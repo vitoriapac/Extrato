@@ -77,7 +77,7 @@
     <div class="kpi-grid" id="kpiGrid"></div>
     <div class="stat-grid" id="quickStats"></div>
 
-
+    <div class="overview-section-heading"><span>Aprovação e retenção</span></div>
     <div class="chart-card">
       <h3>Dashboard de Aprovação</h3>
       <div id="approvalDashboard"></div>
@@ -88,6 +88,7 @@
       <div id="topicRetentionDashboard"></div>
     </div>
 
+    <div class="overview-section-heading"><span>Estudo e sessões</span></div>
     <div class="chart-card">
       <h3>Cronômetro de estudo</h3>
       <div class="timer-block">
@@ -153,16 +154,16 @@
         <table class="log responsive-history-table study-sessions-table">
           <thead>
             <tr>
-              <th style="width:110px;">Data</th>
+              <th style="width:100px;">Data</th>
               <th style="width:65px;">Início</th>
                <th style="width:85px;">Duração</th>
-              <th style="width:120px;">Tipo</th>
+              <th style="width:110px;">Tipo</th>
               <th style="width:150px;">Disciplina</th>
-              <th style="width:160px;">Tópico</th>
-              <th style="width:85px;">Questões</th>
-              <th style="width:75px;">% acerto</th>
+              <th style="width:180px;">Tópico</th>
+              <th style="width:80px;">Questões</th>
+              <th style="width:80px;">% acerto</th>
               <th>Observação</th>
-              <th style="width:36px;"></th>
+              <th style="width:70px;"></th>
             </tr>
           </thead>
           <tbody id="studySessionsBody"></tbody>
@@ -170,11 +171,13 @@
       </div>
     </div>
 
+    <div class="overview-section-heading"><span>Evolução</span></div>
     <div class="chart-card">
       <h3>Sequência de estudos</h3>
       <div id="heatmapContainer"></div>
     </div>
 
+    <div class="overview-section-heading"><span>Progresso e conquistas</span></div>
     <div class="chart-card">
       <h3>Conquistas</h3>
       <div class="badges-grid" id="badgesGrid"></div>
@@ -192,15 +195,17 @@
 
     <div class="chart-card">
       <h3>Radar de disciplinas</h3>
-      <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin:-4px 0 12px;">
+      <p class="helper-text helper-text--compact">
         Combina progresso concluído e taxa de acerto em questões/simulados — quanto menor o "raio", mais atenção a disciplina precisa.
       </p>
       <div id="radarChart"></div>
     </div>
 
+    <div class="overview-section-heading"><span>Próximas ações</span></div>
     <div class="chart-card">
-      <h3>Próximas revisões no calendário</h3>
+      <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
       <ul class="upcoming-list" id="upcomingList"></ul>
+      <div id="upcomingFooter"></div>
     </div>
   </div>
 
@@ -209,7 +214,7 @@
     <div class="section-head">
       <div class="section-title">🎯 Modo Hoje</div>
     </div>
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin:-8px 0 16px;">
+    <p class="helper-text">
       Só o que importa agora: alertas, plano do dia, prioridades, tarefas, atrasos, simulados planejados e metas. Sem distrações.
     </p>
 
@@ -266,7 +271,7 @@
     </div>
 
     <div class="kpi-grid" id="calIndicadores"></div>
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin:-10px 0 16px;">
+    <p class="helper-text helper-text--compact">
       Os indicadores, tarefas do dia e revisões atrasadas somam automaticamente o que está no Calendário e na Agenda de Revisões.
     </p>
 
@@ -304,7 +309,7 @@
         <button class="month-nav-btn" id="monthNextBtn" title="Próximo mês">▶</button>
         <button class="btn ghost small" id="monthTodayBtn" style="margin-left:8px;">Hoje</button>
       </div>
-      <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin:-6px 0 12px;text-align:center;">
+      <p class="helper-text helper-text--compact calendar-helper-text">
         Respeita os filtros de disciplina e status acima · edite os itens na tabela abaixo
       </p>
       <div id="monthCalendar"></div>
@@ -342,7 +347,7 @@
         <button class="btn" id="addAgendaRowBtn">+ Novo item</button>
       </div>
     </div>
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin:-8px 0 16px;">
+    <p class="helper-text">
       Toda vez que um tópico é marcado como <strong>Concluído</strong> na aba Disciplinas, ele fica disponível aqui para gerar revisões automáticas em 24h, 7 dias e 30 dias.
     </p>
     <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
@@ -447,7 +452,7 @@
     </div>
     <div class="chart-card" id="desempenhoDisciplinaCard" style="display:none;">
       <h3>📊 Desempenho por disciplina</h3>
-      <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin:-4px 0 12px;">
+      <p class="helper-text helper-text--compact">
         Combina questões avulsas e simulados detalhados por disciplina · tendência compara a primeira e a segunda metade dos seus registros
       </p>
       <div id="desempenhoDisciplinaBars"></div>
@@ -459,7 +464,7 @@
     <div class="section-head">
       <div class="section-title">Metas</div>
     </div>
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin:-8px 0 16px;">
+    <p class="helper-text">
       Progresso = Atingido / Meta. As metas semanal e mensal contam tópicos concluídos; questões e simulados contam o que foi registrado na aba anterior, sempre na semana atual.
     </p>
     <div id="metasContainer"></div>
@@ -478,13 +483,13 @@
     <div class="section-head">
       <div class="section-title" style="font-size:16px;">Metas por disciplina</div>
     </div>
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin:-8px 0 12px;">
+    <p class="helper-text">
       Meta de questões resolvidas por semana, específica por disciplina.
     </p>
     <div class="meta-disciplina-add">
                 <select id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
                 <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de tópicos da nova meta" min="1" value="20" style="width:80px;">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">questões/semana</span>
+      <span class="metadata-text">questões/semana</span>
       <button class="btn small" id="addMetaDisciplinaBtn">+ Adicionar meta</button>
     </div>
     <div id="metasPorDisciplinaContainer"></div>

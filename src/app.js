@@ -1683,6 +1683,10 @@ function renderHeader(){
 }
 
 /* ===== RENDER: DASHBOARD ===== */
+let upcomingVisible=5;
+function changeUpcomingLimit(delta){upcomingVisible+=Number(delta||0);renderDashboard()}
+function showAllUpcoming(){upcomingVisible=Number.MAX_SAFE_INTEGER;renderDashboard()}
+function resetUpcomingLimit(){upcomingVisible=5;renderDashboard()}
 function renderDashboard(){
   const topics = activeTopics();
   const total = topics.length;
@@ -1714,26 +1718,29 @@ function renderDashboard(){
 
   const calItems = state.calendar
     .filter(c => c.date >= todayISO())
-    .map(c => ({ date:c.date, subject:entitySubjectName(c), label:c.reviewType && c.reviewType!=='—' ? c.reviewType : null, status:c.status }));
+    .map(c => ({ date:c.date, subject:entitySubjectName(c), label:c.reviewType && c.reviewType!=='—' ? c.reviewType : 'Revisão', status:c.status,origem:'Calendário' }));
   const agendaItems = state.reviewAgenda
     .filter(a => a.date >= todayISO())
-    .map(a => ({ date:a.date, subject:entitySubjectName(a), label:`${a.topicId ? getTopicName(a.topicId) : (a.topic || 'Tópico')} · ${a.tipo}`, status:a.status }));
+    .map(a => ({ date:a.date, subject:entitySubjectName(a), label:`${a.topicId ? getTopicName(a.topicId) : (a.topic || 'Tópico')} · ${a.tipo}`, status:a.status,origem:'Agenda de Revisões' }));
 
-  const upcoming = [...calItems, ...agendaItems]
-    .sort((a,b)=> a.date.localeCompare(b.date))
-    .slice(0,8);
+  const allUpcoming = [...calItems, ...agendaItems].sort((a,b)=> a.date.localeCompare(b.date));
+  const upcoming=allUpcoming.slice(0,upcomingVisible);
 
   const ul = document.getElementById('upcomingList');
+  const title=document.getElementById('upcomingTitle'),footer=document.getElementById('upcomingFooter');
+  if(title)title.textContent=`Próximas revisões · ${allUpcoming.length}`;
   if(upcoming.length === 0){
     ul.innerHTML = `<li class="upcoming-empty">Nenhuma revisão futura cadastrada. Adicione datas no Calendário ou gere a Agenda de Revisões.</li>`;
+    if(footer)footer.innerHTML='';
   } else {
     ul.innerHTML = upcoming.map(c => `
       <li>
         <span class="upcoming-date">${formatDatePt(c.date)}</span>
-        <span style="flex:1;">${escapeHtml(c.subject || '—')} ${c.label ? '· '+escapeHtml(c.label) : ''}</span>
+        <span style="flex:1;"><strong>${escapeHtml(c.subject || '—')}</strong> — ${escapeHtml(unifiedItemLabel(c))}<span class="item-origin">${escapeHtml(c.origem)}</span></span>
         <span class="subject-progress-pill">${escapeHtml(c.status||'Não iniciado')}</span>
       </li>
     `).join('');
+    if(footer)footer.innerHTML=renderCollectionFooter({variant:'block',total:allUpcoming.length,visible:upcoming.length,step:5,label:'revisões',showMoreAction:'changeUpcomingLimit(5)',showAllAction:'showAllUpcoming()',showLessAction:upcomingVisible>5?'resetUpcomingLimit()':''})+`<button class="btn ghost small upcoming-calendar-link" data-delegated-click="navigateKpi('calendario')">Ver todas no calendário</button>`;
   }
 }
 
@@ -1752,7 +1759,11 @@ function renderSubjects(){
 
   const activeHtml = subjects.length===0 ? `<div class="empty-state"><p>Nenhuma disciplina ativa.</p><button class="btn" data-delegated-click="addSubject()">+ Adicionar disciplina</button></div>` : subjects.map((s, idx) => {
     const pct = subjectProgress(s);
-    const visibleTopics=s.topics.filter(t=>!t.archived);
+    const subjectTopics=s.topics.filter(t=>!t.archived);
+    const topicFilter=subjectTopicFilters.get(s.id)||{status:'',difficulty:''};
+    const allVisibleTopics=subjectTopics.filter(topic=>(!topicFilter.status||topic.status===topicFilter.status)&&(!topicFilter.difficulty||topic.difficulty===topicFilter.difficulty));
+    const topicLimit=subjectTopicLimits.get(s.id)||10;
+    const visibleTopics=allVisibleTopics.slice(0,topicLimit);
     const archivedTopics=s.topics.filter(t=>t.archived);
     return `
     <div class="subject-block" data-subject-id="${s.id}">
@@ -1768,12 +1779,13 @@ function renderSubjects(){
                 data-delegated-blur="renameSubject('${s.id}', this.textContent)">${escapeHtml(s.name)}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="subject-progress-pill">${pct}% · ${visibleTopics.length} tópico${visibleTopics.length===1?'':'s'}</span>
+          <span class="subject-progress-pill">${pct}% · ${subjectTopics.length} tópico${subjectTopics.length===1?'':'s'}</span>
           <button class="btn ghost small" data-delegated-click="event.stopPropagation();duplicateSubject('${s.id}')">Duplicar</button>
           <button class="btn ghost small" data-delegated-click="event.stopPropagation();archiveSubject('${s.id}')">Arquivar</button>
         </div>
       </div>
       <div class="subject-body ${s.collapsed ? 'collapsed':''}">
+        <div class="subject-topic-filters"><select aria-label="Filtrar tópicos de ${escapeAttr(s.name)} por status" data-delegated-change="setSubjectTopicFilter('${s.id}','status',this.value)"><option value="">Todos os status</option>${STATUS_OPTIONS.map(option=>`<option value="${option}" ${topicFilter.status===option?'selected':''}>${option}</option>`).join('')}</select><select aria-label="Filtrar tópicos de ${escapeAttr(s.name)} por dificuldade" data-delegated-change="setSubjectTopicFilter('${s.id}','difficulty',this.value)"><option value="">Todas as dificuldades</option>${DIFFICULTY_OPTIONS.map(option=>`<option value="${option}" ${topicFilter.difficulty===option?'selected':''}>${option}</option>`).join('')}</select></div>
         <div class="ledger-scroll">
         <table class="ledger">
           <thead>
@@ -1830,6 +1842,7 @@ function renderSubjects(){
           </tbody>
         </table>
         </div>
+        ${renderCollectionFooter({variant:'block',total:allVisibleTopics.length,visible:visibleTopics.length,step:10,label:`tópicos filtrados · ${subjectTopics.length} no total`,showMoreAction:`changeSubjectTopicLimit('${s.id}',10)`,showAllAction:`showAllSubjectTopics('${s.id}')`,showLessAction:topicLimit>10?`resetSubjectTopicLimit('${s.id}')`:''})}
         <div class="add-topic-row">
           <button class="btn ghost small" data-delegated-click="addTopic('${s.id}')">+ Adicionar tópico</button>
         </div>
@@ -1854,11 +1867,17 @@ function renderSubjects(){
 }
 
 let openNotesIds = new Set();
+const subjectTopicLimits=new Map();
+const subjectTopicFilters=new Map();
 function toggleNotes(topicId){
-  if(openNotesIds.has(topicId)) openNotesIds.delete(topicId);
-  else openNotesIds.add(topicId);
+  if(openNotesIds.has(topicId)) openNotesIds.clear();
+  else{openNotesIds.clear();openNotesIds.add(topicId)}
   renderSubjects();
 }
+function changeSubjectTopicLimit(subjectId,delta){subjectTopicLimits.set(subjectId,(subjectTopicLimits.get(subjectId)||10)+Number(delta||0));renderSubjects()}
+function showAllSubjectTopics(subjectId){subjectTopicLimits.set(subjectId,Number.MAX_SAFE_INTEGER);renderSubjects()}
+function resetSubjectTopicLimit(subjectId){subjectTopicLimits.set(subjectId,10);renderSubjects()}
+function setSubjectTopicFilter(subjectId,field,value){const current=subjectTopicFilters.get(subjectId)||{status:'',difficulty:''};if(field==='status'||field==='difficulty')current[field]=value;subjectTopicFilters.set(subjectId,current);subjectTopicLimits.set(subjectId,10);renderSubjects()}
 function updateTopicTags(subjectId, topicId, value){
   const s = state.subjects.find(x=>x.id===subjectId);
   const t = s.topics.find(x=>x.id===topicId);
@@ -2116,6 +2135,19 @@ function getRevisoesUnificadas(){
   }));
   return [...doCalendario, ...daAgenda];
 }
+function unifiedItemLabel(item){
+  const subject=String(item?.subject||'').trim(),label=String(item?.label||'').trim();
+  if(!subject||!label) return label||'Revisão';
+  const escaped=subject.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return label.replace(new RegExp(`^${escaped}\\s*[·•—-]\\s*`,'i'),'').trim()||'Revisão';
+}
+const overdueGroupLimits={calAtrasadas:3,hojeAtrasadas:3};
+const overdueExpandedDates={calAtrasadas:new Set(),hojeAtrasadas:new Set()};
+const overdueExpansionInitialized=new Set();
+function changeOverdueGroupLimit(elId,delta){overdueGroupLimits[elId]=(overdueGroupLimits[elId]||3)+Number(delta||0);renderCalAtrasadas(elId)}
+function showAllOverdueGroups(elId){overdueGroupLimits[elId]=Number.MAX_SAFE_INTEGER;renderCalAtrasadas(elId)}
+function resetOverdueGroupLimit(elId){overdueGroupLimits[elId]=3;renderCalAtrasadas(elId)}
+function toggleOverdueDate(elId,date){const dates=overdueExpandedDates[elId]||(overdueExpandedDates[elId]=new Set());if(dates.has(date))dates.delete(date);else dates.add(date);renderCalAtrasadas(elId)}
 
 function renderCalIndicadores(){
   const todas = getRevisoesUnificadas();
@@ -2524,6 +2556,17 @@ function calcAcertoPct(correct, resolved){
 
 let openQuestionErrorIds = new Set();
 let performanceSubjectId = null;
+let performanceViewMode='with-data';
+let performanceVisible=8;
+let retentionShowAll=false;
+const retentionView={subjectId:'',order:'asc',confidence:'all'};
+function setPerformanceViewMode(mode){performanceViewMode=['with-data','insufficient','without-data','all'].includes(mode)?mode:'with-data';performanceVisible=8;renderQuestionAnalytics()}
+function changePerformanceLimit(delta){performanceVisible+=Number(delta||0);renderQuestionAnalytics()}
+function showAllPerformance(){performanceVisible=Number.MAX_SAFE_INTEGER;renderQuestionAnalytics()}
+function resetPerformanceLimit(){performanceVisible=8;renderQuestionAnalytics()}
+function showAllRetention(){retentionShowAll=true;renderTopicRetentionDashboard()}
+function resetRetentionLimit(){retentionShowAll=false;renderTopicRetentionDashboard()}
+function setRetentionFilter(field,value){if(field in retentionView)retentionView[field]=value;retentionShowAll=false;renderTopicRetentionDashboard()}
 const listViewState={questionsVisible:10,simulationsVisible:5,sessionDaysVisible:5};
 const LIST_VIEW_STEPS={questions:10,simulations:5,sessionDays:5};
 const historyEditState={questionId:null,questionIsNew:false,simulationId:null,simulationIsNew:false,sessionId:null};
@@ -2949,17 +2992,22 @@ function renderQuestionAnalytics(){
     ['Taxa de acerto',accuracy===null?'—':`${accuracy}%`],
     ['Cobertura por tópico',`${coverage}%`],
     ['Tendência',`${trend.icon} ${trend.label}`]
-  ].map(([label,value])=>`<div class="stat"><div class="stat-value">${value}</div><div class="stat-label">${label}</div></div>`).join('');
+  ].map(([label,value])=>`<div class="stat-cell"><div class="n">${value}</div><div class="l">${label}</div></div>`).join('');
 
   const topicPerformance=getSubjectTopicPerformance(performanceSubjectId);
-  bars.innerHTML=topicPerformance.length?topicPerformance.map(topic=>{
+  const mature=topicPerformance.filter(topic=>topic.resolved>=30),insufficient=topicPerformance.filter(topic=>topic.resolved>0&&topic.resolved<30);
+  if(performanceViewMode==='with-data'&&!mature.length&&insufficient.length)performanceViewMode='insufficient';
+  const filteredPerformance=performanceViewMode==='all'?topicPerformance:topicPerformance.filter(topic=>performanceViewMode==='without-data'?topic.resolved===0:performanceViewMode==='insufficient'?topic.resolved>0&&topic.resolved<30:topic.resolved>=30);
+  const visiblePerformance=filteredPerformance.slice(0,performanceVisible);
+  const performanceTabs=`<div class="analytics-view-tabs" role="group" aria-label="Filtrar desempenho por dados"><button class="btn small ${performanceViewMode==='with-data'?'':'ghost'}" data-delegated-click="setPerformanceViewMode('with-data')">Com dados</button><button class="btn small ${performanceViewMode==='insufficient'?'':'ghost'}" data-delegated-click="setPerformanceViewMode('insufficient')">Amostra insuficiente</button><button class="btn small ${performanceViewMode==='without-data'?'':'ghost'}" data-delegated-click="setPerformanceViewMode('without-data')">Sem dados</button><button class="btn small ${performanceViewMode==='all'?'':'ghost'}" data-delegated-click="setPerformanceViewMode('all')">Todos</button></div>`;
+  bars.innerHTML=performanceTabs+(filteredPerformance.length?visiblePerformance.map(topic=>{
     const width=topic.accuracy===null?0:topic.accuracy;
     return `<div class="performance-row">
       <div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId,topic.id).score}/100</div></div>
       <div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div>
       <div class="performance-value">${topic.classification.icon} ${topic.accuracy===null?'—':topic.accuracy+'%'}</div>
     </div>`;
-  }).join(''):'<div class="empty-state"><p>Nenhum tópico ativo nesta disciplina.</p></div>';
+  }).join('')+renderCollectionFooter({variant:'block',total:filteredPerformance.length,visible:visiblePerformance.length,step:8,label:'tópicos',showMoreAction:'changePerformanceLimit(8)',showAllAction:'showAllPerformance()',showLessAction:performanceVisible>8?'resetPerformanceLimit()':''}):`<div class="empty-state empty-state--compact"><strong>${performanceViewMode==='with-data'?'Nenhum tópico possui amostra suficiente':'Nenhum tópico nesta categoria'}</strong><p>${performanceViewMode==='with-data'?'São necessárias pelo menos 30 questões por tópico para esta visualização.':'Altere o filtro para visualizar os demais tópicos.'}</p></div>`);
 
   weeklyEl.innerHTML=`<div class="trend-grid">${weekly.map(week=>`
     <div class="trend-week ${week.insufficientData?'insufficient':''}">
@@ -4459,9 +4507,19 @@ function renderApprovalDashboard(){
 }
 function renderTopicRetentionDashboard(){
   const el=document.getElementById('topicRetentionDashboard');if(!el)return;
-  const rows=activeTopics().map(t=>({...t,r:topicRetentionScore(t.subjectId,t.id)})).filter(x=>x.r.available).sort((a,b)=>a.r.score-b.r.score);
-  if(!rows.length){el.innerHTML='<div class="upcoming-empty">Conclua revisões ou registre questões vinculadas aos tópicos para calcular a retenção.</div>';return;}
-  el.innerHTML=rows.map(x=>{const c=x.r.score>=70?'ok':x.r.score>=50?'warn':'';return `<div class="retention-row" title="${escapeAttr(x.r.detail)}"><div class="retention-topic"><strong>${escapeHtml(x.name)}</strong><span>${escapeHtml(x.subjectName)} · confiança ${x.r.confidenceLabel}</span></div><div class="retention-track"><div class="retention-fill ${c}" style="width:${x.r.score}%"></div></div><div class="retention-value">${x.r.score}%</div></div>`}).join('');
+  const baseRows=activeTopics().map(t=>({...t,r:topicRetentionScore(t.subjectId,t.id)})).filter(x=>x.r.available);
+  const confidenceMatch=row=>retentionView.confidence==='all'||row.r.confidenceLabel.toLowerCase()===retentionView.confidence;
+  const rows=baseRows.filter(row=>(!retentionView.subjectId||row.subjectId===retentionView.subjectId)&&confidenceMatch(row)).sort((a,b)=>{
+    const score=retentionView.order==='desc'?b.r.score-a.r.score:a.r.score-b.r.score;
+    return score||a.r.confidence-b.r.confidence||a.subjectName.localeCompare(b.subjectName)||a.name.localeCompare(b.name);
+  });
+  const toolbar=`<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map(subject=>`<option value="${escapeAttr(subject.id)}" ${retentionView.subjectId===subject.id?'selected':''}>${escapeHtml(subject.name)}</option>`).join('')}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${retentionView.order==='asc'?'selected':''}>Menor retenção</option><option value="desc" ${retentionView.order==='desc'?'selected':''}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${retentionView.confidence==='alta'?'selected':''}>Confiança alta</option><option value="média" ${retentionView.confidence==='média'?'selected':''}>Confiança média</option><option value="baixa" ${retentionView.confidence==='baixa'?'selected':''}>Confiança baixa</option></select></div>`;
+  if(!rows.length){el.innerHTML=toolbar+'<div class="upcoming-empty">Nenhum tópico corresponde aos filtros atuais.</div>';return;}
+  const visible=retentionShowAll?rows:rows.slice(0,8);
+  const scoreCounts=new Map();rows.forEach(row=>scoreCounts.set(row.r.score,(scoreCounts.get(row.r.score)||0)+1));
+  const repeated=[...scoreCounts.entries()].sort((a,b)=>b[1]-a[1])[0];
+  const repeatedSummary=repeated&&repeated[1]>=4?`<div class="retention-pattern-note">${repeated[1]} tópicos apresentam retenção estimada em ${repeated[0]}%. Compare a confiança antes de interpretar o resultado como definitivo.</div>`:'';
+  el.innerHTML=toolbar+repeatedSummary+visible.map(x=>{const c=x.r.score>=70?'ok':x.r.score>=50?'warn':'';return `<div class="retention-row" title="${escapeAttr(x.r.detail)}"><div class="retention-topic"><strong>${escapeHtml(x.name)}</strong><span>${escapeHtml(x.subjectName)} · confiança ${x.r.confidenceLabel}</span></div><div class="retention-track"><div class="retention-fill ${c}" style="width:${x.r.score}%"></div></div><div class="retention-value">${x.r.score}%</div></div>`}).join('')+renderCollectionFooter({variant:'block',total:rows.length,visible:visible.length,step:8,label:'tópicos',showMoreAction:'showAllRetention()',showAllAction:'showAllRetention()',showLessAction:retentionShowAll?'resetRetentionLimit()':''});
 }
 
 function planStartDate(){
@@ -4508,13 +4566,16 @@ function renderCalTarefasHoje(elId){
   elId=elId||'calTarefasHoje';const today=todayISO(),items=getRevisoesUnificadas().filter(r=>r.date===today).sort((a,b)=>(a.subject||'').localeCompare(b.subject||''));
   const ul=document.getElementById(elId);if(!ul)return;
   if(!items.length){ul.innerHTML='<li class="upcoming-empty">Nenhuma tarefa para hoje. 🎉</li>';return}
-  ul.innerHTML=items.map(x=>`<li><span class="dias-pill dias-hoje" style="margin-right:6px">hoje</span><span style="flex:1">${escapeHtml(x.subject||'—')} · ${escapeHtml(x.label)} <span style="color:var(--ink-soft);font-size:11px"> (${x.origem})</span></span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x,elId)}</li>`).join('');
+  ul.innerHTML=items.map(x=>`<li><span class="dias-pill dias-hoje" style="margin-right:6px">hoje</span><span style="flex:1">${escapeHtml(x.subject||'—')} · ${escapeHtml(unifiedItemLabel(x))} <span class="item-origin">(${x.origem})</span></span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x,elId)}</li>`).join('');
 }
 function renderCalAtrasadas(elId){
   elId=elId||'calAtrasadas';const today=todayISO(),items=getRevisoesUnificadas().filter(r=>r.date&&r.date<today&&r.status!=='Concluído').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const ul=document.getElementById(elId);if(!ul)return;
   if(!items.length){ul.innerHTML='<li class="upcoming-empty">Nenhuma revisão atrasada. Tudo em dia!</li>';return}
-  ul.innerHTML=items.map(x=>`<li><span class="upcoming-date">${formatDatePt(x.date)}</span><span style="flex:1">${escapeHtml(x.subject||'—')} · ${escapeHtml(x.label)} <span style="color:var(--ink-soft);font-size:11px"> (${x.origem})</span></span>${diasParaRevisaoPill(x.date,x.status)}${quickReviewButton(x,elId)}</li>`).join('');
+  const groups=new Map();items.forEach(item=>{if(!groups.has(item.date))groups.set(item.date,[]);groups.get(item.date).push(item)});
+  const entries=[...groups.entries()],limit=overdueGroupLimits[elId]||3,visible=entries.slice(0,limit);
+  if(!overdueExpansionInitialized.has(elId)){overdueExpandedDates[elId].add(entries[0][0]);overdueExpansionInitialized.add(elId)}
+  ul.innerHTML=`<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>`+visible.map(([date,dateItems])=>{const expanded=overdueExpandedDates[elId].has(date);return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${dateItems.length} revisão(ões) · ${Math.abs(diasParaRevisao(date)||0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded?'':'hidden'}>${dateItems.map(x=>`<li><span style="flex:1">${escapeHtml(x.subject||'—')} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x,elId)}</li>`).join('')}</ul></li>`}).join('')+`<li class="overdue-list-footer">${renderCollectionFooter({variant:'block',total:entries.length,visible:visible.length,step:3,label:'datas',showMoreAction:`changeOverdueGroupLimit('${elId}',3)`,showAllAction:`showAllOverdueGroups('${elId}')`,showLessAction:limit>3?`resetOverdueGroupLimit('${elId}')`:''})}</li>`;
 }
 function renderKPIs(){
   const resolved=state.questoes.reduce((n,q)=>n+(Number(q.resolved)||0),0),accuracy=taxaAcertoGeral(),average=mediaSimulados(),late=revisoesAtrasadas(),target=state.metas.metaAprovacao;
@@ -4536,23 +4597,23 @@ function escapeAttr(str){ return escapeHtml(str); }
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTIONS=new Set([
   'addAgendaRow','addBreakdownRow','addCalRow','addQuestaoRow','addSimuladoRow','addSubject','addTopic','applyTodayGoalToAllDays','archiveSubject','archiveTopic','clearWeekendGoals',
-  'cancelAgendaEdit','cancelCalendarEdit','cancelQuestionEdit','cancelSimulationEdit','cancelStudySessionEdit','changeAgendaLimit','changeCalendarLimit','clearSessionHistoryFilters','completeAgendaReview','completeCalendarItem','completeUnifiedReview','deleteAgendaRow',
+  'cancelAgendaEdit','cancelCalendarEdit','cancelQuestionEdit','cancelSimulationEdit','cancelStudySessionEdit','changeAgendaLimit','changeCalendarLimit','changeOverdueGroupLimit','changePerformanceLimit','changeSubjectTopicLimit','changeUpcomingLimit','clearSessionHistoryFilters','completeAgendaReview','completeCalendarItem','completeUnifiedReview','deleteAgendaRow',
   'deleteBreakdownRow','deleteCalRow','deleteMetaDisciplina','deleteQuestaoRow','deleteSimuladoRow','deleteStudySession','duplicateSubject',
   'editAgenda','editCalendarItem','editQuestion','editSimulation','editStudySession','focusStudyTimer','gerarAgendaAutomatica','moveSubject','navigateKpi','renameSubject',
-  'requestPermanentSubjectDelete','requestPermanentTopicDelete','resetAdaptiveReviewDate','resetAgendaLimit','resetCalendarLimit','restoreSubject','restoreTopic','saveAgendaEdit','saveCalendarEdit','saveQuestionEdit',
-  'saveSimulationEdit','saveStudySessionEdit','selectSessionHistoryDate','startPlannedActivity','toggleBreakdown','toggleNotes',
-  'toggleCompletedReviews','toggleFilterPanel','toggleQuestionErrors','toggleSessionDay','toggleStreakActiveDays','toggleStreakExpanded','toggleSubject','updateAgenda','updateAgendaDraft','updateBreakdownRow','updateCal','updateCalendarDraft','updateMeta',
+  'requestPermanentSubjectDelete','requestPermanentTopicDelete','resetAdaptiveReviewDate','resetAgendaLimit','resetCalendarLimit','resetOverdueGroupLimit','resetPerformanceLimit','resetRetentionLimit','resetSubjectTopicLimit','resetUpcomingLimit','restoreSubject','restoreTopic','saveAgendaEdit','saveCalendarEdit','saveQuestionEdit','setPerformanceViewMode','setRetentionFilter','setSubjectTopicFilter',
+  'saveSimulationEdit','saveStudySessionEdit','selectSessionHistoryDate','showAllOverdueGroups','showAllPerformance','showAllRetention','showAllSubjectTopics','showAllUpcoming','startPlannedActivity','toggleBreakdown','toggleNotes',
+  'toggleCompletedReviews','toggleFilterPanel','toggleOverdueDate','toggleQuestionErrors','toggleSessionDay','toggleStreakActiveDays','toggleStreakExpanded','toggleSubject','updateAgenda','updateAgendaDraft','updateBreakdownRow','updateCal','updateCalendarDraft','updateMeta',
   'updateMetaDisciplina','updateMetaHoursDay','updateQuestionDraft','updateQuestionError','updateSessionHistoryFilter',
   'updateSimulationDraft','updateStudySessionDraft','updateTopic','updateTopicStatus','updateTopicTags'
 ]);
 const DELEGATED_ACTION_HANDLERS={
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
-  cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
+  cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
   editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,
-  requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,
-  saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,startPlannedActivity,toggleBreakdown,toggleNotes,
-  toggleCompletedReviews,toggleFilterPanel,toggleQuestionErrors,toggleSessionDay,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
+  requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRetentionFilter,setSubjectTopicFilter,
+  saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
+  toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
   updateMetaDisciplina,updateMetaHoursDay,updateQuestionDraft,updateQuestionError,updateSessionHistoryFilter,
   updateSimulationDraft,updateStudySessionDraft,updateTopic,updateTopicStatus,updateTopicTags
 };

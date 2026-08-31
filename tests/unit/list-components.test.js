@@ -15,6 +15,19 @@ test('rodapé oferece recolhimento após expandir',()=>{
   assert.match(html,/Mostrar menos/);
 });
 
+test('rodapé de bloco oferece expansão total e passo restante',()=>{
+  const html=renderCollectionFooter({total:23,visible:8,step:8,showMoreAction:'more()',showAllAction:'all()',showLessAction:'less()',label:'tópicos',variant:'block'});
+  assert.match(html,/list-summary-footer/);
+  assert.match(html,/Mostrar mais 8/);
+  assert.match(html,/Ver todos/);
+  assert.match(html,/Exibindo 8 de 23 tópicos/);
+});
+
+test('rodapé de bloco é omitido quando a coleção cabe no limite inicial',()=>{
+  const html=renderCollectionFooter({total:4,visible:4,step:5,label:'revisões',variant:'block'});
+  assert.equal(html,'');
+});
+
 test('cabeçalho recolhível expõe estado acessível e contagem',()=>{
   const html=renderGroupHeader({title:'Concluídas',count:27,tone:'completed',expanded:false,toggleAction:'toggle()',colspan:8});
   assert.match(html,/aria-expanded="false"/);
