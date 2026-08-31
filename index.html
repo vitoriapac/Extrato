@@ -277,7 +277,8 @@
     <div class="section-head">
       <div class="section-title" style="font-size:16px;">Itens do calendário</div>
     </div>
-    <div class="cal-filters">
+    <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="calendarFilters" data-delegated-click="toggleFilterPanel('calendar')">Filtros</button>
+    <div class="cal-filters responsive-filters" id="calendarFilters">
                 <select id="calFilterSubject" aria-label="Filtrar calendário por disciplina"><option value="">Todas as disciplinas</option></select>
                 <select id="calFilterStatus" aria-label="Filtrar calendário por status">
         <option value="">Todos os status</option>
@@ -304,7 +305,7 @@
     </div>
 
     <div class="cal-table-wrap">
-      <table class="cal">
+      <table class="cal responsive-history-table">
         <thead>
           <tr>
             <th style="width:110px;">Data</th>
@@ -333,7 +334,8 @@
     <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin:-8px 0 16px;">
       Toda vez que um tópico é marcado como <strong>Concluído</strong> na aba Disciplinas, ele fica disponível aqui para gerar revisões automáticas em 24h, 7 dias e 30 dias.
     </p>
-    <div class="cal-filters">
+    <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
+    <div class="cal-filters responsive-filters" id="agendaFilters">
                 <select id="agendaFilterSubject" aria-label="Filtrar agenda por disciplina"><option value="">Todas as disciplinas</option></select>
                 <select id="agendaFilterStatus" aria-label="Filtrar agenda por status">
         <option value="">Todos os status</option>
@@ -347,7 +349,7 @@
                 <select id="agendaFilterTipo" aria-label="Filtrar agenda por tipo"><option value="">Todos os tipos</option></select>
     </div>
     <div class="cal-table-wrap">
-      <table class="cal">
+      <table class="cal responsive-history-table">
         <thead>
           <tr>
             <th style="width:105px;">Data</th>

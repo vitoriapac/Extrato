@@ -299,6 +299,21 @@
   .edit-notes-field{grid-column:span 2;}
   .inline-edit-actions{display:flex;gap:8px;align-items:center;grid-column:1/-1;}
   .mobile-history-card{display:none;}
+  .mobile-filter-toggle{display:none;margin-bottom:10px}
+  .review-group-row td{padding:0!important;background:var(--slate-bg)!important;border-bottom:1px solid var(--paper-line)}
+  .review-group-row.overdue td{box-shadow:inset 3px 0 0 var(--red)}
+  .review-group-row.today td{box-shadow:inset 3px 0 0 var(--gold)}
+  .review-group-row.upcoming td{box-shadow:inset 3px 0 0 var(--blue)}
+  .review-group-row.completed td{box-shadow:inset 3px 0 0 var(--green)}
+  .review-group-header{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border:0;background:transparent;color:var(--heading);text-align:left;cursor:pointer}
+  .review-group-header.static{cursor:default}
+  .review-group-title{font:600 12px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.05em}
+  .review-group-meta{display:flex;align-items:center;gap:10px}
+  .count-badge{min-width:25px;padding:3px 7px;border:1px solid var(--paper-line);background:var(--white);font:600 10px 'IBM Plex Mono',monospace;text-align:center}
+  .review-group-chevron{font-size:18px;transition:transform .18s ease}
+  .review-group-header[aria-expanded="true"] .review-group-chevron{transform:rotate(90deg)}
+  .history-status{display:inline-flex;padding:4px 8px;border:1px solid var(--paper-line);font:600 9px 'IBM Plex Mono',monospace;text-transform:uppercase}
+  .history-primary-action{white-space:nowrap}
   .mobile-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
   .mobile-card-date{font:10px 'IBM Plex Mono',monospace;color:var(--ink-soft);}
   .mobile-card-title{font-weight:600;color:var(--heading);}
@@ -493,6 +508,12 @@
     .inline-edit-actions .btn{width:100%;}
     #studySessionsCard .cal-filters select,#studySessionsCard .cal-filters button{width:100%;min-height:44px;}
     #studySessionsCard .session-filter-summary{width:100%;}
+    .mobile-filter-toggle{display:inline-flex;width:100%;justify-content:center;min-height:44px}
+    .cal-filters.responsive-filters{display:none;flex-direction:column;align-items:stretch}
+    .cal-filters.responsive-filters.show{display:flex}
+    .responsive-filters select{width:100%;min-height:44px}
+    #panel-calendario .cal-table-wrap,#panel-agenda .cal-table-wrap{overflow:visible;border:0;background:transparent}
+    #panel-calendario table.cal,#panel-agenda table.cal{min-width:0}
   }
 
   .upcoming-list{list-style:none;margin:0;padding:0;}

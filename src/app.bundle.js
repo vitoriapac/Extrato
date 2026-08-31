@@ -361,6 +361,22 @@
     return false;
   }
 
+  // src/ui/list-components.js
+  function renderCollectionFooter({ total, visible, showMoreAction, showLessAction, colspan, label }) {
+    if (total <= visible && visible <= 0) return "";
+    const shown = Math.min(total, visible);
+    if (total <= shown && shown <= 0) return "";
+    return `<tr class="list-view-footer"><td colspan="${colspan}"><div class="list-view-controls">
+    <span class="list-view-count">Exibindo ${shown} de ${total} ${label}</span>
+    ${shown < total ? `<button class="btn ghost small" type="button" data-delegated-click="${showMoreAction}">Mostrar mais</button>` : ""}
+    ${shown > 0 && showLessAction ? `<button class="btn ghost small" type="button" data-delegated-click="${showLessAction}">Mostrar menos</button>` : ""}
+  </div></td></tr>`;
+  }
+  function renderGroupHeader({ title, count, tone = "neutral", expanded = true, toggleAction = "", colspan = 8 }) {
+    const content = `<span class="review-group-title">${title}</span><span class="review-group-meta"><span class="count-badge">${count}</span>${toggleAction ? `<span class="review-group-chevron" aria-hidden="true">›</span>` : ""}</span>`;
+    return `<tr class="review-group-row ${tone}"><td colspan="${colspan}">${toggleAction ? `<button type="button" class="review-group-header" aria-expanded="${expanded}" data-delegated-click="${toggleAction}">${content}</button>` : `<div class="review-group-header static">${content}</div>`}</td></tr>`;
+  }
+
   // src/app.js
   var THEME_STORAGE_KEY = "bb-premium-theme";
   function getCurrentTheme() {
@@ -2610,6 +2626,73 @@
     selTipo.innerHTML = `<option value="">Todos os tipos de revisão</option>` + REVIEW_OPTIONS.filter((o) => o !== "—").map((o) => `<option value="${o}">${o}</option>`).join("");
     selTipo.value = currentTipo;
   }
+  function toggleFilterPanel(scope) {
+    const id = scope === "agenda" ? "agendaFilters" : "calendarFilters";
+    const panel = document.getElementById(id), button = document.querySelector(`[aria-controls="${id}"]`);
+    if (!panel) return;
+    const expanded = !panel.classList.contains("show");
+    panel.classList.toggle("show", expanded);
+    button?.setAttribute("aria-expanded", String(expanded));
+  }
+  var calendarUiState = { visible: 10, editingId: null, editingIsNew: false, draft: null };
+  function calendarViewModel(item) {
+    return { date: item.date ? formatDatePt(item.date) : "Sem data", week: item.week || "—", subject: getSubjectName(entitySubjectId(item)), status: item.status || "Não iniciado", reviewType: item.reviewType && item.reviewType !== "—" ? item.reviewType : "Sem revisão" };
+  }
+  function changeCalendarLimit(delta) {
+    calendarUiState.visible = Math.max(10, calendarUiState.visible + Number(delta || 0));
+    renderCalendar();
+  }
+  function resetCalendarLimit() {
+    calendarUiState.visible = 10;
+    renderCalendar();
+  }
+  function editCalendarItem(id) {
+    if (calendarUiState.editingIsNew && calendarUiState.editingId !== id) state.calendar = state.calendar.filter((item2) => item2.id !== calendarUiState.editingId);
+    const item = state.calendar.find((entry) => entry.id === id);
+    if (!item) return;
+    calendarUiState.editingId = id;
+    calendarUiState.editingIsNew = false;
+    calendarUiState.draft = cloneRecord(item);
+    renderCalendar();
+  }
+  function cancelCalendarEdit() {
+    if (calendarUiState.editingIsNew) state.calendar = state.calendar.filter((item) => item.id !== calendarUiState.editingId);
+    calendarUiState.editingId = null;
+    calendarUiState.editingIsNew = false;
+    calendarUiState.draft = null;
+    renderCalendar();
+  }
+  function updateCalendarDraft(field, value) {
+    const draft = calendarUiState.draft;
+    if (draft) draft[field] = value;
+  }
+  function saveCalendarEdit() {
+    const draft = calendarUiState.draft, index = state.calendar.findIndex((item) => item.id === calendarUiState.editingId);
+    if (!draft || index < 0) return cancelCalendarEdit();
+    state.calendar[index] = draft;
+    calendarUiState.editingId = null;
+    calendarUiState.editingIsNew = false;
+    calendarUiState.draft = null;
+    persistAndRender();
+    showToast("Item do calendário atualizado.");
+  }
+  function completeCalendarItem(id) {
+    const item = state.calendar.find((entry) => entry.id === id);
+    if (!item || item.status === "Concluído") return;
+    item.status = "Concluído";
+    persistAndRender();
+    showToast("Item concluído.");
+  }
+  function renderCalendarReadRow(item) {
+    const vm = calendarViewModel(item), pending = item.status !== "Concluído";
+    if (isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)} · ${escapeHtml(vm.week)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.reviewType)}</div></div><button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.status)}</span><span>${diasParaRevisaoPill(item.date, item.status)}</span></div><div class="mobile-card-actions">${pending ? `<button class="btn small history-primary-action" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>` : ""}</div></article></td></tr>`;
+    return `<tr class="history-read-row history-desktop-row ${item.date === todayISO() ? "today" : ""}" data-id="${item.id}"><td>${escapeHtml(vm.date)}</td><td>${escapeHtml(vm.week)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><span class="history-status ${STATUS_CLASS[item.status] || ""}">${escapeHtml(vm.status)}</span></td><td>${escapeHtml(vm.reviewType)}</td><td>${diasParaRevisaoPill(item.date, item.status)}</td><td><div class="row-actions">${pending ? `<button class="btn small" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>` : ""}<button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div></td></tr>`;
+  }
+  function renderCalendarEditRow(item) {
+    const draft = calendarUiState.draft, subjectId = entitySubjectId(draft);
+    if (!draft) return "";
+    return `<tr class="row-editing" data-id="${item.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateCalendarDraft('date',this.value)"></label><label>Semana<input type="text" value="${escapeAttr(draft.week || "")}" data-delegated-input="updateCalendarDraft('week',this.value)"></label><label>Disciplina<select data-delegated-change="updateCalendarDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("")}</select></label><label>Status<select data-delegated-change="updateCalendarDraft('status',this.value)">${STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft.status ? "selected" : ""}>${option}</option>`).join("")}</select></label><label>Tipo de revisão<select data-delegated-change="updateCalendarDraft('reviewType',this.value)">${REVIEW_OPTIONS.map((option) => `<option value="${option}" ${option === draft.reviewType ? "selected" : ""}>${option}</option>`).join("")}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelCalendarEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveCalendarEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteCalRow('${item.id}')">Excluir</button></div></div></td></tr>`;
+  }
   function renderCalendar() {
     const body = document.getElementById("calBody");
     const filterSubject = document.getElementById("calFilterSubject").value;
@@ -2624,39 +2707,26 @@
     </div></td></tr>`;
       return;
     }
-    const today = todayISO();
-    body.innerHTML = rows.map((c) => `
-    <tr class="${c.date === today ? "today" : ""}" data-id="${c.id}">
-      <td><input type="date" value="${c.date || ""}" data-delegated-blur="updateCal('${c.id}','date', this.value)"></td>
-      <td><input type="text" value="${escapeAttr(c.week || "")}" placeholder="Sem. 1" data-delegated-blur="updateCal('${c.id}','week', this.value)"></td>
-      <td>
-        <select data-delegated-change="updateCal('${c.id}','subjectId', this.value)">
-          <option value="">—</option>
-          ${subjectsForSelection(entitySubjectId(c)).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === entitySubjectId(c) ? "selected" : ""}>${escapeHtml(s.name)}${s.archived ? " (arquivada)" : ""}</option>`).join("")}
-        </select>
-      </td>
-      <td>
-        <select class="status-select ${STATUS_CLASS[c.status] || "st-nao"}" data-delegated-change="updateCal('${c.id}','status', this.value, true)">
-          ${STATUS_OPTIONS.map((o) => `<option value="${o}" ${o === c.status ? "selected" : ""}>${o}</option>`).join("")}
-        </select>
-      </td>
-      <td>
-        <select data-delegated-change="updateCal('${c.id}','reviewType', this.value)">
-          ${REVIEW_OPTIONS.map((o) => `<option value="${o}" ${o === c.reviewType ? "selected" : ""}>${o}</option>`).join("")}
-        </select>
-      </td>
-      <td>${diasParaRevisaoPill(c.date, c.status)}</td>
-      <td><button class="icon-btn" data-delegated-click="deleteCalRow('${c.id}')" title="Remover">✕</button></td>
-    </tr>
-  `).join("");
+    const visible = rows.slice(0, calendarUiState.visible);
+    body.innerHTML = visible.map((item) => calendarUiState.editingId === item.id ? renderCalendarEditRow(item) : renderCalendarReadRow(item)).join("") + renderCollectionFooter({ total: rows.length, visible: calendarUiState.visible, showMoreAction: "changeCalendarLimit(10)", showLessAction: calendarUiState.visible > 10 ? "resetCalendarLimit()" : "", colspan: 7, label: "itens" });
   }
   function addCalRow() {
-    state.calendar.push({ id: uid("calendar"), date: todayISO(), week: "", subjectId: activeSubjects()[0]?.id || null, topicId: null, status: "Não iniciado", reviewType: "—", createdAt: nowISO() });
-    persistAndRender();
+    const item = { id: uid("calendar"), date: todayISO(), week: "", subjectId: activeSubjects()[0]?.id || null, topicId: null, status: "Não iniciado", reviewType: "—", createdAt: nowISO() };
+    state.calendar.push(item);
+    calendarUiState.editingId = item.id;
+    calendarUiState.editingIsNew = true;
+    calendarUiState.draft = cloneRecord(item);
+    renderCalendar();
   }
   function deleteCalRow(id) {
-    state.calendar = state.calendar.filter((c) => c.id !== id);
-    persistAndRender();
+    showConfirm("Excluir este item do calendário?", () => {
+      state.calendar = state.calendar.filter((c) => c.id !== id);
+      calendarUiState.editingId = null;
+      calendarUiState.editingIsNew = false;
+      calendarUiState.draft = null;
+      persistAndRender();
+      showToast("Item excluído.");
+    });
   }
   function updateCal(id, field, value) {
     const c = state.calendar.find((x) => x.id === id);
@@ -2664,15 +2734,23 @@
     persistAndRender();
   }
   document.getElementById("calFilterSubject").addEventListener("change", () => {
+    calendarUiState.visible = 10;
     renderCalendar();
     renderMonthCalendar();
   });
   document.getElementById("calFilterStatus").addEventListener("change", () => {
+    calendarUiState.visible = 10;
     renderCalendar();
     renderMonthCalendar();
   });
-  document.getElementById("calFilterMes").addEventListener("change", renderCalendar);
-  document.getElementById("calFilterTipo").addEventListener("change", renderCalendar);
+  document.getElementById("calFilterMes").addEventListener("change", () => {
+    calendarUiState.visible = 10;
+    renderCalendar();
+  });
+  document.getElementById("calFilterTipo").addEventListener("change", () => {
+    calendarUiState.visible = 10;
+    renderCalendar();
+  });
   document.getElementById("addSubjectBtn").addEventListener("click", addSubject);
   document.getElementById("addCalRowBtn").addEventListener("click", addCalRow);
   function addDays(iso, days) {
@@ -2777,6 +2855,94 @@
     selTipo.innerHTML = `<option value="">Todos os tipos</option>` + TIPO_AGENDA_OPTIONS.map((o) => `<option value="${o}">${o}</option>`).join("");
     selTipo.value = currentTipo;
   }
+  var agendaUiState = { upcomingVisible: 5, completedVisible: 10, completedExpanded: false, editingId: null, editingIsNew: false, draft: null };
+  function agendaViewModel(item) {
+    const topicId = item.topicId || item.topicRef;
+    return { date: item.date ? formatDatePt(item.date) : "Sem data", subject: getSubjectName(entitySubjectId(item)), topic: topicId ? getTopicName(topicId) : item.topic || "Sem tópico", type: item.tipo || "Revisão livre", difficulty: getTopicDifficulty(topicId), status: item.status || "Não iniciado" };
+  }
+  function toggleCompletedReviews() {
+    agendaUiState.completedExpanded = !agendaUiState.completedExpanded;
+    renderAgenda();
+  }
+  function changeAgendaLimit(group, delta) {
+    const key = `${group}Visible`, minimum = group === "completed" ? 10 : 5;
+    agendaUiState[key] = Math.max(minimum, agendaUiState[key] + Number(delta || 0));
+    renderAgenda();
+  }
+  function resetAgendaLimit(group) {
+    agendaUiState[`${group}Visible`] = group === "completed" ? 10 : 5;
+    renderAgenda();
+  }
+  function editAgenda(id) {
+    if (agendaUiState.editingIsNew && agendaUiState.editingId !== id) state.reviewAgenda = state.reviewAgenda.filter((item2) => item2.id !== agendaUiState.editingId);
+    const item = state.reviewAgenda.find((entry) => entry.id === id);
+    if (!item) return;
+    agendaUiState.editingId = id;
+    agendaUiState.editingIsNew = false;
+    agendaUiState.draft = cloneRecord(item);
+    renderAgenda();
+  }
+  function cancelAgendaEdit() {
+    if (agendaUiState.editingIsNew) state.reviewAgenda = state.reviewAgenda.filter((item) => item.id !== agendaUiState.editingId);
+    agendaUiState.editingId = null;
+    agendaUiState.editingIsNew = false;
+    agendaUiState.draft = null;
+    renderAgenda();
+  }
+  function updateAgendaDraft(field, value) {
+    const draft = agendaUiState.draft;
+    if (!draft) return;
+    draft[field] = value;
+    if (field === "subjectId" && draft.topicId && !topicsForSelection(value, draft.topicId).some((topic) => topic.id === draft.topicId)) draft.topicId = null;
+  }
+  function applyAgendaField(item, field, value) {
+    const oldStatus = item.status, oldValue = item[field];
+    item[field] = value;
+    if (field === "date" && value !== oldValue) {
+      item.manualDate = true;
+      item.adaptive = false;
+    }
+    if (field === "status" && value === "Concluído" && oldStatus !== "Concluído") {
+      item.completedAt = nowISO();
+      const topicId = item.topicId || item.topicRef || null;
+      addHistoryEvent("review_completed", entitySubjectId(item), topicId, { reviewId: item.id, reviewType: item.tipo });
+      if (topicId) refreshTopicReviewStats(topicId);
+    } else if (field === "status" && value !== "Concluído" && oldStatus === "Concluído") {
+      const topicId = item.topicId || item.topicRef || null;
+      item.completedAt = null;
+      addHistoryEvent("review_reopened", entitySubjectId(item), topicId, { reviewId: item.id, newStatus: value });
+      if (topicId) refreshTopicReviewStats(topicId);
+    }
+  }
+  function saveAgendaEdit() {
+    const draft = agendaUiState.draft, item = state.reviewAgenda.find((entry) => entry.id === agendaUiState.editingId);
+    if (!draft || !item) return cancelAgendaEdit();
+    ["date", "subjectId", "topic", "tipo", "status"].forEach((field) => {
+      if (item[field] !== draft[field]) applyAgendaField(item, field, draft[field]);
+    });
+    agendaUiState.editingId = null;
+    agendaUiState.editingIsNew = false;
+    agendaUiState.draft = null;
+    persistAndRender();
+    showToast("Revisão atualizada.");
+  }
+  function completeAgendaReview(id) {
+    const item = state.reviewAgenda.find((entry) => entry.id === id);
+    if (!item || item.status === "Concluído") return;
+    applyAgendaField(item, "status", "Concluído");
+    persistAndRender();
+    showToast("Revisão concluída.");
+  }
+  function renderAgendaReadRow(item) {
+    const vm = agendaViewModel(item), pending = item.status !== "Concluído";
+    if (isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="8"><article class="mobile-history-card review-mobile-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)} · ${escapeHtml(vm.status)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>${escapeHtml(vm.difficulty)}</span><span>${diasParaRevisaoPill(item.date, item.status)}</span></div><div class="mobile-card-actions">${pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}</div></article></td></tr>`;
+    return `<tr class="history-read-row history-desktop-row ${item.date === todayISO() ? "today" : ""}" data-id="${item.id}"><td>${escapeHtml(vm.date)}<div class="review-date-mode" title="${escapeAttr(item.adaptiveReason || "")}">${item.manualDate ? "Manual" : "Adaptativa"}${item.manualDate && item.topicId ? ` · <button type="button" data-delegated-click="resetAdaptiveReviewDate('${item.id}')">usar sugestão</button>` : ""}</div></td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td>${escapeHtml(vm.type)}</td><td><span class="dias-pill ${DIFFICULTY_CLASS[vm.difficulty]}">${escapeHtml(vm.difficulty)}</span></td><td><span class="history-status ${STATUS_CLASS[item.status] || ""}">${escapeHtml(vm.status)}</span></td><td>${diasParaRevisaoPill(item.date, item.status)}</td><td><div class="row-actions">${pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}<button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div></td></tr>`;
+  }
+  function renderAgendaEditRow(item) {
+    const draft = agendaUiState.draft, subjectId = entitySubjectId(draft);
+    if (!draft) return "";
+    return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateAgendaDraft('date',this.value)"></label><label>Disciplina<select ${draft.topicId ? 'disabled title="Definida pelo tópico vinculado"' : ""} data-delegated-change="updateAgendaDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("")}</select></label><label>Tópico<input type="text" value="${escapeAttr(draft.topicId ? getTopicName(draft.topicId) : draft.topic || "")}" ${draft.topicId ? "readonly" : ""} data-delegated-input="updateAgendaDraft('topic',this.value)"></label><label>Tipo<select data-delegated-change="updateAgendaDraft('tipo',this.value)">${TIPO_AGENDA_OPTIONS.map((option) => `<option value="${option}" ${option === draft.tipo ? "selected" : ""}>${option}</option>`).join("")}</select></label><label>Status<select data-delegated-change="updateAgendaDraft('status',this.value)">${STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft.status ? "selected" : ""}>${option}</option>`).join("")}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelAgendaEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveAgendaEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteAgendaRow('${item.id}')">Excluir</button></div></div></td></tr>`;
+  }
   function renderAgenda() {
     const body = document.getElementById("agendaBody");
     const filterSubject = document.getElementById("agendaFilterSubject").value;
@@ -2799,75 +2965,72 @@
       return;
     }
     const today = todayISO();
-    body.innerHTML = rows.map((a) => {
-      const dificuldade = getTopicDifficulty(a.topicId || a.topicRef);
-      return `
-    <tr class="${a.date === today ? "today" : ""}" data-id="${a.id}">
-      <td>
-        <input type="date" value="${a.date || ""}" data-delegated-blur="updateAgenda('${a.id}','date',this.value)">
-        <div class="review-date-mode" title="${escapeAttr(a.adaptiveReason || "")}">
-          ${a.manualDate ? "Manual" : "Adaptativa"}
-          ${a.manualDate && a.topicId ? `<button type="button" data-delegated-click="resetAdaptiveReviewDate('` + a.id + `')">usar sugestão</button>` : ""}
-        </div>
-      </td>
-      <td>
-        <select data-delegated-change="updateAgenda('${a.id}','subjectId', this.value)">
-          <option value="">—</option>
-          ${subjectsForSelection(entitySubjectId(a)).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === entitySubjectId(a) ? "selected" : ""}>${escapeHtml(s.name)}${s.archived ? " (arquivada)" : ""}</option>`).join("")}
-        </select>
-      </td>
-      <td><input type="text" value="${escapeAttr(a.topicId ? getTopicName(a.topicId) : a.topic || "")}" placeholder="Tópico" ${a.topicId ? 'readonly title="Vinculado ao tópico cadastrado"' : ""} data-delegated-blur="updateAgenda('${a.id}','topic', this.value)"></td>
-      <td>
-        <select data-delegated-change="updateAgenda('${a.id}','tipo', this.value)">
-          ${TIPO_AGENDA_OPTIONS.map((o) => `<option value="${o}" ${o === a.tipo ? "selected" : ""}>${o}</option>`).join("")}
-        </select>
-      </td>
-      <td><span class="dias-pill ${DIFFICULTY_CLASS[dificuldade]}">${dificuldade}</span></td>
-      <td>
-        <select class="status-select ${STATUS_CLASS[a.status] || "st-nao"}" data-delegated-change="updateAgenda('${a.id}','status', this.value)">
-          ${STATUS_OPTIONS.map((o) => `<option value="${o}" ${o === a.status ? "selected" : ""}>${o}</option>`).join("")}
-        </select>
-      </td>
-      <td>${diasParaRevisaoPill(a.date, a.status)}</td>
-      <td><button class="icon-btn" data-delegated-click="deleteAgendaRow('${a.id}')" title="Remover">✕</button></td>
-    </tr>
-  `;
-    }).join("");
+    const groups = { overdue: rows.filter((item) => item.status !== "Concluído" && item.date && item.date < today), today: rows.filter((item) => item.status !== "Concluído" && item.date === today), upcoming: rows.filter((item) => item.status !== "Concluído" && (!item.date || item.date > today)), completed: rows.filter((item) => item.status === "Concluído").sort((a, b) => String(b.completedAt || b.date || "").localeCompare(String(a.completedAt || a.date || ""))) };
+    const html = [];
+    const renderItems = (items) => items.map((item) => agendaUiState.editingId === item.id ? renderAgendaEditRow(item) : renderAgendaReadRow(item)).join("");
+    if (groups.overdue.length) {
+      html.push(renderGroupHeader({ title: "🔴 Atrasadas", count: groups.overdue.length, tone: "overdue" }), renderItems(groups.overdue));
+    }
+    if (groups.today.length) {
+      html.push(renderGroupHeader({ title: "🟡 Hoje", count: groups.today.length, tone: "today" }), renderItems(groups.today));
+    }
+    if (groups.upcoming.length) {
+      const visible = groups.upcoming.slice(0, agendaUiState.upcomingVisible);
+      html.push(renderGroupHeader({ title: "🔵 Próximas", count: groups.upcoming.length, tone: "upcoming" }), renderItems(visible), renderCollectionFooter({ total: groups.upcoming.length, visible: agendaUiState.upcomingVisible, showMoreAction: "changeAgendaLimit('upcoming',5)", showLessAction: agendaUiState.upcomingVisible > 5 ? "resetAgendaLimit('upcoming')" : "", colspan: 8, label: "revisões" }));
+    }
+    if (groups.completed.length) {
+      html.push(renderGroupHeader({ title: "✓ Concluídas", count: groups.completed.length, tone: "completed", expanded: agendaUiState.completedExpanded, toggleAction: "toggleCompletedReviews()" }));
+      if (agendaUiState.completedExpanded) {
+        const visible = groups.completed.slice(0, agendaUiState.completedVisible);
+        html.push(renderItems(visible), renderCollectionFooter({ total: groups.completed.length, visible: agendaUiState.completedVisible, showMoreAction: "changeAgendaLimit('completed',10)", showLessAction: agendaUiState.completedVisible > 10 ? "resetAgendaLimit('completed')" : "", colspan: 8, label: "revisões" }));
+      }
+    }
+    body.innerHTML = html.join("");
   }
   function addAgendaRow() {
-    state.reviewAgenda.push({ id: uid("review"), topicId: null, date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topic: "", tipo: "Revisão livre", status: "Não iniciado", adaptive: false, manualDate: true, adaptiveReason: null, suggestedDate: null, baseIntervalDays: 7, createdAt: nowISO(), completedAt: null });
-    persistAndRender();
+    const item = { id: uid("review"), topicId: null, date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topic: "", tipo: "Revisão livre", status: "Não iniciado", adaptive: false, manualDate: true, adaptiveReason: null, suggestedDate: null, baseIntervalDays: 7, createdAt: nowISO(), completedAt: null };
+    state.reviewAgenda.push(item);
+    agendaUiState.editingId = item.id;
+    agendaUiState.editingIsNew = true;
+    agendaUiState.draft = cloneRecord(item);
+    renderAgenda();
   }
   function deleteAgendaRow(id) {
-    state.reviewAgenda = state.reviewAgenda.filter((a) => a.id !== id);
-    persistAndRender();
+    showConfirm("Excluir esta revisão?", () => {
+      state.reviewAgenda = state.reviewAgenda.filter((a) => a.id !== id);
+      agendaUiState.editingId = null;
+      agendaUiState.editingIsNew = false;
+      agendaUiState.draft = null;
+      persistAndRender();
+      showToast("Revisão excluída.");
+    });
   }
   function updateAgenda(id, field, value) {
     const a = state.reviewAgenda.find((x) => x.id === id);
-    const oldStatus = a.status;
-    const oldValue = a[field];
-    a[field] = value;
-    if (field === "date" && value !== oldValue) {
-      a.manualDate = true;
-      a.adaptive = false;
-    }
-    if (field === "status" && value === "Concluído" && oldStatus !== "Concluído") {
-      a.completedAt = nowISO();
-      const topicId = a.topicId || a.topicRef || null;
-      addHistoryEvent("review_completed", entitySubjectId(a), topicId, { reviewId: a.id, reviewType: a.tipo });
-      if (topicId) refreshTopicReviewStats(topicId);
-    } else if (field === "status" && value !== "Concluído" && oldStatus === "Concluído") {
-      const topicId = a.topicId || a.topicRef || null;
-      a.completedAt = null;
-      addHistoryEvent("review_reopened", entitySubjectId(a), topicId, { reviewId: a.id, newStatus: value });
-      if (topicId) refreshTopicReviewStats(topicId);
-    }
+    if (!a) return;
+    applyAgendaField(a, field, value);
     persistAndRender();
   }
-  document.getElementById("agendaFilterSubject").addEventListener("change", renderAgenda);
-  document.getElementById("agendaFilterStatus").addEventListener("change", renderAgenda);
-  document.getElementById("agendaFilterMes").addEventListener("change", renderAgenda);
-  document.getElementById("agendaFilterTipo").addEventListener("change", renderAgenda);
+  document.getElementById("agendaFilterSubject").addEventListener("change", () => {
+    agendaUiState.upcomingVisible = 5;
+    agendaUiState.completedVisible = 10;
+    renderAgenda();
+  });
+  document.getElementById("agendaFilterStatus").addEventListener("change", () => {
+    agendaUiState.upcomingVisible = 5;
+    agendaUiState.completedVisible = 10;
+    renderAgenda();
+  });
+  document.getElementById("agendaFilterMes").addEventListener("change", () => {
+    agendaUiState.upcomingVisible = 5;
+    agendaUiState.completedVisible = 10;
+    renderAgenda();
+  });
+  document.getElementById("agendaFilterTipo").addEventListener("change", () => {
+    agendaUiState.upcomingVisible = 5;
+    agendaUiState.completedVisible = 10;
+    renderAgenda();
+  });
   document.getElementById("addAgendaRowBtn").addEventListener("click", addAgendaRow);
   document.getElementById("autoGenBtn").addEventListener("click", gerarAgendaAutomatica);
   function calcAcertoPct(correct, resolved) {
@@ -4953,10 +5116,16 @@
     "addTopic",
     "archiveSubject",
     "archiveTopic",
+    "cancelAgendaEdit",
+    "cancelCalendarEdit",
     "cancelQuestionEdit",
     "cancelSimulationEdit",
     "cancelStudySessionEdit",
+    "changeAgendaLimit",
+    "changeCalendarLimit",
     "clearSessionHistoryFilters",
+    "completeAgendaReview",
+    "completeCalendarItem",
     "completeUnifiedReview",
     "deleteAgendaRow",
     "deleteBreakdownRow",
@@ -4966,6 +5135,8 @@
     "deleteSimuladoRow",
     "deleteStudySession",
     "duplicateSubject",
+    "editAgenda",
+    "editCalendarItem",
     "editQuestion",
     "editSimulation",
     "editStudySession",
@@ -4976,8 +5147,12 @@
     "requestPermanentSubjectDelete",
     "requestPermanentTopicDelete",
     "resetAdaptiveReviewDate",
+    "resetAgendaLimit",
+    "resetCalendarLimit",
     "restoreSubject",
     "restoreTopic",
+    "saveAgendaEdit",
+    "saveCalendarEdit",
     "saveQuestionEdit",
     "saveSimulationEdit",
     "saveStudySessionEdit",
@@ -4985,12 +5160,16 @@
     "startPlannedActivity",
     "toggleBreakdown",
     "toggleNotes",
+    "toggleCompletedReviews",
+    "toggleFilterPanel",
     "toggleQuestionErrors",
     "toggleSessionDay",
     "toggleSubject",
     "updateAgenda",
+    "updateAgendaDraft",
     "updateBreakdownRow",
     "updateCal",
+    "updateCalendarDraft",
     "updateMeta",
     "updateMetaDisciplina",
     "updateMetaHoursDay",
@@ -5013,10 +5192,16 @@
     addTopic,
     archiveSubject,
     archiveTopic,
+    cancelAgendaEdit,
+    cancelCalendarEdit,
     cancelQuestionEdit,
     cancelSimulationEdit,
     cancelStudySessionEdit,
+    changeAgendaLimit,
+    changeCalendarLimit,
     clearSessionHistoryFilters,
+    completeAgendaReview,
+    completeCalendarItem,
     completeUnifiedReview,
     deleteAgendaRow,
     deleteBreakdownRow,
@@ -5026,6 +5211,8 @@
     deleteSimuladoRow,
     deleteStudySession,
     duplicateSubject,
+    editAgenda,
+    editCalendarItem,
     editQuestion,
     editSimulation,
     editStudySession,
@@ -5036,8 +5223,12 @@
     requestPermanentSubjectDelete,
     requestPermanentTopicDelete,
     resetAdaptiveReviewDate,
+    resetAgendaLimit,
+    resetCalendarLimit,
     restoreSubject,
     restoreTopic,
+    saveAgendaEdit,
+    saveCalendarEdit,
     saveQuestionEdit,
     saveSimulationEdit,
     saveStudySessionEdit,
@@ -5045,12 +5236,16 @@
     startPlannedActivity,
     toggleBreakdown,
     toggleNotes,
+    toggleCompletedReviews,
+    toggleFilterPanel,
     toggleQuestionErrors,
     toggleSessionDay,
     toggleSubject,
     updateAgenda,
+    updateAgendaDraft,
     updateBreakdownRow,
     updateCal,
+    updateCalendarDraft,
     updateMeta,
     updateMetaDisciplina,
     updateMetaHoursDay,
@@ -5238,6 +5433,8 @@
     renderQuestoes();
     renderSimulados();
     renderStudySessionsHistory();
+    renderAgenda();
+    renderCalendar();
   });
   document.addEventListener("keydown", function(e) {
     trapModalTab(e, [document.getElementById("sessionModalOverlay"), document.getElementById("modalOverlay")]);

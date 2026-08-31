@@ -13,6 +13,8 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/core/utils.js`: utilidades puras e validações primitivas.
 - `src/storage/repository.js`: acesso a IndexedDB, `localStorage` e `window.storage`.
 - `src/domain/reviews.js`: regras puras de intervalos e revisões adaptativas.
+- `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.
+- `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
 - `src/app.js`: composição temporária da interface e funcionalidades ainda não extraídas.
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
 
