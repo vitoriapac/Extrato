@@ -2,17 +2,19 @@
 <html lang="pt-BR" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudyTrack — Extrato de Estudos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b2545">
+  <meta name="description" content="Painel local para planejar estudos, revisões, questões e simulados.">
+  <title>StudyTrack — Extrato de Estudos</title>
+  <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%230b2545%22/><path d=%22M18 16h28v32H18z%22 fill=%22%23f6c344%22/><path d=%22M24 23h16M24 31h16M24 39h10%22 stroke=%22%230b2545%22 stroke-width=%224%22 stroke-linecap=%22round%22/></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="src/theme-bootstrap.js"></script>
 <link rel="stylesheet" href="styles/tokens.css">
 <link rel="stylesheet" href="styles/app.css">
 </head>
 <body>
-<main class="wrap" id="mainContent">
+  <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
+  <main class="wrap" id="mainContent">
 
   <div class="statement">
     <div class="statement-top">
@@ -41,7 +43,8 @@
     <div class="exam-countdown" id="examCountdownBlock">
       <div class="exam-countdown-label">
         Data da prova:
-        <input type="date" id="examDateInput">
+            <label class="sr-only" for="examDateInput">Data da prova</label>
+            <input type="date" id="examDateInput" aria-label="Data da prova">
       </div>
       <div class="exam-countdown-figure" id="examCountdownFigure"></div>
       <div class="exam-progress" id="examProgress" style="display:none;"></div>
@@ -50,7 +53,8 @@
 
   <div class="global-search-row">
     <div class="global-search">
-      <input type="text" id="globalSearchInput" placeholder="🔎 Buscar tópico, nota ou tag... (Ctrl+K)">
+          <label class="sr-only" for="globalSearchInput">Busca global</label>
+          <input type="search" id="globalSearchInput" aria-label="Buscar tópico, nota ou tag" placeholder="🔎 Buscar tópico, nota ou tag... (Ctrl+K)">
       <div class="search-results" id="globalSearchResults"></div>
     </div>
     <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para modo escuro">
@@ -274,16 +278,16 @@
       <div class="section-title" style="font-size:16px;">Itens do calendário</div>
     </div>
     <div class="cal-filters">
-      <select id="calFilterSubject"><option value="">Todas as disciplinas</option></select>
-      <select id="calFilterStatus">
+                <select id="calFilterSubject" aria-label="Filtrar calendário por disciplina"><option value="">Todas as disciplinas</option></select>
+                <select id="calFilterStatus" aria-label="Filtrar calendário por status">
         <option value="">Todos os status</option>
         <option>Não iniciado</option>
         <option>Em andamento</option>
         <option>Revisão</option>
         <option>Concluído</option>
       </select>
-      <select id="calFilterMes"><option value="">Todos os meses</option></select>
-      <select id="calFilterTipo"><option value="">Todos os tipos de revisão</option></select>
+                <select id="calFilterMes" aria-label="Filtrar calendário por mês"><option value="">Todos os meses</option></select>
+                <select id="calFilterTipo" aria-label="Filtrar calendário por tipo"><option value="">Todos os tipos de revisão</option></select>
     </div>
 
     <div class="chart-card">
@@ -330,8 +334,8 @@
       Toda vez que um tópico é marcado como <strong>Concluído</strong> na aba Disciplinas, ele fica disponível aqui para gerar revisões automáticas em 24h, 7 dias e 30 dias.
     </p>
     <div class="cal-filters">
-      <select id="agendaFilterSubject"><option value="">Todas as disciplinas</option></select>
-      <select id="agendaFilterStatus">
+                <select id="agendaFilterSubject" aria-label="Filtrar agenda por disciplina"><option value="">Todas as disciplinas</option></select>
+                <select id="agendaFilterStatus" aria-label="Filtrar agenda por status">
         <option value="">Todos os status</option>
         <option>Não iniciado</option>
         <option>Em andamento</option>
@@ -339,8 +343,8 @@
         <option>Concluído</option>
         <option value="Atrasadas">Atrasadas</option>
       </select>
-      <select id="agendaFilterMes"><option value="">Todos os meses</option></select>
-      <select id="agendaFilterTipo"><option value="">Todos os tipos</option></select>
+                <select id="agendaFilterMes" aria-label="Filtrar agenda por mês"><option value="">Todos os meses</option></select>
+                <select id="agendaFilterTipo" aria-label="Filtrar agenda por tipo"><option value="">Todos os tipos</option></select>
     </div>
     <div class="cal-table-wrap">
       <table class="cal">
@@ -465,8 +469,8 @@
       Meta de questões resolvidas por semana, específica por disciplina.
     </p>
     <div class="meta-disciplina-add">
-      <select id="novaMetaDisciplinaSelect"></select>
-      <input type="number" id="novaMetaDisciplinaValor" min="1" value="20" style="width:80px;">
+                <select id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
+                <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de tópicos da nova meta" min="1" value="20" style="width:80px;">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">questões/semana</span>
       <button class="btn small" id="addMetaDisciplinaBtn">+ Adicionar meta</button>
     </div>
@@ -487,7 +491,7 @@
       <button class="btn ghost small" id="exportBackupBtn">⬇ Exportar backup</button>
       <button class="btn ghost small" id="exportAutomaticBackupBtn">⏱ Baixar recuperação</button>
       <button class="btn ghost small" id="importBackupBtn">⬆ Importar backup</button>
-      <input type="file" id="importBackupFile" accept="application/json" style="display:none;">
+      <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
     </div>
   </div>
 
@@ -503,7 +507,7 @@
     <p id="modalMessage">Tem certeza?</p>
     <div class="modal-prompt" id="modalPromptGroup" hidden>
       <label for="modalPromptInput" id="modalPromptLabel">Nome</label>
-      <input id="modalPromptInput" type="text" maxlength="80" autocomplete="off">
+          <input id="modalPromptInput" type="text" maxlength="80" autocomplete="off" aria-describedby="modalPromptError">
       <span class="modal-prompt-error" id="modalPromptError" role="alert"></span>
     </div>
     <div class="modal-actions">
@@ -517,19 +521,19 @@
   <div class="modal-box">
     <p>Sessão de <strong id="sessionModalDuration">00:00</strong> finalizada. Quer registrar o que você estudou?</p>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-      <select id="sessionModalSubject" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);"></select>
-      <select id="sessionModalTopic" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);"></select>
-      <select id="sessionModalType" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);">
+          <select id="sessionModalSubject" aria-label="Disciplina da sessão" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);"></select>
+          <select id="sessionModalTopic" aria-label="Tópico da sessão" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);"></select>
+          <select id="sessionModalType" aria-label="Tipo da sessão" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);">
         <option value="study">Estudo teórico</option>
         <option value="review">Revisão</option>
         <option value="questions">Questões</option>
         <option value="simulation">Simulado</option>
       </select>
       <div style="display:flex;gap:10px;">
-        <input type="number" id="sessionModalResolved" placeholder="Questões resolvidas" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
-        <input type="number" id="sessionModalCorrect" placeholder="Acertos" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
+          <input type="number" id="sessionModalResolved" aria-label="Questões resolvidas" placeholder="Questões resolvidas" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
+          <input type="number" id="sessionModalCorrect" aria-label="Quantidade de acertos" placeholder="Acertos" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
       </div>
-      <textarea id="sessionModalNotes" placeholder="Observação opcional" style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);resize:vertical;min-height:58px;"></textarea>
+        <textarea id="sessionModalNotes" aria-label="Observação da sessão" placeholder="Observação opcional" style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);resize:vertical;min-height:58px;"></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn ghost small" id="sessionModalSkipBtn">Só zerar o cronômetro</button>
@@ -538,6 +542,7 @@
   </div>
 </div>
 
-<script src="src/app.bundle.js"></script>
+  <script src="src/app.bundle.js"></script>
+  <script src="src/pwa.js"></script>
 </body>
 </html>

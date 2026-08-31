@@ -1,0 +1,14 @@
+{
+  "name": "StudyTrack — Extrato de Estudos",
+  "short_name": "StudyTrack",
+  "description": "Planejamento, revisões e acompanhamento de estudos no navegador.",
+  "lang": "pt-BR",
+  "start_url": "./extrato-de-estudos-melhorado.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f3ec",
+  "theme_color": "#0b2545",
+  "icons": [
+    {"src":"icons/app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

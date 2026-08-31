@@ -37,8 +37,8 @@ export function calculateAdaptiveInterval({baseDays,accuracy=null,volume=0,targe
   if(dominantErrorKey==='esqueci'){factor*=0.8;reasons.push('esquecimento predominante')}
   if(dominantErrorKey==='naoSabia'){factor*=0.85;reasons.push('lacuna de teoria')}
   if(reviews>=3&&volume>=10&&accuracy>=target){factor*=1.1;reasons.push('histórico consistente')}
-  const lower=Math.max(1,Math.ceil(safeBase*0.5));
-  const upper=Math.min(60,Math.max(lower,Math.floor(safeBase*1.5)));
+  const upper=Math.min(60,Math.max(1,Math.floor(safeBase*1.5)));
+  const lower=Math.min(upper,Math.max(1,Math.ceil(safeBase*0.5)));
   return {
     days:Math.max(lower,Math.min(upper,Math.round(safeBase*factor))),
     reason:reasons.length?reasons.join(' · '):'intervalo-base preservado'

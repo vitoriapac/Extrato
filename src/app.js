@@ -6,6 +6,8 @@ import {
 import {uid,nowISO,isPlainObject,isSafeId,isISODate,isOptionalTimestamp,isFiniteNonNegative,structuredCloneSafe} from './core/utils.js';
 import {createStorageManager,repositoryReadLocalState,repositoryWriteLocalState} from './storage/repository.js';
 import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,calculateAdaptiveInterval} from './domain/reviews.js';
+import {createDefaultState} from './state/defaults.js';
+import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
 
 const THEME_STORAGE_KEY='bb-premium-theme';
 function getCurrentTheme(){
@@ -50,43 +52,7 @@ const ERROR_RECOMMENDATIONS = {
 const DIAGNOSIS_STATUS_ICON = {'Crítico':'🔴','Atenção':'🟠','Acompanhamento':'🟡','Em dia':'🟢'};
 
 
-let state = {
-  schemaVersion: CURRENT_SCHEMA_VERSION,
-  subjects: [
-    {
-      id: uid('subject'), name: 'Português', collapsed:false, archived:false, archivedAt:null, createdAt: nowISO(),
-      topics: [
-        { id: uid('topic'), name: 'Interpretação de Texto', link: 'https://youtube.com', status: 'Não iniciado', archived:false, archivedAt:null, createdAt: nowISO(), firstCompletedAt:null, lastCompletedAt:null, completionCount:0, lastReviewedAt:null, reviewCount:0 }
-      ]
-    }
-  ],
-  calendar: [],
-  reviewAgenda: [],
-  questoes: [],
-  simulados: [],
-  metas: {
-    semanal: 5,
-    mensal: 20,
-    questoesSemanal: 150,
-    simuladosSemanal: 1,
-    metaAprovacao: 70,
-    horasDiarias: 2.5,
-    horasPorDia: {'0':2.5,'1':2.5,'2':2.5,'3':2.5,'4':2.5,'5':2.5,'6':2.5}
-  },
-  examDate: '',
-  progressHistory: [],
-  studySessions: [],
-  dailyPlans: [],
-  activeTimer: {
-    startedAt:null,runStartedAt:null,accumulatedSeconds:0,isRunning:false,
-    subjectId:null,topicId:null,type:'study',hiddenAt:null,planItemId:null,targetMinutes:null
-  },
-  topicHistory: [],
-  achievementsUnlocked: {},
-  metasPorDisciplina: [],
-  lastBackupAt: null,
-  updatedAt: null
-};
+let state = createDefaultState();
 
 function getSubjectById(subjectId){
   return state.subjects.find(s => s.id === subjectId) || null;
@@ -388,17 +354,49 @@ function ensureStateDefaults(){
 }
 
 const StorageManager=createStorageManager({dbName:DB_NAME,dbVersion:DB_VERSION,storeName:STORE_NAME});
+const INSTANCE_ID=uid('instance');
+const STATE_CHANNEL=typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
+let applyingRemoteState=false;
 function readLocalState(key=STORAGE_KEY){return repositoryReadLocalState(key)}
 function writeLocalState(value,key=STORAGE_KEY){return repositoryWriteLocalState(value,key)}
+
+function normalizeAndValidateState(raw){
+  const parsed=typeof raw==='string'?JSON.parse(raw):structuredCloneSafe(raw);
+  const validation=validateBackupData(parsed);
+  if(!validation.valid) throw new Error(validation.message);
+  return validation.normalized;
+}
+
+async function readLatestValidSnapshot(){
+  const rawIndex=await StorageManager.get(BACKUP_INDEX_KEY);
+  if(!rawIndex) return null;
+  const index=JSON.parse(rawIndex);
+  const snapshots=Array.isArray(index.snapshots)?index.snapshots.slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))):[];
+  for(const snapshot of snapshots){
+    try{
+      const raw=await StorageManager.get(snapshot.key);
+      if(!raw) continue;
+      if(snapshot.checksum&&await sha256(raw)!==snapshot.checksum) continue;
+      return {raw,state:normalizeAndValidateState(raw)};
+    }catch(error){ console.warn('Snapshot de recuperacao ignorado',error); }
+  }
+  return null;
+}
 
 async function loadState(){
   let loadWarning = '';
   try{
     const raw = await StorageManager.get(STORAGE_KEY);
     if(raw){
-      const parsed = JSON.parse(raw);
-      if(parsed && Array.isArray(parsed.subjects)) state = migrateState(parsed);
-      else loadWarning = 'Os dados salvos estão incompletos. O aplicativo iniciou com os dados padrão.';
+      try{ state=normalizeAndValidateState(raw); }
+      catch(error){
+        const recovered=await readLatestValidSnapshot();
+        if(recovered){
+          state=recovered.state;
+          await StorageManager.set(STORAGE_KEY,JSON.stringify(state));
+          loadWarning='Os dados principais estavam inválidos e foram recuperados do backup automático mais recente.';
+        }else throw error;
+      }
     }
   }catch(e){
     console.error('Erro ao carregar estado salvo',e);
@@ -488,6 +486,7 @@ async function saveState(serialized=JSON.stringify(state),previousRaw=null){
     }
     const success = await StorageManager.set(STORAGE_KEY,serialized);
     if(success){
+      if(!applyingRemoteState) STATE_CHANNEL?.postMessage({source:INSTANCE_ID,serialized,updatedAt:JSON.parse(serialized).updatedAt||null});
       flashSaved();
       if(backupWarning) showToast('Os dados atuais foram salvos, mas o backup automático não pôde ser atualizado. Exporte um backup manual.');
     }
@@ -497,6 +496,22 @@ async function saveState(serialized=JSON.stringify(state),previousRaw=null){
     showToast('Não foi possível salvar. Exporte um backup para proteger seus dados.');
   }
 }
+
+STATE_CHANNEL?.addEventListener('message',event=>{
+  const message=event.data;
+  if(!message||message.source===INSTANCE_ID||typeof message.serialized!=='string') return;
+  const remoteTime=Date.parse(message.updatedAt||0)||0;
+  const localTime=Date.parse(state.updatedAt||0)||0;
+  if(remoteTime<=localTime) return;
+  try{
+    applyingRemoteState=true;
+    state=normalizeAndValidateState(message.serialized);
+    writeLocalState(message.serialized);
+    render();
+    showToast('Dados atualizados por outra aba.');
+  }catch(error){ console.warn('Atualizacao de outra aba ignorada',error); }
+  finally{ applyingRemoteState=false; }
+});
 function flashSaved(){
   const el = document.getElementById('saveIndicator');
   el.classList.add('show');
@@ -587,6 +602,7 @@ function activateTab(tabName, updateHash = true){
     b.tabIndex = active ? 0 : -1;
   });
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p === panel));
+  if(typeof render==='function') render(tabName);
   if(updateHash) history.replaceState(null, '', '#'+tabName);
 }
 
@@ -1400,7 +1416,7 @@ function renderHeatmap(){
     const level=heatmapLevel(summary);
     const tooltip=heatmapTooltip(summary);
     const selected=sessionHistoryFilters.date===summary.date?'selected':'';
-    return `<button type="button" class="heatmap-cell ${level>0?'heat-'+level:''} ${selected}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" onclick="selectSessionHistoryDate('${summary.date}')"></button>`;
+    return `<button type="button" class="heatmap-cell ${level>0?'heat-'+level:''} ${selected}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" data-delegated-click="selectSessionHistoryDate('${summary.date}')"></button>`;
   }).join('');
   const activityStreak=computeStreak(getActivityDates());
   const goalStreak=computeStreak(getGoalDates());
@@ -1685,32 +1701,32 @@ function renderSubjects(){
   if(subjects.length === 0 && archived.length===0){
     container.innerHTML = `<div class="empty-state">
       <p>Nenhuma disciplina cadastrada ainda.</p>
-      <button class="btn" onclick="addSubject()">+ Adicionar primeira disciplina</button>
+      <button class="btn" data-delegated-click="addSubject()">+ Adicionar primeira disciplina</button>
     </div>`;
     return;
   }
 
-  const activeHtml = subjects.length===0 ? `<div class="empty-state"><p>Nenhuma disciplina ativa.</p><button class="btn" onclick="addSubject()">+ Adicionar disciplina</button></div>` : subjects.map((s, idx) => {
+  const activeHtml = subjects.length===0 ? `<div class="empty-state"><p>Nenhuma disciplina ativa.</p><button class="btn" data-delegated-click="addSubject()">+ Adicionar disciplina</button></div>` : subjects.map((s, idx) => {
     const pct = subjectProgress(s);
     const visibleTopics=s.topics.filter(t=>!t.archived);
     const archivedTopics=s.topics.filter(t=>t.archived);
     return `
     <div class="subject-block" data-subject-id="${s.id}">
-      <div class="subject-header" onclick="toggleSubject('${s.id}')">
+      <div class="subject-header" data-delegated-click="toggleSubject('${s.id}')">
         <div class="subject-header-left">
-          <div class="subject-order-btns" onclick="event.stopPropagation()">
-            <button class="icon-btn-nav" onclick="moveSubject('${s.id}', -1)" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-            <button class="icon-btn-nav" onclick="moveSubject('${s.id}', 1)" ${idx===subjects.length-1?'disabled':''} title="Mover pra baixo">▼</button>
+          <div class="subject-order-btns" data-delegated-click="event.stopPropagation()">
+            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', -1)" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
+            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', 1)" ${idx===subjects.length-1?'disabled':''} title="Mover pra baixo">▼</button>
           </div>
           <span class="subject-toggle">${s.collapsed ? '▸' : '▾'}</span>
           <span class="subject-name" contenteditable="true"
-                onclick="event.stopPropagation()"
-                onblur="renameSubject('${s.id}', this.textContent)">${escapeHtml(s.name)}</span>
+                data-delegated-click="event.stopPropagation()"
+                data-delegated-blur="renameSubject('${s.id}', this.textContent)">${escapeHtml(s.name)}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span class="subject-progress-pill">${pct}% · ${visibleTopics.length} tópico${visibleTopics.length===1?'':'s'}</span>
-          <button class="btn ghost small" onclick="event.stopPropagation();duplicateSubject('${s.id}')">Duplicar</button>
-          <button class="btn ghost small" onclick="event.stopPropagation();archiveSubject('${s.id}')">Arquivar</button>
+          <button class="btn ghost small" data-delegated-click="event.stopPropagation();duplicateSubject('${s.id}')">Duplicar</button>
+          <button class="btn ghost small" data-delegated-click="event.stopPropagation();archiveSubject('${s.id}')">Arquivar</button>
         </div>
       </div>
       <div class="subject-body ${s.collapsed ? 'collapsed':''}">
@@ -1731,39 +1747,39 @@ function renderSubjects(){
               <tr data-status="${t.status}" id="topic-row-${t.id}">
                 <td>
                   <input type="text" value="${escapeAttr(t.name)}" placeholder="Nome do tópico"
-                     onblur="updateTopic('${s.id}','${t.id}','name', this.value)">
+                     data-delegated-blur="updateTopic('${s.id}','${t.id}','name', this.value)">
                   ${t.tags && t.tags.length ? `<div class="tag-chips">${t.tags.map(tag=>`<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
                 </td>
                 <td>
                   <input type="url" value="${escapeAttr(t.link||'')}" placeholder="https://..."
-                     onblur="updateTopic('${s.id}','${t.id}','link', this.value)">
+                     data-delegated-blur="updateTopic('${s.id}','${t.id}','link', this.value)">
                 </td>
                 <td>
                   <select class="status-select ${STATUS_CLASS[t.status]||'st-nao'}"
-                     onchange="updateTopicStatus('${s.id}','${t.id}', this)">
+                     data-delegated-change="updateTopicStatus('${s.id}','${t.id}', this)">
                     ${STATUS_OPTIONS.map(o=>`<option value="${o}" ${o===t.status?'selected':''}>${o}</option>`).join('')}
                   </select>
                   <span class="stamp">✓ ok</span>
                 </td>
                 <td>
                   <select class="status-select ${DIFFICULTY_CLASS[t.difficulty]||'diff-medio'}"
-                     onchange="updateTopic('${s.id}','${t.id}','difficulty', this.value)">
+                     data-delegated-change="updateTopic('${s.id}','${t.id}','difficulty', this.value)">
                     ${DIFFICULTY_OPTIONS.map(o=>`<option value="${o}" ${o===t.difficulty?'selected':''}>${o}</option>`).join('')}
                   </select>
                 </td>
                 <td>
-                  <button class="btn ghost small notes-toggle-btn ${(t.notes || (t.tags && t.tags.length)) ? 'has-notes':''}" onclick="toggleNotes('${t.id}')">${(t.notes || (t.tags && t.tags.length)) ? '📝 ver' : '📝 add'}</button>
+                  <button class="btn ghost small notes-toggle-btn ${(t.notes || (t.tags && t.tags.length)) ? 'has-notes':''}" data-delegated-click="toggleNotes('${t.id}')">${(t.notes || (t.tags && t.tags.length)) ? '📝 ver' : '📝 add'}</button>
                 </td>
-                <td><button class="icon-btn" onclick="archiveTopic('${s.id}','${t.id}')" title="Arquivar tópico">✕</button></td>
+                <td><button class="icon-btn" data-delegated-click="archiveTopic('${s.id}','${t.id}')" title="Arquivar tópico">✕</button></td>
               </tr>
               ${openNotesIds.has(t.id) ? `
               <tr class="notes-row">
                 <td colspan="6">
                   <input type="text" class="topic-tags-input" placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
                     value="${escapeAttr((t.tags||[]).join(', '))}"
-                    onblur="updateTopicTags('${s.id}','${t.id}', this.value)">
+                    data-delegated-blur="updateTopicTags('${s.id}','${t.id}', this.value)">
                   <textarea class="topic-notes-textarea" placeholder="Resumo, pegadinha da prova, dúvida pra revisar depois..."
-                    onblur="updateTopic('${s.id}','${t.id}','notes', this.value)">${escapeHtml(t.notes||'')}</textarea>
+                    data-delegated-blur="updateTopic('${s.id}','${t.id}','notes', this.value)">${escapeHtml(t.notes||'')}</textarea>
                 </td>
               </tr>` : ''}
             `).join('')}
@@ -1771,13 +1787,13 @@ function renderSubjects(){
         </table>
         </div>
         <div class="add-topic-row">
-          <button class="btn ghost small" onclick="addTopic('${s.id}')">+ Adicionar tópico</button>
+          <button class="btn ghost small" data-delegated-click="addTopic('${s.id}')">+ Adicionar tópico</button>
         </div>
         ${archivedTopics.length?`<div class="archived-section">
           <div class="archived-section-title">Tópicos arquivados</div>
           ${archivedTopics.map(t=>`<div class="archived-item">
             <div><div class="archived-item-name">${escapeHtml(t.name||'Tópico sem nome')}</div><div class="archived-item-date">Arquivado em ${t.archivedAt?new Date(t.archivedAt).toLocaleDateString('pt-BR'):'—'}</div></div>
-            <div class="archived-item-actions"><button class="btn ghost small" onclick="restoreTopic('${s.id}','${t.id}')">Restaurar</button><button class="btn danger" onclick="requestPermanentTopicDelete('${s.id}','${t.id}')">Excluir definitivamente</button></div>
+            <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreTopic('${s.id}','${t.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentTopicDelete('${s.id}','${t.id}')">Excluir definitivamente</button></div>
           </div>`).join('')}
         </div>`:''}
       </div>
@@ -1787,7 +1803,7 @@ function renderSubjects(){
     <div class="archived-section-title">Disciplinas arquivadas</div>
     ${archived.map(s=>`<div class="archived-item">
       <div><div class="archived-item-name">${escapeHtml(s.name)}</div><div class="archived-item-date">Arquivada em ${s.archivedAt?new Date(s.archivedAt).toLocaleDateString('pt-BR'):'—'} · ${s.topics.length} tópico(s)</div></div>
-      <div class="archived-item-actions"><button class="btn ghost small" onclick="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" onclick="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
+      <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
     </div>`).join('')}
   </div>`:'';
   container.innerHTML=activeHtml+archivedHtml;
@@ -2194,7 +2210,7 @@ function renderCalendar(){
   if(rows.length === 0){
     body.innerHTML = `<tr><td colspan="7"><div class="empty-state" style="border:none;">
       <p>Nenhum item encontrado com esses filtros.</p>
-      <button class="btn" onclick="addCalRow()">+ Adicionar item</button>
+      <button class="btn" data-delegated-click="addCalRow()">+ Adicionar item</button>
     </div></td></tr>`;
     return;
   }
@@ -2202,26 +2218,26 @@ function renderCalendar(){
   const today = todayISO();
   body.innerHTML = rows.map(c => `
     <tr class="${c.date===today ? 'today':''}" data-id="${c.id}">
-      <td><input type="date" value="${c.date||''}" onblur="updateCal('${c.id}','date', this.value)"></td>
-      <td><input type="text" value="${escapeAttr(c.week||'')}" placeholder="Sem. 1" onblur="updateCal('${c.id}','week', this.value)"></td>
+      <td><input type="date" value="${c.date||''}" data-delegated-blur="updateCal('${c.id}','date', this.value)"></td>
+      <td><input type="text" value="${escapeAttr(c.week||'')}" placeholder="Sem. 1" data-delegated-blur="updateCal('${c.id}','week', this.value)"></td>
       <td>
-        <select onchange="updateCal('${c.id}','subjectId', this.value)">
+        <select data-delegated-change="updateCal('${c.id}','subjectId', this.value)">
           <option value="">—</option>
           ${subjectsForSelection(entitySubjectId(c)).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===entitySubjectId(c)?'selected':''}>${escapeHtml(s.name)}${s.archived?' (arquivada)':''}</option>`).join('')}
         </select>
       </td>
       <td>
-        <select class="status-select ${STATUS_CLASS[c.status]||'st-nao'}" onchange="updateCal('${c.id}','status', this.value, true)">
+        <select class="status-select ${STATUS_CLASS[c.status]||'st-nao'}" data-delegated-change="updateCal('${c.id}','status', this.value, true)">
           ${STATUS_OPTIONS.map(o=>`<option value="${o}" ${o===c.status?'selected':''}>${o}</option>`).join('')}
         </select>
       </td>
       <td>
-        <select onchange="updateCal('${c.id}','reviewType', this.value)">
+        <select data-delegated-change="updateCal('${c.id}','reviewType', this.value)">
           ${REVIEW_OPTIONS.map(o=>`<option value="${o}" ${o===c.reviewType?'selected':''}>${o}</option>`).join('')}
         </select>
       </td>
       <td>${diasParaRevisaoPill(c.date, c.status)}</td>
-      <td><button class="icon-btn" onclick="deleteCalRow('${c.id}')" title="Remover">✕</button></td>
+      <td><button class="icon-btn" data-delegated-click="deleteCalRow('${c.id}')" title="Remover">✕</button></td>
     </tr>
   `).join('');
 }
@@ -2368,8 +2384,8 @@ function renderAgenda(){
   if(rows.length === 0){
     body.innerHTML = `<tr><td colspan="8"><div class="empty-state" style="border:none;">
       <p>Nenhuma revisão encontrada com esses filtros.</p>
-      <button class="btn ghost small" onclick="gerarAgendaAutomatica()">⟳ Gerar a partir dos concluídos</button>
-      <button class="btn small" onclick="addAgendaRow()">+ Adicionar manualmente</button>
+      <button class="btn ghost small" data-delegated-click="gerarAgendaAutomatica()">⟳ Gerar a partir dos concluídos</button>
+      <button class="btn small" data-delegated-click="addAgendaRow()">+ Adicionar manualmente</button>
     </div></td></tr>`;
     return;
   }
@@ -2380,32 +2396,32 @@ function renderAgenda(){
     return `
     <tr class="${a.date===today ? 'today':''}" data-id="${a.id}">
       <td>
-        <input type="date" value="${a.date||''}" onblur="updateAgenda('${a.id}','date',this.value)">
+        <input type="date" value="${a.date||''}" data-delegated-blur="updateAgenda('${a.id}','date',this.value)">
         <div class="review-date-mode" title="${escapeAttr(a.adaptiveReason||'')}">
           ${a.manualDate?'Manual':'Adaptativa'}
-          ${a.manualDate&&a.topicId?'<button type="button" onclick="resetAdaptiveReviewDate(\''+a.id+'\')">usar sugestão</button>':''}
+          ${a.manualDate&&a.topicId?'<button type="button" data-delegated-click="resetAdaptiveReviewDate(\''+a.id+'\')">usar sugestão</button>':''}
         </div>
       </td>
       <td>
-        <select onchange="updateAgenda('${a.id}','subjectId', this.value)">
+        <select data-delegated-change="updateAgenda('${a.id}','subjectId', this.value)">
           <option value="">—</option>
           ${subjectsForSelection(entitySubjectId(a)).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===entitySubjectId(a)?'selected':''}>${escapeHtml(s.name)}${s.archived?' (arquivada)':''}</option>`).join('')}
         </select>
       </td>
-      <td><input type="text" value="${escapeAttr(a.topicId ? getTopicName(a.topicId) : (a.topic||''))}" placeholder="Tópico" ${a.topicId?'readonly title="Vinculado ao tópico cadastrado"':''} onblur="updateAgenda('${a.id}','topic', this.value)"></td>
+      <td><input type="text" value="${escapeAttr(a.topicId ? getTopicName(a.topicId) : (a.topic||''))}" placeholder="Tópico" ${a.topicId?'readonly title="Vinculado ao tópico cadastrado"':''} data-delegated-blur="updateAgenda('${a.id}','topic', this.value)"></td>
       <td>
-        <select onchange="updateAgenda('${a.id}','tipo', this.value)">
+        <select data-delegated-change="updateAgenda('${a.id}','tipo', this.value)">
           ${TIPO_AGENDA_OPTIONS.map(o=>`<option value="${o}" ${o===a.tipo?'selected':''}>${o}</option>`).join('')}
         </select>
       </td>
       <td><span class="dias-pill ${DIFFICULTY_CLASS[dificuldade]}">${dificuldade}</span></td>
       <td>
-        <select class="status-select ${STATUS_CLASS[a.status]||'st-nao'}" onchange="updateAgenda('${a.id}','status', this.value)">
+        <select class="status-select ${STATUS_CLASS[a.status]||'st-nao'}" data-delegated-change="updateAgenda('${a.id}','status', this.value)">
           ${STATUS_OPTIONS.map(o=>`<option value="${o}" ${o===a.status?'selected':''}>${o}</option>`).join('')}
         </select>
       </td>
       <td>${diasParaRevisaoPill(a.date, a.status)}</td>
-      <td><button class="icon-btn" onclick="deleteAgendaRow('${a.id}')" title="Remover">✕</button></td>
+      <td><button class="icon-btn" data-delegated-click="deleteAgendaRow('${a.id}')" title="Remover">✕</button></td>
     </tr>
   `;}).join('');
 }
@@ -2470,8 +2486,8 @@ function renderListViewFooter(total,visible,step,showMoreAction,showLessAction,c
   if(total<=step) return '';
   return `<tr class="list-view-footer"><td colspan="${colspan}"><div class="list-view-controls">
     <span class="list-view-count">Exibindo ${Math.min(visible,total)} de ${total} ${label}</span>
-    ${visible<total?`<button class="btn ghost small" type="button" onclick="${showMoreAction}">Mostrar mais</button>`:''}
-    ${visible>step?`<button class="btn ghost small" type="button" onclick="${showLessAction}">Mostrar menos</button>`:''}
+    ${visible<total?`<button class="btn ghost small" type="button" data-delegated-click="${showMoreAction}">Mostrar mais</button>`:''}
+    ${visible>step?`<button class="btn ghost small" type="button" data-delegated-click="${showLessAction}">Mostrar menos</button>`:''}
   </div></td></tr>`;
 }
 function changeListLimit(key,delta,renderFn){
@@ -2533,7 +2549,7 @@ function renderQuestionErrorFields(question){
               <label class="error-breakdown-field">
                 <span>${meta.icon} ${meta.label}</span>
                 <input type="number" min="0" max="${realErrors}" value="${question.errorBreakdown[key]||0}"
-                  onblur="updateQuestionError('${question.id}','${key}',this.value)">
+                  data-delegated-blur="updateQuestionError('${question.id}','${key}',this.value)">
               </label>
             `).join('')}
           </div>
@@ -2573,12 +2589,12 @@ function saveQuestionEdit(){
 }
 function renderQuestionReadRow(q){
   const vm=questionViewModel(q); const realErrors=Math.max(0,vm.resolved-vm.correct); const categorized=questionCategorizedErrors(q);
-  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${q.id}"><td colspan="8"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" onclick="editQuestion('${q.id}')" aria-label="Editar registro">Editar</button></div><div class="mobile-card-metrics"><span>${vm.resolved} questões</span><span>${vm.correct} acertos</span><strong>${vm.accuracy}%</strong><button class="error-toggle-btn" onclick="toggleQuestionErrors('${q.id}')">Erros ${categorized}/${realErrors}</button></div></article></td></tr>${openQuestionErrorIds.has(q.id)?renderQuestionErrorFields(q):''}`;
-  return `<tr class="history-read-row history-desktop-row" data-id="${q.id}"><td>${escapeHtml(vm.date)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td class="number-cell">${vm.resolved}</td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.accuracy}%</td><td><button class="error-toggle-btn" onclick="toggleQuestionErrors('${q.id}')">${categorized}/${realErrors}</button></td><td><div class="row-actions"><button class="btn ghost small" onclick="editQuestion('${q.id}')">Editar</button></div></td></tr>${openQuestionErrorIds.has(q.id)?renderQuestionErrorFields(q):''}`;
+  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${q.id}"><td colspan="8"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editQuestion('${q.id}')" aria-label="Editar registro">Editar</button></div><div class="mobile-card-metrics"><span>${vm.resolved} questões</span><span>${vm.correct} acertos</span><strong>${vm.accuracy}%</strong><button class="error-toggle-btn" data-delegated-click="toggleQuestionErrors('${q.id}')">Erros ${categorized}/${realErrors}</button></div></article></td></tr>${openQuestionErrorIds.has(q.id)?renderQuestionErrorFields(q):''}`;
+  return `<tr class="history-read-row history-desktop-row" data-id="${q.id}"><td>${escapeHtml(vm.date)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td class="number-cell">${vm.resolved}</td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.accuracy}%</td><td><button class="error-toggle-btn" data-delegated-click="toggleQuestionErrors('${q.id}')">${categorized}/${realErrors}</button></td><td><div class="row-actions"><button class="btn ghost small" data-delegated-click="editQuestion('${q.id}')">Editar</button></div></td></tr>${openQuestionErrorIds.has(q.id)?renderQuestionErrorFields(q):''}`;
 }
 function renderQuestionEditRow(q){
   const d=historyEditDraft.question; const subjectId=entitySubjectId(d); const topics=topicsForSelection(subjectId,d.topicId);
-  return `<tr class="row-editing" data-id="${q.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date||''}" onchange="updateQuestionDraft('date',this.value)"></label><label>Disciplina<select onchange="updateQuestionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===subjectId?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select></label><label>Tópico<select onchange="updateQuestionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map(t=>`<option value="${escapeAttr(t.id)}" ${t.id===d.topicId?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select></label><label>Resolvidas<input type="number" min="0" value="${Number(d.resolved)||0}" oninput="updateQuestionDraft('resolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct)||0}" oninput="updateQuestionDraft('correct',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" onclick="cancelQuestionEdit()">Cancelar</button><button class="btn small" onclick="saveQuestionEdit()">Salvar alterações</button><button class="btn ghost small" onclick="deleteQuestaoRow('${q.id}')">Excluir</button></div></div></td></tr>`;
+  return `<tr class="row-editing" data-id="${q.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date||''}" data-delegated-change="updateQuestionDraft('date',this.value)"></label><label>Disciplina<select data-delegated-change="updateQuestionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===subjectId?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select></label><label>Tópico<select data-delegated-change="updateQuestionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map(t=>`<option value="${escapeAttr(t.id)}" ${t.id===d.topicId?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select></label><label>Resolvidas<input type="number" min="0" value="${Number(d.resolved)||0}" data-delegated-input="updateQuestionDraft('resolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct)||0}" data-delegated-input="updateQuestionDraft('correct',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelQuestionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveQuestionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteQuestaoRow('${q.id}')">Excluir</button></div></div></td></tr>`;
 }
 function renderQuestoes(){
   const body=document.getElementById('questoesBody');
@@ -2586,7 +2602,7 @@ function renderQuestoes(){
   if(rows.length===0){
     body.innerHTML=`<tr><td colspan="8"><div class="empty-state" style="border:none;">
       <p>Nenhuma sessão de questões registrada ainda.</p>
-      <button class="btn small" onclick="addQuestaoRow()">+ Registrar sessão</button>
+      <button class="btn small" data-delegated-click="addQuestaoRow()">+ Registrar sessão</button>
     </div></td></tr>`;
     return;
   }
@@ -2966,14 +2982,14 @@ function saveSimulationEdit(){
 }
 function renderSimulationReadRow(sim){
   const vm=simulationViewModel(sim); const hasBreakdown=sim.breakdown&&sim.breakdown.length>0;
-  const details=`<button class="btn ghost small ${hasBreakdown?'has-notes':''}" onclick="toggleBreakdown('${sim.id}')">${openBreakdownIds.has(sim.id)?'Ocultar detalhes':'Ver desempenho'}</button>`;
-  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${sim.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)}</div><div class="mobile-card-title">${escapeHtml(vm.name)}</div></div><button class="btn ghost small" onclick="editSimulation('${sim.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${vm.correct} / ${vm.total}</span><strong>Nota ${vm.score}%</strong>${details}</div></article></td></tr>${openBreakdownIds.has(sim.id)?renderSimulationBreakdown(sim):''}`;
-  return `<tr class="history-read-row history-desktop-row" data-id="${sim.id}"><td>${escapeHtml(vm.date)}</td><td><div class="row-primary">${escapeHtml(vm.name)}</div></td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.total}</td><td class="number-cell">${vm.score}%</td><td>${details}</td><td><button class="btn ghost small" onclick="editSimulation('${sim.id}')">Editar</button></td></tr>${openBreakdownIds.has(sim.id)?renderSimulationBreakdown(sim):''}`;
+  const details=`<button class="btn ghost small ${hasBreakdown?'has-notes':''}" data-delegated-click="toggleBreakdown('${sim.id}')">${openBreakdownIds.has(sim.id)?'Ocultar detalhes':'Ver desempenho'}</button>`;
+  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${sim.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)}</div><div class="mobile-card-title">${escapeHtml(vm.name)}</div></div><button class="btn ghost small" data-delegated-click="editSimulation('${sim.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${vm.correct} / ${vm.total}</span><strong>Nota ${vm.score}%</strong>${details}</div></article></td></tr>${openBreakdownIds.has(sim.id)?renderSimulationBreakdown(sim):''}`;
+  return `<tr class="history-read-row history-desktop-row" data-id="${sim.id}"><td>${escapeHtml(vm.date)}</td><td><div class="row-primary">${escapeHtml(vm.name)}</div></td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.total}</td><td class="number-cell">${vm.score}%</td><td>${details}</td><td><button class="btn ghost small" data-delegated-click="editSimulation('${sim.id}')">Editar</button></td></tr>${openBreakdownIds.has(sim.id)?renderSimulationBreakdown(sim):''}`;
 }
 function renderSimulationBreakdown(sim){
-  return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:8px;">Nota por disciplina neste simulado — a nota geral é calculada automaticamente por aqui.</div>${(sim.breakdown||[]).map(b=>`<div class="breakdown-line"><select onchange="updateBreakdownRow('${sim.id}','${b.id}','subjectId',this.value)"><option value="">—</option>${subjectsForSelection(entitySubjectId(b)).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===entitySubjectId(b)?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select><input type="number" min="0" value="${b.correct||0}" placeholder="Acertos" onblur="updateBreakdownRow('${sim.id}','${b.id}','correct',this.value)"><input type="number" min="0" value="${b.total||0}" placeholder="Total" onblur="updateBreakdownRow('${sim.id}','${b.id}','total',this.value)"><button class="icon-btn" onclick="deleteBreakdownRow('${sim.id}','${b.id}')">✕</button></div>`).join('')}<button class="btn ghost small breakdown-add-btn" onclick="addBreakdownRow('${sim.id}')">+ Adicionar disciplina</button></div></td></tr>`;
+  return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:8px;">Nota por disciplina neste simulado — a nota geral é calculada automaticamente por aqui.</div>${(sim.breakdown||[]).map(b=>`<div class="breakdown-line"><select data-delegated-change="updateBreakdownRow('${sim.id}','${b.id}','subjectId',this.value)"><option value="">—</option>${subjectsForSelection(entitySubjectId(b)).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===entitySubjectId(b)?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select><input type="number" min="0" value="${b.correct||0}" placeholder="Acertos" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','correct',this.value)"><input type="number" min="0" value="${b.total||0}" placeholder="Total" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','total',this.value)"><button class="icon-btn" data-delegated-click="deleteBreakdownRow('${sim.id}','${b.id}')">✕</button></div>`).join('')}<button class="btn ghost small breakdown-add-btn" data-delegated-click="addBreakdownRow('${sim.id}')">+ Adicionar disciplina</button></div></td></tr>`;
 }
-function renderSimulationEditRow(sim){ const d=historyEditDraft.simulation; const hasBreakdown=d.breakdown&&d.breakdown.length>0; return `<tr class="row-editing" data-id="${sim.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date||''}" onchange="updateSimulationDraft('date',this.value)"></label><label>Nome<input type="text" value="${escapeAttr(d.nome||'')}" oninput="updateSimulationDraft('nome',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct)||0}" ${hasBreakdown?'disabled':''} oninput="updateSimulationDraft('correct',this.value)"></label><label>Total<input type="number" min="0" value="${Number(d.total)||0}" ${hasBreakdown?'disabled':''} oninput="updateSimulationDraft('total',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" onclick="cancelSimulationEdit()">Cancelar</button><button class="btn small" onclick="saveSimulationEdit()">Salvar alterações</button><button class="btn ghost small" onclick="deleteSimuladoRow('${sim.id}')">Excluir</button></div></div></td></tr>`; }
+function renderSimulationEditRow(sim){ const d=historyEditDraft.simulation; const hasBreakdown=d.breakdown&&d.breakdown.length>0; return `<tr class="row-editing" data-id="${sim.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date||''}" data-delegated-change="updateSimulationDraft('date',this.value)"></label><label>Nome<input type="text" value="${escapeAttr(d.nome||'')}" data-delegated-input="updateSimulationDraft('nome',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct)||0}" ${hasBreakdown?'disabled':''} data-delegated-input="updateSimulationDraft('correct',this.value)"></label><label>Total<input type="number" min="0" value="${Number(d.total)||0}" ${hasBreakdown?'disabled':''} data-delegated-input="updateSimulationDraft('total',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelSimulationEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveSimulationEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteSimuladoRow('${sim.id}')">Excluir</button></div></div></td></tr>`; }
 
 function renderSimulados(){
   const body = document.getElementById('simuladosBody');
@@ -2981,7 +2997,7 @@ function renderSimulados(){
   if(rows.length === 0){
     body.innerHTML = `<tr><td colspan="7"><div class="empty-state" style="border:none;">
       <p>Nenhum simulado registrado ainda.</p>
-      <button class="btn small" onclick="addSimuladoRow()">+ Registrar simulado</button>
+      <button class="btn small" data-delegated-click="addSimuladoRow()">+ Registrar simulado</button>
     </div></td></tr>`;
     return;
   }
@@ -3027,7 +3043,7 @@ function renderWeeklyHoursGoals(){
   if(!container) return;
   const todayDay=parseLocalDate(todayISO()).getDay();
   container.innerHTML='<div class="weekday-goals">'+WEEKDAY_LABELS.map((label,day)=>
-    '<label class="weekday-goal '+(day===todayDay?'today':'')+'"><span>'+label+(day===todayDay?' · hoje':'')+'</span><input type="number" min="0" step="0.25" value="'+metaHoursForDate(addDays(startOfWeek(todayISO()),day===0?6:day-1))+'" onblur="updateMetaHoursDay('+day+',this.value)" aria-label="Meta de horas de '+label+'"></label>'
+    '<label class="weekday-goal '+(day===todayDay?'today':'')+'"><span>'+label+(day===todayDay?' · hoje':'')+'</span><input type="number" min="0" step="0.25" value="'+metaHoursForDate(addDays(startOfWeek(todayISO()),day===0?6:day-1))+'" data-delegated-blur="updateMetaHoursDay('+day+',this.value)" aria-label="Meta de horas de '+label+'"></label>'
   ).join('')+'</div>';
 }
 
@@ -3080,7 +3096,7 @@ function renderMetas(){
       </div>
       <div class="meta-inputs">
         Meta:
-        <input type="number" min="0" value="${c.meta}" onblur="updateMeta('${c.key}', this.value)">
+        <input type="number" min="0" value="${c.meta}" data-delegated-blur="updateMeta('${c.key}', this.value)">
       </div>
     </div>`;
   }).join('') + `
@@ -3100,7 +3116,7 @@ function renderMetas(){
       </div>
       <div class="meta-inputs">
         Meta:
-        <input type="number" min="0" max="100" value="${state.metas.metaAprovacao}" onblur="updateMeta('metaAprovacao', this.value)">%
+        <input type="number" min="0" max="100" value="${state.metas.metaAprovacao}" data-delegated-blur="updateMeta('metaAprovacao', this.value)">%
       </div>
     </div>`;
 }
@@ -3150,8 +3166,8 @@ function renderMetasPorDisciplina(){
       </div>
       <div class="meta-inputs">
         Meta:
-        <input type="number" min="1" value="${md.meta}" onblur="updateMetaDisciplina('${md.id}', this.value)">
-        <button class="icon-btn" onclick="deleteMetaDisciplina('${md.id}')" title="Remover">✕</button>
+        <input type="number" min="1" value="${md.meta}" data-delegated-blur="updateMetaDisciplina('${md.id}', this.value)">
+        <button class="icon-btn" data-delegated-click="deleteMetaDisciplina('${md.id}')" title="Remover">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -3882,12 +3898,12 @@ function saveStudySessionEdit(){
 }
 function renderStudySessionReadRow(session){
   const vm=sessionViewModel(session);
-  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${session.id}"><td colspan="10"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.time)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" onclick="editStudySession('${session.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>⏱ ${escapeHtml(vm.duration)}</span>${vm.questions?`<span>${vm.questions} questões</span><strong>${vm.accuracy}%</strong>`:''}${vm.notes?`<span title="${escapeAttr(vm.notes)}">📝 ${escapeHtml(vm.notes)}</span>`:''}</div></article></td></tr>`;
-  return `<tr class="history-read-row history-desktop-row" data-id="${session.id}"><td>${escapeHtml(vm.date)}</td><td class="number-cell">${escapeHtml(vm.time)}</td><td class="number-cell">${escapeHtml(vm.duration)}</td><td>${escapeHtml(vm.type)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td class="number-cell">${vm.questions||'—'}</td><td class="number-cell">${vm.accuracy===null?'—':vm.accuracy+'%'}</td><td title="${escapeAttr(vm.notes)}">${escapeHtml(vm.notes||'—')}</td><td><button class="btn ghost small" onclick="editStudySession('${session.id}')">Editar</button></td></tr>`;
+  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${session.id}"><td colspan="10"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.time)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>⏱ ${escapeHtml(vm.duration)}</span>${vm.questions?`<span>${vm.questions} questões</span><strong>${vm.accuracy}%</strong>`:''}${vm.notes?`<span title="${escapeAttr(vm.notes)}">📝 ${escapeHtml(vm.notes)}</span>`:''}</div></article></td></tr>`;
+  return `<tr class="history-read-row history-desktop-row" data-id="${session.id}"><td>${escapeHtml(vm.date)}</td><td class="number-cell">${escapeHtml(vm.time)}</td><td class="number-cell">${escapeHtml(vm.duration)}</td><td>${escapeHtml(vm.type)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td class="number-cell">${vm.questions||'—'}</td><td class="number-cell">${vm.accuracy===null?'—':vm.accuracy+'%'}</td><td title="${escapeAttr(vm.notes)}">${escapeHtml(vm.notes||'—')}</td><td><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></td></tr>`;
 }
 function renderStudySessionEditRow(session){
   const d=historyEditDraft.session; const subjectId=entitySubjectId(d); const subject=getSubjectById(subjectId); const topics=subject?subject.topics:[];
-  return `<tr class="row-editing" data-id="${session.id}"><td colspan="10"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date||''}" onchange="updateStudySessionDraft('date',this.value)"></label><label>Duração (min)<input type="number" min="0" value="${Math.floor((Number(d.durationSeconds)||0)/60)}" oninput="updateStudySessionDraft('durationMinutes',this.value)"></label><label>Tipo<select onchange="updateStudySessionDraft('type',this.value)">${sessionTypeOptions(d.type||'study')}</select></label><label>Disciplina<select onchange="updateStudySessionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===subjectId?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select></label><label>Tópico<select onchange="updateStudySessionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map(t=>`<option value="${escapeAttr(t.id)}" ${t.id===d.topicId?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select></label><label>Questões<input type="number" min="0" value="${Number(d.questionsResolved)||0}" oninput="updateStudySessionDraft('questionsResolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correctAnswers)||0}" oninput="updateStudySessionDraft('correctAnswers',this.value)"></label><label class="edit-notes-field">Observação<textarea oninput="updateStudySessionDraft('notes',this.value)">${escapeHtml(d.notes||'')}</textarea></label><div class="inline-edit-actions"><button class="btn ghost small" onclick="cancelStudySessionEdit()">Cancelar</button><button class="btn small" onclick="saveStudySessionEdit()">Salvar alterações</button><button class="btn ghost small" onclick="deleteStudySession('${session.id}')">Excluir</button></div></div></td></tr>`;
+  return `<tr class="row-editing" data-id="${session.id}"><td colspan="10"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date||''}" data-delegated-change="updateStudySessionDraft('date',this.value)"></label><label>Duração (min)<input type="number" min="0" value="${Math.floor((Number(d.durationSeconds)||0)/60)}" data-delegated-input="updateStudySessionDraft('durationMinutes',this.value)"></label><label>Tipo<select data-delegated-change="updateStudySessionDraft('type',this.value)">${sessionTypeOptions(d.type||'study')}</select></label><label>Disciplina<select data-delegated-change="updateStudySessionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===subjectId?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select></label><label>Tópico<select data-delegated-change="updateStudySessionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map(t=>`<option value="${escapeAttr(t.id)}" ${t.id===d.topicId?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select></label><label>Questões<input type="number" min="0" value="${Number(d.questionsResolved)||0}" data-delegated-input="updateStudySessionDraft('questionsResolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correctAnswers)||0}" data-delegated-input="updateStudySessionDraft('correctAnswers',this.value)"></label><label class="edit-notes-field">Observação<textarea data-delegated-input="updateStudySessionDraft('notes',this.value)">${escapeHtml(d.notes||'')}</textarea></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelStudySessionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveStudySessionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteStudySession('${session.id}')">Excluir</button></div></div></td></tr>`;
 }
 function renderStudySessionsHistory(){
   const body=document.getElementById('studySessionsBody');
@@ -3916,7 +3932,7 @@ function renderStudySessionsHistory(){
     const correct=sessions.reduce((sum,s)=>sum+(Number(s.correctAnswers)||0),0);
     const accuracy=questions>0?` · ${Math.round((correct/questions)*100)}% de acerto`:'';
     const expanded=expandedSessionDays.has(date);
-    html.push(`<tr class="session-day-row"><td colspan="10"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" onclick="toggleSessionDay('${escapeAttr(date)}')"><span>${date==='Sem data'?date:formatDatePt(date)} · ${sessions.length} sessão(ões) · ${formatDuration(seconds)} · ${questions} questões${accuracy}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
+    html.push(`<tr class="session-day-row"><td colspan="10"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date)}')"><span>${date==='Sem data'?date:formatDatePt(date)} · ${sessions.length} sessão(ões) · ${formatDuration(seconds)} · ${questions} questões${accuracy}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
     if(!expanded) return;
     sessions.forEach(session=>html.push(historyEditState.sessionId===session.id?renderStudySessionEditRow(session):renderStudySessionReadRow(session)));
   });
@@ -4069,7 +4085,7 @@ function renderPlanoHoje(){
       <div class="plano-item-reason">⏱️ ${formatPlanMinutes(item.plannedMinutes)} · ${escapeHtml(item.action)}${item.recommendedQuestions?' · '+item.recommendedQuestions+' questões':''}</div>
       <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>
       <div class="plano-item-actions">
-        ${canStart?`<button type="button" class="btn small" onclick="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds>0?'▶ Continuar':'▶ Iniciar'}</button>`:''}
+        ${canStart?`<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds>0?'▶ Continuar':'▶ Iniciar'}</button>`:''}
         <span class="plano-item-status">${active?'Cronômetro ativo':escapeHtml(planItemStatusLabel(item.status))} · ${formatDuration(item.executedSeconds)} executado</span>
       </div>
     </div>
@@ -4129,7 +4145,7 @@ function renderMetasHoje(){
           <label class="meta-hoje-time-goal">
             <span>Meta diária</span>
             <input type="number" min="0" step="0.25" value="${metaHoursToday()}"
-              onblur="updateMetaHoursDay(parseLocalDate(todayISO()).getDay(),this.value)" title="Editar a meta de hoje" aria-label="Meta de horas de hoje">
+              data-delegated-blur="updateMetaHoursDay(parseLocalDate(todayISO()).getDay(),this.value)" title="Editar a meta de hoje" aria-label="Meta de horas de hoje">
           </label>
         </div>
       </div>
@@ -4413,7 +4429,7 @@ function completeUnifiedReview(id,origin){
 }
 function quickReviewButton(item,elId){
   if(!String(elId||'').startsWith('hoje')||item.status==='Concluído')return '';
-  return `<button type="button" class="btn small quick-review-btn" onclick="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">✓ Revisar</button>`;
+  return `<button type="button" class="btn small quick-review-btn" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">✓ Revisar</button>`;
 }
 function renderCalTarefasHoje(elId){
   elId=elId||'calTarefasHoje';const today=todayISO(),items=getRevisoesUnificadas().filter(r=>r.date===today).sort((a,b)=>(a.subject||'').localeCompare(b.subject||''));
@@ -4431,11 +4447,11 @@ function renderKPIs(){
   const resolved=state.questoes.reduce((n,q)=>n+(Number(q.resolved)||0),0),accuracy=taxaAcertoGeral(),average=mediaSimulados(),late=revisoesAtrasadas(),target=state.metas.metaAprovacao;
   const hasResults=state.questoes.length+state.simulados.length>0;
   document.getElementById('kpiGrid').innerHTML=`
-    <button type="button" class="kpi-cell kpi-link" onclick="navigateKpi('questoes')"><div class="n">${resolved}</div><div class="l">Questões resolvidas</div></button>
-    <button type="button" class="kpi-cell kpi-link ${hasResults?(accuracy>=target?'ok':'warn'):''}" onclick="navigateKpi('questoes')"><div class="n">${accuracy}%</div><div class="l">Taxa de acerto</div></button>
-    <button type="button" class="kpi-cell kpi-link" onclick="navigateKpi('questoes')"><div class="n">${average}%</div><div class="l">Média simulados</div></button>
-    <button type="button" class="kpi-cell kpi-link ${late>0?'warn':''}" onclick="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
-    <button type="button" class="kpi-cell kpi-link ${hasResults?(accuracy>=target?'ok':'warn'):''}" onclick="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de aprovação</div></button>`;
+    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${resolved}</div><div class="l">Questões resolvidas</div></button>
+    <button type="button" class="kpi-cell kpi-link ${hasResults?(accuracy>=target?'ok':'warn'):''}" data-delegated-click="navigateKpi('questoes')"><div class="n">${accuracy}%</div><div class="l">Taxa de acerto</div></button>
+    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${average}%</div><div class="l">Média simulados</div></button>
+    <button type="button" class="kpi-cell kpi-link ${late>0?'warn':''}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
+    <button type="button" class="kpi-cell kpi-link ${hasResults?(accuracy>=target?'ok':'warn'):''}" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de aprovação</div></button>`;
 }
 
 /* ===== ESCAPE HELPERS ===== */
@@ -4444,7 +4460,7 @@ function escapeHtml(str){
 }
 function escapeAttr(str){ return escapeHtml(str); }
 
-/* ===== EVENTOS DELEGADOS: atributos executáveis são removidos do DOM ===== */
+/* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTIONS=new Set([
   'addAgendaRow','addBreakdownRow','addCalRow','addQuestaoRow','addSimuladoRow','addSubject','addTopic','archiveSubject','archiveTopic',
   'cancelQuestionEdit','cancelSimulationEdit','cancelStudySessionEdit','clearSessionHistoryFilters','completeUnifiedReview','deleteAgendaRow',
@@ -4515,38 +4531,27 @@ function dispatchDelegatedCode(code,event,element){
   fn(...(match[2].trim()?splitDelegatedArguments(match[2]).map(arg=>delegatedArgument(arg,element)):[]));
 }
 const DELEGATED_EVENT_TYPES=['click','change','input','blur'];
-function secureInlineHandlers(root=document){
-  DELEGATED_EVENT_TYPES.forEach(type=>root.querySelectorAll(`[on${type}]`).forEach(element=>{
-    const code=element.getAttribute(`on${type}`),key=`delegated${type[0].toUpperCase()+type.slice(1)}`;
-    if(code)element.dataset[key]=code;
-    element.removeAttribute(`on${type}`);element[`on${type}`]=null;
-  }));
-}
 DELEGATED_EVENT_TYPES.forEach(type=>document.addEventListener(type,event=>{
   const key=`delegated${type[0].toUpperCase()+type.slice(1)}`,attribute=`data-${key.replace(/[A-Z]/g,char=>'-'+char.toLowerCase())}`;
   const element=event.target?.closest?.(`[${attribute}]`); if(!element)return;
   try{dispatchDelegatedCode(element.dataset[key],event,element)}catch(error){console.error('Evento delegado bloqueado',error);showToast('Uma ação inválida foi bloqueada por segurança.')}
 },type==='blur'));
-const INLINE_HANDLER_OBSERVER=new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>{
-  if(node.nodeType===Node.ELEMENT_NODE){
-    secureInlineHandlers(node);
-    DELEGATED_EVENT_TYPES.forEach(type=>{
-      if(node.hasAttribute?.(`on${type}`)){
-        const code=node.getAttribute(`on${type}`),key=`delegated${type[0].toUpperCase()+type.slice(1)}`;
-        if(code)node.dataset[key]=code;
-        node.removeAttribute(`on${type}`);node[`on${type}`]=null;
-      }
-    });
-  }
-})));
-INLINE_HANDLER_OBSERVER.observe(document.documentElement,{childList:true,subtree:true});
-
 /* ===== MASTER RENDER ===== */
 function safeRenderSection(name,renderer){
   try{ renderer(); }
   catch(error){ console.error('Falha ao renderizar '+name,error); }
 }
-function render(){
+const RENDER_SCOPE_SECTIONS={
+  dashboard:new Set(['dashboard de aprovação','controles do cronômetro','evolução do progresso','heatmap','conquistas','radar','visão geral','horas estudadas','histórico de sessões']),
+  disciplinas:new Set(['disciplinas']),
+  calendario:new Set(['indicadores do calendário','tarefas de hoje','tarefas atrasadas','filtros do calendário','calendário','calendário mensal']),
+  agenda:new Set(['filtros da agenda','agenda']),
+  questoes:new Set(['questões','análise de questões','simulados','gráfico de simulados','desempenho por disciplina']),
+  metas:new Set(['metas','metas de horas por dia','metas por disciplina','histórico de metas','ritmo']),
+  hoje:new Set(['prioridades','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
+};
+function activeTabName(){return document.querySelector('.tab-btn.active')?.dataset.tab||'dashboard'}
+function render(scope='all'){
   const sections=[
     ['indicadores',renderKPIs],
     ['dashboard de aprovação',renderApprovalDashboard],
@@ -4586,11 +4591,13 @@ function render(){
     ['alertas',renderAlertasInteligentes],
     ['plano de hoje',renderPlanoHoje]
   ];
-  sections.forEach(([name,renderer])=>safeRenderSection(name,renderer));
-  secureInlineHandlers();
+  const globalSections=new Set(['indicadores','cabeçalho']);
+  const selected=scope==='all'?null:RENDER_SCOPE_SECTIONS[scope==='active'?activeTabName():scope];
+  sections.filter(([name])=>!selected||globalSections.has(name)||selected.has(name)).forEach(([name,renderer])=>safeRenderSection(name,renderer));
+  labelDynamicControls();
 }
 function persistAndRender(){
-  render();
+  render('active');
   scheduleSave();
 }
 function renderAll(){ render(); }
@@ -4604,6 +4611,7 @@ historyLayoutMedia.addEventListener('change',()=>{
 
 /* ===== ATALHOS DE TECLADO ===== */
 document.addEventListener('keydown', function(e){
+  trapModalTab(e,[document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]);
   const isMac = navigator.platform.toUpperCase().includes('MAC');
   const modifierPressed = isMac ? e.metaKey : e.ctrlKey;
   const activeTag = document.activeElement ? document.activeElement.tagName : '';
@@ -4645,7 +4653,6 @@ window.addEventListener('beforeunload', () => {if(!TEST_MODE)writeLocalState(JSO
 const initialTab = location.hash.replace('#','');
 if(document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) activateTab(initialTab, false);
 
-secureInlineHandlers();
 const TEST_MODE=new URLSearchParams(location.search).get('test')==='1';
 if(TEST_MODE){
   const pristineTestState=structuredCloneSafe(state);

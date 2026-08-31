@@ -1,0 +1,16 @@
+{
+  "name": "extrato-de-estudos",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Painel local para planejamento, revisao e acompanhamento de estudos.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs",
+    "check:bundle": "node scripts/build.mjs --check",
+    "test": "node --test tests/unit/*.test.js",
+    "check": "npm run test && npm run check:bundle"
+  },
+  "devDependencies": { "esbuild": "^0.25.9" },
+  "engines": { "node": ">=22" }
+}

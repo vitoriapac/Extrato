@@ -1,4 +1,6 @@
 .playwright-mcp/
+node_modules/
+coverage/
 
 # Sistema operacional e editores
 .DS_Store
