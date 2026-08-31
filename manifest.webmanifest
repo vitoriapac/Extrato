@@ -3,7 +3,7 @@
   "short_name": "StudyTrack",
   "description": "Planejamento, revisões e acompanhamento de estudos no navegador.",
   "lang": "pt-BR",
-  "start_url": "./extrato-de-estudos-melhorado.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f6f3ec",

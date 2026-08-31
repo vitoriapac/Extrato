@@ -4,7 +4,7 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 
 ## Estrutura
 
-- `extrato-de-estudos-melhorado.html`: marcação e pontos de montagem da interface.
+- `index.html`: marcação e pontos de montagem da interface.
 - `styles/tokens.css`: cores, temas e tokens visuais.
 - `styles/app.css`: layout e componentes.
 - `src/theme-bootstrap.js`: aplica o tema antes da primeira pintura.

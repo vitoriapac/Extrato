@@ -19,13 +19,13 @@ Os dados de estudo ficam no navegador do usuário. O projeto não possui servido
 
 ## Executar
 
-Para uso simples, abra `extrato-de-estudos-melhorado.html`. A persistência funciona localmente; recursos de PWA exigem um servidor HTTP local.
+Para uso simples, abra `index.html`. A persistência funciona localmente; recursos de PWA exigem um servidor HTTP local.
 
 ```powershell
 npm run serve
 ```
 
-Depois abra o endereço exibido e acesse `/extrato-de-estudos-melhorado.html`.
+Depois abra o endereço exibido. A página inicial será aberta automaticamente.
 
 ## Desenvolvimento
 

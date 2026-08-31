@@ -11,7 +11,7 @@ createServer(async(request,response)=>{
     const pathname=decodeURIComponent(new URL(request.url,'http://localhost').pathname);
     let file=resolve(root,'.'+pathname);
     if(file!==root&&!file.startsWith(root+sep))throw new Error('Caminho invalido');
-    if((await stat(file)).isDirectory())file=resolve(file,'extrato-de-estudos-melhorado.html');
+    if((await stat(file)).isDirectory())file=resolve(file,'index.html');
     response.setHeader('Content-Type',types[extname(file)]||'application/octet-stream');
     createReadStream(file).pipe(response);
   }catch(error){response.writeHead(404);response.end('Nao encontrado');}

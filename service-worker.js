@@ -1,6 +1,6 @@
-const CACHE_NAME='studytrack-v2';
+const CACHE_NAME='studytrack-v3';
 const APP_SHELL=[
-  './','./extrato-de-estudos-melhorado.html','./styles/tokens.css','./styles/app.css',
+  './','./index.html','./styles/tokens.css','./styles/app.css',
   './src/theme-bootstrap.js','./src/app.bundle.js','./src/pwa.js','./manifest.webmanifest','./icons/app-icon.svg'
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting())));
@@ -10,5 +10,5 @@ self.addEventListener('fetch',event=>{
   event.respondWith(fetch(event.request).then(response=>{
     if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));}
     return response;
-  }).catch(async()=>await caches.match(event.request)||await caches.match('./extrato-de-estudos-melhorado.html')));
+  }).catch(async()=>await caches.match(event.request)||await caches.match('./index.html')));
 });
