@@ -1,0 +1,17 @@
+export const STORAGE_KEY='bb-premium-study-data';
+export const BACKUP_KEY=STORAGE_KEY+'-automatic-backup';
+export const BACKUP_INDEX_KEY=BACKUP_KEY+'-index';
+export const AUTOMATIC_BACKUP_SLOTS=5;
+export const CURRENT_SCHEMA_VERSION=8;
+export const MAX_BACKUP_FILE_SIZE=10*1024*1024;
+export const DB_NAME='extrato-estudos-db';
+export const DB_VERSION=1;
+export const STORE_NAME='app-state';
+
+export const STATUS_OPTIONS=['Não iniciado','Em andamento','Revisão','Concluído'];
+export const REVIEW_OPTIONS=['—','Revisão rápida','Revisão completa','Questões','Resumo/Mapa mental'];
+export const STATUS_CLASS={'Não iniciado':'st-nao','Em andamento':'st-and','Revisão':'st-rev','Concluído':'st-con'};
+export const TIPO_AGENDA_OPTIONS=['Revisão 24h','Revisão 3 dias','Revisão 7 dias','Revisão 14 dias','Revisão 15 dias','Revisão 30 dias','Revisão livre'];
+export const DIFFICULTY_OPTIONS=['Fácil','Médio','Difícil'];
+export const DIFFICULTY_WEIGHT={'Fácil':1,'Médio':2,'Difícil':3};
+export const DIFFICULTY_CLASS={'Fácil':'diff-facil','Médio':'diff-medio','Difícil':'diff-dificil'};

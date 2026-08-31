@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyTrack — Extrato de Estudos</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%230b2545%22/><path d=%22M18 16h28v32H18z%22 fill=%22%23f6c344%22/><path d=%22M24 23h16M24 31h16M24 39h10%22 stroke=%22%230b2545%22 stroke-width=%224%22 stroke-linecap=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="src/theme-bootstrap.js"></script>
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/app.css">
+</head>
+<body>
+<main class="wrap" id="mainContent">
+
+  <div class="statement">
+    <div class="statement-top">
+      <div>
+        <div class="statement-eyebrow">Extrato de estudos</div>
+        <div class="statement-title">StudyTrack</div>
+      </div>
+      <div class="statement-account">
+        Nº do plano<strong id="planNumber">2026-001</strong>
+      </div>
+    </div>
+    <div class="statement-body">
+      <div class="balance-block">
+        <div class="balance-label">Saldo de conteúdo concluído</div>
+        <div class="balance-figure" id="balanceFigure">0<span>%</span></div>
+        <div class="balance-sub" id="balanceSub">0 de 0 tópicos concluídos</div>
+      </div>
+      <div class="mini-stats">
+        <div class="mini-stat"><div class="n" id="statSubjects">0</div><div class="l">Disciplinas</div></div>
+        <div class="mini-stat"><div class="n" id="statAndamento">0</div><div class="l">Em andamento</div></div>
+        <div class="mini-stat"><div class="n" id="statConcluido">0</div><div class="l">Concluídos</div></div>
+        <div class="mini-stat"><div class="n" id="statRevisoes">0</div><div class="l">Revisões previstas</div></div>
+        <div class="mini-stat"><div class="n" id="statStreak">0</div><div class="l">🔥 Sequência</div></div>
+      </div>
+    </div>
+    <div class="exam-countdown" id="examCountdownBlock">
+      <div class="exam-countdown-label">
+        Data da prova:
+        <input type="date" id="examDateInput">
+      </div>
+      <div class="exam-countdown-figure" id="examCountdownFigure"></div>
+      <div class="exam-progress" id="examProgress" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="global-search-row">
+    <div class="global-search">
+      <input type="text" id="globalSearchInput" placeholder="🔎 Buscar tópico, nota ou tag... (Ctrl+K)">
+      <div class="search-results" id="globalSearchResults"></div>
+    </div>
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para modo escuro">
+      <span id="themeToggleIcon">🌙</span>
+    </button>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Seções do extrato">
+    <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard">Visão geral</button>
+    <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje">🎯 Hoje</button>
+    <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas">Disciplinas</button>
+    <button class="tab-btn" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario">Calendário</button>
+    <button class="tab-btn" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda">Agenda de Revisões</button>
+    <button class="tab-btn" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes">Questões &amp; Simulados</button>
+    <button class="tab-btn" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Metas</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="panel active" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+    <div class="kpi-grid" id="kpiGrid"></div>
+    <div class="stat-grid" id="quickStats"></div>
+
+
+    <div class="chart-card">
+      <h3>Dashboard de Aprovação</h3>
+      <div id="approvalDashboard"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Retenção por tópico</h3>
+      <p class="retention-summary">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p>
+      <div id="topicRetentionDashboard"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Cronômetro de estudo</h3>
+      <div class="timer-block">
+        <div class="timer-context" aria-label="Contexto da sessão">
+          <select id="timerSubjectSelect" aria-label="Disciplina da sessão"></select>
+          <select id="timerTopicSelect" aria-label="Tópico da sessão"></select>
+          <select id="timerTypeSelect" aria-label="Tipo da sessão">
+            <option value="study">Estudo teórico</option>
+            <option value="review">Revisão</option>
+            <option value="questions">Questões</option>
+            <option value="simulation">Simulado</option>
+          </select>
+        </div>
+        <div class="timer-display" id="studyTimerDisplay">00:00</div>
+        <div class="timer-target" id="studyTimerTarget" style="display:none;"></div>
+        <div class="timer-actions">
+          <button class="btn" id="timerStartBtn">▶ Iniciar</button>
+          <button class="btn" id="timerPauseBtn" style="display:none;">⏸ Pausar</button>
+          <button class="btn ghost" id="timerResetBtn">↺ Zerar</button>
+          <button class="btn ghost" id="timerFinishBtn">✓ Finalizar sessão</button>
+        </div>
+      </div>
+      <div class="stat-grid" id="studyTimeStats" style="margin-top:18px;margin-bottom:0;"></div>
+      <h3 style="margin-top:22px;">Evolução das horas — últimos 14 dias</h3>
+      <div id="studyHoursChart"></div>
+      <h3 style="margin-top:22px;">Distribuição por disciplina</h3>
+      <div id="subjectHoursBars"></div>
+    </div>
+
+    <div class="chart-card" id="studySessionsCard">
+      <div class="section-head">
+        <h3 style="margin:0;">Histórico de sessões</h3>
+        <span class="subject-progress-pill" id="studySessionsCount">0 sessões</span>
+      </div>
+      <div class="cal-filters" style="margin-top:14px;">
+        <select id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
+          <option value="7">Últimos 7 dias</option>
+          <option value="30" selected>Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+          <option value="all">Todo o período</option>
+        </select>
+        <select id="studySessionsSubjectFilter" aria-label="Disciplina do histórico" data-delegated-change="updateSessionHistoryFilter('subjectId',this.value)"></select>
+        <select id="studySessionsTypeFilter" aria-label="Tipo de sessão do histórico" data-delegated-change="updateSessionHistoryFilter('type',this.value)">
+          <option value="">Todos os tipos</option>
+          <option value="study">Estudo teórico</option>
+          <option value="review">Revisão</option>
+          <option value="questions">Questões</option>
+          <option value="simulation">Simulado</option>
+        </select>
+        <button class="btn ghost small" id="studySessionsClearFilter" data-delegated-click="clearSessionHistoryFilters()">Limpar filtros</button>
+        <span class="session-filter-summary" id="studySessionsFilterSummary"></span>
+      </div>
+      <div class="log-table-wrap" style="margin-bottom:0;">
+        <table class="log responsive-history-table" style="min-width:1080px;">
+          <thead>
+            <tr>
+              <th style="width:110px;">Data</th>
+              <th style="width:65px;">Início</th>
+               <th style="width:85px;">Duração</th>
+              <th style="width:120px;">Tipo</th>
+              <th style="width:150px;">Disciplina</th>
+              <th style="width:160px;">Tópico</th>
+              <th style="width:85px;">Questões</th>
+              <th style="width:75px;">% acerto</th>
+              <th>Observação</th>
+              <th style="width:36px;"></th>
+            </tr>
+          </thead>
+          <tbody id="studySessionsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Sequência de estudos</h3>
+      <div id="heatmapContainer"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Conquistas</h3>
+      <div class="badges-grid" id="badgesGrid"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Evolução do progresso</h3>
+      <div id="progressChart"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Progresso por disciplina</h3>
+      <div id="progressBars"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Radar de disciplinas</h3>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin:-4px 0 12px;">
+        Combina progresso concluído e taxa de acerto em questões/simulados — quanto menor o "raio", mais atenção a disciplina precisa.
+      </p>
+      <div id="radarChart"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Próximas revisões no calendário</h3>
+      <ul class="upcoming-list" id="upcomingList"></ul>
+    </div>
+  </div>
+
+  <!-- HOJE -->
+  <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
+    <div class="section-head">
+      <div class="section-title">🎯 Modo Hoje</div>
+    </div>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin:-8px 0 16px;">
+      Só o que importa agora: alertas, plano do dia, prioridades, tarefas, atrasos, simulados planejados e metas. Sem distrações.
+    </p>
+
+    <div class="chart-card">
+      <h3>⚠️ Atenção</h3>
+      <div id="alertasInteligentesList"></div>
+    </div>
+
+    <div class="chart-card plano-hoje-card">
+      <h3>📋 Plano de hoje</h3>
+      <div id="planoHojeContent"></div>
+    </div>
+
+    <div class="chart-card priority-card">
+      <h3>📌 Hoje você deveria estudar</h3>
+      <div id="prioridadeHojeList"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Tarefas do dia</h3>
+      <ul class="upcoming-list" id="hojeTarefasHoje"></ul>
+    </div>
+
+    <div class="chart-card">
+      <h3>Revisões atrasadas</h3>
+      <ul class="upcoming-list" id="hojeAtrasadas"></ul>
+    </div>
+
+    <div class="chart-card">
+      <h3>Simulados planejados</h3>
+      <ul class="upcoming-list" id="hojeSimuladosPlanejados"></ul>
+    </div>
+
+    <div class="chart-card">
+      <h3>Metas de hoje</h3>
+      <div id="hojeMetas"></div>
+    </div>
+  </div>
+
+  <!-- DISCIPLINAS -->
+  <div class="panel" id="panel-disciplinas" role="tabpanel" aria-labelledby="tab-disciplinas">
+    <div class="section-head">
+      <div class="section-title">Disciplinas &amp; tópicos</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost" id="loadDefaultSubjectsBtn">📋 Carregar disciplinas do edital</button>
+        <button class="btn" id="addSubjectBtn">+ Nova disciplina</button>
+      </div>
+    </div>
+    <div id="subjectsContainer"></div>
+  </div>
+
+  <!-- CALENDARIO -->
+  <div class="panel" id="panel-calendario" role="tabpanel" aria-labelledby="tab-calendario">
+    <div class="section-head">
+      <div class="section-title">Calendário de estudos</div>
+      <button class="btn" id="addCalRowBtn">+ Novo item</button>
+    </div>
+
+    <div class="kpi-grid" id="calIndicadores"></div>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin:-10px 0 16px;">
+      Os indicadores, tarefas do dia e revisões atrasadas somam automaticamente o que está no Calendário e na Agenda de Revisões.
+    </p>
+
+    <div class="chart-card">
+      <h3>Tarefas do dia</h3>
+      <ul class="upcoming-list" id="calTarefasHoje"></ul>
+    </div>
+
+    <div class="chart-card">
+      <h3>Revisões atrasadas</h3>
+      <ul class="upcoming-list" id="calAtrasadas"></ul>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title" style="font-size:16px;">Itens do calendário</div>
+    </div>
+    <div class="cal-filters">
+      <select id="calFilterSubject"><option value="">Todas as disciplinas</option></select>
+      <select id="calFilterStatus">
+        <option value="">Todos os status</option>
+        <option>Não iniciado</option>
+        <option>Em andamento</option>
+        <option>Revisão</option>
+        <option>Concluído</option>
+      </select>
+      <select id="calFilterMes"><option value="">Todos os meses</option></select>
+      <select id="calFilterTipo"><option value="">Todos os tipos de revisão</option></select>
+    </div>
+
+    <div class="chart-card">
+      <div class="calendar-month-toolbar">
+        <button class="month-nav-btn" id="monthPrevBtn" title="Mês anterior">◀</button>
+        <h3 id="calendarMonthTitle"></h3>
+        <button class="month-nav-btn" id="monthNextBtn" title="Próximo mês">▶</button>
+        <button class="btn ghost small" id="monthTodayBtn" style="margin-left:8px;">Hoje</button>
+      </div>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin:-6px 0 12px;text-align:center;">
+        Respeita os filtros de disciplina e status acima · edite os itens na tabela abaixo
+      </p>
+      <div id="monthCalendar"></div>
+    </div>
+
+    <div class="cal-table-wrap">
+      <table class="cal">
+        <thead>
+          <tr>
+            <th style="width:110px;">Data</th>
+            <th style="width:70px;">Semana</th>
+            <th>Disciplina</th>
+            <th style="width:130px;">Status</th>
+            <th style="width:150px;">Tipo de revisão</th>
+            <th style="width:120px;">Prioridade</th>
+            <th style="width:36px;"></th>
+          </tr>
+        </thead>
+        <tbody id="calBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AGENDA DE REVISÕES -->
+  <div class="panel" id="panel-agenda" role="tabpanel" aria-labelledby="tab-agenda">
+    <div class="section-head">
+      <div class="section-title">Agenda de revisões</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost" id="autoGenBtn">⟳ Gerar a partir dos concluídos</button>
+        <button class="btn" id="addAgendaRowBtn">+ Novo item</button>
+      </div>
+    </div>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin:-8px 0 16px;">
+      Toda vez que um tópico é marcado como <strong>Concluído</strong> na aba Disciplinas, ele fica disponível aqui para gerar revisões automáticas em 24h, 7 dias e 30 dias.
+    </p>
+    <div class="cal-filters">
+      <select id="agendaFilterSubject"><option value="">Todas as disciplinas</option></select>
+      <select id="agendaFilterStatus">
+        <option value="">Todos os status</option>
+        <option>Não iniciado</option>
+        <option>Em andamento</option>
+        <option>Revisão</option>
+        <option>Concluído</option>
+        <option value="Atrasadas">Atrasadas</option>
+      </select>
+      <select id="agendaFilterMes"><option value="">Todos os meses</option></select>
+      <select id="agendaFilterTipo"><option value="">Todos os tipos</option></select>
+    </div>
+    <div class="cal-table-wrap">
+      <table class="cal">
+        <thead>
+          <tr>
+            <th style="width:105px;">Data</th>
+            <th style="width:16%;">Disciplina</th>
+            <th>Tópico</th>
+            <th style="width:120px;">Tipo</th>
+            <th style="width:100px;">Dificuldade</th>
+            <th style="width:120px;">Status</th>
+            <th style="width:120px;">Dias para revisão</th>
+            <th style="width:36px;"></th>
+          </tr>
+        </thead>
+        <tbody id="agendaBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- QUESTÕES & SIMULADOS -->
+  <div class="panel" id="panel-questoes" role="tabpanel" aria-labelledby="tab-questoes">
+    <div class="section-head">
+      <div class="section-title">Questões resolvidas</div>
+      <button class="btn" id="addQuestaoRowBtn">+ Registrar sessão</button>
+    </div>
+    <div class="log-table-wrap">
+      <table class="log responsive-history-table">
+        <thead>
+          <tr>
+            <th style="width:120px;">Data</th>
+            <th>Disciplina</th>
+            <th style="width:180px;">Tópico</th>
+            <th style="width:120px;">Resolvidas</th>
+            <th style="width:100px;">Acertos</th>
+            <th style="width:90px;">% acerto</th>
+            <th style="width:100px;">Erros</th>
+            <th style="width:36px;"></th>
+          </tr>
+        </thead>
+        <tbody id="questoesBody"></tbody>
+      </table>
+    </div>
+
+
+    <div class="chart-card" id="topicPerformanceCard">
+      <div class="section-head">
+        <h3 style="margin:0;">Desempenho por tópico e tendência</h3>
+        <span class="subject-progress-pill" id="questionDataCoverage">0% identificadas</span>
+      </div>
+      <div class="analytics-toolbar">
+        <select id="performanceSubjectSelect" aria-label="Disciplina analisada" data-delegated-change="performanceSubjectId=this.value;renderQuestionAnalytics()"></select>
+        <span class="analytics-note">A tendência exige pelo menos 30 questões em cada janela comparada.</span>
+      </div>
+      <div class="stat-grid" id="questionAnalyticsSummary" style="margin-bottom:16px;"></div>
+      <h3>Desempenho dos tópicos</h3>
+      <div id="topicPerformanceBars"></div>
+      <h3 style="margin-top:22px;">Tendência semanal — últimas 8 semanas</h3>
+      <div id="subjectWeeklyTrend"></div>
+      <h3 style="margin-top:22px;">Perfil de erros categorizados</h3>
+      <div id="subjectErrorProfile"></div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title">Simulados</div>
+      <button class="btn" id="addSimuladoRowBtn">+ Registrar simulado</button>
+    </div>
+    <div class="chart-card" id="simuladosChartCard" style="display:none;">
+      <h3>Evolução das notas nos simulados</h3>
+      <div id="simuladosChart"></div>
+    </div>
+    <div class="log-table-wrap">
+      <table class="log responsive-history-table">
+        <thead>
+          <tr>
+            <th style="width:110px;">Data</th>
+            <th>Nome do simulado</th>
+            <th style="width:90px;">Acertos</th>
+            <th style="width:90px;">Total</th>
+            <th style="width:80px;">Nota</th>
+            <th style="width:90px;"></th>
+            <th style="width:36px;"></th>
+          </tr>
+        </thead>
+        <tbody id="simuladosBody"></tbody>
+      </table>
+    </div>
+    <div class="chart-card" id="desempenhoDisciplinaCard" style="display:none;">
+      <h3>📊 Desempenho por disciplina</h3>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin:-4px 0 12px;">
+        Combina questões avulsas e simulados detalhados por disciplina · tendência compara a primeira e a segunda metade dos seus registros
+      </p>
+      <div id="desempenhoDisciplinaBars"></div>
+    </div>
+  </div>
+
+  <!-- METAS -->
+  <div class="panel" id="panel-metas" role="tabpanel" aria-labelledby="tab-metas">
+    <div class="section-head">
+      <div class="section-title">Metas</div>
+    </div>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin:-8px 0 16px;">
+      Progresso = Atingido / Meta. As metas semanal e mensal contam tópicos concluídos; questões e simulados contam o que foi registrado na aba anterior, sempre na semana atual.
+    </p>
+    <div id="metasContainer"></div>
+
+    <div class="chart-card">
+      <h3>Meta de horas por dia da semana</h3>
+      <p class="analytics-note" style="margin:-4px 0 14px;">Cada dia usa sua própria meta no cronômetro, heatmap, consistência e Plano de Hoje.</p>
+      <div id="weeklyHoursGoals"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Estimativa de ritmo</h3>
+      <div id="ritmoContainer"></div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title" style="font-size:16px;">Metas por disciplina</div>
+    </div>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin:-8px 0 12px;">
+      Meta de questões resolvidas por semana, específica por disciplina.
+    </p>
+    <div class="meta-disciplina-add">
+      <select id="novaMetaDisciplinaSelect"></select>
+      <input type="number" id="novaMetaDisciplinaValor" min="1" value="20" style="width:80px;">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">questões/semana</span>
+      <button class="btn small" id="addMetaDisciplinaBtn">+ Adicionar meta</button>
+    </div>
+    <div id="metasPorDisciplinaContainer"></div>
+
+    <div class="chart-card">
+      <h3>Histórico de metas (últimas 8 semanas)</h3>
+      <div id="historicoMetasContainer"></div>
+    </div>
+  </div>
+
+  <div class="backup-block">
+    <div>
+      <div class="backup-title">Backup dos dados</div>
+      <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando pra não perder nada — e importe pra restaurar em outro dispositivo.</div>
+    </div>
+    <div class="backup-actions">
+      <button class="btn ghost small" id="exportBackupBtn">⬇ Exportar backup</button>
+      <button class="btn ghost small" id="exportAutomaticBackupBtn">⏱ Baixar recuperação</button>
+      <button class="btn ghost small" id="importBackupBtn">⬆ Importar backup</button>
+      <input type="file" id="importBackupFile" accept="application/json" style="display:none;">
+    </div>
+  </div>
+
+  <footer>Salvo automaticamente no seu navegador — extrato.gerado localmente<br>
+    <span style="opacity:0.8;">Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>1–7</strong> troca de aba · <strong>Esc</strong> fecha</span>
+  </footer>
+</main>
+
+<div class="save-indicator" id="saveIndicator" role="status" aria-live="polite">✓ Salvo</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalMessage">
+  <div class="modal-box">
+    <p id="modalMessage">Tem certeza?</p>
+    <div class="modal-prompt" id="modalPromptGroup" hidden>
+      <label for="modalPromptInput" id="modalPromptLabel">Nome</label>
+      <input id="modalPromptInput" type="text" maxlength="80" autocomplete="off">
+      <span class="modal-prompt-error" id="modalPromptError" role="alert"></span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost small" id="modalCancelBtn">Cancelar</button>
+      <button class="btn danger" id="modalConfirmBtn" style="padding:9px 16px;font-size:12px;">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="sessionModalOverlay" role="dialog" aria-modal="true" aria-label="Finalizar sessão de estudo">
+  <div class="modal-box">
+    <p>Sessão de <strong id="sessionModalDuration">00:00</strong> finalizada. Quer registrar o que você estudou?</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+      <select id="sessionModalSubject" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);"></select>
+      <select id="sessionModalTopic" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);"></select>
+      <select id="sessionModalType" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);">
+        <option value="study">Estudo teórico</option>
+        <option value="review">Revisão</option>
+        <option value="questions">Questões</option>
+        <option value="simulation">Simulado</option>
+      </select>
+      <div style="display:flex;gap:10px;">
+        <input type="number" id="sessionModalResolved" placeholder="Questões resolvidas" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
+        <input type="number" id="sessionModalCorrect" placeholder="Acertos" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
+      </div>
+      <textarea id="sessionModalNotes" placeholder="Observação opcional" style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);resize:vertical;min-height:58px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost small" id="sessionModalSkipBtn">Só zerar o cronômetro</button>
+      <button class="btn" id="sessionModalSaveBtn" style="padding:9px 16px;font-size:12px;">Salvar sessão</button>
+    </div>
+  </div>
+</div>
+
+<script src="src/app.bundle.js"></script>
+</body>
+</html>
