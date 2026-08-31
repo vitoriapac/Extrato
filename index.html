@@ -140,8 +140,17 @@
         <button class="btn ghost small" id="studySessionsClearFilter" data-delegated-click="clearSessionHistoryFilters()">Limpar filtros</button>
         <span class="session-filter-summary" id="studySessionsFilterSummary"></span>
       </div>
-      <div class="log-table-wrap" style="margin-bottom:0;">
-        <table class="log responsive-history-table" style="min-width:1080px;">
+      <div class="empty-state empty-state--compact sessions-empty-state" id="studySessionsEmpty" hidden>
+        <div class="empty-state__icon" aria-hidden="true">⏱</div>
+        <strong>Nenhuma sessão encontrada</strong>
+        <p>Ajuste os filtros ou inicie uma nova sessão de estudo.</p>
+        <div class="empty-state-actions">
+          <button class="btn ghost small" data-delegated-click="clearSessionHistoryFilters()">Limpar filtros</button>
+          <button class="btn small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button>
+        </div>
+      </div>
+      <div class="log-table-wrap study-sessions-table-wrap" id="studySessionsTableWrap" style="margin-bottom:0;">
+        <table class="log responsive-history-table study-sessions-table">
           <thead>
             <tr>
               <th style="width:110px;">Data</th>
@@ -210,12 +219,9 @@
     </div>
 
     <div class="chart-card plano-hoje-card">
-      <h3>📋 Plano de hoje</h3>
+      <h3>📋 Próximas ações de hoje</h3>
       <div id="planoHojeContent"></div>
-    </div>
-
-    <div class="chart-card priority-card">
-      <h3>📌 Hoje você deveria estudar</h3>
+      <h4 class="today-secondary-title">Outras prioridades recomendadas</h4>
       <div id="prioridadeHojeList"></div>
     </div>
 
@@ -291,7 +297,7 @@
                 <select id="calFilterTipo" aria-label="Filtrar calendário por tipo"><option value="">Todos os tipos de revisão</option></select>
     </div>
 
-    <div class="chart-card">
+    <div class="chart-card calendar-month-card" id="calendarMonthCard">
       <div class="calendar-month-toolbar">
         <button class="month-nav-btn" id="monthPrevBtn" title="Mês anterior">◀</button>
         <h3 id="calendarMonthTitle"></h3>
@@ -304,7 +310,12 @@
       <div id="monthCalendar"></div>
     </div>
 
-    <div class="cal-table-wrap">
+    <div class="calendar-view-switch" role="group" aria-label="Visualização do calendário">
+      <button class="btn small calendar-view-btn active" type="button" aria-pressed="true" data-calendar-view="month">Mês</button>
+      <button class="btn ghost small calendar-view-btn" type="button" aria-pressed="false" data-calendar-view="agenda">Agenda</button>
+    </div>
+
+    <div class="cal-table-wrap calendar-agenda-view" id="calendarAgendaView">
       <table class="cal responsive-history-table">
         <thead>
           <tr>

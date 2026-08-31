@@ -1,4 +1,8 @@
 :root{
+  --font-body:'IBM Plex Sans',sans-serif;--font-display:'Fraunces',serif;--font-data:'IBM Plex Mono',monospace;
+  --text-xs:.6875rem;--text-sm:.75rem;--text-md:.875rem;--text-lg:1rem;--text-xl:1.25rem;
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-6:1.5rem;
+  --control-height:36px;--touch-target:44px;
   --navy:#0B2545;--blue:#0F3D73;--gold:#C89A3E;--gold-bright:#E8B94A;
   --paper:#F6F3EC;--paper-line:#E4DFD1;--ink:#1C2430;--ink-soft:#5B6472;
   --green:#2E7D5B;--green-bg:#E4F0EA;--amber:#B8791E;--amber-bg:#F5E9D4;

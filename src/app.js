@@ -42,6 +42,8 @@ const MIN_TREND_WINDOW_QUESTIONS = 30;
 const MIN_TOPIC_TREND_WINDOW_QUESTIONS = 20;
 const MIN_ERROR_RECOMMENDATION_COUNT = 10;
 const MIN_ERROR_RECOMMENDATION_COVERAGE = 60;
+const DEFAULT_STREAK_WEEKS = 12;
+const streakView = {expanded:false,onlyActiveDays:false};
 const ERROR_RECOMMENDATIONS = {
   naoSabia:{action:'Revisar a teoria e os conceitos-base',studyType:'study',estimatedMinutes:35,questions:10},
   esqueci:{action:'Fazer uma revisão curta e recuperar de memória',studyType:'review',estimatedMinutes:25,questions:15},
@@ -603,6 +605,9 @@ function activateTab(tabName, updateHash = true){
     b.tabIndex = active ? 0 : -1;
   });
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p === panel));
+  document.querySelector('.statement')?.classList.toggle('statement--compact',tabName!=='dashboard');
+  document.querySelector('.global-search-row')?.classList.toggle('global-search-row--compact',tabName!=='dashboard');
+  btn.scrollIntoView?.({block:'nearest',inline:'nearest',behavior:'smooth'});
   if(typeof render==='function') render(tabName);
   if(updateHash) history.replaceState(null, '', '#'+tabName);
 }
@@ -791,6 +796,19 @@ function computeStreak(activityDates){
     cursor = addDays(cursor, -1);
   }
   return count;
+}
+
+function toggleStreakExpanded(){
+  streakView.expanded=!streakView.expanded;
+  renderHeatmap();
+}
+function toggleStreakActiveDays(){
+  streakView.onlyActiveDays=!streakView.onlyActiveDays;
+  renderHeatmap();
+}
+function focusStudyTimer(){
+  activateTab('dashboard');
+  document.getElementById('timerStartBtn')?.focus();
 }
 
 /* ===== GRÁFICO DE EVOLUÇÃO DO PROGRESSO ===== */
@@ -1406,12 +1424,20 @@ function heatmapTooltip(summary){
   return parts.join(' · ');
 }
 function renderHeatmap(){
-  const days = 119;
+  const activityDates=getActivityDates();
+  if(activityDates.size===0){
+    document.getElementById('heatmapContainer').innerHTML=`<div class="empty-state empty-state--compact"><div class="empty-state__icon" aria-hidden="true">🔥</div><strong>Comece sua sequência</strong><p>Registre sua primeira sessão para começar sua sequência de estudos.</p><button class="btn small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button></div>`;
+    return;
+  }
+  const earliest=[...activityDates].sort()[0];
+  const historyDays=Math.max(1,Math.round((parseLocalDate(todayISO())-parseLocalDate(earliest))/86400000)+1);
+  const days=streakView.expanded?historyDays:DEFAULT_STREAK_WEEKS*7;
   const today = todayISO();
   const cells = [];
   for(let i = days-1; i >= 0; i--){
     const d = addDays(today, -i);
-    cells.push(getDailyStudySummary(d));
+    const summary=getDailyStudySummary(d);
+    if(!streakView.onlyActiveDays||summary.meaningful) cells.push(summary);
   }
   const cellsHtml = cells.map(summary => {
     const level=heatmapLevel(summary);
@@ -1419,9 +1445,14 @@ function renderHeatmap(){
     const selected=sessionHistoryFilters.date===summary.date?'selected':'';
     return `<button type="button" class="heatmap-cell ${level>0?'heat-'+level:''} ${selected}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" data-delegated-click="selectSessionHistoryDate('${summary.date}')"></button>`;
   }).join('');
-  const activityStreak=computeStreak(getActivityDates());
+  const activityStreak=computeStreak(activityDates);
   const goalStreak=computeStreak(getGoalDates());
   document.getElementById('heatmapContainer').innerHTML = `
+    <div class="heatmap-toolbar" aria-label="Período da sequência">
+      <span>${streakView.expanded?'Período completo':`Últimas ${DEFAULT_STREAK_WEEKS} semanas`}</span>
+      <button class="btn ghost small" data-delegated-click="toggleStreakExpanded()">${streakView.expanded?'Mostrar menos':'Ver período completo'}</button>
+      <button class="btn ghost small" aria-pressed="${streakView.onlyActiveDays}" data-delegated-click="toggleStreakActiveDays()">${streakView.onlyActiveDays?'Mostrar todos os dias':'Apenas dias com atividade'}</button>
+    </div>
     <div class="heatmap-grid">${cellsHtml}</div>
     <div class="heatmap-legend">
       0%
@@ -1437,6 +1468,18 @@ function renderHeatmap(){
       <span>Cores: &lt;50% · 50–99% · ≥100% da meta diária</span>
     </div>
   `;
+}
+
+function getMetricDataState(metric,minimumConfidence=.35){
+  if(!metric?.available||metric.raw===null) return 'empty';
+  if((Number(metric.confidence)||0)<minimumConfidence) return 'insufficient';
+  return 'ready';
+}
+function metricStateLabel(metric,minimumConfidence=.35){
+  const status=getMetricDataState(metric,minimumConfidence);
+  if(status==='empty') return 'Aguardando dados';
+  if(status==='insufficient') return 'Estimativa inicial';
+  return 'Resultado calculado';
 }
 
 /* ===== GRÁFICO: EVOLUÇÃO DOS SIMULADOS ===== */
@@ -2199,6 +2242,17 @@ function toggleFilterPanel(scope){
   const panel=document.getElementById(id),button=document.querySelector(`[aria-controls="${id}"]`);if(!panel)return;
   const expanded=!panel.classList.contains('show');panel.classList.toggle('show',expanded);button?.setAttribute('aria-expanded',String(expanded));
 }
+function setCalendarMobileView(view){
+  const normalized=view==='agenda'?'agenda':'month';
+  document.getElementById('panel-calendario')?.setAttribute('data-calendar-view',normalized);
+  document.querySelectorAll('.calendar-view-btn').forEach(button=>{
+    const active=button.dataset.calendarView===normalized;
+    button.classList.toggle('active',active);
+    button.classList.toggle('ghost',!active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+}
+document.querySelectorAll('.calendar-view-btn').forEach(button=>button.addEventListener('click',()=>setCalendarMobileView(button.dataset.calendarView)));
 const calendarUiState={visible:10,editingId:null,editingIsNew:false,draft:null};
 function calendarViewModel(item){return {date:item.date?formatDatePt(item.date):'Sem data',week:item.week||'—',subject:getSubjectName(entitySubjectId(item)),status:item.status||'Não iniciado',reviewType:item.reviewType&&item.reviewType!=='—'?item.reviewType:'Sem revisão'};}
 function changeCalendarLimit(delta){calendarUiState.visible=Math.max(10,calendarUiState.visible+Number(delta||0));renderCalendar()}
@@ -3033,11 +3087,24 @@ function updateMetaHoursDay(day,value){
   if(Number(day)===parseLocalDate(todayISO()).getDay()) state.metas.horasDiarias=state.metas.horasPorDia[String(day)];
   persistAndRender();
 }
+function applyTodayGoalToAllDays(){
+  const value=metaHoursToday();
+  WEEKDAY_LABELS.forEach((_,day)=>{state.metas.horasPorDia[String(day)]=value});
+  state.metas.horasDiarias=value;
+  persistAndRender();
+  showToast(`Meta de ${value}h aplicada a todos os dias.`);
+}
+function clearWeekendGoals(){
+  state.metas.horasPorDia['0']=0;
+  state.metas.horasPorDia['6']=0;
+  persistAndRender();
+  showToast('Metas do fim de semana removidas.');
+}
 function renderWeeklyHoursGoals(){
   const container=document.getElementById('weeklyHoursGoals');
   if(!container) return;
   const todayDay=parseLocalDate(todayISO()).getDay();
-  container.innerHTML='<div class="weekday-goals">'+WEEKDAY_LABELS.map((label,day)=>
+  container.innerHTML='<div class="weekday-goal-actions"><button class="btn ghost small" data-delegated-click="applyTodayGoalToAllDays()">Aplicar meta de hoje a todos</button><button class="btn ghost small" data-delegated-click="clearWeekendGoals()">Limpar fim de semana</button></div><div class="weekday-goals">'+WEEKDAY_LABELS.map((label,day)=>
     '<label class="weekday-goal '+(day===todayDay?'today':'')+'"><span>'+label+(day===todayDay?' · hoje':'')+'</span><input type="number" min="0" step="0.25" value="'+metaHoursForDate(addDays(startOfWeek(todayISO()),day===0?6:day-1))+'" data-delegated-blur="updateMetaHoursDay('+day+',this.value)" aria-label="Meta de horas de '+label+'"></label>'
   ).join('')+'</div>';
 }
@@ -3904,6 +3971,8 @@ function renderStudySessionsHistory(){
   const body=document.getElementById('studySessionsBody');
   const count=document.getElementById('studySessionsCount');
   const summary=document.getElementById('studySessionsFilterSummary');
+  const tableWrap=document.getElementById('studySessionsTableWrap');
+  const emptyState=document.getElementById('studySessionsEmpty');
   if(!body||!count) return;
   renderSessionHistoryFilterControls();
   const rows=filteredStudySessions();
@@ -3911,7 +3980,14 @@ function renderStudySessionsHistory(){
   if(summary){
     summary.textContent=sessionHistoryFilters.date?`Dia selecionado: ${formatDatePt(sessionHistoryFilters.date)}`:`${rows.length} sessão(ões) no filtro atual`;
   }
-  if(rows.length===0){ body.innerHTML=`<tr><td colspan="10"><div class="empty-state" style="border:none;"><p>Nenhuma sessão encontrada para este filtro.</p></div></td></tr>`; return; }
+  if(rows.length===0){
+    body.innerHTML='';
+    if(tableWrap) tableWrap.hidden=true;
+    if(emptyState) emptyState.hidden=false;
+    return;
+  }
+  if(tableWrap) tableWrap.hidden=false;
+  if(emptyState) emptyState.hidden=true;
   const groups=new Map();
   rows.forEach(session=>{ const date=session.date||'Sem data'; if(!groups.has(date)) groups.set(date,[]); groups.get(date).push(session); });
   const groupedDays=[...groups.entries()];
@@ -4367,14 +4443,16 @@ function renderApprovalDashboard(){
   const el=document.getElementById('approvalDashboard');if(!el)return;
   const m=computeApprovalMetrics(),score=indiceProntidao(m),level=classificacaoAprovacao(score),confidence=confiancaAprovacao(m),projection=projectPerformance(m);
   const factors=[['Conhecimento · 35%',m.conhecimento],['Retenção · 25%',m.retencao],['Questões · 20%',m.questoes],['Simulados · 15%',m.simulados],['Consistência · 5%',m.consistencia]];
-  el.innerHTML=`<div class="kpi-grid">
-    <div class="kpi-cell ${level.cor==='danger'?'warn':level.cor}"><div class="n">${score}/100</div><div class="l">Chance estimada</div></div>
-    <div class="kpi-cell ${level.cor==='danger'?'warn':level.cor}"><div class="n" style="font-size:18px">${level.nivel}</div><div class="l">Faixa ${level.faixa}</div></div>
+  const approvalState=confidence.value<=0?'empty':confidence.value<.35?'insufficient':'ready';
+  const approvalLabel=approvalState==='empty'?'Aguardando dados':approvalState==='insufficient'?'Estimativa inicial':'Resultado calculado';
+  el.innerHTML=`<div class="metric-state metric-state--${approvalState}">${approvalLabel}${approvalState!=='ready'?'<span>Registre mais atividades para liberar uma classificação definitiva.</span>':''}</div><div class="kpi-grid">
+    <div class="kpi-cell ${approvalState==='ready'?(level.cor==='danger'?'warn':level.cor):'neutral'}"><div class="n">${approvalState==='empty'?'—':score+'/100'}</div><div class="l">${approvalState==='ready'?'Chance estimada':approvalLabel}</div></div>
+    <div class="kpi-cell ${approvalState==='ready'?(level.cor==='danger'?'warn':level.cor):'neutral'}"><div class="n" style="font-size:18px">${approvalState==='ready'?level.nivel:approvalLabel}</div><div class="l">${approvalState==='ready'?'Faixa '+level.faixa:'Sem classificação definitiva'}</div></div>
     <div class="kpi-cell"><div class="n">${confidence.nivel}</div><div class="l">Confiança · ${Math.round(confidence.value*100)}%</div></div>
     <div class="kpi-cell"><div class="n">${m.retencao.available?Math.round(m.retencao.raw)+'%':'—'}</div><div class="l">Retenção média</div></div>
     <div class="kpi-cell"><div class="n">${projection.available?projection.low+'–'+projection.high+'%':'—'}</div><div class="l">Projeção de desempenho</div></div>
   </div>
-  ${factors.map(([label,item])=>`<div class="bar-row" title="${escapeAttr(item.detail)}"><div class="bar-label">${label}</div><div class="bar-track"><div class="bar-fill" style="width:${item.score}%"></div></div><div class="bar-pct">${item.score}%</div></div>`).join('')}
+  ${factors.map(([label,item])=>{const dataState=getMetricDataState(item);return `<div class="bar-row metric-row metric-row--${dataState}" title="${escapeAttr(item.detail)}"><div class="bar-label">${label}<small>${metricStateLabel(item)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${dataState==='empty'?0:item.score}%"></div></div><div class="bar-pct">${dataState==='empty'?'—':item.score+'%'}</div></div>`}).join('')}
   <div class="approval-scale"><span class="approval-scale-danger">🔴 0–49</span><span class="approval-scale-warn">🟠 50–69</span><span class="approval-scale-good">🟢 70–84</span><span class="approval-scale-great">🏆 85+</span></div>
   <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
   renderTopicRetentionDashboard();
@@ -4457,24 +4535,24 @@ function escapeAttr(str){ return escapeHtml(str); }
 
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTIONS=new Set([
-  'addAgendaRow','addBreakdownRow','addCalRow','addQuestaoRow','addSimuladoRow','addSubject','addTopic','archiveSubject','archiveTopic',
+  'addAgendaRow','addBreakdownRow','addCalRow','addQuestaoRow','addSimuladoRow','addSubject','addTopic','applyTodayGoalToAllDays','archiveSubject','archiveTopic','clearWeekendGoals',
   'cancelAgendaEdit','cancelCalendarEdit','cancelQuestionEdit','cancelSimulationEdit','cancelStudySessionEdit','changeAgendaLimit','changeCalendarLimit','clearSessionHistoryFilters','completeAgendaReview','completeCalendarItem','completeUnifiedReview','deleteAgendaRow',
   'deleteBreakdownRow','deleteCalRow','deleteMetaDisciplina','deleteQuestaoRow','deleteSimuladoRow','deleteStudySession','duplicateSubject',
-  'editAgenda','editCalendarItem','editQuestion','editSimulation','editStudySession','gerarAgendaAutomatica','moveSubject','navigateKpi','renameSubject',
+  'editAgenda','editCalendarItem','editQuestion','editSimulation','editStudySession','focusStudyTimer','gerarAgendaAutomatica','moveSubject','navigateKpi','renameSubject',
   'requestPermanentSubjectDelete','requestPermanentTopicDelete','resetAdaptiveReviewDate','resetAgendaLimit','resetCalendarLimit','restoreSubject','restoreTopic','saveAgendaEdit','saveCalendarEdit','saveQuestionEdit',
   'saveSimulationEdit','saveStudySessionEdit','selectSessionHistoryDate','startPlannedActivity','toggleBreakdown','toggleNotes',
-  'toggleCompletedReviews','toggleFilterPanel','toggleQuestionErrors','toggleSessionDay','toggleSubject','updateAgenda','updateAgendaDraft','updateBreakdownRow','updateCal','updateCalendarDraft','updateMeta',
+  'toggleCompletedReviews','toggleFilterPanel','toggleQuestionErrors','toggleSessionDay','toggleStreakActiveDays','toggleStreakExpanded','toggleSubject','updateAgenda','updateAgendaDraft','updateBreakdownRow','updateCal','updateCalendarDraft','updateMeta',
   'updateMetaDisciplina','updateMetaHoursDay','updateQuestionDraft','updateQuestionError','updateSessionHistoryFilter',
   'updateSimulationDraft','updateStudySessionDraft','updateTopic','updateTopicStatus','updateTopicTags'
 ]);
 const DELEGATED_ACTION_HANDLERS={
-  addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,archiveSubject,archiveTopic,
+  addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
-  editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,
+  editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,
   requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,startPlannedActivity,toggleBreakdown,toggleNotes,
-  toggleCompletedReviews,toggleFilterPanel,toggleQuestionErrors,toggleSessionDay,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
+  toggleCompletedReviews,toggleFilterPanel,toggleQuestionErrors,toggleSessionDay,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
   updateMetaDisciplina,updateMetaHoursDay,updateQuestionDraft,updateQuestionError,updateSessionHistoryFilter,
   updateSimulationDraft,updateStudySessionDraft,updateTopic,updateTopicStatus,updateTopicTags
 };
@@ -4647,6 +4725,7 @@ document.addEventListener('keydown', function(e){
 
 window.addEventListener('beforeunload', () => {if(!TEST_MODE)writeLocalState(JSON.stringify(state))});
 
+setCalendarMobileView('month');
 const initialTab = location.hash.replace('#','');
 if(document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) activateTab(initialTab, false);
 
