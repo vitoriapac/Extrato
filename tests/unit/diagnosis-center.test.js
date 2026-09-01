@@ -13,3 +13,10 @@ test('distribui o foco semanal proporcionalmente às oportunidades',()=>{
   const result=generateDiagnosis([{id:'a',subjectName:'A',examImpact:100,improvementPotential:100,effortEfficiency:100},{id:'b',subjectName:'B',examImpact:50,improvementPotential:50,effortEfficiency:50}]);
   assert.equal(result.weeklyFocus[0].subjectName,'A');assert.ok(result.weeklyFocus[0].percentage>result.weeklyFocus[1].percentage);
 });
+
+test('redistribui pesos e reduz confiança quando impacto de prova está ausente',()=>{
+  const result=generateDiagnosis([{id:'a',subjectName:'A',examImpact:null,improvementPotential:60,effortEfficiency:80}]);
+  assert.equal(result.opportunities[0].opportunityScore,68);
+  assert.equal(result.opportunities[0].confidence,.6);
+  assert.deepEqual(result.opportunities[0].missingFactors,['examImpact']);
+});

@@ -60,10 +60,17 @@ test('calcula consistência somente nos dias com meta',()=>{
 });
 
 test('classifica tendência usando duas janelas equivalentes',()=>{
-  const weeks=[{resolved:10,correct:5},{resolved:10,correct:5},{resolved:10,correct:5},{resolved:10,correct:8},{resolved:10,correct:8},{resolved:10,correct:8}];
+  const weeks=[{resolved:10,correct:5},{resolved:10,correct:5},{resolved:10,correct:5},{resolved:10,correct:5},{resolved:10,correct:8},{resolved:10,correct:8},{resolved:10,correct:8},{resolved:10,correct:8}];
   const result=calculateWindowTrend(weeks,30);
   assert.equal(result.key,'up');
   assert.equal(result.delta,30);
+  assert.equal(result.previousAccuracy,50);
+  assert.equal(result.recentAccuracy,80);
+});
+
+test('não usa semanas sem volume suficiente como desempenho zero',()=>{
+  const result=calculateWindowTrend([{resolved:0,correct:0},{resolved:0,correct:0},{resolved:10,correct:8},{resolved:10,correct:8},{resolved:0,correct:0},{resolved:0,correct:0},{resolved:10,correct:6},{resolved:10,correct:6}],30);
+  assert.equal(result.key,'insufficient');assert.equal(result.delta,null);assert.equal(result.previousAccuracy,80);assert.equal(result.recentAccuracy,60);
 });
 
 test('resume sessões e questões sem contar registros vinculados duas vezes',()=>{

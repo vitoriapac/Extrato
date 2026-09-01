@@ -4,6 +4,7 @@ import {recommendStudy} from '../../src/application/recommend-study.js';
 test('ordena recomendações pela fórmula explicável',()=>{
   const result=recommendStudy([{id:'a',estimatedMinutes:30,examImpact:90,retentionRisk:80,masteryGap:70,reviewUrgency:80,planAlignment:50,recencyRisk:60},{id:'b',estimatedMinutes:30,examImpact:20,retentionRisk:20,masteryGap:20,reviewUrgency:0,planAlignment:20,recencyRisk:20}],{availableMinutes:45});
   assert.equal(result[0].id,'a');assert.ok(result[0].reasons.length);assert.equal(result[0].confidence,'alta');
+  assert.ok(result[0].contributions.examImpact>0);assert.ok(Math.abs(Object.values(result[0].contributions).reduce((sum,value)=>sum+value,0)-result[0].score)<=2);
 });
 
 test('respeita tempo, exclusões, conclusão e arquivamento',()=>{

@@ -5,7 +5,7 @@
   var BACKUP_KEY = STORAGE_KEY + "-automatic-backup";
   var BACKUP_INDEX_KEY = BACKUP_KEY + "-index";
   var AUTOMATIC_BACKUP_SLOTS = 5;
-  var CURRENT_SCHEMA_VERSION = 9;
+  var CURRENT_SCHEMA_VERSION = 10;
   var MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
   var DB_NAME = "extrato-estudos-db";
   var DB_VERSION = 1;
@@ -346,6 +346,7 @@
       progressHistory: [],
       studySessions: [],
       dailyPlans: [],
+      studyPlans: [],
       activeTimer: {
         startedAt: null,
         runStartedAt: null,
@@ -508,15 +509,17 @@
   }
 
   // src/domain/analytics/trends.js
-  function calculateWindowTrend(weeklyData, minWindow = 30) {
+  function calculateWindowTrend(weeklyData, minWindow = 30, windowWeeks = 4) {
     const pool = (data) => data.reduce((acc, week) => ({ resolved: acc.resolved + (Number(week.resolved) || 0), correct: acc.correct + (Number(week.correct) || 0) }), { resolved: 0, correct: 0 });
     const accuracy = (data) => data.resolved ? Math.round(data.correct / data.resolved * 1e3) / 10 : null;
-    const recent = pool(weeklyData.slice(-3)), previous = pool(weeklyData.slice(-6, -3));
-    if (recent.resolved < minWindow || previous.resolved < minWindow) return { key: "insufficient", icon: "—", label: "Amostra insuficiente", delta: null, recent, previous };
-    const delta = accuracy(recent) - accuracy(previous);
-    if (delta >= 3) return { key: "up", icon: "↗", label: "Em evolução", delta, recent, previous };
-    if (delta <= -3) return { key: "down", icon: "↘", label: "Em queda", delta, recent, previous };
-    return { key: "stable", icon: "→", label: "Estável", delta, recent, previous };
+    const recent = pool(weeklyData.slice(-windowWeeks)), previous = pool(weeklyData.slice(-(windowWeeks * 2), -windowWeeks));
+    const recentAccuracy = accuracy(recent), previousAccuracy = accuracy(previous);
+    const evidence = { sampleSize: recent.resolved + previous.resolved, windowWeeks, confidence: Math.min(1, Math.min(recent.resolved, previous.resolved) / (minWindow * 2)) };
+    if (recent.resolved < minWindow || previous.resolved < minWindow) return { key: "insufficient", icon: "—", label: "Amostra insuficiente", delta: null, recent, previous, recentAccuracy, previousAccuracy, evidence };
+    const delta = Math.round((recentAccuracy - previousAccuracy) * 10) / 10;
+    if (delta >= 3) return { key: "up", icon: "↗", label: "Em evolução", delta, recent, previous, recentAccuracy, previousAccuracy, evidence };
+    if (delta <= -3) return { key: "down", icon: "↘", label: "Em queda", delta, recent, previous, recentAccuracy, previousAccuracy, evidence };
+    return { key: "stable", icon: "→", label: "Estável", delta, recent, previous, recentAccuracy, previousAccuracy, evidence };
   }
 
   // src/domain/analytics/study-metrics.js
@@ -630,14 +633,25 @@
         ["Tendência", item.trendRisk == null ? null : clamp2(item.trendRisk)]
       ].filter(([, value]) => value != null);
       const strongest = factors.sort((a, b) => b[1] - a[1])[0];
-      return strongest ? { ...item, severity: Math.round(strongest[1]), factor: strongest[0], reason: `${strongest[0]} requer atenção` } : null;
+      return strongest ? { ...item, severity: item.risk?.value ?? Math.round(strongest[1]), factor: strongest[0], reason: `${strongest[0]} requer atenção` } : null;
     }).filter(Boolean).filter((item) => item.severity >= 35).sort((a, b) => b.severity - a.severity);
+    const opportunityWeights = { examImpact: 0.4, improvementPotential: 0.35, effortEfficiency: 0.25 };
     const opportunities = valid.map((item) => {
-      const examImpact = clamp2(item.examImpact);
-      const improvementPotential = clamp2(item.improvementPotential);
-      const effortEfficiency = clamp2(item.effortEfficiency);
-      return { ...item, opportunityScore: Math.round(examImpact * 0.4 + improvementPotential * 0.35 + effortEfficiency * 0.25) };
-    }).filter((item) => item.opportunityScore >= 30).sort((a, b) => b.opportunityScore - a.opportunityScore);
+      let weighted = 0, availableWeight = 0;
+      const factors = {}, missingFactors = [];
+      Object.entries(opportunityWeights).forEach(([key, weight]) => {
+        if (item[key] == null) {
+          missingFactors.push(key);
+          return;
+        }
+        factors[key] = clamp2(item[key]);
+        weighted += factors[key] * weight;
+        availableWeight += weight;
+      });
+      const opportunityScore = availableWeight ? Math.round(weighted / availableWeight) : null;
+      const confidence = Math.round(availableWeight * 100) / 100;
+      return { ...item, opportunityScore, opportunityFactors: factors, missingFactors, confidence, confidenceLabel: confidence >= 0.8 ? "Alta" : confidence >= 0.5 ? "Média" : "Baixa" };
+    }).filter((item) => item.opportunityScore != null && item.opportunityScore >= 30).sort((a, b) => b.opportunityScore - a.opportunityScore);
     const criticalReviews = valid.filter((item) => item.reviewUrgency > 0).sort((a, b) => b.reviewUrgency - a.reviewUrgency);
     const topicsAtRisk = valid.filter((item) => item.retention != null && item.retention < 60 || (item.daysSinceContact || 0) >= 10).sort((a, b) => (b.daysSinceContact || 0) - (a.daysSinceContact || 0));
     const subjectScores = /* @__PURE__ */ new Map();
@@ -656,21 +670,93 @@
     return candidates.filter((item) => item && !item.archived && !item.completed && !excluded.has(item.id)).map((item) => {
       const factors = {};
       let weighted = 0, weight = 0;
+      const missingFactors = [];
       Object.entries(RECOMMENDATION_WEIGHTS).forEach(([key, factorWeight]) => {
-        if (item[key] == null) return;
+        if (item[key] == null) {
+          missingFactors.push(key);
+          return;
+        }
         factors[key] = clamp3(item[key]);
         weighted += factors[key] * factorWeight;
         weight += factorWeight;
       });
+      const contributions = Object.fromEntries(Object.entries(factors).map(([key, value]) => [key, Math.round(value * (RECOMMENDATION_WEIGHTS[key] / weight))]));
       const reasons = [];
       if (factors.reviewUrgency >= 40) reasons.push("revisão atrasada ou prevista para agora");
       if (factors.retentionRisk >= 40) reasons.push("retenção estimada pede reforço");
       if (factors.masteryGap >= 40) reasons.push("há margem relevante para melhorar o domínio");
       if (factors.examImpact >= 60) reasons.push("alto impacto configurado na prova");
       if (factors.recencyRisk >= 40) reasons.push("tempo elevado sem contato");
-      const factorCount = Object.keys(factors).length;
-      return { ...item, factors, score: weight ? Math.round(weighted / weight) : 0, reasons: reasons.length ? reasons : ["prioridade compatível com o plano atual"], confidence: factorCount >= 5 ? "alta" : factorCount >= 3 ? "média" : "baixa" };
+      return { ...item, factors, contributions, missingFactors, score: weight ? Math.round(weighted / weight) : 0, reasons: reasons.length ? reasons : ["prioridade compatível com o plano atual"], confidence: weight >= 0.8 ? "alta" : weight >= 0.5 ? "média" : "baixa" };
     }).filter((item) => item.estimatedMinutes <= availableMinutes && Object.keys(item.factors).length).sort((a, b) => b.score - a.score || a.estimatedMinutes - b.estimatedMinutes);
+  }
+
+  // src/domain/diagnostics/risk-score.js
+  var RISK_WEIGHTS = Object.freeze({ masteryRisk: 0.25, retentionRisk: 0.25, trendRisk: 0.15, recencyRisk: 0.15, examImpact: 0.15, examProximity: 0.05 });
+  var clamp4 = (value) => Math.max(0, Math.min(100, Number(value) || 0));
+  function calculateRiskScore(factors = {}, weights = RISK_WEIGHTS) {
+    let weighted = 0, availableWeight = 0;
+    const normalized = {}, missingFactors = [], contributions = {};
+    Object.entries(weights).forEach(([key, weight]) => {
+      if (factors[key] == null) {
+        missingFactors.push(key);
+        return;
+      }
+      normalized[key] = clamp4(factors[key]);
+      weighted += normalized[key] * weight;
+      availableWeight += weight;
+    });
+    if (!availableWeight) return { value: null, level: "insufficient", confidence: 0, confidenceLabel: "Baixa", factors: normalized, missingFactors, contributions: {} };
+    const value = Math.round(weighted / availableWeight);
+    Object.entries(normalized).forEach(([key, factor]) => {
+      contributions[key] = Math.round(factor * (weights[key] / availableWeight));
+    });
+    const confidence = Math.round(availableWeight * 100) / 100;
+    return { value, level: value >= 70 ? "high" : value >= 40 ? "medium" : "low", confidence, confidenceLabel: confidence >= 0.8 ? "Alta" : confidence >= 0.5 ? "Média" : "Baixa", factors: normalized, missingFactors, contributions };
+  }
+
+  // src/application/build-study-plan.js
+  var clamp5 = (value) => Math.max(0, Math.min(100, Number(value) || 0));
+  function buildStudyPlan({ topics = [], weeklyAvailableMinutes = 0, weeksUntilExam = 0 } = {}) {
+    const active = topics.filter((item) => item && !item.archived && !item.completed);
+    const configured = active.filter((item) => Number(item.estimatedMinutes) > 0);
+    const missingEffort = active.filter((item) => !Number(item.estimatedMinutes)).map((item) => item.id);
+    const availability = Math.max(0, Math.round(Number(weeklyAvailableMinutes) || 0));
+    const weeks = Math.max(0, Math.ceil(Number(weeksUntilExam) || 0));
+    if (!configured.length || availability <= 0 || weeks <= 0) return { state: "insufficient", weeklyAvailableMinutes: availability, weeksUntilExam: weeks, remainingMinutes: configured.reduce((sum, item) => sum + Number(item.estimatedMinutes), 0), missingEffort, items: [], subjects: [], activityMix: { theory: 0, questions: 0, reviews: 0 }, confidence: 0 };
+    const remainingMinutes = configured.reduce((sum, item) => sum + Number(item.estimatedMinutes), 0);
+    const weeklyBudget = Math.min(availability, Math.ceil(remainingMinutes / weeks));
+    const scored = configured.map((item) => {
+      const examImpact = item.examImpact == null ? 50 : clamp5(item.examImpact), masteryGap = item.masteryGap == null ? 50 : clamp5(item.masteryGap), retentionNeed = item.retentionNeed == null ? 50 : clamp5(item.retentionNeed), urgency = clamp5(100 - (weeks - 1) * 4);
+      const score = Math.max(1, examImpact * 0.35 + masteryGap * 0.3 + retentionNeed * 0.2 + urgency * 0.15);
+      return { ...item, score };
+    });
+    const totalScore = scored.reduce((sum, item) => sum + item.score, 0);
+    const allocations = new Map(scored.map((item) => [item.id, Math.min(Math.round(Number(item.estimatedMinutes)), Math.floor(weeklyBudget * item.score / totalScore))]));
+    let unallocated = weeklyBudget - [...allocations.values()].reduce((sum, value) => sum + value, 0);
+    for (const item of [...scored].sort((a, b) => b.score - a.score)) {
+      if (unallocated <= 0) break;
+      const current = allocations.get(item.id), capacity = Math.max(0, Math.round(Number(item.estimatedMinutes)) - current), extra = Math.min(capacity, unallocated);
+      allocations.set(item.id, current + extra);
+      unallocated -= extra;
+    }
+    const items = scored.map((item) => {
+      const minutes = allocations.get(item.id) || 0;
+      const reviewShare = item.retentionNeed >= 60 ? 0.35 : 0.2, questionShare = item.masteryGap >= 60 ? 0.4 : 0.3;
+      const reviews = Math.round(minutes * reviewShare), questions = Math.round(minutes * questionShare), theory = Math.max(0, minutes - reviews - questions);
+      return { ...item, minutes, activityMix: { theory, questions, reviews } };
+    }).filter((item) => item.minutes > 0);
+    const subjectMap = /* @__PURE__ */ new Map();
+    items.forEach((item) => {
+      const current = subjectMap.get(item.subjectId) || { subjectId: item.subjectId, subjectName: item.subjectName, minutes: 0 };
+      current.minutes += item.minutes;
+      subjectMap.set(item.subjectId, current);
+    });
+    const activityMix = items.reduce((sum, item) => ({ theory: sum.theory + item.activityMix.theory, questions: sum.questions + item.activityMix.questions, reviews: sum.reviews + item.activityMix.reviews }), { theory: 0, questions: 0, reviews: 0 });
+    const coverage = active.length ? configured.length / active.length : 0;
+    const strategicCoverage = configured.filter((item) => item.examImpact != null).length / configured.length;
+    const confidence = Math.round((coverage * 0.65 + strategicCoverage * 0.35) * 100) / 100;
+    return { state: confidence >= 0.75 ? "ready" : "estimated", weeklyAvailableMinutes: availability, weeklyPlannedMinutes: items.reduce((sum, item) => sum + item.minutes, 0), weeksUntilExam: weeks, remainingMinutes, missingEffort, items, subjects: [...subjectMap.values()].sort((a, b) => b.minutes - a.minutes), activityMix, confidence, confidenceLabel: confidence >= 0.8 ? "Alta" : confidence >= 0.5 ? "Média" : "Baixa" };
   }
 
   // src/app.js
@@ -909,6 +995,11 @@
     data.schemaVersion = 9;
     return data;
   }
+  function migrateV9toV10(data) {
+    if (!Array.isArray(data.studyPlans)) data.studyPlans = [];
+    data.schemaVersion = 10;
+    return data;
+  }
   function migrateState(data) {
     let version = Number(data.schemaVersion || 1);
     if (version < 2) {
@@ -943,6 +1034,10 @@
       data = migrateV8toV9(data);
       version = 9;
     }
+    if (version < 10) {
+      data = migrateV9toV10(data);
+      version = 10;
+    }
     data.schemaVersion = CURRENT_SCHEMA_VERSION;
     return data;
   }
@@ -975,6 +1070,7 @@
     if (!Array.isArray(state.metasPorDisciplina)) state.metasPorDisciplina = [];
     if (!Array.isArray(state.studySessions)) state.studySessions = [];
     if (!Array.isArray(state.dailyPlans)) state.dailyPlans = [];
+    if (!Array.isArray(state.studyPlans)) state.studyPlans = [];
     if (!state.activeTimer || typeof state.activeTimer !== "object") state.activeTimer = {};
     state.activeTimer.startedAt = state.activeTimer.startedAt || null;
     state.activeTimer.runStartedAt = state.activeTimer.runStartedAt || null;
@@ -1690,7 +1786,7 @@
     if (version > CURRENT_SCHEMA_VERSION) {
       return { valid: false, message: `Este backup usa a versão ${version}, mas este aplicativo aceita até a versão ${CURRENT_SCHEMA_VERSION}. Abra-o em uma versão mais recente do aplicativo.` };
     }
-    const arrayFields = ["calendar", "reviewAgenda", "questoes", "simulados", "progressHistory", "studySessions", "dailyPlans", "topicHistory", "metasPorDisciplina"];
+    const arrayFields = ["calendar", "reviewAgenda", "questoes", "simulados", "progressHistory", "studySessions", "dailyPlans", "studyPlans", "topicHistory", "metasPorDisciplina"];
     const invalidField = arrayFields.find((field) => field in data && !Array.isArray(data[field]));
     if (invalidField) {
       return { valid: false, message: `O campo "${invalidField}" está em um formato incompatível.` };
@@ -1724,7 +1820,7 @@
   }
   function validateNormalizedBackup(data) {
     const fail = (message) => ({ valid: false, message });
-    const collections = ["subjects", "calendar", "reviewAgenda", "questoes", "simulados", "progressHistory", "studySessions", "dailyPlans", "topicHistory", "metasPorDisciplina"];
+    const collections = ["subjects", "calendar", "reviewAgenda", "questoes", "simulados", "progressHistory", "studySessions", "dailyPlans", "studyPlans", "topicHistory", "metasPorDisciplina"];
     for (const field of collections) {
       if (!Array.isArray(data[field])) return fail(`O campo "${field}" deve ser uma lista.`);
       if (data[field].length > 5e4) return fail(`O campo "${field}" excede o limite seguro de 50.000 registros.`);
@@ -1801,6 +1897,11 @@
         planItemIds.add(item.id);
         if (!isFiniteNonNegative(item.plannedMinutes) || !isFiniteNonNegative(item.executedSeconds) || !["study", "review", "questions", "simulation"].includes(item.type) || !["planned", "in_progress", "partial", "completed", "deferred", "replaced", "skipped"].includes(item.status)) return fail("Um item de plano possui dados inválidos.");
       }
+    }
+    for (const plan of data.studyPlans) {
+      const error = validateEntity(plan, "Um plano até a prova");
+      if (error) return fail(error);
+      if (!isOptionalTimestamp(plan.confirmedAt) || !isFiniteNonNegative(plan.weeklyAvailableMinutes) || !isFiniteNonNegative(plan.weeklyPlannedMinutes) || !Array.isArray(plan.subjects) || !Array.isArray(plan.items)) return fail("Um plano até a prova possui dados inválidos.");
     }
     for (const item of data.topicHistory) {
       const error = validateEntity(item, "Um evento histórico");
@@ -2413,21 +2514,25 @@
       return;
     }
     card.style.display = "block";
-    const TREND_COLOR = { "↑": "var(--green)", "↓": "var(--red)", "→": "var(--ink-soft)" };
-    const rows = perf.map((p) => `
+    const rows = perf.map((p) => {
+      const trend = calculateWeightedTrend(getSubjectWeeklyTrend(p.subjectId));
+      const color = trend.key === "up" ? "var(--green)" : trend.key === "down" ? "var(--red)" : "var(--ink-soft)";
+      const comparison = trend.key === "insufficient" ? "Amostra insuficiente" : `${trend.previousAccuracy}% → ${trend.recentAccuracy}% (${trend.delta >= 0 ? "+" : ""}${trend.delta} p.p.)`;
+      return `
     <tr>
       <td>${escapeHtml(p.subject)}</td>
       <td style="text-align:right;">${p.acerto}%</td>
       <td style="text-align:right;">${p.total}</td>
-      <td style="text-align:center;color:${TREND_COLOR[p.trend]};font-weight:600;">${p.trend}</td>
+      <td style="text-align:right;color:${color};font-weight:600;">${trend.icon} ${escapeHtml(trend.label)}<small class="trend-comparison">${escapeHtml(comparison)}</small></td>
     </tr>
-  `).join("");
+  `;
+    }).join("");
     const fracos = perf.filter((p) => p.acerto < 70 && p.total >= 5);
     const alertasHtml = fracos.length ? fracos.map((p) => `<div class="desempenho-alerta">🔴 ${escapeHtml(p.subject)} precisa de atenção.</div>`).join("") : "";
     container.innerHTML = `
     <table class="weekly-history-table" style="margin-bottom:${fracos.length ? "12px" : "0"};">
       <thead>
-        <tr><th>Disciplina</th><th style="text-align:right;">Acerto</th><th style="text-align:right;">Questões</th><th style="text-align:center;">Tendência</th></tr>
+        <tr><th>Disciplina</th><th style="text-align:right;">Acerto</th><th style="text-align:right;">Questões</th><th style="text-align:right;">Tendência · 4 semanas × 4 anteriores</th></tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>
@@ -2637,6 +2742,11 @@
               ${openNotesIds.has(t.id) ? `
               <tr class="notes-row">
                 <td colspan="6">
+                  ${renderTopicAnalyticsState(s, t)}
+                  <div class="topic-strategy-fields">
+                    <label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Não definida" value="${t.examImportance == null ? "" : Math.round(t.examImportance * 100)}" data-delegated-blur="updateTopicStrategy('${s.id}','${t.id}','examImportance',this.value)"></label>
+                    <label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${t.estimatedStudyMinutes == null ? "" : t.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${s.id}','${t.id}','estimatedStudyMinutes',this.value)"></label>
+                  </div>
                   <input type="text" class="topic-tags-input" placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
                     value="${escapeAttr((t.tags || []).join(", "))}"
                     data-delegated-blur="updateTopicTags('${s.id}','${t.id}', this.value)">
@@ -2707,6 +2817,29 @@
     t.tags = value.split(",").map((tag) => tag.trim()).filter(Boolean);
     persistAndRender();
   }
+  function updateTopicStrategy(subjectId, topicId, field, value) {
+    studyPlanPreview = null;
+    const found = getTopicById(topicId);
+    if (!found || found.subject.id !== subjectId) return;
+    if (field === "examImportance") found.topic.examImportance = value === "" ? null : Number(value) / 100;
+    if (field === "estimatedStudyMinutes") found.topic.estimatedStudyMinutes = value === "" ? null : Number(value);
+    normalizeTopicStrategy(found.topic);
+    persistAndRender();
+  }
+  function renderTopicAnalyticsState(subject, topic) {
+    const coverage = topic.status === "Concluído" ? 100 : topic.status === "Em andamento" || topic.status === "Revisão" ? 50 : 0;
+    const masteryResult = topicMasteryIndex(subject.id, topic.id), retentionResult = topicRetentionScore(subject.id, topic.id);
+    const mastery = masteryResult.confidence > 0 ? masteryResult.score : null, retention = retentionResult.available ? retentionResult.score : null;
+    let label = "Não iniciado";
+    if (coverage > 0 && mastery === null) label = "Em estudo · aguardando questões";
+    else if (coverage === 100 && mastery < 50) label = "Coberto, não consolidado";
+    else if (coverage === 100 && retention !== null && retention < 60) label = "Domínio em risco";
+    else if (coverage === 100 && mastery >= 75) label = "Consolidado";
+    else if (coverage === 100) label = "Em consolidação";
+    else if (coverage > 0) label = "Em estudo";
+    const metric = (name, value, detail = "") => `<div><span>${name}</span><strong>${value === null ? "Aguardando dados" : Math.round(value) + "%"}</strong>${detail ? `<small>${escapeHtml(detail)}</small>` : ""}</div>`;
+    return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>Independente do status manual</small></div><div class="topic-analytics-metrics">${metric("Cobertura", coverage)}${metric("Domínio", mastery, mastery === null ? "Registre questões deste tópico" : "Confiança " + Math.round(masteryResult.confidence * 100) + "%")}${metric("Retenção", retention, retention === null ? "Conclua revisões vinculadas" : "Estimativa baseada nas revisões")}</div></div>`;
+  }
   function moveSubject(id, direction) {
     const active = activeSubjects();
     const activeIdx = active.findIndex((s) => s.id === id);
@@ -2743,7 +2876,10 @@
         lastCompletedAt: null,
         completionCount: 0,
         lastReviewedAt: null,
-        reviewCount: 0
+        reviewCount: 0,
+        examImportance: t.examImportance ?? null,
+        estimatedStudyMinutes: t.estimatedStudyMinutes ?? null,
+        prerequisites: []
       }))
     };
     state.subjects.splice(idx + 1, 0, copy);
@@ -2851,7 +2987,7 @@
   }
   function addTopic(subjectId) {
     const s = state.subjects.find((x) => x.id === subjectId);
-    s.topics.push({ id: uid("topic"), name: "", link: "", status: "Não iniciado", archived: false, archivedAt: null, notes: "", tags: [], difficulty: "Médio", createdAt: nowISO(), firstCompletedAt: null, lastCompletedAt: null, completionCount: 0, lastReviewedAt: null, reviewCount: 0 });
+    s.topics.push({ id: uid("topic"), name: "", link: "", status: "Não iniciado", archived: false, archivedAt: null, notes: "", tags: [], difficulty: "Médio", createdAt: nowISO(), firstCompletedAt: null, lastCompletedAt: null, completionCount: 0, lastReviewedAt: null, reviewCount: 0, examImportance: null, estimatedStudyMinutes: null, prerequisites: [] });
     persistAndRender();
   }
   function archiveTopic(subjectId, topicId) {
@@ -4179,6 +4315,7 @@
     return metaHoursForDate(todayISO());
   }
   function updateMetaHoursDay(day, value) {
+    studyPlanPreview = null;
     state.metas.horasPorDia[String(day)] = Math.max(0, Number(value) || 0);
     if (Number(day) === parseLocalDate(todayISO()).getDay()) state.metas.horasDiarias = state.metas.horasPorDia[String(day)];
     persistAndRender();
@@ -4278,6 +4415,87 @@
   }
   function updateMeta(key, value) {
     state.metas[key] = Number(value) || 0;
+    persistAndRender();
+  }
+  function renderExamBlueprintConfig() {
+    const container = document.getElementById("examBlueprintConfig");
+    if (!container) return;
+    const blueprint = state.examBlueprint;
+    const rows = activeSubjects().map((subject) => {
+      const config = blueprint.subjects.find((item) => item.subjectId === subject.id);
+      return `<div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)"></label><label>Prioridade<select data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label></div>`;
+    }).join("");
+    container.innerHTML = `<div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label></div><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+  }
+  var studyPlanPreview = null;
+  function studyPlanCandidates() {
+    return activeTopics().filter((topic) => topic.status !== "Concluído").map((topic) => {
+      const mastery = topicMasteryIndex(topic.subjectId, topic.id), retention = topicRetentionScore(topic.subjectId, topic.id), blueprint = state.examBlueprint.subjects.find((item) => item.subjectId === topic.subjectId);
+      const examImpact = topic.examImportance != null ? topic.examImportance * 100 : blueprint ? Math.min(100, blueprint.expectedQuestions * 4 * blueprint.questionWeight) : null;
+      return { id: topic.id, subjectId: topic.subjectId, subjectName: topic.subjectName, topicName: topic.name, archived: topic.topicArchived || topic.subjectArchived, completed: false, estimatedMinutes: topic.estimatedStudyMinutes, examImpact, masteryGap: mastery.confidence > 0 ? 100 - mastery.score : null, retentionNeed: retention.available ? 100 - retention.score : null };
+    });
+  }
+  function calculateStudyPlanPreview() {
+    const days = state.examDate ? diasParaRevisao(state.examDate) : null;
+    const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum, hours) => sum + Math.max(0, Number(hours) || 0) * 60, 0);
+    studyPlanPreview = buildStudyPlan({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
+    renderStudyPlanBuilder();
+  }
+  function clearStudyPlanPreview() {
+    studyPlanPreview = null;
+    renderStudyPlanBuilder();
+  }
+  function confirmStudyPlan() {
+    if (!studyPlanPreview || studyPlanPreview.state === "insufficient" || !studyPlanPreview.items.length) return;
+    const confirmedAt = nowISO();
+    state.studyPlans.push({ ...structuredCloneSafe(studyPlanPreview), id: uid("study-plan"), confirmedAt, examDate: state.examDate || null, algorithmVersion: state.algorithmVersions.recommendations });
+    studyPlanPreview = null;
+    scheduleSave();
+    renderStudyPlanBuilder();
+    showToast("Plano semanal confirmado e salvo.");
+  }
+  function renderStudyPlanBuilder() {
+    const container = document.getElementById("examStudyPlan");
+    if (!container) return;
+    const latest = [...state.studyPlans].sort((a, b) => (b.confirmedAt || "").localeCompare(a.confirmedAt || ""))[0];
+    if (!studyPlanPreview) {
+      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString("pt-BR")} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : "data não definida"}</span></div>` : ""}<button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>`;
+      return;
+    }
+    const plan = studyPlanPreview;
+    if (plan.state === "insufficient") {
+      container.innerHTML = `<div class="upcoming-empty">Não foi possível montar o plano. Defina a data da prova, disponibilidade semanal e esforço de pelo menos um tópico.</div><button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;
+      return;
+    }
+    const subjectRows = plan.subjects.map((item) => `<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join("");
+    const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
+    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Disponibilidade semanal</span></div><div><strong>${formatPlanMinutes(plan.remainingMinutes)}</strong><span>Carga pendente configurada</span></div><div><strong>${plan.weeksUntilExam}</strong><span>Semanas até a prova</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Confiança ${plan.confidenceLabel.toLowerCase()} · ${Math.round(plan.confidence * 100)}% dos dados estratégicos disponíveis${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
+  }
+  function updateExamBlueprint(field, value) {
+    studyPlanPreview = null;
+    if (field === "examDate") {
+      state.examBlueprint.examDate = value || null;
+      state.examDate = value || "";
+    }
+    if (field === "targetScore") {
+      const target = Math.max(0, Math.min(100, Number(value) || 0));
+      state.examBlueprint.targetScore = target;
+      state.metas.metaAprovacao = target;
+    }
+    state.examBlueprint.configuredAt = nowISO();
+    persistAndRender();
+  }
+  function updateExamSubject(subjectId, field, value) {
+    studyPlanPreview = null;
+    let config = state.examBlueprint.subjects.find((item) => item.subjectId === subjectId);
+    if (!config) {
+      config = { subjectId, expectedQuestions: 0, questionWeight: 1, priority: "normal" };
+      state.examBlueprint.subjects.push(config);
+    }
+    if (field === "expectedQuestions") config.expectedQuestions = Math.max(0, Math.round(Number(value) || 0));
+    if (field === "questionWeight") config.questionWeight = Math.max(0.1, Number(value) || 1);
+    if (field === "priority" && EXAM_PRIORITIES.includes(value)) config.priority = value;
+    state.examBlueprint.configuredAt = nowISO();
     persistAndRender();
   }
   function somarQuestoesDisciplinaNaSemana(subjectId) {
@@ -5099,6 +5317,10 @@
     computeSubjectPerformance().filter((p) => isActiveSubjectId(p.subjectId) && p.acerto < 65 && p.total >= 5).forEach((p) => {
       alertas.push({ nivel: "alta", icon: "🔴", texto: `${p.subject} abaixo de 65% de acerto (${p.acerto}%)` });
     });
+    activeSubjects().forEach((subject) => {
+      const trend = calculateWeightedTrend(getSubjectWeeklyTrend(subject.id));
+      if (trend.key === "down") alertas.push({ nivel: Math.abs(trend.delta) >= 8 ? "alta" : "media", icon: "↘", texto: `${subject.name} caiu ${Math.abs(trend.delta)} pontos nas últimas quatro semanas (${trend.previousAccuracy}% para ${trend.recentAccuracy}%)` });
+    });
     const diaSemana = (/* @__PURE__ */ new Date(today + "T00:00:00")).getDay();
     const diasDecorridos = diaSemana === 0 ? 7 : diaSemana;
     const expectedFrac = diasDecorridos / 7;
@@ -5166,9 +5388,10 @@
       const examImpact = topic?.examImportance != null ? Number(topic.examImportance) * 100 : blueprintImpact;
       const mastery = priority.diagnosis?.mastery?.score ?? (priority.erroQuestoes == null ? null : 100 - priority.erroQuestoes);
       const daysSinceContact = Math.max(0, Number(priority.diasSemEstudar) || 0);
-      const estimatedMinutes = Math.max(15, Number(priority.estimatedMinutes) || Number(topic?.estimatedStudyMinutes) || 30);
+      const estimatedMinutes = Math.max(15, priority.tipo === "revisão" ? Number(priority.estimatedMinutes) || 25 : Number(topic?.estimatedStudyMinutes) || Number(priority.estimatedMinutes) || 30);
       const reviewUrgency = Math.min(100, Math.max(0, Number(priority.diasAtrasado) || 0) * 12);
       const completed = state.studySessions.some((session) => session.date === today && session.topicId === priority.topicId);
+      const risk = calculateRiskScore({ masteryRisk: mastery == null ? null : 100 - mastery, retentionRisk: retention?.available ? 100 - retention.score : null, trendRisk: priority.diagnosis?.trend?.key === "insufficient" ? null : trendPriorityRisk(priority.diagnosis?.trend), recencyRisk: Math.min(100, daysSinceContact * 5), examImpact, examProximity: state.examDate ? proximidadeProvaScore() : null });
       return {
         id: priority.topicId || `review-${priority.subjectId}`,
         subjectId: priority.subjectId,
@@ -5180,6 +5403,7 @@
         estimatedMinutes,
         studyType: priority.studyType,
         action: priority.recommendedAction,
+        risk,
         examImpact,
         retention: retention?.available ? retention.score : null,
         retentionRisk: retention?.available ? 100 - retention.score : null,
@@ -5208,8 +5432,8 @@
     }
     const list = (items, empty, formatter) => items.length ? items.slice(0, 4).map(formatter).join("") : `<p class="diagnosis-empty">${empty}</p>`;
     container.innerHTML = `<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(result.bottlenecks, "Nenhum gargalo relevante agora.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${escapeHtml(item.reason)} · gravidade ${item.severity}/100</span></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(result.opportunities, "Configure pesos e esforço para revelar oportunidades.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · ${formatPlanMinutes(item.estimatedMinutes)}</span></article>`)}</section>
+    <section><h4>Gargalos</h4>${list(result.bottlenecks, "Nenhum gargalo relevante agora.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value ?? item.severity}/100 · confiança ${(item.risk?.confidenceLabel || "Baixa").toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</span></article>`)}</section>
+    <section><h4>Oportunidades</h4>${list(result.opportunities, "Configure pesos e esforço para revelar oportunidades.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · confiança ${item.confidenceLabel.toLowerCase()} · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes("examImpact") ? " · peso da prova ausente" : ""}</span></article>`)}</section>
     <section><h4>Revisões críticas e risco</h4>${list(result.criticalReviews.length ? result.criticalReviews : result.topicsAtRisk, "Nenhuma revisão crítica identificada.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${item.reviewUrgency > 0 ? "Urgência " + Math.round(item.reviewUrgency) + "/100" : item.daysSinceContact + " dias sem contato"}</span></article>`)}</section>
     <section><h4>Foco da semana</h4>${list(result.weeklyFocus, "Sem distribuição confiável.", (item) => `<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
@@ -5224,7 +5448,9 @@
       container.innerHTML = `<div class="upcoming-empty">${availableMinutes < 15 ? "Defina pelo menos 15 minutos na meta de hoje." : "Nenhuma recomendação compatível com o tempo e os dados atuais."}</div>`;
       return;
     }
-    container.innerHTML = `<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button></div></div>`;
+    const factorLabels = { examImpact: "Impacto na prova", retentionRisk: "Risco de retenção", masteryGap: "Lacuna de domínio", reviewUrgency: "Urgência da revisão", planAlignment: "Alinhamento com o plano", recencyRisk: "Tempo sem contato" };
+    const contributionRows = Object.entries(item.contributions).map(([key, value]) => `<div><span>${escapeHtml(factorLabels[key] || key)}</span><strong>+${value}</strong></div>`).join("");
+    container.innerHTML = `<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button></div></div>`;
   }
   function dismissStudyRecommendation(id) {
     dismissedRecommendationIds.add(id);
@@ -5795,6 +6021,9 @@
     "archiveSubject",
     "archiveTopic",
     "clearWeekendGoals",
+    "calculateStudyPlanPreview",
+    "clearStudyPlanPreview",
+    "confirmStudyPlan",
     "cancelAgendaEdit",
     "cancelCalendarEdit",
     "cancelQuestionEdit",
@@ -5887,7 +6116,10 @@
     "updateStudySessionDraft",
     "updateTopic",
     "updateTopicStatus",
-    "updateTopicTags"
+    "updateTopicTags",
+    "updateTopicStrategy",
+    "updateExamBlueprint",
+    "updateExamSubject"
   ]);
   var DELEGATED_ACTION_HANDLERS = {
     addAgendaRow,
@@ -5901,6 +6133,9 @@
     archiveSubject,
     archiveTopic,
     clearWeekendGoals,
+    calculateStudyPlanPreview,
+    clearStudyPlanPreview,
+    confirmStudyPlan,
     cancelAgendaEdit,
     cancelCalendarEdit,
     cancelQuestionEdit,
@@ -5993,7 +6228,10 @@
     updateStudySessionDraft,
     updateTopic,
     updateTopicStatus,
-    updateTopicTags
+    updateTopicTags,
+    updateTopicStrategy,
+    updateExamBlueprint,
+    updateExamSubject
   };
   function splitDelegatedArguments(source) {
     const values = [];
@@ -6107,7 +6345,7 @@
     calendario: /* @__PURE__ */ new Set(["indicadores do calendário", "tarefas de hoje", "tarefas atrasadas", "filtros do calendário", "calendário", "calendário mensal"]),
     agenda: /* @__PURE__ */ new Set(["filtros da agenda", "agenda"]),
     questoes: /* @__PURE__ */ new Set(["questões", "análise de questões", "simulados", "gráfico de simulados", "desempenho por disciplina"]),
-    metas: /* @__PURE__ */ new Set(["metas", "metas de horas por dia", "metas por disciplina", "histórico de metas", "ritmo"]),
+    metas: /* @__PURE__ */ new Set(["metas", "configuração estratégica", "plano até a prova", "metas de horas por dia", "metas por disciplina", "histórico de metas", "ritmo"]),
     hoje: /* @__PURE__ */ new Set(["resumo executivo", "central de diagnóstico", "recomendação de estudo", "prioridades", "tarefas da aba hoje", "atrasos da aba hoje", "simulados planejados", "metas de hoje", "alertas", "plano de hoje"])
   };
   function activeTabName() {
@@ -6141,6 +6379,8 @@
       ["gráfico de simulados", renderSimuladosChart],
       ["desempenho por disciplina", renderDesempenhoDisciplina],
       ["metas", renderMetas],
+      ["configuração estratégica", renderExamBlueprintConfig],
+      ["plano até a prova", renderStudyPlanBuilder],
       ["metas de horas por dia", renderWeeklyHoursGoals],
       ["metas por disciplina", renderMetasPorDisciplina],
       ["histórico de metas", renderHistoricoMetas],
