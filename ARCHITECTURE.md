@@ -24,10 +24,13 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/domain/analytics/multidimensional-radar.js`: eixos, confiança e interpretação do radar comparativo.
 - `src/domain/diagnostics/cognitive-profile.js`: perfil de erros com amostra, período, cobertura e confiança.
 - `src/domain/diagnostics/risk-score.js`: risco composto com pesos redistribuídos, confiança e contribuições auditáveis.
+- `src/domain/forecasts/performance-forecast.js`: faixa atual, distância até a meta e projeção conservadora de 30 dias com requisitos mínimos de evidência.
 - `src/application/build-executive-summary.js`: modelo de apresentação do resumo executivo sem acesso ao DOM.
 - `src/application/generate-diagnosis.js`: classificação explicável de gargalos, oportunidades, riscos e foco semanal.
 - `src/application/recommend-study.js`: priorização normalizada e limitada pelo tempo disponível.
 - `src/application/build-study-plan.js`: proposta semanal até a prova, limitada por carga e disponibilidade.
+- `src/application/replan-study.js`: cálculo de déficit e proposta de redistribuição sem mutação automática do plano.
+- `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.
 - `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.
 - `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
 - `src/ui/filter-panel.js`: contagem e rótulos puros dos filtros responsivos.
