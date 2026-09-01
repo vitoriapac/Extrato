@@ -1,10 +1,15 @@
 import {
   STORAGE_KEY,BACKUP_KEY,BACKUP_INDEX_KEY,AUTOMATIC_BACKUP_SLOTS,CURRENT_SCHEMA_VERSION,MAX_BACKUP_FILE_SIZE,
   DB_NAME,DB_VERSION,STORE_NAME,STATUS_OPTIONS,REVIEW_OPTIONS,STATUS_CLASS,TIPO_AGENDA_OPTIONS,
-  DIFFICULTY_OPTIONS,DIFFICULTY_WEIGHT,DIFFICULTY_CLASS
+  DIFFICULTY_OPTIONS,DIFFICULTY_WEIGHT,DIFFICULTY_CLASS,DEMO_STORAGE_KEY
 } from './state/schema.js';
-import {uid,nowISO,isPlainObject,isSafeId,isISODate,isOptionalTimestamp,isFiniteNonNegative,structuredCloneSafe,pluralize} from './core/utils.js';
+import {uid,isPlainObject,isSafeId,isISODate,isOptionalTimestamp,isFiniteNonNegative,structuredCloneSafe,pluralize} from './core/utils.js';
 import {createStorageManager,repositoryReadLocalState,repositoryWriteLocalState} from './storage/repository.js';
+import {createRealStorageProvider} from './storage/real-storage-provider.js';
+import {createDemoStorageProvider} from './storage/demo-storage-provider.js';
+import {createClock} from './core/clock.js';
+import {createAppContext} from './application/create-app-context.js';
+import {bootstrapApplication} from './bootstrap.js';
 import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,calculateAdaptiveInterval} from './domain/reviews.js';
 import {createDefaultState} from './state/defaults.js';
 import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
@@ -25,11 +30,21 @@ import {generateDiagnosis} from './application/generate-diagnosis.js';
 import {recommendStudy} from './application/recommend-study.js';
 import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
 import {buildStudyPlan} from './application/build-study-plan.js';
-import {buildReplanProposal} from './application/replan-study.js';
+import {buildReplanProposal,applyReplan,undoReplan} from './application/replan-study.js';
+import {buildDailyPlanProposal,applyDailyPlanProposal,undoDailyPlanGeneration} from './application/planning/distribute-study-plan.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
+import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
+import {generateDemoData} from './demo/demo-generator.js';
 
 const THEME_STORAGE_KEY='bb-premium-theme';
+const MODE_FLASH_KEY='bb-premium-mode-message';
+const TEST_MODE=new URLSearchParams(location.search).get('test')==='1';
+const APP_MODE=TEST_MODE?APP_MODES.REAL:readAppMode(globalThis.sessionStorage);
+const IS_DEMO_MODE=APP_MODE===APP_MODES.DEMO;
+let suppressBeforeUnloadSave=false;
+const appClock=createClock();
+function nowISO(){return appClock.nowISO()}
 function getCurrentTheme(){
   return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
 }
@@ -49,7 +64,7 @@ document.getElementById('themeToggleBtn').addEventListener('click',toggleTheme);
 updateThemeToggleIcon();
 document.getElementById('exportReportBtn')?.addEventListener('click',()=>{
   const meta=document.getElementById('printReportMeta');
-  if(meta)meta.textContent=`Relatório geral · período consolidado até ${new Date().toLocaleDateString('pt-BR')}`;
+  if(meta)meta.textContent=`${IS_DEMO_MODE?'RELATÓRIO DE DEMONSTRAÇÃO · Dados fictícios · ':''}Relatório geral · período consolidado até ${new Date().toLocaleDateString('pt-BR')}`;
   activateTab('dashboard',false);
   requestAnimationFrame(()=>window.print());
 });
@@ -283,6 +298,11 @@ function migrateV10toV11(data){
   data.schemaVersion=11;return data;
 }
 function migrateV11toV12(data){if(!Array.isArray(data.alertStates))data.alertStates=[];data.schemaVersion=12;return data}
+function migrateV12toV13(data){
+  (data.dailyPlans||[]).forEach(plan=>{plan.studyPlanId=plan.studyPlanId||null;plan.generationOperationId=plan.generationOperationId||null;(plan.items||[]).forEach(item=>{item.studyPlanId=item.studyPlanId||null;item.studyPlanItemId=item.studyPlanItemId||null;item.generationOperationId=item.generationOperationId||null;item.rescheduledFromId=item.rescheduledFromId||null;item.rescheduleOperationId=item.rescheduleOperationId||null})});
+  (data.studyPlans||[]).forEach(plan=>{if(!Array.isArray(plan.dailyPlanOperations))plan.dailyPlanOperations=[]});
+  (data.planAdjustments||[]).forEach(item=>{item.operationId=item.operationId||null;item.changes=Array.isArray(item.changes)?item.changes:[];item.undoneAt=item.undoneAt||null});data.schemaVersion=13;return data
+}
 
 function migrateState(data){
   let version = Number(data.schemaVersion || 1);
@@ -297,6 +317,7 @@ function migrateState(data){
   if(version < 10){ data = migrateV9toV10(data); version = 10; }
   if(version < 11){ data = migrateV10toV11(data); version = 11; }
   if(version < 12){ data = migrateV11toV12(data); version = 12; }
+  if(version < 13){ data = migrateV12toV13(data); version = 13; }
   data.schemaVersion = CURRENT_SCHEMA_VERSION;
   return data;
 }
@@ -349,6 +370,8 @@ function ensureStateDefaults(){
     if(!plan.id) plan.id=uid('plan');
     if(typeof plan.date!=='string') plan.date=todayISO();
     plan.availableMinutes=Math.max(0,Number(plan.availableMinutes)||0);
+    plan.studyPlanId=plan.studyPlanId||null;
+    plan.generationOperationId=plan.generationOperationId||null;
     if(!Array.isArray(plan.items)) plan.items=[];
     plan.items.forEach(item=>{
       if(!item.id) item.id=uid('plan-item');
@@ -360,8 +383,10 @@ function ensureStateDefaults(){
       if(!['planned','in_progress','partial','completed','deferred','replaced','skipped'].includes(item.status)) item.status='planned';
       if(!Array.isArray(item.sessionIds)) item.sessionIds=[];
       item.originalDate=item.originalDate||plan.date;item.currentDate=item.currentDate||plan.date;item.rescheduleCount=Math.max(0,Number(item.rescheduleCount)||0);item.skippedReason=item.skippedReason||null;item.recommendationId=item.recommendationId||null;
+      item.studyPlanId=item.studyPlanId||null;item.studyPlanItemId=item.studyPlanItemId||null;item.generationOperationId=item.generationOperationId||null;item.rescheduledFromId=item.rescheduledFromId||null;item.rescheduleOperationId=item.rescheduleOperationId||null;
     });
   });
+  state.studyPlans.forEach(plan=>{if(!Array.isArray(plan.dailyPlanOperations))plan.dailyPlanOperations=[]});
   if(!Array.isArray(state.topicHistory)) state.topicHistory = [];
   state.topicHistory.forEach(normalizeHistoryEvent);
   state.schemaVersion = CURRENT_SCHEMA_VERSION;
@@ -416,12 +441,16 @@ function ensureStateDefaults(){
   refreshAllTopicReviewStats();
 }
 
-const StorageManager=createStorageManager({dbName:DB_NAME,dbVersion:DB_VERSION,storeName:STORE_NAME});
+const persistentStorageManager=createStorageManager({dbName:DB_NAME,dbVersion:DB_VERSION,storeName:STORE_NAME});
+const realStorageProvider=createRealStorageProvider({manager:persistentStorageManager,readLocal:repositoryReadLocalState,writeLocal:repositoryWriteLocalState,removeLocal:key=>{try{localStorage.removeItem(key)}catch(error){}}});
+const demoStorageProvider=IS_DEMO_MODE?createDemoStorageProvider({storage:sessionStorage,stateKey:STORAGE_KEY,demoKey:DEMO_STORAGE_KEY,generate:()=>generateDemoData({today:appClock.today()})}):null;
+const appContext=createAppContext({storage:demoStorageProvider||realStorageProvider,clock:appClock,idGenerator:uid,repositories:{}});
+const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
-const STATE_CHANNEL=typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
+const STATE_CHANNEL=!IS_DEMO_MODE&&typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
 let applyingRemoteState=false;
-function readLocalState(key=STORAGE_KEY){return repositoryReadLocalState(key)}
-function writeLocalState(value,key=STORAGE_KEY){return repositoryWriteLocalState(value,key)}
+function readLocalState(key=STORAGE_KEY){return appContext.storage.readLocal(key)}
+function writeLocalState(value,key=STORAGE_KEY){return appContext.storage.writeLocal(key,value)}
 
 function normalizeAndValidateState(raw){
   const parsed=typeof raw==='string'?JSON.parse(raw):structuredCloneSafe(raw);
@@ -468,7 +497,8 @@ async function loadState(){
   ensureStateDefaults();
   restoreTimerFromState();
   render();
-  if(loadWarning) showToast(loadWarning);
+  let modeMessage='';try{modeMessage=sessionStorage.getItem(MODE_FLASH_KEY)||'';sessionStorage.removeItem(MODE_FLASH_KEY)}catch(error){}
+  if(loadWarning) showToast(loadWarning);else if(modeMessage)showToast(modeMessage);
 }
 
 let saveTimeout;
@@ -536,7 +566,7 @@ async function saveState(serialized=JSON.stringify(state),previousRaw=null){
   try{
     let backupWarning = false;
     const lastBackup = state.lastBackupAt ? Date.parse(state.lastBackupAt) : 0;
-    if(previousRaw&&Date.now() - lastBackup >= 24*60*60*1000){
+    if(!IS_DEMO_MODE&&previousRaw&&Date.now() - lastBackup >= 24*60*60*1000){
       const backupSuccess=await rotateAutomaticBackup(previousRaw);
       if(backupSuccess){
         state.lastBackupAt=nowISO();
@@ -760,7 +790,7 @@ function parseLocalDate(iso){
   const date=new Date(year,month-1,day,12,0,0,0);
   return Number.isNaN(date.getTime())?null:date;
 }
-function todayISO(){ return localDateISO(); }
+function todayISO(){ return appContext.clock.today(); }
 function formatDatePt(iso){
   if(!iso) return '—';
   const [y,m,d] = iso.split('-');
@@ -934,6 +964,7 @@ function renderProgressChart(){
 
 /* ===== BACKUP: EXPORTAR / IMPORTAR ===== */
 function exportBackup(){
+  if(IS_DEMO_MODE){showToast('Backups ficam indisponíveis durante a demonstração.');return}
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -950,6 +981,7 @@ function downloadJsonBackup(raw,name){
   anchor.href=url;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();URL.revokeObjectURL(url);
 }
 async function exportLatestAutomaticBackup(){
+  if(IS_DEMO_MODE){showToast('A recuperação real fica indisponível durante a demonstração.');return}
   try{
     const rawIndex=await StorageManager.get(BACKUP_INDEX_KEY);
     if(!rawIndex){showToast('Ainda não existe um snapshot automático de recuperação.');return}
@@ -1114,6 +1146,7 @@ function backupSummary(data,version){
   return `Backup v${version}: ${pluralize(subjectCount,'disciplina')}, ${pluralize(topicCount,'tópico')}, ${pluralize(sessionCount,'sessão','sessões')} e ${pluralize(questionCount,'registro')} de questões. Última atualização: ${updatedLabel}.`;
 }
 function importBackupFromFile(file){
+  if(IS_DEMO_MODE){showToast('A importação fica indisponível durante a demonstração.');return}
   if(!file) return;
   if(file.size > MAX_BACKUP_FILE_SIZE){
     showToast('O arquivo excede o limite de 10 MB para importação.');
@@ -1168,6 +1201,21 @@ document.getElementById('importBackupFile').addEventListener('change', function(
     this.value = '';
   }
 });
+function reloadWithModeChange(){
+  suppressBeforeUnloadSave=true;
+  if(saveTimeout)clearTimeout(saveTimeout);
+  pendingSave=null;
+  location.reload();
+}
+function configureDemoModeUi(){
+  const banner=document.getElementById('demoBanner'),enterButton=document.getElementById('enterDemoBtn');
+  banner.hidden=!IS_DEMO_MODE;enterButton.hidden=IS_DEMO_MODE;
+  document.querySelectorAll('[data-demo-protected]').forEach(button=>{button.disabled=IS_DEMO_MODE;button.title=IS_DEMO_MODE?'Indisponível para proteger seus dados reais.':''});
+}
+document.getElementById('enterDemoBtn').addEventListener('click',()=>showConfirm('Explorar a demonstração com três meses de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.',()=>{enterDemoMode(sessionStorage);reloadWithModeChange()}));
+document.getElementById('resetDemoBtn').addEventListener('click',()=>showConfirm('Reiniciar todos os dados fictícios da demonstração?',()=>{resetDemoMode(sessionStorage,DEMO_STORAGE_KEY);reloadWithModeChange()}));
+document.getElementById('exitDemoBtn').addEventListener('click',()=>{exitDemoMode(sessionStorage,DEMO_STORAGE_KEY);sessionStorage.setItem(MODE_FLASH_KEY,'Demonstração encerrada. Seus dados pessoais foram restaurados.');reloadWithModeChange()});
+configureDemoModeUi();
 
 /* ===== CRONÔMETRO DE SESSÃO DE ESTUDO ===== */
 let timerSeconds = 0;
@@ -3356,7 +3404,7 @@ function renderExamBlueprintConfig(){
   }).join('');
   container.innerHTML=`<div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label></div><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
 }
-let studyPlanPreview=null;
+let studyPlanPreview=null,dailyPlanPreview=null;
 function studyPlanCandidates(){
   return activeTopics().filter(topic=>topic.status!=='Concluído').map(topic=>{
     const mastery=topicMasteryIndex(topic.subjectId,topic.id),retention=topicRetentionScore(topic.subjectId,topic.id),blueprint=state.examBlueprint.subjects.find(item=>item.subjectId===topic.subjectId);
@@ -3373,12 +3421,34 @@ function calculateStudyPlanPreview(){
 function clearStudyPlanPreview(){studyPlanPreview=null;renderStudyPlanBuilder()}
 function confirmStudyPlan(){
   if(!studyPlanPreview||studyPlanPreview.state==='insufficient'||!studyPlanPreview.items.length)return;
-  const confirmedAt=nowISO();state.studyPlans.push({...structuredCloneSafe(studyPlanPreview),id:uid('study-plan'),confirmedAt,examDate:state.examDate||null,algorithmVersion:state.algorithmVersions.recommendations});studyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('Plano semanal confirmado e salvo.')
+  const confirmedAt=nowISO(),id=uid('study-plan'),plan=structuredCloneSafe(studyPlanPreview);
+  plan.items=plan.items.map(item=>({...item,id:uid('study-plan-item'),topicId:item.topicId||item.id,studyPlanId:id}));
+  state.studyPlans.push({...plan,id,confirmedAt,examDate:state.examDate||null,algorithmVersion:state.algorithmVersions.recommendations,dailyPlanOperations:[]});studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('Plano semanal confirmado e salvo.')
+}
+function latestStudyPlan(){return [...state.studyPlans].sort((a,b)=>(b.confirmedAt||'').localeCompare(a.confirmedAt||''))[0]||null}
+function calculateDailyPlanPreview(){
+  const studyPlan=latestStudyPlan();if(!studyPlan)return;
+  const days=Array.from({length:7},(_,index)=>{const date=addDays(todayISO(),index);return {date,availableMinutes:Math.round(metaHoursForDate(date)*60)}}),end=days.at(-1).date;
+  const dueReviews=state.reviewAgenda.filter(review=>review.status!=='Concluído'&&review.topicId&&review.date>=todayISO()&&review.date<=end).map(review=>({id:review.id,date:review.date,subjectId:review.subjectId,topicId:review.topicId,subjectName:getSubjectName(review.subjectId),topicName:getTopicName(review.topicId),minutes:25}));
+  dailyPlanPreview=buildDailyPlanProposal({studyPlan,existingPlans:state.dailyPlans,days,dueReviews,reserveRatio:.1});renderStudyPlanBuilder();
+}
+function clearDailyPlanPreview(){dailyPlanPreview=null;renderStudyPlanBuilder()}
+function confirmDailyPlanPreview(){
+  if(dailyPlanPreview?.state!=='proposal')return;const studyPlan=latestStudyPlan(),operationId=uid('daily-plan-operation'),createdAt=nowISO(),result=applyDailyPlanProposal({dailyPlans:state.dailyPlans,proposal:dailyPlanPreview,operationId,now:createdAt,idGenerator:uid});
+  studyPlan.dailyPlanOperations=Array.isArray(studyPlan.dailyPlanOperations)?studyPlan.dailyPlanOperations:[];studyPlan.dailyPlanOperations.push({id:operationId,createdAt,createdItems:result.createdItems,undoneAt:null});dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast(`${pluralize(result.createdItems,'atividade')} criada${result.createdItems===1?'':'s'} no plano diário.`)
+}
+function undoLatestDailyPlanGeneration(){
+  const studyPlan=latestStudyPlan(),operation=[...(studyPlan?.dailyPlanOperations||[])].reverse().find(item=>!item.undoneAt);if(!operation)return;const result=undoDailyPlanGeneration({dailyPlans:state.dailyPlans,operationId:operation.id});
+  operation.undoneAt=result.complete?nowISO():null;operation.protectedItems=result.protectedItems;scheduleSave();renderStudyPlanBuilder();renderPlanoHoje();showToast(result.protectedItems.length?`${pluralize(result.removedItems,'atividade')} removida${result.removedItems===1?'':'s'}; itens executados foram preservados.`:'Criação dos planos diários desfeita.')
 }
 function renderStudyPlanBuilder(){
   const container=document.getElementById('examStudyPlan');if(!container)return;
-  const latest=[...state.studyPlans].sort((a,b)=>(b.confirmedAt||'').localeCompare(a.confirmedAt||''))[0];
-  if(!studyPlanPreview){container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR')} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate?formatDatePt(latest.examDate):'data não definida'}</span></div>`:''}<button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>`;return}
+  const latest=latestStudyPlan();
+  if(!studyPlanPreview){
+    if(dailyPlanPreview){const proposal=dailyPlanPreview,rows=proposal.days.map(day=>`<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`).join('');container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${proposal.days.length}</strong><span>Dias utilizados</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Não alocados</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state==='proposal'?`<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>`:`<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;return}
+    const activeOperation=[...(latest?.dailyPlanOperations||[])].reverse().find(item=>!item.undoneAt);
+    container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR')} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate?formatDatePt(latest.examDate):'data não definida'}</span></div>`:''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest?'<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>':''}${activeOperation?'<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>':''}</div>`;return
+  }
   const plan=studyPlanPreview;
   if(plan.state==='insufficient'){container.innerHTML=`<div class="upcoming-empty">Não foi possível montar o plano. Defina a data da prova, disponibilidade semanal e esforço de pelo menos um tópico.</div><button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;return}
   const subjectRows=plan.subjects.map(item=>`<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join('');
@@ -4229,7 +4299,7 @@ function computeAlertasInteligentes(){
 
   const atrasadas = revisoesAtrasadas();
   if(atrasadas > 0){
-    alertas.push({id:'reviews-overdue',severity:'high', nivel:'alta', icon:'🔴', texto:`${atrasadas} revisão${atrasadas===1?'':'ões'} atrasada${atrasadas===1?'':'s'}` });
+    alertas.push({id:'reviews-overdue',severity:'high', nivel:'alta', icon:'🔴', texto:`${pluralize(atrasadas,'revisão','revisões')} atrasada${atrasadas===1?'':'s'}` });
   }
 
   computeSubjectPerformance().filter(p=>isActiveSubjectId(p.subjectId)&&p.acerto<65&&p.total>=5).forEach(p=>{
@@ -4256,7 +4326,7 @@ function computeAlertasInteligentes(){
     !state.reviewAgenda.some(a=>(a.topicId||a.topicRef)===t.id&&a.status!=='Concluído')
   ).length;
   if(difSemRevisao > 0){
-    alertas.push({id:'hard-topics-no-review',severity:'low', nivel:'baixa', icon:'🟡', texto:`${difSemRevisao} tópico${difSemRevisao===1?'':'s'} difícil${difSemRevisao===1?'':'eis'} sem revisão agendada` });
+    alertas.push({id:'hard-topics-no-review',severity:'low', nivel:'baixa', icon:'🟡', texto:`${pluralize(difSemRevisao,'tópico')} ${difSemRevisao===1?'difícil':'difíceis'} sem revisão agendada` });
   }
 
   const ritmo = computeRitmo();
@@ -4367,13 +4437,19 @@ function calculateReplanPreview(){
   replanPreview=buildReplanProposal({plans:state.dailyPlans.filter(plan=>plan.date>=start&&plan.date<=todayISO()),periodStart:start,periodEnd:end,futureDays});renderWeeklyReplan();
 }
 function clearReplanPreview(){replanPreview=null;renderWeeklyReplan()}
-function confirmReplan(){if(!replanPreview||replanPreview.state!=='proposal')return;state.planAdjustments.push({...structuredCloneSafe(replanPreview),id:uid('plan-adjustment'),confirmedAt:nowISO(),status:'confirmed'});replanPreview=null;scheduleSave();renderWeeklyReplan();showToast('Redistribuição registrada. O plano original foi preservado.')}
+function confirmReplan(){
+  if(!replanPreview||replanPreview.state!=='proposal')return;const operationId=uid('replan-operation'),appliedAt=nowISO(),result=applyReplan({dailyPlans:state.dailyPlans,proposal:replanPreview,operationId,now:appliedAt,idGenerator:uid});
+  state.planAdjustments.push({...structuredCloneSafe(replanPreview),id:uid('plan-adjustment'),operationId,confirmedAt:appliedAt,appliedAt,status:'applied',changes:result.changes,undoneAt:null});replanPreview=null;scheduleSave();renderWeeklyReplan();renderPlanoHoje();showToast(`${pluralize(result.createdItems,'atividade')} redistribuída${result.createdItems===1?'':'s'} para os próximos dias.`)
+}
+function undoPlanAdjustment(id){
+  const adjustment=state.planAdjustments.find(item=>item.id===id);if(!adjustment||adjustment.undoneAt)return;const result=undoReplan({dailyPlans:state.dailyPlans,adjustment});adjustment.status=result.complete?'undone':'partially_undone';adjustment.undoneAt=result.complete?nowISO():null;adjustment.protectedItems=result.protectedItems;scheduleSave();renderWeeklyReplan();renderPlanoHoje();showToast(result.protectedItems.length?'Itens já executados foram preservados; os demais retornaram à origem.':'Redistribuição desfeita com segurança.')
+}
 function renderWeeklyReplan(){
   const container=document.getElementById('weeklyReplan');if(!container)return;
   const latest=[...state.planAdjustments].sort((a,b)=>(b.confirmedAt||'').localeCompare(a.confirmedAt||''))[0];
-  if(!replanPreview){container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Último ajuste confirmado</strong><span>${formatPlanMinutes(latest.redistributedMinutes)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes)} sem capacidade</span></div>`:''}<button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>`;return}
+  if(!replanPreview){container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt?'desfeito':'aplicado'}</strong><span>${formatPlanMinutes(latest.redistributedMinutes)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes)} sem capacidade</span></div>`:''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest&&!latest.undoneAt&&latest.status!=='undone'&&latest.changes?.length?`<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>`:''}</div>`;return}
   if(replanPreview.state==='balanced'){container.innerHTML='<div class="upcoming-empty">Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';return}
-  const allocations=replanPreview.allocations.map(item=>`<div><strong>${formatDatePt(item.date)}</strong><span>+ ${formatPlanMinutes(item.minutes)}</span></div>`).join('');
+  const allocationByDate=new Map();replanPreview.allocations.forEach(item=>allocationByDate.set(item.date,(allocationByDate.get(item.date)||0)+item.minutes));const allocations=[...allocationByDate].map(([date,minutes])=>`<div><strong>${formatDatePt(date)}</strong><span>+ ${formatPlanMinutes(minutes)}</span></div>`).join('');
   container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(replanPreview.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(replanPreview.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatPlanMinutes(replanPreview.deficitMinutes)}</strong><span>Déficit</span></div><div><strong>${formatPlanMinutes(replanPreview.redistributedMinutes)}</strong><span>Redistribuição possível</span></div></div><div class="replan-allocations">${allocations||'<span>Sem capacidade restante nesta semana.</span>'}</div>${replanPreview.discardedMinutes?`<p class="confidence-note">${formatPlanMinutes(replanPreview.discardedMinutes)} não cabem na disponibilidade restante e não serão acumulados automaticamente.</p>`:''}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
 }
 
@@ -4864,8 +4940,8 @@ function escapeAttr(str){ return escapeHtml(str); }
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTIONS=new Set([
   'addAgendaRow','addBreakdownRow','addCalRow','addQuestaoRow','addSimuladoRow','addSubject','addTopic','applyTodayGoalToAllDays','archiveSubject','archiveTopic','clearWeekendGoals',
-  'calculateStudyPlanPreview','clearStudyPlanPreview','confirmStudyPlan',
-  'calculateReplanPreview','clearReplanPreview','confirmReplan',
+  'calculateStudyPlanPreview','clearStudyPlanPreview','confirmStudyPlan','calculateDailyPlanPreview','clearDailyPlanPreview','confirmDailyPlanPreview','undoLatestDailyPlanGeneration',
+  'calculateReplanPreview','clearReplanPreview','confirmReplan','undoPlanAdjustment',
   'cancelAgendaEdit','cancelCalendarEdit','cancelQuestionEdit','cancelSimulationEdit','cancelStudySessionEdit','changeAgendaLimit','changeCalendarLimit','changeOverdueGroupLimit','changePerformanceLimit','changeSubjectTopicLimit','changeUpcomingLimit','clearSessionHistoryFilters','completeAgendaReview','completeCalendarItem','completeUnifiedReview','deleteAgendaRow',
   'deleteBreakdownRow','deleteCalRow','deleteMetaDisciplina','deleteQuestaoRow','deleteSimuladoRow','deleteStudySession','duplicateSubject',
   'editAgenda','editCalendarItem','editQuestion','editSimulation','editStudySession','focusStudyTimer','gerarAgendaAutomatica','moveSubject','navigateKpi','renameSubject','selectHeatmapDay','setHeatmapFilter','viewSelectedHeatmapSessions',
@@ -4878,8 +4954,8 @@ const DELEGATED_ACTIONS=new Set([
 ]);
 const DELEGATED_ACTION_HANDLERS={
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
-  calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,
-  calculateReplanPreview,clearReplanPreview,confirmReplan,
+  calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,
+  calculateReplanPreview,clearReplanPreview,confirmReplan,undoPlanAdjustment,
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
   editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
@@ -5063,17 +5139,16 @@ document.addEventListener('keydown', function(e){
   }
 });
 
-window.addEventListener('beforeunload', () => {if(!TEST_MODE)writeLocalState(JSON.stringify(state))});
+window.addEventListener('beforeunload', () => {if(!TEST_MODE&&!suppressBeforeUnloadSave)writeLocalState(JSON.stringify(state))});
 
 setCalendarMobileView('month');
 const initialTab = location.hash.replace('#','');
 if(document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) activateTab(initialTab, false);
 
-const TEST_MODE=new URLSearchParams(location.search).get('test')==='1';
 if(TEST_MODE){
   const pristineTestState=structuredCloneSafe(state);
   window.__EXTRATO_TEST__={
-    CURRENT_SCHEMA_VERSION,STATUS_OPTIONS,DIFFICULTY_OPTIONS,
+    CURRENT_SCHEMA_VERSION,STATUS_OPTIONS,DIFFICULTY_OPTIONS,APP_MODE,IS_DEMO_MODE,
     getState:()=>state,
     setState:value=>{state=migrateState(structuredCloneSafe(value));ensureStateDefaults();return state},
     resetState:()=>{state=structuredCloneSafe(pristineTestState);ensureStateDefaults();return state},
@@ -5087,5 +5162,5 @@ if(TEST_MODE){
   ensureStateDefaults();restoreTimerFromState();render();
   const testScript=document.createElement('script');testScript.src='tests/tests.js';document.body.appendChild(testScript);
 }else{
-  loadState();
+  bootstrapApplication({context:appContext,start:loadState,onError:error=>console.error('Falha na inicialização do aplicativo',error)});
 }

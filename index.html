@@ -20,6 +20,11 @@
   <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
   <main class="wrap" id="mainContent">
 
+  <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
+    <div><strong>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
+    <div class="demo-banner-actions"><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn small" id="exitDemoBtn">Sair da demonstração</button></div>
+  </aside>
+
   <div class="statement">
     <div class="statement-top">
       <div>
@@ -555,10 +560,11 @@
       <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando pra não perder nada — e importe pra restaurar em outro dispositivo.</div>
     </div>
     <div class="backup-actions">
+      <button class="btn small" id="enterDemoBtn">▶ Explorar demonstração</button>
       <button class="btn ghost small" id="exportReportBtn">▣ Exportar relatório PDF</button>
-      <button class="btn ghost small" id="exportBackupBtn">⬇ Exportar backup</button>
-      <button class="btn ghost small" id="exportAutomaticBackupBtn">⏱ Baixar recuperação</button>
-      <button class="btn ghost small" id="importBackupBtn">⬆ Importar backup</button>
+      <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>⬇ Exportar backup</button>
+      <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected>⏱ Baixar recuperação</button>
+      <button class="btn ghost small" id="importBackupBtn" data-demo-protected>⬆ Importar backup</button>
       <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
     </div>
   </div>

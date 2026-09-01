@@ -8,11 +8,19 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `styles/tokens.css`: cores, temas e tokens visuais.
 - `styles/app.css`: layout e componentes.
 - `src/theme-bootstrap.js`: aplica o tema antes da primeira pintura.
+- `src/bootstrap.js`: executa a inicialização com contexto explícito e contenção de falhas.
+- `src/application/create-app-context.js`: registra provider, relógio, repositórios e gerador de IDs injetáveis.
+- `src/application/demo/demo-mode.js`: controla entrada, reinício e saída segura da demonstração.
 - `src/state/schema.js`: contrato do estado, versões, enums e chaves de armazenamento.
 - `src/state/defaults.js`: fábrica do estado inicial, sem compartilhar referências mutáveis.
 - `src/state/strategic.js`: normalização do plano de prova, importância/esforço dos tópicos e versões dos algoritmos.
 - `src/core/utils.js`: utilidades puras e validações primitivas.
+- `src/core/clock.js`: relógio injetável para datas locais e instantes reproduzíveis.
 - `src/storage/repository.js`: acesso a IndexedDB, `localStorage` e `window.storage`.
+- `src/storage/storage-provider.js`: contrato mínimo dos providers de persistência.
+- `src/storage/real-storage-provider.js`: adaptação compatível da persistência real existente.
+- `src/storage/demo-storage-provider.js`: persistência temporária e isolada em `sessionStorage`.
+- `src/demo/demo-generator.js`: cenário determinístico móvel de 90 dias para exploração do produto.
 - `src/domain/reviews.js`: regras puras de intervalos e revisões adaptativas.
 - `src/domain/analytics/evidence.js`: contrato comum de amostra, período, confiança e fontes.
 - `src/domain/analytics/readiness-score.js`: composição ponderada do índice e de sua confiança.
@@ -30,6 +38,7 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/application/recommend-study.js`: priorização normalizada e limitada pelo tempo disponível.
 - `src/application/build-study-plan.js`: proposta semanal até a prova, limitada por carga e disponibilidade.
 - `src/application/replan-study.js`: cálculo de déficit e proposta de redistribuição sem mutação automática do plano.
+- `src/application/planning/distribute-study-plan.js`: distribuição confirmável do plano semanal, materialização diária e desfazer protegido por execução.
 - `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.
 - `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.
 - `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
@@ -59,6 +68,6 @@ O bundle é gerado pelo esbuild e não deve ser editado manualmente. `build.ps1`
 
 IndexedDB é usado em conjunto com armazenamento local. Cada estado recebe `updatedAt`; o mais recente é carregado. Backups automáticos rotativos possuem checksum SHA-256. Antes de adotar dados locais ou importados, a aplicação migra e valida toda a estrutura. Abas abertas trocam versões por `BroadcastChannel`.
 
-O schema 9 introduz `examBlueprint`, `algorithmVersions` e os campos estratégicos dos tópicos. Dados ausentes são mantidos em estado neutro (`null`) e backups anteriores continuam sendo migrados automaticamente.
+O schema 13 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo e os vínculos auditáveis entre planos semanais, planos diários e replanejamentos. Dados ausentes são mantidos em estado neutro (`null`) e backups anteriores continuam sendo migrados automaticamente.
 
 O Índice de Prontidão usa cobertura (30%), domínio (25%), retenção (20%), consistência (15%) e simulados (10%). Pesos de fatores indisponíveis são redistribuídos entre as evidências existentes; a ausência reduz a confiança, mas não produz nota zero.

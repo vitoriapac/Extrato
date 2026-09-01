@@ -2,11 +2,13 @@ export const STORAGE_KEY='bb-premium-study-data';
 export const BACKUP_KEY=STORAGE_KEY+'-automatic-backup';
 export const BACKUP_INDEX_KEY=BACKUP_KEY+'-index';
 export const AUTOMATIC_BACKUP_SLOTS=5;
-export const CURRENT_SCHEMA_VERSION=12;
+export const CURRENT_SCHEMA_VERSION=13;
 export const MAX_BACKUP_FILE_SIZE=10*1024*1024;
 export const DB_NAME='extrato-estudos-db';
 export const DB_VERSION=1;
 export const STORE_NAME='app-state';
+export const DEMO_STORAGE_KEY='bb-premium-study-demo';
+export const MODE_STORAGE_KEY='bb-premium-mode';
 
 export const STATUS_OPTIONS=['Não iniciado','Em andamento','Revisão','Concluído'];
 export const REVIEW_OPTIONS=['—','Revisão rápida','Revisão completa','Questões','Resumo/Mapa mental'];

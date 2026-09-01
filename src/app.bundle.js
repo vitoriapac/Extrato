@@ -5,11 +5,12 @@
   var BACKUP_KEY = STORAGE_KEY + "-automatic-backup";
   var BACKUP_INDEX_KEY = BACKUP_KEY + "-index";
   var AUTOMATIC_BACKUP_SLOTS = 5;
-  var CURRENT_SCHEMA_VERSION = 12;
+  var CURRENT_SCHEMA_VERSION = 13;
   var MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
   var DB_NAME = "extrato-estudos-db";
   var DB_VERSION = 1;
   var STORE_NAME = "app-state";
+  var DEMO_STORAGE_KEY = "bb-premium-study-demo";
   var STATUS_OPTIONS = ["Não iniciado", "Em andamento", "Revisão", "Concluído"];
   var REVIEW_OPTIONS = ["—", "Revisão rápida", "Revisão completa", "Questões", "Resumo/Mapa mental"];
   var STATUS_CLASS = { "Não iniciado": "st-nao", "Em andamento": "st-and", "Revisão": "st-rev", "Concluído": "st-con" };
@@ -195,6 +196,111 @@
         return success;
       }
     };
+  }
+
+  // src/storage/storage-provider.js
+  var STORAGE_PROVIDER_METHODS = Object.freeze(["get", "set", "remove", "readLocal", "writeLocal"]);
+  function assertStorageProvider(provider) {
+    if (!provider || STORAGE_PROVIDER_METHODS.some((method) => typeof provider[method] !== "function")) throw new TypeError("Provider de armazenamento incompleto.");
+    return provider;
+  }
+
+  // src/storage/real-storage-provider.js
+  function createRealStorageProvider({ manager, readLocal, writeLocal, removeLocal } = {}) {
+    if (!manager || ["get", "set", "remove"].some((method) => typeof manager[method] !== "function")) throw new TypeError("O provider real requer um gerenciador persistente.");
+    if (typeof readLocal !== "function" || typeof writeLocal !== "function") throw new TypeError("O provider real requer acesso ao armazenamento local.");
+    return assertStorageProvider({
+      get: (key) => manager.get(key),
+      set: (key, value) => manager.set(key, value),
+      remove: async (key) => {
+        const removed = await manager.remove(key);
+        if (typeof removeLocal === "function") removeLocal(key);
+        return removed;
+      },
+      readLocal: (key) => readLocal(key),
+      writeLocal: (key, value) => writeLocal(value, key),
+      mode: "real"
+    });
+  }
+
+  // src/storage/demo-storage-provider.js
+  function createDemoStorageProvider({ storage, stateKey, demoKey, generate } = {}) {
+    if (!storage || typeof storage.getItem !== "function" || typeof storage.setItem !== "function") throw new TypeError("O provider demo requer um armazenamento de sessão.");
+    if (typeof generate !== "function") throw new TypeError("O provider demo requer um gerador de estado.");
+    const keyFor = (key) => key === stateKey ? demoKey : `${demoKey}:${key}`;
+    const ensureState = () => {
+      let value = storage.getItem(demoKey);
+      if (!value) {
+        value = JSON.stringify(generate());
+        storage.setItem(demoKey, value);
+      }
+      return value;
+    };
+    return assertStorageProvider({
+      async get(key) {
+        return key === stateKey ? ensureState() : storage.getItem(keyFor(key));
+      },
+      async set(key, value) {
+        storage.setItem(keyFor(key), value);
+        return true;
+      },
+      async remove(key) {
+        storage.removeItem(keyFor(key));
+        return true;
+      },
+      readLocal(key) {
+        return key === stateKey ? ensureState() : storage.getItem(keyFor(key));
+      },
+      writeLocal(key, value) {
+        storage.setItem(keyFor(key), value);
+        return true;
+      },
+      mode: "demo"
+    });
+  }
+
+  // src/core/clock.js
+  function asDate(value) {
+    const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+    if (Number.isNaN(date.getTime())) throw new TypeError("O relógio retornou uma data inválida.");
+    return date;
+  }
+  function createClock({ now = () => /* @__PURE__ */ new Date() } = {}) {
+    if (typeof now !== "function") throw new TypeError("O relógio precisa receber uma função now.");
+    const current = () => asDate(now());
+    return Object.freeze({
+      now: current,
+      nowISO: () => current().toISOString(),
+      today: () => {
+        const date = current();
+        const year = date.getFullYear(), month = String(date.getMonth() + 1).padStart(2, "0"), day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      },
+      timestamp: () => current().getTime()
+    });
+  }
+
+  // src/application/create-app-context.js
+  var REQUIRED_STORAGE_METHODS = ["get", "set", "remove"];
+  function createAppContext({ storage, repositories = {}, clock, idGenerator } = {}) {
+    if (!storage || REQUIRED_STORAGE_METHODS.some((method) => typeof storage[method] !== "function")) throw new TypeError("O contexto requer um provider de armazenamento válido.");
+    if (!clock || typeof clock.today !== "function" || typeof clock.nowISO !== "function") throw new TypeError("O contexto requer um relógio válido.");
+    if (typeof idGenerator !== "function") throw new TypeError("O contexto requer um gerador de IDs.");
+    return Object.freeze({ storage, repositories: Object.freeze({ ...repositories }), clock, idGenerator });
+  }
+
+  // src/bootstrap.js
+  async function bootstrapApplication({ context, start, onError = () => {
+  } } = {}) {
+    if (!context) throw new TypeError("O bootstrap requer o contexto da aplicação.");
+    if (typeof start !== "function") throw new TypeError("O bootstrap requer uma função de inicialização.");
+    try {
+      await start(context);
+      return { ok: true, context };
+    } catch (error) {
+      onError(error, context);
+      return { ok: false, error, context };
+    }
   }
 
   // src/domain/reviews.js
@@ -767,15 +873,162 @@
     const inPeriod = plans.filter((plan) => plan.date >= periodStart && plan.date <= periodEnd);
     const plannedMinutes = inPeriod.reduce((sum, plan) => sum + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
     const executedMinutes = Math.round(inPeriod.reduce((sum, plan) => sum + (plan.items || []).reduce((n, item) => n + (Number(item.executedSeconds) || 0) / 60, 0), 0));
-    const deficitMinutes = Math.max(0, plannedMinutes - executedMinutes);
+    const pendingItems = inPeriod.flatMap((plan) => (plan.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).map((item) => ({ sourcePlanId: plan.id, sourceItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || null, remainingMinutes: Math.max(0, Math.round((Number(item.plannedMinutes) || 0) - (Number(item.executedSeconds) || 0) / 60)), priority: Number(item.score) || 0 }))).filter((item) => item.remainingMinutes > 0).sort((a, b) => b.priority - a.priority);
+    const deficitMinutes = pendingItems.reduce((sum, item) => sum + item.remainingMinutes, 0);
+    const capacities = (futureDays || []).map((day) => ({ date: day.date, remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)) }));
+    const allocations = [];
     let remaining = deficitMinutes;
-    const allocations = futureDays.map((day) => {
-      const available = Math.max(0, Math.round(Number(day.availableMinutes) || 0)), minutes = Math.min(available, remaining);
-      remaining -= minutes;
-      return { date: day.date, minutes };
-    }).filter((item) => item.minutes > 0);
+    pendingItems.forEach((item) => {
+      let itemRemaining = item.remainingMinutes;
+      capacities.forEach((day) => {
+        if (itemRemaining <= 0 || day.remaining <= 0) return;
+        const minutes = Math.min(itemRemaining, day.remaining);
+        allocations.push({ ...item, date: day.date, minutes });
+        itemRemaining -= minutes;
+        day.remaining -= minutes;
+        remaining -= minutes;
+      });
+    });
     const redistributedMinutes = allocations.reduce((sum, item) => sum + item.minutes, 0);
-    return { state: deficitMinutes ? "proposal" : "balanced", periodStart, periodEnd, plannedMinutes, executedMinutes, deficitMinutes, redistributedMinutes, discardedMinutes: Math.max(0, deficitMinutes - redistributedMinutes), allocations, reasons: deficitMinutes ? ["execução abaixo do planejado no período"] : [] };
+    return { state: deficitMinutes ? "proposal" : "balanced", periodStart, periodEnd, plannedMinutes, executedMinutes, deficitMinutes, redistributedMinutes, discardedMinutes: Math.max(0, remaining), pendingItems, allocations, reasons: deficitMinutes ? ["execução abaixo do planejado no período"] : [] };
+  }
+  function applyReplan({ dailyPlans = [], proposal, operationId, now, idGenerator } = {}) {
+    if (proposal?.state !== "proposal" || !operationId || typeof idGenerator !== "function") return { changes: [], createdItems: 0 };
+    const changes = [], originalStatuses = /* @__PURE__ */ new Map();
+    for (const allocation of proposal.allocations) {
+      const sourcePlan = dailyPlans.find((plan) => plan.id === allocation.sourcePlanId), sourceItem = sourcePlan?.items?.find((item) => item.id === allocation.sourceItemId);
+      if (!sourceItem) continue;
+      if (dailyPlans.some((plan) => (plan.items || []).some((item) => item.rescheduleOperationId === operationId && item.rescheduledFromId === sourceItem.id && item.currentDate === allocation.date))) continue;
+      let destination = dailyPlans.find((plan) => plan.date === allocation.date);
+      if (!destination) {
+        destination = { id: idGenerator("plan"), date: allocation.date, availableMinutes: allocation.minutes, plannedMinutes: 0, flexMinutes: 0, createdAt: now, updatedAt: now, items: [] };
+        dailyPlans.push(destination);
+      }
+      const sourceKey = `${sourcePlan.id}:${sourceItem.id}`;
+      if (!originalStatuses.has(sourceKey)) originalStatuses.set(sourceKey, sourceItem.status);
+      sourceItem.status = "deferred";
+      sourceItem.skippedReason = `Redistribuída para ${allocation.date}`;
+      sourcePlan.updatedAt = now;
+      const created = { ...sourceItem, id: idGenerator("plan-item"), plannedMinutes: allocation.minutes, executedSeconds: 0, status: "planned", sessionIds: [], originalDate: sourceItem.originalDate || sourcePlan.date, currentDate: allocation.date, rescheduleCount: (Number(sourceItem.rescheduleCount) || 0) + 1, skippedReason: null, rescheduledFromId: sourceItem.id, rescheduleOperationId: operationId, createdAt: now, lastExecutedAt: null };
+      destination.items.push(created);
+      destination.plannedMinutes = (destination.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum, item) => sum + (Number(item.plannedMinutes) || 0), 0);
+      destination.flexMinutes = Math.max(0, (Number(destination.availableMinutes) || 0) - destination.plannedMinutes);
+      destination.updatedAt = now;
+      changes.push({ sourcePlanId: sourcePlan.id, sourceItemId: sourceItem.id, sourcePreviousStatus: originalStatuses.get(sourceKey), destinationPlanId: destination.id, destinationItemId: created.id, date: allocation.date, minutes: allocation.minutes });
+    }
+    return { changes, createdItems: changes.length, operationId };
+  }
+  function undoReplan({ dailyPlans = [], adjustment } = {}) {
+    const protectedItems = [], undoneChanges = [], protectedSources = /* @__PURE__ */ new Set(), sourceKey = (change) => `${change.sourcePlanId}:${change.sourceItemId}`;
+    for (const change of adjustment?.changes || []) {
+      const destination = dailyPlans.find((plan) => plan.id === change.destinationPlanId), item = destination?.items?.find((candidate) => candidate.id === change.destinationItemId);
+      if (!item) continue;
+      const executed = Number(item.executedSeconds) > 0 || (item.sessionIds || []).length > 0 || ["in_progress", "partial", "completed"].includes(item.status);
+      if (executed) {
+        protectedItems.push(item.id);
+        protectedSources.add(sourceKey(change));
+        continue;
+      }
+      destination.items = destination.items.filter((candidate) => candidate.id !== item.id);
+      destination.plannedMinutes = destination.items.filter((candidate) => !["skipped", "replaced"].includes(candidate.status)).reduce((sum, candidate) => sum + (Number(candidate.plannedMinutes) || 0), 0);
+      destination.flexMinutes = Math.max(0, (Number(destination.availableMinutes) || 0) - destination.plannedMinutes);
+      undoneChanges.push(change);
+    }
+    undoneChanges.filter((change) => !protectedSources.has(sourceKey(change))).forEach((change) => {
+      const source = dailyPlans.find((plan) => plan.id === change.sourcePlanId)?.items?.find((candidate) => candidate.id === change.sourceItemId);
+      if (source) {
+        source.status = change.sourcePreviousStatus || "planned";
+        source.skippedReason = null;
+      }
+    });
+    for (let index = dailyPlans.length - 1; index >= 0; index--) if (!dailyPlans[index].items?.length) dailyPlans.splice(index, 1);
+    return { undoneChanges, protectedItems, complete: protectedItems.length === 0 };
+  }
+
+  // src/application/planning/distribute-study-plan.js
+  var ACTIVE_STATUSES = /* @__PURE__ */ new Set(["planned", "in_progress", "partial", "completed", "deferred"]);
+  var clampMinutes = (value) => Math.max(0, Math.round(Number(value) || 0));
+  function existingSourceKeys(plans, studyPlanId) {
+    return new Set((plans || []).flatMap((plan) => (plan.items || []).filter((item) => item.studyPlanId === studyPlanId && item.studyPlanItemId && ACTIVE_STATUSES.has(item.status)).map((item) => item.studyPlanItemId)));
+  }
+  function buildDailyPlanProposal({ studyPlan, existingPlans = [], days = [], dueReviews = [], reserveRatio = 0.1 } = {}) {
+    if (!studyPlan?.id || !Array.isArray(studyPlan.items)) return { state: "insufficient", reason: "Plano semanal ausente.", days: [], plannedMinutes: 0, unallocatedMinutes: 0 };
+    const existingKeys = existingSourceKeys(existingPlans, studyPlan.id), ratio = Math.max(0, Math.min(0.4, Number(reserveRatio) || 0));
+    const slots = (days || []).map((day) => {
+      const existing = existingPlans.filter((plan) => plan.date === day.date).flatMap((plan) => plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum, item) => sum + clampMinutes(item.plannedMinutes), 0);
+      const available = clampMinutes(day.availableMinutes), reserve = Math.round(available * ratio), capacity = Math.max(0, available - reserve - existing);
+      return { date: day.date, availableMinutes: available, reserveMinutes: reserve, existingMinutes: existing, remaining: capacity, items: [] };
+    });
+    const candidates = [];
+    (dueReviews || []).filter((review) => review?.topicId && review?.date && !existingKeys.has(`review:${review.id}`)).forEach((review, index) => candidates.push({ studyPlanItemId: `review:${review.id || index}`, subjectId: review.subjectId || null, topicId: review.topicId, subjectName: review.subjectName || "", topicName: review.topicName || "", type: "review", minutes: clampMinutes(review.minutes || 25), dueDate: review.date, origin: "review" }));
+    studyPlan.items.filter((item) => !existingKeys.has(item.id)).forEach((item) => {
+      const mixes = [["review", item.activityMix?.reviews], ["questions", item.activityMix?.questions], ["study", item.activityMix?.theory]].filter(([, minutes]) => clampMinutes(minutes) > 0);
+      (mixes.length ? mixes : [["study", item.minutes]]).forEach(([type, minutes]) => candidates.push({ studyPlanItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || item.id || null, subjectName: item.subjectName || "", topicName: item.topicName || "", type, minutes: clampMinutes(minutes), dueDate: null, origin: "study-plan" }));
+    });
+    let unallocatedMinutes = 0;
+    for (const candidate of candidates) {
+      let remaining = candidate.minutes;
+      const ordered = candidate.dueDate ? [...slots].sort((a, b) => Math.abs(a.date.localeCompare(candidate.dueDate)) - Math.abs(b.date.localeCompare(candidate.dueDate))) : slots;
+      for (const slot of ordered) {
+        while (remaining > 0 && slot.remaining >= 15) {
+          const chunk = Math.min(60, remaining, slot.remaining), minutes = chunk < 15 ? 0 : chunk;
+          if (!minutes) break;
+          slot.items.push({ ...candidate, minutes });
+          slot.remaining -= minutes;
+          remaining -= minutes;
+        }
+        if (remaining <= 0) break;
+      }
+      unallocatedMinutes += remaining;
+    }
+    const proposalDays = slots.filter((slot) => slot.items.length).map((slot) => ({ ...slot, plannedMinutes: slot.items.reduce((sum, item) => sum + item.minutes, 0), flexMinutes: slot.reserveMinutes + slot.remaining }));
+    const plannedMinutes = proposalDays.reduce((sum, day) => sum + day.plannedMinutes, 0);
+    return { state: plannedMinutes ? "proposal" : "insufficient", studyPlanId: studyPlan.id, days: proposalDays, plannedMinutes, unallocatedMinutes, existingLinkedItems: existingKeys.size, reserveRatio: ratio, reason: plannedMinutes ? null : "Não há capacidade ou itens novos para distribuir." };
+  }
+  function applyDailyPlanProposal({ dailyPlans = [], proposal, operationId, now, idGenerator } = {}) {
+    if (proposal?.state !== "proposal" || !operationId || typeof idGenerator !== "function") return { createdItems: 0, createdPlans: 0 };
+    const existing = new Set(dailyPlans.flatMap((plan) => (plan.items || []).filter((item) => item.studyPlanId === proposal.studyPlanId && item.studyPlanItemId).map((item) => `${item.studyPlanItemId}:${item.type}:${item.currentDate || plan.date}`)));
+    let createdItems = 0, createdPlans = 0;
+    proposal.days.forEach((day) => {
+      let plan = dailyPlans.find((item) => item.date === day.date);
+      if (!plan) {
+        plan = { id: idGenerator("plan"), date: day.date, availableMinutes: day.availableMinutes, plannedMinutes: 0, flexMinutes: day.availableMinutes, createdAt: now, updatedAt: now, studyPlanId: proposal.studyPlanId, generationOperationId: operationId, items: [] };
+        dailyPlans.push(plan);
+        createdPlans++;
+      }
+      day.items.forEach((source, index) => {
+        const key = `${source.studyPlanItemId}:${source.type}:${day.date}`;
+        if (existing.has(key)) return;
+        existing.add(key);
+        plan.items.push({ id: idGenerator("plan-item"), subjectId: source.subjectId, topicId: source.topicId, subjectName: source.subjectName, topicName: source.topicName, type: source.type, plannedMinutes: source.minutes, executedSeconds: 0, status: "planned", sessionIds: [], position: plan.items.length + 1, statusIcon: "📅", statusLabel: "Plano semanal", reason: source.origin === "review" ? "Revisão prevista para o período" : "Distribuição confirmada do plano semanal", action: source.type === "questions" ? "Resolver questões" : source.type === "review" ? "Revisar o tópico" : "Estudar o tópico", recommendedQuestions: 0, originalDate: day.date, currentDate: day.date, rescheduleCount: 0, skippedReason: null, recommendationId: null, studyPlanId: proposal.studyPlanId, studyPlanItemId: source.studyPlanItemId, generationOperationId: operationId, createdAt: now });
+        createdItems++;
+      });
+      plan.plannedMinutes = (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum, item) => sum + clampMinutes(item.plannedMinutes), 0);
+      plan.flexMinutes = Math.max(0, plan.availableMinutes - plan.plannedMinutes);
+      plan.updatedAt = now;
+    });
+    return { createdItems, createdPlans, operationId };
+  }
+  function undoDailyPlanGeneration({ dailyPlans = [], operationId } = {}) {
+    let removedItems = 0;
+    const protectedItems = [];
+    for (let index = dailyPlans.length - 1; index >= 0; index--) {
+      const plan = dailyPlans[index];
+      plan.items = (plan.items || []).filter((item) => {
+        if (item.generationOperationId !== operationId) return true;
+        const executed = Number(item.executedSeconds) > 0 || (item.sessionIds || []).length > 0 || ["in_progress", "partial", "completed"].includes(item.status);
+        if (executed) {
+          protectedItems.push(item.id);
+          return true;
+        }
+        removedItems++;
+        return false;
+      });
+      plan.plannedMinutes = plan.items.filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum, item) => sum + clampMinutes(item.plannedMinutes), 0);
+      plan.flexMinutes = Math.max(0, (Number(plan.availableMinutes) || 0) - plan.plannedMinutes);
+      if (!plan.items.length && plan.generationOperationId === operationId) dailyPlans.splice(index, 1);
+    }
+    return { removedItems, protectedItems, complete: protectedItems.length === 0 };
   }
 
   // src/application/alert-lifecycle.js
@@ -814,8 +1067,8 @@
     return value >= 0.7 ? "Alta" : value >= 0.35 ? "Média" : "Baixa";
   }
   function dayNumber(date) {
-    const timestamp = Date.parse(`${date}T00:00:00Z`);
-    return Number.isFinite(timestamp) ? timestamp / 864e5 : null;
+    const timestamp2 = Date.parse(`${date}T00:00:00Z`);
+    return Number.isFinite(timestamp2) ? timestamp2 / 864e5 : null;
   }
   function normalizeObservations(observations) {
     return (Array.isArray(observations) ? observations : []).map((item) => ({ date: item?.date, value: Number(item?.value), sampleSize: Number(item?.sampleSize) })).filter((item) => dayNumber(item.date) !== null && Number.isFinite(item.value) && item.value >= 0 && item.value <= 100 && Number.isFinite(item.sampleSize) && item.sampleSize > 0).sort((a, b) => a.date.localeCompare(b.date));
@@ -856,8 +1109,156 @@
     return { available: true, currentBand, gap, movingAverage, forecast30, evidence };
   }
 
+  // src/application/demo/demo-mode.js
+  var APP_MODES = Object.freeze({ REAL: "real", DEMO: "demo" });
+  function readAppMode(storage) {
+    try {
+      return storage?.getItem("bb-premium-mode") === APP_MODES.DEMO ? APP_MODES.DEMO : APP_MODES.REAL;
+    } catch (error) {
+      return APP_MODES.REAL;
+    }
+  }
+  function enterDemoMode(storage) {
+    storage?.setItem("bb-premium-mode", APP_MODES.DEMO);
+    return APP_MODES.DEMO;
+  }
+  function exitDemoMode(storage, demoKey = "bb-premium-study-demo") {
+    storage?.removeItem(demoKey);
+    storage?.setItem("bb-premium-mode", APP_MODES.REAL);
+    return APP_MODES.REAL;
+  }
+  function resetDemoMode(storage, demoKey = "bb-premium-study-demo") {
+    storage?.removeItem(demoKey);
+    storage?.setItem("bb-premium-mode", APP_MODES.DEMO);
+    return APP_MODES.DEMO;
+  }
+
+  // src/demo/demo-generator.js
+  var SUBJECTS = [
+    ["Português", ["Interpretação de texto", "Gramática", "Concordância", "Regência", "Crase", "Pontuação", "Redação oficial", "Semântica"]],
+    ["Matemática", ["Razões e proporções", "Porcentagem", "Equações", "Funções", "Probabilidade", "Estatística", "Geometria", "Matemática financeira"]],
+    ["Direito Constitucional", ["Princípios fundamentais", "Direitos fundamentais", "Organização do Estado", "Poder Legislativo", "Poder Executivo", "Poder Judiciário", "Controle de constitucionalidade", "Administração pública"]],
+    ["Direito Administrativo", ["Atos administrativos", "Poderes administrativos", "Agentes públicos", "Licitações", "Contratos", "Serviços públicos", "Responsabilidade civil", "Improbidade"]],
+    ["Informática", ["Sistemas operacionais", "Editores de texto", "Planilhas", "Internet", "Segurança da informação", "Redes", "Banco de dados", "Computação em nuvem"]],
+    ["Conhecimentos Bancários", ["Sistema financeiro", "Produtos bancários", "Mercado financeiro", "Câmbio", "Garantias", "Prevenção à fraude", "Atendimento", "Atualidades financeiras"]]
+  ];
+  var ERROR_KEYS = ["naoSabia", "esqueci", "interpretacao", "calculo", "desatencao", "chute"];
+  var TYPES = ["questions", "study", "questions", "review", "questions"];
+  function hashSeed(value) {
+    let hash = 2166136261;
+    for (const char of String(value)) {
+      hash ^= char.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+  function randomFactory(seed) {
+    let value = hashSeed(seed) || 1;
+    return () => {
+      value += 1831565813;
+      let next = value;
+      next = Math.imul(next ^ next >>> 15, next | 1);
+      next ^= next + Math.imul(next ^ next >>> 7, next | 61);
+      return ((next ^ next >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function shiftDate(iso, days) {
+    const [year, month, day] = iso.split("-").map(Number), date = new Date(Date.UTC(year, month - 1, day + days));
+    return date.toISOString().slice(0, 10);
+  }
+  function timestamp(date, hour = 12) {
+    return `${date}T${String(hour).padStart(2, "0")}:00:00.000Z`;
+  }
+  function distributeErrors(errors, random) {
+    const result = Object.fromEntries(ERROR_KEYS.map((key) => [key, 0]));
+    let remaining = errors;
+    ERROR_KEYS.forEach((key, index) => {
+      const count = index === ERROR_KEYS.length - 1 ? remaining : Math.min(remaining, Math.floor(random() * Math.max(1, errors * 0.32)));
+      result[key] = count;
+      remaining -= count;
+    });
+    return result;
+  }
+  function generateDemoData({ seed = "studytrack-demo-v1", today } = {}) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(today || "")) throw new TypeError("A demonstração requer a data local atual.");
+    const random = randomFactory(`${seed}:${today}`), state2 = createDefaultState(), createdAt = timestamp(shiftDate(today, -89));
+    state2.subjects = SUBJECTS.map(([name, topicNames], subjectIndex) => ({
+      id: `demo-subject-${subjectIndex + 1}`,
+      name,
+      collapsed: false,
+      archived: false,
+      archivedAt: null,
+      createdAt,
+      topics: topicNames.map((topicName, topicIndex) => {
+        const archived = topicIndex === 7 && subjectIndex === 4, status = topicIndex % 5 === 0 ? "Não iniciado" : topicIndex % 4 === 0 ? "Revisão" : topicIndex % 3 === 0 ? "Concluído" : "Em andamento";
+        const lastDate = shiftDate(today, -Math.min(80, topicIndex * 6 + subjectIndex * 2));
+        return { id: `demo-topic-${subjectIndex + 1}-${topicIndex + 1}`, name: topicName, link: "", status, archived, archivedAt: archived ? timestamp(shiftDate(today, -12)) : null, notes: topicIndex % 3 === 0 ? "Revisar pontos marcados no material principal." : "", tags: topicIndex % 2 ? ["edital"] : ["prioridade"], difficulty: ["Fácil", "Médio", "Difícil"][(topicIndex + subjectIndex) % 3], createdAt, firstCompletedAt: status === "Concluído" ? timestamp(shiftDate(today, -50)) : null, lastCompletedAt: status === "Concluído" ? timestamp(lastDate) : null, completionCount: status === "Concluído" ? 2 : 0, lastReviewedAt: status === "Revisão" || status === "Concluído" ? timestamp(lastDate) : null, reviewCount: status === "Revisão" || status === "Concluído" ? 1 + topicIndex % 3 : 0, examImportance: Math.round((0.45 + random() * 0.5) * 100) / 100, estimatedStudyMinutes: 120 + Math.floor(random() * 300), prerequisites: topicIndex === 0 ? [] : [`demo-topic-${subjectIndex + 1}-${topicIndex}`] };
+      })
+    }));
+    const activeTopics2 = state2.subjects.flatMap((subject) => subject.topics.filter((topic) => !topic.archived).map((topic) => ({ subject, topic })));
+    state2.studySessions = [];
+    state2.questoes = [];
+    const activeAges = Array.from({ length: 90 }, (_, age) => age).filter((age) => age % 7 !== 0 && age % 11 !== 0);
+    for (let index = 0; index < 120; index++) {
+      const age = activeAges[index % activeAges.length], date = shiftDate(today, -age), entry = activeTopics2[index % activeTopics2.length], type = TYPES[index % TYPES.length], durationMinutes = 25 + Math.floor(random() * 66);
+      const session = { id: `demo-session-${index + 1}`, date, startedAt: timestamp(date, 8 + index % 11), endedAt: timestamp(date, 9 + index % 11), durationSeconds: durationMinutes * 60, subjectId: entry.subject.id, topicId: entry.topic.id, planItemId: null, type, questionsResolved: 0, correctAnswers: 0, notes: index % 9 === 0 ? "Sessão demonstrativa com observação de progresso." : "", createdAt: timestamp(date) };
+      if (type === "questions") {
+        const resolved = 22 + Math.floor(random() * 15), progress = (89 - age) / 89, subjectPenalty = entry.subject.id === "demo-subject-4" && age < 28 ? -10 : 0, rate = Math.max(42, Math.min(88, 54 + progress * 24 + subjectPenalty + (random() - 0.5) * 10)), correct = Math.round(resolved * rate / 100), errors = resolved - correct;
+        session.questionsResolved = resolved;
+        session.correctAnswers = correct;
+        state2.questoes.push({ id: `demo-question-${state2.questoes.length + 1}`, date, subjectId: entry.subject.id, topicId: entry.topic.id, resolved, correct, errorBreakdown: distributeErrors(errors, random), studySessionId: session.id, createdAt: timestamp(date) });
+      }
+      state2.studySessions.push(session);
+    }
+    const simulationRates = [61, 64, 63, 67, 69, 72, 74, 76, 70];
+    state2.simulados = simulationRates.map((rate, index) => {
+      const date = shiftDate(today, -(80 - index * 10)), total = 100, correct = rate;
+      return { id: `demo-simulation-${index + 1}`, date, nome: `Simulado ${index + 1}`, total, correct, breakdown: state2.subjects.map((subject, subjectIndex) => {
+        const rowTotal = subjectIndex < 4 ? 17 : 16, rowCorrect = Math.max(0, Math.min(rowTotal, Math.round(rowTotal * (rate + (subjectIndex - 2) * 2) / 100)));
+        return { id: `demo-simulation-row-${index + 1}-${subjectIndex + 1}`, subjectId: subject.id, total: rowTotal, correct: rowCorrect };
+      }), createdAt: timestamp(date) };
+    });
+    state2.reviewAgenda = Array.from({ length: 42 }, (_, index) => {
+      const entry = activeTopics2[index % activeTopics2.length], offset = index < 8 ? -(8 - index) : index - 8, date = shiftDate(today, offset), completed = index % 4 === 0;
+      return { id: `demo-review-${index + 1}`, date, subjectId: entry.subject.id, topicId: entry.topic.id, topicRef: entry.topic.id, topic: entry.topic.name, tipo: ["Revisão 24h", "Revisão 7 dias", "Revisão 30 dias"][index % 3], difficulty: ["Fácil", "Médio", "Difícil"][index % 3], status: completed ? "Concluído" : "Não iniciado", completedAt: completed ? timestamp(shiftDate(date, index % 3 === 0 ? 2 : 0)) : null, manualDate: false, adaptive: true, adaptiveReason: "Intervalo ajustado pelo histórico demonstrativo.", suggestedDate: date, baseIntervalDays: [1, 7, 30][index % 3], createdAt: timestamp(shiftDate(date, -7)) };
+    });
+    state2.calendar = Array.from({ length: 24 }, (_, index) => {
+      const entry = activeTopics2[index * 3 % activeTopics2.length], date = shiftDate(today, index - 6);
+      return { id: `demo-calendar-${index + 1}`, date, week: "", subjectId: entry.subject.id, topicId: entry.topic.id, subject: entry.subject.name, topic: entry.topic.name, status: index < 4 ? "Concluído" : "Não iniciado", reviewType: index % 2 ? "Questões" : "Revisão rápida", createdAt: timestamp(shiftDate(date, -5)) };
+    });
+    state2.progressHistory = Array.from({ length: 90 }, (_, index) => ({ date: shiftDate(today, index - 89), pct: Math.min(82, 18 + Math.floor(index * 0.65)) }));
+    state2.metas = { semanal: 12, mensal: 48, questoesSemanal: 220, simuladosSemanal: 1, metaAprovacao: 80, horasDiarias: 2.2, horasPorDia: { "0": 0, "1": 2.5, "2": 2.5, "3": 2, "4": 2.5, "5": 2, "6": 1 } };
+    state2.examDate = shiftDate(today, 90);
+    state2.examBlueprint = { examDate: state2.examDate, targetScore: 80, configuredAt: timestamp(today), subjects: state2.subjects.map((subject, index) => ({ subjectId: subject.id, expectedQuestions: index < 4 ? 18 : 14, questionWeight: index === 2 ? 1.5 : 1, priority: index < 2 ? "high" : index === 5 ? "low" : "normal" })) };
+    state2.metasPorDisciplina = state2.subjects.map((subject, index) => ({ id: `demo-subject-goal-${index + 1}`, subjectId: subject.id, meta: 30 + index * 5, createdAt }));
+    state2.dailyPlans = Array.from({ length: 14 }, (_, index) => {
+      const date = shiftDate(today, index - 6), entryA = activeTopics2[index * 2 % activeTopics2.length], entryB = activeTopics2[(index * 2 + 1) % activeTopics2.length], past = index < 6;
+      const items = [entryA, entryB].map((entry, itemIndex) => ({ id: `demo-plan-item-${index + 1}-${itemIndex + 1}`, subjectId: entry.subject.id, topicId: entry.topic.id, type: itemIndex ? "questions" : "study", plannedMinutes: itemIndex ? 35 : 45, executedSeconds: past ? itemIndex ? 2100 : 1800 : 0, status: past ? itemIndex ? "completed" : "partial" : "planned", originalDate: date, currentDate: date, rescheduleCount: index === 5 && itemIndex === 0 ? 1 : 0, skippedReason: null, recommendationId: null, lastExecutedAt: past ? timestamp(date) : null }));
+      return { id: `demo-daily-plan-${index + 1}`, date, availableMinutes: 120, plannedMinutes: 80, flexMinutes: 40, createdAt: timestamp(date), updatedAt: timestamp(date), items };
+    });
+    const planItems = activeTopics2.slice(0, 12).map((entry, index) => ({ id: `demo-study-plan-topic-${index + 1}`, subjectId: entry.subject.id, subjectName: entry.subject.name, topicId: entry.topic.id, topicName: entry.topic.name, minutes: 45 + index % 3 * 15, estimatedMinutes: entry.topic.estimatedStudyMinutes, activityMix: { theory: 20, questions: 20, reviews: 5 } }));
+    state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum, item) => sum + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject) => ({ subjectId: subject.id, subjectName: subject.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
+    state2.planAdjustments = [{ id: "demo-adjustment-1", periodStart: shiftDate(today, -7), periodEnd: shiftDate(today, 7), plannedMinutes: 480, executedMinutes: 350, deficitMinutes: 130, redistributedMinutes: 100, discardedMinutes: 30, allocations: [{ date: shiftDate(today, 1), minutes: 50 }, { date: shiftDate(today, 2), minutes: 50 }], confirmedAt: timestamp(shiftDate(today, -1)), status: "confirmed" }];
+    state2.recommendationFeedback = Array.from({ length: 6 }, (_, index) => ({ id: `demo-feedback-${index + 1}`, recommendationId: `demo-recommendation-${index + 1}`, date: shiftDate(today, -index * 5), subjectId: state2.subjects[index % state2.subjects.length].id, topicId: activeTopics2[index].topic.id, accepted: index !== 4, completed: index < 3, useful: index < 3 ? index !== 2 : null, reasonSkipped: index === 4 ? "Preferiu outra disciplina" : null, resultingSessionId: index < 3 ? state2.studySessions[index].id : null, createdAt: timestamp(shiftDate(today, -index * 5)), completedAt: index < 3 ? timestamp(shiftDate(today, -index * 5)) : null }));
+    state2.topicHistory = activeTopics2.flatMap((entry, index) => [{ id: `demo-history-start-${index + 1}`, type: "topic_created", date: shiftDate(today, -89 + index % 15), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -89 + index % 15)) }, ...entry.topic.status === "Concluído" ? [{ id: `demo-history-done-${index + 1}`, type: "topic_completed", date: shiftDate(today, -30 - index % 20), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -30 - index % 20)) }] : []]);
+    state2.alertStates = [];
+    state2.achievementsUnlocked = { primeira_sessao: timestamp(shiftDate(today, -88)), cem_questoes: timestamp(shiftDate(today, -70)) };
+    state2.lastBackupAt = timestamp(today);
+    state2.updatedAt = timestamp(today);
+    return state2;
+  }
+
   // src/app.js
   var THEME_STORAGE_KEY = "bb-premium-theme";
+  var MODE_FLASH_KEY = "bb-premium-mode-message";
+  var TEST_MODE = new URLSearchParams(location.search).get("test") === "1";
+  var APP_MODE = TEST_MODE ? APP_MODES.REAL : readAppMode(globalThis.sessionStorage);
+  var IS_DEMO_MODE = APP_MODE === APP_MODES.DEMO;
+  var suppressBeforeUnloadSave = false;
+  var appClock = createClock();
+  function nowISO2() {
+    return appClock.nowISO();
+  }
   function getCurrentTheme() {
     return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
   }
@@ -882,7 +1283,7 @@
   updateThemeToggleIcon();
   document.getElementById("exportReportBtn")?.addEventListener("click", () => {
     const meta = document.getElementById("printReportMeta");
-    if (meta) meta.textContent = `Relatório geral · período consolidado até ${(/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR")}`;
+    if (meta) meta.textContent = `${IS_DEMO_MODE ? "RELATÓRIO DE DEMONSTRAÇÃO · Dados fictícios · " : ""}Relatório geral · período consolidado até ${(/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR")}`;
     activateTab("dashboard", false);
     requestAnimationFrame(() => window.print());
   });
@@ -941,7 +1342,7 @@
   }
   function normalizeHistoryEvent(event) {
     if (!event.id) event.id = uid("history");
-    if (!event.occurredAt) event.occurredAt = event.date || nowISO();
+    if (!event.occurredAt) event.occurredAt = event.date || nowISO2();
     if (!event.date) event.date = event.occurredAt;
     if (!event.localDate) event.localDate = historicalLocalDate(event.occurredAt || event.date);
     if (!event.metadata || typeof event.metadata !== "object") event.metadata = {};
@@ -954,36 +1355,36 @@
     (data.subjects || []).forEach((subject) => {
       if (!subject.id) subject.id = uid("subject");
       subject.archived = Boolean(subject.archived);
-      subject.createdAt = subject.createdAt || nowISO();
+      subject.createdAt = subject.createdAt || nowISO2();
       if (!Array.isArray(subject.topics)) subject.topics = [];
       subjectIdByName.set(subject.name, subject.id);
       subject.topics.forEach((topic) => {
         if (!topic.id) topic.id = uid("topic");
-        topic.createdAt = topic.createdAt || nowISO();
+        topic.createdAt = topic.createdAt || nowISO2();
       });
     });
     (data.questoes || []).forEach((q) => {
       q.id = q.id || uid("question");
       q.subjectId = q.subjectId || subjectIdByName.get(q.subject) || null;
       q.topicId = q.topicId || null;
-      q.createdAt = q.createdAt || nowISO();
+      q.createdAt = q.createdAt || nowISO2();
     });
     (data.calendar || []).forEach((item) => {
       item.id = item.id || uid("calendar");
       item.subjectId = item.subjectId || subjectIdByName.get(item.subject) || null;
       item.topicId = item.topicId || null;
-      item.createdAt = item.createdAt || nowISO();
+      item.createdAt = item.createdAt || nowISO2();
     });
     (data.reviewAgenda || []).forEach((item) => {
       item.id = item.id || uid("review");
       item.subjectId = item.subjectId || subjectIdByName.get(item.subject) || null;
       item.topicId = item.topicId || item.topicRef || null;
-      item.createdAt = item.createdAt || nowISO();
+      item.createdAt = item.createdAt || nowISO2();
       item.completedAt = item.completedAt || null;
     });
     (data.simulados || []).forEach((sim) => {
       sim.id = sim.id || uid("simulado");
-      sim.createdAt = sim.createdAt || nowISO();
+      sim.createdAt = sim.createdAt || nowISO2();
       (sim.breakdown || []).forEach((b) => {
         b.id = b.id || uid("breakdown");
         b.subjectId = b.subjectId || subjectIdByName.get(b.subject) || null;
@@ -1012,7 +1413,7 @@
     if (!Array.isArray(data.topicHistory)) data.topicHistory = [];
     data.topicHistory.forEach((event) => {
       if (!event.id) event.id = uid("history");
-      if (!event.occurredAt) event.occurredAt = event.date || nowISO();
+      if (!event.occurredAt) event.occurredAt = event.date || nowISO2();
       if (!event.date) event.date = event.occurredAt;
     });
     (data.subjects || []).forEach((subject) => (subject.topics || []).forEach((topic) => {
@@ -1115,6 +1516,29 @@
     data.schemaVersion = 12;
     return data;
   }
+  function migrateV12toV13(data) {
+    (data.dailyPlans || []).forEach((plan) => {
+      plan.studyPlanId = plan.studyPlanId || null;
+      plan.generationOperationId = plan.generationOperationId || null;
+      (plan.items || []).forEach((item) => {
+        item.studyPlanId = item.studyPlanId || null;
+        item.studyPlanItemId = item.studyPlanItemId || null;
+        item.generationOperationId = item.generationOperationId || null;
+        item.rescheduledFromId = item.rescheduledFromId || null;
+        item.rescheduleOperationId = item.rescheduleOperationId || null;
+      });
+    });
+    (data.studyPlans || []).forEach((plan) => {
+      if (!Array.isArray(plan.dailyPlanOperations)) plan.dailyPlanOperations = [];
+    });
+    (data.planAdjustments || []).forEach((item) => {
+      item.operationId = item.operationId || null;
+      item.changes = Array.isArray(item.changes) ? item.changes : [];
+      item.undoneAt = item.undoneAt || null;
+    });
+    data.schemaVersion = 13;
+    return data;
+  }
   function migrateState(data) {
     let version = Number(data.schemaVersion || 1);
     if (version < 2) {
@@ -1160,6 +1584,10 @@
     if (version < 12) {
       data = migrateV11toV12(data);
       version = 12;
+    }
+    if (version < 13) {
+      data = migrateV12toV13(data);
+      version = 13;
     }
     data.schemaVersion = CURRENT_SCHEMA_VERSION;
     return data;
@@ -1212,6 +1640,8 @@
       if (!plan.id) plan.id = uid("plan");
       if (typeof plan.date !== "string") plan.date = todayISO();
       plan.availableMinutes = Math.max(0, Number(plan.availableMinutes) || 0);
+      plan.studyPlanId = plan.studyPlanId || null;
+      plan.generationOperationId = plan.generationOperationId || null;
       if (!Array.isArray(plan.items)) plan.items = [];
       plan.items.forEach((item) => {
         if (!item.id) item.id = uid("plan-item");
@@ -1227,7 +1657,15 @@
         item.rescheduleCount = Math.max(0, Number(item.rescheduleCount) || 0);
         item.skippedReason = item.skippedReason || null;
         item.recommendationId = item.recommendationId || null;
+        item.studyPlanId = item.studyPlanId || null;
+        item.studyPlanItemId = item.studyPlanItemId || null;
+        item.generationOperationId = item.generationOperationId || null;
+        item.rescheduledFromId = item.rescheduledFromId || null;
+        item.rescheduleOperationId = item.rescheduleOperationId || null;
       });
+    });
+    state.studyPlans.forEach((plan) => {
+      if (!Array.isArray(plan.dailyPlanOperations)) plan.dailyPlanOperations = [];
     });
     if (!Array.isArray(state.topicHistory)) state.topicHistory = [];
     state.topicHistory.forEach(normalizeHistoryEvent);
@@ -1237,12 +1675,12 @@
       if (typeof s.collapsed !== "boolean") s.collapsed = false;
       if (typeof s.archived !== "boolean") s.archived = false;
       if (!("archivedAt" in s)) s.archivedAt = null;
-      if (typeof s.createdAt !== "string") s.createdAt = nowISO();
+      if (typeof s.createdAt !== "string") s.createdAt = nowISO2();
       s.topics.forEach((t) => {
         if (typeof t.notes !== "string") t.notes = "";
         if (!Array.isArray(t.tags)) t.tags = [];
         if (!DIFFICULTY_OPTIONS.includes(t.difficulty)) t.difficulty = "Médio";
-        if (typeof t.createdAt !== "string") t.createdAt = nowISO();
+        if (typeof t.createdAt !== "string") t.createdAt = nowISO2();
         if (typeof t.archived !== "boolean") t.archived = false;
         if (!("archivedAt" in t)) t.archivedAt = null;
         if (!("firstCompletedAt" in t)) t.firstCompletedAt = null;
@@ -1282,15 +1720,24 @@
     });
     refreshAllTopicReviewStats();
   }
-  var StorageManager = createStorageManager({ dbName: DB_NAME, dbVersion: DB_VERSION, storeName: STORE_NAME });
+  var persistentStorageManager = createStorageManager({ dbName: DB_NAME, dbVersion: DB_VERSION, storeName: STORE_NAME });
+  var realStorageProvider = createRealStorageProvider({ manager: persistentStorageManager, readLocal: repositoryReadLocalState, writeLocal: repositoryWriteLocalState, removeLocal: (key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+    }
+  } });
+  var demoStorageProvider = IS_DEMO_MODE ? createDemoStorageProvider({ storage: sessionStorage, stateKey: STORAGE_KEY, demoKey: DEMO_STORAGE_KEY, generate: () => generateDemoData({ today: appClock.today() }) }) : null;
+  var appContext = createAppContext({ storage: demoStorageProvider || realStorageProvider, clock: appClock, idGenerator: uid, repositories: {} });
+  var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
-  var STATE_CHANNEL = typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
+  var STATE_CHANNEL = !IS_DEMO_MODE && typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
   var applyingRemoteState = false;
   function readLocalState(key = STORAGE_KEY) {
-    return repositoryReadLocalState(key);
+    return appContext.storage.readLocal(key);
   }
   function writeLocalState(value, key = STORAGE_KEY) {
-    return repositoryWriteLocalState(value, key);
+    return appContext.storage.writeLocal(key, value);
   }
   function normalizeAndValidateState(raw) {
     const parsed = typeof raw === "string" ? JSON.parse(raw) : structuredCloneSafe(raw);
@@ -1338,7 +1785,14 @@
     ensureStateDefaults();
     restoreTimerFromState();
     render();
+    let modeMessage = "";
+    try {
+      modeMessage = sessionStorage.getItem(MODE_FLASH_KEY) || "";
+      sessionStorage.removeItem(MODE_FLASH_KEY);
+    } catch (error) {
+    }
     if (loadWarning) showToast(loadWarning);
+    else if (modeMessage) showToast(modeMessage);
   }
   var saveTimeout;
   var saveQueue = Promise.resolve();
@@ -1378,11 +1832,11 @@
     if (!saved) return false;
     const verification = await StorageManager.get(key);
     if (verification !== previousRaw || checksum && await sha256(verification) !== checksum) return false;
-    const snapshot = { slot, key, createdAt: nowISO(), stateUpdatedAt: previous.updatedAt || null, checksum, bytes: new Blob([previousRaw]).size };
+    const snapshot = { slot, key, createdAt: nowISO2(), stateUpdatedAt: previous.updatedAt || null, checksum, bytes: new Blob([previousRaw]).size };
     index.snapshots = index.snapshots.filter((item) => item && item.slot !== slot).concat(snapshot).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     index.nextSlot = (slot + 1) % slotCount;
     index.version = 1;
-    index.updatedAt = nowISO();
+    index.updatedAt = nowISO2();
     return StorageManager.set(indexKey, JSON.stringify(index));
   }
   function enqueueSave(serialized, previousRaw) {
@@ -1401,7 +1855,7 @@
   }
   function scheduleSave() {
     const previousRaw = readLocalState(STORAGE_KEY);
-    state.updatedAt = nowISO();
+    state.updatedAt = nowISO2();
     const serialized = JSON.stringify(state);
     writeLocalState(serialized);
     clearTimeout(saveTimeout);
@@ -1411,10 +1865,10 @@
     try {
       let backupWarning = false;
       const lastBackup = state.lastBackupAt ? Date.parse(state.lastBackupAt) : 0;
-      if (previousRaw && Date.now() - lastBackup >= 24 * 60 * 60 * 1e3) {
+      if (!IS_DEMO_MODE && previousRaw && Date.now() - lastBackup >= 24 * 60 * 60 * 1e3) {
         const backupSuccess = await rotateAutomaticBackup(previousRaw);
         if (backupSuccess) {
-          state.lastBackupAt = nowISO();
+          state.lastBackupAt = nowISO2();
           const parsed = JSON.parse(serialized);
           parsed.lastBackupAt = state.lastBackupAt;
           parsed.updatedAt = state.updatedAt;
@@ -1670,7 +2124,7 @@
     return Number.isNaN(date.getTime()) ? null : date;
   }
   function todayISO() {
-    return localDateISO();
+    return appContext.clock.today();
   }
   function formatDatePt(iso) {
     if (!iso) return "—";
@@ -1731,7 +2185,7 @@
   document.getElementById("examDateInput").addEventListener("change", function() {
     state.examDate = this.value;
     state.examBlueprint.examDate = this.value || null;
-    state.examBlueprint.configuredAt = nowISO();
+    state.examBlueprint.configuredAt = nowISO2();
     persistAndRender();
   });
   function getDailyStudySummary(date, options = {}) {
@@ -1853,6 +2307,10 @@
   `;
   }
   function exportBackup() {
+    if (IS_DEMO_MODE) {
+      showToast("Backups ficam indisponíveis durante a demonstração.");
+      return;
+    }
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1874,6 +2332,10 @@
     URL.revokeObjectURL(url);
   }
   async function exportLatestAutomaticBackup() {
+    if (IS_DEMO_MODE) {
+      showToast("A recuperação real fica indisponível durante a demonstração.");
+      return;
+    }
     try {
       const rawIndex = await StorageManager.get(BACKUP_INDEX_KEY);
       if (!rawIndex) {
@@ -2083,6 +2545,10 @@
     return `Backup v${version}: ${pluralize(subjectCount, "disciplina")}, ${pluralize(topicCount, "tópico")}, ${pluralize(sessionCount, "sessão", "sessões")} e ${pluralize(questionCount, "registro")} de questões. Última atualização: ${updatedLabel}.`;
   }
   function importBackupFromFile(file) {
+    if (IS_DEMO_MODE) {
+      showToast("A importação fica indisponível durante a demonstração.");
+      return;
+    }
     if (!file) return;
     if (file.size > MAX_BACKUP_FILE_SIZE) {
       showToast("O arquivo excede o limite de 10 MB para importação.");
@@ -2137,6 +2603,35 @@
       this.value = "";
     }
   });
+  function reloadWithModeChange() {
+    suppressBeforeUnloadSave = true;
+    if (saveTimeout) clearTimeout(saveTimeout);
+    pendingSave = null;
+    location.reload();
+  }
+  function configureDemoModeUi() {
+    const banner = document.getElementById("demoBanner"), enterButton = document.getElementById("enterDemoBtn");
+    banner.hidden = !IS_DEMO_MODE;
+    enterButton.hidden = IS_DEMO_MODE;
+    document.querySelectorAll("[data-demo-protected]").forEach((button) => {
+      button.disabled = IS_DEMO_MODE;
+      button.title = IS_DEMO_MODE ? "Indisponível para proteger seus dados reais." : "";
+    });
+  }
+  document.getElementById("enterDemoBtn").addEventListener("click", () => showConfirm("Explorar a demonstração com três meses de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.", () => {
+    enterDemoMode(sessionStorage);
+    reloadWithModeChange();
+  }));
+  document.getElementById("resetDemoBtn").addEventListener("click", () => showConfirm("Reiniciar todos os dados fictícios da demonstração?", () => {
+    resetDemoMode(sessionStorage, DEMO_STORAGE_KEY);
+    reloadWithModeChange();
+  }));
+  document.getElementById("exitDemoBtn").addEventListener("click", () => {
+    exitDemoMode(sessionStorage, DEMO_STORAGE_KEY);
+    sessionStorage.setItem(MODE_FLASH_KEY, "Demonstração encerrada. Seus dados pessoais foram restaurados.");
+    reloadWithModeChange();
+  });
+  configureDemoModeUi();
   var timerSeconds = 0;
   var timerRunning = false;
   var timerIntervalId = null;
@@ -2160,7 +2655,7 @@
     const found = findDailyPlanItem(state.activeTimer?.planItemId);
     if (found && found.item.status === "in_progress") {
       found.item.status = found.item.executedSeconds > 0 ? "partial" : "planned";
-      found.plan.updatedAt = nowISO();
+      found.plan.updatedAt = nowISO2();
     }
   }
   function recordPlannedExecution(planItemId, session) {
@@ -2171,8 +2666,8 @@
     item.sessionIds = linkedSessions.map((candidate) => candidate.id);
     item.executedSeconds = linkedSessions.reduce((sum, candidate) => sum + Math.max(0, Number(candidate.durationSeconds) || 0), 0);
     item.status = item.plannedMinutes > 0 && item.executedSeconds >= item.plannedMinutes * 60 ? "completed" : "partial";
-    item.lastExecutedAt = session.endedAt || nowISO();
-    plan.updatedAt = nowISO();
+    item.lastExecutedAt = session.endedAt || nowISO2();
+    plan.updatedAt = nowISO2();
     if (item.recommendationId) {
       const feedback = state.recommendationFeedback.find((entry) => entry.recommendationId === item.recommendationId && entry.accepted);
       if (feedback) {
@@ -2192,7 +2687,7 @@
         found.item.executedSeconds = 0;
         found.item.status = "planned";
         found.item.lastExecutedAt = null;
-        found.plan.updatedAt = nowISO();
+        found.plan.updatedAt = nowISO2();
       }
     }
   }
@@ -2219,8 +2714,8 @@
       targetMinutes: item.plannedMinutes
     });
     item.status = "in_progress";
-    item.startedAt = item.startedAt || nowISO();
-    plan.updatedAt = nowISO();
+    item.startedAt = item.startedAt || nowISO2();
+    plan.updatedAt = nowISO2();
     populateTimerContextControls();
     startTimer();
     renderPlanoHoje();
@@ -2292,13 +2787,13 @@
     if (timerRunning) return;
     const active = state.activeTimer;
     if (timerSeconds === 0) {
-      active.startedAt = nowISO();
+      active.startedAt = nowISO2();
       active.accumulatedSeconds = 0;
     }
     active.subjectId = document.getElementById("timerSubjectSelect").value || null;
     active.topicId = document.getElementById("timerTopicSelect").value || null;
     active.type = document.getElementById("timerTypeSelect").value || "study";
-    active.runStartedAt = nowISO();
+    active.runStartedAt = nowISO2();
     active.isRunning = true;
     active.hiddenAt = null;
     timerStartedAt = active.startedAt;
@@ -2424,9 +2919,9 @@
     const notes = document.getElementById("sessionModalNotes").value.trim();
     const session = {
       id: uid("session"),
-      startedAt: timerStartedAt || nowISO(),
-      endedAt: nowISO(),
-      date: localDateFromTimestamp(timerStartedAt || nowISO()),
+      startedAt: timerStartedAt || nowISO2(),
+      endedAt: nowISO2(),
+      date: localDateFromTimestamp(timerStartedAt || nowISO2()),
       durationSeconds: timerSeconds,
       subjectId,
       topicId,
@@ -2440,7 +2935,7 @@
     recordPlannedExecution(session.planItemId, session);
     addHistoryEvent("study_session", subjectId, topicId, { sessionId: session.id, durationSeconds: session.durationSeconds });
     if (resolved > 0) {
-      state.questoes.push({ id: uid("question"), date: session.date, subjectId, topicId, resolved, correct: Math.min(correct, resolved), studySessionId: session.id, createdAt: nowISO() });
+      state.questoes.push({ id: uid("question"), date: session.date, subjectId, topicId, resolved, correct: Math.min(correct, resolved), studySessionId: session.id, createdAt: nowISO2() });
     }
     persistAndRender();
     showToast(resolved > 0 ? "Sessão e questões registradas." : "Sessão de estudo registrada.");
@@ -2449,7 +2944,7 @@
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       if (state.activeTimer.isRunning) {
-        state.activeTimer.hiddenAt = nowISO();
+        state.activeTimer.hiddenAt = nowISO2();
         scheduleSave();
       }
       return;
@@ -3012,7 +3507,7 @@
       collapsed: false,
       archived: false,
       archivedAt: null,
-      createdAt: nowISO(),
+      createdAt: nowISO2(),
       topics: original.topics.map((t) => ({
         id: uid("topic"),
         name: t.name,
@@ -3023,7 +3518,7 @@
         notes: "",
         tags: [...t.tags || []],
         difficulty: t.difficulty || "Médio",
-        createdAt: nowISO(),
+        createdAt: nowISO2(),
         firstCompletedAt: null,
         lastCompletedAt: null,
         completionCount: 0,
@@ -3059,7 +3554,7 @@
       if (state.subjects.some((subject) => subject.name.trim().toLocaleLowerCase("pt-BR") === name.toLocaleLowerCase("pt-BR"))) return "Já existe uma disciplina com esse nome.";
       return "";
     } }, (name) => {
-      state.subjects.push({ id: uid("subject"), name, collapsed: false, archived: false, archivedAt: null, createdAt: nowISO(), topics: [] });
+      state.subjects.push({ id: uid("subject"), name, collapsed: false, archived: false, archivedAt: null, createdAt: nowISO2(), topics: [] });
       persistAndRender();
       showToast(`Disciplina "${name}" criada.`);
     });
@@ -3078,7 +3573,7 @@
     let adicionadas = 0;
     DISCIPLINAS_PADRAO_BB.forEach((nome) => {
       if (!existentes.has(nome)) {
-        state.subjects.push({ id: uid("subject"), name: nome, collapsed: false, archived: false, archivedAt: null, createdAt: nowISO(), topics: [] });
+        state.subjects.push({ id: uid("subject"), name: nome, collapsed: false, archived: false, archivedAt: null, createdAt: nowISO2(), topics: [] });
         adicionadas++;
       }
     });
@@ -3094,7 +3589,7 @@
     const subject = getSubjectById(id);
     if (!subject) return showToast("Disciplina não encontrada.");
     subject.archived = true;
-    subject.archivedAt = nowISO();
+    subject.archivedAt = nowISO2();
     addHistoryEvent("subject_archived", id, null, { name: subject.name });
     persistAndRender();
     showToast(`"${subject.name}" foi arquivada.`);
@@ -3139,14 +3634,14 @@
   }
   function addTopic(subjectId) {
     const s = state.subjects.find((x) => x.id === subjectId);
-    s.topics.push({ id: uid("topic"), name: "", link: "", status: "Não iniciado", archived: false, archivedAt: null, notes: "", tags: [], difficulty: "Médio", createdAt: nowISO(), firstCompletedAt: null, lastCompletedAt: null, completionCount: 0, lastReviewedAt: null, reviewCount: 0, examImportance: null, estimatedStudyMinutes: null, prerequisites: [] });
+    s.topics.push({ id: uid("topic"), name: "", link: "", status: "Não iniciado", archived: false, archivedAt: null, notes: "", tags: [], difficulty: "Médio", createdAt: nowISO2(), firstCompletedAt: null, lastCompletedAt: null, completionCount: 0, lastReviewedAt: null, reviewCount: 0, examImportance: null, estimatedStudyMinutes: null, prerequisites: [] });
     persistAndRender();
   }
   function archiveTopic(subjectId, topicId) {
     const found = getTopicById(topicId);
     if (!found || found.subject.id !== subjectId) return;
     found.topic.archived = true;
-    found.topic.archivedAt = nowISO();
+    found.topic.archivedAt = nowISO2();
     addHistoryEvent("topic_archived", subjectId, topicId, { name: found.topic.name });
     persistAndRender();
     showToast("Tópico arquivado.");
@@ -3190,7 +3685,7 @@
   }
   function addHistoryEvent(type, subjectId, topicId = null, metadata = {}) {
     if (!Array.isArray(state.topicHistory)) state.topicHistory = [];
-    const occurredAt = nowISO();
+    const occurredAt = nowISO2();
     const event = { id: uid("history"), date: occurredAt, occurredAt, localDate: todayISO(), type, subjectId: subjectId || null, topicId: topicId || null, metadata };
     state.topicHistory.push(event);
     return event;
@@ -3227,7 +3722,7 @@
     state.subjects.forEach((subject) => subject.topics.forEach((topic) => refreshTopicReviewStats(topic.id)));
   }
   function markTopicCompleted(topic) {
-    const now = nowISO();
+    const now = nowISO2();
     if (!topic.firstCompletedAt) topic.firstCompletedAt = now;
     topic.lastCompletedAt = now;
     topic.completedAt = todayISO();
@@ -3491,7 +3986,7 @@
     body.innerHTML = visible.map((item) => calendarUiState.editingId === item.id ? renderCalendarEditRow(item) : renderCalendarReadRow(item)).join("") + renderCollectionFooter({ total: rows.length, visible: calendarUiState.visible, showMoreAction: "changeCalendarLimit(10)", showLessAction: calendarUiState.visible > 10 ? "resetCalendarLimit()" : "", colspan: 7, label: "itens" });
   }
   function addCalRow() {
-    const item = { id: uid("calendar"), date: todayISO(), week: "", subjectId: activeSubjects()[0]?.id || null, topicId: null, status: "Não iniciado", reviewType: "—", createdAt: nowISO() };
+    const item = { id: uid("calendar"), date: todayISO(), week: "", subjectId: activeSubjects()[0]?.id || null, topicId: null, status: "Não iniciado", reviewType: "—", createdAt: nowISO2() };
     state.calendar.push(item);
     calendarUiState.editingId = item.id;
     calendarUiState.editingIsNew = true;
@@ -3598,7 +4093,7 @@
             adaptiveReason: suggestion.reason,
             tipo: intervalo.tipo,
             status: "Não iniciado",
-            createdAt: nowISO(),
+            createdAt: nowISO2(),
             completedAt: null
           });
           adicionados++;
@@ -3683,7 +4178,7 @@
       item.adaptive = false;
     }
     if (field === "status" && value === "Concluído" && oldStatus !== "Concluído") {
-      item.completedAt = nowISO();
+      item.completedAt = nowISO2();
       const topicId = item.topicId || item.topicRef || null;
       addHistoryEvent("review_completed", entitySubjectId(item), topicId, { reviewId: item.id, reviewType: item.tipo });
       if (topicId) refreshTopicReviewStats(topicId);
@@ -3768,7 +4263,7 @@
     body.innerHTML = html.join("");
   }
   function addAgendaRow() {
-    const item = { id: uid("review"), topicId: null, date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topic: "", tipo: "Revisão livre", status: "Não iniciado", adaptive: false, manualDate: true, adaptiveReason: null, suggestedDate: null, baseIntervalDays: 7, createdAt: nowISO(), completedAt: null };
+    const item = { id: uid("review"), topicId: null, date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topic: "", tipo: "Revisão livre", status: "Não iniciado", adaptive: false, manualDate: true, adaptiveReason: null, suggestedDate: null, baseIntervalDays: 7, createdAt: nowISO2(), completedAt: null };
     state.reviewAgenda.push(item);
     agendaUiState.editingId = item.id;
     agendaUiState.editingIsNew = true;
@@ -4025,7 +4520,7 @@
   }
   function addQuestaoRow() {
     listViewState.questionsVisible = LIST_VIEW_STEPS.questions;
-    const question = { id: uid("question"), date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topicId: null, resolved: 0, correct: 0, errorBreakdown: emptyErrorBreakdown(), createdAt: nowISO() };
+    const question = { id: uid("question"), date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topicId: null, resolved: 0, correct: 0, errorBreakdown: emptyErrorBreakdown(), createdAt: nowISO2() };
     state.questoes.push(question);
     historyEditState.questionId = question.id;
     historyEditState.questionIsNew = true;
@@ -4449,7 +4944,7 @@
   }
   function addSimuladoRow() {
     listViewState.simulationsVisible = LIST_VIEW_STEPS.simulations;
-    const sim = { id: uid("simulado"), date: todayISO(), nome: "", correct: 0, total: 0, breakdown: [], createdAt: nowISO() };
+    const sim = { id: uid("simulado"), date: todayISO(), nome: "", correct: 0, total: 0, breakdown: [], createdAt: nowISO2() };
     state.simulados.push(sim);
     historyEditState.simulationId = sim.id;
     historyEditState.simulationIsNew = true;
@@ -4592,6 +5087,7 @@
     container.innerHTML = `<div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label></div><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
   }
   var studyPlanPreview = null;
+  var dailyPlanPreview = null;
   function studyPlanCandidates() {
     return activeTopics().filter((topic) => topic.status !== "Concluído").map((topic) => {
       const mastery = topicMasteryIndex(topic.subjectId, topic.id), retention = topicRetentionScore(topic.subjectId, topic.id), blueprint = state.examBlueprint.subjects.find((item) => item.subjectId === topic.subjectId);
@@ -4611,19 +5107,66 @@
   }
   function confirmStudyPlan() {
     if (!studyPlanPreview || studyPlanPreview.state === "insufficient" || !studyPlanPreview.items.length) return;
-    const confirmedAt = nowISO();
-    state.studyPlans.push({ ...structuredCloneSafe(studyPlanPreview), id: uid("study-plan"), confirmedAt, examDate: state.examDate || null, algorithmVersion: state.algorithmVersions.recommendations });
+    const confirmedAt = nowISO2(), id = uid("study-plan"), plan = structuredCloneSafe(studyPlanPreview);
+    plan.items = plan.items.map((item) => ({ ...item, id: uid("study-plan-item"), topicId: item.topicId || item.id, studyPlanId: id }));
+    state.studyPlans.push({ ...plan, id, confirmedAt, examDate: state.examDate || null, algorithmVersion: state.algorithmVersions.recommendations, dailyPlanOperations: [] });
     studyPlanPreview = null;
+    dailyPlanPreview = null;
     scheduleSave();
     renderStudyPlanBuilder();
     showToast("Plano semanal confirmado e salvo.");
   }
+  function latestStudyPlan() {
+    return [...state.studyPlans].sort((a, b) => (b.confirmedAt || "").localeCompare(a.confirmedAt || ""))[0] || null;
+  }
+  function calculateDailyPlanPreview() {
+    const studyPlan = latestStudyPlan();
+    if (!studyPlan) return;
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const date = addDays(todayISO(), index);
+      return { date, availableMinutes: Math.round(metaHoursForDate(date) * 60) };
+    }), end = days.at(-1).date;
+    const dueReviews = state.reviewAgenda.filter((review) => review.status !== "Concluído" && review.topicId && review.date >= todayISO() && review.date <= end).map((review) => ({ id: review.id, date: review.date, subjectId: review.subjectId, topicId: review.topicId, subjectName: getSubjectName(review.subjectId), topicName: getTopicName(review.topicId), minutes: 25 }));
+    dailyPlanPreview = buildDailyPlanProposal({ studyPlan, existingPlans: state.dailyPlans, days, dueReviews, reserveRatio: 0.1 });
+    renderStudyPlanBuilder();
+  }
+  function clearDailyPlanPreview() {
+    dailyPlanPreview = null;
+    renderStudyPlanBuilder();
+  }
+  function confirmDailyPlanPreview() {
+    if (dailyPlanPreview?.state !== "proposal") return;
+    const studyPlan = latestStudyPlan(), operationId = uid("daily-plan-operation"), createdAt = nowISO2(), result = applyDailyPlanProposal({ dailyPlans: state.dailyPlans, proposal: dailyPlanPreview, operationId, now: createdAt, idGenerator: uid });
+    studyPlan.dailyPlanOperations = Array.isArray(studyPlan.dailyPlanOperations) ? studyPlan.dailyPlanOperations : [];
+    studyPlan.dailyPlanOperations.push({ id: operationId, createdAt, createdItems: result.createdItems, undoneAt: null });
+    dailyPlanPreview = null;
+    scheduleSave();
+    renderStudyPlanBuilder();
+    showToast(`${pluralize(result.createdItems, "atividade")} criada${result.createdItems === 1 ? "" : "s"} no plano diário.`);
+  }
+  function undoLatestDailyPlanGeneration() {
+    const studyPlan = latestStudyPlan(), operation = [...studyPlan?.dailyPlanOperations || []].reverse().find((item) => !item.undoneAt);
+    if (!operation) return;
+    const result = undoDailyPlanGeneration({ dailyPlans: state.dailyPlans, operationId: operation.id });
+    operation.undoneAt = result.complete ? nowISO2() : null;
+    operation.protectedItems = result.protectedItems;
+    scheduleSave();
+    renderStudyPlanBuilder();
+    renderPlanoHoje();
+    showToast(result.protectedItems.length ? `${pluralize(result.removedItems, "atividade")} removida${result.removedItems === 1 ? "" : "s"}; itens executados foram preservados.` : "Criação dos planos diários desfeita.");
+  }
   function renderStudyPlanBuilder() {
     const container = document.getElementById("examStudyPlan");
     if (!container) return;
-    const latest = [...state.studyPlans].sort((a, b) => (b.confirmedAt || "").localeCompare(a.confirmedAt || ""))[0];
+    const latest = latestStudyPlan();
     if (!studyPlanPreview) {
-      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString("pt-BR")} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : "data não definida"}</span></div>` : ""}<button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>`;
+      if (dailyPlanPreview) {
+        const proposal = dailyPlanPreview, rows = proposal.days.map((day) => `<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`).join("");
+        container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${proposal.days.length}</strong><span>Dias utilizados</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Não alocados</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state === "proposal" ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
+        return;
+      }
+      const activeOperation = [...latest?.dailyPlanOperations || []].reverse().find((item) => !item.undoneAt);
+      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString("pt-BR")} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : "data não definida"}</span></div>` : ""}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest ? '<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>' : ""}${activeOperation ? '<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>' : ""}</div>`;
       return;
     }
     const plan = studyPlanPreview;
@@ -4646,7 +5189,7 @@
       state.examBlueprint.targetScore = target;
       state.metas.metaAprovacao = target;
     }
-    state.examBlueprint.configuredAt = nowISO();
+    state.examBlueprint.configuredAt = nowISO2();
     persistAndRender();
   }
   function updateExamSubject(subjectId, field, value) {
@@ -4659,7 +5202,7 @@
     if (field === "expectedQuestions") config.expectedQuestions = Math.max(0, Math.round(Number(value) || 0));
     if (field === "questionWeight") config.questionWeight = Math.max(0.1, Number(value) || 1);
     if (field === "priority" && EXAM_PRIORITIES.includes(value)) config.priority = value;
-    state.examBlueprint.configuredAt = nowISO();
+    state.examBlueprint.configuredAt = nowISO2();
     persistAndRender();
   }
   function somarQuestoesDisciplinaNaSemana(subjectId) {
@@ -5348,7 +5891,7 @@
       return;
     }
     if (!question) {
-      question = { id: uid("question"), studySessionId: session.id, createdAt: nowISO() };
+      question = { id: uid("question"), studySessionId: session.id, createdAt: nowISO2() };
       state.questoes.push(question);
     }
     Object.assign(question, { date: session.date, subjectId: session.subjectId || null, topicId: session.topicId || null, resolved, correct });
@@ -5476,7 +6019,7 @@
     const today = todayISO();
     const atrasadas = revisoesAtrasadas();
     if (atrasadas > 0) {
-      alertas.push({ id: "reviews-overdue", severity: "high", nivel: "alta", icon: "🔴", texto: `${atrasadas} revisão${atrasadas === 1 ? "" : "ões"} atrasada${atrasadas === 1 ? "" : "s"}` });
+      alertas.push({ id: "reviews-overdue", severity: "high", nivel: "alta", icon: "🔴", texto: `${pluralize(atrasadas, "revisão", "revisões")} atrasada${atrasadas === 1 ? "" : "s"}` });
     }
     computeSubjectPerformance().filter((p) => isActiveSubjectId(p.subjectId) && p.acerto < 65 && p.total >= 5).forEach((p) => {
       alertas.push({ id: `accuracy-${p.subjectId}`, subjectId: p.subjectId, severity: "high", nivel: "alta", icon: "🔴", texto: `${p.subject} abaixo de 65% de acerto (${p.acerto}%)` });
@@ -5502,7 +6045,7 @@
       (t) => t.difficulty === "Difícil" && t.status !== "Concluído" && !state.reviewAgenda.some((a) => (a.topicId || a.topicRef) === t.id && a.status !== "Concluído")
     ).length;
     if (difSemRevisao > 0) {
-      alertas.push({ id: "hard-topics-no-review", severity: "low", nivel: "baixa", icon: "🟡", texto: `${difSemRevisao} tópico${difSemRevisao === 1 ? "" : "s"} difícil${difSemRevisao === 1 ? "" : "eis"} sem revisão agendada` });
+      alertas.push({ id: "hard-topics-no-review", severity: "low", nivel: "baixa", icon: "🟡", texto: `${pluralize(difSemRevisao, "tópico")} ${difSemRevisao === 1 ? "difícil" : "difíceis"} sem revisão agendada` });
     }
     const ritmo = computeRitmo();
     if (ritmo.status === "ok" && ritmo.comparativo === "no-prazo") {
@@ -5636,7 +6179,7 @@
       existing.reasonSkipped = reasonSkipped;
       return existing;
     }
-    const feedback = { id: uid("recommendation-feedback"), recommendationId: recommendation.recommendationId, date: todayISO(), subjectId: recommendation.subjectId || null, topicId: recommendation.topicId || null, accepted: Boolean(accepted), completed: false, useful: null, reasonSkipped, resultingSessionId: null, createdAt: nowISO(), completedAt: null };
+    const feedback = { id: uid("recommendation-feedback"), recommendationId: recommendation.recommendationId, date: todayISO(), subjectId: recommendation.subjectId || null, topicId: recommendation.topicId || null, accepted: Boolean(accepted), completed: false, useful: null, reasonSkipped, resultingSessionId: null, createdAt: nowISO2(), completedAt: null };
     state.recommendationFeedback.push(feedback);
     return feedback;
   }
@@ -5665,16 +6208,16 @@
     recordRecommendationFeedback(recommendation, { accepted: true });
     let plan = todayDailyStudyPlan();
     if (!plan) {
-      plan = { id: uid("plan"), date: todayISO(), availableMinutes: Math.round(metaHoursToday() * 60), plannedMinutes: 0, flexMinutes: 0, createdAt: nowISO(), updatedAt: nowISO(), items: [] };
+      plan = { id: uid("plan"), date: todayISO(), availableMinutes: Math.round(metaHoursToday() * 60), plannedMinutes: 0, flexMinutes: 0, createdAt: nowISO2(), updatedAt: nowISO2(), items: [] };
       state.dailyPlans.push(plan);
     }
     let item = plan.items.find((candidate) => candidate.topicId === recommendation.topicId && !["completed", "skipped"].includes(candidate.status));
     if (item) item.recommendationId = recommendation.recommendationId;
     if (!item) {
-      item = { id: uid("plan-item"), subjectId: recommendation.subjectId, topicId: recommendation.topicId, subjectName: recommendation.subjectName, topicName: recommendation.topicName, type: recommendation.studyType || "study", plannedMinutes: recommendation.estimatedMinutes, executedSeconds: 0, status: "planned", sessionIds: [], score: recommendation.score, tier: recommendation.score >= 70 ? "Alta" : recommendation.score >= 40 ? "Média" : "Baixa", position: plan.items.length + 1, statusIcon: "🎯", statusLabel: "Recomendação inteligente", reason: recommendation.reasons.join(" · "), action: recommendation.action, recommendedQuestions: 0, originalDate: todayISO(), currentDate: todayISO(), rescheduleCount: 0, skippedReason: null, recommendationId: recommendation.recommendationId, createdAt: nowISO() };
+      item = { id: uid("plan-item"), subjectId: recommendation.subjectId, topicId: recommendation.topicId, subjectName: recommendation.subjectName, topicName: recommendation.topicName, type: recommendation.studyType || "study", plannedMinutes: recommendation.estimatedMinutes, executedSeconds: 0, status: "planned", sessionIds: [], score: recommendation.score, tier: recommendation.score >= 70 ? "Alta" : recommendation.score >= 40 ? "Média" : "Baixa", position: plan.items.length + 1, statusIcon: "🎯", statusLabel: "Recomendação inteligente", reason: recommendation.reasons.join(" · "), action: recommendation.action, recommendedQuestions: 0, originalDate: todayISO(), currentDate: todayISO(), rescheduleCount: 0, skippedReason: null, recommendationId: recommendation.recommendationId, createdAt: nowISO2() };
       plan.items.push(item);
       plan.plannedMinutes += item.plannedMinutes;
-      plan.updatedAt = nowISO();
+      plan.updatedAt = nowISO2();
       scheduleSave();
     }
     startPlannedActivity(item.id);
@@ -5696,25 +6239,41 @@
   }
   function confirmReplan() {
     if (!replanPreview || replanPreview.state !== "proposal") return;
-    state.planAdjustments.push({ ...structuredCloneSafe(replanPreview), id: uid("plan-adjustment"), confirmedAt: nowISO(), status: "confirmed" });
+    const operationId = uid("replan-operation"), appliedAt = nowISO2(), result = applyReplan({ dailyPlans: state.dailyPlans, proposal: replanPreview, operationId, now: appliedAt, idGenerator: uid });
+    state.planAdjustments.push({ ...structuredCloneSafe(replanPreview), id: uid("plan-adjustment"), operationId, confirmedAt: appliedAt, appliedAt, status: "applied", changes: result.changes, undoneAt: null });
     replanPreview = null;
     scheduleSave();
     renderWeeklyReplan();
-    showToast("Redistribuição registrada. O plano original foi preservado.");
+    renderPlanoHoje();
+    showToast(`${pluralize(result.createdItems, "atividade")} redistribuída${result.createdItems === 1 ? "" : "s"} para os próximos dias.`);
+  }
+  function undoPlanAdjustment(id) {
+    const adjustment = state.planAdjustments.find((item) => item.id === id);
+    if (!adjustment || adjustment.undoneAt) return;
+    const result = undoReplan({ dailyPlans: state.dailyPlans, adjustment });
+    adjustment.status = result.complete ? "undone" : "partially_undone";
+    adjustment.undoneAt = result.complete ? nowISO2() : null;
+    adjustment.protectedItems = result.protectedItems;
+    scheduleSave();
+    renderWeeklyReplan();
+    renderPlanoHoje();
+    showToast(result.protectedItems.length ? "Itens já executados foram preservados; os demais retornaram à origem." : "Redistribuição desfeita com segurança.");
   }
   function renderWeeklyReplan() {
     const container = document.getElementById("weeklyReplan");
     if (!container) return;
     const latest = [...state.planAdjustments].sort((a, b) => (b.confirmedAt || "").localeCompare(a.confirmedAt || ""))[0];
     if (!replanPreview) {
-      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste confirmado</strong><span>${formatPlanMinutes(latest.redistributedMinutes)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes)} sem capacidade</span></div>` : ""}<button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>`;
+      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt ? "desfeito" : "aplicado"}</strong><span>${formatPlanMinutes(latest.redistributedMinutes)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes)} sem capacidade</span></div>` : ""}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest && !latest.undoneAt && latest.status !== "undone" && latest.changes?.length ? `<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>` : ""}</div>`;
       return;
     }
     if (replanPreview.state === "balanced") {
       container.innerHTML = '<div class="upcoming-empty">Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';
       return;
     }
-    const allocations = replanPreview.allocations.map((item) => `<div><strong>${formatDatePt(item.date)}</strong><span>+ ${formatPlanMinutes(item.minutes)}</span></div>`).join("");
+    const allocationByDate = /* @__PURE__ */ new Map();
+    replanPreview.allocations.forEach((item) => allocationByDate.set(item.date, (allocationByDate.get(item.date) || 0) + item.minutes));
+    const allocations = [...allocationByDate].map(([date, minutes]) => `<div><strong>${formatDatePt(date)}</strong><span>+ ${formatPlanMinutes(minutes)}</span></div>`).join("");
     container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(replanPreview.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(replanPreview.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatPlanMinutes(replanPreview.deficitMinutes)}</strong><span>Déficit</span></div><div><strong>${formatPlanMinutes(replanPreview.redistributedMinutes)}</strong><span>Redistribuição possível</span></div></div><div class="replan-allocations">${allocations || "<span>Sem capacidade restante nesta semana.</span>"}</div>${replanPreview.discardedMinutes ? `<p class="confidence-note">${formatPlanMinutes(replanPreview.discardedMinutes)} não cabem na disponibilidade restante e não serão acumulados automaticamente.</p>` : ""}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
   }
   function formatPlanMinutes(minutes) {
@@ -5741,7 +6300,7 @@
   function materializeDailyStudyPlan(priorities, availableMinutes) {
     const calculated = buildDailyStudyPlan(priorities, availableMinutes);
     if (!calculated.items.length) return null;
-    const createdAt = nowISO();
+    const createdAt = nowISO2();
     const plan = {
       id: uid("plan"),
       date: todayISO(),
@@ -6289,9 +6848,14 @@
     "calculateStudyPlanPreview",
     "clearStudyPlanPreview",
     "confirmStudyPlan",
+    "calculateDailyPlanPreview",
+    "clearDailyPlanPreview",
+    "confirmDailyPlanPreview",
+    "undoLatestDailyPlanGeneration",
     "calculateReplanPreview",
     "clearReplanPreview",
     "confirmReplan",
+    "undoPlanAdjustment",
     "cancelAgendaEdit",
     "cancelCalendarEdit",
     "cancelQuestionEdit",
@@ -6407,9 +6971,14 @@
     calculateStudyPlanPreview,
     clearStudyPlanPreview,
     confirmStudyPlan,
+    calculateDailyPlanPreview,
+    clearDailyPlanPreview,
+    confirmDailyPlanPreview,
+    undoLatestDailyPlanGeneration,
     calculateReplanPreview,
     clearReplanPreview,
     confirmReplan,
+    undoPlanAdjustment,
     cancelAgendaEdit,
     cancelCalendarEdit,
     cancelQuestionEdit,
@@ -6729,18 +7298,19 @@
     }
   });
   window.addEventListener("beforeunload", () => {
-    if (!TEST_MODE) writeLocalState(JSON.stringify(state));
+    if (!TEST_MODE && !suppressBeforeUnloadSave) writeLocalState(JSON.stringify(state));
   });
   setCalendarMobileView("month");
   var initialTab = location.hash.replace("#", "");
   if (document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) activateTab(initialTab, false);
-  var TEST_MODE = new URLSearchParams(location.search).get("test") === "1";
   if (TEST_MODE) {
     const pristineTestState = structuredCloneSafe(state);
     window.__EXTRATO_TEST__ = {
       CURRENT_SCHEMA_VERSION,
       STATUS_OPTIONS,
       DIFFICULTY_OPTIONS,
+      APP_MODE,
+      IS_DEMO_MODE,
       getState: () => state,
       setState: (value) => {
         state = migrateState(structuredCloneSafe(value));
@@ -6785,6 +7355,6 @@
     testScript.src = "tests/tests.js";
     document.body.appendChild(testScript);
   } else {
-    loadState();
+    bootstrapApplication({ context: appContext, start: loadState, onError: (error) => console.error("Falha na inicialização do aplicativo", error) });
   }
 })();

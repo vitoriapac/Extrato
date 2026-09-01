@@ -715,6 +715,9 @@
   .backup-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--heading);}
   .backup-desc{font-size:12px;color:var(--ink-soft);max-width:420px;margin-top:2px;}
   .backup-actions{display:flex;gap:8px;flex-shrink:0;}
+  .demo-banner{position:sticky;top:0;z-index:95;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--gold);background:var(--highlight-bg);color:var(--ink)}
+  .demo-banner[hidden]{display:none}.demo-banner>div:first-child{display:flex;flex-direction:column;gap:2px}.demo-banner strong{color:var(--heading);font:600 11px var(--font-data);letter-spacing:.08em}.demo-banner span{font-size:12px;color:var(--ink-soft)}.demo-banner-actions{display:flex;gap:8px;flex-shrink:0}
+  [data-demo-protected]:disabled{cursor:not-allowed;opacity:.45}
   .save-indicator{
     position:fixed;bottom:18px;right:18px;
     font-family:'IBM Plex Mono',monospace;font-size:11px;
@@ -808,6 +811,7 @@
 }
 
 @media (max-width:640px){
+  .demo-banner{position:static;align-items:stretch;flex-direction:column}.demo-banner-actions{display:grid;grid-template-columns:1fr 1fr}.demo-banner-actions .btn{white-space:normal}
   .backup-actions{width:100%;flex:1 1 100%;flex-shrink:1;flex-wrap:wrap;min-width:0}
   .backup-actions .btn{min-width:0;flex:1 1 140px;white-space:normal}
 }
@@ -966,6 +970,7 @@
   .topic-analytics-metrics{grid-template-columns:1fr}.topic-analytics-title small{margin-left:0;width:100%}
   .study-plan-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.study-plan-subjects>div,.study-plan-topic{flex-direction:column;gap:4px}.study-plan-actions .btn{width:100%}
   .alerta-item{align-items:flex-start;flex-wrap:wrap}.alerta-item .alert-dismiss{margin-left:0;width:100%}.error-analysis-toolbar select{width:100%}
+  .upcoming-list li{align-items:flex-start;flex-wrap:wrap}.upcoming-list li>span:not(.upcoming-date){min-width:0;overflow-wrap:anywhere}.upcoming-list .quick-review-btn{flex:1 0 100%;margin-left:0}.priority-subject{overflow-wrap:anywhere}
   #subjectWeeklyTrend,#desempenhoDisciplinaBars{max-width:100%;overflow-x:auto}
   .statement,.statement.statement--compact{padding:18px 16px}
   .statement.statement--compact{display:block}
