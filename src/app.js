@@ -11,6 +11,18 @@ import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
 import {renderCollectionFooter,renderGroupHeader} from './ui/list-components.js';
 import {countActiveFilters,filterPanelLabel} from './ui/filter-panel.js';
 import {filterStudySessions,groupStudySessionsByDate} from './ui/session-history.js';
+import {calculateReadinessScore,READINESS_WEIGHTS} from './domain/analytics/readiness-score.js';
+import {calculateTopicCoverage} from './domain/analytics/coverage.js';
+import {calculateActivityStreak,calculateGoalConsistency} from './domain/analytics/consistency.js';
+import {calculateWindowTrend} from './domain/analytics/trends.js';
+import {summarizeStudyRecords} from './domain/analytics/study-metrics.js';
+import {normalizeTopicStrategy,normalizeExamBlueprint,normalizeAlgorithmVersions,EXAM_PRIORITIES} from './state/strategic.js';
+import {buildExecutiveSummary} from './application/build-executive-summary.js';
+import {buildCognitiveProfile} from './domain/diagnostics/cognitive-profile.js';
+import {HEATMAP_METRICS,heatmapMetricLevel} from './domain/analytics/heatmap.js';
+import {calculateSubjectRadar} from './domain/analytics/multidimensional-radar.js';
+import {generateDiagnosis} from './application/generate-diagnosis.js';
+import {recommendStudy} from './application/recommend-study.js';
 
 const THEME_STORAGE_KEY='bb-premium-theme';
 function getCurrentTheme(){
@@ -51,7 +63,7 @@ const MIN_TOPIC_TREND_WINDOW_QUESTIONS = 20;
 const MIN_ERROR_RECOMMENDATION_COUNT = 10;
 const MIN_ERROR_RECOMMENDATION_COVERAGE = 60;
 const DEFAULT_STREAK_WEEKS = 12;
-const streakView = {expanded:false,onlyActiveDays:false};
+const streakView = {expanded:false,onlyActiveDays:false,metric:'hours',subjectId:'',selectedDate:null};
 const ERROR_RECOMMENDATIONS = {
   naoSabia:{action:'Revisar a teoria e os conceitos-base',studyType:'study',estimatedMinutes:35,questions:10},
   esqueci:{action:'Fazer uma revisão curta e recuperar de memória',studyType:'review',estimatedMinutes:25,questions:15},
@@ -246,6 +258,14 @@ function migrateV7toV8(data){
   return data;
 }
 
+function migrateV8toV9(data){
+  data.examBlueprint=normalizeExamBlueprint(data.examBlueprint,data.examDate);
+  data.algorithmVersions=normalizeAlgorithmVersions(data.algorithmVersions);
+  (data.subjects||[]).forEach(subject=>(subject.topics||[]).forEach(normalizeTopicStrategy));
+  data.schemaVersion=9;
+  return data;
+}
+
 function migrateState(data){
   let version = Number(data.schemaVersion || 1);
   if(version < 2){ data = migrateV1toV2(data); version = 2; }
@@ -255,6 +275,7 @@ function migrateState(data){
   if(version < 6){ data = migrateV5toV6(data); version = 6; }
   if(version < 7){ data = migrateV6toV7(data); version = 7; }
   if(version < 8){ data = migrateV7toV8(data); version = 8; }
+  if(version < 9){ data = migrateV8toV9(data); version = 9; }
   data.schemaVersion = CURRENT_SCHEMA_VERSION;
   return data;
 }
@@ -279,6 +300,10 @@ function ensureStateDefaults(){
     state.metas.horasPorDia[String(day)]=Number.isFinite(value)?Math.max(0,value):state.metas.horasDiarias;
   }
   if(typeof state.examDate !== 'string') state.examDate = '';
+  state.examBlueprint=normalizeExamBlueprint(state.examBlueprint,state.examDate);
+  state.algorithmVersions=normalizeAlgorithmVersions(state.algorithmVersions);
+  if(!state.examDate&&state.examBlueprint.examDate)state.examDate=state.examBlueprint.examDate;
+  if(state.examDate!==state.examBlueprint.examDate)state.examBlueprint.examDate=state.examDate||null;
   if(!Array.isArray(state.progressHistory)) state.progressHistory = [];
   if(!state.achievementsUnlocked||typeof state.achievementsUnlocked!=='object') state.achievementsUnlocked={};
   if(!Array.isArray(state.metasPorDisciplina)) state.metasPorDisciplina = [];
@@ -332,6 +357,7 @@ function ensureStateDefaults(){
       t.completionCount = Number(t.completionCount)||0;
       if(!('lastReviewedAt' in t)) t.lastReviewedAt = null;
       t.reviewCount = Number(t.reviewCount)||0;
+      normalizeTopicStrategy(t);
     });
   });
   state.questoes.forEach(question=>{
@@ -687,10 +713,7 @@ function subjectsForSelection(selectedId=null){
 }
 function activeTopics(){ return allTopics().filter(topic=>!topic.subjectArchived&&!topic.topicArchived); }
 function subjectProgress(subject){
-  const topics=subject.topics.filter(t=>!t.archived);
-  if(topics.length === 0) return 0;
-  const done = topics.filter(t=>t.status==='Concluído').length;
-  return Math.round((done/topics.length)*100);
+  return calculateTopicCoverage(subject.topics).value;
 }
 function localDateISO(value){
   if(arguments.length===0) value=new Date();
@@ -770,32 +793,31 @@ function diasParaRevisaoPill(iso, status){
 
 document.getElementById('examDateInput').addEventListener('change', function(){
   state.examDate = this.value;
+  state.examBlueprint.examDate=this.value||null;
+  state.examBlueprint.configuredAt=nowISO();
   persistAndRender();
 });
 
 /* ===== SEQUÊNCIA DE DIAS ESTUDANDO (STREAK) ===== */
-function getDailyStudySummary(date){
-  const sessions=state.studySessions.filter(s=>s.date===date);
+function getDailyStudySummary(date,options={}){
+  const subjectId=options.subjectId||'';
+  const matchesSubject=item=>!subjectId||entitySubjectId(item)===subjectId;
+  const sessions=state.studySessions.filter(s=>s.date===date&&matchesSubject(s));
   const allSessionIds=new Set(state.studySessions.map(s=>s.id));
-  const independentQuestions=state.questoes.filter(q=>q.date===date&&(!q.studySessionId||!allSessionIds.has(q.studySessionId)));
-  const seconds=sessions.reduce((sum,s)=>sum+(Number(s.durationSeconds)||0),0);
-  const sessionQuestions=sessions.reduce((sum,s)=>sum+(Number(s.questionsResolved)||0),0);
-  const sessionCorrect=sessions.reduce((sum,s)=>sum+(Number(s.correctAnswers)||0),0);
-  const independentResolved=independentQuestions.reduce((sum,q)=>sum+(Number(q.resolved)||0),0);
-  const independentCorrect=independentQuestions.reduce((sum,q)=>sum+(Number(q.correct)||0),0);
-  const questions=sessionQuestions+independentResolved;
-  const correct=sessionCorrect+independentCorrect;
+  const independentQuestions=state.questoes.filter(q=>q.date===date&&matchesSubject(q)&&(!q.studySessionId||!allSessionIds.has(q.studySessionId)));
+  const simulations=state.simulados.filter(sim=>sim.date===date&&(!subjectId||(sim.breakdown||[]).some(row=>entitySubjectId(row)===subjectId)));
+  const reviews=state.reviewAgenda.filter(review=>review.status==='Concluído'&&localDateFromTimestamp(review.completedAt)===date&&matchesSubject(review));
+  const metrics=summarizeStudyRecords({sessions,questions:independentQuestions,simulations});
+  const {seconds,questions,correct,accuracy}=metrics;
   const subjectNames=new Set();
   sessions.forEach(s=>{ const id=entitySubjectId(s); if(id) subjectNames.add(getSubjectName(id)); });
   independentQuestions.forEach(q=>{ const id=entitySubjectId(q); if(id) subjectNames.add(getSubjectName(id)); });
-  const simulations=state.simulados.filter(s=>s.date===date).length;
   const targetSeconds=metaHoursForDate(date)*3600;
   const goalPct=targetSeconds>0?Math.round((seconds/targetSeconds)*100):0;
   return {
-    date,sessions,seconds,questions,correct,simulations,targetSeconds,goalPct,
-    accuracy:questions>0?Math.round((correct/questions)*100):null,
+    date,sessions,seconds,questions,correct,reviews:reviews.length,simulations:metrics.simulations,targetSeconds,goalPct,accuracy,
     subjectNames:[...subjectNames],
-    meaningful:seconds>=300||independentResolved>0||simulations>0,
+    meaningful:seconds>=300||independentQuestions.some(q=>(Number(q.resolved)||0)>0)||metrics.simulations>0,
     goalAchieved:targetSeconds>0&&seconds>=targetSeconds
   };
 }
@@ -818,17 +840,7 @@ function getGoalDates(){
   return set;
 }
 function computeStreak(activityDates){
-  let cursor = todayISO();
-  if(!activityDates.has(cursor)){
-    cursor = addDays(cursor, -1);
-    if(!activityDates.has(cursor)) return 0;
-  }
-  let count = 0;
-  while(activityDates.has(cursor)){
-    count++;
-    cursor = addDays(cursor, -1);
-  }
-  return count;
+  return calculateActivityStreak(activityDates,{today:todayISO(),addDays});
 }
 
 function toggleStreakExpanded(){
@@ -994,6 +1006,9 @@ function validateNormalizedBackup(data){
       if(!textOk(topic.name,500)||!textOk(topic.link||'',2000)||!textOk(topic.notes||'',20000)) return fail('Um tópico excede os limites de texto permitidos.');
       if(!STATUS_OPTIONS.includes(topic.status)||!DIFFICULTY_OPTIONS.includes(topic.difficulty)) return fail('Um tópico possui status ou dificuldade inválida.');
       if(!Array.isArray(topic.tags)||topic.tags.length>100||topic.tags.some(tag=>!textOk(tag,100))) return fail('Um tópico possui tags inválidas.');
+      if(topic.examImportance!==null&&(!Number.isFinite(Number(topic.examImportance))||Number(topic.examImportance)<0||Number(topic.examImportance)>1)) return fail('Um tópico possui importância de prova inválida.');
+      if(topic.estimatedStudyMinutes!==null&&(!isFiniteNonNegative(topic.estimatedStudyMinutes)||Number(topic.estimatedStudyMinutes)<=0)) return fail('Um tópico possui esforço estimado inválido.');
+      if(!Array.isArray(topic.prerequisites)||topic.prerequisites.length>100||topic.prerequisites.some(id=>!isSafeId(id))) return fail('Um tópico possui pré-requisitos inválidos.');
     }
   }
   const validateEntity=(item,label)=>{
@@ -1040,6 +1055,7 @@ function validateNormalizedBackup(data){
     if(!isFiniteNonNegative(item.meta)) return fail('Uma meta por disciplina possui valor inválido.');
   }
   const validRef=(value,set)=>value==null||(isSafeId(value)&&set.has(value));
+  if(data.subjects.some(subject=>subject.topics.some(topic=>topic.prerequisites.some(id=>!topicIds.has(id)||id===topic.id)))) return fail('O backup contém pré-requisito de tópico inexistente ou circular direto.');
   const referenceCollections=[...data.calendar,...data.reviewAgenda,...data.questoes,...data.studySessions,...data.metasPorDisciplina];
   if(referenceCollections.some(item=>!validRef(item.subjectId,subjectIds)||!validRef(item.topicId,topicIds))) return fail('O backup contém referência para disciplina ou tópico inexistente.');
   if(data.simulados.some(sim=>sim.breakdown.some(item=>!validRef(item.subjectId,subjectIds)))) return fail('O backup contém detalhamento de simulado para uma disciplina inexistente.');
@@ -1049,6 +1065,9 @@ function validateNormalizedBackup(data){
   if(data.studySessions.some(item=>item.planItemId!=null&&!validRef(item.planItemId,planItemIds))) return fail('O backup contém sessão vinculada a um item de plano inexistente.');
   if(!isPlainObject(data.metas)||Object.entries(data.metas).some(([key,value])=>key!=='horasPorDia'&&!isFiniteNonNegative(value))||!isPlainObject(data.metas.horasPorDia)||Object.values(data.metas.horasPorDia).some(value=>!isFiniteNonNegative(value))) return fail('O backup contém metas globais inválidas.');
   if(!isPlainObject(data.activeTimer)||!isFiniteNonNegative(data.activeTimer.accumulatedSeconds)||!validRef(data.activeTimer.subjectId,subjectIds)||!validRef(data.activeTimer.topicId,topicIds)||!validRef(data.activeTimer.planItemId,planItemIds)) return fail('O backup contém um cronômetro ativo inválido.');
+  if(!isPlainObject(data.examBlueprint)||!(data.examBlueprint.examDate===null||isISODate(data.examBlueprint.examDate))||!Number.isFinite(Number(data.examBlueprint.targetScore))||Number(data.examBlueprint.targetScore)<0||Number(data.examBlueprint.targetScore)>100||!isOptionalTimestamp(data.examBlueprint.configuredAt)||!Array.isArray(data.examBlueprint.subjects)||data.examBlueprint.subjects.length>1000) return fail('O backup contém configuração de prova inválida.');
+  if(data.examBlueprint.subjects.some(item=>!isPlainObject(item)||!validRef(item.subjectId,subjectIds)||!isFiniteNonNegative(item.expectedQuestions)||!isFiniteNonNegative(item.questionWeight)||!EXAM_PRIORITIES.includes(item.priority))) return fail('O backup contém peso de disciplina inválido.');
+  if(!isPlainObject(data.algorithmVersions)||Object.values(data.algorithmVersions).some(value=>!Number.isInteger(Number(value))||Number(value)<1)) return fail('O backup contém versões de algoritmos inválidas.');
   if(data.progressHistory.some(item=>!isPlainObject(item)||!isISODate(item.date)||!isFiniteNonNegative(item.pct)||Number(item.pct)>100)) return fail('O backup contém histórico de progresso inválido.');
   return {valid:true};
 }
@@ -1438,55 +1457,49 @@ function renderBadges(){
 
 /* ===== HEATMAP DE HORAS E META DIÁRIA ===== */
 function heatmapLevel(summary){
-  if(summary.seconds<=0) return 0;
-  if(summary.targetSeconds<=0){
-    if(summary.seconds<3600) return 1;
-    if(summary.seconds<7200) return 2;
-    return 3;
-  }
-  if(summary.goalPct<50) return 1;
-  if(summary.goalPct<100) return 2;
-  return 3;
+  return heatmapMetricLevel(summary,streakView.metric);
 }
 function heatmapTooltip(summary){
   const parts=[formatDatePt(summary.date),formatDuration(summary.seconds),pluralize(summary.sessions.length,'sessão','sessões')];
   if(summary.targetSeconds>0) parts.push(`${summary.goalPct}% da meta`);
   if(summary.questions>0) parts.push(`${summary.questions} questões · ${summary.accuracy}% de acerto`);
+  if(summary.reviews>0) parts.push(pluralize(summary.reviews,'revisão','revisões'));
   if(summary.simulations>0) parts.push(pluralize(summary.simulations,'simulado'));
   if(summary.subjectNames.length) parts.push(summary.subjectNames.join(', '));
   return parts.join(' · ');
 }
 function renderHeatmap(){
   const activityDates=getActivityDates();
-  if(activityDates.size===0){
-    document.getElementById('heatmapContainer').innerHTML=`<div class="empty-state empty-state--compact"><div class="empty-state__icon" aria-hidden="true">🔥</div><strong>Comece sua sequência</strong><p>Registre sua primeira sessão para começar sua sequência de estudos.</p><button class="btn small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button></div>`;
-    return;
-  }
   const earliest=[...activityDates].sort()[0];
-  const historyDays=Math.max(1,Math.round((parseLocalDate(todayISO())-parseLocalDate(earliest))/86400000)+1);
+  const historyDays=earliest?Math.max(1,Math.round((parseLocalDate(todayISO())-parseLocalDate(earliest))/86400000)+1):DEFAULT_STREAK_WEEKS*7;
   const days=streakView.expanded?historyDays:DEFAULT_STREAK_WEEKS*7;
   const today = todayISO();
   const cells = [];
   for(let i = days-1; i >= 0; i--){
     const d = addDays(today, -i);
-    const summary=getDailyStudySummary(d);
-    if(!streakView.onlyActiveDays||summary.meaningful) cells.push(summary);
+    const summary=getDailyStudySummary(d,{subjectId:streakView.subjectId});
+    const active=heatmapMetricLevel(summary,streakView.metric)>0;
+    if(!streakView.onlyActiveDays||active) cells.push(summary);
   }
   const cellsHtml = cells.map(summary => {
     const level=heatmapLevel(summary);
     const tooltip=heatmapTooltip(summary);
-    const selected=sessionHistoryFilters.date===summary.date?'selected':'';
-    return `<button type="button" class="heatmap-cell ${level>0?'heat-'+level:''} ${selected}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" data-delegated-click="selectSessionHistoryDate('${summary.date}')"></button>`;
+    const selected=streakView.selectedDate===summary.date?'selected':'';
+    return `<button type="button" class="heatmap-cell ${level>0?'heat-'+level:''} ${selected}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" data-delegated-click="selectHeatmapDay('${summary.date}')"></button>`;
   }).join('');
+  const hasMetricActivity=cells.some(summary=>heatmapMetricLevel(summary,streakView.metric)>0);
   const activityStreak=computeStreak(activityDates);
   const goalStreak=computeStreak(getGoalDates());
   document.getElementById('heatmapContainer').innerHTML = `
     <div class="heatmap-toolbar" aria-label="Período da sequência">
+      <select aria-label="Métrica do heatmap" data-delegated-change="setHeatmapFilter('metric',this.value)"><option value="hours" ${streakView.metric==='hours'?'selected':''}>Horas</option><option value="questions" ${streakView.metric==='questions'?'selected':''}>Questões</option><option value="reviews" ${streakView.metric==='reviews'?'selected':''}>Revisões</option><option value="simulations" ${streakView.metric==='simulations'?'selected':''}>Simulados</option></select>
+      <select aria-label="Disciplina do heatmap" data-delegated-change="setHeatmapFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map(subject=>`<option value="${escapeAttr(subject.id)}" ${streakView.subjectId===subject.id?'selected':''}>${escapeHtml(subject.name)}</option>`).join('')}</select>
       <span>${streakView.expanded?'Período completo':`Últimas ${DEFAULT_STREAK_WEEKS} semanas`}</span>
       <button class="btn ghost small" data-delegated-click="toggleStreakExpanded()">${streakView.expanded?'Mostrar menos':'Ver período completo'}</button>
       <button class="btn ghost small" aria-pressed="${streakView.onlyActiveDays}" data-delegated-click="toggleStreakActiveDays()">${streakView.onlyActiveDays?'Mostrar todos os dias':'Apenas dias com atividade'}</button>
     </div>
     <div class="heatmap-grid">${cellsHtml}</div>
+    ${hasMetricActivity?'':`<div class="empty-inline heatmap-empty"><p>Nenhuma atividade encontrada para este indicador e disciplina.</p><button class="btn small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button></div>`}
     <div class="heatmap-legend">
       0%
       <span class="heatmap-cell"></span>
@@ -1498,10 +1511,15 @@ function renderHeatmap(){
     <div class="heatmap-summary">
       <span>🔥 Atividade: ${pluralize(activityStreak,'dia')}</span>
       <span>🎯 Meta atingida: ${pluralize(goalStreak,'dia')}</span>
-      <span>Cores: &lt;50% · 50–99% · ≥100% da meta diária</span>
+      <span>${streakView.metric==='hours'?'Cores: <50% · 50–99% · ≥100% da meta diária':'Intensidade relativa da atividade selecionada'}</span>
     </div>
+    ${streakView.selectedDate?`<div class="heatmap-detail" role="status">${escapeHtml(heatmapTooltip(getDailyStudySummary(streakView.selectedDate,{subjectId:streakView.subjectId})))} <button class="btn ghost small" data-delegated-click="viewSelectedHeatmapSessions()">Ver sessões deste dia</button></div>`:''}
   `;
 }
+
+function setHeatmapFilter(field,value){if(field==='metric'&&HEATMAP_METRICS.includes(value))streakView.metric=value;if(field==='subjectId')streakView.subjectId=value;streakView.selectedDate=null;renderHeatmap()}
+function selectHeatmapDay(date){streakView.selectedDate=date;renderHeatmap()}
+function viewSelectedHeatmapSessions(){if(streakView.selectedDate)selectSessionHistoryDate(streakView.selectedDate)}
 
 function getMetricDataState(metric,minimumConfidence=.35){
   if(!metric?.available||metric.raw===null) return 'empty';
@@ -2813,15 +2831,8 @@ function getQuestionErrors(question){
   return {breakdown,totalErrors,categorizedErrors,uncategorized:Math.max(0,totalErrors-categorizedErrors)};
 }
 function buildErrorProfile(records){
-  const categories=emptyErrorBreakdown();
-  let totalErrors=0;
-  records.forEach(question=>{
-    const errors=getQuestionErrors(question);
-    totalErrors+=errors.totalErrors;
-    Object.keys(categories).forEach(key=>categories[key]+=errors.breakdown[key]||0);
-  });
-  const categorizedErrors=Object.values(categories).reduce((sum,value)=>sum+value,0);
-  return {categories,totalErrors,categorizedErrors,uncategorized:Math.max(0,totalErrors-categorizedErrors),coverage:totalErrors?Math.round(categorizedErrors/totalErrors*100):0};
+  records.forEach(normalizeErrorBreakdown);
+  return buildCognitiveProfile(records,Object.keys(ERROR_CATEGORIES));
 }
 function getSubjectErrorProfile(subjectId){
   return buildErrorProfile(validQuestionRecords().filter(question=>entitySubjectId(question)===subjectId));
@@ -2886,14 +2897,7 @@ function getTopicWeeklyTrend(topicId,weeks=8){
   });
 }
 function calculateWeightedTrend(weeklyData,minWindow=MIN_TREND_WINDOW_QUESTIONS){
-  const pool=data=>data.reduce((acc,week)=>({resolved:acc.resolved+week.resolved,correct:acc.correct+week.correct}),{resolved:0,correct:0});
-  const recent=pool(weeklyData.slice(-3));
-  const previous=pool(weeklyData.slice(-6,-3));
-  if(recent.resolved<minWindow||previous.resolved<minWindow) return {key:'insufficient',icon:'—',label:'Amostra insuficiente',delta:null,recent,previous};
-  const delta=accuracyFromCounts(recent.correct,recent.resolved)-accuracyFromCounts(previous.correct,previous.resolved);
-  if(delta>=3) return {key:'up',icon:'↗',label:'Em evolução',delta,recent,previous};
-  if(delta<=-3) return {key:'down',icon:'↘',label:'Em queda',delta,recent,previous};
-  return {key:'stable',icon:'→',label:'Estável',delta,recent,previous};
+  return calculateWindowTrend(weeklyData,minWindow);
 }
 function topicLastActivityDate(topicId){
   let last=null;
@@ -2961,7 +2965,7 @@ function diagnoseTopic(subjectId,topicId){
   const dominantError=dominantTopicError(errorProfile);
   const lastActivity=topicLastActivityDate(topicId);
   const dateDistance=lastActivity?diasParaRevisao(lastActivity):null;
-  const daysSinceStudy=dateDistance===null?21:Math.max(0,-dateDistance);
+  const daysSinceStudy=dateDistance===null?0:Math.max(0,-dateDistance);
   const pendingReview=pendingReviewForTopic(topicId);
   const reviewDistance=pendingReview?.date?diasParaRevisao(pendingReview.date):null;
   const overdueDays=reviewDistance===null?0:Math.max(0,-reviewDistance);
@@ -3518,7 +3522,7 @@ function ultimaAtividadeDisciplina(subjectId){
 }
 function diasSemEstudarDisciplina(subjectId){
   const last = ultimaAtividadeDisciplina(subjectId);
-  if(!last) return 21; // nunca estudada: trata como "bastante tempo sem estudar"
+  if(!last) return 0;
   const d = diasParaRevisao(last);
   return d !== null ? Math.max(0, -d) : 21;
 }
@@ -3648,35 +3652,43 @@ function renderPrioridadeHoje(){
 }
 
 /* ===== RADAR DE DISCIPLINAS ===== */
+const radarView={subjectIds:[]};
+function subjectRadarModel(subject){
+  const topics=subject.topics.filter(topic=>!topic.archived),coverage=topics.length?subjectProgress(subject):null;
+  const masteryValues=topics.map(topic=>topicMasteryIndex(subject.id,topic.id)).filter(item=>item.confidence>0);
+  const retentionValues=topics.map(topic=>topicRetentionScore(subject.id,topic.id)).filter(item=>item.available);
+  const mastery=masteryValues.length?masteryValues.reduce((sum,item)=>sum+item.score,0)/masteryValues.length:null;
+  const retention=retentionValues.length?retentionValues.reduce((sum,item)=>sum+item.score,0)/retentionValues.length:null;
+  const last=ultimaAtividadeDisciplina(subject.id),distance=last?diasParaRevisao(last):null,daysSinceContact=distance===null?null:Math.max(0,-distance);
+  const cutoff=addDays(todayISO(),-27),activeDates=new Set();
+  state.studySessions.filter(item=>entitySubjectId(item)===subject.id&&item.date>=cutoff).forEach(item=>activeDates.add(item.date));
+  state.questoes.filter(item=>entitySubjectId(item)===subject.id&&item.date>=cutoff).forEach(item=>activeDates.add(item.date));
+  const result=calculateSubjectRadar({coverage,mastery,retention,daysSinceContact,activeDays:activeDates.size||null});
+  return {...result,id:subject.id,name:subject.name};
+}
+function setRadarSubject(slot,value){
+  const index=Math.max(0,Math.min(1,Number(slot)||0));
+  radarView.subjectIds[index]=value||'';
+  if(value)radarView.subjectIds=radarView.subjectIds.map((id,i)=>i!==index&&id===value?'':id);
+  renderRadarDisciplinas();
+}
 function renderRadarDisciplinas(){
   const container = document.getElementById('radarChart');
   if(!container) return;
   const subjects = activeSubjects().filter(s => s.topics.some(t=>!t.archived));
 
-  if(subjects.length < 3){
-    container.innerHTML = `<div class="radar-empty">Cadastre pelo menos 3 disciplinas com tópicos pra ver o radar.</div>`;
+  if(!subjects.length){
+    container.innerHTML = `<div class="radar-empty">Cadastre uma disciplina com tópicos para ver o radar.</div>`;
     return;
   }
-
-  const shown = subjects.slice(0, 8);
-  const scores = shown.map(s => {
-    const progresso = subjectProgress(s);
-    const acerto = taxaAcertoDisciplina(s.id);
-    const temQuestoes = state.questoes.some(q=>entitySubjectId(q)===s.id) || state.simulados.some(sim=>(sim.breakdown||[]).some(b=>entitySubjectId(b)===s.id));
-    const score = temQuestoes ? Math.round((progresso*0.5 + acerto*0.5)) : progresso;
-    return { name: s.name, score };
-  });
-
-  const N = scores.length;
-  const W = 560, H = 560, cx = W/2, cy = H/2, maxR = 110;
+  if(!radarView.subjectIds[0]||!subjects.some(subject=>subject.id===radarView.subjectIds[0]))radarView.subjectIds[0]=subjects[0].id;
+  radarView.subjectIds=radarView.subjectIds.slice(0,2);
+  const selected=radarView.subjectIds.map(id=>subjects.find(subject=>subject.id===id)).filter(Boolean).map(subjectRadarModel);
+  const axisMeta=[['coverage','Cobertura'],['mastery','Domínio'],['retention','Retenção'],['frequency','Frequência'],['consistency','Consistência']];
+  const N=axisMeta.length,W=560,H=430,cx=W/2,cy=190,maxR=125;
   const angleFor = i => (Math.PI*2 * i/N) - Math.PI/2;
-
-  function truncateLabel(name){
-    return name.length > 14 ? name.slice(0, 13) + '…' : name;
-  }
-
   const gridRings = [0.25,0.5,0.75,1].map(frac => {
-    const pts = scores.map((_,i) => {
+    const pts = axisMeta.map((_,i) => {
       const a = angleFor(i);
       const r = maxR*frac;
       return `${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`;
@@ -3684,40 +3696,30 @@ function renderRadarDisciplinas(){
     return `<polygon class="radar-grid" points="${pts}"></polygon>`;
   }).join('');
 
-  const axes = scores.map((_,i) => {
+  const axes = axisMeta.map((_,i) => {
     const a = angleFor(i);
     return `<line class="radar-axis" x1="${cx}" y1="${cy}" x2="${cx+maxR*Math.cos(a)}" y2="${cy+maxR*Math.sin(a)}"></line>`;
   }).join('');
 
-  const shapePts = scores.map((s,i) => {
+  const labels = axisMeta.map(([,label],i) => {
     const a = angleFor(i);
-    const r = maxR * (s.score/100);
-    return `${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`;
-  }).join(' ');
-
-  const dots = scores.map((s,i) => {
-    const a = angleFor(i);
-    const r = maxR * (s.score/100);
-    return `<circle class="radar-dot" cx="${cx+r*Math.cos(a)}" cy="${cy+r*Math.sin(a)}" r="3.5"><title>${escapeHtml(s.name)}: ${s.score}%</title></circle>`;
-  }).join('');
-
-  const labels = scores.map((s,i) => {
-    const a = angleFor(i);
-    const labelR = maxR + 30;
+    const labelR = maxR + 28;
     const x = cx + labelR*Math.cos(a);
     const y = cy + labelR*Math.sin(a);
     const anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
-    return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle"><title>${escapeHtml(s.name)}: ${s.score}%</title>${escapeHtml(truncateLabel(s.name))} (${s.score}%)</text>`;
+    return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle">${label}</text>`;
   }).join('');
-
+  const series=selected.map((model,seriesIndex)=>{const values=axisMeta.map(([key])=>model.axes[key]);const complete=values.every(value=>value!==null);const points=values.map((value,index)=>{if(value===null)return '';const a=angleFor(index),r=maxR*(value/100);return `${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`}).filter(Boolean);const shape=complete?`<polygon class="radar-shape radar-series-${seriesIndex+1}" points="${points.join(' ')}"></polygon>`:'';const dots=values.map((value,index)=>{if(value===null)return '';const a=angleFor(index),r=maxR*(value/100);return `<circle class="radar-dot radar-series-${seriesIndex+1}" cx="${cx+r*Math.cos(a)}" cy="${cy+r*Math.sin(a)}" r="4"><title>${escapeHtml(model.name)} · ${axisMeta[index][1]}: ${value}/100</title></circle>`}).join('');return shape+dots}).join('');
+  const options=(selectedId='')=>`<option value="">Nenhuma</option>`+subjects.map(subject=>`<option value="${escapeAttr(subject.id)}" ${subject.id===selectedId?'selected':''}>${escapeHtml(subject.name)}</option>`).join('');
   container.innerHTML = `
+    <div class="radar-toolbar"><label>Disciplina 1<select data-delegated-change="setRadarSubject(0,this.value)">${options(radarView.subjectIds[0])}</select></label><label>Comparar com<select data-delegated-change="setRadarSubject(1,this.value)">${options(radarView.subjectIds[1])}</select></label></div>
     <svg class="radar-svg" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:460px;height:auto;display:block;margin:0 auto;">
       ${gridRings}
       ${axes}
-      <polygon class="radar-shape" points="${shapePts}"></polygon>
-      ${dots}
+      ${series}
       ${labels}
     </svg>
+    <div class="radar-analysis">${selected.map((model,index)=>`<section><h4><span class="radar-key radar-key-${index+1}"></span>${escapeHtml(model.name)}</h4><p>${escapeHtml(model.interpretation)}</p><small>${model.availableAxes} de 5 eixos · confiança ${model.confidenceLabel.toLowerCase()}</small><dl>${axisMeta.map(([key,label])=>`<div><dt>${label}</dt><dd>${model.axes[key]===null?'Aguardando dados':model.axes[key]+'/100'}</dd></div>`).join('')}</dl></section>`).join('')}</div>
   `;
 }
 
@@ -4155,6 +4157,68 @@ function renderAlertasInteligentes(){
   `).join('');
 }
 
+function renderExecutiveSummary(){
+  const container=document.getElementById('executiveSummary');if(!container)return;
+  const metrics=computeApprovalMetrics(),readiness=readinessResult(metrics),pace=computeRitmo(),priorities=computeStudyPriorities();
+  const topPriority=priorities[0]?{...priorities[0],reason:motivoPrioridade(priorities[0])}:null;
+  const risks=computeAlertasInteligentes().filter(alert=>alert.nivel!=='ok');
+  const configuredTopics=activeTopics().filter(topic=>topic.examImportance!==null&&topic.estimatedStudyMinutes!==null);
+  const opportunityCount=configuredTopics.filter(topic=>priorities.some(priority=>priority.topicId===topic.id)).length;
+  const weekStart=startOfWeek(todayISO()),weeklyGoal={achieved:uniqueTopicsCompletedBetween(weekStart,addDays(weekStart,6)),target:state.metas.semanal};
+  const summary=buildExecutiveSummary({readiness,daysToExam:state.examDate?(diasParaRevisao(state.examDate)??null):null,pace,topPriority,riskCount:risks.length,weeklyGoal,opportunityCount});
+  container.innerHTML=`<div class="executive-kpis">${summary.cards.map(card=>`<div class="executive-kpi"><strong>${escapeHtml(card.value)}</strong><span>${escapeHtml(card.label)}</span><small>${escapeHtml(card.detail)}</small></div>`).join('')}</div>
+    <div class="executive-decision-grid"><section><h4>Prioridade principal</h4>${summary.primaryAction?`<strong>${escapeHtml(summary.primaryAction.title)}</strong><p>${escapeHtml(summary.primaryAction.subject||'')} · ${escapeHtml(summary.primaryAction.topic||'')} · ${formatPlanMinutes(summary.primaryAction.duration)}</p><small>${escapeHtml(summary.primaryAction.reason)}</small>`:'<p>Ainda não há uma prioridade confiável. Cadastre tópicos ou revisões pendentes.</p>'}</section>
+    <section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount===1?'':'s'} com evidência atual.</p><small>${escapeHtml(summary.opportunityMessage)}</small></section></div>`;
+}
+
+const dismissedRecommendationIds=new Set();
+let currentStudyRecommendations=[];
+function intelligenceCandidates(){
+  const today=todayISO();
+  return computeStudyPriorities().map(priority=>{
+    const found=getTopicById(priority.topicId),topic=found?.topic,subject=found?.subject;
+    const retention=priority.topicId?topicRetentionScore(priority.subjectId,priority.topicId):null;
+    const blueprint=state.examBlueprint.subjects.find(item=>item.subjectId===priority.subjectId);
+    const blueprintImpact=blueprint?Math.min(100,(Number(blueprint.expectedQuestions)||0)*4*(Number(blueprint.questionWeight)||1)):null;
+    const examImpact=topic?.examImportance!=null?Number(topic.examImportance)*100:blueprintImpact;
+    const mastery=priority.diagnosis?.mastery?.score??(priority.erroQuestoes==null?null:100-priority.erroQuestoes);
+    const daysSinceContact=Math.max(0,Number(priority.diasSemEstudar)||0);
+    const estimatedMinutes=Math.max(15,Number(priority.estimatedMinutes)||Number(topic?.estimatedStudyMinutes)||30);
+    const reviewUrgency=Math.min(100,Math.max(0,Number(priority.diasAtrasado)||0)*12);
+    const completed=state.studySessions.some(session=>session.date===today&&session.topicId===priority.topicId);
+    return {id:priority.topicId||`review-${priority.subjectId}`,subjectId:priority.subjectId,topicId:priority.topicId,subjectName:priority.subjectName,topicName:priority.topicName,archived:Boolean(topic?.archived||subject?.archived),completed,estimatedMinutes,studyType:priority.studyType,action:priority.recommendedAction,
+      examImpact,retention:retention?.available?retention.score:null,retentionRisk:retention?.available?100-retention.score:null,mastery,masteryGap:mastery==null?null:100-mastery,coverage:subject?subjectProgress(subject):null,frequency:Math.max(0,100-daysSinceContact*5),daysSinceContact,recencyRisk:Math.min(100,daysSinceContact*5),reviewUrgency,planAlignment:priority.tipo==='continuar'?90:priority.tipo==='revisão'?80:55,trendRisk:trendPriorityRisk(priority.diagnosis?.trend),improvementPotential:mastery==null?50:100-mastery,effortEfficiency:Math.max(10,100-estimatedMinutes),reason:motivoPrioridade(priority)};
+  });
+}
+function renderDiagnosisCenter(){
+  const container=document.getElementById('diagnosisCenter');if(!container)return;
+  const result=generateDiagnosis(intelligenceCandidates());
+  if(result.state==='insufficient'){container.innerHTML='<div class="upcoming-empty">Ainda não há dados suficientes. Cadastre tópicos e registre atividades para gerar o diagnóstico.</div>';return}
+  const list=(items,empty,formatter)=>items.length?items.slice(0,4).map(formatter).join(''):`<p class="diagnosis-empty">${empty}</p>`;
+  container.innerHTML=`<div class="diagnosis-summary">
+    <section><h4>Gargalos</h4>${list(result.bottlenecks,'Nenhum gargalo relevante agora.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${escapeHtml(item.reason)} · gravidade ${item.severity}/100</span></article>`)}</section>
+    <section><h4>Oportunidades</h4>${list(result.opportunities,'Configure pesos e esforço para revelar oportunidades.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · ${formatPlanMinutes(item.estimatedMinutes)}</span></article>`)}</section>
+    <section><h4>Revisões críticas e risco</h4>${list(result.criticalReviews.length?result.criticalReviews:result.topicsAtRisk,'Nenhuma revisão crítica identificada.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${item.reviewUrgency>0?'Urgência '+Math.round(item.reviewUrgency)+'/100':item.daysSinceContact+' dias sem contato'}</span></article>`)}</section>
+    <section><h4>Foco da semana</h4>${list(result.weeklyFocus,'Sem distribuição confiável.',item=>`<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
+  </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
+}
+function renderStudyRecommendation(){
+  const container=document.getElementById('studyRecommendation');if(!container)return;
+  const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
+  currentStudyRecommendations=recommendStudy(intelligenceCandidates(),{availableMinutes,excludedIds:[...dismissedRecommendationIds]});
+  const item=currentStudyRecommendations[0];
+  if(!item){container.innerHTML=`<div class="upcoming-empty">${availableMinutes<15?'Defina pelo menos 15 minutos na meta de hoje.':'Nenhuma recomendação compatível com o tempo e os dados atuais.'}</div>`;return}
+  container.innerHTML=`<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action||'Estudar agora')}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button></div></div>`;
+}
+function dismissStudyRecommendation(id){dismissedRecommendationIds.add(id);renderStudyRecommendation()}
+function startStudyRecommendation(id){
+  const recommendation=currentStudyRecommendations.find(item=>item.id===id);if(!recommendation)return;
+  let plan=todayDailyStudyPlan();if(!plan){plan={id:uid('plan'),date:todayISO(),availableMinutes:Math.round(metaHoursToday()*60),plannedMinutes:0,flexMinutes:0,createdAt:nowISO(),updatedAt:nowISO(),items:[]};state.dailyPlans.push(plan)}
+  let item=plan.items.find(candidate=>candidate.topicId===recommendation.topicId&&!['completed','skipped'].includes(candidate.status));
+  if(!item){item={id:uid('plan-item'),subjectId:recommendation.subjectId,topicId:recommendation.topicId,subjectName:recommendation.subjectName,topicName:recommendation.topicName,type:recommendation.studyType||'study',plannedMinutes:recommendation.estimatedMinutes,executedSeconds:0,status:'planned',sessionIds:[],score:recommendation.score,tier:recommendation.score>=70?'Alta':recommendation.score>=40?'Média':'Baixa',position:plan.items.length+1,statusIcon:'🎯',statusLabel:'Recomendação inteligente',reason:recommendation.reasons.join(' · '),action:recommendation.action,recommendedQuestions:0,createdAt:nowISO()};plan.items.push(item);plan.plannedMinutes+=item.plannedMinutes;plan.updatedAt=nowISO();scheduleSave()}
+  startPlannedActivity(item.id);
+}
+
 /* ===== PLANO DE HOJE ===== */
 
 function formatPlanMinutes(minutes){
@@ -4412,15 +4476,17 @@ function scoreRevisoes(metrics){ return (metrics||computeApprovalMetrics()).revi
 function scoreTendencia(metrics){ return (metrics||computeApprovalMetrics()).tendencia.score; }
 function scorePrazo(metrics){ return (metrics||computeApprovalMetrics()).prazo.score; }
 
-const APPROVAL_WEIGHTS={simulados:0.25,acertos:0.10,edital:0.15,dominio:0.20,revisoes:0.10,tendencia:0.10,prazo:0.10};
-function indiceProntidao(metrics){
+function readinessFactors(metrics){
   const m=metrics||computeApprovalMetrics();
-  return clampScore(Object.keys(APPROVAL_WEIGHTS).reduce((sum,key)=>sum+m[key].score*APPROVAL_WEIGHTS[key],0));
+  return {coverage:m.edital,mastery:m.dominio,retention:m.retencao,consistency:m.consistencia,simulations:m.simulados};
+}
+function readinessResult(metrics){return calculateReadinessScore(readinessFactors(metrics),READINESS_WEIGHTS)}
+function indiceProntidao(metrics){
+  return readinessResult(metrics).value??0;
 }
 function confiancaAprovacao(metrics){
-  const m=metrics||computeApprovalMetrics();
-  const value=Object.keys(APPROVAL_WEIGHTS).reduce((sum,key)=>sum+m[key].confidence*APPROVAL_WEIGHTS[key],0);
-  return {value,nivel:value>=0.70?'Alta':value>=0.35?'Média':'Baixa'};
+  const result=readinessResult(metrics);
+  return {value:result.confidence,nivel:result.confidenceLabel};
 }
 function projectPerformance(metrics){
   const m=metrics||computeApprovalMetrics();
@@ -4501,38 +4567,38 @@ function approvalConhecimentoMetric(base){
   return {score:clampScore(50+(raw-50)*Math.max(.25,confidence)),confidence,available:true,raw,detail:'Domínio dos tópicos (65%) + cobertura do edital (35%)'};
 }
 function approvalConsistenciaMetric(){
-  const today=todayISO(),byDate=studySecondsByDate(state.studySessions);let applicable=0,achieved=0,studiedDays=0;
-  for(let n=27;n>=0;n--){const date=addDays(today,-n),target=metaHoursForDate(date)*3600,studied=byDate[date]||0;if(studied)studiedDays++;if(target<=0)continue;applicable++;if(studied>=target)achieved++;}
-  if(!applicable)return {score:50,confidence:0,available:false,raw:null,detail:'Defina metas de horas para medir consistência'};
-  const raw=achieved/applicable*100,confidence=Math.min(1,studiedDays/14);
-  return {score:clampScore(50+(raw-50)*Math.max(.2,confidence)),confidence,available:studiedDays>0,raw,detail:achieved+' de '+applicable+' metas diárias atingidas nos últimos 28 dias'};
+  const today=todayISO(),byDate=studySecondsByDate(state.studySessions);
+  const days=[];for(let n=27;n>=0;n--){const date=addDays(today,-n);days.push({targetSeconds:metaHoursForDate(date)*3600,studiedSeconds:byDate[date]||0})}
+  const result=calculateGoalConsistency(days);
+  if(!result.applicable)return {score:50,confidence:0,available:false,raw:null,detail:'Defina metas de horas para medir consistência'};
+  const raw=result.value,confidence=Math.min(1,result.studiedDays/14);
+  return {score:clampScore(50+(raw-50)*Math.max(.2,confidence)),confidence,available:result.available,raw,detail:result.achieved+' de '+result.applicable+' metas diárias atingidas nos últimos 28 dias'};
 }
 function computeApprovalMetrics(){
   const base={simulados:approvalSimuladosMetric(),acertos:approvalAcertosMetric(),edital:approvalEditalMetric(),dominio:approvalDominioMetric(),revisoes:approvalRevisoesMetric(),tendencia:approvalTendenciaMetric(),prazo:approvalPrazoMetric()};
   return {...base,conhecimento:approvalConhecimentoMetric(base),retencao:approvalRetencaoMetric(),questoes:base.acertos,consistencia:approvalConsistenciaMetric()};
 }
-Object.keys(APPROVAL_WEIGHTS).forEach(key=>delete APPROVAL_WEIGHTS[key]);
-Object.assign(APPROVAL_WEIGHTS,{conhecimento:.35,retencao:.25,questoes:.20,simulados:.15,consistencia:.05});
 function classificacaoAprovacao(score){
-  if(score>=85)return {nivel:'🏆 Excelente posição',cor:'ok',faixa:'85–100'};
-  if(score>=70)return {nivel:'🟢 Muito competitivo',cor:'ok',faixa:'70–84'};
-  if(score>=50)return {nivel:'🟠 Competitivo, com ajustes',cor:'warn',faixa:'50–69'};
-  return {nivel:'🔴 Precisa evoluir',cor:'danger',faixa:'0–49'};
+  if(score>=85)return {nivel:'🏆 Excelente preparação',cor:'ok',faixa:'85–100'};
+  if(score>=70)return {nivel:'🟢 Preparação avançada',cor:'ok',faixa:'70–84'};
+  if(score>=50)return {nivel:'🟠 Em desenvolvimento',cor:'warn',faixa:'50–69'};
+  return {nivel:'🔴 Preparação inicial',cor:'danger',faixa:'0–49'};
 }
 function renderApprovalDashboard(){
   const el=document.getElementById('approvalDashboard');if(!el)return;
-  const m=computeApprovalMetrics(),score=indiceProntidao(m),level=classificacaoAprovacao(score),confidence=confiancaAprovacao(m),projection=projectPerformance(m);
-  const factors=[['Conhecimento · 35%',m.conhecimento],['Retenção · 25%',m.retencao],['Questões · 20%',m.questoes],['Simulados · 15%',m.simulados],['Consistência · 5%',m.consistencia]];
-  const approvalState=confidence.value<=0?'empty':confidence.value<.35?'insufficient':'ready';
-  const approvalLabel=approvalState==='empty'?'Aguardando dados':approvalState==='insufficient'?'Estimativa inicial':'Resultado calculado';
+  const m=computeApprovalMetrics(),readiness=readinessResult(m),score=readiness.value??0,level=classificacaoAprovacao(score),confidence={value:readiness.confidence,nivel:readiness.confidenceLabel},projection=projectPerformance(m);
+  const factors=[['Cobertura · 30%',m.edital,'coverage'],['Domínio · 25%',m.dominio,'mastery'],['Retenção · 20%',m.retencao,'retention'],['Consistência · 15%',m.consistencia,'consistency'],['Simulados · 10%',m.simulados,'simulations']];
+  const approvalState=readiness.state==='empty'?'empty':readiness.state==='insufficient'||confidence.value<.35?'insufficient':'ready';
+  const approvalLabel=approvalState==='empty'?'Aguardando dados':approvalState==='insufficient'?'Estimativa inicial':'Estimativa calculada';
   el.innerHTML=`<div class="metric-state metric-state--${approvalState}">${approvalLabel}${approvalState!=='ready'?'<span>Registre mais atividades para liberar uma classificação definitiva.</span>':''}</div><div class="kpi-grid">
-    <div class="kpi-cell ${approvalState==='ready'?(level.cor==='danger'?'warn':level.cor):'neutral'}"><div class="n">${approvalState==='empty'?'—':score+'/100'}</div><div class="l">${approvalState==='ready'?'Chance estimada':approvalLabel}</div></div>
-    <div class="kpi-cell ${approvalState==='ready'?(level.cor==='danger'?'warn':level.cor):'neutral'}"><div class="n" style="font-size:18px">${approvalState==='ready'?level.nivel:approvalLabel}</div><div class="l">${approvalState==='ready'?'Faixa '+level.faixa:'Sem classificação definitiva'}</div></div>
+    <div class="kpi-cell ${approvalState==='ready'?(level.cor==='danger'?'warn':level.cor):'neutral'}"><div class="n">${approvalState==='empty'?'—':score+'/100'}</div><div class="l">Índice de Prontidão</div></div>
+    <div class="kpi-cell ${approvalState==='ready'?(level.cor==='danger'?'warn':level.cor):'neutral'}"><div class="n" style="font-size:18px">${approvalState==='ready'?level.nivel:approvalLabel}</div><div class="l">${approvalState==='ready'?'Nível de preparação · '+level.faixa:'Sem classificação definitiva'}</div></div>
     <div class="kpi-cell"><div class="n">${confidence.nivel}</div><div class="l">Confiança · ${Math.round(confidence.value*100)}%</div></div>
     <div class="kpi-cell"><div class="n">${m.retencao.available?Math.round(m.retencao.raw)+'%':'—'}</div><div class="l">Retenção média</div></div>
     <div class="kpi-cell"><div class="n">${projection.available?projection.low+'–'+projection.high+'%':'—'}</div><div class="l">Projeção de desempenho</div></div>
   </div>
   ${factors.map(([label,item])=>{const dataState=getMetricDataState(item);return `<div class="bar-row metric-row metric-row--${dataState}" title="${escapeAttr(item.detail)}"><div class="bar-label">${label}<small>${metricStateLabel(item)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${dataState==='empty'?0:item.score}%"></div></div><div class="bar-pct">${dataState==='empty'?'—':item.score+'%'}</div></div>`}).join('')}
+  <details class="readiness-explanation"><summary>Como este índice foi calculado?</summary><p>Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e nunca recebem nota zero.</p><ul>${factors.map(([label,item,key])=>`<li><strong>${label}</strong>: ${item.available?item.score+'/100 · confiança '+Math.round(item.confidence*100)+'%':'aguardando dados'}${item.detail?' · '+escapeHtml(item.detail):''}</li>`).join('')}</ul></details>
   <div class="approval-scale"><span class="approval-scale-danger">🔴 0–49</span><span class="approval-scale-warn">🟠 50–69</span><span class="approval-scale-good">🟢 70–84</span><span class="approval-scale-great">🏆 85+</span></div>
   <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
   renderTopicRetentionDashboard();
@@ -4631,8 +4697,9 @@ const DELEGATED_ACTIONS=new Set([
   'addAgendaRow','addBreakdownRow','addCalRow','addQuestaoRow','addSimuladoRow','addSubject','addTopic','applyTodayGoalToAllDays','archiveSubject','archiveTopic','clearWeekendGoals',
   'cancelAgendaEdit','cancelCalendarEdit','cancelQuestionEdit','cancelSimulationEdit','cancelStudySessionEdit','changeAgendaLimit','changeCalendarLimit','changeOverdueGroupLimit','changePerformanceLimit','changeSubjectTopicLimit','changeUpcomingLimit','clearSessionHistoryFilters','completeAgendaReview','completeCalendarItem','completeUnifiedReview','deleteAgendaRow',
   'deleteBreakdownRow','deleteCalRow','deleteMetaDisciplina','deleteQuestaoRow','deleteSimuladoRow','deleteStudySession','duplicateSubject',
-  'editAgenda','editCalendarItem','editQuestion','editSimulation','editStudySession','focusStudyTimer','gerarAgendaAutomatica','moveSubject','navigateKpi','renameSubject',
-  'requestPermanentSubjectDelete','requestPermanentTopicDelete','resetAdaptiveReviewDate','resetAgendaLimit','resetCalendarLimit','resetOverdueGroupLimit','resetPerformanceLimit','resetRetentionLimit','resetSubjectTopicLimit','resetUpcomingLimit','restoreSubject','restoreTopic','saveAgendaEdit','saveCalendarEdit','saveQuestionEdit','setPerformanceViewMode','setRetentionFilter','setSubjectTopicFilter',
+  'editAgenda','editCalendarItem','editQuestion','editSimulation','editStudySession','focusStudyTimer','gerarAgendaAutomatica','moveSubject','navigateKpi','renameSubject','selectHeatmapDay','setHeatmapFilter','viewSelectedHeatmapSessions',
+  'dismissStudyRecommendation','startStudyRecommendation',
+  'requestPermanentSubjectDelete','requestPermanentTopicDelete','resetAdaptiveReviewDate','resetAgendaLimit','resetCalendarLimit','resetOverdueGroupLimit','resetPerformanceLimit','resetRetentionLimit','resetSubjectTopicLimit','resetUpcomingLimit','restoreSubject','restoreTopic','saveAgendaEdit','saveCalendarEdit','saveQuestionEdit','setPerformanceViewMode','setRadarSubject','setRetentionFilter','setSubjectTopicFilter',
   'saveSimulationEdit','saveStudySessionEdit','selectSessionHistoryDate','showAllOverdueGroups','showAllPerformance','showAllRetention','showAllSubjectTopics','showAllUpcoming','startPlannedActivity','toggleBreakdown','toggleNotes',
   'toggleCompletedReviews','toggleFilterPanel','toggleOverdueDate','toggleQuestionErrors','toggleSessionDay','toggleSessionDetails','toggleStreakActiveDays','toggleStreakExpanded','toggleSubject','updateAgenda','updateAgendaDraft','updateBreakdownRow','updateCal','updateCalendarDraft','updateMeta',
   'updateMetaDisciplina','updateMetaHoursDay','updateQuestionDraft','updateQuestionError','updateSessionHistoryFilter',
@@ -4642,8 +4709,9 @@ const DELEGATED_ACTION_HANDLERS={
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
-  editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,
-  requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRetentionFilter,setSubjectTopicFilter,
+  editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
+  dismissStudyRecommendation,startStudyRecommendation,
+  requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRadarSubject,setRetentionFilter,setSubjectTopicFilter,
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
   toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleSessionDetails,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
   updateMetaDisciplina,updateMetaHoursDay,updateQuestionDraft,updateQuestionError,updateSessionHistoryFilter,
@@ -4714,7 +4782,7 @@ const RENDER_SCOPE_SECTIONS={
   agenda:new Set(['filtros da agenda','agenda']),
   questoes:new Set(['questões','análise de questões','simulados','gráfico de simulados','desempenho por disciplina']),
   metas:new Set(['metas','metas de horas por dia','metas por disciplina','histórico de metas','ritmo']),
-  hoje:new Set(['prioridades','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
+  hoje:new Set(['resumo executivo','central de diagnóstico','recomendação de estudo','prioridades','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
 };
 function activeTabName(){return document.querySelector('.tab-btn.active')?.dataset.tab||'dashboard'}
 function render(scope='all'){
@@ -4749,6 +4817,9 @@ function render(scope='all'){
     ['metas por disciplina',renderMetasPorDisciplina],
     ['histórico de metas',renderHistoricoMetas],
     ['ritmo',renderRitmo],
+    ['resumo executivo',renderExecutiveSummary],
+    ['central de diagnóstico',renderDiagnosisCenter],
+    ['recomendação de estudo',renderStudyRecommendation],
     ['prioridades',renderPrioridadeHoje],
     ['tarefas da aba hoje',()=>renderCalTarefasHoje('hojeTarefasHoje')],
     ['atrasos da aba hoje',()=>renderCalAtrasadas('hojeAtrasadas')],
@@ -4834,7 +4905,7 @@ if(TEST_MODE){
     startOfWeek,isSameWeek,addDays,diasParaRevisao,parseLocalDate,todayISO,localDateFromTimestamp,
     calculateAdaptiveInterval,adaptiveReviewSuggestion,
     syncQuestionFromStudySession,getSubjectDependencies,getTopicDependencies,
-    computeApprovalMetrics,indiceProntidao,computeStudyPriorities,topicRetentionScore,
+    computeApprovalMetrics,indiceProntidao,readinessResult,calculateReadinessScore,computeStudyPriorities,topicRetentionScore,
     sha256,rotateAutomaticBackup,StorageManager,structuredCloneSafe
   };
   ensureStateDefaults();restoreTimerFromState();render();

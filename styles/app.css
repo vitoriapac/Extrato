@@ -186,6 +186,7 @@
   .radar-axis{stroke:var(--paper-line);stroke-width:1;}
   .radar-shape{fill:var(--gold);fill-opacity:0.18;stroke:var(--gold);stroke-width:2;}
   .radar-dot{fill:var(--gold-bright);stroke:var(--white);stroke-width:1.5;}
+  .radar-shape.radar-series-2{fill:var(--blue);stroke:var(--blue);fill-opacity:.12}.radar-dot.radar-series-2{fill:var(--blue)}
   .radar-empty{text-align:center;padding:24px;color:var(--ink-soft);font-size:13px;}
 
   /* ===== PRIORIDADE INTELIGENTE ===== */
@@ -829,6 +830,15 @@
 
 .heatmap-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;font:var(--text-xs) var(--font-data);color:var(--ink-soft)}
 .heatmap-toolbar>span{margin-right:auto;font-weight:600;color:var(--ink)}
+.heatmap-toolbar select,.radar-toolbar select{min-height:36px;border:1px solid var(--paper-line);background:var(--paper);color:var(--ink);padding:7px 9px;font:11px var(--font-data)}
+.heatmap-detail{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:10px 12px;border:1px solid var(--paper-line);background:var(--paper);font:11px/1.5 var(--font-data);color:var(--ink)}
+.heatmap-empty{margin-top:var(--space-3)}
+.radar-toolbar{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}.radar-toolbar label{display:flex;flex-direction:column;gap:5px;color:var(--ink-soft);font:10px var(--font-data);text-transform:uppercase}
+.radar-analysis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.radar-analysis section{padding:12px;border:1px solid var(--paper-line);background:var(--paper)}
+.radar-analysis h4{display:flex;align-items:center;gap:7px;margin:0 0 6px;color:var(--heading)}.radar-analysis p{margin:0 0 6px}.radar-analysis small{color:var(--ink-soft)}
+.radar-analysis dl{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;margin:10px 0 0;background:var(--paper-line)}.radar-analysis dl>div{padding:7px;background:var(--white);text-align:center}.radar-analysis dt{font:9px var(--font-data);color:var(--ink-soft)}.radar-analysis dd{margin:3px 0 0;font:10px var(--font-data);color:var(--heading)}
+.radar-key{width:10px;height:10px;background:var(--gold);display:inline-block}.radar-key-2{background:var(--blue)}
+.diagnosis-summary{display:grid;grid-template-columns:1fr;gap:12px}.diagnosis-summary section{padding:14px;border:1px solid var(--paper-line);background:var(--paper)}.diagnosis-summary h4{margin:0 0 10px}.diagnosis-summary article{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--paper-line)}.diagnosis-summary article:first-of-type{border-top:0}.diagnosis-summary article span,.diagnosis-empty,.confidence-note{color:var(--ink-soft);font:11px/1.5 var(--font-data)}.confidence-note{margin:12px 0 0}.study-recommendation{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.study-recommendation h4{margin:5px 0}.study-recommendation p{margin:5px 0;color:var(--ink-soft)}.study-recommendation ul{margin:10px 0 0;padding-left:18px}.recommendation-rank{color:var(--gold-deep);font:600 10px var(--font-data);text-transform:uppercase}.recommendation-actions{display:flex;gap:8px;flex-wrap:wrap}
 .heatmap-grid{max-width:100%;overflow-x:auto;padding:3px 0}
 .metric-state{display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:12px;border:1px solid var(--paper-line);background:var(--info-bg);color:var(--blue);font:600 var(--text-sm) var(--font-data)}
 .metric-state span{font-weight:400;color:var(--ink-soft)}
@@ -861,6 +871,19 @@
 .retention-toolbar,.subject-topic-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .retention-toolbar select,.subject-topic-filters select{min-height:var(--control-height);padding:7px 10px;border:1px solid var(--paper-line);background:var(--paper);color:var(--ink);font:var(--text-small) var(--font-data)}
 .retention-pattern-note{margin-bottom:12px;padding:10px 12px;background:var(--info-bg);color:var(--ink-soft);font:12px/1.5 var(--font-body)}
+.readiness-explanation{margin:14px 0 0;padding:10px 12px;border:1px solid var(--paper-line);background:var(--paper);font-size:12px}
+.readiness-explanation summary{color:var(--heading);cursor:pointer;font-family:var(--font-data);font-size:11px;font-weight:600}
+.readiness-explanation p{margin:10px 0;max-width:80ch;color:var(--ink-soft)}
+.readiness-explanation ul{margin:0;padding-left:20px}.readiness-explanation li{margin:6px 0;line-height:1.45}
+.executive-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--paper-line);border:1px solid var(--paper-line)}
+.executive-kpi{display:flex;min-width:0;min-height:112px;flex-direction:column;padding:14px;background:var(--white)}
+.executive-kpi strong{color:var(--heading);font:600 24px var(--font-display)}
+.executive-kpi span{margin-top:2px;color:var(--ink);font:600 11px var(--font-data);text-transform:uppercase}
+.executive-kpi small{margin-top:auto;padding-top:10px;color:var(--ink-soft);font-size:11px;line-height:1.4}
+.executive-decision-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.executive-decision-grid section{padding:14px;border:1px solid var(--paper-line);background:var(--paper)}
+.executive-decision-grid h4{margin:0 0 8px;color:var(--ink-soft);font:600 10px var(--font-data);letter-spacing:.05em;text-transform:uppercase}
+.executive-decision-grid p{margin:5px 0;color:var(--ink)}.executive-decision-grid small{color:var(--ink-soft);line-height:1.45}
 .overdue-group-title{width:100%;border:0;cursor:pointer;text-align:left;color:var(--ink)}
 .overdue-group-title>span:first-child{display:flex;flex-direction:column;gap:3px}
 .overdue-group-title small{font:11px var(--font-data);color:var(--ink-soft)}
@@ -925,6 +948,9 @@
 
 @media (max-width:760px){
   .wrap{padding:12px 12px 92px}
+  .executive-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.executive-decision-grid{grid-template-columns:1fr}
+  .heatmap-detail{align-items:flex-start;flex-direction:column}.radar-analysis{grid-template-columns:1fr}.radar-analysis dl{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .study-recommendation,.diagnosis-summary article{flex-direction:column}.recommendation-actions{width:100%}.recommendation-actions .btn{flex:1}
   .statement,.statement.statement--compact{padding:18px 16px}
   .statement.statement--compact{display:block}
   .statement--compact .statement-body{position:static;margin-top:12px;justify-content:space-between}
