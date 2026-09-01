@@ -28,6 +28,8 @@ import {HEATMAP_METRICS,heatmapMetricLevel} from './domain/analytics/heatmap.js'
 import {calculateSubjectRadar} from './domain/analytics/multidimensional-radar.js';
 import {generateDiagnosis} from './application/generate-diagnosis.js';
 import {recommendStudy} from './application/recommend-study.js';
+import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
+import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
 import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
 import {buildStudyPlan} from './application/build-study-plan.js';
 import {buildReplanProposal,applyReplan,undoReplan} from './application/replan-study.js';
@@ -303,6 +305,9 @@ function migrateV12toV13(data){
   (data.studyPlans||[]).forEach(plan=>{if(!Array.isArray(plan.dailyPlanOperations))plan.dailyPlanOperations=[]});
   (data.planAdjustments||[]).forEach(item=>{item.operationId=item.operationId||null;item.changes=Array.isArray(item.changes)?item.changes:[];item.undoneAt=item.undoneAt||null});data.schemaVersion=13;return data
 }
+function migrateV13toV14(data){
+  (data.recommendationFeedback||[]).forEach(item=>{item.shownAt=item.shownAt||item.createdAt||null;item.ratedAt=item.ratedAt||null;item.algorithmVersion=Math.max(1,Number(item.algorithmVersion)||1);item.score=Number.isFinite(Number(item.score))?Number(item.score):null;item.confidence=item.confidence||null});data.schemaVersion=14;return data
+}
 
 function migrateState(data){
   let version = Number(data.schemaVersion || 1);
@@ -318,6 +323,7 @@ function migrateState(data){
   if(version < 11){ data = migrateV10toV11(data); version = 11; }
   if(version < 12){ data = migrateV11toV12(data); version = 12; }
   if(version < 13){ data = migrateV12toV13(data); version = 13; }
+  if(version < 14){ data = migrateV13toV14(data); version = 14; }
   data.schemaVersion = CURRENT_SCHEMA_VERSION;
   return data;
 }
@@ -354,6 +360,7 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.studyPlans)) state.studyPlans = [];
   if(!Array.isArray(state.planAdjustments)) state.planAdjustments = [];
   if(!Array.isArray(state.recommendationFeedback)) state.recommendationFeedback = [];
+  state.recommendationFeedback.forEach(item=>{item.shownAt=item.shownAt||item.createdAt||null;item.ratedAt=item.ratedAt||null;item.algorithmVersion=Math.max(1,Number(item.algorithmVersion)||1);item.score=Number.isFinite(Number(item.score))?Number(item.score):null;item.confidence=item.confidence||null});
   if(!Array.isArray(state.alertStates)) state.alertStates = [];
   if(!state.activeTimer || typeof state.activeTimer!=='object') state.activeTimer = {};
   state.activeTimer.startedAt = state.activeTimer.startedAt || null;
@@ -1255,7 +1262,7 @@ function recordPlannedExecution(planItemId,session){
   item.status=item.plannedMinutes>0&&item.executedSeconds>=item.plannedMinutes*60?'completed':'partial';
   item.lastExecutedAt=session.endedAt||nowISO();
   plan.updatedAt=nowISO();
-  if(item.recommendationId){const feedback=state.recommendationFeedback.find(entry=>entry.recommendationId===item.recommendationId&&entry.accepted);if(feedback){feedback.completed=item.status==='completed';feedback.completedAt=feedback.completed?item.lastExecutedAt:null;feedback.resultingSessionId=session.id}}
+  if(item.recommendationId&&item.status==='completed')completeRecommendationFeedback(state.recommendationFeedback,item.recommendationId,{sessionId:session.id,completedAt:item.lastExecutedAt});
 }
 function syncPlannedExecution(planItemId){
   const latest=state.studySessions.filter(session=>session.planItemId===planItemId).sort((a,b)=>(a.endedAt||'').localeCompare(b.endedAt||'')).pop();
@@ -1563,13 +1570,14 @@ function renderHeatmap(){
     const active=heatmapMetricLevel(summary,streakView.metric)>0;
     if(!streakView.onlyActiveDays||active) cells.push(summary);
   }
-  const cellsHtml = cells.map(summary => {
-    const level=heatmapLevel(summary);
+  const heatmapModel=buildHeatmapViewModel({summaries:cells,metric:streakView.metric,selectedDate:streakView.selectedDate});
+  const cellsHtml = heatmapModel.cells.map(summary => {
+    const level=summary.level;
     const tooltip=heatmapTooltip(summary);
     const selected=streakView.selectedDate===summary.date?'selected':'';
     return `<button type="button" class="heatmap-cell ${level>0?'heat-'+level:''} ${selected}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" data-delegated-click="selectHeatmapDay('${summary.date}')"></button>`;
   }).join('');
-  const hasMetricActivity=cells.some(summary=>heatmapMetricLevel(summary,streakView.metric)>0);
+  const hasMetricActivity=heatmapModel.hasActivity;
   const activityStreak=computeStreak(activityDates);
   const goalStreak=computeStreak(getGoalDates());
   document.getElementById('heatmapContainer').innerHTML = `
@@ -4397,29 +4405,35 @@ function intelligenceCandidates(){
 }
 function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
-  const result=generateDiagnosis(intelligenceCandidates());
-  if(result.state==='insufficient'){container.innerHTML='<div class="upcoming-empty">Ainda não há dados suficientes. Cadastre tópicos e registre atividades para gerar o diagnóstico.</div>';return}
+  const result=generateDiagnosis(intelligenceCandidates()),model=buildDiagnosisViewModel(result);
+  if(model.state==='insufficient'){container.innerHTML='<div class="upcoming-empty">Ainda não há dados suficientes. Cadastre tópicos e registre atividades para gerar o diagnóstico.</div>';return}
   const list=(items,empty,formatter)=>items.length?items.slice(0,4).map(formatter).join(''):`<p class="diagnosis-empty">${empty}</p>`;
+  const section=key=>model.sections.find(item=>item.key===key)?.items||[];
   container.innerHTML=`<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(result.bottlenecks,'Nenhum gargalo relevante agora.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value??item.severity}/100 · confiança ${(item.risk?.confidenceLabel||'Baixa').toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length?' · '+item.risk.missingFactors.length+' fatores ausentes':''}</span></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(result.opportunities,'Configure pesos e esforço para revelar oportunidades.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · confiança ${item.confidenceLabel.toLowerCase()} · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes('examImpact')?' · peso da prova ausente':''}</span></article>`)}</section>
-    <section><h4>Revisões críticas e risco</h4>${list(result.criticalReviews.length?result.criticalReviews:result.topicsAtRisk,'Nenhuma revisão crítica identificada.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${item.reviewUrgency>0?'Urgência '+Math.round(item.reviewUrgency)+'/100':item.daysSinceContact+' dias sem contato'}</span></article>`)}</section>
-    <section><h4>Foco da semana</h4>${list(result.weeklyFocus,'Sem distribuição confiável.',item=>`<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
+    <section><h4>Gargalos</h4>${list(section('bottlenecks'),'Nenhum gargalo relevante agora.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value??item.severity}/100 · confiança ${(item.risk?.confidenceLabel||'Baixa').toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length?' · '+item.risk.missingFactors.length+' fatores ausentes':''}</span></article>`)}</section>
+    <section><h4>Oportunidades</h4>${list(section('opportunities'),'Configure pesos e esforço para revelar oportunidades.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · confiança ${item.confidenceLabel.toLowerCase()} · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes('examImpact')?' · peso da prova ausente':''}</span></article>`)}</section>
+    <section><h4>Revisões críticas e risco</h4>${list(section('risk'),'Nenhuma revisão crítica identificada.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${item.reviewUrgency>0?'Urgência '+Math.round(item.reviewUrgency)+'/100':item.daysSinceContact+' dias sem contato'}</span></article>`)}</section>
+    <section><h4>Foco da semana</h4>${list(section('focus'),'Sem distribuição confiável.',item=>`<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
 }
 function renderStudyRecommendation(){
   const container=document.getElementById('studyRecommendation');if(!container)return;
   const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
-  currentStudyRecommendations=recommendStudy(intelligenceCandidates(),{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>({...item,recommendationId:`rec-${todayISO()}-${item.id}`}));
+  const previous=new Map(currentStudyRecommendations.map(item=>[item.id,item]));
+  currentStudyRecommendations=recommendStudy(intelligenceCandidates(),{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>previous.get(item.id)||createRecommendationPresentation(item,{id:uid('recommendation'),shownAt:nowISO(),algorithmVersion:state.algorithmVersions.recommendations}));
   const item=currentStudyRecommendations[0];
   if(!item){container.innerHTML=`<div class="upcoming-empty">${availableMinutes<15?'Defina pelo menos 15 minutos na meta de hoje.':'Nenhuma recomendação compatível com o tempo e os dados atuais.'}</div>`;return}
   const factorLabels={examImpact:'Impacto na prova',retentionRisk:'Risco de retenção',masteryGap:'Lacuna de domínio',reviewUrgency:'Urgência da revisão',planAlignment:'Alinhamento com o plano',recencyRisk:'Tempo sem contato'};
   const contributionRows=Object.entries(item.contributions).map(([key,value])=>`<div><span>${escapeHtml(factorLabels[key]||key)}</span><strong>+${value}</strong></div>`).join('');
-  container.innerHTML=`<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action||'Estudar agora')}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
+  const pending=state.recommendationFeedback.find(feedback=>feedback.completed&&feedback.useful===null),summary=summarizeRecommendationFeedback(state.recommendationFeedback);
+  const outcome=pending?`<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'';
+  const history=summary.shown?`<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate??0}% concluídas${summary.rated?` · ${summary.usefulnessRate}% úteis`:''}</small>`:'';
+  container.innerHTML=`${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action||'Estudar agora')}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details>${history}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
 }
-function recordRecommendationFeedback(recommendation,{accepted,reasonSkipped=null}={}){const existing=state.recommendationFeedback.find(item=>item.recommendationId===recommendation.recommendationId);if(existing){existing.accepted=Boolean(accepted);existing.reasonSkipped=reasonSkipped;return existing}const feedback={id:uid('recommendation-feedback'),recommendationId:recommendation.recommendationId,date:todayISO(),subjectId:recommendation.subjectId||null,topicId:recommendation.topicId||null,accepted:Boolean(accepted),completed:false,useful:null,reasonSkipped,resultingSessionId:null,createdAt:nowISO(),completedAt:null};state.recommendationFeedback.push(feedback);return feedback}
+function recordRecommendationFeedback(recommendation,{accepted,reasonSkipped=null}={}){return recordRecommendationDecision(state.recommendationFeedback,recommendation,{accepted,reasonSkipped,now:nowISO(),idGenerator:uid})}
 function dismissStudyRecommendation(id){const recommendation=currentStudyRecommendations.find(item=>item.id===id);if(recommendation){recordRecommendationFeedback(recommendation,{accepted:false,reasonSkipped:'swapped'});scheduleSave()}dismissedRecommendationIds.add(id);renderStudyRecommendation()}
 function markRecommendationNotUseful(id){const recommendation=currentStudyRecommendations.find(item=>item.id===id);if(recommendation){const feedback=recordRecommendationFeedback(recommendation,{accepted:false,reasonSkipped:'not_useful'});feedback.useful=false;scheduleSave()}dismissedRecommendationIds.add(id);renderStudyRecommendation()}
+function rateRecommendationOutcome(recommendationId,useful){if(rateRecommendationFeedback(state.recommendationFeedback,recommendationId,{useful,ratedAt:nowISO()})){scheduleSave();renderStudyRecommendation();showToast('Obrigado. Esse retorno melhora a avaliação das recomendações.')}}
 function startStudyRecommendation(id){
   const recommendation=currentStudyRecommendations.find(item=>item.id===id);if(!recommendation)return;
   recordRecommendationFeedback(recommendation,{accepted:true});
@@ -4764,19 +4778,8 @@ function performanceForecastObservations(){
 
 function gerarDiagnosticoAprovacao(metrics){
   const m=metrics||computeApprovalMetrics();
-  const diagnostico=[];
-  if(m.simulados.available&&m.simulados.raw>=75) diagnostico.push('✅ Boa média nos simulados');
-  if(m.revisoes.available&&m.revisoes.raw>=90) diagnostico.push('✅ Revisões em dia');
-  if(m.tendencia.available&&m.tendencia.score>=60) diagnostico.push('✅ Evolução positiva recente');
-  if(m.edital.available&&m.edital.raw<60) diagnostico.push('⚠️ Edital com baixa cobertura');
-  if(m.dominio.available&&m.dominio.raw<50) diagnostico.push('⚠️ Domínio médio dos tópicos ainda baixo');
-  if(m.dominio.available&&m.dominio.raw>=75) diagnostico.push('✅ Bom domínio médio dos tópicos');
-  if(m.acertos.available&&m.acertos.raw<state.metas.metaAprovacao) diagnostico.push(`⚠️ Taxa de acerto abaixo da meta (${state.metas.metaAprovacao}%)`);
-  if(m.prazo.available&&m.prazo.score<60) diagnostico.push('⚠️ Ritmo atual abaixo do necessário até a prova');
-  if(!m.simulados.available) diagnostico.push('ℹ️ Registre simulados para aumentar a confiança do índice');
-  if(m.acertos.confidence<0.34) diagnostico.push('ℹ️ Ainda há poucas questões para uma estimativa estável');
-  if(diagnostico.length===0) diagnostico.push('✅ Indicadores equilibrados no momento');
-  return diagnostico;
+  const icons={positive:'✅',warning:'⚠️',info:'ℹ️'};
+  return buildApprovalSignals(m,{target:state.metas.metaAprovacao}).map(item=>`${icons[item.level]} ${item.text}`);
 }
 function topicRetentionScore(subjectId,topicId){
   const found=getTopicById(topicId);
@@ -4945,7 +4948,7 @@ const DELEGATED_ACTIONS=new Set([
   'cancelAgendaEdit','cancelCalendarEdit','cancelQuestionEdit','cancelSimulationEdit','cancelStudySessionEdit','changeAgendaLimit','changeCalendarLimit','changeOverdueGroupLimit','changePerformanceLimit','changeSubjectTopicLimit','changeUpcomingLimit','clearSessionHistoryFilters','completeAgendaReview','completeCalendarItem','completeUnifiedReview','deleteAgendaRow',
   'deleteBreakdownRow','deleteCalRow','deleteMetaDisciplina','deleteQuestaoRow','deleteSimuladoRow','deleteStudySession','duplicateSubject',
   'editAgenda','editCalendarItem','editQuestion','editSimulation','editStudySession','focusStudyTimer','gerarAgendaAutomatica','moveSubject','navigateKpi','renameSubject','selectHeatmapDay','setHeatmapFilter','viewSelectedHeatmapSessions',
-  'dismissIntelligentAlert','dismissStudyRecommendation','markRecommendationNotUseful','startStudyRecommendation',
+  'dismissIntelligentAlert','dismissStudyRecommendation','markRecommendationNotUseful','rateRecommendationOutcome','startStudyRecommendation',
   'requestPermanentSubjectDelete','requestPermanentTopicDelete','resetAdaptiveReviewDate','resetAgendaLimit','resetCalendarLimit','resetOverdueGroupLimit','resetPerformanceLimit','resetRetentionLimit','resetSubjectTopicLimit','resetUpcomingLimit','restoreSubject','restoreTopic','saveAgendaEdit','saveCalendarEdit','saveQuestionEdit','setPerformanceViewMode','setRadarSubject','setRetentionFilter','setSubjectTopicFilter',
   'saveSimulationEdit','saveStudySessionEdit','selectSessionHistoryDate','showAllOverdueGroups','showAllPerformance','showAllRetention','showAllSubjectTopics','showAllUpcoming','startPlannedActivity','toggleBreakdown','toggleNotes',
   'toggleCompletedReviews','toggleFilterPanel','toggleOverdueDate','toggleQuestionErrors','toggleSessionDay','toggleSessionDetails','toggleStreakActiveDays','toggleStreakExpanded','toggleSubject','updateAgenda','updateAgendaDraft','updateBreakdownRow','updateCal','updateCalendarDraft','updateMeta',
@@ -4959,7 +4962,7 @@ const DELEGATED_ACTION_HANDLERS={
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
   editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
-  dismissIntelligentAlert,dismissStudyRecommendation,markRecommendationNotUseful,startStudyRecommendation,
+  dismissIntelligentAlert,dismissStudyRecommendation,markRecommendationNotUseful,rateRecommendationOutcome,startStudyRecommendation,
   requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRadarSubject,setRetentionFilter,setSubjectTopicFilter,
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
   toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleSessionDetails,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,

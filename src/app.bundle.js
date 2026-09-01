@@ -5,7 +5,7 @@
   var BACKUP_KEY = STORAGE_KEY + "-automatic-backup";
   var BACKUP_INDEX_KEY = BACKUP_KEY + "-index";
   var AUTOMATIC_BACKUP_SLOTS = 5;
-  var CURRENT_SCHEMA_VERSION = 13;
+  var CURRENT_SCHEMA_VERSION = 14;
   var MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
   var DB_NAME = "extrato-estudos-db";
   var DB_VERSION = 1;
@@ -800,6 +800,91 @@
     }).filter((item) => item.estimatedMinutes <= availableMinutes && Object.keys(item.factors).length).sort((a, b) => b.score - a.score || a.estimatedMinutes - b.estimatedMinutes);
   }
 
+  // src/application/recommendations/recommendation-feedback.js
+  var asBoolean = (value) => value === true;
+  function createRecommendationPresentation(recommendation, { id, shownAt, algorithmVersion = 1 } = {}) {
+    if (!recommendation || !id || !shownAt) throw new Error("Recomendação, identidade e instante são obrigatórios.");
+    return { ...recommendation, recommendationId: id, shownAt, algorithmVersion };
+  }
+  function recordRecommendationDecision(feedbackList, recommendation, { accepted, reasonSkipped = null, now, idGenerator } = {}) {
+    const existing = feedbackList.find((item) => item.recommendationId === recommendation.recommendationId);
+    if (existing) return existing;
+    const feedback = {
+      id: idGenerator("recommendation-feedback"),
+      recommendationId: recommendation.recommendationId,
+      date: String(recommendation.shownAt).slice(0, 10),
+      subjectId: recommendation.subjectId || null,
+      topicId: recommendation.topicId || null,
+      accepted: asBoolean(accepted),
+      completed: false,
+      useful: null,
+      reasonSkipped,
+      resultingSessionId: null,
+      score: Number(recommendation.score) || 0,
+      confidence: recommendation.confidence || "baixa",
+      algorithmVersion: Number(recommendation.algorithmVersion) || 1,
+      shownAt: recommendation.shownAt,
+      createdAt: now,
+      completedAt: null,
+      ratedAt: null
+    };
+    feedbackList.push(feedback);
+    return feedback;
+  }
+  function completeRecommendationFeedback(feedbackList, recommendationId, { sessionId, completedAt } = {}) {
+    const feedback = feedbackList.find((item) => item.recommendationId === recommendationId && item.accepted);
+    if (!feedback) return null;
+    feedback.completed = true;
+    feedback.completedAt = completedAt;
+    feedback.resultingSessionId = sessionId || null;
+    return feedback;
+  }
+  function rateRecommendationFeedback(feedbackList, recommendationId, { useful, ratedAt } = {}) {
+    const feedback = feedbackList.find((item) => item.recommendationId === recommendationId && item.completed);
+    if (!feedback) return null;
+    feedback.useful = asBoolean(useful);
+    feedback.ratedAt = ratedAt;
+    return feedback;
+  }
+  function summarizeRecommendationFeedback(feedbackList = []) {
+    const decisions = feedbackList.filter((item) => typeof item.accepted === "boolean");
+    const accepted = decisions.filter((item) => item.accepted);
+    const completed = accepted.filter((item) => item.completed);
+    const rated = completed.filter((item) => typeof item.useful === "boolean");
+    const pct = (part, total) => total ? Math.round(part / total * 100) : null;
+    return { shown: decisions.length, accepted: accepted.length, completed: completed.length, rated: rated.length, acceptanceRate: pct(accepted.length, decisions.length), completionRate: pct(completed.length, accepted.length), usefulnessRate: pct(rated.filter((item) => item.useful).length, rated.length) };
+  }
+
+  // src/application/analytics/build-analytics-view-model.js
+  function buildHeatmapViewModel({ summaries = [], metric = "hours", selectedDate = null } = {}) {
+    const normalizedMetric = HEATMAP_METRICS.includes(metric) ? metric : "hours";
+    const cells = summaries.map((summary) => ({ ...summary, level: heatmapMetricLevel(summary, normalizedMetric), selected: summary.date === selectedDate }));
+    return { metric: normalizedMetric, cells, hasActivity: cells.some((item) => item.level > 0), selected: cells.find((item) => item.selected) || null };
+  }
+  function buildDiagnosisViewModel(diagnosis, { limit = 4 } = {}) {
+    if (!diagnosis || diagnosis.state === "insufficient") return { state: "insufficient", sections: [] };
+    return { state: "estimated", sections: [
+      { key: "bottlenecks", title: "Gargalos", items: (diagnosis.bottlenecks || []).slice(0, limit) },
+      { key: "opportunities", title: "Oportunidades", items: (diagnosis.opportunities || []).slice(0, limit) },
+      { key: "risk", title: "Revisões críticas e risco", items: ((diagnosis.criticalReviews || []).length ? diagnosis.criticalReviews : diagnosis.topicsAtRisk || []).slice(0, limit) },
+      { key: "focus", title: "Foco da semana", items: (diagnosis.weeklyFocus || []).slice(0, limit) }
+    ] };
+  }
+  function buildApprovalSignals(metrics, { target = 70 } = {}) {
+    const signals = [];
+    if (metrics.simulados?.available && metrics.simulados.raw >= 75) signals.push({ level: "positive", text: "Boa média nos simulados" });
+    if (metrics.revisoes?.available && metrics.revisoes.raw >= 90) signals.push({ level: "positive", text: "Revisões em dia" });
+    if (metrics.tendencia?.available && metrics.tendencia.score >= 60) signals.push({ level: "positive", text: "Evolução positiva recente" });
+    if (metrics.edital?.available && metrics.edital.raw < 60) signals.push({ level: "warning", text: "Edital com baixa cobertura" });
+    if (metrics.dominio?.available && metrics.dominio.raw < 50) signals.push({ level: "warning", text: "Domínio médio dos tópicos ainda baixo" });
+    if (metrics.dominio?.available && metrics.dominio.raw >= 75) signals.push({ level: "positive", text: "Bom domínio médio dos tópicos" });
+    if (metrics.acertos?.available && metrics.acertos.raw < target) signals.push({ level: "warning", text: `Taxa de acerto abaixo da meta (${target}%)` });
+    if (metrics.prazo?.available && metrics.prazo.score < 60) signals.push({ level: "warning", text: "Ritmo atual abaixo do necessário até a prova" });
+    if (!metrics.simulados?.available) signals.push({ level: "info", text: "Registre simulados para aumentar a confiança do índice" });
+    if ((metrics.acertos?.confidence || 0) < 0.34) signals.push({ level: "info", text: "Ainda há poucas questões para uma estimativa estável" });
+    return signals.length ? signals : [{ level: "positive", text: "Indicadores equilibrados no momento" }];
+  }
+
   // src/domain/diagnostics/risk-score.js
   var RISK_WEIGHTS = Object.freeze({ masteryRisk: 0.25, retentionRisk: 0.25, trendRisk: 0.15, recencyRisk: 0.15, examImpact: 0.15, examProximity: 0.05 });
   var clamp4 = (value) => Math.max(0, Math.min(100, Number(value) || 0));
@@ -1539,6 +1624,17 @@
     data.schemaVersion = 13;
     return data;
   }
+  function migrateV13toV14(data) {
+    (data.recommendationFeedback || []).forEach((item) => {
+      item.shownAt = item.shownAt || item.createdAt || null;
+      item.ratedAt = item.ratedAt || null;
+      item.algorithmVersion = Math.max(1, Number(item.algorithmVersion) || 1);
+      item.score = Number.isFinite(Number(item.score)) ? Number(item.score) : null;
+      item.confidence = item.confidence || null;
+    });
+    data.schemaVersion = 14;
+    return data;
+  }
   function migrateState(data) {
     let version = Number(data.schemaVersion || 1);
     if (version < 2) {
@@ -1589,6 +1685,10 @@
       data = migrateV12toV13(data);
       version = 13;
     }
+    if (version < 14) {
+      data = migrateV13toV14(data);
+      version = 14;
+    }
     data.schemaVersion = CURRENT_SCHEMA_VERSION;
     return data;
   }
@@ -1624,6 +1724,13 @@
     if (!Array.isArray(state.studyPlans)) state.studyPlans = [];
     if (!Array.isArray(state.planAdjustments)) state.planAdjustments = [];
     if (!Array.isArray(state.recommendationFeedback)) state.recommendationFeedback = [];
+    state.recommendationFeedback.forEach((item) => {
+      item.shownAt = item.shownAt || item.createdAt || null;
+      item.ratedAt = item.ratedAt || null;
+      item.algorithmVersion = Math.max(1, Number(item.algorithmVersion) || 1);
+      item.score = Number.isFinite(Number(item.score)) ? Number(item.score) : null;
+      item.confidence = item.confidence || null;
+    });
     if (!Array.isArray(state.alertStates)) state.alertStates = [];
     if (!state.activeTimer || typeof state.activeTimer !== "object") state.activeTimer = {};
     state.activeTimer.startedAt = state.activeTimer.startedAt || null;
@@ -2668,14 +2775,7 @@
     item.status = item.plannedMinutes > 0 && item.executedSeconds >= item.plannedMinutes * 60 ? "completed" : "partial";
     item.lastExecutedAt = session.endedAt || nowISO2();
     plan.updatedAt = nowISO2();
-    if (item.recommendationId) {
-      const feedback = state.recommendationFeedback.find((entry) => entry.recommendationId === item.recommendationId && entry.accepted);
-      if (feedback) {
-        feedback.completed = item.status === "completed";
-        feedback.completedAt = feedback.completed ? item.lastExecutedAt : null;
-        feedback.resultingSessionId = session.id;
-      }
-    }
+    if (item.recommendationId && item.status === "completed") completeRecommendationFeedback(state.recommendationFeedback, item.recommendationId, { sessionId: session.id, completedAt: item.lastExecutedAt });
   }
   function syncPlannedExecution(planItemId) {
     const latest = state.studySessions.filter((session) => session.planItemId === planItemId).sort((a, b) => (a.endedAt || "").localeCompare(b.endedAt || "")).pop();
@@ -2990,9 +3090,6 @@
     </div>`;
     }).join("");
   }
-  function heatmapLevel(summary) {
-    return heatmapMetricLevel(summary, streakView.metric);
-  }
   function heatmapTooltip(summary) {
     const parts = [formatDatePt(summary.date), formatDuration(summary.seconds), pluralize(summary.sessions.length, "sessão", "sessões")];
     if (summary.targetSeconds > 0) parts.push(`${summary.goalPct}% da meta`);
@@ -3015,13 +3112,14 @@
       const active = heatmapMetricLevel(summary, streakView.metric) > 0;
       if (!streakView.onlyActiveDays || active) cells.push(summary);
     }
-    const cellsHtml = cells.map((summary) => {
-      const level = heatmapLevel(summary);
+    const heatmapModel = buildHeatmapViewModel({ summaries: cells, metric: streakView.metric, selectedDate: streakView.selectedDate });
+    const cellsHtml = heatmapModel.cells.map((summary) => {
+      const level = summary.level;
       const tooltip = heatmapTooltip(summary);
       const selected = streakView.selectedDate === summary.date ? "selected" : "";
       return `<button type="button" class="heatmap-cell ${level > 0 ? "heat-" + level : ""} ${selected}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" data-delegated-click="selectHeatmapDay('${summary.date}')"></button>`;
     }).join("");
-    const hasMetricActivity = cells.some((summary) => heatmapMetricLevel(summary, streakView.metric) > 0);
+    const hasMetricActivity = heatmapModel.hasActivity;
     const activityStreak = computeStreak(activityDates);
     const goalStreak = computeStreak(getGoalDates());
     document.getElementById("heatmapContainer").innerHTML = `
@@ -6145,24 +6243,26 @@
   function renderDiagnosisCenter() {
     const container = document.getElementById("diagnosisCenter");
     if (!container) return;
-    const result = generateDiagnosis(intelligenceCandidates());
-    if (result.state === "insufficient") {
+    const result = generateDiagnosis(intelligenceCandidates()), model = buildDiagnosisViewModel(result);
+    if (model.state === "insufficient") {
       container.innerHTML = '<div class="upcoming-empty">Ainda não há dados suficientes. Cadastre tópicos e registre atividades para gerar o diagnóstico.</div>';
       return;
     }
     const list = (items, empty, formatter) => items.length ? items.slice(0, 4).map(formatter).join("") : `<p class="diagnosis-empty">${empty}</p>`;
+    const section = (key) => model.sections.find((item) => item.key === key)?.items || [];
     container.innerHTML = `<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(result.bottlenecks, "Nenhum gargalo relevante agora.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value ?? item.severity}/100 · confiança ${(item.risk?.confidenceLabel || "Baixa").toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</span></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(result.opportunities, "Configure pesos e esforço para revelar oportunidades.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · confiança ${item.confidenceLabel.toLowerCase()} · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes("examImpact") ? " · peso da prova ausente" : ""}</span></article>`)}</section>
-    <section><h4>Revisões críticas e risco</h4>${list(result.criticalReviews.length ? result.criticalReviews : result.topicsAtRisk, "Nenhuma revisão crítica identificada.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${item.reviewUrgency > 0 ? "Urgência " + Math.round(item.reviewUrgency) + "/100" : item.daysSinceContact + " dias sem contato"}</span></article>`)}</section>
-    <section><h4>Foco da semana</h4>${list(result.weeklyFocus, "Sem distribuição confiável.", (item) => `<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
+    <section><h4>Gargalos</h4>${list(section("bottlenecks"), "Nenhum gargalo relevante agora.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value ?? item.severity}/100 · confiança ${(item.risk?.confidenceLabel || "Baixa").toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</span></article>`)}</section>
+    <section><h4>Oportunidades</h4>${list(section("opportunities"), "Configure pesos e esforço para revelar oportunidades.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · confiança ${item.confidenceLabel.toLowerCase()} · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes("examImpact") ? " · peso da prova ausente" : ""}</span></article>`)}</section>
+    <section><h4>Revisões críticas e risco</h4>${list(section("risk"), "Nenhuma revisão crítica identificada.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${item.reviewUrgency > 0 ? "Urgência " + Math.round(item.reviewUrgency) + "/100" : item.daysSinceContact + " dias sem contato"}</span></article>`)}</section>
+    <section><h4>Foco da semana</h4>${list(section("focus"), "Sem distribuição confiável.", (item) => `<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
   }
   function renderStudyRecommendation() {
     const container = document.getElementById("studyRecommendation");
     if (!container) return;
     const availableMinutes = Math.max(0, Math.round(metaHoursToday() * 60));
-    currentStudyRecommendations = recommendStudy(intelligenceCandidates(), { availableMinutes, excludedIds: [...dismissedRecommendationIds] }).map((item2) => ({ ...item2, recommendationId: `rec-${todayISO()}-${item2.id}` }));
+    const previous = new Map(currentStudyRecommendations.map((item2) => [item2.id, item2]));
+    currentStudyRecommendations = recommendStudy(intelligenceCandidates(), { availableMinutes, excludedIds: [...dismissedRecommendationIds] }).map((item2) => previous.get(item2.id) || createRecommendationPresentation(item2, { id: uid("recommendation"), shownAt: nowISO2(), algorithmVersion: state.algorithmVersions.recommendations }));
     const item = currentStudyRecommendations[0];
     if (!item) {
       container.innerHTML = `<div class="upcoming-empty">${availableMinutes < 15 ? "Defina pelo menos 15 minutos na meta de hoje." : "Nenhuma recomendação compatível com o tempo e os dados atuais."}</div>`;
@@ -6170,18 +6270,13 @@
     }
     const factorLabels = { examImpact: "Impacto na prova", retentionRisk: "Risco de retenção", masteryGap: "Lacuna de domínio", reviewUrgency: "Urgência da revisão", planAlignment: "Alinhamento com o plano", recencyRisk: "Tempo sem contato" };
     const contributionRows = Object.entries(item.contributions).map(([key, value]) => `<div><span>${escapeHtml(factorLabels[key] || key)}</span><strong>+${value}</strong></div>`).join("");
-    container.innerHTML = `<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
+    const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null), summary = summarizeRecommendationFeedback(state.recommendationFeedback);
+    const outcome = pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>` : "";
+    const history2 = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
+    container.innerHTML = `${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details>${history2}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
   }
   function recordRecommendationFeedback(recommendation, { accepted, reasonSkipped = null } = {}) {
-    const existing = state.recommendationFeedback.find((item) => item.recommendationId === recommendation.recommendationId);
-    if (existing) {
-      existing.accepted = Boolean(accepted);
-      existing.reasonSkipped = reasonSkipped;
-      return existing;
-    }
-    const feedback = { id: uid("recommendation-feedback"), recommendationId: recommendation.recommendationId, date: todayISO(), subjectId: recommendation.subjectId || null, topicId: recommendation.topicId || null, accepted: Boolean(accepted), completed: false, useful: null, reasonSkipped, resultingSessionId: null, createdAt: nowISO2(), completedAt: null };
-    state.recommendationFeedback.push(feedback);
-    return feedback;
+    return recordRecommendationDecision(state.recommendationFeedback, recommendation, { accepted, reasonSkipped, now: nowISO2(), idGenerator: uid });
   }
   function dismissStudyRecommendation(id) {
     const recommendation = currentStudyRecommendations.find((item) => item.id === id);
@@ -6201,6 +6296,13 @@
     }
     dismissedRecommendationIds.add(id);
     renderStudyRecommendation();
+  }
+  function rateRecommendationOutcome(recommendationId, useful) {
+    if (rateRecommendationFeedback(state.recommendationFeedback, recommendationId, { useful, ratedAt: nowISO2() })) {
+      scheduleSave();
+      renderStudyRecommendation();
+      showToast("Obrigado. Esse retorno melhora a avaliação das recomendações.");
+    }
   }
   function startStudyRecommendation(id) {
     const recommendation = currentStudyRecommendations.find((item2) => item2.id === id);
@@ -6587,19 +6689,8 @@
   }
   function gerarDiagnosticoAprovacao(metrics) {
     const m = metrics || computeApprovalMetrics();
-    const diagnostico = [];
-    if (m.simulados.available && m.simulados.raw >= 75) diagnostico.push("✅ Boa média nos simulados");
-    if (m.revisoes.available && m.revisoes.raw >= 90) diagnostico.push("✅ Revisões em dia");
-    if (m.tendencia.available && m.tendencia.score >= 60) diagnostico.push("✅ Evolução positiva recente");
-    if (m.edital.available && m.edital.raw < 60) diagnostico.push("⚠️ Edital com baixa cobertura");
-    if (m.dominio.available && m.dominio.raw < 50) diagnostico.push("⚠️ Domínio médio dos tópicos ainda baixo");
-    if (m.dominio.available && m.dominio.raw >= 75) diagnostico.push("✅ Bom domínio médio dos tópicos");
-    if (m.acertos.available && m.acertos.raw < state.metas.metaAprovacao) diagnostico.push(`⚠️ Taxa de acerto abaixo da meta (${state.metas.metaAprovacao}%)`);
-    if (m.prazo.available && m.prazo.score < 60) diagnostico.push("⚠️ Ritmo atual abaixo do necessário até a prova");
-    if (!m.simulados.available) diagnostico.push("ℹ️ Registre simulados para aumentar a confiança do índice");
-    if (m.acertos.confidence < 0.34) diagnostico.push("ℹ️ Ainda há poucas questões para uma estimativa estável");
-    if (diagnostico.length === 0) diagnostico.push("✅ Indicadores equilibrados no momento");
-    return diagnostico;
+    const icons = { positive: "✅", warning: "⚠️", info: "ℹ️" };
+    return buildApprovalSignals(m, { target: state.metas.metaAprovacao }).map((item) => `${icons[item.level]} ${item.text}`);
   }
   function topicRetentionScore(subjectId, topicId) {
     const found = getTopicById(topicId);
@@ -6895,6 +6986,7 @@
     "dismissIntelligentAlert",
     "dismissStudyRecommendation",
     "markRecommendationNotUseful",
+    "rateRecommendationOutcome",
     "startStudyRecommendation",
     "requestPermanentSubjectDelete",
     "requestPermanentTopicDelete",
@@ -7018,6 +7110,7 @@
     dismissIntelligentAlert,
     dismissStudyRecommendation,
     markRecommendationNotUseful,
+    rateRecommendationOutcome,
     startStudyRecommendation,
     requestPermanentSubjectDelete,
     requestPermanentTopicDelete,
