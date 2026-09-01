@@ -33,3 +33,7 @@ export function isFiniteNonNegative(value){
 export function structuredCloneSafe(value){
   return JSON.parse(JSON.stringify(value));
 }
+
+export function pluralize(count,singular,pluralForm=`${singular}s`){
+  return `${count} ${Number(count)===1?singular:pluralForm}`;
+}

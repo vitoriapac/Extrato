@@ -7,6 +7,8 @@ Aplicação local para planejar estudos, acompanhar tópicos, registrar questõe
 - Disciplinas, tópicos, notas, tags e níveis de dificuldade.
 - Calendário, agenda de revisões e plano diário.
 - Cronômetro e histórico de sessões.
+- Histórico compacto no desktop, com detalhes sob demanda e filtros recolhíveis no celular.
+- Relatório A4 exportável pela opção de impressão/“Salvar como PDF” do navegador.
 - Questões, simulados, diagnóstico de erros e indicadores de prontidão.
 - Metas semanais, mensais e por disciplina.
 - Tema claro/escuro, interface responsiva e navegação por teclado.

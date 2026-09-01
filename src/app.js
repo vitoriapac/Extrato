@@ -3,12 +3,14 @@ import {
   DB_NAME,DB_VERSION,STORE_NAME,STATUS_OPTIONS,REVIEW_OPTIONS,STATUS_CLASS,TIPO_AGENDA_OPTIONS,
   DIFFICULTY_OPTIONS,DIFFICULTY_WEIGHT,DIFFICULTY_CLASS
 } from './state/schema.js';
-import {uid,nowISO,isPlainObject,isSafeId,isISODate,isOptionalTimestamp,isFiniteNonNegative,structuredCloneSafe} from './core/utils.js';
+import {uid,nowISO,isPlainObject,isSafeId,isISODate,isOptionalTimestamp,isFiniteNonNegative,structuredCloneSafe,pluralize} from './core/utils.js';
 import {createStorageManager,repositoryReadLocalState,repositoryWriteLocalState} from './storage/repository.js';
 import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,calculateAdaptiveInterval} from './domain/reviews.js';
 import {createDefaultState} from './state/defaults.js';
 import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
 import {renderCollectionFooter,renderGroupHeader} from './ui/list-components.js';
+import {countActiveFilters,filterPanelLabel} from './ui/filter-panel.js';
+import {filterStudySessions,groupStudySessionsByDate} from './ui/session-history.js';
 
 const THEME_STORAGE_KEY='bb-premium-theme';
 function getCurrentTheme(){
@@ -28,6 +30,12 @@ function setTheme(theme){
 function toggleTheme(){ setTheme(getCurrentTheme()==='dark'?'light':'dark'); }
 document.getElementById('themeToggleBtn').addEventListener('click',toggleTheme);
 updateThemeToggleIcon();
+document.getElementById('exportReportBtn')?.addEventListener('click',()=>{
+  const meta=document.getElementById('printReportMeta');
+  if(meta)meta.textContent=`Relatório geral · período consolidado até ${new Date().toLocaleDateString('pt-BR')}`;
+  activateTab('dashboard',false);
+  requestAnimationFrame(()=>window.print());
+});
 
 const ERROR_CATEGORIES = {
   naoSabia:{label:'Não sabia',icon:'📚'},
@@ -607,17 +615,42 @@ function activateTab(tabName, updateHash = true){
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p === panel));
   document.querySelector('.statement')?.classList.toggle('statement--compact',tabName!=='dashboard');
   document.querySelector('.global-search-row')?.classList.toggle('global-search-row--compact',tabName!=='dashboard');
+  syncMobileMoreState(tabName);
   btn.scrollIntoView?.({block:'nearest',inline:'nearest',behavior:'smooth'});
   if(typeof render==='function') render(tabName);
   if(updateHash) history.replaceState(null, '', '#'+tabName);
 }
 
-document.querySelectorAll('.tab-btn').forEach(btn=>{
+const moreTabButton=document.getElementById('moreTabButton'),mobileMoreMenu=document.getElementById('mobileMoreMenu');
+function closeMobileMore({restoreFocus=false}={}){
+  if(!mobileMoreMenu)return;mobileMoreMenu.hidden=true;moreTabButton?.setAttribute('aria-expanded','false');
+  if(restoreFocus)moreTabButton?.focus();
+}
+function toggleMobileMore(){
+  if(!mobileMoreMenu)return;const open=mobileMoreMenu.hidden;mobileMoreMenu.hidden=!open;moreTabButton?.setAttribute('aria-expanded',String(open));
+  if(open)mobileMoreMenu.querySelector('[role="menuitem"]')?.focus();
+}
+function syncMobileMoreState(tabName){
+  const secondary=['agenda','questoes','metas'].includes(tabName);
+  moreTabButton?.classList.toggle('active',secondary);
+  mobileMoreMenu?.querySelectorAll('[data-more-tab]').forEach(item=>item.classList.toggle('active',item.dataset.moreTab===tabName));
+}
+moreTabButton?.addEventListener('click',toggleMobileMore);
+mobileMoreMenu?.addEventListener('click',event=>{const item=event.target.closest('[data-more-tab]');if(!item)return;activateTab(item.dataset.moreTab);closeMobileMore();});
+mobileMoreMenu?.addEventListener('keydown',event=>{
+  const items=[...mobileMoreMenu.querySelectorAll('[role="menuitem"]')],index=items.indexOf(document.activeElement);
+  if(event.key==='Escape'){event.preventDefault();closeMobileMore({restoreFocus:true});return}
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;event.preventDefault();
+  const next=event.key==='Home'?0:event.key==='End'?items.length-1:(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next]?.focus();
+});
+document.addEventListener('click',event=>{if(!mobileMoreMenu?.hidden&&!mobileMoreMenu.contains(event.target)&&event.target!==moreTabButton)closeMobileMore();});
+
+document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
   btn.addEventListener('click', ()=>activateTab(btn.dataset.tab));
   btn.addEventListener('keydown', e=>{
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
     e.preventDefault();
-    const tabs = [...document.querySelectorAll('.tab-btn')];
+    const tabs = [...document.querySelectorAll('.tab-btn[data-tab]')].filter(tab=>getComputedStyle(tab).display!=='none');
     const current = tabs.indexOf(btn);
     const next = e.key==='Home' ? 0 : e.key==='End' ? tabs.length-1 :
       (current + (e.key==='ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
@@ -1026,7 +1059,7 @@ function backupSummary(data,version){
   const questionCount=Array.isArray(data.questoes)?data.questoes.length:0;
   const updated=Date.parse(data.updatedAt||'');
   const updatedLabel=Number.isFinite(updated)?new Date(updated).toLocaleString('pt-BR'):'data não informada';
-  return `Backup v${version}: ${subjectCount} disciplina(s), ${topicCount} tópico(s), ${sessionCount} sessão(ões) e ${questionCount} registro(s) de questões. Última atualização: ${updatedLabel}.`;
+  return `Backup v${version}: ${pluralize(subjectCount,'disciplina')}, ${pluralize(topicCount,'tópico')}, ${pluralize(sessionCount,'sessão','sessões')} e ${pluralize(questionCount,'registro')} de questões. Última atualização: ${updatedLabel}.`;
 }
 function importBackupFromFile(file){
   if(!file) return;
@@ -1416,10 +1449,10 @@ function heatmapLevel(summary){
   return 3;
 }
 function heatmapTooltip(summary){
-  const parts=[formatDatePt(summary.date),formatDuration(summary.seconds),`${summary.sessions.length} sessão(ões)`];
+  const parts=[formatDatePt(summary.date),formatDuration(summary.seconds),pluralize(summary.sessions.length,'sessão','sessões')];
   if(summary.targetSeconds>0) parts.push(`${summary.goalPct}% da meta`);
   if(summary.questions>0) parts.push(`${summary.questions} questões · ${summary.accuracy}% de acerto`);
-  if(summary.simulations>0) parts.push(`${summary.simulations} simulado(s)`);
+  if(summary.simulations>0) parts.push(pluralize(summary.simulations,'simulado'));
   if(summary.subjectNames.length) parts.push(summary.subjectNames.join(', '));
   return parts.join(' · ');
 }
@@ -1463,8 +1496,8 @@ function renderHeatmap(){
       meta atingida
     </div>
     <div class="heatmap-summary">
-      <span>🔥 Atividade: ${activityStreak} dia(s)</span>
-      <span>🎯 Meta atingida: ${goalStreak} dia(s)</span>
+      <span>🔥 Atividade: ${pluralize(activityStreak,'dia')}</span>
+      <span>🎯 Meta atingida: ${pluralize(goalStreak,'dia')}</span>
       <span>Cores: &lt;50% · 50–99% · ≥100% da meta diária</span>
     </div>
   `;
@@ -1859,7 +1892,7 @@ function renderSubjects(){
   const archivedHtml=archived.length?`<div class="archived-section">
     <div class="archived-section-title">Disciplinas arquivadas</div>
     ${archived.map(s=>`<div class="archived-item">
-      <div><div class="archived-item-name">${escapeHtml(s.name)}</div><div class="archived-item-date">Arquivada em ${s.archivedAt?new Date(s.archivedAt).toLocaleDateString('pt-BR'):'—'} · ${s.topics.length} tópico(s)</div></div>
+      <div><div class="archived-item-name">${escapeHtml(s.name)}</div><div class="archived-item-date">Arquivada em ${s.archivedAt?new Date(s.archivedAt).toLocaleDateString('pt-BR'):'—'} · ${pluralize(s.topics.length,'tópico')}</div></div>
       <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
     </div>`).join('')}
   </div>`:'';
@@ -1957,7 +1990,7 @@ function carregarDisciplinasPadrao(){
   });
   persistAndRender();
   if(adicionadas > 0){
-    showToast(`${adicionadas} disciplina(s) do edital adicionada(s).`);
+    showToast(`${pluralize(adicionadas,'disciplina')} do edital ${adicionadas===1?'adicionada':'adicionadas'}.`);
   } else {
     showToast('Todas as disciplinas do edital já estão na sua lista.');
   }
@@ -2002,7 +2035,7 @@ function requestPermanentSubjectDelete(id){
   if(!subject) return;
   if(!subject.archived) return showToast('Arquive a disciplina antes de solicitar a exclusão definitiva.');
   const total=dependencyTotal(getSubjectDependencies(id));
-  if(total>0) return showToast(`A disciplina possui ${total} registro(s) vinculado(s) e não pode ser excluída.`);
+  if(total>0) return showToast(`A disciplina possui ${pluralize(total,'registro')} ${total===1?'vinculado':'vinculados'} e não pode ser excluída.`);
   showConfirm(`Excluir definitivamente "${subject.name}"? Esta ação não pode ser desfeita.`,()=>{
     state.subjects=state.subjects.filter(s=>s.id!==id);
     persistAndRender();
@@ -2047,7 +2080,7 @@ function requestPermanentTopicDelete(subjectId,topicId){
   if(!found||found.subject.id!==subjectId) return;
   if(!found.topic.archived) return showToast('Arquive o tópico antes de solicitar a exclusão definitiva.');
   const total=dependencyTotal(getTopicDependencies(topicId));
-  if(total>0) return showToast(`O tópico possui ${total} registro(s) vinculado(s) e não pode ser excluído.`);
+  if(total>0) return showToast(`O tópico possui ${pluralize(total,'registro')} ${total===1?'vinculado':'vinculados'} e não pode ser excluído.`);
   showConfirm(`Excluir definitivamente "${found.topic.name||'este tópico'}"?`,()=>{
     found.subject.topics=found.subject.topics.filter(topic=>topic.id!==topicId);
     persistAndRender();
@@ -2270,9 +2303,10 @@ function renderCalendarFilters(){
 }
 
 function toggleFilterPanel(scope){
-  const id=scope==='agenda'?'agendaFilters':'calendarFilters';
+  const id=scope==='agenda'?'agendaFilters':scope==='sessions'?'studySessionsFilters':'calendarFilters';
   const panel=document.getElementById(id),button=document.querySelector(`[aria-controls="${id}"]`);if(!panel)return;
   const expanded=!panel.classList.contains('show');panel.classList.toggle('show',expanded);button?.setAttribute('aria-expanded',String(expanded));
+  if(scope==='sessions')renderSessionHistoryFilterControls();
 }
 function setCalendarMobileView(view){
   const normalized=view==='agenda'?'agenda':'month';
@@ -2411,7 +2445,7 @@ function gerarAgendaAutomatica(){
   });
   persistAndRender();
   if(adicionados > 0){
-    showToast(`${adicionados} revisão(ões) adicionada(s) à agenda — tópicos difíceis ganham revisões mais próximas.`);
+    showToast(`${pluralize(adicionados,'revisão','revisões')} ${adicionados===1?'adicionada':'adicionadas'} à agenda — tópicos difíceis ganham revisões mais próximas.`);
   } else {
     showToast('A agenda já está atualizada — nenhuma revisão nova para gerar.');
   }
@@ -3869,6 +3903,7 @@ function renderSubjectHoursBars(){
 const SESSION_TYPES={study:'Estudo teórico',review:'Revisão',questions:'Questões',simulation:'Simulado'};
 let sessionHistoryFilters={period:'30',subjectId:'',type:'',date:''};
 let expandedSessionDays=new Set();
+let expandedSessionDetails=new Set();
 let sessionHistoryExpansionInitialized=false;
 function sessionTypeLabel(type){ return SESSION_TYPES[type]||SESSION_TYPES.study; }
 function sessionTypeOptions(selected){
@@ -3907,6 +3942,11 @@ function toggleSessionDay(date){
   else expandedSessionDays.add(date);
   renderStudySessionsHistory();
 }
+function toggleSessionDetails(id){
+  if(expandedSessionDetails.has(id))expandedSessionDetails.delete(id);
+  else expandedSessionDetails=new Set([id]);
+  renderStudySessionsHistory();
+}
 function renderSessionHistoryFilterControls(){
   const period=document.getElementById('studySessionsPeriod');
   const subject=document.getElementById('studySessionsSubjectFilter');
@@ -3916,19 +3956,12 @@ function renderSessionHistoryFilterControls(){
   subject.innerHTML=`<option value="">Todas as disciplinas</option>`+state.subjects.map(s=>`<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('');
   subject.value=sessionHistoryFilters.subjectId;
   type.value=sessionHistoryFilters.type;
+  const active=countActiveFilters(sessionHistoryFilters,{period:'30',subjectId:'',type:'',date:''});
+  const toggle=document.getElementById('studySessionsFilterToggle');
+  if(toggle)toggle.textContent=filterPanelLabel(active)+(toggle.getAttribute('aria-expanded')==='true'?' ▴':' ▾');
 }
 function filteredStudySessions(){
-  let rows=[...state.studySessions];
-  if(sessionHistoryFilters.date){
-    rows=rows.filter(s=>s.date===sessionHistoryFilters.date);
-  }else if(sessionHistoryFilters.period!=='all'){
-    const days=Math.max(1,Number(sessionHistoryFilters.period)||30);
-    const cutoff=addDays(todayISO(),-(days-1));
-    rows=rows.filter(s=>s.date&&s.date>=cutoff&&s.date<=todayISO());
-  }
-  if(sessionHistoryFilters.subjectId) rows=rows.filter(s=>entitySubjectId(s)===sessionHistoryFilters.subjectId);
-  if(sessionHistoryFilters.type) rows=rows.filter(s=>(s.type||'study')===sessionHistoryFilters.type);
-  return rows.sort((a,b)=>(b.endedAt||b.date||'').localeCompare(a.endedAt||a.date||''));
+  return filterStudySessions(state.studySessions,sessionHistoryFilters,{today:todayISO(),addDays,subjectIdOf:entitySubjectId});
 }
 function sessionTopicOptions(session){
   const subject=getSubjectById(entitySubjectId(session));
@@ -4008,8 +4041,9 @@ function saveStudySessionEdit(){
 }
 function renderStudySessionReadRow(session){
   const vm=sessionViewModel(session);
-  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${session.id}"><td colspan="10"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.time)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>⏱ ${escapeHtml(vm.duration)}</span>${vm.questions?`<span>${vm.questions} questões</span><strong>${vm.accuracy}%</strong>`:''}${vm.notes?`<span title="${escapeAttr(vm.notes)}">📝 ${escapeHtml(vm.notes)}</span>`:''}</div></article></td></tr>`;
-  return `<tr class="history-read-row history-desktop-row" data-id="${session.id}"><td>${escapeHtml(vm.date)}</td><td class="number-cell">${escapeHtml(vm.time)}</td><td class="number-cell">${escapeHtml(vm.duration)}</td><td>${escapeHtml(vm.type)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td class="number-cell">${vm.questions||'—'}</td><td class="number-cell">${vm.accuracy===null?'—':vm.accuracy+'%'}</td><td title="${escapeAttr(vm.notes)}">${escapeHtml(vm.notes||'—')}</td><td><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></td></tr>`;
+  const detailsId=`session-details-${session.id}`,expanded=expandedSessionDetails.has(session.id);
+  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${session.id}"><td colspan="5"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)} · ${escapeHtml(vm.time)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>⏱ ${escapeHtml(vm.duration)}</span>${vm.questions?`<span>${pluralize(vm.questions,'questão','questões')}</span><strong>${vm.accuracy}%</strong>`:''}${vm.notes?`<span title="${escapeAttr(vm.notes)}">📝 ${escapeHtml(vm.notes)}</span>`:''}</div></article></td></tr>`;
+  return `<tr class="history-read-row history-desktop-row" data-id="${session.id}"><td><div class="row-primary">${escapeHtml(vm.date)}</div><div class="row-secondary">${escapeHtml(vm.time)}</div></td><td class="number-cell">${escapeHtml(vm.duration)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td><div class="row-primary">${vm.questions?pluralize(vm.questions,'questão','questões'):'Sem questões'}</div><div class="row-secondary">${vm.accuracy===null?'—':vm.accuracy+'% de acerto'}</div></td><td class="session-actions"><button class="btn ghost small" aria-expanded="${expanded}" aria-controls="${detailsId}" data-delegated-click="toggleSessionDetails('${session.id}')">Detalhes</button><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></td></tr>${expanded?`<tr class="session-details-row" id="${detailsId}"><td colspan="5"><dl><div><dt>Tipo</dt><dd>${escapeHtml(vm.type)}</dd></div><div><dt>Observação</dt><dd>${escapeHtml(vm.notes||'Sem observação')}</dd></div><div><dt>Atividade do plano</dt><dd>${session.planItemId?'Vinculada ao plano diário':'Sem vínculo'}</dd></div></dl></td></tr>`:''}`;
 }
 function renderStudySessionEditRow(session){
   const d=historyEditDraft.session; const subjectId=entitySubjectId(d); const subject=getSubjectById(subjectId); const topics=subject?subject.topics:[];
@@ -4026,7 +4060,7 @@ function renderStudySessionsHistory(){
   const rows=filteredStudySessions();
   count.textContent=rows.length===state.studySessions.length?`${rows.length} sess${rows.length===1?'ão':'ões'}`:`${rows.length} de ${state.studySessions.length}`;
   if(summary){
-    summary.textContent=sessionHistoryFilters.date?`Dia selecionado: ${formatDatePt(sessionHistoryFilters.date)}`:`${rows.length} sessão(ões) no filtro atual`;
+    summary.textContent=sessionHistoryFilters.date?`Dia selecionado: ${formatDatePt(sessionHistoryFilters.date)}`:`${pluralize(rows.length,'sessão','sessões')} no filtro atual`;
   }
   if(rows.length===0){
     body.innerHTML='';
@@ -4036,9 +4070,7 @@ function renderStudySessionsHistory(){
   }
   if(tableWrap) tableWrap.hidden=false;
   if(emptyState) emptyState.hidden=true;
-  const groups=new Map();
-  rows.forEach(session=>{ const date=session.date||'Sem data'; if(!groups.has(date)) groups.set(date,[]); groups.get(date).push(session); });
-  const groupedDays=[...groups.entries()];
+  const groupedDays=groupStudySessionsByDate(rows);
   const visibleGroups=groupedDays.slice(0,listViewState.sessionDaysVisible);
   if(!sessionHistoryExpansionInitialized&&visibleGroups.length){
     expandedSessionDays.add(visibleGroups[0][0]);
@@ -4051,7 +4083,7 @@ function renderStudySessionsHistory(){
     const correct=sessions.reduce((sum,s)=>sum+(Number(s.correctAnswers)||0),0);
     const accuracy=questions>0?` · ${Math.round((correct/questions)*100)}% de acerto`:'';
     const expanded=expandedSessionDays.has(date);
-    html.push(`<tr class="session-day-row"><td colspan="10"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date)}')"><span>${date==='Sem data'?date:formatDatePt(date)} · ${sessions.length} sessão(ões) · ${formatDuration(seconds)} · ${questions} questões${accuracy}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
+    html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date)}')"><span>${date==='Sem data'?date:formatDatePt(date)} · ${pluralize(sessions.length,'sessão','sessões')} · ${formatDuration(seconds)} · ${pluralize(questions,'questão','questões')}${accuracy}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
     if(!expanded) return;
     sessions.forEach(session=>html.push(historyEditState.sessionId===session.id?renderStudySessionEditRow(session):renderStudySessionReadRow(session)));
   });
@@ -4546,7 +4578,7 @@ function renderExamCountdown(){
   const fig=document.getElementById('examCountdownFigure');renderExamProgress();
   if(!state.examDate){fig.textContent='defina a data ao lado';fig.classList.remove('urgent');return}
   const dias=diasParaRevisao(state.examDate);fig.classList.toggle('urgent',dias!==null&&dias<=7);
-  if(dias===null)fig.textContent='';else if(dias<0)fig.textContent='prova foi há '+Math.abs(dias)+' dia(s)';else if(dias===0)fig.textContent='a prova é hoje!';else fig.textContent='faltam '+dias+' dia'+(dias===1?'':'s')+' para a prova';
+  if(dias===null)fig.textContent='';else if(dias<0)fig.textContent='prova foi há '+pluralize(Math.abs(dias),'dia');else if(dias===0)fig.textContent='a prova é hoje!';else fig.textContent='faltam '+pluralize(dias,'dia')+' para a prova';
 }
 function navigateKpi(tab,filter){
   activateTab(tab);
@@ -4602,7 +4634,7 @@ const DELEGATED_ACTIONS=new Set([
   'editAgenda','editCalendarItem','editQuestion','editSimulation','editStudySession','focusStudyTimer','gerarAgendaAutomatica','moveSubject','navigateKpi','renameSubject',
   'requestPermanentSubjectDelete','requestPermanentTopicDelete','resetAdaptiveReviewDate','resetAgendaLimit','resetCalendarLimit','resetOverdueGroupLimit','resetPerformanceLimit','resetRetentionLimit','resetSubjectTopicLimit','resetUpcomingLimit','restoreSubject','restoreTopic','saveAgendaEdit','saveCalendarEdit','saveQuestionEdit','setPerformanceViewMode','setRetentionFilter','setSubjectTopicFilter',
   'saveSimulationEdit','saveStudySessionEdit','selectSessionHistoryDate','showAllOverdueGroups','showAllPerformance','showAllRetention','showAllSubjectTopics','showAllUpcoming','startPlannedActivity','toggleBreakdown','toggleNotes',
-  'toggleCompletedReviews','toggleFilterPanel','toggleOverdueDate','toggleQuestionErrors','toggleSessionDay','toggleStreakActiveDays','toggleStreakExpanded','toggleSubject','updateAgenda','updateAgendaDraft','updateBreakdownRow','updateCal','updateCalendarDraft','updateMeta',
+  'toggleCompletedReviews','toggleFilterPanel','toggleOverdueDate','toggleQuestionErrors','toggleSessionDay','toggleSessionDetails','toggleStreakActiveDays','toggleStreakExpanded','toggleSubject','updateAgenda','updateAgendaDraft','updateBreakdownRow','updateCal','updateCalendarDraft','updateMeta',
   'updateMetaDisciplina','updateMetaHoursDay','updateQuestionDraft','updateQuestionError','updateSessionHistoryFilter',
   'updateSimulationDraft','updateStudySessionDraft','updateTopic','updateTopicStatus','updateTopicTags'
 ]);
@@ -4613,7 +4645,7 @@ const DELEGATED_ACTION_HANDLERS={
   editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,
   requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRetentionFilter,setSubjectTopicFilter,
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
-  toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
+  toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleSessionDetails,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
   updateMetaDisciplina,updateMetaHoursDay,updateQuestionDraft,updateQuestionError,updateSessionHistoryFilter,
   updateSimulationDraft,updateStudySessionDraft,updateTopic,updateTopicStatus,updateTopicTags
 };

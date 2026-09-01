@@ -15,8 +15,11 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/domain/reviews.js`: regras puras de intervalos e revisões adaptativas.
 - `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.
 - `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
+- `src/ui/filter-panel.js`: contagem e rótulos puros dos filtros responsivos.
+- `src/ui/session-history.js`: filtragem e agrupamento puro do histórico de sessões.
 - `src/app.js`: composição temporária da interface e funcionalidades ainda não extraídas.
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
+- `styles/print.css`: apresentação A4 do relatório exportado pela impressão do navegador.
 
 ## Fluxo de dependências
 

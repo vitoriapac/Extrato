@@ -1,0 +1,20 @@
+@page{size:A4 portrait;margin:12mm}
+@media print{
+  :root{color-scheme:light}
+  body{background:#fff!important;color:#172033!important;font-size:10pt}
+  .wrap{max-width:none!important;padding:0!important}
+  .tabs,.mobile-more-menu,.overview-nav,.global-search-row,.theme-toggle-btn,.backup-block,footer,.save-indicator,.toast,.timer-actions,.cal-filters,.mobile-filter-toggle,.list-summary-footer,.list-view-footer,.session-actions{display:none!important}
+  .statement{padding:12px 14px!important;margin-bottom:10px!important;break-inside:avoid}
+  .print-report-meta{display:block!important;margin:0 0 8px;color:#4b5563;font:9pt var(--font-data)}
+  .panel{display:none!important}
+  #panel-dashboard{display:block!important}
+  .overview-pair{display:block!important}
+  .chart-card{padding:10px!important;margin-bottom:8px!important;border:1px solid #ccd1d8!important;box-shadow:none!important;break-inside:avoid}
+  .overview-section-heading{margin:14px 0 7px!important}
+  .kpi-grid,.stat-grid{break-inside:avoid}
+  .study-sessions-table-wrap{overflow:visible!important}
+  .study-sessions-table{min-width:0!important;font-size:8pt!important}
+  .session-details-row{display:none!important}
+  svg{max-height:190px}
+  *{animation:none!important;transition:none!important}
+}

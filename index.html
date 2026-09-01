@@ -11,6 +11,7 @@
 <script src="src/theme-bootstrap.js"></script>
 <link rel="stylesheet" href="styles/tokens.css">
 <link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -67,17 +68,29 @@
     <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje">🎯 Hoje</button>
     <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas">Disciplinas</button>
     <button class="tab-btn" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario">Calendário</button>
-    <button class="tab-btn" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda">Agenda de Revisões</button>
-    <button class="tab-btn" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes">Questões &amp; Simulados</button>
-    <button class="tab-btn" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Metas</button>
+    <button class="tab-btn tab-secondary" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda">Agenda de Revisões</button>
+    <button class="tab-btn tab-secondary" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes">Questões &amp; Simulados</button>
+    <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Metas</button>
+    <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu">Mais</button>
+  </div>
+  <div class="mobile-more-menu" id="mobileMoreMenu" role="menu" hidden>
+    <button type="button" role="menuitem" data-more-tab="agenda">Agenda de Revisões</button>
+    <button type="button" role="menuitem" data-more-tab="questoes">Questões e Simulados</button>
+    <button type="button" role="menuitem" data-more-tab="metas">Metas</button>
   </div>
 
   <!-- DASHBOARD -->
   <div class="panel active" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+    <div class="print-report-meta" id="printReportMeta"></div>
     <div class="kpi-grid" id="kpiGrid"></div>
     <div class="stat-grid" id="quickStats"></div>
 
-    <div class="overview-section-heading"><span>Aprovação e retenção</span></div>
+    <nav class="overview-nav" aria-label="Atalhos da Visão Geral">
+      <a href="#overview-summary">Resumo</a><a href="#overview-performance">Desempenho</a><a href="#overview-study">Estudo</a><a href="#overview-evolution">Evolução</a><a href="#overview-progress">Progresso</a><a href="#overview-next-actions">Próximas ações</a>
+    </nav>
+
+    <div class="overview-section-heading" id="overview-summary"><span>Aprovação e retenção</span></div>
+    <div class="overview-pair" id="overview-performance">
     <div class="chart-card">
       <h3>Dashboard de Aprovação</h3>
       <div id="approvalDashboard"></div>
@@ -87,8 +100,9 @@
       <p class="retention-summary">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p>
       <div id="topicRetentionDashboard"></div>
     </div>
+    </div>
 
-    <div class="overview-section-heading"><span>Estudo e sessões</span></div>
+    <div class="overview-section-heading" id="overview-study"><span>Estudo e sessões</span></div>
     <div class="chart-card">
       <h3>Cronômetro de estudo</h3>
       <div class="timer-block">
@@ -123,7 +137,8 @@
         <h3 style="margin:0;">Histórico de sessões</h3>
         <span class="subject-progress-pill" id="studySessionsCount">0 sessões</span>
       </div>
-      <div class="cal-filters" style="margin-top:14px;">
+      <button class="btn ghost small mobile-filter-toggle" id="studySessionsFilterToggle" type="button" aria-expanded="false" aria-controls="studySessionsFilters" data-delegated-click="toggleFilterPanel('sessions')">Filtros ▾</button>
+      <div class="cal-filters responsive-filters" id="studySessionsFilters" style="margin-top:14px;">
         <select id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
           <option value="7">Últimos 7 dias</option>
           <option value="30" selected>Últimos 30 dias</option>
@@ -154,16 +169,11 @@
         <table class="log responsive-history-table study-sessions-table">
           <thead>
             <tr>
-              <th style="width:100px;">Data</th>
-              <th style="width:65px;">Início</th>
-               <th style="width:85px;">Duração</th>
-              <th style="width:110px;">Tipo</th>
-              <th style="width:150px;">Disciplina</th>
-              <th style="width:180px;">Tópico</th>
-              <th style="width:80px;">Questões</th>
-              <th style="width:80px;">% acerto</th>
-              <th>Observação</th>
-              <th style="width:70px;"></th>
+              <th style="width:150px;">Data</th>
+              <th style="width:100px;">Duração</th>
+              <th>Estudo</th>
+              <th style="width:190px;">Desempenho</th>
+              <th style="width:180px;">Ações</th>
             </tr>
           </thead>
           <tbody id="studySessionsBody"></tbody>
@@ -171,23 +181,25 @@
       </div>
     </div>
 
-    <div class="overview-section-heading"><span>Evolução</span></div>
+    <div class="overview-section-heading" id="overview-evolution"><span>Evolução</span></div>
+    <div class="overview-pair">
     <div class="chart-card">
       <h3>Sequência de estudos</h3>
       <div id="heatmapContainer"></div>
     </div>
-
-    <div class="overview-section-heading"><span>Progresso e conquistas</span></div>
     <div class="chart-card">
       <h3>Conquistas</h3>
       <div class="badges-grid" id="badgesGrid"></div>
     </div>
+    </div>
 
+    <div class="overview-section-heading" id="overview-progress"><span>Progresso e conquistas</span></div>
     <div class="chart-card">
       <h3>Evolução do progresso</h3>
       <div id="progressChart"></div>
     </div>
 
+    <div class="overview-pair">
     <div class="chart-card">
       <h3>Progresso por disciplina</h3>
       <div id="progressBars"></div>
@@ -200,8 +212,9 @@
       </p>
       <div id="radarChart"></div>
     </div>
+    </div>
 
-    <div class="overview-section-heading"><span>Próximas ações</span></div>
+    <div class="overview-section-heading" id="overview-next-actions"><span>Próximas ações</span></div>
     <div class="chart-card">
       <h3 id="upcomingTitle">Próximas revisões no calendário</h3>
       <ul class="upcoming-list" id="upcomingList"></ul>
@@ -506,6 +519,7 @@
       <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando pra não perder nada — e importe pra restaurar em outro dispositivo.</div>
     </div>
     <div class="backup-actions">
+      <button class="btn ghost small" id="exportReportBtn">▣ Exportar relatório PDF</button>
       <button class="btn ghost small" id="exportBackupBtn">⬇ Exportar backup</button>
       <button class="btn ghost small" id="exportAutomaticBackupBtn">⏱ Baixar recuperação</button>
       <button class="btn ghost small" id="importBackupBtn">⬆ Importar backup</button>

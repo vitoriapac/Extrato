@@ -8,6 +8,14 @@
     transition:background-color .2s ease,color .2s ease;
   }
   .wrap{width:min(100%,1280px);margin-inline:auto;padding:28px clamp(16px,2.5vw,32px) 80px;}
+  .panel,.chart-card,.dashboard-grid,.kpi-grid,.stat-grid,.log-table-wrap,.cal-table-wrap{min-width:0;max-width:100%}
+  .overview-pair{display:block}
+  .overview-nav{position:sticky;top:0;z-index:15;display:flex;gap:4px;overflow-x:auto;margin:0 0 var(--space-4);padding:7px;background:var(--paper);border:1px solid var(--paper-line);scrollbar-width:thin}
+  .overview-nav a{flex:0 0 auto;padding:7px 10px;color:var(--ink-soft);font:10px var(--font-data);letter-spacing:.04em;text-decoration:none;text-transform:uppercase}
+  .overview-nav a:hover,.overview-nav a:focus-visible{background:var(--slate-bg);color:var(--heading);outline:1px solid var(--gold)}
+  [id^="overview-"]{scroll-margin-top:74px}
+  .more-tab-btn,.mobile-more-menu{display:none}
+  .print-report-meta{display:none}
 
   /* ===== HERO / EXTRATO HEADER ===== */
   .statement{
@@ -434,9 +442,13 @@
   .pace-status.neutral{background:var(--slate-bg);color:var(--ink-soft);}
 
   .log-table-wrap{background:var(--white);border:1px solid var(--paper-line);border-radius:var(--radius);overflow-x:auto;margin-bottom:20px;}
-  .study-sessions-table{table-layout:fixed;min-width:1080px!important;}
+  .study-sessions-table{table-layout:fixed;min-width:760px!important;}
   .study-sessions-table th,.study-sessions-table td{overflow:hidden;text-overflow:ellipsis;}
-  .study-sessions-table td:nth-child(5),.study-sessions-table td:nth-child(6),.study-sessions-table td:nth-child(9){white-space:normal;overflow-wrap:anywhere}
+  .study-sessions-table td:nth-child(3),.study-sessions-table td:nth-child(4){white-space:normal;overflow-wrap:anywhere}
+  .session-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+  .session-details-row td{background:var(--paper)!important;padding:12px 16px!important}
+  .session-details-row dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0}
+  .session-details-row dl>div{min-width:0}.session-details-row dt{font:10px var(--font-data);color:var(--ink-soft);text-transform:uppercase}.session-details-row dd{margin:4px 0 0;overflow-wrap:anywhere}
   .study-sessions-table-wrap[hidden],.sessions-empty-state[hidden]{display:none!important;}
   .empty-state-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
   table.log{width:100%;border-collapse:collapse;font-size:13px;min-width:560px;}
@@ -500,8 +512,15 @@
   }
 
   @media (max-width:760px){
-    .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;}
-    .tab-btn{flex:0 0 auto;white-space:nowrap;}
+    .tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));overflow:visible;}
+    .tab-btn{min-width:0;padding-inline:7px;white-space:normal;}
+    .tabs .tab-secondary{display:none}
+    .more-tab-btn{display:block}
+    .more-tab-btn.active{background:var(--navy);color:var(--gold-bright)}
+    .mobile-more-menu{position:absolute;z-index:40;right:12px;display:grid;min-width:220px;padding:6px;background:var(--white);border:1px solid var(--paper-line);box-shadow:0 10px 24px rgba(11,37,69,.18)}
+    .mobile-more-menu[hidden]{display:none}
+    .mobile-more-menu button{border:0;background:transparent;color:var(--ink);padding:12px;text-align:left;font:12px var(--font-data);cursor:pointer}
+    .mobile-more-menu button:hover,.mobile-more-menu button:focus-visible,.mobile-more-menu button.active{background:var(--slate-bg);color:var(--heading);outline:1px solid var(--gold)}
     .history-desktop-row{display:none;}
     .responsive-history-table{min-width:0!important;}
     .responsive-history-table thead{display:none;}
@@ -512,6 +531,7 @@
     .inline-edit-form input,.inline-edit-form select,.inline-edit-form textarea,.inline-edit-form button,.mobile-history-card button{min-height:44px;}
     .inline-edit-actions{grid-column:1;flex-direction:column-reverse;align-items:stretch;}
     .inline-edit-actions .btn{width:100%;}
+    .session-details-row dl{grid-template-columns:1fr}
     #studySessionsCard .cal-filters select,#studySessionsCard .cal-filters button{width:100%;min-height:44px;}
     #studySessionsCard .session-filter-summary{width:100%;}
     .mobile-filter-toggle{display:inline-flex;width:100%;justify-content:center;min-height:44px}
