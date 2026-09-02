@@ -37,6 +37,7 @@ import {buildDailyPlanProposal,applyDailyPlanProposal,undoDailyPlanGeneration} f
 import {createStudyPlanService} from './application/planning/study-plan-service.js';
 import {createDailyPlanService} from './application/planning/daily-plan-service.js';
 import {createReplanService} from './application/planning/replan-service.js';
+import {createSessionService} from './application/sessions/session-service.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
@@ -469,6 +470,7 @@ const planningRepository=appContext.repositories.planning;
 const studyPlanService=createStudyPlanService({repository:planningRepository,calculate:buildStudyPlan,clock:appClock,idGenerator:uid,algorithmVersion:()=>state.algorithmVersions.recommendations});
 const dailyPlanService=createDailyPlanService({repository:planningRepository,buildProposal:buildDailyPlanProposal,applyProposal:applyDailyPlanProposal,undoGeneration:undoDailyPlanGeneration,clock:appClock,idGenerator:uid});
 const replanService=createReplanService({repository:planningRepository,buildProposal:buildReplanProposal,applyProposal:applyReplan,undoProposal:undoReplan,clock:appClock,idGenerator:uid});
+const sessionService=createSessionService({repository:appContext.repositories.studySessions,questionsRepository:appContext.repositories.questoes,historyRepository:appContext.repositories.topicHistory,planningRepository,recommendationsRepository:appContext.repositories.recommendationFeedback,clock:appClock,idGenerator:uid,normalizeQuestion:normalizeErrorBreakdown,completeRecommendation:completeRecommendationFeedback});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
 const STATE_CHANNEL=!IS_DEMO_MODE&&typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
@@ -1244,30 +1246,10 @@ function releaseActivePlanItem(){
   }
 }
 function recordPlannedExecution(planItemId,session){
-  const found=findDailyPlanItem(planItemId);
-  if(!found) return;
-  const {plan,item}=found;
-  const linkedSessions=state.studySessions.filter(candidate=>candidate.planItemId===item.id);
-  item.sessionIds=linkedSessions.map(candidate=>candidate.id);
-  item.executedSeconds=linkedSessions.reduce((sum,candidate)=>sum+Math.max(0,Number(candidate.durationSeconds)||0),0);
-  item.status=item.plannedMinutes>0&&item.executedSeconds>=item.plannedMinutes*60?'completed':'partial';
-  item.lastExecutedAt=session.endedAt||nowISO();
-  plan.updatedAt=nowISO();
-  if(item.recommendationId&&item.status==='completed')completeRecommendationFeedback(state.recommendationFeedback,item.recommendationId,{sessionId:session.id,completedAt:item.lastExecutedAt});
+  return sessionService.syncPlanItem(planItemId);
 }
 function syncPlannedExecution(planItemId){
-  const latest=state.studySessions.filter(session=>session.planItemId===planItemId).sort((a,b)=>(a.endedAt||'').localeCompare(b.endedAt||'')).pop();
-  if(latest) recordPlannedExecution(planItemId,latest);
-  else{
-    const found=findDailyPlanItem(planItemId);
-    if(found){
-      found.item.sessionIds=[];
-      found.item.executedSeconds=0;
-      found.item.status='planned';
-      found.item.lastExecutedAt=null;
-      found.plan.updatedAt=nowISO();
-    }
-  }
+  return sessionService.syncPlanItem(planItemId);
 }
 function startPlannedActivity(itemId){
   const found=findDailyPlanItem(itemId);
@@ -1478,12 +1460,7 @@ document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
     durationSeconds:timerSeconds,subjectId,topicId,type,questionsResolved:resolved,
     correctAnswers:Math.min(correct,resolved),notes,planItemId:state.activeTimer.planItemId||null
   };
-  state.studySessions.push(session);
-  recordPlannedExecution(session.planItemId,session);
-  addHistoryEvent('study_session',subjectId,topicId,{sessionId:session.id,durationSeconds:session.durationSeconds});
-  if(resolved > 0){
-    state.questoes.push({ id:uid('question'),date:session.date,subjectId,topicId,resolved,correct:Math.min(correct,resolved),studySessionId:session.id,createdAt:nowISO() });
-  }
+  sessionService.complete(session);
   persistAndRender();
   showToast(resolved > 0 ? 'Sessão e questões registradas.' : 'Sessão de estudo registrada.');
   closeSessionModal();
@@ -4175,18 +4152,7 @@ function sessionStartTime(session){
   return Number.isNaN(date.getTime())?'—':date.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
 function syncQuestionFromStudySession(session){
-  let question=state.questoes.find(q=>q.studySessionId===session.id);
-  const resolved=Math.max(0,Number(session.questionsResolved)||0);
-  const correct=Math.max(0,Math.min(Number(session.correctAnswers)||0,resolved));
-  session.questionsResolved=resolved;
-  session.correctAnswers=correct;
-  if(resolved<=0){ state.questoes=state.questoes.filter(q=>q.studySessionId!==session.id); return; }
-  if(!question){
-    question={id:uid('question'),studySessionId:session.id,createdAt:nowISO()};
-    state.questoes.push(question);
-  }
-  Object.assign(question,{date:session.date,subjectId:session.subjectId||null,topicId:session.topicId||null,resolved,correct});
-  normalizeErrorBreakdown(question);
+  return sessionService.edit(session.id,session);
 }
 function updateStudySession(id,field,value){
   const session=state.studySessions.find(s=>s.id===id);
@@ -4209,11 +4175,7 @@ function updateStudySessionSubject(id,subjectId){
 }
 function deleteStudySession(id){
   showConfirm('Excluir esta sessão e as questões vinculadas a ela?',()=>{
-    const planItemId=state.studySessions.find(s=>s.id===id)?.planItemId||null;
-    state.studySessions=state.studySessions.filter(s=>s.id!==id);
-    state.questoes=state.questoes.filter(q=>q.studySessionId!==id);
-    state.topicHistory=state.topicHistory.filter(h=>!(h.type==='study_session'&&h.metadata?.sessionId===id));
-    if(planItemId) syncPlannedExecution(planItemId);
+    sessionService.remove(id);
     persistAndRender();
     showToast('Sessão excluída.');
   });
@@ -4238,7 +4200,7 @@ function saveStudySessionEdit(){
   const d=historyEditDraft.session; if(!d) return;
   d.durationSeconds=Math.max(0,Number(d.durationSeconds)||0); d.questionsResolved=Math.max(0,Math.floor(Number(d.questionsResolved)||0)); d.correctAnswers=Math.max(0,Math.min(Math.floor(Number(d.correctAnswers)||0),d.questionsResolved));
   const index=state.studySessions.findIndex(s=>s.id===d.id); if(index<0) return cancelStudySessionEdit();
-  state.studySessions[index]=d; syncQuestionFromStudySession(d); if(d.planItemId) syncPlannedExecution(d.planItemId);
+  sessionService.edit(d.id,d);
   historyEditState.sessionId=null; historyEditDraft.session=null; persistAndRender(); showToast('Sessão atualizada.');
 }
 function renderStudySessionReadRow(session){

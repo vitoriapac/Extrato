@@ -1207,6 +1207,79 @@
     });
   }
 
+  // src/application/sessions/session-service.js
+  function createSessionService({ repository, questionsRepository, historyRepository, planningRepository: planningRepository2, recommendationsRepository, clock, idGenerator, normalizeQuestion = () => {
+  }, completeRecommendation = () => {
+  } } = {}) {
+    if (!repository || typeof repository.add !== "function") throw new TypeError("Serviço de sessões requer repositório.");
+    if (!questionsRepository || !planningRepository2 || !clock || typeof idGenerator !== "function") throw new TypeError("Serviço de sessões requer dependências de aplicação.");
+    const normalize = (input) => {
+      const resolved = Math.max(0, Math.floor(Number(input.questionsResolved) || 0));
+      return { ...input, durationSeconds: Math.max(0, Number(input.durationSeconds) || 0), questionsResolved: resolved, correctAnswers: Math.max(0, Math.min(Math.floor(Number(input.correctAnswers) || 0), resolved)) };
+    };
+    const findPlanItem = (id) => {
+      if (!id) return null;
+      for (const plan of planningRepository2.getDailyPlans()) {
+        const item = (plan.items || []).find((candidate) => candidate.id === id);
+        if (item) return { plan, item };
+      }
+      return null;
+    };
+    const syncPlan = (planItemId) => {
+      const found = findPlanItem(planItemId);
+      if (!found) return null;
+      const linked = repository.listByPlanItem(planItemId), latest = [...linked].sort((a, b) => String(a.endedAt || "").localeCompare(String(b.endedAt || ""))).pop();
+      found.item.sessionIds = linked.map((item) => item.id);
+      found.item.executedSeconds = linked.reduce((sum2, item) => sum2 + Math.max(0, Number(item.durationSeconds) || 0), 0);
+      found.item.status = !linked.length ? "planned" : found.item.plannedMinutes > 0 && found.item.executedSeconds >= found.item.plannedMinutes * 60 ? "completed" : "partial";
+      found.item.lastExecutedAt = latest?.endedAt || null;
+      found.plan.updatedAt = clock.nowISO();
+      if (latest && found.item.recommendationId && found.item.status === "completed") completeRecommendation(recommendationsRepository?.all?.() || [], found.item.recommendationId, { sessionId: latest.id, completedAt: found.item.lastExecutedAt });
+      return found.item;
+    };
+    const syncQuestion = (session) => {
+      const linked = questionsRepository.all().filter((item) => item.studySessionId === session.id), existing = linked[0] || null;
+      linked.slice(1).forEach((item) => questionsRepository.remove(item.id));
+      if (session.questionsResolved <= 0) {
+        if (existing) questionsRepository.remove(existing.id);
+        return null;
+      }
+      const values = { date: session.date, subjectId: session.subjectId || null, topicId: session.topicId || null, resolved: session.questionsResolved, correct: session.correctAnswers, studySessionId: session.id };
+      const question = existing ? questionsRepository.update(existing.id, values) : questionsRepository.add({ id: idGenerator("question"), createdAt: clock.nowISO(), ...values });
+      normalizeQuestion(question);
+      return question;
+    };
+    return Object.freeze({
+      complete: (input) => {
+        const session = normalize({ id: idGenerator("session"), createdAt: clock.nowISO(), ...input });
+        const saved = repository.add(session);
+        syncQuestion(saved);
+        syncPlan(saved.planItemId);
+        const occurredAt = clock.nowISO();
+        historyRepository?.add?.({ id: idGenerator("history"), date: occurredAt, occurredAt, localDate: saved.date || clock.today(), type: "study_session", subjectId: saved.subjectId || null, topicId: saved.topicId || null, metadata: { sessionId: saved.id, durationSeconds: saved.durationSeconds } });
+        return saved;
+      },
+      edit: (id, changes) => {
+        const current = repository.findById(id);
+        if (!current) return null;
+        const oldPlanItemId = current.planItemId || null, saved = repository.update(id, normalize({ ...current, ...changes }));
+        syncQuestion(saved);
+        if (oldPlanItemId && oldPlanItemId !== saved.planItemId) syncPlan(oldPlanItemId);
+        syncPlan(saved.planItemId);
+        return saved;
+      },
+      remove: (id) => {
+        const session = repository.remove(id);
+        if (!session) return null;
+        questionsRepository.all().filter((item) => item.studySessionId === id).forEach((item) => questionsRepository.remove(item.id));
+        historyRepository?.all?.().filter((item) => item.type === "study_session" && item.metadata?.sessionId === id).forEach((item) => historyRepository.remove(item.id));
+        syncPlan(session.planItemId);
+        return session;
+      },
+      syncPlanItem: syncPlan
+    });
+  }
+
   // src/application/alert-lifecycle.js
   var severityOrder = { high: 3, medium: 2, low: 1, ok: 0 };
   function reconcileAlerts(alerts = [], states = [], today, addDays2) {
@@ -1513,6 +1586,34 @@
     return Object.freeze({ getStudyPlans: () => plans(), getActiveStudyPlan: () => [...plans()].sort((a, b) => String(b.confirmedAt || "").localeCompare(String(a.confirmedAt || "")))[0] || null, saveStudyPlan: save(plans), getDailyPlans: () => daily(), getDailyPlan: (date) => daily().find((plan) => plan.date === date) || null, saveDailyPlan: save(daily), getAdjustments: () => adjustments(), findAdjustment: (id) => adjustments().find((item) => item.id === id) || null, saveAdjustment: save(adjustments) });
   }
 
+  // src/repositories/sessions-repository.js
+  function createSessionsRepository({ getState } = {}) {
+    if (typeof getState !== "function") throw new TypeError("Repositório de sessões requer acesso ao estado.");
+    const items = () => Array.isArray(getState()?.studySessions) ? getState().studySessions : [];
+    return Object.freeze({
+      all: () => items(),
+      findById: (id) => items().find((item) => item.id === id) || null,
+      add: (session) => {
+        if (items().some((item) => item.id === session.id)) return items().find((item) => item.id === session.id);
+        items().push(session);
+        return session;
+      },
+      update: (id, changes) => {
+        const session = items().find((item) => item.id === id);
+        if (!session) return null;
+        Object.assign(session, changes);
+        return session;
+      },
+      remove: (id) => {
+        const list = items(), index = list.findIndex((item) => item.id === id);
+        return index < 0 ? null : list.splice(index, 1)[0];
+      },
+      listByPeriod: ({ start = null, end = null } = {}) => items().filter((item) => (!start || item.date >= start) && (!end || item.date <= end)),
+      listByTopic: (topicId) => items().filter((item) => item.topicId === topicId),
+      listByPlanItem: (planItemId) => items().filter((item) => item.planItemId === planItemId)
+    });
+  }
+
   // src/repositories/collection-repository.js
   function createCollectionRepository({ getState, field } = {}) {
     if (typeof getState !== "function" || !field) throw new TypeError("Repositório requer estado e coleção.");
@@ -1540,7 +1641,8 @@
     });
   }
   function createAppRepositories(getState) {
-    const repositories = Object.fromEntries(["subjects", "calendar", "questoes", "simulados", "studySessions", "dailyPlans", "studyPlans", "recommendationFeedback"].map((field) => [field, createCollectionRepository({ getState, field })]));
+    const repositories = Object.fromEntries(["subjects", "calendar", "questoes", "simulados", "dailyPlans", "studyPlans", "recommendationFeedback", "topicHistory"].map((field) => [field, createCollectionRepository({ getState, field })]));
+    repositories.studySessions = createSessionsRepository({ getState });
     repositories.reviewAgenda = createReviewsRepository({ getState });
     repositories.planning = createPlanningRepository({ getState });
     return Object.freeze(repositories);
@@ -2150,6 +2252,7 @@
   var studyPlanService = createStudyPlanService({ repository: planningRepository, calculate: buildStudyPlan, clock: appClock, idGenerator: uid, algorithmVersion: () => state.algorithmVersions.recommendations });
   var dailyPlanService = createDailyPlanService({ repository: planningRepository, buildProposal: buildDailyPlanProposal, applyProposal: applyDailyPlanProposal, undoGeneration: undoDailyPlanGeneration, clock: appClock, idGenerator: uid });
   var replanService = createReplanService({ repository: planningRepository, buildProposal: buildReplanProposal, applyProposal: applyReplan, undoProposal: undoReplan, clock: appClock, idGenerator: uid });
+  var sessionService = createSessionService({ repository: appContext.repositories.studySessions, questionsRepository: appContext.repositories.questoes, historyRepository: appContext.repositories.topicHistory, planningRepository, recommendationsRepository: appContext.repositories.recommendationFeedback, clock: appClock, idGenerator: uid, normalizeQuestion: normalizeErrorBreakdown, completeRecommendation: completeRecommendationFeedback });
   var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
   var STATE_CHANNEL = !IS_DEMO_MODE && typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
@@ -3063,32 +3166,6 @@
       found.plan.updatedAt = nowISO2();
     }
   }
-  function recordPlannedExecution(planItemId, session) {
-    const found = findDailyPlanItem(planItemId);
-    if (!found) return;
-    const { plan, item } = found;
-    const linkedSessions = state.studySessions.filter((candidate) => candidate.planItemId === item.id);
-    item.sessionIds = linkedSessions.map((candidate) => candidate.id);
-    item.executedSeconds = linkedSessions.reduce((sum2, candidate) => sum2 + Math.max(0, Number(candidate.durationSeconds) || 0), 0);
-    item.status = item.plannedMinutes > 0 && item.executedSeconds >= item.plannedMinutes * 60 ? "completed" : "partial";
-    item.lastExecutedAt = session.endedAt || nowISO2();
-    plan.updatedAt = nowISO2();
-    if (item.recommendationId && item.status === "completed") completeRecommendationFeedback(state.recommendationFeedback, item.recommendationId, { sessionId: session.id, completedAt: item.lastExecutedAt });
-  }
-  function syncPlannedExecution(planItemId) {
-    const latest = state.studySessions.filter((session) => session.planItemId === planItemId).sort((a, b) => (a.endedAt || "").localeCompare(b.endedAt || "")).pop();
-    if (latest) recordPlannedExecution(planItemId, latest);
-    else {
-      const found = findDailyPlanItem(planItemId);
-      if (found) {
-        found.item.sessionIds = [];
-        found.item.executedSeconds = 0;
-        found.item.status = "planned";
-        found.item.lastExecutedAt = null;
-        found.plan.updatedAt = nowISO2();
-      }
-    }
-  }
   function startPlannedActivity(itemId) {
     const found = findDailyPlanItem(itemId);
     if (!found) {
@@ -3329,12 +3406,7 @@
       notes,
       planItemId: state.activeTimer.planItemId || null
     };
-    state.studySessions.push(session);
-    recordPlannedExecution(session.planItemId, session);
-    addHistoryEvent("study_session", subjectId, topicId, { sessionId: session.id, durationSeconds: session.durationSeconds });
-    if (resolved > 0) {
-      state.questoes.push({ id: uid("question"), date: session.date, subjectId, topicId, resolved, correct: Math.min(correct, resolved), studySessionId: session.id, createdAt: nowISO2() });
-    }
+    sessionService.complete(session);
     persistAndRender();
     showToast(resolved > 0 ? "Sessão e questões registradas." : "Sessão de estudo registrada.");
     closeSessionModal();
@@ -6276,29 +6348,11 @@
     return Number.isNaN(date.getTime()) ? "—" : date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   }
   function syncQuestionFromStudySession(session) {
-    let question = state.questoes.find((q) => q.studySessionId === session.id);
-    const resolved = Math.max(0, Number(session.questionsResolved) || 0);
-    const correct = Math.max(0, Math.min(Number(session.correctAnswers) || 0, resolved));
-    session.questionsResolved = resolved;
-    session.correctAnswers = correct;
-    if (resolved <= 0) {
-      state.questoes = state.questoes.filter((q) => q.studySessionId !== session.id);
-      return;
-    }
-    if (!question) {
-      question = { id: uid("question"), studySessionId: session.id, createdAt: nowISO2() };
-      state.questoes.push(question);
-    }
-    Object.assign(question, { date: session.date, subjectId: session.subjectId || null, topicId: session.topicId || null, resolved, correct });
-    normalizeErrorBreakdown(question);
+    return sessionService.edit(session.id, session);
   }
   function deleteStudySession(id) {
     showConfirm("Excluir esta sessão e as questões vinculadas a ela?", () => {
-      const planItemId = state.studySessions.find((s) => s.id === id)?.planItemId || null;
-      state.studySessions = state.studySessions.filter((s) => s.id !== id);
-      state.questoes = state.questoes.filter((q) => q.studySessionId !== id);
-      state.topicHistory = state.topicHistory.filter((h) => !(h.type === "study_session" && h.metadata?.sessionId === id));
-      if (planItemId) syncPlannedExecution(planItemId);
+      sessionService.remove(id);
       persistAndRender();
       showToast("Sessão excluída.");
     });
@@ -6339,9 +6393,7 @@
     d.correctAnswers = Math.max(0, Math.min(Math.floor(Number(d.correctAnswers) || 0), d.questionsResolved));
     const index = state.studySessions.findIndex((s) => s.id === d.id);
     if (index < 0) return cancelStudySessionEdit();
-    state.studySessions[index] = d;
-    syncQuestionFromStudySession(d);
-    if (d.planItemId) syncPlannedExecution(d.planItemId);
+    sessionService.edit(d.id, d);
     historyEditState.sessionId = null;
     historyEditDraft.session = null;
     persistAndRender();

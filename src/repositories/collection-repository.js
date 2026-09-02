@@ -1,5 +1,6 @@
 import {createReviewsRepository} from './reviews-repository.js';
 import {createPlanningRepository} from './planning-repository.js';
+import {createSessionsRepository} from './sessions-repository.js';
 
 export function createCollectionRepository({getState,field}={}){
   if(typeof getState!=='function'||!field)throw new TypeError('Repositório requer estado e coleção.');
@@ -13,7 +14,8 @@ export function createCollectionRepository({getState,field}={}){
 }
 
 export function createAppRepositories(getState){
-  const repositories=Object.fromEntries(['subjects','calendar','questoes','simulados','studySessions','dailyPlans','studyPlans','recommendationFeedback'].map(field=>[field,createCollectionRepository({getState,field})]));
+  const repositories=Object.fromEntries(['subjects','calendar','questoes','simulados','dailyPlans','studyPlans','recommendationFeedback','topicHistory'].map(field=>[field,createCollectionRepository({getState,field})]));
+  repositories.studySessions=createSessionsRepository({getState});
   repositories.reviewAgenda=createReviewsRepository({getState});
   repositories.planning=createPlanningRepository({getState});
   return Object.freeze(repositories);
