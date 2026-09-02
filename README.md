@@ -8,7 +8,7 @@ Aplicação local para planejar estudos, acompanhar tópicos, registrar questõe
 - Calendário, agenda de revisões e plano diário.
 - Cronômetro e histórico de sessões.
 - Histórico compacto no desktop, com detalhes sob demanda e filtros recolhíveis no celular.
-- Relatório estratégico A4 com prontidão, planejamento, execução, projeção, riscos, oportunidades, recomendações e erros.
+- Relatório estratégico A4 com período configurável, prova, planejamento versus execução, desempenho por disciplina, simulados, revisões, riscos, oportunidades, recomendações e erros.
 - Questões, simulados, diagnóstico de erros e indicadores de prontidão.
 - Metas semanais, mensais e por disciplina.
 - Tema claro/escuro, interface responsiva e navegação por teclado.

@@ -39,6 +39,7 @@ import {createStudyPlanService} from './application/planning/study-plan-service.
 import {createDailyPlanService} from './application/planning/daily-plan-service.js';
 import {createReplanService} from './application/planning/replan-service.js';
 import {createSessionService} from './application/sessions/session-service.js';
+import {createRecordService} from './application/records/record-service.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
@@ -80,9 +81,11 @@ function toggleTheme(){ setTheme(getCurrentTheme()==='dark'?'light':'dark'); }
 document.getElementById('themeToggleBtn').addEventListener('click',toggleTheme);
 updateThemeToggleIcon();
 document.getElementById('exportReportBtn')?.addEventListener('click',()=>{
-  const diagnosis=generateDiagnosis(intelligenceCandidates()),report=buildStrategicReport({state,generatedAt:nowISO(),isDemo:IS_DEMO_MODE,readiness:readinessResult(computeApprovalMetrics()),diagnosis,forecast:projectPerformance()});
+  const preset=document.getElementById('reportPeriodSelect')?.value||'30',period={preset,start:document.getElementById('reportPeriodStart')?.value||null,end:document.getElementById('reportPeriodEnd')?.value||null};
+  const diagnosis=generateDiagnosis(intelligenceCandidates()),report=buildStrategicReport({state,generatedAt:nowISO(),isDemo:IS_DEMO_MODE,readiness:readinessResult(computeApprovalMetrics()),diagnosis,forecast:projectPerformance(),period});
   printStrategicReport({document,window,report,render:renderStrategicReport});
 });
+document.getElementById('reportPeriodSelect')?.addEventListener('change',event=>{const custom=event.target.value==='custom';document.getElementById('reportPeriodStart').hidden=!custom;document.getElementById('reportPeriodEnd').hidden=!custom});
 
 const ERROR_CATEGORIES = {
   naoSabia:{label:'Não sabia',icon:'📚'},
@@ -472,6 +475,7 @@ const studyPlanService=createStudyPlanService({repository:planningRepository,cal
 const dailyPlanService=createDailyPlanService({repository:planningRepository,buildProposal:buildDailyPlanProposal,applyProposal:applyDailyPlanProposal,undoGeneration:undoDailyPlanGeneration,clock:appClock,idGenerator:uid});
 const replanService=createReplanService({repository:planningRepository,buildProposal:buildReplanProposal,applyProposal:applyReplan,undoProposal:undoReplan,clock:appClock,idGenerator:uid});
 const sessionService=createSessionService({repository:appContext.repositories.studySessions,questionsRepository:appContext.repositories.questoes,historyRepository:appContext.repositories.topicHistory,planningRepository,recommendationsRepository:appContext.repositories.recommendationFeedback,clock:appClock,idGenerator:uid,normalizeQuestion:normalizeErrorBreakdown,completeRecommendation:completeRecommendationFeedback,onCompleted:measureRecommendationResults});
+const calendarService=createRecordService({repository:appContext.repositories.calendar,clock:appClock,idGenerator:uid,prefix:'calendar'}),questionService=createRecordService({repository:appContext.repositories.questoes,clock:appClock,idGenerator:uid,prefix:'question',normalize:item=>{item.resolved=Math.max(0,Math.floor(Number(item.resolved)||0));item.correct=Math.min(item.resolved,Math.max(0,Math.floor(Number(item.correct)||0)));normalizeErrorBreakdown(item);return item}}),simulationService=createRecordService({repository:appContext.repositories.simulados,clock:appClock,idGenerator:uid,prefix:'simulado',normalize:item=>{item.total=Math.max(0,Math.floor(Number(item.total)||0));item.correct=Math.min(item.total,Math.max(0,Math.floor(Number(item.correct)||0)));return item}}),goalService=createRecordService({repository:appContext.repositories.metasPorDisciplina,clock:appClock,idGenerator:uid,prefix:'goal'});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
 const STATE_CHANNEL=!IS_DEMO_MODE&&typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
@@ -2435,12 +2439,12 @@ function calendarViewModel(item){return {date:item.date?formatDatePt(item.date):
 function changeCalendarLimit(delta){calendarUiState.visible=Math.max(10,calendarUiState.visible+Number(delta||0));renderCalendar()}
 function resetCalendarLimit(){calendarUiState.visible=10;renderCalendar()}
 function editCalendarItem(id){
-  if(calendarUiState.editingIsNew&&calendarUiState.editingId!==id)state.calendar=state.calendar.filter(item=>item.id!==calendarUiState.editingId);
+  if(calendarUiState.editingIsNew&&calendarUiState.editingId!==id)calendarService.remove(calendarUiState.editingId);
   const item=state.calendar.find(entry=>entry.id===id);if(!item)return;calendarUiState.editingId=id;calendarUiState.editingIsNew=false;calendarUiState.draft=cloneRecord(item);renderCalendar();
 }
-function cancelCalendarEdit(){if(calendarUiState.editingIsNew)state.calendar=state.calendar.filter(item=>item.id!==calendarUiState.editingId);calendarUiState.editingId=null;calendarUiState.editingIsNew=false;calendarUiState.draft=null;renderCalendar()}
+function cancelCalendarEdit(){if(calendarUiState.editingIsNew)calendarService.remove(calendarUiState.editingId);calendarUiState.editingId=null;calendarUiState.editingIsNew=false;calendarUiState.draft=null;renderCalendar()}
 function updateCalendarDraft(field,value){const draft=calendarUiState.draft;if(draft)draft[field]=value;}
-function saveCalendarEdit(){const draft=calendarUiState.draft,index=state.calendar.findIndex(item=>item.id===calendarUiState.editingId);if(!draft||index<0)return cancelCalendarEdit();state.calendar[index]=draft;calendarUiState.editingId=null;calendarUiState.editingIsNew=false;calendarUiState.draft=null;persistAndRender();showToast('Item do calendário atualizado.');}
+function saveCalendarEdit(){const draft=calendarUiState.draft;if(!draft||!calendarService.find(calendarUiState.editingId))return cancelCalendarEdit();calendarService.update(draft.id,draft);calendarUiState.editingId=null;calendarUiState.editingIsNew=false;calendarUiState.draft=null;persistAndRender();showToast('Item do calendário atualizado.');}
 function completeCalendarItem(id){const item=state.calendar.find(entry=>entry.id===id);if(!item||item.status==='Concluído')return;item.status='Concluído';persistAndRender();showToast('Item concluído.');}
 function renderCalendarReadRow(item){
   const vm=calendarViewModel(item),pending=item.status!=='Concluído';
@@ -2475,10 +2479,10 @@ function renderCalendar(){
 }
 
 function addCalRow(){
-  const item={id:uid('calendar'),date:todayISO(),week:'',subjectId:activeSubjects()[0]?.id||null,topicId:null,status:'Não iniciado',reviewType:'—',createdAt:nowISO()};state.calendar.push(item);calendarUiState.editingId=item.id;calendarUiState.editingIsNew=true;calendarUiState.draft=cloneRecord(item);renderCalendar();
+  const item=calendarService.create({date:todayISO(),week:'',subjectId:activeSubjects()[0]?.id||null,topicId:null,status:'Não iniciado',reviewType:'—'});calendarUiState.editingId=item.id;calendarUiState.editingIsNew=true;calendarUiState.draft=cloneRecord(item);renderCalendar();
 }
 function deleteCalRow(id){
-  showConfirm('Excluir este item do calendário?',()=>{state.calendar=state.calendar.filter(c=>c.id!==id);calendarUiState.editingId=null;calendarUiState.editingIsNew=false;calendarUiState.draft=null;persistAndRender();showToast('Item excluído.');});
+  showConfirm('Excluir este item do calendário?',()=>{calendarService.remove(id);calendarUiState.editingId=null;calendarUiState.editingIsNew=false;calendarUiState.draft=null;persistAndRender();showToast('Item excluído.');});
 }
 function updateCal(id, field, value){
   const c = state.calendar.find(x=>x.id===id);
@@ -2809,13 +2813,13 @@ function questionViewModel(q){
   return {date:q.date?formatDatePt(q.date):'Sem data',subject:getSubjectName(subjectId)||'Sem disciplina',topic:q.topicId?getTopicName(q.topicId):'Sem tópico',resolved:Number(q.resolved)||0,correct:Number(q.correct)||0,accuracy:calcAcertoPct(q.correct,q.resolved)};
 }
 function editQuestion(id){
-  if(historyEditState.questionIsNew&&historyEditState.questionId!==id) state.questoes=state.questoes.filter(q=>q.id!==historyEditState.questionId);
+  if(historyEditState.questionIsNew&&historyEditState.questionId!==id) questionService.remove(historyEditState.questionId);
   const question=state.questoes.find(q=>q.id===id); if(!question) return;
   if(historyEditState.questionId!==id) historyEditState.questionIsNew=false;
   historyEditState.questionId=id; historyEditDraft.question=cloneRecord(question); renderQuestoes();
 }
 function cancelQuestionEdit(){
-  if(historyEditState.questionIsNew&&historyEditState.questionId) state.questoes=state.questoes.filter(q=>q.id!==historyEditState.questionId);
+  if(historyEditState.questionIsNew&&historyEditState.questionId) questionService.remove(historyEditState.questionId);
   historyEditState.questionId=null; historyEditState.questionIsNew=false; historyEditDraft.question=null; renderQuestoes();
 }
 function updateQuestionDraft(field,value){
@@ -2830,7 +2834,7 @@ function saveQuestionEdit(){
   draft.correct=Math.max(0,Math.min(Math.floor(Number(draft.correct)||0),draft.resolved));
   normalizeErrorBreakdown(draft);
   const index=state.questoes.findIndex(q=>q.id===draft.id); if(index<0) return cancelQuestionEdit();
-  state.questoes[index]=draft; historyEditState.questionId=null; historyEditState.questionIsNew=false; historyEditDraft.question=null; persistAndRender(); showToast('Registro atualizado.');
+  questionService.update(draft.id,draft); historyEditState.questionId=null; historyEditState.questionIsNew=false; historyEditDraft.question=null; persistAndRender(); showToast('Registro atualizado.');
 }
 function renderQuestionReadRow(q){
   const vm=questionViewModel(q); const realErrors=Math.max(0,vm.resolved-vm.correct); const categorized=questionCategorizedErrors(q);
@@ -2859,10 +2863,10 @@ function renderQuestoes(){
 function addQuestaoRow(){
   listViewState.questionsVisible=LIST_VIEW_STEPS.questions;
   const question={id:uid('question'),date:todayISO(),subjectId:activeSubjects()[0]?.id||null,topicId:null,resolved:0,correct:0,errorBreakdown:emptyErrorBreakdown(),createdAt:nowISO()};
-  state.questoes.push(question); historyEditState.questionId=question.id; historyEditState.questionIsNew=true; historyEditDraft.question=cloneRecord(question); renderQuestoes();
+  questionService.create(question); historyEditState.questionId=question.id; historyEditState.questionIsNew=true; historyEditDraft.question=cloneRecord(question); renderQuestoes();
 }
 function deleteQuestaoRow(id){
-  showConfirm('Excluir este registro de questões?',()=>{ state.questoes=state.questoes.filter(q=>q.id!==id); openQuestionErrorIds.delete(id); historyEditState.questionId=null; historyEditState.questionIsNew=false; historyEditDraft.question=null; persistAndRender(); showToast('Registro excluído.'); });
+  showConfirm('Excluir este registro de questões?',()=>{ questionService.remove(id); openQuestionErrorIds.delete(id); historyEditState.questionId=null; historyEditState.questionIsNew=false; historyEditDraft.question=null; persistAndRender(); showToast('Registro excluído.'); });
 }
 function updateQuestionSubject(id,subjectId){
   const question=state.questoes.find(q=>q.id===id);
@@ -3213,14 +3217,14 @@ function deleteBreakdownRow(simuladoId, breakdownId){
 }
 
 function simulationViewModel(sim){ const counts=simuladoEffectiveCounts(sim); return {date:sim.date?formatDatePt(sim.date):'Sem data',name:sim.nome||'Simulado sem nome',correct:counts.correct,total:counts.total,score:simuladoNota(sim)}; }
-function editSimulation(id){ if(historyEditState.simulationIsNew&&historyEditState.simulationId!==id) state.simulados=state.simulados.filter(s=>s.id!==historyEditState.simulationId); const sim=state.simulados.find(s=>s.id===id); if(!sim) return; if(historyEditState.simulationId!==id) historyEditState.simulationIsNew=false; historyEditState.simulationId=id; historyEditDraft.simulation=cloneRecord(sim); renderSimulados(); }
-function cancelSimulationEdit(){ if(historyEditState.simulationIsNew&&historyEditState.simulationId) state.simulados=state.simulados.filter(s=>s.id!==historyEditState.simulationId); historyEditState.simulationId=null; historyEditState.simulationIsNew=false; historyEditDraft.simulation=null; renderSimulados(); }
+function editSimulation(id){ if(historyEditState.simulationIsNew&&historyEditState.simulationId!==id) simulationService.remove(historyEditState.simulationId); const sim=state.simulados.find(s=>s.id===id); if(!sim) return; if(historyEditState.simulationId!==id) historyEditState.simulationIsNew=false; historyEditState.simulationId=id; historyEditDraft.simulation=cloneRecord(sim); renderSimulados(); }
+function cancelSimulationEdit(){ if(historyEditState.simulationIsNew&&historyEditState.simulationId) simulationService.remove(historyEditState.simulationId); historyEditState.simulationId=null; historyEditState.simulationIsNew=false; historyEditDraft.simulation=null; renderSimulados(); }
 function updateSimulationDraft(field,value){ const d=historyEditDraft.simulation; if(!d) return; d[field]=(field==='correct'||field==='total')?Math.max(0,Math.floor(Number(value)||0)):value; }
 function saveSimulationEdit(){
   const d=historyEditDraft.simulation; if(!d) return;
   d.total=Math.max(0,Math.floor(Number(d.total)||0)); d.correct=Math.max(0,Math.min(Math.floor(Number(d.correct)||0),d.total));
   const index=state.simulados.findIndex(s=>s.id===d.id); if(index<0) return cancelSimulationEdit();
-  state.simulados[index]=d; historyEditState.simulationId=null; historyEditState.simulationIsNew=false; historyEditDraft.simulation=null; persistAndRender(); showToast('Simulado atualizado.');
+  simulationService.update(d.id,d); historyEditState.simulationId=null; historyEditState.simulationIsNew=false; historyEditDraft.simulation=null; persistAndRender(); showToast('Simulado atualizado.');
 }
 function renderSimulationReadRow(sim){
   const vm=simulationViewModel(sim); const hasBreakdown=sim.breakdown&&sim.breakdown.length>0;
@@ -3250,10 +3254,10 @@ function renderSimulados(){
 }
 function addSimuladoRow(){
   listViewState.simulationsVisible=LIST_VIEW_STEPS.simulations;
-  const sim={id:uid('simulado'),date:todayISO(),nome:'',correct:0,total:0,breakdown:[],createdAt:nowISO()}; state.simulados.push(sim); historyEditState.simulationId=sim.id; historyEditState.simulationIsNew=true; historyEditDraft.simulation=cloneRecord(sim); renderSimulados();
+  const sim=simulationService.create({date:todayISO(),nome:'',correct:0,total:0,breakdown:[]}); historyEditState.simulationId=sim.id; historyEditState.simulationIsNew=true; historyEditDraft.simulation=cloneRecord(sim); renderSimulados();
 }
 function deleteSimuladoRow(id){
-  showConfirm('Excluir este simulado?',()=>{ state.simulados=state.simulados.filter(s=>s.id!==id); openBreakdownIds.delete(id); historyEditState.simulationId=null; historyEditState.simulationIsNew=false; historyEditDraft.simulation=null; persistAndRender(); showToast('Simulado excluído.'); });
+  showConfirm('Excluir este simulado?',()=>{ simulationService.remove(id); openBreakdownIds.delete(id); historyEditState.simulationId=null; historyEditState.simulationIsNew=false; historyEditDraft.simulation=null; persistAndRender(); showToast('Simulado excluído.'); });
 }
 function updateSimulado(id, field, value){
   const sim = state.simulados.find(x=>x.id===id);
@@ -3510,7 +3514,7 @@ function addMetaDisciplina(){
     showToast('Já existe uma meta pra essa disciplina.');
     return;
   }
-  state.metasPorDisciplina.push({ id: uid('goal'), subjectId, meta });
+  goalService.create({subjectId,meta});
   persistAndRender();
 }
 function updateMetaDisciplina(id, value){
@@ -3519,7 +3523,7 @@ function updateMetaDisciplina(id, value){
   persistAndRender();
 }
 function deleteMetaDisciplina(id){
-  state.metasPorDisciplina = state.metasPorDisciplina.filter(x=>x.id!==id);
+  goalService.remove(id);
   persistAndRender();
 }
 document.getElementById('addMetaDisciplinaBtn').addEventListener('click', addMetaDisciplina);

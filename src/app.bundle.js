@@ -263,9 +263,9 @@
 
   // src/core/clock.js
   function asDate(value2) {
-    const date = value2 instanceof Date ? new Date(value2.getTime()) : new Date(value2);
-    if (Number.isNaN(date.getTime())) throw new TypeError("O relógio retornou uma data inválida.");
-    return date;
+    const date2 = value2 instanceof Date ? new Date(value2.getTime()) : new Date(value2);
+    if (Number.isNaN(date2.getTime())) throw new TypeError("O relógio retornou uma data inválida.");
+    return date2;
   }
   function createClock({ now = () => /* @__PURE__ */ new Date() } = {}) {
     if (typeof now !== "function") throw new TypeError("O relógio precisa receber uma função now.");
@@ -274,8 +274,8 @@
       now: current,
       nowISO: () => current().toISOString(),
       today: () => {
-        const date = current();
-        const year = date.getFullYear(), month = String(date.getMonth() + 1).padStart(2, "0"), day = String(date.getDate()).padStart(2, "0");
+        const date2 = current();
+        const year = date2.getFullYear(), month = String(date2.getMonth() + 1).padStart(2, "0"), day = String(date2.getDate()).padStart(2, "0");
         return `${year}-${month}-${day}`;
       },
       timestamp: () => current().getTime()
@@ -390,9 +390,9 @@
     };
   }
   function addLocalDays(iso, days) {
-    const [year, month, day] = String(iso).split("-").map(Number), date = new Date(year, month - 1, day);
-    date.setDate(date.getDate() + days);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const [year, month, day] = String(iso).split("-").map(Number), date2 = new Date(year, month - 1, day);
+    date2.setDate(date2.getDate() + days);
+    return `${date2.getFullYear()}-${String(date2.getMonth() + 1).padStart(2, "0")}-${String(date2.getDate()).padStart(2, "0")}`;
   }
   function applyAdaptiveReviewRating(source, rating, { reviewDate, algorithmVersion = 2 } = {}) {
     if (!REVIEW_RATINGS[rating]) throw new Error("Avaliação de revisão inválida.");
@@ -596,9 +596,9 @@
   function groupStudySessionsByDate(sessions) {
     const groups = /* @__PURE__ */ new Map();
     for (const session of sessions || []) {
-      const date = session.date || "Sem data";
-      if (!groups.has(date)) groups.set(date, []);
-      groups.get(date).push(session);
+      const date2 = session.date || "Sem data";
+      if (!groups.has(date2)) groups.set(date2, []);
+      groups.get(date2).push(session);
     }
     return [...groups.entries()];
   }
@@ -1017,10 +1017,10 @@
 
   // src/application/replan-study.js
   function buildReplanProposal({ plans = [], periodStart, periodEnd, futureDays = [] } = {}) {
-    const inPeriod = plans.filter((plan) => plan.date >= periodStart && plan.date <= periodEnd);
-    const plannedMinutes = inPeriod.reduce((sum2, plan) => sum2 + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
-    const executedMinutes = Math.round(inPeriod.reduce((sum2, plan) => sum2 + (plan.items || []).reduce((n, item) => n + (Number(item.executedSeconds) || 0) / 60, 0), 0));
-    const pendingItems = inPeriod.flatMap((plan) => (plan.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).map((item) => ({ sourcePlanId: plan.id, sourceItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || null, remainingMinutes: Math.max(0, Math.round((Number(item.plannedMinutes) || 0) - (Number(item.executedSeconds) || 0) / 60)), priority: Number(item.score) || 0 }))).filter((item) => item.remainingMinutes > 0).sort((a, b) => b.priority - a.priority);
+    const inPeriod2 = plans.filter((plan) => plan.date >= periodStart && plan.date <= periodEnd);
+    const plannedMinutes = inPeriod2.reduce((sum2, plan) => sum2 + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
+    const executedMinutes = Math.round(inPeriod2.reduce((sum2, plan) => sum2 + (plan.items || []).reduce((n, item) => n + (Number(item.executedSeconds) || 0) / 60, 0), 0));
+    const pendingItems = inPeriod2.flatMap((plan) => (plan.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).map((item) => ({ sourcePlanId: plan.id, sourceItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || null, remainingMinutes: Math.max(0, Math.round((Number(item.plannedMinutes) || 0) - (Number(item.executedSeconds) || 0) / 60)), priority: Number(item.score) || 0 }))).filter((item) => item.remainingMinutes > 0).sort((a, b) => b.priority - a.priority);
     const deficitMinutes = pendingItems.reduce((sum2, item) => sum2 + item.remainingMinutes, 0);
     const capacities = (futureDays || []).map((day) => ({ date: day.date, remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)) }));
     const allocations = [];
@@ -1303,6 +1303,15 @@
     });
   }
 
+  // src/application/records/record-service.js
+  function createRecordService({ repository, clock, idGenerator, prefix, normalize = (value2) => value2 } = {}) {
+    if (!repository || !clock || typeof idGenerator !== "function") throw new TypeError("Serviço de registros requer dependências.");
+    return Object.freeze({ list: () => repository.all(), find: (id) => repository.findById(id), create: (input) => repository.add(normalize({ id: idGenerator(prefix), createdAt: clock.nowISO(), ...input })), update: (id, changes) => {
+      const current = repository.findById(id);
+      return current ? repository.update(id, normalize({ ...current, ...changes })) : null;
+    }, remove: (id) => repository.remove(id) });
+  }
+
   // src/application/alert-lifecycle.js
   var severityOrder = { high: 3, medium: 2, low: 1, ok: 0 };
   function reconcileAlerts(alerts = [], states = [], today, addDays2) {
@@ -1338,8 +1347,8 @@
   function confidenceLabel(value2) {
     return value2 >= 0.7 ? "Alta" : value2 >= 0.35 ? "Média" : "Baixa";
   }
-  function dayNumber(date) {
-    const timestamp2 = Date.parse(`${date}T00:00:00Z`);
+  function dayNumber(date2) {
+    const timestamp2 = Date.parse(`${date2}T00:00:00Z`);
     return Number.isFinite(timestamp2) ? timestamp2 / 864e5 : null;
   }
   function normalizeObservations(observations) {
@@ -1436,11 +1445,11 @@
     };
   }
   function shiftDate(iso, days) {
-    const [year, month, day] = iso.split("-").map(Number), date = new Date(Date.UTC(year, month - 1, day + days));
-    return date.toISOString().slice(0, 10);
+    const [year, month, day] = iso.split("-").map(Number), date2 = new Date(Date.UTC(year, month - 1, day + days));
+    return date2.toISOString().slice(0, 10);
   }
-  function timestamp(date, hour = 12) {
-    return `${date}T${String(hour).padStart(2, "0")}:00:00.000Z`;
+  function timestamp(date2, hour = 12) {
+    return `${date2}T${String(hour).padStart(2, "0")}:00:00.000Z`;
   }
   function distributeErrors(errors, random) {
     const result = Object.fromEntries(ERROR_KEYS.map((key) => [key, 0]));
@@ -1473,31 +1482,31 @@
     state2.questoes = [];
     const activeAges = Array.from({ length: 90 }, (_, age) => age).filter((age) => age % 7 !== 0 && age % 11 !== 0);
     for (let index = 0; index < 120; index++) {
-      const age = activeAges[index % activeAges.length], date = shiftDate(today, -age), entry = activeTopics2[index % activeTopics2.length], type = TYPES[index % TYPES.length], durationMinutes = 25 + Math.floor(random() * 66);
-      const session = { id: `demo-session-${index + 1}`, date, startedAt: timestamp(date, 8 + index % 11), endedAt: timestamp(date, 9 + index % 11), durationSeconds: durationMinutes * 60, subjectId: entry.subject.id, topicId: entry.topic.id, planItemId: null, type, questionsResolved: 0, correctAnswers: 0, notes: index % 9 === 0 ? "Sessão demonstrativa com observação de progresso." : "", createdAt: timestamp(date) };
+      const age = activeAges[index % activeAges.length], date2 = shiftDate(today, -age), entry = activeTopics2[index % activeTopics2.length], type = TYPES[index % TYPES.length], durationMinutes = 25 + Math.floor(random() * 66);
+      const session = { id: `demo-session-${index + 1}`, date: date2, startedAt: timestamp(date2, 8 + index % 11), endedAt: timestamp(date2, 9 + index % 11), durationSeconds: durationMinutes * 60, subjectId: entry.subject.id, topicId: entry.topic.id, planItemId: null, type, questionsResolved: 0, correctAnswers: 0, notes: index % 9 === 0 ? "Sessão demonstrativa com observação de progresso." : "", createdAt: timestamp(date2) };
       if (type === "questions") {
         const resolved = 22 + Math.floor(random() * 15), progress = (89 - age) / 89, subjectPenalty = entry.subject.id === "demo-subject-4" && age < 28 ? -10 : 0, rate = Math.max(42, Math.min(88, 54 + progress * 24 + subjectPenalty + (random() - 0.5) * 10)), correct = Math.round(resolved * rate / 100), errors = resolved - correct;
         session.questionsResolved = resolved;
         session.correctAnswers = correct;
-        state2.questoes.push({ id: `demo-question-${state2.questoes.length + 1}`, date, subjectId: entry.subject.id, topicId: entry.topic.id, resolved, correct, errorBreakdown: distributeErrors(errors, random), studySessionId: session.id, createdAt: timestamp(date) });
+        state2.questoes.push({ id: `demo-question-${state2.questoes.length + 1}`, date: date2, subjectId: entry.subject.id, topicId: entry.topic.id, resolved, correct, errorBreakdown: distributeErrors(errors, random), studySessionId: session.id, createdAt: timestamp(date2) });
       }
       state2.studySessions.push(session);
     }
     const simulationRates = [61, 64, 63, 67, 69, 72, 74, 76, 70];
     state2.simulados = simulationRates.map((rate, index) => {
-      const date = shiftDate(today, -(80 - index * 10)), total = 100, correct = rate;
-      return { id: `demo-simulation-${index + 1}`, date, nome: `Simulado ${index + 1}`, total, correct, breakdown: state2.subjects.map((subject, subjectIndex) => {
+      const date2 = shiftDate(today, -(80 - index * 10)), total = 100, correct = rate;
+      return { id: `demo-simulation-${index + 1}`, date: date2, nome: `Simulado ${index + 1}`, total, correct, breakdown: state2.subjects.map((subject, subjectIndex) => {
         const rowTotal = subjectIndex < 4 ? 17 : 16, rowCorrect = Math.max(0, Math.min(rowTotal, Math.round(rowTotal * (rate + (subjectIndex - 2) * 2) / 100)));
         return { id: `demo-simulation-row-${index + 1}-${subjectIndex + 1}`, subjectId: subject.id, total: rowTotal, correct: rowCorrect };
-      }), createdAt: timestamp(date) };
+      }), createdAt: timestamp(date2) };
     });
     state2.reviewAgenda = Array.from({ length: 42 }, (_, index) => {
-      const entry = activeTopics2[index % activeTopics2.length], offset = index < 8 ? -(8 - index) : index - 8, date = shiftDate(today, offset), completed = index % 4 === 0;
-      return { id: `demo-review-${index + 1}`, date, subjectId: entry.subject.id, topicId: entry.topic.id, topicRef: entry.topic.id, topic: entry.topic.name, tipo: ["Revisão 24h", "Revisão 7 dias", "Revisão 30 dias"][index % 3], difficulty: ["Fácil", "Médio", "Difícil"][index % 3], status: completed ? "Concluído" : "Não iniciado", completedAt: completed ? timestamp(shiftDate(date, index % 3 === 0 ? 2 : 0)) : null, manualDate: false, adaptive: true, adaptiveReason: "Intervalo ajustado pelo histórico demonstrativo.", suggestedDate: date, baseIntervalDays: [1, 7, 30][index % 3], createdAt: timestamp(shiftDate(date, -7)) };
+      const entry = activeTopics2[index % activeTopics2.length], offset = index < 8 ? -(8 - index) : index - 8, date2 = shiftDate(today, offset), completed = index % 4 === 0;
+      return { id: `demo-review-${index + 1}`, date: date2, subjectId: entry.subject.id, topicId: entry.topic.id, topicRef: entry.topic.id, topic: entry.topic.name, tipo: ["Revisão 24h", "Revisão 7 dias", "Revisão 30 dias"][index % 3], difficulty: ["Fácil", "Médio", "Difícil"][index % 3], status: completed ? "Concluído" : "Não iniciado", completedAt: completed ? timestamp(shiftDate(date2, index % 3 === 0 ? 2 : 0)) : null, manualDate: false, adaptive: true, adaptiveReason: "Intervalo ajustado pelo histórico demonstrativo.", suggestedDate: date2, baseIntervalDays: [1, 7, 30][index % 3], createdAt: timestamp(shiftDate(date2, -7)) };
     });
     state2.calendar = Array.from({ length: 24 }, (_, index) => {
-      const entry = activeTopics2[index * 3 % activeTopics2.length], date = shiftDate(today, index - 6);
-      return { id: `demo-calendar-${index + 1}`, date, week: "", subjectId: entry.subject.id, topicId: entry.topic.id, subject: entry.subject.name, topic: entry.topic.name, status: index < 4 ? "Concluído" : "Não iniciado", reviewType: index % 2 ? "Questões" : "Revisão rápida", createdAt: timestamp(shiftDate(date, -5)) };
+      const entry = activeTopics2[index * 3 % activeTopics2.length], date2 = shiftDate(today, index - 6);
+      return { id: `demo-calendar-${index + 1}`, date: date2, week: "", subjectId: entry.subject.id, topicId: entry.topic.id, subject: entry.subject.name, topic: entry.topic.name, status: index < 4 ? "Concluído" : "Não iniciado", reviewType: index % 2 ? "Questões" : "Revisão rápida", createdAt: timestamp(shiftDate(date2, -5)) };
     });
     state2.progressHistory = Array.from({ length: 90 }, (_, index) => ({ date: shiftDate(today, index - 89), pct: Math.min(82, 18 + Math.floor(index * 0.65)) }));
     state2.metas = { semanal: 12, mensal: 48, questoesSemanal: 220, simuladosSemanal: 1, metaAprovacao: 80, horasDiarias: 2.2, horasPorDia: { "0": 0, "1": 2.5, "2": 2.5, "3": 2, "4": 2.5, "5": 2, "6": 1 } };
@@ -1505,9 +1514,9 @@
     state2.examBlueprint = { examDate: state2.examDate, targetScore: 80, configuredAt: timestamp(today), subjects: state2.subjects.map((subject, index) => ({ subjectId: subject.id, expectedQuestions: index < 4 ? 18 : 14, questionWeight: index === 2 ? 1.5 : 1, priority: index < 2 ? "high" : index === 5 ? "low" : "normal" })) };
     state2.metasPorDisciplina = state2.subjects.map((subject, index) => ({ id: `demo-subject-goal-${index + 1}`, subjectId: subject.id, meta: 30 + index * 5, createdAt }));
     state2.dailyPlans = Array.from({ length: 14 }, (_, index) => {
-      const date = shiftDate(today, index - 6), entryA = activeTopics2[index * 2 % activeTopics2.length], entryB = activeTopics2[(index * 2 + 1) % activeTopics2.length], past = index < 6;
-      const items = [entryA, entryB].map((entry, itemIndex) => ({ id: `demo-plan-item-${index + 1}-${itemIndex + 1}`, subjectId: entry.subject.id, topicId: entry.topic.id, type: itemIndex ? "questions" : "study", plannedMinutes: itemIndex ? 35 : 45, executedSeconds: past ? itemIndex ? 2100 : 1800 : 0, status: past ? itemIndex ? "completed" : "partial" : "planned", originalDate: date, currentDate: date, rescheduleCount: index === 5 && itemIndex === 0 ? 1 : 0, skippedReason: null, recommendationId: null, lastExecutedAt: past ? timestamp(date) : null }));
-      return { id: `demo-daily-plan-${index + 1}`, date, availableMinutes: 120, plannedMinutes: 80, flexMinutes: 40, createdAt: timestamp(date), updatedAt: timestamp(date), items };
+      const date2 = shiftDate(today, index - 6), entryA = activeTopics2[index * 2 % activeTopics2.length], entryB = activeTopics2[(index * 2 + 1) % activeTopics2.length], past = index < 6;
+      const items = [entryA, entryB].map((entry, itemIndex) => ({ id: `demo-plan-item-${index + 1}-${itemIndex + 1}`, subjectId: entry.subject.id, topicId: entry.topic.id, type: itemIndex ? "questions" : "study", plannedMinutes: itemIndex ? 35 : 45, executedSeconds: past ? itemIndex ? 2100 : 1800 : 0, status: past ? itemIndex ? "completed" : "partial" : "planned", originalDate: date2, currentDate: date2, rescheduleCount: index === 5 && itemIndex === 0 ? 1 : 0, skippedReason: null, recommendationId: null, lastExecutedAt: past ? timestamp(date2) : null }));
+      return { id: `demo-daily-plan-${index + 1}`, date: date2, availableMinutes: 120, plannedMinutes: 80, flexMinutes: 40, createdAt: timestamp(date2), updatedAt: timestamp(date2), items };
     });
     const planItems = activeTopics2.slice(0, 12).map((entry, index) => ({ id: `demo-study-plan-topic-${index + 1}`, subjectId: entry.subject.id, subjectName: entry.subject.name, topicId: entry.topic.id, topicName: entry.topic.name, minutes: 45 + index % 3 * 15, estimatedMinutes: entry.topic.estimatedStudyMinutes, activityMix: { theory: 20, questions: 20, reviews: 5 } }));
     state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum2, item) => sum2 + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject) => ({ subjectId: subject.id, subjectName: subject.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
@@ -1564,8 +1573,8 @@
       return { valid: false, message: "Arquivo inválido — não parece um backup deste extrato." };
     }
   }
-  function backupFileName(date, { recovery = false } = {}) {
-    return `${recovery ? "recuperacao" : "backup"}-extrato-estudos-${date}.json`;
+  function backupFileName(date2, { recovery = false } = {}) {
+    return `${recovery ? "recuperacao" : "backup"}-extrato-estudos-${date2}.json`;
   }
 
   // src/repositories/reviews-repository.js
@@ -1590,7 +1599,7 @@
         const list = items(), index = list.findIndex((item) => item.id === id);
         return index < 0 ? null : list.splice(index, 1)[0];
       },
-      hasPendingForTopic: (topicId, date, { exceptId = null } = {}) => items().some((item) => item.id !== exceptId && (item.topicId || item.topicRef) === topicId && item.status !== "Concluído" && (!date || item.date === date))
+      hasPendingForTopic: (topicId, date2, { exceptId = null } = {}) => items().some((item) => item.id !== exceptId && (item.topicId || item.topicRef) === topicId && item.status !== "Concluído" && (!date2 || item.date === date2))
     });
   }
 
@@ -1607,7 +1616,7 @@
       list().push(item);
       return item;
     };
-    return Object.freeze({ getStudyPlans: () => plans(), getActiveStudyPlan: () => [...plans()].sort((a, b) => String(b.confirmedAt || "").localeCompare(String(a.confirmedAt || "")))[0] || null, saveStudyPlan: save(plans), getDailyPlans: () => daily(), getDailyPlan: (date) => daily().find((plan) => plan.date === date) || null, saveDailyPlan: save(daily), getAdjustments: () => adjustments(), findAdjustment: (id) => adjustments().find((item) => item.id === id) || null, saveAdjustment: save(adjustments) });
+    return Object.freeze({ getStudyPlans: () => plans(), getActiveStudyPlan: () => [...plans()].sort((a, b) => String(b.confirmedAt || "").localeCompare(String(a.confirmedAt || "")))[0] || null, saveStudyPlan: save(plans), getDailyPlans: () => daily(), getDailyPlan: (date2) => daily().find((plan) => plan.date === date2) || null, saveDailyPlan: save(daily), getAdjustments: () => adjustments(), findAdjustment: (id) => adjustments().find((item) => item.id === id) || null, saveAdjustment: save(adjustments) });
   }
 
   // src/repositories/sessions-repository.js
@@ -1665,7 +1674,7 @@
     });
   }
   function createAppRepositories(getState) {
-    const repositories = Object.fromEntries(["subjects", "calendar", "questoes", "simulados", "dailyPlans", "studyPlans", "recommendationFeedback", "topicHistory"].map((field) => [field, createCollectionRepository({ getState, field })]));
+    const repositories = Object.fromEntries(["subjects", "calendar", "questoes", "simulados", "dailyPlans", "studyPlans", "recommendationFeedback", "topicHistory", "metasPorDisciplina"].map((field) => [field, createCollectionRepository({ getState, field })]));
     repositories.studySessions = createSessionsRepository({ getState });
     repositories.reviewAgenda = createReviewsRepository({ getState });
     repositories.planning = createPlanningRepository({ getState });
@@ -1695,7 +1704,7 @@
       completeReview: (id) => complete(repository.findById(id)),
       createManualReview: (input) => repository.add({ id: idGenerator("review"), topicId: null, date: clock.today(), subjectId: null, topic: "", tipo: "Revisão livre", status: "Não iniciado", adaptive: false, manualDate: true, adaptiveReason: null, suggestedDate: null, baseIntervalDays: 7, createdAt: clock.nowISO(), completedAt: null, ...input }),
       removeReview: (id) => repository.remove(id),
-      rescheduleReview: (id, date) => repository.update(id, { date, manualDate: true, adaptive: false }),
+      rescheduleReview: (id, date2) => repository.update(id, { date: date2, manualDate: true, adaptive: false }),
       restoreAdaptiveSchedule: (id, suggestion) => repository.update(id, { date: suggestion.date, suggestedDate: suggestion.date, adaptiveReason: suggestion.reason, manualDate: false, adaptive: true }),
       rateReview: (id, rating, { label = "adaptativa" } = {}) => {
         const review = repository.findById(id), topicId = topicIdOf(review), topic = topicId ? findTopic(topicId) : null;
@@ -1747,45 +1756,52 @@
 
   // src/reports/report-data.js
   var sum = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
-  function buildStrategicReport({ state: state2, generatedAt, isDemo = false, readiness = null, diagnosis = null, forecast = null } = {}) {
-    const subjects = (state2.subjects || []).filter((item) => !item.archived), topics = subjects.flatMap((subject) => (subject.topics || []).filter((item) => !item.archived));
-    const sessions = state2.studySessions || [], questions = state2.questoes || [], simulations = state2.simulados || [], reviews = state2.reviewAgenda || [];
-    const resolved = sum(questions, (item) => item.resolved), correct = sum(questions, (item) => item.correct), studySeconds = sum(sessions, (item) => item.durationSeconds);
-    const simulationTotal = sum(simulations, (item) => item.total), simulationCorrect = sum(simulations, (item) => item.correct);
-    const activePlan = [...state2.studyPlans || []].reverse().find((item) => !item.undoneAt) || null;
-    const adjustments = state2.planAdjustments || [], feedback = state2.recommendationFeedback || [];
-    return {
-      title: isDemo ? "Relatório estratégico de demonstração" : "Relatório estratégico",
-      isDemo,
-      generatedAt,
-      overview: { subjects: subjects.length, topics: topics.length, completedTopics: topics.filter((item) => item.status === "Concluído").length, studySeconds, resolved, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length, simulationAverage: simulationTotal ? Math.round(simulationCorrect / simulationTotal * 100) : null, pendingReviews: reviews.filter((item) => item.status !== "Concluído").length },
-      readiness,
-      forecast,
-      activePlan,
-      execution: { dailyPlans: (state2.dailyPlans || []).length, replans: adjustments.filter((item) => item.status === "applied").length, undoneReplans: adjustments.filter((item) => item.status === "undone").length },
-      risks: (diagnosis?.bottlenecks || []).slice(0, 5),
-      opportunities: (diagnosis?.opportunities || []).slice(0, 5),
-      recommendations: { decisions: feedback.length, accepted: feedback.filter((item) => item.accepted).length, completed: feedback.filter((item) => item.completed).length, useful: feedback.filter((item) => item.useful === true).length },
-      errors: Object.entries(questions.reduce((totals, item) => {
-        Object.entries(item.errorBreakdown || {}).forEach(([key, value2]) => totals[key] = (totals[key] || 0) + (Number(value2) || 0));
-        return totals;
-      }, {})).sort((a, b) => b[1] - a[1])
-    };
+  var shiftDate2 = (iso, days) => {
+    const [year, month, day] = iso.split("-").map(Number), date2 = new Date(Date.UTC(year, month - 1, day + days));
+    return date2.toISOString().slice(0, 10);
+  };
+  var inPeriod = (item, start, end) => {
+    const date2 = item.date || String(item.endedAt || item.createdAt || "").slice(0, 10);
+    return Boolean(date2 && date2 >= start && date2 <= end);
+  };
+  function resolveReportPeriod({ preset = "30", start = null, end = null, generatedAt } = {}) {
+    const today = String(generatedAt || (/* @__PURE__ */ new Date()).toISOString()).slice(0, 10);
+    if (preset === "custom" && start && end && start <= end) return { preset, start, end, label: `${start} a ${end}` };
+    const days = Math.max(1, Number(preset) || 30);
+    return { preset: String(days), start: shiftDate2(today, -(days - 1)), end: today, label: `Últimos ${days} dias` };
+  }
+  function buildStrategicReport({ state: state2, generatedAt, isDemo = false, readiness = null, diagnosis = null, forecast = null, period } = {}) {
+    const range = resolveReportPeriod({ ...period, generatedAt }), subjects = (state2.subjects || []).filter((item) => !item.archived), topics = subjects.flatMap((subject) => (subject.topics || []).filter((item) => !item.archived));
+    const sessions = (state2.studySessions || []).filter((item) => inPeriod(item, range.start, range.end)), questions = (state2.questoes || []).filter((item) => inPeriod(item, range.start, range.end)), simulations = (state2.simulados || []).filter((item) => inPeriod(item, range.start, range.end)), reviews = (state2.reviewAgenda || []).filter((item) => inPeriod(item, range.start, range.end));
+    const resolved = sum(questions, (item) => item.resolved), correct = sum(questions, (item) => item.correct), studySeconds = sum(sessions, (item) => item.durationSeconds), simulationTotal = sum(simulations, (item) => item.total), simulationCorrect = sum(simulations, (item) => item.correct), activePlan = [...state2.studyPlans || []].reverse().find((item) => !item.undoneAt) || null, adjustments = (state2.planAdjustments || []).filter((item) => inPeriod(item, range.start, range.end)), feedback = (state2.recommendationFeedback || []).filter((item) => inPeriod(item, range.start, range.end));
+    const bySubject = subjects.map((subject) => {
+      const subjectSessions = sessions.filter((item) => item.subjectId === subject.id), subjectQuestions = questions.filter((item) => item.subjectId === subject.id), volume = sum(subjectQuestions, (item) => item.resolved), hits = sum(subjectQuestions, (item) => item.correct);
+      return { id: subject.id, name: subject.name, studySeconds: sum(subjectSessions, (item) => item.durationSeconds), questions: volume, accuracy: volume ? Math.round(hits / volume * 100) : null, completed: (subject.topics || []).filter((item) => !item.archived && item.status === "Concluído").length, total: (subject.topics || []).filter((item) => !item.archived).length };
+    }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60);
+    return { title: isDemo ? "Relatório estratégico de demonstração" : "Relatório estratégico", isDemo, generatedAt, period: range, exam: { date: state2.examDate || state2.examBlueprint?.examDate || null, target: state2.examBlueprint?.targetScore ?? state2.metas?.metaAprovacao ?? null }, overview: { subjects: subjects.length, topics: topics.length, completedTopics: topics.filter((item) => item.status === "Concluído").length, studySeconds, resolved, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length, simulationAverage: simulationTotal ? Math.round(simulationCorrect / simulationTotal * 100) : null, pendingReviews: reviews.filter((item) => item.status !== "Concluído").length, completedReviews: reviews.filter((item) => item.status === "Concluído").length }, readiness, forecast, activePlan, bySubject, simulations: simulations.map((item) => ({ date: item.date, name: item.nome || "Simulado", score: item.total ? Math.round(item.correct / item.total * 100) : null })), execution: { plannedMinutes: planned, executedMinutes: executed, adherence: planned ? Math.round(executed / planned * 100) : null, dailyPlans: (state2.dailyPlans || []).filter((item) => inPeriod(item, range.start, range.end)).length, replans: adjustments.filter((item) => ["applied", "confirmed"].includes(item.status)).length, undoneReplans: adjustments.filter((item) => item.status === "undone").length }, risks: (diagnosis?.bottlenecks || []).slice(0, 5), opportunities: (diagnosis?.opportunities || []).slice(0, 5), priorities: [...diagnosis?.bottlenecks || [], ...diagnosis?.opportunities || []].slice(0, 5), recommendations: { decisions: feedback.length, accepted: feedback.filter((item) => item.accepted).length, completed: feedback.filter((item) => item.completed).length, useful: feedback.filter((item) => item.useful === true).length, measured: feedback.filter((item) => item.outcome).length }, errors: Object.entries(questions.reduce((totals, item) => {
+      Object.entries(item.errorBreakdown || {}).forEach(([key, value2]) => totals[key] = (totals[key] || 0) + (Number(value2) || 0));
+      return totals;
+    }, {})).sort((a, b) => b[1] - a[1]) };
   }
 
   // src/reports/report-template.js
   var escape = (value2) => String(value2 ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
   var duration = (seconds) => `${Math.floor((seconds || 0) / 3600)}h ${Math.round((seconds || 0) % 3600 / 60)}min`;
   var value = (value2) => value2 == null ? "Dados insuficientes" : escape(value2);
+  var date = (value2) => value2 ? String(value2).split("-").reverse().join("/") : "Não configurada";
+  var bars = (items, getValue, getLabel) => {
+    const max = Math.max(1, ...items.map(getValue));
+    return items.length ? `<div class="report-bars">${items.map((item) => `<div><span>${escape(getLabel(item))}</span><i><b style="width:${Math.round(getValue(item) / max * 100)}%"></b></i><strong>${escape(getValue(item))}</strong></div>`).join("")}</div>` : "<p>Sem dados no período.</p>";
+  };
   function renderStrategicReport(report) {
-    const readiness = report.readiness?.value ?? report.readiness?.score ?? null, forecast = report.forecast?.forecast30;
-    const list = (items, formatter, empty) => items.length ? items.map(formatter).join("") : `<li>${empty}</li>`;
-    return `<header><p class="report-kicker">STUDYTRACK</p><h1>${escape(report.title)}</h1><p>Gerado em ${escape(new Date(report.generatedAt).toLocaleString("pt-BR"))}${report.isDemo ? " · Dados fictícios" : ""}</p></header>
-  <section><h2>Resumo</h2><div class="report-kpis"><div><strong>${report.overview.completedTopics}/${report.overview.topics}</strong><span>Tópicos concluídos</span></div><div><strong>${duration(report.overview.studySeconds)}</strong><span>Tempo estudado</span></div><div><strong>${value(report.overview.accuracy == null ? null : report.overview.accuracy + "%")}</strong><span>Taxa de acerto</span></div><div><strong>${value(readiness == null ? null : Math.round(readiness) + "/100")}</strong><span>Prontidão</span></div></div></section>
-  <section><h2>Planejamento e execução</h2><p>${report.activePlan ? `Plano ativo com ${report.activePlan.items?.length || 0} itens e ${Math.round((report.activePlan.weeklyPlannedMinutes || 0) / 60)}h semanais.` : "Nenhum plano estratégico confirmado."}</p><p>${report.execution.dailyPlans} planos diários · ${report.execution.replans} replanejamentos aplicados · ${report.overview.pendingReviews} revisões pendentes.</p></section>
-  <section><h2>Projeção</h2><p>${forecast ? `Estimativa em 30 dias: ${forecast.low}–${forecast.high}% (centro ${forecast.central}%).` : "Ainda não há amostra suficiente para projeção de 30 dias."}</p></section>
-  <section class="report-columns"><div><h2>Riscos prioritários</h2><ul>${list(report.risks, (item) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>${escape(item.reason || "Requer atenção")}</span></li>`, "Nenhum risco relevante identificado.")}</ul></div><div><h2>Oportunidades</h2><ul>${list(report.opportunities, (item) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>Retorno estimado ${value(item.opportunityScore)}/100</span></li>`, "Configure impacto e esforço para revelar oportunidades.")}</ul></div></section>
-  <section><h2>Recomendações e erros</h2><p>${report.recommendations.accepted}/${report.recommendations.decisions} recomendações aceitas · ${report.recommendations.completed} concluídas · ${report.recommendations.useful} avaliadas como úteis.</p><p>${report.errors.length ? `Erros predominantes: ${report.errors.slice(0, 3).map(([key, count]) => `${escape(key)} (${count})`).join(", ")}.` : "Ainda não há categorias de erro registradas."}</p></section>`;
+    const readiness = report.readiness?.value ?? report.readiness?.score ?? null, forecast = report.forecast?.forecast30, list = (items, formatter, empty) => items.length ? items.map(formatter).join("") : `<li>${empty}</li>`;
+    return `<header><p class="report-kicker">STUDYTRACK</p><h1>${escape(report.title)}</h1><p>${escape(report.period.label)} · ${date(report.period.start)} a ${date(report.period.end)} · Gerado em ${escape(new Date(report.generatedAt).toLocaleString("pt-BR"))}${report.isDemo ? " · DADOS FICTÍCIOS" : ""}</p></header><div class="report-page-meta">${report.isDemo ? "DEMONSTRAÇÃO · " : ""}${escape(report.period.label)}</div>
+<section><h2>Identificação da prova e resumo executivo</h2><p>Prova: <strong>${date(report.exam.date)}</strong> · Meta: <strong>${value(report.exam.target == null ? null : report.exam.target + "%")}</strong></p><div class="report-kpis"><div><strong>${report.overview.completedTopics}/${report.overview.topics}</strong><span>Tópicos concluídos</span></div><div><strong>${duration(report.overview.studySeconds)}</strong><span>Tempo estudado</span></div><div><strong>${value(report.overview.accuracy == null ? null : report.overview.accuracy + "%")}</strong><span>Taxa de acerto</span></div><div><strong>${value(readiness == null ? null : Math.round(readiness) + "/100")}</strong><span>Prontidão</span></div></div></section>
+<section><h2>Planejamento versus execução</h2><div class="report-kpis report-kpis--three"><div><strong>${report.execution.plannedMinutes} min</strong><span>Planejado</span></div><div><strong>${report.execution.executedMinutes} min</strong><span>Executado</span></div><div><strong>${value(report.execution.adherence == null ? null : report.execution.adherence + "%")}</strong><span>Aderência</span></div></div></section>
+<section><h2>Evolução e distribuição por disciplina</h2>${bars(report.bySubject, (item) => Math.round(item.studySeconds / 60), (item) => item.name)}<table><thead><tr><th>Disciplina</th><th>Conteúdo</th><th>Questões</th><th>Acerto</th></tr></thead><tbody>${report.bySubject.map((item) => `<tr><td>${escape(item.name)}</td><td>${item.completed}/${item.total}</td><td>${item.questions}</td><td>${value(item.accuracy == null ? null : item.accuracy + "%")}</td></tr>`).join("")}</tbody></table></section>
+<section class="report-columns"><div><h2>Simulados</h2><ul>${list(report.simulations, (item) => `<li><strong>${escape(item.name)} · ${value(item.score == null ? null : item.score + "%")}</strong><span>${date(item.date)}</span></li>`, "Nenhum simulado no período.")}</ul></div><div><h2>Retenção e revisões</h2><p>${report.overview.completedReviews} concluídas · ${report.overview.pendingReviews} pendentes.</p><p>${forecast ? `Projeção em 30 dias: ${forecast.low}–${forecast.high}% (centro ${forecast.central}%).` : "Projeção ainda sem amostra suficiente."}</p></div></section>
+<section class="report-columns"><div><h2>Riscos</h2><ul>${list(report.risks, (item) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>${escape(item.reason || "Requer atenção")}</span></li>`, "Nenhum risco relevante.")}</ul></div><div><h2>Oportunidades</h2><ul>${list(report.opportunities, (item) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>Retorno ${value(item.opportunityScore)}/100</span></li>`, "Nenhuma oportunidade calculada.")}</ul></div></section>
+<section><h2>Erros e recomendações concluídas</h2><p>${report.recommendations.accepted}/${report.recommendations.decisions} recomendações aceitas · ${report.recommendations.completed} concluídas · ${report.recommendations.measured} com resultado medido.</p><p>${report.errors.length ? `Erros predominantes: ${report.errors.slice(0, 5).map(([key, count]) => `${escape(key)} (${count})`).join(", ")}.` : "Nenhuma categoria de erro no período."}</p></section><section><h2>Prioridades do próximo período</h2><ol>${list(report.priorities, (item) => `<li>${escape(item.subjectName)} — ${escape(item.topicName)}</li>`, "Mantenha o plano atual e gere novas evidências.")}</ol></section>`;
   }
 
   // src/reports/print-report.js
@@ -1832,8 +1848,14 @@
   document.getElementById("themeToggleBtn").addEventListener("click", toggleTheme);
   updateThemeToggleIcon();
   document.getElementById("exportReportBtn")?.addEventListener("click", () => {
-    const diagnosis = generateDiagnosis(intelligenceCandidates()), report = buildStrategicReport({ state, generatedAt: nowISO2(), isDemo: IS_DEMO_MODE, readiness: readinessResult(computeApprovalMetrics()), diagnosis, forecast: projectPerformance() });
+    const preset = document.getElementById("reportPeriodSelect")?.value || "30", period = { preset, start: document.getElementById("reportPeriodStart")?.value || null, end: document.getElementById("reportPeriodEnd")?.value || null };
+    const diagnosis = generateDiagnosis(intelligenceCandidates()), report = buildStrategicReport({ state, generatedAt: nowISO2(), isDemo: IS_DEMO_MODE, readiness: readinessResult(computeApprovalMetrics()), diagnosis, forecast: projectPerformance(), period });
     printStrategicReport({ document, window, report, render: renderStrategicReport });
+  });
+  document.getElementById("reportPeriodSelect")?.addEventListener("change", (event) => {
+    const custom = event.target.value === "custom";
+    document.getElementById("reportPeriodStart").hidden = !custom;
+    document.getElementById("reportPeriodEnd").hidden = !custom;
   });
   var ERROR_CATEGORIES = {
     naoSabia: { label: "Não sabia", icon: "📚" },
@@ -2279,6 +2301,19 @@
   var dailyPlanService = createDailyPlanService({ repository: planningRepository, buildProposal: buildDailyPlanProposal, applyProposal: applyDailyPlanProposal, undoGeneration: undoDailyPlanGeneration, clock: appClock, idGenerator: uid });
   var replanService = createReplanService({ repository: planningRepository, buildProposal: buildReplanProposal, applyProposal: applyReplan, undoProposal: undoReplan, clock: appClock, idGenerator: uid });
   var sessionService = createSessionService({ repository: appContext.repositories.studySessions, questionsRepository: appContext.repositories.questoes, historyRepository: appContext.repositories.topicHistory, planningRepository, recommendationsRepository: appContext.repositories.recommendationFeedback, clock: appClock, idGenerator: uid, normalizeQuestion: normalizeErrorBreakdown, completeRecommendation: completeRecommendationFeedback, onCompleted: measureRecommendationResults });
+  var calendarService = createRecordService({ repository: appContext.repositories.calendar, clock: appClock, idGenerator: uid, prefix: "calendar" });
+  var questionService = createRecordService({ repository: appContext.repositories.questoes, clock: appClock, idGenerator: uid, prefix: "question", normalize: (item) => {
+    item.resolved = Math.max(0, Math.floor(Number(item.resolved) || 0));
+    item.correct = Math.min(item.resolved, Math.max(0, Math.floor(Number(item.correct) || 0)));
+    normalizeErrorBreakdown(item);
+    return item;
+  } });
+  var simulationService = createRecordService({ repository: appContext.repositories.simulados, clock: appClock, idGenerator: uid, prefix: "simulado", normalize: (item) => {
+    item.total = Math.max(0, Math.floor(Number(item.total) || 0));
+    item.correct = Math.min(item.total, Math.max(0, Math.floor(Number(item.correct) || 0)));
+    return item;
+  } });
+  var goalService = createRecordService({ repository: appContext.repositories.metasPorDisciplina, clock: appClock, idGenerator: uid, prefix: "goal" });
   var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
   var STATE_CHANNEL = !IS_DEMO_MODE && typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
@@ -2670,8 +2705,8 @@
     if (!iso || typeof iso !== "string") return null;
     const [year, month, day] = iso.split("-").map(Number);
     if (!year || !month || !day) return null;
-    const date = new Date(year, month - 1, day, 12, 0, 0, 0);
-    return Number.isNaN(date.getTime()) ? null : date;
+    const date2 = new Date(year, month - 1, day, 12, 0, 0, 0);
+    return Number.isNaN(date2.getTime()) ? null : date2;
   }
   function todayISO() {
     return appContext.clock.today();
@@ -2700,12 +2735,12 @@
     return [...set].sort();
   }
   function startOfWeek(d) {
-    const date = parseLocalDate(d);
-    if (!date) return "";
-    const day = date.getDay();
+    const date2 = parseLocalDate(d);
+    if (!date2) return "";
+    const day = date2.getDay();
     const diff = (day === 0 ? -6 : 1) - day;
-    date.setDate(date.getDate() + diff);
-    return localDateISO(date);
+    date2.setDate(date2.getDate() + diff);
+    return localDateISO(date2);
   }
   function isSameWeek(iso) {
     if (!iso) return false;
@@ -2738,14 +2773,14 @@
     state.examBlueprint.configuredAt = nowISO2();
     persistAndRender();
   });
-  function getDailyStudySummary(date, options = {}) {
+  function getDailyStudySummary(date2, options = {}) {
     const subjectId = options.subjectId || "";
     const matchesSubject = (item) => !subjectId || entitySubjectId(item) === subjectId;
-    const sessions = state.studySessions.filter((s) => s.date === date && matchesSubject(s));
+    const sessions = state.studySessions.filter((s) => s.date === date2 && matchesSubject(s));
     const allSessionIds = new Set(state.studySessions.map((s) => s.id));
-    const independentQuestions = state.questoes.filter((q) => q.date === date && matchesSubject(q) && (!q.studySessionId || !allSessionIds.has(q.studySessionId)));
-    const simulations = state.simulados.filter((sim) => sim.date === date && (!subjectId || (sim.breakdown || []).some((row) => entitySubjectId(row) === subjectId)));
-    const reviews = state.reviewAgenda.filter((review) => review.status === "Concluído" && localDateFromTimestamp(review.completedAt) === date && matchesSubject(review));
+    const independentQuestions = state.questoes.filter((q) => q.date === date2 && matchesSubject(q) && (!q.studySessionId || !allSessionIds.has(q.studySessionId)));
+    const simulations = state.simulados.filter((sim) => sim.date === date2 && (!subjectId || (sim.breakdown || []).some((row) => entitySubjectId(row) === subjectId)));
+    const reviews = state.reviewAgenda.filter((review) => review.status === "Concluído" && localDateFromTimestamp(review.completedAt) === date2 && matchesSubject(review));
     const metrics = summarizeStudyRecords({ sessions, questions: independentQuestions, simulations });
     const { seconds, questions, correct, accuracy } = metrics;
     const subjectNames = /* @__PURE__ */ new Set();
@@ -2757,10 +2792,10 @@
       const id = entitySubjectId(q);
       if (id) subjectNames.add(getSubjectName(id));
     });
-    const targetSeconds = metaHoursForDate(date) * 3600;
+    const targetSeconds = metaHoursForDate(date2) * 3600;
     const goalPct = targetSeconds > 0 ? Math.round(seconds / targetSeconds * 100) : 0;
     return {
-      date,
+      date: date2,
       sessions,
       seconds,
       questions,
@@ -2783,15 +2818,15 @@
       ...state.questoes.filter((q) => !q.studySessionId || !sessionIds.has(q.studySessionId)).map((q) => q.date),
       ...state.simulados.map((s) => s.date)
     ].filter(Boolean));
-    dates.forEach((date) => {
-      if (getDailyStudySummary(date).meaningful) set.add(date);
+    dates.forEach((date2) => {
+      if (getDailyStudySummary(date2).meaningful) set.add(date2);
     });
     return set;
   }
   function getGoalDates() {
     const set = /* @__PURE__ */ new Set();
-    new Set(state.studySessions.map((s) => s.date).filter(Boolean)).forEach((date) => {
-      if (getDailyStudySummary(date).goalAchieved) set.add(date);
+    new Set(state.studySessions.map((s) => s.date).filter(Boolean)).forEach((date2) => {
+      if (getDailyStudySummary(date2).goalAchieved) set.add(date2);
     });
     return set;
   }
@@ -3554,8 +3589,8 @@
     streakView.selectedDate = null;
     renderHeatmap();
   }
-  function selectHeatmapDay(date) {
-    streakView.selectedDate = date;
+  function selectHeatmapDay(date2) {
+    streakView.selectedDate = date2;
     renderHeatmap();
   }
   function viewSelectedHeatmapSessions() {
@@ -3768,11 +3803,11 @@
     <div class="stat-cell"><div class="n">${andamento}</div><div class="l">Em andamento</div></div>
     <div class="stat-cell"><div class="n">${done}</div><div class="l">Concluídos</div></div>
   `;
-    const bars = document.getElementById("progressBars");
+    const bars2 = document.getElementById("progressBars");
     if (activeSubjects().length === 0) {
-      bars.innerHTML = `<div class="upcoming-empty">Adicione disciplinas na aba "Disciplinas" para ver o progresso aqui.</div>`;
+      bars2.innerHTML = `<div class="upcoming-empty">Adicione disciplinas na aba "Disciplinas" para ver o progresso aqui.</div>`;
     } else {
-      bars.innerHTML = activeSubjects().map((s) => {
+      bars2.innerHTML = activeSubjects().map((s) => {
         const pct = subjectProgress(s);
         return `<div class="bar-row">
         <div class="bar-label" title="${escapeAttr(s.name)}">${escapeHtml(s.name)}</div>
@@ -4200,8 +4235,8 @@
   function uniqueTopicsCompletedBetween(startDate, endDate) {
     const ids = /* @__PURE__ */ new Set();
     topicCompletionEvents().forEach((event) => {
-      const date = eventLocalDate(event);
-      if (date && date >= startDate && date <= endDate && event.topicId) ids.add(event.topicId);
+      const date2 = eventLocalDate(event);
+      if (date2 && date2 >= startDate && date2 <= endDate && event.topicId) ids.add(event.topicId);
     });
     return ids.size;
   }
@@ -4287,10 +4322,10 @@
     overdueGroupLimits[elId] = 3;
     renderCalAtrasadas(elId);
   }
-  function toggleOverdueDate(elId, date) {
+  function toggleOverdueDate(elId, date2) {
     const dates = overdueExpandedDates[elId] || (overdueExpandedDates[elId] = /* @__PURE__ */ new Set());
-    if (dates.has(date)) dates.delete(date);
-    else dates.add(date);
+    if (dates.has(date2)) dates.delete(date2);
+    else dates.add(date2);
     renderCalAtrasadas(elId);
   }
   function renderCalIndicadores() {
@@ -4420,7 +4455,7 @@
     renderCalendar();
   }
   function editCalendarItem(id) {
-    if (calendarUiState.editingIsNew && calendarUiState.editingId !== id) state.calendar = state.calendar.filter((item2) => item2.id !== calendarUiState.editingId);
+    if (calendarUiState.editingIsNew && calendarUiState.editingId !== id) calendarService.remove(calendarUiState.editingId);
     const item = state.calendar.find((entry) => entry.id === id);
     if (!item) return;
     calendarUiState.editingId = id;
@@ -4429,7 +4464,7 @@
     renderCalendar();
   }
   function cancelCalendarEdit() {
-    if (calendarUiState.editingIsNew) state.calendar = state.calendar.filter((item) => item.id !== calendarUiState.editingId);
+    if (calendarUiState.editingIsNew) calendarService.remove(calendarUiState.editingId);
     calendarUiState.editingId = null;
     calendarUiState.editingIsNew = false;
     calendarUiState.draft = null;
@@ -4440,9 +4475,9 @@
     if (draft) draft[field] = value2;
   }
   function saveCalendarEdit() {
-    const draft = calendarUiState.draft, index = state.calendar.findIndex((item) => item.id === calendarUiState.editingId);
-    if (!draft || index < 0) return cancelCalendarEdit();
-    state.calendar[index] = draft;
+    const draft = calendarUiState.draft;
+    if (!draft || !calendarService.find(calendarUiState.editingId)) return cancelCalendarEdit();
+    calendarService.update(draft.id, draft);
     calendarUiState.editingId = null;
     calendarUiState.editingIsNew = false;
     calendarUiState.draft = null;
@@ -4484,8 +4519,7 @@
     body.innerHTML = visible.map((item) => calendarUiState.editingId === item.id ? renderCalendarEditRow(item) : renderCalendarReadRow(item)).join("") + renderCollectionFooter({ total: rows.length, visible: calendarUiState.visible, showMoreAction: "changeCalendarLimit(10)", showLessAction: calendarUiState.visible > 10 ? "resetCalendarLimit()" : "", colspan: 7, label: "itens" });
   }
   function addCalRow() {
-    const item = { id: uid("calendar"), date: todayISO(), week: "", subjectId: activeSubjects()[0]?.id || null, topicId: null, status: "Não iniciado", reviewType: "—", createdAt: nowISO2() };
-    state.calendar.push(item);
+    const item = calendarService.create({ date: todayISO(), week: "", subjectId: activeSubjects()[0]?.id || null, topicId: null, status: "Não iniciado", reviewType: "—" });
     calendarUiState.editingId = item.id;
     calendarUiState.editingIsNew = true;
     calendarUiState.draft = cloneRecord(item);
@@ -4493,7 +4527,7 @@
   }
   function deleteCalRow(id) {
     showConfirm("Excluir este item do calendário?", () => {
-      state.calendar = state.calendar.filter((c) => c.id !== id);
+      calendarService.remove(id);
       calendarUiState.editingId = null;
       calendarUiState.editingIsNew = false;
       calendarUiState.draft = null;
@@ -4947,7 +4981,7 @@
     return { date: q.date ? formatDatePt(q.date) : "Sem data", subject: getSubjectName(subjectId) || "Sem disciplina", topic: q.topicId ? getTopicName(q.topicId) : "Sem tópico", resolved: Number(q.resolved) || 0, correct: Number(q.correct) || 0, accuracy: calcAcertoPct(q.correct, q.resolved) };
   }
   function editQuestion(id) {
-    if (historyEditState.questionIsNew && historyEditState.questionId !== id) state.questoes = state.questoes.filter((q) => q.id !== historyEditState.questionId);
+    if (historyEditState.questionIsNew && historyEditState.questionId !== id) questionService.remove(historyEditState.questionId);
     const question = state.questoes.find((q) => q.id === id);
     if (!question) return;
     if (historyEditState.questionId !== id) historyEditState.questionIsNew = false;
@@ -4956,7 +4990,7 @@
     renderQuestoes();
   }
   function cancelQuestionEdit() {
-    if (historyEditState.questionIsNew && historyEditState.questionId) state.questoes = state.questoes.filter((q) => q.id !== historyEditState.questionId);
+    if (historyEditState.questionIsNew && historyEditState.questionId) questionService.remove(historyEditState.questionId);
     historyEditState.questionId = null;
     historyEditState.questionIsNew = false;
     historyEditDraft.question = null;
@@ -4977,7 +5011,7 @@
     normalizeErrorBreakdown(draft);
     const index = state.questoes.findIndex((q) => q.id === draft.id);
     if (index < 0) return cancelQuestionEdit();
-    state.questoes[index] = draft;
+    questionService.update(draft.id, draft);
     historyEditState.questionId = null;
     historyEditState.questionIsNew = false;
     historyEditDraft.question = null;
@@ -5024,7 +5058,7 @@
   function addQuestaoRow() {
     listViewState.questionsVisible = LIST_VIEW_STEPS.questions;
     const question = { id: uid("question"), date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topicId: null, resolved: 0, correct: 0, errorBreakdown: emptyErrorBreakdown(), createdAt: nowISO2() };
-    state.questoes.push(question);
+    questionService.create(question);
     historyEditState.questionId = question.id;
     historyEditState.questionIsNew = true;
     historyEditDraft.question = cloneRecord(question);
@@ -5032,7 +5066,7 @@
   }
   function deleteQuestaoRow(id) {
     showConfirm("Excluir este registro de questões?", () => {
-      state.questoes = state.questoes.filter((q) => q.id !== id);
+      questionService.remove(id);
       openQuestionErrorIds.delete(id);
       historyEditState.questionId = null;
       historyEditState.questionIsNew = false;
@@ -5152,8 +5186,8 @@
   }
   function topicLastActivityDate(topicId) {
     let last = null;
-    const bump = (date) => {
-      if (date && (!last || date > last)) last = date;
+    const bump = (date2) => {
+      if (date2 && (!last || date2 > last)) last = date2;
     };
     state.topicHistory.filter((event) => event.topicId === topicId && !["topic_archived", "topic_restored"].includes(event.type)).forEach((event) => bump(eventLocalDate(event)));
     state.questoes.filter((question) => question.topicId === topicId).forEach((question) => bump(question.date));
@@ -5268,13 +5302,13 @@
     }
     select.innerHTML = subjects.map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === performanceSubjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("");
     const summary = document.getElementById("questionAnalyticsSummary");
-    const bars = document.getElementById("topicPerformanceBars");
+    const bars2 = document.getElementById("topicPerformanceBars");
     const weeklyEl = document.getElementById("subjectWeeklyTrend");
     const profileEl = document.getElementById("subjectErrorProfile");
     const coverageEl = document.getElementById("questionDataCoverage");
     if (!performanceSubjectId) {
       summary.innerHTML = "";
-      bars.innerHTML = weeklyEl.innerHTML = profileEl.innerHTML = '<div class="empty-state"><p>Cadastre uma disciplina para iniciar a análise.</p></div>';
+      bars2.innerHTML = weeklyEl.innerHTML = profileEl.innerHTML = '<div class="empty-state"><p>Cadastre uma disciplina para iniciar a análise.</p></div>';
       coverageEl.textContent = "0% identificadas";
       return;
     }
@@ -5299,7 +5333,7 @@
     const filteredPerformance = performanceViewMode === "all" ? topicPerformance : topicPerformance.filter((topic) => performanceViewMode === "without-data" ? topic.resolved === 0 : performanceViewMode === "insufficient" ? topic.resolved > 0 && topic.resolved < 30 : topic.resolved >= 30);
     const visiblePerformance = filteredPerformance.slice(0, performanceVisible);
     const performanceTabs = `<div class="analytics-view-tabs" role="group" aria-label="Filtrar desempenho por dados"><button class="btn small ${performanceViewMode === "with-data" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('with-data')">Com dados</button><button class="btn small ${performanceViewMode === "insufficient" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('insufficient')">Amostra insuficiente</button><button class="btn small ${performanceViewMode === "without-data" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('without-data')">Sem dados</button><button class="btn small ${performanceViewMode === "all" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('all')">Todos</button></div>`;
-    bars.innerHTML = performanceTabs + (filteredPerformance.length ? visiblePerformance.map((topic) => {
+    bars2.innerHTML = performanceTabs + (filteredPerformance.length ? visiblePerformance.map((topic) => {
       const width = topic.accuracy === null ? 0 : topic.accuracy;
       return `<div class="performance-row">
       <div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId, topic.id).score}/100</div></div>
@@ -5375,7 +5409,7 @@
     return { date: sim.date ? formatDatePt(sim.date) : "Sem data", name: sim.nome || "Simulado sem nome", correct: counts.correct, total: counts.total, score: simuladoNota(sim) };
   }
   function editSimulation(id) {
-    if (historyEditState.simulationIsNew && historyEditState.simulationId !== id) state.simulados = state.simulados.filter((s) => s.id !== historyEditState.simulationId);
+    if (historyEditState.simulationIsNew && historyEditState.simulationId !== id) simulationService.remove(historyEditState.simulationId);
     const sim = state.simulados.find((s) => s.id === id);
     if (!sim) return;
     if (historyEditState.simulationId !== id) historyEditState.simulationIsNew = false;
@@ -5384,7 +5418,7 @@
     renderSimulados();
   }
   function cancelSimulationEdit() {
-    if (historyEditState.simulationIsNew && historyEditState.simulationId) state.simulados = state.simulados.filter((s) => s.id !== historyEditState.simulationId);
+    if (historyEditState.simulationIsNew && historyEditState.simulationId) simulationService.remove(historyEditState.simulationId);
     historyEditState.simulationId = null;
     historyEditState.simulationIsNew = false;
     historyEditDraft.simulation = null;
@@ -5402,7 +5436,7 @@
     d.correct = Math.max(0, Math.min(Math.floor(Number(d.correct) || 0), d.total));
     const index = state.simulados.findIndex((s) => s.id === d.id);
     if (index < 0) return cancelSimulationEdit();
-    state.simulados[index] = d;
+    simulationService.update(d.id, d);
     historyEditState.simulationId = null;
     historyEditState.simulationIsNew = false;
     historyEditDraft.simulation = null;
@@ -5447,8 +5481,7 @@
   }
   function addSimuladoRow() {
     listViewState.simulationsVisible = LIST_VIEW_STEPS.simulations;
-    const sim = { id: uid("simulado"), date: todayISO(), nome: "", correct: 0, total: 0, breakdown: [], createdAt: nowISO2() };
-    state.simulados.push(sim);
+    const sim = simulationService.create({ date: todayISO(), nome: "", correct: 0, total: 0, breakdown: [] });
     historyEditState.simulationId = sim.id;
     historyEditState.simulationIsNew = true;
     historyEditDraft.simulation = cloneRecord(sim);
@@ -5456,7 +5489,7 @@
   }
   function deleteSimuladoRow(id) {
     showConfirm("Excluir este simulado?", () => {
-      state.simulados = state.simulados.filter((s) => s.id !== id);
+      simulationService.remove(id);
       openBreakdownIds.delete(id);
       historyEditState.simulationId = null;
       historyEditState.simulationIsNew = false;
@@ -5468,8 +5501,8 @@
   document.getElementById("addQuestaoRowBtn").addEventListener("click", addQuestaoRow);
   document.getElementById("addSimuladoRowBtn").addEventListener("click", addSimuladoRow);
   var WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-  function metaHoursForDate(date = todayISO()) {
-    const parsed = parseLocalDate(date);
+  function metaHoursForDate(date2 = todayISO()) {
+    const parsed = parseLocalDate(date2);
     const day = parsed ? parsed.getDay() : (/* @__PURE__ */ new Date()).getDay();
     return Math.max(0, Number(state.metas?.horasPorDia?.[String(day)] ?? state.metas?.horasDiarias) || 0);
   }
@@ -5508,8 +5541,8 @@
   function contarTopicosConcluidosNoPeriodo(pred) {
     const ids = /* @__PURE__ */ new Set();
     topicCompletionEvents().forEach((event) => {
-      const date = eventLocalDate(event);
-      if (date && pred(date) && event.topicId) ids.add(event.topicId);
+      const date2 = eventLocalDate(event);
+      if (date2 && pred(date2) && event.topicId) ids.add(event.topicId);
     });
     return ids.size;
   }
@@ -5624,8 +5657,8 @@
     const studyPlan = latestStudyPlan();
     if (!studyPlan) return;
     const days = Array.from({ length: 7 }, (_, index) => {
-      const date = addDays(todayISO(), index);
-      return { date, availableMinutes: Math.round(metaHoursForDate(date) * 60) };
+      const date2 = addDays(todayISO(), index);
+      return { date: date2, availableMinutes: Math.round(metaHoursForDate(date2) * 60) };
     }), end = days.at(-1).date;
     const dueReviews = state.reviewAgenda.filter((review) => review.status !== "Concluído" && review.topicId && review.date >= todayISO() && review.date <= end).map((review) => ({ id: review.id, date: review.date, subjectId: review.subjectId, topicId: review.topicId, subjectName: getSubjectName(review.subjectId), topicName: getTopicName(review.topicId), minutes: 25 }));
     dailyPlanPreview = dailyPlanService.calculate({ studyPlan, days, dueReviews, reserveRatio: 0.1 });
@@ -5754,7 +5787,7 @@
       showToast("Já existe uma meta pra essa disciplina.");
       return;
     }
-    state.metasPorDisciplina.push({ id: uid("goal"), subjectId, meta });
+    goalService.create({ subjectId, meta });
     persistAndRender();
   }
   function updateMetaDisciplina(id, value2) {
@@ -5763,7 +5796,7 @@
     persistAndRender();
   }
   function deleteMetaDisciplina(id) {
-    state.metasPorDisciplina = state.metasPorDisciplina.filter((x) => x.id !== id);
+    goalService.remove(id);
     persistAndRender();
   }
   document.getElementById("addMetaDisciplinaBtn").addEventListener("click", addMetaDisciplina);
@@ -6204,9 +6237,9 @@
     const byDate = studySecondsByDate(state.studySessions.filter((s) => s.date >= weekStart && s.date <= today));
     let achieved = 0;
     for (let index = 0; index < elapsed; index++) {
-      const date = addDays(weekStart, index);
-      const target = metaHoursForDate(date) * 3600;
-      if (target > 0 && (byDate[date] || 0) >= target) achieved++;
+      const date2 = addDays(weekStart, index);
+      const target = metaHoursForDate(date2) * 3600;
+      if (target > 0 && (byDate[date2] || 0) >= target) achieved++;
     }
     return { achieved, elapsed };
   }
@@ -6265,8 +6298,8 @@
     const byDate = studySecondsByDate();
     const data = [];
     for (let i = 13; i >= 0; i--) {
-      const date = addDays(todayISO(), -i);
-      data.push({ date, seconds: byDate[date] || 0 });
+      const date2 = addDays(todayISO(), -i);
+      data.push({ date: date2, seconds: byDate[date2] || 0 });
     }
     const total = data.reduce((sum2, d) => sum2 + d.seconds, 0);
     if (total <= 0) {
@@ -6335,20 +6368,20 @@
     renderStudySessionsHistory();
     renderHeatmap();
   }
-  function selectSessionHistoryDate(date) {
-    sessionHistoryFilters.date = date;
+  function selectSessionHistoryDate(date2) {
+    sessionHistoryFilters.date = date2;
     sessionHistoryFilters.period = "all";
     listViewState.sessionDaysVisible = LIST_VIEW_STEPS.sessionDays;
-    expandedSessionDays = /* @__PURE__ */ new Set([date]);
+    expandedSessionDays = /* @__PURE__ */ new Set([date2]);
     sessionHistoryExpansionInitialized = true;
     renderStudySessionsHistory();
     renderHeatmap();
     document.getElementById("studySessionsCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
-  function toggleSessionDay(date) {
+  function toggleSessionDay(date2) {
     sessionHistoryExpansionInitialized = true;
-    if (expandedSessionDays.has(date)) expandedSessionDays.delete(date);
-    else expandedSessionDays.add(date);
+    if (expandedSessionDays.has(date2)) expandedSessionDays.delete(date2);
+    else expandedSessionDays.add(date2);
     renderStudySessionsHistory();
   }
   function toggleSessionDetails(id) {
@@ -6374,8 +6407,8 @@
   }
   function sessionStartTime(session) {
     if (!session.startedAt) return "—";
-    const date = new Date(session.startedAt);
-    return Number.isNaN(date.getTime()) ? "—" : date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    const date2 = new Date(session.startedAt);
+    return Number.isNaN(date2.getTime()) ? "—" : date2.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   }
   function syncQuestionFromStudySession(session) {
     return sessionService.edit(session.id, session);
@@ -6470,13 +6503,13 @@
       sessionHistoryExpansionInitialized = true;
     }
     const html = [];
-    visibleGroups.forEach(([date, sessions]) => {
+    visibleGroups.forEach(([date2, sessions]) => {
       const seconds = sessions.reduce((sum2, s) => sum2 + (Number(s.durationSeconds) || 0), 0);
       const questions = sessions.reduce((sum2, s) => sum2 + (Number(s.questionsResolved) || 0), 0);
       const correct = sessions.reduce((sum2, s) => sum2 + (Number(s.correctAnswers) || 0), 0);
       const accuracy = questions > 0 ? ` · ${Math.round(correct / questions * 100)}% de acerto` : "";
-      const expanded = expandedSessionDays.has(date);
-      html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date)}')"><span>${date === "Sem data" ? date : formatDatePt(date)} · ${pluralize(sessions.length, "sessão", "sessões")} · ${formatDuration(seconds)} · ${pluralize(questions, "questão", "questões")}${accuracy}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
+      const expanded = expandedSessionDays.has(date2);
+      html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date2)}')"><span>${date2 === "Sem data" ? date2 : formatDatePt(date2)} · ${pluralize(sessions.length, "sessão", "sessões")} · ${formatDuration(seconds)} · ${pluralize(questions, "questão", "questões")}${accuracy}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
       if (!expanded) return;
       sessions.forEach((session) => html.push(historyEditState.sessionId === session.id ? renderStudySessionEditRow(session) : renderStudySessionReadRow(session)));
     });
@@ -6718,10 +6751,10 @@
   var replanPreview = null;
   function calculateReplanPreview() {
     const start = startOfWeek(todayISO()), end = addDays(start, 6), futureDays = [];
-    for (let date = addDays(todayISO(), 1); date <= end; date = addDays(date, 1)) {
-      const capacity = metaHoursForDate(date) * 60;
-      const planned = state.dailyPlans.filter((plan) => plan.date === date).reduce((sum2, plan) => sum2 + (plan.items || []).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
-      futureDays.push({ date, availableMinutes: Math.max(0, capacity - planned) });
+    for (let date2 = addDays(todayISO(), 1); date2 <= end; date2 = addDays(date2, 1)) {
+      const capacity = metaHoursForDate(date2) * 60;
+      const planned = state.dailyPlans.filter((plan) => plan.date === date2).reduce((sum2, plan) => sum2 + (plan.items || []).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
+      futureDays.push({ date: date2, availableMinutes: Math.max(0, capacity - planned) });
     }
     replanPreview = replanService.calculate({ plans: planningRepository.getDailyPlans().filter((plan) => plan.date >= start && plan.date <= todayISO()), periodStart: start, periodEnd: end, futureDays });
     renderWeeklyReplan();
@@ -6761,7 +6794,7 @@
     }
     const allocationByDate = /* @__PURE__ */ new Map();
     replanPreview.allocations.forEach((item) => allocationByDate.set(item.date, (allocationByDate.get(item.date) || 0) + item.minutes));
-    const allocations = [...allocationByDate].map(([date, minutes]) => `<div><strong>${formatDatePt(date)}</strong><span>+ ${formatPlanMinutes(minutes)}</span></div>`).join("");
+    const allocations = [...allocationByDate].map(([date2, minutes]) => `<div><strong>${formatDatePt(date2)}</strong><span>+ ${formatPlanMinutes(minutes)}</span></div>`).join("");
     container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(replanPreview.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(replanPreview.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatPlanMinutes(replanPreview.deficitMinutes)}</strong><span>Déficit</span></div><div><strong>${formatPlanMinutes(replanPreview.redistributedMinutes)}</strong><span>Redistribuição possível</span></div></div><div class="replan-allocations">${allocations || "<span>Sem capacidade restante nesta semana.</span>"}</div>${replanPreview.discardedMinutes ? `<p class="confidence-note">${formatPlanMinutes(replanPreview.discardedMinutes)} não cabem na disponibilidade restante e não serão acumulados automaticamente.</p>` : ""}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
   }
   function formatPlanMinutes(minutes) {
@@ -7116,8 +7149,8 @@
     const today = todayISO(), byDate = studySecondsByDate(state.studySessions);
     const days = [];
     for (let n = 27; n >= 0; n--) {
-      const date = addDays(today, -n);
-      days.push({ targetSeconds: metaHoursForDate(date) * 3600, studiedSeconds: byDate[date] || 0 });
+      const date2 = addDays(today, -n);
+      days.push({ targetSeconds: metaHoursForDate(date2) * 3600, studiedSeconds: byDate[date2] || 0 });
     }
     const result = calculateGoalConsistency(days);
     if (!result.applicable) return { score: 50, confidence: 0, available: false, raw: null, detail: "Defina metas de horas para medir consistência" };
@@ -7287,9 +7320,9 @@
       overdueExpandedDates[elId].add(entries[0][0]);
       overdueExpansionInitialized.add(elId);
     }
-    ul.innerHTML = `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>` + visible.map(([date, dateItems]) => {
-      const expanded = overdueExpandedDates[elId].has(date);
-      return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${dateItems.length} revisão(ões) · ${Math.abs(diasParaRevisao(date) || 0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? "" : "hidden"}>${dateItems.map((x) => `<li><span style="flex:1">${escapeHtml(x.subject || "—")} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join("")}</ul></li>`;
+    ul.innerHTML = `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>` + visible.map(([date2, dateItems]) => {
+      const expanded = overdueExpandedDates[elId].has(date2);
+      return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date2}')"><span><strong>${formatDatePt(date2)}</strong><small>${dateItems.length} revisão(ões) · ${Math.abs(diasParaRevisao(date2) || 0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? "" : "hidden"}>${dateItems.map((x) => `<li><span style="flex:1">${escapeHtml(x.subject || "—")} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join("")}</ul></li>`;
     }).join("") + `<li class="overdue-list-footer">${renderCollectionFooter({ variant: "block", total: entries.length, visible: visible.length, step: 3, label: "datas", showMoreAction: `changeOverdueGroupLimit('${elId}',3)`, showAllAction: `showAllOverdueGroups('${elId}')`, showLessAction: limit > 3 ? `resetOverdueGroupLimit('${elId}')` : "" })}</li>`;
   }
   function renderKPIs() {

@@ -44,12 +44,15 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/application/build-study-plan.js`: proposta semanal até a prova, limitada por carga e disponibilidade.
 - `src/application/replan-study.js`: cálculo de déficit e proposta de redistribuição sem mutação automática do plano.
 - `src/application/planning/distribute-study-plan.js`: distribuição confirmável do plano semanal, materialização diária e desfazer protegido por execução.
+- `src/application/sessions/session-service.js`: ciclo de vida das sessões e sincronização de questões, planejamento, histórico e recomendações.
+- `src/application/records/record-service.js`: operações normalizadas para calendário, questões, simulados e metas.
+- `src/application/recommendations/outcome-service.js`: linha de base, resultado e confiança das recomendações sem ajuste automático de pesos.
 - `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.
 - `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.
 - `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
 - `src/ui/filter-panel.js`: contagem e rótulos puros dos filtros responsivos.
 - `src/ui/session-history.js`: filtragem e agrupamento puro do histórico de sessões.
-- `src/reports/report-data.js`: snapshot estratégico independente da interface.
+- `src/reports/report-data.js`: snapshot estratégico filtrado por período e independente da interface.
 - `src/reports/report-template.js`: template seguro do relatório A4.
 - `src/reports/print-report.js`: coordenação isolada da impressão/“Salvar como PDF”.
 - `src/app.js`: composição temporária da interface e funcionalidades ainda não extraídas.

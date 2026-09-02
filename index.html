@@ -563,6 +563,8 @@
       <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando pra não perder nada — e importe pra restaurar em outro dispositivo.</div>
     </div>
     <div class="backup-actions">
+      <select id="reportPeriodSelect" aria-label="Período do relatório"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option><option value="custom">Período personalizado</option></select>
+      <input type="date" id="reportPeriodStart" aria-label="Início do período do relatório" hidden><input type="date" id="reportPeriodEnd" aria-label="Fim do período do relatório" hidden>
       <button class="btn small" id="enterDemoBtn">▶ Explorar demonstração</button>
       <button class="btn ghost small" id="exportReportBtn">▣ Exportar relatório PDF</button>
       <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>⬇ Exportar backup</button>

@@ -14,7 +14,7 @@ export function createCollectionRepository({getState,field}={}){
 }
 
 export function createAppRepositories(getState){
-  const repositories=Object.fromEntries(['subjects','calendar','questoes','simulados','dailyPlans','studyPlans','recommendationFeedback','topicHistory'].map(field=>[field,createCollectionRepository({getState,field})]));
+  const repositories=Object.fromEntries(['subjects','calendar','questoes','simulados','dailyPlans','studyPlans','recommendationFeedback','topicHistory','metasPorDisciplina'].map(field=>[field,createCollectionRepository({getState,field})]));
   repositories.studySessions=createSessionsRepository({getState});
   repositories.reviewAgenda=createReviewsRepository({getState});
   repositories.planning=createPlanningRepository({getState});
