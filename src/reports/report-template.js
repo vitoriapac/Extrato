@@ -1,0 +1,14 @@
+const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const duration=seconds=>`${Math.floor((seconds||0)/3600)}h ${Math.round(((seconds||0)%3600)/60)}min`;
+const value=value=>value==null?'Dados insuficientes':escape(value);
+
+export function renderStrategicReport(report){
+  const readiness=report.readiness?.value??report.readiness?.score??null,forecast=report.forecast?.forecast30;
+  const list=(items,formatter,empty)=>items.length?items.map(formatter).join(''):`<li>${empty}</li>`;
+  return `<header><p class="report-kicker">STUDYTRACK</p><h1>${escape(report.title)}</h1><p>Gerado em ${escape(new Date(report.generatedAt).toLocaleString('pt-BR'))}${report.isDemo?' · Dados fictícios':''}</p></header>
+  <section><h2>Resumo</h2><div class="report-kpis"><div><strong>${report.overview.completedTopics}/${report.overview.topics}</strong><span>Tópicos concluídos</span></div><div><strong>${duration(report.overview.studySeconds)}</strong><span>Tempo estudado</span></div><div><strong>${value(report.overview.accuracy==null?null:report.overview.accuracy+'%')}</strong><span>Taxa de acerto</span></div><div><strong>${value(readiness==null?null:Math.round(readiness)+'/100')}</strong><span>Prontidão</span></div></div></section>
+  <section><h2>Planejamento e execução</h2><p>${report.activePlan?`Plano ativo com ${report.activePlan.items?.length||0} itens e ${Math.round((report.activePlan.weeklyPlannedMinutes||0)/60)}h semanais.`:'Nenhum plano estratégico confirmado.'}</p><p>${report.execution.dailyPlans} planos diários · ${report.execution.replans} replanejamentos aplicados · ${report.overview.pendingReviews} revisões pendentes.</p></section>
+  <section><h2>Projeção</h2><p>${forecast?`Estimativa em 30 dias: ${forecast.low}–${forecast.high}% (centro ${forecast.central}%).`:'Ainda não há amostra suficiente para projeção de 30 dias.'}</p></section>
+  <section class="report-columns"><div><h2>Riscos prioritários</h2><ul>${list(report.risks,item=>`<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>${escape(item.reason||'Requer atenção')}</span></li>`,'Nenhum risco relevante identificado.')}</ul></div><div><h2>Oportunidades</h2><ul>${list(report.opportunities,item=>`<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>Retorno estimado ${value(item.opportunityScore)}/100</span></li>`,'Configure impacto e esforço para revelar oportunidades.')}</ul></div></section>
+  <section><h2>Recomendações e erros</h2><p>${report.recommendations.accepted}/${report.recommendations.decisions} recomendações aceitas · ${report.recommendations.completed} concluídas · ${report.recommendations.useful} avaliadas como úteis.</p><p>${report.errors.length?`Erros predominantes: ${report.errors.slice(0,3).map(([key,count])=>`${escape(key)} (${count})`).join(', ')}.`:'Ainda não há categorias de erro registradas.'}</p></section>`;
+}

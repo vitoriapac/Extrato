@@ -8,11 +8,12 @@ Aplicação local para planejar estudos, acompanhar tópicos, registrar questõe
 - Calendário, agenda de revisões e plano diário.
 - Cronômetro e histórico de sessões.
 - Histórico compacto no desktop, com detalhes sob demanda e filtros recolhíveis no celular.
-- Relatório A4 exportável pela opção de impressão/“Salvar como PDF” do navegador.
+- Relatório estratégico A4 com prontidão, planejamento, execução, projeção, riscos, oportunidades, recomendações e erros.
 - Questões, simulados, diagnóstico de erros e indicadores de prontidão.
 - Metas semanais, mensais e por disciplina.
 - Tema claro/escuro, interface responsiva e navegação por teclado.
 - Persistência local, snapshots rotativos e importação/exportação de backup.
+- Modo demonstração isolado, com 90 dias de dados fictícios e sem acesso à base real.
 - Instalação como PWA e funcionamento offline quando servido por HTTP.
 
 ## Privacidade e dados
@@ -43,6 +44,10 @@ npm run check
 Edite os módulos em `src/`. `src/app.bundle.js` é gerado pelo esbuild e não deve ser editado manualmente. O script `build.ps1` continua disponível como atalho no Windows.
 
 Os testes legados de integração podem ser abertos em `tests/test-runner.html`. Novas regras puras devem receber testes em `tests/unit/`.
+
+## Arquitetura
+
+As regras de estudo, analytics, recomendações, revisões, persistência e relatórios ficam em módulos independentes do DOM. IndexedDB, armazenamento local e demonstração usam providers substituíveis; migrações são sequenciais e backups passam por validação antes da adoção. Consulte [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Atalhos
 

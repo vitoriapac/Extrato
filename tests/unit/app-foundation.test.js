@@ -22,6 +22,9 @@ test('provider real delega persistência sem alterar chaves',async()=>{
   await provider.set('real-key','conteúdo');
   provider.writeLocal('real-key','conteúdo local');
   assert.equal(await provider.get('real-key'),'conteúdo');
+  assert.equal(await provider.load('real-key'),'conteúdo');
+  await provider.importBackup('backup-key','backup');
+  assert.equal(await provider.exportBackup('backup-key'),'backup');
   assert.equal(provider.readLocal('real-key'),'conteúdo local');
   await provider.remove('real-key');
   assert.equal(provider.readLocal('real-key'),null);

@@ -1,22 +1,14 @@
-function openDatabase({dbName,dbVersion,storeName}){
-  return new Promise((resolve,reject)=>{
-    if(!globalThis.indexedDB){reject(new Error('IndexedDB indisponível'));return}
-    const request=indexedDB.open(dbName,dbVersion);
-    request.onupgradeneeded=()=>{
-      const db=request.result;
-      if(!db.objectStoreNames.contains(storeName))db.createObjectStore(storeName);
-    };
-    request.onsuccess=()=>resolve(request.result);
-    request.onerror=()=>reject(request.error);
-  });
-}
+import {createIndexedDbProvider} from './indexed-db-provider.js';
+import {createLocalStorageProvider} from './local-storage-provider.js';
+
+const localProvider=createLocalStorageProvider();
 
 export function repositoryReadLocalState(key){
-  try{return localStorage.getItem(key)}catch(error){return null}
+  return localProvider.get(key);
 }
 
 export function repositoryWriteLocalState(value,key){
-  try{localStorage.setItem(key,value);return true}catch(error){return false}
+  return localProvider.set(key,value);
 }
 
 function serializedTimestamp(value){
@@ -24,36 +16,11 @@ function serializedTimestamp(value){
 }
 
 export function createStorageManager(config){
-  const {storeName}=config;
-  async function indexedDbGet(key){
-    const db=await openDatabase(config);
-    return new Promise((resolve,reject)=>{
-      const tx=db.transaction(storeName,'readonly'),request=tx.objectStore(storeName).get(key);
-      request.onsuccess=()=>resolve(request.result||null);
-      request.onerror=()=>reject(request.error);
-      tx.oncomplete=()=>db.close();
-    });
-  }
-  async function indexedDbSet(key,value){
-    const db=await openDatabase(config);
-    return new Promise((resolve,reject)=>{
-      const tx=db.transaction(storeName,'readwrite');tx.objectStore(storeName).put(value,key);
-      tx.oncomplete=()=>{db.close();resolve(true)};
-      tx.onerror=()=>{db.close();reject(tx.error)};
-    });
-  }
-  async function indexedDbDelete(key){
-    const db=await openDatabase(config);
-    return new Promise((resolve,reject)=>{
-      const tx=db.transaction(storeName,'readwrite');tx.objectStore(storeName).delete(key);
-      tx.oncomplete=()=>{db.close();resolve(true)};
-      tx.onerror=()=>{db.close();reject(tx.error)};
-    });
-  }
+  const indexedDb=createIndexedDbProvider(config);
   return {
     async get(key){
       const values=[];
-      try{const value=await indexedDbGet(key);if(value)values.push(value)}catch(error){console.warn('IndexedDB indisponível',error)}
+      try{const value=await indexedDb.get(key);if(value)values.push(value)}catch(error){console.warn('IndexedDB indisponível',error)}
       if(globalThis.storage&&typeof globalThis.storage.get==='function'){
         try{const result=await globalThis.storage.get(key,false);if(result?.value)values.push(result.value)}catch(error){console.warn('window.storage indisponível',error)}
       }
@@ -62,7 +29,7 @@ export function createStorageManager(config){
     },
     async set(key,value){
       let success=false;
-      try{await indexedDbSet(key,value);success=true}catch(error){console.warn('Falha no IndexedDB',error)}
+      try{await indexedDb.set(key,value);success=true}catch(error){console.warn('Falha no IndexedDB',error)}
       if(globalThis.storage&&typeof globalThis.storage.set==='function'){
         try{await globalThis.storage.set(key,value,false);success=true}catch(error){console.warn('Falha no window.storage',error)}
       }
@@ -71,11 +38,11 @@ export function createStorageManager(config){
     },
     async remove(key){
       let success=false;
-      try{await indexedDbDelete(key);success=true}catch(error){console.warn('Falha ao remover do IndexedDB',error)}
+      try{await indexedDb.remove(key);success=true}catch(error){console.warn('Falha ao remover do IndexedDB',error)}
       if(globalThis.storage&&typeof globalThis.storage.delete==='function'){
         try{await globalThis.storage.delete(key,false);success=true}catch(error){console.warn('Falha ao remover do window.storage',error)}
       }
-      try{localStorage.removeItem(key);success=true}catch(error){}
+      if(localProvider.remove(key))success=true;
       return success;
     }
   };

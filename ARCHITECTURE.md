@@ -17,9 +17,14 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/core/utils.js`: utilidades puras e validações primitivas.
 - `src/core/clock.js`: relógio injetável para datas locais e instantes reproduzíveis.
 - `src/storage/repository.js`: acesso a IndexedDB, `localStorage` e `window.storage`.
-- `src/storage/storage-provider.js`: contrato mínimo dos providers de persistência.
+- `src/storage/storage-provider.js`: contrato dos providers, incluindo carga, gravação, remoção, exportação e importação.
+- `src/storage/indexed-db-provider.js`: acesso isolado ao IndexedDB.
+- `src/storage/local-storage-provider.js`: fallback contido para armazenamento local.
 - `src/storage/real-storage-provider.js`: adaptação compatível da persistência real existente.
 - `src/storage/demo-storage-provider.js`: persistência temporária e isolada em `sessionStorage`.
+- `src/storage/migration-service.js`: execução ordenada e verificável das migrações de schema.
+- `src/storage/backup-service.js`: serialização, leitura segura e nomes dos arquivos de backup.
+- `src/repositories/collection-repository.js`: contrato uniforme de consulta e mutação das coleções do estado.
 - `src/demo/demo-generator.js`: cenário determinístico móvel de 90 dias para exploração do produto.
 - `src/domain/reviews.js`: regras puras de intervalos e revisões adaptativas.
 - `src/domain/analytics/evidence.js`: contrato comum de amostra, período, confiança e fontes.
@@ -44,6 +49,9 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
 - `src/ui/filter-panel.js`: contagem e rótulos puros dos filtros responsivos.
 - `src/ui/session-history.js`: filtragem e agrupamento puro do histórico de sessões.
+- `src/reports/report-data.js`: snapshot estratégico independente da interface.
+- `src/reports/report-template.js`: template seguro do relatório A4.
+- `src/reports/print-report.js`: coordenação isolada da impressão/“Salvar como PDF”.
 - `src/app.js`: composição temporária da interface e funcionalidades ainda não extraídas.
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
 - `styles/print.css`: apresentação A4 do relatório exportado pela impressão do navegador.

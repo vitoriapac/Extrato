@@ -38,6 +38,12 @@ import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
 import {generateDemoData} from './demo/demo-generator.js';
+import {runStateMigrations,validateBackupEnvelope} from './storage/migration-service.js';
+import {serializeBackup,parseBackupText,backupFileName} from './storage/backup-service.js';
+import {createAppRepositories} from './repositories/collection-repository.js';
+import {buildStrategicReport} from './reports/report-data.js';
+import {renderStrategicReport} from './reports/report-template.js';
+import {printStrategicReport} from './reports/print-report.js';
 
 const THEME_STORAGE_KEY='bb-premium-theme';
 const MODE_FLASH_KEY='bb-premium-mode-message';
@@ -65,10 +71,8 @@ function toggleTheme(){ setTheme(getCurrentTheme()==='dark'?'light':'dark'); }
 document.getElementById('themeToggleBtn').addEventListener('click',toggleTheme);
 updateThemeToggleIcon();
 document.getElementById('exportReportBtn')?.addEventListener('click',()=>{
-  const meta=document.getElementById('printReportMeta');
-  if(meta)meta.textContent=`${IS_DEMO_MODE?'RELATÓRIO DE DEMONSTRAÇÃO · Dados fictícios · ':''}Relatório geral · período consolidado até ${new Date().toLocaleDateString('pt-BR')}`;
-  activateTab('dashboard',false);
-  requestAnimationFrame(()=>window.print());
+  const diagnosis=generateDiagnosis(intelligenceCandidates()),report=buildStrategicReport({state,generatedAt:nowISO(),isDemo:IS_DEMO_MODE,readiness:readinessResult(computeApprovalMetrics()),diagnosis,forecast:projectPerformance()});
+  printStrategicReport({document,window,report,render:renderStrategicReport});
 });
 
 const ERROR_CATEGORIES = {
@@ -315,23 +319,7 @@ function migrateV14toV15(data){
 }
 
 function migrateState(data){
-  let version = Number(data.schemaVersion || 1);
-  if(version < 2){ data = migrateV1toV2(data); version = 2; }
-  if(version < 3){ data = migrateV2toV3(data); version = 3; }
-  if(version < 4){ data = migrateV3toV4(data); version = 4; }
-  if(version < 5){ data = migrateV4toV5(data); version = 5; }
-  if(version < 6){ data = migrateV5toV6(data); version = 6; }
-  if(version < 7){ data = migrateV6toV7(data); version = 7; }
-  if(version < 8){ data = migrateV7toV8(data); version = 8; }
-  if(version < 9){ data = migrateV8toV9(data); version = 9; }
-  if(version < 10){ data = migrateV9toV10(data); version = 10; }
-  if(version < 11){ data = migrateV10toV11(data); version = 11; }
-  if(version < 12){ data = migrateV11toV12(data); version = 12; }
-  if(version < 13){ data = migrateV12toV13(data); version = 13; }
-  if(version < 14){ data = migrateV13toV14(data); version = 14; }
-  if(version < 15){ data = migrateV14toV15(data); version = 15; }
-  data.schemaVersion = CURRENT_SCHEMA_VERSION;
-  return data;
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15}});
 }
 
 function ensureStateDefaults(){
@@ -461,7 +449,7 @@ function ensureStateDefaults(){
 const persistentStorageManager=createStorageManager({dbName:DB_NAME,dbVersion:DB_VERSION,storeName:STORE_NAME});
 const realStorageProvider=createRealStorageProvider({manager:persistentStorageManager,readLocal:repositoryReadLocalState,writeLocal:repositoryWriteLocalState,removeLocal:key=>{try{localStorage.removeItem(key)}catch(error){}}});
 const demoStorageProvider=IS_DEMO_MODE?createDemoStorageProvider({storage:sessionStorage,stateKey:STORAGE_KEY,demoKey:DEMO_STORAGE_KEY,generate:()=>generateDemoData({today:appClock.today()})}):null;
-const appContext=createAppContext({storage:demoStorageProvider||realStorageProvider,clock:appClock,idGenerator:uid,repositories:{}});
+const appContext=createAppContext({storage:demoStorageProvider||realStorageProvider,clock:appClock,idGenerator:uid,repositories:createAppRepositories(()=>state)});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
 const STATE_CHANNEL=!IS_DEMO_MODE&&typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
@@ -982,11 +970,11 @@ function renderProgressChart(){
 /* ===== BACKUP: EXPORTAR / IMPORTAR ===== */
 function exportBackup(){
   if(IS_DEMO_MODE){showToast('Backups ficam indisponíveis durante a demonstração.');return}
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const blob = new Blob([serializeBackup(state)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `backup-extrato-estudos-${todayISO()}.json`;
+  a.download = backupFileName(todayISO());
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1014,31 +1002,8 @@ async function exportLatestAutomaticBackup(){
   }catch(error){console.error('Falha ao exportar snapshot automático',error);showToast('Não foi possível exportar o snapshot automático.')}
 }
 function validateBackupData(data){
-  if(!data || typeof data !== 'object' || Array.isArray(data)){
-    return {valid:false,message:'O arquivo não contém um objeto de backup válido.'};
-  }
-  if(!Array.isArray(data.subjects)){
-    return {valid:false,message:'O backup não contém uma lista válida de disciplinas.'};
-  }
-  const version = Number(data.schemaVersion || 1);
-  if(!Number.isInteger(version) || version < 1){
-    return {valid:false,message:'A versão do backup é inválida.'};
-  }
-  if(version > CURRENT_SCHEMA_VERSION){
-    return {valid:false,message:`Este backup usa a versão ${version}, mas este aplicativo aceita até a versão ${CURRENT_SCHEMA_VERSION}. Abra-o em uma versão mais recente do aplicativo.`};
-  }
   const arrayFields = ['calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','recommendationFeedback','alertStates','topicHistory','metasPorDisciplina'];
-  const invalidField = arrayFields.find(field=>field in data && !Array.isArray(data[field]));
-  if(invalidField){
-    return {valid:false,message:`O campo "${invalidField}" está em um formato incompatível.`};
-  }
-  const invalidSubject = data.subjects.some(subject=>!subject || typeof subject !== 'object' || ('topics' in subject && !Array.isArray(subject.topics)));
-  if(invalidSubject){
-    return {valid:false,message:'Uma ou mais disciplinas do backup estão em formato incompatível.'};
-  }
-  if('metas' in data && (!data.metas || typeof data.metas !== 'object' || Array.isArray(data.metas))){
-    return {valid:false,message:'As metas do backup estão em formato incompatível.'};
-  }
+  const envelope=validateBackupEnvelope(data,{currentVersion:CURRENT_SCHEMA_VERSION,arrayFields});if(!envelope.valid)return envelope;const {version}=envelope;
   try{
     const normalized=migrateState(structuredCloneSafe(data));
     ensureBackupStateDefaults(normalized);
@@ -1173,11 +1138,8 @@ function importBackupFromFile(file){
   reader.onload = function(e){
     let parsed;
     try{
-      parsed = JSON.parse(e.target.result);
-    }catch(err){
-      showToast('Arquivo inválido — não parece um backup deste extrato.');
-      return;
-    }
+      const parsedResult=parseBackupText(String(e.target.result),{maxBytes:MAX_BACKUP_FILE_SIZE});if(!parsedResult.valid){showToast(parsedResult.message);return}parsed=parsedResult.data;
+    }catch(err){showToast('Arquivo inválido — não parece um backup deste extrato.');return}
     const validation=validateBackupData(parsed);
     if(!validation.valid){
       showToast(validation.message);
