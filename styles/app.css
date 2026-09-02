@@ -1022,3 +1022,202 @@
   #upcomingFooter{align-items:stretch}
   #upcomingFooter .list-summary-footer,.upcoming-calendar-link{width:100%}
 }
+
+/* ===== LEGIBILIDADE E CONTROLES ===== */
+.overview-nav a,
+.mini-stat .l,
+.heatmap-summary,
+.session-day-toggle,
+.list-view-count,
+.inline-edit-form label,
+.count-badge,
+.history-status,
+.mobile-card-date,
+.mobile-card-metrics,
+.session-filter-summary,
+.session-details-row dt,
+table.log thead th,
+.error-toggle-btn,
+.error-breakdown-head,
+.error-breakdown-field,
+.analytics-note,
+.performance-meta,
+.performance-value,
+.trend-week span,
+.trend-week small,
+.trend-week-date,
+.trend-week-volume,
+.error-profile-item span,
+.error-profile-label,
+.month-header,
+.day-number,
+.cal-event,
+.cal-event-more,
+table.cal thead th,
+footer{font-size:var(--text-xs)}
+
+.row-secondary,
+.kpi-cell .l,
+.stat-cell .l,
+.subject-progress-pill,
+.item-origin,
+.priority-reason,
+.priority-badge,
+.plano-item-head,
+.plano-item-status,
+.plano-depois-label,
+.meta-hoje-label,
+.meta-hoje-time-target,
+.timer-target,
+.tag-chip,
+.stamp,
+.archived-section-title,
+.archived-item-date,
+.dias-pill,
+.trend-comparison,
+.meta-formula,
+.meta-progress-label,
+.weekday-goal span,
+.confidence-note,
+.diagnosis-summary article span,
+.diagnosis-empty,
+.recommendation-rank,
+.recommendation-explanation summary,
+.recommendation-contributions>div,
+.readiness-explanation summary,
+.executive-kpi small,
+.performance-forecast .section-eyebrow{font-size:var(--text-xs)}
+
+.panel small,.panel dt,.panel dd,.panel th,
+.executive-kpi>span,.confirmed-plan-note,.overdue-summary{font-size:var(--text-xs)}
+
+.btn{min-height:var(--control-height);display:inline-flex;align-items:center;justify-content:center}
+.btn.small,.btn.danger{min-height:var(--control-height);padding:7px 11px;font-size:var(--text-xs)}
+input,select,textarea{font-size:max(1em,var(--text-sm))}
+
+/* Textos longos devem se adaptar antes de serem truncados. */
+.subject-name,.mobile-card-title,.mobile-card-subtitle,.performance-name,
+.metric-state,.section-description,.helper-text,.metadata-text{overflow-wrap:anywhere}
+
+@media (max-width:760px){
+  button,a,input,select,textarea,[role="button"]{touch-action:manipulation}
+  .btn,.tab-btn,.icon-btn,.icon-btn-nav,.month-nav-btn,.theme-toggle-btn,
+  .mobile-more-menu button,.review-group-header,.session-day-toggle,
+  .error-toggle-btn,.calendar-view-btn{min-height:var(--touch-target)}
+  .btn.small,.btn.danger{min-height:var(--touch-target)}
+  .panel input,.panel select,.panel textarea{min-height:var(--touch-target);max-width:100%}
+
+  .bar-row{align-items:flex-start;gap:8px;flex-wrap:wrap}
+  .bar-label{width:calc(100% - 50px);min-width:0;white-space:normal;text-overflow:clip;overflow:visible}
+  .bar-label small{display:block;white-space:normal}
+  .bar-track{order:3;flex-basis:calc(100% - 50px)}
+  .bar-pct{margin-left:auto}
+
+  .performance-row>*{min-width:0}
+  .performance-name,.performance-meta{overflow-wrap:anywhere}
+  .analytics-toolbar select,.cal-filters select{width:100%}
+  .breakdown-line{grid-template-columns:minmax(0,1fr) 64px 64px auto}
+
+  .month-grid-wrap{overscroll-behavior-inline:contain;scrollbar-width:thin}
+  .month-grid{min-width:560px}
+  .cal-event{max-width:100%}
+
+  .kpi-cell{min-width:0;padding:15px 14px}
+  .kpi-cell .n{overflow-wrap:anywhere}
+  .kpi-cell .l{line-height:1.35}
+
+  table.log input,table.log select,table.cal input,table.cal select{min-width:0}
+
+  .responsive-history-table,
+  .responsive-history-table tbody,
+  .mobile-history-row,
+  .mobile-history-row td{display:block!important;width:100%}
+  .mobile-history-row td{overflow:visible!important}
+  .mobile-history-card,.mobile-card-head,.mobile-card-metrics{width:100%;min-width:0}
+  .mobile-card-head>div{min-width:0}
+  .mobile-card-metrics>*{max-width:100%;overflow-wrap:anywhere}
+}
+
+/* ===== HIERARQUIA DA VISÃO GERAL ===== */
+.overview-nav{
+  gap:6px;padding:8px;margin-bottom:24px;background:var(--white);
+  border-color:var(--paper-line);scroll-snap-type:x proximity
+}
+.overview-nav a{
+  min-height:36px;display:inline-flex;align-items:center;padding:8px 12px;
+  border-bottom:2px solid transparent;scroll-snap-align:start
+}
+.overview-nav a:hover,.overview-nav a:focus-visible{
+  border-bottom-color:var(--gold);background:var(--slate-bg)
+}
+.overview-section-heading{
+  gap:10px;margin:42px 0 18px;color:var(--heading);
+  font:600 var(--text-lg)/1.3 var(--font-display);letter-spacing:0;text-transform:none
+}
+.overview-section-heading::before{width:4px;height:22px;background:var(--gold);content:""}
+.overview-section-heading::after{margin-left:4px}
+.overview-section-heading:first-of-type{margin-top:28px}
+.overview-section-heading+.overview-pair,
+.overview-section-heading+.chart-card{margin-top:0}
+
+/* ===== DENSIDADE DE DISCIPLINAS E QUESTÕES ===== */
+.subject-header{gap:18px}
+.subject-header-left{min-width:0;flex:1}
+.subject-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.subject-header-actions .subject-progress-pill{margin-right:4px}
+.subject-body{padding-top:14px}
+.subject-topic-filters{padding-bottom:12px;border-bottom:1px solid var(--paper-line)}
+.subject-block+.subject-block{margin-top:18px}
+
+#panel-questoes>.log-table-wrap{margin-bottom:32px}
+#panel-questoes>.section-head{margin-top:8px;padding-top:8px}
+#panel-questoes>#topicPerformanceCard{margin-block:32px}
+#panel-questoes .analytics-toolbar{padding:12px;background:var(--paper);border:1px solid var(--paper-line)}
+#panel-questoes .analytics-note{flex:1;min-width:min(100%,280px)}
+.analytics-view-tabs{padding-bottom:12px;border-bottom:1px solid var(--paper-line)}
+.performance-row{column-gap:18px}
+
+/* ===== ESTADOS E CONSISTÊNCIA DOS CONTROLES ===== */
+.btn,.tab-btn,.icon-btn,.icon-btn-nav,.month-nav-btn,.theme-toggle-btn,
+.mobile-more-menu button,.error-toggle-btn,input,select,textarea{
+  transition:background-color .15s ease,color .15s ease,border-color .15s ease,opacity .15s ease,transform .1s ease
+}
+.btn:active:not(:disabled),.tab-btn:active:not(:disabled),
+.icon-btn:active:not(:disabled),.icon-btn-nav:active:not(:disabled),
+.month-nav-btn:active:not(:disabled){transform:translateY(1px)}
+button:disabled,input:disabled,select:disabled,textarea:disabled{
+  cursor:not-allowed;opacity:.5
+}
+input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){border-color:var(--ink-soft)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{
+  border-color:var(--gold);outline:3px solid var(--gold);outline-offset:1px
+}
+.empty-state{max-width:100%;color:var(--ink-soft)}
+.empty-state .btn{margin-top:4px}
+
+@media (max-width:760px){
+  .overview-nav{
+    top:60px;z-index:80;margin:0 -2px 24px;padding:6px;
+    box-shadow:0 1px 0 var(--paper-line)
+  }
+  .overview-nav a{min-height:40px;padding:8px 10px}
+  .overview-section-heading{margin-top:34px;font-size:var(--text-lg)}
+
+  .subject-header{flex-direction:column;align-items:stretch}
+  .subject-header-actions{justify-content:flex-start;padding-top:10px;border-top:1px solid var(--paper-line)}
+  .subject-header-actions .subject-progress-pill{flex:1 0 100%;width:max-content;max-width:100%;margin:0}
+  .subject-header-actions .btn{flex:1}
+  .subject-order-btns{flex-direction:row}
+
+  #panel-questoes>.log-table-wrap{margin-bottom:26px}
+  #panel-questoes>#topicPerformanceCard{margin-block:26px}
+  #panel-questoes .analytics-toolbar{align-items:stretch}
+  .analytics-view-tabs{display:grid;grid-template-columns:1fr 1fr}
+  .performance-row{gap:8px;padding-block:14px}
+}
+
+@media (min-width:641px) and (max-width:900px){
+  .backup-block{align-items:flex-start}
+  .backup-actions{width:100%;min-width:0;flex:1 1 100%;flex-wrap:wrap}
+  .backup-actions .btn{min-width:0;flex:1 1 190px;white-space:normal}
+}

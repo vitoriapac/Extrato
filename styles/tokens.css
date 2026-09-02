@@ -1,7 +1,7 @@
 :root{
   --font-body:'IBM Plex Sans','Segoe UI',Arial,sans-serif;--font-display:'Fraunces',Georgia,serif;--font-data:'IBM Plex Mono',Consolas,'Courier New',monospace;
-  --text-caption:.6875rem;--text-small:.75rem;--text-body:.875rem;--text-title:1.25rem;--text-value:1.5rem;
-  --text-xs:.6875rem;--text-sm:.75rem;--text-md:.875rem;--text-lg:1rem;--text-xl:1.25rem;
+  --text-caption:.75rem;--text-small:.8125rem;--text-body:.875rem;--text-title:1.25rem;--text-value:1.5rem;
+  --text-xs:.75rem;--text-sm:.8125rem;--text-md:.875rem;--text-lg:1rem;--text-xl:1.25rem;
   --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-6:1.5rem;--space-8:2rem;
   --control-height:36px;--touch-target:44px;
   --navy:#0B2545;--blue:#0F3D73;--gold:#C89A3E;--gold-bright:#E8B94A;
