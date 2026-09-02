@@ -9,8 +9,16 @@
     "serve": "node scripts/serve.mjs",
     "check:bundle": "node scripts/build.mjs --check",
     "test": "node --test tests/unit/*.test.js",
-    "check": "npm run test && npm run check:bundle"
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "check": "npm run test && npm run check:bundle",
+    "check:all": "npm run check && npm run test:e2e"
   },
-  "devDependencies": { "esbuild": "^0.25.9" },
-  "engines": { "node": ">=22" }
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "esbuild": "^0.25.9"
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }

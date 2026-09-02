@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createReviewsRepository} from '../../src/repositories/reviews-repository.js';
+import {createReviewService,reviewTypeForDays} from '../../src/application/reviews/review-service.js';
+
+function fixture(){const topic={id:'t1',name:'Tópico',adaptiveReview:null},state={reviewAgenda:[{id:'r1',subjectId:'s1',topicId:'t1',date:'2026-09-02',tipo:'Revisão 7 dias',status:'Não iniciado'}]},events=[];const repository=createReviewsRepository({getState:()=>state});const service=createReviewService({repository,clock:{today:()=> '2026-09-02',nowISO:()=> '2026-09-02T12:00:00.000Z'},idGenerator:()=> 'r2',findTopic:id=>id==='t1'?topic:null,algorithmVersion:()=>2,calculateAdaptiveState:()=>({intervalDays:14,nextReviewDate:'2026-09-16',algorithmVersion:2}),onEvent:(...args)=>events.push(args)});return{state,topic,repository,service,events}}
+
+test('repositório consulta pendências e evita duplicidade por tópico e data',()=>{const{repository}=fixture();assert.equal(repository.listPending().length,1);assert.equal(repository.hasPendingForTopic('t1','2026-09-02'),true)});
+test('avaliação conclui a atual e agenda uma única próxima revisão',()=>{const{state,topic,service}=fixture();const result=service.rateReview('r1','good');assert.equal(result.review.status,'Concluído');assert.equal(result.next.date,'2026-09-16');assert.equal(topic.adaptiveReview.intervalDays,14);assert.equal(state.reviewAgenda.length,2);service.rateReview('r1','good');assert.equal(state.reviewAgenda.length,2)});
+test('data manual pode voltar à sugestão adaptativa',()=>{const{repository,service}=fixture();service.rescheduleReview('r1','2026-09-20');assert.equal(repository.findById('r1').manualDate,true);service.restoreAdaptiveSchedule('r1',{date:'2026-09-09',reason:'Sugestão'});assert.deepEqual({date:repository.findById('r1').date,manual:repository.findById('r1').manualDate},{date:'2026-09-09',manual:false})});
+test('tipo adaptativo preserva intervalos conhecidos',()=>{assert.equal(reviewTypeForDays(1),'Revisão 24h');assert.equal(reviewTypeForDays(21),'Revisão livre')});

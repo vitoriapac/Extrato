@@ -10,5 +10,8 @@ export function createCollectionRepository({getState,field}={}){
 }
 
 export function createAppRepositories(getState){
-  return Object.freeze(Object.fromEntries(['subjects','calendar','reviewAgenda','questoes','simulados','studySessions','dailyPlans','studyPlans','recommendationFeedback'].map(field=>[field,createCollectionRepository({getState,field})])));
+  const repositories=Object.fromEntries(['subjects','calendar','questoes','simulados','studySessions','dailyPlans','studyPlans','recommendationFeedback'].map(field=>[field,createCollectionRepository({getState,field})]));
+  repositories.reviewAgenda=createReviewsRepository({getState});
+  return Object.freeze(repositories);
 }
+import {createReviewsRepository} from './reviews-repository.js';

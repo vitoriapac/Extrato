@@ -41,6 +41,10 @@ import {generateDemoData} from './demo/demo-generator.js';
 import {runStateMigrations,validateBackupEnvelope} from './storage/migration-service.js';
 import {serializeBackup,parseBackupText,backupFileName} from './storage/backup-service.js';
 import {createAppRepositories} from './repositories/collection-repository.js';
+import {createReviewService} from './application/reviews/review-service.js';
+import {createReviewsController} from './ui/controllers/reviews-controller.js';
+import {createReviewViewModel} from './ui/view-models/review-view-model.js';
+import {renderReviewRead,renderReviewEdit} from './ui/renderers/reviews-renderer.js';
 import {buildStrategicReport} from './reports/report-data.js';
 import {renderStrategicReport} from './reports/report-template.js';
 import {printStrategicReport} from './reports/print-report.js';
@@ -450,6 +454,14 @@ const persistentStorageManager=createStorageManager({dbName:DB_NAME,dbVersion:DB
 const realStorageProvider=createRealStorageProvider({manager:persistentStorageManager,readLocal:repositoryReadLocalState,writeLocal:repositoryWriteLocalState,removeLocal:key=>{try{localStorage.removeItem(key)}catch(error){}}});
 const demoStorageProvider=IS_DEMO_MODE?createDemoStorageProvider({storage:sessionStorage,stateKey:STORAGE_KEY,demoKey:DEMO_STORAGE_KEY,generate:()=>generateDemoData({today:appClock.today()})}):null;
 const appContext=createAppContext({storage:demoStorageProvider||realStorageProvider,clock:appClock,idGenerator:uid,repositories:createAppRepositories(()=>state)});
+const reviewService=createReviewService({
+  repository:appContext.repositories.reviewAgenda,clock:appClock,idGenerator:uid,
+  findTopic:topicId=>getTopicById(topicId)?.topic||null,
+  calculateAdaptiveState:(current,rating,options)=>applyAdaptiveReviewRating(current,rating,options),
+  algorithmVersion:()=>state.algorithmVersions.adaptiveReview,
+  onEvent:(type,review,details)=>addHistoryEvent(type,entitySubjectId(review),review.topicId||review.topicRef||null,details),
+  onTopicChanged:topicId=>refreshTopicReviewStats(topicId)
+});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
 const STATE_CHANNEL=!IS_DEMO_MODE&&typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
@@ -2516,16 +2528,12 @@ function adaptiveReviewSuggestion(topicId,baseDays,baseDate){
   return {...result,date:addDays(baseDate,result.days)};
 }
 function resetAdaptiveReviewDate(id){
-  const review=state.reviewAgenda.find(item=>item.id===id);
+  const review=appContext.repositories.reviewAgenda.findById(id);
   if(!review||!review.topicId) return;
   const found=getTopicById(review.topicId);
   const baseDate=found?.topic?.completedAt||todayISO();
   const suggestion=adaptiveReviewSuggestion(review.topicId,review.baseIntervalDays||reviewBaseDaysFromType(review.tipo),baseDate);
-  review.date=suggestion.date;
-  review.suggestedDate=suggestion.date;
-  review.adaptiveReason=suggestion.reason;
-  review.manualDate=false;
-  review.adaptive=true;
+  reviewService.restoreAdaptiveSchedule(id,suggestion);
   persistAndRender();
 }
 function gerarAgendaAutomatica(){
@@ -2593,7 +2601,7 @@ function renderAgendaFilters(){
 const agendaUiState={upcomingVisible:5,completedVisible:10,completedExpanded:false,editingId:null,editingIsNew:false,draft:null};
 function agendaViewModel(item){
   const topicId=item.topicId||item.topicRef;
-  return {date:item.date?formatDatePt(item.date):'Sem data',subject:getSubjectName(entitySubjectId(item)),topic:topicId?getTopicName(topicId):(item.topic||'Sem tópico'),type:item.tipo||'Revisão livre',difficulty:getTopicDifficulty(topicId),status:item.status||'Não iniciado'};
+  return createReviewViewModel(item,{subjectName:getSubjectName(entitySubjectId(item)),topicName:topicId?getTopicName(topicId):'',difficulty:getTopicDifficulty(topicId),formatDate:formatDatePt});
 }
 function toggleCompletedReviews(){agendaUiState.completedExpanded=!agendaUiState.completedExpanded;renderAgenda()}
 function changeAgendaLimit(group,delta){const key=`${group}Visible`,minimum=group==='completed'?10:5;agendaUiState[key]=Math.max(minimum,agendaUiState[key]+Number(delta||0));renderAgenda()}
@@ -2622,31 +2630,23 @@ function saveAgendaEdit(){
 let pendingReviewRatingId=null;
 function closeReviewRating(){pendingReviewRatingId=null;const overlay=document.getElementById('reviewRatingOverlay');overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true')}
 function completeAgendaReview(id){
-  const item=state.reviewAgenda.find(entry=>entry.id===id);if(!item||item.status==='Concluído')return;
-  if(!(item.topicId||item.topicRef)){applyAgendaField(item,'status','Concluído');persistAndRender();showToast('Revisão concluída.');return}
+  const item=appContext.repositories.reviewAgenda.findById(id);if(!item||item.status==='Concluído')return;
+  if(!(item.topicId||item.topicRef)){reviewService.completeReview(id);persistAndRender();showToast('Revisão concluída.');return}
   pendingReviewRatingId=id;const overlay=document.getElementById('reviewRatingOverlay');overlay.classList.add('show');overlay.removeAttribute('aria-hidden');overlay.querySelector('[data-review-rating="good"]')?.focus();
 }
 function adaptiveReviewType(days){return ({1:'Revisão 24h',3:'Revisão 3 dias',7:'Revisão 7 dias',14:'Revisão 14 dias',15:'Revisão 15 dias',30:'Revisão 30 dias'})[days]||'Revisão livre'}
 function rateCompletedReview(rating){
-  const item=state.reviewAgenda.find(entry=>entry.id===pendingReviewRatingId),topicId=item?.topicId||item?.topicRef;if(!item||!topicId||!REVIEW_RATINGS[rating])return closeReviewRating();
-  const found=getTopicById(topicId),reviewDate=todayISO(),adaptiveState=applyAdaptiveReviewRating(found?.topic?.adaptiveReview,rating,{reviewDate,algorithmVersion:state.algorithmVersions.adaptiveReview});
-  if(found)found.topic.adaptiveReview=adaptiveState;item.lastRating=rating;item.adaptiveState=structuredCloneSafe(adaptiveState);item.adaptiveReason=`Avaliação: ${REVIEW_RATINGS[rating].label} · próximo intervalo: ${adaptiveState.intervalDays} dia${adaptiveState.intervalDays===1?'':'s'}`;
-  applyAgendaField(item,'status','Concluído');
-  const alreadyScheduled=state.reviewAgenda.some(review=>review.id!==item.id&&(review.topicId||review.topicRef)===topicId&&review.status!=='Concluído'&&review.date===adaptiveState.nextReviewDate);
-  if(!alreadyScheduled)state.reviewAgenda.push({id:uid('review'),subjectId:entitySubjectId(item)||found?.subject?.id||null,topicId,topicRef:topicId,topic:found?.topic?.name||item.topic||'',date:adaptiveState.nextReviewDate,suggestedDate:adaptiveState.nextReviewDate,baseIntervalDays:adaptiveState.intervalDays,adaptive:true,manualDate:false,adaptiveReason:`Agendada após avaliação ${REVIEW_RATINGS[rating].label}.`,tipo:adaptiveReviewType(adaptiveState.intervalDays),status:'Não iniciado',lastRating:null,adaptiveState:structuredCloneSafe(adaptiveState),createdAt:nowISO(),completedAt:null});
-  addHistoryEvent('adaptive_review_rated',entitySubjectId(item),topicId,{reviewId:item.id,rating,intervalDays:adaptiveState.intervalDays,nextReviewDate:adaptiveState.nextReviewDate,algorithmVersion:adaptiveState.algorithmVersion});
-  closeReviewRating();persistAndRender();showToast(`Revisão concluída. Próxima em ${formatDatePt(adaptiveState.nextReviewDate)}.`);
+  if(!REVIEW_RATINGS[rating])return closeReviewRating();
+  const result=reviewService.rateReview(pendingReviewRatingId,rating,{label:REVIEW_RATINGS[rating].label});
+  if(!result)return closeReviewRating();
+  closeReviewRating();persistAndRender();showToast(`Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState.nextReviewDate)}.`);
 }
-document.querySelectorAll('[data-review-rating]').forEach(button=>button.addEventListener('click',()=>rateCompletedReview(button.dataset.reviewRating)));
-document.getElementById('reviewRatingCancelBtn')?.addEventListener('click',closeReviewRating);
 function renderAgendaReadRow(item){
-  const vm=agendaViewModel(item),pending=item.status!=='Concluído';
-  if(isMobileHistoryLayout())return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="8"><article class="mobile-history-card review-mobile-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)} · ${escapeHtml(vm.status)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>${escapeHtml(vm.difficulty)}</span><span>${diasParaRevisaoPill(item.date,item.status)}</span></div><div class="mobile-card-actions">${pending?`<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>`:''}</div></article></td></tr>`;
-  return `<tr class="history-read-row history-desktop-row ${item.date===todayISO()?'today':''}" data-id="${item.id}"><td>${escapeHtml(vm.date)}<div class="review-date-mode" title="${escapeAttr(item.adaptiveReason||'')}">${item.manualDate?'Manual':'Adaptativa'}${item.lastRating?` · ${escapeHtml(REVIEW_RATINGS[item.lastRating].label)}`:''}${item.manualDate&&item.topicId?` · <button type="button" data-delegated-click="resetAdaptiveReviewDate('${item.id}')">usar sugestão</button>`:''}</div></td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td>${escapeHtml(vm.type)}</td><td><span class="dias-pill ${DIFFICULTY_CLASS[vm.difficulty]}">${escapeHtml(vm.difficulty)}</span></td><td><span class="history-status ${STATUS_CLASS[item.status]||''}">${escapeHtml(vm.status)}</span></td><td>${diasParaRevisaoPill(item.date,item.status)}</td><td><div class="row-actions">${pending?`<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>`:''}<button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div></td></tr>`;
+  return renderReviewRead({item,view:agendaViewModel(item),mobile:isMobileHistoryLayout(),escapeHtml,escapeAttr,daysPill:diasParaRevisaoPill(item.date,item.status),difficultyClass:DIFFICULTY_CLASS,statusClass:STATUS_CLASS,ratingLabel:key=>REVIEW_RATINGS[key]?.label||key,today:todayISO()});
 }
 function renderAgendaEditRow(item){
   const draft=agendaUiState.draft,subjectId=entitySubjectId(draft);if(!draft)return '';
-  return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date||''}" data-delegated-change="updateAgendaDraft('date',this.value)"></label><label>Disciplina<select ${draft.topicId?'disabled title="Definida pelo tópico vinculado"':''} data-delegated-change="updateAgendaDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map(subject=>`<option value="${escapeAttr(subject.id)}" ${subject.id===subjectId?'selected':''}>${escapeHtml(subject.name)}</option>`).join('')}</select></label><label>Tópico<input type="text" value="${escapeAttr(draft.topicId?getTopicName(draft.topicId):(draft.topic||''))}" ${draft.topicId?'readonly':''} data-delegated-input="updateAgendaDraft('topic',this.value)"></label><label>Tipo<select data-delegated-change="updateAgendaDraft('tipo',this.value)">${TIPO_AGENDA_OPTIONS.map(option=>`<option value="${option}" ${option===draft.tipo?'selected':''}>${option}</option>`).join('')}</select></label><label>Status<select data-delegated-change="updateAgendaDraft('status',this.value)">${STATUS_OPTIONS.map(option=>`<option value="${option}" ${option===draft.status?'selected':''}>${option}</option>`).join('')}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelAgendaEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveAgendaEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteAgendaRow('${item.id}')">Excluir</button></div></div></td></tr>`;
+  return renderReviewEdit({item,draft,subjectOptions:subjectsForSelection(subjectId).map(subject=>`<option value="${escapeAttr(subject.id)}" ${subject.id===subjectId?'selected':''}>${escapeHtml(subject.name)}</option>`).join(''),topicName:draft.topicId?getTopicName(draft.topicId):(draft.topic||''),typeOptions:TIPO_AGENDA_OPTIONS.map(option=>`<option value="${option}" ${option===draft.tipo?'selected':''}>${option}</option>`).join(''),statusOptions:STATUS_OPTIONS.map(option=>`<option value="${option}" ${option===draft.status?'selected':''}>${option}</option>`).join(''),escapeAttr});
 }
 function renderAgenda(){
   const body = document.getElementById('agendaBody');
@@ -2689,11 +2689,11 @@ function renderAgenda(){
 }
 
 function addAgendaRow(){
-  const item={id:uid('review'),topicId:null,date:todayISO(),subjectId:activeSubjects()[0]?.id||null,topic:'',tipo:'Revisão livre',status:'Não iniciado',adaptive:false,manualDate:true,adaptiveReason:null,suggestedDate:null,baseIntervalDays:7,createdAt:nowISO(),completedAt:null};
-  state.reviewAgenda.push(item);agendaUiState.editingId=item.id;agendaUiState.editingIsNew=true;agendaUiState.draft=cloneRecord(item);renderAgenda();
+  const item=reviewService.createManualReview({subjectId:activeSubjects()[0]?.id||null});
+  agendaUiState.editingId=item.id;agendaUiState.editingIsNew=true;agendaUiState.draft=cloneRecord(item);renderAgenda();
 }
 function deleteAgendaRow(id){
-  showConfirm('Excluir esta revisão?',()=>{state.reviewAgenda=state.reviewAgenda.filter(a=>a.id!==id);agendaUiState.editingId=null;agendaUiState.editingIsNew=false;agendaUiState.draft=null;persistAndRender();showToast('Revisão excluída.');});
+  showConfirm('Excluir esta revisão?',()=>{reviewService.removeReview(id);agendaUiState.editingId=null;agendaUiState.editingIsNew=false;agendaUiState.draft=null;persistAndRender();showToast('Revisão excluída.');});
 }
 function updateAgenda(id, field, value){
   const a = state.reviewAgenda.find(x=>x.id===id);
@@ -2701,12 +2701,11 @@ function updateAgenda(id, field, value){
   persistAndRender();
 }
 
-document.getElementById('agendaFilterSubject').addEventListener('change',()=>{agendaUiState.upcomingVisible=5;agendaUiState.completedVisible=10;renderAgenda();});
-document.getElementById('agendaFilterStatus').addEventListener('change',()=>{agendaUiState.upcomingVisible=5;agendaUiState.completedVisible=10;renderAgenda();});
-document.getElementById('agendaFilterMes').addEventListener('change',()=>{agendaUiState.upcomingVisible=5;agendaUiState.completedVisible=10;renderAgenda();});
-document.getElementById('agendaFilterTipo').addEventListener('change',()=>{agendaUiState.upcomingVisible=5;agendaUiState.completedVisible=10;renderAgenda();});
-document.getElementById('addAgendaRowBtn').addEventListener('click', addAgendaRow);
-document.getElementById('autoGenBtn').addEventListener('click', gerarAgendaAutomatica);
+createReviewsController({actions:{
+  rate:rateCompletedReview,cancelRating:closeReviewRating,
+  filtersChanged:()=>{agendaUiState.upcomingVisible=5;agendaUiState.completedVisible=10;renderAgenda()},
+  createManual:addAgendaRow,generateAutomatic:gerarAgendaAutomatica
+}}).register();
 
 /* ===== QUESTÕES & SIMULADOS ===== */
 function calcAcertoPct(correct, resolved){

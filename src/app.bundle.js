@@ -1421,6 +1421,32 @@
     return `${recovery ? "recuperacao" : "backup"}-extrato-estudos-${date}.json`;
   }
 
+  // src/repositories/reviews-repository.js
+  function createReviewsRepository({ getState } = {}) {
+    if (typeof getState !== "function") throw new TypeError("Repositório de revisões requer acesso ao estado.");
+    const items = () => Array.isArray(getState()?.reviewAgenda) ? getState().reviewAgenda : [];
+    return Object.freeze({
+      all: () => items(),
+      findById: (id) => items().find((item) => item.id === id) || null,
+      listPending: () => items().filter((item) => item.status !== "Concluído"),
+      add: (review) => {
+        items().push(review);
+        return review;
+      },
+      update: (id, changes) => {
+        const review = items().find((item) => item.id === id);
+        if (!review) return null;
+        Object.assign(review, changes);
+        return review;
+      },
+      remove: (id) => {
+        const list = items(), index = list.findIndex((item) => item.id === id);
+        return index < 0 ? null : list.splice(index, 1)[0];
+      },
+      hasPendingForTopic: (topicId, date, { exceptId = null } = {}) => items().some((item) => item.id !== exceptId && (item.topicId || item.topicRef) === topicId && item.status !== "Concluído" && (!date || item.date === date))
+    });
+  }
+
   // src/repositories/collection-repository.js
   function createCollectionRepository({ getState, field } = {}) {
     if (typeof getState !== "function" || !field) throw new TypeError("Repositório requer estado e coleção.");
@@ -1448,7 +1474,82 @@
     });
   }
   function createAppRepositories(getState) {
-    return Object.freeze(Object.fromEntries(["subjects", "calendar", "reviewAgenda", "questoes", "simulados", "studySessions", "dailyPlans", "studyPlans", "recommendationFeedback"].map((field) => [field, createCollectionRepository({ getState, field })])));
+    const repositories = Object.fromEntries(["subjects", "calendar", "questoes", "simulados", "studySessions", "dailyPlans", "studyPlans", "recommendationFeedback"].map((field) => [field, createCollectionRepository({ getState, field })]));
+    repositories.reviewAgenda = createReviewsRepository({ getState });
+    return Object.freeze(repositories);
+  }
+
+  // src/application/reviews/review-service.js
+  var REVIEW_TYPES = Object.freeze({ 1: "Revisão 24h", 3: "Revisão 3 dias", 7: "Revisão 7 dias", 14: "Revisão 14 dias", 15: "Revisão 15 dias", 30: "Revisão 30 dias" });
+  function reviewTypeForDays(days) {
+    return REVIEW_TYPES[Number(days)] || "Revisão livre";
+  }
+  function createReviewService({ repository, clock, idGenerator, findTopic = () => null, calculateAdaptiveState, algorithmVersion = () => 1, onEvent = () => {
+  }, onTopicChanged = () => {
+  } } = {}) {
+    if (!repository || typeof repository.findById !== "function") throw new TypeError("Serviço de revisões requer repositório.");
+    if (!clock || typeof clock.today !== "function" || typeof clock.nowISO !== "function") throw new TypeError("Serviço de revisões requer relógio.");
+    if (typeof idGenerator !== "function") throw new TypeError("Serviço de revisões requer gerador de IDs.");
+    const topicIdOf = (review) => review?.topicId || review?.topicRef || null;
+    const complete = (review, completedAt = clock.nowISO()) => {
+      if (!review || review.status === "Concluído") return review || null;
+      repository.update(review.id, { status: "Concluído", completedAt });
+      onEvent("review_completed", review, { reviewId: review.id, reviewType: review.tipo });
+      if (topicIdOf(review)) onTopicChanged(topicIdOf(review));
+      return review;
+    };
+    return Object.freeze({
+      completeReview: (id) => complete(repository.findById(id)),
+      createManualReview: (input) => repository.add({ id: idGenerator("review"), topicId: null, date: clock.today(), subjectId: null, topic: "", tipo: "Revisão livre", status: "Não iniciado", adaptive: false, manualDate: true, adaptiveReason: null, suggestedDate: null, baseIntervalDays: 7, createdAt: clock.nowISO(), completedAt: null, ...input }),
+      removeReview: (id) => repository.remove(id),
+      rescheduleReview: (id, date) => repository.update(id, { date, manualDate: true, adaptive: false }),
+      restoreAdaptiveSchedule: (id, suggestion) => repository.update(id, { date: suggestion.date, suggestedDate: suggestion.date, adaptiveReason: suggestion.reason, manualDate: false, adaptive: true }),
+      rateReview: (id, rating, { label = "adaptativa" } = {}) => {
+        const review = repository.findById(id), topicId = topicIdOf(review), topic = topicId ? findTopic(topicId) : null;
+        if (!review || !topicId || !topic || typeof calculateAdaptiveState !== "function") return null;
+        const adaptiveState = calculateAdaptiveState(topic.adaptiveReview, rating, { reviewDate: clock.today(), algorithmVersion: algorithmVersion() });
+        topic.adaptiveReview = adaptiveState;
+        repository.update(id, { lastRating: rating, adaptiveState: structuredClone(adaptiveState), adaptiveReason: `Avaliação: ${label} · próximo intervalo: ${adaptiveState.intervalDays} dia${adaptiveState.intervalDays === 1 ? "" : "s"}` });
+        complete(review);
+        let next = null;
+        if (!repository.hasPendingForTopic(topicId, adaptiveState.nextReviewDate, { exceptId: id })) next = repository.add({ id: idGenerator("review"), subjectId: review.subjectId || null, topicId, topicRef: topicId, topic: topic.name || review.topic || "", date: adaptiveState.nextReviewDate, suggestedDate: adaptiveState.nextReviewDate, baseIntervalDays: adaptiveState.intervalDays, adaptive: true, manualDate: false, adaptiveReason: `Agendada após avaliação ${label}.`, tipo: reviewTypeForDays(adaptiveState.intervalDays), status: "Não iniciado", lastRating: null, adaptiveState: structuredClone(adaptiveState), createdAt: clock.nowISO(), completedAt: null });
+        onEvent("adaptive_review_rated", review, { reviewId: id, rating, intervalDays: adaptiveState.intervalDays, nextReviewDate: adaptiveState.nextReviewDate, algorithmVersion: adaptiveState.algorithmVersion });
+        onTopicChanged(topicId);
+        return { review, next, adaptiveState };
+      }
+    });
+  }
+
+  // src/ui/controllers/reviews-controller.js
+  function createReviewsController({ root = document, actions } = {}) {
+    if (!root || !actions) throw new TypeError("Controlador de revisões requer interface e ações.");
+    const listen = (selector, event, handler) => root.querySelector(selector)?.addEventListener(event, handler);
+    return Object.freeze({
+      register() {
+        root.querySelectorAll("[data-review-rating]").forEach((button) => button.addEventListener("click", () => actions.rate(button.dataset.reviewRating)));
+        listen("#reviewRatingCancelBtn", "click", actions.cancelRating);
+        for (const id of ["#agendaFilterSubject", "#agendaFilterStatus", "#agendaFilterMes", "#agendaFilterTipo"]) listen(id, "change", actions.filtersChanged);
+        listen("#addAgendaRowBtn", "click", actions.createManual);
+        listen("#autoGenBtn", "click", actions.generateAutomatic);
+      }
+    });
+  }
+
+  // src/ui/view-models/review-view-model.js
+  function createReviewViewModel(review, { subjectName = "", topicName = "", difficulty = "Médio", formatDate = (value2) => value2 } = {}) {
+    return Object.freeze({ id: review.id, date: review.date ? formatDate(review.date) : "Sem data", subject: subjectName || "Sem disciplina", topic: topicName || review.topic || "Sem tópico", type: review.tipo || "Revisão livre", difficulty, status: review.status || "Não iniciado", pending: review.status !== "Concluído", manualDate: Boolean(review.manualDate), lastRating: review.lastRating || null });
+  }
+
+  // src/ui/renderers/reviews-renderer.js
+  function renderReviewRead({ item, view, mobile, escapeHtml: escapeHtml2, escapeAttr: escapeAttr2, daysPill, difficultyClass, statusClass, ratingLabel, today }) {
+    if (mobile) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="8"><article class="mobile-history-card review-mobile-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml2(view.date)} · ${escapeHtml2(view.status)}</div><div class="mobile-card-title">${escapeHtml2(view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml2(view.topic)}</div></div><button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml2(view.type)}</span><span>${escapeHtml2(view.difficulty)}</span><span>${daysPill}</span></div><div class="mobile-card-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}</div></article></td></tr>`;
+    const mode = view.manualDate ? "Manual" : "Adaptativa", rating = view.lastRating ? ` · ${escapeHtml2(ratingLabel(view.lastRating))}` : "";
+    const restore = view.manualDate && item.topicId ? ` · <button type="button" data-delegated-click="resetAdaptiveReviewDate('${item.id}')">usar sugestão</button>` : "";
+    return `<tr class="history-read-row history-desktop-row ${item.date === today ? "today" : ""}" data-id="${item.id}"><td>${escapeHtml2(view.date)}<div class="review-date-mode" title="${escapeAttr2(item.adaptiveReason || "")}">${mode}${rating}${restore}</div></td><td><div class="row-primary">${escapeHtml2(view.subject)}</div></td><td><div class="row-secondary">${escapeHtml2(view.topic)}</div></td><td>${escapeHtml2(view.type)}</td><td><span class="dias-pill ${difficultyClass[view.difficulty] || ""}">${escapeHtml2(view.difficulty)}</span></td><td><span class="history-status ${statusClass[item.status] || ""}">${escapeHtml2(view.status)}</span></td><td>${daysPill}</td><td><div class="row-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}<button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div></td></tr>`;
+  }
+  function renderReviewEdit({ item, draft, subjectOptions, topicName, typeOptions, statusOptions, escapeAttr: escapeAttr2 }) {
+    if (!draft) return "";
+    return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateAgendaDraft('date',this.value)"></label><label>Disciplina<select ${draft.topicId ? 'disabled title="Definida pelo tópico vinculado"' : ""} data-delegated-change="updateAgendaDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Tópico<input type="text" value="${escapeAttr2(topicName)}" ${draft.topicId ? "readonly" : ""} data-delegated-input="updateAgendaDraft('topic',this.value)"></label><label>Tipo<select data-delegated-change="updateAgendaDraft('tipo',this.value)">${typeOptions}</select></label><label>Status<select data-delegated-change="updateAgendaDraft('status',this.value)">${statusOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelAgendaEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveAgendaEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteAgendaRow('${item.id}')">Excluir</button></div></div></td></tr>`;
   }
 
   // src/reports/report-data.js
@@ -1968,6 +2069,16 @@
   } });
   var demoStorageProvider = IS_DEMO_MODE ? createDemoStorageProvider({ storage: sessionStorage, stateKey: STORAGE_KEY, demoKey: DEMO_STORAGE_KEY, generate: () => generateDemoData({ today: appClock.today() }) }) : null;
   var appContext = createAppContext({ storage: demoStorageProvider || realStorageProvider, clock: appClock, idGenerator: uid, repositories: createAppRepositories(() => state) });
+  var reviewService = createReviewService({
+    repository: appContext.repositories.reviewAgenda,
+    clock: appClock,
+    idGenerator: uid,
+    findTopic: (topicId) => getTopicById(topicId)?.topic || null,
+    calculateAdaptiveState: (current, rating, options) => applyAdaptiveReviewRating(current, rating, options),
+    algorithmVersion: () => state.algorithmVersions.adaptiveReview,
+    onEvent: (type, review, details) => addHistoryEvent(type, entitySubjectId(review), review.topicId || review.topicRef || null, details),
+    onTopicChanged: (topicId) => refreshTopicReviewStats(topicId)
+  });
   var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
   var STATE_CHANNEL = !IS_DEMO_MODE && typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
@@ -4268,16 +4379,12 @@
     return { ...result, date: addDays(baseDate, result.days) };
   }
   function resetAdaptiveReviewDate(id) {
-    const review = state.reviewAgenda.find((item) => item.id === id);
+    const review = appContext.repositories.reviewAgenda.findById(id);
     if (!review || !review.topicId) return;
     const found = getTopicById(review.topicId);
     const baseDate = found?.topic?.completedAt || todayISO();
     const suggestion = adaptiveReviewSuggestion(review.topicId, review.baseIntervalDays || reviewBaseDaysFromType(review.tipo), baseDate);
-    review.date = suggestion.date;
-    review.suggestedDate = suggestion.date;
-    review.adaptiveReason = suggestion.reason;
-    review.manualDate = false;
-    review.adaptive = true;
+    reviewService.restoreAdaptiveSchedule(id, suggestion);
     persistAndRender();
   }
   function gerarAgendaAutomatica() {
@@ -4347,7 +4454,7 @@
   var agendaUiState = { upcomingVisible: 5, completedVisible: 10, completedExpanded: false, editingId: null, editingIsNew: false, draft: null };
   function agendaViewModel(item) {
     const topicId = item.topicId || item.topicRef;
-    return { date: item.date ? formatDatePt(item.date) : "Sem data", subject: getSubjectName(entitySubjectId(item)), topic: topicId ? getTopicName(topicId) : item.topic || "Sem tópico", type: item.tipo || "Revisão livre", difficulty: getTopicDifficulty(topicId), status: item.status || "Não iniciado" };
+    return createReviewViewModel(item, { subjectName: getSubjectName(entitySubjectId(item)), topicName: topicId ? getTopicName(topicId) : "", difficulty: getTopicDifficulty(topicId), formatDate: formatDatePt });
   }
   function toggleCompletedReviews() {
     agendaUiState.completedExpanded = !agendaUiState.completedExpanded;
@@ -4423,10 +4530,10 @@
     overlay.setAttribute("aria-hidden", "true");
   }
   function completeAgendaReview(id) {
-    const item = state.reviewAgenda.find((entry) => entry.id === id);
+    const item = appContext.repositories.reviewAgenda.findById(id);
     if (!item || item.status === "Concluído") return;
     if (!(item.topicId || item.topicRef)) {
-      applyAgendaField(item, "status", "Concluído");
+      reviewService.completeReview(id);
       persistAndRender();
       showToast("Revisão concluída.");
       return;
@@ -4437,36 +4544,21 @@
     overlay.removeAttribute("aria-hidden");
     overlay.querySelector('[data-review-rating="good"]')?.focus();
   }
-  function adaptiveReviewType(days) {
-    return { 1: "Revisão 24h", 3: "Revisão 3 dias", 7: "Revisão 7 dias", 14: "Revisão 14 dias", 15: "Revisão 15 dias", 30: "Revisão 30 dias" }[days] || "Revisão livre";
-  }
   function rateCompletedReview(rating) {
-    const item = state.reviewAgenda.find((entry) => entry.id === pendingReviewRatingId), topicId = item?.topicId || item?.topicRef;
-    if (!item || !topicId || !REVIEW_RATINGS[rating]) return closeReviewRating();
-    const found = getTopicById(topicId), reviewDate = todayISO(), adaptiveState = applyAdaptiveReviewRating(found?.topic?.adaptiveReview, rating, { reviewDate, algorithmVersion: state.algorithmVersions.adaptiveReview });
-    if (found) found.topic.adaptiveReview = adaptiveState;
-    item.lastRating = rating;
-    item.adaptiveState = structuredCloneSafe(adaptiveState);
-    item.adaptiveReason = `Avaliação: ${REVIEW_RATINGS[rating].label} · próximo intervalo: ${adaptiveState.intervalDays} dia${adaptiveState.intervalDays === 1 ? "" : "s"}`;
-    applyAgendaField(item, "status", "Concluído");
-    const alreadyScheduled = state.reviewAgenda.some((review) => review.id !== item.id && (review.topicId || review.topicRef) === topicId && review.status !== "Concluído" && review.date === adaptiveState.nextReviewDate);
-    if (!alreadyScheduled) state.reviewAgenda.push({ id: uid("review"), subjectId: entitySubjectId(item) || found?.subject?.id || null, topicId, topicRef: topicId, topic: found?.topic?.name || item.topic || "", date: adaptiveState.nextReviewDate, suggestedDate: adaptiveState.nextReviewDate, baseIntervalDays: adaptiveState.intervalDays, adaptive: true, manualDate: false, adaptiveReason: `Agendada após avaliação ${REVIEW_RATINGS[rating].label}.`, tipo: adaptiveReviewType(adaptiveState.intervalDays), status: "Não iniciado", lastRating: null, adaptiveState: structuredCloneSafe(adaptiveState), createdAt: nowISO2(), completedAt: null });
-    addHistoryEvent("adaptive_review_rated", entitySubjectId(item), topicId, { reviewId: item.id, rating, intervalDays: adaptiveState.intervalDays, nextReviewDate: adaptiveState.nextReviewDate, algorithmVersion: adaptiveState.algorithmVersion });
+    if (!REVIEW_RATINGS[rating]) return closeReviewRating();
+    const result = reviewService.rateReview(pendingReviewRatingId, rating, { label: REVIEW_RATINGS[rating].label });
+    if (!result) return closeReviewRating();
     closeReviewRating();
     persistAndRender();
-    showToast(`Revisão concluída. Próxima em ${formatDatePt(adaptiveState.nextReviewDate)}.`);
+    showToast(`Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState.nextReviewDate)}.`);
   }
-  document.querySelectorAll("[data-review-rating]").forEach((button) => button.addEventListener("click", () => rateCompletedReview(button.dataset.reviewRating)));
-  document.getElementById("reviewRatingCancelBtn")?.addEventListener("click", closeReviewRating);
   function renderAgendaReadRow(item) {
-    const vm = agendaViewModel(item), pending = item.status !== "Concluído";
-    if (isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="8"><article class="mobile-history-card review-mobile-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)} · ${escapeHtml(vm.status)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>${escapeHtml(vm.difficulty)}</span><span>${diasParaRevisaoPill(item.date, item.status)}</span></div><div class="mobile-card-actions">${pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}</div></article></td></tr>`;
-    return `<tr class="history-read-row history-desktop-row ${item.date === todayISO() ? "today" : ""}" data-id="${item.id}"><td>${escapeHtml(vm.date)}<div class="review-date-mode" title="${escapeAttr(item.adaptiveReason || "")}">${item.manualDate ? "Manual" : "Adaptativa"}${item.lastRating ? ` · ${escapeHtml(REVIEW_RATINGS[item.lastRating].label)}` : ""}${item.manualDate && item.topicId ? ` · <button type="button" data-delegated-click="resetAdaptiveReviewDate('${item.id}')">usar sugestão</button>` : ""}</div></td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td>${escapeHtml(vm.type)}</td><td><span class="dias-pill ${DIFFICULTY_CLASS[vm.difficulty]}">${escapeHtml(vm.difficulty)}</span></td><td><span class="history-status ${STATUS_CLASS[item.status] || ""}">${escapeHtml(vm.status)}</span></td><td>${diasParaRevisaoPill(item.date, item.status)}</td><td><div class="row-actions">${pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}<button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div></td></tr>`;
+    return renderReviewRead({ item, view: agendaViewModel(item), mobile: isMobileHistoryLayout(), escapeHtml, escapeAttr, daysPill: diasParaRevisaoPill(item.date, item.status), difficultyClass: DIFFICULTY_CLASS, statusClass: STATUS_CLASS, ratingLabel: (key) => REVIEW_RATINGS[key]?.label || key, today: todayISO() });
   }
   function renderAgendaEditRow(item) {
     const draft = agendaUiState.draft, subjectId = entitySubjectId(draft);
     if (!draft) return "";
-    return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateAgendaDraft('date',this.value)"></label><label>Disciplina<select ${draft.topicId ? 'disabled title="Definida pelo tópico vinculado"' : ""} data-delegated-change="updateAgendaDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("")}</select></label><label>Tópico<input type="text" value="${escapeAttr(draft.topicId ? getTopicName(draft.topicId) : draft.topic || "")}" ${draft.topicId ? "readonly" : ""} data-delegated-input="updateAgendaDraft('topic',this.value)"></label><label>Tipo<select data-delegated-change="updateAgendaDraft('tipo',this.value)">${TIPO_AGENDA_OPTIONS.map((option) => `<option value="${option}" ${option === draft.tipo ? "selected" : ""}>${option}</option>`).join("")}</select></label><label>Status<select data-delegated-change="updateAgendaDraft('status',this.value)">${STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft.status ? "selected" : ""}>${option}</option>`).join("")}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelAgendaEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveAgendaEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteAgendaRow('${item.id}')">Excluir</button></div></div></td></tr>`;
+    return renderReviewEdit({ item, draft, subjectOptions: subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join(""), topicName: draft.topicId ? getTopicName(draft.topicId) : draft.topic || "", typeOptions: TIPO_AGENDA_OPTIONS.map((option) => `<option value="${option}" ${option === draft.tipo ? "selected" : ""}>${option}</option>`).join(""), statusOptions: STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft.status ? "selected" : ""}>${option}</option>`).join(""), escapeAttr });
   }
   function renderAgenda() {
     const body = document.getElementById("agendaBody");
@@ -4513,8 +4605,7 @@
     body.innerHTML = html.join("");
   }
   function addAgendaRow() {
-    const item = { id: uid("review"), topicId: null, date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topic: "", tipo: "Revisão livre", status: "Não iniciado", adaptive: false, manualDate: true, adaptiveReason: null, suggestedDate: null, baseIntervalDays: 7, createdAt: nowISO2(), completedAt: null };
-    state.reviewAgenda.push(item);
+    const item = reviewService.createManualReview({ subjectId: activeSubjects()[0]?.id || null });
     agendaUiState.editingId = item.id;
     agendaUiState.editingIsNew = true;
     agendaUiState.draft = cloneRecord(item);
@@ -4522,7 +4613,7 @@
   }
   function deleteAgendaRow(id) {
     showConfirm("Excluir esta revisão?", () => {
-      state.reviewAgenda = state.reviewAgenda.filter((a) => a.id !== id);
+      reviewService.removeReview(id);
       agendaUiState.editingId = null;
       agendaUiState.editingIsNew = false;
       agendaUiState.draft = null;
@@ -4536,28 +4627,17 @@
     applyAgendaField(a, field, value2);
     persistAndRender();
   }
-  document.getElementById("agendaFilterSubject").addEventListener("change", () => {
-    agendaUiState.upcomingVisible = 5;
-    agendaUiState.completedVisible = 10;
-    renderAgenda();
-  });
-  document.getElementById("agendaFilterStatus").addEventListener("change", () => {
-    agendaUiState.upcomingVisible = 5;
-    agendaUiState.completedVisible = 10;
-    renderAgenda();
-  });
-  document.getElementById("agendaFilterMes").addEventListener("change", () => {
-    agendaUiState.upcomingVisible = 5;
-    agendaUiState.completedVisible = 10;
-    renderAgenda();
-  });
-  document.getElementById("agendaFilterTipo").addEventListener("change", () => {
-    agendaUiState.upcomingVisible = 5;
-    agendaUiState.completedVisible = 10;
-    renderAgenda();
-  });
-  document.getElementById("addAgendaRowBtn").addEventListener("click", addAgendaRow);
-  document.getElementById("autoGenBtn").addEventListener("click", gerarAgendaAutomatica);
+  createReviewsController({ actions: {
+    rate: rateCompletedReview,
+    cancelRating: closeReviewRating,
+    filtersChanged: () => {
+      agendaUiState.upcomingVisible = 5;
+      agendaUiState.completedVisible = 10;
+      renderAgenda();
+    },
+    createManual: addAgendaRow,
+    generateAutomatic: gerarAgendaAutomatica
+  } }).register();
   function calcAcertoPct(correct, resolved) {
     const r = Number(resolved) || 0;
     const c = Number(correct) || 0;
