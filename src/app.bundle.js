@@ -1157,6 +1157,56 @@
     return { removedItems, protectedItems, complete: protectedItems.length === 0 };
   }
 
+  // src/application/planning/study-plan-service.js
+  function createStudyPlanService({ repository, calculate, clock, idGenerator, algorithmVersion = () => 1 } = {}) {
+    if (!repository || typeof repository.saveStudyPlan !== "function") throw new TypeError("Serviço de plano requer repositório.");
+    return Object.freeze({ calculate: (input) => calculate(input), confirm: (proposal) => {
+      if (!proposal || proposal.state === "insufficient" || !proposal.items?.length) return null;
+      const id = idGenerator("study-plan"), confirmedAt = clock.nowISO(), plan = { ...structuredClone(proposal), id, confirmedAt, algorithmVersion: algorithmVersion(), dailyPlanOperations: [], items: proposal.items.map((item) => ({ ...item, id: idGenerator("study-plan-item"), topicId: item.topicId || item.id, studyPlanId: id })) };
+      return repository.saveStudyPlan(plan);
+    }, getActive: () => repository.getActiveStudyPlan(), listVersions: () => [...repository.getStudyPlans()].sort((a, b) => String(b.confirmedAt || "").localeCompare(String(a.confirmedAt || ""))) });
+  }
+
+  // src/application/planning/daily-plan-service.js
+  function createDailyPlanService({ repository, buildProposal, applyProposal, undoGeneration, clock, idGenerator } = {}) {
+    if (!repository || typeof repository.getDailyPlans !== "function") throw new TypeError("Serviço diário requer repositório.");
+    return Object.freeze({ calculate: (input) => buildProposal({ ...input, existingPlans: repository.getDailyPlans() }), confirm: (proposal, studyPlan) => {
+      const operationId = idGenerator("daily-plan-operation"), createdAt = clock.nowISO(), result = applyProposal({ dailyPlans: repository.getDailyPlans(), proposal, operationId, now: createdAt, idGenerator });
+      studyPlan.dailyPlanOperations = Array.isArray(studyPlan.dailyPlanOperations) ? studyPlan.dailyPlanOperations : [];
+      studyPlan.dailyPlanOperations.push({ id: operationId, createdAt, createdItems: result.createdItems, undoneAt: null });
+      return result;
+    }, undo: (operation, studyPlan) => {
+      const result = undoGeneration({ dailyPlans: repository.getDailyPlans(), operationId: operation.id });
+      operation.undoneAt = result.complete ? clock.nowISO() : null;
+      operation.protectedItems = result.protectedItems;
+      repository.saveStudyPlan(studyPlan);
+      return result;
+    } });
+  }
+
+  // src/application/planning/replan-service.js
+  function createReplanService({ repository, buildProposal, applyProposal, undoProposal, clock, idGenerator } = {}) {
+    if (!repository || typeof repository.saveAdjustment !== "function") throw new TypeError("Serviço de replanejamento requer repositório.");
+    return Object.freeze({
+      calculate: (input) => buildProposal({ ...input, plans: input.plans || repository.getDailyPlans() }),
+      confirm: (proposal) => {
+        if (proposal?.state !== "proposal") return null;
+        const operationId = idGenerator("replan-operation"), appliedAt = clock.nowISO();
+        const result = applyProposal({ dailyPlans: repository.getDailyPlans(), proposal, operationId, now: appliedAt, idGenerator });
+        const adjustment = { ...structuredClone(proposal), id: idGenerator("plan-adjustment"), operationId, confirmedAt: appliedAt, appliedAt, status: "applied", changes: result.changes, undoneAt: null };
+        repository.saveAdjustment(adjustment);
+        return { result, adjustment };
+      },
+      undo: (id) => {
+        const adjustment = repository.findAdjustment(id);
+        if (!adjustment || adjustment.undoneAt) return null;
+        const result = undoProposal({ dailyPlans: repository.getDailyPlans(), adjustment });
+        repository.saveAdjustment({ ...adjustment, status: result.complete ? "undone" : "partially_undone", undoneAt: result.complete ? clock.nowISO() : null, protectedItems: result.protectedItems });
+        return result;
+      }
+    });
+  }
+
   // src/application/alert-lifecycle.js
   var severityOrder = { high: 3, medium: 2, low: 1, ok: 0 };
   function reconcileAlerts(alerts = [], states = [], today, addDays2) {
@@ -2096,6 +2146,10 @@
     onEvent: (type, review, details) => addHistoryEvent(type, entitySubjectId(review), review.topicId || review.topicRef || null, details),
     onTopicChanged: (topicId) => refreshTopicReviewStats(topicId)
   });
+  var planningRepository = appContext.repositories.planning;
+  var studyPlanService = createStudyPlanService({ repository: planningRepository, calculate: buildStudyPlan, clock: appClock, idGenerator: uid, algorithmVersion: () => state.algorithmVersions.recommendations });
+  var dailyPlanService = createDailyPlanService({ repository: planningRepository, buildProposal: buildDailyPlanProposal, applyProposal: applyDailyPlanProposal, undoGeneration: undoDailyPlanGeneration, clock: appClock, idGenerator: uid });
+  var replanService = createReplanService({ repository: planningRepository, buildProposal: buildReplanProposal, applyProposal: applyReplan, undoProposal: undoReplan, clock: appClock, idGenerator: uid });
   var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
   var STATE_CHANNEL = !IS_DEMO_MODE && typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
@@ -5445,7 +5499,7 @@
   function calculateStudyPlanPreview() {
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
     const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum2, hours) => sum2 + Math.max(0, Number(hours) || 0) * 60, 0);
-    studyPlanPreview = buildStudyPlan({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
+    studyPlanPreview = studyPlanService.calculate({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
     renderStudyPlanBuilder();
   }
   function clearStudyPlanPreview() {
@@ -5454,9 +5508,7 @@
   }
   function confirmStudyPlan() {
     if (!studyPlanPreview || studyPlanPreview.state === "insufficient" || !studyPlanPreview.items.length) return;
-    const confirmedAt = nowISO2(), id = uid("study-plan"), plan = structuredCloneSafe(studyPlanPreview);
-    plan.items = plan.items.map((item) => ({ ...item, id: uid("study-plan-item"), topicId: item.topicId || item.id, studyPlanId: id }));
-    state.studyPlans.push({ ...plan, id, confirmedAt, examDate: state.examDate || null, algorithmVersion: state.algorithmVersions.recommendations, dailyPlanOperations: [] });
+    studyPlanService.confirm({ ...studyPlanPreview, examDate: state.examDate || null });
     studyPlanPreview = null;
     dailyPlanPreview = null;
     scheduleSave();
@@ -5464,7 +5516,7 @@
     showToast("Plano semanal confirmado e salvo.");
   }
   function latestStudyPlan() {
-    return [...state.studyPlans].sort((a, b) => (b.confirmedAt || "").localeCompare(a.confirmedAt || ""))[0] || null;
+    return studyPlanService.getActive();
   }
   function calculateDailyPlanPreview() {
     const studyPlan = latestStudyPlan();
@@ -5474,7 +5526,7 @@
       return { date, availableMinutes: Math.round(metaHoursForDate(date) * 60) };
     }), end = days.at(-1).date;
     const dueReviews = state.reviewAgenda.filter((review) => review.status !== "Concluído" && review.topicId && review.date >= todayISO() && review.date <= end).map((review) => ({ id: review.id, date: review.date, subjectId: review.subjectId, topicId: review.topicId, subjectName: getSubjectName(review.subjectId), topicName: getTopicName(review.topicId), minutes: 25 }));
-    dailyPlanPreview = buildDailyPlanProposal({ studyPlan, existingPlans: state.dailyPlans, days, dueReviews, reserveRatio: 0.1 });
+    dailyPlanPreview = dailyPlanService.calculate({ studyPlan, days, dueReviews, reserveRatio: 0.1 });
     renderStudyPlanBuilder();
   }
   function clearDailyPlanPreview() {
@@ -5483,9 +5535,7 @@
   }
   function confirmDailyPlanPreview() {
     if (dailyPlanPreview?.state !== "proposal") return;
-    const studyPlan = latestStudyPlan(), operationId = uid("daily-plan-operation"), createdAt = nowISO2(), result = applyDailyPlanProposal({ dailyPlans: state.dailyPlans, proposal: dailyPlanPreview, operationId, now: createdAt, idGenerator: uid });
-    studyPlan.dailyPlanOperations = Array.isArray(studyPlan.dailyPlanOperations) ? studyPlan.dailyPlanOperations : [];
-    studyPlan.dailyPlanOperations.push({ id: operationId, createdAt, createdItems: result.createdItems, undoneAt: null });
+    const studyPlan = latestStudyPlan(), result = dailyPlanService.confirm(dailyPlanPreview, studyPlan);
     dailyPlanPreview = null;
     scheduleSave();
     renderStudyPlanBuilder();
@@ -5494,9 +5544,7 @@
   function undoLatestDailyPlanGeneration() {
     const studyPlan = latestStudyPlan(), operation = [...studyPlan?.dailyPlanOperations || []].reverse().find((item) => !item.undoneAt);
     if (!operation) return;
-    const result = undoDailyPlanGeneration({ dailyPlans: state.dailyPlans, operationId: operation.id });
-    operation.undoneAt = result.complete ? nowISO2() : null;
-    operation.protectedItems = result.protectedItems;
+    const result = dailyPlanService.undo(operation, studyPlan);
     scheduleSave();
     renderStudyPlanBuilder();
     renderPlanoHoje();
@@ -6581,7 +6629,7 @@
       const planned = state.dailyPlans.filter((plan) => plan.date === date).reduce((sum2, plan) => sum2 + (plan.items || []).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
       futureDays.push({ date, availableMinutes: Math.max(0, capacity - planned) });
     }
-    replanPreview = buildReplanProposal({ plans: state.dailyPlans.filter((plan) => plan.date >= start && plan.date <= todayISO()), periodStart: start, periodEnd: end, futureDays });
+    replanPreview = replanService.calculate({ plans: planningRepository.getDailyPlans().filter((plan) => plan.date >= start && plan.date <= todayISO()), periodStart: start, periodEnd: end, futureDays });
     renderWeeklyReplan();
   }
   function clearReplanPreview() {
@@ -6590,8 +6638,7 @@
   }
   function confirmReplan() {
     if (!replanPreview || replanPreview.state !== "proposal") return;
-    const operationId = uid("replan-operation"), appliedAt = nowISO2(), result = applyReplan({ dailyPlans: state.dailyPlans, proposal: replanPreview, operationId, now: appliedAt, idGenerator: uid });
-    state.planAdjustments.push({ ...structuredCloneSafe(replanPreview), id: uid("plan-adjustment"), operationId, confirmedAt: appliedAt, appliedAt, status: "applied", changes: result.changes, undoneAt: null });
+    const { result } = replanService.confirm(replanPreview);
     replanPreview = null;
     scheduleSave();
     renderWeeklyReplan();
@@ -6599,12 +6646,8 @@
     showToast(`${pluralize(result.createdItems, "atividade")} redistribuída${result.createdItems === 1 ? "" : "s"} para os próximos dias.`);
   }
   function undoPlanAdjustment(id) {
-    const adjustment = state.planAdjustments.find((item) => item.id === id);
-    if (!adjustment || adjustment.undoneAt) return;
-    const result = undoReplan({ dailyPlans: state.dailyPlans, adjustment });
-    adjustment.status = result.complete ? "undone" : "partially_undone";
-    adjustment.undoneAt = result.complete ? nowISO2() : null;
-    adjustment.protectedItems = result.protectedItems;
+    const result = replanService.undo(id);
+    if (!result) return;
     scheduleSave();
     renderWeeklyReplan();
     renderPlanoHoje();

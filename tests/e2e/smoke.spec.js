@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 
 test('inicializa e navega pelas áreas principais',async({page})=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.goto('/?test=1');await expect(page).toHaveTitle(/StudyTrack|OK — Testes do Extrato/);
+  await page.goto('/');await expect(page).toHaveTitle(/StudyTrack/);
   for(const name of ['hoje','disciplinas','calendario','agenda','questoes','metas','dashboard']){
     await page.locator(`[data-tab="${name}"]`).evaluate(button=>button.click());
     await expect(page.locator(`#panel-${name}`)).toBeVisible();

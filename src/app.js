@@ -34,6 +34,9 @@ import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
 import {buildStudyPlan} from './application/build-study-plan.js';
 import {buildReplanProposal,applyReplan,undoReplan} from './application/replan-study.js';
 import {buildDailyPlanProposal,applyDailyPlanProposal,undoDailyPlanGeneration} from './application/planning/distribute-study-plan.js';
+import {createStudyPlanService} from './application/planning/study-plan-service.js';
+import {createDailyPlanService} from './application/planning/daily-plan-service.js';
+import {createReplanService} from './application/planning/replan-service.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
@@ -462,6 +465,10 @@ const reviewService=createReviewService({
   onEvent:(type,review,details)=>addHistoryEvent(type,entitySubjectId(review),review.topicId||review.topicRef||null,details),
   onTopicChanged:topicId=>refreshTopicReviewStats(topicId)
 });
+const planningRepository=appContext.repositories.planning;
+const studyPlanService=createStudyPlanService({repository:planningRepository,calculate:buildStudyPlan,clock:appClock,idGenerator:uid,algorithmVersion:()=>state.algorithmVersions.recommendations});
+const dailyPlanService=createDailyPlanService({repository:planningRepository,buildProposal:buildDailyPlanProposal,applyProposal:applyDailyPlanProposal,undoGeneration:undoDailyPlanGeneration,clock:appClock,idGenerator:uid});
+const replanService=createReplanService({repository:planningRepository,buildProposal:buildReplanProposal,applyProposal:applyReplan,undoProposal:undoReplan,clock:appClock,idGenerator:uid});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
 const STATE_CHANNEL=!IS_DEMO_MODE&&typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
@@ -3413,31 +3420,29 @@ function studyPlanCandidates(){
 function calculateStudyPlanPreview(){
   const days=state.examDate?diasParaRevisao(state.examDate):null;
   const weeklyAvailableMinutes=Object.values(state.metas.horasPorDia).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0);
-  studyPlanPreview=buildStudyPlan({topics:studyPlanCandidates(),weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
+  studyPlanPreview=studyPlanService.calculate({topics:studyPlanCandidates(),weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
   renderStudyPlanBuilder();
 }
 function clearStudyPlanPreview(){studyPlanPreview=null;renderStudyPlanBuilder()}
 function confirmStudyPlan(){
   if(!studyPlanPreview||studyPlanPreview.state==='insufficient'||!studyPlanPreview.items.length)return;
-  const confirmedAt=nowISO(),id=uid('study-plan'),plan=structuredCloneSafe(studyPlanPreview);
-  plan.items=plan.items.map(item=>({...item,id:uid('study-plan-item'),topicId:item.topicId||item.id,studyPlanId:id}));
-  state.studyPlans.push({...plan,id,confirmedAt,examDate:state.examDate||null,algorithmVersion:state.algorithmVersions.recommendations,dailyPlanOperations:[]});studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('Plano semanal confirmado e salvo.')
+  studyPlanService.confirm({...studyPlanPreview,examDate:state.examDate||null});studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('Plano semanal confirmado e salvo.')
 }
-function latestStudyPlan(){return [...state.studyPlans].sort((a,b)=>(b.confirmedAt||'').localeCompare(a.confirmedAt||''))[0]||null}
+function latestStudyPlan(){return studyPlanService.getActive()}
 function calculateDailyPlanPreview(){
   const studyPlan=latestStudyPlan();if(!studyPlan)return;
   const days=Array.from({length:7},(_,index)=>{const date=addDays(todayISO(),index);return {date,availableMinutes:Math.round(metaHoursForDate(date)*60)}}),end=days.at(-1).date;
   const dueReviews=state.reviewAgenda.filter(review=>review.status!=='Concluído'&&review.topicId&&review.date>=todayISO()&&review.date<=end).map(review=>({id:review.id,date:review.date,subjectId:review.subjectId,topicId:review.topicId,subjectName:getSubjectName(review.subjectId),topicName:getTopicName(review.topicId),minutes:25}));
-  dailyPlanPreview=buildDailyPlanProposal({studyPlan,existingPlans:state.dailyPlans,days,dueReviews,reserveRatio:.1});renderStudyPlanBuilder();
+  dailyPlanPreview=dailyPlanService.calculate({studyPlan,days,dueReviews,reserveRatio:.1});renderStudyPlanBuilder();
 }
 function clearDailyPlanPreview(){dailyPlanPreview=null;renderStudyPlanBuilder()}
 function confirmDailyPlanPreview(){
-  if(dailyPlanPreview?.state!=='proposal')return;const studyPlan=latestStudyPlan(),operationId=uid('daily-plan-operation'),createdAt=nowISO(),result=applyDailyPlanProposal({dailyPlans:state.dailyPlans,proposal:dailyPlanPreview,operationId,now:createdAt,idGenerator:uid});
-  studyPlan.dailyPlanOperations=Array.isArray(studyPlan.dailyPlanOperations)?studyPlan.dailyPlanOperations:[];studyPlan.dailyPlanOperations.push({id:operationId,createdAt,createdItems:result.createdItems,undoneAt:null});dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast(`${pluralize(result.createdItems,'atividade')} criada${result.createdItems===1?'':'s'} no plano diário.`)
+  if(dailyPlanPreview?.state!=='proposal')return;const studyPlan=latestStudyPlan(),result=dailyPlanService.confirm(dailyPlanPreview,studyPlan);
+  dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast(`${pluralize(result.createdItems,'atividade')} criada${result.createdItems===1?'':'s'} no plano diário.`)
 }
 function undoLatestDailyPlanGeneration(){
-  const studyPlan=latestStudyPlan(),operation=[...(studyPlan?.dailyPlanOperations||[])].reverse().find(item=>!item.undoneAt);if(!operation)return;const result=undoDailyPlanGeneration({dailyPlans:state.dailyPlans,operationId:operation.id});
-  operation.undoneAt=result.complete?nowISO():null;operation.protectedItems=result.protectedItems;scheduleSave();renderStudyPlanBuilder();renderPlanoHoje();showToast(result.protectedItems.length?`${pluralize(result.removedItems,'atividade')} removida${result.removedItems===1?'':'s'}; itens executados foram preservados.`:'Criação dos planos diários desfeita.')
+  const studyPlan=latestStudyPlan(),operation=[...(studyPlan?.dailyPlanOperations||[])].reverse().find(item=>!item.undoneAt);if(!operation)return;const result=dailyPlanService.undo(operation,studyPlan);
+  scheduleSave();renderStudyPlanBuilder();renderPlanoHoje();showToast(result.protectedItems.length?`${pluralize(result.removedItems,'atividade')} removida${result.removedItems===1?'':'s'}; itens executados foram preservados.`:'Criação dos planos diários desfeita.')
 }
 function renderStudyPlanBuilder(){
   const container=document.getElementById('examStudyPlan');if(!container)return;
@@ -4438,15 +4443,15 @@ let replanPreview=null;
 function calculateReplanPreview(){
   const start=startOfWeek(todayISO()),end=addDays(start,6),futureDays=[];
   for(let date=addDays(todayISO(),1);date<=end;date=addDays(date,1)){const capacity=metaHoursForDate(date)*60;const planned=state.dailyPlans.filter(plan=>plan.date===date).reduce((sum,plan)=>sum+(plan.items||[]).reduce((n,item)=>n+(Number(item.plannedMinutes)||0),0),0);futureDays.push({date,availableMinutes:Math.max(0,capacity-planned)})}
-  replanPreview=buildReplanProposal({plans:state.dailyPlans.filter(plan=>plan.date>=start&&plan.date<=todayISO()),periodStart:start,periodEnd:end,futureDays});renderWeeklyReplan();
+  replanPreview=replanService.calculate({plans:planningRepository.getDailyPlans().filter(plan=>plan.date>=start&&plan.date<=todayISO()),periodStart:start,periodEnd:end,futureDays});renderWeeklyReplan();
 }
 function clearReplanPreview(){replanPreview=null;renderWeeklyReplan()}
 function confirmReplan(){
-  if(!replanPreview||replanPreview.state!=='proposal')return;const operationId=uid('replan-operation'),appliedAt=nowISO(),result=applyReplan({dailyPlans:state.dailyPlans,proposal:replanPreview,operationId,now:appliedAt,idGenerator:uid});
-  state.planAdjustments.push({...structuredCloneSafe(replanPreview),id:uid('plan-adjustment'),operationId,confirmedAt:appliedAt,appliedAt,status:'applied',changes:result.changes,undoneAt:null});replanPreview=null;scheduleSave();renderWeeklyReplan();renderPlanoHoje();showToast(`${pluralize(result.createdItems,'atividade')} redistribuída${result.createdItems===1?'':'s'} para os próximos dias.`)
+  if(!replanPreview||replanPreview.state!=='proposal')return;const {result}=replanService.confirm(replanPreview);
+  replanPreview=null;scheduleSave();renderWeeklyReplan();renderPlanoHoje();showToast(`${pluralize(result.createdItems,'atividade')} redistribuída${result.createdItems===1?'':'s'} para os próximos dias.`)
 }
 function undoPlanAdjustment(id){
-  const adjustment=state.planAdjustments.find(item=>item.id===id);if(!adjustment||adjustment.undoneAt)return;const result=undoReplan({dailyPlans:state.dailyPlans,adjustment});adjustment.status=result.complete?'undone':'partially_undone';adjustment.undoneAt=result.complete?nowISO():null;adjustment.protectedItems=result.protectedItems;scheduleSave();renderWeeklyReplan();renderPlanoHoje();showToast(result.protectedItems.length?'Itens já executados foram preservados; os demais retornaram à origem.':'Redistribuição desfeita com segurança.')
+  const result=replanService.undo(id);if(!result)return;scheduleSave();renderWeeklyReplan();renderPlanoHoje();showToast(result.protectedItems.length?'Itens já executados foram preservados; os demais retornaram à origem.':'Redistribuição desfeita com segurança.')
 }
 function renderWeeklyReplan(){
   const container=document.getElementById('weeklyReplan');if(!container)return;
