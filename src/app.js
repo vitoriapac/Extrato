@@ -29,6 +29,7 @@ import {calculateSubjectRadar} from './domain/analytics/multidimensional-radar.j
 import {generateDiagnosis} from './application/generate-diagnosis.js';
 import {recommendStudy} from './application/recommend-study.js';
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
+import {captureRecommendationBaseline,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
 import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
 import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
 import {buildStudyPlan} from './application/build-study-plan.js';
@@ -363,7 +364,7 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.studyPlans)) state.studyPlans = [];
   if(!Array.isArray(state.planAdjustments)) state.planAdjustments = [];
   if(!Array.isArray(state.recommendationFeedback)) state.recommendationFeedback = [];
-  state.recommendationFeedback.forEach(item=>{item.shownAt=item.shownAt||item.createdAt||null;item.ratedAt=item.ratedAt||null;item.algorithmVersion=Math.max(1,Number(item.algorithmVersion)||1);item.score=Number.isFinite(Number(item.score))?Number(item.score):null;item.confidence=item.confidence||null});
+  state.recommendationFeedback.forEach(item=>{item.shownAt=item.shownAt||item.createdAt||null;item.ratedAt=item.ratedAt||null;item.algorithmVersion=Math.max(1,Number(item.algorithmVersion)||1);item.score=Number.isFinite(Number(item.score))?Number(item.score):null;item.confidence=item.confidence||null;item.baseline=item.baseline||null;item.outcome=item.outcome||null});
   if(!Array.isArray(state.alertStates)) state.alertStates = [];
   if(!state.activeTimer || typeof state.activeTimer!=='object') state.activeTimer = {};
   state.activeTimer.startedAt = state.activeTimer.startedAt || null;
@@ -470,7 +471,7 @@ const planningRepository=appContext.repositories.planning;
 const studyPlanService=createStudyPlanService({repository:planningRepository,calculate:buildStudyPlan,clock:appClock,idGenerator:uid,algorithmVersion:()=>state.algorithmVersions.recommendations});
 const dailyPlanService=createDailyPlanService({repository:planningRepository,buildProposal:buildDailyPlanProposal,applyProposal:applyDailyPlanProposal,undoGeneration:undoDailyPlanGeneration,clock:appClock,idGenerator:uid});
 const replanService=createReplanService({repository:planningRepository,buildProposal:buildReplanProposal,applyProposal:applyReplan,undoProposal:undoReplan,clock:appClock,idGenerator:uid});
-const sessionService=createSessionService({repository:appContext.repositories.studySessions,questionsRepository:appContext.repositories.questoes,historyRepository:appContext.repositories.topicHistory,planningRepository,recommendationsRepository:appContext.repositories.recommendationFeedback,clock:appClock,idGenerator:uid,normalizeQuestion:normalizeErrorBreakdown,completeRecommendation:completeRecommendationFeedback});
+const sessionService=createSessionService({repository:appContext.repositories.studySessions,questionsRepository:appContext.repositories.questoes,historyRepository:appContext.repositories.topicHistory,planningRepository,recommendationsRepository:appContext.repositories.recommendationFeedback,clock:appClock,idGenerator:uid,normalizeQuestion:normalizeErrorBreakdown,completeRecommendation:completeRecommendationFeedback,onCompleted:measureRecommendationResults});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
 const STATE_CHANNEL=!IS_DEMO_MODE&&typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
@@ -1208,11 +1209,15 @@ function reloadWithModeChange(){
   location.reload();
 }
 function configureDemoModeUi(){
-  const banner=document.getElementById('demoBanner'),enterButton=document.getElementById('enterDemoBtn');
+  const banner=document.getElementById('demoBanner'),enterButton=document.getElementById('enterDemoBtn'),emptyCta=document.getElementById('demoEmptyCta');
   banner.hidden=!IS_DEMO_MODE;enterButton.hidden=IS_DEMO_MODE;
+  if(emptyCta)emptyCta.hidden=IS_DEMO_MODE||state.subjects.length>0||state.studySessions.length>0;
   document.querySelectorAll('[data-demo-protected]').forEach(button=>{button.disabled=IS_DEMO_MODE;button.title=IS_DEMO_MODE?'Indisponível para proteger seus dados reais.':''});
 }
 document.getElementById('enterDemoBtn').addEventListener('click',()=>showConfirm('Explorar a demonstração com três meses de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.',()=>{enterDemoMode(sessionStorage);reloadWithModeChange()}));
+document.getElementById('enterDemoEmptyBtn').addEventListener('click',()=>document.getElementById('enterDemoBtn').click());
+document.querySelectorAll('[data-demo-target]').forEach(button=>button.addEventListener('click',()=>activateTab(button.dataset.demoTarget)));
+document.getElementById('demoReportShortcut').addEventListener('click',()=>document.getElementById('exportReportBtn').click());
 document.getElementById('resetDemoBtn').addEventListener('click',()=>showConfirm('Reiniciar todos os dados fictícios da demonstração?',()=>{resetDemoMode(sessionStorage,DEMO_STORAGE_KEY);reloadWithModeChange()}));
 document.getElementById('exitDemoBtn').addEventListener('click',()=>{exitDemoMode(sessionStorage,DEMO_STORAGE_KEY);sessionStorage.setItem(MODE_FLASH_KEY,'Demonstração encerrada. Seus dados pessoais foram restaurados.');reloadWithModeChange()});
 configureDemoModeUi();
@@ -4387,7 +4392,18 @@ function renderStudyRecommendation(){
   const history=summary.shown?`<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate??0}% concluídas${summary.rated?` · ${summary.usefulnessRate}% úteis`:''}</small>`:'';
   container.innerHTML=`${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action||'Estudar agora')}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details>${history}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
 }
-function recordRecommendationFeedback(recommendation,{accepted,reasonSkipped=null}={}){return recordRecommendationDecision(state.recommendationFeedback,recommendation,{accepted,reasonSkipped,now:nowISO(),idGenerator:uid})}
+function recommendationBaseline(topicId){
+  const performance=getTopicPerformance(topicId),retention=topicRetentionScore(null,topicId),found=getTopicById(topicId),last=found?.topic?.lastReviewedAt||found?.topic?.lastCompletedAt||null;
+  return captureRecommendationBaseline({accuracy:performance.accuracy,questionVolume:performance.resolved,retentionScore:retention.available?retention.score:null,daysSinceContact:last?Math.max(0,-(diasParaRevisao(localDateFromTimestamp(last))??0)):null,measuredAt:nowISO()});
+}
+function recordRecommendationFeedback(recommendation,{accepted,reasonSkipped=null}={}){return recordRecommendationDecision(state.recommendationFeedback,recommendation,{accepted,reasonSkipped,baseline:recommendationBaseline(recommendation.topicId),now:nowISO(),idGenerator:uid})}
+function measureRecommendationResults(session){
+  if(!session?.topicId)return;const measuredAt=nowISO();
+  state.recommendationFeedback.filter(item=>item.accepted&&item.completed&&item.topicId===session.topicId&&item.baseline&&!item.outcome).forEach(feedback=>{
+    const since=Date.parse(feedback.baseline.measuredAt)||0,records=validQuestionRecords().filter(item=>item.topicId===session.topicId&&Date.parse(item.createdAt||`${item.date}T23:59:59Z`)>=since),volume=records.reduce((sum,item)=>sum+(Number(item.resolved)||0),0),correct=records.reduce((sum,item)=>sum+(Number(item.correct)||0),0),activities=state.studySessions.filter(item=>item.topicId===session.topicId&&item.id!==session.id&&Date.parse(item.createdAt||item.startedAt||0)>=since).length,retention=topicRetentionScore(null,session.topicId);
+    measureRecommendationOutcome(feedback,{accuracyAfter:volume?Math.round(correct/volume*1000)/10:null,questionVolumeAfter:volume,retentionAfter:retention.available?retention.score:null,measuredAt,daysElapsed:Math.max(0,(Date.parse(measuredAt)-since)/86400000),otherActivities:activities});
+  });
+}
 function dismissStudyRecommendation(id){const recommendation=currentStudyRecommendations.find(item=>item.id===id);if(recommendation){recordRecommendationFeedback(recommendation,{accepted:false,reasonSkipped:'swapped'});scheduleSave()}dismissedRecommendationIds.add(id);renderStudyRecommendation()}
 function markRecommendationNotUseful(id){const recommendation=currentStudyRecommendations.find(item=>item.id===id);if(recommendation){const feedback=recordRecommendationFeedback(recommendation,{accepted:false,reasonSkipped:'not_useful'});feedback.useful=false;scheduleSave()}dismissedRecommendationIds.add(id);renderStudyRecommendation()}
 function rateRecommendationOutcome(recommendationId,useful){if(rateRecommendationFeedback(state.recommendationFeedback,recommendationId,{useful,ratedAt:nowISO()})){scheduleSave();renderStudyRecommendation();showToast('Obrigado. Esse retorno melhora a avaliação das recomendações.')}}

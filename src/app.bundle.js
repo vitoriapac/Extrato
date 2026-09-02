@@ -847,7 +847,7 @@
     if (!recommendation || !id || !shownAt) throw new Error("Recomendação, identidade e instante são obrigatórios.");
     return { ...recommendation, recommendationId: id, shownAt, algorithmVersion };
   }
-  function recordRecommendationDecision(feedbackList, recommendation, { accepted, reasonSkipped = null, now, idGenerator } = {}) {
+  function recordRecommendationDecision(feedbackList, recommendation, { accepted, reasonSkipped = null, baseline = null, now, idGenerator } = {}) {
     const existing = feedbackList.find((item) => item.recommendationId === recommendation.recommendationId);
     if (existing) return existing;
     const feedback = {
@@ -864,6 +864,8 @@
       score: Number(recommendation.score) || 0,
       confidence: recommendation.confidence || "baixa",
       algorithmVersion: Number(recommendation.algorithmVersion) || 1,
+      baseline: baseline || null,
+      outcome: null,
       shownAt: recommendation.shownAt,
       createdAt: now,
       completedAt: null,
@@ -894,6 +896,25 @@
     const rated = completed.filter((item) => typeof item.useful === "boolean");
     const pct = (part, total) => total ? Math.round(part / total * 100) : null;
     return { shown: decisions.length, accepted: accepted.length, completed: completed.length, rated: rated.length, acceptanceRate: pct(accepted.length, decisions.length), completionRate: pct(completed.length, accepted.length), usefulnessRate: pct(rated.filter((item) => item.useful).length, rated.length) };
+  }
+
+  // src/application/recommendations/outcome-service.js
+  function recommendationOutcomeConfidence(questionVolume = 0) {
+    const volume = Math.max(0, Number(questionVolume) || 0);
+    return volume < 1 ? "Aguardando" : volume < 20 ? "Amostra inicial" : volume < 50 ? "Estimativa" : "Mais confiável";
+  }
+  function captureRecommendationBaseline({ accuracy = null, questionVolume = 0, retentionScore = null, daysSinceContact = null, measuredAt } = {}) {
+    return { accuracy: Number.isFinite(Number(accuracy)) ? Number(accuracy) : null, questionVolume: Math.max(0, Number(questionVolume) || 0), retentionScore: Number.isFinite(Number(retentionScore)) ? Number(retentionScore) : null, daysSinceContact: Number.isFinite(Number(daysSinceContact)) ? Math.max(0, Number(daysSinceContact)) : null, measuredAt };
+  }
+  function measureRecommendationOutcome(feedback, { accuracyAfter = null, questionVolumeAfter = 0, nextReviewRating = null, retentionAfter = null, measuredAt, daysElapsed = 0, otherActivities = 0 } = {}) {
+    if (!feedback) return null;
+    const volume = Math.max(0, Number(questionVolumeAfter) || 0), reasons = [];
+    if (volume < 20) reasons.push("Amostra inferior a 20 questões");
+    if (Number(daysElapsed) < 1) reasons.push("Período de observação muito curto");
+    if (Number(otherActivities) > 3) reasons.push("Muitas outras atividades no tópico");
+    const outcome = { accuracyAfter: Number.isFinite(Number(accuracyAfter)) ? Number(accuracyAfter) : null, questionVolumeAfter: volume, nextReviewRating: nextReviewRating || null, retentionAfter: Number.isFinite(Number(retentionAfter)) ? Number(retentionAfter) : null, measuredAt, confidence: recommendationOutcomeConfidence(volume), attributionEligible: reasons.length === 0, reasons };
+    feedback.outcome = outcome;
+    return outcome;
   }
 
   // src/application/analytics/build-analytics-view-model.js
@@ -1210,6 +1231,7 @@
   // src/application/sessions/session-service.js
   function createSessionService({ repository, questionsRepository, historyRepository, planningRepository: planningRepository2, recommendationsRepository, clock, idGenerator, normalizeQuestion = () => {
   }, completeRecommendation = () => {
+  }, onCompleted = () => {
   } } = {}) {
     if (!repository || typeof repository.add !== "function") throw new TypeError("Serviço de sessões requer repositório.");
     if (!questionsRepository || !planningRepository2 || !clock || typeof idGenerator !== "function") throw new TypeError("Serviço de sessões requer dependências de aplicação.");
@@ -1257,6 +1279,7 @@
         syncPlan(saved.planItemId);
         const occurredAt = clock.nowISO();
         historyRepository?.add?.({ id: idGenerator("history"), date: occurredAt, occurredAt, localDate: saved.date || clock.today(), type: "study_session", subjectId: saved.subjectId || null, topicId: saved.topicId || null, metadata: { sessionId: saved.id, durationSeconds: saved.durationSeconds } });
+        onCompleted(saved);
         return saved;
       },
       edit: (id, changes) => {
@@ -1393,6 +1416,7 @@
   ];
   var ERROR_KEYS = ["naoSabia", "esqueci", "interpretacao", "calculo", "desatencao", "chute"];
   var TYPES = ["questions", "study", "questions", "review", "questions"];
+  var DEMO_SCENARIO = Object.freeze({ days: 90, subjects: 6, sessions: 120, simulations: 9, seed: "studytrack-demo-v2" });
   function hashSeed(value2) {
     let hash = 2166136261;
     for (const char of String(value2)) {
@@ -1428,7 +1452,7 @@
     });
     return result;
   }
-  function generateDemoData({ seed = "studytrack-demo-v1", today } = {}) {
+  function generateDemoData({ seed = DEMO_SCENARIO.seed, today } = {}) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(today || "")) throw new TypeError("A demonstração requer a data local atual.");
     const random = randomFactory(`${seed}:${today}`), state2 = createDefaultState(), createdAt = timestamp(shiftDate(today, -89));
     state2.subjects = SUBJECTS.map(([name, topicNames], subjectIndex) => ({
@@ -1488,7 +1512,7 @@
     const planItems = activeTopics2.slice(0, 12).map((entry, index) => ({ id: `demo-study-plan-topic-${index + 1}`, subjectId: entry.subject.id, subjectName: entry.subject.name, topicId: entry.topic.id, topicName: entry.topic.name, minutes: 45 + index % 3 * 15, estimatedMinutes: entry.topic.estimatedStudyMinutes, activityMix: { theory: 20, questions: 20, reviews: 5 } }));
     state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum2, item) => sum2 + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject) => ({ subjectId: subject.id, subjectName: subject.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
     state2.planAdjustments = [{ id: "demo-adjustment-1", periodStart: shiftDate(today, -7), periodEnd: shiftDate(today, 7), plannedMinutes: 480, executedMinutes: 350, deficitMinutes: 130, redistributedMinutes: 100, discardedMinutes: 30, allocations: [{ date: shiftDate(today, 1), minutes: 50 }, { date: shiftDate(today, 2), minutes: 50 }], confirmedAt: timestamp(shiftDate(today, -1)), status: "confirmed" }];
-    state2.recommendationFeedback = Array.from({ length: 6 }, (_, index) => ({ id: `demo-feedback-${index + 1}`, recommendationId: `demo-recommendation-${index + 1}`, date: shiftDate(today, -index * 5), subjectId: state2.subjects[index % state2.subjects.length].id, topicId: activeTopics2[index].topic.id, accepted: index !== 4, completed: index < 3, useful: index < 3 ? index !== 2 : null, reasonSkipped: index === 4 ? "Preferiu outra disciplina" : null, resultingSessionId: index < 3 ? state2.studySessions[index].id : null, createdAt: timestamp(shiftDate(today, -index * 5)), completedAt: index < 3 ? timestamp(shiftDate(today, -index * 5)) : null }));
+    state2.recommendationFeedback = Array.from({ length: 6 }, (_, index) => ({ id: `demo-feedback-${index + 1}`, recommendationId: `demo-recommendation-${index + 1}`, date: shiftDate(today, -index * 5), subjectId: state2.subjects[index % state2.subjects.length].id, topicId: activeTopics2[index].topic.id, accepted: index !== 4, completed: index < 3, useful: index < 3 ? index !== 2 : null, reasonSkipped: index === 4 ? "Preferiu outra disciplina" : null, resultingSessionId: index < 3 ? state2.studySessions[index].id : null, baseline: { accuracy: 52 + index * 3, questionVolume: 24 + index * 4, retentionScore: 45 + index * 2, daysSinceContact: 8 - index, measuredAt: timestamp(shiftDate(today, -index * 5)) }, outcome: index < 3 ? { accuracyAfter: 64 + index * 3, questionVolumeAfter: 22 + index * 12, nextReviewRating: index === 0 ? "Bom" : null, retentionAfter: 54 + index * 3, measuredAt: timestamp(shiftDate(today, -index * 5 + 2)), confidence: index === 0 ? "Estimativa" : "Mais confiável", attributionEligible: true, reasons: [] } : null, createdAt: timestamp(shiftDate(today, -index * 5)), completedAt: index < 3 ? timestamp(shiftDate(today, -index * 5)) : null }));
     state2.topicHistory = activeTopics2.flatMap((entry, index) => [{ id: `demo-history-start-${index + 1}`, type: "topic_created", date: shiftDate(today, -89 + index % 15), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -89 + index % 15)) }, ...entry.topic.status === "Concluído" ? [{ id: `demo-history-done-${index + 1}`, type: "topic_completed", date: shiftDate(today, -30 - index % 20), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -30 - index % 20)) }] : []]);
     state2.alertStates = [];
     state2.achievementsUnlocked = { primeira_sessao: timestamp(shiftDate(today, -88)), cem_questoes: timestamp(shiftDate(today, -70)) };
@@ -2129,6 +2153,8 @@
       item.algorithmVersion = Math.max(1, Number(item.algorithmVersion) || 1);
       item.score = Number.isFinite(Number(item.score)) ? Number(item.score) : null;
       item.confidence = item.confidence || null;
+      item.baseline = item.baseline || null;
+      item.outcome = item.outcome || null;
     });
     if (!Array.isArray(state.alertStates)) state.alertStates = [];
     if (!state.activeTimer || typeof state.activeTimer !== "object") state.activeTimer = {};
@@ -2252,7 +2278,7 @@
   var studyPlanService = createStudyPlanService({ repository: planningRepository, calculate: buildStudyPlan, clock: appClock, idGenerator: uid, algorithmVersion: () => state.algorithmVersions.recommendations });
   var dailyPlanService = createDailyPlanService({ repository: planningRepository, buildProposal: buildDailyPlanProposal, applyProposal: applyDailyPlanProposal, undoGeneration: undoDailyPlanGeneration, clock: appClock, idGenerator: uid });
   var replanService = createReplanService({ repository: planningRepository, buildProposal: buildReplanProposal, applyProposal: applyReplan, undoProposal: undoReplan, clock: appClock, idGenerator: uid });
-  var sessionService = createSessionService({ repository: appContext.repositories.studySessions, questionsRepository: appContext.repositories.questoes, historyRepository: appContext.repositories.topicHistory, planningRepository, recommendationsRepository: appContext.repositories.recommendationFeedback, clock: appClock, idGenerator: uid, normalizeQuestion: normalizeErrorBreakdown, completeRecommendation: completeRecommendationFeedback });
+  var sessionService = createSessionService({ repository: appContext.repositories.studySessions, questionsRepository: appContext.repositories.questoes, historyRepository: appContext.repositories.topicHistory, planningRepository, recommendationsRepository: appContext.repositories.recommendationFeedback, clock: appClock, idGenerator: uid, normalizeQuestion: normalizeErrorBreakdown, completeRecommendation: completeRecommendationFeedback, onCompleted: measureRecommendationResults });
   var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
   var STATE_CHANNEL = !IS_DEMO_MODE && typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
@@ -3118,9 +3144,10 @@
     location.reload();
   }
   function configureDemoModeUi() {
-    const banner = document.getElementById("demoBanner"), enterButton = document.getElementById("enterDemoBtn");
+    const banner = document.getElementById("demoBanner"), enterButton = document.getElementById("enterDemoBtn"), emptyCta = document.getElementById("demoEmptyCta");
     banner.hidden = !IS_DEMO_MODE;
     enterButton.hidden = IS_DEMO_MODE;
+    if (emptyCta) emptyCta.hidden = IS_DEMO_MODE || state.subjects.length > 0 || state.studySessions.length > 0;
     document.querySelectorAll("[data-demo-protected]").forEach((button) => {
       button.disabled = IS_DEMO_MODE;
       button.title = IS_DEMO_MODE ? "Indisponível para proteger seus dados reais." : "";
@@ -3130,6 +3157,9 @@
     enterDemoMode(sessionStorage);
     reloadWithModeChange();
   }));
+  document.getElementById("enterDemoEmptyBtn").addEventListener("click", () => document.getElementById("enterDemoBtn").click());
+  document.querySelectorAll("[data-demo-target]").forEach((button) => button.addEventListener("click", () => activateTab(button.dataset.demoTarget)));
+  document.getElementById("demoReportShortcut").addEventListener("click", () => document.getElementById("exportReportBtn").click());
   document.getElementById("resetDemoBtn").addEventListener("click", () => showConfirm("Reiniciar todos os dados fictícios da demonstração?", () => {
     resetDemoMode(sessionStorage, DEMO_STORAGE_KEY);
     reloadWithModeChange();
@@ -6624,8 +6654,20 @@
     const history2 = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
     container.innerHTML = `${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details>${history2}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
   }
+  function recommendationBaseline(topicId) {
+    const performance = getTopicPerformance(topicId), retention = topicRetentionScore(null, topicId), found = getTopicById(topicId), last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
+    return captureRecommendationBaseline({ accuracy: performance.accuracy, questionVolume: performance.resolved, retentionScore: retention.available ? retention.score : null, daysSinceContact: last ? Math.max(0, -(diasParaRevisao(localDateFromTimestamp(last)) ?? 0)) : null, measuredAt: nowISO2() });
+  }
   function recordRecommendationFeedback(recommendation, { accepted, reasonSkipped = null } = {}) {
-    return recordRecommendationDecision(state.recommendationFeedback, recommendation, { accepted, reasonSkipped, now: nowISO2(), idGenerator: uid });
+    return recordRecommendationDecision(state.recommendationFeedback, recommendation, { accepted, reasonSkipped, baseline: recommendationBaseline(recommendation.topicId), now: nowISO2(), idGenerator: uid });
+  }
+  function measureRecommendationResults(session) {
+    if (!session?.topicId) return;
+    const measuredAt = nowISO2();
+    state.recommendationFeedback.filter((item) => item.accepted && item.completed && item.topicId === session.topicId && item.baseline && !item.outcome).forEach((feedback) => {
+      const since = Date.parse(feedback.baseline.measuredAt) || 0, records = validQuestionRecords().filter((item) => item.topicId === session.topicId && Date.parse(item.createdAt || `${item.date}T23:59:59Z`) >= since), volume = records.reduce((sum2, item) => sum2 + (Number(item.resolved) || 0), 0), correct = records.reduce((sum2, item) => sum2 + (Number(item.correct) || 0), 0), activities = state.studySessions.filter((item) => item.topicId === session.topicId && item.id !== session.id && Date.parse(item.createdAt || item.startedAt || 0) >= since).length, retention = topicRetentionScore(null, session.topicId);
+      measureRecommendationOutcome(feedback, { accuracyAfter: volume ? Math.round(correct / volume * 1e3) / 10 : null, questionVolumeAfter: volume, retentionAfter: retention.available ? retention.score : null, measuredAt, daysElapsed: Math.max(0, (Date.parse(measuredAt) - since) / 864e5), otherActivities: activities });
+    });
   }
   function dismissStudyRecommendation(id) {
     const recommendation = currentStudyRecommendations.find((item) => item.id === id);

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {generateDemoData} from '../../src/demo/demo-generator.js';
+import {DEMO_SCENARIO,generateDemoData} from '../../src/demo/demo-generator.js';
 import {createDemoStorageProvider} from '../../src/storage/demo-storage-provider.js';
 import {enterDemoMode,exitDemoMode,readAppMode,resetDemoMode} from '../../src/application/demo/demo-mode.js';
 
@@ -14,6 +14,8 @@ test('gera noventa dias determinísticos com referências e volumes demonstrativ
   assert.ok(first.questoes.every(item=>sessionIds.has(item.studySessionId)&&topicIds.has(item.topicId)));
   assert.ok(first.questoes.every(item=>Object.values(item.errorBreakdown).reduce((sum,value)=>sum+value,0)<=item.resolved-item.correct));
   assert.ok(new Set(first.studySessions.map(item=>item.date)).size<90);
+  assert.deepEqual(DEMO_SCENARIO,{days:90,subjects:6,sessions:120,simulations:9,seed:'studytrack-demo-v2'});
+  assert.ok(first.recommendationFeedback.some(item=>item.baseline&&item.outcome));
 });
 
 test('provider demo mantém dados em chave isolada da base real',async()=>{

@@ -27,3 +27,8 @@ test('encerra a demo em uma nova sessão do navegador',async({browser})=>{
   const first=await browser.newContext();const page=await first.newPage();await openDemo(page);await first.close();
   const second=await browser.newContext();const next=await second.newPage();await next.goto('/');await expect(next.locator('#demoBanner')).toBeHidden();await second.close();
 });
+
+test('roteiro da demonstração navega pelas áreas preservando o cenário',async({page})=>{
+  await openDemo(page);await expect(page.locator('.demo-tour')).toBeVisible();
+  for(const target of ['hoje','dashboard','agenda','metas']){await page.locator(`[data-demo-target="${target}"]`).click();await expect(page.locator(`#panel-${target}`)).toBeVisible()}
+});
