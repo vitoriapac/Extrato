@@ -1,3 +1,6 @@
+import {createReviewsRepository} from './reviews-repository.js';
+import {createPlanningRepository} from './planning-repository.js';
+
 export function createCollectionRepository({getState,field}={}){
   if(typeof getState!=='function'||!field)throw new TypeError('Repositório requer estado e coleção.');
   const collection=()=>{const value=getState()?.[field];return Array.isArray(value)?value:[]};
@@ -12,6 +15,6 @@ export function createCollectionRepository({getState,field}={}){
 export function createAppRepositories(getState){
   const repositories=Object.fromEntries(['subjects','calendar','questoes','simulados','studySessions','dailyPlans','studyPlans','recommendationFeedback'].map(field=>[field,createCollectionRepository({getState,field})]));
   repositories.reviewAgenda=createReviewsRepository({getState});
+  repositories.planning=createPlanningRepository({getState});
   return Object.freeze(repositories);
 }
-import {createReviewsRepository} from './reviews-repository.js';

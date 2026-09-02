@@ -1,0 +1,4 @@
+export function createStudyPlanService({repository,calculate,clock,idGenerator,algorithmVersion=()=>1}={}){
+  if(!repository||typeof repository.saveStudyPlan!=='function')throw new TypeError('Serviço de plano requer repositório.');
+  return Object.freeze({calculate:input=>calculate(input),confirm:proposal=>{if(!proposal||proposal.state==='insufficient'||!proposal.items?.length)return null;const id=idGenerator('study-plan'),confirmedAt=clock.nowISO(),plan={...structuredClone(proposal),id,confirmedAt,algorithmVersion:algorithmVersion(),dailyPlanOperations:[],items:proposal.items.map(item=>({...item,id:idGenerator('study-plan-item'),topicId:item.topicId||item.id,studyPlanId:id}))};return repository.saveStudyPlan(plan)},getActive:()=>repository.getActiveStudyPlan(),listVersions:()=>[...repository.getStudyPlans()].sort((a,b)=>String(b.confirmedAt||'').localeCompare(String(a.confirmedAt||'')))});
+}
