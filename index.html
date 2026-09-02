@@ -615,6 +615,19 @@
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="reviewRatingOverlay" role="dialog" aria-modal="true" aria-labelledby="reviewRatingTitle">
+  <div class="modal-box review-rating-box">
+    <h3 id="reviewRatingTitle">Como foi esta revisão?</h3>
+    <p>Seu resultado define quando este tópico deve aparecer novamente.</p>
+    <div class="review-rating-actions">
+      <button class="btn ghost" data-review-rating="again">Errei<small>rever amanhã</small></button>
+      <button class="btn ghost" data-review-rating="hard">Difícil<small>intervalo menor</small></button>
+      <button class="btn" data-review-rating="good">Bom<small>intervalo normal</small></button>
+      <button class="btn ghost" data-review-rating="easy">Fácil<small>intervalo maior</small></button>
+    </div>
+    <button class="btn ghost small" id="reviewRatingCancelBtn">Cancelar</button>
+  </div>
+</div>
 
   <script src="src/app.bundle.js"></script>
   <script src="src/pwa.js"></script>

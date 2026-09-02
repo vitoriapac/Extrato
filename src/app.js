@@ -10,7 +10,7 @@ import {createDemoStorageProvider} from './storage/demo-storage-provider.js';
 import {createClock} from './core/clock.js';
 import {createAppContext} from './application/create-app-context.js';
 import {bootstrapApplication} from './bootstrap.js';
-import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,calculateAdaptiveInterval} from './domain/reviews.js';
+import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,REVIEW_RATINGS,calculateAdaptiveInterval,createAdaptiveReviewState,applyAdaptiveReviewRating} from './domain/reviews.js';
 import {createDefaultState} from './state/defaults.js';
 import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
 import {renderCollectionFooter,renderGroupHeader} from './ui/list-components.js';
@@ -308,6 +308,11 @@ function migrateV12toV13(data){
 function migrateV13toV14(data){
   (data.recommendationFeedback||[]).forEach(item=>{item.shownAt=item.shownAt||item.createdAt||null;item.ratedAt=item.ratedAt||null;item.algorithmVersion=Math.max(1,Number(item.algorithmVersion)||1);item.score=Number.isFinite(Number(item.score))?Number(item.score):null;item.confidence=item.confidence||null});data.schemaVersion=14;return data
 }
+function migrateV14toV15(data){
+  data.algorithmVersions=normalizeAlgorithmVersions(data.algorithmVersions);data.algorithmVersions.adaptiveReview=Math.max(2,Number(data.algorithmVersions.adaptiveReview)||2);
+  (data.subjects||[]).forEach(subject=>(subject.topics||[]).forEach(topic=>{topic.adaptiveReview=topic.adaptiveReview?createAdaptiveReviewState(topic.adaptiveReview):null}));
+  (data.reviewAgenda||[]).forEach(review=>{review.lastRating=REVIEW_RATINGS[review.lastRating]?review.lastRating:null;review.adaptiveState=review.adaptiveState?createAdaptiveReviewState(review.adaptiveState):null});data.schemaVersion=15;return data
+}
 
 function migrateState(data){
   let version = Number(data.schemaVersion || 1);
@@ -324,6 +329,7 @@ function migrateState(data){
   if(version < 12){ data = migrateV11toV12(data); version = 12; }
   if(version < 13){ data = migrateV12toV13(data); version = 13; }
   if(version < 14){ data = migrateV13toV14(data); version = 14; }
+  if(version < 15){ data = migrateV14toV15(data); version = 15; }
   data.schemaVersion = CURRENT_SCHEMA_VERSION;
   return data;
 }
@@ -350,6 +356,7 @@ function ensureStateDefaults(){
   if(typeof state.examDate !== 'string') state.examDate = '';
   state.examBlueprint=normalizeExamBlueprint(state.examBlueprint,state.examDate);
   state.algorithmVersions=normalizeAlgorithmVersions(state.algorithmVersions);
+  state.algorithmVersions.adaptiveReview=Math.max(2,Number(state.algorithmVersions.adaptiveReview)||2);
   if(!state.examDate&&state.examBlueprint.examDate)state.examDate=state.examBlueprint.examDate;
   if(state.examDate!==state.examBlueprint.examDate)state.examBlueprint.examDate=state.examDate||null;
   if(!Array.isArray(state.progressHistory)) state.progressHistory = [];
@@ -415,6 +422,7 @@ function ensureStateDefaults(){
       t.completionCount = Number(t.completionCount)||0;
       if(!('lastReviewedAt' in t)) t.lastReviewedAt = null;
       t.reviewCount = Number(t.reviewCount)||0;
+      t.adaptiveReview=t.adaptiveReview?createAdaptiveReviewState(t.adaptiveReview):null;
       normalizeTopicStrategy(t);
     });
   });
@@ -444,6 +452,8 @@ function ensureStateDefaults(){
     review.adaptive=review.adaptive!==false;
     review.adaptiveReason=review.adaptiveReason||null;
     review.suggestedDate=review.suggestedDate||null;
+    review.lastRating=REVIEW_RATINGS[review.lastRating]?review.lastRating:null;
+    review.adaptiveState=review.adaptiveState?createAdaptiveReviewState(review.adaptiveState):null;
   });
   refreshAllTopicReviewStats();
 }
@@ -2647,11 +2657,30 @@ function saveAgendaEdit(){
   ['date','subjectId','topic','tipo','status'].forEach(field=>{if(item[field]!==draft[field])applyAgendaField(item,field,draft[field])});
   agendaUiState.editingId=null;agendaUiState.editingIsNew=false;agendaUiState.draft=null;persistAndRender();showToast('Revisão atualizada.');
 }
-function completeAgendaReview(id){const item=state.reviewAgenda.find(entry=>entry.id===id);if(!item||item.status==='Concluído')return;applyAgendaField(item,'status','Concluído');persistAndRender();showToast('Revisão concluída.');}
+let pendingReviewRatingId=null;
+function closeReviewRating(){pendingReviewRatingId=null;const overlay=document.getElementById('reviewRatingOverlay');overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true')}
+function completeAgendaReview(id){
+  const item=state.reviewAgenda.find(entry=>entry.id===id);if(!item||item.status==='Concluído')return;
+  if(!(item.topicId||item.topicRef)){applyAgendaField(item,'status','Concluído');persistAndRender();showToast('Revisão concluída.');return}
+  pendingReviewRatingId=id;const overlay=document.getElementById('reviewRatingOverlay');overlay.classList.add('show');overlay.removeAttribute('aria-hidden');overlay.querySelector('[data-review-rating="good"]')?.focus();
+}
+function adaptiveReviewType(days){return ({1:'Revisão 24h',3:'Revisão 3 dias',7:'Revisão 7 dias',14:'Revisão 14 dias',15:'Revisão 15 dias',30:'Revisão 30 dias'})[days]||'Revisão livre'}
+function rateCompletedReview(rating){
+  const item=state.reviewAgenda.find(entry=>entry.id===pendingReviewRatingId),topicId=item?.topicId||item?.topicRef;if(!item||!topicId||!REVIEW_RATINGS[rating])return closeReviewRating();
+  const found=getTopicById(topicId),reviewDate=todayISO(),adaptiveState=applyAdaptiveReviewRating(found?.topic?.adaptiveReview,rating,{reviewDate,algorithmVersion:state.algorithmVersions.adaptiveReview});
+  if(found)found.topic.adaptiveReview=adaptiveState;item.lastRating=rating;item.adaptiveState=structuredCloneSafe(adaptiveState);item.adaptiveReason=`Avaliação: ${REVIEW_RATINGS[rating].label} · próximo intervalo: ${adaptiveState.intervalDays} dia${adaptiveState.intervalDays===1?'':'s'}`;
+  applyAgendaField(item,'status','Concluído');
+  const alreadyScheduled=state.reviewAgenda.some(review=>review.id!==item.id&&(review.topicId||review.topicRef)===topicId&&review.status!=='Concluído'&&review.date===adaptiveState.nextReviewDate);
+  if(!alreadyScheduled)state.reviewAgenda.push({id:uid('review'),subjectId:entitySubjectId(item)||found?.subject?.id||null,topicId,topicRef:topicId,topic:found?.topic?.name||item.topic||'',date:adaptiveState.nextReviewDate,suggestedDate:adaptiveState.nextReviewDate,baseIntervalDays:adaptiveState.intervalDays,adaptive:true,manualDate:false,adaptiveReason:`Agendada após avaliação ${REVIEW_RATINGS[rating].label}.`,tipo:adaptiveReviewType(adaptiveState.intervalDays),status:'Não iniciado',lastRating:null,adaptiveState:structuredCloneSafe(adaptiveState),createdAt:nowISO(),completedAt:null});
+  addHistoryEvent('adaptive_review_rated',entitySubjectId(item),topicId,{reviewId:item.id,rating,intervalDays:adaptiveState.intervalDays,nextReviewDate:adaptiveState.nextReviewDate,algorithmVersion:adaptiveState.algorithmVersion});
+  closeReviewRating();persistAndRender();showToast(`Revisão concluída. Próxima em ${formatDatePt(adaptiveState.nextReviewDate)}.`);
+}
+document.querySelectorAll('[data-review-rating]').forEach(button=>button.addEventListener('click',()=>rateCompletedReview(button.dataset.reviewRating)));
+document.getElementById('reviewRatingCancelBtn')?.addEventListener('click',closeReviewRating);
 function renderAgendaReadRow(item){
   const vm=agendaViewModel(item),pending=item.status!=='Concluído';
   if(isMobileHistoryLayout())return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="8"><article class="mobile-history-card review-mobile-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)} · ${escapeHtml(vm.status)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>${escapeHtml(vm.difficulty)}</span><span>${diasParaRevisaoPill(item.date,item.status)}</span></div><div class="mobile-card-actions">${pending?`<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>`:''}</div></article></td></tr>`;
-  return `<tr class="history-read-row history-desktop-row ${item.date===todayISO()?'today':''}" data-id="${item.id}"><td>${escapeHtml(vm.date)}<div class="review-date-mode" title="${escapeAttr(item.adaptiveReason||'')}">${item.manualDate?'Manual':'Adaptativa'}${item.manualDate&&item.topicId?` · <button type="button" data-delegated-click="resetAdaptiveReviewDate('${item.id}')">usar sugestão</button>`:''}</div></td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td>${escapeHtml(vm.type)}</td><td><span class="dias-pill ${DIFFICULTY_CLASS[vm.difficulty]}">${escapeHtml(vm.difficulty)}</span></td><td><span class="history-status ${STATUS_CLASS[item.status]||''}">${escapeHtml(vm.status)}</span></td><td>${diasParaRevisaoPill(item.date,item.status)}</td><td><div class="row-actions">${pending?`<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>`:''}<button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div></td></tr>`;
+  return `<tr class="history-read-row history-desktop-row ${item.date===todayISO()?'today':''}" data-id="${item.id}"><td>${escapeHtml(vm.date)}<div class="review-date-mode" title="${escapeAttr(item.adaptiveReason||'')}">${item.manualDate?'Manual':'Adaptativa'}${item.lastRating?` · ${escapeHtml(REVIEW_RATINGS[item.lastRating].label)}`:''}${item.manualDate&&item.topicId?` · <button type="button" data-delegated-click="resetAdaptiveReviewDate('${item.id}')">usar sugestão</button>`:''}</div></td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td>${escapeHtml(vm.type)}</td><td><span class="dias-pill ${DIFFICULTY_CLASS[vm.difficulty]}">${escapeHtml(vm.difficulty)}</span></td><td><span class="history-status ${STATUS_CLASS[item.status]||''}">${escapeHtml(vm.status)}</span></td><td>${diasParaRevisaoPill(item.date,item.status)}</td><td><div class="row-actions">${pending?`<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>`:''}<button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div></td></tr>`;
 }
 function renderAgendaEditRow(item){
   const draft=agendaUiState.draft,subjectId=entitySubjectId(draft);if(!draft)return '';
@@ -4900,7 +4929,7 @@ function navigateKpi(tab,filter){
   document.getElementById('panel-'+tab)?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function completeUnifiedReview(id,origin){
-  if(origin==='Agenda de Revisões'){const item=state.reviewAgenda.find(x=>x.id===id);if(!item||item.status==='Concluído')return;updateAgenda(id,'status','Concluído')}
+  if(origin==='Agenda de Revisões'){completeAgendaReview(id)}
   else{const item=state.calendar.find(x=>x.id===id);if(!item||item.status==='Concluído')return;updateCal(id,'status','Concluído')}
   showToast('Revisão concluída e indicadores atualizados.');
 }
@@ -5105,7 +5134,7 @@ historyLayoutMedia.addEventListener('change',()=>{
 
 /* ===== ATALHOS DE TECLADO ===== */
 document.addEventListener('keydown', function(e){
-  trapModalTab(e,[document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]);
+  trapModalTab(e,[document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]);
   const isMac = navigator.platform.toUpperCase().includes('MAC');
   const modifierPressed = isMac ? e.metaKey : e.ctrlKey;
   const activeTag = document.activeElement ? document.activeElement.tagName : '';
@@ -5120,6 +5149,9 @@ document.addEventListener('keydown', function(e){
   if(e.key === 'Escape'){
     document.getElementById('globalSearchInput').blur();
     document.getElementById('globalSearchResults').classList.remove('show');
+    if(document.getElementById('reviewRatingOverlay').classList.contains('show')){
+      e.preventDefault();closeReviewRating();return;
+    }
     if(document.getElementById('sessionModalOverlay').classList.contains('show')){
       e.preventDefault();
       document.getElementById('sessionModalSkipBtn').click();

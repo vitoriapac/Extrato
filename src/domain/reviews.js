@@ -44,3 +44,39 @@ export function calculateAdaptiveInterval({baseDays,accuracy=null,volume=0,targe
     reason:reasons.length?reasons.join(' · '):'intervalo-base preservado'
   };
 }
+
+export const REVIEW_RATINGS=Object.freeze({
+  again:{label:'Errei',quality:1},hard:{label:'Difícil',quality:3},good:{label:'Bom',quality:4},easy:{label:'Fácil',quality:5}
+});
+
+export function createAdaptiveReviewState(source={}){
+  source=source||{};
+  return {
+    easinessFactor:Math.max(1.3,Number(source.easinessFactor)||2.5),
+    repetitions:Math.max(0,Math.floor(Number(source.repetitions)||0)),
+    intervalDays:Math.max(0,Math.floor(Number(source.intervalDays)||0)),
+    lastReviewDate:source.lastReviewDate||null,nextReviewDate:source.nextReviewDate||null,
+    lastRating:REVIEW_RATINGS[source.lastRating]?source.lastRating:null,
+    algorithmVersion:Math.max(1,Number(source.algorithmVersion)||2)
+  };
+}
+
+function addLocalDays(iso,days){
+  const [year,month,day]=String(iso).split('-').map(Number),date=new Date(year,month-1,day);date.setDate(date.getDate()+days);
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+export function applyAdaptiveReviewRating(source,rating,{reviewDate,algorithmVersion=2}={}){
+  if(!REVIEW_RATINGS[rating])throw new Error('Avaliação de revisão inválida.');
+  const state=createAdaptiveReviewState(source),quality=REVIEW_RATINGS[rating].quality;
+  let repetitions=state.repetitions,intervalDays=state.intervalDays;
+  if(quality<3){repetitions=0;intervalDays=1}
+  else{
+    repetitions+=1;
+    if(repetitions===1)intervalDays=rating==='easy'?4:1;
+    else if(repetitions===2)intervalDays=rating==='hard'?4:rating==='easy'?8:6;
+    else intervalDays=Math.max(1,Math.round(intervalDays*state.easinessFactor*(rating==='hard'?.8:rating==='easy'?1.3:1)));
+  }
+  const easinessFactor=Math.max(1.3,state.easinessFactor+(0.1-(5-quality)*(0.08+(5-quality)*0.02)));
+  return {easinessFactor:Math.round(easinessFactor*100)/100,repetitions,intervalDays:Math.min(365,intervalDays),lastReviewDate:reviewDate,nextReviewDate:addLocalDays(reviewDate,Math.min(365,intervalDays)),lastRating:rating,algorithmVersion};
+}
