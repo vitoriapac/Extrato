@@ -1,6 +1,16 @@
 # StudyTrack — Extrato de Estudos
 
-Aplicação local para planejar estudos, acompanhar tópicos, registrar questões e simulados, organizar revisões adaptativas e medir progresso.
+StudyTrack (Extrato de Estudos) é uma SPA em JavaScript vanilla, sem frameworks ou dependências externas em runtime, para planejamento e acompanhamento de estudos. Arquitetura modular em camadas (state → core → storage → domain → ui), com regra explícita de fluxo de dependências documentada em ARCHITECTURE.md.
+
+Persistência: IndexedDB como armazenamento primário, com fallback automático para localStorage, sincronização entre abas via BroadcastChannel, snapshots rotativos com checksum SHA-256 e migração/validação de esquema antes de adotar dados locais ou importados.
+
+Funcionalidades: disciplinas e tópicos com tags e níveis de dificuldade, calendário e agenda de revisões, algoritmo de revisão espaçada (24h/7d/30d), cronômetro de sessões, banco de questões e simulados com diagnóstico de erros, índice de prontidão, radar por disciplina e replanejamento semanal.
+
+PWA: instalável, funcionamento offline via Service Worker (requer servidor HTTP local para essa camada), tema claro/escuro e navegação acessível por teclado (incluindo busca global via Ctrl/Cmd+K).
+
+Build e testes: bundling com esbuild (src/app.bundle.js gerado, não editado manualmente), suíte de testes unitários (tests/unit/) e testes de integração legados (tests/test-runner.html), CI configurado via GitHub Actions.
+
+Privacidade: 100% client-side — nenhum dado de estudo trafega para servidor ou é enviado ao repositório; todo o histórico permanece no navegador do usuário.
 
 ## Recursos
 
