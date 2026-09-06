@@ -7,6 +7,7 @@ import {buildStudyCandidates} from '../../src/application/build-study-candidates
 import {recommendStudy} from '../../src/application/recommend-study.js';
 import {buildStudyPlan} from '../../src/application/build-study-plan.js';
 import {buildDailyPlanProposal} from '../../src/application/planning/distribute-study-plan.js';
+import {calculateReviewHealth} from '../../src/domain/analytics/review-health.js';
 
 const today='2026-09-06';
 const topic=(id,extra={})=>({id,name:id,subjectId:'s1',status:'Em andamento',estimatedStudyMinutes:180,prerequisites:[],...extra});
@@ -47,7 +48,7 @@ test('ausência de evidência não vira domínio zero nem confiança alta',()=>{
   assert.equal(candidate.mastery,null);assert.equal(candidate.masteryGap,null);
   assert.equal(candidate.evidence.evidenceStrength,0);assert.equal(candidate.evidence.evidenceLabel,'Baixa');
   assert.ok(candidate.missingFactors.includes('masteryGap'));
-  const all=calculatePriorityScore({examImpact:90,masteryGap:70,retentionRisk:60,reviewUrgency:50,planAlignment:80,recencyRisk:30,evidenceStrength:.05});
+  const all=calculatePriorityScore({examImpact:90,masteryGap:70,retentionRisk:60,reviewUrgency:50,reviewHealthRisk:45,planAlignment:80,recencyRisk:30,evidenceStrength:.05});
   assert.equal(all.evidence.completeness,1);assert.equal(all.evidence.evidenceLabel,'Baixa');
   assert.equal(calculatePriorityScore({examImpact:NaN,masteryGap:Infinity}).value,null);
 });
@@ -95,4 +96,12 @@ test('métricas puras distinguem ausência, evidência fraca e histórico consol
   assert.equal(calculateTopicRetention().available,false);
   const retention=calculateTopicRetention({due:Array(4).fill({}),onTime:4,resolved:100,correct:90,lastReview:today,daysSince:0});
   assert.ok(retention.score>=90);assert.equal(retention.evidence.completeness,1);
+});
+
+test('saúde da revisão alimenta a prioridade com o mesmo contrato dos demais scores',()=>{
+  const reviewHealth=calculateReviewHealth({daysSinceReview:20,retention:40,mastery:45,recentPerformance:50,examImpact:90,evidenceStrength:.8});
+  const scored=calculatePriorityScore({examImpact:90,retentionRisk:60,masteryGap:55,reviewUrgency:20,reviewHealthRisk:100-reviewHealth.value,planAlignment:50,recencyRisk:70,evidenceStrength:.8});
+  for(const key of ['value','state','evidence','confidence','factors','reasons','algorithmVersion'])assert.ok(key in scored);
+  assert.equal(scored.algorithmVersion,3);assert.ok(scored.factors.reviewHealthRisk>40);
+  assert.ok(scored.reasons.includes('saúde da revisão requer atenção'));
 });

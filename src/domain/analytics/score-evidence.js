@@ -25,3 +25,11 @@ export function calculateFactorScore(input={},weights={}){
   const completeness=totalWeight?Math.round(availableWeight/totalWeight*100)/100:0;
   return {value,factors,missingFactors,contributions,completeness};
 }
+
+export function createScoreResult({value=null,state=null,evidence=null,confidence=null,factors={},reasons=[],algorithmVersion=1,...details}={}){
+  const numeric=value==null||!Number.isFinite(Number(value))?null:Math.max(0,Math.min(100,Math.round(Number(value))));
+  const scoreEvidence=evidence||describeScoreEvidence({completeness:0,evidenceStrength:confidence});
+  return {value:numeric,state:state||(numeric===null?'empty':'estimated'),evidence:scoreEvidence,
+    confidence:confidence==null?scoreEvidence.evidenceStrength:Math.max(0,Math.min(1,Number(confidence)||0)),
+    factors,reasons:[...new Set((reasons||[]).filter(Boolean))],algorithmVersion:Math.max(1,Math.floor(Number(algorithmVersion)||1)),...details};
+}

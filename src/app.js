@@ -32,7 +32,8 @@ import {recommendStudy} from './application/recommend-study.js';
 import {buildStudyCandidates} from './application/build-study-candidates.js';
 import {calculateTopicMastery,calculateTopicRetention} from './domain/analytics/topic-metrics.js';
 import {PRIORITY_ALGORITHM_VERSION} from './domain/analytics/priority-score.js';
-import {canStudy} from './domain/study-eligibility.js';
+import {calculateReviewHealth} from './domain/analytics/review-health.js';
+import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eligibility.js';
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
 import {captureRecommendationBaseline,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
 import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
@@ -1860,6 +1861,12 @@ function renderTopicAnalyticsState(subject,topic){
   const coverage=topic.status==='Concluído'?100:topic.status==='Em andamento'||topic.status==='Revisão'?50:0;
   const masteryResult=topicMasteryIndex(subject.id,topic.id),retentionResult=topicRetentionScore(subject.id,topic.id);
   const mastery=masteryResult.confidence>0?masteryResult.score:null,retention=retentionResult.available?retentionResult.score:null;
+  const diagnosis=diagnoseTopic(subject.id,topic.id),reviewHealth=topicReviewHealthScore(topic,masteryResult,retentionResult,diagnosis);
+  const lastContact=diagnosis?.lastActivity?Math.max(0,-(diasParaRevisao(diagnosis.lastActivity)??0)):null;
+  const lastReviewDate=localDateFromTimestamp(topic.lastReviewedAt);
+  const lastReview=lastReviewDate?Math.max(0,-(diasParaRevisao(lastReviewDate)??0)):null;
+  const performance=diagnosis?.performance?.accuracy??null,trend=diagnosis?.trend;
+  const blockers=prerequisiteBlockers({...topic,mastery,covered:coverage===100},allTopics().map(item=>({...item,covered:item.status==='Concluído',mastery:topicMasteryIndex(item.subjectId,item.id).confidence>0?topicMasteryIndex(item.subjectId,item.id).score:null})));
   let label='Não iniciado';
   if(coverage>0&&mastery===null)label='Em estudo · aguardando questões';
   else if(coverage===100&&mastery<50)label='Coberto, não consolidado';
@@ -1867,8 +1874,13 @@ function renderTopicAnalyticsState(subject,topic){
   else if(coverage===100&&mastery>=75)label='Consolidado';
   else if(coverage===100)label='Em consolidação';
   else if(coverage>0)label='Em estudo';
-  const metric=(name,value,detail='')=>`<div><span>${name}</span><strong>${value===null?'Aguardando dados':Math.round(value)+'%'}</strong>${detail?`<small>${escapeHtml(detail)}</small>`:''}</div>`;
-  return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>Independente do status manual</small></div><div class="topic-analytics-metrics">${metric('Cobertura',coverage)}${metric('Domínio',mastery,mastery===null?'Registre questões deste tópico':'Confiança '+Math.round(masteryResult.confidence*100)+'%')}${metric('Retenção',retention,retention===null?'Conclua revisões vinculadas':'Estimativa baseada nas revisões')}</div></div>`;
+  if(blockers.length)label='Bloqueado por pré-requisito';
+  else if(coverage===100&&needsMaintenance({covered:true,masteryGap:mastery===null?null:100-mastery,retentionRisk:retention===null?null:100-retention,reviewHealthRisk:reviewHealth.value===null?null:100-reviewHealth.value}))label='Estudado, mas precisa consolidação';
+  const pctMetric=(name,value,detail='')=>`<div class="topic-metric"><span>${name}</span><strong>${value===null?'Aguardando dados':Math.round(value)+'%'}</strong><div class="topic-metric-track"><i style="width:${value===null?0:Math.round(value)}%"></i></div>${detail?`<small>${escapeHtml(detail)}</small>`:''}</div>`;
+  const textMetric=(name,value,detail='')=>`<div class="topic-metric"><span>${name}</span><strong>${escapeHtml(value)}</strong>${detail?`<small>${escapeHtml(detail)}</small>`:''}</div>`;
+  const trendText=!trend||trend.key==='insufficient'?'Aguardando dados':`${trend.icon} ${trend.label}`;
+  const eligibility=blockers.length?`🔒 Aguarda ${blockers.map(id=>getTopicName(id)||id).join(', ')}`:coverage===100&&!needsMaintenance({covered:true,masteryGap:mastery===null?null:100-mastery,retentionRisk:retention===null?null:100-retention,reviewHealthRisk:reviewHealth.value===null?null:100-reviewHealth.value})?'✓ Consolidado':reviewHealth.level==='critical'?'↻ Revisão recomendada':masteryResult.evidence?.evidenceStrength<.35?'⚠ Poucos dados':'★ Elegível para priorização';
+  return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>${escapeHtml(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric('Cobertura',coverage)}${pctMetric('Domínio',mastery,mastery===null?'Registre questões deste tópico':'Evidência '+masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric('Retenção',retention,retention===null?'Conclua revisões vinculadas':'Evidência '+retentionResult.evidence.evidenceLabel.toLowerCase())}${pctMetric('Saúde da revisão',reviewHealth.value,reviewHealth.reasons[0])}${textMetric('Último contato',lastContact===null?'Sem registro':lastContact===0?'Hoje':lastContact+' dias')}${textMetric('Última revisão',lastReview===null?'Sem registro':lastReview===0?'Hoje':lastReview+' dias')}${pctMetric('Desempenho recente',performance,diagnosis?.performance?.resolved?diagnosis.performance.resolved+' questões':'Sem questões')}${textMetric('Tendência',trendText,trend?.delta==null?'':(trend.delta>=0?'+':'')+trend.delta+' p.p.')}</div></div>`;
 }
 function moveSubject(id, direction){
   const active=activeSubjects();
@@ -4058,7 +4070,8 @@ let currentStudyRecommendations=[];
 function intelligenceCandidates(){
   const priorities=collectStudyCandidates(),topics=allTopics();
   const retentions=Object.fromEntries(topics.map(topic=>[topic.id,topicRetentionScore(topic.subjectId,topic.id)]));
-  return buildStudyCandidates({priorities,topics,retentions,blueprint:state.examBlueprint.subjects,
+  const reviewHealths=Object.fromEntries(topics.map(topic=>[topic.id,topicReviewHealthScore(topic,topicMasteryIndex(topic.subjectId,topic.id),retentions[topic.id])]));
+  return buildStudyCandidates({priorities,topics,retentions,reviewHealths,blueprint:state.examBlueprint.subjects,
     sessions:state.studySessions,today:todayISO(),examProximity:state.examDate?proximidadeProvaScore():null});
 }
 function renderDiagnosisCenter(){
@@ -4077,21 +4090,36 @@ function renderDiagnosisCenter(){
 function renderStudyRecommendation(){
   const container=document.getElementById('studyRecommendation');if(!container)return;
   const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
+  const candidates=intelligenceCandidates();
   const previous=new Map(currentStudyRecommendations.map(item=>[item.id,item]));
-  currentStudyRecommendations=recommendStudy(intelligenceCandidates(),{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>{
+  currentStudyRecommendations=recommendStudy(candidates,{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>{
     const old=previous.get(item.id);
     return old&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
       ?{...item,recommendationId:old.recommendationId,shownAt:old.shownAt,algorithmVersion:PRIORITY_ALGORITHM_VERSION}
       :createRecommendationPresentation(item,{id:uid('recommendation'),shownAt:nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION});
   });
-  const item=currentStudyRecommendations[0];
-  if(!item){container.innerHTML=`<div class="upcoming-empty">${availableMinutes<15?'Defina pelo menos 15 minutos na meta de hoje.':'Nenhuma recomendação compatível com o tempo e os dados atuais.'}</div>`;return}
-  const factorLabels={examImpact:'Impacto na prova',retentionRisk:'Risco de retenção',masteryGap:'Lacuna de domínio',reviewUrgency:'Urgência da revisão',planAlignment:'Alinhamento com o plano',recencyRisk:'Tempo sem contato'};
-  const contributionRows=Object.entries(item.contributions).map(([key,value])=>`<div><span>${escapeHtml(factorLabels[key]||key)}</span><strong>+${value}</strong></div>`).join('');
+  const visible=currentStudyRecommendations.slice(0,3);
+  const factorLabels={examImpact:'Impacto na prova',retentionRisk:'Risco de retenção',masteryGap:'Lacuna de domínio',reviewUrgency:'Urgência da revisão',reviewHealthRisk:'Saúde da revisão',planAlignment:'Alinhamento com o plano',recencyRisk:'Tempo sem contato'};
   const pending=state.recommendationFeedback.find(feedback=>feedback.completed&&feedback.useful===null),summary=summarizeRecommendationFeedback(state.recommendationFeedback);
   const outcome=pending?`<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'';
   const history=summary.shown?`<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate??0}% concluídas${summary.rated?` · ${summary.usefulnessRate}% úteis`:''}</small>`:'';
-  container.innerHTML=`${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action||'Estudar agora')}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · evidência ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}</p><ul>${item.reasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><p>Dados disponíveis: ${Math.round(item.evidence.completeness*100)}% · força da evidência: ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}. Estimativa por regras.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details>${history}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
+  const visibleIds=new Set(visible.map(item=>item.id));
+  const excluded=candidates.filter(item=>!visibleIds.has(item.id)).map(item=>{
+    if(item.blockedPrerequisites?.length)return {...item,stateIcon:'🔒',stateText:'Aguarda '+item.blockedPrerequisites.map(id=>getTopicName(id)||id).join(', ')};
+    if(item.completed)return {...item,stateIcon:'✓',stateText:'Atividade já realizada hoje'};
+    if(item.covered&&!needsMaintenance(item))return {...item,stateIcon:'✓',stateText:'Concluído e consolidado'};
+    if(item.remainingMinutes===null&&!item.covered)return {...item,stateIcon:'○',stateText:'Carga de estudo ainda não configurada'};
+    if(dismissedRecommendationIds.has(item.id))return {...item,stateIcon:'○',stateText:'Ocultado nesta sessão'};
+    return {...item,stateIcon:item.examImpact!=null&&item.examImpact<30?'○':'★',stateText:item.examImpact!=null&&item.examImpact<30?'Baixa relevância configurada para a prova':'Prioridade inferior às três recomendações atuais'};
+  }).filter(Boolean).slice(0,6);
+  const excludedHtml=excluded.length?`<details class="recommendation-exclusions"><summary>Por que outros tópicos não aparecem?</summary>${excluded.map(item=>`<div><span>${item.stateIcon}</span><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><small>${escapeHtml(item.stateText)}</small></div>`).join('')}</details>`:'';
+  if(!visible.length){container.innerHTML=`${outcome}<div class="upcoming-empty">${availableMinutes<15?'Defina pelo menos 15 minutos na meta de hoje.':'Nenhuma atividade está elegível neste momento.'}</div>${excludedHtml}${history}`;return}
+  const cards=visible.map((item,index)=>{
+    const contributionRows=Object.entries(item.contributions).map(([key,value])=>`<div><span>${escapeHtml(factorLabels[key]||key)}</span><strong>+${value}</strong></div>`).join('');
+    const state=item.reviewHealth?.level==='critical'?'↻ Revisão recomendada':item.evidence.evidenceStrength<.35?'⚠ Poucos dados':item.score>=70?'★ Prioridade elevada':'○ Prioridade calculada';
+    return `<article class="study-recommendation ${index===0?'is-primary':''}"><div class="recommendation-content"><span class="recommendation-rank">#${index+1} · Prioridade ${item.score}/100</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action||'Estudar agora')}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions?` · ${pluralize(item.recommendedQuestions,'questão','questões')}`:''} · ${escapeHtml(state)}</p><ul>${item.reasons.slice(0,3).map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul><details class="recommendation-explanation"><summary>Por que esta prioridade?</summary><p>Dados disponíveis: ${Math.round(item.evidence.completeness*100)}% · força da evidência: ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar estudo</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Ocultar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
+  }).join('');
+  container.innerHTML=`${outcome}<div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
 }
 function recommendationBaseline(topicId){
   const performance=getTopicPerformance(topicId),retention=topicRetentionScore(null,topicId),found=getTopicById(topicId),last=found?.topic?.lastReviewedAt||found?.topic?.lastCompletedAt||null;
@@ -4473,6 +4501,16 @@ function topicRetentionScore(subjectId,topicId){
   return calculateTopicRetention({due,resolved,correct,lastReview,daysSince,onTime,periodStart:cutoff,periodEnd:today});
 }
 
+function topicReviewHealthScore(topic,masteryResult=topicMasteryIndex(topic.subjectId,topic.id),retentionResult=topicRetentionScore(topic.subjectId,topic.id),diagnosis=diagnoseTopic(topic.subjectId,topic.id)){
+  const lastReviewDate=localDateFromTimestamp(topic.lastReviewedAt);
+  const daysSinceReview=lastReviewDate?Math.max(0,-(diasParaRevisao(lastReviewDate)??0)):null;
+  const evidenceValues=[masteryResult?.confidence,retentionResult?.confidence].filter(value=>Number.isFinite(Number(value)));
+  const evidenceStrength=evidenceValues.length?evidenceValues.reduce((sum,value)=>sum+Number(value),0)/evidenceValues.length:null;
+  return calculateReviewHealth({daysSinceReview,hasPriorStudy:topic.status!=='Não iniciado'||Boolean(diagnosis?.performance?.resolved)||Boolean(diagnosis?.studySeconds),retention:retentionResult?.available?retentionResult.score:null,
+    mastery:masteryResult?.confidence>0?masteryResult.score:null,recentPerformance:diagnosis?.performance?.accuracy??null,
+    examImpact:topic.examImportance==null?null:Number(topic.examImportance)*100,evidenceStrength});
+}
+
 function approvalRetencaoMetric(){
   const topics=activeTopics(),values=topics.map(t=>topicRetentionScore(t.subjectId,t.id)).filter(x=>x.available);
   if(!values.length)return {score:50,confidence:0,available:false,raw:null,detail:'Sem evidências de retenção por tópico'};
@@ -4526,19 +4564,20 @@ function renderApprovalDashboard(){
 }
 function renderTopicRetentionDashboard(){
   const el=document.getElementById('topicRetentionDashboard');if(!el)return;
-  const baseRows=activeTopics().map(t=>({...t,r:topicRetentionScore(t.subjectId,t.id)})).filter(x=>x.r.available);
+  const baseRows=activeTopics().map(t=>{const r=topicRetentionScore(t.subjectId,t.id);return {...t,r,h:topicReviewHealthScore(t,topicMasteryIndex(t.subjectId,t.id),r)}}).filter(x=>x.r.available||x.h.value!==null);
   const confidenceMatch=row=>retentionView.confidence==='all'||row.r.confidenceLabel.toLowerCase()===retentionView.confidence;
   const rows=baseRows.filter(row=>(!retentionView.subjectId||row.subjectId===retentionView.subjectId)&&confidenceMatch(row)).sort((a,b)=>{
-    const score=retentionView.order==='desc'?b.r.score-a.r.score:a.r.score-b.r.score;
+    const av=a.r.available?a.r.score:a.h.value,bv=b.r.available?b.r.score:b.h.value;
+    const score=retentionView.order==='desc'?bv-av:av-bv;
     return score||a.r.confidence-b.r.confidence||a.subjectName.localeCompare(b.subjectName)||a.name.localeCompare(b.name);
   });
   const toolbar=`<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map(subject=>`<option value="${escapeAttr(subject.id)}" ${retentionView.subjectId===subject.id?'selected':''}>${escapeHtml(subject.name)}</option>`).join('')}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${retentionView.order==='asc'?'selected':''}>Menor retenção</option><option value="desc" ${retentionView.order==='desc'?'selected':''}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${retentionView.confidence==='alta'?'selected':''}>Confiança alta</option><option value="média" ${retentionView.confidence==='média'?'selected':''}>Confiança média</option><option value="baixa" ${retentionView.confidence==='baixa'?'selected':''}>Confiança baixa</option></select></div>`;
   if(!rows.length){el.innerHTML=toolbar+'<div class="upcoming-empty">Nenhum tópico corresponde aos filtros atuais.</div>';return;}
   const visible=retentionShowAll?rows:rows.slice(0,8);
-  const scoreCounts=new Map();rows.forEach(row=>scoreCounts.set(row.r.score,(scoreCounts.get(row.r.score)||0)+1));
+  const scoreCounts=new Map();rows.forEach(row=>{const score=row.r.available?row.r.score:row.h.value;scoreCounts.set(score,(scoreCounts.get(score)||0)+1)});
   const repeated=[...scoreCounts.entries()].sort((a,b)=>b[1]-a[1])[0];
   const repeatedSummary=repeated&&repeated[1]>=4?`<div class="retention-pattern-note">${repeated[1]} tópicos apresentam retenção estimada em ${repeated[0]}%. Compare a confiança antes de interpretar o resultado como definitivo.</div>`:'';
-  el.innerHTML=toolbar+repeatedSummary+visible.map(x=>{const c=x.r.score>=70?'ok':x.r.score>=50?'warn':'';return `<div class="retention-row" title="${escapeAttr(x.r.detail)}"><div class="retention-topic"><strong>${escapeHtml(x.name)}</strong><span>${escapeHtml(x.subjectName)} · confiança ${x.r.confidenceLabel}</span></div><div class="retention-track"><div class="retention-fill ${c}" style="width:${x.r.score}%"></div></div><div class="retention-value">${x.r.score}%</div></div>`}).join('')+renderCollectionFooter({variant:'block',total:rows.length,visible:visible.length,step:8,label:'tópicos',showMoreAction:'showAllRetention()',showAllAction:'showAllRetention()',showLessAction:retentionShowAll?'resetRetentionLimit()':''});
+  el.innerHTML=toolbar+repeatedSummary+visible.map(x=>{const score=x.r.available?x.r.score:x.h.value,c=score>=70?'ok':score>=50?'warn':'';return `<div class="retention-row" title="${escapeAttr(x.r.detail||x.h.reasons[0])}"><div class="retention-topic"><strong>${escapeHtml(x.name)}</strong><span>${escapeHtml(x.subjectName)} · retenção ${x.r.available?x.r.score+'%':'—'} · saúde ${x.h.value===null?'—':x.h.value+'%'}</span></div><div class="retention-track"><div class="retention-fill ${c}" style="width:${score}%"></div></div><div class="retention-value">${score}%</div></div>`}).join('')+renderCollectionFooter({variant:'block',total:rows.length,visible:visible.length,step:8,label:'tópicos',showMoreAction:'showAllRetention()',showAllAction:'showAllRetention()',showLessAction:retentionShowAll?'resetRetentionLimit()':''});
 }
 
 function planStartDate(){
@@ -4661,7 +4700,7 @@ const RENDER_SCOPE_SECTIONS={
   agenda:new Set(['filtros da agenda','agenda']),
   questoes:new Set(['questões','análise de questões','simulados','gráfico de simulados','desempenho por disciplina']),
   metas:new Set(['metas','configuração estratégica','plano até a prova','metas de horas por dia','metas por disciplina','histórico de metas','ritmo']),
-  hoje:new Set(['resumo executivo','central de diagnóstico','recomendação de estudo','replanejamento','prioridades','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
+  hoje:new Set(['resumo executivo','central de diagnóstico','recomendação de estudo','replanejamento','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
 };
 function activeTabName(){return document.querySelector('.tab-btn.active')?.dataset.tab||'dashboard'}
 const applicationRenderer=createApplicationRenderer({
@@ -4702,7 +4741,6 @@ const applicationRenderer=createApplicationRenderer({
     ['central de diagnóstico',renderDiagnosisCenter],
     ['recomendação de estudo',renderStudyRecommendation],
     ['replanejamento',renderWeeklyReplan],
-    ['prioridades',renderPrioridadeHoje],
     ['tarefas da aba hoje',()=>renderCalTarefasHoje('hojeTarefasHoje')],
     ['atrasos da aba hoje',()=>renderCalAtrasadas('hojeAtrasadas')],
     ['simulados planejados',renderSimuladosPlanejados],

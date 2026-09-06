@@ -12,7 +12,7 @@ export function recordRecommendationDecision(feedbackList,recommendation,{accept
     id:idGenerator('recommendation-feedback'),recommendationId:recommendation.recommendationId,
     date:String(recommendation.shownAt).slice(0,10),subjectId:recommendation.subjectId||null,topicId:recommendation.topicId||null,
     accepted:asBoolean(accepted),completed:false,useful:null,reasonSkipped,resultingSessionId:null,
-    score:Number(recommendation.score)||0,confidence:recommendation.confidence||'baixa',algorithmVersion:Number(recommendation.algorithmVersion)||1,
+    score:Number(recommendation.score)||0,confidence:Number.isFinite(Number(recommendation.confidence))?Number(recommendation.confidence):null,confidenceLabel:recommendation.confidenceLabel||recommendation.evidence?.evidenceLabel||null,algorithmVersion:Number(recommendation.algorithmVersion)||1,
     baseline:baseline||null,outcome:null,shownAt:recommendation.shownAt,createdAt:now,completedAt:null,ratedAt:null
   };
   feedbackList.push(feedback);return feedback;

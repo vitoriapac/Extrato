@@ -22,5 +22,5 @@ test('normaliza pesos e versões de algoritmos',()=>{
   const blueprint=normalizeExamBlueprint({targetScore:120,subjects:[{subjectId:'subject-1',expectedQuestions:19.6,questionWeight:2,priority:'high'}]});
   assert.equal(blueprint.targetScore,100);
   assert.deepEqual(blueprint.subjects[0],{subjectId:'subject-1',expectedQuestions:20,questionWeight:2,priority:'high'});
-  assert.deepEqual(normalizeAlgorithmVersions({readiness:2,retention:0}),{readiness:2,retention:1,recommendations:1,adaptiveReview:1,forecasts:1});
+  assert.deepEqual(normalizeAlgorithmVersions({readiness:2,retention:0}),{readiness:2,retention:1,reviewHealth:1,recommendations:3,adaptiveReview:1,forecasts:1});
 });

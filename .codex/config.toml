@@ -1,0 +1,7 @@
+[mcp_servers.playwright]
+command = "cmd.exe"
+args = ["/d", "/s", "/c", "npx -y @playwright/mcp@0.0.80 --headless --isolated --output-dir .playwright-mcp"]
+startup_timeout_sec = 120
+tool_timeout_sec = 120
+required = true
+

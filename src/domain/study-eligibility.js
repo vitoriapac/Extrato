@@ -2,7 +2,8 @@ export const MIN_SESSION_MINUTES=15;
 
 export function needsMaintenance(item){
   return (item.masteryGap!=null&&item.masteryGap>40)||
-    ((item.retentionRisk??item.retentionNeed)!=null&&(item.retentionRisk??item.retentionNeed)>40)||item.reviewUrgency>=40;
+    ((item.retentionRisk??item.retentionNeed)!=null&&(item.retentionRisk??item.retentionNeed)>40)||
+    (item.reviewHealthRisk!=null&&item.reviewHealthRisk>40)||item.reviewUrgency>=40;
 }
 
 export function canStudy(item,{ignoreToday=false}={}){

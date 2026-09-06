@@ -424,7 +424,7 @@
   }
 
   // src/state/strategic.js
-  var DEFAULT_ALGORITHM_VERSIONS = Object.freeze({ readiness: 1, retention: 1, recommendations: 1, adaptiveReview: 1, forecasts: 1 });
+  var DEFAULT_ALGORITHM_VERSIONS = Object.freeze({ readiness: 1, retention: 1, reviewHealth: 1, recommendations: 3, adaptiveReview: 1, forecasts: 1 });
   var EXAM_PRIORITIES = Object.freeze(["low", "normal", "high"]);
   function normalizeTopicStrategy(topic) {
     const importance = topic.examImportance == null || topic.examImportance === "" ? NaN : Number(topic.examImportance);
@@ -665,6 +665,20 @@
     const completeness = totalWeight ? Math.round(availableWeight / totalWeight * 100) / 100 : 0;
     return { value: value2, factors, missingFactors, contributions, completeness };
   }
+  function createScoreResult({ value: value2 = null, state: state2 = null, evidence = null, confidence = null, factors = {}, reasons = [], algorithmVersion = 1, ...details } = {}) {
+    const numeric = value2 == null || !Number.isFinite(Number(value2)) ? null : Math.max(0, Math.min(100, Math.round(Number(value2))));
+    const scoreEvidence = evidence || describeScoreEvidence({ completeness: 0, evidenceStrength: confidence });
+    return {
+      value: numeric,
+      state: state2 || (numeric === null ? "empty" : "estimated"),
+      evidence: scoreEvidence,
+      confidence: confidence == null ? scoreEvidence.evidenceStrength : Math.max(0, Math.min(1, Number(confidence) || 0)),
+      factors,
+      reasons: [...new Set((reasons || []).filter(Boolean))],
+      algorithmVersion: Math.max(1, Math.floor(Number(algorithmVersion) || 1)),
+      ...details
+    };
+  }
 
   // src/domain/analytics/readiness-score.js
   function clampMetric(value2) {
@@ -675,7 +689,7 @@
     const entries = Object.entries(weights);
     const available = entries.filter(([key]) => metrics?.[key]?.available && Number.isFinite(Number(metrics[key].score)));
     const missingFactors = entries.filter(([key]) => !available.some(([availableKey]) => availableKey === key)).map(([key]) => key);
-    if (!available.length) return { value: null, confidence: 0, confidenceLabel: "Baixa", state: "empty", factors: Object.fromEntries(entries.map(([key]) => [key, null])), missingFactors, availableFactors: [], evidence: describeScoreEvidence() };
+    if (!available.length) return { value: null, confidence: 0, confidenceLabel: "Baixa", state: "empty", factors: Object.fromEntries(entries.map(([key]) => [key, null])), missingFactors, availableFactors: [], evidence: describeScoreEvidence(), reasons: ["sem fatores disponíveis"], algorithmVersion: 1 };
     const availableWeight = available.reduce((sum3, [, weight]) => sum3 + weight, 0);
     const value2 = clampMetric(available.reduce((sum3, [key, weight]) => sum3 + Number(metrics[key].score) * weight, 0) / availableWeight);
     const evidenceConfidence = available.reduce((sum3, [key, weight]) => sum3 + (Number(metrics[key].confidence) || 0) * weight, 0) / availableWeight;
@@ -689,7 +703,9 @@
       factors: Object.fromEntries(entries.map(([key]) => [key, metrics?.[key]?.available ? Number(metrics[key].score) : null])),
       missingFactors,
       availableFactors: available.map(([key]) => key),
-      evidence: describeScoreEvidence({ completeness: availableWeight / entries.reduce((sum3, [, weight]) => sum3 + weight, 0), evidenceStrength: evidenceConfidence })
+      evidence: describeScoreEvidence({ completeness: availableWeight / entries.reduce((sum3, [, weight]) => sum3 + weight, 0), evidenceStrength: evidenceConfidence }),
+      reasons: missingFactors.length ? [missingFactors.length + " fator(es) aguardando dados"] : ["todos os fatores disponíveis"],
+      algorithmVersion: 1
     };
   }
 
@@ -876,31 +892,39 @@
   }
 
   // src/domain/analytics/priority-score.js
-  var PRIORITY_ALGORITHM_VERSION = 2;
-  var PRIORITY_WEIGHTS = Object.freeze({ examImpact: 0.25, retentionRisk: 0.2, masteryGap: 0.2, reviewUrgency: 0.15, planAlignment: 0.1, recencyRisk: 0.1 });
+  var PRIORITY_ALGORITHM_VERSION = 3;
+  var PRIORITY_WEIGHTS = Object.freeze({ examImpact: 0.25, retentionRisk: 0.2, masteryGap: 0.2, reviewUrgency: 0.1, reviewHealthRisk: 0.1, planAlignment: 0.075, recencyRisk: 0.075 });
   function calculatePriorityScore(candidate = {}) {
     const result = calculateFactorScore({ ...candidate, retentionRisk: candidate.retentionRisk ?? candidate.retentionNeed }, PRIORITY_WEIGHTS);
     const reasons = [];
     if (result.factors.reviewUrgency >= 40) reasons.push("revisão atrasada ou prevista para agora");
+    if (result.factors.reviewHealthRisk >= 40) reasons.push("saúde da revisão requer atenção");
     if (result.factors.retentionRisk >= 40) reasons.push("retenção estimada pede reforço");
     if (result.factors.masteryGap >= 40) reasons.push("há margem relevante para melhorar o domínio");
     if (result.factors.examImpact >= 60) reasons.push("alto impacto configurado na prova");
     if (result.factors.recencyRisk >= 40) reasons.push("tempo elevado sem contato");
-    const evidence = describeScoreEvidence({ completeness: result.completeness, evidenceStrength: candidate.evidenceStrength });
+    const evidence = describeScoreEvidence({ completeness: result.completeness, evidenceStrength: candidate.evidenceStrength ?? result.completeness });
+    const finalReasons = reasons.length ? reasons : ["prioridade calculada pelos fatores disponíveis"];
     return {
       ...result,
+      ...createScoreResult({
+        value: result.value,
+        state: result.value === null ? "empty" : result.completeness < 0.5 ? "insufficient" : "estimated",
+        evidence,
+        confidence: evidence.evidenceStrength,
+        factors: result.factors,
+        reasons: finalReasons,
+        algorithmVersion: PRIORITY_ALGORITHM_VERSION
+      }),
       score: result.value ?? 0,
-      reasons: reasons.length ? reasons : ["prioridade calculada pelos fatores disponíveis"],
-      confidence: evidence.completenessLabel.toLowerCase(),
-      evidence,
-      algorithmVersion: PRIORITY_ALGORITHM_VERSION
+      confidenceLabel: evidence.evidenceLabel
     };
   }
 
   // src/domain/study-eligibility.js
   var MIN_SESSION_MINUTES = 15;
   function needsMaintenance(item) {
-    return item.masteryGap != null && item.masteryGap > 40 || (item.retentionRisk ?? item.retentionNeed) != null && (item.retentionRisk ?? item.retentionNeed) > 40 || item.reviewUrgency >= 40;
+    return item.masteryGap != null && item.masteryGap > 40 || (item.retentionRisk ?? item.retentionNeed) != null && (item.retentionRisk ?? item.retentionNeed) > 40 || item.reviewHealthRisk != null && item.reviewHealthRisk > 40 || item.reviewUrgency >= 40;
   }
   function canStudy(item, { ignoreToday = false } = {}) {
     return Boolean(item && !item.archived && !item.blockedPrerequisites?.length && (ignoreToday || !item.completed) && (!item.covered || needsMaintenance(item)));
@@ -949,26 +973,37 @@
   }
 
   // src/domain/diagnostics/risk-score.js
+  var RISK_ALGORITHM_VERSION = 1;
   var RISK_WEIGHTS = Object.freeze({ masteryRisk: 0.25, retentionRisk: 0.25, trendRisk: 0.15, recencyRisk: 0.15, examImpact: 0.15, examProximity: 0.05 });
   function calculateRiskScore(factors = {}, weights = RISK_WEIGHTS, { evidenceStrength = null } = {}) {
     const result = calculateFactorScore(factors, weights);
-    const evidence = describeScoreEvidence({ completeness: result.completeness, evidenceStrength });
+    const evidence = describeScoreEvidence({ completeness: result.completeness, evidenceStrength: evidenceStrength ?? result.completeness });
     const value2 = result.value;
+    const reasons = Object.entries(result.contributions).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([key]) => key);
     return {
       ...result,
+      ...createScoreResult({
+        value: value2,
+        state: value2 === null ? "empty" : "estimated",
+        evidence,
+        confidence: evidence.evidenceStrength,
+        factors: result.factors,
+        reasons,
+        algorithmVersion: RISK_ALGORITHM_VERSION
+      }),
       level: value2 === null ? "insufficient" : value2 >= 70 ? "high" : value2 >= 40 ? "medium" : "low",
-      confidence: result.completeness,
-      confidenceLabel: evidence.completenessLabel,
-      evidence
+      completeness: result.completeness,
+      confidenceLabel: evidence.evidenceLabel
     };
   }
 
   // src/application/build-study-candidates.js
-  function buildStudyCandidates({ priorities = [], topics = [], retentions = {}, blueprint = [], sessions = [], today, examProximity = null } = {}) {
+  function buildStudyCandidates({ priorities = [], topics = [], retentions = {}, reviewHealths = {}, blueprint = [], sessions = [], today, examProximity = null } = {}) {
     const catalog = new Map(topics.map((topic) => [topic.id, topic]));
     const candidates = priorities.map((priority) => {
       const topic = catalog.get(priority.topicId), diagnosis = priority.diagnosis;
       const retention = retentions[priority.topicId];
+      const reviewHealth = reviewHealths[priority.topicId];
       const exam = blueprint.find((item) => item.subjectId === priority.subjectId);
       const examImpact = topic?.examImportance != null ? topic.examImportance * 100 : exam ? Math.min(100, (Number(exam.expectedQuestions) || 0) * 4 * (Number(exam.questionWeight) || 1)) : null;
       const mastery = diagnosis?.mastery?.confidence > 0 ? diagnosis.mastery.score : null;
@@ -981,6 +1016,7 @@
       const evidenceStrength = ((diagnosis?.mastery?.confidence || 0) + (retention?.confidence || 0)) / 2;
       const recencyRisk = daysSinceContact === null ? null : Math.min(100, daysSinceContact * 5);
       const retentionRisk = retention?.available ? 100 - retention.score : null;
+      const reviewHealthRisk = reviewHealth?.value == null ? null : 100 - reviewHealth.value;
       const masteryGap = mastery === null ? null : 100 - mastery;
       const studiedMinutes = sessions.filter((session) => session.topicId === priority.topicId && session.date <= today && session.type === "study").reduce((sum3, session) => sum3 + Math.max(0, Number(session.durationSeconds) || 0) / 60, 0);
       const remainingMinutes = topic?.estimatedStudyMinutes == null ? null : Math.max(0, Math.ceil(topic.estimatedStudyMinutes - studiedMinutes));
@@ -1004,6 +1040,8 @@
         retention: retention?.available ? retention.score : null,
         retentionRisk,
         retentionNeed: retentionRisk,
+        reviewHealth,
+        reviewHealthRisk,
         reviewUrgency,
         coverage: covered ? 100 : topic?.status === "Em andamento" ? 50 : 0,
         frequency: daysSinceContact === null ? null : Math.max(0, 100 - daysSinceContact * 5),
@@ -1040,6 +1078,8 @@
     const classification = !available ? "Sem dados" : score >= 80 ? "Dominado" : score >= 60 ? "Em consolidação" : score >= 40 ? "Em desenvolvimento" : "Inicial";
     const completeness = [performance.resolved > 0, trend.key !== "insufficient", reviews.length > 0, recentSeconds > 0].filter(Boolean).length / 4;
     return {
+      value: available ? score : null,
+      state: available ? "estimated" : "empty",
       score,
       available,
       confidence,
@@ -1050,6 +1090,9 @@
       reviewScore,
       studyScore,
       trend,
+      factors: { performance: performanceScore, trend: trendScore, reviews: reviewScore, study: studyScore },
+      reasons: available ? [classification] : ["sem evidências do tópico"],
+      algorithmVersion: 1,
       evidence: { ...createMetricEvidence({ sampleSize: performance.resolved, periodStart, periodEnd, confidence, sources: [performance.resolved ? "questions" : null, reviews.length ? "reviews" : null, recentSeconds ? "sessions" : null] }), ...describeScoreEvidence({ completeness, evidenceStrength: confidence }) }
     };
   }
@@ -1061,10 +1104,61 @@
     const available = Boolean(due.length || resolved || lastReview);
     const completeness = [due.length > 0, resolved > 0, Boolean(lastReview)].filter(Boolean).length / 3;
     const evidence = { ...createMetricEvidence({ sampleSize: resolved, periodStart, periodEnd, confidence, sources: [due.length ? "reviews" : null, resolved ? "questions" : null] }), ...describeScoreEvidence({ completeness, evidenceStrength: confidence }) };
-    if (!available) return { score: 0, raw: null, confidence: 0, confidenceLabel: "Baixa", available: false, detail: "Sem revisões ou questões vinculadas", evidence };
+    if (!available) return { value: null, state: "empty", score: 0, raw: null, confidence: 0, confidenceLabel: "Baixa", available: false, detail: "Sem revisões ou questões vinculadas", evidence, factors: {}, reasons: ["sem revisões ou questões vinculadas"], algorithmVersion: 1 };
     const raw = reviewRate * 0.45 + accuracy * 0.35 + recency * 0.2, score = clamp3(50 + (raw - 50) * (0.35 + confidence * 0.65));
     const detail = (due.length ? onTime + " de " + due.length + " revisões no prazo" : "sem revisões vencidas") + " · " + (resolved ? Math.round(accuracy) + "% em " + resolved + " questões recentes" : "sem questões recentes") + " · " + (daysSince === null ? "sem revisão registrada" : daysSince + "d desde a última revisão");
-    return { score, raw, confidence, confidenceLabel: confidenceLabel(confidence), available: true, detail, evidence };
+    return {
+      value: score,
+      state: completeness < 0.5 ? "insufficient" : "estimated",
+      score,
+      raw,
+      confidence,
+      confidenceLabel: confidenceLabel(confidence),
+      available: true,
+      detail,
+      evidence,
+      factors: { reviewRate, accuracy, recency },
+      reasons: [detail],
+      algorithmVersion: 1
+    };
+  }
+
+  // src/domain/analytics/review-health.js
+  var REVIEW_HEALTH_ALGORITHM_VERSION = 1;
+  var REVIEW_HEALTH_WEIGHTS = Object.freeze({ recency: 0.25, retention: 0.3, mastery: 0.25, recentPerformance: 0.15, examResilience: 0.05 });
+  var clamp4 = (value2) => Math.max(0, Math.min(100, Number(value2) || 0));
+  function calculateReviewHealth({ daysSinceReview = null, hasPriorStudy = false, retention = null, mastery = null, recentPerformance = null, examImpact = null, evidenceStrength = null } = {}) {
+    const knowledge = [retention, mastery, recentPerformance].filter((value2) => value2 != null && Number.isFinite(Number(value2)));
+    const knowledgeFloor = knowledge.length ? Math.min(...knowledge.map(clamp4)) : null;
+    const factors = {
+      recency: daysSinceReview == null ? hasPriorStudy ? 0 : null : clamp4(100 - Math.max(0, Number(daysSinceReview)) * 4),
+      retention,
+      mastery,
+      recentPerformance,
+      examResilience: examImpact == null || knowledgeFloor == null ? null : clamp4(100 - clamp4(examImpact) * (100 - knowledgeFloor) / 100)
+    };
+    const scored = calculateFactorScore(factors, REVIEW_HEALTH_WEIGHTS);
+    const reasons = [];
+    if (daysSinceReview == null && hasPriorStudy) reasons.push("nenhuma revisão registrada");
+    else if (factors.recency != null && factors.recency < 60) reasons.push("muito tempo desde a última revisão");
+    if (factors.retention != null && factors.retention < 60) reasons.push("retenção pede reforço");
+    if (factors.mastery != null && factors.mastery < 60) reasons.push("domínio ainda frágil");
+    if (factors.recentPerformance != null && factors.recentPerformance < 60) reasons.push("desempenho recente abaixo do esperado");
+    if (factors.examResilience != null && factors.examResilience < 60) reasons.push("fragilidade relevante para a prova");
+    const strength = evidenceStrength == null ? scored.completeness : Math.max(0, Math.min(1, Number(evidenceStrength) || 0));
+    const evidence = describeScoreEvidence({ completeness: scored.completeness, evidenceStrength: strength });
+    return createScoreResult({
+      value: scored.value,
+      state: scored.value === null ? "empty" : scored.completeness < 0.5 ? "insufficient" : "estimated",
+      evidence,
+      confidence: strength,
+      factors: scored.factors,
+      reasons: reasons.length ? reasons : ["revisão em condição estável"],
+      algorithmVersion: REVIEW_HEALTH_ALGORITHM_VERSION,
+      missingFactors: scored.missingFactors,
+      contributions: scored.contributions,
+      level: scored.value === null ? "unknown" : scored.value >= 70 ? "healthy" : scored.value >= 45 ? "attention" : "critical"
+    });
   }
 
   // src/application/recommendations/recommendation-feedback.js
@@ -1088,7 +1182,8 @@
       reasonSkipped,
       resultingSessionId: null,
       score: Number(recommendation.score) || 0,
-      confidence: recommendation.confidence || "baixa",
+      confidence: Number.isFinite(Number(recommendation.confidence)) ? Number(recommendation.confidence) : null,
+      confidenceLabel: recommendation.confidenceLabel || recommendation.evidence?.evidenceLabel || null,
       algorithmVersion: Number(recommendation.algorithmVersion) || 1,
       baseline: baseline || null,
       outcome: null,
@@ -1977,20 +2072,20 @@
   }
 
   // src/application/goals/goal-service.js
-  var clamp4 = (value2, min = 0, max = Infinity) => Math.max(min, Math.min(max, Number(value2) || 0));
+  var clamp5 = (value2, min = 0, max = Infinity) => Math.max(min, Math.min(max, Number(value2) || 0));
   function createGoalService({ repository, getDayOfWeek } = {}) {
     if (!repository || typeof repository.getGoals !== "function") throw new TypeError("Serviço de metas requer repositório.");
     return Object.freeze({
-      hoursForDay: (day) => clamp4(repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias),
-      hoursForDate: (date2) => clamp4(repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date2))] ?? repository.getGoals()?.horasDiarias),
+      hoursForDay: (day) => clamp5(repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias),
+      hoursForDate: (date2) => clamp5(repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date2))] ?? repository.getGoals()?.horasDiarias),
       updateDailyHours: (day, value2, { isToday = false } = {}) => {
-        const hours = clamp4(value2);
+        const hours = clamp5(value2);
         repository.updateDailyHours(day, hours);
         if (isToday) repository.updateGoal("horasDiarias", hours);
         return hours;
       },
       applyHoursToEveryDay: (value2) => {
-        const hours = clamp4(value2);
+        const hours = clamp5(value2);
         for (let day = 0; day < 7; day++) repository.updateDailyHours(day, hours);
         repository.updateGoal("horasDiarias", hours);
         return hours;
@@ -1999,7 +2094,7 @@
         repository.updateDailyHours(0, 0);
         repository.updateDailyHours(6, 0);
       },
-      update: (key, value2) => repository.updateGoal(key, key === "metaAprovacao" ? clamp4(value2, 0, 100) : clamp4(value2))
+      update: (key, value2) => repository.updateGoal(key, key === "metaAprovacao" ? clamp5(value2, 0, 100) : clamp5(value2))
     });
   }
 
@@ -2055,7 +2150,7 @@
   }
 
   // src/domain/forecasts/performance-forecast.js
-  var clamp5 = (value2, min = 0, max = 100) => Math.max(min, Math.min(max, value2));
+  var clamp6 = (value2, min = 0, max = 100) => Math.max(min, Math.min(max, value2));
   function confidenceLabel2(value2) {
     return value2 >= 0.7 ? "Alta" : value2 >= 0.35 ? "Média" : "Baixa";
   }
@@ -2067,7 +2162,7 @@
     return (Array.isArray(observations) ? observations : []).map((item) => ({ date: item?.date, value: Number(item?.value), sampleSize: Number(item?.sampleSize) })).filter((item) => dayNumber(item.date) !== null && Number.isFinite(item.value) && item.value >= 0 && item.value <= 100 && Number.isFinite(item.sampleSize) && item.sampleSize > 0).sort((a, b) => a.date.localeCompare(b.date));
   }
   function buildPerformanceForecast({ currentValue = null, currentConfidence = 0, targetScore = 80, observations = [] } = {}) {
-    const current = currentValue === null || currentValue === void 0 ? NaN : Number(currentValue), confidence = clamp5(Number(currentConfidence) || 0, 0, 1), target = clamp5(Number(targetScore) || 80);
+    const current = currentValue === null || currentValue === void 0 ? NaN : Number(currentValue), confidence = clamp6(Number(currentConfidence) || 0, 0, 1), target = clamp6(Number(targetScore) || 80);
     const normalized = normalizeObservations(observations);
     const sampleSize = normalized.reduce((sum3, item) => sum3 + item.sampleSize, 0);
     const observationCount = normalized.length;
@@ -2078,7 +2173,7 @@
       return { available: false, currentBand: null, gap: null, movingAverage: null, forecast30: { available: false, reason: "A faixa atual ainda não possui dados suficientes." }, evidence };
     }
     const margin = Math.max(4, Math.round(18 * (1 - confidence)));
-    const currentBand = { central: Math.round(current), low: Math.round(clamp5(current - margin)), high: Math.round(clamp5(current + margin)), confidence, confidenceLabel: confidenceLabel2(confidence) };
+    const currentBand = { central: Math.round(current), low: Math.round(clamp6(current - margin)), high: Math.round(clamp6(current + margin)), confidence, confidenceLabel: confidenceLabel2(confidence) };
     const gap = { minimum: Math.max(0, Math.round(target - currentBand.high)), maximum: Math.max(0, Math.round(target - currentBand.low)), target };
     const recent = normalized.slice(-3), recentSample = recent.reduce((sum3, item) => sum3 + item.sampleSize, 0);
     const movingAverage = recentSample ? Math.round(recent.reduce((sum3, item) => sum3 + item.value * item.sampleSize, 0) / recentSample) : null;
@@ -2094,11 +2189,11 @@
     const meanX = points.reduce((sum3, item) => sum3 + item.x * item.w, 0) / weight, meanY = points.reduce((sum3, item) => sum3 + item.y * item.w, 0) / weight;
     const denominator = points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) ** 2, 0);
     const rawSlope = denominator ? points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) * (item.y - meanY), 0) / denominator : 0;
-    const forecastConfidence = clamp5(Math.min(1, observationCount / 8) * 0.35 + Math.min(1, sampleSize / 300) * 0.4 + Math.min(1, spanDays / 56) * 0.25);
-    const slopePerDay = clamp5(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
-    const projected = clamp5(normalized.at(-1).value + slopePerDay * 30);
+    const forecastConfidence = clamp6(Math.min(1, observationCount / 8) * 0.35 + Math.min(1, sampleSize / 300) * 0.4 + Math.min(1, spanDays / 56) * 0.25);
+    const slopePerDay = clamp6(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
+    const projected = clamp6(normalized.at(-1).value + slopePerDay * 30);
     const forecastMargin = Math.max(margin, Math.round(16 * (1 - forecastConfidence)));
-    const forecast30 = { available: true, central: Math.round(projected), low: Math.round(clamp5(projected - forecastMargin)), high: Math.round(clamp5(projected + forecastMargin)), confidence: forecastConfidence, confidenceLabel: confidenceLabel2(forecastConfidence), slopePerWeek: Math.round(slopePerDay * 70) / 10, reason: null, evidence: describeScoreEvidence({ completeness: 1, evidenceStrength: forecastConfidence }) };
+    const forecast30 = { available: true, central: Math.round(projected), low: Math.round(clamp6(projected - forecastMargin)), high: Math.round(clamp6(projected + forecastMargin)), confidence: forecastConfidence, confidenceLabel: confidenceLabel2(forecastConfidence), slopePerWeek: Math.round(slopePerDay * 70) / 10, reason: null, evidence: describeScoreEvidence({ completeness: 1, evidenceStrength: forecastConfidence }) };
     return { available: true, currentBand, gap, movingAverage, forecast30, evidence };
   }
 
@@ -4592,6 +4687,12 @@
     const coverage = topic.status === "Concluído" ? 100 : topic.status === "Em andamento" || topic.status === "Revisão" ? 50 : 0;
     const masteryResult = topicMasteryIndex(subject.id, topic.id), retentionResult = topicRetentionScore(subject.id, topic.id);
     const mastery = masteryResult.confidence > 0 ? masteryResult.score : null, retention = retentionResult.available ? retentionResult.score : null;
+    const diagnosis = diagnoseTopic(subject.id, topic.id), reviewHealth = topicReviewHealthScore(topic, masteryResult, retentionResult, diagnosis);
+    const lastContact = diagnosis?.lastActivity ? Math.max(0, -(diasParaRevisao(diagnosis.lastActivity) ?? 0)) : null;
+    const lastReviewDate = localDateFromTimestamp(topic.lastReviewedAt);
+    const lastReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
+    const performance = diagnosis?.performance?.accuracy ?? null, trend = diagnosis?.trend;
+    const blockers = prerequisiteBlockers({ ...topic, mastery, covered: coverage === 100 }, allTopics().map((item) => ({ ...item, covered: item.status === "Concluído", mastery: topicMasteryIndex(item.subjectId, item.id).confidence > 0 ? topicMasteryIndex(item.subjectId, item.id).score : null })));
     let label = "Não iniciado";
     if (coverage > 0 && mastery === null) label = "Em estudo · aguardando questões";
     else if (coverage === 100 && mastery < 50) label = "Coberto, não consolidado";
@@ -4599,8 +4700,13 @@
     else if (coverage === 100 && mastery >= 75) label = "Consolidado";
     else if (coverage === 100) label = "Em consolidação";
     else if (coverage > 0) label = "Em estudo";
-    const metric = (name, value2, detail = "") => `<div><span>${name}</span><strong>${value2 === null ? "Aguardando dados" : Math.round(value2) + "%"}</strong>${detail ? `<small>${escapeHtml(detail)}</small>` : ""}</div>`;
-    return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>Independente do status manual</small></div><div class="topic-analytics-metrics">${metric("Cobertura", coverage)}${metric("Domínio", mastery, mastery === null ? "Registre questões deste tópico" : "Confiança " + Math.round(masteryResult.confidence * 100) + "%")}${metric("Retenção", retention, retention === null ? "Conclua revisões vinculadas" : "Estimativa baseada nas revisões")}</div></div>`;
+    if (blockers.length) label = "Bloqueado por pré-requisito";
+    else if (coverage === 100 && needsMaintenance({ covered: true, masteryGap: mastery === null ? null : 100 - mastery, retentionRisk: retention === null ? null : 100 - retention, reviewHealthRisk: reviewHealth.value === null ? null : 100 - reviewHealth.value })) label = "Estudado, mas precisa consolidação";
+    const pctMetric = (name, value2, detail = "") => `<div class="topic-metric"><span>${name}</span><strong>${value2 === null ? "Aguardando dados" : Math.round(value2) + "%"}</strong><div class="topic-metric-track"><i style="width:${value2 === null ? 0 : Math.round(value2)}%"></i></div>${detail ? `<small>${escapeHtml(detail)}</small>` : ""}</div>`;
+    const textMetric = (name, value2, detail = "") => `<div class="topic-metric"><span>${name}</span><strong>${escapeHtml(value2)}</strong>${detail ? `<small>${escapeHtml(detail)}</small>` : ""}</div>`;
+    const trendText = !trend || trend.key === "insufficient" ? "Aguardando dados" : `${trend.icon} ${trend.label}`;
+    const eligibility = blockers.length ? `🔒 Aguarda ${blockers.map((id) => getTopicName(id) || id).join(", ")}` : coverage === 100 && !needsMaintenance({ covered: true, masteryGap: mastery === null ? null : 100 - mastery, retentionRisk: retention === null ? null : 100 - retention, reviewHealthRisk: reviewHealth.value === null ? null : 100 - reviewHealth.value }) ? "✓ Consolidado" : reviewHealth.level === "critical" ? "↻ Revisão recomendada" : masteryResult.evidence?.evidenceStrength < 0.35 ? "⚠ Poucos dados" : "★ Elegível para priorização";
+    return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>${escapeHtml(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric("Cobertura", coverage)}${pctMetric("Domínio", mastery, mastery === null ? "Registre questões deste tópico" : "Evidência " + masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric("Retenção", retention, retention === null ? "Conclua revisões vinculadas" : "Evidência " + retentionResult.evidence.evidenceLabel.toLowerCase())}${pctMetric("Saúde da revisão", reviewHealth.value, reviewHealth.reasons[0])}${textMetric("Último contato", lastContact === null ? "Sem registro" : lastContact === 0 ? "Hoje" : lastContact + " dias")}${textMetric("Última revisão", lastReview === null ? "Sem registro" : lastReview === 0 ? "Hoje" : lastReview + " dias")}${pctMetric("Desempenho recente", performance, diagnosis?.performance?.resolved ? diagnosis.performance.resolved + " questões" : "Sem questões")}${textMetric("Tendência", trendText, trend?.delta == null ? "" : (trend.delta >= 0 ? "+" : "") + trend.delta + " p.p.")}</div></div>`;
   }
   function moveSubject(id, direction) {
     const active = activeSubjects();
@@ -6514,29 +6620,6 @@
     if (priority.diasSemEstudar >= 7) return priority.diasSemEstudar + "d sem atividade no tópico";
     return priority.tipo === "revisão" ? "Revisão de hoje" : "Tópico novo";
   }
-  function renderPrioridadeHoje() {
-    const container = document.getElementById("prioridadeHojeList");
-    if (!container) return;
-    const priorities = computeStudyPriorities().slice(0, 6);
-    if (priorities.length === 0) {
-      container.innerHTML = `<div class="upcoming-empty">Nenhuma atividade elegível para o tempo disponível. Confira os pré-requisitos e a meta de hoje.</div>`;
-      return;
-    }
-    const TIER_CLASS = { "Alta": "priority-alta", "Média": "priority-media", "Baixa": "priority-baixa" };
-    container.innerHTML = priorities.map(
-      (p, idx) => `
-    <div class="priority-item">
-      <div class="priority-rank">${idx + 1}</div>
-      <div class="priority-info">
-        <div class="priority-subject">${escapeHtml(p.subjectName)}</div>
-        <div class="priority-topic">${escapeHtml(p.topicName)} <span style="opacity:0.6;">· ${p.tipo}</span></div>
-        <div class="priority-reason">${p.diagnosis?.statusIcon || "🟡"} ${escapeHtml(p.diagnosis?.status || "Acompanhamento")} · ${escapeHtml(motivoPrioridade(p))}</div>
-        <div class="priority-reason">Ação: ${escapeHtml(p.recommendedAction)}</div>
-      </div>
-      <div class="priority-badge ${TIER_CLASS[p.tier]}">${PRIORITY_TIER_EMOJI[p.tier]} ${p.score}/100</div>
-    </div>`
-    ).join("");
-  }
   var radarView = { subjectIds: [] };
   function subjectRadarModel(subject) {
     const topics = subject.topics.filter((topic) => !topic.archived), coverage = topics.length ? subjectProgress(subject) : null;
@@ -7013,10 +7096,12 @@
   function intelligenceCandidates() {
     const priorities = collectStudyCandidates(), topics = allTopics();
     const retentions = Object.fromEntries(topics.map((topic) => [topic.id, topicRetentionScore(topic.subjectId, topic.id)]));
+    const reviewHealths = Object.fromEntries(topics.map((topic) => [topic.id, topicReviewHealthScore(topic, topicMasteryIndex(topic.subjectId, topic.id), retentions[topic.id])]));
     return buildStudyCandidates({
       priorities,
       topics,
       retentions,
+      reviewHealths,
       blueprint: state.examBlueprint.subjects,
       sessions: state.studySessions,
       today: todayISO(),
@@ -7044,22 +7129,37 @@
     const container = document.getElementById("studyRecommendation");
     if (!container) return;
     const availableMinutes = Math.max(0, Math.round(metaHoursToday() * 60));
-    const previous = new Map(currentStudyRecommendations.map((item2) => [item2.id, item2]));
-    currentStudyRecommendations = recommendStudy(intelligenceCandidates(), { availableMinutes, excludedIds: [...dismissedRecommendationIds] }).map((item2) => {
-      const old = previous.get(item2.id);
-      return old && old.score === item2.score && old.estimatedMinutes === item2.estimatedMinutes && JSON.stringify(old.factors) === JSON.stringify(item2.factors) ? { ...item2, recommendationId: old.recommendationId, shownAt: old.shownAt, algorithmVersion: PRIORITY_ALGORITHM_VERSION } : createRecommendationPresentation(item2, { id: uid("recommendation"), shownAt: nowISO2(), algorithmVersion: PRIORITY_ALGORITHM_VERSION });
+    const candidates = intelligenceCandidates();
+    const previous = new Map(currentStudyRecommendations.map((item) => [item.id, item]));
+    currentStudyRecommendations = recommendStudy(candidates, { availableMinutes, excludedIds: [...dismissedRecommendationIds] }).map((item) => {
+      const old = previous.get(item.id);
+      return old && old.score === item.score && old.estimatedMinutes === item.estimatedMinutes && JSON.stringify(old.factors) === JSON.stringify(item.factors) ? { ...item, recommendationId: old.recommendationId, shownAt: old.shownAt, algorithmVersion: PRIORITY_ALGORITHM_VERSION } : createRecommendationPresentation(item, { id: uid("recommendation"), shownAt: nowISO2(), algorithmVersion: PRIORITY_ALGORITHM_VERSION });
     });
-    const item = currentStudyRecommendations[0];
-    if (!item) {
-      container.innerHTML = `<div class="upcoming-empty">${availableMinutes < 15 ? "Defina pelo menos 15 minutos na meta de hoje." : "Nenhuma recomendação compatível com o tempo e os dados atuais."}</div>`;
-      return;
-    }
-    const factorLabels = { examImpact: "Impacto na prova", retentionRisk: "Risco de retenção", masteryGap: "Lacuna de domínio", reviewUrgency: "Urgência da revisão", planAlignment: "Alinhamento com o plano", recencyRisk: "Tempo sem contato" };
-    const contributionRows = Object.entries(item.contributions).map(([key, value2]) => `<div><span>${escapeHtml(factorLabels[key] || key)}</span><strong>+${value2}</strong></div>`).join("");
+    const visible = currentStudyRecommendations.slice(0, 3);
+    const factorLabels = { examImpact: "Impacto na prova", retentionRisk: "Risco de retenção", masteryGap: "Lacuna de domínio", reviewUrgency: "Urgência da revisão", reviewHealthRisk: "Saúde da revisão", planAlignment: "Alinhamento com o plano", recencyRisk: "Tempo sem contato" };
     const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null), summary = summarizeRecommendationFeedback(state.recommendationFeedback);
     const outcome = pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>` : "";
     const history = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
-    container.innerHTML = `${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · evidência ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><p>Dados disponíveis: ${Math.round(item.evidence.completeness * 100)}% · força da evidência: ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}. Estimativa por regras.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details>${history}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
+    const visibleIds = new Set(visible.map((item) => item.id));
+    const excluded = candidates.filter((item) => !visibleIds.has(item.id)).map((item) => {
+      if (item.blockedPrerequisites?.length) return { ...item, stateIcon: "🔒", stateText: "Aguarda " + item.blockedPrerequisites.map((id) => getTopicName(id) || id).join(", ") };
+      if (item.completed) return { ...item, stateIcon: "✓", stateText: "Atividade já realizada hoje" };
+      if (item.covered && !needsMaintenance(item)) return { ...item, stateIcon: "✓", stateText: "Concluído e consolidado" };
+      if (item.remainingMinutes === null && !item.covered) return { ...item, stateIcon: "○", stateText: "Carga de estudo ainda não configurada" };
+      if (dismissedRecommendationIds.has(item.id)) return { ...item, stateIcon: "○", stateText: "Ocultado nesta sessão" };
+      return { ...item, stateIcon: item.examImpact != null && item.examImpact < 30 ? "○" : "★", stateText: item.examImpact != null && item.examImpact < 30 ? "Baixa relevância configurada para a prova" : "Prioridade inferior às três recomendações atuais" };
+    }).filter(Boolean).slice(0, 6);
+    const excludedHtml = excluded.length ? `<details class="recommendation-exclusions"><summary>Por que outros tópicos não aparecem?</summary>${excluded.map((item) => `<div><span>${item.stateIcon}</span><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><small>${escapeHtml(item.stateText)}</small></div>`).join("")}</details>` : "";
+    if (!visible.length) {
+      container.innerHTML = `${outcome}<div class="upcoming-empty">${availableMinutes < 15 ? "Defina pelo menos 15 minutos na meta de hoje." : "Nenhuma atividade está elegível neste momento."}</div>${excludedHtml}${history}`;
+      return;
+    }
+    const cards = visible.map((item, index) => {
+      const contributionRows = Object.entries(item.contributions).map(([key, value2]) => `<div><span>${escapeHtml(factorLabels[key] || key)}</span><strong>+${value2}</strong></div>`).join("");
+      const state2 = item.reviewHealth?.level === "critical" ? "↻ Revisão recomendada" : item.evidence.evidenceStrength < 0.35 ? "⚠ Poucos dados" : item.score >= 70 ? "★ Prioridade elevada" : "○ Prioridade calculada";
+      return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}"><div class="recommendation-content"><span class="recommendation-rank">#${index + 1} · Prioridade ${item.score}/100</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || "Estudar agora")}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${escapeHtml(state2)}</p><ul>${item.reasons.slice(0, 3).map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta prioridade?</summary><p>Dados disponíveis: ${Math.round(item.evidence.completeness * 100)}% · força da evidência: ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar estudo</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Ocultar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
+    }).join("");
+    container.innerHTML = `${outcome}<div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
   }
   function recommendationBaseline(topicId) {
     const performance = getTopicPerformance(topicId), retention = topicRetentionScore(null, topicId), found = getTopicById(topicId), last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
@@ -7506,6 +7606,21 @@
     const daysSince = lastReview ? Math.max(0, -(diasParaRevisao(lastReview) ?? 0)) : null;
     return calculateTopicRetention({ due, resolved, correct, lastReview, daysSince, onTime, periodStart: cutoff, periodEnd: today });
   }
+  function topicReviewHealthScore(topic, masteryResult = topicMasteryIndex(topic.subjectId, topic.id), retentionResult = topicRetentionScore(topic.subjectId, topic.id), diagnosis = diagnoseTopic(topic.subjectId, topic.id)) {
+    const lastReviewDate = localDateFromTimestamp(topic.lastReviewedAt);
+    const daysSinceReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
+    const evidenceValues = [masteryResult?.confidence, retentionResult?.confidence].filter((value2) => Number.isFinite(Number(value2)));
+    const evidenceStrength = evidenceValues.length ? evidenceValues.reduce((sum3, value2) => sum3 + Number(value2), 0) / evidenceValues.length : null;
+    return calculateReviewHealth({
+      daysSinceReview,
+      hasPriorStudy: topic.status !== "Não iniciado" || Boolean(diagnosis?.performance?.resolved) || Boolean(diagnosis?.studySeconds),
+      retention: retentionResult?.available ? retentionResult.score : null,
+      mastery: masteryResult?.confidence > 0 ? masteryResult.score : null,
+      recentPerformance: diagnosis?.performance?.accuracy ?? null,
+      examImpact: topic.examImportance == null ? null : Number(topic.examImportance) * 100,
+      evidenceStrength
+    });
+  }
   function approvalRetencaoMetric() {
     const topics = activeTopics(), values = topics.map((t) => topicRetentionScore(t.subjectId, t.id)).filter((x) => x.available);
     if (!values.length) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem evidências de retenção por tópico" };
@@ -7570,10 +7685,14 @@
   function renderTopicRetentionDashboard() {
     const el = document.getElementById("topicRetentionDashboard");
     if (!el) return;
-    const baseRows = activeTopics().map((t) => ({ ...t, r: topicRetentionScore(t.subjectId, t.id) })).filter((x) => x.r.available);
+    const baseRows = activeTopics().map((t) => {
+      const r = topicRetentionScore(t.subjectId, t.id);
+      return { ...t, r, h: topicReviewHealthScore(t, topicMasteryIndex(t.subjectId, t.id), r) };
+    }).filter((x) => x.r.available || x.h.value !== null);
     const confidenceMatch = (row) => retentionView.confidence === "all" || row.r.confidenceLabel.toLowerCase() === retentionView.confidence;
     const rows = baseRows.filter((row) => (!retentionView.subjectId || row.subjectId === retentionView.subjectId) && confidenceMatch(row)).sort((a, b) => {
-      const score = retentionView.order === "desc" ? b.r.score - a.r.score : a.r.score - b.r.score;
+      const av = a.r.available ? a.r.score : a.h.value, bv = b.r.available ? b.r.score : b.h.value;
+      const score = retentionView.order === "desc" ? bv - av : av - bv;
       return score || a.r.confidence - b.r.confidence || a.subjectName.localeCompare(b.subjectName) || a.name.localeCompare(b.name);
     });
     const toolbar = `<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map((subject) => `<option value="${escapeAttr(subject.id)}" ${retentionView.subjectId === subject.id ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("")}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${retentionView.order === "asc" ? "selected" : ""}>Menor retenção</option><option value="desc" ${retentionView.order === "desc" ? "selected" : ""}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${retentionView.confidence === "alta" ? "selected" : ""}>Confiança alta</option><option value="média" ${retentionView.confidence === "média" ? "selected" : ""}>Confiança média</option><option value="baixa" ${retentionView.confidence === "baixa" ? "selected" : ""}>Confiança baixa</option></select></div>`;
@@ -7583,12 +7702,15 @@
     }
     const visible = retentionShowAll ? rows : rows.slice(0, 8);
     const scoreCounts = /* @__PURE__ */ new Map();
-    rows.forEach((row) => scoreCounts.set(row.r.score, (scoreCounts.get(row.r.score) || 0) + 1));
+    rows.forEach((row) => {
+      const score = row.r.available ? row.r.score : row.h.value;
+      scoreCounts.set(score, (scoreCounts.get(score) || 0) + 1);
+    });
     const repeated = [...scoreCounts.entries()].sort((a, b) => b[1] - a[1])[0];
     const repeatedSummary = repeated && repeated[1] >= 4 ? `<div class="retention-pattern-note">${repeated[1]} tópicos apresentam retenção estimada em ${repeated[0]}%. Compare a confiança antes de interpretar o resultado como definitivo.</div>` : "";
     el.innerHTML = toolbar + repeatedSummary + visible.map((x) => {
-      const c = x.r.score >= 70 ? "ok" : x.r.score >= 50 ? "warn" : "";
-      return `<div class="retention-row" title="${escapeAttr(x.r.detail)}"><div class="retention-topic"><strong>${escapeHtml(x.name)}</strong><span>${escapeHtml(x.subjectName)} · confiança ${x.r.confidenceLabel}</span></div><div class="retention-track"><div class="retention-fill ${c}" style="width:${x.r.score}%"></div></div><div class="retention-value">${x.r.score}%</div></div>`;
+      const score = x.r.available ? x.r.score : x.h.value, c = score >= 70 ? "ok" : score >= 50 ? "warn" : "";
+      return `<div class="retention-row" title="${escapeAttr(x.r.detail || x.h.reasons[0])}"><div class="retention-topic"><strong>${escapeHtml(x.name)}</strong><span>${escapeHtml(x.subjectName)} · retenção ${x.r.available ? x.r.score + "%" : "—"} · saúde ${x.h.value === null ? "—" : x.h.value + "%"}</span></div><div class="retention-track"><div class="retention-fill ${c}" style="width:${score}%"></div></div><div class="retention-value">${score}%</div></div>`;
     }).join("") + renderCollectionFooter({ variant: "block", total: rows.length, visible: visible.length, step: 8, label: "tópicos", showMoreAction: "showAllRetention()", showAllAction: "showAllRetention()", showLessAction: retentionShowAll ? "resetRetentionLimit()" : "" });
   }
   function planStartDate() {
@@ -7881,7 +8003,7 @@
     agenda: /* @__PURE__ */ new Set(["filtros da agenda", "agenda"]),
     questoes: /* @__PURE__ */ new Set(["questões", "análise de questões", "simulados", "gráfico de simulados", "desempenho por disciplina"]),
     metas: /* @__PURE__ */ new Set(["metas", "configuração estratégica", "plano até a prova", "metas de horas por dia", "metas por disciplina", "histórico de metas", "ritmo"]),
-    hoje: /* @__PURE__ */ new Set(["resumo executivo", "central de diagnóstico", "recomendação de estudo", "replanejamento", "prioridades", "tarefas da aba hoje", "atrasos da aba hoje", "simulados planejados", "metas de hoje", "alertas", "plano de hoje"])
+    hoje: /* @__PURE__ */ new Set(["resumo executivo", "central de diagnóstico", "recomendação de estudo", "replanejamento", "tarefas da aba hoje", "atrasos da aba hoje", "simulados planejados", "metas de hoje", "alertas", "plano de hoje"])
   };
   function activeTabName() {
     return document.querySelector(".tab-btn.active")?.dataset.tab || "dashboard";
@@ -7924,7 +8046,6 @@
       ["central de diagnóstico", renderDiagnosisCenter],
       ["recomendação de estudo", renderStudyRecommendation],
       ["replanejamento", renderWeeklyReplan],
-      ["prioridades", renderPrioridadeHoje],
       ["tarefas da aba hoje", () => renderCalTarefasHoje("hojeTarefasHoje")],
       ["atrasos da aba hoje", () => renderCalAtrasadas("hojeAtrasadas")],
       ["simulados planejados", renderSimuladosPlanejados],

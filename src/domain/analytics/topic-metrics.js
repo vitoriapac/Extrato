@@ -19,7 +19,8 @@ export function calculateTopicMastery({topic={},performance={resolved:0,accuracy
   const score=available?clamp(performanceScore*.4+trendScore*.2+reviewScore*.15+studyScore*.15+confidence*10):0;
   const classification=!available?'Sem dados':score>=80?'Dominado':score>=60?'Em consolidação':score>=40?'Em desenvolvimento':'Inicial';
   const completeness=[performance.resolved>0,trend.key!=='insufficient',reviews.length>0,recentSeconds>0].filter(Boolean).length/4;
-  return {score,available,confidence,confidenceLabel:confidenceLabel(confidence),classification,performanceScore,trendScore,reviewScore,studyScore,trend,
+  return {value:available?score:null,state:available?'estimated':'empty',score,available,confidence,confidenceLabel:confidenceLabel(confidence),classification,performanceScore,trendScore,reviewScore,studyScore,trend,
+    factors:{performance:performanceScore,trend:trendScore,reviews:reviewScore,study:studyScore},reasons:available?[classification]:['sem evidências do tópico'],algorithmVersion:1,
     evidence:{...createMetricEvidence({sampleSize:performance.resolved,periodStart,periodEnd,confidence,sources:[performance.resolved?'questions':null,reviews.length?'reviews':null,recentSeconds?'sessions':null]}),...describeScoreEvidence({completeness,evidenceStrength:confidence})}};
 }
 
@@ -32,8 +33,9 @@ export function calculateTopicRetention({due=[],resolved=0,correct=0,lastReview=
   const available=Boolean(due.length||resolved||lastReview);
   const completeness=[due.length>0,resolved>0,Boolean(lastReview)].filter(Boolean).length/3;
   const evidence={...createMetricEvidence({sampleSize:resolved,periodStart,periodEnd,confidence,sources:[due.length?'reviews':null,resolved?'questions':null]}),...describeScoreEvidence({completeness,evidenceStrength:confidence})};
-  if(!available)return {score:0,raw:null,confidence:0,confidenceLabel:'Baixa',available:false,detail:'Sem revisões ou questões vinculadas',evidence};
+  if(!available)return {value:null,state:'empty',score:0,raw:null,confidence:0,confidenceLabel:'Baixa',available:false,detail:'Sem revisões ou questões vinculadas',evidence,factors:{},reasons:['sem revisões ou questões vinculadas'],algorithmVersion:1};
   const raw=reviewRate*.45+accuracy*.35+recency*.20,score=clamp(50+(raw-50)*(.35+confidence*.65));
   const detail=(due.length?onTime+' de '+due.length+' revisões no prazo':'sem revisões vencidas')+' · '+(resolved?Math.round(accuracy)+'% em '+resolved+' questões recentes':'sem questões recentes')+' · '+(daysSince===null?'sem revisão registrada':daysSince+'d desde a última revisão');
-  return {score,raw,confidence,confidenceLabel:confidenceLabel(confidence),available:true,detail,evidence};
+  return {value:score,state:completeness<.5?'insufficient':'estimated',score,raw,confidence,confidenceLabel:confidenceLabel(confidence),available:true,detail,evidence,
+    factors:{reviewRate,accuracy,recency},reasons:[detail],algorithmVersion:1};
 }

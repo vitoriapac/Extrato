@@ -33,6 +33,7 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/domain/analytics/score-evidence.js`: separa disponibilidade de dados, força da evidência e incerteza heurística.
 - `src/domain/analytics/priority-score.js`: fórmula única de prioridade usada por recomendações e planejamento.
 - `src/domain/analytics/topic-metrics.js`: métricas puras de domínio e retenção por tópico.
+- `src/domain/analytics/review-health.js`: condição explicável da revisão a partir de recência, retenção, domínio, desempenho e impacto da prova.
 - `src/domain/analytics/readiness-score.js`: composição ponderada do índice e de sua confiança.
 - `src/domain/analytics/coverage.js`: cobertura de tópicos ativos.
 - `src/domain/analytics/consistency.js`: sequência de atividade e cumprimento das metas diárias.
