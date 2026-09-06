@@ -5,7 +5,7 @@ function existingSourceKeys(plans,studyPlanId){
   return new Set((plans||[]).flatMap(plan=>(plan.items||[]).filter(item=>item.studyPlanId===studyPlanId&&item.studyPlanItemId&&ACTIVE_STATUSES.has(item.status)).map(item=>item.studyPlanItemId)));
 }
 
-export function buildDailyPlanProposal({studyPlan,existingPlans=[],days=[],dueReviews=[],reserveRatio=.1}={}){
+export function buildDailyPlanProposal({studyPlan,existingPlans=[],days=[],dueReviews=[],reserveRatio=.1,eligibleTopicIds=null}={}){
   if(!studyPlan?.id||!Array.isArray(studyPlan.items))return {state:'insufficient',reason:'Plano semanal ausente.',days:[],plannedMinutes:0,unallocatedMinutes:0};
   const existingKeys=existingSourceKeys(existingPlans,studyPlan.id),ratio=Math.max(0,Math.min(.4,Number(reserveRatio)||0));
   const slots=(days||[]).map(day=>{
@@ -14,8 +14,9 @@ export function buildDailyPlanProposal({studyPlan,existingPlans=[],days=[],dueRe
     return {date:day.date,availableMinutes:available,reserveMinutes:reserve,existingMinutes:existing,remaining:capacity,items:[]};
   });
   const candidates=[];
-  (dueReviews||[]).filter(review=>review?.topicId&&review?.date&&!existingKeys.has(`review:${review.id}`)).forEach((review,index)=>candidates.push({studyPlanItemId:`review:${review.id||index}`,subjectId:review.subjectId||null,topicId:review.topicId,subjectName:review.subjectName||'',topicName:review.topicName||'',type:'review',minutes:clampMinutes(review.minutes||25),dueDate:review.date,origin:'review'}));
-  studyPlan.items.filter(item=>!existingKeys.has(item.id)).forEach(item=>{
+  const allowed=topicId=>eligibleTopicIds===null||eligibleTopicIds.includes(topicId);
+  (dueReviews||[]).filter(review=>review?.topicId&&review?.date&&allowed(review.topicId)&&!existingKeys.has(`review:${review.id}`)).forEach((review,index)=>candidates.push({studyPlanItemId:`review:${review.id||index}`,subjectId:review.subjectId||null,topicId:review.topicId,subjectName:review.subjectName||'',topicName:review.topicName||'',type:'review',minutes:clampMinutes(review.minutes||25),dueDate:review.date,origin:'review'}));
+  studyPlan.items.filter(item=>allowed(item.topicId||item.id)&&!existingKeys.has(item.id)).forEach(item=>{
     const mixes=[['review',item.activityMix?.reviews],['questions',item.activityMix?.questions],['study',item.activityMix?.theory]].filter(([,minutes])=>clampMinutes(minutes)>0);
     (mixes.length?mixes:[['study',item.minutes]]).forEach(([type,minutes])=>candidates.push({studyPlanItemId:item.id,subjectId:item.subjectId||null,topicId:item.topicId||item.id||null,subjectName:item.subjectName||'',topicName:item.topicName||'',type,minutes:clampMinutes(minutes),dueDate:null,origin:'study-plan'}));
   });

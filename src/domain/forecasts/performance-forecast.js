@@ -1,3 +1,5 @@
+import {describeScoreEvidence} from '../analytics/score-evidence.js';
+
 const clamp=(value,min=0,max=100)=>Math.max(min,Math.min(max,value));
 
 function confidenceLabel(value){
@@ -23,7 +25,7 @@ export function buildPerformanceForecast({currentValue=null,currentConfidence=0,
   const observationCount=normalized.length;
   const periodStart=normalized[0]?.date||null,periodEnd=normalized.at(-1)?.date||null;
   const spanDays=periodStart&&periodEnd?Math.round(dayNumber(periodEnd)-dayNumber(periodStart)):0;
-  const evidence={sampleSize,observationCount,periodStart,periodEnd,spanDays};
+  const evidence={sampleSize,observationCount,periodStart,periodEnd,spanDays,...describeScoreEvidence({completeness:Number.isFinite(current)?1:0,evidenceStrength:Number.isFinite(current)?confidence:null})};
   if(!Number.isFinite(current)||current<0||current>100){
     return {available:false,currentBand:null,gap:null,movingAverage:null,forecast30:{available:false,reason:'A faixa atual ainda não possui dados suficientes.'},evidence};
   }
@@ -48,6 +50,6 @@ export function buildPerformanceForecast({currentValue=null,currentConfidence=0,
   const slopePerDay=clamp(rawSlope,-1,1)*(.35+forecastConfidence*.35);
   const projected=clamp(normalized.at(-1).value+slopePerDay*30);
   const forecastMargin=Math.max(margin,Math.round(16*(1-forecastConfidence)));
-  const forecast30={available:true,central:Math.round(projected),low:Math.round(clamp(projected-forecastMargin)),high:Math.round(clamp(projected+forecastMargin)),confidence:forecastConfidence,confidenceLabel:confidenceLabel(forecastConfidence),slopePerWeek:Math.round(slopePerDay*70)/10,reason:null};
+  const forecast30={available:true,central:Math.round(projected),low:Math.round(clamp(projected-forecastMargin)),high:Math.round(clamp(projected+forecastMargin)),confidence:forecastConfidence,confidenceLabel:confidenceLabel(forecastConfidence),slopePerWeek:Math.round(slopePerDay*70)/10,reason:null,evidence:describeScoreEvidence({completeness:1,evidenceStrength:forecastConfidence})};
   return {available:true,currentBand,gap,movingAverage,forecast30,evidence};
 }

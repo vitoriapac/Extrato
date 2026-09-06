@@ -1,3 +1,5 @@
+import {describeScoreEvidence} from './score-evidence.js';
+
 export function clampMetric(value){return Math.max(0,Math.min(100,Math.round(Number(value)||0)))}
 
 export function calculateWeightedScore(metrics,weights){
@@ -14,7 +16,7 @@ export function calculateReadinessScore(metrics,weights=READINESS_WEIGHTS){
   const entries=Object.entries(weights);
   const available=entries.filter(([key])=>metrics?.[key]?.available&&Number.isFinite(Number(metrics[key].score)));
   const missingFactors=entries.filter(([key])=>!available.some(([availableKey])=>availableKey===key)).map(([key])=>key);
-  if(!available.length)return {value:null,confidence:0,confidenceLabel:'Baixa',state:'empty',factors:Object.fromEntries(entries.map(([key])=>[key,null])),missingFactors,availableFactors:[]};
+  if(!available.length)return {value:null,confidence:0,confidenceLabel:'Baixa',state:'empty',factors:Object.fromEntries(entries.map(([key])=>[key,null])),missingFactors,availableFactors:[],evidence:describeScoreEvidence()};
   const availableWeight=available.reduce((sum,[,weight])=>sum+weight,0);
   const value=clampMetric(available.reduce((sum,[key,weight])=>sum+Number(metrics[key].score)*weight,0)/availableWeight);
   const evidenceConfidence=available.reduce((sum,[key,weight])=>sum+(Number(metrics[key].confidence)||0)*weight,0)/availableWeight;
@@ -24,6 +26,7 @@ export function calculateReadinessScore(metrics,weights=READINESS_WEIGHTS){
     value,confidence,confidenceLabel:confidence>=.70?'Alta':confidence>=.35?'Média':'Baixa',
     state:available.length<2?'insufficient':'estimated',
     factors:Object.fromEntries(entries.map(([key])=>[key,metrics?.[key]?.available?Number(metrics[key].score):null])),
-    missingFactors,availableFactors:available.map(([key])=>key)
+    missingFactors,availableFactors:available.map(([key])=>key),
+    evidence:describeScoreEvidence({completeness:availableWeight/entries.reduce((sum,[,weight])=>sum+weight,0),evidenceStrength:evidenceConfidence})
   };
 }

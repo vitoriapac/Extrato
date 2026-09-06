@@ -8,7 +8,9 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `styles/tokens.css`: cores, temas e tokens visuais.
 - `styles/app.css`: layout e componentes.
 - `src/theme-bootstrap.js`: aplica o tema antes da primeira pintura.
-- `src/bootstrap.js`: executa a inicialização com contexto explícito e contenção de falhas.
+- `src/bootstrap/bootstrap-application.js`: executa a inicialização com contexto explícito e contenção de falhas.
+- `src/bootstrap/register-lifecycle.js`: registra e permite desmontar eventos globais do ciclo de vida.
+- `src/bootstrap.js`: reexportação temporária compatível do bootstrap modular.
 - `src/application/create-app-context.js`: registra provider, relógio, repositórios e gerador de IDs injetáveis.
 - `src/application/demo/demo-mode.js`: controla entrada, reinício e saída segura da demonstração.
 - `src/state/schema.js`: contrato do estado, versões, enums e chaves de armazenamento.
@@ -28,6 +30,9 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/demo/demo-generator.js`: cenário determinístico móvel de 90 dias para exploração do produto.
 - `src/domain/reviews.js`: regras puras de intervalos e revisões adaptativas.
 - `src/domain/analytics/evidence.js`: contrato comum de amostra, período, confiança e fontes.
+- `src/domain/analytics/score-evidence.js`: separa disponibilidade de dados, força da evidência e incerteza heurística.
+- `src/domain/analytics/priority-score.js`: fórmula única de prioridade usada por recomendações e planejamento.
+- `src/domain/analytics/topic-metrics.js`: métricas puras de domínio e retenção por tópico.
 - `src/domain/analytics/readiness-score.js`: composição ponderada do índice e de sua confiança.
 - `src/domain/analytics/coverage.js`: cobertura de tópicos ativos.
 - `src/domain/analytics/consistency.js`: sequência de atividade e cumprimento das metas diárias.
@@ -41,9 +46,11 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/application/build-executive-summary.js`: modelo de apresentação do resumo executivo sem acesso ao DOM.
 - `src/application/generate-diagnosis.js`: classificação explicável de gargalos, oportunidades, riscos e foco semanal.
 - `src/application/recommend-study.js`: priorização normalizada e limitada pelo tempo disponível.
+- `src/application/build-study-candidates.js`: composição única dos candidatos, riscos, evidências e elegibilidade.
 - `src/application/build-study-plan.js`: proposta semanal até a prova, limitada por carga e disponibilidade.
 - `src/application/replan-study.js`: cálculo de déficit e proposta de redistribuição sem mutação automática do plano.
 - `src/application/planning/distribute-study-plan.js`: distribuição confirmável do plano semanal, materialização diária e desfazer protegido por execução.
+- `src/domain/study-eligibility.js`: sessões curtas, manutenção de tópicos concluídos e validação transitiva de pré-requisitos.
 - `src/application/sessions/session-service.js`: ciclo de vida das sessões e sincronização de questões, planejamento, histórico e recomendações.
 - `src/application/records/record-service.js`: operações normalizadas para calendário, questões, simulados e metas.
 - `src/application/subjects/subject-service.js`: ciclo de vida de disciplinas e tópicos, incluindo arquivamento auditável.
@@ -56,6 +63,8 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/ui/controllers/editable-collection-controller.js`: estado de rascunho e ciclo de edição dos registros operacionais.
 - `src/ui/controllers/preferences-controller.js`: tema visual e persistência das preferências locais.
 - `src/ui/controllers/backup-controller.js`: leitura, exportação e importação de arquivos de backup no navegador.
+- `src/ui/controllers/delegated-events-controller.js`: roteamento seguro das ações declarativas da interface sem funções globais.
+- `src/ui/renderers/application-renderer.js`: composição resiliente e seletiva das seções visuais.
 - `src/application/goals/goal-service.js`: regras de metas globais e disponibilidade diária.
 - `src/application/analytics/build-overview-view-model.js`: composição das métricas de tempo da Visão Geral sem dependência do DOM.
 - `src/repositories/settings-repository.js`: alterações controladas das metas e configurações persistentes.
@@ -65,7 +74,7 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/reports/report-data.js`: snapshot estratégico filtrado por período e independente da interface.
 - `src/reports/report-template.js`: template seguro do relatório A4.
 - `src/reports/print-report.js`: coordenação isolada da impressão/“Salvar como PDF”.
-- `src/app.js`: composição temporária da interface e funcionalidades ainda não extraídas.
+- `src/app.js`: raiz de composição, compatibilidade dos fluxos legados e registro explícito das dependências.
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
 - `styles/print.css`: apresentação A4 do relatório exportado pela impressão do navegador.
 
@@ -92,3 +101,12 @@ IndexedDB é usado em conjunto com armazenamento local. Cada estado recebe `upda
 O schema 15 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo, vínculos auditáveis do planejamento, evidências das recomendações e o estado individual da revisão adaptativa. Dados ausentes são mantidos em estado neutro (`null`) e backups anteriores continuam sendo migrados automaticamente.
 
 O Índice de Prontidão usa cobertura (30%), domínio (25%), retenção (20%), consistência (15%) e simulados (10%). Pesos de fatores indisponíveis são redistribuídos entre as evidências existentes; a ausência reduz a confiança, mas não produz nota zero.
+
+## Auditoria final da modularização
+
+- A interface não publica controladores no escopo global; a única exceção é `window.__EXTRATO_TEST__`, criada apenas com `?test=1` para a suíte legada.
+- Eventos declarativos aceitam somente handlers registrados e argumentos previamente permitidos.
+- Renderizadores de alto nível isolam falhas por seção, evitando que um cartão interrompa toda a tela.
+- Alterações de metas, disciplinas, sessões, revisões, planejamento e registros operacionais passam por serviços e repositórios.
+- Acesso técnico a IndexedDB, `localStorage`, `sessionStorage`, arquivos e impressão está contido em providers ou controladores de infraestrutura.
+- `app.bundle.js` continua sendo artefato gerado; a fonte de verdade permanece nos módulos de `src/`.

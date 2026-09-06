@@ -10,5 +10,6 @@ test('ordena recomendações pela fórmula explicável',()=>{
 test('respeita tempo, exclusões, conclusão e arquivamento',()=>{
   const base={estimatedMinutes:20,examImpact:60,masteryGap:50,planAlignment:50};
   const result=recommendStudy([{...base,id:'ok'},{...base,id:'long',estimatedMinutes:90},{...base,id:'skip'},{...base,id:'done',completed:true},{...base,id:'arch',archived:true}],{availableMinutes:30,excludedIds:['skip']});
-  assert.deepEqual(result.map(item=>item.id),['ok']);
+  assert.deepEqual(result.map(item=>item.id),['ok','long']);
+  assert.equal(result[1].estimatedMinutes,30);
 });

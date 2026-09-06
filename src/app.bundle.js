@@ -291,7 +291,7 @@
     return Object.freeze({ storage, repositories: Object.freeze({ ...repositories }), clock, idGenerator });
   }
 
-  // src/bootstrap.js
+  // src/bootstrap/bootstrap-application.js
   async function bootstrapApplication({ context, start, onError = () => {
   } } = {}) {
     if (!context) throw new TypeError("O bootstrap requer o contexto da aplicação.");
@@ -303,6 +303,18 @@
       onError(error, context);
       return { ok: false, error, context };
     }
+  }
+
+  // src/bootstrap/register-lifecycle.js
+  function registerApplicationLifecycle({ window: window2, onBeforeUnload, onResponsiveChange, mediaQuery = "(max-width:760px)" } = {}) {
+    if (!window2) throw new TypeError("Ciclo de vida requer janela.");
+    const media = window2.matchMedia(mediaQuery), beforeUnload = () => onBeforeUnload?.(), responsive = (event) => onResponsiveChange?.(event);
+    window2.addEventListener("beforeunload", beforeUnload);
+    media.addEventListener("change", responsive);
+    return Object.freeze({ media, destroy: () => {
+      window2.removeEventListener("beforeunload", beforeUnload);
+      media.removeEventListener("change", responsive);
+    } });
   }
 
   // src/domain/reviews.js
@@ -603,6 +615,57 @@
     return [...groups.entries()];
   }
 
+  // src/domain/analytics/evidence.js
+  var CONFIDENCE_THRESHOLDS = { medium: 0.35, high: 0.7 };
+  function confidenceLabel(value2) {
+    const confidence = Math.max(0, Math.min(1, Number(value2) || 0));
+    return confidence >= CONFIDENCE_THRESHOLDS.high ? "Alta" : confidence >= CONFIDENCE_THRESHOLDS.medium ? "Média" : "Baixa";
+  }
+  function createMetricEvidence({ sampleSize = 0, periodStart = null, periodEnd = null, confidence = 0, sources = [] } = {}) {
+    const normalizedConfidence = Math.max(0, Math.min(1, Number(confidence) || 0));
+    return {
+      sampleSize: Math.max(0, Math.floor(Number(sampleSize) || 0)),
+      periodStart: periodStart || null,
+      periodEnd: periodEnd || null,
+      confidence: normalizedConfidence,
+      confidenceLabel: confidenceLabel(normalizedConfidence),
+      sources: [...new Set((sources || []).filter(Boolean))]
+    };
+  }
+
+  // src/domain/analytics/score-evidence.js
+  var unit = (value2) => Math.max(0, Math.min(1, Number(value2) || 0));
+  function describeScoreEvidence({ completeness = 0, evidenceStrength = null } = {}) {
+    const coverage = unit(completeness), strength = evidenceStrength == null ? null : unit(evidenceStrength);
+    return {
+      completeness: coverage,
+      completenessLabel: confidenceLabel(coverage),
+      evidenceStrength: strength,
+      evidenceLabel: strength === null ? "Não avaliada" : confidenceLabel(strength),
+      uncertainty: "heuristic",
+      detail: "Estimativa por regras; não representa probabilidade de aprovação."
+    };
+  }
+  function calculateFactorScore(input = {}, weights = {}) {
+    const factors = {}, missingFactors = [];
+    let weighted = 0, availableWeight = 0;
+    const totalWeight = Object.values(weights).reduce((sum3, value3) => sum3 + value3, 0);
+    for (const [key, weight] of Object.entries(weights)) {
+      const value3 = input[key];
+      if (value3 == null || value3 === "" || !Number.isFinite(Number(value3))) {
+        missingFactors.push(key);
+        continue;
+      }
+      factors[key] = Math.max(0, Math.min(100, Number(value3)));
+      weighted += factors[key] * weight;
+      availableWeight += weight;
+    }
+    const value2 = availableWeight ? Math.round(weighted / availableWeight) : null;
+    const contributions = Object.fromEntries(Object.entries(factors).map(([key, score]) => [key, Math.round(score * weights[key] / availableWeight)]));
+    const completeness = totalWeight ? Math.round(availableWeight / totalWeight * 100) / 100 : 0;
+    return { value: value2, factors, missingFactors, contributions, completeness };
+  }
+
   // src/domain/analytics/readiness-score.js
   function clampMetric(value2) {
     return Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
@@ -612,7 +675,7 @@
     const entries = Object.entries(weights);
     const available = entries.filter(([key]) => metrics?.[key]?.available && Number.isFinite(Number(metrics[key].score)));
     const missingFactors = entries.filter(([key]) => !available.some(([availableKey]) => availableKey === key)).map(([key]) => key);
-    if (!available.length) return { value: null, confidence: 0, confidenceLabel: "Baixa", state: "empty", factors: Object.fromEntries(entries.map(([key]) => [key, null])), missingFactors, availableFactors: [] };
+    if (!available.length) return { value: null, confidence: 0, confidenceLabel: "Baixa", state: "empty", factors: Object.fromEntries(entries.map(([key]) => [key, null])), missingFactors, availableFactors: [], evidence: describeScoreEvidence() };
     const availableWeight = available.reduce((sum3, [, weight]) => sum3 + weight, 0);
     const value2 = clampMetric(available.reduce((sum3, [key, weight]) => sum3 + Number(metrics[key].score) * weight, 0) / availableWeight);
     const evidenceConfidence = available.reduce((sum3, [key, weight]) => sum3 + (Number(metrics[key].confidence) || 0) * weight, 0) / availableWeight;
@@ -625,7 +688,8 @@
       state: available.length < 2 ? "insufficient" : "estimated",
       factors: Object.fromEntries(entries.map(([key]) => [key, metrics?.[key]?.available ? Number(metrics[key].score) : null])),
       missingFactors,
-      availableFactors: available.map(([key]) => key)
+      availableFactors: available.map(([key]) => key),
+      evidence: describeScoreEvidence({ completeness: availableWeight / entries.reduce((sum3, [, weight]) => sum3 + weight, 0), evidenceStrength: evidenceConfidence })
     };
   }
 
@@ -811,34 +875,196 @@
     return { bottlenecks, opportunities, criticalReviews, topicsAtRisk, weeklyFocus, state: valid.length ? "estimated" : "insufficient" };
   }
 
+  // src/domain/analytics/priority-score.js
+  var PRIORITY_ALGORITHM_VERSION = 2;
+  var PRIORITY_WEIGHTS = Object.freeze({ examImpact: 0.25, retentionRisk: 0.2, masteryGap: 0.2, reviewUrgency: 0.15, planAlignment: 0.1, recencyRisk: 0.1 });
+  function calculatePriorityScore(candidate = {}) {
+    const result = calculateFactorScore({ ...candidate, retentionRisk: candidate.retentionRisk ?? candidate.retentionNeed }, PRIORITY_WEIGHTS);
+    const reasons = [];
+    if (result.factors.reviewUrgency >= 40) reasons.push("revisão atrasada ou prevista para agora");
+    if (result.factors.retentionRisk >= 40) reasons.push("retenção estimada pede reforço");
+    if (result.factors.masteryGap >= 40) reasons.push("há margem relevante para melhorar o domínio");
+    if (result.factors.examImpact >= 60) reasons.push("alto impacto configurado na prova");
+    if (result.factors.recencyRisk >= 40) reasons.push("tempo elevado sem contato");
+    const evidence = describeScoreEvidence({ completeness: result.completeness, evidenceStrength: candidate.evidenceStrength });
+    return {
+      ...result,
+      score: result.value ?? 0,
+      reasons: reasons.length ? reasons : ["prioridade calculada pelos fatores disponíveis"],
+      confidence: evidence.completenessLabel.toLowerCase(),
+      evidence,
+      algorithmVersion: PRIORITY_ALGORITHM_VERSION
+    };
+  }
+
+  // src/domain/study-eligibility.js
+  var MIN_SESSION_MINUTES = 15;
+  function needsMaintenance(item) {
+    return item.masteryGap != null && item.masteryGap > 40 || (item.retentionRisk ?? item.retentionNeed) != null && (item.retentionRisk ?? item.retentionNeed) > 40 || item.reviewUrgency >= 40;
+  }
+  function canStudy(item, { ignoreToday = false } = {}) {
+    return Boolean(item && !item.archived && !item.blockedPrerequisites?.length && (ignoreToday || !item.completed) && (!item.covered || needsMaintenance(item)));
+  }
+  function sessionMinutes(item, availableMinutes) {
+    const available = Math.floor(Number(availableMinutes) || 0);
+    if (available < MIN_SESSION_MINUTES) return 0;
+    const desired = Number(item.sessionMinutes ?? item.estimatedMinutes) || 30;
+    return Math.min(available, 60, Math.max(MIN_SESSION_MINUTES, Math.round(desired)));
+  }
+  function prerequisiteBlockers(topic, topics = []) {
+    const byId = new Map(topics.map((item) => [item.id, item]));
+    const blockers = /* @__PURE__ */ new Set();
+    const visit = (id, path) => {
+      if (path.has(id)) {
+        blockers.add(id);
+        return;
+      }
+      const base = byId.get(id);
+      if (!base || base.archived) {
+        blockers.add(id);
+        return;
+      }
+      const known = base.mastery != null && Number.isFinite(Number(base.mastery));
+      if (known ? base.mastery < 60 : !(base.covered || base.status === "Concluído")) blockers.add(id);
+      const next = new Set(path);
+      next.add(id);
+      for (const parent of base.prerequisites || []) visit(parent, next);
+    };
+    for (const id of topic.prerequisites || []) visit(id, /* @__PURE__ */ new Set([topic.id]));
+    return [...blockers];
+  }
+  function withPrerequisiteEligibility(candidates, topics = candidates) {
+    return candidates.map((item) => ({ ...item, blockedPrerequisites: prerequisiteBlockers(item, topics) }));
+  }
+  function resolveStudyEligibility(candidates, topics) {
+    return candidates.filter(Boolean).map((item) => ({ ...item, blockedPrerequisites: topics ? prerequisiteBlockers(item, topics) : item.blockedPrerequisites ?? prerequisiteBlockers(item, candidates.filter(Boolean)) }));
+  }
+
   // src/application/recommend-study.js
-  var RECOMMENDATION_WEIGHTS = Object.freeze({ examImpact: 0.25, retentionRisk: 0.2, masteryGap: 0.2, reviewUrgency: 0.15, planAlignment: 0.1, recencyRisk: 0.1 });
-  var clamp3 = (value2) => Math.max(0, Math.min(100, Number(value2) || 0));
   function recommendStudy(candidates = [], options = {}) {
     const availableMinutes = Math.max(0, Number(options.availableMinutes) || 0);
     const excluded = new Set(options.excludedIds || []);
-    return candidates.filter((item) => item && !item.archived && !item.completed && !excluded.has(item.id)).map((item) => {
-      const factors = {};
-      let weighted = 0, weight = 0;
-      const missingFactors = [];
-      Object.entries(RECOMMENDATION_WEIGHTS).forEach(([key, factorWeight]) => {
-        if (item[key] == null) {
-          missingFactors.push(key);
-          return;
-        }
-        factors[key] = clamp3(item[key]);
-        weighted += factors[key] * factorWeight;
-        weight += factorWeight;
-      });
-      const contributions = Object.fromEntries(Object.entries(factors).map(([key, value2]) => [key, Math.round(value2 * (RECOMMENDATION_WEIGHTS[key] / weight))]));
-      const reasons = [];
-      if (factors.reviewUrgency >= 40) reasons.push("revisão atrasada ou prevista para agora");
-      if (factors.retentionRisk >= 40) reasons.push("retenção estimada pede reforço");
-      if (factors.masteryGap >= 40) reasons.push("há margem relevante para melhorar o domínio");
-      if (factors.examImpact >= 60) reasons.push("alto impacto configurado na prova");
-      if (factors.recencyRisk >= 40) reasons.push("tempo elevado sem contato");
-      return { ...item, factors, contributions, missingFactors, score: weight ? Math.round(weighted / weight) : 0, reasons: reasons.length ? reasons : ["prioridade compatível com o plano atual"], confidence: weight >= 0.8 ? "alta" : weight >= 0.5 ? "média" : "baixa" };
-    }).filter((item) => item.estimatedMinutes <= availableMinutes && Object.keys(item.factors).length).sort((a, b) => b.score - a.score || a.estimatedMinutes - b.estimatedMinutes);
+    const eligible = resolveStudyEligibility(candidates, options.topics);
+    return eligible.filter((item) => canStudy(item) && !excluded.has(item.id)).map((item) => ({ ...item, ...calculatePriorityScore(item), estimatedMinutes: sessionMinutes(item, availableMinutes) })).filter((item) => item.estimatedMinutes > 0 && Object.keys(item.factors).length).sort((a, b) => b.score - a.score || a.estimatedMinutes - b.estimatedMinutes || String(a.id).localeCompare(String(b.id)));
+  }
+
+  // src/domain/diagnostics/risk-score.js
+  var RISK_WEIGHTS = Object.freeze({ masteryRisk: 0.25, retentionRisk: 0.25, trendRisk: 0.15, recencyRisk: 0.15, examImpact: 0.15, examProximity: 0.05 });
+  function calculateRiskScore(factors = {}, weights = RISK_WEIGHTS, { evidenceStrength = null } = {}) {
+    const result = calculateFactorScore(factors, weights);
+    const evidence = describeScoreEvidence({ completeness: result.completeness, evidenceStrength });
+    const value2 = result.value;
+    return {
+      ...result,
+      level: value2 === null ? "insufficient" : value2 >= 70 ? "high" : value2 >= 40 ? "medium" : "low",
+      confidence: result.completeness,
+      confidenceLabel: evidence.completenessLabel,
+      evidence
+    };
+  }
+
+  // src/application/build-study-candidates.js
+  function buildStudyCandidates({ priorities = [], topics = [], retentions = {}, blueprint = [], sessions = [], today, examProximity = null } = {}) {
+    const catalog = new Map(topics.map((topic) => [topic.id, topic]));
+    const candidates = priorities.map((priority) => {
+      const topic = catalog.get(priority.topicId), diagnosis = priority.diagnosis;
+      const retention = retentions[priority.topicId];
+      const exam = blueprint.find((item) => item.subjectId === priority.subjectId);
+      const examImpact = topic?.examImportance != null ? topic.examImportance * 100 : exam ? Math.min(100, (Number(exam.expectedQuestions) || 0) * 4 * (Number(exam.questionWeight) || 1)) : null;
+      const mastery = diagnosis?.mastery?.confidence > 0 ? diagnosis.mastery.score : null;
+      const daysSinceContact = diagnosis?.lastActivity ? Math.max(0, Number(priority.diasSemEstudar) || 0) : null;
+      const covered = topic?.status === "Concluído";
+      const reviewUrgency = priority.tipo === "revisão" ? Math.min(100, 40 + Math.max(0, Number(priority.diasAtrasado) || 0) * 12) : 0;
+      const sessionMinutes2 = Math.max(15, Math.min(60, Number(priority.estimatedMinutes) || 30));
+      const trend = diagnosis?.trend;
+      const trendRisk = !trend || trend.key === "insufficient" ? null : trend.key === "down" ? Math.min(100, 40 + Math.abs(trend.delta || 0) * 6) : 0;
+      const evidenceStrength = ((diagnosis?.mastery?.confidence || 0) + (retention?.confidence || 0)) / 2;
+      const recencyRisk = daysSinceContact === null ? null : Math.min(100, daysSinceContact * 5);
+      const retentionRisk = retention?.available ? 100 - retention.score : null;
+      const masteryGap = mastery === null ? null : 100 - mastery;
+      const studiedMinutes = sessions.filter((session) => session.topicId === priority.topicId && session.date <= today && session.type === "study").reduce((sum3, session) => sum3 + Math.max(0, Number(session.durationSeconds) || 0) / 60, 0);
+      const remainingMinutes = topic?.estimatedStudyMinutes == null ? null : Math.max(0, Math.ceil(topic.estimatedStudyMinutes - studiedMinutes));
+      const risk = calculateRiskScore({ masteryRisk: masteryGap, retentionRisk, trendRisk, recencyRisk, examImpact, examProximity }, void 0, { evidenceStrength });
+      const candidate = {
+        ...priority,
+        id: priority.topicId || priority.id,
+        archived: Boolean(topic?.topicArchived || topic?.subjectArchived || topic?.archived),
+        covered,
+        completed: sessions.some((session) => session.date === today && session.topicId === priority.topicId && (!priority.topicId ? session.subjectId === priority.subjectId : true) && Number(session.durationSeconds) > 0),
+        prerequisites: topic?.prerequisites || [],
+        remainingMinutes,
+        totalEstimatedMinutes: topic?.estimatedStudyMinutes ?? null,
+        estimatedMinutes: sessionMinutes2,
+        sessionMinutes: sessionMinutes2,
+        action: priority.recommendedAction,
+        risk,
+        examImpact,
+        mastery,
+        masteryGap,
+        retention: retention?.available ? retention.score : null,
+        retentionRisk,
+        retentionNeed: retentionRisk,
+        reviewUrgency,
+        coverage: covered ? 100 : topic?.status === "Em andamento" ? 50 : 0,
+        frequency: daysSinceContact === null ? null : Math.max(0, 100 - daysSinceContact * 5),
+        daysSinceContact,
+        recencyRisk,
+        planAlignment: priority.tipo === "continuar" ? 90 : priority.tipo === "revisão" ? 80 : 55,
+        trendRisk,
+        improvementPotential: masteryGap,
+        effortEfficiency: Math.max(10, 100 - sessionMinutes2),
+        evidenceStrength
+      };
+      return { ...candidate, ...calculatePriorityScore(candidate) };
+    });
+    const prerequisites = topics.map((topic) => ({ ...topic, covered: topic.status === "Concluído", archived: topic.archived || topic.topicArchived || topic.subjectArchived, mastery: candidates.find((item) => item.topicId === topic.id)?.mastery ?? null }));
+    return withPrerequisiteEligibility(candidates, prerequisites);
+  }
+
+  // src/domain/analytics/topic-metrics.js
+  var clamp3 = (value2) => Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
+  function calculateTopicMastery({ topic = {}, performance = { resolved: 0, accuracy: null }, trend = { key: "insufficient" }, reviews = [], recentSessions = [], periodStart = null, periodEnd = null } = {}) {
+    const questionConfidence = Math.min(1, performance.resolved / 50);
+    const performanceScore = performance.accuracy === null ? 0 : performance.accuracy * questionConfidence + 40 * (1 - questionConfidence);
+    let trendScore = 50;
+    if (trend.key === "up") trendScore = Math.min(100, 70 + Math.max(0, trend.delta || 0) * 2);
+    else if (trend.key === "down") trendScore = Math.max(0, 40 - Math.abs(trend.delta || 0) * 2);
+    else if (trend.key === "stable") trendScore = 60;
+    const completedReviews = reviews.filter((review) => review.status === "Concluído").length;
+    const reviewScore = reviews.length ? completedReviews / reviews.length * 100 : topic.status === "Concluído" ? 50 : 20;
+    const recentSeconds = recentSessions.reduce((sum3, item) => sum3 + (Number(item.durationSeconds) || 0), 0);
+    const studyScore = Math.min(100, recentSeconds / 7200 * 100);
+    const confidence = Math.min(1, questionConfidence * 0.6 + Math.min(1, reviews.length / 4) * 0.2 + Math.min(1, recentSessions.length / 4) * 0.2);
+    const available = performance.resolved > 0 || reviews.length > 0 || recentSeconds > 0;
+    const score = available ? clamp3(performanceScore * 0.4 + trendScore * 0.2 + reviewScore * 0.15 + studyScore * 0.15 + confidence * 10) : 0;
+    const classification = !available ? "Sem dados" : score >= 80 ? "Dominado" : score >= 60 ? "Em consolidação" : score >= 40 ? "Em desenvolvimento" : "Inicial";
+    const completeness = [performance.resolved > 0, trend.key !== "insufficient", reviews.length > 0, recentSeconds > 0].filter(Boolean).length / 4;
+    return {
+      score,
+      available,
+      confidence,
+      confidenceLabel: confidenceLabel(confidence),
+      classification,
+      performanceScore,
+      trendScore,
+      reviewScore,
+      studyScore,
+      trend,
+      evidence: { ...createMetricEvidence({ sampleSize: performance.resolved, periodStart, periodEnd, confidence, sources: [performance.resolved ? "questions" : null, reviews.length ? "reviews" : null, recentSeconds ? "sessions" : null] }), ...describeScoreEvidence({ completeness, evidenceStrength: confidence }) }
+    };
+  }
+  function calculateTopicRetention({ due = [], resolved = 0, correct = 0, lastReview = null, daysSince = null, onTime = 0, periodStart = null, periodEnd = null } = {}) {
+    const reviewRate = due.length ? onTime / due.length * 100 : 50;
+    const accuracy = resolved ? correct / resolved * 100 : 50;
+    const recency = daysSince === null ? 50 : Math.max(0, 100 - Math.max(0, daysSince - 1) * 2.7);
+    const confidence = Math.min(1, Math.min(1, due.length / 4) * 0.4 + Math.min(1, resolved / 50) * 0.4 + (lastReview ? 1 : 0) * 0.2);
+    const available = Boolean(due.length || resolved || lastReview);
+    const completeness = [due.length > 0, resolved > 0, Boolean(lastReview)].filter(Boolean).length / 3;
+    const evidence = { ...createMetricEvidence({ sampleSize: resolved, periodStart, periodEnd, confidence, sources: [due.length ? "reviews" : null, resolved ? "questions" : null] }), ...describeScoreEvidence({ completeness, evidenceStrength: confidence }) };
+    if (!available) return { score: 0, raw: null, confidence: 0, confidenceLabel: "Baixa", available: false, detail: "Sem revisões ou questões vinculadas", evidence };
+    const raw = reviewRate * 0.45 + accuracy * 0.35 + recency * 0.2, score = clamp3(50 + (raw - 50) * (0.35 + confidence * 0.65));
+    const detail = (due.length ? onTime + " de " + due.length + " revisões no prazo" : "sem revisões vencidas") + " · " + (resolved ? Math.round(accuracy) + "% em " + resolved + " questões recentes" : "sem questões recentes") + " · " + (daysSince === null ? "sem revisão registrada" : daysSince + "d desde a última revisão");
+    return { score, raw, confidence, confidenceLabel: confidenceLabel(confidence), available: true, detail, evidence };
   }
 
   // src/application/recommendations/recommendation-feedback.js
@@ -947,60 +1173,44 @@
     return signals.length ? signals : [{ level: "positive", text: "Indicadores equilibrados no momento" }];
   }
 
-  // src/domain/diagnostics/risk-score.js
-  var RISK_WEIGHTS = Object.freeze({ masteryRisk: 0.25, retentionRisk: 0.25, trendRisk: 0.15, recencyRisk: 0.15, examImpact: 0.15, examProximity: 0.05 });
-  var clamp4 = (value2) => Math.max(0, Math.min(100, Number(value2) || 0));
-  function calculateRiskScore(factors = {}, weights = RISK_WEIGHTS) {
-    let weighted = 0, availableWeight = 0;
-    const normalized = {}, missingFactors = [], contributions = {};
-    Object.entries(weights).forEach(([key, weight]) => {
-      if (factors[key] == null) {
-        missingFactors.push(key);
-        return;
-      }
-      normalized[key] = clamp4(factors[key]);
-      weighted += normalized[key] * weight;
-      availableWeight += weight;
-    });
-    if (!availableWeight) return { value: null, level: "insufficient", confidence: 0, confidenceLabel: "Baixa", factors: normalized, missingFactors, contributions: {} };
-    const value2 = Math.round(weighted / availableWeight);
-    Object.entries(normalized).forEach(([key, factor]) => {
-      contributions[key] = Math.round(factor * (weights[key] / availableWeight));
-    });
-    const confidence = Math.round(availableWeight * 100) / 100;
-    return { value: value2, level: value2 >= 70 ? "high" : value2 >= 40 ? "medium" : "low", confidence, confidenceLabel: confidence >= 0.8 ? "Alta" : confidence >= 0.5 ? "Média" : "Baixa", factors: normalized, missingFactors, contributions };
-  }
-
   // src/application/build-study-plan.js
-  var clamp5 = (value2) => Math.max(0, Math.min(100, Number(value2) || 0));
-  function buildStudyPlan({ topics = [], weeklyAvailableMinutes = 0, weeksUntilExam = 0 } = {}) {
-    const active = topics.filter((item) => item && !item.archived && !item.completed);
-    const configured = active.filter((item) => Number(item.estimatedMinutes) > 0);
-    const missingEffort = active.filter((item) => !Number(item.estimatedMinutes)).map((item) => item.id);
-    const availability = Math.max(0, Math.round(Number(weeklyAvailableMinutes) || 0));
-    const weeks = Math.max(0, Math.ceil(Number(weeksUntilExam) || 0));
-    if (!configured.length || availability <= 0 || weeks <= 0) return { state: "insufficient", weeklyAvailableMinutes: availability, weeksUntilExam: weeks, remainingMinutes: configured.reduce((sum3, item) => sum3 + Number(item.estimatedMinutes), 0), missingEffort, items: [], subjects: [], activityMix: { theory: 0, questions: 0, reviews: 0 }, confidence: 0 };
-    const remainingMinutes = configured.reduce((sum3, item) => sum3 + Number(item.estimatedMinutes), 0);
-    const weeklyBudget = Math.min(availability, Math.ceil(remainingMinutes / weeks));
-    const scored = configured.map((item) => {
-      const examImpact = item.examImpact == null ? 50 : clamp5(item.examImpact), masteryGap = item.masteryGap == null ? 50 : clamp5(item.masteryGap), retentionNeed = item.retentionNeed == null ? 50 : clamp5(item.retentionNeed), urgency = clamp5(100 - (weeks - 1) * 4);
-      const score = Math.max(1, examImpact * 0.35 + masteryGap * 0.3 + retentionNeed * 0.2 + urgency * 0.15);
-      return { ...item, score };
-    });
-    const totalScore = scored.reduce((sum3, item) => sum3 + item.score, 0);
-    const allocations = new Map(scored.map((item) => [item.id, Math.min(Math.round(Number(item.estimatedMinutes)), Math.floor(weeklyBudget * item.score / totalScore))]));
+  var positive = (value2) => Number.isFinite(Number(value2)) && Number(value2) > 0 ? Math.round(Number(value2)) : 0;
+  function buildStudyPlan({ topics = [], weeklyAvailableMinutes = 0, weeksUntilExam = 0, prerequisiteTopics } = {}) {
+    const candidates = resolveStudyEligibility(topics, prerequisiteTopics);
+    const active = candidates.filter((item) => item && !item.archived && (!item.completed || item.covered) && (!item.covered || needsMaintenance(item)));
+    const blockedTopics = active.filter((item) => item.blockedPrerequisites?.length).map((item) => ({ id: item.id, topicName: item.topicName, prerequisites: item.blockedPrerequisites }));
+    const effort = (item) => item.covered ? sessionMinutes(item, 60) : positive(item.remainingMinutes ?? item.estimatedMinutes);
+    const missingEffort = active.filter((item) => !item.covered && (item.remainingMinutes ?? item.estimatedMinutes) == null).map((item) => item.id);
+    const configured = active.filter((item) => effort(item) > 0 && canStudy(item, { ignoreToday: true }));
+    const availability = positive(weeklyAvailableMinutes), weeks = Math.max(0, Math.ceil(Number(weeksUntilExam) || 0));
+    const remainingMinutes = active.filter((item) => !item.covered).reduce((sum3, item) => sum3 + effort(item), 0);
+    const maintenanceMinutes = configured.filter((item) => item.covered).reduce((sum3, item) => sum3 + effort(item), 0);
+    const base = { weeklyAvailableMinutes: availability, weeksUntilExam: weeks, remainingMinutes, maintenanceMinutes, missingEffort, blockedTopics };
+    if (!configured.length || availability <= 0 || weeks <= 0) return { ...base, state: "insufficient", items: [], subjects: [], activityMix: { theory: 0, questions: 0, reviews: 0 }, confidence: 0 };
+    const weeklyBudget = Math.min(availability, Math.ceil(remainingMinutes / weeks) + maintenanceMinutes);
+    const scored = configured.map((item) => ({ ...item, ...calculatePriorityScore(item), capacityMinutes: effort(item) })).sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));
+    const totalScore = scored.reduce((sum3, item) => sum3 + Math.max(1, item.score), 0);
+    const allocations = new Map(scored.map((item) => [item.id, Math.min(item.capacityMinutes, Math.floor(weeklyBudget * Math.max(1, item.score) / totalScore))]));
     let unallocated = weeklyBudget - [...allocations.values()].reduce((sum3, value2) => sum3 + value2, 0);
-    for (const item of [...scored].sort((a, b) => b.score - a.score)) {
+    for (const item of scored) {
       if (unallocated <= 0) break;
-      const current = allocations.get(item.id), capacity = Math.max(0, Math.round(Number(item.estimatedMinutes)) - current), extra = Math.min(capacity, unallocated);
+      const current = allocations.get(item.id), extra = Math.min(item.capacityMinutes - current, unallocated);
       allocations.set(item.id, current + extra);
       unallocated -= extra;
     }
     const items = scored.map((item) => {
       const minutes = allocations.get(item.id) || 0;
-      const reviewShare = item.retentionNeed >= 60 ? 0.35 : 0.2, questionShare = item.masteryGap >= 60 ? 0.4 : 0.3;
-      const reviews = Math.round(minutes * reviewShare), questions = Math.round(minutes * questionShare), theory = Math.max(0, minutes - reviews - questions);
-      return { ...item, minutes, activityMix: { theory, questions, reviews } };
+      const retentionNeed = item.retentionRisk ?? item.retentionNeed;
+      const reviewShare = item.covered ? retentionNeed >= 40 || item.reviewUrgency >= 40 ? 0.6 : 0.3 : retentionNeed >= 60 ? 0.35 : 0.2;
+      const reviews = item.covered && minutes >= 30 ? Math.max(15, Math.min(minutes - 15, Math.round(minutes * reviewShare))) : Math.round(minutes * reviewShare);
+      const questions = item.covered ? minutes - reviews : Math.min(minutes - reviews, Math.round(minutes * (item.masteryGap >= 60 ? 0.4 : 0.3)));
+      const activityMix2 = { theory: minutes - reviews - questions, questions, reviews };
+      const largest = Object.keys(activityMix2).sort((a, b) => activityMix2[b] - activityMix2[a])[0];
+      for (const key of Object.keys(activityMix2)) if (key !== largest && activityMix2[key] > 0 && activityMix2[key] < 15) {
+        activityMix2[largest] += activityMix2[key];
+        activityMix2[key] = 0;
+      }
+      return { ...item, minutes, activityMix: activityMix2 };
     }).filter((item) => item.minutes > 0);
     const subjectMap = /* @__PURE__ */ new Map();
     items.forEach((item) => {
@@ -1012,7 +1222,9 @@
     const coverage = active.length ? configured.length / active.length : 0;
     const strategicCoverage = configured.filter((item) => item.examImpact != null).length / configured.length;
     const confidence = Math.round((coverage * 0.65 + strategicCoverage * 0.35) * 100) / 100;
-    return { state: confidence >= 0.75 ? "ready" : "estimated", weeklyAvailableMinutes: availability, weeklyPlannedMinutes: items.reduce((sum3, item) => sum3 + item.minutes, 0), weeksUntilExam: weeks, remainingMinutes, missingEffort, items, subjects: [...subjectMap.values()].sort((a, b) => b.minutes - a.minutes), activityMix, confidence, confidenceLabel: confidence >= 0.8 ? "Alta" : confidence >= 0.5 ? "Média" : "Baixa" };
+    const measured = configured.filter((item) => item.evidenceStrength != null);
+    const evidence = describeScoreEvidence({ completeness: confidence, evidenceStrength: measured.length ? measured.reduce((sum3, item) => sum3 + item.evidenceStrength, 0) / configured.length : null });
+    return { ...base, maintenanceMinutes: items.filter((item) => item.covered).reduce((sum3, item) => sum3 + item.minutes, 0), state: confidence >= 0.75 ? "ready" : "estimated", weeklyPlannedMinutes: items.reduce((sum3, item) => sum3 + item.minutes, 0), items, subjects: [...subjectMap.values()].sort((a, b) => b.minutes - a.minutes), activityMix, confidence, confidenceLabel: evidence.completenessLabel, evidence };
   }
 
   // src/application/replan-study.js
@@ -1098,7 +1310,7 @@
   function existingSourceKeys(plans, studyPlanId) {
     return new Set((plans || []).flatMap((plan) => (plan.items || []).filter((item) => item.studyPlanId === studyPlanId && item.studyPlanItemId && ACTIVE_STATUSES.has(item.status)).map((item) => item.studyPlanItemId)));
   }
-  function buildDailyPlanProposal({ studyPlan, existingPlans = [], days = [], dueReviews = [], reserveRatio = 0.1 } = {}) {
+  function buildDailyPlanProposal({ studyPlan, existingPlans = [], days = [], dueReviews = [], reserveRatio = 0.1, eligibleTopicIds = null } = {}) {
     if (!studyPlan?.id || !Array.isArray(studyPlan.items)) return { state: "insufficient", reason: "Plano semanal ausente.", days: [], plannedMinutes: 0, unallocatedMinutes: 0 };
     const existingKeys = existingSourceKeys(existingPlans, studyPlan.id), ratio = Math.max(0, Math.min(0.4, Number(reserveRatio) || 0));
     const slots = (days || []).map((day) => {
@@ -1107,8 +1319,9 @@
       return { date: day.date, availableMinutes: available, reserveMinutes: reserve, existingMinutes: existing, remaining: capacity, items: [] };
     });
     const candidates = [];
-    (dueReviews || []).filter((review) => review?.topicId && review?.date && !existingKeys.has(`review:${review.id}`)).forEach((review, index) => candidates.push({ studyPlanItemId: `review:${review.id || index}`, subjectId: review.subjectId || null, topicId: review.topicId, subjectName: review.subjectName || "", topicName: review.topicName || "", type: "review", minutes: clampMinutes(review.minutes || 25), dueDate: review.date, origin: "review" }));
-    studyPlan.items.filter((item) => !existingKeys.has(item.id)).forEach((item) => {
+    const allowed = (topicId) => eligibleTopicIds === null || eligibleTopicIds.includes(topicId);
+    (dueReviews || []).filter((review) => review?.topicId && review?.date && allowed(review.topicId) && !existingKeys.has(`review:${review.id}`)).forEach((review, index) => candidates.push({ studyPlanItemId: `review:${review.id || index}`, subjectId: review.subjectId || null, topicId: review.topicId, subjectName: review.subjectName || "", topicName: review.topicName || "", type: "review", minutes: clampMinutes(review.minutes || 25), dueDate: review.date, origin: "review" }));
+    studyPlan.items.filter((item) => allowed(item.topicId || item.id) && !existingKeys.has(item.id)).forEach((item) => {
       const mixes = [["review", item.activityMix?.reviews], ["questions", item.activityMix?.questions], ["study", item.activityMix?.theory]].filter(([, minutes]) => clampMinutes(minutes) > 0);
       (mixes.length ? mixes : [["study", item.minutes]]).forEach(([type, minutes]) => candidates.push({ studyPlanItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || item.id || null, subjectName: item.subjectName || "", topicName: item.topicName || "", type, minutes: clampMinutes(minutes), dueDate: null, origin: "study-plan" }));
     });
@@ -1644,21 +1857,140 @@
     return Object.freeze({ download, exportState, importFile });
   }
 
+  // src/ui/controllers/delegated-events-controller.js
+  function splitArguments(source) {
+    const values = [];
+    let current = "", quote = null, escaped = false, depth = 0;
+    for (const char of source) {
+      if (escaped) {
+        current += char;
+        escaped = false;
+        continue;
+      }
+      if (char === "\\") {
+        current += char;
+        escaped = true;
+        continue;
+      }
+      if (quote) {
+        current += char;
+        if (char === quote) quote = null;
+        continue;
+      }
+      if (char === "'" || char === '"') {
+        quote = char;
+        current += char;
+        continue;
+      }
+      if (char === "(") {
+        depth++;
+        current += char;
+        continue;
+      }
+      if (char === ")") {
+        depth--;
+        current += char;
+        continue;
+      }
+      if (char === "," && depth === 0) {
+        values.push(current.trim());
+        current = "";
+        continue;
+      }
+      current += char;
+    }
+    if (current.trim()) values.push(current.trim());
+    return values;
+  }
+  function defaultArgument(expression, element) {
+    const value2 = expression.trim();
+    if (value2 === "this.value") return element.value;
+    if (value2 === "this.value||null") return element.value || null;
+    if (value2 === "this.textContent") return element.textContent;
+    if (value2 === "this") return element;
+    if (value2 === "true") return true;
+    if (value2 === "false") return false;
+    if (value2 === "null") return null;
+    if (/^-?\d+(?:\.\d+)?$/.test(value2)) return Number(value2);
+    if (value2.startsWith("'") && value2.endsWith("'") || value2.startsWith('"') && value2.endsWith('"')) return value2.slice(1, -1).replace(/\\(['"\\])/g, "$1");
+    throw new Error("Argumento de evento não permitido: " + value2);
+  }
+  function createDelegatedEventsController({ document: document2, handlers = {}, parseArgument = defaultArgument, resolveSpecial = () => false, onError = () => {
+  }, eventTypes = ["click", "change", "input", "blur"] } = {}) {
+    if (!document2) throw new TypeError("Controlador de eventos requer documento.");
+    const dispatch = (code, event, element) => {
+      const normalized = String(code || "").trim();
+      if (!normalized) return;
+      if (normalized === "event.stopPropagation()") {
+        event.stopPropagation();
+        return;
+      }
+      if (normalized.startsWith("event.stopPropagation();")) {
+        event.stopPropagation();
+        return dispatch(normalized.slice(24), event, element);
+      }
+      if (resolveSpecial(normalized, event, element)) return;
+      const match = normalized.match(/^([A-Za-z_$][\w$]*)\((.*)\)$/s), fn = match && handlers[match[1]];
+      if (!match || typeof fn !== "function") throw new Error("Ação de evento não permitida: " + normalized);
+      fn(...match[2].trim() ? splitArguments(match[2]).map((argument) => parseArgument(argument, element)) : []);
+    };
+    const listeners = [];
+    const register = () => {
+      eventTypes.forEach((type) => {
+        const listener = (event) => {
+          const key = `delegated${type[0].toUpperCase() + type.slice(1)}`, attribute = `data-${key.replace(/[A-Z]/g, (char) => "-" + char.toLowerCase())}`, element = event.target?.closest?.(`[${attribute}]`);
+          if (!element) return;
+          try {
+            dispatch(element.dataset[key], event, element);
+          } catch (error) {
+            onError(error, event, element);
+          }
+        };
+        document2.addEventListener(type, listener, type === "blur");
+        listeners.push([type, listener]);
+      });
+      return api;
+    };
+    const destroy = () => listeners.splice(0).forEach(([type, listener]) => document2.removeEventListener(type, listener, type === "blur"));
+    const api = Object.freeze({ dispatch, register, destroy });
+    return api;
+  }
+
+  // src/ui/renderers/application-renderer.js
+  function createApplicationRenderer({ sections = [], scopes = {}, globalSections = [], getActiveScope = () => null, afterRender = () => {
+  }, onError = () => {
+  } } = {}) {
+    const globals = new Set(globalSections);
+    const render2 = (scope = "all") => {
+      const selected = scope === "all" ? null : scopes[scope === "active" ? getActiveScope() : scope];
+      sections.filter(([name]) => !selected || globals.has(name) || selected.has(name)).forEach(([name, renderer]) => {
+        try {
+          renderer();
+        } catch (error) {
+          onError(error, name);
+        }
+      });
+      afterRender();
+      return scope;
+    };
+    return Object.freeze({ render: render2 });
+  }
+
   // src/application/goals/goal-service.js
-  var clamp6 = (value2, min = 0, max = Infinity) => Math.max(min, Math.min(max, Number(value2) || 0));
+  var clamp4 = (value2, min = 0, max = Infinity) => Math.max(min, Math.min(max, Number(value2) || 0));
   function createGoalService({ repository, getDayOfWeek } = {}) {
     if (!repository || typeof repository.getGoals !== "function") throw new TypeError("Serviço de metas requer repositório.");
     return Object.freeze({
-      hoursForDay: (day) => clamp6(repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias),
-      hoursForDate: (date2) => clamp6(repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date2))] ?? repository.getGoals()?.horasDiarias),
+      hoursForDay: (day) => clamp4(repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias),
+      hoursForDate: (date2) => clamp4(repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date2))] ?? repository.getGoals()?.horasDiarias),
       updateDailyHours: (day, value2, { isToday = false } = {}) => {
-        const hours = clamp6(value2);
+        const hours = clamp4(value2);
         repository.updateDailyHours(day, hours);
         if (isToday) repository.updateGoal("horasDiarias", hours);
         return hours;
       },
       applyHoursToEveryDay: (value2) => {
-        const hours = clamp6(value2);
+        const hours = clamp4(value2);
         for (let day = 0; day < 7; day++) repository.updateDailyHours(day, hours);
         repository.updateGoal("horasDiarias", hours);
         return hours;
@@ -1667,7 +1999,7 @@
         repository.updateDailyHours(0, 0);
         repository.updateDailyHours(6, 0);
       },
-      update: (key, value2) => repository.updateGoal(key, key === "metaAprovacao" ? clamp6(value2, 0, 100) : clamp6(value2))
+      update: (key, value2) => repository.updateGoal(key, key === "metaAprovacao" ? clamp4(value2, 0, 100) : clamp4(value2))
     });
   }
 
@@ -1723,8 +2055,8 @@
   }
 
   // src/domain/forecasts/performance-forecast.js
-  var clamp7 = (value2, min = 0, max = 100) => Math.max(min, Math.min(max, value2));
-  function confidenceLabel(value2) {
+  var clamp5 = (value2, min = 0, max = 100) => Math.max(min, Math.min(max, value2));
+  function confidenceLabel2(value2) {
     return value2 >= 0.7 ? "Alta" : value2 >= 0.35 ? "Média" : "Baixa";
   }
   function dayNumber(date2) {
@@ -1735,18 +2067,18 @@
     return (Array.isArray(observations) ? observations : []).map((item) => ({ date: item?.date, value: Number(item?.value), sampleSize: Number(item?.sampleSize) })).filter((item) => dayNumber(item.date) !== null && Number.isFinite(item.value) && item.value >= 0 && item.value <= 100 && Number.isFinite(item.sampleSize) && item.sampleSize > 0).sort((a, b) => a.date.localeCompare(b.date));
   }
   function buildPerformanceForecast({ currentValue = null, currentConfidence = 0, targetScore = 80, observations = [] } = {}) {
-    const current = currentValue === null || currentValue === void 0 ? NaN : Number(currentValue), confidence = clamp7(Number(currentConfidence) || 0, 0, 1), target = clamp7(Number(targetScore) || 80);
+    const current = currentValue === null || currentValue === void 0 ? NaN : Number(currentValue), confidence = clamp5(Number(currentConfidence) || 0, 0, 1), target = clamp5(Number(targetScore) || 80);
     const normalized = normalizeObservations(observations);
     const sampleSize = normalized.reduce((sum3, item) => sum3 + item.sampleSize, 0);
     const observationCount = normalized.length;
     const periodStart = normalized[0]?.date || null, periodEnd = normalized.at(-1)?.date || null;
     const spanDays = periodStart && periodEnd ? Math.round(dayNumber(periodEnd) - dayNumber(periodStart)) : 0;
-    const evidence = { sampleSize, observationCount, periodStart, periodEnd, spanDays };
+    const evidence = { sampleSize, observationCount, periodStart, periodEnd, spanDays, ...describeScoreEvidence({ completeness: Number.isFinite(current) ? 1 : 0, evidenceStrength: Number.isFinite(current) ? confidence : null }) };
     if (!Number.isFinite(current) || current < 0 || current > 100) {
       return { available: false, currentBand: null, gap: null, movingAverage: null, forecast30: { available: false, reason: "A faixa atual ainda não possui dados suficientes." }, evidence };
     }
     const margin = Math.max(4, Math.round(18 * (1 - confidence)));
-    const currentBand = { central: Math.round(current), low: Math.round(clamp7(current - margin)), high: Math.round(clamp7(current + margin)), confidence, confidenceLabel: confidenceLabel(confidence) };
+    const currentBand = { central: Math.round(current), low: Math.round(clamp5(current - margin)), high: Math.round(clamp5(current + margin)), confidence, confidenceLabel: confidenceLabel2(confidence) };
     const gap = { minimum: Math.max(0, Math.round(target - currentBand.high)), maximum: Math.max(0, Math.round(target - currentBand.low)), target };
     const recent = normalized.slice(-3), recentSample = recent.reduce((sum3, item) => sum3 + item.sampleSize, 0);
     const movingAverage = recentSample ? Math.round(recent.reduce((sum3, item) => sum3 + item.value * item.sampleSize, 0) / recentSample) : null;
@@ -1762,11 +2094,11 @@
     const meanX = points.reduce((sum3, item) => sum3 + item.x * item.w, 0) / weight, meanY = points.reduce((sum3, item) => sum3 + item.y * item.w, 0) / weight;
     const denominator = points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) ** 2, 0);
     const rawSlope = denominator ? points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) * (item.y - meanY), 0) / denominator : 0;
-    const forecastConfidence = clamp7(Math.min(1, observationCount / 8) * 0.35 + Math.min(1, sampleSize / 300) * 0.4 + Math.min(1, spanDays / 56) * 0.25);
-    const slopePerDay = clamp7(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
-    const projected = clamp7(normalized.at(-1).value + slopePerDay * 30);
+    const forecastConfidence = clamp5(Math.min(1, observationCount / 8) * 0.35 + Math.min(1, sampleSize / 300) * 0.4 + Math.min(1, spanDays / 56) * 0.25);
+    const slopePerDay = clamp5(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
+    const projected = clamp5(normalized.at(-1).value + slopePerDay * 30);
     const forecastMargin = Math.max(margin, Math.round(16 * (1 - forecastConfidence)));
-    const forecast30 = { available: true, central: Math.round(projected), low: Math.round(clamp7(projected - forecastMargin)), high: Math.round(clamp7(projected + forecastMargin)), confidence: forecastConfidence, confidenceLabel: confidenceLabel(forecastConfidence), slopePerWeek: Math.round(slopePerDay * 70) / 10, reason: null };
+    const forecast30 = { available: true, central: Math.round(projected), low: Math.round(clamp5(projected - forecastMargin)), high: Math.round(clamp5(projected + forecastMargin)), confidence: forecastConfidence, confidenceLabel: confidenceLabel2(forecastConfidence), slopePerWeek: Math.round(slopePerDay * 70) / 10, reason: null, evidence: describeScoreEvidence({ completeness: 1, evidenceStrength: forecastConfidence }) };
     return { available: true, currentBand, gap, movingAverage, forecast30, evidence };
   }
 
@@ -2582,6 +2914,7 @@
     if (typeof state.examDate !== "string") state.examDate = "";
     state.examBlueprint = normalizeExamBlueprint(state.examBlueprint, state.examDate);
     state.algorithmVersions = normalizeAlgorithmVersions(state.algorithmVersions);
+    state.algorithmVersions.recommendations = PRIORITY_ALGORITHM_VERSION;
     state.algorithmVersions.adaptiveReview = Math.max(2, Number(state.algorithmVersions.adaptiveReview) || 2);
     if (!state.examDate && state.examBlueprint.examDate) state.examDate = state.examBlueprint.examDate;
     if (state.examDate !== state.examBlueprint.examDate) state.examBlueprint.examDate = state.examDate || null;
@@ -3487,6 +3820,13 @@
       return;
     }
     const { plan, item } = found;
+    if (item.topicId) {
+      const candidate = intelligenceCandidates().find((candidate2) => candidate2.topicId === item.topicId);
+      if (!candidate || candidate.archived || candidate.blockedPrerequisites.length) {
+        showToast("Esta atividade aguarda pré-requisitos ou possui um tópico arquivado. Recalcule o plano.");
+        return;
+      }
+    }
     Object.assign(state.activeTimer, {
       subjectId: item.subjectId || null,
       topicId: item.topicId || null,
@@ -5395,33 +5735,17 @@
   }
   function topicMasteryIndex(subjectId, topicId) {
     const found = getTopicById(topicId);
-    if (!found) return { score: 0, confidence: 0, confidenceLabel: "Baixa", classification: "Sem dados" };
-    const performance = getTopicPerformance(topicId);
-    const questionConfidence = Math.min(1, performance.resolved / 50);
-    const performanceScore = performance.accuracy === null ? 0 : performance.accuracy * questionConfidence + 40 * (1 - questionConfidence);
-    const trend = calculateWeightedTrend(getTopicWeeklyTrend(topicId), MIN_TOPIC_TREND_WINDOW_QUESTIONS);
-    let trendScore = 50;
-    if (trend.key === "up") trendScore = Math.min(100, 70 + Math.max(0, trend.delta || 0) * 2);
-    else if (trend.key === "down") trendScore = Math.max(0, 40 - Math.abs(trend.delta || 0) * 2);
-    else if (trend.key === "stable") trendScore = 60;
-    const today = todayISO();
-    const reviews = state.reviewAgenda.filter((review) => (review.topicId || review.topicRef) === topicId && review.date && review.date <= today);
-    const completedReviews = reviews.filter((review) => review.status === "Concluído").length;
-    const reviewScore = reviews.length ? completedReviews / reviews.length * 100 : found.topic.status === "Concluído" ? 50 : 20;
-    const cutoff = addDays(today, -29);
-    const recentSessions = state.studySessions.filter((session) => session.topicId === topicId && session.date >= cutoff && session.date <= today);
-    const recentSeconds = recentSessions.reduce((sum3, session) => sum3 + (Number(session.durationSeconds) || 0), 0);
-    const studyScore = Math.min(100, recentSeconds / (2 * 3600) * 100);
-    const reviewConfidence = Math.min(1, reviews.length / 4);
-    const studyConfidence = Math.min(1, recentSessions.length / 4);
-    const confidence = Math.min(1, questionConfidence * 0.6 + reviewConfidence * 0.2 + studyConfidence * 0.2);
-    const confidenceScore = confidence * 100;
-    let score = Math.round(performanceScore * 0.4 + trendScore * 0.2 + reviewScore * 0.15 + studyScore * 0.15 + confidenceScore * 0.1);
-    const hasEvidence = performance.resolved > 0 || reviews.length > 0 || recentSeconds > 0;
-    if (!hasEvidence) score = 0;
-    score = Math.max(0, Math.min(100, score));
-    const classification = score >= 80 ? "Dominado" : score >= 60 ? "Em consolidação" : score >= 40 ? "Em desenvolvimento" : "Inicial";
-    return { score, confidence, confidenceLabel: confidence >= 0.7 ? "Alta" : confidence >= 0.35 ? "Média" : "Baixa", classification, performanceScore, trendScore, reviewScore, studyScore, trend };
+    if (!found) return calculateTopicMastery();
+    const today = todayISO(), cutoff = addDays(today, -29);
+    return calculateTopicMastery({
+      topic: found.topic,
+      performance: getTopicPerformance(topicId),
+      trend: calculateWeightedTrend(getTopicWeeklyTrend(topicId), MIN_TOPIC_TREND_WINDOW_QUESTIONS),
+      reviews: state.reviewAgenda.filter((review) => (review.topicId || review.topicRef) === topicId && review.date && review.date <= today),
+      recentSessions: state.studySessions.filter((session) => session.topicId === topicId && session.date >= cutoff && session.date <= today),
+      periodStart: null,
+      periodEnd: today
+    });
   }
   function diagnoseTopic(subjectId, topicId) {
     const found = getTopicById(topicId);
@@ -5775,11 +6099,7 @@
   var studyPlanPreview = null;
   var dailyPlanPreview = null;
   function studyPlanCandidates() {
-    return activeTopics().filter((topic) => topic.status !== "Concluído").map((topic) => {
-      const mastery = topicMasteryIndex(topic.subjectId, topic.id), retention = topicRetentionScore(topic.subjectId, topic.id), blueprint = state.examBlueprint.subjects.find((item) => item.subjectId === topic.subjectId);
-      const examImpact = topic.examImportance != null ? topic.examImportance * 100 : blueprint ? Math.min(100, blueprint.expectedQuestions * 4 * blueprint.questionWeight) : null;
-      return { id: topic.id, subjectId: topic.subjectId, subjectName: topic.subjectName, topicName: topic.name, archived: topic.topicArchived || topic.subjectArchived, completed: false, estimatedMinutes: topic.estimatedStudyMinutes, examImpact, masteryGap: mastery.confidence > 0 ? 100 - mastery.score : null, retentionNeed: retention.available ? 100 - retention.score : null };
-    });
+    return intelligenceCandidates().filter((item) => item.topicId).map((item) => ({ ...item, completed: false, estimatedMinutes: item.remainingMinutes }));
   }
   function calculateStudyPlanPreview() {
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
@@ -5811,7 +6131,7 @@
       return { date: date2, availableMinutes: Math.round(metaHoursForDate(date2) * 60) };
     }), end = days.at(-1).date;
     const dueReviews = state.reviewAgenda.filter((review) => review.status !== "Concluído" && review.topicId && review.date >= todayISO() && review.date <= end).map((review) => ({ id: review.id, date: review.date, subjectId: review.subjectId, topicId: review.topicId, subjectName: getSubjectName(review.subjectId), topicName: getTopicName(review.topicId), minutes: 25 }));
-    dailyPlanPreview = dailyPlanService.calculate({ studyPlan, days, dueReviews, reserveRatio: 0.1 });
+    dailyPlanPreview = dailyPlanService.calculate({ studyPlan, days, dueReviews, reserveRatio: 0.1, eligibleTopicIds: intelligenceCandidates().filter((item) => !item.archived && !item.blockedPrerequisites.length).map((item) => item.topicId) });
     renderStudyPlanBuilder();
   }
   function clearDailyPlanPreview() {
@@ -5850,13 +6170,14 @@
       return;
     }
     const plan = studyPlanPreview;
+    const blockedNote = plan.blockedTopics?.length ? `<p class="confidence-note">Aguardando pré-requisitos: ${plan.blockedTopics.map((item) => escapeHtml(item.topicName || item.id) + " (" + item.prerequisites.map((id) => escapeHtml(getTopicName(id) || id)).join(", ") + ")").join("; ")}. Conclua a base ou reforce seu domínio e recalcule a proposta.</p>` : "";
     if (plan.state === "insufficient") {
-      container.innerHTML = `<div class="upcoming-empty">Não foi possível montar o plano. Defina a data da prova, disponibilidade semanal e esforço de pelo menos um tópico.</div><button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;
+      container.innerHTML = `<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;
       return;
     }
     const subjectRows = plan.subjects.map((item) => `<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join("");
-    const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
-    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Disponibilidade semanal</span></div><div><strong>${formatPlanMinutes(plan.remainingMinutes)}</strong><span>Carga pendente configurada</span></div><div><strong>${plan.weeksUntilExam}</strong><span>Semanas até a prova</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Confiança ${plan.confidenceLabel.toLowerCase()} · ${Math.round(plan.confidence * 100)}% dos dados estratégicos disponíveis${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
+    const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? " · manutenção" : ""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
+    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Disponibilidade semanal</span></div><div><strong>${formatPlanMinutes(plan.remainingMinutes)}</strong><span>Carga pendente configurada</span></div><div><strong>${plan.weeksUntilExam}</strong><span>Semanas até a prova</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || "não avaliada"}${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
   }
   function updateExamBlueprint(field, value2) {
     studyPlanPreview = null;
@@ -6115,7 +6436,6 @@
     const d = diasParaRevisao(last);
     return d !== null ? Math.max(0, -d) : 21;
   }
-  var PRIORITY_WEIGHTS = { revisaoAtrasada: 0.25, baixoDesempenho: 0.3, tendencia: 0.1, dificuldade: 0.15, tempoSemEstudar: 0.1, proximidadeProva: 0.1 };
   var PRIORITY_TIER_EMOJI = { "Alta": "🔴", "Média": "🟠", "Baixa": "🟡" };
   function proximidadeProvaScore() {
     if (!state.examDate) return 0;
@@ -6123,13 +6443,8 @@
     if (dias === null) return 0;
     return Math.max(0, Math.min(100, 100 - dias));
   }
-  function trendPriorityRisk(trend) {
-    if (!trend || trend.key !== "down" || trend.delta === null) return 0;
-    return Math.max(0, Math.min(100, 40 + Math.abs(trend.delta) * 6));
-  }
-  function computeStudyPriorities() {
+  function collectStudyCandidates() {
     const today = todayISO();
-    const provaScore = proximidadeProvaScore();
     const candidateMap = /* @__PURE__ */ new Map();
     const addCandidate = (key, candidate) => {
       const current = candidateMap.get(key);
@@ -6144,6 +6459,7 @@
       const topicId = review.topicId || review.topicRef || null;
       const diagnosis = topicId ? diagnoseTopic(subjectId, topicId) : null;
       addCandidate(topicId || "review:" + review.id, {
+        id: "review-" + review.id,
         subjectId,
         topicId,
         subjectName: entitySubjectName(review),
@@ -6156,7 +6472,7 @@
         diagnosis
       });
     });
-    activeTopics().filter((topic) => topic.status !== "Concluído" && (topic.name || "").trim() !== "").forEach((topic) => {
+    activeTopics().filter((topic) => (topic.name || "").trim() !== "").forEach((topic) => {
       if (candidateMap.has(topic.id)) return;
       const diagnosis = diagnoseTopic(topic.subjectId, topic.id);
       addCandidate(topic.id, {
@@ -6164,7 +6480,7 @@
         topicId: topic.id,
         subjectName: topic.subjectName,
         topicName: topic.name,
-        tipo: topic.status === "Em andamento" ? "continuar" : "novo tópico",
+        tipo: topic.status === "Concluído" ? "manutenção" : topic.status === "Em andamento" ? "continuar" : "novo tópico",
         dificuldade: topic.difficulty || "Médio",
         diasAtrasado: 0,
         erroQuestoes: diagnosis?.effectiveErrorRate ?? taxaErroDisciplina(topic.subjectId),
@@ -6174,24 +6490,18 @@
     });
     const candidates = [...candidateMap.values()];
     candidates.forEach((candidate) => {
-      const scoreRevisaoAtrasada = Math.max(0, Math.min(100, candidate.diasAtrasado * 10));
-      const scoreBaixoDesempenho = Math.max(0, Math.min(100, Number(candidate.erroQuestoes) || 0));
-      const scoreTendencia = trendPriorityRisk(candidate.diagnosis?.trend);
-      const scoreDificuldade = (DIFFICULTY_WEIGHT[candidate.dificuldade] || 2) / 3 * 100;
-      const scoreTempoSemEstudar = Math.max(0, Math.min(100, candidate.diasSemEstudar * 5));
-      const score = Math.round(
-        scoreRevisaoAtrasada * PRIORITY_WEIGHTS.revisaoAtrasada + scoreBaixoDesempenho * PRIORITY_WEIGHTS.baixoDesempenho + scoreTendencia * PRIORITY_WEIGHTS.tendencia + scoreDificuldade * PRIORITY_WEIGHTS.dificuldade + scoreTempoSemEstudar * PRIORITY_WEIGHTS.tempoSemEstudar + provaScore * PRIORITY_WEIGHTS.proximidadeProva
-      );
-      candidate.score = Math.max(0, Math.min(100, score));
-      candidate.tier = candidate.score >= 70 ? "Alta" : candidate.score >= 40 ? "Média" : "Baixa";
       candidate.recommendedAction = candidate.diagnosis?.recommendation?.action || (candidate.tipo === "revisão" ? "Concluir a revisão programada" : "Estudar o tópico");
       candidate.studyType = candidate.diagnosis?.recommendation?.studyType || (candidate.tipo === "revisão" ? "review" : "study");
       candidate.estimatedMinutes = candidate.diagnosis?.recommendation?.estimatedMinutes || (candidate.tipo === "revisão" ? 25 : 35);
       candidate.recommendedQuestions = candidate.diagnosis?.recommendation?.questions || 0;
     });
-    return candidates.sort((a, b) => b.score - a.score || b.diasAtrasado - a.diasAtrasado);
+    return candidates;
+  }
+  function computeStudyPriorities() {
+    return recommendStudy(intelligenceCandidates(), { availableMinutes: Math.round(metaHoursToday() * 60) }).map((item) => ({ ...item, tier: item.score >= 70 ? "Alta" : item.score >= 40 ? "Média" : "Baixa" }));
   }
   function motivoPrioridade(priority) {
+    if (priority.reasons?.length) return priority.reasons.join(" · ");
     if (priority.diasAtrasado > 0) return "Revisão atrasada (" + priority.diasAtrasado + "d)";
     const diagnosis = priority.diagnosis;
     if (diagnosis?.trend?.key === "down") return "Tendência em queda (" + diagnosis.trend.delta.toFixed(1) + " p.p.)";
@@ -6209,7 +6519,7 @@
     if (!container) return;
     const priorities = computeStudyPriorities().slice(0, 6);
     if (priorities.length === 0) {
-      container.innerHTML = `<div class="upcoming-empty">Nada pendente — todos os tópicos cadastrados estão concluídos e sem revisões em aberto. 🎉</div>`;
+      container.innerHTML = `<div class="upcoming-empty">Nenhuma atividade elegível para o tempo disponível. Confira os pré-requisitos e a meta de hoje.</div>`;
       return;
     }
     const TIER_CLASS = { "Alta": "priority-alta", "Média": "priority-media", "Baixa": "priority-baixa" };
@@ -6701,47 +7011,16 @@
   var dismissedRecommendationIds = /* @__PURE__ */ new Set();
   var currentStudyRecommendations = [];
   function intelligenceCandidates() {
-    const today = todayISO();
-    return computeStudyPriorities().map((priority) => {
-      const found = getTopicById(priority.topicId), topic = found?.topic, subject = found?.subject;
-      const retention = priority.topicId ? topicRetentionScore(priority.subjectId, priority.topicId) : null;
-      const blueprint = state.examBlueprint.subjects.find((item) => item.subjectId === priority.subjectId);
-      const blueprintImpact = blueprint ? Math.min(100, (Number(blueprint.expectedQuestions) || 0) * 4 * (Number(blueprint.questionWeight) || 1)) : null;
-      const examImpact = topic?.examImportance != null ? Number(topic.examImportance) * 100 : blueprintImpact;
-      const mastery = priority.diagnosis?.mastery?.score ?? (priority.erroQuestoes == null ? null : 100 - priority.erroQuestoes);
-      const daysSinceContact = Math.max(0, Number(priority.diasSemEstudar) || 0);
-      const estimatedMinutes = Math.max(15, priority.tipo === "revisão" ? Number(priority.estimatedMinutes) || 25 : Number(topic?.estimatedStudyMinutes) || Number(priority.estimatedMinutes) || 30);
-      const reviewUrgency = Math.min(100, Math.max(0, Number(priority.diasAtrasado) || 0) * 12);
-      const completed = state.studySessions.some((session) => session.date === today && session.topicId === priority.topicId);
-      const risk = calculateRiskScore({ masteryRisk: mastery == null ? null : 100 - mastery, retentionRisk: retention?.available ? 100 - retention.score : null, trendRisk: priority.diagnosis?.trend?.key === "insufficient" ? null : trendPriorityRisk(priority.diagnosis?.trend), recencyRisk: Math.min(100, daysSinceContact * 5), examImpact, examProximity: state.examDate ? proximidadeProvaScore() : null });
-      return {
-        id: priority.topicId || `review-${priority.subjectId}`,
-        subjectId: priority.subjectId,
-        topicId: priority.topicId,
-        subjectName: priority.subjectName,
-        topicName: priority.topicName,
-        archived: Boolean(topic?.archived || subject?.archived),
-        completed,
-        estimatedMinutes,
-        studyType: priority.studyType,
-        action: priority.recommendedAction,
-        risk,
-        examImpact,
-        retention: retention?.available ? retention.score : null,
-        retentionRisk: retention?.available ? 100 - retention.score : null,
-        mastery,
-        masteryGap: mastery == null ? null : 100 - mastery,
-        coverage: subject ? subjectProgress(subject) : null,
-        frequency: Math.max(0, 100 - daysSinceContact * 5),
-        daysSinceContact,
-        recencyRisk: Math.min(100, daysSinceContact * 5),
-        reviewUrgency,
-        planAlignment: priority.tipo === "continuar" ? 90 : priority.tipo === "revisão" ? 80 : 55,
-        trendRisk: trendPriorityRisk(priority.diagnosis?.trend),
-        improvementPotential: mastery == null ? 50 : 100 - mastery,
-        effortEfficiency: Math.max(10, 100 - estimatedMinutes),
-        reason: motivoPrioridade(priority)
-      };
+    const priorities = collectStudyCandidates(), topics = allTopics();
+    const retentions = Object.fromEntries(topics.map((topic) => [topic.id, topicRetentionScore(topic.subjectId, topic.id)]));
+    return buildStudyCandidates({
+      priorities,
+      topics,
+      retentions,
+      blueprint: state.examBlueprint.subjects,
+      sessions: state.studySessions,
+      today: todayISO(),
+      examProximity: state.examDate ? proximidadeProvaScore() : null
     });
   }
   function renderDiagnosisCenter() {
@@ -6755,8 +7034,8 @@
     const list = (items, empty, formatter) => items.length ? items.slice(0, 4).map(formatter).join("") : `<p class="diagnosis-empty">${empty}</p>`;
     const section = (key) => model.sections.find((item) => item.key === key)?.items || [];
     container.innerHTML = `<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(section("bottlenecks"), "Nenhum gargalo relevante agora.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value ?? item.severity}/100 · confiança ${(item.risk?.confidenceLabel || "Baixa").toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</span></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(section("opportunities"), "Configure pesos e esforço para revelar oportunidades.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · confiança ${item.confidenceLabel.toLowerCase()} · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes("examImpact") ? " · peso da prova ausente" : ""}</span></article>`)}</section>
+    <section><h4>Gargalos</h4>${list(section("bottlenecks"), "Nenhum gargalo relevante agora.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value ?? item.severity}/100 · dados disponíveis ${Math.round((item.risk?.evidence?.completeness || 0) * 100)}% · evidência ${(item.risk?.evidence?.evidenceLabel || "Não avaliada").toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</span></article>`)}</section>
+    <section><h4>Oportunidades</h4>${list(section("opportunities"), "Configure pesos e esforço para revelar oportunidades.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · dados disponíveis ${Math.round(item.confidence * 100)}% · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes("examImpact") ? " · peso da prova ausente" : ""}</span></article>`)}</section>
     <section><h4>Revisões críticas e risco</h4>${list(section("risk"), "Nenhuma revisão crítica identificada.", (item) => `<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${item.reviewUrgency > 0 ? "Urgência " + Math.round(item.reviewUrgency) + "/100" : item.daysSinceContact + " dias sem contato"}</span></article>`)}</section>
     <section><h4>Foco da semana</h4>${list(section("focus"), "Sem distribuição confiável.", (item) => `<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
@@ -6766,7 +7045,10 @@
     if (!container) return;
     const availableMinutes = Math.max(0, Math.round(metaHoursToday() * 60));
     const previous = new Map(currentStudyRecommendations.map((item2) => [item2.id, item2]));
-    currentStudyRecommendations = recommendStudy(intelligenceCandidates(), { availableMinutes, excludedIds: [...dismissedRecommendationIds] }).map((item2) => previous.get(item2.id) || createRecommendationPresentation(item2, { id: uid("recommendation"), shownAt: nowISO2(), algorithmVersion: state.algorithmVersions.recommendations }));
+    currentStudyRecommendations = recommendStudy(intelligenceCandidates(), { availableMinutes, excludedIds: [...dismissedRecommendationIds] }).map((item2) => {
+      const old = previous.get(item2.id);
+      return old && old.score === item2.score && old.estimatedMinutes === item2.estimatedMinutes && JSON.stringify(old.factors) === JSON.stringify(item2.factors) ? { ...item2, recommendationId: old.recommendationId, shownAt: old.shownAt, algorithmVersion: PRIORITY_ALGORITHM_VERSION } : createRecommendationPresentation(item2, { id: uid("recommendation"), shownAt: nowISO2(), algorithmVersion: PRIORITY_ALGORITHM_VERSION });
+    });
     const item = currentStudyRecommendations[0];
     if (!item) {
       container.innerHTML = `<div class="upcoming-empty">${availableMinutes < 15 ? "Defina pelo menos 15 minutos na meta de hoje." : "Nenhuma recomendação compatível com o tempo e os dados atuais."}</div>`;
@@ -6777,7 +7059,7 @@
     const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null), summary = summarizeRecommendationFeedback(state.recommendationFeedback);
     const outcome = pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>` : "";
     const history = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
-    container.innerHTML = `${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details>${history}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
+    container.innerHTML = `${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · evidência ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><p>Dados disponíveis: ${Math.round(item.evidence.completeness * 100)}% · força da evidência: ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}. Estimativa por regras.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details>${history}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
   }
   function recommendationBaseline(topicId) {
     const performance = getTopicPerformance(topicId), retention = topicRetentionScore(null, topicId), found = getTopicById(topicId), last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
@@ -6823,6 +7105,13 @@
   function startStudyRecommendation(id) {
     const recommendation = currentStudyRecommendations.find((item2) => item2.id === id);
     if (!recommendation) return;
+    const fresh = recommendStudy(intelligenceCandidates(), { availableMinutes: Math.round(metaHoursToday() * 60) }).find((item2) => item2.id === id);
+    if (!fresh) {
+      renderStudyRecommendation();
+      showToast("As condições mudaram. Confira a recomendação atual.");
+      return;
+    }
+    Object.assign(recommendation, fresh);
     recordRecommendationFeedback(recommendation, { accepted: true });
     let plan = todayDailyStudyPlan();
     if (!plan) {
@@ -6969,7 +7258,7 @@
     const availableMinutes = Math.max(0, Math.round(metaHoursToday() * 60));
     const plan = ensureTodayDailyStudyPlan(priorities, availableMinutes);
     if (!plan && priorities.length === 0) {
-      container.innerHTML = '<div class="upcoming-empty">Nada pendente hoje — todos os tópicos concluídos e sem revisões em aberto. 🎉</div>';
+      container.innerHTML = '<div class="upcoming-empty">Nenhuma atividade elegível para o tempo disponível. Confira os pré-requisitos e a meta de hoje.</div>';
       return;
     }
     if (!plan) {
@@ -7209,18 +7498,13 @@
     const today = todayISO(), due = state.reviewAgenda.filter((r) => (r.topicId || r.topicRef) === topicId && r.date && r.date <= today);
     const done = due.filter((r) => r.status === "Concluído" && r.completedAt);
     const onTime = done.filter((r) => localDateFromTimestamp(r.completedAt) <= addDays(r.date, 1)).length;
-    const reviewRate = due.length ? onTime / due.length * 100 : 50, cutoff = addDays(today, -59);
+    const cutoff = addDays(today, -59);
     const questions = validQuestionRecords().filter((q) => q.topicId === topicId && q.date >= cutoff && q.date <= today);
     const resolved = questions.reduce((n, q) => n + (Number(q.resolved) || 0), 0), correct = questions.reduce((n, q) => n + (Number(q.correct) || 0), 0);
-    const accuracy = resolved ? correct / resolved * 100 : 50, dates = done.map((r) => localDateFromTimestamp(r.completedAt)).filter(Boolean).sort();
+    const dates = done.map((r) => localDateFromTimestamp(r.completedAt)).filter(Boolean).sort();
     const lastReview = dates[dates.length - 1] || localDateFromTimestamp(found.topic.lastReviewedAt) || null;
     const daysSince = lastReview ? Math.max(0, -(diasParaRevisao(lastReview) ?? 0)) : null;
-    const recency = daysSince === null ? 50 : Math.max(0, 100 - Math.max(0, daysSince - 1) * 2.7);
-    const confidence = Math.min(1, Math.min(1, due.length / 4) * 0.4 + Math.min(1, resolved / 50) * 0.4 + (lastReview ? 1 : 0) * 0.2);
-    if (!due.length && !resolved && !lastReview) return { score: 0, raw: null, confidence: 0, confidenceLabel: "Baixa", available: false, detail: "Sem revisões ou questões vinculadas" };
-    const raw = reviewRate * 0.45 + accuracy * 0.35 + recency * 0.2, score = clampScore(50 + (raw - 50) * (0.35 + confidence * 0.65));
-    const detail = (due.length ? onTime + " de " + due.length + " revisões no prazo" : "sem revisões vencidas") + " · " + (resolved ? Math.round(accuracy) + "% em " + resolved + " questões recentes" : "sem questões recentes") + " · " + (daysSince === null ? "sem revisão registrada" : daysSince + "d desde a última revisão");
-    return { score, raw, confidence, confidenceLabel: confidence >= 0.7 ? "Alta" : confidence >= 0.35 ? "Média" : "Baixa", available: true, detail };
+    return calculateTopicRetention({ due, resolved, correct, lastReview, daysSince, onTime, periodStart: cutoff, periodEnd: today });
   }
   function approvalRetencaoMetric() {
     const topics = activeTopics(), values = topics.map((t) => topicRetentionScore(t.subjectId, t.id)).filter((x) => x.available);
@@ -7433,130 +7717,6 @@
   function escapeAttr(str) {
     return escapeHtml(str);
   }
-  var DELEGATED_ACTIONS = /* @__PURE__ */ new Set([
-    "addAgendaRow",
-    "addBreakdownRow",
-    "addCalRow",
-    "addQuestaoRow",
-    "addSimuladoRow",
-    "addSubject",
-    "addTopic",
-    "applyTodayGoalToAllDays",
-    "archiveSubject",
-    "archiveTopic",
-    "clearWeekendGoals",
-    "calculateStudyPlanPreview",
-    "clearStudyPlanPreview",
-    "confirmStudyPlan",
-    "calculateDailyPlanPreview",
-    "clearDailyPlanPreview",
-    "confirmDailyPlanPreview",
-    "undoLatestDailyPlanGeneration",
-    "calculateReplanPreview",
-    "clearReplanPreview",
-    "confirmReplan",
-    "undoPlanAdjustment",
-    "cancelAgendaEdit",
-    "cancelCalendarEdit",
-    "cancelQuestionEdit",
-    "cancelSimulationEdit",
-    "cancelStudySessionEdit",
-    "changeAgendaLimit",
-    "changeCalendarLimit",
-    "changeOverdueGroupLimit",
-    "changePerformanceLimit",
-    "changeSubjectTopicLimit",
-    "changeUpcomingLimit",
-    "clearSessionHistoryFilters",
-    "completeAgendaReview",
-    "completeCalendarItem",
-    "completeUnifiedReview",
-    "deleteAgendaRow",
-    "deleteBreakdownRow",
-    "deleteCalRow",
-    "deleteMetaDisciplina",
-    "deleteQuestaoRow",
-    "deleteSimuladoRow",
-    "deleteStudySession",
-    "duplicateSubject",
-    "editAgenda",
-    "editCalendarItem",
-    "editQuestion",
-    "editSimulation",
-    "editStudySession",
-    "focusStudyTimer",
-    "gerarAgendaAutomatica",
-    "moveSubject",
-    "navigateKpi",
-    "renameSubject",
-    "selectHeatmapDay",
-    "setHeatmapFilter",
-    "viewSelectedHeatmapSessions",
-    "dismissIntelligentAlert",
-    "dismissStudyRecommendation",
-    "markRecommendationNotUseful",
-    "rateRecommendationOutcome",
-    "startStudyRecommendation",
-    "requestPermanentSubjectDelete",
-    "requestPermanentTopicDelete",
-    "resetAdaptiveReviewDate",
-    "resetAgendaLimit",
-    "resetCalendarLimit",
-    "resetOverdueGroupLimit",
-    "resetPerformanceLimit",
-    "resetRetentionLimit",
-    "resetSubjectTopicLimit",
-    "resetUpcomingLimit",
-    "restoreSubject",
-    "restoreTopic",
-    "saveAgendaEdit",
-    "saveCalendarEdit",
-    "saveQuestionEdit",
-    "setPerformanceViewMode",
-    "setRadarSubject",
-    "setRetentionFilter",
-    "setSubjectTopicFilter",
-    "saveSimulationEdit",
-    "saveStudySessionEdit",
-    "selectSessionHistoryDate",
-    "showAllOverdueGroups",
-    "showAllPerformance",
-    "showAllRetention",
-    "showAllSubjectTopics",
-    "showAllUpcoming",
-    "startPlannedActivity",
-    "toggleBreakdown",
-    "toggleNotes",
-    "toggleCompletedReviews",
-    "toggleFilterPanel",
-    "toggleOverdueDate",
-    "toggleQuestionErrors",
-    "toggleSessionDay",
-    "toggleSessionDetails",
-    "toggleStreakActiveDays",
-    "toggleStreakExpanded",
-    "toggleSubject",
-    "updateAgenda",
-    "updateAgendaDraft",
-    "updateBreakdownRow",
-    "updateCal",
-    "updateCalendarDraft",
-    "updateMeta",
-    "updateMetaDisciplina",
-    "updateMetaHoursDay",
-    "updateQuestionDraft",
-    "updateQuestionError",
-    "updateSessionHistoryFilter",
-    "setErrorAnalysisFilter",
-    "updateSimulationDraft",
-    "updateStudySessionDraft",
-    "updateTopic",
-    "updateTopicStatus",
-    "updateTopicTags",
-    "updateTopicStrategy",
-    "updateExamBlueprint",
-    "updateExamSubject"
-  ]);
   var DELEGATED_ACTION_HANDLERS = {
     addAgendaRow,
     addBreakdownRow,
@@ -7681,50 +7841,6 @@
     updateExamBlueprint,
     updateExamSubject
   };
-  function splitDelegatedArguments(source) {
-    const values = [];
-    let current = "", quote = null, escaped = false, depth = 0;
-    for (const char of source) {
-      if (escaped) {
-        current += char;
-        escaped = false;
-        continue;
-      }
-      if (char === "\\") {
-        current += char;
-        escaped = true;
-        continue;
-      }
-      if (quote) {
-        current += char;
-        if (char === quote) quote = null;
-        continue;
-      }
-      if (char === "'" || char === '"') {
-        quote = char;
-        current += char;
-        continue;
-      }
-      if (char === "(") {
-        depth++;
-        current += char;
-        continue;
-      }
-      if (char === ")") {
-        depth--;
-        current += char;
-        continue;
-      }
-      if (char === "," && depth === 0) {
-        values.push(current.trim());
-        current = "";
-        continue;
-      }
-      current += char;
-    }
-    if (current.trim()) values.push(current.trim());
-    return values;
-  }
   function delegatedArgument(expression, element) {
     const value2 = expression.trim();
     if (value2 === "this.value") return element.value;
@@ -7739,54 +7855,25 @@
     if (value2.startsWith("'") && value2.endsWith("'") || value2.startsWith('"') && value2.endsWith('"')) return value2.slice(1, -1).replace(/\\(['"\\])/g, "$1");
     throw new Error("Argumento de evento não permitido: " + value2);
   }
-  function dispatchDelegatedCode(code, event, element) {
-    const normalized = String(code || "").trim();
-    if (!normalized) return;
-    if (normalized === "event.stopPropagation()") {
-      event.stopPropagation();
-      return;
-    }
-    if (normalized.startsWith("event.stopPropagation();")) {
-      event.stopPropagation();
-      return dispatchDelegatedCode(normalized.slice(24), event, element);
-    }
+  function resolveDelegatedSpecial(normalized, event, element) {
     if (normalized === "performanceSubjectId=this.value;renderQuestionAnalytics()") {
       performanceSubjectId = element.value;
       renderQuestionAnalytics();
-      return;
+      return true;
     }
     const listMatch = normalized.match(/^changeListLimit\('(questions|simulations|sessionDays)',(-?)(?:LIST_VIEW_STEPS\.\1|listViewState\.\1Visible),(renderQuestoes|renderSimulados|renderStudySessionsHistory)\)$/);
     if (listMatch) {
       const delta = listMatch[2] ? -listViewState[`${listMatch[1]}Visible`] : LIST_VIEW_STEPS[listMatch[1]];
       const renderers = { renderQuestoes, renderSimulados, renderStudySessionsHistory };
       changeListLimit(listMatch[1], delta, renderers[listMatch[3]]);
-      return;
+      return true;
     }
-    const match = normalized.match(/^([A-Za-z_$][\w$]*)\((.*)\)$/s);
-    if (!match || !DELEGATED_ACTIONS.has(match[1])) throw new Error("Ação de evento não permitida: " + normalized);
-    const fn = DELEGATED_ACTION_HANDLERS[match[1]];
-    if (typeof fn !== "function") throw new Error("Ação de evento indisponível: " + match[1]);
-    fn(...match[2].trim() ? splitDelegatedArguments(match[2]).map((arg) => delegatedArgument(arg, element)) : []);
+    return false;
   }
-  var DELEGATED_EVENT_TYPES = ["click", "change", "input", "blur"];
-  DELEGATED_EVENT_TYPES.forEach((type) => document.addEventListener(type, (event) => {
-    const key = `delegated${type[0].toUpperCase() + type.slice(1)}`, attribute = `data-${key.replace(/[A-Z]/g, (char) => "-" + char.toLowerCase())}`;
-    const element = event.target?.closest?.(`[${attribute}]`);
-    if (!element) return;
-    try {
-      dispatchDelegatedCode(element.dataset[key], event, element);
-    } catch (error) {
-      console.error("Evento delegado bloqueado", error);
-      showToast("Uma ação inválida foi bloqueada por segurança.");
-    }
-  }, type === "blur"));
-  function safeRenderSection(name, renderer) {
-    try {
-      renderer();
-    } catch (error) {
-      console.error("Falha ao renderizar " + name, error);
-    }
-  }
+  createDelegatedEventsController({ document, handlers: DELEGATED_ACTION_HANDLERS, parseArgument: delegatedArgument, resolveSpecial: resolveDelegatedSpecial, onError: (error) => {
+    console.error("Evento delegado bloqueado", error);
+    showToast("Uma ação inválida foi bloqueada por segurança.");
+  } }).register();
   var RENDER_SCOPE_SECTIONS = {
     dashboard: /* @__PURE__ */ new Set(["dashboard de aprovação", "controles do cronômetro", "evolução do progresso", "heatmap", "conquistas", "radar", "visão geral", "horas estudadas", "histórico de sessões"]),
     disciplinas: /* @__PURE__ */ new Set(["disciplinas"]),
@@ -7799,8 +7886,8 @@
   function activeTabName() {
     return document.querySelector(".tab-btn.active")?.dataset.tab || "dashboard";
   }
-  function render(scope = "all") {
-    const sections = [
+  var applicationRenderer = createApplicationRenderer({
+    sections: [
       ["indicadores", renderKPIs],
       ["dashboard de aprovação", renderApprovalDashboard],
       ["controles do cronômetro", populateTimerContextControls],
@@ -7844,11 +7931,15 @@
       ["metas de hoje", renderMetasHoje],
       ["alertas", renderAlertasInteligentes],
       ["plano de hoje", renderPlanoHoje]
-    ];
-    const globalSections = /* @__PURE__ */ new Set(["indicadores", "cabeçalho"]);
-    const selected = scope === "all" ? null : RENDER_SCOPE_SECTIONS[scope === "active" ? activeTabName() : scope];
-    sections.filter(([name]) => !selected || globalSections.has(name) || selected.has(name)).forEach(([name, renderer]) => safeRenderSection(name, renderer));
-    labelDynamicControls();
+    ],
+    scopes: RENDER_SCOPE_SECTIONS,
+    globalSections: ["indicadores", "cabeçalho"],
+    getActiveScope: activeTabName,
+    afterRender: labelDynamicControls,
+    onError: (error, name) => console.error("Falha ao renderizar " + name, error)
+  });
+  function render(scope = "all") {
+    return applicationRenderer.render(scope);
   }
   function persistAndRender() {
     render("active");
@@ -7857,18 +7948,16 @@
   function renderAll() {
     render();
   }
-  var historyLayoutMedia = window.matchMedia("(max-width:760px)");
-  historyLayoutMedia.addEventListener("change", () => {
+  navigationController.registerShortcuts();
+  registerApplicationLifecycle({ window, onBeforeUnload: () => {
+    if (!TEST_MODE && !suppressBeforeUnloadSave) writeLocalState(JSON.stringify(state));
+  }, onResponsiveChange: () => {
     renderQuestoes();
     renderSimulados();
     renderStudySessionsHistory();
     renderAgenda();
     renderCalendar();
-  });
-  navigationController.registerShortcuts();
-  window.addEventListener("beforeunload", () => {
-    if (!TEST_MODE && !suppressBeforeUnloadSave) writeLocalState(JSON.stringify(state));
-  });
+  } });
   setCalendarMobileView("month");
   var initialTab = location.hash.replace("#", "");
   if (document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) activateTab(initialTab, false);
@@ -7912,6 +8001,11 @@
       calculateReadinessScore,
       computeStudyPriorities,
       topicRetentionScore,
+      topicMasteryIndex,
+      intelligenceCandidates,
+      studyPlanCandidates,
+      buildStudyPlan,
+      renderAll,
       sha256,
       rotateAutomaticBackup,
       StorageManager,

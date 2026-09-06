@@ -9,7 +9,8 @@ import {createRealStorageProvider} from './storage/real-storage-provider.js';
 import {createDemoStorageProvider} from './storage/demo-storage-provider.js';
 import {createClock} from './core/clock.js';
 import {createAppContext} from './application/create-app-context.js';
-import {bootstrapApplication} from './bootstrap.js';
+import {bootstrapApplication} from './bootstrap/bootstrap-application.js';
+import {registerApplicationLifecycle} from './bootstrap/register-lifecycle.js';
 import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,REVIEW_RATINGS,calculateAdaptiveInterval,createAdaptiveReviewState,applyAdaptiveReviewRating} from './domain/reviews.js';
 import {createDefaultState} from './state/defaults.js';
 import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
@@ -28,6 +29,10 @@ import {HEATMAP_METRICS,heatmapMetricLevel} from './domain/analytics/heatmap.js'
 import {calculateSubjectRadar} from './domain/analytics/multidimensional-radar.js';
 import {generateDiagnosis} from './application/generate-diagnosis.js';
 import {recommendStudy} from './application/recommend-study.js';
+import {buildStudyCandidates} from './application/build-study-candidates.js';
+import {calculateTopicMastery,calculateTopicRetention} from './domain/analytics/topic-metrics.js';
+import {PRIORITY_ALGORITHM_VERSION} from './domain/analytics/priority-score.js';
+import {canStudy} from './domain/study-eligibility.js';
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
 import {captureRecommendationBaseline,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
 import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
@@ -46,6 +51,8 @@ import {createModalController} from './ui/controllers/modal-controller.js';
 import {createEditableCollectionController} from './ui/controllers/editable-collection-controller.js';
 import {createPreferencesController} from './ui/controllers/preferences-controller.js';
 import {createBackupController} from './ui/controllers/backup-controller.js';
+import {createDelegatedEventsController} from './ui/controllers/delegated-events-controller.js';
+import {createApplicationRenderer} from './ui/renderers/application-renderer.js';
 import {createGoalService} from './application/goals/goal-service.js';
 import {buildStudyTimeViewModel} from './application/analytics/build-overview-view-model.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
@@ -353,6 +360,7 @@ function ensureStateDefaults(){
   if(typeof state.examDate !== 'string') state.examDate = '';
   state.examBlueprint=normalizeExamBlueprint(state.examBlueprint,state.examDate);
   state.algorithmVersions=normalizeAlgorithmVersions(state.algorithmVersions);
+  state.algorithmVersions.recommendations=PRIORITY_ALGORITHM_VERSION;
   state.algorithmVersions.adaptiveReview=Math.max(2,Number(state.algorithmVersions.adaptiveReview)||2);
   if(!state.examDate&&state.examBlueprint.examDate)state.examDate=state.examBlueprint.examDate;
   if(state.examDate!==state.examBlueprint.examDate)state.examBlueprint.examDate=state.examDate||null;
@@ -1106,6 +1114,7 @@ function startPlannedActivity(itemId){
     return;
   }
   const {plan,item}=found;
+  if(item.topicId){const candidate=intelligenceCandidates().find(candidate=>candidate.topicId===item.topicId);if(!candidate||candidate.archived||candidate.blockedPrerequisites.length){showToast("Esta atividade aguarda pré-requisitos ou possui um tópico arquivado. Recalcule o plano.");return;}}
   Object.assign(state.activeTimer,{
     subjectId:item.subjectId||null,topicId:item.topicId||null,type:item.type||'study',
     planItemId:item.id,targetMinutes:item.plannedMinutes
@@ -2821,34 +2830,13 @@ function dominantTopicError(profile){
 }
 function topicMasteryIndex(subjectId,topicId){
   const found=getTopicById(topicId);
-  if(!found) return {score:0,confidence:0,confidenceLabel:'Baixa',classification:'Sem dados'};
-  const performance=getTopicPerformance(topicId);
-  const questionConfidence=Math.min(1,performance.resolved/50);
-  const performanceScore=performance.accuracy===null?0:performance.accuracy*questionConfidence+40*(1-questionConfidence);
-  const trend=calculateWeightedTrend(getTopicWeeklyTrend(topicId),MIN_TOPIC_TREND_WINDOW_QUESTIONS);
-  let trendScore=50;
-  if(trend.key==='up') trendScore=Math.min(100,70+Math.max(0,trend.delta||0)*2);
-  else if(trend.key==='down') trendScore=Math.max(0,40-Math.abs(trend.delta||0)*2);
-  else if(trend.key==='stable') trendScore=60;
-
-  const today=todayISO();
-  const reviews=state.reviewAgenda.filter(review=>(review.topicId||review.topicRef)===topicId&&review.date&&review.date<=today);
-  const completedReviews=reviews.filter(review=>review.status==='Concluído').length;
-  const reviewScore=reviews.length?completedReviews/reviews.length*100:(found.topic.status==='Concluído'?50:20);
-  const cutoff=addDays(today,-29);
-  const recentSessions=state.studySessions.filter(session=>session.topicId===topicId&&session.date>=cutoff&&session.date<=today);
-  const recentSeconds=recentSessions.reduce((sum,session)=>sum+(Number(session.durationSeconds)||0),0);
-  const studyScore=Math.min(100,recentSeconds/(2*3600)*100);
-  const reviewConfidence=Math.min(1,reviews.length/4);
-  const studyConfidence=Math.min(1,recentSessions.length/4);
-  const confidence=Math.min(1,questionConfidence*0.6+reviewConfidence*0.2+studyConfidence*0.2);
-  const confidenceScore=confidence*100;
-  let score=Math.round(performanceScore*0.40+trendScore*0.20+reviewScore*0.15+studyScore*0.15+confidenceScore*0.10);
-  const hasEvidence=performance.resolved>0||reviews.length>0||recentSeconds>0;
-  if(!hasEvidence) score=0;
-  score=Math.max(0,Math.min(100,score));
-  const classification=score>=80?'Dominado':score>=60?'Em consolidação':score>=40?'Em desenvolvimento':'Inicial';
-  return {score,confidence,confidenceLabel:confidence>=0.70?'Alta':confidence>=0.35?'Média':'Baixa',classification,performanceScore,trendScore,reviewScore,studyScore,trend};
+  if(!found)return calculateTopicMastery();
+  const today=todayISO(),cutoff=addDays(today,-29);
+  return calculateTopicMastery({topic:found.topic,performance:getTopicPerformance(topicId),
+    trend:calculateWeightedTrend(getTopicWeeklyTrend(topicId),MIN_TOPIC_TREND_WINDOW_QUESTIONS),
+    reviews:state.reviewAgenda.filter(review=>(review.topicId||review.topicRef)===topicId&&review.date&&review.date<=today),
+    recentSessions:state.studySessions.filter(session=>session.topicId===topicId&&session.date>=cutoff&&session.date<=today),
+    periodStart:null,periodEnd:today});
 }
 function diagnoseTopic(subjectId,topicId){
   const found=getTopicById(topicId);
@@ -3180,11 +3168,7 @@ function renderExamBlueprintConfig(){
 }
 let studyPlanPreview=null,dailyPlanPreview=null;
 function studyPlanCandidates(){
-  return activeTopics().filter(topic=>topic.status!=='Concluído').map(topic=>{
-    const mastery=topicMasteryIndex(topic.subjectId,topic.id),retention=topicRetentionScore(topic.subjectId,topic.id),blueprint=state.examBlueprint.subjects.find(item=>item.subjectId===topic.subjectId);
-    const examImpact=topic.examImportance!=null?topic.examImportance*100:blueprint?Math.min(100,blueprint.expectedQuestions*4*blueprint.questionWeight):null;
-    return {id:topic.id,subjectId:topic.subjectId,subjectName:topic.subjectName,topicName:topic.name,archived:topic.topicArchived||topic.subjectArchived,completed:false,estimatedMinutes:topic.estimatedStudyMinutes,examImpact,masteryGap:mastery.confidence>0?100-mastery.score:null,retentionNeed:retention.available?100-retention.score:null};
-  });
+  return intelligenceCandidates().filter(item=>item.topicId).map(item=>({...item,completed:false,estimatedMinutes:item.remainingMinutes}));
 }
 function calculateStudyPlanPreview(){
   const days=state.examDate?diasParaRevisao(state.examDate):null;
@@ -3202,7 +3186,7 @@ function calculateDailyPlanPreview(){
   const studyPlan=latestStudyPlan();if(!studyPlan)return;
   const days=Array.from({length:7},(_,index)=>{const date=addDays(todayISO(),index);return {date,availableMinutes:Math.round(metaHoursForDate(date)*60)}}),end=days.at(-1).date;
   const dueReviews=state.reviewAgenda.filter(review=>review.status!=='Concluído'&&review.topicId&&review.date>=todayISO()&&review.date<=end).map(review=>({id:review.id,date:review.date,subjectId:review.subjectId,topicId:review.topicId,subjectName:getSubjectName(review.subjectId),topicName:getTopicName(review.topicId),minutes:25}));
-  dailyPlanPreview=dailyPlanService.calculate({studyPlan,days,dueReviews,reserveRatio:.1});renderStudyPlanBuilder();
+  dailyPlanPreview=dailyPlanService.calculate({studyPlan,days,dueReviews,reserveRatio:.1,eligibleTopicIds:intelligenceCandidates().filter(item=>!item.archived&&!item.blockedPrerequisites.length).map(item=>item.topicId)});renderStudyPlanBuilder();
 }
 function clearDailyPlanPreview(){dailyPlanPreview=null;renderStudyPlanBuilder()}
 function confirmDailyPlanPreview(){
@@ -3222,10 +3206,11 @@ function renderStudyPlanBuilder(){
     container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR')} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate?formatDatePt(latest.examDate):'data não definida'}</span></div>`:''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest?'<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>':''}${activeOperation?'<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>':''}</div>`;return
   }
   const plan=studyPlanPreview;
-  if(plan.state==='insufficient'){container.innerHTML=`<div class="upcoming-empty">Não foi possível montar o plano. Defina a data da prova, disponibilidade semanal e esforço de pelo menos um tópico.</div><button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;return}
+  const blockedNote=plan.blockedTopics?.length?`<p class="confidence-note">Aguardando pré-requisitos: ${plan.blockedTopics.map(item=>escapeHtml(item.topicName||item.id)+" ("+item.prerequisites.map(id=>escapeHtml(getTopicName(id)||id)).join(", ")+")").join("; ")}. Conclua a base ou reforce seu domínio e recalcule a proposta.</p>`:"";
+  if(plan.state==='insufficient'){container.innerHTML=`<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;return}
   const subjectRows=plan.subjects.map(item=>`<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join('');
-  const topicRows=plan.items.slice(0,8).map(item=>`<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join('');
-  container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Disponibilidade semanal</span></div><div><strong>${formatPlanMinutes(plan.remainingMinutes)}</strong><span>Carga pendente configurada</span></div><div><strong>${plan.weeksUntilExam}</strong><span>Semanas até a prova</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Confiança ${plan.confidenceLabel.toLowerCase()} · ${Math.round(plan.confidence*100)}% dos dados estratégicos disponíveis${plan.missingEffort.length?` · ${plan.missingEffort.length} tópico${plan.missingEffort.length===1?'':'s'} sem esforço estimado`:''}</div><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
+  const topicRows=plan.items.slice(0,8).map(item=>`<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered?" · manutenção":""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join('');
+  container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Disponibilidade semanal</span></div><div><strong>${formatPlanMinutes(plan.remainingMinutes)}</strong><span>Carga pendente configurada</span></div><div><strong>${plan.weeksUntilExam}</strong><span>Semanas até a prova</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence*100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase()||"não avaliada"}${plan.missingEffort.length?` · ${plan.missingEffort.length} tópico${plan.missingEffort.length===1?'':'s'} sem esforço estimado`:''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes||0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
 }
 function updateExamBlueprint(field,value){
   studyPlanPreview=null;
@@ -3496,9 +3481,8 @@ function diasSemEstudarDisciplina(subjectId){
 }
 
 /* ===== PRIORIDADE INTELIGENTE DE ESTUDOS (Score 0-100) ===== */
-/* Pesos: Revisão atrasada 30% · Baixo desempenho 30% · Dificuldade 20% · Tempo sem estudar 10% · Proximidade da prova 10% */
+/* Prioridade compartilhada com recomendações e planejamento semanal. */
 
-const PRIORITY_WEIGHTS={revisaoAtrasada:0.25,baixoDesempenho:0.30,tendencia:0.10,dificuldade:0.15,tempoSemEstudar:0.10,proximidadeProva:0.10};
 const PRIORITY_TIER_EMOJI={'Alta':'🔴','Média':'🟠','Baixa':'🟡'};
 
 function proximidadeProvaScore(){
@@ -3511,9 +3495,9 @@ function trendPriorityRisk(trend){
   if(!trend||trend.key!=='down'||trend.delta===null) return 0;
   return Math.max(0,Math.min(100,40+Math.abs(trend.delta)*6));
 }
-function computeStudyPriorities(){
+function collectStudyCandidates(){
   const today=todayISO();
-  const provaScore=proximidadeProvaScore();
+
   const candidateMap=new Map();
   const addCandidate=(key,candidate)=>{
     const current=candidateMap.get(key);
@@ -3530,7 +3514,7 @@ function computeStudyPriorities(){
       const subjectId=entitySubjectId(review);
       const topicId=review.topicId||review.topicRef||null;
       const diagnosis=topicId?diagnoseTopic(subjectId,topicId):null;
-      addCandidate(topicId||'review:'+review.id,{
+      addCandidate(topicId||'review:'+review.id,{id:'review-'+review.id,
         subjectId,topicId,subjectName:entitySubjectName(review),
         topicName:topicId?getTopicName(topicId):(review.topic||review.tipo||'Revisão'),
         tipo:'revisão',dificuldade:getTopicDifficulty(topicId),
@@ -3542,13 +3526,13 @@ function computeStudyPriorities(){
     });
 
   activeTopics()
-    .filter(topic=>topic.status!=='Concluído'&&(topic.name||'').trim()!=='')
+    .filter(topic=>(topic.name||'').trim()!=='')
     .forEach(topic=>{
       if(candidateMap.has(topic.id)) return;
       const diagnosis=diagnoseTopic(topic.subjectId,topic.id);
       addCandidate(topic.id,{
         subjectId:topic.subjectId,topicId:topic.id,subjectName:topic.subjectName,topicName:topic.name,
-        tipo:topic.status==='Em andamento'?'continuar':'novo tópico',
+        tipo:topic.status==='Concluído'?'manutenção':topic.status==='Em andamento'?'continuar':'novo tópico',
         dificuldade:topic.difficulty||'Médio',diasAtrasado:0,
         erroQuestoes:diagnosis?.effectiveErrorRate??taxaErroDisciplina(topic.subjectId),
         diasSemEstudar:diagnosis?.daysSinceStudy??diasSemEstudarDisciplina(topic.subjectId),
@@ -3558,29 +3542,20 @@ function computeStudyPriorities(){
 
   const candidates=[...candidateMap.values()];
   candidates.forEach(candidate=>{
-    const scoreRevisaoAtrasada=Math.max(0,Math.min(100,candidate.diasAtrasado*10));
-    const scoreBaixoDesempenho=Math.max(0,Math.min(100,Number(candidate.erroQuestoes)||0));
-    const scoreTendencia=trendPriorityRisk(candidate.diagnosis?.trend);
-    const scoreDificuldade=((DIFFICULTY_WEIGHT[candidate.dificuldade]||2)/3)*100;
-    const scoreTempoSemEstudar=Math.max(0,Math.min(100,candidate.diasSemEstudar*5));
-    const score=Math.round(
-      scoreRevisaoAtrasada*PRIORITY_WEIGHTS.revisaoAtrasada+
-      scoreBaixoDesempenho*PRIORITY_WEIGHTS.baixoDesempenho+
-      scoreTendencia*PRIORITY_WEIGHTS.tendencia+
-      scoreDificuldade*PRIORITY_WEIGHTS.dificuldade+
-      scoreTempoSemEstudar*PRIORITY_WEIGHTS.tempoSemEstudar+
-      provaScore*PRIORITY_WEIGHTS.proximidadeProva
-    );
-    candidate.score=Math.max(0,Math.min(100,score));
-    candidate.tier=candidate.score>=70?'Alta':candidate.score>=40?'Média':'Baixa';
+
     candidate.recommendedAction=candidate.diagnosis?.recommendation?.action||(candidate.tipo==='revisão'?'Concluir a revisão programada':'Estudar o tópico');
     candidate.studyType=candidate.diagnosis?.recommendation?.studyType||(candidate.tipo==='revisão'?'review':'study');
     candidate.estimatedMinutes=candidate.diagnosis?.recommendation?.estimatedMinutes||(candidate.tipo==='revisão'?25:35);
     candidate.recommendedQuestions=candidate.diagnosis?.recommendation?.questions||0;
   });
-  return candidates.sort((a,b)=>b.score-a.score||b.diasAtrasado-a.diasAtrasado);
+  return candidates;
+}
+function computeStudyPriorities(){
+  return recommendStudy(intelligenceCandidates(),{availableMinutes:Math.round(metaHoursToday()*60)})
+    .map(item=>({...item,tier:item.score>=70?'Alta':item.score>=40?'Média':'Baixa'}));
 }
 function motivoPrioridade(priority){
+  if(priority.reasons?.length)return priority.reasons.join(" · ");
   if(priority.diasAtrasado>0) return 'Revisão atrasada ('+priority.diasAtrasado+'d)';
   const diagnosis=priority.diagnosis;
   if(diagnosis?.trend?.key==='down') return 'Tendência em queda ('+diagnosis.trend.delta.toFixed(1)+' p.p.)';
@@ -3600,7 +3575,7 @@ function renderPrioridadeHoje(){
   const priorities = computeStudyPriorities().slice(0, 6);
 
   if(priorities.length === 0){
-    container.innerHTML = `<div class="upcoming-empty">Nada pendente — todos os tópicos cadastrados estão concluídos e sem revisões em aberto. 🎉</div>`;
+    container.innerHTML = `<div class="upcoming-empty">Nenhuma atividade elegível para o tempo disponível. Confira os pré-requisitos e a meta de hoje.</div>`;
     return;
   }
 
@@ -4081,22 +4056,10 @@ function renderExecutiveSummary(){
 const dismissedRecommendationIds=new Set();
 let currentStudyRecommendations=[];
 function intelligenceCandidates(){
-  const today=todayISO();
-  return computeStudyPriorities().map(priority=>{
-    const found=getTopicById(priority.topicId),topic=found?.topic,subject=found?.subject;
-    const retention=priority.topicId?topicRetentionScore(priority.subjectId,priority.topicId):null;
-    const blueprint=state.examBlueprint.subjects.find(item=>item.subjectId===priority.subjectId);
-    const blueprintImpact=blueprint?Math.min(100,(Number(blueprint.expectedQuestions)||0)*4*(Number(blueprint.questionWeight)||1)):null;
-    const examImpact=topic?.examImportance!=null?Number(topic.examImportance)*100:blueprintImpact;
-    const mastery=priority.diagnosis?.mastery?.score??(priority.erroQuestoes==null?null:100-priority.erroQuestoes);
-    const daysSinceContact=Math.max(0,Number(priority.diasSemEstudar)||0);
-    const estimatedMinutes=Math.max(15,priority.tipo==='revisão'?(Number(priority.estimatedMinutes)||25):(Number(topic?.estimatedStudyMinutes)||Number(priority.estimatedMinutes)||30));
-    const reviewUrgency=Math.min(100,Math.max(0,Number(priority.diasAtrasado)||0)*12);
-    const completed=state.studySessions.some(session=>session.date===today&&session.topicId===priority.topicId);
-    const risk=calculateRiskScore({masteryRisk:mastery==null?null:100-mastery,retentionRisk:retention?.available?100-retention.score:null,trendRisk:priority.diagnosis?.trend?.key==='insufficient'?null:trendPriorityRisk(priority.diagnosis?.trend),recencyRisk:Math.min(100,daysSinceContact*5),examImpact,examProximity:state.examDate?proximidadeProvaScore():null});
-    return {id:priority.topicId||`review-${priority.subjectId}`,subjectId:priority.subjectId,topicId:priority.topicId,subjectName:priority.subjectName,topicName:priority.topicName,archived:Boolean(topic?.archived||subject?.archived),completed,estimatedMinutes,studyType:priority.studyType,action:priority.recommendedAction,risk,
-      examImpact,retention:retention?.available?retention.score:null,retentionRisk:retention?.available?100-retention.score:null,mastery,masteryGap:mastery==null?null:100-mastery,coverage:subject?subjectProgress(subject):null,frequency:Math.max(0,100-daysSinceContact*5),daysSinceContact,recencyRisk:Math.min(100,daysSinceContact*5),reviewUrgency,planAlignment:priority.tipo==='continuar'?90:priority.tipo==='revisão'?80:55,trendRisk:trendPriorityRisk(priority.diagnosis?.trend),improvementPotential:mastery==null?50:100-mastery,effortEfficiency:Math.max(10,100-estimatedMinutes),reason:motivoPrioridade(priority)};
-  });
+  const priorities=collectStudyCandidates(),topics=allTopics();
+  const retentions=Object.fromEntries(topics.map(topic=>[topic.id,topicRetentionScore(topic.subjectId,topic.id)]));
+  return buildStudyCandidates({priorities,topics,retentions,blueprint:state.examBlueprint.subjects,
+    sessions:state.studySessions,today:todayISO(),examProximity:state.examDate?proximidadeProvaScore():null});
 }
 function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
@@ -4105,8 +4068,8 @@ function renderDiagnosisCenter(){
   const list=(items,empty,formatter)=>items.length?items.slice(0,4).map(formatter).join(''):`<p class="diagnosis-empty">${empty}</p>`;
   const section=key=>model.sections.find(item=>item.key===key)?.items||[];
   container.innerHTML=`<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(section('bottlenecks'),'Nenhum gargalo relevante agora.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value??item.severity}/100 · confiança ${(item.risk?.confidenceLabel||'Baixa').toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length?' · '+item.risk.missingFactors.length+' fatores ausentes':''}</span></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(section('opportunities'),'Configure pesos e esforço para revelar oportunidades.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · confiança ${item.confidenceLabel.toLowerCase()} · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes('examImpact')?' · peso da prova ausente':''}</span></article>`)}</section>
+    <section><h4>Gargalos</h4>${list(section('bottlenecks'),'Nenhum gargalo relevante agora.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value??item.severity}/100 · dados disponíveis ${Math.round((item.risk?.evidence?.completeness||0)*100)}% · evidência ${(item.risk?.evidence?.evidenceLabel||'Não avaliada').toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length?' · '+item.risk.missingFactors.length+' fatores ausentes':''}</span></article>`)}</section>
+    <section><h4>Oportunidades</h4>${list(section('opportunities'),'Configure pesos e esforço para revelar oportunidades.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · dados disponíveis ${Math.round(item.confidence*100)}% · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes('examImpact')?' · peso da prova ausente':''}</span></article>`)}</section>
     <section><h4>Revisões críticas e risco</h4>${list(section('risk'),'Nenhuma revisão crítica identificada.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${item.reviewUrgency>0?'Urgência '+Math.round(item.reviewUrgency)+'/100':item.daysSinceContact+' dias sem contato'}</span></article>`)}</section>
     <section><h4>Foco da semana</h4>${list(section('focus'),'Sem distribuição confiável.',item=>`<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
@@ -4115,7 +4078,12 @@ function renderStudyRecommendation(){
   const container=document.getElementById('studyRecommendation');if(!container)return;
   const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
   const previous=new Map(currentStudyRecommendations.map(item=>[item.id,item]));
-  currentStudyRecommendations=recommendStudy(intelligenceCandidates(),{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>previous.get(item.id)||createRecommendationPresentation(item,{id:uid('recommendation'),shownAt:nowISO(),algorithmVersion:state.algorithmVersions.recommendations}));
+  currentStudyRecommendations=recommendStudy(intelligenceCandidates(),{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>{
+    const old=previous.get(item.id);
+    return old&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
+      ?{...item,recommendationId:old.recommendationId,shownAt:old.shownAt,algorithmVersion:PRIORITY_ALGORITHM_VERSION}
+      :createRecommendationPresentation(item,{id:uid('recommendation'),shownAt:nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION});
+  });
   const item=currentStudyRecommendations[0];
   if(!item){container.innerHTML=`<div class="upcoming-empty">${availableMinutes<15?'Defina pelo menos 15 minutos na meta de hoje.':'Nenhuma recomendação compatível com o tempo e os dados atuais.'}</div>`;return}
   const factorLabels={examImpact:'Impacto na prova',retentionRisk:'Risco de retenção',masteryGap:'Lacuna de domínio',reviewUrgency:'Urgência da revisão',planAlignment:'Alinhamento com o plano',recencyRisk:'Tempo sem contato'};
@@ -4123,7 +4091,7 @@ function renderStudyRecommendation(){
   const pending=state.recommendationFeedback.find(feedback=>feedback.completed&&feedback.useful===null),summary=summarizeRecommendationFeedback(state.recommendationFeedback);
   const outcome=pending?`<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'';
   const history=summary.shown?`<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate??0}% concluídas${summary.rated?` · ${summary.usefulnessRate}% úteis`:''}</small>`:'';
-  container.innerHTML=`${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action||'Estudar agora')}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details>${history}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
+  container.innerHTML=`${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action||'Estudar agora')}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · evidência ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}</p><ul>${item.reasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><p>Dados disponíveis: ${Math.round(item.evidence.completeness*100)}% · força da evidência: ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}. Estimativa por regras.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details>${history}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
 }
 function recommendationBaseline(topicId){
   const performance=getTopicPerformance(topicId),retention=topicRetentionScore(null,topicId),found=getTopicById(topicId),last=found?.topic?.lastReviewedAt||found?.topic?.lastCompletedAt||null;
@@ -4142,6 +4110,9 @@ function markRecommendationNotUseful(id){const recommendation=currentStudyRecomm
 function rateRecommendationOutcome(recommendationId,useful){if(rateRecommendationFeedback(state.recommendationFeedback,recommendationId,{useful,ratedAt:nowISO()})){scheduleSave();renderStudyRecommendation();showToast('Obrigado. Esse retorno melhora a avaliação das recomendações.')}}
 function startStudyRecommendation(id){
   const recommendation=currentStudyRecommendations.find(item=>item.id===id);if(!recommendation)return;
+  const fresh=recommendStudy(intelligenceCandidates(),{availableMinutes:Math.round(metaHoursToday()*60)}).find(item=>item.id===id);
+  if(!fresh){renderStudyRecommendation();showToast('As condições mudaram. Confira a recomendação atual.');return;}
+  Object.assign(recommendation,fresh);
   recordRecommendationFeedback(recommendation,{accepted:true});
   let plan=todayDailyStudyPlan();if(!plan){plan={id:uid('plan'),date:todayISO(),availableMinutes:Math.round(metaHoursToday()*60),plannedMinutes:0,flexMinutes:0,createdAt:nowISO(),updatedAt:nowISO(),items:[]};state.dailyPlans.push(plan)}
   let item=plan.items.find(candidate=>candidate.topicId===recommendation.topicId&&!['completed','skipped'].includes(candidate.status));
@@ -4235,7 +4206,7 @@ function renderPlanoHoje(){
   const plan=ensureTodayDailyStudyPlan(priorities,availableMinutes);
 
   if(!plan&&priorities.length===0){
-    container.innerHTML='<div class="upcoming-empty">Nada pendente hoje — todos os tópicos concluídos e sem revisões em aberto. 🎉</div>';
+    container.innerHTML='<div class="upcoming-empty">Nenhuma atividade elegível para o tempo disponível. Confira os pré-requisitos e a meta de hoje.</div>';
     return;
   }
   if(!plan){
@@ -4493,19 +4464,15 @@ function topicRetentionScore(subjectId,topicId){
   const today=todayISO(),due=state.reviewAgenda.filter(r=>(r.topicId||r.topicRef)===topicId&&r.date&&r.date<=today);
   const done=due.filter(r=>r.status==='Concluído'&&r.completedAt);
   const onTime=done.filter(r=>localDateFromTimestamp(r.completedAt)<=addDays(r.date,1)).length;
-  const reviewRate=due.length?onTime/due.length*100:50,cutoff=addDays(today,-59);
+  const cutoff=addDays(today,-59);
   const questions=validQuestionRecords().filter(q=>q.topicId===topicId&&q.date>=cutoff&&q.date<=today);
   const resolved=questions.reduce((n,q)=>n+(Number(q.resolved)||0),0),correct=questions.reduce((n,q)=>n+(Number(q.correct)||0),0);
-  const accuracy=resolved?correct/resolved*100:50,dates=done.map(r=>localDateFromTimestamp(r.completedAt)).filter(Boolean).sort();
+  const dates=done.map(r=>localDateFromTimestamp(r.completedAt)).filter(Boolean).sort();
   const lastReview=dates[dates.length-1]||localDateFromTimestamp(found.topic.lastReviewedAt)||null;
   const daysSince=lastReview?Math.max(0,-(diasParaRevisao(lastReview)??0)):null;
-  const recency=daysSince===null?50:Math.max(0,100-Math.max(0,daysSince-1)*2.7);
-  const confidence=Math.min(1,Math.min(1,due.length/4)*.4+Math.min(1,resolved/50)*.4+(lastReview?1:0)*.2);
-  if(!due.length&&!resolved&&!lastReview)return {score:0,raw:null,confidence:0,confidenceLabel:'Baixa',available:false,detail:'Sem revisões ou questões vinculadas'};
-  const raw=reviewRate*.45+accuracy*.35+recency*.20,score=clampScore(50+(raw-50)*(.35+confidence*.65));
-  const detail=(due.length?onTime+' de '+due.length+' revisões no prazo':'sem revisões vencidas')+' · '+(resolved?Math.round(accuracy)+'% em '+resolved+' questões recentes':'sem questões recentes')+' · '+(daysSince===null?'sem revisão registrada':daysSince+'d desde a última revisão');
-  return {score,raw,confidence,confidenceLabel:confidence>=.7?'Alta':confidence>=.35?'Média':'Baixa',available:true,detail};
+  return calculateTopicRetention({due,resolved,correct,lastReview,daysSince,onTime,periodStart:cutoff,periodEnd:today});
 }
+
 function approvalRetencaoMetric(){
   const topics=activeTopics(),values=topics.map(t=>topicRetentionScore(t.subjectId,t.id)).filter(x=>x.available);
   if(!values.length)return {score:50,confidence:0,available:false,raw:null,detail:'Sem evidências de retenção por tópico'};
@@ -4647,20 +4614,6 @@ function escapeHtml(str){
 function escapeAttr(str){ return escapeHtml(str); }
 
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
-const DELEGATED_ACTIONS=new Set([
-  'addAgendaRow','addBreakdownRow','addCalRow','addQuestaoRow','addSimuladoRow','addSubject','addTopic','applyTodayGoalToAllDays','archiveSubject','archiveTopic','clearWeekendGoals',
-  'calculateStudyPlanPreview','clearStudyPlanPreview','confirmStudyPlan','calculateDailyPlanPreview','clearDailyPlanPreview','confirmDailyPlanPreview','undoLatestDailyPlanGeneration',
-  'calculateReplanPreview','clearReplanPreview','confirmReplan','undoPlanAdjustment',
-  'cancelAgendaEdit','cancelCalendarEdit','cancelQuestionEdit','cancelSimulationEdit','cancelStudySessionEdit','changeAgendaLimit','changeCalendarLimit','changeOverdueGroupLimit','changePerformanceLimit','changeSubjectTopicLimit','changeUpcomingLimit','clearSessionHistoryFilters','completeAgendaReview','completeCalendarItem','completeUnifiedReview','deleteAgendaRow',
-  'deleteBreakdownRow','deleteCalRow','deleteMetaDisciplina','deleteQuestaoRow','deleteSimuladoRow','deleteStudySession','duplicateSubject',
-  'editAgenda','editCalendarItem','editQuestion','editSimulation','editStudySession','focusStudyTimer','gerarAgendaAutomatica','moveSubject','navigateKpi','renameSubject','selectHeatmapDay','setHeatmapFilter','viewSelectedHeatmapSessions',
-  'dismissIntelligentAlert','dismissStudyRecommendation','markRecommendationNotUseful','rateRecommendationOutcome','startStudyRecommendation',
-  'requestPermanentSubjectDelete','requestPermanentTopicDelete','resetAdaptiveReviewDate','resetAgendaLimit','resetCalendarLimit','resetOverdueGroupLimit','resetPerformanceLimit','resetRetentionLimit','resetSubjectTopicLimit','resetUpcomingLimit','restoreSubject','restoreTopic','saveAgendaEdit','saveCalendarEdit','saveQuestionEdit','setPerformanceViewMode','setRadarSubject','setRetentionFilter','setSubjectTopicFilter',
-  'saveSimulationEdit','saveStudySessionEdit','selectSessionHistoryDate','showAllOverdueGroups','showAllPerformance','showAllRetention','showAllSubjectTopics','showAllUpcoming','startPlannedActivity','toggleBreakdown','toggleNotes',
-  'toggleCompletedReviews','toggleFilterPanel','toggleOverdueDate','toggleQuestionErrors','toggleSessionDay','toggleSessionDetails','toggleStreakActiveDays','toggleStreakExpanded','toggleSubject','updateAgenda','updateAgendaDraft','updateBreakdownRow','updateCal','updateCalendarDraft','updateMeta',
-  'updateMetaDisciplina','updateMetaHoursDay','updateQuestionDraft','updateQuestionError','updateSessionHistoryFilter',
-  'setErrorAnalysisFilter','updateSimulationDraft','updateStudySessionDraft','updateTopic','updateTopicStatus','updateTopicTags','updateTopicStrategy','updateExamBlueprint','updateExamSubject'
-]);
 const DELEGATED_ACTION_HANDLERS={
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
   calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,
@@ -4675,21 +4628,6 @@ const DELEGATED_ACTION_HANDLERS={
   updateMetaDisciplina,updateMetaHoursDay,updateQuestionDraft,updateQuestionError,updateSessionHistoryFilter,
   setErrorAnalysisFilter,updateSimulationDraft,updateStudySessionDraft,updateTopic,updateTopicStatus,updateTopicTags,updateTopicStrategy,updateExamBlueprint,updateExamSubject
 };
-function splitDelegatedArguments(source){
-  const values=[]; let current='',quote=null,escaped=false,depth=0;
-  for(const char of source){
-    if(escaped){current+=char;escaped=false;continue}
-    if(char==='\\'){current+=char;escaped=true;continue}
-    if(quote){current+=char;if(char===quote)quote=null;continue}
-    if(char==='\''||char==='"'){quote=char;current+=char;continue}
-    if(char==='('){depth++;current+=char;continue}
-    if(char===')'){depth--;current+=char;continue}
-    if(char===','&&depth===0){values.push(current.trim());current='';continue}
-    current+=char;
-  }
-  if(current.trim())values.push(current.trim());
-  return values;
-}
 function delegatedArgument(expression,element){
   const value=expression.trim();
   if(value==='this.value')return element.value;
@@ -4704,35 +4642,18 @@ function delegatedArgument(expression,element){
   if((value.startsWith("'")&&value.endsWith("'"))||(value.startsWith('"')&&value.endsWith('"')))return value.slice(1,-1).replace(/\\(['"\\])/g,'$1');
   throw new Error('Argumento de evento não permitido: '+value);
 }
-function dispatchDelegatedCode(code,event,element){
-  const normalized=String(code||'').trim();
-  if(!normalized)return;
-  if(normalized==='event.stopPropagation()'){event.stopPropagation();return}
-  if(normalized.startsWith('event.stopPropagation();')){event.stopPropagation();return dispatchDelegatedCode(normalized.slice(24),event,element)}
-  if(normalized==='performanceSubjectId=this.value;renderQuestionAnalytics()'){performanceSubjectId=element.value;renderQuestionAnalytics();return}
+function resolveDelegatedSpecial(normalized,event,element){
+  if(normalized==='performanceSubjectId=this.value;renderQuestionAnalytics()'){performanceSubjectId=element.value;renderQuestionAnalytics();return true}
   const listMatch=normalized.match(/^changeListLimit\('(questions|simulations|sessionDays)',(-?)(?:LIST_VIEW_STEPS\.\1|listViewState\.\1Visible),(renderQuestoes|renderSimulados|renderStudySessionsHistory)\)$/);
   if(listMatch){
     const delta=(listMatch[2]? -listViewState[`${listMatch[1]}Visible`] : LIST_VIEW_STEPS[listMatch[1]]);
     const renderers={renderQuestoes,renderSimulados,renderStudySessionsHistory};
-    changeListLimit(listMatch[1],delta,renderers[listMatch[3]]); return;
+    changeListLimit(listMatch[1],delta,renderers[listMatch[3]]); return true;
   }
-  const match=normalized.match(/^([A-Za-z_$][\w$]*)\((.*)\)$/s);
-  if(!match||!DELEGATED_ACTIONS.has(match[1]))throw new Error('Ação de evento não permitida: '+normalized);
-  const fn=DELEGATED_ACTION_HANDLERS[match[1]];
-  if(typeof fn!=='function')throw new Error('Ação de evento indisponível: '+match[1]);
-  fn(...(match[2].trim()?splitDelegatedArguments(match[2]).map(arg=>delegatedArgument(arg,element)):[]));
+  return false;
 }
-const DELEGATED_EVENT_TYPES=['click','change','input','blur'];
-DELEGATED_EVENT_TYPES.forEach(type=>document.addEventListener(type,event=>{
-  const key=`delegated${type[0].toUpperCase()+type.slice(1)}`,attribute=`data-${key.replace(/[A-Z]/g,char=>'-'+char.toLowerCase())}`;
-  const element=event.target?.closest?.(`[${attribute}]`); if(!element)return;
-  try{dispatchDelegatedCode(element.dataset[key],event,element)}catch(error){console.error('Evento delegado bloqueado',error);showToast('Uma ação inválida foi bloqueada por segurança.')}
-},type==='blur'));
+createDelegatedEventsController({document,handlers:DELEGATED_ACTION_HANDLERS,parseArgument:delegatedArgument,resolveSpecial:resolveDelegatedSpecial,onError:error=>{console.error('Evento delegado bloqueado',error);showToast('Uma ação inválida foi bloqueada por segurança.')}}).register();
 /* ===== MASTER RENDER ===== */
-function safeRenderSection(name,renderer){
-  try{ renderer(); }
-  catch(error){ console.error('Falha ao renderizar '+name,error); }
-}
 const RENDER_SCOPE_SECTIONS={
   dashboard:new Set(['dashboard de aprovação','controles do cronômetro','evolução do progresso','heatmap','conquistas','radar','visão geral','horas estudadas','histórico de sessões']),
   disciplinas:new Set(['disciplinas']),
@@ -4743,8 +4664,8 @@ const RENDER_SCOPE_SECTIONS={
   hoje:new Set(['resumo executivo','central de diagnóstico','recomendação de estudo','replanejamento','prioridades','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
 };
 function activeTabName(){return document.querySelector('.tab-btn.active')?.dataset.tab||'dashboard'}
-function render(scope='all'){
-  const sections=[
+const applicationRenderer=createApplicationRenderer({
+  sections:[
     ['indicadores',renderKPIs],
     ['dashboard de aprovação',renderApprovalDashboard],
     ['controles do cronômetro',populateTimerContextControls],
@@ -4788,31 +4709,18 @@ function render(scope='all'){
     ['metas de hoje',renderMetasHoje],
     ['alertas',renderAlertasInteligentes],
     ['plano de hoje',renderPlanoHoje]
-  ];
-  const globalSections=new Set(['indicadores','cabeçalho']);
-  const selected=scope==='all'?null:RENDER_SCOPE_SECTIONS[scope==='active'?activeTabName():scope];
-  sections.filter(([name])=>!selected||globalSections.has(name)||selected.has(name)).forEach(([name,renderer])=>safeRenderSection(name,renderer));
-  labelDynamicControls();
-}
+  ],scopes:RENDER_SCOPE_SECTIONS,globalSections:['indicadores','cabeçalho'],getActiveScope:activeTabName,afterRender:labelDynamicControls,onError:(error,name)=>console.error('Falha ao renderizar '+name,error)
+});
+function render(scope='all'){return applicationRenderer.render(scope)}
 function persistAndRender(){
   render('active');
   scheduleSave();
 }
 function renderAll(){ render(); }
 
-const historyLayoutMedia=window.matchMedia('(max-width:760px)');
-historyLayoutMedia.addEventListener('change',()=>{
-  renderQuestoes();
-  renderSimulados();
-  renderStudySessionsHistory();
-  renderAgenda();
-  renderCalendar();
-});
-
 /* ===== ATALHOS DE TECLADO ===== */
 navigationController.registerShortcuts();
-
-window.addEventListener('beforeunload', () => {if(!TEST_MODE&&!suppressBeforeUnloadSave)writeLocalState(JSON.stringify(state))});
+registerApplicationLifecycle({window,onBeforeUnload:()=>{if(!TEST_MODE&&!suppressBeforeUnloadSave)writeLocalState(JSON.stringify(state))},onResponsiveChange:()=>{renderQuestoes();renderSimulados();renderStudySessionsHistory();renderAgenda();renderCalendar()}});
 
 setCalendarMobileView('month');
 const initialTab = location.hash.replace('#','');
@@ -4829,7 +4737,7 @@ if(TEST_MODE){
     startOfWeek,isSameWeek,addDays,diasParaRevisao,parseLocalDate,todayISO,localDateFromTimestamp,
     calculateAdaptiveInterval,adaptiveReviewSuggestion,
     syncQuestionFromStudySession,getSubjectDependencies,getTopicDependencies,
-    computeApprovalMetrics,indiceProntidao,readinessResult,calculateReadinessScore,computeStudyPriorities,topicRetentionScore,
+    computeApprovalMetrics,indiceProntidao,readinessResult,calculateReadinessScore,computeStudyPriorities,topicRetentionScore,topicMasteryIndex,intelligenceCandidates,studyPlanCandidates,buildStudyPlan,renderAll,
     sha256,rotateAutomaticBackup,StorageManager,structuredCloneSafe
   };
   ensureStateDefaults();restoreTimerFromState();render();

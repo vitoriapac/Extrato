@@ -1,32 +1,42 @@
-const clamp=value=>Math.max(0,Math.min(100,Number(value)||0));
+import {calculatePriorityScore} from '../domain/analytics/priority-score.js';
+import {describeScoreEvidence} from '../domain/analytics/score-evidence.js';
+import {canStudy,needsMaintenance,sessionMinutes,resolveStudyEligibility} from '../domain/study-eligibility.js';
 
-export function buildStudyPlan({topics=[],weeklyAvailableMinutes=0,weeksUntilExam=0}={}){
-  const active=topics.filter(item=>item&&!item.archived&&!item.completed);
-  const configured=active.filter(item=>Number(item.estimatedMinutes)>0);
-  const missingEffort=active.filter(item=>!Number(item.estimatedMinutes)).map(item=>item.id);
-  const availability=Math.max(0,Math.round(Number(weeklyAvailableMinutes)||0));
-  const weeks=Math.max(0,Math.ceil(Number(weeksUntilExam)||0));
-  if(!configured.length||availability<=0||weeks<=0)return {state:'insufficient',weeklyAvailableMinutes:availability,weeksUntilExam:weeks,remainingMinutes:configured.reduce((sum,item)=>sum+Number(item.estimatedMinutes),0),missingEffort,items:[],subjects:[],activityMix:{theory:0,questions:0,reviews:0},confidence:0};
-  const remainingMinutes=configured.reduce((sum,item)=>sum+Number(item.estimatedMinutes),0);
-  const weeklyBudget=Math.min(availability,Math.ceil(remainingMinutes/weeks));
-  const scored=configured.map(item=>{
-    const examImpact=item.examImpact==null?50:clamp(item.examImpact),masteryGap=item.masteryGap==null?50:clamp(item.masteryGap),retentionNeed=item.retentionNeed==null?50:clamp(item.retentionNeed),urgency=clamp(100-(weeks-1)*4);
-    const score=Math.max(1,examImpact*.35+masteryGap*.30+retentionNeed*.20+urgency*.15);
-    return {...item,score};
-  });
-  const totalScore=scored.reduce((sum,item)=>sum+item.score,0);
-  const allocations=new Map(scored.map(item=>[item.id,Math.min(Math.round(Number(item.estimatedMinutes)),Math.floor(weeklyBudget*item.score/totalScore))]));
+const positive=value=>Number.isFinite(Number(value))&&Number(value)>0?Math.round(Number(value)):0;
+
+export function buildStudyPlan({topics=[],weeklyAvailableMinutes=0,weeksUntilExam=0,prerequisiteTopics}={}){
+  const candidates=resolveStudyEligibility(topics,prerequisiteTopics);
+  const active=candidates.filter(item=>item&&!item.archived&&(!item.completed||item.covered)&&(!item.covered||needsMaintenance(item)));
+  const blockedTopics=active.filter(item=>item.blockedPrerequisites?.length).map(item=>({id:item.id,topicName:item.topicName,prerequisites:item.blockedPrerequisites}));
+  const effort=item=>item.covered?sessionMinutes(item,60):positive(item.remainingMinutes??item.estimatedMinutes);
+  const missingEffort=active.filter(item=>!item.covered&&(item.remainingMinutes??item.estimatedMinutes)==null).map(item=>item.id);
+  const configured=active.filter(item=>effort(item)>0&&canStudy(item,{ignoreToday:true}));
+  const availability=positive(weeklyAvailableMinutes),weeks=Math.max(0,Math.ceil(Number(weeksUntilExam)||0));
+  const remainingMinutes=active.filter(item=>!item.covered).reduce((sum,item)=>sum+effort(item),0);
+  const maintenanceMinutes=configured.filter(item=>item.covered).reduce((sum,item)=>sum+effort(item),0);
+  const base={weeklyAvailableMinutes:availability,weeksUntilExam:weeks,remainingMinutes,maintenanceMinutes,missingEffort,blockedTopics};
+  if(!configured.length||availability<=0||weeks<=0)return {...base,state:'insufficient',items:[],subjects:[],activityMix:{theory:0,questions:0,reviews:0},confidence:0};
+  const weeklyBudget=Math.min(availability,Math.ceil(remainingMinutes/weeks)+maintenanceMinutes);
+  const scored=configured.map(item=>({...item,...calculatePriorityScore(item),capacityMinutes:effort(item)})).sort((a,b)=>b.score-a.score||String(a.id).localeCompare(String(b.id)));
+  const totalScore=scored.reduce((sum,item)=>sum+Math.max(1,item.score),0);
+  const allocations=new Map(scored.map(item=>[item.id,Math.min(item.capacityMinutes,Math.floor(weeklyBudget*Math.max(1,item.score)/totalScore))]));
   let unallocated=weeklyBudget-[...allocations.values()].reduce((sum,value)=>sum+value,0);
-  for(const item of [...scored].sort((a,b)=>b.score-a.score)){
+  for(const item of scored){
     if(unallocated<=0)break;
-    const current=allocations.get(item.id),capacity=Math.max(0,Math.round(Number(item.estimatedMinutes))-current),extra=Math.min(capacity,unallocated);
+    const current=allocations.get(item.id),extra=Math.min(item.capacityMinutes-current,unallocated);
     allocations.set(item.id,current+extra);unallocated-=extra;
   }
   const items=scored.map(item=>{
     const minutes=allocations.get(item.id)||0;
-    const reviewShare=item.retentionNeed>=60?.35:.20,questionShare=item.masteryGap>=60?.40:.30;
-    const reviews=Math.round(minutes*reviewShare),questions=Math.round(minutes*questionShare),theory=Math.max(0,minutes-reviews-questions);
-    return {...item,minutes,activityMix:{theory,questions,reviews}};
+    const retentionNeed=item.retentionRisk??item.retentionNeed;
+    const reviewShare=item.covered?(retentionNeed>=40||item.reviewUrgency>=40?.6:.3):(retentionNeed>=60?.35:.20);
+    const reviews=item.covered&&minutes>=30?Math.max(15,Math.min(minutes-15,Math.round(minutes*reviewShare))):Math.round(minutes*reviewShare);
+    const questions=item.covered?minutes-reviews:Math.min(minutes-reviews,Math.round(minutes*(item.masteryGap>=60?.40:.30)));
+    const activityMix={theory:minutes-reviews-questions,questions,reviews};
+    // Avoid creating fragments that the daily distributor cannot schedule.
+    const largest=Object.keys(activityMix).sort((a,b)=>activityMix[b]-activityMix[a])[0];
+    for(const key of Object.keys(activityMix))if(key!==largest&&activityMix[key]>0&&activityMix[key]<15){activityMix[largest]+=activityMix[key];activityMix[key]=0;}
+    return {...item,minutes,activityMix};
   }).filter(item=>item.minutes>0);
   const subjectMap=new Map();
   items.forEach(item=>{const current=subjectMap.get(item.subjectId)||{subjectId:item.subjectId,subjectName:item.subjectName,minutes:0};current.minutes+=item.minutes;subjectMap.set(item.subjectId,current)});
@@ -34,5 +44,7 @@ export function buildStudyPlan({topics=[],weeklyAvailableMinutes=0,weeksUntilExa
   const coverage=active.length?configured.length/active.length:0;
   const strategicCoverage=configured.filter(item=>item.examImpact!=null).length/configured.length;
   const confidence=Math.round((coverage*.65+strategicCoverage*.35)*100)/100;
-  return {state:confidence>=.75?'ready':'estimated',weeklyAvailableMinutes:availability,weeklyPlannedMinutes:items.reduce((sum,item)=>sum+item.minutes,0),weeksUntilExam:weeks,remainingMinutes,missingEffort,items,subjects:[...subjectMap.values()].sort((a,b)=>b.minutes-a.minutes),activityMix,confidence,confidenceLabel:confidence>=.8?'Alta':confidence>=.5?'Média':'Baixa'};
+  const measured=configured.filter(item=>item.evidenceStrength!=null);
+  const evidence=describeScoreEvidence({completeness:confidence,evidenceStrength:measured.length?measured.reduce((sum,item)=>sum+item.evidenceStrength,0)/configured.length:null});
+  return {...base,maintenanceMinutes:items.filter(item=>item.covered).reduce((sum,item)=>sum+item.minutes,0),state:confidence>=.75?'ready':'estimated',weeklyPlannedMinutes:items.reduce((sum,item)=>sum+item.minutes,0),items,subjects:[...subjectMap.values()].sort((a,b)=>b.minutes-a.minutes),activityMix,confidence,confidenceLabel:evidence.completenessLabel,evidence};
 }
