@@ -52,6 +52,8 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.
 - `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.
 - `src/ui/controllers/navigation-controller.js`: abas, menu móvel, atalhos numéricos, busca e fechamento por Escape.
+- `src/ui/controllers/modal-controller.js`: confirmações e prompts acessíveis com validação e restauração de foco.
+- `src/ui/controllers/editable-collection-controller.js`: estado de rascunho e ciclo de edição dos registros operacionais.
 - `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
 - `src/ui/filter-panel.js`: contagem e rótulos puros dos filtros responsivos.
 - `src/ui/session-history.js`: filtragem e agrupamento puro do histórico de sessões.

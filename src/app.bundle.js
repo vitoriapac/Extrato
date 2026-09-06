@@ -1470,6 +1470,104 @@
     return Object.freeze({ activate, closeMore, registerShortcuts });
   }
 
+  // src/ui/controllers/modal-controller.js
+  function createModalController({ document: document2, window: window2 } = {}) {
+    if (!document2 || !window2) throw new TypeError("Controlador de modal requer documento e janela.");
+    let activeCleanup = null;
+    const confirm = (message, onConfirm = () => {
+    }, onCancel, options = {}) => {
+      const overlay = document2.getElementById("modalOverlay");
+      if (activeCleanup) activeCleanup(false);
+      const previous = document2.activeElement, messageNode = document2.getElementById("modalMessage"), group = document2.getElementById("modalPromptGroup"), input = document2.getElementById("modalPromptInput"), label = document2.getElementById("modalPromptLabel"), error = document2.getElementById("modalPromptError"), confirmButton = document2.getElementById("modalConfirmBtn"), cancelButton = document2.getElementById("modalCancelBtn"), hasPrompt = Boolean(options.prompt), originalLabel = confirmButton.textContent;
+      messageNode.textContent = message;
+      group.hidden = !hasPrompt;
+      error.textContent = "";
+      if (hasPrompt) {
+        label.textContent = options.prompt.label || "Nome";
+        input.value = options.prompt.value || "";
+        input.placeholder = options.prompt.placeholder || "";
+      }
+      if (options.confirmLabel) confirmButton.textContent = options.confirmLabel;
+      overlay.classList.add("show");
+      let frame = 0;
+      const cleanup = (restore = true) => {
+        if (frame) window2.cancelAnimationFrame(frame);
+        overlay.classList.remove("show");
+        confirmButton.removeEventListener("click", accept);
+        cancelButton.removeEventListener("click", cancel);
+        overlay.removeEventListener("click", outside);
+        input.removeEventListener("keydown", enter);
+        confirmButton.textContent = originalLabel;
+        activeCleanup = null;
+        if (restore && previous?.isConnected) previous.focus();
+      };
+      const accept = () => {
+        const value2 = hasPrompt ? input.value.trim() : void 0, validation = hasPrompt && typeof options.prompt.validate === "function" ? options.prompt.validate(value2) : "";
+        if (validation) {
+          error.textContent = validation;
+          input.focus();
+          return;
+        }
+        cleanup();
+        onConfirm(value2);
+      };
+      const cancel = () => {
+        cleanup();
+        if (typeof onCancel === "function") onCancel();
+      };
+      const outside = (event) => {
+        if (event.target === overlay) cancel();
+      };
+      const enter = (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          accept();
+        }
+      };
+      confirmButton.addEventListener("click", accept);
+      cancelButton.addEventListener("click", cancel);
+      overlay.addEventListener("click", outside);
+      if (hasPrompt) input.addEventListener("keydown", enter);
+      activeCleanup = cleanup;
+      frame = window2.requestAnimationFrame(() => {
+        frame = 0;
+        (hasPrompt ? input : cancelButton).focus();
+      });
+    };
+    return Object.freeze({ confirm, prompt: (message, options, onConfirm, onCancel) => confirm(message, onConfirm, onCancel, { confirmLabel: options.confirmLabel || "Criar", prompt: options }), close: () => activeCleanup?.() });
+  }
+
+  // src/ui/controllers/editable-collection-controller.js
+  function createEditableCollectionController({ service, clone = (value2) => structuredClone(value2), render: render2 = () => {
+  }, normalize = (value2) => value2, onSaved = () => {
+  }, initialState = {} } = {}) {
+    if (!service || typeof service.find !== "function") throw new TypeError("Controlador de edição requer serviço de coleção.");
+    const state2 = { editingId: null, editingIsNew: false, draft: null, ...initialState };
+    const reset = () => Object.assign(state2, { editingId: null, editingIsNew: false, draft: null });
+    return Object.freeze({ state: state2, begin: (id, { isNew = false } = {}) => {
+      if (state2.editingIsNew && state2.editingId !== id) service.remove(state2.editingId);
+      const item = service.find(id);
+      if (!item) return null;
+      Object.assign(state2, { editingId: id, editingIsNew: isNew, draft: clone(item) });
+      render2();
+      return state2.draft;
+    }, update: (field, value2) => {
+      if (!state2.draft) return null;
+      state2.draft[field] = value2;
+      return state2.draft;
+    }, cancel: () => {
+      if (state2.editingIsNew && state2.editingId) service.remove(state2.editingId);
+      reset();
+      render2();
+    }, save: () => {
+      if (!state2.draft || !service.find(state2.editingId)) return null;
+      const saved = service.update(state2.editingId, normalize(clone(state2.draft)));
+      reset();
+      onSaved(saved);
+      return saved;
+    }, reset });
+  }
+
   // src/application/alert-lifecycle.js
   var severityOrder = { high: 3, medium: 2, low: 1, ok: 0 };
   function reconcileAlerts(alerts = [], states = [], today, addDays2) {
@@ -2712,80 +2810,12 @@
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => el.classList.remove("show"), 2600);
   }
-  var activeConfirmCleanup = null;
+  var modalController = createModalController({ document, window });
   function showConfirm(message, onConfirm, onCancel, options = {}) {
-    const overlay = document.getElementById("modalOverlay");
-    if (activeConfirmCleanup) activeConfirmCleanup(false);
-    const previouslyFocused = document.activeElement;
-    document.getElementById("modalMessage").textContent = message;
-    const promptGroup = document.getElementById("modalPromptGroup");
-    const promptInput = document.getElementById("modalPromptInput");
-    const promptLabel = document.getElementById("modalPromptLabel");
-    const promptError = document.getElementById("modalPromptError");
-    const hasPrompt = Boolean(options.prompt);
-    promptGroup.hidden = !hasPrompt;
-    promptError.textContent = "";
-    if (hasPrompt) {
-      promptLabel.textContent = options.prompt.label || "Nome";
-      promptInput.value = options.prompt.value || "";
-      promptInput.placeholder = options.prompt.placeholder || "";
-    }
-    overlay.classList.add("show");
-    const confirmBtn = document.getElementById("modalConfirmBtn");
-    const cancelBtn = document.getElementById("modalCancelBtn");
-    const originalConfirmLabel = confirmBtn.textContent;
-    let focusFrame = 0;
-    if (options.confirmLabel) confirmBtn.textContent = options.confirmLabel;
-    function cleanup(restoreFocus = true) {
-      if (focusFrame) cancelAnimationFrame(focusFrame);
-      overlay.classList.remove("show");
-      confirmBtn.removeEventListener("click", onConfirmClick);
-      cancelBtn.removeEventListener("click", onCancelClick);
-      overlay.removeEventListener("click", onOverlayClick);
-      promptInput.removeEventListener("keydown", onPromptKeydown);
-      confirmBtn.textContent = originalConfirmLabel;
-      activeConfirmCleanup = null;
-      if (restoreFocus && previouslyFocused?.isConnected) previouslyFocused.focus();
-    }
-    function onConfirmClick() {
-      const value2 = hasPrompt ? promptInput.value.trim() : void 0;
-      const validationMessage = hasPrompt && typeof options.prompt.validate === "function" ? options.prompt.validate(value2) : "";
-      if (validationMessage) {
-        promptError.textContent = validationMessage;
-        promptInput.focus();
-        return;
-      }
-      cleanup();
-      onConfirm(value2);
-    }
-    function cancel() {
-      cleanup();
-      if (typeof onCancel === "function") onCancel();
-    }
-    function onCancelClick() {
-      cancel();
-    }
-    function onOverlayClick(e) {
-      if (e.target === overlay) cancel();
-    }
-    function onPromptKeydown(e) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        onConfirmClick();
-      }
-    }
-    confirmBtn.addEventListener("click", onConfirmClick);
-    cancelBtn.addEventListener("click", onCancelClick);
-    overlay.addEventListener("click", onOverlayClick);
-    if (hasPrompt) promptInput.addEventListener("keydown", onPromptKeydown);
-    activeConfirmCleanup = cleanup;
-    focusFrame = requestAnimationFrame(() => {
-      focusFrame = 0;
-      (hasPrompt ? promptInput : cancelBtn).focus();
-    });
+    return modalController.confirm(message, onConfirm, onCancel, options);
   }
   function showPrompt(message, options, onConfirm, onCancel) {
-    showConfirm(message, onConfirm, onCancel, { confirmLabel: options.confirmLabel || "Criar", prompt: options });
+    return modalController.prompt(message, options, onConfirm, onCancel);
   }
   var navigationController = createNavigationController({ document, window, render: (tab) => render(tab), trapModalTab: (event) => trapModalTab(event, [document.getElementById("reviewRatingOverlay"), document.getElementById("sessionModalOverlay"), document.getElementById("modalOverlay")]), closeReview: closeReviewRating });
   function activateTab(tabName, updateHash = true) {
@@ -4556,7 +4586,11 @@
     });
   }
   document.querySelectorAll(".calendar-view-btn").forEach((button) => button.addEventListener("click", () => setCalendarMobileView(button.dataset.calendarView)));
-  var calendarUiState = { visible: 10, editingId: null, editingIsNew: false, draft: null };
+  var calendarEditController = createEditableCollectionController({ service: calendarService, clone: cloneRecord, render: renderCalendar, onSaved: () => {
+    persistAndRender();
+    showToast("Item do calendário atualizado.");
+  }, initialState: { visible: 10 } });
+  var calendarUiState = calendarEditController.state;
   function calendarViewModel(item) {
     return { date: item.date ? formatDatePt(item.date) : "Sem data", week: item.week || "—", subject: getSubjectName(entitySubjectId(item)), status: item.status || "Não iniciado", reviewType: item.reviewType && item.reviewType !== "—" ? item.reviewType : "Sem revisão" };
   }
@@ -4569,34 +4603,16 @@
     renderCalendar();
   }
   function editCalendarItem(id) {
-    if (calendarUiState.editingIsNew && calendarUiState.editingId !== id) calendarService.remove(calendarUiState.editingId);
-    const item = state.calendar.find((entry) => entry.id === id);
-    if (!item) return;
-    calendarUiState.editingId = id;
-    calendarUiState.editingIsNew = false;
-    calendarUiState.draft = cloneRecord(item);
-    renderCalendar();
+    calendarEditController.begin(id);
   }
   function cancelCalendarEdit() {
-    if (calendarUiState.editingIsNew) calendarService.remove(calendarUiState.editingId);
-    calendarUiState.editingId = null;
-    calendarUiState.editingIsNew = false;
-    calendarUiState.draft = null;
-    renderCalendar();
+    calendarEditController.cancel();
   }
   function updateCalendarDraft(field, value2) {
-    const draft = calendarUiState.draft;
-    if (draft) draft[field] = value2;
+    calendarEditController.update(field, value2);
   }
   function saveCalendarEdit() {
-    const draft = calendarUiState.draft;
-    if (!draft || !calendarService.find(calendarUiState.editingId)) return cancelCalendarEdit();
-    calendarService.update(draft.id, draft);
-    calendarUiState.editingId = null;
-    calendarUiState.editingIsNew = false;
-    calendarUiState.draft = null;
-    persistAndRender();
-    showToast("Item do calendário atualizado.");
+    if (!calendarEditController.save()) cancelCalendarEdit();
   }
   function completeCalendarItem(id) {
     const item = state.calendar.find((entry) => entry.id === id);
@@ -4634,17 +4650,12 @@
   }
   function addCalRow() {
     const item = calendarService.create({ date: todayISO(), week: "", subjectId: activeSubjects()[0]?.id || null, topicId: null, status: "Não iniciado", reviewType: "—" });
-    calendarUiState.editingId = item.id;
-    calendarUiState.editingIsNew = true;
-    calendarUiState.draft = cloneRecord(item);
-    renderCalendar();
+    calendarEditController.begin(item.id, { isNew: true });
   }
   function deleteCalRow(id) {
     showConfirm("Excluir este item do calendário?", () => {
       calendarService.remove(id);
-      calendarUiState.editingId = null;
-      calendarUiState.editingIsNew = false;
-      calendarUiState.draft = null;
+      calendarEditController.reset();
       persistAndRender();
       showToast("Item excluído.");
     });
@@ -5009,8 +5020,25 @@
   }
   var listViewState = { questionsVisible: 10, simulationsVisible: 5, sessionDaysVisible: 5 };
   var LIST_VIEW_STEPS = { questions: 10, simulations: 5, sessionDays: 5 };
-  var historyEditState = { questionId: null, questionIsNew: false, simulationId: null, simulationIsNew: false, sessionId: null };
-  var historyEditDraft = { question: null, simulation: null, session: null };
+  var historyEditState = { sessionId: null };
+  var historyEditDraft = { session: null };
+  var questionEditController = createEditableCollectionController({ service: questionService, clone: cloneRecord, render: renderQuestoes, normalize: (draft) => {
+    draft.resolved = Math.max(0, Math.floor(Number(draft.resolved) || 0));
+    draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.resolved));
+    normalizeErrorBreakdown(draft);
+    return draft;
+  }, onSaved: () => {
+    persistAndRender();
+    showToast("Registro atualizado.");
+  } });
+  var simulationEditController = createEditableCollectionController({ service: simulationService, clone: cloneRecord, render: renderSimulados, normalize: (draft) => {
+    draft.total = Math.max(0, Math.floor(Number(draft.total) || 0));
+    draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.total));
+    return draft;
+  }, onSaved: () => {
+    persistAndRender();
+    showToast("Simulado atualizado.");
+  } });
   function cloneRecord(record) {
     return record ? JSON.parse(JSON.stringify(record)) : null;
   }
@@ -5095,42 +5123,20 @@
     return { date: q.date ? formatDatePt(q.date) : "Sem data", subject: getSubjectName(subjectId) || "Sem disciplina", topic: q.topicId ? getTopicName(q.topicId) : "Sem tópico", resolved: Number(q.resolved) || 0, correct: Number(q.correct) || 0, accuracy: calcAcertoPct(q.correct, q.resolved) };
   }
   function editQuestion(id) {
-    if (historyEditState.questionIsNew && historyEditState.questionId !== id) questionService.remove(historyEditState.questionId);
-    const question = state.questoes.find((q) => q.id === id);
-    if (!question) return;
-    if (historyEditState.questionId !== id) historyEditState.questionIsNew = false;
-    historyEditState.questionId = id;
-    historyEditDraft.question = cloneRecord(question);
-    renderQuestoes();
+    questionEditController.begin(id);
   }
   function cancelQuestionEdit() {
-    if (historyEditState.questionIsNew && historyEditState.questionId) questionService.remove(historyEditState.questionId);
-    historyEditState.questionId = null;
-    historyEditState.questionIsNew = false;
-    historyEditDraft.question = null;
-    renderQuestoes();
+    questionEditController.cancel();
   }
   function updateQuestionDraft(field, value2) {
-    const draft = historyEditDraft.question;
+    const draft = questionEditController.state.draft;
     if (!draft) return;
-    draft[field] = field === "resolved" || field === "correct" ? Math.max(0, Math.floor(Number(value2) || 0)) : value2;
+    questionEditController.update(field, field === "resolved" || field === "correct" ? Math.max(0, Math.floor(Number(value2) || 0)) : value2);
     if (field === "subjectId" && draft.topicId && !topicsForSelection(value2, draft.topicId).some((t) => t.id === draft.topicId)) draft.topicId = null;
     if (field === "subjectId") renderQuestoes();
   }
   function saveQuestionEdit() {
-    const draft = historyEditDraft.question;
-    if (!draft) return;
-    draft.resolved = Math.max(0, Math.floor(Number(draft.resolved) || 0));
-    draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.resolved));
-    normalizeErrorBreakdown(draft);
-    const index = state.questoes.findIndex((q) => q.id === draft.id);
-    if (index < 0) return cancelQuestionEdit();
-    questionService.update(draft.id, draft);
-    historyEditState.questionId = null;
-    historyEditState.questionIsNew = false;
-    historyEditDraft.question = null;
-    persistAndRender();
-    showToast("Registro atualizado.");
+    if (!questionEditController.save()) cancelQuestionEdit();
   }
   function renderQuestionReadRow(q) {
     const vm = questionViewModel(q);
@@ -5140,7 +5146,7 @@
     return `<tr class="history-read-row history-desktop-row" data-id="${q.id}"><td>${escapeHtml(vm.date)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td class="number-cell">${vm.resolved}</td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.accuracy}%</td><td><button class="error-toggle-btn" data-delegated-click="toggleQuestionErrors('${q.id}')">${categorized}/${realErrors}</button></td><td><div class="row-actions"><button class="btn ghost small" data-delegated-click="editQuestion('${q.id}')">Editar</button></div></td></tr>${openQuestionErrorIds.has(q.id) ? renderQuestionErrorFields(q) : ""}`;
   }
   function renderQuestionEditRow(q) {
-    const d = historyEditDraft.question;
+    const d = questionEditController.state.draft;
     const subjectId = entitySubjectId(d);
     const topics = topicsForSelection(subjectId, d.topicId);
     return `<tr class="row-editing" data-id="${q.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date || ""}" data-delegated-change="updateQuestionDraft('date',this.value)"></label><label>Disciplina<select data-delegated-change="updateQuestionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === subjectId ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}</select></label><label>Tópico<select data-delegated-change="updateQuestionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map((t) => `<option value="${escapeAttr(t.id)}" ${t.id === d.topicId ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}</select></label><label>Resolvidas<input type="number" min="0" value="${Number(d.resolved) || 0}" data-delegated-input="updateQuestionDraft('resolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct) || 0}" data-delegated-input="updateQuestionDraft('correct',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelQuestionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveQuestionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteQuestaoRow('${q.id}')">Excluir</button></div></div></td></tr>`;
@@ -5158,7 +5164,7 @@
     const visibleRows = rows.slice(0, listViewState.questionsVisible);
     body.innerHTML = visibleRows.map((q) => {
       normalizeErrorBreakdown(q);
-      return historyEditState.questionId === q.id ? renderQuestionEditRow(q) : renderQuestionReadRow(q);
+      return questionEditController.state.editingId === q.id ? renderQuestionEditRow(q) : renderQuestionReadRow(q);
     }).join("") + renderListViewFooter(
       rows.length,
       listViewState.questionsVisible,
@@ -5173,18 +5179,13 @@
     listViewState.questionsVisible = LIST_VIEW_STEPS.questions;
     const question = { id: uid("question"), date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topicId: null, resolved: 0, correct: 0, errorBreakdown: emptyErrorBreakdown(), createdAt: nowISO2() };
     questionService.create(question);
-    historyEditState.questionId = question.id;
-    historyEditState.questionIsNew = true;
-    historyEditDraft.question = cloneRecord(question);
-    renderQuestoes();
+    questionEditController.begin(question.id, { isNew: true });
   }
   function deleteQuestaoRow(id) {
     showConfirm("Excluir este registro de questões?", () => {
       questionService.remove(id);
       openQuestionErrorIds.delete(id);
-      historyEditState.questionId = null;
-      historyEditState.questionIsNew = false;
-      historyEditDraft.question = null;
+      questionEditController.reset();
       persistAndRender();
       showToast("Registro excluído.");
     });
@@ -5523,39 +5524,16 @@
     return { date: sim.date ? formatDatePt(sim.date) : "Sem data", name: sim.nome || "Simulado sem nome", correct: counts.correct, total: counts.total, score: simuladoNota(sim) };
   }
   function editSimulation(id) {
-    if (historyEditState.simulationIsNew && historyEditState.simulationId !== id) simulationService.remove(historyEditState.simulationId);
-    const sim = state.simulados.find((s) => s.id === id);
-    if (!sim) return;
-    if (historyEditState.simulationId !== id) historyEditState.simulationIsNew = false;
-    historyEditState.simulationId = id;
-    historyEditDraft.simulation = cloneRecord(sim);
-    renderSimulados();
+    simulationEditController.begin(id);
   }
   function cancelSimulationEdit() {
-    if (historyEditState.simulationIsNew && historyEditState.simulationId) simulationService.remove(historyEditState.simulationId);
-    historyEditState.simulationId = null;
-    historyEditState.simulationIsNew = false;
-    historyEditDraft.simulation = null;
-    renderSimulados();
+    simulationEditController.cancel();
   }
   function updateSimulationDraft(field, value2) {
-    const d = historyEditDraft.simulation;
-    if (!d) return;
-    d[field] = field === "correct" || field === "total" ? Math.max(0, Math.floor(Number(value2) || 0)) : value2;
+    simulationEditController.update(field, field === "correct" || field === "total" ? Math.max(0, Math.floor(Number(value2) || 0)) : value2);
   }
   function saveSimulationEdit() {
-    const d = historyEditDraft.simulation;
-    if (!d) return;
-    d.total = Math.max(0, Math.floor(Number(d.total) || 0));
-    d.correct = Math.max(0, Math.min(Math.floor(Number(d.correct) || 0), d.total));
-    const index = state.simulados.findIndex((s) => s.id === d.id);
-    if (index < 0) return cancelSimulationEdit();
-    simulationService.update(d.id, d);
-    historyEditState.simulationId = null;
-    historyEditState.simulationIsNew = false;
-    historyEditDraft.simulation = null;
-    persistAndRender();
-    showToast("Simulado atualizado.");
+    if (!simulationEditController.save()) cancelSimulationEdit();
   }
   function renderSimulationReadRow(sim) {
     const vm = simulationViewModel(sim);
@@ -5568,7 +5546,7 @@
     return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:8px;">Nota por disciplina neste simulado — a nota geral é calculada automaticamente por aqui.</div>${(sim.breakdown || []).map((b) => `<div class="breakdown-line"><select data-delegated-change="updateBreakdownRow('${sim.id}','${b.id}','subjectId',this.value)"><option value="">—</option>${subjectsForSelection(entitySubjectId(b)).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === entitySubjectId(b) ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}</select><input type="number" min="0" value="${b.correct || 0}" placeholder="Acertos" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','correct',this.value)"><input type="number" min="0" value="${b.total || 0}" placeholder="Total" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','total',this.value)"><button class="icon-btn" data-delegated-click="deleteBreakdownRow('${sim.id}','${b.id}')">✕</button></div>`).join("")}<button class="btn ghost small breakdown-add-btn" data-delegated-click="addBreakdownRow('${sim.id}')">+ Adicionar disciplina</button></div></td></tr>`;
   }
   function renderSimulationEditRow(sim) {
-    const d = historyEditDraft.simulation;
+    const d = simulationEditController.state.draft;
     const hasBreakdown = d.breakdown && d.breakdown.length > 0;
     return `<tr class="row-editing" data-id="${sim.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date || ""}" data-delegated-change="updateSimulationDraft('date',this.value)"></label><label>Nome<input type="text" value="${escapeAttr(d.nome || "")}" data-delegated-input="updateSimulationDraft('nome',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct) || 0}" ${hasBreakdown ? "disabled" : ""} data-delegated-input="updateSimulationDraft('correct',this.value)"></label><label>Total<input type="number" min="0" value="${Number(d.total) || 0}" ${hasBreakdown ? "disabled" : ""} data-delegated-input="updateSimulationDraft('total',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelSimulationEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveSimulationEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteSimuladoRow('${sim.id}')">Excluir</button></div></div></td></tr>`;
   }
@@ -5583,7 +5561,7 @@
       return;
     }
     const visibleRows = rows.slice(0, listViewState.simulationsVisible);
-    body.innerHTML = visibleRows.map((sim) => historyEditState.simulationId === sim.id ? renderSimulationEditRow(sim) : renderSimulationReadRow(sim)).join("") + renderListViewFooter(
+    body.innerHTML = visibleRows.map((sim) => simulationEditController.state.editingId === sim.id ? renderSimulationEditRow(sim) : renderSimulationReadRow(sim)).join("") + renderListViewFooter(
       rows.length,
       listViewState.simulationsVisible,
       LIST_VIEW_STEPS.simulations,
@@ -5596,18 +5574,13 @@
   function addSimuladoRow() {
     listViewState.simulationsVisible = LIST_VIEW_STEPS.simulations;
     const sim = simulationService.create({ date: todayISO(), nome: "", correct: 0, total: 0, breakdown: [] });
-    historyEditState.simulationId = sim.id;
-    historyEditState.simulationIsNew = true;
-    historyEditDraft.simulation = cloneRecord(sim);
-    renderSimulados();
+    simulationEditController.begin(sim.id, { isNew: true });
   }
   function deleteSimuladoRow(id) {
     showConfirm("Excluir este simulado?", () => {
       simulationService.remove(id);
       openBreakdownIds.delete(id);
-      historyEditState.simulationId = null;
-      historyEditState.simulationIsNew = false;
-      historyEditDraft.simulation = null;
+      simulationEditController.reset();
       persistAndRender();
       showToast("Simulado excluído.");
     });
