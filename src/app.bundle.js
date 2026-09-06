@@ -613,9 +613,9 @@
     const available = entries.filter(([key]) => metrics?.[key]?.available && Number.isFinite(Number(metrics[key].score)));
     const missingFactors = entries.filter(([key]) => !available.some(([availableKey]) => availableKey === key)).map(([key]) => key);
     if (!available.length) return { value: null, confidence: 0, confidenceLabel: "Baixa", state: "empty", factors: Object.fromEntries(entries.map(([key]) => [key, null])), missingFactors, availableFactors: [] };
-    const availableWeight = available.reduce((sum2, [, weight]) => sum2 + weight, 0);
-    const value2 = clampMetric(available.reduce((sum2, [key, weight]) => sum2 + Number(metrics[key].score) * weight, 0) / availableWeight);
-    const evidenceConfidence = available.reduce((sum2, [key, weight]) => sum2 + (Number(metrics[key].confidence) || 0) * weight, 0) / availableWeight;
+    const availableWeight = available.reduce((sum3, [, weight]) => sum3 + weight, 0);
+    const value2 = clampMetric(available.reduce((sum3, [key, weight]) => sum3 + Number(metrics[key].score) * weight, 0) / availableWeight);
+    const evidenceConfidence = available.reduce((sum3, [key, weight]) => sum3 + (Number(metrics[key].confidence) || 0) * weight, 0) / availableWeight;
     const coverageFactor = available.length / entries.length;
     const confidence = Math.max(0, Math.min(1, evidenceConfidence * (0.55 + 0.45 * coverageFactor)));
     return {
@@ -674,11 +674,11 @@
 
   // src/domain/analytics/study-metrics.js
   function summarizeStudyRecords({ sessions = [], questions = [], simulations = [] }) {
-    const seconds = sessions.reduce((sum2, item) => sum2 + (Number(item.durationSeconds) || 0), 0);
-    const sessionQuestions = sessions.reduce((sum2, item) => sum2 + (Number(item.questionsResolved) || 0), 0);
-    const sessionCorrect = sessions.reduce((sum2, item) => sum2 + (Number(item.correctAnswers) || 0), 0);
-    const resolved = sessionQuestions + questions.reduce((sum2, item) => sum2 + (Number(item.resolved) || 0), 0);
-    const correct = sessionCorrect + questions.reduce((sum2, item) => sum2 + (Number(item.correct) || 0), 0);
+    const seconds = sessions.reduce((sum3, item) => sum3 + (Number(item.durationSeconds) || 0), 0);
+    const sessionQuestions = sessions.reduce((sum3, item) => sum3 + (Number(item.questionsResolved) || 0), 0);
+    const sessionCorrect = sessions.reduce((sum3, item) => sum3 + (Number(item.correctAnswers) || 0), 0);
+    const resolved = sessionQuestions + questions.reduce((sum3, item) => sum3 + (Number(item.resolved) || 0), 0);
+    const correct = sessionCorrect + questions.reduce((sum3, item) => sum3 + (Number(item.correct) || 0), 0);
     return { seconds, questions: resolved, correct, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length };
   }
 
@@ -723,7 +723,7 @@
         remaining -= accepted;
       }
     }
-    const categorizedErrors = Object.values(categories).reduce((sum2, value2) => sum2 + value2, 0), orderedDates = dates.sort();
+    const categorizedErrors = Object.values(categories).reduce((sum3, value2) => sum3 + value2, 0), orderedDates = dates.sort();
     return { categories, totalErrors, categorizedErrors, uncategorized: Math.max(0, totalErrors - categorizedErrors), coverage: totalErrors ? Math.round(categorizedErrors / totalErrors * 100) : 0, confidence: cognitiveConfidence(categorizedErrors), sampleSize: records.length, periodStart: orderedDates[0] || null, periodEnd: orderedDates[orderedDates.length - 1] || null };
   }
 
@@ -806,7 +806,7 @@
     const topicsAtRisk = valid.filter((item) => item.retention != null && item.retention < 60 || (item.daysSinceContact || 0) >= 10).sort((a, b) => (b.daysSinceContact || 0) - (a.daysSinceContact || 0));
     const subjectScores = /* @__PURE__ */ new Map();
     opportunities.forEach((item) => subjectScores.set(item.subjectName, (subjectScores.get(item.subjectName) || 0) + item.opportunityScore));
-    const total = [...subjectScores.values()].reduce((sum2, value2) => sum2 + value2, 0);
+    const total = [...subjectScores.values()].reduce((sum3, value2) => sum3 + value2, 0);
     const weeklyFocus = [...subjectScores].map(([subjectName, value2]) => ({ subjectName, percentage: total ? Math.round(value2 / total * 100) : 0 })).sort((a, b) => b.percentage - a.percentage).slice(0, 4);
     return { bottlenecks, opportunities, criticalReviews, topicsAtRisk, weeklyFocus, state: valid.length ? "estimated" : "insufficient" };
   }
@@ -979,17 +979,17 @@
     const missingEffort = active.filter((item) => !Number(item.estimatedMinutes)).map((item) => item.id);
     const availability = Math.max(0, Math.round(Number(weeklyAvailableMinutes) || 0));
     const weeks = Math.max(0, Math.ceil(Number(weeksUntilExam) || 0));
-    if (!configured.length || availability <= 0 || weeks <= 0) return { state: "insufficient", weeklyAvailableMinutes: availability, weeksUntilExam: weeks, remainingMinutes: configured.reduce((sum2, item) => sum2 + Number(item.estimatedMinutes), 0), missingEffort, items: [], subjects: [], activityMix: { theory: 0, questions: 0, reviews: 0 }, confidence: 0 };
-    const remainingMinutes = configured.reduce((sum2, item) => sum2 + Number(item.estimatedMinutes), 0);
+    if (!configured.length || availability <= 0 || weeks <= 0) return { state: "insufficient", weeklyAvailableMinutes: availability, weeksUntilExam: weeks, remainingMinutes: configured.reduce((sum3, item) => sum3 + Number(item.estimatedMinutes), 0), missingEffort, items: [], subjects: [], activityMix: { theory: 0, questions: 0, reviews: 0 }, confidence: 0 };
+    const remainingMinutes = configured.reduce((sum3, item) => sum3 + Number(item.estimatedMinutes), 0);
     const weeklyBudget = Math.min(availability, Math.ceil(remainingMinutes / weeks));
     const scored = configured.map((item) => {
       const examImpact = item.examImpact == null ? 50 : clamp5(item.examImpact), masteryGap = item.masteryGap == null ? 50 : clamp5(item.masteryGap), retentionNeed = item.retentionNeed == null ? 50 : clamp5(item.retentionNeed), urgency = clamp5(100 - (weeks - 1) * 4);
       const score = Math.max(1, examImpact * 0.35 + masteryGap * 0.3 + retentionNeed * 0.2 + urgency * 0.15);
       return { ...item, score };
     });
-    const totalScore = scored.reduce((sum2, item) => sum2 + item.score, 0);
+    const totalScore = scored.reduce((sum3, item) => sum3 + item.score, 0);
     const allocations = new Map(scored.map((item) => [item.id, Math.min(Math.round(Number(item.estimatedMinutes)), Math.floor(weeklyBudget * item.score / totalScore))]));
-    let unallocated = weeklyBudget - [...allocations.values()].reduce((sum2, value2) => sum2 + value2, 0);
+    let unallocated = weeklyBudget - [...allocations.values()].reduce((sum3, value2) => sum3 + value2, 0);
     for (const item of [...scored].sort((a, b) => b.score - a.score)) {
       if (unallocated <= 0) break;
       const current = allocations.get(item.id), capacity = Math.max(0, Math.round(Number(item.estimatedMinutes)) - current), extra = Math.min(capacity, unallocated);
@@ -1008,20 +1008,20 @@
       current.minutes += item.minutes;
       subjectMap.set(item.subjectId, current);
     });
-    const activityMix = items.reduce((sum2, item) => ({ theory: sum2.theory + item.activityMix.theory, questions: sum2.questions + item.activityMix.questions, reviews: sum2.reviews + item.activityMix.reviews }), { theory: 0, questions: 0, reviews: 0 });
+    const activityMix = items.reduce((sum3, item) => ({ theory: sum3.theory + item.activityMix.theory, questions: sum3.questions + item.activityMix.questions, reviews: sum3.reviews + item.activityMix.reviews }), { theory: 0, questions: 0, reviews: 0 });
     const coverage = active.length ? configured.length / active.length : 0;
     const strategicCoverage = configured.filter((item) => item.examImpact != null).length / configured.length;
     const confidence = Math.round((coverage * 0.65 + strategicCoverage * 0.35) * 100) / 100;
-    return { state: confidence >= 0.75 ? "ready" : "estimated", weeklyAvailableMinutes: availability, weeklyPlannedMinutes: items.reduce((sum2, item) => sum2 + item.minutes, 0), weeksUntilExam: weeks, remainingMinutes, missingEffort, items, subjects: [...subjectMap.values()].sort((a, b) => b.minutes - a.minutes), activityMix, confidence, confidenceLabel: confidence >= 0.8 ? "Alta" : confidence >= 0.5 ? "Média" : "Baixa" };
+    return { state: confidence >= 0.75 ? "ready" : "estimated", weeklyAvailableMinutes: availability, weeklyPlannedMinutes: items.reduce((sum3, item) => sum3 + item.minutes, 0), weeksUntilExam: weeks, remainingMinutes, missingEffort, items, subjects: [...subjectMap.values()].sort((a, b) => b.minutes - a.minutes), activityMix, confidence, confidenceLabel: confidence >= 0.8 ? "Alta" : confidence >= 0.5 ? "Média" : "Baixa" };
   }
 
   // src/application/replan-study.js
   function buildReplanProposal({ plans = [], periodStart, periodEnd, futureDays = [] } = {}) {
     const inPeriod2 = plans.filter((plan) => plan.date >= periodStart && plan.date <= periodEnd);
-    const plannedMinutes = inPeriod2.reduce((sum2, plan) => sum2 + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
-    const executedMinutes = Math.round(inPeriod2.reduce((sum2, plan) => sum2 + (plan.items || []).reduce((n, item) => n + (Number(item.executedSeconds) || 0) / 60, 0), 0));
+    const plannedMinutes = inPeriod2.reduce((sum3, plan) => sum3 + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
+    const executedMinutes = Math.round(inPeriod2.reduce((sum3, plan) => sum3 + (plan.items || []).reduce((n, item) => n + (Number(item.executedSeconds) || 0) / 60, 0), 0));
     const pendingItems = inPeriod2.flatMap((plan) => (plan.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).map((item) => ({ sourcePlanId: plan.id, sourceItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || null, remainingMinutes: Math.max(0, Math.round((Number(item.plannedMinutes) || 0) - (Number(item.executedSeconds) || 0) / 60)), priority: Number(item.score) || 0 }))).filter((item) => item.remainingMinutes > 0).sort((a, b) => b.priority - a.priority);
-    const deficitMinutes = pendingItems.reduce((sum2, item) => sum2 + item.remainingMinutes, 0);
+    const deficitMinutes = pendingItems.reduce((sum3, item) => sum3 + item.remainingMinutes, 0);
     const capacities = (futureDays || []).map((day) => ({ date: day.date, remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)) }));
     const allocations = [];
     let remaining = deficitMinutes;
@@ -1036,7 +1036,7 @@
         remaining -= minutes;
       });
     });
-    const redistributedMinutes = allocations.reduce((sum2, item) => sum2 + item.minutes, 0);
+    const redistributedMinutes = allocations.reduce((sum3, item) => sum3 + item.minutes, 0);
     return { state: deficitMinutes ? "proposal" : "balanced", periodStart, periodEnd, plannedMinutes, executedMinutes, deficitMinutes, redistributedMinutes, discardedMinutes: Math.max(0, remaining), pendingItems, allocations, reasons: deficitMinutes ? ["execução abaixo do planejado no período"] : [] };
   }
   function applyReplan({ dailyPlans = [], proposal, operationId, now, idGenerator } = {}) {
@@ -1058,7 +1058,7 @@
       sourcePlan.updatedAt = now;
       const created = { ...sourceItem, id: idGenerator("plan-item"), plannedMinutes: allocation.minutes, executedSeconds: 0, status: "planned", sessionIds: [], originalDate: sourceItem.originalDate || sourcePlan.date, currentDate: allocation.date, rescheduleCount: (Number(sourceItem.rescheduleCount) || 0) + 1, skippedReason: null, rescheduledFromId: sourceItem.id, rescheduleOperationId: operationId, createdAt: now, lastExecutedAt: null };
       destination.items.push(created);
-      destination.plannedMinutes = (destination.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum2, item) => sum2 + (Number(item.plannedMinutes) || 0), 0);
+      destination.plannedMinutes = (destination.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum3, item) => sum3 + (Number(item.plannedMinutes) || 0), 0);
       destination.flexMinutes = Math.max(0, (Number(destination.availableMinutes) || 0) - destination.plannedMinutes);
       destination.updatedAt = now;
       changes.push({ sourcePlanId: sourcePlan.id, sourceItemId: sourceItem.id, sourcePreviousStatus: originalStatuses.get(sourceKey), destinationPlanId: destination.id, destinationItemId: created.id, date: allocation.date, minutes: allocation.minutes });
@@ -1077,7 +1077,7 @@
         continue;
       }
       destination.items = destination.items.filter((candidate) => candidate.id !== item.id);
-      destination.plannedMinutes = destination.items.filter((candidate) => !["skipped", "replaced"].includes(candidate.status)).reduce((sum2, candidate) => sum2 + (Number(candidate.plannedMinutes) || 0), 0);
+      destination.plannedMinutes = destination.items.filter((candidate) => !["skipped", "replaced"].includes(candidate.status)).reduce((sum3, candidate) => sum3 + (Number(candidate.plannedMinutes) || 0), 0);
       destination.flexMinutes = Math.max(0, (Number(destination.availableMinutes) || 0) - destination.plannedMinutes);
       undoneChanges.push(change);
     }
@@ -1102,7 +1102,7 @@
     if (!studyPlan?.id || !Array.isArray(studyPlan.items)) return { state: "insufficient", reason: "Plano semanal ausente.", days: [], plannedMinutes: 0, unallocatedMinutes: 0 };
     const existingKeys = existingSourceKeys(existingPlans, studyPlan.id), ratio = Math.max(0, Math.min(0.4, Number(reserveRatio) || 0));
     const slots = (days || []).map((day) => {
-      const existing = existingPlans.filter((plan) => plan.date === day.date).flatMap((plan) => plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum2, item) => sum2 + clampMinutes(item.plannedMinutes), 0);
+      const existing = existingPlans.filter((plan) => plan.date === day.date).flatMap((plan) => plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum3, item) => sum3 + clampMinutes(item.plannedMinutes), 0);
       const available = clampMinutes(day.availableMinutes), reserve = Math.round(available * ratio), capacity = Math.max(0, available - reserve - existing);
       return { date: day.date, availableMinutes: available, reserveMinutes: reserve, existingMinutes: existing, remaining: capacity, items: [] };
     });
@@ -1128,8 +1128,8 @@
       }
       unallocatedMinutes += remaining;
     }
-    const proposalDays = slots.filter((slot) => slot.items.length).map((slot) => ({ ...slot, plannedMinutes: slot.items.reduce((sum2, item) => sum2 + item.minutes, 0), flexMinutes: slot.reserveMinutes + slot.remaining }));
-    const plannedMinutes = proposalDays.reduce((sum2, day) => sum2 + day.plannedMinutes, 0);
+    const proposalDays = slots.filter((slot) => slot.items.length).map((slot) => ({ ...slot, plannedMinutes: slot.items.reduce((sum3, item) => sum3 + item.minutes, 0), flexMinutes: slot.reserveMinutes + slot.remaining }));
+    const plannedMinutes = proposalDays.reduce((sum3, day) => sum3 + day.plannedMinutes, 0);
     return { state: plannedMinutes ? "proposal" : "insufficient", studyPlanId: studyPlan.id, days: proposalDays, plannedMinutes, unallocatedMinutes, existingLinkedItems: existingKeys.size, reserveRatio: ratio, reason: plannedMinutes ? null : "Não há capacidade ou itens novos para distribuir." };
   }
   function applyDailyPlanProposal({ dailyPlans = [], proposal, operationId, now, idGenerator } = {}) {
@@ -1150,7 +1150,7 @@
         plan.items.push({ id: idGenerator("plan-item"), subjectId: source.subjectId, topicId: source.topicId, subjectName: source.subjectName, topicName: source.topicName, type: source.type, plannedMinutes: source.minutes, executedSeconds: 0, status: "planned", sessionIds: [], position: plan.items.length + 1, statusIcon: "📅", statusLabel: "Plano semanal", reason: source.origin === "review" ? "Revisão prevista para o período" : "Distribuição confirmada do plano semanal", action: source.type === "questions" ? "Resolver questões" : source.type === "review" ? "Revisar o tópico" : "Estudar o tópico", recommendedQuestions: 0, originalDate: day.date, currentDate: day.date, rescheduleCount: 0, skippedReason: null, recommendationId: null, studyPlanId: proposal.studyPlanId, studyPlanItemId: source.studyPlanItemId, generationOperationId: operationId, createdAt: now });
         createdItems++;
       });
-      plan.plannedMinutes = (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum2, item) => sum2 + clampMinutes(item.plannedMinutes), 0);
+      plan.plannedMinutes = (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum3, item) => sum3 + clampMinutes(item.plannedMinutes), 0);
       plan.flexMinutes = Math.max(0, plan.availableMinutes - plan.plannedMinutes);
       plan.updatedAt = now;
     });
@@ -1171,7 +1171,7 @@
         removedItems++;
         return false;
       });
-      plan.plannedMinutes = plan.items.filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum2, item) => sum2 + clampMinutes(item.plannedMinutes), 0);
+      plan.plannedMinutes = plan.items.filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum3, item) => sum3 + clampMinutes(item.plannedMinutes), 0);
       plan.flexMinutes = Math.max(0, (Number(plan.availableMinutes) || 0) - plan.plannedMinutes);
       if (!plan.items.length && plan.generationOperationId === operationId) dailyPlans.splice(index, 1);
     }
@@ -1252,7 +1252,7 @@
       if (!found) return null;
       const linked = repository.listByPlanItem(planItemId), latest = [...linked].sort((a, b) => String(a.endedAt || "").localeCompare(String(b.endedAt || ""))).pop();
       found.item.sessionIds = linked.map((item) => item.id);
-      found.item.executedSeconds = linked.reduce((sum2, item) => sum2 + Math.max(0, Number(item.durationSeconds) || 0), 0);
+      found.item.executedSeconds = linked.reduce((sum3, item) => sum3 + Math.max(0, Number(item.durationSeconds) || 0), 0);
       found.item.status = !linked.length ? "planned" : found.item.plannedMinutes > 0 && found.item.executedSeconds >= found.item.plannedMinutes * 60 ? "completed" : "partial";
       found.item.lastExecutedAt = latest?.endedAt || null;
       found.plan.updatedAt = clock.nowISO();
@@ -1568,6 +1568,130 @@
     }, reset });
   }
 
+  // src/ui/controllers/preferences-controller.js
+  function createPreferencesController({ document: document2, storage, key = "bb-premium-theme" } = {}) {
+    if (!document2) throw new TypeError("Controlador de preferências requer documento.");
+    const current = () => document2.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    const sync = () => {
+      const dark = current() === "dark", icon = document2.getElementById("themeToggleIcon"), button = document2.getElementById("themeToggleBtn");
+      if (icon) icon.textContent = dark ? "☀️" : "🌙";
+      if (button) button.setAttribute("aria-label", dark ? "Mudar para modo claro" : "Mudar para modo escuro");
+      return current();
+    };
+    const set = (theme) => {
+      const normalized = theme === "dark" ? "dark" : "light";
+      document2.documentElement.setAttribute("data-theme", normalized);
+      try {
+        storage?.setItem(key, normalized);
+      } catch (error) {
+      }
+      sync();
+      return normalized;
+    };
+    return Object.freeze({ current, set, toggle: () => set(current() === "dark" ? "light" : "dark"), sync });
+  }
+
+  // src/ui/controllers/backup-controller.js
+  function createBackupController({ document: document2, window: window2, serialize, fileName, validate, onImport, notify, isDisabled = () => false, maxBytes = 10 * 1024 * 1024 } = {}) {
+    if (!document2 || !window2 || typeof serialize !== "function") throw new TypeError("Controlador de backup requer dependências do navegador.");
+    const download = (raw, name) => {
+      const blob = new window2.Blob([raw], { type: "application/json" }), url = window2.URL.createObjectURL(blob), anchor = document2.createElement("a");
+      anchor.href = url;
+      anchor.download = name;
+      document2.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window2.URL.revokeObjectURL(url);
+    };
+    const exportState = (state2, date2) => {
+      if (isDisabled()) {
+        notify("Backups ficam indisponíveis durante a demonstração.");
+        return false;
+      }
+      download(serialize(state2), fileName(date2));
+      notify("Backup exportado.");
+      return true;
+    };
+    const importFile = (file) => {
+      if (isDisabled()) {
+        notify("A importação fica indisponível durante a demonstração.");
+        return;
+      }
+      if (!file) return;
+      if (file.size > maxBytes) {
+        notify("O arquivo excede o limite de 10 MB para importação.");
+        return;
+      }
+      const reader = new window2.FileReader();
+      reader.onload = () => {
+        let parsed;
+        try {
+          parsed = JSON.parse(reader.result);
+        } catch (error) {
+          notify("Arquivo inválido — não parece um backup deste extrato.");
+          return;
+        }
+        const result = validate(parsed);
+        if (!result.valid) {
+          notify(result.message);
+          return;
+        }
+        onImport(result);
+      };
+      reader.onerror = () => notify("Não foi possível ler o arquivo selecionado.");
+      reader.readAsText(file);
+    };
+    return Object.freeze({ download, exportState, importFile });
+  }
+
+  // src/application/goals/goal-service.js
+  var clamp6 = (value2, min = 0, max = Infinity) => Math.max(min, Math.min(max, Number(value2) || 0));
+  function createGoalService({ repository, getDayOfWeek } = {}) {
+    if (!repository || typeof repository.getGoals !== "function") throw new TypeError("Serviço de metas requer repositório.");
+    return Object.freeze({
+      hoursForDay: (day) => clamp6(repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias),
+      hoursForDate: (date2) => clamp6(repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date2))] ?? repository.getGoals()?.horasDiarias),
+      updateDailyHours: (day, value2, { isToday = false } = {}) => {
+        const hours = clamp6(value2);
+        repository.updateDailyHours(day, hours);
+        if (isToday) repository.updateGoal("horasDiarias", hours);
+        return hours;
+      },
+      applyHoursToEveryDay: (value2) => {
+        const hours = clamp6(value2);
+        for (let day = 0; day < 7; day++) repository.updateDailyHours(day, hours);
+        repository.updateGoal("horasDiarias", hours);
+        return hours;
+      },
+      clearWeekend: () => {
+        repository.updateDailyHours(0, 0);
+        repository.updateDailyHours(6, 0);
+      },
+      update: (key, value2) => repository.updateGoal(key, key === "metaAprovacao" ? clamp6(value2, 0, 100) : clamp6(value2))
+    });
+  }
+
+  // src/application/analytics/build-overview-view-model.js
+  var sum = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
+  function buildStudyTimeViewModel({ sessions = [], today, weekStart, monthStart, hoursForDate, addDays: addDays2 } = {}) {
+    const dated = sessions.filter((item) => item.date), totalSeconds = sum(dated, (item) => item.durationSeconds), todaySeconds = sum(dated.filter((item) => item.date === today), (item) => item.durationSeconds), weekSeconds = sum(dated.filter((item) => item.date >= weekStart && item.date <= today), (item) => item.durationSeconds), monthSeconds = sum(dated.filter((item) => item.date >= monthStart && item.date <= today), (item) => item.durationSeconds);
+    const firstRecent = dated.filter((item) => item.date >= addDays2(today, -29) && item.date <= today).map((item) => item.date).sort()[0] || null;
+    const days = firstRecent ? Math.floor((/* @__PURE__ */ new Date(today + "T00:00:00") - /* @__PURE__ */ new Date(firstRecent + "T00:00:00")) / 864e5) + 1 : 0, recent = firstRecent ? dated.filter((item) => item.date >= firstRecent && item.date <= today) : [], realized = sum(recent, (item) => item.durationSeconds);
+    let planned = 0;
+    for (let index = 0; index < days; index++) planned += hoursForDate(addDays2(firstRecent, index)) * 3600;
+    const elapsed = Math.floor((/* @__PURE__ */ new Date(today + "T00:00:00") - /* @__PURE__ */ new Date(weekStart + "T00:00:00")) / 864e5) + 1, byDate = Object.groupBy ? Object.groupBy(dated.filter((item) => item.date >= weekStart && item.date <= today), (item) => item.date) : dated.filter((item) => item.date >= weekStart && item.date <= today).reduce((map, item) => {
+      var _a;
+      return (map[_a = item.date] ?? (map[_a] = [])).push(item), map;
+    }, {});
+    let achieved = 0;
+    for (let index = 0; index < elapsed; index++) {
+      const date2 = addDays2(weekStart, index), target = hoursForDate(date2) * 3600, actual = sum(byDate[date2] || [], (item) => item.durationSeconds);
+      if (target > 0 && actual >= target) achieved++;
+    }
+    const targetSeconds = hoursForDate(today) * 3600;
+    return { todaySeconds, weekSeconds, monthSeconds, totalSeconds, targetSeconds, todayGoalPct: targetSeconds > 0 ? Math.round(todaySeconds / targetSeconds * 100) : 0, consistency: { achieved, elapsed }, pace: { secondsPerDay: days ? realized / days : 0, days }, dedication: { score: planned > 0 ? Math.min(100, Math.round(realized / planned * 100)) : 0, realized, planned, days } };
+  }
+
   // src/application/alert-lifecycle.js
   var severityOrder = { high: 3, medium: 2, low: 1, ok: 0 };
   function reconcileAlerts(alerts = [], states = [], today, addDays2) {
@@ -1599,7 +1723,7 @@
   }
 
   // src/domain/forecasts/performance-forecast.js
-  var clamp6 = (value2, min = 0, max = 100) => Math.max(min, Math.min(max, value2));
+  var clamp7 = (value2, min = 0, max = 100) => Math.max(min, Math.min(max, value2));
   function confidenceLabel(value2) {
     return value2 >= 0.7 ? "Alta" : value2 >= 0.35 ? "Média" : "Baixa";
   }
@@ -1611,9 +1735,9 @@
     return (Array.isArray(observations) ? observations : []).map((item) => ({ date: item?.date, value: Number(item?.value), sampleSize: Number(item?.sampleSize) })).filter((item) => dayNumber(item.date) !== null && Number.isFinite(item.value) && item.value >= 0 && item.value <= 100 && Number.isFinite(item.sampleSize) && item.sampleSize > 0).sort((a, b) => a.date.localeCompare(b.date));
   }
   function buildPerformanceForecast({ currentValue = null, currentConfidence = 0, targetScore = 80, observations = [] } = {}) {
-    const current = currentValue === null || currentValue === void 0 ? NaN : Number(currentValue), confidence = clamp6(Number(currentConfidence) || 0, 0, 1), target = clamp6(Number(targetScore) || 80);
+    const current = currentValue === null || currentValue === void 0 ? NaN : Number(currentValue), confidence = clamp7(Number(currentConfidence) || 0, 0, 1), target = clamp7(Number(targetScore) || 80);
     const normalized = normalizeObservations(observations);
-    const sampleSize = normalized.reduce((sum2, item) => sum2 + item.sampleSize, 0);
+    const sampleSize = normalized.reduce((sum3, item) => sum3 + item.sampleSize, 0);
     const observationCount = normalized.length;
     const periodStart = normalized[0]?.date || null, periodEnd = normalized.at(-1)?.date || null;
     const spanDays = periodStart && periodEnd ? Math.round(dayNumber(periodEnd) - dayNumber(periodStart)) : 0;
@@ -1622,10 +1746,10 @@
       return { available: false, currentBand: null, gap: null, movingAverage: null, forecast30: { available: false, reason: "A faixa atual ainda não possui dados suficientes." }, evidence };
     }
     const margin = Math.max(4, Math.round(18 * (1 - confidence)));
-    const currentBand = { central: Math.round(current), low: Math.round(clamp6(current - margin)), high: Math.round(clamp6(current + margin)), confidence, confidenceLabel: confidenceLabel(confidence) };
+    const currentBand = { central: Math.round(current), low: Math.round(clamp7(current - margin)), high: Math.round(clamp7(current + margin)), confidence, confidenceLabel: confidenceLabel(confidence) };
     const gap = { minimum: Math.max(0, Math.round(target - currentBand.high)), maximum: Math.max(0, Math.round(target - currentBand.low)), target };
-    const recent = normalized.slice(-3), recentSample = recent.reduce((sum2, item) => sum2 + item.sampleSize, 0);
-    const movingAverage = recentSample ? Math.round(recent.reduce((sum2, item) => sum2 + item.value * item.sampleSize, 0) / recentSample) : null;
+    const recent = normalized.slice(-3), recentSample = recent.reduce((sum3, item) => sum3 + item.sampleSize, 0);
+    const movingAverage = recentSample ? Math.round(recent.reduce((sum3, item) => sum3 + item.value * item.sampleSize, 0) / recentSample) : null;
     if (observationCount < 4 || sampleSize < 120 || spanDays < 21) {
       const needs = [];
       if (observationCount < 4) needs.push(`${4 - observationCount} semana(s) adicional(is)`);
@@ -1634,15 +1758,15 @@
       return { available: true, currentBand, gap, movingAverage, forecast30: { available: false, reason: `Aguardando ${needs.join(", ")}.` }, evidence };
     }
     const origin = dayNumber(periodStart), points = normalized.map((item) => ({ x: dayNumber(item.date) - origin, y: item.value, w: item.sampleSize }));
-    const weight = points.reduce((sum2, item) => sum2 + item.w, 0);
-    const meanX = points.reduce((sum2, item) => sum2 + item.x * item.w, 0) / weight, meanY = points.reduce((sum2, item) => sum2 + item.y * item.w, 0) / weight;
-    const denominator = points.reduce((sum2, item) => sum2 + item.w * (item.x - meanX) ** 2, 0);
-    const rawSlope = denominator ? points.reduce((sum2, item) => sum2 + item.w * (item.x - meanX) * (item.y - meanY), 0) / denominator : 0;
-    const forecastConfidence = clamp6(Math.min(1, observationCount / 8) * 0.35 + Math.min(1, sampleSize / 300) * 0.4 + Math.min(1, spanDays / 56) * 0.25);
-    const slopePerDay = clamp6(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
-    const projected = clamp6(normalized.at(-1).value + slopePerDay * 30);
+    const weight = points.reduce((sum3, item) => sum3 + item.w, 0);
+    const meanX = points.reduce((sum3, item) => sum3 + item.x * item.w, 0) / weight, meanY = points.reduce((sum3, item) => sum3 + item.y * item.w, 0) / weight;
+    const denominator = points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) ** 2, 0);
+    const rawSlope = denominator ? points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) * (item.y - meanY), 0) / denominator : 0;
+    const forecastConfidence = clamp7(Math.min(1, observationCount / 8) * 0.35 + Math.min(1, sampleSize / 300) * 0.4 + Math.min(1, spanDays / 56) * 0.25);
+    const slopePerDay = clamp7(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
+    const projected = clamp7(normalized.at(-1).value + slopePerDay * 30);
     const forecastMargin = Math.max(margin, Math.round(16 * (1 - forecastConfidence)));
-    const forecast30 = { available: true, central: Math.round(projected), low: Math.round(clamp6(projected - forecastMargin)), high: Math.round(clamp6(projected + forecastMargin)), confidence: forecastConfidence, confidenceLabel: confidenceLabel(forecastConfidence), slopePerWeek: Math.round(slopePerDay * 70) / 10, reason: null };
+    const forecast30 = { available: true, central: Math.round(projected), low: Math.round(clamp7(projected - forecastMargin)), high: Math.round(clamp7(projected + forecastMargin)), confidence: forecastConfidence, confidenceLabel: confidenceLabel(forecastConfidence), slopePerWeek: Math.round(slopePerDay * 70) / 10, reason: null };
     return { available: true, currentBand, gap, movingAverage, forecast30, evidence };
   }
 
@@ -1775,7 +1899,7 @@
       return { id: `demo-daily-plan-${index + 1}`, date: date2, availableMinutes: 120, plannedMinutes: 80, flexMinutes: 40, createdAt: timestamp(date2), updatedAt: timestamp(date2), items };
     });
     const planItems = activeTopics2.slice(0, 12).map((entry, index) => ({ id: `demo-study-plan-topic-${index + 1}`, subjectId: entry.subject.id, subjectName: entry.subject.name, topicId: entry.topic.id, topicName: entry.topic.name, minutes: 45 + index % 3 * 15, estimatedMinutes: entry.topic.estimatedStudyMinutes, activityMix: { theory: 20, questions: 20, reviews: 5 } }));
-    state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum2, item) => sum2 + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject) => ({ subjectId: subject.id, subjectName: subject.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
+    state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum3, item) => sum3 + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject) => ({ subjectId: subject.id, subjectName: subject.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
     state2.planAdjustments = [{ id: "demo-adjustment-1", periodStart: shiftDate(today, -7), periodEnd: shiftDate(today, 7), plannedMinutes: 480, executedMinutes: 350, deficitMinutes: 130, redistributedMinutes: 100, discardedMinutes: 30, allocations: [{ date: shiftDate(today, 1), minutes: 50 }, { date: shiftDate(today, 2), minutes: 50 }], confirmedAt: timestamp(shiftDate(today, -1)), status: "confirmed" }];
     state2.recommendationFeedback = Array.from({ length: 6 }, (_, index) => ({ id: `demo-feedback-${index + 1}`, recommendationId: `demo-recommendation-${index + 1}`, date: shiftDate(today, -index * 5), subjectId: state2.subjects[index % state2.subjects.length].id, topicId: activeTopics2[index].topic.id, accepted: index !== 4, completed: index < 3, useful: index < 3 ? index !== 2 : null, reasonSkipped: index === 4 ? "Preferiu outra disciplina" : null, resultingSessionId: index < 3 ? state2.studySessions[index].id : null, baseline: { accuracy: 52 + index * 3, questionVolume: 24 + index * 4, retentionScore: 45 + index * 2, daysSinceContact: 8 - index, measuredAt: timestamp(shiftDate(today, -index * 5)) }, outcome: index < 3 ? { accuracyAfter: 64 + index * 3, questionVolumeAfter: 22 + index * 12, nextReviewRating: index === 0 ? "Bom" : null, retentionAfter: 54 + index * 3, measuredAt: timestamp(shiftDate(today, -index * 5 + 2)), confidence: index === 0 ? "Estimativa" : "Mais confiável", attributionEligible: true, reasons: [] } : null, createdAt: timestamp(shiftDate(today, -index * 5)), completedAt: index < 3 ? timestamp(shiftDate(today, -index * 5)) : null }));
     state2.topicHistory = activeTopics2.flatMap((entry, index) => [{ id: `demo-history-start-${index + 1}`, type: "topic_created", date: shiftDate(today, -89 + index % 15), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -89 + index % 15)) }, ...entry.topic.status === "Concluído" ? [{ id: `demo-history-done-${index + 1}`, type: "topic_completed", date: shiftDate(today, -30 - index % 20), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -30 - index % 20)) }] : []]);
@@ -1819,15 +1943,6 @@
   function serializeBackup(state2, { space = 2 } = {}) {
     if (!state2 || typeof state2 !== "object") throw new TypeError("Estado inválido para backup.");
     return JSON.stringify(state2, null, space);
-  }
-  function parseBackupText(raw, { maxBytes = 10 * 1024 * 1024 } = {}) {
-    if (typeof raw !== "string") return { valid: false, message: "O backup precisa ser um arquivo de texto." };
-    if (new TextEncoder().encode(raw).length > maxBytes) return { valid: false, message: "O arquivo excede o limite permitido para importação." };
-    try {
-      return { valid: true, data: JSON.parse(raw) };
-    } catch (error) {
-      return { valid: false, message: "Arquivo inválido — não parece um backup deste extrato." };
-    }
   }
   function backupFileName(date2, { recovery = false } = {}) {
     return `${recovery ? "recuperacao" : "backup"}-extrato-estudos-${date2}.json`;
@@ -1952,6 +2067,24 @@
     } });
   }
 
+  // src/repositories/settings-repository.js
+  function createSettingsRepository({ getState } = {}) {
+    if (typeof getState !== "function") throw new TypeError("Repositório de configurações requer estado.");
+    const state2 = () => getState();
+    return Object.freeze({
+      getGoals: () => state2().metas,
+      updateGoal: (key, value2) => {
+        state2().metas[key] = value2;
+        return state2().metas;
+      },
+      updateDailyHours: (day, value2) => {
+        state2().metas.horasPorDia[String(day)] = value2;
+        return state2().metas;
+      },
+      getSubjectGoals: () => state2().metasPorDisciplina
+    });
+  }
+
   // src/repositories/collection-repository.js
   function createCollectionRepository({ getState, field } = {}) {
     if (typeof getState !== "function" || !field) throw new TypeError("Repositório requer estado e coleção.");
@@ -1984,6 +2117,7 @@
     repositories.studySessions = createSessionsRepository({ getState });
     repositories.reviewAgenda = createReviewsRepository({ getState });
     repositories.planning = createPlanningRepository({ getState });
+    repositories.settings = createSettingsRepository({ getState });
     return Object.freeze(repositories);
   }
 
@@ -2061,7 +2195,7 @@
   }
 
   // src/reports/report-data.js
-  var sum = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
+  var sum2 = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
   var shiftDate2 = (iso, days) => {
     const [year, month, day] = iso.split("-").map(Number), date2 = new Date(Date.UTC(year, month - 1, day + days));
     return date2.toISOString().slice(0, 10);
@@ -2079,11 +2213,11 @@
   function buildStrategicReport({ state: state2, generatedAt, isDemo = false, readiness = null, diagnosis = null, forecast = null, period } = {}) {
     const range = resolveReportPeriod({ ...period, generatedAt }), subjects = (state2.subjects || []).filter((item) => !item.archived), topics = subjects.flatMap((subject) => (subject.topics || []).filter((item) => !item.archived));
     const sessions = (state2.studySessions || []).filter((item) => inPeriod(item, range.start, range.end)), questions = (state2.questoes || []).filter((item) => inPeriod(item, range.start, range.end)), simulations = (state2.simulados || []).filter((item) => inPeriod(item, range.start, range.end)), reviews = (state2.reviewAgenda || []).filter((item) => inPeriod(item, range.start, range.end));
-    const resolved = sum(questions, (item) => item.resolved), correct = sum(questions, (item) => item.correct), studySeconds = sum(sessions, (item) => item.durationSeconds), simulationTotal = sum(simulations, (item) => item.total), simulationCorrect = sum(simulations, (item) => item.correct), activePlan = [...state2.studyPlans || []].reverse().find((item) => !item.undoneAt) || null, adjustments = (state2.planAdjustments || []).filter((item) => inPeriod(item, range.start, range.end)), feedback = (state2.recommendationFeedback || []).filter((item) => inPeriod(item, range.start, range.end));
+    const resolved = sum2(questions, (item) => item.resolved), correct = sum2(questions, (item) => item.correct), studySeconds = sum2(sessions, (item) => item.durationSeconds), simulationTotal = sum2(simulations, (item) => item.total), simulationCorrect = sum2(simulations, (item) => item.correct), activePlan = [...state2.studyPlans || []].reverse().find((item) => !item.undoneAt) || null, adjustments = (state2.planAdjustments || []).filter((item) => inPeriod(item, range.start, range.end)), feedback = (state2.recommendationFeedback || []).filter((item) => inPeriod(item, range.start, range.end));
     const bySubject = subjects.map((subject) => {
-      const subjectSessions = sessions.filter((item) => item.subjectId === subject.id), subjectQuestions = questions.filter((item) => item.subjectId === subject.id), volume = sum(subjectQuestions, (item) => item.resolved), hits = sum(subjectQuestions, (item) => item.correct);
-      return { id: subject.id, name: subject.name, studySeconds: sum(subjectSessions, (item) => item.durationSeconds), questions: volume, accuracy: volume ? Math.round(hits / volume * 100) : null, completed: (subject.topics || []).filter((item) => !item.archived && item.status === "Concluído").length, total: (subject.topics || []).filter((item) => !item.archived).length };
-    }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60);
+      const subjectSessions = sessions.filter((item) => item.subjectId === subject.id), subjectQuestions = questions.filter((item) => item.subjectId === subject.id), volume = sum2(subjectQuestions, (item) => item.resolved), hits = sum2(subjectQuestions, (item) => item.correct);
+      return { id: subject.id, name: subject.name, studySeconds: sum2(subjectSessions, (item) => item.durationSeconds), questions: volume, accuracy: volume ? Math.round(hits / volume * 100) : null, completed: (subject.topics || []).filter((item) => !item.archived && item.status === "Concluído").length, total: (subject.topics || []).filter((item) => !item.archived).length };
+    }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum2(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum2(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60);
     return { title: isDemo ? "Relatório estratégico de demonstração" : "Relatório estratégico", isDemo, generatedAt, period: range, exam: { date: state2.examDate || state2.examBlueprint?.examDate || null, target: state2.examBlueprint?.targetScore ?? state2.metas?.metaAprovacao ?? null }, overview: { subjects: subjects.length, topics: topics.length, completedTopics: topics.filter((item) => item.status === "Concluído").length, studySeconds, resolved, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length, simulationAverage: simulationTotal ? Math.round(simulationCorrect / simulationTotal * 100) : null, pendingReviews: reviews.filter((item) => item.status !== "Concluído").length, completedReviews: reviews.filter((item) => item.status === "Concluído").length }, readiness, forecast, activePlan, bySubject, simulations: simulations.map((item) => ({ date: item.date, name: item.nome || "Simulado", score: item.total ? Math.round(item.correct / item.total * 100) : null })), execution: { plannedMinutes: planned, executedMinutes: executed, adherence: planned ? Math.round(executed / planned * 100) : null, dailyPlans: (state2.dailyPlans || []).filter((item) => inPeriod(item, range.start, range.end)).length, replans: adjustments.filter((item) => ["applied", "confirmed"].includes(item.status)).length, undoneReplans: adjustments.filter((item) => item.status === "undone").length }, risks: (diagnosis?.bottlenecks || []).slice(0, 5), opportunities: (diagnosis?.opportunities || []).slice(0, 5), priorities: [...diagnosis?.bottlenecks || [], ...diagnosis?.opportunities || []].slice(0, 5), recommendations: { decisions: feedback.length, accepted: feedback.filter((item) => item.accepted).length, completed: feedback.filter((item) => item.completed).length, useful: feedback.filter((item) => item.useful === true).length, measured: feedback.filter((item) => item.outcome).length }, errors: Object.entries(questions.reduce((totals, item) => {
       Object.entries(item.errorBreakdown || {}).forEach(([key, value2]) => totals[key] = (totals[key] || 0) + (Number(value2) || 0));
       return totals;
@@ -2131,28 +2265,12 @@
   function nowISO2() {
     return appClock.nowISO();
   }
-  function getCurrentTheme() {
-    return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
-  }
-  function updateThemeToggleIcon() {
-    const icon = document.getElementById("themeToggleIcon");
-    if (icon) icon.textContent = getCurrentTheme() === "dark" ? "☀️" : "🌙";
-    const button = document.getElementById("themeToggleBtn");
-    if (button) button.setAttribute("aria-label", getCurrentTheme() === "dark" ? "Mudar para modo claro" : "Mudar para modo escuro");
-  }
-  function setTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme === "dark" ? "dark" : "light");
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
-    } catch (e) {
-    }
-    updateThemeToggleIcon();
-  }
+  var preferencesController = createPreferencesController({ document, storage: localStorage, key: THEME_STORAGE_KEY });
   function toggleTheme() {
-    setTheme(getCurrentTheme() === "dark" ? "light" : "dark");
+    return preferencesController.toggle();
   }
   document.getElementById("themeToggleBtn").addEventListener("click", toggleTheme);
-  updateThemeToggleIcon();
+  preferencesController.sync();
   document.getElementById("exportReportBtn")?.addEventListener("click", () => {
     const preset = document.getElementById("reportPeriodSelect")?.value || "30", period = { preset, start: document.getElementById("reportPeriodStart")?.value || null, end: document.getElementById("reportPeriodEnd")?.value || null };
     const diagnosis = generateDiagnosis(intelligenceCandidates()), report = buildStrategicReport({ state, generatedAt: nowISO2(), isDemo: IS_DEMO_MODE, readiness: readinessResult(computeApprovalMetrics()), diagnosis, forecast: projectPerformance(), period });
@@ -2619,7 +2737,8 @@
     item.correct = Math.min(item.total, Math.max(0, Math.floor(Number(item.correct) || 0)));
     return item;
   } });
-  var goalService = createRecordService({ repository: appContext.repositories.metasPorDisciplina, clock: appClock, idGenerator: uid, prefix: "goal" });
+  var subjectGoalService = createRecordService({ repository: appContext.repositories.metasPorDisciplina, clock: appClock, idGenerator: uid, prefix: "goal" });
+  var goalsService = createGoalService({ repository: appContext.repositories.settings, getDayOfWeek: (date2) => parseLocalDate(date2)?.getDay() ?? (/* @__PURE__ */ new Date()).getDay() });
   var subjectService = createSubjectService({ repository: appContext.repositories.subjects, clock: appClock, idGenerator: uid, onEvent: addHistoryEvent });
   var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
@@ -3062,30 +3181,15 @@
     </svg>
   `;
   }
+  var backupController = createBackupController({ document, window, serialize: serializeBackup, fileName: backupFileName, validate: validateBackupData, notify: showToast, isDisabled: () => IS_DEMO_MODE, maxBytes: MAX_BACKUP_FILE_SIZE, onImport: ({ normalized, version }) => {
+    const summary = backupSummary(normalized, version);
+    showConfirm(`${summary} Importar vai substituir todos os dados atuais. Continuar?`, () => applyImportedBackup(normalized));
+  } });
   function exportBackup() {
-    if (IS_DEMO_MODE) {
-      showToast("Backups ficam indisponíveis durante a demonstração.");
-      return;
-    }
-    const blob = new Blob([serializeBackup(state)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = backupFileName(todayISO());
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast("Backup exportado.");
+    backupController.exportState(state, todayISO());
   }
   function downloadJsonBackup(raw, name) {
-    const blob = new Blob([raw], { type: "application/json" }), url = URL.createObjectURL(blob), anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = name;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
+    backupController.download(raw, name);
   }
   async function exportLatestAutomaticBackup() {
     if (IS_DEMO_MODE) {
@@ -3272,65 +3376,31 @@
   }
   function backupSummary(data, version) {
     const subjectCount = data.subjects.length;
-    const topicCount = data.subjects.reduce((sum2, subject) => sum2 + (Array.isArray(subject.topics) ? subject.topics.length : 0), 0);
+    const topicCount = data.subjects.reduce((sum3, subject) => sum3 + (Array.isArray(subject.topics) ? subject.topics.length : 0), 0);
     const sessionCount = Array.isArray(data.studySessions) ? data.studySessions.length : 0;
     const questionCount = Array.isArray(data.questoes) ? data.questoes.length : 0;
     const updated = Date.parse(data.updatedAt || "");
     const updatedLabel = Number.isFinite(updated) ? new Date(updated).toLocaleString("pt-BR") : "data não informada";
     return `Backup v${version}: ${pluralize(subjectCount, "disciplina")}, ${pluralize(topicCount, "tópico")}, ${pluralize(sessionCount, "sessão", "sessões")} e ${pluralize(questionCount, "registro")} de questões. Última atualização: ${updatedLabel}.`;
   }
+  function applyImportedBackup(importedState) {
+    const previousState = state;
+    try {
+      state = importedState;
+      ensureStateDefaults();
+      restoreTimerFromState();
+      persistAndRender();
+      showToast("Backup importado com sucesso.");
+    } catch (error) {
+      state = previousState;
+      restoreTimerFromState();
+      render();
+      console.error("Erro ao importar backup", error);
+      showToast("O backup passou pela validação inicial, mas não pôde ser convertido. Seus dados atuais foram preservados.");
+    }
+  }
   function importBackupFromFile(file) {
-    if (IS_DEMO_MODE) {
-      showToast("A importação fica indisponível durante a demonstração.");
-      return;
-    }
-    if (!file) return;
-    if (file.size > MAX_BACKUP_FILE_SIZE) {
-      showToast("O arquivo excede o limite de 10 MB para importação.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      let parsed;
-      try {
-        const parsedResult = parseBackupText(String(e.target.result), { maxBytes: MAX_BACKUP_FILE_SIZE });
-        if (!parsedResult.valid) {
-          showToast(parsedResult.message);
-          return;
-        }
-        parsed = parsedResult.data;
-      } catch (err) {
-        showToast("Arquivo inválido — não parece um backup deste extrato.");
-        return;
-      }
-      const validation = validateBackupData(parsed);
-      if (!validation.valid) {
-        showToast(validation.message);
-        return;
-      }
-      const summary = backupSummary(parsed, validation.version);
-      showConfirm(`${summary} Importar vai substituir todos os dados atuais. Continuar?`, () => {
-        const previousState = state;
-        try {
-          const importedState = validation.normalized;
-          state = importedState;
-          ensureStateDefaults();
-          restoreTimerFromState();
-          persistAndRender();
-          showToast("Backup importado com sucesso.");
-        } catch (err) {
-          state = previousState;
-          restoreTimerFromState();
-          render();
-          console.error("Erro ao importar backup", err);
-          showToast("O backup passou pela validação inicial, mas não pôde ser convertido. Seus dados atuais foram preservados.");
-        }
-      });
-    };
-    reader.onerror = function() {
-      showToast("Não foi possível ler o arquivo selecionado.");
-    };
-    reader.readAsText(file);
+    backupController.importFile(file);
   }
   document.getElementById("exportBackupBtn").addEventListener("click", exportBackup);
   document.getElementById("exportAutomaticBackupBtn").addEventListener("click", exportLatestAutomaticBackup);
@@ -3680,8 +3750,8 @@
     { id: "allsubjects", icon: "🗂️", name: "Plano completo", desc: "Todas as disciplinas 100%", check: () => activeSubjects().length > 0 && activeSubjects().every((s) => s.topics.some((t) => !t.archived) && subjectProgress(s) === 100) },
     { id: "topics10", icon: "✅", name: "Dez tópicos", desc: "10 tópicos concluídos", check: () => allTopics().filter((t) => t.status === "Concluído").length >= 10 },
     { id: "topics50", icon: "📚", name: "Cinquenta tópicos", desc: "50 tópicos concluídos", check: () => allTopics().filter((t) => t.status === "Concluído").length >= 50 },
-    { id: "q100", icon: "✍️", name: "Cem questões", desc: "100 questões resolvidas", check: () => state.questoes.reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0) >= 100 },
-    { id: "q500", icon: "🧠", name: "Quinhentas questões", desc: "500 questões resolvidas", check: () => state.questoes.reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0) >= 500 },
+    { id: "q100", icon: "✍️", name: "Cem questões", desc: "100 questões resolvidas", check: () => state.questoes.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0) >= 100 },
+    { id: "q500", icon: "🧠", name: "Quinhentas questões", desc: "500 questões resolvidas", check: () => state.questoes.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0) >= 500 },
     { id: "sim1", icon: "📝", name: "Primeiro simulado", desc: "Completou o primeiro simulado", check: () => state.simulados.length >= 1 },
     { id: "sim5", icon: "🏅", name: "Cinco simulados", desc: "Completou 5 simulados", check: () => state.simulados.length >= 5 }
   ];
@@ -4297,12 +4367,12 @@
       reviews: state.reviewAgenda.filter((item) => entitySubjectId(item) === subjectId || topicIds.has(item.topicId || item.topicRef)).length,
       goals: state.metasPorDisciplina.filter((item) => entitySubjectId(item) === subjectId).length,
       history: state.topicHistory.filter((item) => (item.subjectId === subjectId || topicIds.has(item.topicId)) && !["subject_archived", "subject_restored"].includes(item.type)).length,
-      simulatedBreakdowns: state.simulados.reduce((sum2, sim) => sum2 + (sim.breakdown || []).filter((item) => entitySubjectId(item) === subjectId).length, 0),
+      simulatedBreakdowns: state.simulados.reduce((sum3, sim) => sum3 + (sim.breakdown || []).filter((item) => entitySubjectId(item) === subjectId).length, 0),
       activeTimer: state.activeTimer.subjectId === subjectId || topicIds.has(state.activeTimer.topicId) ? 1 : 0
     };
   }
   function dependencyTotal(dependencies) {
-    return Object.values(dependencies).reduce((sum2, value2) => sum2 + (Number(value2) || 0), 0);
+    return Object.values(dependencies).reduce((sum3, value2) => sum3 + (Number(value2) || 0), 0);
   }
   function requestPermanentSubjectDelete(id) {
     const subject = getSubjectById(id);
@@ -5067,7 +5137,7 @@
       normalized[key] = Math.max(0, Math.floor(Number(question?.errorBreakdown?.[key]) || 0));
     });
     const realErrors = Math.max(0, (Number(question?.resolved) || 0) - (Number(question?.correct) || 0));
-    let excess = Object.values(normalized).reduce((sum2, value2) => sum2 + value2, 0) - realErrors;
+    let excess = Object.values(normalized).reduce((sum3, value2) => sum3 + value2, 0) - realErrors;
     [...Object.keys(normalized)].reverse().forEach((key) => {
       if (excess <= 0) return;
       const cut = Math.min(normalized[key], excess);
@@ -5090,7 +5160,7 @@
     renderQuestionAnalytics();
   }
   function questionCategorizedErrors(question) {
-    return Object.values(normalizeErrorBreakdown(question)).reduce((sum2, value2) => sum2 + value2, 0);
+    return Object.values(normalizeErrorBreakdown(question)).reduce((sum3, value2) => sum3 + value2, 0);
   }
   function renderQuestionErrorFields(question) {
     const realErrors = Math.max(0, (Number(question.resolved) || 0) - (Number(question.correct) || 0));
@@ -5195,7 +5265,7 @@
     if (!question || !ERROR_CATEGORIES[key]) return;
     normalizeErrorBreakdown(question);
     const realErrors = Math.max(0, (Number(question.resolved) || 0) - (Number(question.correct) || 0));
-    const others = Object.entries(question.errorBreakdown).reduce((sum2, [category, count]) => category === key ? sum2 : sum2 + count, 0);
+    const others = Object.entries(question.errorBreakdown).reduce((sum3, [category, count]) => category === key ? sum3 : sum3 + count, 0);
     const requested = Math.max(0, Math.floor(Number(value2) || 0));
     const allowed = Math.max(0, realErrors - others);
     question.errorBreakdown[key] = Math.min(requested, allowed);
@@ -5217,8 +5287,8 @@
   }
   function getTopicPerformance(topicId) {
     const records = validQuestionRecords().filter((q) => q.topicId === topicId);
-    const resolved = records.reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0);
-    const correct = records.reduce((sum2, q) => sum2 + (Number(q.correct) || 0), 0);
+    const resolved = records.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
+    const correct = records.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0);
     return { resolved, correct, accuracy: accuracyFromCounts(correct, resolved) };
   }
   function getSubjectTopicPerformance(subjectId) {
@@ -5274,8 +5344,8 @@
   }
   function getSubjectPerformanceBetween(subjectId, start, end) {
     const records = validQuestionRecords().filter((question) => entitySubjectId(question) === subjectId && question.date >= start && question.date <= end);
-    const resolved = records.reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0);
-    const correct = records.reduce((sum2, q) => sum2 + (Number(q.correct) || 0), 0);
+    const resolved = records.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
+    const correct = records.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0);
     return { start, end, resolved, correct, accuracy: accuracyFromCounts(correct, resolved), insufficientData: resolved < MIN_WEEKLY_QUESTIONS };
   }
   function getSubjectWeeklyTrend(subjectId, weeks = 8) {
@@ -5286,8 +5356,8 @@
   }
   function getTopicPerformanceBetween(topicId, start, end) {
     const records = validQuestionRecords().filter((question) => question.topicId === topicId && question.date >= start && question.date <= end);
-    const resolved = records.reduce((sum2, question) => sum2 + (Number(question.resolved) || 0), 0);
-    const correct = records.reduce((sum2, question) => sum2 + (Number(question.correct) || 0), 0);
+    const resolved = records.reduce((sum3, question) => sum3 + (Number(question.resolved) || 0), 0);
+    const correct = records.reduce((sum3, question) => sum3 + (Number(question.correct) || 0), 0);
     return { start, end, resolved, correct, accuracy: accuracyFromCounts(correct, resolved), insufficientData: resolved < MIN_WEEKLY_QUESTIONS };
   }
   function getTopicWeeklyTrend(topicId, weeks = 8) {
@@ -5340,7 +5410,7 @@
     const reviewScore = reviews.length ? completedReviews / reviews.length * 100 : found.topic.status === "Concluído" ? 50 : 20;
     const cutoff = addDays(today, -29);
     const recentSessions = state.studySessions.filter((session) => session.topicId === topicId && session.date >= cutoff && session.date <= today);
-    const recentSeconds = recentSessions.reduce((sum2, session) => sum2 + (Number(session.durationSeconds) || 0), 0);
+    const recentSeconds = recentSessions.reduce((sum3, session) => sum3 + (Number(session.durationSeconds) || 0), 0);
     const studyScore = Math.min(100, recentSeconds / (2 * 3600) * 100);
     const reviewConfidence = Math.min(1, reviews.length / 4);
     const studyConfidence = Math.min(1, recentSessions.length / 4);
@@ -5428,9 +5498,9 @@
       return;
     }
     const records = validQuestionRecords().filter((question) => entitySubjectId(question) === performanceSubjectId);
-    const resolved = records.reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0);
-    const correct = records.reduce((sum2, q) => sum2 + (Number(q.correct) || 0), 0);
-    const identified = records.filter((q) => q.topicId).reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0);
+    const resolved = records.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
+    const correct = records.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0);
+    const identified = records.filter((q) => q.topicId).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
     const coverage = resolved ? Math.round(identified / resolved * 100) : 0;
     const accuracy = accuracyFromCounts(correct, resolved);
     const weekly = getSubjectWeeklyTrend(performanceSubjectId);
@@ -5589,31 +5659,24 @@
   document.getElementById("addSimuladoRowBtn").addEventListener("click", addSimuladoRow);
   var WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
   function metaHoursForDate(date2 = todayISO()) {
-    const parsed = parseLocalDate(date2);
-    const day = parsed ? parsed.getDay() : (/* @__PURE__ */ new Date()).getDay();
-    return Math.max(0, Number(state.metas?.horasPorDia?.[String(day)] ?? state.metas?.horasDiarias) || 0);
+    return goalsService.hoursForDate(date2);
   }
   function metaHoursToday() {
     return metaHoursForDate(todayISO());
   }
   function updateMetaHoursDay(day, value2) {
     studyPlanPreview = null;
-    state.metas.horasPorDia[String(day)] = Math.max(0, Number(value2) || 0);
-    if (Number(day) === parseLocalDate(todayISO()).getDay()) state.metas.horasDiarias = state.metas.horasPorDia[String(day)];
+    goalsService.updateDailyHours(day, value2, { isToday: Number(day) === parseLocalDate(todayISO()).getDay() });
     persistAndRender();
   }
   function applyTodayGoalToAllDays() {
     const value2 = metaHoursToday();
-    WEEKDAY_LABELS.forEach((_, day) => {
-      state.metas.horasPorDia[String(day)] = value2;
-    });
-    state.metas.horasDiarias = value2;
+    goalsService.applyHoursToEveryDay(value2);
     persistAndRender();
     showToast(`Meta de ${value2}h aplicada a todos os dias.`);
   }
   function clearWeekendGoals() {
-    state.metas.horasPorDia["0"] = 0;
-    state.metas.horasPorDia["6"] = 0;
+    goalsService.clearWeekend();
     persistAndRender();
     showToast("Metas do fim de semana removidas.");
   }
@@ -5634,7 +5697,7 @@
     return ids.size;
   }
   function somarQuestoesNaSemana() {
-    return state.questoes.filter((q) => isSameWeek(q.date)).reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0);
+    return state.questoes.filter((q) => isSameWeek(q.date)).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
   }
   function contarSimuladosNaSemana() {
     return state.simulados.filter((s) => isSameWeek(s.date)).length;
@@ -5696,7 +5759,7 @@
     </div>`;
   }
   function updateMeta(key, value2) {
-    state.metas[key] = Number(value2) || 0;
+    goalsService.update(key, value2);
     persistAndRender();
   }
   function renderExamBlueprintConfig() {
@@ -5720,7 +5783,7 @@
   }
   function calculateStudyPlanPreview() {
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
-    const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum2, hours) => sum2 + Math.max(0, Number(hours) || 0) * 60, 0);
+    const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum3, hours) => sum3 + Math.max(0, Number(hours) || 0) * 60, 0);
     studyPlanPreview = studyPlanService.calculate({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
     renderStudyPlanBuilder();
   }
@@ -5804,7 +5867,7 @@
     if (field === "targetScore") {
       const target = Math.max(0, Math.min(100, Number(value2) || 0));
       state.examBlueprint.targetScore = target;
-      state.metas.metaAprovacao = target;
+      goalsService.update("metaAprovacao", target);
     }
     state.examBlueprint.configuredAt = nowISO2();
     persistAndRender();
@@ -5823,7 +5886,7 @@
     persistAndRender();
   }
   function somarQuestoesDisciplinaNaSemana(subjectId) {
-    return state.questoes.filter((q) => entitySubjectId(q) === subjectId && isSameWeek(q.date)).reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0);
+    return state.questoes.filter((q) => entitySubjectId(q) === subjectId && isSameWeek(q.date)).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
   }
   function renderMetasPorDisciplina() {
     const sel = document.getElementById("novaMetaDisciplinaSelect");
@@ -5874,16 +5937,15 @@
       showToast("Já existe uma meta pra essa disciplina.");
       return;
     }
-    goalService.create({ subjectId, meta });
+    subjectGoalService.create({ subjectId, meta });
     persistAndRender();
   }
   function updateMetaDisciplina(id, value2) {
-    const md = state.metasPorDisciplina.find((x) => x.id === id);
-    md.meta = Number(value2) || 1;
+    subjectGoalService.update(id, { meta: Number(value2) || 1 });
     persistAndRender();
   }
   function deleteMetaDisciplina(id) {
-    goalService.remove(id);
+    subjectGoalService.remove(id);
     persistAndRender();
   }
   document.getElementById("addMetaDisciplinaBtn").addEventListener("click", addMetaDisciplina);
@@ -5897,7 +5959,7 @@
       const weekStart = getWeekStartMinus(i);
       const weekEnd = addDays(weekStart, 6);
       const topicsConcl = uniqueTopicsCompletedBetween(weekStart, weekEnd);
-      const questoesResolved = state.questoes.filter((q) => q.date >= weekStart && q.date <= weekEnd).reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0);
+      const questoesResolved = state.questoes.filter((q) => q.date >= weekStart && q.date <= weekEnd).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
       const simuladosCount = state.simulados.filter((s) => s.date >= weekStart && s.date <= weekEnd).length;
       weeks.push({
         weekStart,
@@ -6003,14 +6065,14 @@
   }
   function taxaAcertoGeral() {
     const simCounts = state.simulados.map((s) => simuladoEffectiveCounts(s));
-    const totalResolvidas = state.questoes.reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0) + simCounts.reduce((sum2, c) => sum2 + c.total, 0);
-    const totalCorretas = state.questoes.reduce((sum2, q) => sum2 + (Number(q.correct) || 0), 0) + simCounts.reduce((sum2, c) => sum2 + c.correct, 0);
+    const totalResolvidas = state.questoes.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0) + simCounts.reduce((sum3, c) => sum3 + c.total, 0);
+    const totalCorretas = state.questoes.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0) + simCounts.reduce((sum3, c) => sum3 + c.correct, 0);
     if (totalResolvidas <= 0) return 0;
     return Math.round(totalCorretas / totalResolvidas * 1e3) / 10;
   }
   function mediaSimulados() {
     if (state.simulados.length === 0) return 0;
-    const soma = state.simulados.reduce((sum2, s) => sum2 + simuladoNota(s), 0);
+    const soma = state.simulados.reduce((sum3, s) => sum3 + simuladoNota(s), 0);
     return Math.round(soma / state.simulados.length * 10) / 10;
   }
   function revisoesAtrasadas() {
@@ -6170,8 +6232,8 @@
     const topics = subject.topics.filter((topic) => !topic.archived), coverage = topics.length ? subjectProgress(subject) : null;
     const masteryValues = topics.map((topic) => topicMasteryIndex(subject.id, topic.id)).filter((item) => item.confidence > 0);
     const retentionValues = topics.map((topic) => topicRetentionScore(subject.id, topic.id)).filter((item) => item.available);
-    const mastery = masteryValues.length ? masteryValues.reduce((sum2, item) => sum2 + item.score, 0) / masteryValues.length : null;
-    const retention = retentionValues.length ? retentionValues.reduce((sum2, item) => sum2 + item.score, 0) / retentionValues.length : null;
+    const mastery = masteryValues.length ? masteryValues.reduce((sum3, item) => sum3 + item.score, 0) / masteryValues.length : null;
+    const retention = retentionValues.length ? retentionValues.reduce((sum3, item) => sum3 + item.score, 0) / retentionValues.length : null;
     const last = ultimaAtividadeDisciplina(subject.id), distance = last ? diasParaRevisao(last) : null, daysSinceContact = distance === null ? null : Math.max(0, -distance);
     const cutoff = addDays(todayISO(), -27), activeDates = /* @__PURE__ */ new Set();
     state.studySessions.filter((item) => entitySubjectId(item) === subject.id && item.date >= cutoff).forEach((item) => activeDates.add(item.date));
@@ -6279,24 +6341,18 @@
   }
   function totalStudySeconds(filterFn) {
     const fn = filterFn || (() => true);
-    return state.studySessions.filter(fn).reduce((sum2, s) => sum2 + (Number(s.durationSeconds) || 0), 0);
+    return state.studySessions.filter(fn).reduce((sum3, s) => sum3 + (Number(s.durationSeconds) || 0), 0);
   }
   function segundosEstudadosHoje() {
     return totalStudySeconds((s) => s.date === todayISO());
-  }
-  function segundosEstudadosSemana() {
-    return totalStudySeconds((s) => isSameWeek(s.date));
-  }
-  function segundosEstudadosMes() {
-    return totalStudySeconds((s) => isSameMonth(s.date));
   }
   function studyTimeByTopic(topicId) {
     return totalStudySeconds((s) => s.topicId === topicId);
   }
   function questionsPerHour() {
     const sessions = state.studySessions.filter((s) => (Number(s.durationSeconds) || 0) >= 300 && (Number(s.questionsResolved) || 0) > 0);
-    const seconds = sessions.reduce((sum2, s) => sum2 + (Number(s.durationSeconds) || 0), 0);
-    const questions = sessions.reduce((sum2, s) => sum2 + (Number(s.questionsResolved) || 0), 0);
+    const seconds = sessions.reduce((sum3, s) => sum3 + (Number(s.durationSeconds) || 0), 0);
+    const questions = sessions.reduce((sum3, s) => sum3 + (Number(s.questionsResolved) || 0), 0);
     return seconds > 0 ? Math.round(questions / (seconds / 3600)) : 0;
   }
   function studySecondsByDate(sessions = state.studySessions) {
@@ -6307,70 +6363,19 @@
     });
     return map;
   }
-  function inclusiveDayCount(startIso, endIso) {
-    if (!startIso || !endIso) return 0;
-    const start = /* @__PURE__ */ new Date(startIso + "T00:00:00");
-    const end = /* @__PURE__ */ new Date(endIso + "T00:00:00");
-    return Math.max(0, Math.floor((end - start) / 864e5) + 1);
-  }
-  function progressoMetaHorasHoje() {
-    const target = metaHoursToday() * 3600;
-    return target > 0 ? Math.round(segundosEstudadosHoje() / target * 100) : 0;
-  }
-  function consistenciaSemanalHoras() {
-    const today = todayISO();
-    const weekStart = startOfWeek(today);
-    const elapsed = inclusiveDayCount(weekStart, today);
-    const byDate = studySecondsByDate(state.studySessions.filter((s) => s.date >= weekStart && s.date <= today));
-    let achieved = 0;
-    for (let index = 0; index < elapsed; index++) {
-      const date2 = addDays(weekStart, index);
-      const target = metaHoursForDate(date2) * 3600;
-      if (target > 0 && (byDate[date2] || 0) >= target) achieved++;
-    }
-    return { achieved, elapsed };
-  }
-  function ritmoMedioEstudo() {
-    const today = todayISO();
-    const cutoff = addDays(today, -29);
-    const recent = state.studySessions.filter((s) => s.date && s.date >= cutoff && s.date <= today);
-    if (recent.length === 0) return { secondsPerDay: 0, days: 0 };
-    const first = recent.map((s) => s.date).sort()[0];
-    const days = inclusiveDayCount(first, today);
-    const total = recent.reduce((sum2, s) => sum2 + (Number(s.durationSeconds) || 0), 0);
-    return { secondsPerDay: days > 0 ? total / days : 0, days };
-  }
-  function scoreDedicacao() {
-    const today = todayISO();
-    const cutoff = addDays(today, -29);
-    const recent = state.studySessions.filter((s) => s.date && s.date >= cutoff && s.date <= today);
-    if (recent.length === 0) return { score: 0, realized: 0, planned: 0, days: 0 };
-    const first = recent.map((s) => s.date).sort()[0];
-    const days = inclusiveDayCount(first, today);
-    const realized = recent.reduce((sum2, s) => sum2 + (Number(s.durationSeconds) || 0), 0);
-    let planned = 0;
-    for (let index = 0; index < days; index++) planned += metaHoursForDate(addDays(first, index)) * 3600;
-    return { score: planned > 0 ? Math.min(100, Math.round(realized / planned * 100)) : 0, realized, planned, days };
-  }
   function renderStudyHoursDashboard() {
     const container = document.getElementById("studyTimeStats");
     if (!container) return;
-    const today = segundosEstudadosHoje();
-    const week = segundosEstudadosSemana();
-    const month = segundosEstudadosMes();
-    const total = totalStudySeconds();
-    const metaSeconds = metaHoursToday() * 3600;
+    const model = buildStudyTimeViewModel({ sessions: state.studySessions, today: todayISO(), weekStart: startOfWeek(todayISO()), monthStart: todayISO().slice(0, 7) + "-01", hoursForDate: metaHoursForDate, addDays });
+    const { todaySeconds: today, weekSeconds: week, monthSeconds: month, totalSeconds: total, targetSeconds: metaSeconds, consistency, pace, dedication, todayGoalPct } = model;
     const remaining = Math.max(0, metaSeconds - today);
-    const consistency = consistenciaSemanalHoras();
-    const pace = ritmoMedioEstudo();
-    const dedication = scoreDedicacao();
-    const metaLabel = metaSeconds > 0 ? `${progressoMetaHorasHoje()}% · faltam ${formatDuration(remaining)}` : "meta não definida";
+    const metaLabel = metaSeconds > 0 ? `${todayGoalPct}% · faltam ${formatDuration(remaining)}` : "meta não definida";
     container.innerHTML = `
     <div class="stat-cell" title="${escapeAttr(metaLabel)}"><div class="n">${formatDuration(today)}</div><div class="l">Estudo hoje</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(week)}</div><div class="l">Estudo na semana</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(month)}</div><div class="l">Estudo no mês</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(total)}</div><div class="l">Total acumulado</div></div>
-    <div class="stat-cell"><div class="n">${metaSeconds > 0 ? progressoMetaHorasHoje() + "%" : "—"}</div><div class="l">Meta de hoje</div></div>
+    <div class="stat-cell"><div class="n">${metaSeconds > 0 ? todayGoalPct + "%" : "—"}</div><div class="l">Meta de hoje</div></div>
     <div class="stat-cell"><div class="n">${metaSeconds > 0 ? consistency.achieved + "/" + consistency.elapsed : "—"}</div><div class="l">Consistência semanal</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(pace.secondsPerDay)}</div><div class="l">Ritmo médio diário</div></div>
     <div class="stat-cell" title="${dedication.days ? `Últimos ${dedication.days} dias observados` : ""}"><div class="n">${dedication.score}/100</div><div class="l">Score de dedicação</div></div>
@@ -6388,7 +6393,7 @@
       const date2 = addDays(todayISO(), -i);
       data.push({ date: date2, seconds: byDate[date2] || 0 });
     }
-    const total = data.reduce((sum2, d) => sum2 + d.seconds, 0);
+    const total = data.reduce((sum3, d) => sum3 + d.seconds, 0);
     if (total <= 0) {
       container.innerHTML = `<div class="progress-chart-empty">Registre sessões para visualizar a evolução das horas.</div>`;
       return;
@@ -6420,7 +6425,7 @@
       container.innerHTML = `<div class="upcoming-empty">Nenhuma sessão registrada.</div>`;
       return;
     }
-    const total = rows.reduce((sum2, row) => sum2 + row[1], 0);
+    const total = rows.reduce((sum3, row) => sum3 + row[1], 0);
     container.innerHTML = rows.map(([subjectId, seconds]) => {
       const name = subjectId === "__none" ? "Sem disciplina" : getSubjectName(subjectId);
       const pct = total > 0 ? Math.round(seconds / total * 100) : 0;
@@ -6591,9 +6596,9 @@
     }
     const html = [];
     visibleGroups.forEach(([date2, sessions]) => {
-      const seconds = sessions.reduce((sum2, s) => sum2 + (Number(s.durationSeconds) || 0), 0);
-      const questions = sessions.reduce((sum2, s) => sum2 + (Number(s.questionsResolved) || 0), 0);
-      const correct = sessions.reduce((sum2, s) => sum2 + (Number(s.correctAnswers) || 0), 0);
+      const seconds = sessions.reduce((sum3, s) => sum3 + (Number(s.durationSeconds) || 0), 0);
+      const questions = sessions.reduce((sum3, s) => sum3 + (Number(s.questionsResolved) || 0), 0);
+      const correct = sessions.reduce((sum3, s) => sum3 + (Number(s.correctAnswers) || 0), 0);
       const accuracy = questions > 0 ? ` · ${Math.round(correct / questions * 100)}% de acerto` : "";
       const expanded = expandedSessionDays.has(date2);
       html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date2)}')"><span>${date2 === "Sem data" ? date2 : formatDatePt(date2)} · ${pluralize(sessions.length, "sessão", "sessões")} · ${formatDuration(seconds)} · ${pluralize(questions, "questão", "questões")}${accuracy}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
@@ -6785,7 +6790,7 @@
     if (!session?.topicId) return;
     const measuredAt = nowISO2();
     state.recommendationFeedback.filter((item) => item.accepted && item.completed && item.topicId === session.topicId && item.baseline && !item.outcome).forEach((feedback) => {
-      const since = Date.parse(feedback.baseline.measuredAt) || 0, records = validQuestionRecords().filter((item) => item.topicId === session.topicId && Date.parse(item.createdAt || `${item.date}T23:59:59Z`) >= since), volume = records.reduce((sum2, item) => sum2 + (Number(item.resolved) || 0), 0), correct = records.reduce((sum2, item) => sum2 + (Number(item.correct) || 0), 0), activities = state.studySessions.filter((item) => item.topicId === session.topicId && item.id !== session.id && Date.parse(item.createdAt || item.startedAt || 0) >= since).length, retention = topicRetentionScore(null, session.topicId);
+      const since = Date.parse(feedback.baseline.measuredAt) || 0, records = validQuestionRecords().filter((item) => item.topicId === session.topicId && Date.parse(item.createdAt || `${item.date}T23:59:59Z`) >= since), volume = records.reduce((sum3, item) => sum3 + (Number(item.resolved) || 0), 0), correct = records.reduce((sum3, item) => sum3 + (Number(item.correct) || 0), 0), activities = state.studySessions.filter((item) => item.topicId === session.topicId && item.id !== session.id && Date.parse(item.createdAt || item.startedAt || 0) >= since).length, retention = topicRetentionScore(null, session.topicId);
       measureRecommendationOutcome(feedback, { accuracyAfter: volume ? Math.round(correct / volume * 1e3) / 10 : null, questionVolumeAfter: volume, retentionAfter: retention.available ? retention.score : null, measuredAt, daysElapsed: Math.max(0, (Date.parse(measuredAt) - since) / 864e5), otherActivities: activities });
     });
   }
@@ -6840,7 +6845,7 @@
     const start = startOfWeek(todayISO()), end = addDays(start, 6), futureDays = [];
     for (let date2 = addDays(todayISO(), 1); date2 <= end; date2 = addDays(date2, 1)) {
       const capacity = metaHoursForDate(date2) * 60;
-      const planned = state.dailyPlans.filter((plan) => plan.date === date2).reduce((sum2, plan) => sum2 + (plan.items || []).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
+      const planned = state.dailyPlans.filter((plan) => plan.date === date2).reduce((sum3, plan) => sum3 + (plan.items || []).reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0), 0);
       futureDays.push({ date: date2, availableMinutes: Math.max(0, capacity - planned) });
     }
     replanPreview = replanService.calculate({ plans: planningRepository.getDailyPlans().filter((plan) => plan.date >= start && plan.date <= todayISO()), periodStart: start, periodEnd: end, futureDays });
@@ -6903,7 +6908,7 @@
       remaining -= minutes;
       if (remaining <= 0) break;
     }
-    return { items, plannedMinutes: items.reduce((sum2, item) => sum2 + item.minutes, 0), flexMinutes: remaining };
+    return { items, plannedMinutes: items.reduce((sum3, item) => sum3 + item.minutes, 0), flexMinutes: remaining };
   }
   function materializeDailyStudyPlan(priorities, availableMinutes) {
     const calculated = buildDailyStudyPlan(priorities, availableMinutes);
@@ -6989,7 +6994,7 @@
     </div>
   `;
     }).join("");
-    const executedSeconds = plan.items.reduce((sum2, item) => sum2 + (Number(item.executedSeconds) || 0), 0);
+    const executedSeconds = plan.items.reduce((sum3, item) => sum3 + (Number(item.executedSeconds) || 0), 0);
     const executionPct = plan.plannedMinutes > 0 ? Math.min(100, Math.round(executedSeconds / (plan.plannedMinutes * 60) * 100)) : 0;
     container.innerHTML = `
     ${listaHtml}
@@ -7006,7 +7011,7 @@
     const today = todayISO();
     const topicosHoje = uniqueTopicsCompletedBetween(today, today);
     const metaTopicosHoje = Math.max(1, Math.round(state.metas.semanal / 7));
-    const questoesHoje = state.questoes.filter((q) => q.date === today).reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0);
+    const questoesHoje = state.questoes.filter((q) => q.date === today).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
     const metaQuestoesHoje = Math.max(1, Math.round(state.metas.questoesSemanal / 7));
     const revisoesHoje = getRevisoesUnificadas().filter((r) => r.date === today);
     const revisoesConcluidasHoje = revisoesHoje.filter((r) => r.status === "Concluído").length;
@@ -7048,7 +7053,7 @@
     return Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
   }
   function average(values) {
-    return values.length ? values.reduce((sum2, n) => sum2 + n, 0) / values.length : 0;
+    return values.length ? values.reduce((sum3, n) => sum3 + n, 0) / values.length : 0;
   }
   function approvalSimuladosMetric() {
     const completed = state.simulados.filter((sim) => simuladoEffectiveCounts(sim).total > 0).sort((a, b) => (a.date || "").localeCompare(b.date || "")).slice(-5);
@@ -7065,8 +7070,8 @@
     return { score: clampScore(50 + (raw - 50) * confidence), confidence, available: true, raw, detail: `${completed.length} simulado${completed.length === 1 ? "" : "s"} · média recente ${Math.round(raw)}%` };
   }
   function approvalAcertosMetric() {
-    const total = state.questoes.reduce((sum2, q) => sum2 + (Number(q.resolved) || 0), 0);
-    const correct = state.questoes.reduce((sum2, q) => sum2 + (Number(q.correct) || 0), 0);
+    const total = state.questoes.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
+    const correct = state.questoes.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0);
     if (total === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem questões registradas" };
     const raw = correct / total * 100;
     const confidence = Math.min(1, total / 300);
@@ -7087,10 +7092,10 @@
     const values = topics.map((topic) => topicMasteryIndex(topic.subjectId, topic.id));
     const evidenced = values.filter((item) => item.confidence > 0);
     if (evidenced.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Ainda não há evidências de domínio" };
-    const weightTotal = evidenced.reduce((sum2, item) => sum2 + Math.max(0.15, item.confidence), 0);
-    const raw = evidenced.reduce((sum2, item) => sum2 + item.score * Math.max(0.15, item.confidence), 0) / weightTotal;
+    const weightTotal = evidenced.reduce((sum3, item) => sum3 + Math.max(0.15, item.confidence), 0);
+    const raw = evidenced.reduce((sum3, item) => sum3 + item.score * Math.max(0.15, item.confidence), 0) / weightTotal;
     const coverage = evidenced.length / topics.length;
-    const evidence = evidenced.reduce((sum2, item) => sum2 + item.confidence, 0) / evidenced.length;
+    const evidence = evidenced.reduce((sum3, item) => sum3 + item.confidence, 0) / evidenced.length;
     const confidence = Math.min(1, coverage * 0.55 + evidence * 0.45);
     return { score: clampScore(50 + (raw - 50) * confidence), confidence, available: true, raw, detail: Math.round(raw) + "/100 em " + evidenced.length + " de " + topics.length + " tópicos" };
   }
@@ -7100,9 +7105,9 @@
     if (due.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem revisões vencidas até hoje" };
     const completed = due.filter((r) => r.status === "Concluído").length;
     const pending = due.filter((r) => r.status !== "Concluído");
-    const severity = pending.reduce((sum2, r) => {
+    const severity = pending.reduce((sum3, r) => {
       const daysLate = Math.max(0, -(diasParaRevisao(r.date) || 0));
-      return sum2 + Math.min(1, daysLate / 14);
+      return sum3 + Math.min(1, daysLate / 14);
     }, 0);
     const raw = Math.max(0, completed / due.length * 100 - severity / due.length * 20);
     const confidence = Math.min(1, due.length / 10);
@@ -7161,8 +7166,8 @@
     let central = weighted / totalWeight;
     if (m.tendencia.available) central += (m.tendencia.score - 50) * 0.08;
     central = Math.max(0, Math.min(100, central));
-    const sourceCoverage = sources.reduce((sum2, source) => sum2 + source.weight, 0);
-    const evidence = sources.reduce((sum2, source) => sum2 + source.metric.confidence * source.weight, 0) / sourceCoverage;
+    const sourceCoverage = sources.reduce((sum3, source) => sum3 + source.weight, 0);
+    const evidence = sources.reduce((sum3, source) => sum3 + source.metric.confidence * source.weight, 0) / sourceCoverage;
     const confidence = Math.min(1, evidence * 0.75 + sourceCoverage * 0.25);
     const result = buildPerformanceForecast({ currentValue: central, currentConfidence: confidence, targetScore: state.metas.metaAprovacao, observations: performanceForecastObservations() });
     const { low, high } = result.currentBand;
@@ -7183,8 +7188,8 @@
   function performanceForecastObservations() {
     return Array.from({ length: 12 }, (_, index) => getWeekRange(11 - index)).map(({ start, end }) => {
       const questions = validQuestionRecords().filter((item) => item.date >= start && item.date <= end);
-      let total = questions.reduce((sum2, item) => sum2 + (Number(item.resolved) || 0), 0);
-      let correct = questions.reduce((sum2, item) => sum2 + (Number(item.correct) || 0), 0);
+      let total = questions.reduce((sum3, item) => sum3 + (Number(item.resolved) || 0), 0);
+      let correct = questions.reduce((sum3, item) => sum3 + (Number(item.correct) || 0), 0);
       state.simulados.filter((item) => item.date >= start && item.date <= end).forEach((item) => {
         const counts = simuladoEffectiveCounts(item);
         total += counts.total;

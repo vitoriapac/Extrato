@@ -44,12 +44,16 @@ import {createSubjectService} from './application/subjects/subject-service.js';
 import {createNavigationController} from './ui/controllers/navigation-controller.js';
 import {createModalController} from './ui/controllers/modal-controller.js';
 import {createEditableCollectionController} from './ui/controllers/editable-collection-controller.js';
+import {createPreferencesController} from './ui/controllers/preferences-controller.js';
+import {createBackupController} from './ui/controllers/backup-controller.js';
+import {createGoalService} from './application/goals/goal-service.js';
+import {buildStudyTimeViewModel} from './application/analytics/build-overview-view-model.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
 import {generateDemoData} from './demo/demo-generator.js';
 import {runStateMigrations,validateBackupEnvelope} from './storage/migration-service.js';
-import {serializeBackup,parseBackupText,backupFileName} from './storage/backup-service.js';
+import {serializeBackup,backupFileName} from './storage/backup-service.js';
 import {createAppRepositories} from './repositories/collection-repository.js';
 import {createReviewService} from './application/reviews/review-service.js';
 import {createReviewsController} from './ui/controllers/reviews-controller.js';
@@ -67,23 +71,12 @@ const IS_DEMO_MODE=APP_MODE===APP_MODES.DEMO;
 let suppressBeforeUnloadSave=false;
 const appClock=createClock();
 function nowISO(){return appClock.nowISO()}
-function getCurrentTheme(){
-  return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
-}
-function updateThemeToggleIcon(){
-  const icon=document.getElementById('themeToggleIcon');
-  if(icon) icon.textContent=getCurrentTheme()==='dark'?'☀️':'🌙';
-  const button=document.getElementById('themeToggleBtn');
-  if(button) button.setAttribute('aria-label',getCurrentTheme()==='dark'?'Mudar para modo claro':'Mudar para modo escuro');
-}
-function setTheme(theme){
-  document.documentElement.setAttribute('data-theme',theme==='dark'?'dark':'light');
-  try{ localStorage.setItem(THEME_STORAGE_KEY,theme); }catch(e){}
-  updateThemeToggleIcon();
-}
-function toggleTheme(){ setTheme(getCurrentTheme()==='dark'?'light':'dark'); }
+const preferencesController=createPreferencesController({document,storage:localStorage,key:THEME_STORAGE_KEY});
+function getCurrentTheme(){return preferencesController.current()}
+function setTheme(theme){return preferencesController.set(theme)}
+function toggleTheme(){return preferencesController.toggle()}
 document.getElementById('themeToggleBtn').addEventListener('click',toggleTheme);
-updateThemeToggleIcon();
+preferencesController.sync();
 document.getElementById('exportReportBtn')?.addEventListener('click',()=>{
   const preset=document.getElementById('reportPeriodSelect')?.value||'30',period={preset,start:document.getElementById('reportPeriodStart')?.value||null,end:document.getElementById('reportPeriodEnd')?.value||null};
   const diagnosis=generateDiagnosis(intelligenceCandidates()),report=buildStrategicReport({state,generatedAt:nowISO(),isDemo:IS_DEMO_MODE,readiness:readinessResult(computeApprovalMetrics()),diagnosis,forecast:projectPerformance(),period});
@@ -479,7 +472,8 @@ const studyPlanService=createStudyPlanService({repository:planningRepository,cal
 const dailyPlanService=createDailyPlanService({repository:planningRepository,buildProposal:buildDailyPlanProposal,applyProposal:applyDailyPlanProposal,undoGeneration:undoDailyPlanGeneration,clock:appClock,idGenerator:uid});
 const replanService=createReplanService({repository:planningRepository,buildProposal:buildReplanProposal,applyProposal:applyReplan,undoProposal:undoReplan,clock:appClock,idGenerator:uid});
 const sessionService=createSessionService({repository:appContext.repositories.studySessions,questionsRepository:appContext.repositories.questoes,historyRepository:appContext.repositories.topicHistory,planningRepository,recommendationsRepository:appContext.repositories.recommendationFeedback,clock:appClock,idGenerator:uid,normalizeQuestion:normalizeErrorBreakdown,completeRecommendation:completeRecommendationFeedback,onCompleted:measureRecommendationResults});
-const calendarService=createRecordService({repository:appContext.repositories.calendar,clock:appClock,idGenerator:uid,prefix:'calendar'}),questionService=createRecordService({repository:appContext.repositories.questoes,clock:appClock,idGenerator:uid,prefix:'question',normalize:item=>{item.resolved=Math.max(0,Math.floor(Number(item.resolved)||0));item.correct=Math.min(item.resolved,Math.max(0,Math.floor(Number(item.correct)||0)));normalizeErrorBreakdown(item);return item}}),simulationService=createRecordService({repository:appContext.repositories.simulados,clock:appClock,idGenerator:uid,prefix:'simulado',normalize:item=>{item.total=Math.max(0,Math.floor(Number(item.total)||0));item.correct=Math.min(item.total,Math.max(0,Math.floor(Number(item.correct)||0)));return item}}),goalService=createRecordService({repository:appContext.repositories.metasPorDisciplina,clock:appClock,idGenerator:uid,prefix:'goal'});
+const calendarService=createRecordService({repository:appContext.repositories.calendar,clock:appClock,idGenerator:uid,prefix:'calendar'}),questionService=createRecordService({repository:appContext.repositories.questoes,clock:appClock,idGenerator:uid,prefix:'question',normalize:item=>{item.resolved=Math.max(0,Math.floor(Number(item.resolved)||0));item.correct=Math.min(item.resolved,Math.max(0,Math.floor(Number(item.correct)||0)));normalizeErrorBreakdown(item);return item}}),simulationService=createRecordService({repository:appContext.repositories.simulados,clock:appClock,idGenerator:uid,prefix:'simulado',normalize:item=>{item.total=Math.max(0,Math.floor(Number(item.total)||0));item.correct=Math.min(item.total,Math.max(0,Math.floor(Number(item.correct)||0)));return item}}),subjectGoalService=createRecordService({repository:appContext.repositories.metasPorDisciplina,clock:appClock,idGenerator:uid,prefix:'goal'});
+const goalsService=createGoalService({repository:appContext.repositories.settings,getDayOfWeek:date=>parseLocalDate(date)?.getDay()??new Date().getDay()});
 const subjectService=createSubjectService({repository:appContext.repositories.subjects,clock:appClock,idGenerator:uid,onEvent:addHistoryEvent});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
@@ -888,23 +882,9 @@ function renderProgressChart(){
 }
 
 /* ===== BACKUP: EXPORTAR / IMPORTAR ===== */
-function exportBackup(){
-  if(IS_DEMO_MODE){showToast('Backups ficam indisponíveis durante a demonstração.');return}
-  const blob = new Blob([serializeBackup(state)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = backupFileName(todayISO());
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('Backup exportado.');
-}
-function downloadJsonBackup(raw,name){
-  const blob=new Blob([raw],{type:'application/json'}),url=URL.createObjectURL(blob),anchor=document.createElement('a');
-  anchor.href=url;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();URL.revokeObjectURL(url);
-}
+const backupController=createBackupController({document,window,serialize:serializeBackup,fileName:backupFileName,validate:validateBackupData,notify:showToast,isDisabled:()=>IS_DEMO_MODE,maxBytes:MAX_BACKUP_FILE_SIZE,onImport:({normalized,version})=>{const summary=backupSummary(normalized,version);showConfirm(`${summary} Importar vai substituir todos os dados atuais. Continuar?`,()=>applyImportedBackup(normalized))}});
+function exportBackup(){backupController.exportState(state,todayISO())}
+function downloadJsonBackup(raw,name){backupController.download(raw,name)}
 async function exportLatestAutomaticBackup(){
   if(IS_DEMO_MODE){showToast('A recuperação real fica indisponível durante a demonstração.');return}
   try{
@@ -1047,48 +1027,8 @@ function backupSummary(data,version){
   const updatedLabel=Number.isFinite(updated)?new Date(updated).toLocaleString('pt-BR'):'data não informada';
   return `Backup v${version}: ${pluralize(subjectCount,'disciplina')}, ${pluralize(topicCount,'tópico')}, ${pluralize(sessionCount,'sessão','sessões')} e ${pluralize(questionCount,'registro')} de questões. Última atualização: ${updatedLabel}.`;
 }
-function importBackupFromFile(file){
-  if(IS_DEMO_MODE){showToast('A importação fica indisponível durante a demonstração.');return}
-  if(!file) return;
-  if(file.size > MAX_BACKUP_FILE_SIZE){
-    showToast('O arquivo excede o limite de 10 MB para importação.');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(e){
-    let parsed;
-    try{
-      const parsedResult=parseBackupText(String(e.target.result),{maxBytes:MAX_BACKUP_FILE_SIZE});if(!parsedResult.valid){showToast(parsedResult.message);return}parsed=parsedResult.data;
-    }catch(err){showToast('Arquivo inválido — não parece um backup deste extrato.');return}
-    const validation=validateBackupData(parsed);
-    if(!validation.valid){
-      showToast(validation.message);
-      return;
-    }
-    const summary=backupSummary(parsed,validation.version);
-    showConfirm(`${summary} Importar vai substituir todos os dados atuais. Continuar?`, () => {
-      const previousState=state;
-      try{
-        const importedState=validation.normalized;
-        state=importedState;
-        ensureStateDefaults();
-        restoreTimerFromState();
-        persistAndRender();
-        showToast('Backup importado com sucesso.');
-      }catch(err){
-        state=previousState;
-        restoreTimerFromState();
-        render();
-        console.error('Erro ao importar backup',err);
-        showToast('O backup passou pela validação inicial, mas não pôde ser convertido. Seus dados atuais foram preservados.');
-      }
-    });
-  };
-  reader.onerror = function(){
-    showToast('Não foi possível ler o arquivo selecionado.');
-  };
-  reader.readAsText(file);
-}
+function applyImportedBackup(importedState){const previousState=state;try{state=importedState;ensureStateDefaults();restoreTimerFromState();persistAndRender();showToast('Backup importado com sucesso.')}catch(error){state=previousState;restoreTimerFromState();render();console.error('Erro ao importar backup',error);showToast('O backup passou pela validação inicial, mas não pôde ser convertido. Seus dados atuais foram preservados.')}}
+function importBackupFromFile(file){backupController.importFile(file)}
 document.getElementById('exportBackupBtn').addEventListener('click', exportBackup);
 document.getElementById('exportAutomaticBackupBtn').addEventListener('click', exportLatestAutomaticBackup);
 document.getElementById('importBackupBtn').addEventListener('click', () => {
@@ -3122,27 +3062,22 @@ document.getElementById('addSimuladoRowBtn').addEventListener('click', addSimula
 /* ===== METAS ===== */
 const WEEKDAY_LABELS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 function metaHoursForDate(date=todayISO()){
-  const parsed=parseLocalDate(date);
-  const day=parsed?parsed.getDay():new Date().getDay();
-  return Math.max(0,Number(state.metas?.horasPorDia?.[String(day)]??state.metas?.horasDiarias)||0);
+  return goalsService.hoursForDate(date);
 }
 function metaHoursToday(){return metaHoursForDate(todayISO());}
 function updateMetaHoursDay(day,value){
   studyPlanPreview=null;
-  state.metas.horasPorDia[String(day)]=Math.max(0,Number(value)||0);
-  if(Number(day)===parseLocalDate(todayISO()).getDay()) state.metas.horasDiarias=state.metas.horasPorDia[String(day)];
+  goalsService.updateDailyHours(day,value,{isToday:Number(day)===parseLocalDate(todayISO()).getDay()});
   persistAndRender();
 }
 function applyTodayGoalToAllDays(){
   const value=metaHoursToday();
-  WEEKDAY_LABELS.forEach((_,day)=>{state.metas.horasPorDia[String(day)]=value});
-  state.metas.horasDiarias=value;
+  goalsService.applyHoursToEveryDay(value);
   persistAndRender();
   showToast(`Meta de ${value}h aplicada a todos os dias.`);
 }
 function clearWeekendGoals(){
-  state.metas.horasPorDia['0']=0;
-  state.metas.horasPorDia['6']=0;
+  goalsService.clearWeekend();
   persistAndRender();
   showToast('Metas do fim de semana removidas.');
 }
@@ -3230,7 +3165,7 @@ function renderMetas(){
 }
 
 function updateMeta(key, value){
-  state.metas[key] = Number(value) || 0;
+  goalsService.update(key,value);
   persistAndRender();
 }
 
@@ -3295,7 +3230,7 @@ function renderStudyPlanBuilder(){
 function updateExamBlueprint(field,value){
   studyPlanPreview=null;
   if(field==='examDate'){state.examBlueprint.examDate=value||null;state.examDate=value||''}
-  if(field==='targetScore'){const target=Math.max(0,Math.min(100,Number(value)||0));state.examBlueprint.targetScore=target;state.metas.metaAprovacao=target}
+  if(field==='targetScore'){const target=Math.max(0,Math.min(100,Number(value)||0));state.examBlueprint.targetScore=target;goalsService.update('metaAprovacao',target)}
   state.examBlueprint.configuredAt=nowISO();persistAndRender();
 }
 function updateExamSubject(subjectId,field,value){
@@ -3362,16 +3297,15 @@ function addMetaDisciplina(){
     showToast('Já existe uma meta pra essa disciplina.');
     return;
   }
-  goalService.create({subjectId,meta});
+  subjectGoalService.create({subjectId,meta});
   persistAndRender();
 }
 function updateMetaDisciplina(id, value){
-  const md = state.metasPorDisciplina.find(x=>x.id===id);
-  md.meta = Number(value) || 1;
+  subjectGoalService.update(id,{meta:Number(value)||1});
   persistAndRender();
 }
 function deleteMetaDisciplina(id){
-  goalService.remove(id);
+  subjectGoalService.remove(id);
   persistAndRender();
 }
 document.getElementById('addMetaDisciplinaBtn').addEventListener('click', addMetaDisciplina);
@@ -3798,8 +3732,6 @@ function totalStudySeconds(filterFn){
   return state.studySessions.filter(fn).reduce((sum,s)=>sum+(Number(s.durationSeconds)||0),0);
 }
 function segundosEstudadosHoje(){ return totalStudySeconds(s=>s.date===todayISO()); }
-function segundosEstudadosSemana(){ return totalStudySeconds(s=>isSameWeek(s.date)); }
-function segundosEstudadosMes(){ return totalStudySeconds(s=>isSameMonth(s.date)); }
 function studyTimeBySubject(){
   const map = {};
   state.studySessions.forEach(session=>{
@@ -3824,70 +3756,19 @@ function studySecondsByDate(sessions=state.studySessions){
   });
   return map;
 }
-function inclusiveDayCount(startIso,endIso){
-  if(!startIso||!endIso) return 0;
-  const start=new Date(startIso+'T00:00:00');
-  const end=new Date(endIso+'T00:00:00');
-  return Math.max(0,Math.floor((end-start)/86400000)+1);
-}
-function progressoMetaHorasHoje(){
-  const target=metaHoursToday()*3600;
-  return target>0?Math.round((segundosEstudadosHoje()/target)*100):0;
-}
-function consistenciaSemanalHoras(){
-  const today=todayISO();
-  const weekStart=startOfWeek(today);
-  const elapsed=inclusiveDayCount(weekStart,today);
-  const byDate=studySecondsByDate(state.studySessions.filter(s=>s.date>=weekStart&&s.date<=today));
-  let achieved=0;
-  for(let index=0;index<elapsed;index++){
-    const date=addDays(weekStart,index);
-    const target=metaHoursForDate(date)*3600;
-    if(target>0&&(byDate[date]||0)>=target) achieved++;
-  }
-  return {achieved,elapsed};
-}
-function ritmoMedioEstudo(){
-  const today=todayISO();
-  const cutoff=addDays(today,-29);
-  const recent=state.studySessions.filter(s=>s.date&&s.date>=cutoff&&s.date<=today);
-  if(recent.length===0) return {secondsPerDay:0,days:0};
-  const first=recent.map(s=>s.date).sort()[0];
-  const days=inclusiveDayCount(first,today);
-  const total=recent.reduce((sum,s)=>sum+(Number(s.durationSeconds)||0),0);
-  return {secondsPerDay:days>0?total/days:0,days};
-}
-function scoreDedicacao(){
-  const today=todayISO();
-  const cutoff=addDays(today,-29);
-  const recent=state.studySessions.filter(s=>s.date&&s.date>=cutoff&&s.date<=today);
-  if(recent.length===0) return {score:0,realized:0,planned:0,days:0};
-  const first=recent.map(s=>s.date).sort()[0];
-  const days=inclusiveDayCount(first,today);
-  const realized=recent.reduce((sum,s)=>sum+(Number(s.durationSeconds)||0),0);
-  let planned=0;
-  for(let index=0;index<days;index++) planned+=metaHoursForDate(addDays(first,index))*3600;
-  return {score:planned>0?Math.min(100,Math.round((realized/planned)*100)):0,realized,planned,days};
-}
 function renderStudyHoursDashboard(){
   const container=document.getElementById('studyTimeStats');
   if(!container) return;
-  const today=segundosEstudadosHoje();
-  const week=segundosEstudadosSemana();
-  const month=segundosEstudadosMes();
-  const total=totalStudySeconds();
-  const metaSeconds=metaHoursToday()*3600;
+  const model=buildStudyTimeViewModel({sessions:state.studySessions,today:todayISO(),weekStart:startOfWeek(todayISO()),monthStart:todayISO().slice(0,7)+'-01',hoursForDate:metaHoursForDate,addDays});
+  const {todaySeconds:today,weekSeconds:week,monthSeconds:month,totalSeconds:total,targetSeconds:metaSeconds,consistency,pace,dedication,todayGoalPct}=model;
   const remaining=Math.max(0,metaSeconds-today);
-  const consistency=consistenciaSemanalHoras();
-  const pace=ritmoMedioEstudo();
-  const dedication=scoreDedicacao();
-  const metaLabel=metaSeconds>0?`${progressoMetaHorasHoje()}% · faltam ${formatDuration(remaining)}`:'meta não definida';
+  const metaLabel=metaSeconds>0?`${todayGoalPct}% · faltam ${formatDuration(remaining)}`:'meta não definida';
   container.innerHTML=`
     <div class="stat-cell" title="${escapeAttr(metaLabel)}"><div class="n">${formatDuration(today)}</div><div class="l">Estudo hoje</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(week)}</div><div class="l">Estudo na semana</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(month)}</div><div class="l">Estudo no mês</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(total)}</div><div class="l">Total acumulado</div></div>
-    <div class="stat-cell"><div class="n">${metaSeconds>0?progressoMetaHorasHoje()+'%':'—'}</div><div class="l">Meta de hoje</div></div>
+    <div class="stat-cell"><div class="n">${metaSeconds>0?todayGoalPct+'%':'—'}</div><div class="l">Meta de hoje</div></div>
     <div class="stat-cell"><div class="n">${metaSeconds>0?consistency.achieved+'/'+consistency.elapsed:'—'}</div><div class="l">Consistência semanal</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(pace.secondsPerDay)}</div><div class="l">Ritmo médio diário</div></div>
     <div class="stat-cell" title="${dedication.days?`Últimos ${dedication.days} dias observados`:''}"><div class="n">${dedication.score}/100</div><div class="l">Score de dedicação</div></div>

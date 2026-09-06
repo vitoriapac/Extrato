@@ -1,0 +1,7 @@
+export function createBackupController({document,window,serialize,fileName,validate,onImport,notify,isDisabled=()=>false,maxBytes=10*1024*1024}={}){
+  if(!document||!window||typeof serialize!=='function')throw new TypeError('Controlador de backup requer dependências do navegador.');
+  const download=(raw,name)=>{const blob=new window.Blob([raw],{type:'application/json'}),url=window.URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();window.URL.revokeObjectURL(url)};
+  const exportState=(state,date)=>{if(isDisabled()){notify('Backups ficam indisponíveis durante a demonstração.');return false}download(serialize(state),fileName(date));notify('Backup exportado.');return true};
+  const importFile=file=>{if(isDisabled()){notify('A importação fica indisponível durante a demonstração.');return}if(!file)return;if(file.size>maxBytes){notify('O arquivo excede o limite de 10 MB para importação.');return}const reader=new window.FileReader();reader.onload=()=>{let parsed;try{parsed=JSON.parse(reader.result)}catch(error){notify('Arquivo inválido — não parece um backup deste extrato.');return}const result=validate(parsed);if(!result.valid){notify(result.message);return}onImport(result)};reader.onerror=()=>notify('Não foi possível ler o arquivo selecionado.');reader.readAsText(file)};
+  return Object.freeze({download,exportState,importFile});
+}

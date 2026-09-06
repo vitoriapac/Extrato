@@ -2,6 +2,7 @@ import {createReviewsRepository} from './reviews-repository.js';
 import {createPlanningRepository} from './planning-repository.js';
 import {createSessionsRepository} from './sessions-repository.js';
 import {createSubjectsRepository} from './subjects-repository.js';
+import {createSettingsRepository} from './settings-repository.js';
 
 export function createCollectionRepository({getState,field}={}){
   if(typeof getState!=='function'||!field)throw new TypeError('Repositório requer estado e coleção.');
@@ -20,5 +21,6 @@ export function createAppRepositories(getState){
   repositories.studySessions=createSessionsRepository({getState});
   repositories.reviewAgenda=createReviewsRepository({getState});
   repositories.planning=createPlanningRepository({getState});
+  repositories.settings=createSettingsRepository({getState});
   return Object.freeze(repositories);
 }

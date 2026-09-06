@@ -54,6 +54,11 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/ui/controllers/navigation-controller.js`: abas, menu móvel, atalhos numéricos, busca e fechamento por Escape.
 - `src/ui/controllers/modal-controller.js`: confirmações e prompts acessíveis com validação e restauração de foco.
 - `src/ui/controllers/editable-collection-controller.js`: estado de rascunho e ciclo de edição dos registros operacionais.
+- `src/ui/controllers/preferences-controller.js`: tema visual e persistência das preferências locais.
+- `src/ui/controllers/backup-controller.js`: leitura, exportação e importação de arquivos de backup no navegador.
+- `src/application/goals/goal-service.js`: regras de metas globais e disponibilidade diária.
+- `src/application/analytics/build-overview-view-model.js`: composição das métricas de tempo da Visão Geral sem dependência do DOM.
+- `src/repositories/settings-repository.js`: alterações controladas das metas e configurações persistentes.
 - `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
 - `src/ui/filter-panel.js`: contagem e rótulos puros dos filtros responsivos.
 - `src/ui/session-history.js`: filtragem e agrupamento puro do histórico de sessões.
