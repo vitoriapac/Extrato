@@ -2076,16 +2076,16 @@
   function createGoalService({ repository, getDayOfWeek } = {}) {
     if (!repository || typeof repository.getGoals !== "function") throw new TypeError("Serviço de metas requer repositório.");
     return Object.freeze({
-      hoursForDay: (day) => clamp5(repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias),
-      hoursForDate: (date2) => clamp5(repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date2))] ?? repository.getGoals()?.horasDiarias),
+      hoursForDay: (day) => clamp5(repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias, 0, 24),
+      hoursForDate: (date2) => clamp5(repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date2))] ?? repository.getGoals()?.horasDiarias, 0, 24),
       updateDailyHours: (day, value2, { isToday = false } = {}) => {
-        const hours = clamp5(value2);
+        const hours = clamp5(value2, 0, 24);
         repository.updateDailyHours(day, hours);
         if (isToday) repository.updateGoal("horasDiarias", hours);
         return hours;
       },
       applyHoursToEveryDay: (value2) => {
-        const hours = clamp5(value2);
+        const hours = clamp5(value2, 0, 24);
         for (let day = 0; day < 7; day++) repository.updateDailyHours(day, hours);
         repository.updateGoal("horasDiarias", hours);
         return hours;
@@ -2096,6 +2096,50 @@
       },
       update: (key, value2) => repository.updateGoal(key, key === "metaAprovacao" ? clamp5(value2, 0, 100) : clamp5(value2))
     });
+  }
+
+  // src/application/goals/weekly-availability.js
+  var clampHours = (value2) => Math.max(0, Math.min(24, Number(value2) || 0));
+  function buildWeeklyAvailability(hoursByDay = {}) {
+    const days = Array.from({ length: 7 }, (_, day) => ({ day, hours: clampHours(hoursByDay[String(day)] ?? hoursByDay[day]) }));
+    const totalHours = Math.round(days.reduce((sum3, item) => sum3 + item.hours, 0) * 100) / 100;
+    const activeDays = days.filter((item) => item.hours > 0).length;
+    const averageHours = activeDays ? Math.round(totalHours / activeDays * 100) / 100 : 0;
+    const peakHours = Math.max(0, ...days.map((item) => item.hours));
+    return { days, totalHours, totalMinutes: Math.round(totalHours * 60), activeDays, averageHours, peakHours, state: totalHours ? "configured" : "empty" };
+  }
+
+  // src/ui/view-models/priority-view-model.js
+  var PRIORITY_FACTOR_LABELS = Object.freeze({
+    examImpact: "Impacto na prova",
+    retentionRisk: "Risco de retenção",
+    masteryGap: "Lacuna de domínio",
+    reviewUrgency: "Urgência da revisão",
+    reviewHealthRisk: "Saúde da revisão",
+    planAlignment: "Alinhamento com o plano",
+    recencyRisk: "Tempo sem contato"
+  });
+  function buildPriorityViewModel(item = {}, position = 1) {
+    const score = item.score == null || item.score === "" ? null : Number.isFinite(Number(item.score)) ? Math.max(0, Math.min(100, Math.round(Number(item.score)))) : null;
+    const evidenceStrength = Number(item.evidence?.evidenceStrength) || 0;
+    const state2 = item.blockedPrerequisites?.length ? "blocked" : item.reviewHealth?.level === "critical" ? "review" : evidenceStrength < 0.35 ? "limited" : score >= 70 ? "high" : "calculated";
+    const stateLabels = { blocked: "Bloqueado por pré-requisito", review: "Revisão recomendada", limited: "Poucos dados", high: "Prioridade elevada", calculated: "Prioridade calculada" };
+    const contributionRows = Object.entries(item.contributions || {}).map(([key, value2]) => ({
+      key,
+      label: PRIORITY_FACTOR_LABELS[key] || key,
+      value: Math.max(0, Math.round(Number(value2) || 0)),
+      factor: item.factors?.[key] ?? null
+    })).sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
+    return {
+      position,
+      score,
+      state: state2,
+      stateLabel: stateLabels[state2],
+      contributionRows,
+      completeness: Math.round((Number(item.evidence?.completeness) || 0) * 100),
+      evidenceLabel: item.evidence?.evidenceLabel || "Não avaliada",
+      reasons: (item.reasons || []).filter(Boolean)
+    };
   }
 
   // src/application/analytics/build-overview-view-model.js
@@ -6114,9 +6158,10 @@
     const container = document.getElementById("weeklyHoursGoals");
     if (!container) return;
     const todayDay = parseLocalDate(todayISO()).getDay();
-    container.innerHTML = '<div class="weekday-goal-actions"><button class="btn ghost small" data-delegated-click="applyTodayGoalToAllDays()">Aplicar meta de hoje a todos</button><button class="btn ghost small" data-delegated-click="clearWeekendGoals()">Limpar fim de semana</button></div><div class="weekday-goals">' + WEEKDAY_LABELS.map(
-      (label, day) => '<label class="weekday-goal ' + (day === todayDay ? "today" : "") + '"><span>' + label + (day === todayDay ? " · hoje" : "") + '</span><input type="number" min="0" step="0.25" value="' + metaHoursForDate(addDays(startOfWeek(todayISO()), day === 0 ? 6 : day - 1)) + '" data-delegated-blur="updateMetaHoursDay(' + day + ',this.value)" aria-label="Meta de horas de ' + label + '"></label>'
-    ).join("") + "</div>";
+    const availability = buildWeeklyAvailability(state.metas.horasPorDia);
+    container.innerHTML = `<div class="weekly-availability-summary"><div><strong>${formatPlanMinutes(availability.totalMinutes)}</strong><span>disponíveis por semana</span></div><div><strong>${availability.activeDays}</strong><span>dias com estudo</span></div><div><strong>${formatPlanMinutes(Math.round(availability.averageHours * 60))}</strong><span>média por dia ativo</span></div><div><strong>${formatPlanMinutes(Math.round(metaHoursToday() * 60))}</strong><span>disponíveis hoje</span></div></div>${availability.state === "empty" ? '<p class="availability-warning">Defina ao menos um dia para habilitar recomendações e planejamento.</p>' : ""}<div class="weekday-goal-actions"><button class="btn ghost small" data-delegated-click="applyTodayGoalToAllDays()">Aplicar hoje a todos</button><button class="btn ghost small" data-delegated-click="clearWeekendGoals()">Limpar fim de semana</button></div><div class="weekday-goals">${WEEKDAY_LABELS.map(
+      (label, day) => `<label class="weekday-goal ${day === todayDay ? "today" : ""}"><span>${label}${day === todayDay ? " · hoje" : ""}</span><div><input type="number" min="0" max="24" step="0.25" value="${metaHoursForDate(addDays(startOfWeek(todayISO()), day === 0 ? 6 : day - 1))}" data-delegated-blur="updateMetaHoursDay(${day},this.value)" aria-label="Disponibilidade em horas de ${label}"><small>h</small></div></label>`
+    ).join("")}</div>`;
   }
   function contarTopicosConcluidosNoPeriodo(pred) {
     const ids = /* @__PURE__ */ new Set();
@@ -7136,7 +7181,6 @@
       return old && old.score === item.score && old.estimatedMinutes === item.estimatedMinutes && JSON.stringify(old.factors) === JSON.stringify(item.factors) ? { ...item, recommendationId: old.recommendationId, shownAt: old.shownAt, algorithmVersion: PRIORITY_ALGORITHM_VERSION } : createRecommendationPresentation(item, { id: uid("recommendation"), shownAt: nowISO2(), algorithmVersion: PRIORITY_ALGORITHM_VERSION });
     });
     const visible = currentStudyRecommendations.slice(0, 3);
-    const factorLabels = { examImpact: "Impacto na prova", retentionRisk: "Risco de retenção", masteryGap: "Lacuna de domínio", reviewUrgency: "Urgência da revisão", reviewHealthRisk: "Saúde da revisão", planAlignment: "Alinhamento com o plano", recencyRisk: "Tempo sem contato" };
     const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null), summary = summarizeRecommendationFeedback(state.recommendationFeedback);
     const outcome = pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>` : "";
     const history = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
@@ -7155,11 +7199,12 @@
       return;
     }
     const cards = visible.map((item, index) => {
-      const contributionRows = Object.entries(item.contributions).map(([key, value2]) => `<div><span>${escapeHtml(factorLabels[key] || key)}</span><strong>+${value2}</strong></div>`).join("");
-      const state2 = item.reviewHealth?.level === "critical" ? "↻ Revisão recomendada" : item.evidence.evidenceStrength < 0.35 ? "⚠ Poucos dados" : item.score >= 70 ? "★ Prioridade elevada" : "○ Prioridade calculada";
-      return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}"><div class="recommendation-content"><span class="recommendation-rank">#${index + 1} · Prioridade ${item.score}/100</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || "Estudar agora")}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${escapeHtml(state2)}</p><ul>${item.reasons.slice(0, 3).map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta prioridade?</summary><p>Dados disponíveis: ${Math.round(item.evidence.completeness * 100)}% · força da evidência: ${escapeHtml(item.evidence.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar estudo</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Ocultar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
+      const model = buildPriorityViewModel(item, index + 1);
+      const contributionRows = model.contributionRows.map((row) => `<div><span>${escapeHtml(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100, row.value * 4)}%"></i></span><strong>+${row.value}</strong></div>`).join("");
+      const stateIcon = { review: "↻", limited: "⚠", high: "★", calculated: "○", blocked: "🔒" }[model.state] || "○";
+      return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || "Estudar agora")}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p><div class="priority-reasons">${model.reasons.slice(0, 4).map((reason) => `<span>+ ${escapeHtml(reason)}</span>`).join("")}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(model.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar estudo</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
     }).join("");
-    container.innerHTML = `${outcome}<div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
+    container.innerHTML = `${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · mostrando ${visible.length} ${visible.length === 1 ? "prioridade elegível" : "prioridades elegíveis"}</span></div><div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
   }
   function recommendationBaseline(topicId) {
     const performance = getTopicPerformance(topicId), retention = topicRetentionScore(null, topicId), found = getTopicById(topicId), last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
