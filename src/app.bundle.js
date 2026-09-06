@@ -661,7 +661,16 @@
       availableWeight += weight;
     }
     const value2 = availableWeight ? Math.round(weighted / availableWeight) : null;
-    const contributions = Object.fromEntries(Object.entries(factors).map(([key, score]) => [key, Math.round(score * weights[key] / availableWeight)]));
+    const exactContributions = Object.entries(factors).map(([key, score]) => ({ key, exact: score * weights[key] / availableWeight }));
+    const contributionValues = exactContributions.map((item) => Math.floor(item.exact));
+    let remainder = (value2 ?? 0) - contributionValues.reduce((sum3, item) => sum3 + item, 0);
+    exactContributions.map((item, index) => ({ index, fraction: item.exact - Math.floor(item.exact) })).sort((a, b) => b.fraction - a.fraction || a.index - b.index).forEach((item) => {
+      if (remainder > 0) {
+        contributionValues[item.index]++;
+        remainder--;
+      }
+    });
+    const contributions = Object.fromEntries(exactContributions.map((item, index) => [item.key, contributionValues[index]]));
     const completeness = totalWeight ? Math.round(availableWeight / totalWeight * 100) / 100 : 0;
     return { value: value2, factors, missingFactors, contributions, completeness };
   }
@@ -7416,8 +7425,8 @@
       const canStart = !["completed", "deferred", "replaced", "skipped"].includes(item.status) && !active;
       return `
     <div class="plano-item ${active ? "is-active" : ""} ${item.status === "completed" ? "is-completed" : ""}">
-      <div class="plano-item-head">${escapeHtml(item.statusIcon)} ${escapeHtml(item.statusLabel)} · ${item.score}/100</div>
-      <div class="plano-item-title">${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</div>
+      <div class="plano-item-head">${escapeHtml(item.statusIcon || "📌")} ${escapeHtml(item.statusLabel || planItemStatusLabel(item.status))} · ${Number.isFinite(Number(item.score)) ? Math.round(Number(item.score)) + "/100" : "prioridade não calculada"}</div>
+      <div class="plano-item-title">${escapeHtml(item.subjectName || getSubjectName(item.subjectId) || "Disciplina")} — ${escapeHtml(item.topicName || getTopicName(item.topicId) || "Tópico")}</div>
       <div class="plano-item-reason">${escapeHtml(item.reason)}</div>
       <div class="plano-item-reason">⏱️ ${formatPlanMinutes(item.plannedMinutes)} · ${escapeHtml(item.action)}${item.recommendedQuestions ? " · " + item.recommendedQuestions + " questões" : ""}</div>
       <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>

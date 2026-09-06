@@ -4251,8 +4251,8 @@ function renderPlanoHoje(){
     const canStart=!['completed','deferred','replaced','skipped'].includes(item.status)&&!active;
     return `
     <div class="plano-item ${active?'is-active':''} ${item.status==='completed'?'is-completed':''}">
-      <div class="plano-item-head">${escapeHtml(item.statusIcon)} ${escapeHtml(item.statusLabel)} · ${item.score}/100</div>
-      <div class="plano-item-title">${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</div>
+      <div class="plano-item-head">${escapeHtml(item.statusIcon||'📌')} ${escapeHtml(item.statusLabel||planItemStatusLabel(item.status))} · ${Number.isFinite(Number(item.score))?Math.round(Number(item.score))+'/100':'prioridade não calculada'}</div>
+      <div class="plano-item-title">${escapeHtml(item.subjectName||getSubjectName(item.subjectId)||'Disciplina')} — ${escapeHtml(item.topicName||getTopicName(item.topicId)||'Tópico')}</div>
       <div class="plano-item-reason">${escapeHtml(item.reason)}</div>
       <div class="plano-item-reason">⏱️ ${formatPlanMinutes(item.plannedMinutes)} · ${escapeHtml(item.action)}${item.recommendedQuestions?' · '+item.recommendedQuestions+' questões':''}</div>
       <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>

@@ -21,7 +21,13 @@ export function calculateFactorScore(input={},weights={}){
     weighted+=factors[key]*weight;availableWeight+=weight;
   }
   const value=availableWeight?Math.round(weighted/availableWeight):null;
-  const contributions=Object.fromEntries(Object.entries(factors).map(([key,score])=>[key,Math.round(score*weights[key]/availableWeight)]));
+  const exactContributions=Object.entries(factors).map(([key,score])=>({key,exact:score*weights[key]/availableWeight}));
+  const contributionValues=exactContributions.map(item=>Math.floor(item.exact));
+  let remainder=(value??0)-contributionValues.reduce((sum,item)=>sum+item,0);
+  exactContributions.map((item,index)=>({index,fraction:item.exact-Math.floor(item.exact)}))
+    .sort((a,b)=>b.fraction-a.fraction||a.index-b.index)
+    .forEach(item=>{if(remainder>0){contributionValues[item.index]++;remainder--}});
+  const contributions=Object.fromEntries(exactContributions.map((item,index)=>[item.key,contributionValues[index]]));
   const completeness=totalWeight?Math.round(availableWeight/totalWeight*100)/100:0;
   return {value,factors,missingFactors,contributions,completeness};
 }

@@ -854,8 +854,8 @@
 .recommendation-outcome{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;margin-bottom:12px;background:var(--paper-alt);border-left:3px solid var(--gold)}.recommendation-history{display:block;margin-top:10px;color:var(--ink-soft);font-family:var(--font-data)}
 .study-recommendation-list{display:grid;gap:12px}.study-recommendation{padding:14px;border:1px solid var(--paper-line);background:var(--paper)}.study-recommendation.is-primary{border-left:4px solid var(--gold);background:var(--paper-alt)}.recommendation-content{min-width:0;flex:1}.recommendation-exclusions{margin-top:14px;border-top:1px solid var(--paper-line);padding-top:10px}.recommendation-exclusions summary{cursor:pointer;font:600 11px var(--font-data);color:var(--heading)}.recommendation-exclusions>div{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;padding:8px 0;border-bottom:1px solid var(--paper-line)}.recommendation-exclusions>div small{grid-column:2;color:var(--ink-soft);font:10px var(--font-data)}
 .recommendation-capacity{display:flex;align-items:baseline;gap:6px;margin-bottom:12px;padding:9px 11px;background:var(--info-bg);color:var(--ink-soft);font:11px var(--font-data)}.recommendation-capacity strong{color:var(--heading);font-size:15px}
-.priority-score-gauge{width:64px;height:64px;flex:0 0 64px;border-radius:50%;display:grid;place-content:center;text-align:center;background:radial-gradient(circle closest-side,var(--paper) 76%,transparent 77% 99%),conic-gradient(var(--gold) calc(var(--priority)*1%),var(--paper-line) 0)}.priority-score-gauge strong{font-size:20px;line-height:1;color:var(--heading)}.priority-score-gauge span{font:9px var(--font-data);color:var(--ink-soft)}
-.priority-reasons{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.priority-reasons span{padding:4px 7px;background:var(--success-bg);color:var(--ink-soft);font:10px var(--font-data)}
+.priority-score-gauge{width:64px;height:64px;flex:0 0 64px;border-radius:50%;display:grid;place-content:center;text-align:center;background:radial-gradient(circle closest-side,var(--paper) 76%,transparent 77% 99%),conic-gradient(var(--gold) calc(var(--priority)*1%),var(--paper-line) 0)}.priority-score-gauge strong{font-size:20px;line-height:1;color:var(--heading)}.priority-score-gauge span{font:11px var(--font-data);color:var(--ink-soft)}
+.priority-reasons{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.priority-reasons span{padding:5px 8px;background:var(--success-bg);color:var(--ink-soft);font:11px/1.35 var(--font-data)}
 .recommendation-contributions>div{display:grid;grid-template-columns:minmax(130px,1fr) minmax(70px,1fr) 34px;gap:8px;align-items:center}.contribution-track{height:5px;background:var(--paper-line)}.contribution-track i{display:block;height:100%;background:var(--gold)}
 .review-rating-box{max-width:560px}.review-rating-box h3{margin:0 0 6px}.review-rating-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}.review-rating-actions .btn{display:flex;flex-direction:column;align-items:center;gap:4px}.review-rating-actions small{font:9px var(--font-data);opacity:.75}
 .strategic-print-report{display:none}
@@ -994,8 +994,8 @@
   .statement--compact .exam-countdown{position:static;margin:10px 0 0;padding:10px 0 0;border-top:1px solid rgba(246,243,236,.18)}
   .global-search-row--compact{margin-top:8px}
   .tabs{position:sticky;top:0;z-index:90;margin-top:14px;background:var(--paper);box-shadow:0 2px 0 var(--heading);padding-top:4px;scroll-behavior:smooth}
-  .tabs::after{content:'';position:sticky;right:0;flex:0 0 20px;background:linear-gradient(90deg,transparent,var(--paper));pointer-events:none}
-  .tab-btn{min-height:var(--touch-target);padding:10px 14px}
+  .tabs::after{display:none}
+  .tab-btn{min-height:var(--touch-target);padding:8px 4px;font-size:10px;line-height:1.25;letter-spacing:.02em;overflow-wrap:anywhere}
   .btn,.icon-btn,.icon-btn-nav,.month-nav-btn,.theme-toggle-btn{min-height:var(--touch-target)}
   .icon-btn,.icon-btn-nav,.month-nav-btn{min-width:var(--touch-target)}
   .heatmap-toolbar .btn{flex:1 1 150px}
