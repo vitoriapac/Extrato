@@ -1356,6 +1356,120 @@
     });
   }
 
+  // src/ui/controllers/navigation-controller.js
+  var MAIN_TABS = Object.freeze(["dashboard", "hoje", "disciplinas", "calendario", "agenda", "questoes", "metas"]);
+  function nextNavigationIndex(current, length, key) {
+    if (!length) return -1;
+    if (key === "Home") return 0;
+    if (key === "End") return length - 1;
+    const delta = ["ArrowRight", "ArrowDown"].includes(key) ? 1 : -1;
+    return (current + delta + length) % length;
+  }
+  function createNavigationController({ document: document2, window: window2, render: render2 = () => {
+  }, trapModalTab: trapModalTab2 = () => {
+  }, closeReview = () => {
+  } } = {}) {
+    if (!document2 || !window2) throw new TypeError("Controlador de navegação requer documento e janela.");
+    const moreButton = document2.getElementById("moreTabButton"), moreMenu = document2.getElementById("mobileMoreMenu");
+    const syncMore = (tabName) => {
+      const secondary = ["agenda", "questoes", "metas"].includes(tabName);
+      moreButton?.classList.toggle("active", secondary);
+      moreMenu?.querySelectorAll("[data-more-tab]").forEach((item) => item.classList.toggle("active", item.dataset.moreTab === tabName));
+    };
+    const closeMore = ({ restoreFocus = false } = {}) => {
+      if (!moreMenu) return;
+      moreMenu.hidden = true;
+      moreButton?.setAttribute("aria-expanded", "false");
+      if (restoreFocus) moreButton?.focus();
+    };
+    const activate = (tabName, updateHash = true) => {
+      const button = document2.querySelector(`.tab-btn[data-tab="${tabName}"]`), panel = document2.getElementById(`panel-${tabName}`);
+      if (!button || !panel) return false;
+      document2.querySelectorAll(".tab-btn").forEach((item) => {
+        const active = item === button;
+        item.classList.toggle("active", active);
+        item.setAttribute("aria-selected", String(active));
+        item.tabIndex = active ? 0 : -1;
+      });
+      document2.querySelectorAll(".panel").forEach((item) => item.classList.toggle("active", item === panel));
+      document2.querySelector(".statement")?.classList.toggle("statement--compact", tabName !== "dashboard");
+      document2.querySelector(".global-search-row")?.classList.toggle("global-search-row--compact", tabName !== "dashboard");
+      syncMore(tabName);
+      button.scrollIntoView?.({ block: "nearest", inline: "nearest", behavior: "smooth" });
+      render2(tabName);
+      if (updateHash) window2.history.replaceState(null, "", `#${tabName}`);
+      return true;
+    };
+    moreButton?.addEventListener("click", () => {
+      const open = moreMenu?.hidden;
+      if (!moreMenu) return;
+      moreMenu.hidden = !open;
+      moreButton.setAttribute("aria-expanded", String(open));
+      if (open) moreMenu.querySelector('[role="menuitem"]')?.focus();
+    });
+    moreMenu?.addEventListener("click", (event) => {
+      const item = event.target.closest("[data-more-tab]");
+      if (item) {
+        activate(item.dataset.moreTab);
+        closeMore();
+      }
+    });
+    moreMenu?.addEventListener("keydown", (event) => {
+      const items = [...moreMenu.querySelectorAll('[role="menuitem"]')], index = items.indexOf(document2.activeElement);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMore({ restoreFocus: true });
+        return;
+      }
+      if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      items[nextNavigationIndex(index, items.length, event.key)]?.focus();
+    });
+    document2.addEventListener("click", (event) => {
+      if (!moreMenu?.hidden && !moreMenu.contains(event.target) && event.target !== moreButton) closeMore();
+    });
+    document2.querySelectorAll(".tab-btn[data-tab]").forEach((button) => {
+      button.addEventListener("click", () => activate(button.dataset.tab));
+      button.addEventListener("keydown", (event) => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        const tabs = [...document2.querySelectorAll(".tab-btn[data-tab]")].filter((item) => window2.getComputedStyle(item).display !== "none"), next = nextNavigationIndex(tabs.indexOf(button), tabs.length, event.key);
+        tabs[next]?.focus();
+        activate(tabs[next]?.dataset.tab);
+      });
+    });
+    const registerShortcuts = () => document2.addEventListener("keydown", (event) => {
+      trapModalTab2(event);
+      const modifier = window2.navigator.platform.toUpperCase().includes("MAC") ? event.metaKey : event.ctrlKey, active = document2.activeElement, typing = ["INPUT", "TEXTAREA", "SELECT"].includes(active?.tagName) || active?.isContentEditable;
+      if (modifier && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        document2.getElementById("globalSearchInput")?.focus();
+        return;
+      }
+      if (event.key === "Escape") {
+        document2.getElementById("globalSearchInput")?.blur();
+        document2.getElementById("globalSearchResults")?.classList.remove("show");
+        if (document2.getElementById("reviewRatingOverlay")?.classList.contains("show")) {
+          event.preventDefault();
+          closeReview();
+          return;
+        }
+        if (document2.getElementById("sessionModalOverlay")?.classList.contains("show")) {
+          event.preventDefault();
+          document2.getElementById("sessionModalSkipBtn")?.click();
+          return;
+        }
+        if (document2.getElementById("modalOverlay")?.classList.contains("show")) {
+          event.preventDefault();
+          document2.getElementById("modalCancelBtn")?.click();
+        }
+        return;
+      }
+      if (!typing && /^[1-7]$/.test(event.key)) activate(MAIN_TABS[Number(event.key) - 1]);
+    });
+    return Object.freeze({ activate, closeMore, registerShortcuts });
+  }
+
   // src/application/alert-lifecycle.js
   var severityOrder = { high: 3, medium: 2, low: 1, ok: 0 };
   function reconcileAlerts(alerts = [], states = [], today, addDays2) {
@@ -2673,78 +2787,10 @@
   function showPrompt(message, options, onConfirm, onCancel) {
     showConfirm(message, onConfirm, onCancel, { confirmLabel: options.confirmLabel || "Criar", prompt: options });
   }
+  var navigationController = createNavigationController({ document, window, render: (tab) => render(tab), trapModalTab: (event) => trapModalTab(event, [document.getElementById("reviewRatingOverlay"), document.getElementById("sessionModalOverlay"), document.getElementById("modalOverlay")]), closeReview: closeReviewRating });
   function activateTab(tabName, updateHash = true) {
-    const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
-    const panel = document.getElementById("panel-" + tabName);
-    if (!btn || !panel) return;
-    document.querySelectorAll(".tab-btn").forEach((b) => {
-      const active = b === btn;
-      b.classList.toggle("active", active);
-      b.setAttribute("aria-selected", active ? "true" : "false");
-      b.tabIndex = active ? 0 : -1;
-    });
-    document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p === panel));
-    document.querySelector(".statement")?.classList.toggle("statement--compact", tabName !== "dashboard");
-    document.querySelector(".global-search-row")?.classList.toggle("global-search-row--compact", tabName !== "dashboard");
-    syncMobileMoreState(tabName);
-    btn.scrollIntoView?.({ block: "nearest", inline: "nearest", behavior: "smooth" });
-    if (typeof render === "function") render(tabName);
-    if (updateHash) history.replaceState(null, "", "#" + tabName);
+    return navigationController.activate(tabName, updateHash);
   }
-  var moreTabButton = document.getElementById("moreTabButton");
-  var mobileMoreMenu = document.getElementById("mobileMoreMenu");
-  function closeMobileMore({ restoreFocus = false } = {}) {
-    if (!mobileMoreMenu) return;
-    mobileMoreMenu.hidden = true;
-    moreTabButton?.setAttribute("aria-expanded", "false");
-    if (restoreFocus) moreTabButton?.focus();
-  }
-  function toggleMobileMore() {
-    if (!mobileMoreMenu) return;
-    const open = mobileMoreMenu.hidden;
-    mobileMoreMenu.hidden = !open;
-    moreTabButton?.setAttribute("aria-expanded", String(open));
-    if (open) mobileMoreMenu.querySelector('[role="menuitem"]')?.focus();
-  }
-  function syncMobileMoreState(tabName) {
-    const secondary = ["agenda", "questoes", "metas"].includes(tabName);
-    moreTabButton?.classList.toggle("active", secondary);
-    mobileMoreMenu?.querySelectorAll("[data-more-tab]").forEach((item) => item.classList.toggle("active", item.dataset.moreTab === tabName));
-  }
-  moreTabButton?.addEventListener("click", toggleMobileMore);
-  mobileMoreMenu?.addEventListener("click", (event) => {
-    const item = event.target.closest("[data-more-tab]");
-    if (!item) return;
-    activateTab(item.dataset.moreTab);
-    closeMobileMore();
-  });
-  mobileMoreMenu?.addEventListener("keydown", (event) => {
-    const items = [...mobileMoreMenu.querySelectorAll('[role="menuitem"]')], index = items.indexOf(document.activeElement);
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeMobileMore({ restoreFocus: true });
-      return;
-    }
-    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    const next = event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
-    items[next]?.focus();
-  });
-  document.addEventListener("click", (event) => {
-    if (!mobileMoreMenu?.hidden && !mobileMoreMenu.contains(event.target) && event.target !== moreTabButton) closeMobileMore();
-  });
-  document.querySelectorAll(".tab-btn[data-tab]").forEach((btn) => {
-    btn.addEventListener("click", () => activateTab(btn.dataset.tab));
-    btn.addEventListener("keydown", (e) => {
-      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
-      e.preventDefault();
-      const tabs = [...document.querySelectorAll(".tab-btn[data-tab]")].filter((tab) => getComputedStyle(tab).display !== "none");
-      const current = tabs.indexOf(btn);
-      const next = e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : (current + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
-      tabs[next].focus();
-      activateTab(tabs[next].dataset.tab);
-    });
-  });
   function allTopics() {
     return state.subjects.flatMap((s) => s.topics.map((t) => ({ ...t, subjectName: s.name, subjectId: s.id, subjectArchived: Boolean(s.archived), topicArchived: Boolean(t.archived) })));
   }
@@ -6752,8 +6798,8 @@
     const contributionRows = Object.entries(item.contributions).map(([key, value2]) => `<div><span>${escapeHtml(factorLabels[key] || key)}</span><strong>+${value2}</strong></div>`).join("");
     const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null), summary = summarizeRecommendationFeedback(state.recommendationFeedback);
     const outcome = pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>` : "";
-    const history2 = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
-    container.innerHTML = `${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details>${history2}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
+    const history = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
+    container.innerHTML = `${outcome}<div class="study-recommendation"><div><span class="recommendation-rank">Recomendação principal · ${item.score}/100</span><h4>${escapeHtml(item.action || "Estudar agora")}</h4><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><p>${formatPlanMinutes(item.estimatedMinutes)} · confiança ${escapeHtml(item.confidence)}</p><ul>${item.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><details class="recommendation-explanation"><summary>Por que esta pontuação?</summary><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${item.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details>${history}</div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar agora</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar recomendação</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></div>`;
   }
   function recommendationBaseline(topicId) {
     const performance = getTopicPerformance(topicId), retention = topicRetentionScore(null, topicId), found = getTopicById(topicId), last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
@@ -7841,45 +7887,7 @@
     renderAgenda();
     renderCalendar();
   });
-  document.addEventListener("keydown", function(e) {
-    trapModalTab(e, [document.getElementById("reviewRatingOverlay"), document.getElementById("sessionModalOverlay"), document.getElementById("modalOverlay")]);
-    const isMac = navigator.platform.toUpperCase().includes("MAC");
-    const modifierPressed = isMac ? e.metaKey : e.ctrlKey;
-    const activeTag = document.activeElement ? document.activeElement.tagName : "";
-    const typingInField = ["INPUT", "TEXTAREA", "SELECT"].includes(activeTag) || document.activeElement?.isContentEditable;
-    if (modifierPressed && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      document.getElementById("globalSearchInput").focus();
-      return;
-    }
-    if (e.key === "Escape") {
-      document.getElementById("globalSearchInput").blur();
-      document.getElementById("globalSearchResults").classList.remove("show");
-      if (document.getElementById("reviewRatingOverlay").classList.contains("show")) {
-        e.preventDefault();
-        closeReviewRating();
-        return;
-      }
-      if (document.getElementById("sessionModalOverlay").classList.contains("show")) {
-        e.preventDefault();
-        document.getElementById("sessionModalSkipBtn").click();
-        return;
-      }
-      if (document.getElementById("modalOverlay").classList.contains("show")) {
-        e.preventDefault();
-        document.getElementById("modalCancelBtn").click();
-        return;
-      }
-      return;
-    }
-    if (!typingInField && /^[1-7]$/.test(e.key)) {
-      const tabs = ["dashboard", "hoje", "disciplinas", "calendario", "agenda", "questoes", "metas"];
-      const idx = parseInt(e.key, 10) - 1;
-      if (tabs[idx]) {
-        document.querySelector(`.tab-btn[data-tab="${tabs[idx]}"]`).click();
-      }
-    }
-  });
+  navigationController.registerShortcuts();
   window.addEventListener("beforeunload", () => {
     if (!TEST_MODE && !suppressBeforeUnloadSave) writeLocalState(JSON.stringify(state));
   });

@@ -41,6 +41,7 @@ import {createReplanService} from './application/planning/replan-service.js';
 import {createSessionService} from './application/sessions/session-service.js';
 import {createRecordService} from './application/records/record-service.js';
 import {createSubjectService} from './application/subjects/subject-service.js';
+import {createNavigationController} from './ui/controllers/navigation-controller.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
@@ -716,63 +717,8 @@ function showPrompt(message, options, onConfirm, onCancel){
 }
 
 /* ===== TABS ===== */
-function activateTab(tabName, updateHash = true){
-  const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
-  const panel = document.getElementById('panel-'+tabName);
-  if(!btn || !panel) return;
-
-  document.querySelectorAll('.tab-btn').forEach(b=>{
-    const active = b === btn;
-    b.classList.toggle('active', active);
-    b.setAttribute('aria-selected', active ? 'true' : 'false');
-    b.tabIndex = active ? 0 : -1;
-  });
-  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p === panel));
-  document.querySelector('.statement')?.classList.toggle('statement--compact',tabName!=='dashboard');
-  document.querySelector('.global-search-row')?.classList.toggle('global-search-row--compact',tabName!=='dashboard');
-  syncMobileMoreState(tabName);
-  btn.scrollIntoView?.({block:'nearest',inline:'nearest',behavior:'smooth'});
-  if(typeof render==='function') render(tabName);
-  if(updateHash) history.replaceState(null, '', '#'+tabName);
-}
-
-const moreTabButton=document.getElementById('moreTabButton'),mobileMoreMenu=document.getElementById('mobileMoreMenu');
-function closeMobileMore({restoreFocus=false}={}){
-  if(!mobileMoreMenu)return;mobileMoreMenu.hidden=true;moreTabButton?.setAttribute('aria-expanded','false');
-  if(restoreFocus)moreTabButton?.focus();
-}
-function toggleMobileMore(){
-  if(!mobileMoreMenu)return;const open=mobileMoreMenu.hidden;mobileMoreMenu.hidden=!open;moreTabButton?.setAttribute('aria-expanded',String(open));
-  if(open)mobileMoreMenu.querySelector('[role="menuitem"]')?.focus();
-}
-function syncMobileMoreState(tabName){
-  const secondary=['agenda','questoes','metas'].includes(tabName);
-  moreTabButton?.classList.toggle('active',secondary);
-  mobileMoreMenu?.querySelectorAll('[data-more-tab]').forEach(item=>item.classList.toggle('active',item.dataset.moreTab===tabName));
-}
-moreTabButton?.addEventListener('click',toggleMobileMore);
-mobileMoreMenu?.addEventListener('click',event=>{const item=event.target.closest('[data-more-tab]');if(!item)return;activateTab(item.dataset.moreTab);closeMobileMore();});
-mobileMoreMenu?.addEventListener('keydown',event=>{
-  const items=[...mobileMoreMenu.querySelectorAll('[role="menuitem"]')],index=items.indexOf(document.activeElement);
-  if(event.key==='Escape'){event.preventDefault();closeMobileMore({restoreFocus:true});return}
-  if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;event.preventDefault();
-  const next=event.key==='Home'?0:event.key==='End'?items.length-1:(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next]?.focus();
-});
-document.addEventListener('click',event=>{if(!mobileMoreMenu?.hidden&&!mobileMoreMenu.contains(event.target)&&event.target!==moreTabButton)closeMobileMore();});
-
-document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
-  btn.addEventListener('click', ()=>activateTab(btn.dataset.tab));
-  btn.addEventListener('keydown', e=>{
-    if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
-    e.preventDefault();
-    const tabs = [...document.querySelectorAll('.tab-btn[data-tab]')].filter(tab=>getComputedStyle(tab).display!=='none');
-    const current = tabs.indexOf(btn);
-    const next = e.key==='Home' ? 0 : e.key==='End' ? tabs.length-1 :
-      (current + (e.key==='ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-    tabs[next].focus();
-    activateTab(tabs[next].dataset.tab);
-  });
-});
+const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
+function activateTab(tabName,updateHash=true){return navigationController.activate(tabName,updateHash)}
 
 /* ===== HELPERS ===== */
 function allTopics(){
@@ -5050,46 +4996,7 @@ historyLayoutMedia.addEventListener('change',()=>{
 });
 
 /* ===== ATALHOS DE TECLADO ===== */
-document.addEventListener('keydown', function(e){
-  trapModalTab(e,[document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]);
-  const isMac = navigator.platform.toUpperCase().includes('MAC');
-  const modifierPressed = isMac ? e.metaKey : e.ctrlKey;
-  const activeTag = document.activeElement ? document.activeElement.tagName : '';
-  const typingInField = ['INPUT','TEXTAREA','SELECT'].includes(activeTag) || document.activeElement?.isContentEditable;
-
-  if(modifierPressed && e.key.toLowerCase() === 'k'){
-    e.preventDefault();
-    document.getElementById('globalSearchInput').focus();
-    return;
-  }
-
-  if(e.key === 'Escape'){
-    document.getElementById('globalSearchInput').blur();
-    document.getElementById('globalSearchResults').classList.remove('show');
-    if(document.getElementById('reviewRatingOverlay').classList.contains('show')){
-      e.preventDefault();closeReviewRating();return;
-    }
-    if(document.getElementById('sessionModalOverlay').classList.contains('show')){
-      e.preventDefault();
-      document.getElementById('sessionModalSkipBtn').click();
-      return;
-    }
-    if(document.getElementById('modalOverlay').classList.contains('show')){
-      e.preventDefault();
-      document.getElementById('modalCancelBtn').click();
-      return;
-    }
-    return;
-  }
-
-  if(!typingInField && /^[1-7]$/.test(e.key)){
-    const tabs = ['dashboard','hoje','disciplinas','calendario','agenda','questoes','metas'];
-    const idx = parseInt(e.key, 10) - 1;
-    if(tabs[idx]){
-      document.querySelector(`.tab-btn[data-tab="${tabs[idx]}"]`).click();
-    }
-  }
-});
+navigationController.registerShortcuts();
 
 window.addEventListener('beforeunload', () => {if(!TEST_MODE&&!suppressBeforeUnloadSave)writeLocalState(JSON.stringify(state))});
 
