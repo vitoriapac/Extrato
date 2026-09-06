@@ -46,6 +46,8 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/application/planning/distribute-study-plan.js`: distribuição confirmável do plano semanal, materialização diária e desfazer protegido por execução.
 - `src/application/sessions/session-service.js`: ciclo de vida das sessões e sincronização de questões, planejamento, histórico e recomendações.
 - `src/application/records/record-service.js`: operações normalizadas para calendário, questões, simulados e metas.
+- `src/application/subjects/subject-service.js`: ciclo de vida de disciplinas e tópicos, incluindo arquivamento auditável.
+- `src/repositories/subjects-repository.js`: acesso à coleção e às entidades aninhadas de tópicos.
 - `src/application/recommendations/outcome-service.js`: linha de base, resultado e confiança das recomendações sem ajuste automático de pesos.
 - `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.
 - `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.

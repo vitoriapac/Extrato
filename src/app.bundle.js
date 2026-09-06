@@ -1312,6 +1312,50 @@
     }, remove: (id) => repository.remove(id) });
   }
 
+  // src/application/subjects/subject-service.js
+  var DEFAULT_SUBJECT_NAMES = Object.freeze(["Português", "Matemática", "Matemática Financeira", "Conhecimentos Bancários", "Atualidades do Mercado Financeiro", "Informática", "Vendas e Negociação"]);
+  var cleanName = (value2) => String(value2 || "").trim() || "Disciplina sem nome";
+  function createSubjectService({ repository, clock, idGenerator, onEvent = () => {
+  } } = {}) {
+    if (!repository || !clock || typeof idGenerator !== "function") throw new TypeError("Serviço de disciplinas requer dependências.");
+    const newSubject = (name) => ({ id: idGenerator("subject"), name: cleanName(name), collapsed: false, archived: false, archivedAt: null, createdAt: clock.nowISO(), topics: [] });
+    const newTopic = (input) => ({ id: idGenerator("topic"), name: "", link: "", status: "Não iniciado", archived: false, archivedAt: null, notes: "", tags: [], difficulty: "Médio", createdAt: clock.nowISO(), firstCompletedAt: null, lastCompletedAt: null, completionCount: 0, lastReviewedAt: null, reviewCount: 0, examImportance: null, estimatedStudyMinutes: null, prerequisites: [], ...input });
+    return Object.freeze({
+      create: (name) => repository.add(newSubject(name)),
+      rename: (id, name) => repository.update(id, { name: cleanName(name) }),
+      toggle: (id) => {
+        const item = repository.findById(id);
+        return item ? repository.update(id, { collapsed: !item.collapsed }) : null;
+      },
+      addDefaults: (names = DEFAULT_SUBJECT_NAMES) => names.filter((name) => !repository.all().some((item) => item.name === name)).map((name) => repository.add(newSubject(name))),
+      archive: (id) => {
+        const item = repository.update(id, { archived: true, archivedAt: clock.nowISO() });
+        if (item) onEvent("subject_archived", id, null, { name: item.name });
+        return item;
+      },
+      restore: (id) => {
+        const item = repository.update(id, { archived: false, archivedAt: null });
+        if (item) onEvent("subject_restored", id, null, { name: item.name });
+        return item;
+      },
+      remove: (id) => repository.remove(id),
+      addTopic: (subjectId, input = {}) => repository.addTopic(subjectId, newTopic(input)),
+      updateTopic: (subjectId, topicId, changes) => repository.updateTopic(subjectId, topicId, changes),
+      archiveTopic: (subjectId, topicId) => {
+        const item = repository.updateTopic(subjectId, topicId, { archived: true, archivedAt: clock.nowISO() });
+        if (item) onEvent("topic_archived", subjectId, topicId, { name: item.name });
+        return item;
+      },
+      restoreTopic: (subjectId, topicId) => {
+        const item = repository.updateTopic(subjectId, topicId, { archived: false, archivedAt: null });
+        if (item) onEvent("topic_restored", subjectId, topicId, { name: item.name });
+        return item;
+      },
+      removeTopic: (subjectId, topicId) => repository.removeTopic(subjectId, topicId),
+      findTopic: repository.findTopic
+    });
+  }
+
   // src/application/alert-lifecycle.js
   var severityOrder = { high: 3, medium: 2, low: 1, ok: 0 };
   function reconcileAlerts(alerts = [], states = [], today, addDays2) {
@@ -1647,6 +1691,55 @@
     });
   }
 
+  // src/repositories/subjects-repository.js
+  function createSubjectsRepository({ getState } = {}) {
+    if (typeof getState !== "function") throw new TypeError("Repositório de disciplinas requer acesso ao estado.");
+    const subjects = () => Array.isArray(getState()?.subjects) ? getState().subjects : [];
+    const findTopic = (topicId) => {
+      for (const subject of subjects()) {
+        const topic = (subject.topics || []).find((item) => item.id === topicId);
+        if (topic) return { subject, topic };
+      }
+      return null;
+    };
+    return Object.freeze({ all: () => subjects(), findById: (id) => subjects().find((item) => item.id === id) || null, findTopic, add: (subject) => {
+      subjects().push(subject);
+      return subject;
+    }, insertAfter: (afterId, subject) => {
+      const index = subjects().findIndex((item) => item.id === afterId);
+      subjects().splice(index < 0 ? subjects().length : index + 1, 0, subject);
+      return subject;
+    }, update: (id, changes) => {
+      const subject = subjects().find((item) => item.id === id);
+      if (!subject) return null;
+      Object.assign(subject, changes);
+      return subject;
+    }, remove: (id) => {
+      const list = subjects(), index = list.findIndex((item) => item.id === id);
+      return index < 0 ? null : list.splice(index, 1)[0];
+    }, addTopic: (subjectId, topic) => {
+      const subject = subjects().find((item) => item.id === subjectId);
+      if (!subject) return null;
+      (subject.topics || (subject.topics = [])).push(topic);
+      return topic;
+    }, updateTopic: (subjectId, topicId, changes) => {
+      const found = findTopic(topicId);
+      if (!found || found.subject.id !== subjectId) return null;
+      Object.assign(found.topic, changes);
+      return found.topic;
+    }, removeTopic: (subjectId, topicId) => {
+      const subject = subjects().find((item) => item.id === subjectId);
+      if (!subject) return null;
+      const index = (subject.topics || []).findIndex((item) => item.id === topicId);
+      return index < 0 ? null : subject.topics.splice(index, 1)[0];
+    }, swap: (firstId, secondId) => {
+      const list = subjects(), first = list.findIndex((item) => item.id === firstId), second = list.findIndex((item) => item.id === secondId);
+      if (first < 0 || second < 0) return false;
+      [list[first], list[second]] = [list[second], list[first]];
+      return true;
+    } });
+  }
+
   // src/repositories/collection-repository.js
   function createCollectionRepository({ getState, field } = {}) {
     if (typeof getState !== "function" || !field) throw new TypeError("Repositório requer estado e coleção.");
@@ -1674,7 +1767,8 @@
     });
   }
   function createAppRepositories(getState) {
-    const repositories = Object.fromEntries(["subjects", "calendar", "questoes", "simulados", "dailyPlans", "studyPlans", "recommendationFeedback", "topicHistory", "metasPorDisciplina"].map((field) => [field, createCollectionRepository({ getState, field })]));
+    const repositories = Object.fromEntries(["calendar", "questoes", "simulados", "dailyPlans", "studyPlans", "recommendationFeedback", "topicHistory", "metasPorDisciplina"].map((field) => [field, createCollectionRepository({ getState, field })]));
+    repositories.subjects = createSubjectsRepository({ getState });
     repositories.studySessions = createSessionsRepository({ getState });
     repositories.reviewAgenda = createReviewsRepository({ getState });
     repositories.planning = createPlanningRepository({ getState });
@@ -2314,6 +2408,7 @@
     return item;
   } });
   var goalService = createRecordService({ repository: appContext.repositories.metasPorDisciplina, clock: appClock, idGenerator: uid, prefix: "goal" });
+  var subjectService = createSubjectService({ repository: appContext.repositories.subjects, clock: appClock, idGenerator: uid, onEvent: addHistoryEvent });
   var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
   var STATE_CHANNEL = !IS_DEMO_MODE && typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
@@ -3992,18 +4087,19 @@
     renderSubjects();
   }
   function updateTopicTags(subjectId, topicId, value2) {
-    const s = state.subjects.find((x) => x.id === subjectId);
-    const t = s.topics.find((x) => x.id === topicId);
-    t.tags = value2.split(",").map((tag) => tag.trim()).filter(Boolean);
+    subjectService.updateTopic(subjectId, topicId, { tags: value2.split(",").map((tag) => tag.trim()).filter(Boolean) });
     persistAndRender();
   }
   function updateTopicStrategy(subjectId, topicId, field, value2) {
     studyPlanPreview = null;
     const found = getTopicById(topicId);
     if (!found || found.subject.id !== subjectId) return;
-    if (field === "examImportance") found.topic.examImportance = value2 === "" ? null : Number(value2) / 100;
-    if (field === "estimatedStudyMinutes") found.topic.estimatedStudyMinutes = value2 === "" ? null : Number(value2);
+    const changes = {};
+    if (field === "examImportance") changes.examImportance = value2 === "" ? null : Number(value2) / 100;
+    if (field === "estimatedStudyMinutes") changes.estimatedStudyMinutes = value2 === "" ? null : Number(value2);
+    Object.assign(found.topic, changes);
     normalizeTopicStrategy(found.topic);
+    subjectService.updateTopic(subjectId, topicId, found.topic);
     persistAndRender();
   }
   function renderTopicAnalyticsState(subject, topic) {
@@ -4067,15 +4163,14 @@
     showToast(`"${copy.name}" criada com os mesmos tópicos (progresso zerado).`);
   }
   function toggleSubject(id) {
-    const s = state.subjects.find((x) => x.id === id);
-    s.collapsed = !s.collapsed;
+    subjectService.toggle(id);
     renderSubjects();
   }
   function renameSubject(id, name) {
-    const s = state.subjects.find((x) => x.id === id);
     const clean = name.trim() || "Disciplina sem nome";
-    if (s.name !== clean) {
-      s.name = clean;
+    const s = appContext.repositories.subjects.findById(id);
+    if (s?.name !== clean) {
+      subjectService.rename(id, clean);
       persistAndRender();
     } else {
       renderAll();
@@ -4087,29 +4182,13 @@
       if (state.subjects.some((subject) => subject.name.trim().toLocaleLowerCase("pt-BR") === name.toLocaleLowerCase("pt-BR"))) return "Já existe uma disciplina com esse nome.";
       return "";
     } }, (name) => {
-      state.subjects.push({ id: uid("subject"), name, collapsed: false, archived: false, archivedAt: null, createdAt: nowISO2(), topics: [] });
+      subjectService.create(name);
       persistAndRender();
       showToast(`Disciplina "${name}" criada.`);
     });
   }
-  var DISCIPLINAS_PADRAO_BB = [
-    "Português",
-    "Matemática",
-    "Matemática Financeira",
-    "Conhecimentos Bancários",
-    "Atualidades do Mercado Financeiro",
-    "Informática",
-    "Vendas e Negociação"
-  ];
   function carregarDisciplinasPadrao() {
-    const existentes = new Set(state.subjects.map((s) => s.name));
-    let adicionadas = 0;
-    DISCIPLINAS_PADRAO_BB.forEach((nome) => {
-      if (!existentes.has(nome)) {
-        state.subjects.push({ id: uid("subject"), name: nome, collapsed: false, archived: false, archivedAt: null, createdAt: nowISO2(), topics: [] });
-        adicionadas++;
-      }
-    });
+    const adicionadas = subjectService.addDefaults().length;
     persistAndRender();
     if (adicionadas > 0) {
       showToast(`${pluralize(adicionadas, "disciplina")} do edital ${adicionadas === 1 ? "adicionada" : "adicionadas"}.`);
@@ -4121,18 +4200,14 @@
   function archiveSubject(id) {
     const subject = getSubjectById(id);
     if (!subject) return showToast("Disciplina não encontrada.");
-    subject.archived = true;
-    subject.archivedAt = nowISO2();
-    addHistoryEvent("subject_archived", id, null, { name: subject.name });
+    subjectService.archive(id);
     persistAndRender();
     showToast(`"${subject.name}" foi arquivada.`);
   }
   function restoreSubject(id) {
     const subject = getSubjectById(id);
     if (!subject) return;
-    subject.archived = false;
-    subject.archivedAt = null;
-    addHistoryEvent("subject_restored", id, null, { name: subject.name });
+    subjectService.restore(id);
     persistAndRender();
     showToast(`"${subject.name}" foi restaurada.`);
   }
@@ -4160,31 +4235,26 @@
     const total = dependencyTotal(getSubjectDependencies(id));
     if (total > 0) return showToast(`A disciplina possui ${pluralize(total, "registro")} ${total === 1 ? "vinculado" : "vinculados"} e não pode ser excluída.`);
     showConfirm(`Excluir definitivamente "${subject.name}"? Esta ação não pode ser desfeita.`, () => {
-      state.subjects = state.subjects.filter((s) => s.id !== id);
+      subjectService.remove(id);
       persistAndRender();
       showToast("Disciplina excluída definitivamente.");
     });
   }
   function addTopic(subjectId) {
-    const s = state.subjects.find((x) => x.id === subjectId);
-    s.topics.push({ id: uid("topic"), name: "", link: "", status: "Não iniciado", archived: false, archivedAt: null, notes: "", tags: [], difficulty: "Médio", createdAt: nowISO2(), firstCompletedAt: null, lastCompletedAt: null, completionCount: 0, lastReviewedAt: null, reviewCount: 0, examImportance: null, estimatedStudyMinutes: null, prerequisites: [] });
+    subjectService.addTopic(subjectId);
     persistAndRender();
   }
   function archiveTopic(subjectId, topicId) {
     const found = getTopicById(topicId);
     if (!found || found.subject.id !== subjectId) return;
-    found.topic.archived = true;
-    found.topic.archivedAt = nowISO2();
-    addHistoryEvent("topic_archived", subjectId, topicId, { name: found.topic.name });
+    subjectService.archiveTopic(subjectId, topicId);
     persistAndRender();
     showToast("Tópico arquivado.");
   }
   function restoreTopic(subjectId, topicId) {
     const found = getTopicById(topicId);
     if (!found || found.subject.id !== subjectId) return;
-    found.topic.archived = false;
-    found.topic.archivedAt = null;
-    addHistoryEvent("topic_restored", subjectId, topicId, { name: found.topic.name });
+    subjectService.restoreTopic(subjectId, topicId);
     persistAndRender();
     showToast("Tópico restaurado.");
   }
@@ -4205,15 +4275,13 @@
     const total = dependencyTotal(getTopicDependencies(topicId));
     if (total > 0) return showToast(`O tópico possui ${pluralize(total, "registro")} ${total === 1 ? "vinculado" : "vinculados"} e não pode ser excluído.`);
     showConfirm(`Excluir definitivamente "${found.topic.name || "este tópico"}"?`, () => {
-      found.subject.topics = found.subject.topics.filter((topic) => topic.id !== topicId);
+      subjectService.removeTopic(subjectId, topicId);
       persistAndRender();
       showToast("Tópico excluído definitivamente.");
     });
   }
   function updateTopic(subjectId, topicId, field, value2) {
-    const s = state.subjects.find((x) => x.id === subjectId);
-    const t = s.topics.find((x) => x.id === topicId);
-    t[field] = value2;
+    subjectService.updateTopic(subjectId, topicId, { [field]: value2 });
     persistAndRender();
   }
   function addHistoryEvent(type, subjectId, topicId = null, metadata = {}) {

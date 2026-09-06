@@ -40,6 +40,7 @@ import {createDailyPlanService} from './application/planning/daily-plan-service.
 import {createReplanService} from './application/planning/replan-service.js';
 import {createSessionService} from './application/sessions/session-service.js';
 import {createRecordService} from './application/records/record-service.js';
+import {createSubjectService} from './application/subjects/subject-service.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
@@ -476,6 +477,7 @@ const dailyPlanService=createDailyPlanService({repository:planningRepository,bui
 const replanService=createReplanService({repository:planningRepository,buildProposal:buildReplanProposal,applyProposal:applyReplan,undoProposal:undoReplan,clock:appClock,idGenerator:uid});
 const sessionService=createSessionService({repository:appContext.repositories.studySessions,questionsRepository:appContext.repositories.questoes,historyRepository:appContext.repositories.topicHistory,planningRepository,recommendationsRepository:appContext.repositories.recommendationFeedback,clock:appClock,idGenerator:uid,normalizeQuestion:normalizeErrorBreakdown,completeRecommendation:completeRecommendationFeedback,onCompleted:measureRecommendationResults});
 const calendarService=createRecordService({repository:appContext.repositories.calendar,clock:appClock,idGenerator:uid,prefix:'calendar'}),questionService=createRecordService({repository:appContext.repositories.questoes,clock:appClock,idGenerator:uid,prefix:'question',normalize:item=>{item.resolved=Math.max(0,Math.floor(Number(item.resolved)||0));item.correct=Math.min(item.resolved,Math.max(0,Math.floor(Number(item.correct)||0)));normalizeErrorBreakdown(item);return item}}),simulationService=createRecordService({repository:appContext.repositories.simulados,clock:appClock,idGenerator:uid,prefix:'simulado',normalize:item=>{item.total=Math.max(0,Math.floor(Number(item.total)||0));item.correct=Math.min(item.total,Math.max(0,Math.floor(Number(item.correct)||0)));return item}}),goalService=createRecordService({repository:appContext.repositories.metasPorDisciplina,clock:appClock,idGenerator:uid,prefix:'goal'});
+const subjectService=createSubjectService({repository:appContext.repositories.subjects,clock:appClock,idGenerator:uid,onEvent:addHistoryEvent});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
 const STATE_CHANNEL=!IS_DEMO_MODE&&typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
@@ -2005,17 +2007,13 @@ function showAllSubjectTopics(subjectId){subjectTopicLimits.set(subjectId,Number
 function resetSubjectTopicLimit(subjectId){subjectTopicLimits.set(subjectId,10);renderSubjects()}
 function setSubjectTopicFilter(subjectId,field,value){const current=subjectTopicFilters.get(subjectId)||{status:'',difficulty:''};if(field==='status'||field==='difficulty')current[field]=value;subjectTopicFilters.set(subjectId,current);subjectTopicLimits.set(subjectId,10);renderSubjects()}
 function updateTopicTags(subjectId, topicId, value){
-  const s = state.subjects.find(x=>x.id===subjectId);
-  const t = s.topics.find(x=>x.id===topicId);
-  t.tags = value.split(',').map(tag=>tag.trim()).filter(Boolean);
+  subjectService.updateTopic(subjectId,topicId,{tags:value.split(',').map(tag=>tag.trim()).filter(Boolean)});
   persistAndRender();
 }
 function updateTopicStrategy(subjectId,topicId,field,value){
   studyPlanPreview=null;
   const found=getTopicById(topicId);if(!found||found.subject.id!==subjectId)return;
-  if(field==='examImportance')found.topic.examImportance=value===''?null:Number(value)/100;
-  if(field==='estimatedStudyMinutes')found.topic.estimatedStudyMinutes=value===''?null:Number(value);
-  normalizeTopicStrategy(found.topic);persistAndRender();
+  const changes={};if(field==='examImportance')changes.examImportance=value===''?null:Number(value)/100;if(field==='estimatedStudyMinutes')changes.estimatedStudyMinutes=value===''?null:Number(value);Object.assign(found.topic,changes);normalizeTopicStrategy(found.topic);subjectService.updateTopic(subjectId,topicId,found.topic);persistAndRender();
 }
 function renderTopicAnalyticsState(subject,topic){
   const coverage=topic.status==='Concluído'?100:topic.status==='Em andamento'||topic.status==='Revisão'?50:0;
@@ -2065,14 +2063,12 @@ function duplicateSubject(id){
 }
 
 function toggleSubject(id){
-  const s = state.subjects.find(x=>x.id===id);
-  s.collapsed = !s.collapsed;
+  subjectService.toggle(id);
   renderSubjects();
 }
 function renameSubject(id, name){
-  const s = state.subjects.find(x=>x.id===id);
   const clean = name.trim() || 'Disciplina sem nome';
-  if(s.name !== clean){ s.name = clean; persistAndRender(); } else { renderAll(); }
+  const s=appContext.repositories.subjects.findById(id);if(s?.name !== clean){subjectService.rename(id,clean);persistAndRender();}else{renderAll();}
 }
 function addSubject(){
   showPrompt('Criar uma nova disciplina',{label:'Nome da disciplina',placeholder:'Ex.: Conhecimentos Bancários',confirmLabel:'Criar',validate:name=>{
@@ -2080,29 +2076,13 @@ function addSubject(){
     if(state.subjects.some(subject=>subject.name.trim().toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'))) return 'Já existe uma disciplina com esse nome.';
     return '';
   }},name=>{
-    state.subjects.push({ id: uid('subject'), name, collapsed:false, archived:false, archivedAt:null, createdAt:nowISO(), topics: [] });
+    subjectService.create(name);
     persistAndRender();
     showToast(`Disciplina "${name}" criada.`);
   });
 }
-const DISCIPLINAS_PADRAO_BB = [
-  'Português',
-  'Matemática',
-  'Matemática Financeira',
-  'Conhecimentos Bancários',
-  'Atualidades do Mercado Financeiro',
-  'Informática',
-  'Vendas e Negociação'
-];
 function carregarDisciplinasPadrao(){
-  const existentes = new Set(state.subjects.map(s => s.name));
-  let adicionadas = 0;
-  DISCIPLINAS_PADRAO_BB.forEach(nome => {
-    if(!existentes.has(nome)){
-      state.subjects.push({ id: uid('subject'), name: nome, collapsed:false, archived:false, archivedAt:null, createdAt:nowISO(), topics: [] });
-      adicionadas++;
-    }
-  });
+  const adicionadas=subjectService.addDefaults().length;
   persistAndRender();
   if(adicionadas > 0){
     showToast(`${pluralize(adicionadas,'disciplina')} do edital ${adicionadas===1?'adicionada':'adicionadas'}.`);
@@ -2115,18 +2095,14 @@ document.getElementById('loadDefaultSubjectsBtn').addEventListener('click', carr
 function archiveSubject(id){
   const subject=getSubjectById(id);
   if(!subject) return showToast('Disciplina não encontrada.');
-  subject.archived=true;
-  subject.archivedAt=nowISO();
-  addHistoryEvent('subject_archived',id,null,{name:subject.name});
+  subjectService.archive(id);
   persistAndRender();
   showToast(`"${subject.name}" foi arquivada.`);
 }
 function restoreSubject(id){
   const subject=getSubjectById(id);
   if(!subject) return;
-  subject.archived=false;
-  subject.archivedAt=null;
-  addHistoryEvent('subject_restored',id,null,{name:subject.name});
+  subjectService.restore(id);
   persistAndRender();
   showToast(`"${subject.name}" foi restaurada.`);
 }
@@ -2152,31 +2128,26 @@ function requestPermanentSubjectDelete(id){
   const total=dependencyTotal(getSubjectDependencies(id));
   if(total>0) return showToast(`A disciplina possui ${pluralize(total,'registro')} ${total===1?'vinculado':'vinculados'} e não pode ser excluída.`);
   showConfirm(`Excluir definitivamente "${subject.name}"? Esta ação não pode ser desfeita.`,()=>{
-    state.subjects=state.subjects.filter(s=>s.id!==id);
+    subjectService.remove(id);
     persistAndRender();
     showToast('Disciplina excluída definitivamente.');
   });
 }
 function addTopic(subjectId){
-  const s = state.subjects.find(x=>x.id===subjectId);
-  s.topics.push({ id: uid('topic'), name:'', link:'', status:'Não iniciado', archived:false, archivedAt:null, notes:'', tags:[], difficulty:'Médio', createdAt:nowISO(), firstCompletedAt:null,lastCompletedAt:null,completionCount:0,lastReviewedAt:null,reviewCount:0,examImportance:null,estimatedStudyMinutes:null,prerequisites:[] });
+  subjectService.addTopic(subjectId);
   persistAndRender();
 }
 function archiveTopic(subjectId,topicId){
   const found=getTopicById(topicId);
   if(!found||found.subject.id!==subjectId) return;
-  found.topic.archived=true;
-  found.topic.archivedAt=nowISO();
-  addHistoryEvent('topic_archived',subjectId,topicId,{name:found.topic.name});
+  subjectService.archiveTopic(subjectId,topicId);
   persistAndRender();
   showToast('Tópico arquivado.');
 }
 function restoreTopic(subjectId,topicId){
   const found=getTopicById(topicId);
   if(!found||found.subject.id!==subjectId) return;
-  found.topic.archived=false;
-  found.topic.archivedAt=null;
-  addHistoryEvent('topic_restored',subjectId,topicId,{name:found.topic.name});
+  subjectService.restoreTopic(subjectId,topicId);
   persistAndRender();
   showToast('Tópico restaurado.');
 }
@@ -2197,15 +2168,13 @@ function requestPermanentTopicDelete(subjectId,topicId){
   const total=dependencyTotal(getTopicDependencies(topicId));
   if(total>0) return showToast(`O tópico possui ${pluralize(total,'registro')} ${total===1?'vinculado':'vinculados'} e não pode ser excluído.`);
   showConfirm(`Excluir definitivamente "${found.topic.name||'este tópico'}"?`,()=>{
-    found.subject.topics=found.subject.topics.filter(topic=>topic.id!==topicId);
+    subjectService.removeTopic(subjectId,topicId);
     persistAndRender();
     showToast('Tópico excluído definitivamente.');
   });
 }
 function updateTopic(subjectId, topicId, field, value){
-  const s = state.subjects.find(x=>x.id===subjectId);
-  const t = s.topics.find(x=>x.id===topicId);
-  t[field] = value;
+  subjectService.updateTopic(subjectId,topicId,{[field]:value});
   persistAndRender();
 }
 function addHistoryEvent(type,subjectId,topicId=null,metadata={}){
