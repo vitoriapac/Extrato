@@ -1,7 +1,8 @@
-export function createSessionService({repository,questionsRepository,historyRepository,planningRepository,recommendationsRepository,clock,idGenerator,normalizeQuestion=()=>{},completeRecommendation=()=>{},onCompleted=()=>{}}={}){
+import {normalizeStudySession} from '../../domain/sessions/study-session.js';
+export function createSessionService({repository,questionsRepository,historyRepository,planningRepository,recommendationsRepository,clock,idGenerator,normalizeSession=normalizeStudySession,normalizeQuestion=()=>{},completeRecommendation=()=>{},onCompleted=()=>{}}={}){
   if(!repository||typeof repository.add!=='function')throw new TypeError('Serviço de sessões requer repositório.');
   if(!questionsRepository||!planningRepository||!clock||typeof idGenerator!=='function')throw new TypeError('Serviço de sessões requer dependências de aplicação.');
-  const normalize=input=>{const resolved=Math.max(0,Math.floor(Number(input.questionsResolved)||0));return {...input,durationSeconds:Math.max(0,Number(input.durationSeconds)||0),questionsResolved:resolved,correctAnswers:Math.max(0,Math.min(Math.floor(Number(input.correctAnswers)||0),resolved))}};
+  const normalize=input=>normalizeSession(input,{today:()=>clock.today()});
   const findPlanItem=id=>{if(!id)return null;for(const plan of planningRepository.getDailyPlans()){const item=(plan.items||[]).find(candidate=>candidate.id===id);if(item)return{plan,item}}return null};
   const syncPlan=planItemId=>{
     const found=findPlanItem(planItemId);if(!found)return null;

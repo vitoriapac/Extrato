@@ -45,6 +45,7 @@ import {createStudyPlanService} from './application/planning/study-plan-service.
 import {createDailyPlanService} from './application/planning/daily-plan-service.js';
 import {createReplanService} from './application/planning/replan-service.js';
 import {createSessionService} from './application/sessions/session-service.js';
+import {normalizeStudySession} from './domain/sessions/study-session.js';
 import {createRecordService} from './application/records/record-service.js';
 import {createSubjectService} from './application/subjects/subject-service.js';
 import {createNavigationController} from './ui/controllers/navigation-controller.js';
@@ -342,8 +343,13 @@ function migrateV15toV16(data){
   data.schemaVersion=16;return data;
 }
 
+function migrateV16toV17(data){
+  data.studySessions=(data.studySessions||[]).map(session=>normalizeStudySession(session));
+  data.schemaVersion=17;return data;
+}
+
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17}});
 }
 
 function ensureStateDefaults(){
@@ -446,20 +452,10 @@ function ensureStateDefaults(){
   state.simulados.forEach(sim => {
     if(!Array.isArray(sim.breakdown)) sim.breakdown = [];
   });
-  state.studySessions.forEach(session=>{
-    if(!session.id) session.id=uid('session');
-    if(typeof session.date!=='string') session.date=todayISO();
-    session.durationSeconds=Math.max(0,Number(session.durationSeconds)||0);
-    session.subjectId=session.subjectId||null;
-    session.topicId=session.topicId||null;
-    session.planItemId=session.planItemId||null;
-    session.source=session.source||'manual';
-    session.recommendationId=session.recommendationId||null;
-    session.prioritySnapshot=session.prioritySnapshot==null||session.prioritySnapshot===''?null:Number.isFinite(Number(session.prioritySnapshot))?Number(session.prioritySnapshot):null;
-    if(!['study','review','questions','simulation'].includes(session.type)) session.type='study';
-    session.questionsResolved=Math.max(0,Number(session.questionsResolved)||0);
-    session.correctAnswers=Math.max(0,Math.min(Number(session.correctAnswers)||0,session.questionsResolved));
-    if(typeof session.notes!=='string') session.notes='';
+  state.studySessions=state.studySessions.map(session=>{
+    const normalized=normalizeStudySession(session,{today:todayISO});
+    if(!normalized.id)normalized.id=uid('session');
+    return normalized;
   });
   state.reviewAgenda.forEach(review=>{
     review.topicId=review.topicId||review.topicRef||null;

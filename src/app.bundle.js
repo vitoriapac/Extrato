@@ -5,7 +5,7 @@
   var BACKUP_KEY = STORAGE_KEY + "-automatic-backup";
   var BACKUP_INDEX_KEY = BACKUP_KEY + "-index";
   var AUTOMATIC_BACKUP_SLOTS = 5;
-  var CURRENT_SCHEMA_VERSION = 16;
+  var CURRENT_SCHEMA_VERSION = 17;
   var MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
   var DB_NAME = "extrato-estudos-db";
   var DB_VERSION = 1;
@@ -341,18 +341,18 @@
       { dias: 30, tipo: "Revisão 30 dias" }
     ]
   };
-  function calculateAdaptiveInterval({ baseDays, accuracy = null, volume = 0, target = 70, trendKey = null, dominantErrorKey = null, reviews = 0 }) {
+  function calculateAdaptiveInterval({ baseDays, accuracy: accuracy2 = null, volume = 0, target = 70, trendKey = null, dominantErrorKey = null, reviews = 0 }) {
     const safeBase = Math.max(1, Number(baseDays) || 7);
     let factor = 1;
     const reasons = [];
-    if (volume >= 10 && accuracy !== null) {
-      if (accuracy < 50) {
+    if (volume >= 10 && accuracy2 !== null) {
+      if (accuracy2 < 50) {
         factor *= 0.65;
         reasons.push("acerto abaixo de 50%");
-      } else if (accuracy < target) {
+      } else if (accuracy2 < target) {
         factor *= 0.8;
         reasons.push("acerto abaixo da meta");
-      } else if (accuracy >= target + 15) {
+      } else if (accuracy2 >= target + 15) {
         factor *= 1.2;
         reasons.push("bom desempenho");
       }
@@ -372,7 +372,7 @@
       factor *= 0.85;
       reasons.push("lacuna de teoria");
     }
-    if (reviews >= 3 && volume >= 10 && accuracy >= target) {
+    if (reviews >= 3 && volume >= 10 && accuracy2 >= target) {
       factor *= 1.1;
       reasons.push("histórico consistente");
     }
@@ -748,17 +748,24 @@
   }
 
   // src/domain/analytics/trends.js
-  function calculateWindowTrend(weeklyData, minWindow = 30, windowWeeks = 4) {
-    const pool = (data) => data.reduce((acc, week) => ({ resolved: acc.resolved + (Number(week.resolved) || 0), correct: acc.correct + (Number(week.correct) || 0) }), { resolved: 0, correct: 0 });
-    const accuracy = (data) => data.resolved ? Math.round(data.correct / data.resolved * 1e3) / 10 : null;
-    const recent = pool(weeklyData.slice(-windowWeeks)), previous = pool(weeklyData.slice(-(windowWeeks * 2), -windowWeeks));
-    const recentAccuracy = accuracy(recent), previousAccuracy = accuracy(previous);
-    const evidence = { sampleSize: recent.resolved + previous.resolved, windowWeeks, confidence: Math.min(1, Math.min(recent.resolved, previous.resolved) / (minWindow * 2)) };
-    if (recent.resolved < minWindow || previous.resolved < minWindow) return { key: "insufficient", icon: "—", label: "Amostra insuficiente", delta: null, recent, previous, recentAccuracy, previousAccuracy, evidence };
-    const delta = Math.round((recentAccuracy - previousAccuracy) * 10) / 10;
-    if (delta >= 3) return { key: "up", icon: "↗", label: "Em evolução", delta, recent, previous, recentAccuracy, previousAccuracy, evidence };
-    if (delta <= -3) return { key: "down", icon: "↘", label: "Em queda", delta, recent, previous, recentAccuracy, previousAccuracy, evidence };
-    return { key: "stable", icon: "→", label: "Estável", delta, recent, previous, recentAccuracy, previousAccuracy, evidence };
+  var TREND_ALGORITHM_VERSION = 2;
+  var clamp = (value2) => Math.max(0, Math.min(100, value2));
+  var round = (value2) => Math.round(value2 * 10) / 10;
+  var pool = (data) => data.reduce((acc, week) => ({ resolved: acc.resolved + (Number(week.resolved) || 0), correct: acc.correct + (Number(week.correct) || 0) }), { resolved: 0, correct: 0 });
+  var accuracy = (data) => data.resolved ? round(data.correct / data.resolved * 100) : null;
+  function classification(delta) {
+    if (delta >= 12) return { state: "strong_up", key: "up", direction: "up", icon: "↗", label: "Forte evolução" };
+    if (delta >= 3) return { state: "up", key: "up", direction: "up", icon: "↗", label: "Em evolução" };
+    if (delta <= -12) return { state: "strong_down", key: "down", direction: "down", icon: "↘", label: "Forte queda" };
+    if (delta <= -3) return { state: "down", key: "down", direction: "down", icon: "↘", label: "Em queda" };
+    return { state: "stable", key: "stable", direction: "stable", icon: "→", label: "Estável" };
+  }
+  function calculateWindowTrend(weeklyData = [], minWindow = 30, windowWeeks = 4) {
+    const weeks = Array.isArray(weeklyData) ? weeklyData : [], recent = pool(weeks.slice(-windowWeeks)), previous = pool(weeks.slice(-(windowWeeks * 2), -windowWeeks)), recentAccuracy = accuracy(recent), previousAccuracy = accuracy(previous), sampleSize = recent.resolved + previous.resolved, confidence = round(Math.min(1, Math.min(recent.resolved, previous.resolved) / minWindow));
+    const evidence = { sampleSize, windowWeeks, confidence, minimumPerPeriod: minWindow, sources: ["questions"] }, periods = { previous, recent, windowWeeks };
+    if (recent.resolved < minWindow || previous.resolved < minWindow) return { value: null, state: "insufficient", key: "insufficient", direction: "none", icon: "—", label: "Amostra insuficiente", delta: null, recent, previous, recentAccuracy, previousAccuracy, periods, evidence, confidence, factors: { recentAccuracy, previousAccuracy }, reasons: ["Cada período precisa atingir a amostra mínima"], algorithmVersion: TREND_ALGORITHM_VERSION };
+    const delta = round(recentAccuracy - previousAccuracy), kind = classification(delta);
+    return { ...kind, value: round(clamp(50 + delta * 2)), delta, recent, previous, recentAccuracy, previousAccuracy, periods, evidence, confidence, factors: { recentAccuracy, previousAccuracy }, reasons: [kind.label], algorithmVersion: TREND_ALGORITHM_VERSION };
   }
 
   // src/domain/analytics/study-metrics.js
@@ -836,14 +843,14 @@
   }
 
   // src/domain/analytics/multidimensional-radar.js
-  var clamp = (value2) => Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
+  var clamp2 = (value2) => Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
   function calculateSubjectRadar(input = {}) {
     const axes = {
-      coverage: Number.isFinite(input.coverage) ? clamp(input.coverage) : null,
-      mastery: Number.isFinite(input.mastery) ? clamp(input.mastery) : null,
-      retention: Number.isFinite(input.retention) ? clamp(input.retention) : null,
-      frequency: Number.isFinite(input.daysSinceContact) ? clamp(100 - input.daysSinceContact * 5) : null,
-      consistency: Number.isFinite(input.activeDays) ? clamp(input.activeDays / 16 * 100) : null
+      coverage: Number.isFinite(input.coverage) ? clamp2(input.coverage) : null,
+      mastery: Number.isFinite(input.mastery) ? clamp2(input.mastery) : null,
+      retention: Number.isFinite(input.retention) ? clamp2(input.retention) : null,
+      frequency: Number.isFinite(input.daysSinceContact) ? clamp2(100 - input.daysSinceContact * 5) : null,
+      consistency: Number.isFinite(input.activeDays) ? clamp2(input.activeDays / 16 * 100) : null
     };
     const available = Object.values(axes).filter((value2) => value2 !== null);
     const confidence = available.length / 5;
@@ -860,16 +867,16 @@
   }
 
   // src/application/generate-diagnosis.js
-  var clamp2 = (value2) => Math.max(0, Math.min(100, Number(value2) || 0));
+  var clamp3 = (value2) => Math.max(0, Math.min(100, Number(value2) || 0));
   function generateDiagnosis(candidates = []) {
     const valid = candidates.filter((item) => item && !item.archived);
     const bottlenecks = valid.map((item) => {
       const factors = [
-        ["Domínio", item.mastery == null ? null : 100 - clamp2(item.mastery)],
-        ["Retenção", item.retention == null ? null : 100 - clamp2(item.retention)],
-        ["Cobertura", item.coverage == null ? null : 100 - clamp2(item.coverage)],
-        ["Frequência", item.frequency == null ? null : 100 - clamp2(item.frequency)],
-        ["Tendência", item.trendRisk == null ? null : clamp2(item.trendRisk)]
+        ["Domínio", item.mastery == null ? null : 100 - clamp3(item.mastery)],
+        ["Retenção", item.retention == null ? null : 100 - clamp3(item.retention)],
+        ["Cobertura", item.coverage == null ? null : 100 - clamp3(item.coverage)],
+        ["Frequência", item.frequency == null ? null : 100 - clamp3(item.frequency)],
+        ["Tendência", item.trendRisk == null ? null : clamp3(item.trendRisk)]
       ].filter(([, value2]) => value2 != null);
       const strongest = factors.sort((a, b) => b[1] - a[1])[0];
       return strongest ? { ...item, severity: item.risk?.value ?? Math.round(strongest[1]), factor: strongest[0], reason: `${strongest[0]} requer atenção` } : null;
@@ -883,7 +890,7 @@
           missingFactors.push(key);
           return;
         }
-        factors[key] = clamp2(item[key]);
+        factors[key] = clamp3(item[key]);
         weighted += factors[key] * weight;
         availableWeight += weight;
       });
@@ -1069,7 +1076,7 @@
   }
 
   // src/domain/analytics/topic-metrics.js
-  var clamp3 = (value2) => Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
+  var clamp4 = (value2) => Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
   function calculateTopicMastery({ topic = {}, performance = { resolved: 0, accuracy: null }, trend = { key: "insufficient" }, reviews = [], recentSessions = [], periodStart = null, periodEnd = null } = {}) {
     const questionConfidence = Math.min(1, performance.resolved / 50);
     const performanceScore = performance.accuracy === null ? 0 : performance.accuracy * questionConfidence + 40 * (1 - questionConfidence);
@@ -1083,8 +1090,8 @@
     const studyScore = Math.min(100, recentSeconds / 7200 * 100);
     const confidence = Math.min(1, questionConfidence * 0.6 + Math.min(1, reviews.length / 4) * 0.2 + Math.min(1, recentSessions.length / 4) * 0.2);
     const available = performance.resolved > 0 || reviews.length > 0 || recentSeconds > 0;
-    const score = available ? clamp3(performanceScore * 0.4 + trendScore * 0.2 + reviewScore * 0.15 + studyScore * 0.15 + confidence * 10) : 0;
-    const classification = !available ? "Sem dados" : score >= 80 ? "Dominado" : score >= 60 ? "Em consolidação" : score >= 40 ? "Em desenvolvimento" : "Inicial";
+    const score = available ? clamp4(performanceScore * 0.4 + trendScore * 0.2 + reviewScore * 0.15 + studyScore * 0.15 + confidence * 10) : 0;
+    const classification2 = !available ? "Sem dados" : score >= 80 ? "Dominado" : score >= 60 ? "Em consolidação" : score >= 40 ? "Em desenvolvimento" : "Inicial";
     const completeness = [performance.resolved > 0, trend.key !== "insufficient", reviews.length > 0, recentSeconds > 0].filter(Boolean).length / 4;
     return {
       value: available ? score : null,
@@ -1093,29 +1100,29 @@
       available,
       confidence,
       confidenceLabel: confidenceLabel(confidence),
-      classification,
+      classification: classification2,
       performanceScore,
       trendScore,
       reviewScore,
       studyScore,
       trend,
       factors: { performance: performanceScore, trend: trendScore, reviews: reviewScore, study: studyScore },
-      reasons: available ? [classification] : ["sem evidências do tópico"],
+      reasons: available ? [classification2] : ["sem evidências do tópico"],
       algorithmVersion: 1,
       evidence: { ...createMetricEvidence({ sampleSize: performance.resolved, periodStart, periodEnd, confidence, sources: [performance.resolved ? "questions" : null, reviews.length ? "reviews" : null, recentSeconds ? "sessions" : null] }), ...describeScoreEvidence({ completeness, evidenceStrength: confidence }) }
     };
   }
   function calculateTopicRetention({ due = [], resolved = 0, correct = 0, lastReview = null, daysSince = null, onTime = 0, periodStart = null, periodEnd = null } = {}) {
     const reviewRate = due.length ? onTime / due.length * 100 : 50;
-    const accuracy = resolved ? correct / resolved * 100 : 50;
+    const accuracy2 = resolved ? correct / resolved * 100 : 50;
     const recency = daysSince === null ? 50 : Math.max(0, 100 - Math.max(0, daysSince - 1) * 2.7);
     const confidence = Math.min(1, Math.min(1, due.length / 4) * 0.4 + Math.min(1, resolved / 50) * 0.4 + (lastReview ? 1 : 0) * 0.2);
     const available = Boolean(due.length || resolved || lastReview);
     const completeness = [due.length > 0, resolved > 0, Boolean(lastReview)].filter(Boolean).length / 3;
     const evidence = { ...createMetricEvidence({ sampleSize: resolved, periodStart, periodEnd, confidence, sources: [due.length ? "reviews" : null, resolved ? "questions" : null] }), ...describeScoreEvidence({ completeness, evidenceStrength: confidence }) };
     if (!available) return { value: null, state: "empty", score: 0, raw: null, confidence: 0, confidenceLabel: "Baixa", available: false, detail: "Sem revisões ou questões vinculadas", evidence, factors: {}, reasons: ["sem revisões ou questões vinculadas"], algorithmVersion: 1 };
-    const raw = reviewRate * 0.45 + accuracy * 0.35 + recency * 0.2, score = clamp3(50 + (raw - 50) * (0.35 + confidence * 0.65));
-    const detail = (due.length ? onTime + " de " + due.length + " revisões no prazo" : "sem revisões vencidas") + " · " + (resolved ? Math.round(accuracy) + "% em " + resolved + " questões recentes" : "sem questões recentes") + " · " + (daysSince === null ? "sem revisão registrada" : daysSince + "d desde a última revisão");
+    const raw = reviewRate * 0.45 + accuracy2 * 0.35 + recency * 0.2, score = clamp4(50 + (raw - 50) * (0.35 + confidence * 0.65));
+    const detail = (due.length ? onTime + " de " + due.length + " revisões no prazo" : "sem revisões vencidas") + " · " + (resolved ? Math.round(accuracy2) + "% em " + resolved + " questões recentes" : "sem questões recentes") + " · " + (daysSince === null ? "sem revisão registrada" : daysSince + "d desde a última revisão");
     return {
       value: score,
       state: completeness < 0.5 ? "insufficient" : "estimated",
@@ -1126,7 +1133,7 @@
       available: true,
       detail,
       evidence,
-      factors: { reviewRate, accuracy, recency },
+      factors: { reviewRate, accuracy: accuracy2, recency },
       reasons: [detail],
       algorithmVersion: 1
     };
@@ -1135,16 +1142,16 @@
   // src/domain/analytics/review-health.js
   var REVIEW_HEALTH_ALGORITHM_VERSION = 1;
   var REVIEW_HEALTH_WEIGHTS = Object.freeze({ recency: 0.25, retention: 0.3, mastery: 0.25, recentPerformance: 0.15, examResilience: 0.05 });
-  var clamp4 = (value2) => Math.max(0, Math.min(100, Number(value2) || 0));
+  var clamp5 = (value2) => Math.max(0, Math.min(100, Number(value2) || 0));
   function calculateReviewHealth({ daysSinceReview = null, hasPriorStudy = false, retention = null, mastery = null, recentPerformance = null, examImpact = null, evidenceStrength = null } = {}) {
     const knowledge = [retention, mastery, recentPerformance].filter((value2) => value2 != null && Number.isFinite(Number(value2)));
-    const knowledgeFloor = knowledge.length ? Math.min(...knowledge.map(clamp4)) : null;
+    const knowledgeFloor = knowledge.length ? Math.min(...knowledge.map(clamp5)) : null;
     const factors = {
-      recency: daysSinceReview == null ? hasPriorStudy ? 0 : null : clamp4(100 - Math.max(0, Number(daysSinceReview)) * 4),
+      recency: daysSinceReview == null ? hasPriorStudy ? 0 : null : clamp5(100 - Math.max(0, Number(daysSinceReview)) * 4),
       retention,
       mastery,
       recentPerformance,
-      examResilience: examImpact == null || knowledgeFloor == null ? null : clamp4(100 - clamp4(examImpact) * (100 - knowledgeFloor) / 100)
+      examResilience: examImpact == null || knowledgeFloor == null ? null : clamp5(100 - clamp5(examImpact) * (100 - knowledgeFloor) / 100)
     };
     const scored = calculateFactorScore(factors, REVIEW_HEALTH_WEIGHTS);
     const reasons = [];
@@ -1233,7 +1240,7 @@
   var RECOMMENDATION_OUTCOME_VERSION = 1;
   var METRICS = ["mastery", "retention", "reviewHealth", "accuracy", "risk"];
   var numeric = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Math.max(0, Math.min(100, Number(value2)));
-  var round = (value2) => Math.round(value2 * 10) / 10;
+  var round2 = (value2) => Math.round(value2 * 10) / 10;
   function normalizeRecommendationMetrics(value2 = {}) {
     return Object.fromEntries(METRICS.map((key) => [key, numeric(value2?.[key])]));
   }
@@ -1241,7 +1248,7 @@
     const normalizedBefore = normalizeRecommendationMetrics(before), normalizedAfter = normalizeRecommendationMetrics(after);
     const delta = Object.fromEntries(METRICS.map((key) => {
       const start = normalizedBefore[key], end = normalizedAfter[key];
-      return [key, start == null || end == null ? null : round(key === "risk" ? start - end : end - start)];
+      return [key, start == null || end == null ? null : round2(key === "risk" ? start - end : end - start)];
     }));
     const comparable = Object.values(delta).filter((value2) => value2 !== null);
     const volume = Math.max(0, Math.floor(Number(questionVolume) || 0)), elapsed = Math.max(0, Number(daysElapsed) || 0), activities = Math.max(0, Math.floor(Number(otherActivities) || 0));
@@ -1250,7 +1257,7 @@
     if (volume < 20) reasons.push(`Aguardando ${20 - volume} questão(ões) adicional(is)`);
     if (comparable.length < 2) reasons.push("Menos de 2 indicadores comparáveis");
     if (activities > 3) reasons.push("Muitas outras atividades no tópico para atribuir o resultado");
-    const state2 = elapsed < 1 ? "pending" : reasons.length ? "insufficient" : round(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) >= 3 ? "positive" : round(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) <= -3 ? "negative" : "neutral";
+    const state2 = elapsed < 1 ? "pending" : reasons.length ? "insufficient" : round2(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) >= 3 ? "positive" : round2(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) <= -3 ? "negative" : "neutral";
     const confidence = Math.min(1, volume / 50 * 0.55 + Math.min(1, elapsed / 7) * 0.2 + comparable.length / METRICS.length * 0.25);
     const evidence = describeScoreEvidence({ completeness: comparable.length / METRICS.length, evidenceStrength: confidence });
     return {
@@ -1259,12 +1266,12 @@
       before: normalizedBefore,
       after: normalizedAfter,
       delta,
-      averageDelta: comparable.length ? round(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) : null,
+      averageDelta: comparable.length ? round2(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) : null,
       questionVolume: volume,
-      daysElapsed: round(elapsed),
+      daysElapsed: round2(elapsed),
       otherActivities: activities,
       attributionEligible: ["positive", "negative", "neutral"].includes(state2),
-      confidence: round(confidence),
+      confidence: round2(confidence),
       evidence,
       reasons,
       measuredAt,
@@ -1277,8 +1284,8 @@
     const volume = Math.max(0, Number(questionVolume) || 0);
     return volume < 1 ? "Aguardando" : volume < 20 ? "Amostra inicial" : volume < 50 ? "Estimativa" : "Mais confiável";
   }
-  function captureRecommendationBaseline({ mastery = null, accuracy = null, questionVolume = 0, retention = null, retentionScore = null, reviewHealth = null, risk = null, trend = null, daysSinceContact = null, measuredAt } = {}) {
-    const metrics = normalizeRecommendationMetrics({ mastery, accuracy, retention: retention ?? retentionScore, reviewHealth, risk });
+  function captureRecommendationBaseline({ mastery = null, accuracy: accuracy2 = null, questionVolume = 0, retention = null, retentionScore = null, reviewHealth = null, risk = null, trend = null, daysSinceContact = null, measuredAt } = {}) {
+    const metrics = normalizeRecommendationMetrics({ mastery, accuracy: accuracy2, retention: retention ?? retentionScore, reviewHealth, risk });
     return { ...metrics, retentionScore: metrics.retention, accuracy: metrics.accuracy, questionVolume: Math.max(0, Number(questionVolume) || 0), daysSinceContact: Number.isFinite(Number(daysSinceContact)) ? Math.max(0, Number(daysSinceContact)) : null, trend: trend ? structuredClone(trend) : null, measuredAt };
   }
   function captureRecommendationSnapshot(recommendation, { baseline = null, createdAt = null } = {}) {
@@ -1603,17 +1610,34 @@
     });
   }
 
+  // src/domain/sessions/study-session.js
+  var STUDY_SESSION_TYPES = Object.freeze(["study", "review", "questions", "simulation"]);
+  var STUDY_SESSION_SOURCES = Object.freeze(["manual", "plan", "recommendation", "import"]);
+  var nullable = (value2) => value2 == null || value2 === "" ? null : String(value2);
+  var nonNegative = (value2) => Math.max(0, Number(value2) || 0);
+  var nonNegativeInteger = (value2) => Math.floor(nonNegative(value2));
+  var finiteOrNull = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Number(value2);
+  var isLocalDate = (value2) => typeof value2 === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value2);
+  function localDateFromTimestamp(value2) {
+    if (!value2) return null;
+    const parsed = new Date(value2);
+    if (Number.isNaN(parsed.getTime())) return null;
+    const year = parsed.getFullYear(), month = String(parsed.getMonth() + 1).padStart(2, "0"), day = String(parsed.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
+  }
+  function normalizeStudySession(rawSession = {}, options = {}) {
+    const input = rawSession && typeof rawSession === "object" ? rawSession : {}, questionsResolved = nonNegativeInteger(input.questionsResolved), inferredDate = localDateFromTimestamp(input.endedAt || input.startedAt || input.createdAt), fallbackDate = typeof options.today === "function" ? options.today() : options.today, type = STUDY_SESSION_TYPES.includes(input.type) ? input.type : "study", source = STUDY_SESSION_SOURCES.includes(input.source) ? input.source : input.recommendationId ? "recommendation" : input.planItemId ? "plan" : "manual";
+    return { ...input, id: nullable(input.id), date: isLocalDate(input.date) ? input.date : inferredDate || (isLocalDate(fallbackDate) ? fallbackDate : null), createdAt: nullable(input.createdAt), startedAt: nullable(input.startedAt), endedAt: nullable(input.endedAt), durationSeconds: nonNegative(input.durationSeconds), subjectId: nullable(input.subjectId), topicId: nullable(input.topicId), planItemId: nullable(input.planItemId), recommendationId: nullable(input.recommendationId), type, source, questionsResolved, correctAnswers: Math.min(questionsResolved, nonNegativeInteger(input.correctAnswers)), prioritySnapshot: finiteOrNull(input.prioritySnapshot), notes: typeof input.notes === "string" ? input.notes : "" };
+  }
+
   // src/application/sessions/session-service.js
-  function createSessionService({ repository, questionsRepository, historyRepository, planningRepository: planningRepository2, recommendationsRepository, clock, idGenerator, normalizeQuestion = () => {
+  function createSessionService({ repository, questionsRepository, historyRepository, planningRepository: planningRepository2, recommendationsRepository, clock, idGenerator, normalizeSession = normalizeStudySession, normalizeQuestion = () => {
   }, completeRecommendation = () => {
   }, onCompleted = () => {
   } } = {}) {
     if (!repository || typeof repository.add !== "function") throw new TypeError("Serviço de sessões requer repositório.");
     if (!questionsRepository || !planningRepository2 || !clock || typeof idGenerator !== "function") throw new TypeError("Serviço de sessões requer dependências de aplicação.");
-    const normalize = (input) => {
-      const resolved = Math.max(0, Math.floor(Number(input.questionsResolved) || 0));
-      return { ...input, durationSeconds: Math.max(0, Number(input.durationSeconds) || 0), questionsResolved: resolved, correctAnswers: Math.max(0, Math.min(Math.floor(Number(input.correctAnswers) || 0), resolved)) };
-    };
+    const normalize = (input) => normalizeSession(input, { today: () => clock.today() });
     const findPlanItem = (id) => {
       if (!id) return null;
       for (const plan of planningRepository2.getDailyPlans()) {
@@ -2147,20 +2171,20 @@
   }
 
   // src/application/goals/goal-service.js
-  var clamp5 = (value2, min = 0, max = Infinity) => Math.max(min, Math.min(max, Number(value2) || 0));
+  var clamp6 = (value2, min = 0, max = Infinity) => Math.max(min, Math.min(max, Number(value2) || 0));
   function createGoalService({ repository, getDayOfWeek } = {}) {
     if (!repository || typeof repository.getGoals !== "function") throw new TypeError("Serviço de metas requer repositório.");
     return Object.freeze({
-      hoursForDay: (day) => clamp5(repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias, 0, 24),
-      hoursForDate: (date2) => clamp5(repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date2))] ?? repository.getGoals()?.horasDiarias, 0, 24),
+      hoursForDay: (day) => clamp6(repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias, 0, 24),
+      hoursForDate: (date2) => clamp6(repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date2))] ?? repository.getGoals()?.horasDiarias, 0, 24),
       updateDailyHours: (day, value2, { isToday = false } = {}) => {
-        const hours = clamp5(value2, 0, 24);
+        const hours = clamp6(value2, 0, 24);
         repository.updateDailyHours(day, hours);
         if (isToday) repository.updateGoal("horasDiarias", hours);
         return hours;
       },
       applyHoursToEveryDay: (value2) => {
-        const hours = clamp5(value2, 0, 24);
+        const hours = clamp6(value2, 0, 24);
         for (let day = 0; day < 7; day++) repository.updateDailyHours(day, hours);
         repository.updateGoal("horasDiarias", hours);
         return hours;
@@ -2169,7 +2193,7 @@
         repository.updateDailyHours(0, 0);
         repository.updateDailyHours(6, 0);
       },
-      update: (key, value2) => repository.updateGoal(key, key === "metaAprovacao" ? clamp5(value2, 0, 100) : clamp5(value2))
+      update: (key, value2) => repository.updateGoal(key, key === "metaAprovacao" ? clamp6(value2, 0, 100) : clamp6(value2))
     });
   }
 
@@ -2269,7 +2293,7 @@
   }
 
   // src/domain/forecasts/performance-forecast.js
-  var clamp6 = (value2, min = 0, max = 100) => Math.max(min, Math.min(max, value2));
+  var clamp7 = (value2, min = 0, max = 100) => Math.max(min, Math.min(max, value2));
   function confidenceLabel2(value2) {
     return value2 >= 0.7 ? "Alta" : value2 >= 0.35 ? "Média" : "Baixa";
   }
@@ -2281,7 +2305,7 @@
     return (Array.isArray(observations) ? observations : []).map((item) => ({ date: item?.date, value: Number(item?.value), sampleSize: Number(item?.sampleSize) })).filter((item) => dayNumber(item.date) !== null && Number.isFinite(item.value) && item.value >= 0 && item.value <= 100 && Number.isFinite(item.sampleSize) && item.sampleSize > 0).sort((a, b) => a.date.localeCompare(b.date));
   }
   function buildPerformanceForecast({ currentValue = null, currentConfidence = 0, targetScore = 80, observations = [] } = {}) {
-    const current = currentValue === null || currentValue === void 0 ? NaN : Number(currentValue), confidence = clamp6(Number(currentConfidence) || 0, 0, 1), target = clamp6(Number(targetScore) || 80);
+    const current = currentValue === null || currentValue === void 0 ? NaN : Number(currentValue), confidence = clamp7(Number(currentConfidence) || 0, 0, 1), target = clamp7(Number(targetScore) || 80);
     const normalized = normalizeObservations(observations);
     const sampleSize = normalized.reduce((sum3, item) => sum3 + item.sampleSize, 0);
     const observationCount = normalized.length;
@@ -2292,7 +2316,7 @@
       return { available: false, currentBand: null, gap: null, movingAverage: null, forecast30: { available: false, reason: "A faixa atual ainda não possui dados suficientes." }, evidence };
     }
     const margin = Math.max(4, Math.round(18 * (1 - confidence)));
-    const currentBand = { central: Math.round(current), low: Math.round(clamp6(current - margin)), high: Math.round(clamp6(current + margin)), confidence, confidenceLabel: confidenceLabel2(confidence) };
+    const currentBand = { central: Math.round(current), low: Math.round(clamp7(current - margin)), high: Math.round(clamp7(current + margin)), confidence, confidenceLabel: confidenceLabel2(confidence) };
     const gap = { minimum: Math.max(0, Math.round(target - currentBand.high)), maximum: Math.max(0, Math.round(target - currentBand.low)), target };
     const recent = normalized.slice(-3), recentSample = recent.reduce((sum3, item) => sum3 + item.sampleSize, 0);
     const movingAverage = recentSample ? Math.round(recent.reduce((sum3, item) => sum3 + item.value * item.sampleSize, 0) / recentSample) : null;
@@ -2308,11 +2332,11 @@
     const meanX = points.reduce((sum3, item) => sum3 + item.x * item.w, 0) / weight, meanY = points.reduce((sum3, item) => sum3 + item.y * item.w, 0) / weight;
     const denominator = points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) ** 2, 0);
     const rawSlope = denominator ? points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) * (item.y - meanY), 0) / denominator : 0;
-    const forecastConfidence = clamp6(Math.min(1, observationCount / 8) * 0.35 + Math.min(1, sampleSize / 300) * 0.4 + Math.min(1, spanDays / 56) * 0.25);
-    const slopePerDay = clamp6(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
-    const projected = clamp6(normalized.at(-1).value + slopePerDay * 30);
+    const forecastConfidence = clamp7(Math.min(1, observationCount / 8) * 0.35 + Math.min(1, sampleSize / 300) * 0.4 + Math.min(1, spanDays / 56) * 0.25);
+    const slopePerDay = clamp7(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
+    const projected = clamp7(normalized.at(-1).value + slopePerDay * 30);
     const forecastMargin = Math.max(margin, Math.round(16 * (1 - forecastConfidence)));
-    const forecast30 = { available: true, central: Math.round(projected), low: Math.round(clamp6(projected - forecastMargin)), high: Math.round(clamp6(projected + forecastMargin)), confidence: forecastConfidence, confidenceLabel: confidenceLabel2(forecastConfidence), slopePerWeek: Math.round(slopePerDay * 70) / 10, reason: null, evidence: describeScoreEvidence({ completeness: 1, evidenceStrength: forecastConfidence }) };
+    const forecast30 = { available: true, central: Math.round(projected), low: Math.round(clamp7(projected - forecastMargin)), high: Math.round(clamp7(projected + forecastMargin)), confidence: forecastConfidence, confidenceLabel: confidenceLabel2(forecastConfidence), slopePerWeek: Math.round(slopePerDay * 70) / 10, reason: null, evidence: describeScoreEvidence({ completeness: 1, evidenceStrength: forecastConfidence }) };
     return { available: true, currentBand, gap, movingAverage, forecast30, evidence };
   }
 
@@ -2537,22 +2561,29 @@
   }
 
   // src/repositories/sessions-repository.js
-  function createSessionsRepository({ getState } = {}) {
+  function createSessionsRepository({ getState, normalize = normalizeStudySession } = {}) {
     if (typeof getState !== "function") throw new TypeError("Repositório de sessões requer acesso ao estado.");
-    const items = () => Array.isArray(getState()?.studySessions) ? getState().studySessions : [];
+    const items = () => {
+      const sessions = Array.isArray(getState()?.studySessions) ? getState().studySessions : [];
+      sessions.forEach((session, index) => {
+        sessions[index] = normalize(session);
+      });
+      return sessions;
+    };
     return Object.freeze({
       all: () => items(),
       findById: (id) => items().find((item) => item.id === id) || null,
       add: (session) => {
-        if (items().some((item) => item.id === session.id)) return items().find((item) => item.id === session.id);
-        items().push(session);
-        return session;
+        const normalized = normalize(session);
+        if (items().some((item) => item.id === normalized.id)) return items().find((item) => item.id === normalized.id);
+        items().push(normalized);
+        return normalized;
       },
       update: (id, changes) => {
-        const session = items().find((item) => item.id === id);
-        if (!session) return null;
-        Object.assign(session, changes);
-        return session;
+        const list = items(), index = list.findIndex((item) => item.id === id);
+        if (index < 0) return null;
+        list[index] = normalize({ ...list[index], ...changes, id });
+        return list[index];
       },
       remove: (id) => {
         const list = items(), index = list.findIndex((item) => item.id === id);
@@ -3116,8 +3147,13 @@
     data.schemaVersion = 16;
     return data;
   }
+  function migrateV16toV17(data) {
+    data.studySessions = (data.studySessions || []).map((session) => normalizeStudySession(session));
+    data.schemaVersion = 17;
+    return data;
+  }
   function migrateState(data) {
-    return runStateMigrations(data, { currentVersion: CURRENT_SCHEMA_VERSION, migrations: { 1: migrateV1toV2, 2: migrateV2toV3, 3: migrateV3toV4, 4: migrateV4toV5, 5: migrateV5toV6, 6: migrateV6toV7, 7: migrateV7toV8, 8: migrateV8toV9, 9: migrateV9toV10, 10: migrateV10toV11, 11: migrateV11toV12, 12: migrateV12toV13, 13: migrateV13toV14, 14: migrateV14toV15, 15: migrateV15toV16 } });
+    return runStateMigrations(data, { currentVersion: CURRENT_SCHEMA_VERSION, migrations: { 1: migrateV1toV2, 2: migrateV2toV3, 3: migrateV3toV4, 4: migrateV4toV5, 5: migrateV5toV6, 6: migrateV6toV7, 7: migrateV7toV8, 8: migrateV8toV9, 9: migrateV9toV10, 10: migrateV10toV11, 11: migrateV11toV12, 12: migrateV12toV13, 13: migrateV13toV14, 14: migrateV14toV15, 15: migrateV15toV16, 16: migrateV16toV17 } });
   }
   function ensureStateDefaults() {
     if (!state || typeof state !== "object") state = {};
@@ -3238,20 +3274,10 @@
     state.simulados.forEach((sim) => {
       if (!Array.isArray(sim.breakdown)) sim.breakdown = [];
     });
-    state.studySessions.forEach((session) => {
-      if (!session.id) session.id = uid("session");
-      if (typeof session.date !== "string") session.date = todayISO();
-      session.durationSeconds = Math.max(0, Number(session.durationSeconds) || 0);
-      session.subjectId = session.subjectId || null;
-      session.topicId = session.topicId || null;
-      session.planItemId = session.planItemId || null;
-      session.source = session.source || "manual";
-      session.recommendationId = session.recommendationId || null;
-      session.prioritySnapshot = session.prioritySnapshot == null || session.prioritySnapshot === "" ? null : Number.isFinite(Number(session.prioritySnapshot)) ? Number(session.prioritySnapshot) : null;
-      if (!["study", "review", "questions", "simulation"].includes(session.type)) session.type = "study";
-      session.questionsResolved = Math.max(0, Number(session.questionsResolved) || 0);
-      session.correctAnswers = Math.max(0, Math.min(Number(session.correctAnswers) || 0, session.questionsResolved));
-      if (typeof session.notes !== "string") session.notes = "";
+    state.studySessions = state.studySessions.map((session) => {
+      const normalized = normalizeStudySession(session, { today: todayISO });
+      if (!normalized.id) normalized.id = uid("session");
+      return normalized;
     });
     state.reviewAgenda.forEach((review) => {
       review.topicId = review.topicId || review.topicRef || null;
@@ -3549,7 +3575,7 @@
     const day = String(d.getDate()).padStart(2, "0");
     return `${y}-${m}-${day}`;
   }
-  function localDateFromTimestamp(value2) {
+  function localDateFromTimestamp2(value2) {
     return localDateISO(value2);
   }
   function timestampToLocalDateISO(value2) {
@@ -3634,9 +3660,9 @@
     const allSessionIds = new Set(state.studySessions.map((s) => s.id));
     const independentQuestions = state.questoes.filter((q) => q.date === date2 && matchesSubject(q) && (!q.studySessionId || !allSessionIds.has(q.studySessionId)));
     const simulations = state.simulados.filter((sim) => sim.date === date2 && (!subjectId || (sim.breakdown || []).some((row) => entitySubjectId(row) === subjectId)));
-    const reviews = state.reviewAgenda.filter((review) => review.status === "Concluído" && localDateFromTimestamp(review.completedAt) === date2 && matchesSubject(review));
+    const reviews = state.reviewAgenda.filter((review) => review.status === "Concluído" && localDateFromTimestamp2(review.completedAt) === date2 && matchesSubject(review));
     const metrics = summarizeStudyRecords({ sessions, questions: independentQuestions, simulations });
-    const { seconds, questions, correct, accuracy } = metrics;
+    const { seconds, questions, correct, accuracy: accuracy2 } = metrics;
     const subjectNames = /* @__PURE__ */ new Set();
     sessions.forEach((s) => {
       const id = entitySubjectId(s);
@@ -3658,7 +3684,7 @@
       simulations: metrics.simulations,
       targetSeconds,
       goalPct,
-      accuracy,
+      accuracy: accuracy2,
       subjectNames: [...subjectNames],
       meaningful: seconds >= 300 || independentQuestions.some((q) => (Number(q.resolved) || 0) > 0) || metrics.simulations > 0,
       goalAchieved: targetSeconds > 0 && seconds >= targetSeconds
@@ -4273,7 +4299,7 @@
       id: uid("session"),
       startedAt: timerStartedAt || nowISO2(),
       endedAt: nowISO2(),
-      date: localDateFromTimestamp(timerStartedAt || nowISO2()),
+      date: localDateFromTimestamp2(timerStartedAt || nowISO2()),
       durationSeconds: timerSeconds,
       subjectId,
       topicId,
@@ -4825,7 +4851,7 @@
     const mastery = masteryResult.confidence > 0 ? masteryResult.score : null, retention = retentionResult.available ? retentionResult.score : null;
     const diagnosis = diagnoseTopic(subject.id, topic.id), reviewHealth = topicReviewHealthScore(topic, masteryResult, retentionResult, diagnosis);
     const lastContact = diagnosis?.lastActivity ? Math.max(0, -(diasParaRevisao(diagnosis.lastActivity) ?? 0)) : null;
-    const lastReviewDate = localDateFromTimestamp(topic.lastReviewedAt);
+    const lastReviewDate = localDateFromTimestamp2(topic.lastReviewedAt);
     const lastReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
     const performance = diagnosis?.performance?.accuracy ?? null, trend = diagnosis?.trend;
     const blockers = prerequisiteBlockers({ ...topic, mastery, covered: coverage === 100 }, allTopics().map((item) => ({ ...item, covered: item.status === "Concluído", mastery: topicMasteryIndex(item.subjectId, item.id).confidence > 0 ? topicMasteryIndex(item.subjectId, item.id).score : null })));
@@ -5860,11 +5886,11 @@
     if (total < 50) return { key: "medium", label: "Confiança média" };
     return { key: "high", label: "Confiança alta" };
   }
-  function classifyAccuracy(accuracy) {
-    if (accuracy === null) return { key: "none", icon: "⚪", label: "Sem dados" };
+  function classifyAccuracy(accuracy2) {
+    if (accuracy2 === null) return { key: "none", icon: "⚪", label: "Sem dados" };
     const target = Math.max(0, Math.min(100, Number(state.metas?.metaAprovacao) || 70));
-    if (accuracy >= target) return { key: "strong", icon: "🟢", label: "Na meta" };
-    if (accuracy >= target - 10) return { key: "attention", icon: "🟡", label: "Atenção" };
+    if (accuracy2 >= target) return { key: "strong", icon: "🟢", label: "Na meta" };
+    if (accuracy2 >= target - 10) return { key: "attention", icon: "🟡", label: "Atenção" };
     return { key: "weak", icon: "🔴", label: "Prioritário" };
   }
   function getTopicPerformance(topicId) {
@@ -6068,13 +6094,13 @@
     const correct = records.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0);
     const identified = records.filter((q) => q.topicId).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
     const coverage = resolved ? Math.round(identified / resolved * 100) : 0;
-    const accuracy = accuracyFromCounts(correct, resolved);
+    const accuracy2 = accuracyFromCounts(correct, resolved);
     const weekly = getSubjectWeeklyTrend(performanceSubjectId);
     const trend = calculateWeightedTrend(weekly);
     coverageEl.textContent = `${coverage}% identificadas`;
     summary.innerHTML = [
       ["Questões analisadas", resolved],
-      ["Taxa de acerto", accuracy === null ? "—" : `${accuracy}%`],
+      ["Taxa de acerto", accuracy2 === null ? "—" : `${accuracy2}%`],
       ["Cobertura por tópico", `${coverage}%`],
       ["Tendência", `${trend.icon} ${trend.label}`]
     ].map(([label, value2]) => `<div class="stat-cell"><div class="n">${value2}</div><div class="l">${label}</div></div>`).join("");
@@ -7129,9 +7155,9 @@
       const seconds = sessions.reduce((sum3, s) => sum3 + (Number(s.durationSeconds) || 0), 0);
       const questions = sessions.reduce((sum3, s) => sum3 + (Number(s.questionsResolved) || 0), 0);
       const correct = sessions.reduce((sum3, s) => sum3 + (Number(s.correctAnswers) || 0), 0);
-      const accuracy = questions > 0 ? ` · ${Math.round(correct / questions * 100)}% de acerto` : "";
+      const accuracy2 = questions > 0 ? ` · ${Math.round(correct / questions * 100)}% de acerto` : "";
       const expanded = expandedSessionDays.has(date2);
-      html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date2)}')"><span>${date2 === "Sem data" ? date2 : formatDatePt(date2)} · ${pluralize(sessions.length, "sessão", "sessões")} · ${formatDuration(seconds)} · ${pluralize(questions, "questão", "questões")}${accuracy}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
+      html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date2)}')"><span>${date2 === "Sem data" ? date2 : formatDatePt(date2)} · ${pluralize(sessions.length, "sessão", "sessões")} · ${formatDuration(seconds)} · ${pluralize(questions, "questão", "questões")}${accuracy2}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
       if (!expanded) return;
       sessions.forEach((session) => html.push(historyEditState.sessionId === session.id ? renderStudySessionEditRow(session) : renderStudySessionReadRow(session)));
     });
@@ -7308,7 +7334,7 @@
       reviewHealth: recommendation.reviewHealth?.value,
       risk: recommendation.risk?.value,
       trend: recommendation.diagnosis?.trend || null,
-      daysSinceContact: last ? Math.max(0, -(diasParaRevisao(localDateFromTimestamp(last)) ?? 0)) : null,
+      daysSinceContact: last ? Math.max(0, -(diasParaRevisao(localDateFromTimestamp2(last)) ?? 0)) : null,
       measuredAt: nowISO2()
     });
   }
@@ -7745,17 +7771,17 @@
     if (!found) return { score: 0, raw: null, confidence: 0, confidenceLabel: "Baixa", available: false, detail: "Tópico não encontrado" };
     const today = todayISO(), due = state.reviewAgenda.filter((r) => (r.topicId || r.topicRef) === topicId && r.date && r.date <= today);
     const done = due.filter((r) => r.status === "Concluído" && r.completedAt);
-    const onTime = done.filter((r) => localDateFromTimestamp(r.completedAt) <= addDays(r.date, 1)).length;
+    const onTime = done.filter((r) => localDateFromTimestamp2(r.completedAt) <= addDays(r.date, 1)).length;
     const cutoff = addDays(today, -59);
     const questions = validQuestionRecords().filter((q) => q.topicId === topicId && q.date >= cutoff && q.date <= today);
     const resolved = questions.reduce((n, q) => n + (Number(q.resolved) || 0), 0), correct = questions.reduce((n, q) => n + (Number(q.correct) || 0), 0);
-    const dates = done.map((r) => localDateFromTimestamp(r.completedAt)).filter(Boolean).sort();
-    const lastReview = dates[dates.length - 1] || localDateFromTimestamp(found.topic.lastReviewedAt) || null;
+    const dates = done.map((r) => localDateFromTimestamp2(r.completedAt)).filter(Boolean).sort();
+    const lastReview = dates[dates.length - 1] || localDateFromTimestamp2(found.topic.lastReviewedAt) || null;
     const daysSince = lastReview ? Math.max(0, -(diasParaRevisao(lastReview) ?? 0)) : null;
     return calculateTopicRetention({ due, resolved, correct, lastReview, daysSince, onTime, periodStart: cutoff, periodEnd: today });
   }
   function topicReviewHealthScore(topic, masteryResult = topicMasteryIndex(topic.subjectId, topic.id), retentionResult = topicRetentionScore(topic.subjectId, topic.id), diagnosis = diagnoseTopic(topic.subjectId, topic.id)) {
-    const lastReviewDate = localDateFromTimestamp(topic.lastReviewedAt);
+    const lastReviewDate = localDateFromTimestamp2(topic.lastReviewedAt);
     const daysSinceReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
     const evidenceValues = [masteryResult?.confidence, retentionResult?.confidence].filter((value2) => Number.isFinite(Number(value2)));
     const evidenceStrength = evidenceValues.length ? evidenceValues.reduce((sum3, value2) => sum3 + Number(value2), 0) / evidenceValues.length : null;
@@ -7877,7 +7903,7 @@
       if (d) dates.push(d);
     });
     state.subjects.forEach((subject) => {
-      const d = localDateFromTimestamp(subject.createdAt);
+      const d = localDateFromTimestamp2(subject.createdAt);
       if (d) dates.push(d);
     });
     const valid = dates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && (!state.examDate || d <= state.examDate)).sort();
@@ -7972,14 +7998,14 @@
     }).join("") + `<li class="overdue-list-footer">${renderCollectionFooter({ variant: "block", total: entries.length, visible: visible.length, step: 3, label: "datas", showMoreAction: `changeOverdueGroupLimit('${elId}',3)`, showAllAction: `showAllOverdueGroups('${elId}')`, showLessAction: limit > 3 ? `resetOverdueGroupLimit('${elId}')` : "" })}</li>`;
   }
   function renderKPIs() {
-    const resolved = state.questoes.reduce((n, q) => n + (Number(q.resolved) || 0), 0), accuracy = taxaAcertoGeral(), average2 = mediaSimulados(), late = revisoesAtrasadas(), target = state.metas.metaAprovacao;
+    const resolved = state.questoes.reduce((n, q) => n + (Number(q.resolved) || 0), 0), accuracy2 = taxaAcertoGeral(), average2 = mediaSimulados(), late = revisoesAtrasadas(), target = state.metas.metaAprovacao;
     const hasResults = state.questoes.length + state.simulados.length > 0;
     document.getElementById("kpiGrid").innerHTML = `
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${resolved}</div><div class="l">Questões resolvidas</div></button>
-    <button type="button" class="kpi-cell kpi-link ${hasResults ? accuracy >= target ? "ok" : "warn" : ""}" data-delegated-click="navigateKpi('questoes')"><div class="n">${accuracy}%</div><div class="l">Taxa de acerto</div></button>
+    <button type="button" class="kpi-cell kpi-link ${hasResults ? accuracy2 >= target ? "ok" : "warn" : ""}" data-delegated-click="navigateKpi('questoes')"><div class="n">${accuracy2}%</div><div class="l">Taxa de acerto</div></button>
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${average2}%</div><div class="l">Média simulados</div></button>
     <button type="button" class="kpi-cell kpi-link ${late > 0 ? "warn" : ""}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
-    <button type="button" class="kpi-cell kpi-link ${hasResults ? accuracy >= target ? "ok" : "warn" : ""}" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de aprovação</div></button>`;
+    <button type="button" class="kpi-cell kpi-link ${hasResults ? accuracy2 >= target ? "ok" : "warn" : ""}" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de aprovação</div></button>`;
   }
   function escapeHtml(str) {
     return String(str || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
@@ -8258,7 +8284,7 @@
       diasParaRevisao,
       parseLocalDate,
       todayISO,
-      localDateFromTimestamp,
+      localDateFromTimestamp: localDateFromTimestamp2,
       calculateAdaptiveInterval,
       adaptiveReviewSuggestion,
       syncQuestionFromStudySession,

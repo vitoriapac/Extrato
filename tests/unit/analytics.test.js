@@ -76,3 +76,6 @@ test('não usa semanas sem volume suficiente como desempenho zero',()=>{
 test('resume sessões e questões sem contar registros vinculados duas vezes',()=>{
   assert.deepEqual(summarizeStudyRecords({sessions:[{durationSeconds:1800,questionsResolved:10,correctAnswers:7}],questions:[{resolved:5,correct:4}],simulations:[{}]}),{seconds:1800,questions:15,correct:11,accuracy:73,simulations:1});
 });
+
+
+test('expõe contrato versionado e distingue mudanças fortes',()=>{const weeks=[...Array(4).fill({resolved:10,correct:5}),...Array(4).fill({resolved:10,correct:9})];const result=calculateWindowTrend(weeks,30);assert.equal(result.state,'strong_up');assert.equal(result.key,'up');assert.equal(result.direction,'up');assert.equal(result.value,100);assert.equal(result.algorithmVersion,2);assert.equal(result.periods.windowWeeks,4)});
