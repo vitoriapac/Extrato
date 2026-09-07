@@ -1,0 +1,2 @@
+import {test,expect} from '@playwright/test';import {openDemo,activateTab} from './helpers.js';
+test('mostra resultado mensurável da recomendação com comparação e confiança',async({page})=>{await openDemo(page);await activateTab(page,'hoje');const card=page.locator('.recommendation-impact');await expect(card).toBeVisible();await expect(card).toContainText('Resultado da recomendação');await expect(card).toContainText(/Retenção|Acerto/);await expect(card).toContainText('Confiança')});

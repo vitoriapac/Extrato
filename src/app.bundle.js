@@ -675,11 +675,11 @@
     return { value: value2, factors, missingFactors, contributions, completeness };
   }
   function createScoreResult({ value: value2 = null, state: state2 = null, evidence = null, confidence = null, factors = {}, reasons = [], algorithmVersion = 1, ...details } = {}) {
-    const numeric2 = value2 == null || !Number.isFinite(Number(value2)) ? null : Math.max(0, Math.min(100, Math.round(Number(value2))));
+    const numeric3 = value2 == null || !Number.isFinite(Number(value2)) ? null : Math.max(0, Math.min(100, Math.round(Number(value2))));
     const scoreEvidence = evidence || describeScoreEvidence({ completeness: 0, evidenceStrength: confidence });
     return {
-      value: numeric2,
-      state: state2 || (numeric2 === null ? "empty" : "estimated"),
+      value: numeric3,
+      state: state2 || (numeric3 === null ? "empty" : "estimated"),
       evidence: scoreEvidence,
       confidence: confidence == null ? scoreEvidence.evidenceStrength : Math.max(0, Math.min(1, Number(confidence) || 0)),
       factors,
@@ -1284,9 +1284,9 @@
     const volume = Math.max(0, Number(questionVolume) || 0);
     return volume < 1 ? "Aguardando" : volume < 20 ? "Amostra inicial" : volume < 50 ? "Estimativa" : "Mais confiável";
   }
-  function captureRecommendationBaseline({ mastery = null, accuracy: accuracy2 = null, questionVolume = 0, retention = null, retentionScore = null, reviewHealth = null, risk = null, trend = null, daysSinceContact = null, measuredAt } = {}) {
+  function captureRecommendationBaseline({ mastery = null, accuracy: accuracy2 = null, questionVolume = 0, retention = null, retentionScore = null, reviewHealth = null, risk = null, trend = null, evidence = null, daysSinceContact = null, measuredAt } = {}) {
     const metrics = normalizeRecommendationMetrics({ mastery, accuracy: accuracy2, retention: retention ?? retentionScore, reviewHealth, risk });
-    return { ...metrics, retentionScore: metrics.retention, accuracy: metrics.accuracy, questionVolume: Math.max(0, Number(questionVolume) || 0), daysSinceContact: Number.isFinite(Number(daysSinceContact)) ? Math.max(0, Number(daysSinceContact)) : null, trend: trend ? structuredClone(trend) : null, measuredAt };
+    return { ...metrics, retentionScore: metrics.retention, accuracy: metrics.accuracy, questionVolume: Math.max(0, Number(questionVolume) || 0), daysSinceContact: Number.isFinite(Number(daysSinceContact)) ? Math.max(0, Number(daysSinceContact)) : null, trend: trend ? structuredClone(trend) : null, evidence: evidence ? structuredClone(evidence) : null, measuredAt };
   }
   function captureRecommendationSnapshot(recommendation, { baseline = null, createdAt = null } = {}) {
     const before = baseline || captureRecommendationBaseline({ measuredAt: createdAt });
@@ -1299,6 +1299,10 @@
       riskScore: Number.isFinite(Number(recommendation.risk?.value)) ? Number(recommendation.risk.value) : null,
       recommendedMinutes: Math.max(0, Number(recommendation.estimatedMinutes) || 0),
       recommendedQuestions: Math.max(0, Number(recommendation.recommendedQuestions) || 0),
+      masteryBefore: before.mastery ?? null,
+      retentionBefore: before.retention ?? null,
+      reviewHealthBefore: before.reviewHealth ?? null,
+      evidenceBefore: before.evidence ? structuredClone(before.evidence) : null,
       before: structuredClone(before),
       createdAt: createdAt || recommendation.shownAt || null
     });
@@ -1310,6 +1314,24 @@
     const outcome = { ...evaluated, accuracyAfter: evaluated.after.accuracy, questionVolumeAfter: evaluated.questionVolume, nextReviewRating: nextReviewRating || null, retentionAfter: evaluated.after.retention, confidenceLabel: recommendationOutcomeConfidence(evaluated.questionVolume) };
     feedback.outcome = outcome;
     return outcome;
+  }
+
+  // src/application/recommendations/build-recommendation-outcome-view-model.js
+  var LABELS = Object.freeze({ mastery: "Domínio", retention: "Retenção", reviewHealth: "Saúde da revisão", accuracy: "Acerto", risk: "Risco" });
+  var STATE_MAP = Object.freeze({ positive: "improved", negative: "worsened", improved: "improved", worsened: "worsened", neutral: "neutral", pending: "pending", insufficient: "insufficient" });
+  var STATE_LABELS = Object.freeze({ improved: "A recomendação ajudou", worsened: "O resultado piorou", neutral: "Resultado estável", pending: "Resultado em acompanhamento", insufficient: "Evidência insuficiente" });
+  var numeric2 = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Number(value2);
+  function buildRecommendationOutcomeViewModel(feedbackList = []) {
+    const measured = (Array.isArray(feedbackList) ? feedbackList : []).filter((item) => item?.completed && item?.outcome).sort((a, b) => String(b.outcome.measuredAt || b.completedAt || "").localeCompare(String(a.outcome.measuredAt || a.completedAt || "")));
+    const feedback = measured[0];
+    if (!feedback) return { state: "empty", available: false, metrics: [] };
+    const outcome = feedback.outcome, before = outcome.before || feedback.snapshot?.before || feedback.baseline || {}, after = outcome.after || {}, deltas = outcome.delta || {};
+    const metrics = Object.keys(LABELS).map((key) => {
+      const start = numeric2(before[key]), end = numeric2(after[key] ?? outcome[key + "After"]), delta = numeric2(deltas[key]);
+      return { key, label: LABELS[key], before: start, after: end, delta, available: start !== null && end !== null };
+    }).filter((item) => item.available);
+    const state2 = STATE_MAP[outcome.state] || "insufficient", confidence = numeric2(outcome.confidence);
+    return { state: state2, available: true, title: STATE_LABELS[state2], metrics, confidence, confidenceLabel: outcome.confidenceLabel || outcome.evidence?.evidenceLabel || null, evidenceLabel: outcome.evidence?.evidenceLabel || null, reasons: Array.isArray(outcome.reasons) ? outcome.reasons : [], questionVolume: Math.max(0, Number(outcome.questionVolumeAfter ?? outcome.questionVolume) || 0), measuredAt: outcome.measuredAt || null, recommendationId: feedback.recommendationId, algorithmVersion: Number(outcome.algorithmVersion) || 1 };
   }
 
   // src/application/analytics/build-analytics-view-model.js
@@ -7288,6 +7310,12 @@
     <section><h4>Foco da semana</h4>${list(section("focus"), "Sem distribuição confiável.", (item) => `<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
   }
+  function renderRecommendationImpact(model) {
+    if (!model.available) return "";
+    const metrics = model.metrics.map((metric) => `<div><span>${escapeHtml(metric.label)}</span><strong>${metric.before} → ${metric.after}</strong><small class="${metric.delta >= 0 ? "positive" : "negative"}">${metric.delta >= 0 ? "+" : ""}${metric.delta} ${metric.key === "risk" ? "de melhora" : "p.p."}</small></div>`).join("");
+    const reasons = model.reasons.length ? `<small class="recommendation-impact-reasons">${escapeHtml(model.reasons.join(" · "))}</small>` : "";
+    return `<section class="recommendation-impact ${escapeAttr(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml(model.title)}</strong><small>Confiança ${escapeHtml((model.confidenceLabel || "não calculada").toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics || "<p>Indicadores comparáveis ainda indisponíveis.</p>"}</div>${reasons}</section>`;
+  }
   function renderStudyRecommendation() {
     const container = document.getElementById("studyRecommendation");
     if (!container) return;
@@ -7299,8 +7327,8 @@
       return old && old.score === item.score && old.estimatedMinutes === item.estimatedMinutes && JSON.stringify(old.factors) === JSON.stringify(item.factors) ? { ...item, recommendationId: old.recommendationId, shownAt: old.shownAt, algorithmVersion: PRIORITY_ALGORITHM_VERSION } : createRecommendationPresentation(item, { id: uid("recommendation"), shownAt: nowISO2(), algorithmVersion: PRIORITY_ALGORITHM_VERSION });
     });
     const visible = currentStudyRecommendations.slice(0, 3);
-    const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null), summary = summarizeRecommendationFeedback(state.recommendationFeedback);
-    const outcome = pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>` : "";
+    const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null), summary = summarizeRecommendationFeedback(state.recommendationFeedback), impact = renderRecommendationImpact(buildRecommendationOutcomeViewModel(state.recommendationFeedback));
+    const outcome = impact + (pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>` : "");
     const history = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
     const visibleIds = new Set(visible.map((item) => item.id));
     const excluded = candidates.filter((item) => !visibleIds.has(item.id)).map((item) => {
@@ -7334,6 +7362,7 @@
       reviewHealth: recommendation.reviewHealth?.value,
       risk: recommendation.risk?.value,
       trend: recommendation.diagnosis?.trend || null,
+      evidence: recommendation.evidence || null,
       daysSinceContact: last ? Math.max(0, -(diasParaRevisao(localDateFromTimestamp2(last)) ?? 0)) : null,
       measuredAt: nowISO2()
     });

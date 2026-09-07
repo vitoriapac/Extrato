@@ -1232,3 +1232,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
   .backup-actions{width:100%;min-width:0;flex:1 1 100%;flex-wrap:wrap}
   .backup-actions .btn{min-width:0;flex:1 1 190px;white-space:normal}
 }
+
+.recommendation-impact{margin-bottom:12px;padding:12px;border:1px solid var(--paper-line);border-left:4px solid var(--gold);background:var(--paper)}
+.recommendation-impact.improved{border-left-color:var(--green)}.recommendation-impact.worsened{border-left-color:var(--red)}
+.recommendation-impact header{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px}.recommendation-impact header span{font:600 10px var(--font-data);text-transform:uppercase;color:var(--ink-soft)}.recommendation-impact header strong{color:var(--heading)}.recommendation-impact header small{margin-left:auto;color:var(--ink-soft);font:10px var(--font-data)}
+.recommendation-impact-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:1px;background:var(--paper-line)}.recommendation-impact-metrics>div{display:flex;flex-direction:column;gap:3px;padding:9px;background:var(--white)}.recommendation-impact-metrics span,.recommendation-impact-metrics small{font:10px var(--font-data);color:var(--ink-soft)}.recommendation-impact-metrics strong{color:var(--heading)}.recommendation-impact-metrics .positive{color:var(--green)}.recommendation-impact-metrics .negative{color:var(--red)}.recommendation-impact-reasons{display:block;margin-top:8px;color:var(--ink-soft);font:10px/1.4 var(--font-data)}

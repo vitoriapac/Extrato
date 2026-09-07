@@ -36,6 +36,7 @@ import {calculateReviewHealth} from './domain/analytics/review-health.js';
 import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eligibility.js';
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
 import {captureRecommendationBaseline,captureRecommendationSnapshot,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
+import {buildRecommendationOutcomeViewModel} from './application/recommendations/build-recommendation-outcome-view-model.js';
 import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
 import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
 import {buildStudyPlan} from './application/build-study-plan.js';
@@ -4094,6 +4095,12 @@ function renderDiagnosisCenter(){
     <section><h4>Foco da semana</h4>${list(section('focus'),'Sem distribuição confiável.',item=>`<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
 }
+function renderRecommendationImpact(model){
+  if(!model.available)return '';
+  const metrics=model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><strong>${metric.before} → ${metric.after}</strong><small class="${metric.delta>=0?'positive':'negative'}">${metric.delta>=0?'+':''}${metric.delta} ${metric.key==='risk'?'de melhora':'p.p.'}</small></div>`).join('');
+  const reasons=model.reasons.length?`<small class="recommendation-impact-reasons">${escapeHtml(model.reasons.join(' · '))}</small>`:'';
+  return `<section class="recommendation-impact ${escapeAttr(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml(model.title)}</strong><small>Confiança ${escapeHtml((model.confidenceLabel||'não calculada').toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics||'<p>Indicadores comparáveis ainda indisponíveis.</p>'}</div>${reasons}</section>`;
+}
 function renderStudyRecommendation(){
   const container=document.getElementById('studyRecommendation');if(!container)return;
   const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
@@ -4106,8 +4113,8 @@ function renderStudyRecommendation(){
       :createRecommendationPresentation(item,{id:uid('recommendation'),shownAt:nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION});
   });
   const visible=currentStudyRecommendations.slice(0,3);
-  const pending=state.recommendationFeedback.find(feedback=>feedback.completed&&feedback.useful===null),summary=summarizeRecommendationFeedback(state.recommendationFeedback);
-  const outcome=pending?`<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'';
+  const pending=state.recommendationFeedback.find(feedback=>feedback.completed&&feedback.useful===null),summary=summarizeRecommendationFeedback(state.recommendationFeedback),impact=renderRecommendationImpact(buildRecommendationOutcomeViewModel(state.recommendationFeedback));
+  const outcome=impact+(pending?`<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'');
   const history=summary.shown?`<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate??0}% concluídas${summary.rated?` · ${summary.usefulnessRate}% úteis`:''}</small>`:'';
   const visibleIds=new Set(visible.map(item=>item.id));
   const excluded=candidates.filter(item=>!visibleIds.has(item.id)).map(item=>{
@@ -4131,7 +4138,7 @@ function renderStudyRecommendation(){
 function recommendationBaseline(recommendation){
   const topicId=recommendation.topicId,performance=getTopicPerformance(topicId),found=getTopicById(topicId),last=found?.topic?.lastReviewedAt||found?.topic?.lastCompletedAt||null;
   return captureRecommendationBaseline({mastery:recommendation.mastery,accuracy:performance.accuracy,questionVolume:performance.resolved,retention:recommendation.retention,
-    reviewHealth:recommendation.reviewHealth?.value,risk:recommendation.risk?.value,trend:recommendation.diagnosis?.trend||null,daysSinceContact:last?Math.max(0,-(diasParaRevisao(localDateFromTimestamp(last))??0)):null,measuredAt:nowISO()});
+    reviewHealth:recommendation.reviewHealth?.value,risk:recommendation.risk?.value,trend:recommendation.diagnosis?.trend||null,evidence:recommendation.evidence||null,daysSinceContact:last?Math.max(0,-(diasParaRevisao(localDateFromTimestamp(last))??0)):null,measuredAt:nowISO()});
 }
 function recordRecommendationFeedback(recommendation,{accepted,reasonSkipped=null}={}){const baseline=recommendationBaseline(recommendation),createdAt=nowISO();return recordRecommendationDecision(state.recommendationFeedback,recommendation,{accepted,reasonSkipped,baseline,snapshot:captureRecommendationSnapshot(recommendation,{baseline,createdAt}),now:createdAt,idGenerator:uid})}
 function measureRecommendationResults(session){
