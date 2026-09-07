@@ -19,6 +19,8 @@
 <body>
   <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
   <main class="wrap" id="mainContent">
+  <h1 class="sr-only">StudyTrack — Extrato de estudos</h1>
+  <h2 class="sr-only">Painel de acompanhamento e planejamento</h2>
 
   <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
     <div><strong>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
@@ -82,8 +84,8 @@
     <button class="tab-btn tab-secondary" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda">Agenda de Revisões</button>
     <button class="tab-btn tab-secondary" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes">Questões &amp; Simulados</button>
     <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Metas</button>
-    <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu">Mais</button>
   </div>
+  <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu">Mais</button>
   <div class="mobile-more-menu" id="mobileMoreMenu" role="menu" hidden>
     <button type="button" role="menuitem" data-more-tab="agenda">Agenda de Revisões</button>
     <button type="button" role="menuitem" data-more-tab="questoes">Questões e Simulados</button>
@@ -373,7 +375,7 @@
             <th style="width:130px;">Status</th>
             <th style="width:150px;">Tipo de revisão</th>
             <th style="width:120px;">Prioridade</th>
-            <th style="width:36px;"></th>
+            <th style="width:36px;"><span class="sr-only">Ações</span></th>
           </tr>
         </thead>
         <tbody id="calBody"></tbody>
@@ -418,7 +420,7 @@
             <th style="width:100px;">Dificuldade</th>
             <th style="width:120px;">Status</th>
             <th style="width:120px;">Dias para revisão</th>
-            <th style="width:36px;"></th>
+            <th style="width:36px;"><span class="sr-only">Ações</span></th>
           </tr>
         </thead>
         <tbody id="agendaBody"></tbody>
@@ -443,7 +445,7 @@
             <th style="width:100px;">Acertos</th>
             <th style="width:90px;">% acerto</th>
             <th style="width:100px;">Erros</th>
-            <th style="width:36px;"></th>
+            <th style="width:36px;"><span class="sr-only">Ações</span></th>
           </tr>
         </thead>
         <tbody id="questoesBody"></tbody>
@@ -486,8 +488,8 @@
             <th style="width:90px;">Acertos</th>
             <th style="width:90px;">Total</th>
             <th style="width:80px;">Nota</th>
-            <th style="width:90px;"></th>
-            <th style="width:36px;"></th>
+            <th style="width:90px;"><span class="sr-only">Ações</span></th>
+            <th style="width:36px;"><span class="sr-only">Ações</span></th>
           </tr>
         </thead>
         <tbody id="simuladosBody"></tbody>
@@ -573,7 +575,7 @@
   </div>
 
   <footer>Salvo automaticamente no seu navegador — extrato.gerado localmente<br>
-    <span style="opacity:0.8;">Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>1–7</strong> troca de aba · <strong>Esc</strong> fecha</span>
+    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>1–7</strong> troca de aba · <strong>Esc</strong> fecha</span>
   </footer>
 </main>
 

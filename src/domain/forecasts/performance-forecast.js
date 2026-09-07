@@ -1,5 +1,7 @@
 import {describeScoreEvidence} from '../analytics/score-evidence.js';
 
+export const PERFORMANCE_FORECAST_VERSION='1.0.0';
+
 const clamp=(value,min=0,max=100)=>Math.max(min,Math.min(max,value));
 
 function confidenceLabel(value){
@@ -27,7 +29,7 @@ export function buildPerformanceForecast({currentValue=null,currentConfidence=0,
   const spanDays=periodStart&&periodEnd?Math.round(dayNumber(periodEnd)-dayNumber(periodStart)):0;
   const evidence={sampleSize,observationCount,periodStart,periodEnd,spanDays,...describeScoreEvidence({completeness:Number.isFinite(current)?1:0,evidenceStrength:Number.isFinite(current)?confidence:null})};
   if(!Number.isFinite(current)||current<0||current>100){
-    return {available:false,currentBand:null,gap:null,movingAverage:null,forecast30:{available:false,reason:'A faixa atual ainda não possui dados suficientes.'},evidence};
+    return {algorithmVersion:PERFORMANCE_FORECAST_VERSION,available:false,currentBand:null,gap:null,movingAverage:null,forecast30:{available:false,reason:'A faixa atual ainda não possui dados suficientes.'},evidence};
   }
   const margin=Math.max(4,Math.round(18*(1-confidence)));
   const currentBand={central:Math.round(current),low:Math.round(clamp(current-margin)),high:Math.round(clamp(current+margin)),confidence,confidenceLabel:confidenceLabel(confidence)};
@@ -39,7 +41,7 @@ export function buildPerformanceForecast({currentValue=null,currentConfidence=0,
     if(observationCount<4)needs.push(`${4-observationCount} semana(s) adicional(is)`);
     if(sampleSize<120)needs.push(`${120-sampleSize} questão(ões) adicional(is)`);
     if(spanDays<21)needs.push('ao menos 21 dias de histórico');
-    return {available:true,currentBand,gap,movingAverage,forecast30:{available:false,reason:`Aguardando ${needs.join(', ')}.`},evidence};
+    return {algorithmVersion:PERFORMANCE_FORECAST_VERSION,available:true,currentBand,gap,movingAverage,forecast30:{available:false,reason:`Aguardando ${needs.join(', ')}.`},evidence};
   }
   const origin=dayNumber(periodStart),points=normalized.map(item=>({x:dayNumber(item.date)-origin,y:item.value,w:item.sampleSize}));
   const weight=points.reduce((sum,item)=>sum+item.w,0);
@@ -51,5 +53,5 @@ export function buildPerformanceForecast({currentValue=null,currentConfidence=0,
   const projected=clamp(normalized.at(-1).value+slopePerDay*30);
   const forecastMargin=Math.max(margin,Math.round(16*(1-forecastConfidence)));
   const forecast30={available:true,central:Math.round(projected),low:Math.round(clamp(projected-forecastMargin)),high:Math.round(clamp(projected+forecastMargin)),confidence:forecastConfidence,confidenceLabel:confidenceLabel(forecastConfidence),slopePerWeek:Math.round(slopePerDay*70)/10,reason:null,evidence:describeScoreEvidence({completeness:1,evidenceStrength:forecastConfidence})};
-  return {available:true,currentBand,gap,movingAverage,forecast30,evidence};
+  return {algorithmVersion:PERFORMANCE_FORECAST_VERSION,available:true,currentBand,gap,movingAverage,forecast30,evidence};
 }

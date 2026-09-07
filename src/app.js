@@ -1770,7 +1770,7 @@ function renderSubjects(){
               <th style="width:13%;">Status</th>
               <th style="width:13%;">Dificuldade</th>
               <th style="width:9%;">Notas</th>
-              <th style="width:6%;"></th>
+              <th style="width:6%;"><span class="sr-only">Ações</span></th>
             </tr>
           </thead>
           <tbody>

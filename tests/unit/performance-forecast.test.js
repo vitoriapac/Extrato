@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildPerformanceForecast} from '../../src/domain/forecasts/performance-forecast.js';
+import {PERFORMANCE_FORECAST_VERSION,buildPerformanceForecast} from '../../src/domain/forecasts/performance-forecast.js';
 
 test('calcula faixa atual e distância conservadora até a meta',()=>{
   const result=buildPerformanceForecast({currentValue:70,currentConfidence:.5,targetScore:80});
   assert.equal(result.available,true);
+  assert.equal(result.algorithmVersion,PERFORMANCE_FORECAST_VERSION);
   assert.deepEqual(result.currentBand,{central:70,low:61,high:79,confidence:.5,confidenceLabel:'Média'});
   assert.deepEqual(result.gap,{minimum:1,maximum:19,target:80});
 });

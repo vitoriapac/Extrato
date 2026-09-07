@@ -2187,6 +2187,7 @@
     const dispatch = (code, event, element) => {
       const normalized = String(code || "").trim();
       if (!normalized) return;
+      if (normalized.length > 500 || /[\u0000-\u001f]/.test(normalized)) throw new Error("Payload de evento inválido.");
       if (normalized === "event.stopPropagation()") {
         event.stopPropagation();
         return;
@@ -2196,7 +2197,7 @@
         return dispatch(normalized.slice(24), event, element);
       }
       if (resolveSpecial(normalized, event, element)) return;
-      const match = normalized.match(/^([A-Za-z_$][\w$]*)\((.*)\)$/s), fn = match && handlers[match[1]];
+      const match = normalized.match(/^([A-Za-z_$][\w$]*)\((.*)\)$/s), fn = match && Object.hasOwn(handlers, match[1]) ? handlers[match[1]] : null;
       if (!match || typeof fn !== "function") throw new Error("Ação de evento não permitida: " + normalized);
       fn(...match[2].trim() ? splitArguments(match[2]).map((argument) => parseArgument(argument, element)) : []);
     };
@@ -2396,6 +2397,7 @@
   }
 
   // src/domain/forecasts/performance-forecast.js
+  var PERFORMANCE_FORECAST_VERSION = "1.0.0";
   var clamp7 = (value2, min = 0, max = 100) => Math.max(min, Math.min(max, value2));
   function confidenceLabel2(value2) {
     return value2 >= 0.7 ? "Alta" : value2 >= 0.35 ? "Média" : "Baixa";
@@ -2416,7 +2418,7 @@
     const spanDays = periodStart && periodEnd ? Math.round(dayNumber(periodEnd) - dayNumber(periodStart)) : 0;
     const evidence = { sampleSize, observationCount, periodStart, periodEnd, spanDays, ...describeScoreEvidence({ completeness: Number.isFinite(current) ? 1 : 0, evidenceStrength: Number.isFinite(current) ? confidence : null }) };
     if (!Number.isFinite(current) || current < 0 || current > 100) {
-      return { available: false, currentBand: null, gap: null, movingAverage: null, forecast30: { available: false, reason: "A faixa atual ainda não possui dados suficientes." }, evidence };
+      return { algorithmVersion: PERFORMANCE_FORECAST_VERSION, available: false, currentBand: null, gap: null, movingAverage: null, forecast30: { available: false, reason: "A faixa atual ainda não possui dados suficientes." }, evidence };
     }
     const margin = Math.max(4, Math.round(18 * (1 - confidence)));
     const currentBand = { central: Math.round(current), low: Math.round(clamp7(current - margin)), high: Math.round(clamp7(current + margin)), confidence, confidenceLabel: confidenceLabel2(confidence) };
@@ -2428,7 +2430,7 @@
       if (observationCount < 4) needs.push(`${4 - observationCount} semana(s) adicional(is)`);
       if (sampleSize < 120) needs.push(`${120 - sampleSize} questão(ões) adicional(is)`);
       if (spanDays < 21) needs.push("ao menos 21 dias de histórico");
-      return { available: true, currentBand, gap, movingAverage, forecast30: { available: false, reason: `Aguardando ${needs.join(", ")}.` }, evidence };
+      return { algorithmVersion: PERFORMANCE_FORECAST_VERSION, available: true, currentBand, gap, movingAverage, forecast30: { available: false, reason: `Aguardando ${needs.join(", ")}.` }, evidence };
     }
     const origin = dayNumber(periodStart), points = normalized.map((item) => ({ x: dayNumber(item.date) - origin, y: item.value, w: item.sampleSize }));
     const weight = points.reduce((sum3, item) => sum3 + item.w, 0);
@@ -2440,7 +2442,7 @@
     const projected = clamp7(normalized.at(-1).value + slopePerDay * 30);
     const forecastMargin = Math.max(margin, Math.round(16 * (1 - forecastConfidence)));
     const forecast30 = { available: true, central: Math.round(projected), low: Math.round(clamp7(projected - forecastMargin)), high: Math.round(clamp7(projected + forecastMargin)), confidence: forecastConfidence, confidenceLabel: confidenceLabel2(forecastConfidence), slopePerWeek: Math.round(slopePerDay * 70) / 10, reason: null, evidence: describeScoreEvidence({ completeness: 1, evidenceStrength: forecastConfidence }) };
-    return { available: true, currentBand, gap, movingAverage, forecast30, evidence };
+    return { algorithmVersion: PERFORMANCE_FORECAST_VERSION, available: true, currentBand, gap, movingAverage, forecast30, evidence };
   }
 
   // src/application/demo/demo-mode.js
@@ -4827,7 +4829,7 @@
               <th style="width:13%;">Status</th>
               <th style="width:13%;">Dificuldade</th>
               <th style="width:9%;">Notas</th>
-              <th style="width:6%;"></th>
+              <th style="width:6%;"><span class="sr-only">Ações</span></th>
             </tr>
           </thead>
           <tbody>
