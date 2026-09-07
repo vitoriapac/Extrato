@@ -49,7 +49,7 @@ test('ausência de evidência não vira domínio zero nem confiança alta',()=>{
   assert.equal(candidate.evidence.evidenceStrength,0);assert.equal(candidate.evidence.evidenceLabel,'Baixa');
   assert.ok(candidate.missingFactors.includes('masteryGap'));
   const all=calculatePriorityScore({examImpact:90,masteryGap:70,retentionRisk:60,reviewUrgency:50,reviewHealthRisk:45,planAlignment:80,recencyRisk:30,evidenceStrength:.05});
-  assert.equal(all.evidence.completeness,1);assert.equal(all.evidence.evidenceLabel,'Baixa');
+  assert.equal(all.evidence.completeness,.9);assert.ok(all.missingFactors.includes('trendRisk'));assert.equal(all.evidence.evidenceLabel,'Baixa');
   assert.equal(calculatePriorityScore({examImpact:NaN,masteryGap:Infinity}).value,null);
 });
 
@@ -102,6 +102,8 @@ test('saúde da revisão alimenta a prioridade com o mesmo contrato dos demais s
   const reviewHealth=calculateReviewHealth({daysSinceReview:20,retention:40,mastery:45,recentPerformance:50,examImpact:90,evidenceStrength:.8});
   const scored=calculatePriorityScore({examImpact:90,retentionRisk:60,masteryGap:55,reviewUrgency:20,reviewHealthRisk:100-reviewHealth.value,planAlignment:50,recencyRisk:70,evidenceStrength:.8});
   for(const key of ['value','state','evidence','confidence','factors','reasons','algorithmVersion'])assert.ok(key in scored);
-  assert.equal(scored.algorithmVersion,3);assert.ok(scored.factors.reviewHealthRisk>40);
+  assert.equal(scored.algorithmVersion,4);assert.ok(scored.factors.reviewHealthRisk>40);
   assert.ok(scored.reasons.includes('saúde da revisão requer atenção'));
 });
+
+test('queda forte eleva risco e prioridade usando o mesmo fator',()=>{const falling=diagnosis(60);falling.trend={state:'strong_down',key:'down',direction:'down',delta:-15,evidence:{sampleSize:80},confidence:.9};const stable=diagnosis(60);stable.trend={state:'stable',key:'stable',direction:'stable',delta:0,evidence:{sampleSize:80},confidence:.9};const candidates=scenario([topic('queda'),topic('estavel')],{queda:falling,estavel:stable},{queda:{available:true,score:60,confidence:1},estavel:{available:true,score:60,confidence:1}});const down=candidates.find(item=>item.id==='queda'),flat=candidates.find(item=>item.id==='estavel');assert.ok(down.trendRisk>flat.trendRisk);assert.ok(down.risk.value>flat.risk.value);assert.ok(down.score>flat.score);assert.ok(down.reasons.includes('tendência recente em queda'))});

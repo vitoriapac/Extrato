@@ -23,3 +23,10 @@ export function aggregateTrendScores(trends=[]){
   const weighted=usable.map(item=>({item,weight:Math.max(1,Number(item.evidence?.sampleSize)||1)})),weight=weighted.reduce((sum,row)=>sum+row.weight,0),delta=round(weighted.reduce((sum,row)=>sum+row.item.delta*row.weight,0)/weight),kind=classification(delta),confidence=round(weighted.reduce((sum,row)=>sum+(Number(row.item.confidence)||0)*row.weight,0)/weight);
   return {...kind,value:round(clamp(50+delta*2)),delta,evidence:{sampleSize:weight,confidence,sources:['topic_trends']},confidence,factors:usable.map(item=>({state:item.state,delta:item.delta,confidence:item.confidence})),reasons:[kind.label],algorithmVersion:TREND_ALGORITHM_VERSION};
 }
+
+export function trendToRisk(trend){
+  if(!trend||trend.state==='insufficient'||trend.key==='insufficient'||trend.delta==null)return null;
+  if(trend.direction==='down'||trend.key==='down')return Math.min(100,40+Math.abs(Number(trend.delta)||0)*5);
+  if(trend.direction==='up'||trend.key==='up')return Math.max(0,20-Math.abs(Number(trend.delta)||0));
+  return 20;
+}

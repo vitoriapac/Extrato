@@ -4,7 +4,7 @@ import {createMetricEvidence,confidenceLabel} from '../../src/domain/analytics/e
 import {calculateWeightedScore,calculateWeightedConfidence,calculateReadinessScore} from '../../src/domain/analytics/readiness-score.js';
 import {calculateTopicCoverage} from '../../src/domain/analytics/coverage.js';
 import {calculateActivityStreak,calculateGoalConsistency} from '../../src/domain/analytics/consistency.js';
-import {calculateWindowTrend} from '../../src/domain/analytics/trends.js';
+import {calculateWindowTrend,aggregateTrendScores,trendToRisk} from '../../src/domain/analytics/trends.js';
 import {summarizeStudyRecords} from '../../src/domain/analytics/study-metrics.js';
 
 test('cria evidência normalizada e sem fontes duplicadas',()=>{
@@ -79,3 +79,5 @@ test('resume sessões e questões sem contar registros vinculados duas vezes',()
 
 
 test('expõe contrato versionado e distingue mudanças fortes',()=>{const weeks=[...Array(4).fill({resolved:10,correct:5}),...Array(4).fill({resolved:10,correct:9})];const result=calculateWindowTrend(weeks,30);assert.equal(result.state,'strong_up');assert.equal(result.key,'up');assert.equal(result.direction,'up');assert.equal(result.value,100);assert.equal(result.algorithmVersion,2);assert.equal(result.periods.windowWeeks,4)});
+
+test('agrega tendências de tópicos por evidência e converte intensidade em risco',()=>{const result=aggregateTrendScores([{state:'strong_down',key:'down',direction:'down',delta:-15,confidence:.8,evidence:{sampleSize:80}},{state:'up',key:'up',direction:'up',delta:5,confidence:.5,evidence:{sampleSize:20}}]);assert.equal(result.state,'down');assert.equal(result.delta,-11);assert.ok(trendToRisk(result)>=90);assert.equal(trendToRisk({state:'insufficient',key:'insufficient'}),null)});

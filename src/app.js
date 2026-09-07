@@ -20,7 +20,7 @@ import {filterStudySessions,groupStudySessionsByDate} from './ui/session-history
 import {calculateReadinessScore,READINESS_WEIGHTS} from './domain/analytics/readiness-score.js';
 import {calculateTopicCoverage} from './domain/analytics/coverage.js';
 import {calculateActivityStreak,calculateGoalConsistency} from './domain/analytics/consistency.js';
-import {calculateWindowTrend} from './domain/analytics/trends.js';
+import {calculateWindowTrend,trendToRisk} from './domain/analytics/trends.js';
 import {summarizeStudyRecords} from './domain/analytics/study-metrics.js';
 import {normalizeTopicStrategy,normalizeExamBlueprint,normalizeAlgorithmVersions,EXAM_PRIORITIES} from './state/strategic.js';
 import {buildExecutiveSummary} from './application/build-executive-summary.js';
@@ -2875,7 +2875,7 @@ function diagnoseTopic(subjectId,topicId){
   const target=Math.max(0,Math.min(100,Number(state.metas?.metaAprovacao)||70));
   const reliablePerformance=performance.resolved>=10&&performance.accuracy!==null;
   let status='Em dia';
-  if(overdueDays>=7||(reliablePerformance&&performance.accuracy<target-15)||(trend.key==='down'&&reliablePerformance&&performance.accuracy<target)) status='Crítico';
+  if(overdueDays>=7||trend.state==='strong_down'||(reliablePerformance&&performance.accuracy<target-15)||(trend.key==='down'&&reliablePerformance&&performance.accuracy<target)) status='Crítico';
   else if(overdueDays>0||(reliablePerformance&&performance.accuracy<target)||trend.key==='down'||daysSinceStudy>=7) status='Atenção';
   else if(!reliablePerformance||daysSinceStudy>=4) status='Acompanhamento';
 
@@ -4005,7 +4005,7 @@ function computeAlertasInteligentes(){
   });
   activeSubjects().forEach(subject=>{
     const trend=calculateWeightedTrend(getSubjectWeeklyTrend(subject.id));
-    if(trend.key==='down'){const high=Math.abs(trend.delta)>=8;alertas.push({id:`trend-${subject.id}`,subjectId:subject.id,severity:high?'high':'medium',nivel:high?'alta':'media',icon:'↘',texto:`${subject.name} caiu ${Math.abs(trend.delta)} pontos nas últimas quatro semanas (${trend.previousAccuracy}% para ${trend.recentAccuracy}%)`})}
+    if(trend.key==='down'){const high=trend.state==='strong_down';alertas.push({id:`trend-${subject.id}`,subjectId:subject.id,severity:high?'high':'medium',nivel:high?'alta':'media',icon:'↘',texto:`${subject.name} caiu ${Math.abs(trend.delta)} pontos nas últimas quatro semanas (${trend.previousAccuracy}% para ${trend.recentAccuracy}%)`})}
   });
 
   const diaSemana = new Date(today + 'T00:00:00').getDay(); // 0=domingo..6=sábado

@@ -1,6 +1,7 @@
 import {calculatePriorityScore} from '../domain/analytics/priority-score.js';
 import {calculateRiskScore} from '../domain/diagnostics/risk-score.js';
 import {withPrerequisiteEligibility} from '../domain/study-eligibility.js';
+import {trendToRisk} from '../domain/analytics/trends.js';
 
 export function buildStudyCandidates({priorities=[],topics=[],retentions={},reviewHealths={},blueprint=[],sessions=[],today,examProximity=null}={}){
   const catalog=new Map(topics.map(topic=>[topic.id,topic]));
@@ -16,7 +17,7 @@ export function buildStudyCandidates({priorities=[],topics=[],retentions={},revi
     const reviewUrgency=priority.tipo==='revisão'?Math.min(100,40+Math.max(0,Number(priority.diasAtrasado)||0)*12):0;
     const sessionMinutes=Math.max(15,Math.min(60,Number(priority.estimatedMinutes)||30));
     const trend=diagnosis?.trend;
-    const trendRisk=!trend||trend.key==='insufficient'?null:trend.key==='down'?Math.min(100,40+Math.abs(trend.delta||0)*6):0;
+    const trendRisk=trendToRisk(trend);
     const evidenceStrength=((diagnosis?.mastery?.confidence||0)+(retention?.confidence||0))/2;
     const recencyRisk=daysSinceContact===null?null:Math.min(100,daysSinceContact*5);
     const retentionRisk=retention?.available?100-retention.score:null;
@@ -31,7 +32,7 @@ export function buildStudyCandidates({priorities=[],topics=[],retentions={},revi
       estimatedMinutes:sessionMinutes,sessionMinutes,action:priority.recommendedAction,risk,examImpact,mastery,masteryGap,
       retention:retention?.available?retention.score:null,retentionRisk,retentionNeed:retentionRisk,reviewHealth,reviewHealthRisk,reviewUrgency,
       coverage:covered?100:topic?.status==='Em andamento'?50:0,frequency:daysSinceContact===null?null:Math.max(0,100-daysSinceContact*5),
-      daysSinceContact,recencyRisk,planAlignment:priority.tipo==='continuar'?90:priority.tipo==='revisão'?80:55,trendRisk,
+      daysSinceContact,recencyRisk,planAlignment:priority.tipo==='continuar'?90:priority.tipo==='revisão'?80:55,trend,trendRisk,
       improvementPotential:masteryGap,effortEfficiency:Math.max(10,100-sessionMinutes),evidenceStrength};
     return {...candidate,...calculatePriorityScore(candidate)};
   });

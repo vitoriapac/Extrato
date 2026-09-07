@@ -767,6 +767,12 @@
     const delta = round(recentAccuracy - previousAccuracy), kind = classification(delta);
     return { ...kind, value: round(clamp(50 + delta * 2)), delta, recent, previous, recentAccuracy, previousAccuracy, periods, evidence, confidence, factors: { recentAccuracy, previousAccuracy }, reasons: [kind.label], algorithmVersion: TREND_ALGORITHM_VERSION };
   }
+  function trendToRisk(trend) {
+    if (!trend || trend.state === "insufficient" || trend.key === "insufficient" || trend.delta == null) return null;
+    if (trend.direction === "down" || trend.key === "down") return Math.min(100, 40 + Math.abs(Number(trend.delta) || 0) * 5);
+    if (trend.direction === "up" || trend.key === "up") return Math.max(0, 20 - Math.abs(Number(trend.delta) || 0));
+    return 20;
+  }
 
   // src/domain/analytics/study-metrics.js
   function summarizeStudyRecords({ sessions = [], questions = [], simulations = [] }) {
@@ -908,11 +914,12 @@
   }
 
   // src/domain/analytics/priority-score.js
-  var PRIORITY_ALGORITHM_VERSION = 3;
-  var PRIORITY_WEIGHTS = Object.freeze({ examImpact: 0.25, retentionRisk: 0.2, masteryGap: 0.2, reviewUrgency: 0.1, reviewHealthRisk: 0.1, planAlignment: 0.075, recencyRisk: 0.075 });
+  var PRIORITY_ALGORITHM_VERSION = 4;
+  var PRIORITY_WEIGHTS = Object.freeze({ examImpact: 0.225, retentionRisk: 0.175, masteryGap: 0.175, trendRisk: 0.1, reviewUrgency: 0.1, reviewHealthRisk: 0.1, planAlignment: 0.0625, recencyRisk: 0.0625 });
   function calculatePriorityScore(candidate = {}) {
     const result = calculateFactorScore({ ...candidate, retentionRisk: candidate.retentionRisk ?? candidate.retentionNeed }, PRIORITY_WEIGHTS);
     const reasons = [];
+    if (result.factors.trendRisk >= 60) reasons.push("tendência recente em queda");
     if (result.factors.reviewUrgency >= 40) reasons.push("revisão atrasada ou prevista para agora");
     if (result.factors.reviewHealthRisk >= 40) reasons.push("saúde da revisão requer atenção");
     if (result.factors.retentionRisk >= 40) reasons.push("retenção estimada pede reforço");
@@ -1028,7 +1035,7 @@
       const reviewUrgency = priority.tipo === "revisão" ? Math.min(100, 40 + Math.max(0, Number(priority.diasAtrasado) || 0) * 12) : 0;
       const sessionMinutes2 = Math.max(15, Math.min(60, Number(priority.estimatedMinutes) || 30));
       const trend = diagnosis?.trend;
-      const trendRisk = !trend || trend.key === "insufficient" ? null : trend.key === "down" ? Math.min(100, 40 + Math.abs(trend.delta || 0) * 6) : 0;
+      const trendRisk = trendToRisk(trend);
       const evidenceStrength = ((diagnosis?.mastery?.confidence || 0) + (retention?.confidence || 0)) / 2;
       const recencyRisk = daysSinceContact === null ? null : Math.min(100, daysSinceContact * 5);
       const retentionRisk = retention?.available ? 100 - retention.score : null;
@@ -1064,6 +1071,7 @@
         daysSinceContact,
         recencyRisk,
         planAlignment: priority.tipo === "continuar" ? 90 : priority.tipo === "revisão" ? 80 : 55,
+        trend,
         trendRisk,
         improvementPotential: masteryGap,
         effortEfficiency: Math.max(10, 100 - sessionMinutes2),
@@ -6055,7 +6063,7 @@
     const target = Math.max(0, Math.min(100, Number(state.metas?.metaAprovacao) || 70));
     const reliablePerformance = performance.resolved >= 10 && performance.accuracy !== null;
     let status = "Em dia";
-    if (overdueDays >= 7 || reliablePerformance && performance.accuracy < target - 15 || trend.key === "down" && reliablePerformance && performance.accuracy < target) status = "Crítico";
+    if (overdueDays >= 7 || trend.state === "strong_down" || reliablePerformance && performance.accuracy < target - 15 || trend.key === "down" && reliablePerformance && performance.accuracy < target) status = "Crítico";
     else if (overdueDays > 0 || reliablePerformance && performance.accuracy < target || trend.key === "down" || daysSinceStudy >= 7) status = "Atenção";
     else if (!reliablePerformance || daysSinceStudy >= 4) status = "Acompanhamento";
     let recommendation = dominantError?.recommendation || null;
@@ -7207,7 +7215,7 @@
     activeSubjects().forEach((subject) => {
       const trend = calculateWeightedTrend(getSubjectWeeklyTrend(subject.id));
       if (trend.key === "down") {
-        const high = Math.abs(trend.delta) >= 8;
+        const high = trend.state === "strong_down";
         alertas.push({ id: `trend-${subject.id}`, subjectId: subject.id, severity: high ? "high" : "medium", nivel: high ? "alta" : "media", icon: "↘", texto: `${subject.name} caiu ${Math.abs(trend.delta)} pontos nas últimas quatro semanas (${trend.previousAccuracy}% para ${trend.recentAccuracy}%)` });
       }
     });
