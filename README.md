@@ -32,6 +32,8 @@ Os dados de estudo ficam no navegador do usuário. O projeto não possui servido
 
 ## Executar
 
+Projeto publicado no githubpages:
+https://vitoriapac.github.io/Extrato/
 Para uso simples, abra `index.html`. A persistência funciona localmente; recursos de PWA exigem um servidor HTTP local.
 
 ```powershell
