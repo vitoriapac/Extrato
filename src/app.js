@@ -35,7 +35,7 @@ import {PRIORITY_ALGORITHM_VERSION} from './domain/analytics/priority-score.js';
 import {calculateReviewHealth} from './domain/analytics/review-health.js';
 import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eligibility.js';
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
-import {captureRecommendationBaseline,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
+import {captureRecommendationBaseline,captureRecommendationSnapshot,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
 import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
 import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
 import {buildStudyPlan} from './application/build-study-plan.js';
@@ -336,9 +336,14 @@ function migrateV14toV15(data){
   (data.subjects||[]).forEach(subject=>(subject.topics||[]).forEach(topic=>{topic.adaptiveReview=topic.adaptiveReview?createAdaptiveReviewState(topic.adaptiveReview):null}));
   (data.reviewAgenda||[]).forEach(review=>{review.lastRating=REVIEW_RATINGS[review.lastRating]?review.lastRating:null;review.adaptiveState=review.adaptiveState?createAdaptiveReviewState(review.adaptiveState):null});data.schemaVersion=15;return data
 }
+function migrateV15toV16(data){
+  (data.studySessions||[]).forEach(session=>{session.source=session.source||'manual';session.recommendationId=session.recommendationId||null;session.prioritySnapshot=session.prioritySnapshot==null||session.prioritySnapshot===''?null:Number.isFinite(Number(session.prioritySnapshot))?Number(session.prioritySnapshot):null});
+  (data.recommendationFeedback||[]).forEach(item=>{item.snapshot=item.snapshot||null;if(item.outcome&&!item.outcome.state)item.outcome.state=item.outcome.attributionEligible?'neutral':'insufficient'});
+  data.schemaVersion=16;return data;
+}
 
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16}});
 }
 
 function ensureStateDefaults(){
@@ -375,7 +380,7 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.studyPlans)) state.studyPlans = [];
   if(!Array.isArray(state.planAdjustments)) state.planAdjustments = [];
   if(!Array.isArray(state.recommendationFeedback)) state.recommendationFeedback = [];
-  state.recommendationFeedback.forEach(item=>{item.shownAt=item.shownAt||item.createdAt||null;item.ratedAt=item.ratedAt||null;item.algorithmVersion=Math.max(1,Number(item.algorithmVersion)||1);item.score=Number.isFinite(Number(item.score))?Number(item.score):null;item.confidence=item.confidence||null;item.baseline=item.baseline||null;item.outcome=item.outcome||null});
+  state.recommendationFeedback.forEach(item=>{item.shownAt=item.shownAt||item.createdAt||null;item.ratedAt=item.ratedAt||null;item.algorithmVersion=Math.max(1,Number(item.algorithmVersion)||1);item.score=Number.isFinite(Number(item.score))?Number(item.score):null;item.confidence=item.confidence||null;item.snapshot=item.snapshot||null;item.baseline=item.baseline||null;item.outcome=item.outcome||null});
   if(!Array.isArray(state.alertStates)) state.alertStates = [];
   if(!state.activeTimer || typeof state.activeTimer!=='object') state.activeTimer = {};
   state.activeTimer.startedAt = state.activeTimer.startedAt || null;
@@ -448,6 +453,9 @@ function ensureStateDefaults(){
     session.subjectId=session.subjectId||null;
     session.topicId=session.topicId||null;
     session.planItemId=session.planItemId||null;
+    session.source=session.source||'manual';
+    session.recommendationId=session.recommendationId||null;
+    session.prioritySnapshot=session.prioritySnapshot==null||session.prioritySnapshot===''?null:Number.isFinite(Number(session.prioritySnapshot))?Number(session.prioritySnapshot):null;
     if(!['study','review','questions','simulation'].includes(session.type)) session.type='study';
     session.questionsResolved=Math.max(0,Number(session.questionsResolved)||0);
     session.correctAnswers=Math.max(0,Math.min(Number(session.correctAnswers)||0,session.questionsResolved));
@@ -4124,16 +4132,17 @@ function renderStudyRecommendation(){
   }).join('');
   container.innerHTML=`${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · mostrando ${visible.length} ${visible.length===1?'prioridade elegível':'prioridades elegíveis'}</span></div><div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
 }
-function recommendationBaseline(topicId){
-  const performance=getTopicPerformance(topicId),retention=topicRetentionScore(null,topicId),found=getTopicById(topicId),last=found?.topic?.lastReviewedAt||found?.topic?.lastCompletedAt||null;
-  return captureRecommendationBaseline({accuracy:performance.accuracy,questionVolume:performance.resolved,retentionScore:retention.available?retention.score:null,daysSinceContact:last?Math.max(0,-(diasParaRevisao(localDateFromTimestamp(last))??0)):null,measuredAt:nowISO()});
+function recommendationBaseline(recommendation){
+  const topicId=recommendation.topicId,performance=getTopicPerformance(topicId),found=getTopicById(topicId),last=found?.topic?.lastReviewedAt||found?.topic?.lastCompletedAt||null;
+  return captureRecommendationBaseline({mastery:recommendation.mastery,accuracy:performance.accuracy,questionVolume:performance.resolved,retention:recommendation.retention,
+    reviewHealth:recommendation.reviewHealth?.value,risk:recommendation.risk?.value,trend:recommendation.diagnosis?.trend||null,daysSinceContact:last?Math.max(0,-(diasParaRevisao(localDateFromTimestamp(last))??0)):null,measuredAt:nowISO()});
 }
-function recordRecommendationFeedback(recommendation,{accepted,reasonSkipped=null}={}){return recordRecommendationDecision(state.recommendationFeedback,recommendation,{accepted,reasonSkipped,baseline:recommendationBaseline(recommendation.topicId),now:nowISO(),idGenerator:uid})}
+function recordRecommendationFeedback(recommendation,{accepted,reasonSkipped=null}={}){const baseline=recommendationBaseline(recommendation),createdAt=nowISO();return recordRecommendationDecision(state.recommendationFeedback,recommendation,{accepted,reasonSkipped,baseline,snapshot:captureRecommendationSnapshot(recommendation,{baseline,createdAt}),now:createdAt,idGenerator:uid})}
 function measureRecommendationResults(session){
   if(!session?.topicId)return;const measuredAt=nowISO();
-  state.recommendationFeedback.filter(item=>item.accepted&&item.completed&&item.topicId===session.topicId&&item.baseline&&!item.outcome).forEach(feedback=>{
-    const since=Date.parse(feedback.baseline.measuredAt)||0,records=validQuestionRecords().filter(item=>item.topicId===session.topicId&&Date.parse(item.createdAt||`${item.date}T23:59:59Z`)>=since),volume=records.reduce((sum,item)=>sum+(Number(item.resolved)||0),0),correct=records.reduce((sum,item)=>sum+(Number(item.correct)||0),0),activities=state.studySessions.filter(item=>item.topicId===session.topicId&&item.id!==session.id&&Date.parse(item.createdAt||item.startedAt||0)>=since).length,retention=topicRetentionScore(null,session.topicId);
-    measureRecommendationOutcome(feedback,{accuracyAfter:volume?Math.round(correct/volume*1000)/10:null,questionVolumeAfter:volume,retentionAfter:retention.available?retention.score:null,measuredAt,daysElapsed:Math.max(0,(Date.parse(measuredAt)-since)/86400000),otherActivities:activities});
+  state.recommendationFeedback.filter(item=>item.accepted&&item.completed&&item.topicId===session.topicId&&item.baseline&&(!item.outcome||['pending','insufficient'].includes(item.outcome.state))).forEach(feedback=>{
+    const since=Date.parse(feedback.baseline.measuredAt)||0,records=validQuestionRecords().filter(item=>item.topicId===session.topicId&&Date.parse(item.createdAt||`${item.date}T23:59:59Z`)>=since),volume=records.reduce((sum,item)=>sum+(Number(item.resolved)||0),0),correct=records.reduce((sum,item)=>sum+(Number(item.correct)||0),0),activities=state.studySessions.filter(item=>item.topicId===session.topicId&&item.id!==session.id&&Date.parse(item.createdAt||item.startedAt||0)>=since).length,candidate=intelligenceCandidates().find(item=>item.topicId===session.topicId);
+    measureRecommendationOutcome(feedback,{masteryAfter:candidate?.mastery,accuracyAfter:volume?Math.round(correct/volume*1000)/10:null,questionVolumeAfter:volume,retentionAfter:candidate?.retention,reviewHealthAfter:candidate?.reviewHealth?.value,riskAfter:candidate?.risk?.value,measuredAt,daysElapsed:Math.max(0,(Date.parse(measuredAt)-since)/86400000),otherActivities:activities});
   });
 }
 function dismissStudyRecommendation(id){const recommendation=currentStudyRecommendations.find(item=>item.id===id);if(recommendation){recordRecommendationFeedback(recommendation,{accepted:false,reasonSkipped:'swapped'});scheduleSave()}dismissedRecommendationIds.add(id);renderStudyRecommendation()}

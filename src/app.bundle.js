@@ -5,7 +5,7 @@
   var BACKUP_KEY = STORAGE_KEY + "-automatic-backup";
   var BACKUP_INDEX_KEY = BACKUP_KEY + "-index";
   var AUTOMATIC_BACKUP_SLOTS = 5;
-  var CURRENT_SCHEMA_VERSION = 15;
+  var CURRENT_SCHEMA_VERSION = 16;
   var MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
   var DB_NAME = "extrato-estudos-db";
   var DB_VERSION = 1;
@@ -424,7 +424,7 @@
   }
 
   // src/state/strategic.js
-  var DEFAULT_ALGORITHM_VERSIONS = Object.freeze({ readiness: 1, retention: 1, reviewHealth: 1, recommendations: 3, adaptiveReview: 1, forecasts: 1 });
+  var DEFAULT_ALGORITHM_VERSIONS = Object.freeze({ readiness: 1, retention: 1, reviewHealth: 1, recommendations: 3, recommendationOutcomes: 1, adaptiveReview: 1, forecasts: 1 });
   var EXAM_PRIORITIES = Object.freeze(["low", "normal", "high"]);
   function normalizeTopicStrategy(topic) {
     const importance = topic.examImportance == null || topic.examImportance === "" ? NaN : Number(topic.examImportance);
@@ -675,11 +675,11 @@
     return { value: value2, factors, missingFactors, contributions, completeness };
   }
   function createScoreResult({ value: value2 = null, state: state2 = null, evidence = null, confidence = null, factors = {}, reasons = [], algorithmVersion = 1, ...details } = {}) {
-    const numeric = value2 == null || !Number.isFinite(Number(value2)) ? null : Math.max(0, Math.min(100, Math.round(Number(value2))));
+    const numeric2 = value2 == null || !Number.isFinite(Number(value2)) ? null : Math.max(0, Math.min(100, Math.round(Number(value2))));
     const scoreEvidence = evidence || describeScoreEvidence({ completeness: 0, evidenceStrength: confidence });
     return {
-      value: numeric,
-      state: state2 || (numeric === null ? "empty" : "estimated"),
+      value: numeric2,
+      state: state2 || (numeric2 === null ? "empty" : "estimated"),
       evidence: scoreEvidence,
       confidence: confidence == null ? scoreEvidence.evidenceStrength : Math.max(0, Math.min(1, Number(confidence) || 0)),
       factors,
@@ -1176,7 +1176,7 @@
     if (!recommendation || !id || !shownAt) throw new Error("Recomendação, identidade e instante são obrigatórios.");
     return { ...recommendation, recommendationId: id, shownAt, algorithmVersion };
   }
-  function recordRecommendationDecision(feedbackList, recommendation, { accepted, reasonSkipped = null, baseline = null, now, idGenerator } = {}) {
+  function recordRecommendationDecision(feedbackList, recommendation, { accepted, reasonSkipped = null, baseline = null, snapshot = null, now, idGenerator } = {}) {
     const existing = feedbackList.find((item) => item.recommendationId === recommendation.recommendationId);
     if (existing) return existing;
     const feedback = {
@@ -1194,7 +1194,8 @@
       confidence: Number.isFinite(Number(recommendation.confidence)) ? Number(recommendation.confidence) : null,
       confidenceLabel: recommendation.confidenceLabel || recommendation.evidence?.evidenceLabel || null,
       algorithmVersion: Number(recommendation.algorithmVersion) || 1,
-      baseline: baseline || null,
+      snapshot: snapshot ? structuredClone(snapshot) : null,
+      baseline: baseline ? structuredClone(baseline) : null,
       outcome: null,
       shownAt: recommendation.shownAt,
       createdAt: now,
@@ -1228,21 +1229,78 @@
     return { shown: decisions.length, accepted: accepted.length, completed: completed.length, rated: rated.length, acceptanceRate: pct(accepted.length, decisions.length), completionRate: pct(completed.length, accepted.length), usefulnessRate: pct(rated.filter((item) => item.useful).length, rated.length) };
   }
 
+  // src/domain/recommendations/recommendation-outcome.js
+  var RECOMMENDATION_OUTCOME_VERSION = 1;
+  var METRICS = ["mastery", "retention", "reviewHealth", "accuracy", "risk"];
+  var numeric = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Math.max(0, Math.min(100, Number(value2)));
+  var round = (value2) => Math.round(value2 * 10) / 10;
+  function normalizeRecommendationMetrics(value2 = {}) {
+    return Object.fromEntries(METRICS.map((key) => [key, numeric(value2?.[key])]));
+  }
+  function evaluateRecommendationOutcome({ before = {}, after = {}, questionVolume = 0, daysElapsed = 0, otherActivities = 0, measuredAt = null } = {}) {
+    const normalizedBefore = normalizeRecommendationMetrics(before), normalizedAfter = normalizeRecommendationMetrics(after);
+    const delta = Object.fromEntries(METRICS.map((key) => {
+      const start = normalizedBefore[key], end = normalizedAfter[key];
+      return [key, start == null || end == null ? null : round(key === "risk" ? start - end : end - start)];
+    }));
+    const comparable = Object.values(delta).filter((value2) => value2 !== null);
+    const volume = Math.max(0, Math.floor(Number(questionVolume) || 0)), elapsed = Math.max(0, Number(daysElapsed) || 0), activities = Math.max(0, Math.floor(Number(otherActivities) || 0));
+    const reasons = [];
+    if (elapsed < 1) reasons.push("Aguardando ao menos 1 dia após a recomendação");
+    if (volume < 20) reasons.push(`Aguardando ${20 - volume} questão(ões) adicional(is)`);
+    if (comparable.length < 2) reasons.push("Menos de 2 indicadores comparáveis");
+    if (activities > 3) reasons.push("Muitas outras atividades no tópico para atribuir o resultado");
+    const state2 = elapsed < 1 ? "pending" : reasons.length ? "insufficient" : round(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) >= 3 ? "positive" : round(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) <= -3 ? "negative" : "neutral";
+    const confidence = Math.min(1, volume / 50 * 0.55 + Math.min(1, elapsed / 7) * 0.2 + comparable.length / METRICS.length * 0.25);
+    const evidence = describeScoreEvidence({ completeness: comparable.length / METRICS.length, evidenceStrength: confidence });
+    return {
+      state: state2,
+      outcome: state2,
+      before: normalizedBefore,
+      after: normalizedAfter,
+      delta,
+      averageDelta: comparable.length ? round(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) : null,
+      questionVolume: volume,
+      daysElapsed: round(elapsed),
+      otherActivities: activities,
+      attributionEligible: ["positive", "negative", "neutral"].includes(state2),
+      confidence: round(confidence),
+      evidence,
+      reasons,
+      measuredAt,
+      algorithmVersion: RECOMMENDATION_OUTCOME_VERSION
+    };
+  }
+
   // src/application/recommendations/outcome-service.js
   function recommendationOutcomeConfidence(questionVolume = 0) {
     const volume = Math.max(0, Number(questionVolume) || 0);
     return volume < 1 ? "Aguardando" : volume < 20 ? "Amostra inicial" : volume < 50 ? "Estimativa" : "Mais confiável";
   }
-  function captureRecommendationBaseline({ accuracy = null, questionVolume = 0, retentionScore = null, daysSinceContact = null, measuredAt } = {}) {
-    return { accuracy: Number.isFinite(Number(accuracy)) ? Number(accuracy) : null, questionVolume: Math.max(0, Number(questionVolume) || 0), retentionScore: Number.isFinite(Number(retentionScore)) ? Number(retentionScore) : null, daysSinceContact: Number.isFinite(Number(daysSinceContact)) ? Math.max(0, Number(daysSinceContact)) : null, measuredAt };
+  function captureRecommendationBaseline({ mastery = null, accuracy = null, questionVolume = 0, retention = null, retentionScore = null, reviewHealth = null, risk = null, trend = null, daysSinceContact = null, measuredAt } = {}) {
+    const metrics = normalizeRecommendationMetrics({ mastery, accuracy, retention: retention ?? retentionScore, reviewHealth, risk });
+    return { ...metrics, retentionScore: metrics.retention, accuracy: metrics.accuracy, questionVolume: Math.max(0, Number(questionVolume) || 0), daysSinceContact: Number.isFinite(Number(daysSinceContact)) ? Math.max(0, Number(daysSinceContact)) : null, trend: trend ? structuredClone(trend) : null, measuredAt };
   }
-  function measureRecommendationOutcome(feedback, { accuracyAfter = null, questionVolumeAfter = 0, nextReviewRating = null, retentionAfter = null, measuredAt, daysElapsed = 0, otherActivities = 0 } = {}) {
+  function captureRecommendationSnapshot(recommendation, { baseline = null, createdAt = null } = {}) {
+    const before = baseline || captureRecommendationBaseline({ measuredAt: createdAt });
+    return Object.freeze({
+      recommendationId: recommendation.recommendationId,
+      algorithmVersion: Number(recommendation.algorithmVersion) || 1,
+      subjectId: recommendation.subjectId || null,
+      topicId: recommendation.topicId || null,
+      priorityScore: Number.isFinite(Number(recommendation.score)) ? Number(recommendation.score) : null,
+      riskScore: Number.isFinite(Number(recommendation.risk?.value)) ? Number(recommendation.risk.value) : null,
+      recommendedMinutes: Math.max(0, Number(recommendation.estimatedMinutes) || 0),
+      recommendedQuestions: Math.max(0, Number(recommendation.recommendedQuestions) || 0),
+      before: structuredClone(before),
+      createdAt: createdAt || recommendation.shownAt || null
+    });
+  }
+  function measureRecommendationOutcome(feedback, { masteryAfter = null, accuracyAfter = null, questionVolumeAfter = 0, nextReviewRating = null, retentionAfter = null, reviewHealthAfter = null, riskAfter = null, measuredAt, daysElapsed = 0, otherActivities = 0 } = {}) {
     if (!feedback) return null;
-    const volume = Math.max(0, Number(questionVolumeAfter) || 0), reasons = [];
-    if (volume < 20) reasons.push("Amostra inferior a 20 questões");
-    if (Number(daysElapsed) < 1) reasons.push("Período de observação muito curto");
-    if (Number(otherActivities) > 3) reasons.push("Muitas outras atividades no tópico");
-    const outcome = { accuracyAfter: Number.isFinite(Number(accuracyAfter)) ? Number(accuracyAfter) : null, questionVolumeAfter: volume, nextReviewRating: nextReviewRating || null, retentionAfter: Number.isFinite(Number(retentionAfter)) ? Number(retentionAfter) : null, measuredAt, confidence: recommendationOutcomeConfidence(volume), attributionEligible: reasons.length === 0, reasons };
+    const before = feedback.snapshot?.before || feedback.baseline || {};
+    const evaluated = evaluateRecommendationOutcome({ before, after: { mastery: masteryAfter, accuracy: accuracyAfter, retention: retentionAfter, reviewHealth: reviewHealthAfter, risk: riskAfter }, questionVolume: questionVolumeAfter, measuredAt, daysElapsed, otherActivities });
+    const outcome = { ...evaluated, accuracyAfter: evaluated.after.accuracy, questionVolumeAfter: evaluated.questionVolume, nextReviewRating: nextReviewRating || null, retentionAfter: evaluated.after.retention, confidenceLabel: recommendationOutcomeConfidence(evaluated.questionVolume) };
     feedback.outcome = outcome;
     return outcome;
   }
@@ -1590,12 +1648,20 @@
     };
     return Object.freeze({
       complete: (input) => {
-        const session = normalize({ id: idGenerator("session"), createdAt: clock.nowISO(), ...input });
+        const linkedItem = findPlanItem(input.planItemId)?.item || null, recommendationId = input.recommendationId || linkedItem?.recommendationId || null;
+        const session = normalize({
+          id: idGenerator("session"),
+          createdAt: clock.nowISO(),
+          ...input,
+          source: input.source || (recommendationId ? "recommendation" : linkedItem ? "plan" : "manual"),
+          recommendationId,
+          prioritySnapshot: input.prioritySnapshot ?? (Number.isFinite(Number(linkedItem?.score)) ? Number(linkedItem.score) : null)
+        });
         const saved = repository.add(session);
         syncQuestion(saved);
         syncPlan(saved.planItemId);
         const occurredAt = clock.nowISO();
-        historyRepository?.add?.({ id: idGenerator("history"), date: occurredAt, occurredAt, localDate: saved.date || clock.today(), type: "study_session", subjectId: saved.subjectId || null, topicId: saved.topicId || null, metadata: { sessionId: saved.id, durationSeconds: saved.durationSeconds } });
+        historyRepository?.add?.({ id: idGenerator("history"), date: occurredAt, occurredAt, localDate: saved.date || clock.today(), type: "study_session", subjectId: saved.subjectId || null, topicId: saved.topicId || null, metadata: { sessionId: saved.id, durationSeconds: saved.durationSeconds, recommendationId: saved.recommendationId || null } });
         onCompleted(saved);
         return saved;
       },
@@ -3037,8 +3103,21 @@
     data.schemaVersion = 15;
     return data;
   }
+  function migrateV15toV16(data) {
+    (data.studySessions || []).forEach((session) => {
+      session.source = session.source || "manual";
+      session.recommendationId = session.recommendationId || null;
+      session.prioritySnapshot = session.prioritySnapshot == null || session.prioritySnapshot === "" ? null : Number.isFinite(Number(session.prioritySnapshot)) ? Number(session.prioritySnapshot) : null;
+    });
+    (data.recommendationFeedback || []).forEach((item) => {
+      item.snapshot = item.snapshot || null;
+      if (item.outcome && !item.outcome.state) item.outcome.state = item.outcome.attributionEligible ? "neutral" : "insufficient";
+    });
+    data.schemaVersion = 16;
+    return data;
+  }
   function migrateState(data) {
-    return runStateMigrations(data, { currentVersion: CURRENT_SCHEMA_VERSION, migrations: { 1: migrateV1toV2, 2: migrateV2toV3, 3: migrateV3toV4, 4: migrateV4toV5, 5: migrateV5toV6, 6: migrateV6toV7, 7: migrateV7toV8, 8: migrateV8toV9, 9: migrateV9toV10, 10: migrateV10toV11, 11: migrateV11toV12, 12: migrateV12toV13, 13: migrateV13toV14, 14: migrateV14toV15 } });
+    return runStateMigrations(data, { currentVersion: CURRENT_SCHEMA_VERSION, migrations: { 1: migrateV1toV2, 2: migrateV2toV3, 3: migrateV3toV4, 4: migrateV4toV5, 5: migrateV5toV6, 6: migrateV6toV7, 7: migrateV7toV8, 8: migrateV8toV9, 9: migrateV9toV10, 10: migrateV10toV11, 11: migrateV11toV12, 12: migrateV12toV13, 13: migrateV13toV14, 14: migrateV14toV15, 15: migrateV15toV16 } });
   }
   function ensureStateDefaults() {
     if (!state || typeof state !== "object") state = {};
@@ -3080,6 +3159,7 @@
       item.algorithmVersion = Math.max(1, Number(item.algorithmVersion) || 1);
       item.score = Number.isFinite(Number(item.score)) ? Number(item.score) : null;
       item.confidence = item.confidence || null;
+      item.snapshot = item.snapshot || null;
       item.baseline = item.baseline || null;
       item.outcome = item.outcome || null;
     });
@@ -3165,6 +3245,9 @@
       session.subjectId = session.subjectId || null;
       session.topicId = session.topicId || null;
       session.planItemId = session.planItemId || null;
+      session.source = session.source || "manual";
+      session.recommendationId = session.recommendationId || null;
+      session.prioritySnapshot = session.prioritySnapshot == null || session.prioritySnapshot === "" ? null : Number.isFinite(Number(session.prioritySnapshot)) ? Number(session.prioritySnapshot) : null;
       if (!["study", "review", "questions", "simulation"].includes(session.type)) session.type = "study";
       session.questionsResolved = Math.max(0, Number(session.questionsResolved) || 0);
       session.correctAnswers = Math.max(0, Math.min(Number(session.correctAnswers) || 0, session.questionsResolved));
@@ -7215,19 +7298,30 @@
     }).join("");
     container.innerHTML = `${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · mostrando ${visible.length} ${visible.length === 1 ? "prioridade elegível" : "prioridades elegíveis"}</span></div><div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
   }
-  function recommendationBaseline(topicId) {
-    const performance = getTopicPerformance(topicId), retention = topicRetentionScore(null, topicId), found = getTopicById(topicId), last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
-    return captureRecommendationBaseline({ accuracy: performance.accuracy, questionVolume: performance.resolved, retentionScore: retention.available ? retention.score : null, daysSinceContact: last ? Math.max(0, -(diasParaRevisao(localDateFromTimestamp(last)) ?? 0)) : null, measuredAt: nowISO2() });
+  function recommendationBaseline(recommendation) {
+    const topicId = recommendation.topicId, performance = getTopicPerformance(topicId), found = getTopicById(topicId), last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
+    return captureRecommendationBaseline({
+      mastery: recommendation.mastery,
+      accuracy: performance.accuracy,
+      questionVolume: performance.resolved,
+      retention: recommendation.retention,
+      reviewHealth: recommendation.reviewHealth?.value,
+      risk: recommendation.risk?.value,
+      trend: recommendation.diagnosis?.trend || null,
+      daysSinceContact: last ? Math.max(0, -(diasParaRevisao(localDateFromTimestamp(last)) ?? 0)) : null,
+      measuredAt: nowISO2()
+    });
   }
   function recordRecommendationFeedback(recommendation, { accepted, reasonSkipped = null } = {}) {
-    return recordRecommendationDecision(state.recommendationFeedback, recommendation, { accepted, reasonSkipped, baseline: recommendationBaseline(recommendation.topicId), now: nowISO2(), idGenerator: uid });
+    const baseline = recommendationBaseline(recommendation), createdAt = nowISO2();
+    return recordRecommendationDecision(state.recommendationFeedback, recommendation, { accepted, reasonSkipped, baseline, snapshot: captureRecommendationSnapshot(recommendation, { baseline, createdAt }), now: createdAt, idGenerator: uid });
   }
   function measureRecommendationResults(session) {
     if (!session?.topicId) return;
     const measuredAt = nowISO2();
-    state.recommendationFeedback.filter((item) => item.accepted && item.completed && item.topicId === session.topicId && item.baseline && !item.outcome).forEach((feedback) => {
-      const since = Date.parse(feedback.baseline.measuredAt) || 0, records = validQuestionRecords().filter((item) => item.topicId === session.topicId && Date.parse(item.createdAt || `${item.date}T23:59:59Z`) >= since), volume = records.reduce((sum3, item) => sum3 + (Number(item.resolved) || 0), 0), correct = records.reduce((sum3, item) => sum3 + (Number(item.correct) || 0), 0), activities = state.studySessions.filter((item) => item.topicId === session.topicId && item.id !== session.id && Date.parse(item.createdAt || item.startedAt || 0) >= since).length, retention = topicRetentionScore(null, session.topicId);
-      measureRecommendationOutcome(feedback, { accuracyAfter: volume ? Math.round(correct / volume * 1e3) / 10 : null, questionVolumeAfter: volume, retentionAfter: retention.available ? retention.score : null, measuredAt, daysElapsed: Math.max(0, (Date.parse(measuredAt) - since) / 864e5), otherActivities: activities });
+    state.recommendationFeedback.filter((item) => item.accepted && item.completed && item.topicId === session.topicId && item.baseline && (!item.outcome || ["pending", "insufficient"].includes(item.outcome.state))).forEach((feedback) => {
+      const since = Date.parse(feedback.baseline.measuredAt) || 0, records = validQuestionRecords().filter((item) => item.topicId === session.topicId && Date.parse(item.createdAt || `${item.date}T23:59:59Z`) >= since), volume = records.reduce((sum3, item) => sum3 + (Number(item.resolved) || 0), 0), correct = records.reduce((sum3, item) => sum3 + (Number(item.correct) || 0), 0), activities = state.studySessions.filter((item) => item.topicId === session.topicId && item.id !== session.id && Date.parse(item.createdAt || item.startedAt || 0) >= since).length, candidate = intelligenceCandidates().find((item) => item.topicId === session.topicId);
+      measureRecommendationOutcome(feedback, { masteryAfter: candidate?.mastery, accuracyAfter: volume ? Math.round(correct / volume * 1e3) / 10 : null, questionVolumeAfter: volume, retentionAfter: candidate?.retention, reviewHealthAfter: candidate?.reviewHealth?.value, riskAfter: candidate?.risk?.value, measuredAt, daysElapsed: Math.max(0, (Date.parse(measuredAt) - since) / 864e5), otherActivities: activities });
     });
   }
   function dismissStudyRecommendation(id) {

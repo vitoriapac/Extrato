@@ -5,7 +5,7 @@ export function createRecommendationPresentation(recommendation,{id,shownAt,algo
   return {...recommendation,recommendationId:id,shownAt,algorithmVersion};
 }
 
-export function recordRecommendationDecision(feedbackList,recommendation,{accepted,reasonSkipped=null,baseline=null,now,idGenerator}={}){
+export function recordRecommendationDecision(feedbackList,recommendation,{accepted,reasonSkipped=null,baseline=null,snapshot=null,now,idGenerator}={}){
   const existing=feedbackList.find(item=>item.recommendationId===recommendation.recommendationId);
   if(existing)return existing;
   const feedback={
@@ -13,7 +13,7 @@ export function recordRecommendationDecision(feedbackList,recommendation,{accept
     date:String(recommendation.shownAt).slice(0,10),subjectId:recommendation.subjectId||null,topicId:recommendation.topicId||null,
     accepted:asBoolean(accepted),completed:false,useful:null,reasonSkipped,resultingSessionId:null,
     score:Number(recommendation.score)||0,confidence:Number.isFinite(Number(recommendation.confidence))?Number(recommendation.confidence):null,confidenceLabel:recommendation.confidenceLabel||recommendation.evidence?.evidenceLabel||null,algorithmVersion:Number(recommendation.algorithmVersion)||1,
-    baseline:baseline||null,outcome:null,shownAt:recommendation.shownAt,createdAt:now,completedAt:null,ratedAt:null
+    snapshot:snapshot?structuredClone(snapshot):null,baseline:baseline?structuredClone(baseline):null,outcome:null,shownAt:recommendation.shownAt,createdAt:now,completedAt:null,ratedAt:null
   };
   feedbackList.push(feedback);return feedback;
 }

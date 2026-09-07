@@ -1,4 +1,4 @@
-export const DEFAULT_ALGORITHM_VERSIONS=Object.freeze({readiness:1,retention:1,reviewHealth:1,recommendations:3,adaptiveReview:1,forecasts:1});
+export const DEFAULT_ALGORITHM_VERSIONS=Object.freeze({readiness:1,retention:1,reviewHealth:1,recommendations:3,recommendationOutcomes:1,adaptiveReview:1,forecasts:1});
 export const EXAM_PRIORITIES=Object.freeze(['low','normal','high']);
 
 export function normalizeTopicStrategy(topic){
