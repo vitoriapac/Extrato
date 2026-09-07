@@ -63,6 +63,7 @@ import {buildWeeklyAvailability} from './application/goals/weekly-availability.j
 import {buildPriorityViewModel} from './ui/view-models/priority-view-model.js';
 import {buildStudyTimeViewModel} from './application/analytics/build-overview-view-model.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
+import {buildIntelligentAlerts} from './domain/diagnostics/alerts.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
 import {generateDemoData} from './demo/demo-generator.js';
@@ -3222,7 +3223,7 @@ function renderStudyPlanBuilder(){
   if(plan.state==='insufficient'){container.innerHTML=`<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;return}
   const subjectRows=plan.subjects.map(item=>`<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join('');
   const topicRows=plan.items.slice(0,8).map(item=>`<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered?" · manutenção":""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join('');
-  container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Disponibilidade semanal</span></div><div><strong>${formatPlanMinutes(plan.remainingMinutes)}</strong><span>Carga pendente configurada</span></div><div><strong>${plan.weeksUntilExam}</strong><span>Semanas até a prova</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence*100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase()||"não avaliada"}${plan.missingEffort.length?` · ${plan.missingEffort.length} tópico${plan.missingEffort.length===1?'':'s'} sem esforço estimado`:''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes||0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
+  container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes<0?'-':'+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState==='deficit'?'ritmo insuficiente':plan.paceState==='surplus'?'capacidade disponível':'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence*100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase()||"não avaliada"}${plan.missingEffort.length?` · ${plan.missingEffort.length} tópico${plan.missingEffort.length===1?'':'s'} sem esforço estimado`:''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes||0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
 }
 function updateExamBlueprint(field,value){
   studyPlanPreview=null;
@@ -3984,51 +3985,23 @@ function renderStudySessionsHistory(){
 
 /* ===== ALERTAS INTELIGENTES ===== */
 function computeAlertasInteligentes(){
-  const alertas = [];
-  const today = todayISO();
-
-  const atrasadas = revisoesAtrasadas();
-  if(atrasadas > 0){
-    alertas.push({id:'reviews-overdue',severity:'high', nivel:'alta', icon:'🔴', texto:`${pluralize(atrasadas,'revisão','revisões')} atrasada${atrasadas===1?'':'s'}` });
-  }
-
-  computeSubjectPerformance().filter(p=>isActiveSubjectId(p.subjectId)&&p.acerto<65&&p.total>=5).forEach(p=>{
-    alertas.push({id:`accuracy-${p.subjectId}`,subjectId:p.subjectId,severity:'high',nivel:'alta',icon:'🔴',texto:`${p.subject} abaixo de 65% de acerto (${p.acerto}%)`});
-  });
-  activeSubjects().forEach(subject=>{
+  const today=todayISO();
+  const subjects=activeSubjects().map(subject=>{
     const trend=calculateWeightedTrend(getSubjectWeeklyTrend(subject.id));
-    if(trend.key==='down'){const high=trend.state==='strong_down';alertas.push({id:`trend-${subject.id}`,subjectId:subject.id,severity:high?'high':'medium',nivel:high?'alta':'media',icon:'↘',texto:`${subject.name} caiu ${Math.abs(trend.delta)} pontos nas últimas quatro semanas (${trend.previousAccuracy}% para ${trend.recentAccuracy}%)`})}
+    const lastSession=state.studySessions.filter(session=>entitySubjectId(session)===subject.id&&session.date).sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];
+    const daysSinceStudy=lastSession?Math.max(0,Math.floor((new Date(today+'T00:00:00')-new Date(lastSession.date+'T00:00:00'))/86400000)):null;
+    return {subjectId:subject.id,name:subject.name,trend:{direction:trend.key==='down'?'down':trend.key==='up'?'up':'stable',state:trend.state,delta:trend.delta},daysSinceStudy};
   });
-
-  const diaSemana = new Date(today + 'T00:00:00').getDay(); // 0=domingo..6=sábado
-  const diasDecorridos = diaSemana === 0 ? 7 : diaSemana; // considera semana seg-dom
-  const expectedFrac = diasDecorridos / 7;
-  const inicioSemana=startOfWeek(today);
-  const atingidoSemanal=uniqueTopicsCompletedBetween(inicioSemana,addDays(inicioSemana,6));
-  const semanalFrac = state.metas.semanal > 0 ? atingidoSemanal / state.metas.semanal : 1;
-  if(expectedFrac >= 0.5 && semanalFrac < expectedFrac - 0.15){
-    const gap = Math.round((expectedFrac - semanalFrac) * 100);
-    alertas.push({id:'weekly-goal-risk',severity:'medium', nivel:'media', icon:'🟠', texto:`Meta semanal ${gap}% abaixo do esperado pro dia da semana` });
-  }
-
-  const difSemRevisao=activeTopics().filter(t=>
-    t.difficulty==='Difícil'&&t.status!=='Concluído'&&
-    !state.reviewAgenda.some(a=>(a.topicId||a.topicRef)===t.id&&a.status!=='Concluído')
-  ).length;
-  if(difSemRevisao > 0){
-    alertas.push({id:'hard-topics-no-review',severity:'low', nivel:'baixa', icon:'🟡', texto:`${pluralize(difSemRevisao,'tópico')} ${difSemRevisao===1?'difícil':'difíceis'} sem revisão agendada` });
-  }
-
-  const ritmo = computeRitmo();
-  if(ritmo.status === 'ok' && ritmo.comparativo === 'no-prazo'){
-    const folga = ritmo.daysToExam - ritmo.daysNeeded;
-    alertas.push({id:'pace-ahead',severity:'ok', nivel:'ok', icon:'🟢', texto:`Ritmo atual permite terminar ${folga} dia${folga===1?'':'s'} antes da prova` });
-  } else if(ritmo.status === 'ok' && ritmo.comparativo === 'atrasado'){
-    const atraso = ritmo.daysNeeded - ritmo.daysToExam;
-    alertas.push({id:'pace-behind',severity:'high', nivel:'alta', icon:'🔴', texto:`No ritmo atual você terminaria ${atraso} dia${atraso===1?'':'s'} depois da prova` });
-  }
-
-  return alertas;
+  const topics=intelligenceCandidates().map(item=>({topicId:item.topicId,subjectId:item.subjectId,name:item.topicName,mastery:item.mastery,examImpact:item.examImpact,evidenceStrength:item.evidenceStrength}));
+  const days=state.examDate?diasParaRevisao(state.examDate):null;
+  const weeklyAvailableMinutes=Object.values(state.metas.horasPorDia).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0);
+  const plan=buildStudyPlan({topics:studyPlanCandidates(),weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
+  const dayOfWeek=new Date(today+'T00:00:00').getDay(),elapsed=dayOfWeek===0?7:dayOfWeek,expectedFrac=elapsed/7;
+  const weekStart=startOfWeek(today),achieved=uniqueTopicsCompletedBetween(weekStart,addDays(weekStart,6));
+  const actualFrac=state.metas.semanal>0?achieved/state.metas.semanal:1;
+  const weeklyGoalGap=expectedFrac>=.5&&actualFrac<expectedFrac-.15?Math.round((expectedFrac-actualFrac)*100):null;
+  const hardTopicsWithoutReview=activeTopics().filter(topic=>topic.difficulty==='Difícil'&&topic.status!=='Concluído'&&!state.reviewAgenda.some(review=>(review.topicId||review.topicRef)===topic.id&&review.status!=='Concluído')).length;
+  return buildIntelligentAlerts({today,overdueReviews:revisoesAtrasadas(),subjects,topics,weeklyBalanceMinutes:plan.weeklyBalanceMinutes,hardTopicsWithoutReview,weeklyGoalGap});
 }
 
 function renderAlertasInteligentes(){
@@ -4045,7 +4018,7 @@ function renderAlertasInteligentes(){
   container.innerHTML = alertas.map(a => `
     <div class="alerta-item alerta-${a.nivel}">
       <span class="alerta-icon">${a.icon}</span>
-      <span>${escapeHtml(a.texto)}</span>${a.severity!=='ok'?`<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(a.id)}')">Dispensar 7 dias</button>`:''}
+      <span><strong>${escapeHtml(a.reason||a.texto)}</strong><small>${escapeHtml(a.recommendedAction||'')}</small></span>${a.severity!=='ok'?`<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(a.id)}')">Dispensar 7 dias</button>`:''}
     </div>
   `).join('');
 }
@@ -4055,7 +4028,7 @@ function renderExecutiveSummary(){
   const container=document.getElementById('executiveSummary');if(!container)return;
   const metrics=computeApprovalMetrics(),readiness=readinessResult(metrics),pace=computeRitmo(),priorities=computeStudyPriorities();
   const topPriority=priorities[0]?{...priorities[0],reason:motivoPrioridade(priorities[0])}:null;
-  const risks=computeAlertasInteligentes().filter(alert=>alert.nivel!=='ok');
+  const risks=computeAlertasInteligentes();
   const configuredTopics=activeTopics().filter(topic=>topic.examImportance!==null&&topic.estimatedStudyMinutes!==null);
   const opportunityCount=configuredTopics.filter(topic=>priorities.some(priority=>priority.topicId===topic.id)).length;
   const weekStart=startOfWeek(todayISO()),weeklyGoal={achieved:uniqueTopicsCompletedBetween(weekStart,addDays(weekStart,6)),target:state.metas.semanal};

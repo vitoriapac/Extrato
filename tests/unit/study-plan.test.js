@@ -19,3 +19,10 @@ test('redistribui minutos quando um tópico atinge sua carga restante',()=>{
   const plan=buildStudyPlan({weeklyAvailableMinutes:100,weeksUntilExam:1,topics:[{id:'a',subjectId:'s1',subjectName:'A',estimatedMinutes:10,examImpact:100},{id:'b',subjectId:'s2',subjectName:'B',estimatedMinutes:90,examImpact:10}]});
   assert.equal(plan.weeklyPlannedMinutes,100);assert.equal(plan.items.find(item=>item.id==='a').minutes,10);
 });
+
+test('expõe capacidade, necessidade, saldo e ritmo semanal',()=>{
+  const deficit=buildStudyPlan({weeklyAvailableMinutes:100,weeksUntilExam:2,topics:[{id:'a',subjectId:'s1',estimatedMinutes:300}]});
+  assert.equal(deficit.weeklyNeedMinutes,150);assert.equal(deficit.weeklyBalanceMinutes,-50);assert.equal(deficit.paceState,'deficit');
+  const surplus=buildStudyPlan({weeklyAvailableMinutes:300,weeksUntilExam:2,topics:[{id:'a',subjectId:'s1',estimatedMinutes:300}]});
+  assert.equal(surplus.weeklyBalanceMinutes,150);assert.equal(surplus.paceState,'surplus');
+});

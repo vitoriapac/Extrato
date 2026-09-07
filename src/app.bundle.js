@@ -1423,9 +1423,12 @@
     const availability = positive(weeklyAvailableMinutes), weeks = Math.max(0, Math.ceil(Number(weeksUntilExam) || 0));
     const remainingMinutes = active.filter((item) => !item.covered).reduce((sum3, item) => sum3 + effort(item), 0);
     const maintenanceMinutes = configured.filter((item) => item.covered).reduce((sum3, item) => sum3 + effort(item), 0);
-    const base = { weeklyAvailableMinutes: availability, weeksUntilExam: weeks, remainingMinutes, maintenanceMinutes, missingEffort, blockedTopics };
+    const weeklyNeedMinutes = weeks > 0 ? Math.ceil(remainingMinutes / weeks) + maintenanceMinutes : null;
+    const weeklyBalanceMinutes = weeklyNeedMinutes === null ? null : availability - weeklyNeedMinutes;
+    const paceState = weeklyBalanceMinutes === null ? "insufficient" : weeklyBalanceMinutes < 0 ? "deficit" : weeklyBalanceMinutes > 0 ? "surplus" : "balanced";
+    const base = { weeklyAvailableMinutes: availability, weeksUntilExam: weeks, remainingMinutes, maintenanceMinutes, weeklyNeedMinutes, weeklyBalanceMinutes, paceState, missingEffort, blockedTopics };
     if (!configured.length || availability <= 0 || weeks <= 0) return { ...base, state: "insufficient", items: [], subjects: [], activityMix: { theory: 0, questions: 0, reviews: 0 }, confidence: 0 };
-    const weeklyBudget = Math.min(availability, Math.ceil(remainingMinutes / weeks) + maintenanceMinutes);
+    const weeklyBudget = Math.min(availability, weeklyNeedMinutes);
     const scored = configured.map((item) => ({ ...item, ...calculatePriorityScore(item), capacityMinutes: effort(item) })).sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));
     const totalScore = scored.reduce((sum3, item) => sum3 + Math.max(1, item.score), 0);
     const allocations = new Map(scored.map((item) => [item.id, Math.min(item.capacityMinutes, Math.floor(weeklyBudget * Math.max(1, item.score) / totalScore))]));
@@ -2359,6 +2362,37 @@
     }
     state2.dismissedUntil = addDays2(today, days);
     return next;
+  }
+
+  // src/domain/diagnostics/alerts.js
+  var ALERT_TYPES = Object.freeze([
+    "performance_decline",
+    "review_critical",
+    "subject_neglected",
+    "weekly_deficit",
+    "low_mastery_high_exam_impact",
+    "insufficient_evidence"
+  ]);
+  var presentation = { high: { level: "alta", icon: "🔴" }, medium: { level: "media", icon: "🟠" }, low: { level: "baixa", icon: "🟡" } };
+  function createDiagnosticAlert({ type, severity = "medium", subjectId = null, topicId = null, reason, recommendedAction, createdAt = null, id } = {}) {
+    if (!ALERT_TYPES.includes(type)) throw new TypeError("Tipo de alerta inválido.");
+    if (!reason || !recommendedAction) throw new TypeError("Alerta exige motivo e ação recomendada.");
+    const normalizedSeverity = presentation[severity] ? severity : "medium", view = presentation[normalizedSeverity];
+    return { id: id || [type, topicId || subjectId || "global"].join(":"), type, severity: normalizedSeverity, subjectId, topicId, reason: String(reason), recommendedAction: String(recommendedAction), createdAt: createdAt || null, resolvedAt: null, nivel: view.level, icon: view.icon, texto: String(reason) };
+  }
+  function buildIntelligentAlerts({ today = null, overdueReviews = 0, subjects = [], topics = [], weeklyBalanceMinutes = null, hardTopicsWithoutReview = 0, weeklyGoalGap = null } = {}) {
+    const alerts = [];
+    if (overdueReviews > 0) alerts.push(createDiagnosticAlert({ id: "reviews-overdue", type: "review_critical", severity: "high", createdAt: today, reason: overdueReviews + " revisão" + (overdueReviews === 1 ? "" : "ões") + " atrasada" + (overdueReviews === 1 ? "" : "s") + ".", recommendedAction: "Conclua primeiro as revisões vencidas." }));
+    subjects.forEach((subject) => {
+      if (subject.trend?.direction === "down") alerts.push(createDiagnosticAlert({ type: "performance_decline", severity: subject.trend.state === "strong_down" ? "high" : "medium", subjectId: subject.subjectId, createdAt: today, reason: subject.name + " caiu " + Math.abs(subject.trend.delta || 0) + " pontos no período analisado.", recommendedAction: "Revise os erros recentes e reduza conteúdo novo nesta disciplina." }));
+      if (Number(subject.daysSinceStudy) >= 14) alerts.push(createDiagnosticAlert({ type: "subject_neglected", severity: Number(subject.daysSinceStudy) >= 28 ? "high" : "medium", subjectId: subject.subjectId, createdAt: today, reason: subject.name + " está há " + subject.daysSinceStudy + " dias sem estudo registrado.", recommendedAction: "Reserve uma sessão curta para retomar a disciplina." }));
+    });
+    if (Number.isFinite(weeklyBalanceMinutes) && weeklyBalanceMinutes < 0) alerts.push(createDiagnosticAlert({ type: "weekly_deficit", severity: weeklyBalanceMinutes <= -120 ? "high" : "medium", createdAt: today, reason: "A necessidade semanal excede a capacidade em " + Math.abs(weeklyBalanceMinutes) + " minutos.", recommendedAction: "Aumente a disponibilidade ou reduza a carga antes da prova." }));
+    if (Number.isFinite(weeklyGoalGap) && weeklyGoalGap > 0) alerts.push(createDiagnosticAlert({ id: "weekly-goal-risk", type: "weekly_deficit", severity: "medium", createdAt: today, reason: "A meta semanal está " + weeklyGoalGap + "% abaixo do esperado para hoje.", recommendedAction: "Realoque uma sessão nesta semana para recuperar o ritmo." }));
+    topics.filter((topic) => Number(topic.mastery) < 50 && Number(topic.examImpact) >= 70).slice(0, 3).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "low_mastery_high_exam_impact", severity: "high", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: topic.name + " combina baixo domínio com alto impacto na prova.", recommendedAction: "Priorize teoria dirigida, questões e uma revisão curta." })));
+    if (hardTopicsWithoutReview > 0) alerts.push(createDiagnosticAlert({ id: "hard-topics-no-review", type: "review_critical", severity: "low", createdAt: today, reason: hardTopicsWithoutReview + " tópico" + (hardTopicsWithoutReview === 1 ? "" : "s") + " " + (hardTopicsWithoutReview === 1 ? "difícil" : "difíceis") + " sem revisão agendada.", recommendedAction: "Agende revisões para os tópicos difíceis." }));
+    topics.filter((topic) => topic.evidenceStrength != null && Number(topic.evidenceStrength) < 0.25).slice(0, 1).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "insufficient_evidence", severity: "low", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: "Ainda há pouca evidência para avaliar " + topic.name + ".", recommendedAction: "Registre uma sessão com questões para melhorar a confiança da análise." })));
+    return alerts;
   }
 
   // src/domain/forecasts/performance-forecast.js
@@ -6503,7 +6537,7 @@
     }
     const subjectRows = plan.subjects.map((item) => `<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join("");
     const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? " · manutenção" : ""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
-    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Disponibilidade semanal</span></div><div><strong>${formatPlanMinutes(plan.remainingMinutes)}</strong><span>Carga pendente configurada</span></div><div><strong>${plan.weeksUntilExam}</strong><span>Semanas até a prova</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || "não avaliada"}${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
+    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? "-" : "+"}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === "deficit" ? "ritmo insuficiente" : plan.paceState === "surplus" ? "capacidade disponível" : "ritmo equilibrado"}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || "não avaliada"}${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
   }
   function updateExamBlueprint(field, value2) {
     studyPlanPreview = null;
@@ -7230,47 +7264,23 @@
     body.innerHTML = html.join("");
   }
   function computeAlertasInteligentes() {
-    const alertas = [];
     const today = todayISO();
-    const atrasadas = revisoesAtrasadas();
-    if (atrasadas > 0) {
-      alertas.push({ id: "reviews-overdue", severity: "high", nivel: "alta", icon: "🔴", texto: `${pluralize(atrasadas, "revisão", "revisões")} atrasada${atrasadas === 1 ? "" : "s"}` });
-    }
-    computeSubjectPerformance().filter((p) => isActiveSubjectId(p.subjectId) && p.acerto < 65 && p.total >= 5).forEach((p) => {
-      alertas.push({ id: `accuracy-${p.subjectId}`, subjectId: p.subjectId, severity: "high", nivel: "alta", icon: "🔴", texto: `${p.subject} abaixo de 65% de acerto (${p.acerto}%)` });
-    });
-    activeSubjects().forEach((subject) => {
+    const subjects = activeSubjects().map((subject) => {
       const trend = calculateWeightedTrend(getSubjectWeeklyTrend(subject.id));
-      if (trend.key === "down") {
-        const high = trend.state === "strong_down";
-        alertas.push({ id: `trend-${subject.id}`, subjectId: subject.id, severity: high ? "high" : "medium", nivel: high ? "alta" : "media", icon: "↘", texto: `${subject.name} caiu ${Math.abs(trend.delta)} pontos nas últimas quatro semanas (${trend.previousAccuracy}% para ${trend.recentAccuracy}%)` });
-      }
+      const lastSession = state.studySessions.filter((session) => entitySubjectId(session) === subject.id && session.date).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+      const daysSinceStudy = lastSession ? Math.max(0, Math.floor((/* @__PURE__ */ new Date(today + "T00:00:00") - /* @__PURE__ */ new Date(lastSession.date + "T00:00:00")) / 864e5)) : null;
+      return { subjectId: subject.id, name: subject.name, trend: { direction: trend.key === "down" ? "down" : trend.key === "up" ? "up" : "stable", state: trend.state, delta: trend.delta }, daysSinceStudy };
     });
-    const diaSemana = (/* @__PURE__ */ new Date(today + "T00:00:00")).getDay();
-    const diasDecorridos = diaSemana === 0 ? 7 : diaSemana;
-    const expectedFrac = diasDecorridos / 7;
-    const inicioSemana = startOfWeek(today);
-    const atingidoSemanal = uniqueTopicsCompletedBetween(inicioSemana, addDays(inicioSemana, 6));
-    const semanalFrac = state.metas.semanal > 0 ? atingidoSemanal / state.metas.semanal : 1;
-    if (expectedFrac >= 0.5 && semanalFrac < expectedFrac - 0.15) {
-      const gap = Math.round((expectedFrac - semanalFrac) * 100);
-      alertas.push({ id: "weekly-goal-risk", severity: "medium", nivel: "media", icon: "🟠", texto: `Meta semanal ${gap}% abaixo do esperado pro dia da semana` });
-    }
-    const difSemRevisao = activeTopics().filter(
-      (t) => t.difficulty === "Difícil" && t.status !== "Concluído" && !state.reviewAgenda.some((a) => (a.topicId || a.topicRef) === t.id && a.status !== "Concluído")
-    ).length;
-    if (difSemRevisao > 0) {
-      alertas.push({ id: "hard-topics-no-review", severity: "low", nivel: "baixa", icon: "🟡", texto: `${pluralize(difSemRevisao, "tópico")} ${difSemRevisao === 1 ? "difícil" : "difíceis"} sem revisão agendada` });
-    }
-    const ritmo = computeRitmo();
-    if (ritmo.status === "ok" && ritmo.comparativo === "no-prazo") {
-      const folga = ritmo.daysToExam - ritmo.daysNeeded;
-      alertas.push({ id: "pace-ahead", severity: "ok", nivel: "ok", icon: "🟢", texto: `Ritmo atual permite terminar ${folga} dia${folga === 1 ? "" : "s"} antes da prova` });
-    } else if (ritmo.status === "ok" && ritmo.comparativo === "atrasado") {
-      const atraso = ritmo.daysNeeded - ritmo.daysToExam;
-      alertas.push({ id: "pace-behind", severity: "high", nivel: "alta", icon: "🔴", texto: `No ritmo atual você terminaria ${atraso} dia${atraso === 1 ? "" : "s"} depois da prova` });
-    }
-    return alertas;
+    const topics = intelligenceCandidates().map((item) => ({ topicId: item.topicId, subjectId: item.subjectId, name: item.topicName, mastery: item.mastery, examImpact: item.examImpact, evidenceStrength: item.evidenceStrength }));
+    const days = state.examDate ? diasParaRevisao(state.examDate) : null;
+    const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum3, hours) => sum3 + Math.max(0, Number(hours) || 0) * 60, 0);
+    const plan = buildStudyPlan({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
+    const dayOfWeek = (/* @__PURE__ */ new Date(today + "T00:00:00")).getDay(), elapsed = dayOfWeek === 0 ? 7 : dayOfWeek, expectedFrac = elapsed / 7;
+    const weekStart = startOfWeek(today), achieved = uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6));
+    const actualFrac = state.metas.semanal > 0 ? achieved / state.metas.semanal : 1;
+    const weeklyGoalGap = expectedFrac >= 0.5 && actualFrac < expectedFrac - 0.15 ? Math.round((expectedFrac - actualFrac) * 100) : null;
+    const hardTopicsWithoutReview = activeTopics().filter((topic) => topic.difficulty === "Difícil" && topic.status !== "Concluído" && !state.reviewAgenda.some((review) => (review.topicId || review.topicRef) === topic.id && review.status !== "Concluído")).length;
+    return buildIntelligentAlerts({ today, overdueReviews: revisoesAtrasadas(), subjects, topics, weeklyBalanceMinutes: plan.weeklyBalanceMinutes, hardTopicsWithoutReview, weeklyGoalGap });
   }
   function renderAlertasInteligentes() {
     const container = document.getElementById("alertasInteligentesList");
@@ -7288,7 +7298,7 @@
     container.innerHTML = alertas.map((a) => `
     <div class="alerta-item alerta-${a.nivel}">
       <span class="alerta-icon">${a.icon}</span>
-      <span>${escapeHtml(a.texto)}</span>${a.severity !== "ok" ? `<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(a.id)}')">Dispensar 7 dias</button>` : ""}
+      <span><strong>${escapeHtml(a.reason || a.texto)}</strong><small>${escapeHtml(a.recommendedAction || "")}</small></span>${a.severity !== "ok" ? `<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(a.id)}')">Dispensar 7 dias</button>` : ""}
     </div>
   `).join("");
   }
@@ -7302,7 +7312,7 @@
     if (!container) return;
     const metrics = computeApprovalMetrics(), readiness = readinessResult(metrics), pace = computeRitmo(), priorities = computeStudyPriorities();
     const topPriority = priorities[0] ? { ...priorities[0], reason: motivoPrioridade(priorities[0]) } : null;
-    const risks = computeAlertasInteligentes().filter((alert) => alert.nivel !== "ok");
+    const risks = computeAlertasInteligentes();
     const configuredTopics = activeTopics().filter((topic) => topic.examImportance !== null && topic.estimatedStudyMinutes !== null);
     const opportunityCount = configuredTopics.filter((topic) => priorities.some((priority) => priority.topicId === topic.id)).length;
     const weekStart = startOfWeek(todayISO()), weeklyGoal = { achieved: uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6)), target: state.metas.semanal };

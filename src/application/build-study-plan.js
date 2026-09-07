@@ -14,9 +14,12 @@ export function buildStudyPlan({topics=[],weeklyAvailableMinutes=0,weeksUntilExa
   const availability=positive(weeklyAvailableMinutes),weeks=Math.max(0,Math.ceil(Number(weeksUntilExam)||0));
   const remainingMinutes=active.filter(item=>!item.covered).reduce((sum,item)=>sum+effort(item),0);
   const maintenanceMinutes=configured.filter(item=>item.covered).reduce((sum,item)=>sum+effort(item),0);
-  const base={weeklyAvailableMinutes:availability,weeksUntilExam:weeks,remainingMinutes,maintenanceMinutes,missingEffort,blockedTopics};
+  const weeklyNeedMinutes=weeks>0?Math.ceil(remainingMinutes/weeks)+maintenanceMinutes:null;
+  const weeklyBalanceMinutes=weeklyNeedMinutes===null?null:availability-weeklyNeedMinutes;
+  const paceState=weeklyBalanceMinutes===null?'insufficient':weeklyBalanceMinutes<0?'deficit':weeklyBalanceMinutes>0?'surplus':'balanced';
+  const base={weeklyAvailableMinutes:availability,weeksUntilExam:weeks,remainingMinutes,maintenanceMinutes,weeklyNeedMinutes,weeklyBalanceMinutes,paceState,missingEffort,blockedTopics};
   if(!configured.length||availability<=0||weeks<=0)return {...base,state:'insufficient',items:[],subjects:[],activityMix:{theory:0,questions:0,reviews:0},confidence:0};
-  const weeklyBudget=Math.min(availability,Math.ceil(remainingMinutes/weeks)+maintenanceMinutes);
+  const weeklyBudget=Math.min(availability,weeklyNeedMinutes);
   const scored=configured.map(item=>({...item,...calculatePriorityScore(item),capacityMinutes:effort(item)})).sort((a,b)=>b.score-a.score||String(a.id).localeCompare(String(b.id)));
   const totalScore=scored.reduce((sum,item)=>sum+Math.max(1,item.score),0);
   const allocations=new Map(scored.map(item=>[item.id,Math.min(item.capacityMinutes,Math.floor(weeklyBudget*Math.max(1,item.score)/totalScore))]));
