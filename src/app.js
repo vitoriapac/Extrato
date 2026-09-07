@@ -24,7 +24,9 @@ import {calculateWindowTrend,trendToRisk} from './domain/analytics/trends.js';
 import {summarizeStudyRecords} from './domain/analytics/study-metrics.js';
 import {normalizeTopicStrategy,normalizeExamBlueprint,normalizeAlgorithmVersions,EXAM_PRIORITIES} from './state/strategic.js';
 import {buildExecutiveSummary} from './application/build-executive-summary.js';
-import {buildCognitiveProfile} from './domain/diagnostics/cognitive-profile.js';
+import {analyzeErrors} from './domain/diagnostics/error-analysis.js';
+import {buildErrorAnalysisViewModel} from './application/analytics/build-error-analysis-view-model.js';
+import {renderErrorAnalysis} from './ui/renderers/error-analysis-renderer.js';
 import {HEATMAP_METRICS,heatmapMetricLevel} from './domain/analytics/heatmap.js';
 import {calculateSubjectRadar} from './domain/analytics/multidimensional-radar.js';
 import {generateDiagnosis} from './application/generate-diagnosis.js';
@@ -2756,7 +2758,7 @@ function getQuestionErrors(question){
 }
 function buildErrorProfile(records){
   records.forEach(normalizeErrorBreakdown);
-  return buildCognitiveProfile(records,Object.keys(ERROR_CATEGORIES));
+  return analyzeErrors(records,{minimumErrors:MIN_ERROR_RECOMMENDATION_COUNT,minimumCoverage:MIN_ERROR_RECOMMENDATION_COVERAGE});
 }
 function getSubjectErrorProfile(subjectId){
   return buildErrorProfile(validQuestionRecords().filter(question=>entitySubjectId(question)===subjectId));
@@ -2839,13 +2841,8 @@ function pendingReviewForTopic(topicId){
     .sort((a,b)=>(a.date||'').localeCompare(b.date||''))[0]||null;
 }
 function dominantTopicError(profile){
-  if(profile.categorizedErrors<MIN_ERROR_RECOMMENDATION_COUNT||profile.coverage<MIN_ERROR_RECOMMENDATION_COVERAGE) return null;
-  const entries=Object.entries(profile.categories).sort((a,b)=>b[1]-a[1]);
-  const top=entries[0];
-  if(!top||top[1]<=0) return null;
-  const share=Math.round(top[1]/profile.categorizedErrors*100);
-  if(share<30) return null;
-  return {key:top[0],count:top[1],share,meta:ERROR_CATEGORIES[top[0]],recommendation:ERROR_RECOMMENDATIONS[top[0]]};
+  const dominant=profile?.dominant;if(!dominant)return null;
+  return {...dominant,meta:ERROR_CATEGORIES[dominant.key],recommendation:dominant.recommendation||ERROR_RECOMMENDATIONS[dominant.key]};
 }
 function topicMasteryIndex(subjectId,topicId){
   const found=getTopicById(topicId);
@@ -2965,13 +2962,8 @@ function renderQuestionAnalytics(){
   const profile=buildErrorProfile(scopedRecords.filter(question=>question.date>=currentStart&&question.date<=todayISO()));
   const previousProfile=buildErrorProfile(scopedRecords.filter(question=>question.date>=previousStart&&question.date<=previousEnd));
   const errorToolbar=`<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7,30,60,90].map(days=>`<option value="${days}" ${errorAnalysisView.days===days?'selected':''}>Últimos ${days} dias</option>`).join('')}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${subjectTopics.map(topic=>`<option value="${escapeAttr(topic.id)}" ${errorAnalysisView.topicId===topic.id?'selected':''}>${escapeHtml(topic.name)}</option>`).join('')}</select></div>`;
-  if(profile.totalErrors===0){
-    profileEl.innerHTML=errorToolbar+'<div class="empty-state"><p>Nenhum erro registrado neste recorte.</p></div>';
-  }else{
-    const items=[...Object.entries(ERROR_CATEGORIES).map(([key,meta])=>({label:`${meta.icon} ${meta.label}`,value:profile.categories[key],previous:previousProfile.categories[key]})),{label:'Sem categoria',value:profile.uncategorized,previous:previousProfile.uncategorized}];
-    profileEl.innerHTML=errorToolbar+`<div class="error-profile-grid">${items.map(item=>{const delta=item.value-item.previous;return `<div class="error-profile-item"><span>${item.label}</span><strong>${item.value}</strong><small>${previousProfile.totalErrors?`${delta>=0?'+':''}${delta} vs. período anterior`:'Sem período anterior'}</small></div>`}).join('')}</div>
-      <div class="analytics-note">${profile.coverage}% dos ${profile.totalErrors} erros estão categorizados · confiança ${profile.confidence.label.toLowerCase()} · ${formatDatePt(currentStart)} a ${formatDatePt(todayISO())}.</div>`;
-  }
+  const errorModel=buildErrorAnalysisViewModel({current:profile,previous:previousProfile,periodLabel:formatDatePt(currentStart)+' a '+formatDatePt(todayISO())});
+  profileEl.innerHTML=renderErrorAnalysis(errorModel,{toolbar:errorToolbar,escapeHtml});
 }
 
 function simuladoEffectiveCounts(sim){

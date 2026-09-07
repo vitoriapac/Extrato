@@ -829,6 +829,45 @@
     return { categories, totalErrors, categorizedErrors, uncategorized: Math.max(0, totalErrors - categorizedErrors), coverage: totalErrors ? Math.round(categorizedErrors / totalErrors * 100) : 0, confidence: cognitiveConfidence(categorizedErrors), sampleSize: records.length, periodStart: orderedDates[0] || null, periodEnd: orderedDates[orderedDates.length - 1] || null };
   }
 
+  // src/domain/diagnostics/error-analysis.js
+  var ERROR_CATEGORIES = Object.freeze(["naoSabia", "esqueci", "interpretacao", "calculo", "desatencao", "chute"]);
+  var ERROR_ACTIONS = Object.freeze({
+    naoSabia: { action: "Revisar a teoria e os conceitos-base", studyType: "study", estimatedMinutes: 35, questions: 10 },
+    esqueci: { action: "Fazer uma revisão curta e recuperar de memória", studyType: "review", estimatedMinutes: 25, questions: 15 },
+    interpretacao: { action: "Resolver questões comentadas de interpretação", studyType: "questions", estimatedMinutes: 40, questions: 15 },
+    calculo: { action: "Treinar exercícios de cálculo passo a passo", studyType: "questions", estimatedMinutes: 45, questions: 15 },
+    desatencao: { action: "Resolver questões com conferência obrigatória", studyType: "questions", estimatedMinutes: 35, questions: 20 },
+    chute: { action: "Reforçar conceitos antes de voltar às questões", studyType: "study", estimatedMinutes: 30, questions: 10 }
+  });
+  var ERROR_ANALYSIS_VERSION = 1;
+  function analyzeErrors(records = [], options = {}) {
+    const minimumErrors = Math.max(1, Number(options.minimumErrors) || 10), minimumCoverage = Math.max(0, Math.min(100, Number(options.minimumCoverage) || 60)), minimumShare = Math.max(0, Math.min(100, Number(options.minimumShare) || 30));
+    const profile = buildCognitiveProfile(records, ERROR_CATEGORIES), ordered = Object.entries(profile.categories).sort((a, b) => b[1] - a[1]), top = ordered[0], share = top && profile.categorizedErrors ? Math.round(top[1] / profile.categorizedErrors * 100) : 0;
+    const eligible = profile.categorizedErrors >= minimumErrors && profile.coverage >= minimumCoverage && top?.[1] > 0 && share >= minimumShare;
+    const dominant = eligible ? { key: top[0], count: top[1], share, recommendation: ERROR_ACTIONS[top[0]] } : null;
+    const mode = !dominant ? "insufficient" : ["interpretacao", "calculo", "desatencao"].includes(dominant.key) ? "practice" : ["esqueci"].includes(dominant.key) ? "review" : "theory";
+    return { ...profile, state: profile.totalErrors === 0 ? "empty" : eligible ? "diagnosed" : "insufficient", dominant, recommendedMode: mode, reasons: eligible ? [share + "% dos erros categorizados são de " + dominant.key] : ["Amostra ou cobertura insuficiente para orientar o estudo"], algorithmVersion: ERROR_ANALYSIS_VERSION };
+  }
+
+  // src/application/analytics/build-error-analysis-view-model.js
+  var LABELS = { naoSabia: "Não sabia", esqueci: "Esqueci", interpretacao: "Interpretação", calculo: "Cálculo", desatencao: "Desatenção", chute: "Chute" };
+  var ICONS = { naoSabia: "📚", esqueci: "🧠", interpretacao: "📖", calculo: "➗", desatencao: "⚠️", chute: "🎲" };
+  function buildErrorAnalysisViewModel({ current, previous = null, periodLabel = "" } = {}) {
+    if (!current || current.state === "empty") return { state: "empty", totalErrors: 0, items: [], message: "Nenhum erro registrado neste recorte." };
+    const items = [...Object.keys(LABELS).map((key) => ({ key, label: LABELS[key], icon: ICONS[key], value: current.categories[key] || 0, previous: previous?.categories?.[key] || 0 })), { key: "uncategorized", label: "Sem categoria", icon: "○", value: current.uncategorized || 0, previous: previous?.uncategorized || 0 }].map((item) => ({ ...item, delta: item.value - item.previous }));
+    const dominant = current.dominant, diagnosis = dominant ? dominant.share + "% dos erros categorizados vêm de " + LABELS[dominant.key].toLowerCase() + "." : "Ainda não há evidência suficiente para definir uma causa dominante.";
+    const action = dominant ? dominant.recommendation.action : "Continue categorizando os erros para receber uma ação confiável.";
+    return { state: current.state, totalErrors: current.totalErrors, categorizedErrors: current.categorizedErrors, coverage: current.coverage, confidence: current.confidence, periodLabel, items, dominant, diagnosis, action, recommendedMode: current.recommendedMode, hasPrevious: Boolean(previous?.totalErrors), algorithmVersion: current.algorithmVersion };
+  }
+
+  // src/ui/renderers/error-analysis-renderer.js
+  function renderErrorAnalysis(model, { toolbar = "", escapeHtml: escapeHtml2 = (value2) => String(value2) } = {}) {
+    if (model.state === "empty") return toolbar + '<div class="empty-state"><p>' + escapeHtml2(model.message) + "</p></div>";
+    const items = model.items.map((item) => '<div class="error-profile-item"><span>' + item.icon + " " + escapeHtml2(item.label) + "</span><strong>" + item.value + "</strong><small>" + (model.hasPrevious ? (item.delta >= 0 ? "+" : "") + item.delta + " vs. período anterior" : "Sem período anterior") + "</small></div>").join("");
+    const diagnosis = '<section class="error-diagnosis ' + model.state + '"><div><span>Diagnóstico</span><strong>' + escapeHtml2(model.diagnosis) + "</strong></div><div><span>Ação</span><strong>" + escapeHtml2(model.action) + "</strong></div></section>";
+    return toolbar + diagnosis + '<div class="error-profile-grid">' + items + '</div><div class="analytics-note">' + model.coverage + "% dos " + model.totalErrors + " erros estão categorizados · confiança " + escapeHtml2(model.confidence.label.toLowerCase()) + " · " + escapeHtml2(model.periodLabel) + ".</div>";
+  }
+
   // src/domain/analytics/heatmap.js
   var HEATMAP_METRICS = Object.freeze(["hours", "questions", "reviews", "simulations"]);
   function heatmapMetricValue(summary, metric) {
@@ -1325,7 +1364,7 @@
   }
 
   // src/application/recommendations/build-recommendation-outcome-view-model.js
-  var LABELS = Object.freeze({ mastery: "Domínio", retention: "Retenção", reviewHealth: "Saúde da revisão", accuracy: "Acerto", risk: "Risco" });
+  var LABELS2 = Object.freeze({ mastery: "Domínio", retention: "Retenção", reviewHealth: "Saúde da revisão", accuracy: "Acerto", risk: "Risco" });
   var STATE_MAP = Object.freeze({ positive: "improved", negative: "worsened", improved: "improved", worsened: "worsened", neutral: "neutral", pending: "pending", insufficient: "insufficient" });
   var STATE_LABELS = Object.freeze({ improved: "A recomendação ajudou", worsened: "O resultado piorou", neutral: "Resultado estável", pending: "Resultado em acompanhamento", insufficient: "Evidência insuficiente" });
   var numeric2 = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Number(value2);
@@ -1334,9 +1373,9 @@
     const feedback = measured[0];
     if (!feedback) return { state: "empty", available: false, metrics: [] };
     const outcome = feedback.outcome, before = outcome.before || feedback.snapshot?.before || feedback.baseline || {}, after = outcome.after || {}, deltas = outcome.delta || {};
-    const metrics = Object.keys(LABELS).map((key) => {
+    const metrics = Object.keys(LABELS2).map((key) => {
       const start = numeric2(before[key]), end = numeric2(after[key] ?? outcome[key + "After"]), delta = numeric2(deltas[key]);
-      return { key, label: LABELS[key], before: start, after: end, delta, available: start !== null && end !== null };
+      return { key, label: LABELS2[key], before: start, after: end, delta, available: start !== null && end !== null };
     }).filter((item) => item.available);
     const state2 = STATE_MAP[outcome.state] || "insufficient", confidence = numeric2(outcome.confidence);
     return { state: state2, available: true, title: STATE_LABELS[state2], metrics, confidence, confidenceLabel: outcome.confidenceLabel || outcome.evidence?.evidenceLabel || null, evidenceLabel: outcome.evidence?.evidenceLabel || null, reasons: Array.isArray(outcome.reasons) ? outcome.reasons : [], questionVolume: Math.max(0, Number(outcome.questionVolumeAfter ?? outcome.questionVolume) || 0), measuredAt: outcome.measuredAt || null, recommendationId: feedback.recommendationId, algorithmVersion: Number(outcome.algorithmVersion) || 1 };
@@ -2888,7 +2927,7 @@
     document.getElementById("reportPeriodStart").hidden = !custom;
     document.getElementById("reportPeriodEnd").hidden = !custom;
   });
-  var ERROR_CATEGORIES = {
+  var ERROR_CATEGORIES2 = {
     naoSabia: { label: "Não sabia", icon: "📚" },
     esqueci: { label: "Esqueci", icon: "🧠" },
     interpretacao: { label: "Interpretação", icon: "📖" },
@@ -3049,7 +3088,7 @@
       question.topicId = question.topicId || null;
       const source = question.errorBreakdown || {};
       question.errorBreakdown = {};
-      Object.keys(ERROR_CATEGORIES).forEach((key) => {
+      Object.keys(ERROR_CATEGORIES2).forEach((key) => {
         question.errorBreakdown[key] = Math.max(0, Math.floor(Number(source[key]) || 0));
       });
     });
@@ -5767,7 +5806,7 @@
     renderFn();
   }
   function emptyErrorBreakdown() {
-    return Object.fromEntries(Object.keys(ERROR_CATEGORIES).map((key) => [key, 0]));
+    return Object.fromEntries(Object.keys(ERROR_CATEGORIES2).map((key) => [key, 0]));
   }
   function normalizeErrorBreakdown(question) {
     const normalized = emptyErrorBreakdown();
@@ -5812,7 +5851,7 @@
             <span>${categorized} de ${realErrors} erros categorizados</span>
           </div>
           <div class="error-breakdown-grid">
-            ${Object.entries(ERROR_CATEGORIES).map(([key, meta]) => `
+            ${Object.entries(ERROR_CATEGORIES2).map(([key, meta]) => `
               <label class="error-breakdown-field">
                 <span>${meta.icon} ${meta.label}</span>
                 <input type="number" min="0" max="${realErrors}" value="${question.errorBreakdown[key] || 0}"
@@ -5900,7 +5939,7 @@
   }
   function updateQuestionError(id, key, value2) {
     const question = state.questoes.find((q) => q.id === id);
-    if (!question || !ERROR_CATEGORIES[key]) return;
+    if (!question || !ERROR_CATEGORIES2[key]) return;
     normalizeErrorBreakdown(question);
     const realErrors = Math.max(0, (Number(question.resolved) || 0) - (Number(question.correct) || 0));
     const others = Object.entries(question.errorBreakdown).reduce((sum3, [category, count]) => category === key ? sum3 : sum3 + count, 0);
@@ -5943,7 +5982,7 @@
   }
   function buildErrorProfile(records) {
     records.forEach(normalizeErrorBreakdown);
-    return buildCognitiveProfile(records, Object.keys(ERROR_CATEGORIES));
+    return analyzeErrors(records, { minimumErrors: MIN_ERROR_RECOMMENDATION_COUNT, minimumCoverage: MIN_ERROR_RECOMMENDATION_COVERAGE });
   }
   function getTopicErrorProfile(topicId) {
     return buildErrorProfile(validQuestionRecords().filter((question) => question.topicId === topicId));
@@ -6023,13 +6062,9 @@
     return state.reviewAgenda.filter((review) => (review.topicId || review.topicRef) === topicId && review.status !== "Concluído").sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0] || null;
   }
   function dominantTopicError(profile) {
-    if (profile.categorizedErrors < MIN_ERROR_RECOMMENDATION_COUNT || profile.coverage < MIN_ERROR_RECOMMENDATION_COVERAGE) return null;
-    const entries = Object.entries(profile.categories).sort((a, b) => b[1] - a[1]);
-    const top = entries[0];
-    if (!top || top[1] <= 0) return null;
-    const share = Math.round(top[1] / profile.categorizedErrors * 100);
-    if (share < 30) return null;
-    return { key: top[0], count: top[1], share, meta: ERROR_CATEGORIES[top[0]], recommendation: ERROR_RECOMMENDATIONS[top[0]] };
+    const dominant = profile?.dominant;
+    if (!dominant) return null;
+    return { ...dominant, meta: ERROR_CATEGORIES2[dominant.key], recommendation: dominant.recommendation || ERROR_RECOMMENDATIONS[dominant.key] };
   }
   function topicMasteryIndex(subjectId, topicId) {
     const found = getTopicById(topicId);
@@ -6162,16 +6197,8 @@
     const profile = buildErrorProfile(scopedRecords.filter((question) => question.date >= currentStart && question.date <= todayISO()));
     const previousProfile = buildErrorProfile(scopedRecords.filter((question) => question.date >= previousStart && question.date <= previousEnd));
     const errorToolbar = `<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7, 30, 60, 90].map((days) => `<option value="${days}" ${errorAnalysisView.days === days ? "selected" : ""}>Últimos ${days} dias</option>`).join("")}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${subjectTopics.map((topic) => `<option value="${escapeAttr(topic.id)}" ${errorAnalysisView.topicId === topic.id ? "selected" : ""}>${escapeHtml(topic.name)}</option>`).join("")}</select></div>`;
-    if (profile.totalErrors === 0) {
-      profileEl.innerHTML = errorToolbar + '<div class="empty-state"><p>Nenhum erro registrado neste recorte.</p></div>';
-    } else {
-      const items = [...Object.entries(ERROR_CATEGORIES).map(([key, meta]) => ({ label: `${meta.icon} ${meta.label}`, value: profile.categories[key], previous: previousProfile.categories[key] })), { label: "Sem categoria", value: profile.uncategorized, previous: previousProfile.uncategorized }];
-      profileEl.innerHTML = errorToolbar + `<div class="error-profile-grid">${items.map((item) => {
-        const delta = item.value - item.previous;
-        return `<div class="error-profile-item"><span>${item.label}</span><strong>${item.value}</strong><small>${previousProfile.totalErrors ? `${delta >= 0 ? "+" : ""}${delta} vs. período anterior` : "Sem período anterior"}</small></div>`;
-      }).join("")}</div>
-      <div class="analytics-note">${profile.coverage}% dos ${profile.totalErrors} erros estão categorizados · confiança ${profile.confidence.label.toLowerCase()} · ${formatDatePt(currentStart)} a ${formatDatePt(todayISO())}.</div>`;
-    }
+    const errorModel = buildErrorAnalysisViewModel({ current: profile, previous: previousProfile, periodLabel: formatDatePt(currentStart) + " a " + formatDatePt(todayISO()) });
+    profileEl.innerHTML = renderErrorAnalysis(errorModel, { toolbar: errorToolbar, escapeHtml });
   }
   function simuladoEffectiveCounts(sim) {
     if (sim.breakdown && sim.breakdown.length > 0) {

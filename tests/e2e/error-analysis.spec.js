@@ -1,0 +1,2 @@
+import {test,expect} from '@playwright/test';import {openDemo,activateTab} from './helpers.js';
+test('apresenta diagnóstico de erros e ação recomendada',async({page})=>{await openDemo(page);await activateTab(page,'questoes');const diagnosis=page.locator('#subjectErrorProfile .error-diagnosis');await expect(diagnosis).toBeVisible();await expect(diagnosis).toContainText('Diagnóstico');await expect(diagnosis).toContainText('Ação');await expect(page.locator('#subjectErrorProfile')).toContainText(/confiança/i)});
