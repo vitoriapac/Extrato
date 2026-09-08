@@ -58,6 +58,10 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/repositories/subjects-repository.js`: acesso à coleção e às entidades aninhadas de tópicos.
 - `src/application/recommendations/outcome-service.js`: linha de base, resultado e confiança das recomendações sem ajuste automático de pesos.
 - `src/domain/recommendations/recommendation-outcome.js`: comparação imutável entre os estados anterior e posterior, com deltas, confiança e estados de resultado.
+- `src/application/subjects/exam-import-service.js`: preview e importação atômica de estruturas de edital com merge idempotente.
+- `src/domain/exams/exam-presets.js`: catálogo versionado de estruturas BB, Caixa e combinada.
+- `src/domain/analytics/recommendation-calibration.js`: leitura agregada dos resultados reais sem ajuste automático de pesos.
+- `src/domain/forecasts/performance-scenarios.js`: simulações conservadoras de capacidade sobre a projeção de 30 dias.
 - `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.
 - `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.
 - `src/ui/controllers/navigation-controller.js`: abas, menu móvel, atalhos numéricos, busca e fechamento por Escape.

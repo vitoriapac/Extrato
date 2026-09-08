@@ -1,5 +1,9 @@
 # Auditoria de segurança da interface
 
+## Content Security Policy
+
+A versão pública aplica CSP via `meta http-equiv`, compatível com a hospedagem estática do GitHub Pages. Scripts e workers ficam restritos à própria origem; objetos são bloqueados; imagens aceitam apenas origem própria, `data:` e `blob:`; Google Fonts é permitido explicitamente. O GitHub Pages não permite configurar `Content-Security-Policy-Report-Only` por projeto, por isso a política é exercitada no ambiente E2E antes da publicação. `style-src` ainda contém `unsafe-inline` para estilos visuais dinâmicos e atributos legados mapeados nesta auditoria.
+
 Data: 2026-09-07
 
 ## Escopo

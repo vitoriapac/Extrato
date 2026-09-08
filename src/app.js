@@ -51,6 +51,8 @@ import {createSessionService} from './application/sessions/session-service.js';
 import {normalizeStudySession} from './domain/sessions/study-session.js';
 import {createRecordService} from './application/records/record-service.js';
 import {createSubjectService} from './application/subjects/subject-service.js';
+import {createExamImportService} from './application/subjects/exam-import-service.js';
+import {EXAM_PRESETS,getExamPreset} from './domain/exams/exam-presets.js';
 import {createNavigationController} from './ui/controllers/navigation-controller.js';
 import {createModalController} from './ui/controllers/modal-controller.js';
 import {createEditableCollectionController} from './ui/controllers/editable-collection-controller.js';
@@ -65,6 +67,10 @@ import {buildStudyTimeViewModel} from './application/analytics/build-overview-vi
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildIntelligentAlerts} from './domain/diagnostics/alerts.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
+import {buildPerformanceScenarios} from './domain/forecasts/performance-scenarios.js';
+import {buildRecommendationCalibration} from './domain/analytics/recommendation-calibration.js';
+import {renderRecommendationCalibrationModel} from './ui/renderers/recommendation-calibration-renderer.js';
+import {renderPerformanceScenarios} from './ui/renderers/performance-scenarios-renderer.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
 import {generateDemoData} from './demo/demo-generator.js';
 import {runStateMigrations,validateBackupEnvelope} from './storage/migration-service.js';
@@ -676,7 +682,7 @@ function showConfirm(message,onConfirm,onCancel,options={}){return modalControll
 function showPrompt(message,options,onConfirm,onCancel){return modalController.prompt(message,options,onConfirm,onCancel)}
 
 /* ===== TABS ===== */
-const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
+const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('examImportOverlay'),document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
 function activateTab(tabName,updateHash=true){return navigationController.activate(tabName,updateHash)}
 
 /* ===== HELPERS ===== */
@@ -1945,15 +1951,25 @@ function addSubject(){
   });
 }
 function carregarDisciplinasPadrao(){
-  const adicionadas=subjectService.addDefaults().length;
-  persistAndRender();
-  if(adicionadas > 0){
-    showToast(`${pluralize(adicionadas,'disciplina')} do edital ${adicionadas===1?'adicionada':'adicionadas'}.`);
-  } else {
-    showToast('Todas as disciplinas do edital já estão na sua lista.');
-  }
+  openExamImport();
 }
 document.getElementById('loadDefaultSubjectsBtn').addEventListener('click', carregarDisciplinasPadrao);
+
+const examImportService=createExamImportService({subjectService,getSubjects:()=>state.subjects});
+const examImportState={step:1,presetId:EXAM_PRESETS[0].id,subjectIds:new Set(),topicIds:new Set(),previousFocus:null};
+function syncExamSelection(preset){examImportState.subjectIds=new Set(preset.subjects.map(item=>item.id));examImportState.topicIds=new Set(preset.subjects.flatMap(item=>(item.topics||[]).map(topic=>`${item.id}:${topic.id}`)))}
+function selectedExamPreset(){return getExamPreset(examImportState.presetId)||EXAM_PRESETS[0]}
+function renderExamImport(){
+  const content=document.getElementById('examImportContent'),back=document.getElementById('examImportBackBtn'),next=document.getElementById('examImportNextBtn'),preset=selectedExamPreset();back.hidden=examImportState.step===1;next.textContent=examImportState.step===3?'Importar':'Continuar';
+  if(examImportState.step===1)content.innerHTML=`<p>Escolha uma estrutura pronta.</p><div class="exam-preset-list">${EXAM_PRESETS.map((item,index)=>`<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id===examImportState.presetId?'checked':''}><span><strong>${escapeHtml(item.name)}</strong><small>${item.subjects.length?`${item.subjects.length} disciplinas · versão ${escapeHtml(item.version)}`:'Começar sem conteúdo predefinido'}</small></span></label>`).join('')}</div>`;
+  else if(examImportState.step===2)content.innerHTML=preset.subjects.length?`<p>Selecione as disciplinas e os tópicos que deseja importar.</p><div class="exam-subject-list">${preset.subjects.map(subject=>`<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject.id)}" ${examImportState.subjectIds.has(subject.id)?'checked':''}>${escapeHtml(subject.name)}</label><div class="exam-topic-list">${subject.topics.map(topic=>{const key=`${subject.id}:${topic.id}`;return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key)?'checked':''}>${escapeHtml(topic.name)}</label>`}).join('')}</div></section>`).join('')}</div>`:'<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>';
+  else {const preview=examImportService.preview({preset,selectedSubjectIds:examImportState.subjectIds,selectedTopicIds:examImportState.topicIds});content.innerHTML=`<p>Confira as alterações antes de importar.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.existingSubjects}</strong><br>disciplinas existentes</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos existentes</div></div>${preview.warnings.map(item=>`<p class="form-hint">${escapeHtml(item)}</p>`).join('')}`;next.disabled=preview.addedSubjects+preview.addedTopics===0;}
+}
+function openExamImport(){examImportState.step=1;examImportState.presetId=EXAM_PRESETS[0].id;syncExamSelection(EXAM_PRESETS[0]);examImportState.previousFocus=document.activeElement;document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
+function closeExamImport(){document.getElementById('examImportOverlay').classList.remove('show');examImportState.previousFocus?.focus()}
+document.getElementById('examImportContent').addEventListener('change',event=>{if(event.target.name==='examPreset'){examImportState.presetId=event.target.value;syncExamSelection(selectedExamPreset())}if(event.target.dataset.examSubject){const id=event.target.dataset.examSubject;event.target.checked?examImportState.subjectIds.add(id):examImportState.subjectIds.delete(id);selectedExamPreset().subjects.find(item=>item.id===id)?.topics.forEach(topic=>{const key=`${id}:${topic.id}`;event.target.checked?examImportState.topicIds.add(key):examImportState.topicIds.delete(key)});renderExamImport()}if(event.target.dataset.examTopic){event.target.checked?examImportState.topicIds.add(event.target.dataset.examTopic):examImportState.topicIds.delete(event.target.dataset.examTopic)}});
+document.getElementById('examImportCancelBtn').addEventListener('click',closeExamImport);document.getElementById('examImportBackBtn').addEventListener('click',()=>{examImportState.step--;renderExamImport()});document.getElementById('examImportNextBtn').addEventListener('click',()=>{if(examImportState.step<3){examImportState.step++;renderExamImport();return}const result=examImportService.importExamStructure({preset:selectedExamPreset(),selectedSubjectIds:examImportState.subjectIds,selectedTopicIds:examImportState.topicIds,duplicateStrategy:'merge'});persistAndRender();closeExamImport();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados.`)});
+document.getElementById('examImportOverlay').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeExamImport()}});
 
 function archiveSubject(id){
   const subject=getSubjectById(id);
@@ -4444,9 +4460,10 @@ function projectPerformance(metrics){
   const confidence=Math.min(1,evidence*0.75+sourceCoverage*0.25);
   const result=buildPerformanceForecast({currentValue:central,currentConfidence:confidence,targetScore:state.metas.metaAprovacao,observations:performanceForecastObservations()});
   const {low,high}=result.currentBand;
+  const weeklyMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),scenarios=buildPerformanceScenarios(result,{weeklyMinutes});
   return {
     available:true,low,high,central:result.currentBand.central,confidence,
-    confidenceLabel:result.currentBand.confidenceLabel,gap:result.gap,movingAverage:result.movingAverage,forecast30:result.forecast30,evidence:result.evidence,
+    confidenceLabel:result.currentBand.confidenceLabel,gap:result.gap,movingAverage:result.movingAverage,forecast30:result.forecast30,evidence:result.evidence,scenarios,
     detail:'Base: '+sources.map(source=>source.label).join(', ')+' · margem ajustada pela confiança'
   };
 }
@@ -4536,12 +4553,14 @@ function renderApprovalDashboard(){
     <div class="kpi-cell"><div class="n">${projection.available?projection.low+'–'+projection.high+'%':'—'}</div><div class="l">Faixa estimada atual</div></div>
   </div>
   ${factors.map(([label,item])=>{const dataState=getMetricDataState(item);return `<div class="bar-row metric-row metric-row--${dataState}" title="${escapeAttr(item.detail)}"><div class="bar-label">${label}<small>${metricStateLabel(item)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${dataState==='empty'?0:item.score}%"></div></div><div class="bar-pct">${dataState==='empty'?'—':item.score+'%'}</div></div>`}).join('')}
-  ${projection.available?`<section class="performance-forecast" aria-label="Projeção de desempenho"><div><span class="section-eyebrow">PROJEÇÃO DE DESEMPENHO</span><strong>Faixa atual: ${projection.low}–${projection.high}%</strong><small>${projection.gap.minimum===0?'A meta de '+projection.gap.target+'% está dentro da faixa atual.':'Gap estimado até a meta: '+projection.gap.minimum+'–'+projection.gap.maximum+' p.p.'}</small></div><div><strong>${projection.forecast30.available?'Em 30 dias: '+projection.forecast30.low+'–'+projection.forecast30.high+'%':'Projeção de 30 dias aguardando dados'}</strong><small>${projection.forecast30.available?'Média móvel: '+projection.movingAverage+'% · tendência '+(projection.forecast30.slopePerWeek>=0?'+':'')+projection.forecast30.slopePerWeek+' p.p./semana · confiança '+projection.forecast30.confidenceLabel:escapeHtml(projection.forecast30.reason)}</small></div><p>${projection.evidence.observationCount} semanas · ${projection.evidence.sampleSize} questões/simulações na amostra. Estimativa baseada no histórico; não representa garantia nem efeito causal de mais horas.</p></section>`:''}
+  ${projection.available?`<section class="performance-forecast" aria-label="Projeção de desempenho"><div><span class="section-eyebrow">PROJEÇÃO DE DESEMPENHO</span><strong>Faixa atual: ${projection.low}–${projection.high}%</strong><small>${projection.gap.minimum===0?'A meta de '+projection.gap.target+'% está dentro da faixa atual.':'Gap estimado até a meta: '+projection.gap.minimum+'–'+projection.gap.maximum+' p.p.'}</small></div><div><strong>${projection.forecast30.available?'Em 30 dias: '+projection.forecast30.low+'–'+projection.forecast30.high+'%':'Projeção de 30 dias aguardando dados'}</strong><small>${projection.forecast30.available?'Média móvel: '+projection.movingAverage+'% · tendência '+(projection.forecast30.slopePerWeek>=0?'+':'')+projection.forecast30.slopePerWeek+' p.p./semana · confiança '+projection.forecast30.confidenceLabel:escapeHtml(projection.forecast30.reason)}</small></div>${renderPerformanceScenarios(projection.scenarios,{escapeHtml})}<p>${projection.evidence.observationCount} semanas · ${projection.evidence.sampleSize} questões/simulações na amostra. Cenários são simulações de capacidade; não representam garantia nem efeito causal.</p></section>`:''}
   <details class="readiness-explanation"><summary>Como este índice foi calculado?</summary><p>Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e nunca recebem nota zero.</p><ul>${factors.map(([label,item,key])=>`<li><strong>${label}</strong>: ${item.available?item.score+'/100 · confiança '+Math.round(item.confidence*100)+'%':'aguardando dados'}${item.detail?' · '+escapeHtml(item.detail):''}</li>`).join('')}</ul></details>
   <div class="approval-scale"><span class="approval-scale-danger">🔴 0–49</span><span class="approval-scale-warn">🟠 50–69</span><span class="approval-scale-good">🟢 70–84</span><span class="approval-scale-great">🏆 85+</span></div>
   <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
   renderTopicRetentionDashboard();
+  renderRecommendationCalibration();
 }
+function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml})}
 function renderTopicRetentionDashboard(){
   const el=document.getElementById('topicRetentionDashboard');if(!el)return;
   const baseRows=activeTopics().map(t=>{const r=topicRetentionScore(t.subjectId,t.id);return {...t,r,h:topicReviewHealthScore(t,topicMasteryIndex(t.subjectId,t.id),r)}}).filter(x=>x.r.available||x.h.value!==null);
