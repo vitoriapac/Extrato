@@ -79,7 +79,7 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 
 ## Roadmap
 
-O ciclo atual entregou normalização de sessões, feedback mensurável e calibração das recomendações, tendências, diagnóstico de erros, auditoria do planejamento, alertas inteligentes, segurança com CSP, acessibilidade, projeção com cenários, PWA e um assistente para importar disciplinas e tópicos dos editais BB e Caixa. A modularização continua de forma cirúrgica, mantendo `src/app.js` como composição e compatibilidade temporária.
+O ciclo atual entregou normalização de sessões, feedback mensurável e calibração das recomendações, tendências, diagnóstico de erros, auditoria do planejamento, alertas inteligentes, segurança com CSP, acessibilidade, projeção com cenários, PWA e um assistente para importar disciplinas e tópicos dos editais BB e Caixa. Questões, Agenda/Revisões, Calendário e os novos painéis analíticos possuem view-models e renderers modulares; `src/app.js` conserva apenas a orquestração desses fluxos e a compatibilidade temporária.
 
 ## Licença
 

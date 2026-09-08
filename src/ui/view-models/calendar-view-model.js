@@ -1,0 +1,1 @@
+export function buildCalendarItemViewModel(item,{formatDate,getSubjectName,subjectIdOf}={}){return{date:item.date?formatDate(item.date):'Sem data',week:item.week||'—',subject:getSubjectName(subjectIdOf(item)),status:item.status||'Não iniciado',reviewType:item.reviewType&&item.reviewType!=='—'?item.reviewType:'Sem revisão',pending:item.status!=='Concluído'}}

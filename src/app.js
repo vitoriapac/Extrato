@@ -80,6 +80,10 @@ import {createReviewService} from './application/reviews/review-service.js';
 import {createReviewsController} from './ui/controllers/reviews-controller.js';
 import {createReviewViewModel} from './ui/view-models/review-view-model.js';
 import {renderReviewRead,renderReviewEdit} from './ui/renderers/reviews-renderer.js';
+import {buildCalendarItemViewModel} from './ui/view-models/calendar-view-model.js';
+import {renderCalendarRead,renderCalendarEdit} from './ui/renderers/calendar-renderer.js';
+import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
+import {renderQuestionRead,renderQuestionEdit} from './ui/renderers/questions-renderer.js';
 import {buildStrategicReport} from './reports/report-data.js';
 import {renderStrategicReport} from './reports/report-template.js';
 import {printStrategicReport} from './reports/print-report.js';
@@ -2283,7 +2287,7 @@ function setCalendarMobileView(view){
 }
 document.querySelectorAll('.calendar-view-btn').forEach(button=>button.addEventListener('click',()=>setCalendarMobileView(button.dataset.calendarView)));
 const calendarEditController=createEditableCollectionController({service:calendarService,clone:cloneRecord,render:renderCalendar,onSaved:()=>{persistAndRender();showToast('Item do calendário atualizado.');},initialState:{visible:10}}),calendarUiState=calendarEditController.state;
-function calendarViewModel(item){return {date:item.date?formatDatePt(item.date):'Sem data',week:item.week||'—',subject:getSubjectName(entitySubjectId(item)),status:item.status||'Não iniciado',reviewType:item.reviewType&&item.reviewType!=='—'?item.reviewType:'Sem revisão'};}
+function calendarViewModel(item){return buildCalendarItemViewModel(item,{formatDate:formatDatePt,getSubjectName,subjectIdOf:entitySubjectId})}
 function changeCalendarLimit(delta){calendarUiState.visible=Math.max(10,calendarUiState.visible+Number(delta||0));renderCalendar()}
 function resetCalendarLimit(){calendarUiState.visible=10;renderCalendar()}
 function editCalendarItem(id){
@@ -2294,11 +2298,9 @@ function updateCalendarDraft(field,value){calendarEditController.update(field,va
 function saveCalendarEdit(){if(!calendarEditController.save())cancelCalendarEdit()}
 function completeCalendarItem(id){const item=state.calendar.find(entry=>entry.id===id);if(!item||item.status==='Concluído')return;item.status='Concluído';persistAndRender();showToast('Item concluído.');}
 function renderCalendarReadRow(item){
-  const vm=calendarViewModel(item),pending=item.status!=='Concluído';
-  if(isMobileHistoryLayout())return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)} · ${escapeHtml(vm.week)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.reviewType)}</div></div><button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.status)}</span><span>${diasParaRevisaoPill(item.date,item.status)}</span></div><div class="mobile-card-actions">${pending?`<button class="btn small history-primary-action" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>`:''}</div></article></td></tr>`;
-  return `<tr class="history-read-row history-desktop-row ${item.date===todayISO()?'today':''}" data-id="${item.id}"><td>${escapeHtml(vm.date)}</td><td>${escapeHtml(vm.week)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><span class="history-status ${STATUS_CLASS[item.status]||''}">${escapeHtml(vm.status)}</span></td><td>${escapeHtml(vm.reviewType)}</td><td>${diasParaRevisaoPill(item.date,item.status)}</td><td><div class="row-actions">${pending?`<button class="btn small" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>`:''}<button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div></td></tr>`;
+  return renderCalendarRead({item,view:calendarViewModel(item),mobile:isMobileHistoryLayout(),escapeHtml,daysPill:diasParaRevisaoPill(item.date,item.status),statusClass:STATUS_CLASS,today:todayISO()});
 }
-function renderCalendarEditRow(item){const draft=calendarUiState.draft,subjectId=entitySubjectId(draft);if(!draft)return '';return `<tr class="row-editing" data-id="${item.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date||''}" data-delegated-change="updateCalendarDraft('date',this.value)"></label><label>Semana<input type="text" value="${escapeAttr(draft.week||'')}" data-delegated-input="updateCalendarDraft('week',this.value)"></label><label>Disciplina<select data-delegated-change="updateCalendarDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map(subject=>`<option value="${escapeAttr(subject.id)}" ${subject.id===subjectId?'selected':''}>${escapeHtml(subject.name)}</option>`).join('')}</select></label><label>Status<select data-delegated-change="updateCalendarDraft('status',this.value)">${STATUS_OPTIONS.map(option=>`<option value="${option}" ${option===draft.status?'selected':''}>${option}</option>`).join('')}</select></label><label>Tipo de revisão<select data-delegated-change="updateCalendarDraft('reviewType',this.value)">${REVIEW_OPTIONS.map(option=>`<option value="${option}" ${option===draft.reviewType?'selected':''}>${option}</option>`).join('')}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelCalendarEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveCalendarEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteCalRow('${item.id}')">Excluir</button></div></div></td></tr>`;}
+function renderCalendarEditRow(item){const draft=calendarUiState.draft,subjectId=entitySubjectId(draft);return renderCalendarEdit({item,draft,subjectOptions:subjectsForSelection(subjectId).map(subject=>`<option value="${escapeAttr(subject.id)}" ${subject.id===subjectId?'selected':''}>${escapeHtml(subject.name)}</option>`).join(''),statusOptions:STATUS_OPTIONS.map(option=>`<option value="${option}" ${option===draft?.status?'selected':''}>${option}</option>`).join(''),reviewOptions:REVIEW_OPTIONS.map(option=>`<option value="${option}" ${option===draft?.reviewType?'selected':''}>${option}</option>`).join(''),escapeAttr})}
 function renderCalendar(){
   const body = document.getElementById('calBody');
   const filterSubject = document.getElementById('calFilterSubject').value;
@@ -2657,8 +2659,7 @@ function renderQuestionErrorFields(question){
   `;
 }
 function questionViewModel(q){
-  const subjectId=entitySubjectId(q);
-  return {date:q.date?formatDatePt(q.date):'Sem data',subject:getSubjectName(subjectId)||'Sem disciplina',topic:q.topicId?getTopicName(q.topicId):'Sem tópico',resolved:Number(q.resolved)||0,correct:Number(q.correct)||0,accuracy:calcAcertoPct(q.correct,q.resolved)};
+  return buildQuestionViewModel(q,{formatDate:formatDatePt,getSubjectName,getTopicName,subjectIdOf:entitySubjectId,accuracy:calcAcertoPct});
 }
 function editQuestion(id){
   questionEditController.begin(id);
@@ -2675,13 +2676,11 @@ function saveQuestionEdit(){
   if(!questionEditController.save())cancelQuestionEdit();
 }
 function renderQuestionReadRow(q){
-  const vm=questionViewModel(q); const realErrors=Math.max(0,vm.resolved-vm.correct); const categorized=questionCategorizedErrors(q);
-  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${q.id}"><td colspan="8"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editQuestion('${q.id}')" aria-label="Editar registro">Editar</button></div><div class="mobile-card-metrics"><span>${vm.resolved} questões</span><span>${vm.correct} acertos</span><strong>${vm.accuracy}%</strong><button class="error-toggle-btn" data-delegated-click="toggleQuestionErrors('${q.id}')">Erros ${categorized}/${realErrors}</button></div></article></td></tr>${openQuestionErrorIds.has(q.id)?renderQuestionErrorFields(q):''}`;
-  return `<tr class="history-read-row history-desktop-row" data-id="${q.id}"><td>${escapeHtml(vm.date)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div></td><td><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td class="number-cell">${vm.resolved}</td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.accuracy}%</td><td><button class="error-toggle-btn" data-delegated-click="toggleQuestionErrors('${q.id}')">${categorized}/${realErrors}</button></td><td><div class="row-actions"><button class="btn ghost small" data-delegated-click="editQuestion('${q.id}')">Editar</button></div></td></tr>${openQuestionErrorIds.has(q.id)?renderQuestionErrorFields(q):''}`;
+  const vm=questionViewModel(q),expanded=openQuestionErrorIds.has(q.id);return renderQuestionRead({item:q,view:vm,categorized:questionCategorizedErrors(q),errorsHtml:expanded?renderQuestionErrorFields(q):'',expanded,mobile:isMobileHistoryLayout(),escapeHtml});
 }
 function renderQuestionEditRow(q){
   const d=questionEditController.state.draft; const subjectId=entitySubjectId(d); const topics=topicsForSelection(subjectId,d.topicId);
-  return `<tr class="row-editing" data-id="${q.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date||''}" data-delegated-change="updateQuestionDraft('date',this.value)"></label><label>Disciplina<select data-delegated-change="updateQuestionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===subjectId?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select></label><label>Tópico<select data-delegated-change="updateQuestionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map(t=>`<option value="${escapeAttr(t.id)}" ${t.id===d.topicId?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select></label><label>Resolvidas<input type="number" min="0" value="${Number(d.resolved)||0}" data-delegated-input="updateQuestionDraft('resolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct)||0}" data-delegated-input="updateQuestionDraft('correct',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelQuestionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveQuestionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteQuestaoRow('${q.id}')">Excluir</button></div></div></td></tr>`;
+  return renderQuestionEdit({item:q,draft:d,subjectOptions:subjectsForSelection(subjectId).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===subjectId?'selected':''}>${escapeHtml(s.name)}</option>`).join(''),topicOptions:topics.map(t=>`<option value="${escapeAttr(t.id)}" ${t.id===d.topicId?'selected':''}>${escapeHtml(t.name)}</option>`).join('')});
 }
 function renderQuestoes(){
   const body=document.getElementById('questoesBody');
