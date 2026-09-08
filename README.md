@@ -1,73 +1,85 @@
 # StudyTrack — Extrato de Estudos
 
-StudyTrack (Extrato de Estudos) é uma SPA em JavaScript vanilla, sem frameworks ou dependências externas em runtime, para planejamento e acompanhamento de estudos. Arquitetura modular em camadas (state → core → storage → domain → ui), com regra explícita de fluxo de dependências documentada em ARCHITECTURE.md.
+[Experimentar o StudyTrack](https://vitoriapac.github.io/Extrato/)
 
-Persistência: IndexedDB como armazenamento primário, com fallback automático para localStorage, sincronização entre abas via BroadcastChannel, snapshots rotativos com checksum SHA-256 e migração/validação de esquema antes de adotar dados locais ou importados.
+StudyTrack é uma aplicação web para planejar estudos, registrar sessões, organizar revisões e transformar o histórico em recomendações explicáveis. Funciona integralmente no navegador e pode ser instalada como PWA.
 
-Funcionalidades: disciplinas e tópicos com tags e níveis de dificuldade, calendário e agenda de revisões, algoritmo de revisão espaçada (24h/7d/30d), cronômetro de sessões, banco de questões e simulados com diagnóstico de erros, índice de prontidão, radar por disciplina e replanejamento semanal.
+## Funcionalidades
 
-PWA: instalável, funcionamento offline via Service Worker (requer servidor HTTP local para essa camada), tema claro/escuro e navegação acessível por teclado (incluindo busca global via Ctrl/Cmd+K).
+- Disciplinas e tópicos com dificuldade, importância para a prova, esforço e pré-requisitos.
+- Planejamento semanal e diário baseado na disponibilidade, necessidade e saldo de capacidade.
+- Cronômetro, histórico de sessões, questões e simulados.
+- Revisões espaçadas, agenda, calendário e replanejamento.
+- Índice de prontidão, retenção, domínio, tendências e projeção por faixa.
+- Diagnóstico de erros e alertas com motivo e ação recomendada.
+- Resultado mensurável das recomendações, comparando métricas antes e depois.
+- Relatório estratégico em PDF e backup completo em JSON.
+- Modo demonstração isolado com 90 dias de dados fictícios.
+- Tema claro/escuro, layout responsivo e navegação por teclado.
 
-Build e testes: bundling com esbuild (src/app.bundle.js gerado, não editado manualmente), suíte de testes unitários (tests/unit/) e testes de integração legados (tests/test-runner.html), CI configurado via GitHub Actions.
+## Uso
 
-Privacidade: 100% client-side — nenhum dado de estudo trafega para servidor ou é enviado ao repositório; todo o histórico permanece no navegador do usuário.
+Acesse a [demo online](https://vitoriapac.github.io/Extrato/) e selecione **Explorar demonstração** para conhecer o fluxo sem alterar seus dados. Para uso pessoal, saia da demonstração e cadastre a data da prova, a disponibilidade semanal, as disciplinas e os tópicos.
 
-## Recursos
+Os dados ficam no navegador. Exporte um backup JSON regularmente pela área de dados. A importação valida o formato e a versão antes de substituir o estado local.
 
-- Disciplinas, tópicos, notas, tags e níveis de dificuldade.
-- Calendário, agenda de revisões e plano diário.
-- Cronômetro e histórico de sessões.
-- Histórico compacto no desktop, com detalhes sob demanda e filtros recolhíveis no celular.
-- Relatório estratégico A4 com período configurável, prova, planejamento versus execução, desempenho por disciplina, simulados, revisões, riscos, oportunidades, recomendações e erros.
-- Questões, simulados, diagnóstico de erros e indicadores de prontidão.
-- Metas semanais, mensais e por disciplina.
-- Tema claro/escuro, interface responsiva e navegação por teclado.
-- Persistência local, snapshots rotativos e importação/exportação de backup.
-- Modo demonstração isolado, com 90 dias de dados fictícios e sem acesso à base real.
-- Instalação como PWA e funcionamento offline quando servido por HTTP.
+## Instalação como PWA
 
-## Privacidade e dados
+No Chrome ou Edge, abra a versão publicada e use a opção **Instalar StudyTrack** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.
 
-Os dados de estudo ficam no navegador do usuário. O projeto não possui servidor de aplicação nem envia o conteúdo do histórico para o GitHub. Para evitar perda de dados, exporte backups regularmente.
+Quando uma nova versão é publicada, o Service Worker ativa o cache atual e remove caches anteriores.
 
-## Executar
-
-Projeto publicado no githubpages:
-
-https://vitoriapac.github.io/Extrato/
-
-Para uso simples, abra `index.html`. A persistência funciona localmente; recursos de PWA exigem um servidor HTTP local.
-
-```powershell
-npm run serve
-```
-
-Depois abra o endereço exibido. A página inicial será aberta automaticamente.
-
-## Desenvolvimento
+## Executar localmente
 
 Requer Node.js 22 ou superior.
 
 ```powershell
 npm install
 npm run build
-npm test
-npm run check
+npm run serve
 ```
 
-Edite os módulos em `src/`. `src/app.bundle.js` é gerado pelo esbuild e não deve ser editado manualmente. O script `build.ps1` continua disponível como atalho no Windows.
+Abra o endereço informado pelo servidor. O Service Worker exige HTTP; abrir `index.html` diretamente não habilita instalação ou funcionamento offline.
 
-Os testes legados de integração podem ser abertos em `tests/test-runner.html`. Novas regras puras devem receber testes em `tests/unit/`.
+## Desenvolvimento e validação
+
+```powershell
+npm test
+npm run test:e2e
+npm run check:all
+```
+
+`npm run check:all` executa testes unitários, verifica se o bundle é reproduzível e roda os cenários Playwright. Os testes E2E incluem axe para estrutura ARIA, contraste, modal, telas críticas e modo móvel.
+
+O deploy para GitHub Pages ocorre somente após esse gate passar na branch `main`.
 
 ## Arquitetura
 
-As regras de estudo, analytics, recomendações, revisões, persistência e relatórios ficam em módulos independentes do DOM. IndexedDB, armazenamento local e demonstração usam providers substituíveis; migrações são sequenciais e backups passam por validação antes da adoção. Consulte [ARCHITECTURE.md](ARCHITECTURE.md).
+O projeto usa JavaScript vanilla e separa estado, domínio, aplicação, repositórios, armazenamento e interface. As regras analíticas são puras e versionadas quando seus resultados precisam permanecer auditáveis. Consulte [ARCHITECTURE.md](ARCHITECTURE.md) e [SECURITY-AUDIT.md](SECURITY-AUDIT.md).
+
+`src/app.bundle.js` é gerado pelo esbuild a partir de `src/app.js` e dos módulos importados; não deve ser editado manualmente.
+
+## Privacidade
+
+A aplicação não possui servidor de dados. Sessões, questões, simulados, planos e preferências permanecem no IndexedDB ou no armazenamento local do navegador. A versão publicada no GitHub Pages serve somente arquivos estáticos.
+
+## Relatório e PDF
+
+O relatório estratégico permite escolher o período e reúne planejamento versus execução, desempenho, simulados, revisões, riscos, oportunidades, recomendações e perfil de erros. Use a impressão do navegador para salvar o relatório em PDF no formato A4.
+
+## Modo demonstração
+
+A demonstração usa `sessionStorage` e um cenário fictício separado. Reiniciar ou encerrar a demo não altera a base real do navegador.
 
 ## Atalhos
 
-- `Ctrl+K` ou `Cmd+K`: busca global.
-- `1` a `7`: alterna entre as abas quando o foco não está em um campo.
-- `Esc`: fecha busca ou modal ativo.
+- `Ctrl+K` ou `Cmd+K`: abrir a busca global.
+- `1` a `7`: alternar entre as áreas.
+- `Esc`: fechar busca, menu ou modal ativo.
+
+## Roadmap
+
+O ciclo atual entregou normalização de sessões, feedback mensurável das recomendações, tendências, diagnóstico de erros, auditoria do planejamento, alertas inteligentes, segurança, acessibilidade, projeção e PWA. Próximos ciclos podem aprofundar cenários de projeção e reduzir gradualmente o código de compatibilidade ainda presente em `src/app.js`.
 
 ## Licença
 

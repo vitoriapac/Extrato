@@ -4,10 +4,12 @@ import {openDemo} from './helpers.js';
 test('isola, reinicia e encerra a demonstração sem alterar o estado real',async({page})=>{
   await page.goto('/?test=1');
   await expect(page).toHaveTitle(/OK — Testes do Extrato/);
-  const realState=await page.evaluate(()=>{
+  const realState=await page.evaluate(async()=>{
     const state=structuredClone(window.__EXTRATO_TEST__.getState());state.subjects[0].name='Registro real preservado';state.updatedAt='2099-01-01T12:00:00.000Z';
     window.__EXTRATO_TEST__.setState(state);
-    localStorage.setItem('bb-premium-study-data',JSON.stringify(state));return localStorage.getItem('bb-premium-study-data');
+    localStorage.setItem('bb-premium-study-data',JSON.stringify(state));
+    await new Promise((resolve,reject)=>{const request=indexedDB.deleteDatabase('extrato-estudos-db');request.onsuccess=resolve;request.onerror=()=>reject(request.error);request.onblocked=resolve});
+    return localStorage.getItem('bb-premium-study-data');
   });
   await openDemo(page);await expect(page.locator('#demoBanner')).toBeVisible();await expect(page.locator('[data-demo-protected]').first()).toBeDisabled();
   const firstDemo=await page.evaluate(()=>sessionStorage.getItem('bb-premium-study-demo'));expect(firstDemo).toBeTruthy();const parsed=JSON.parse(firstDemo);
