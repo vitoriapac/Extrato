@@ -1,4 +1,4 @@
-const CACHE_NAME='studytrack-v5';
+const CACHE_NAME='studytrack-v6';
 const APP_SHELL=[
   './','./index.html','./styles/tokens.css','./styles/app.css','./styles/print.css',
   './src/theme-bootstrap.js','./src/app.bundle.js','./src/pwa.js','./manifest.webmanifest',
@@ -20,8 +20,8 @@ self.addEventListener('fetch',event=>{
     event.respondWith(fetch(event.request).catch(()=>caches.match('./index.html')));
     return;
   }
-  event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).then(response=>{
-    if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy)));}
-    return response;
-  })));
+  event.respondWith(caches.match(event.request).then(cached=>{
+    const network=fetch(event.request).then(response=>{if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy)));}return response;});
+    return cached?(event.waitUntil(network.catch(()=>null)),cached):network;
+  }));
 });

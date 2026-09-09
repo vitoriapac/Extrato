@@ -10,3 +10,7 @@
 ## Próxima etapa
 
 Mapear os estilos inline restantes, substituir valores fixos por classes e reduzir progressivamente `unsafe-inline` para estilos sem alterar os fluxos de gráficos, temas, modais e responsividade.
+
+## Atualização e cache
+
+O shell PWA usa cache versionado e remove versões antigas na ativação. Assets estáticos adotam stale-while-revalidate; navegações continuam priorizando a rede com fallback offline.

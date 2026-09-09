@@ -21,6 +21,9 @@ A escala oficial é 4, 8, 12, 16, 20, 24 e 32 px, exposta nos tokens `--space-1`
 - `empty-state--compact`: ausência de dados com explicação curta.
 - `bar-track` e `bar-fill`: progresso e distribuição.
 - `section-head` e `overview-section-heading`: títulos estruturais.
+- `compact-header` e `compact-meta`: resumo persistente do plano.
+- `diagnostic-row`: tópico, score, evidência e explicação em níveis distintos.
+- `backup-danger-zone`: ações destrutivas separadas das operações de recuperação.
 
 Cards representam agrupamentos. Dentro deles, use linhas, espaço e tipografia para estabelecer hierarquia em vez de criar novos cards.
 

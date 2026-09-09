@@ -64,6 +64,7 @@ import {createGoalService} from './application/goals/goal-service.js';
 import {buildWeeklyAvailability} from './application/goals/weekly-availability.js';
 import {buildPriorityViewModel} from './ui/view-models/priority-view-model.js';
 import {buildStudyTimeViewModel} from './application/analytics/build-overview-view-model.js';
+import {buildHeaderViewModel} from './application/analytics/build-header-view-model.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildIntelligentAlerts} from './domain/diagnostics/alerts.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
@@ -1376,7 +1377,10 @@ document.addEventListener('visibilitychange',()=>{
 
 /* ===== CONQUISTAS / BADGES ===== */
 const BADGES = [
+  { id:'firstSession', icon:'▶', name:'Primeiros passos', desc:'Primeira sessão concluída', check: () => state.studySessions.length>=1 },
+  { id:'streak3', icon:'⚡', name:'Ritmo iniciado', desc:'3 dias seguidos estudando', check: () => computeStreak(getActivityDates()) >= 3 },
   { id:'streak7', icon:'🔥', name:'Uma semana de foco', desc:'7 dias seguidos estudando', check: () => computeStreak(getActivityDates()) >= 7 },
+  { id:'streak14', icon:'◆', name:'Duas semanas de foco', desc:'14 dias seguidos estudando', check: () => computeStreak(getActivityDates()) >= 14 },
   { id:'streak30', icon:'🏆', name:'Mês de ferro', desc:'30 dias seguidos estudando', check: () => computeStreak(getActivityDates()) >= 30 },
   { id:'subject100', icon:'🎯', name:'Disciplina dominada', desc:'Uma disciplina 100% concluída', check: () => state.subjects.some(s => s.topics.length>0 && subjectProgress(s)===100) },
   { id:'allsubjects', icon:'🗂️', name:'Plano completo', desc:'Todas as disciplinas 100%', check: () => activeSubjects().length>0 && activeSubjects().every(s => s.topics.some(t=>!t.archived) && subjectProgress(s)===100) },
@@ -1384,8 +1388,15 @@ const BADGES = [
   { id:'topics50', icon:'📚', name:'Cinquenta tópicos', desc:'50 tópicos concluídos', check: () => allTopics().filter(t=>t.status==='Concluído').length >= 50 },
   { id:'q100', icon:'✍️', name:'Cem questões', desc:'100 questões resolvidas', check: () => state.questoes.reduce((sum,q)=>sum+(Number(q.resolved)||0),0) >= 100 },
   { id:'q500', icon:'🧠', name:'Quinhentas questões', desc:'500 questões resolvidas', check: () => state.questoes.reduce((sum,q)=>sum+(Number(q.resolved)||0),0) >= 500 },
+  { id:'q1000', icon:'✦', name:'Mil questões', desc:'1.000 questões resolvidas', check: () => state.questoes.reduce((sum,q)=>sum+(Number(q.resolved)||0),0) >= 1000 },
+  { id:'hours10', icon:'◷', name:'Dez horas', desc:'10 horas de estudo registradas', check: () => state.studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0)>=36000 },
+  { id:'hours50', icon:'◷', name:'Cinquenta horas', desc:'50 horas de estudo registradas', check: () => state.studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0)>=180000 },
   { id:'sim1', icon:'📝', name:'Primeiro simulado', desc:'Completou o primeiro simulado', check: () => state.simulados.length >= 1 },
   { id:'sim5', icon:'🏅', name:'Cinco simulados', desc:'Completou 5 simulados', check: () => state.simulados.length >= 5 },
+  { id:'reviews25', icon:'↻', name:'Revisor disciplinado', desc:'25 revisões concluídas', check: () => state.reviewAgenda.filter(item=>item.status==='Concluído').length>=25 },
+  { id:'coverage50', icon:'▰', name:'Edital em andamento', desc:'50% do conteúdo concluído', check: () => allTopics().length>0&&allTopics().filter(item=>item.status==='Concluído').length/allTopics().length>=.5 },
+  { id:'recommendation1', icon:'◎', name:'Inteligência aplicada', desc:'Primeira recomendação concluída', check: () => state.recommendationFeedback.some(item=>item.completed) },
+  { id:'recommendationPositive', icon:'★', name:'Estratégia funcionando', desc:'Recomendação com resultado positivo', check: () => state.recommendationFeedback.some(item=>item.outcome?.state==='positive') },
 ];
 function renderBadges(){
   const grid = document.getElementById('badgesGrid');
@@ -1655,7 +1666,7 @@ document.getElementById('globalSearchInput').addEventListener('focus', renderGlo
 document.getElementById('globalSearchInput').addEventListener('blur', () => {
   setTimeout(()=> document.getElementById('globalSearchResults').classList.remove('show'), 150);
 });
-window.addEventListener('scroll',()=>document.querySelector('.sticky-shell')?.classList.toggle('is-compact',window.scrollY>180),{passive:true});
+const headerObserver=new IntersectionObserver(entries=>{const hero=entries[0],shell=document.querySelector('.sticky-shell');shell?.classList.toggle('is-compact',!hero.isIntersecting&&hero.boundingClientRect.bottom<0)},{threshold:0});headerObserver.observe(document.querySelector('.statement'));
 
 /* ===== RENDER: HEADER STATS ===== */
 function renderHeader(){
@@ -1665,23 +1676,18 @@ function renderHeader(){
   const andamento = topics.filter(t=>t.status==='Em andamento').length;
   const pct = total ? Math.round((done/total)*100) : 0;
 
-  const readiness=readinessResult(computeApprovalMetrics()),readinessValue=readiness.value;
-  document.getElementById('balanceFigure').innerHTML = `${readinessValue??'—'}<span>/100</span>`;
-  document.getElementById('balanceSub').textContent = readinessValue==null?'Aguardando evidências':`${readiness.confidenceLabel||'Confiança inicial'} · ${done} de ${total} tópicos concluídos`;
-  document.getElementById('statSubjects').textContent = activeSubjects().length;
-  document.getElementById('statContent').textContent = pct+'%';
+  const readiness=readinessResult(computeApprovalMetrics());
   document.getElementById('statAndamento').textContent = andamento;
   document.getElementById('statConcluido').textContent = done;
 
   const revisoesPrevistas =
     state.calendar.filter(c => c.date >= todayISO()).length +
     state.reviewAgenda.filter(a => a.date >= todayISO() && a.status !== 'Concluído').length;
-  document.getElementById('statRevisoes').textContent = revisoesPrevistas;
-
-  document.getElementById('statStreak').textContent = computeStreak(getActivityDates());
-  document.getElementById('compactReadiness').textContent=readinessValue==null?'—':readinessValue+'/100';
-  document.getElementById('compactExamDate').textContent=state.examDate?formatDatePt(state.examDate):'';
-  document.getElementById('compactPlanNumber').textContent=document.getElementById('planNumber').textContent;
+  const model=buildHeaderViewModel({readiness,subjects:state.subjects,topics,upcomingReviews:revisoesPrevistas,streak:computeStreak(getActivityDates()),examDate:state.examDate,planNumber:document.getElementById('planNumber').textContent});
+  document.getElementById('balanceFigure').innerHTML = `${model.readinessValue??'—'}<span>/100</span>`;
+  document.getElementById('balanceSub').textContent = model.readinessValue==null?'Aguardando evidências':`${model.readinessConfidence} · ${model.availableFactors} de ${model.totalFactors} fatores disponíveis`;
+  document.getElementById('statSubjects').textContent = model.subjects;document.getElementById('statContent').textContent=model.contentPercent+'%';document.getElementById('statRevisoes').textContent=model.upcomingReviews;document.getElementById('statStreak').textContent=model.streak;
+  document.getElementById('compactReadiness').textContent=model.readinessValue==null?'—':model.readinessValue+'/100';document.getElementById('compactExamDate').textContent=model.examDate?formatDatePt(model.examDate):'';document.getElementById('compactPlanNumber').textContent=model.planNumber;
 
   recordProgressSnapshot(pct);
   renderExamCountdown();
@@ -4093,10 +4099,10 @@ function renderDiagnosisCenter(){
   const list=(items,empty,formatter)=>items.length?items.slice(0,4).map(formatter).join(''):`<p class="diagnosis-empty">${empty}</p>`;
   const section=key=>model.sections.find(item=>item.key===key)?.items||[];
   container.innerHTML=`<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(section('bottlenecks'),'Nenhum gargalo relevante agora.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Risco ${item.risk?.value??item.severity}/100 · dados disponíveis ${Math.round((item.risk?.evidence?.completeness||0)*100)}% · evidência ${(item.risk?.evidence?.evidenceLabel||'Não avaliada').toLowerCase()} · ${escapeHtml(item.reason)}${item.risk?.missingFactors?.length?' · '+item.risk.missingFactors.length+' fatores ausentes':''}</span></article>`)}</section>
+    <section><h4>Gargalos</h4>${list(section('bottlenecks'),'Nenhum gargalo relevante agora.',item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>Risco ${item.risk?.value??item.severity}/100</b><span>Dados ${Math.round((item.risk?.evidence?.completeness||0)*100)}%</span><span>Evidência ${(item.risk?.evidence?.evidenceLabel||'Não avaliada').toLowerCase()}</span></div><small>${escapeHtml(item.reason)}${item.risk?.missingFactors?.length?' · '+item.risk.missingFactors.length+' fatores ausentes':''}</small></article>`)}</section>
     <section><h4>Oportunidades</h4>${list(section('opportunities'),'Configure pesos e esforço para revelar oportunidades.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>Retorno estimado ${item.opportunityScore}/100 · dados disponíveis ${Math.round(item.confidence*100)}% · ${formatPlanMinutes(item.estimatedMinutes)}${item.missingFactors.includes('examImpact')?' · peso da prova ausente':''}</span></article>`)}</section>
-    <section><h4>Revisões críticas e risco</h4>${list(section('risk'),'Nenhuma revisão crítica identificada.',item=>`<article><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${item.reviewUrgency>0?'Urgência '+Math.round(item.reviewUrgency)+'/100':item.daysSinceContact+' dias sem contato'}</span></article>`)}</section>
-    <section><h4>Foco da semana</h4>${list(section('focus'),'Sem distribuição confiável.',item=>`<article><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span></article>`)}</section>
+    <section><h4>Revisões críticas e risco</h4>${list(section('risk'),'Nenhuma revisão crítica identificada.',item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>${item.reviewUrgency>0?'Urgência '+Math.round(item.reviewUrgency)+'/100':item.daysSinceContact+' dias sem contato'}</b></div><small>${escapeHtml(item.reason||item.reasons?.[0]||'Revisão requer atenção pelos indicadores atuais.')}</small></article>`)}</section>
+    <section><h4>Foco da semana</h4>${list(section('focus'),'Sem distribuição confiável.',item=>`<article class="diagnostic-row diagnostic-focus"><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% do foco recomendado</span><div class="diagnostic-progress"><i style="width:${Math.min(100,item.percentage)}%"></i></div></article>`)}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
 }
 function renderRecommendationImpact(model){
@@ -4596,7 +4602,7 @@ function renderStudyTrack32Insights(){
  const rows=intelligenceCandidates().map(item=>({topicId:item.topicId,name:item.name,subjectName:item.subjectName,mastery:item.mastery,examImpact:item.examImpact||0,retention:item.retention||0,coverage:item.coverage||0,trendRisk:item.risk||0}));
  if(gaps){const model=buildGapMap(rows);gaps.innerHTML=model.items.length?model.items.slice(0,5).map(item=>`<div class="retention-row"><div class="retention-topic"><strong>${escapeHtml(item.name||item.topicId)}</strong><span>${escapeHtml(item.reason)}</span></div><div class="retention-value">${item.priority}</div></div>`).join(''):'<div class="upcoming-empty">Nenhum gap priorizado com os dados atuais.</div>';}
  if(history){const model=buildDecisionHistory(state.recommendationFeedback,{limit:5});history.innerHTML=model.items.length?model.items.map(item=>`<div class="analytics-note"><strong>${escapeHtml(item.recommendationId||'Recomendação')}</strong> · ${escapeHtml(item.outcome?.state||'pendente')} · ${escapeHtml(item.algorithmVersion||'versão não identificada')}</div>`).join(''):'<div class="upcoming-empty">Nenhuma decisão registrada.</div>';}
- if(simReplan){const latest=[...state.simulados].sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0],proposal=buildPostSimulationReplan({simulation:latest,subjects:state.subjects});simReplan.innerHTML=proposal.state==='proposal'?`<div class="analytics-note"><strong>Proposta para ${escapeHtml(proposal.simulationDate||'simulado recente')}</strong><span>${proposal.adjustments.map(item=>`${escapeHtml(item.subjectName)}: +${item.deltaMinutes} min`).join(' · ')}</span><small>${escapeHtml(proposal.message)}</small></div>`:`<div class="upcoming-empty">${escapeHtml(proposal.reason||proposal.message)}</div>`;}
+ if(simReplan){const latest=[...state.simulados].sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0],weeklyCapacity=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),planned=(planningRepository.getDailyPlans?.()||[]).flatMap(plan=>plan.items||[]).filter(item=>!['completed','skipped'].includes(item.status)).reduce((sum,item)=>sum+(Number(item.plannedMinutes)||0),0),availableMinutes=Math.max(0,weeklyCapacity-planned),proposal=buildPostSimulationReplan({simulation:latest,subjects:state.subjects,availableMinutes,existingSimulationIds:(state.planAdjustments||[]).map(item=>item.simulationId).filter(Boolean)});simReplan.innerHTML=proposal.state==='proposal'?`<div class="analytics-note"><strong>Proposta para ${escapeHtml(proposal.simulationDate||'simulado recente')}</strong><span>${proposal.adjustments.map(item=>`${escapeHtml(item.subjectName)}: +${item.deltaMinutes} min`).join(' · ')}</span><small>${escapeHtml(proposal.message)}${proposal.unallocatedMinutes?` · ${proposal.unallocatedMinutes} min sem capacidade`:''}</small></div>`:`<div class="upcoming-empty">${escapeHtml(proposal.reason||proposal.message)}</div>`;}
 }
 function renderTopicRetentionDashboard(){
   const el=document.getElementById('topicRetentionDashboard');if(!el)return;
