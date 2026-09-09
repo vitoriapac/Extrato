@@ -1480,8 +1480,8 @@
   // src/application/replan-study.js
   function buildReplanProposal({ plans = [], periodStart, periodEnd, futureDays = [] } = {}) {
     const inPeriod2 = plans.filter((plan) => plan.date >= periodStart && plan.date <= periodEnd);
-    const plannedMinutes = inPeriod2.reduce((sum3, plan) => sum3 + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n2, item) => n2 + (Number(item.plannedMinutes) || 0), 0), 0);
-    const executedMinutes = Math.round(inPeriod2.reduce((sum3, plan) => sum3 + (plan.items || []).reduce((n2, item) => n2 + (Number(item.executedSeconds) || 0) / 60, 0), 0));
+    const plannedMinutes = inPeriod2.reduce((sum3, plan) => sum3 + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n3, item) => n3 + (Number(item.plannedMinutes) || 0), 0), 0);
+    const executedMinutes = Math.round(inPeriod2.reduce((sum3, plan) => sum3 + (plan.items || []).reduce((n3, item) => n3 + (Number(item.executedSeconds) || 0) / 60, 0), 0));
     const pendingItems = inPeriod2.flatMap((plan) => (plan.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).map((item) => ({ sourcePlanId: plan.id, sourceItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || null, remainingMinutes: Math.max(0, Math.round((Number(item.plannedMinutes) || 0) - (Number(item.executedSeconds) || 0) / 60)), priority: Number(item.score) || 0 }))).filter((item) => item.remainingMinutes > 0).sort((a, b) => b.priority - a.priority);
     const deficitMinutes = pendingItems.reduce((sum3, item) => sum3 + item.remainingMinutes, 0);
     const capacities = (futureDays || []).map((day) => ({ date: day.date, remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)) }));
@@ -2560,9 +2560,10 @@
 
   // src/ui/renderers/recommendation-calibration-renderer.js
   function renderRecommendationCalibrationModel(model, { escapeHtml: escapeHtml2 = (value2) => String(value2) } = {}) {
-    const rows = model?.groups?.factor || [];
-    if (!rows.length) return '<div class="upcoming-empty">Conclua recomendações e registre resultados para iniciar a calibração.</div>';
-    return `<div class="calibration-grid">${rows.map((item) => `<article><strong>${escapeHtml2(item.label)}</strong><span>${item.total} resultados · ${item.positive} positivos</span><b>${item.positiveRate === null ? "Amostra insuficiente" : item.positiveRate + "% positivos"}</b><small>Confiança ${escapeHtml2(item.confidence.toLowerCase())}</small></article>`).join("")}</div><p class="analytics-note">Amostra mínima: ${model.minimumSample} resultados atribuíveis por grupo · algoritmo ${model.algorithmVersion}.</p>`;
+    const factorRows = model?.groups?.factor || [], strategyRows = model?.groups?.strategy || [];
+    if (!factorRows.length && !strategyRows.length) return '<div class="upcoming-empty">Conclua recomendações e registre resultados para iniciar a calibração.</div>';
+    const render2 = (item, kind) => `<article><strong>${escapeHtml2(item.label)}</strong><span>${item.total} resultados · ${item.positive} positivos</span><b>${item.positiveRate === null ? "Amostra insuficiente" : item.positiveRate + "% positivos"}</b><small>${kind} · confiança ${escapeHtml2(item.confidence.toLowerCase())}</small></article>`;
+    return `${factorRows.length ? `<h4>Fatores dominantes</h4><div class="calibration-grid">${factorRows.map((item) => render2(item, "fator")).join("")}</div>` : ""}${strategyRows.length ? `<h4>Estratégias</h4><div class="calibration-grid">${strategyRows.map((item) => render2(item, "estratégia")).join("")}</div>` : ""}<p class="analytics-note">Amostra mínima: ${model.minimumSample} resultados atribuíveis por grupo · algoritmo ${model.algorithmVersion}. Pesos permanecem manuais.</p>`;
   }
 
   // src/ui/renderers/performance-scenarios-renderer.js
@@ -3043,7 +3044,7 @@
       });
       const known = topics.filter((t) => t.mastery != null), avg = (key) => {
         const rows = topics.filter((t) => t[key] != null);
-        return rows.length ? Math.round(rows.reduce((n2, t) => n2 + t[key], 0) / rows.length) : null;
+        return rows.length ? Math.round(rows.reduce((n3, t) => n3 + t[key], 0) / rows.length) : null;
       };
       return { subjectId: subject2.id, name: subject2.name, target, coverage: avg("coverage"), mastery: avg("mastery"), retention: avg("retention"), gap: known.length ? Math.round((target - avg("mastery")) * 10) / 10 : null, topics };
     });
@@ -3077,7 +3078,7 @@
       used += minutes;
       return { id: `step-${i + 1}`, type: p[0], label: p[1], minutes, status: "pending" };
     });
-    return { id: `strategy:${candidate.topicId || candidate.id}:${Date.now()}`, algorithmVersion: STUDY_STRATEGY_VERSION, strategyType, label: label2, totalMinutes: steps.reduce((n2, s) => n2 + s.minutes, 0), steps, reasons: [...candidate.reasons || []], evidence: candidate.evidence || null };
+    return { id: `strategy:${candidate.topicId || candidate.id}:${Date.now()}`, algorithmVersion: STUDY_STRATEGY_VERSION, strategyType, label: label2, totalMinutes: steps.reduce((n3, s) => n3 + s.minutes, 0), steps, reasons: [...candidate.reasons || []], evidence: candidate.evidence || null };
   }
 
   // src/domain/analytics/weekly-close.js
@@ -3127,6 +3128,21 @@
       return { id: item.id || item.recommendationId || null, recommendationId: item.recommendationId || item.id || null, createdAt: item.createdAt || item.date || null, subjectId: item.subjectId || snapshot.subjectId || null, topicId: item.topicId || snapshot.topicId || null, priorityScore: snapshot.priorityScore ?? item.score ?? null, reasons: Array.isArray(snapshot.reasons) ? [...snapshot.reasons] : [], strategy: snapshot.strategy || null, algorithmVersion: snapshot.algorithmVersion || item.algorithmVersion || null, outcome: item.outcome ? { state: item.outcome.state || "insufficient", delta: item.outcome.delta || null, measuredAt: item.outcome.measuredAt || null } : null };
     }).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     return { algorithmVersion: DECISION_HISTORY_VERSION, total: items.length, items: items.slice(0, limit) };
+  }
+
+  // src/domain/planning/post-simulation-replan.js
+  var POST_SIMULATION_REPLAN_VERSION = "1.0.0";
+  var n2 = (value2) => Number.isFinite(Number(value2)) ? Number(value2) : null;
+  function buildPostSimulationReplan({ simulation = null, subjects = [], topics = [], minimumQuestions = 5 } = {}) {
+    const rows = Array.isArray(simulation?.breakdown) ? simulation.breakdown.filter((row) => n2(row.total) >= minimumQuestions) : [];
+    if (!simulation || !rows.length) return { algorithmVersion: POST_SIMULATION_REPLAN_VERSION, state: "insufficient", reason: "É necessário um simulado com detalhamento suficiente por disciplina.", adjustments: [], evidence: { rows: rows.length, minimumQuestions } };
+    const subjectMap = new Map(subjects.map((item) => [item.id, item]));
+    const adjustments = rows.map((row) => {
+      const total = n2(row.total) || 0, correct = n2(row.correct) || 0, accuracy2 = Math.round(correct / total * 100), subject2 = subjectMap.get(row.subjectId);
+      const delta = accuracy2 < 50 ? 30 : accuracy2 < 70 ? 15 : 0;
+      return { subjectId: row.subjectId || null, subjectName: subject2?.name || "Disciplina não identificada", accuracy: accuracy2, deltaMinutes: delta, reason: delta ? `Desempenho de ${accuracy2}% no simulado; reforçar questões e revisão.` : "Desempenho sem déficit crítico identificado." };
+    }).filter((item) => item.deltaMinutes > 0);
+    return { algorithmVersion: POST_SIMULATION_REPLAN_VERSION, state: adjustments.length ? "proposal" : "balanced", simulationId: simulation.id, simulationDate: simulation.date, adjustments, evidence: { rows: rows.length, minimumQuestions, measuredRows: rows.length }, message: adjustments.length ? "Proposta aguardando confirmação explícita." : "O simulado não indica redistribuição imediata." };
   }
 
   // src/reports/report-data.js
@@ -4115,17 +4131,17 @@
     }
     const W = 640, H = 160, padL = 30, padR = 12, padT = 12, padB = 22;
     const plotW = W - padL - padR, plotH = H - padT - padB;
-    const n2 = data.length;
-    const xFor = (i) => padL + (n2 === 1 ? 0 : i / (n2 - 1) * plotW);
+    const n3 = data.length;
+    const xFor = (i) => padL + (n3 === 1 ? 0 : i / (n3 - 1) * plotW);
     const yFor = (pct2) => padT + plotH - pct2 / 100 * plotH;
     const points = data.map((d, i) => `${xFor(i)},${yFor(d.pct)}`).join(" ");
-    const areaPoints = `${padL},${padT + plotH} ${points} ${xFor(n2 - 1)},${padT + plotH}`;
+    const areaPoints = `${padL},${padT + plotH} ${points} ${xFor(n3 - 1)},${padT + plotH}`;
     const gridLines = [0, 25, 50, 75, 100].map((v) => `
     <line class="chart-grid" x1="${padL}" y1="${yFor(v)}" x2="${W - padR}" y2="${yFor(v)}"></line>
     <text x="2" y="${yFor(v) + 3}">${v}%</text>
   `).join("");
-    const stepLabels = n2 <= 6 ? n2 : 6;
-    const labelIdxs = Array.from({ length: stepLabels }, (_, k) => Math.round(k * (n2 - 1) / (stepLabels - 1 || 1)));
+    const stepLabels = n3 <= 6 ? n3 : 6;
+    const labelIdxs = Array.from({ length: stepLabels }, (_, k) => Math.round(k * (n3 - 1) / (stepLabels - 1 || 1)));
     const uniqueLabelIdxs = [...new Set(labelIdxs)];
     const dateLabels = uniqueLabelIdxs.map((i) => `<text x="${xFor(i)}" y="${H - 4}" text-anchor="middle">${formatDatePt(data[i].date).slice(0, 5)}</text>`).join("");
     const dots = data.map((d, i) => `<circle class="chart-dot" cx="${xFor(i)}" cy="${yFor(d.pct)}" r="3"><title>${formatDatePt(d.date)}: ${d.pct}%</title></circle>`).join("");
@@ -4845,8 +4861,8 @@
     card.style.display = "block";
     const W = 640, H = 160, padL = 30, padR = 12, padT = 12, padB = 26;
     const plotW = W - padL - padR, plotH = H - padT - padB;
-    const n2 = data.length;
-    const xFor = (i) => padL + (n2 === 1 ? 0 : i / (n2 - 1) * plotW);
+    const n3 = data.length;
+    const xFor = (i) => padL + (n3 === 1 ? 0 : i / (n3 - 1) * plotW);
     const yFor = (pct2) => padT + plotH - pct2 / 100 * plotH;
     const notas = data.map((s) => simuladoNota(s));
     const points = notas.map((pct2, i) => `${xFor(i)},${yFor(pct2)}`).join(" ");
@@ -7844,7 +7860,7 @@
     const start = startOfWeek(todayISO()), end = addDays(start, 6), futureDays = [];
     for (let date2 = addDays(todayISO(), 1); date2 <= end; date2 = addDays(date2, 1)) {
       const capacity = metaHoursForDate(date2) * 60;
-      const planned = state.dailyPlans.filter((plan) => plan.date === date2).reduce((sum3, plan) => sum3 + (plan.items || []).reduce((n2, item) => n2 + (Number(item.plannedMinutes) || 0), 0), 0);
+      const planned = state.dailyPlans.filter((plan) => plan.date === date2).reduce((sum3, plan) => sum3 + (plan.items || []).reduce((n3, item) => n3 + (Number(item.plannedMinutes) || 0), 0), 0);
       futureDays.push({ date: date2, availableMinutes: Math.max(0, capacity - planned) });
     }
     replanPreview = replanService.calculate({ plans: planningRepository.getDailyPlans().filter((plan) => plan.date >= start && plan.date <= todayISO()), periodStart: start, periodEnd: end, futureDays });
@@ -8052,7 +8068,7 @@
     return Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
   }
   function average(values) {
-    return values.length ? values.reduce((sum3, n2) => sum3 + n2, 0) / values.length : 0;
+    return values.length ? values.reduce((sum3, n3) => sum3 + n3, 0) / values.length : 0;
   }
   function approvalSimuladosMetric() {
     const completed = state.simulados.filter((sim) => simuladoEffectiveCounts(sim).total > 0).sort((a, b) => (a.date || "").localeCompare(b.date || "")).slice(-5);
@@ -8212,7 +8228,7 @@
     const onTime = done.filter((r) => localDateFromTimestamp2(r.completedAt) <= addDays(r.date, 1)).length;
     const cutoff = addDays(today, -59);
     const questions = validQuestionRecords().filter((q) => q.topicId === topicId && q.date >= cutoff && q.date <= today);
-    const resolved = questions.reduce((n2, q) => n2 + (Number(q.resolved) || 0), 0), correct = questions.reduce((n2, q) => n2 + (Number(q.correct) || 0), 0);
+    const resolved = questions.reduce((n3, q) => n3 + (Number(q.resolved) || 0), 0), correct = questions.reduce((n3, q) => n3 + (Number(q.correct) || 0), 0);
     const dates = done.map((r) => localDateFromTimestamp2(r.completedAt)).filter(Boolean).sort();
     const lastReview = dates[dates.length - 1] || localDateFromTimestamp2(found.topic.lastReviewedAt) || null;
     const daysSince = lastReview ? Math.max(0, -(diasParaRevisao(lastReview) ?? 0)) : null;
@@ -8236,8 +8252,8 @@
   function approvalRetencaoMetric() {
     const topics = activeTopics(), values = topics.map((t) => topicRetentionScore(t.subjectId, t.id)).filter((x) => x.available);
     if (!values.length) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem evidências de retenção por tópico" };
-    const weight = values.reduce((n2, x) => n2 + Math.max(0.15, x.confidence), 0), raw = values.reduce((n2, x) => n2 + x.score * Math.max(0.15, x.confidence), 0) / weight;
-    const confidence2 = Math.min(1, values.reduce((n2, x) => n2 + x.confidence, 0) / values.length * 0.65 + values.length / topics.length * 0.35);
+    const weight = values.reduce((n3, x) => n3 + Math.max(0.15, x.confidence), 0), raw = values.reduce((n3, x) => n3 + x.score * Math.max(0.15, x.confidence), 0) / weight;
+    const confidence2 = Math.min(1, values.reduce((n3, x) => n3 + x.confidence, 0) / values.length * 0.65 + values.length / topics.length * 0.35);
     return { score: clampScore(50 + (raw - 50) * Math.max(0.35, confidence2)), confidence: confidence2, available: true, raw, detail: Math.round(raw) + "% em " + values.length + " de " + topics.length + " tópicos" };
   }
   function approvalConhecimentoMetric(base) {
@@ -8245,14 +8261,14 @@
     if (base.dominio.available) parts.push({ v: base.dominio.raw ?? base.dominio.score, c: base.dominio.confidence, w: 0.65 });
     if (base.edital.available) parts.push({ v: base.edital.raw ?? base.edital.score, c: base.edital.confidence, w: 0.35 });
     if (!parts.length) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem evidências suficientes de conhecimento" };
-    const w = parts.reduce((n2, x) => n2 + x.w, 0), raw = parts.reduce((n2, x) => n2 + x.v * x.w, 0) / w, confidence2 = parts.reduce((n2, x) => n2 + x.c * x.w, 0) / w;
+    const w = parts.reduce((n3, x) => n3 + x.w, 0), raw = parts.reduce((n3, x) => n3 + x.v * x.w, 0) / w, confidence2 = parts.reduce((n3, x) => n3 + x.c * x.w, 0) / w;
     return { score: clampScore(50 + (raw - 50) * Math.max(0.25, confidence2)), confidence: confidence2, available: true, raw, detail: "Domínio dos tópicos (65%) + cobertura do edital (35%)" };
   }
   function approvalConsistenciaMetric() {
     const today = todayISO(), byDate = studySecondsByDate(state.studySessions);
     const days = [];
-    for (let n2 = 27; n2 >= 0; n2--) {
-      const date2 = addDays(today, -n2);
+    for (let n3 = 27; n3 >= 0; n3--) {
+      const date2 = addDays(today, -n3);
       days.push({ targetSeconds: metaHoursForDate(date2) * 3600, studiedSeconds: byDate[date2] || 0 });
     }
     const result = calculateGoalConsistency(days);
@@ -8303,7 +8319,7 @@
     el.innerHTML = renderRecommendationCalibrationModel(model, { escapeHtml });
   }
   function renderStudyTrack32Insights() {
-    const close = document.getElementById("weeklyCloseDashboard"), comparison = document.getElementById("periodComparisonDashboard"), gaps = document.getElementById("gapMapDashboard"), history = document.getElementById("decisionHistoryDashboard");
+    const close = document.getElementById("weeklyCloseDashboard"), comparison = document.getElementById("periodComparisonDashboard"), gaps = document.getElementById("gapMapDashboard"), history = document.getElementById("decisionHistoryDashboard"), simReplan = document.getElementById("postSimulationReplanDashboard");
     const today = parseLocalDate(todayISO()), start = new Date(today);
     start.setDate(start.getDate() - 6);
     const from = start.toISOString().slice(0, 10), sessions = state.studySessions.filter((x) => x.date >= from && x.date <= todayISO()), questions = state.questoes.filter((x) => x.date >= from && x.date <= todayISO());
@@ -8322,6 +8338,10 @@
     if (history) {
       const model = buildDecisionHistory(state.recommendationFeedback, { limit: 5 });
       history.innerHTML = model.items.length ? model.items.map((item) => `<div class="analytics-note"><strong>${escapeHtml(item.recommendationId || "Recomendação")}</strong> · ${escapeHtml(item.outcome?.state || "pendente")} · ${escapeHtml(item.algorithmVersion || "versão não identificada")}</div>`).join("") : '<div class="upcoming-empty">Nenhuma decisão registrada.</div>';
+    }
+    if (simReplan) {
+      const latest = [...state.simulados].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0], proposal = buildPostSimulationReplan({ simulation: latest, subjects: state.subjects });
+      simReplan.innerHTML = proposal.state === "proposal" ? `<div class="analytics-note"><strong>Proposta para ${escapeHtml(proposal.simulationDate || "simulado recente")}</strong><span>${proposal.adjustments.map((item) => `${escapeHtml(item.subjectName)}: +${item.deltaMinutes} min`).join(" · ")}</span><small>${escapeHtml(proposal.message)}</small></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason || proposal.message)}</div>`;
     }
   }
   function renderTopicRetentionDashboard() {
@@ -8466,7 +8486,7 @@
     }).join("") + `<li class="overdue-list-footer">${renderCollectionFooter({ variant: "block", total: entries.length, visible: visible.length, step: 3, label: "datas", showMoreAction: `changeOverdueGroupLimit('${elId}',3)`, showAllAction: `showAllOverdueGroups('${elId}')`, showLessAction: limit > 3 ? `resetOverdueGroupLimit('${elId}')` : "" })}</li>`;
   }
   function renderKPIs() {
-    const resolved = state.questoes.reduce((n2, q) => n2 + (Number(q.resolved) || 0), 0), accuracy2 = taxaAcertoGeral(), average2 = mediaSimulados(), late = revisoesAtrasadas(), target = state.metas.metaAprovacao;
+    const resolved = state.questoes.reduce((n3, q) => n3 + (Number(q.resolved) || 0), 0), accuracy2 = taxaAcertoGeral(), average2 = mediaSimulados(), late = revisoesAtrasadas(), target = state.metas.metaAprovacao;
     const hasResults = state.questoes.length + state.simulados.length > 0;
     document.getElementById("kpiGrid").innerHTML = `
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${resolved}</div><div class="l">Questões resolvidas</div></button>

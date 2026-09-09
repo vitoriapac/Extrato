@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {buildPostSimulationReplan} from '../../src/domain/planning/post-simulation-replan.js';
+test('post simulation replan is insufficient without breakdown',()=>{const result=buildPostSimulationReplan({simulation:{id:'s1'}});assert.equal(result.state,'insufficient');assert.equal(result.adjustments.length,0)});
+test('post simulation replan proposes explicit reinforcement',()=>{const result=buildPostSimulationReplan({simulation:{id:'s1',date:'2026-01-01',breakdown:[{subjectId:'p',correct:2,total:10}]},subjects:[{id:'p',name:'Português'}]});assert.equal(result.state,'proposal');assert.equal(result.adjustments[0].deltaMinutes,30);assert.match(result.adjustments[0].reason,/Desempenho/)});
