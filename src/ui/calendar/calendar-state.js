@@ -1,0 +1,1 @@
+export function createCalendarState(initial={}){return{month:initial.month||null,filters:{subjectId:initial.filters?.subjectId||'',status:initial.filters?.status||'',month:initial.filters?.month||'',type:initial.filters?.type||''},view:initial.view||'month',visible:Number(initial.visible)||10,editingId:null,selectedId:null,expandedIds:new Set()};}

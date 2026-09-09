@@ -119,3 +119,6 @@ O Índice de Prontidão usa cobertura (30%), domínio (25%), retenção (20%), c
 - Alterações de metas, disciplinas, sessões, revisões, planejamento e registros operacionais passam por serviços e repositórios.
 - Acesso técnico a IndexedDB, `localStorage`, `sessionStorage`, arquivos e impressão está contido em providers ou controladores de infraestrutura.
 - `app.bundle.js` continua sendo artefato gerado; a fonte de verdade permanece nos módulos de `src/`.
+## Ciclo de estabilização
+
+O ciclo atual mantém as regras de data local centralizadas em `study-session.js` e prepara a extração do Calendário por meio de `calendar-state.js` e `calendar-controller.js`. Controladores recebem serviços e callbacks explicitamente; renderizadores permanecem sem persistência.
