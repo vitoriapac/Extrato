@@ -24,6 +24,9 @@ A escala oficial é 4, 8, 12, 16, 20, 24 e 32 px, exposta nos tokens `--space-1`
 - `compact-header` e `compact-meta`: resumo persistente do plano.
 - `diagnostic-row`: tópico, score, evidência e explicação em níveis distintos.
 - `backup-danger-zone`: ações destrutivas separadas das operações de recuperação.
+- `select-control`: aparência comum dos seletores, com variantes `--compact` e `--wide`.
+- `data-row`: histórico traduzido com título, ação e estado.
+- `weekly-assessment` e `period-comparison`: interpretação semanal e deltas por unidade.
 
 Cards representam agrupamentos. Dentro deles, use linhas, espaço e tipografia para estabelecer hierarquia em vez de criar novos cards.
 

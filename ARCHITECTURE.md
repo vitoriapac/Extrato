@@ -122,3 +122,5 @@ O Índice de Prontidão usa cobertura (30%), domínio (25%), retenção (20%), c
 ## Ciclo de estabilização
 
 O ciclo atual mantém as regras de data local centralizadas em `study-session.js` e prepara a extração do Calendário por meio de `calendar-state.js` e `calendar-controller.js`. Controladores recebem serviços e callbacks explicitamente; renderizadores permanecem sem persistência.
+
+O contrato de `report-data.js` resolve nomes e estados antes da impressão; `report-template.js` nunca usa IDs internos como texto visível. O fechamento semanal versionado recebe os dois períodos da camada de aplicação e devolve deltas tipados, diagnóstico e ação recomendada.

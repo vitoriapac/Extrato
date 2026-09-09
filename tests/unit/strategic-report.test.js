@@ -8,6 +8,7 @@ test('consolida relatório estratégico sem depender do DOM',()=>{
   const report=buildStrategicReport({state,generatedAt:'2026-09-02T12:00:00.000Z',isDemo:true,readiness:{value:72},diagnosis:{bottlenecks:[],opportunities:[]},forecast:{forecast30:{low:74,high:82,central:78}}});
   assert.equal(report.overview.accuracy,75);assert.equal(report.overview.studySeconds,3600);assert.equal(report.recommendations.useful,1);assert.equal(report.recommendations.measured,1);assert.equal(report.period.start,'2026-08-04');
   const html=renderStrategicReport(report);assert.match(html,/Relatório estratégico de demonstração/);assert.match(html,/74–82%/);assert.doesNotMatch(html,/<script/);
+  assert.match(html,/Resumo executivo/);assert.match(html,/Foco recomendado/);assert.match(html,/Metodologia/);
 });
 
 test('período personalizado exclui registros externos ao recorte',()=>{const state={subjects:[],studySessions:[{date:'2026-08-01',durationSeconds:3600},{date:'2026-09-01',durationSeconds:1800}],questoes:[],simulados:[],reviewAgenda:[],studyPlans:[],dailyPlans:[],planAdjustments:[],recommendationFeedback:[]};const report=buildStrategicReport({state,generatedAt:'2026-09-02T12:00:00Z',period:{preset:'custom',start:'2026-09-01',end:'2026-09-02'}});assert.equal(report.overview.studySeconds,1800);assert.equal(report.period.label,'2026-09-01 a 2026-09-02')});
