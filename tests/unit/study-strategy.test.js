@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {buildStudyStrategy} from '../../src/domain/recommendations/study-strategy.js';
+test('gera prática dirigida com etapas que respeitam o tempo',()=>{const strategy=buildStudyStrategy({topicId:'t',masteryGap:60,reasons:['domínio baixo'],estimatedMinutes:55});assert.equal(strategy.strategyType,'directed_practice');assert.equal(strategy.steps.reduce((n,s)=>n+s.minutes,0),55);assert.ok(strategy.steps.every(s=>s.minutes>=5))});
+test('prioriza correção quando há erro dominante',()=>{assert.equal(buildStudyStrategy({diagnosis:{dominantError:{key:'calculo'}},estimatedMinutes:30}).strategyType,'error_correction')});

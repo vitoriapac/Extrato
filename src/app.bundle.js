@@ -5,7 +5,7 @@
   var BACKUP_KEY = STORAGE_KEY + "-automatic-backup";
   var BACKUP_INDEX_KEY = BACKUP_KEY + "-index";
   var AUTOMATIC_BACKUP_SLOTS = 5;
-  var CURRENT_SCHEMA_VERSION = 17;
+  var CURRENT_SCHEMA_VERSION = 18;
   var MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
   var DB_NAME = "extrato-estudos-db";
   var DB_VERSION = 1;
@@ -440,12 +440,14 @@
     return {
       examDate: typeof source.examDate === "string" && source.examDate ? source.examDate : legacyExamDate || null,
       targetScore: Number.isFinite(target) ? Math.max(0, Math.min(100, target)) : 80,
+      masteryTarget: Number.isFinite(Number(source.masteryTarget)) ? Math.max(0, Math.min(100, Number(source.masteryTarget))) : 80,
       configuredAt: typeof source.configuredAt === "string" ? source.configuredAt : null,
       subjects: Array.isArray(source.subjects) ? source.subjects.map((item) => ({
         subjectId: item?.subjectId || null,
         expectedQuestions: Math.max(0, Math.round(Number(item?.expectedQuestions) || 0)),
         questionWeight: Math.max(0, Number(item?.questionWeight) || 1),
-        priority: EXAM_PRIORITIES.includes(item?.priority) ? item.priority : "normal"
+        priority: EXAM_PRIORITIES.includes(item?.priority) ? item.priority : "normal",
+        masteryTarget: Number.isFinite(Number(item?.masteryTarget)) ? Math.max(0, Math.min(100, Number(item.masteryTarget))) : null
       })) : []
     };
   }
@@ -500,7 +502,7 @@
         horasPorDia: { "0": 2.5, "1": 2.5, "2": 2.5, "3": 2.5, "4": 2.5, "5": 2.5, "6": 2.5 }
       },
       examDate: "",
-      examBlueprint: { examDate: null, targetScore: 80, configuredAt: null, subjects: [] },
+      examBlueprint: { examDate: null, targetScore: 80, masteryTarget: 80, configuredAt: null, subjects: [] },
       algorithmVersions: { ...DEFAULT_ALGORITHM_VERSIONS },
       progressHistory: [],
       studySessions: [],
@@ -519,7 +521,9 @@
         type: "study",
         hiddenAt: null,
         planItemId: null,
-        targetMinutes: null
+        targetMinutes: null,
+        strategy: null,
+        strategyStep: 0
       },
       topicHistory: [],
       achievementsUnlocked: {},
@@ -1346,6 +1350,7 @@
       topicId: recommendation.topicId || null,
       recommendationType: recommendation.tipo || recommendation.type || recommendation.studyType || null,
       dominantFactor: recommendation.dominantFactor || dominant,
+      strategy: recommendation.strategy ? structuredClone(recommendation.strategy) : null,
       priorityScore: Number.isFinite(Number(recommendation.score)) ? Number(recommendation.score) : null,
       riskScore: Number.isFinite(Number(recommendation.risk?.value)) ? Number(recommendation.risk.value) : null,
       recommendedMinutes: Math.max(0, Number(recommendation.estimatedMinutes) || 0),
@@ -3028,6 +3033,53 @@
     return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateQuestionDraft('date',this.value)"></label><label>Disciplina<select data-delegated-change="updateQuestionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Tópico<select data-delegated-change="updateQuestionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topicOptions}</select></label><label>Resolvidas<input type="number" min="0" value="${Number(draft.resolved) || 0}" data-delegated-input="updateQuestionDraft('resolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(draft.correct) || 0}" data-delegated-input="updateQuestionDraft('correct',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelQuestionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveQuestionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteQuestaoRow('${item.id}')">Excluir</button></div></div></td></tr>`;
   }
 
+  // src/domain/analytics/exam-mastery-matrix.js
+  function buildExamMasteryMatrix({ subjects = [], blueprint = {}, metricsByTopic = {}, masteryTargets = {} } = {}) {
+    const general = Number(blueprint.masteryTarget ?? 80);
+    return subjects.filter((s) => !s.archived).map((subject2) => {
+      const config = (blueprint.subjects || []).find((x) => x.subjectId === subject2.id), target = Number(config?.masteryTarget ?? masteryTargets[subject2.id] ?? general), topics = (subject2.topics || []).filter((t) => !t.archived).map((topic) => {
+        const m = metricsByTopic[topic.id] || {}, mastery = m.mastery?.value ?? m.mastery?.score ?? null, coverage = m.coverage ?? (topic.status === "Concluído" ? 100 : topic.status === "Em andamento" ? 50 : 0);
+        return { subjectId: subject2.id, topicId: topic.id, name: topic.name, coverage, mastery, retention: m.retention?.value ?? m.retention?.score ?? null, trend: m.trend || null, priority: m.priority?.value ?? m.priority?.score ?? null, confidence: m.mastery?.confidence ?? 0, target, gap: mastery == null ? null : Math.round((target - mastery) * 10) / 10, state: mastery == null ? coverage ? "without_evidence" : "not_started" : mastery < target ? "fragile" : "on_target" };
+      });
+      const known = topics.filter((t) => t.mastery != null), avg = (key) => {
+        const rows = topics.filter((t) => t[key] != null);
+        return rows.length ? Math.round(rows.reduce((n, t) => n + t[key], 0) / rows.length) : null;
+      };
+      return { subjectId: subject2.id, name: subject2.name, target, coverage: avg("coverage"), mastery: avg("mastery"), retention: avg("retention"), gap: known.length ? Math.round((target - avg("mastery")) * 10) / 10 : null, topics };
+    });
+  }
+
+  // src/domain/recommendations/study-strategy.js
+  var STUDY_STRATEGY_VERSION = "1.0.0";
+  function buildStudyStrategy(candidate = {}, options = {}) {
+    const total = Math.max(15, Math.round(Number(options.availableMinutes ?? candidate.estimatedMinutes) || 30)), error = candidate.diagnosis?.dominantError?.key || null;
+    let strategyType = "theory", label2 = "Teoria orientada", parts = [["study", "Teoria", 0.7], ["review", "Recapitulação", 0.3]];
+    if (error) {
+      strategyType = "error_correction";
+      label2 = "Correção de erros";
+      parts = [["review", "Revisar erros", 0.35], ["questions", "Prática dirigida", 0.45], ["review", "Correção", 0.2]];
+    } else if ((candidate.retentionRisk ?? 0) >= 40 || (candidate.reviewHealthRisk ?? 0) >= 40) {
+      strategyType = "active_review";
+      label2 = "Revisão ativa";
+      parts = [["review", "Recuperação ativa", 0.45], ["questions", "Questões", 0.4], ["review", "Correção", 0.15]];
+    } else if ((candidate.masteryGap ?? 0) >= 40) {
+      strategyType = "directed_practice";
+      label2 = "Prática dirigida";
+      parts = [["review", "Revisão curta", 0.2], ["questions", "Questões", 0.65], ["review", "Correção", 0.15]];
+    } else if (candidate.covered) {
+      strategyType = "maintenance";
+      label2 = "Manutenção";
+      parts = [["questions", "Questões", 0.7], ["review", "Revisão", 0.3]];
+    }
+    let used = 0;
+    const steps = parts.map((p, i) => {
+      const minutes = i === parts.length - 1 ? total - used : Math.max(5, Math.round(total * p[2] / 5) * 5);
+      used += minutes;
+      return { id: `step-${i + 1}`, type: p[0], label: p[1], minutes, status: "pending" };
+    });
+    return { id: `strategy:${candidate.topicId || candidate.id}:${Date.now()}`, algorithmVersion: STUDY_STRATEGY_VERSION, strategyType, label: label2, totalMinutes: steps.reduce((n, s) => n + s.minutes, 0), steps, reasons: [...candidate.reasons || []], evidence: candidate.evidence || null };
+  }
+
   // src/reports/report-data.js
   var sum2 = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
   var shiftDate2 = (iso, days) => {
@@ -3409,8 +3461,16 @@
     data.schemaVersion = 17;
     return data;
   }
+  function migrateV17toV18(data) {
+    data.examBlueprint = normalizeExamBlueprint(data.examBlueprint, data.examDate);
+    data.activeTimer = data.activeTimer || {};
+    data.activeTimer.strategy = data.activeTimer.strategy || null;
+    data.activeTimer.strategyStep = Math.max(0, Number(data.activeTimer.strategyStep) || 0);
+    data.schemaVersion = 18;
+    return data;
+  }
   function migrateState(data) {
-    return runStateMigrations(data, { currentVersion: CURRENT_SCHEMA_VERSION, migrations: { 1: migrateV1toV2, 2: migrateV2toV3, 3: migrateV3toV4, 4: migrateV4toV5, 5: migrateV5toV6, 6: migrateV6toV7, 7: migrateV7toV8, 8: migrateV8toV9, 9: migrateV9toV10, 10: migrateV10toV11, 11: migrateV11toV12, 12: migrateV12toV13, 13: migrateV13toV14, 14: migrateV14toV15, 15: migrateV15toV16, 16: migrateV16toV17 } });
+    return runStateMigrations(data, { currentVersion: CURRENT_SCHEMA_VERSION, migrations: { 1: migrateV1toV2, 2: migrateV2toV3, 3: migrateV3toV4, 4: migrateV4toV5, 5: migrateV5toV6, 6: migrateV6toV7, 7: migrateV7toV8, 8: migrateV8toV9, 9: migrateV9toV10, 10: migrateV10toV11, 11: migrateV11toV12, 12: migrateV12toV13, 13: migrateV13toV14, 14: migrateV14toV15, 15: migrateV15toV16, 16: migrateV16toV17, 17: migrateV17toV18 } });
   }
   function ensureStateDefaults() {
     if (!state || typeof state !== "object") state = {};
@@ -3468,6 +3528,8 @@
     state.activeTimer.hiddenAt = state.activeTimer.hiddenAt || null;
     state.activeTimer.planItemId = state.activeTimer.planItemId || null;
     state.activeTimer.targetMinutes = Number(state.activeTimer.targetMinutes) || null;
+    state.activeTimer.strategy = state.activeTimer.strategy || null;
+    state.activeTimer.strategyStep = Math.max(0, Number(state.activeTimer.strategyStep) || 0);
     state.dailyPlans.forEach((plan) => {
       if (!plan.id) plan.id = uid("plan");
       if (typeof plan.date !== "string") plan.date = todayISO();
@@ -4385,6 +4447,27 @@
         targetEl.style.display = "none";
       }
     }
+    renderGuidedStrategy();
+  }
+  function renderGuidedStrategy() {
+    const el = document.getElementById("guidedStrategy"), strategy = state.activeTimer?.strategy;
+    if (!el) return;
+    el.hidden = !strategy;
+    if (!strategy) {
+      el.innerHTML = "";
+      return;
+    }
+    const index = Math.min(state.activeTimer.strategyStep || 0, strategy.steps.length - 1), step = strategy.steps[index];
+    el.innerHTML = `<strong>${escapeHtml(strategy.label)} · etapa ${index + 1}/${strategy.steps.length}</strong><span>${escapeHtml(step.label)} · ${step.minutes} min</span><button class="btn ghost small" data-delegated-click="advanceGuidedStrategy()">${index === strategy.steps.length - 1 ? "Concluir etapas" : "Próxima etapa"}</button>`;
+  }
+  function advanceGuidedStrategy() {
+    const strategy = state.activeTimer?.strategy;
+    if (!strategy) return;
+    const index = state.activeTimer.strategyStep || 0;
+    strategy.steps[index].status = "completed";
+    if (index < strategy.steps.length - 1) state.activeTimer.strategyStep = index + 1;
+    renderGuidedStrategy();
+    scheduleSave();
   }
   function updateTimerControls() {
     const hasTime = timerSeconds > 0;
@@ -4457,7 +4540,7 @@
     releaseActivePlanItem();
     timerSeconds = 0;
     timerStartedAt = null;
-    Object.assign(state.activeTimer, { startedAt: null, runStartedAt: null, accumulatedSeconds: 0, isRunning: false, hiddenAt: null, planItemId: null, targetMinutes: null });
+    Object.assign(state.activeTimer, { startedAt: null, runStartedAt: null, accumulatedSeconds: 0, isRunning: false, hiddenAt: null, planItemId: null, targetMinutes: null, strategy: null, strategyStep: 0 });
     updateTimerDisplay();
     updateTimerControls();
     scheduleSave();
@@ -6670,9 +6753,16 @@
     const blueprint = state.examBlueprint;
     const rows = activeSubjects().map((subject2) => {
       const config = blueprint.subjects.find((item) => item.subjectId === subject2.id);
-      return `<div class="exam-subject-row"><strong>${escapeHtml(subject2.name)}</strong><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject2.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject2.id}','questionWeight',this.value)"></label><label>Prioridade<select data-delegated-change="updateExamSubject('${subject2.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label></div>`;
+      return `<div class="exam-subject-row"><strong>${escapeHtml(subject2.name)}</strong><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="${blueprint.masteryTarget}" data-delegated-blur="updateExamSubject('${subject2.id}','masteryTarget',this.value)"></label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject2.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject2.id}','questionWeight',this.value)"></label><label>Prioridade<select data-delegated-change="updateExamSubject('${subject2.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label></div>`;
     }).join("");
-    container.innerHTML = `<div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label></div><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+    container.innerHTML = `<div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+    renderExamMasteryMatrix();
+  }
+  function renderExamMasteryMatrix() {
+    const el = document.getElementById("examMasteryMatrix");
+    if (!el) return;
+    const candidates = intelligenceCandidates(), metrics = Object.fromEntries(candidates.map((c) => [c.topicId, { coverage: c.coverage, mastery: { value: c.mastery, confidence: c.evidenceStrength }, retention: { value: c.retention }, trend: c.trend, priority: { value: c.score } }])), rows = buildExamMasteryMatrix({ subjects: state.subjects, blueprint: state.examBlueprint, metricsByTopic: metrics });
+    el.innerHTML = rows.length ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a, b) => (b.gap ?? -999) - (a.gap ?? -999)).map((row) => `<details><summary><strong>${escapeHtml(row.name)}</strong><span>${row.coverage ?? "—"}%</span><span>${row.mastery ?? "—"}%</span><span>${row.retention ?? "—"}%</span><span>${row.gap == null ? "—" : (row.gap > 0 ? "-" : "") + Math.abs(row.gap) + " pts"}</span></summary>${row.topics.map((t) => `<div class="mastery-topic"><span>${escapeHtml(t.name)}</span><span>${t.coverage}%</span><span>${t.mastery ?? "—"}%</span><span>${t.retention ?? "—"}%</span><span>${escapeHtml(t.state)}</span></div>`).join("")}</details>`).join("")}</div>` : '<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>';
   }
   var studyPlanPreview = null;
   var dailyPlanPreview = null;
@@ -6768,6 +6858,7 @@
       state.examBlueprint.targetScore = target;
       goalsService.update("metaAprovacao", target);
     }
+    if (field === "masteryTarget") state.examBlueprint.masteryTarget = Math.max(0, Math.min(100, Number(value2) || 80));
     state.examBlueprint.configuredAt = nowISO2();
     persistAndRender();
   }
@@ -6775,12 +6866,13 @@
     studyPlanPreview = null;
     let config = state.examBlueprint.subjects.find((item) => item.subjectId === subjectId);
     if (!config) {
-      config = { subjectId, expectedQuestions: 0, questionWeight: 1, priority: "normal" };
+      config = { subjectId, expectedQuestions: 0, questionWeight: 1, priority: "normal", masteryTarget: null };
       state.examBlueprint.subjects.push(config);
     }
     if (field === "expectedQuestions") config.expectedQuestions = Math.max(0, Math.round(Number(value2) || 0));
     if (field === "questionWeight") config.questionWeight = Math.max(0.1, Number(value2) || 1);
     if (field === "priority" && EXAM_PRIORITIES.includes(value2)) config.priority = value2;
+    if (field === "masteryTarget") config.masteryTarget = value2 === "" ? null : Math.max(0, Math.min(100, Number(value2) || 0));
     state.examBlueprint.configuredAt = nowISO2();
     persistAndRender();
   }
@@ -7678,6 +7770,7 @@
       return;
     }
     Object.assign(recommendation, fresh);
+    recommendation.strategy = buildStudyStrategy(recommendation, { availableMinutes: recommendation.estimatedMinutes });
     recordRecommendationFeedback(recommendation, { accepted: true });
     let plan = todayDailyStudyPlan();
     if (!plan) {
@@ -7693,6 +7786,8 @@
       plan.updatedAt = nowISO2();
       scheduleSave();
     }
+    state.activeTimer.strategy = structuredClone(recommendation.strategy);
+    state.activeTimer.strategyStep = 0;
     startPlannedActivity(item.id);
   }
   var replanPreview = null;
@@ -8373,6 +8468,7 @@
     selectHeatmapDay,
     setHeatmapFilter,
     viewSelectedHeatmapSessions,
+    advanceGuidedStrategy,
     dismissIntelligentAlert,
     dismissStudyRecommendation,
     markRecommendationNotUseful,

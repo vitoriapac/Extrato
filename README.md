@@ -79,7 +79,7 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 
 ## Roadmap
 
-O ciclo atual entregou normalização de sessões, feedback mensurável e calibração das recomendações, tendências, diagnóstico de erros, auditoria do planejamento, alertas inteligentes, segurança com CSP, acessibilidade, projeção com cenários, PWA e um assistente para importar disciplinas e tópicos dos editais BB e Caixa. Questões, Agenda/Revisões, Calendário e os novos painéis analíticos possuem view-models e renderers modulares; `src/app.js` conserva apenas a orquestração desses fluxos e a compatibilidade temporária.
+O StudyTrack 3.1 conecta o edital às metas de domínio, à matriz de lacunas e às estratégias automáticas. Recomendações podem iniciar sessões guiadas por etapas no cronômetro existente, com estado recuperável. Questões, Agenda/Revisões, Calendário e os painéis analíticos possuem view-models e renderers modulares; `src/app.js` conserva a orquestração e a compatibilidade temporária.
 
 ## Licença
 

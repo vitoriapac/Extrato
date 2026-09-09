@@ -15,12 +15,12 @@ test('limita importância e normaliza esforço e pré-requisitos',()=>{
 });
 
 test('migra a data legada para a configuração da prova',()=>{
-  assert.deepEqual(normalizeExamBlueprint({},'2026-12-15'),{examDate:'2026-12-15',targetScore:80,configuredAt:null,subjects:[]});
+  assert.deepEqual(normalizeExamBlueprint({},'2026-12-15'),{examDate:'2026-12-15',targetScore:80,masteryTarget:80,configuredAt:null,subjects:[]});
 });
 
 test('normaliza pesos e versões de algoritmos',()=>{
   const blueprint=normalizeExamBlueprint({targetScore:120,subjects:[{subjectId:'subject-1',expectedQuestions:19.6,questionWeight:2,priority:'high'}]});
   assert.equal(blueprint.targetScore,100);
-  assert.deepEqual(blueprint.subjects[0],{subjectId:'subject-1',expectedQuestions:20,questionWeight:2,priority:'high'});
+  assert.deepEqual(blueprint.subjects[0],{subjectId:'subject-1',expectedQuestions:20,questionWeight:2,priority:'high',masteryTarget:null});
   assert.deepEqual(normalizeAlgorithmVersions({readiness:2,retention:0}),{readiness:2,retention:1,reviewHealth:1,recommendations:3,recommendationOutcomes:1,adaptiveReview:1,forecasts:1});
 });

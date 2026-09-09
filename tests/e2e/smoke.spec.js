@@ -12,7 +12,7 @@ test('inicializa e navega pelas áreas principais',async({page})=>{
 
 test('expõe estado de teste isolado com schema atual',async({page})=>{
   await page.goto('/?test=1');
-  await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__?.CURRENT_SCHEMA_VERSION)).toBe(17);
+  await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__?.CURRENT_SCHEMA_VERSION)).toBe(18);
   const state=await page.evaluate(()=>window.__EXTRATO_TEST__.getState());
-  expect(state.subjects.length).toBeGreaterThan(0);expect(state.schemaVersion).toBe(17);
+  expect(state.subjects.length).toBeGreaterThan(0);expect(state.schemaVersion).toBe(18);expect(state.examBlueprint.masteryTarget).toBe(80);
 });

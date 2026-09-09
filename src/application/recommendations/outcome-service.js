@@ -11,7 +11,7 @@ export function captureRecommendationSnapshot(recommendation,{baseline=null,crea
   const before=baseline||captureRecommendationBaseline({measuredAt:createdAt});
   const contributions=recommendation.contributions||recommendation.factors||{};const dominant=Object.entries(contributions).filter(([,value])=>Number.isFinite(Number(value))).sort((a,b)=>Number(b[1])-Number(a[1]))[0]?.[0]||null;
   return Object.freeze({recommendationId:recommendation.recommendationId,algorithmVersion:Number(recommendation.algorithmVersion)||1,subjectId:recommendation.subjectId||null,topicId:recommendation.topicId||null,
-    recommendationType:recommendation.tipo||recommendation.type||recommendation.studyType||null,dominantFactor:recommendation.dominantFactor||dominant,
+    recommendationType:recommendation.tipo||recommendation.type||recommendation.studyType||null,dominantFactor:recommendation.dominantFactor||dominant,strategy:recommendation.strategy?structuredClone(recommendation.strategy):null,
     priorityScore:Number.isFinite(Number(recommendation.score))?Number(recommendation.score):null,riskScore:Number.isFinite(Number(recommendation.risk?.value))?Number(recommendation.risk.value):null,
     recommendedMinutes:Math.max(0,Number(recommendation.estimatedMinutes)||0),recommendedQuestions:Math.max(0,Number(recommendation.recommendedQuestions)||0),masteryBefore:before.mastery??null,retentionBefore:before.retention??null,reviewHealthBefore:before.reviewHealth??null,evidenceBefore:before.evidence?structuredClone(before.evidence):null,before:structuredClone(before),createdAt:createdAt||recommendation.shownAt||null});
 }

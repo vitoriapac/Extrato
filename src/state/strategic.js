@@ -15,13 +15,13 @@ export function normalizeExamBlueprint(value={},legacyExamDate=''){
   const target=Number(source.targetScore);
   return {
     examDate:typeof source.examDate==='string'&&source.examDate?source.examDate:(legacyExamDate||null),
-    targetScore:Number.isFinite(target)?Math.max(0,Math.min(100,target)):80,
+    targetScore:Number.isFinite(target)?Math.max(0,Math.min(100,target)):80,masteryTarget:Number.isFinite(Number(source.masteryTarget))?Math.max(0,Math.min(100,Number(source.masteryTarget))):80,
     configuredAt:typeof source.configuredAt==='string'?source.configuredAt:null,
     subjects:Array.isArray(source.subjects)?source.subjects.map(item=>({
       subjectId:item?.subjectId||null,
       expectedQuestions:Math.max(0,Math.round(Number(item?.expectedQuestions)||0)),
       questionWeight:Math.max(0,Number(item?.questionWeight)||1),
-      priority:EXAM_PRIORITIES.includes(item?.priority)?item.priority:'normal'
+      priority:EXAM_PRIORITIES.includes(item?.priority)?item.priority:'normal',masteryTarget:Number.isFinite(Number(item?.masteryTarget))?Math.max(0,Math.min(100,Number(item.masteryTarget))):null
     })):[]
   };
 }

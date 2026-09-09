@@ -84,6 +84,8 @@ import {buildCalendarItemViewModel} from './ui/view-models/calendar-view-model.j
 import {renderCalendarRead,renderCalendarEdit} from './ui/renderers/calendar-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
 import {renderQuestionRead,renderQuestionEdit} from './ui/renderers/questions-renderer.js';
+import {buildExamMasteryMatrix} from './domain/analytics/exam-mastery-matrix.js';
+import {buildStudyStrategy} from './domain/recommendations/study-strategy.js';
 import {buildStrategicReport} from './reports/report-data.js';
 import {renderStrategicReport} from './reports/report-template.js';
 import {printStrategicReport} from './reports/print-report.js';
@@ -362,8 +364,10 @@ function migrateV16toV17(data){
   data.schemaVersion=17;return data;
 }
 
+function migrateV17toV18(data){data.examBlueprint=normalizeExamBlueprint(data.examBlueprint,data.examDate);data.activeTimer=data.activeTimer||{};data.activeTimer.strategy=data.activeTimer.strategy||null;data.activeTimer.strategyStep=Math.max(0,Number(data.activeTimer.strategyStep)||0);data.schemaVersion=18;return data}
+
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18}});
 }
 
 function ensureStateDefaults(){
@@ -413,6 +417,7 @@ function ensureStateDefaults(){
   state.activeTimer.hiddenAt = state.activeTimer.hiddenAt || null;
   state.activeTimer.planItemId = state.activeTimer.planItemId || null;
   state.activeTimer.targetMinutes = Number(state.activeTimer.targetMinutes)||null;
+  state.activeTimer.strategy=state.activeTimer.strategy||null;state.activeTimer.strategyStep=Math.max(0,Number(state.activeTimer.strategyStep)||0);
   state.dailyPlans.forEach(plan=>{
     if(!plan.id) plan.id=uid('plan');
     if(typeof plan.date!=='string') plan.date=todayISO();
@@ -1177,7 +1182,10 @@ function updateTimerDisplay(){
       targetEl.style.display='none';
     }
   }
+  renderGuidedStrategy();
 }
+function renderGuidedStrategy(){const el=document.getElementById('guidedStrategy'),strategy=state.activeTimer?.strategy;if(!el)return;el.hidden=!strategy;if(!strategy){el.innerHTML='';return}const index=Math.min(state.activeTimer.strategyStep||0,strategy.steps.length-1),step=strategy.steps[index];el.innerHTML=`<strong>${escapeHtml(strategy.label)} · etapa ${index+1}/${strategy.steps.length}</strong><span>${escapeHtml(step.label)} · ${step.minutes} min</span><button class="btn ghost small" data-delegated-click="advanceGuidedStrategy()">${index===strategy.steps.length-1?'Concluir etapas':'Próxima etapa'}</button>`}
+function advanceGuidedStrategy(){const strategy=state.activeTimer?.strategy;if(!strategy)return;const index=state.activeTimer.strategyStep||0;strategy.steps[index].status='completed';if(index<strategy.steps.length-1)state.activeTimer.strategyStep=index+1;renderGuidedStrategy();scheduleSave()}
 function updateTimerControls(){
   const hasTime=timerSeconds>0;
   document.getElementById('timerStartBtn').style.display=timerRunning?'none':'inline-block';
@@ -1247,7 +1255,7 @@ function resetTimer(){
   releaseActivePlanItem();
   timerSeconds = 0;
   timerStartedAt = null;
-  Object.assign(state.activeTimer,{startedAt:null,runStartedAt:null,accumulatedSeconds:0,isRunning:false,hiddenAt:null,planItemId:null,targetMinutes:null});
+  Object.assign(state.activeTimer,{startedAt:null,runStartedAt:null,accumulatedSeconds:0,isRunning:false,hiddenAt:null,planItemId:null,targetMinutes:null,strategy:null,strategyStep:0});
   updateTimerDisplay();
   updateTimerControls();
   scheduleSave();
@@ -3190,10 +3198,12 @@ function renderExamBlueprintConfig(){
   const blueprint=state.examBlueprint;
   const rows=activeSubjects().map(subject=>{
     const config=blueprint.subjects.find(item=>item.subjectId===subject.id);
-    return `<div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions??''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight??''}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)"></label><label>Prioridade<select data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config||config.priority==='normal'?'selected':''}>Normal</option><option value="high" ${config?.priority==='high'?'selected':''}>Alta</option><option value="low" ${config?.priority==='low'?'selected':''}>Baixa</option></select></label></div>`;
+    return `<div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget??''}" placeholder="${blueprint.masteryTarget}" data-delegated-blur="updateExamSubject('${subject.id}','masteryTarget',this.value)"></label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions??''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight??''}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)"></label><label>Prioridade<select data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config||config.priority==='normal'?'selected':''}>Normal</option><option value="high" ${config?.priority==='high'?'selected':''}>Alta</option><option value="low" ${config?.priority==='low'?'selected':''}>Baixa</option></select></label></div>`;
   }).join('');
-  container.innerHTML=`<div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label></div><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+  container.innerHTML=`<div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+  renderExamMasteryMatrix();
 }
+function renderExamMasteryMatrix(){const el=document.getElementById('examMasteryMatrix');if(!el)return;const candidates=intelligenceCandidates(),metrics=Object.fromEntries(candidates.map(c=>[c.topicId,{coverage:c.coverage,mastery:{value:c.mastery,confidence:c.evidenceStrength},retention:{value:c.retention},trend:c.trend,priority:{value:c.score}}])),rows=buildExamMasteryMatrix({subjects:state.subjects,blueprint:state.examBlueprint,metricsByTopic:metrics});el.innerHTML=rows.length?`<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a,b)=>(b.gap??-999)-(a.gap??-999)).map(row=>`<details><summary><strong>${escapeHtml(row.name)}</strong><span>${row.coverage??'—'}%</span><span>${row.mastery??'—'}%</span><span>${row.retention??'—'}%</span><span>${row.gap==null?'—':(row.gap>0?'-':'')+Math.abs(row.gap)+' pts'}</span></summary>${row.topics.map(t=>`<div class="mastery-topic"><span>${escapeHtml(t.name)}</span><span>${t.coverage}%</span><span>${t.mastery??'—'}%</span><span>${t.retention??'—'}%</span><span>${escapeHtml(t.state)}</span></div>`).join('')}</details>`).join('')}</div>`:'<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>'}
 let studyPlanPreview=null,dailyPlanPreview=null;
 function studyPlanCandidates(){
   return intelligenceCandidates().filter(item=>item.topicId).map(item=>({...item,completed:false,estimatedMinutes:item.remainingMinutes}));
@@ -3244,15 +3254,17 @@ function updateExamBlueprint(field,value){
   studyPlanPreview=null;
   if(field==='examDate'){state.examBlueprint.examDate=value||null;state.examDate=value||''}
   if(field==='targetScore'){const target=Math.max(0,Math.min(100,Number(value)||0));state.examBlueprint.targetScore=target;goalsService.update('metaAprovacao',target)}
+  if(field==='masteryTarget')state.examBlueprint.masteryTarget=Math.max(0,Math.min(100,Number(value)||80));
   state.examBlueprint.configuredAt=nowISO();persistAndRender();
 }
 function updateExamSubject(subjectId,field,value){
   studyPlanPreview=null;
   let config=state.examBlueprint.subjects.find(item=>item.subjectId===subjectId);
-  if(!config){config={subjectId,expectedQuestions:0,questionWeight:1,priority:'normal'};state.examBlueprint.subjects.push(config)}
+  if(!config){config={subjectId,expectedQuestions:0,questionWeight:1,priority:'normal',masteryTarget:null};state.examBlueprint.subjects.push(config)}
   if(field==='expectedQuestions')config.expectedQuestions=Math.max(0,Math.round(Number(value)||0));
   if(field==='questionWeight')config.questionWeight=Math.max(.1,Number(value)||1);
   if(field==='priority'&&EXAM_PRIORITIES.includes(value))config.priority=value;
+  if(field==='masteryTarget')config.masteryTarget=value===''?null:Math.max(0,Math.min(100,Number(value)||0));
   state.examBlueprint.configuredAt=nowISO();persistAndRender();
 }
 
@@ -4136,12 +4148,13 @@ function startStudyRecommendation(id){
   const fresh=recommendStudy(intelligenceCandidates(),{availableMinutes:Math.round(metaHoursToday()*60)}).find(item=>item.id===id);
   if(!fresh){renderStudyRecommendation();showToast('As condições mudaram. Confira a recomendação atual.');return;}
   Object.assign(recommendation,fresh);
+  recommendation.strategy=buildStudyStrategy(recommendation,{availableMinutes:recommendation.estimatedMinutes});
   recordRecommendationFeedback(recommendation,{accepted:true});
   let plan=todayDailyStudyPlan();if(!plan){plan={id:uid('plan'),date:todayISO(),availableMinutes:Math.round(metaHoursToday()*60),plannedMinutes:0,flexMinutes:0,createdAt:nowISO(),updatedAt:nowISO(),items:[]};state.dailyPlans.push(plan)}
   let item=plan.items.find(candidate=>candidate.topicId===recommendation.topicId&&!['completed','skipped'].includes(candidate.status));
   if(item)item.recommendationId=recommendation.recommendationId;
   if(!item){item={id:uid('plan-item'),subjectId:recommendation.subjectId,topicId:recommendation.topicId,subjectName:recommendation.subjectName,topicName:recommendation.topicName,type:recommendation.studyType||'study',plannedMinutes:recommendation.estimatedMinutes,executedSeconds:0,status:'planned',sessionIds:[],score:recommendation.score,tier:recommendation.score>=70?'Alta':recommendation.score>=40?'Média':'Baixa',position:plan.items.length+1,statusIcon:'🎯',statusLabel:'Recomendação inteligente',reason:recommendation.reasons.join(' · '),action:recommendation.action,recommendedQuestions:0,originalDate:todayISO(),currentDate:todayISO(),rescheduleCount:0,skippedReason:null,recommendationId:recommendation.recommendationId,createdAt:nowISO()};plan.items.push(item);plan.plannedMinutes+=item.plannedMinutes;plan.updatedAt=nowISO();scheduleSave()}
-  startPlannedActivity(item.id);
+  state.activeTimer.strategy=structuredClone(recommendation.strategy);state.activeTimer.strategyStep=0;startPlannedActivity(item.id);
 }
 
 let replanPreview=null;
@@ -4658,7 +4671,7 @@ const DELEGATED_ACTION_HANDLERS={
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
   editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
-  dismissIntelligentAlert,dismissStudyRecommendation,markRecommendationNotUseful,rateRecommendationOutcome,startStudyRecommendation,
+  advanceGuidedStrategy,dismissIntelligentAlert,dismissStudyRecommendation,markRecommendationNotUseful,rateRecommendationOutcome,startStudyRecommendation,
   requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRadarSubject,setRetentionFilter,setSubjectTopicFilter,
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
   toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleSessionDetails,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,

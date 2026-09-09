@@ -22,12 +22,12 @@ export function createDefaultState(){
       metaAprovacao: 70, horasDiarias: 2.5,
       horasPorDia: {'0':2.5,'1':2.5,'2':2.5,'3':2.5,'4':2.5,'5':2.5,'6':2.5}
     },
-    examDate: '', examBlueprint:{examDate:null,targetScore:80,configuredAt:null,subjects:[]},
+    examDate: '', examBlueprint:{examDate:null,targetScore:80,masteryTarget:80,configuredAt:null,subjects:[]},
     algorithmVersions:{...DEFAULT_ALGORITHM_VERSIONS},progressHistory: [], studySessions: [], dailyPlans: [], studyPlans: [], planAdjustments: [], recommendationFeedback: [], alertStates: [],
     activeTimer: {
       startedAt: null, runStartedAt: null, accumulatedSeconds: 0, isRunning: false,
       subjectId: null, topicId: null, type: 'study', hiddenAt: null,
-      planItemId: null, targetMinutes: null
+      planItemId: null, targetMinutes: null, strategy:null, strategyStep:0
     },
     topicHistory: [], achievementsUnlocked: {}, metasPorDisciplina: [],
     lastBackupAt: null, updatedAt: null

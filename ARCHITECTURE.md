@@ -62,6 +62,8 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/domain/exams/exam-presets.js`: catálogo versionado de estruturas BB, Caixa e combinada.
 - `src/domain/analytics/recommendation-calibration.js`: leitura agregada dos resultados reais sem ajuste automático de pesos.
 - `src/domain/forecasts/performance-scenarios.js`: simulações conservadoras de capacidade sobre a projeção de 30 dias.
+- `src/domain/analytics/exam-mastery-matrix.js`: matriz explicável de cobertura, domínio, retenção e lacunas por edital.
+- `src/domain/recommendations/study-strategy.js`: estratégia versionada e etapas executáveis pelo cronômetro existente.
 - `src/ui/view-models/` e `src/ui/renderers/`: Questões, Agenda/Revisões, Calendário, calibração e cenários mantêm preparação de dados e HTML fora do composition root.
 - `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.
 - `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.
