@@ -158,6 +158,22 @@
   .btn.danger:hover{background:var(--red);color:white;}
   .btn.small{padding:6px 10px;font-size:11px;}
 
+  /* ===== VISUAL SYSTEM ===== */
+  .sticky-shell{position:sticky;top:12px;z-index:30;margin-top:var(--space-3)}
+  .compact-header{display:none;align-items:center;gap:var(--space-5);padding:10px 14px;background:var(--navy);color:var(--on-navy);border-bottom:1px solid var(--gold-bright);box-shadow:0 4px 12px var(--shadow-color);font:11px var(--font-data);text-transform:uppercase;letter-spacing:.05em}
+  .compact-header>strong{font:var(--font-weight-semibold) 17px var(--font-display);text-transform:none;letter-spacing:0}
+  .compact-header b{color:var(--gold-bright)}
+  .compact-plan{margin-left:auto}
+  .sticky-shell.is-compact .compact-header{display:flex}
+  .sticky-shell .global-search-row{margin-top:var(--space-2);background:var(--paper);border:1px solid var(--paper-line);box-shadow:0 4px 12px rgba(11,37,69,.08)}
+  .section-title,.overview-section-heading,.chart-card h3{font-weight:var(--font-weight-semibold)}
+  .empty-state,.diagnosis-empty{color:var(--ink-soft);font-weight:var(--font-weight-regular)}
+  .empty-state--compact,.diagnosis-empty{padding:var(--space-4);border-left:2px solid var(--green);background:var(--green-bg)}
+  .backup-danger-zone{display:inline-flex;margin-left:var(--space-2);padding-left:var(--space-3);border-left:1px solid var(--paper-line)}
+  .badges-grid{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}
+  .badge-card.unlocked{background:var(--white);border-color:var(--gold)}
+  @media(max-width:620px){.compact-header{gap:var(--space-2);flex-wrap:wrap}.compact-header>strong{flex-basis:100%}.compact-plan{margin-left:auto}.sticky-shell{top:8px}.backup-danger-zone{width:100%;margin:var(--space-2) 0 0;padding:var(--space-3) 0 0;border-left:0;border-top:1px solid var(--paper-line)}}
+
   /* ===== DASHBOARD CHARTS ===== */
   .chart-card{
     background:var(--white);border:1px solid var(--paper-line);

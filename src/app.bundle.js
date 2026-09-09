@@ -4387,6 +4387,14 @@
       this.value = "";
     }
   });
+  document.getElementById("clearAllDataBtn").addEventListener("click", () => showConfirm("Esta ação excluirá disciplinas, sessões, revisões, questões, simulados, metas, histórico e configurações. Exporte um backup antes de continuar.", () => showPrompt("Digite LIMPAR para confirmar a exclusão definitiva.", { label: "Confirmação", placeholder: "LIMPAR", confirmLabel: "Limpar dados", validate: (value2) => value2 === "LIMPAR" ? "" : "Digite LIMPAR exatamente como exibido." }, async () => {
+    const keys = [STORAGE_KEY, BACKUP_KEY, BACKUP_INDEX_KEY, ...Array.from({ length: AUTOMATIC_BACKUP_SLOTS }, (_, index) => `${BACKUP_KEY}-${index}`)];
+    await Promise.all(keys.map((key) => appContext.storage.remove(key)));
+    state = createDefaultState();
+    ensureStateDefaults();
+    suppressBeforeUnloadSave = true;
+    location.reload();
+  })));
   function reloadWithModeChange() {
     suppressBeforeUnloadSave = true;
     if (saveTimeout) clearTimeout(saveTimeout);
@@ -5003,20 +5011,26 @@
   document.getElementById("globalSearchInput").addEventListener("blur", () => {
     setTimeout(() => document.getElementById("globalSearchResults").classList.remove("show"), 150);
   });
+  window.addEventListener("scroll", () => document.querySelector(".sticky-shell")?.classList.toggle("is-compact", window.scrollY > 180), { passive: true });
   function renderHeader() {
     const topics = activeTopics();
     const total = topics.length;
     const done = topics.filter((t) => t.status === "Concluído").length;
     const andamento = topics.filter((t) => t.status === "Em andamento").length;
     const pct2 = total ? Math.round(done / total * 100) : 0;
-    document.getElementById("balanceFigure").innerHTML = `${pct2}<span>%</span>`;
-    document.getElementById("balanceSub").textContent = `${done} de ${total} tópicos concluídos`;
+    const readiness = readinessResult(computeApprovalMetrics()), readinessValue = readiness.value;
+    document.getElementById("balanceFigure").innerHTML = `${readinessValue ?? "—"}<span>/100</span>`;
+    document.getElementById("balanceSub").textContent = readinessValue == null ? "Aguardando evidências" : `${readiness.confidenceLabel || "Confiança inicial"} · ${done} de ${total} tópicos concluídos`;
     document.getElementById("statSubjects").textContent = activeSubjects().length;
+    document.getElementById("statContent").textContent = pct2 + "%";
     document.getElementById("statAndamento").textContent = andamento;
     document.getElementById("statConcluido").textContent = done;
     const revisoesPrevistas = state.calendar.filter((c) => c.date >= todayISO()).length + state.reviewAgenda.filter((a) => a.date >= todayISO() && a.status !== "Concluído").length;
     document.getElementById("statRevisoes").textContent = revisoesPrevistas;
     document.getElementById("statStreak").textContent = computeStreak(getActivityDates());
+    document.getElementById("compactReadiness").textContent = readinessValue == null ? "—" : readinessValue + "/100";
+    document.getElementById("compactExamDate").textContent = state.examDate ? formatDatePt(state.examDate) : "";
+    document.getElementById("compactPlanNumber").textContent = document.getElementById("planNumber").textContent;
     recordProgressSnapshot(pct2);
     renderExamCountdown();
   }

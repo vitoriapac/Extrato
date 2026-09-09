@@ -44,12 +44,13 @@
     </div>
     <div class="statement-body">
       <div class="balance-block">
-        <div class="balance-label">Saldo de conteúdo concluído</div>
-        <div class="balance-figure" id="balanceFigure">0<span>%</span></div>
-        <div class="balance-sub" id="balanceSub">0 de 0 tópicos concluídos</div>
+        <div class="balance-label">Índice de prontidão</div>
+        <div class="balance-figure" id="balanceFigure">—<span>/100</span></div>
+        <div class="balance-sub" id="balanceSub">Aguardando evidências</div>
       </div>
       <div class="mini-stats">
         <div class="mini-stat"><div class="n" id="statSubjects">0</div><div class="l">Disciplinas</div></div>
+        <div class="mini-stat"><div class="n" id="statContent">0%</div><div class="l">Conteúdo</div></div>
         <div class="mini-stat"><div class="n" id="statAndamento">0</div><div class="l">Em andamento</div></div>
         <div class="mini-stat"><div class="n" id="statConcluido">0</div><div class="l">Concluídos</div></div>
         <div class="mini-stat"><div class="n" id="statRevisoes">0</div><div class="l">Revisões previstas</div></div>
@@ -67,6 +68,8 @@
     </div>
   </div>
 
+  <div class="sticky-shell">
+  <div class="compact-header" aria-label="Resumo do plano"><strong>StudyTrack</strong><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div>
   <div class="global-search-row">
     <div class="global-search">
           <label class="sr-only" for="globalSearchInput">Busca global</label>
@@ -76,6 +79,7 @@
     <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para modo escuro">
       <span id="themeToggleIcon">🌙</span>
     </button>
+  </div>
   </div>
 
   <div class="tabs" role="tablist" aria-label="Seções do extrato">
@@ -584,6 +588,7 @@
       <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>⬇ Exportar backup</button>
       <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected>⏱ Baixar recuperação</button>
       <button class="btn ghost small" id="importBackupBtn" data-demo-protected>⬆ Importar backup</button>
+      <span class="backup-danger-zone"><button class="btn danger small" id="clearAllDataBtn" data-demo-protected>Limpar todos os dados</button></span>
       <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
     </div>
   </div>
