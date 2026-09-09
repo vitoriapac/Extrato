@@ -86,6 +86,10 @@ import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
 import {renderQuestionRead,renderQuestionEdit} from './ui/renderers/questions-renderer.js';
 import {buildExamMasteryMatrix} from './domain/analytics/exam-mastery-matrix.js';
 import {buildStudyStrategy} from './domain/recommendations/study-strategy.js';
+import {buildWeeklyClose} from './domain/analytics/weekly-close.js';
+import {buildGapMap} from './domain/analytics/gap-map.js';
+import {buildPeriodComparison} from './domain/analytics/period-comparison.js';
+import {buildDecisionHistory} from './domain/recommendations/decision-history.js';
 import {buildStrategicReport} from './reports/report-data.js';
 import {renderStrategicReport} from './reports/report-template.js';
 import {printStrategicReport} from './reports/print-report.js';
@@ -4571,8 +4575,20 @@ function renderApprovalDashboard(){
   <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
   renderTopicRetentionDashboard();
   renderRecommendationCalibration();
+  renderStudyTrack32Insights();
 }
 function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml})}
+function renderStudyTrack32Insights(){
+ const close=document.getElementById('weeklyCloseDashboard'),comparison=document.getElementById('periodComparisonDashboard'),gaps=document.getElementById('gapMapDashboard'),history=document.getElementById('decisionHistoryDashboard');
+ const today=parseLocalDate(todayISO()),start=new Date(today);start.setDate(start.getDate()-6);const from=start.toISOString().slice(0,10),sessions=state.studySessions.filter(x=>x.date>=from&&x.date<=todayISO()),questions=state.questoes.filter(x=>x.date>=from&&x.date<=todayISO());
+ const closeModel=buildWeeklyClose({period:{start:from,end:todayISO()},current:{executedMinutes:Math.round(sessions.reduce((s,x)=>s+(Number(x.durationSeconds)||0),0)/60)},sessions,questions,recommendations:state.recommendationFeedback});
+ if(close)close.innerHTML=closeModel.state==='insufficient'?'<div class="upcoming-empty">Ainda não há evidência suficiente para fechar a semana.</div>':`<div class="kpi-grid"><div class="kpi-cell"><div class="n">${closeModel.investment.executedMinutes} min</div><div class="l">Tempo executado</div></div><div class="kpi-cell"><div class="n">${closeModel.questions.accuracy??'—'}%</div><div class="l">Acerto da semana</div></div><div class="kpi-cell"><div class="n">${closeModel.questions.resolved}</div><div class="l">Questões resolvidas</div></div></div>`;
+ const current={accuracy:closeModel.questions.accuracy,minutes:closeModel.investment.executedMinutes},previous={accuracy:null,minutes:null};
+ if(comparison){const model=buildPeriodComparison({current,previous,period:{start:from,end:todayISO()}});comparison.innerHTML=`<div class="analytics-note">Comparação da semana atual com o período anterior. ${Object.entries(model.metrics).map(([key,item])=>`<span><strong>${escapeHtml(key)}</strong>: ${item.delta==null?'aguardando base':(item.delta>0?'+':'')+item.delta}</span>`).join(' · ')}</div>`;}
+ const rows=intelligenceCandidates().map(item=>({topicId:item.topicId,name:item.name,subjectName:item.subjectName,mastery:item.mastery,examImpact:item.examImpact||0,retention:item.retention||0,coverage:item.coverage||0,trendRisk:item.risk||0}));
+ if(gaps){const model=buildGapMap(rows);gaps.innerHTML=model.items.length?model.items.slice(0,5).map(item=>`<div class="retention-row"><div class="retention-topic"><strong>${escapeHtml(item.name||item.topicId)}</strong><span>${escapeHtml(item.reason)}</span></div><div class="retention-value">${item.priority}</div></div>`).join(''):'<div class="upcoming-empty">Nenhum gap priorizado com os dados atuais.</div>';}
+ if(history){const model=buildDecisionHistory(state.recommendationFeedback,{limit:5});history.innerHTML=model.items.length?model.items.map(item=>`<div class="analytics-note"><strong>${escapeHtml(item.recommendationId||'Recomendação')}</strong> · ${escapeHtml(item.outcome?.state||'pendente')} · ${escapeHtml(item.algorithmVersion||'versão não identificada')}</div>`).join(''):'<div class="upcoming-empty">Nenhuma decisão registrada.</div>';}
+}
 function renderTopicRetentionDashboard(){
   const el=document.getElementById('topicRetentionDashboard');if(!el)return;
   const baseRows=activeTopics().map(t=>{const r=topicRetentionScore(t.subjectId,t.id);return {...t,r,h:topicReviewHealthScore(t,topicMasteryIndex(t.subjectId,t.id),r)}}).filter(x=>x.r.available||x.h.value!==null);
