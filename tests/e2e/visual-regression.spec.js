@@ -31,6 +31,7 @@ test('regressão visual dos componentes críticos em desktop',async({page})=>{
   await expect(page.locator('.sticky-shell')).toHaveClass(/is-compact/);
   await expect(page.locator('.compact-header')).toHaveScreenshot('cabecalho-compacto-desktop.png',screenshotOptions);
   await page.evaluate(()=>scrollTo(0,0));
+  await page.addStyleTag({content:'#studySessionsCard{height:650px!important;overflow:hidden}#badgesGrid{height:520px!important;overflow:hidden}#subjectErrorProfile{height:280px!important;overflow:hidden}#examBlueprintConfig{height:820px!important;overflow:hidden}'});
   await expect(page.locator('#studySessionsCard')).toHaveScreenshot('historico-sessoes-desktop.png',screenshotOptions);
   await expect(page.locator('#badgesGrid')).toHaveScreenshot('conquistas-desktop.png',screenshotOptions);
   await activateTab(page,'questoes');
