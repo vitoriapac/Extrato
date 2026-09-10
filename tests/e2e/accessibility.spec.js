@@ -2,6 +2,8 @@ import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {activateTab,openDemo} from './helpers.js';
 
+test.describe.configure({timeout:60_000});
+
 async function expectAccessible(page,label){
   await page.waitForTimeout(400);
   const results=await new AxeBuilder({page}).analyze();

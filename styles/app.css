@@ -1286,3 +1286,16 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 @media(max-width:760px){.weekly-assessment p{grid-template-columns:1fr;gap:3px}.exam-subject-row{grid-template-columns:1fr}.exam-subject-row>strong{padding-top:0}.study-sessions-table{min-width:0!important}.weekly-kpis strong{font-size:20px}}
 @media(max-width:480px){.weekly-kpis{grid-template-columns:1fr}.weekly-kpis>div{border-right:0;border-bottom:1px solid var(--paper-line)}.weekly-kpis>div:last-child{border-bottom:0}.compact-meta{flex-wrap:wrap}.data-score{white-space:normal}}
 .trend-week.insufficient{opacity:1}.trend-week.insufficient span,.trend-week.insufficient small{color:var(--ink)}
+
+/* ===== COMPOSIÇÃO VISUAL VALIDADA POR SNAPSHOT ===== */
+@media(min-width:901px){
+  .statement-body{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(460px,1.5fr);align-items:end;gap:44px}
+  .balance-block{min-width:0;padding-right:36px;border-right:1px solid rgba(246,243,236,.18)}
+  .mini-stats{display:grid;grid-template-columns:repeat(3,minmax(110px,1fr));gap:24px 28px;width:100%}
+  .mini-stat{min-width:0;padding-top:8px;border-top:1px solid rgba(246,243,236,.14)}
+  .mini-stat .n{font-size:24px;line-height:1.15}
+  .mini-stat .l{display:block;margin-top:5px;line-height:1.35}
+}
+.intelligence-column{display:block}.intelligence-column>.analytics-card{padding:22px 0;margin:0;border:0;border-top:1px solid var(--paper-line);background:transparent}.intelligence-column>.analytics-card:first-of-type{margin-top:22px}.intelligence-column>.analytics-card>h3{margin:0 0 16px;font:600 16px var(--font-display)}
+.weekly-kpis{gap:0;margin-bottom:24px}.weekly-kpis>div{padding:16px}.weekly-assessment{margin-top:0;padding-top:20px}.period-comparison{margin-top:20px;padding-top:20px}.period-comparison>strong{margin-bottom:8px;font:600 15px var(--font-display)}
+@media(max-width:760px){.statement-body{gap:24px}.mini-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:18px 14px}.mini-stat{padding-top:8px;border-top:1px solid rgba(246,243,236,.14)}.intelligence-column>.analytics-card{padding-block:18px}}
