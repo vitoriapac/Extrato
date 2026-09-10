@@ -65,6 +65,9 @@ import {buildWeeklyAvailability} from './application/goals/weekly-availability.j
 import {buildPriorityViewModel} from './ui/view-models/priority-view-model.js';
 import {buildStudyTimeViewModel} from './application/analytics/build-overview-view-model.js';
 import {buildHeaderViewModel} from './application/analytics/build-header-view-model.js';
+import {renderHeroHeader,renderCompactHeader} from './ui/renderers/header-renderer.js';
+import {buildStudyTrack32ViewModel} from './application/analytics/build-studytrack32-view-model.js';
+import {renderWeeklyClose,renderPeriodComparison,renderGapMap,renderDecisionHistory,renderPostSimulationReplan} from './ui/renderers/studytrack32-renderer.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildIntelligentAlerts} from './domain/diagnostics/alerts.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
@@ -83,13 +86,17 @@ import {createReviewViewModel} from './ui/view-models/review-view-model.js';
 import {renderReviewRead,renderReviewEdit} from './ui/renderers/reviews-renderer.js';
 import {buildCalendarItemViewModel} from './ui/view-models/calendar-view-model.js';
 import {renderCalendarRead,renderCalendarEdit} from './ui/renderers/calendar-renderer.js';
+import {createCalendarState} from './ui/calendar/calendar-state.js';
+import {createCalendarController} from './ui/calendar/calendar-controller.js';
+import {createQuestionController} from './application/questions/question-controller.js';
+import {createEditalImportFacade} from './application/subjects/edital-import-facade.js';
+import {createGuidedStudyService} from './application/guided-study/guided-study-service.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
 import {renderQuestionRead,renderQuestionEdit} from './ui/renderers/questions-renderer.js';
 import {buildExamMasteryMatrix} from './domain/analytics/exam-mastery-matrix.js';
 import {buildStudyStrategy} from './domain/recommendations/study-strategy.js';
 import {buildWeeklyClose} from './domain/analytics/weekly-close.js';
 import {buildGapMap} from './domain/analytics/gap-map.js';
-import {buildPeriodComparison} from './domain/analytics/period-comparison.js';
 import {buildDecisionHistory} from './domain/recommendations/decision-history.js';
 import {buildPostSimulationReplan} from './domain/planning/post-simulation-replan.js';
 import {buildStrategicReport} from './reports/report-data.js';
@@ -512,6 +519,7 @@ const studyPlanService=createStudyPlanService({repository:planningRepository,cal
 const dailyPlanService=createDailyPlanService({repository:planningRepository,buildProposal:buildDailyPlanProposal,applyProposal:applyDailyPlanProposal,undoGeneration:undoDailyPlanGeneration,clock:appClock,idGenerator:uid});
 const replanService=createReplanService({repository:planningRepository,buildProposal:buildReplanProposal,applyProposal:applyReplan,undoProposal:undoReplan,clock:appClock,idGenerator:uid});
 const sessionService=createSessionService({repository:appContext.repositories.studySessions,questionsRepository:appContext.repositories.questoes,historyRepository:appContext.repositories.topicHistory,planningRepository,recommendationsRepository:appContext.repositories.recommendationFeedback,clock:appClock,idGenerator:uid,normalizeQuestion:normalizeErrorBreakdown,completeRecommendation:completeRecommendationFeedback,onCompleted:measureRecommendationResults});
+const guidedStudyService=createGuidedStudyService({recommend:({id}={})=>currentStudyRecommendations.filter(item=>!id||item.id===id),sessionService,clock:appClock});
 const calendarService=createRecordService({repository:appContext.repositories.calendar,clock:appClock,idGenerator:uid,prefix:'calendar'}),questionService=createRecordService({repository:appContext.repositories.questoes,clock:appClock,idGenerator:uid,prefix:'question',normalize:item=>{item.resolved=Math.max(0,Math.floor(Number(item.resolved)||0));item.correct=Math.min(item.resolved,Math.max(0,Math.floor(Number(item.correct)||0)));normalizeErrorBreakdown(item);return item}}),simulationService=createRecordService({repository:appContext.repositories.simulados,clock:appClock,idGenerator:uid,prefix:'simulado',normalize:item=>{item.total=Math.max(0,Math.floor(Number(item.total)||0));item.correct=Math.min(item.total,Math.max(0,Math.floor(Number(item.correct)||0)));return item}}),subjectGoalService=createRecordService({repository:appContext.repositories.metasPorDisciplina,clock:appClock,idGenerator:uid,prefix:'goal'});
 const goalsService=createGoalService({repository:appContext.repositories.settings,getDayOfWeek:date=>parseLocalDate(date)?.getDay()??new Date().getDay()});
 const subjectService=createSubjectService({repository:appContext.repositories.subjects,clock:appClock,idGenerator:uid,onEvent:addHistoryEvent});
@@ -1238,6 +1246,7 @@ function startTimer(){
   active.hiddenAt=null;
   timerStartedAt=active.startedAt;
   timerRunning = true;
+  if(guidedStudyService.current())guidedStudyService.resume();
   clearInterval(timerIntervalId);
   timerIntervalId=setInterval(timerTick,1000);
   timerTick();
@@ -1251,6 +1260,7 @@ function pauseTimer(shouldSave=true){
   state.activeTimer.isRunning=false;
   state.activeTimer.hiddenAt=null;
   timerRunning = false;
+  if(guidedStudyService.current())guidedStudyService.pause();
   clearInterval(timerIntervalId);
   timerIntervalId=null;
   updateTimerDisplay();
@@ -1263,6 +1273,7 @@ function resetTimer(){
   timerSeconds = 0;
   timerStartedAt = null;
   Object.assign(state.activeTimer,{startedAt:null,runStartedAt:null,accumulatedSeconds:0,isRunning:false,hiddenAt:null,planItemId:null,targetMinutes:null,strategy:null,strategyStep:0});
+  guidedStudyService.reset();
   updateTimerDisplay();
   updateTimerControls();
   scheduleSave();
@@ -1348,7 +1359,7 @@ document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
     durationSeconds:timerSeconds,subjectId,topicId,type,questionsResolved:resolved,
     correctAnswers:Math.min(correct,resolved),notes,planItemId:state.activeTimer.planItemId||null
   };
-  sessionService.complete(session);
+  if(guidedStudyService.current())guidedStudyService.complete(session);else sessionService.complete(session);
   persistAndRender();
   showToast(resolved > 0 ? 'Sessão e questões registradas.' : 'Sessão de estudo registrada.');
   closeSessionModal();
@@ -1391,6 +1402,7 @@ const BADGES = [
   { id:'q1000', icon:'✦', name:'Mil questões', desc:'1.000 questões resolvidas', check: () => state.questoes.reduce((sum,q)=>sum+(Number(q.resolved)||0),0) >= 1000 },
   { id:'hours10', icon:'◷', name:'Dez horas', desc:'10 horas de estudo registradas', check: () => state.studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0)>=36000 },
   { id:'hours50', icon:'◷', name:'Cinquenta horas', desc:'50 horas de estudo registradas', check: () => state.studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0)>=180000 },
+  { id:'hours100', icon:'◷', name:'Cem horas', desc:'100 horas de estudo registradas', check: () => state.studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0)>=360000 },
   { id:'sim1', icon:'📝', name:'Primeiro simulado', desc:'Completou o primeiro simulado', check: () => state.simulados.length >= 1 },
   { id:'sim5', icon:'🏅', name:'Cinco simulados', desc:'Completou 5 simulados', check: () => state.simulados.length >= 5 },
   { id:'reviews25', icon:'↻', name:'Revisor disciplinado', desc:'25 revisões concluídas', check: () => state.reviewAgenda.filter(item=>item.status==='Concluído').length>=25 },
@@ -1683,11 +1695,8 @@ function renderHeader(){
   const revisoesPrevistas =
     state.calendar.filter(c => c.date >= todayISO()).length +
     state.reviewAgenda.filter(a => a.date >= todayISO() && a.status !== 'Concluído').length;
-  const model=buildHeaderViewModel({readiness,subjects:state.subjects,topics,upcomingReviews:revisoesPrevistas,streak:computeStreak(getActivityDates()),examDate:state.examDate,planNumber:document.getElementById('planNumber').textContent});
-  document.getElementById('balanceFigure').innerHTML = `${model.readinessValue??'—'}<span>/100</span>`;
-  document.getElementById('balanceSub').textContent = model.readinessValue==null?'Aguardando evidências':`${model.readinessConfidence} · ${model.availableFactors} de ${model.totalFactors} fatores disponíveis`;
-  document.getElementById('statSubjects').textContent = model.subjects;document.getElementById('statContent').textContent=model.contentPercent+'%';document.getElementById('statAndamento').textContent=model.inProgress;document.getElementById('statConcluido').textContent=model.completed;document.getElementById('statRevisoes').textContent=model.upcomingReviews;document.getElementById('statStreak').textContent=model.streak;
-  document.getElementById('compactReadiness').textContent=model.readinessValue==null?'—':model.readinessValue+'/100';document.getElementById('compactExamDate').textContent=model.examDate?formatDatePt(model.examDate):'';document.getElementById('compactPlanNumber').textContent=model.planNumber;
+  const model=buildHeaderViewModel({readiness,subjects:state.subjects,topics,upcomingReviews:revisoesPrevistas,streak:computeStreak(getActivityDates()),examDate:state.examDate,planNumber:document.getElementById('planNumber').textContent,today:todayISO()});
+  renderHeroHeader(model,{document});renderCompactHeader(model,{document,formatDate:formatDatePt});
 
   recordProgressSnapshot(pct);
   renderExamCountdown();
@@ -1986,6 +1995,7 @@ function carregarDisciplinasPadrao(){
 document.getElementById('loadDefaultSubjectsBtn').addEventListener('click', carregarDisciplinasPadrao);
 
 const examImportService=createExamImportService({subjectService,getSubjects:()=>state.subjects});
+const editalImportFacade=createEditalImportFacade({catalog:EXAM_PRESETS,importService:examImportService});
 const examImportState={step:1,presetId:EXAM_PRESETS[0].id,subjectIds:new Set(),topicIds:new Set(),previousFocus:null};
 function syncExamSelection(preset){examImportState.subjectIds=new Set(preset.subjects.map(item=>item.id));examImportState.topicIds=new Set(preset.subjects.flatMap(item=>(item.topics||[]).map(topic=>`${item.id}:${topic.id}`)))}
 function selectedExamPreset(){return getExamPreset(examImportState.presetId)||EXAM_PRESETS[0]}
@@ -1993,12 +2003,12 @@ function renderExamImport(){
   const content=document.getElementById('examImportContent'),back=document.getElementById('examImportBackBtn'),next=document.getElementById('examImportNextBtn'),preset=selectedExamPreset();back.hidden=examImportState.step===1;next.textContent=examImportState.step===3?'Importar':'Continuar';
   if(examImportState.step===1)content.innerHTML=`<p>Escolha uma estrutura pronta.</p><div class="exam-preset-list">${EXAM_PRESETS.map((item,index)=>`<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id===examImportState.presetId?'checked':''}><span><strong>${escapeHtml(item.name)}</strong><small>${item.subjects.length?`${item.subjects.length} disciplinas · versão ${escapeHtml(item.version)}`:'Começar sem conteúdo predefinido'}</small></span></label>`).join('')}</div>`;
   else if(examImportState.step===2)content.innerHTML=preset.subjects.length?`<p>Selecione as disciplinas e os tópicos que deseja importar.</p><div class="exam-subject-list">${preset.subjects.map(subject=>`<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject.id)}" ${examImportState.subjectIds.has(subject.id)?'checked':''}>${escapeHtml(subject.name)}</label><div class="exam-topic-list">${subject.topics.map(topic=>{const key=`${subject.id}:${topic.id}`;return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key)?'checked':''}>${escapeHtml(topic.name)}</label>`}).join('')}</div></section>`).join('')}</div>`:'<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>';
-  else {const preview=examImportService.preview({preset,selectedSubjectIds:examImportState.subjectIds,selectedTopicIds:examImportState.topicIds});content.innerHTML=`<p>Confira as alterações antes de importar.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.existingSubjects}</strong><br>disciplinas existentes</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos existentes</div></div>${preview.warnings.map(item=>`<p class="form-hint">${escapeHtml(item)}</p>`).join('')}`;next.disabled=preview.addedSubjects+preview.addedTopics===0;}
+  else {const preview=editalImportFacade.preview(examImportState.subjectIds,examImportState.topicIds);content.innerHTML=`<p>Confira as alterações antes de importar.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.existingSubjects}</strong><br>disciplinas existentes</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos existentes</div></div>${preview.warnings.map(item=>`<p class="form-hint">${escapeHtml(item)}</p>`).join('')}`;next.disabled=preview.addedSubjects+preview.addedTopics===0;}
 }
-function openExamImport(){examImportState.step=1;examImportState.presetId=EXAM_PRESETS[0].id;syncExamSelection(EXAM_PRESETS[0]);examImportState.previousFocus=document.activeElement;document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
-function closeExamImport(){document.getElementById('examImportOverlay').classList.remove('show');examImportState.previousFocus?.focus()}
-document.getElementById('examImportContent').addEventListener('change',event=>{if(event.target.name==='examPreset'){examImportState.presetId=event.target.value;syncExamSelection(selectedExamPreset())}if(event.target.dataset.examSubject){const id=event.target.dataset.examSubject;event.target.checked?examImportState.subjectIds.add(id):examImportState.subjectIds.delete(id);selectedExamPreset().subjects.find(item=>item.id===id)?.topics.forEach(topic=>{const key=`${id}:${topic.id}`;event.target.checked?examImportState.topicIds.add(key):examImportState.topicIds.delete(key)});renderExamImport()}if(event.target.dataset.examTopic){event.target.checked?examImportState.topicIds.add(event.target.dataset.examTopic):examImportState.topicIds.delete(event.target.dataset.examTopic)}});
-document.getElementById('examImportCancelBtn').addEventListener('click',closeExamImport);document.getElementById('examImportBackBtn').addEventListener('click',()=>{examImportState.step--;renderExamImport()});document.getElementById('examImportNextBtn').addEventListener('click',()=>{if(examImportState.step<3){examImportState.step++;renderExamImport();return}const result=examImportService.importExamStructure({preset:selectedExamPreset(),selectedSubjectIds:examImportState.subjectIds,selectedTopicIds:examImportState.topicIds,duplicateStrategy:'merge'});persistAndRender();closeExamImport();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados.`)});
+function openExamImport(){examImportState.step=1;examImportState.presetId=EXAM_PRESETS[0].id;editalImportFacade.begin(examImportState.presetId);syncExamSelection(EXAM_PRESETS[0]);examImportState.previousFocus=document.activeElement;document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
+function closeExamImport(){editalImportFacade.cancel();document.getElementById('examImportOverlay').classList.remove('show');examImportState.previousFocus?.focus()}
+document.getElementById('examImportContent').addEventListener('change',event=>{if(event.target.name==='examPreset'){examImportState.presetId=event.target.value;editalImportFacade.begin(examImportState.presetId);syncExamSelection(selectedExamPreset())}if(event.target.dataset.examSubject){const id=event.target.dataset.examSubject;event.target.checked?examImportState.subjectIds.add(id):examImportState.subjectIds.delete(id);selectedExamPreset().subjects.find(item=>item.id===id)?.topics.forEach(topic=>{const key=`${id}:${topic.id}`;event.target.checked?examImportState.topicIds.add(key):examImportState.topicIds.delete(key)});renderExamImport()}if(event.target.dataset.examTopic){event.target.checked?examImportState.topicIds.add(event.target.dataset.examTopic):examImportState.topicIds.delete(event.target.dataset.examTopic)}});
+document.getElementById('examImportCancelBtn').addEventListener('click',closeExamImport);document.getElementById('examImportBackBtn').addEventListener('click',()=>{examImportState.step--;renderExamImport()});document.getElementById('examImportNextBtn').addEventListener('click',()=>{if(examImportState.step<3){examImportState.step++;renderExamImport();return}const result=editalImportFacade.confirm(examImportState.subjectIds,examImportState.topicIds);persistAndRender();closeExamImport();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados.`)});
 document.getElementById('examImportOverlay').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeExamImport()}});
 
 function archiveSubject(id){
@@ -2195,12 +2205,13 @@ function renderCalIndicadores(){
 }
 
 /* ===== VISÃO MENSAL DO CALENDÁRIO ===== */
-let currentMonthDate = new Date();
+const calendarUiState=createCalendarState(),calendarController=createCalendarController({service:calendarService,state:calendarUiState,clock:appClock,onChange:()=>{renderCalendar();renderMonthCalendar()}});
 const MONTH_MAX_EVENTS_PER_DAY = 3;
 
 function renderMonthCalendar(){
   const container = document.getElementById('monthCalendar');
   if(!container) return;
+  const currentMonthDate=calendarUiState.month;
 
   const filterSubject = document.getElementById('calFilterSubject').value;
   const filterStatus = document.getElementById('calFilterStatus').value;
@@ -2262,16 +2273,13 @@ function renderMonthCalendar(){
 }
 
 document.getElementById('monthPrevBtn').addEventListener('click', () => {
-  currentMonthDate.setMonth(currentMonthDate.getMonth() - 1);
-  renderMonthCalendar();
+  calendarController.goToPreviousMonth();
 });
 document.getElementById('monthNextBtn').addEventListener('click', () => {
-  currentMonthDate.setMonth(currentMonthDate.getMonth() + 1);
-  renderMonthCalendar();
+  calendarController.goToNextMonth();
 });
 document.getElementById('monthTodayBtn').addEventListener('click', () => {
-  currentMonthDate = new Date();
-  renderMonthCalendar();
+  calendarController.goToCurrentMonth();
 });
 
 function renderCalendarFilters(){
@@ -2303,6 +2311,7 @@ function toggleFilterPanel(scope){
 }
 function setCalendarMobileView(view){
   const normalized=view==='agenda'?'agenda':'month';
+  calendarUiState.view=normalized;
   document.getElementById('panel-calendario')?.setAttribute('data-calendar-view',normalized);
   document.querySelectorAll('.calendar-view-btn').forEach(button=>{
     const active=button.dataset.calendarView===normalized;
@@ -2311,18 +2320,18 @@ function setCalendarMobileView(view){
     button.setAttribute('aria-pressed',String(active));
   });
 }
-document.querySelectorAll('.calendar-view-btn').forEach(button=>button.addEventListener('click',()=>setCalendarMobileView(button.dataset.calendarView)));
-const calendarEditController=createEditableCollectionController({service:calendarService,clone:cloneRecord,render:renderCalendar,onSaved:()=>{persistAndRender();showToast('Item do calendário atualizado.');},initialState:{visible:10}}),calendarUiState=calendarEditController.state;
+document.querySelectorAll('.calendar-view-btn').forEach(button=>button.addEventListener('click',()=>{calendarController.setView(button.dataset.calendarView);setCalendarMobileView(calendarUiState.view)}));
+const calendarEditController={state:calendarUiState,begin:(id,options={})=>options.isNew?calendarController.beginEdit(id):(calendarController.beginEdit(id)),update:calendarController.update,cancel:calendarController.cancelEdit,save:()=>{const result=calendarController.save();if(result){persistAndRender();showToast('Item do calendário atualizado.')}return result},reset:()=>{calendarUiState.editingId=null;calendarUiState.draft=null;calendarUiState.isNew=false}};
 function calendarViewModel(item){return buildCalendarItemViewModel(item,{formatDate:formatDatePt,getSubjectName,subjectIdOf:entitySubjectId})}
-function changeCalendarLimit(delta){calendarUiState.visible=Math.max(10,calendarUiState.visible+Number(delta||0));renderCalendar()}
-function resetCalendarLimit(){calendarUiState.visible=10;renderCalendar()}
+function changeCalendarLimit(delta){calendarController.showMore(delta)}
+function resetCalendarLimit(){calendarController.showLess()}
 function editCalendarItem(id){
   calendarEditController.begin(id);
 }
 function cancelCalendarEdit(){calendarEditController.cancel()}
 function updateCalendarDraft(field,value){calendarEditController.update(field,value)}
 function saveCalendarEdit(){if(!calendarEditController.save())cancelCalendarEdit()}
-function completeCalendarItem(id){const item=state.calendar.find(entry=>entry.id===id);if(!item||item.status==='Concluído')return;item.status='Concluído';persistAndRender();showToast('Item concluído.');}
+function completeCalendarItem(id){const item=calendarController.complete(id);if(item){persistAndRender();showToast('Item concluído.')}}
 function renderCalendarReadRow(item){
   return renderCalendarRead({item,view:calendarViewModel(item),mobile:isMobileHistoryLayout(),escapeHtml,daysPill:diasParaRevisaoPill(item.date,item.status),statusClass:STATUS_CLASS,today:todayISO()});
 }
@@ -2354,10 +2363,10 @@ function renderCalendar(){
 }
 
 function addCalRow(){
-  const item=calendarService.create({date:todayISO(),week:'',subjectId:activeSubjects()[0]?.id||null,topicId:null,status:'Não iniciado',reviewType:'—'});calendarEditController.begin(item.id,{isNew:true});
+  calendarController.create({date:todayISO(),week:'',subjectId:activeSubjects()[0]?.id||null,topicId:null,status:'Não iniciado',reviewType:'—'});
 }
 function deleteCalRow(id){
-  showConfirm('Excluir este item do calendário?',()=>{calendarService.remove(id);calendarEditController.reset();persistAndRender();showToast('Item excluído.');});
+  showConfirm('Excluir este item do calendário?',()=>{calendarController.remove(id);persistAndRender();showToast('Item excluído.');});
 }
 function updateCal(id, field, value){
   const c = state.calendar.find(x=>x.id===id);
@@ -2365,10 +2374,10 @@ function updateCal(id, field, value){
   persistAndRender();
 }
 
-document.getElementById('calFilterSubject').addEventListener('change', () => {calendarUiState.visible=10;renderCalendar();renderMonthCalendar();});
-document.getElementById('calFilterStatus').addEventListener('change', () => {calendarUiState.visible=10;renderCalendar();renderMonthCalendar();});
-document.getElementById('calFilterMes').addEventListener('change',()=>{calendarUiState.visible=10;renderCalendar();});
-document.getElementById('calFilterTipo').addEventListener('change',()=>{calendarUiState.visible=10;renderCalendar();});
+document.getElementById('calFilterSubject').addEventListener('change',event=>calendarController.setFilter('subjectId',event.target.value));
+document.getElementById('calFilterStatus').addEventListener('change',event=>calendarController.setFilter('status',event.target.value));
+document.getElementById('calFilterMes').addEventListener('change',event=>calendarController.setFilter('month',event.target.value));
+document.getElementById('calFilterTipo').addEventListener('change',event=>calendarController.setFilter('type',event.target.value));
 document.getElementById('addSubjectBtn').addEventListener('click', addSubject);
 document.getElementById('addCalRowBtn').addEventListener('click', addCalRow);
 
@@ -2603,6 +2612,7 @@ const listViewState={questionsVisible:10,simulationsVisible:5,sessionDaysVisible
 const LIST_VIEW_STEPS={questions:10,simulations:5,sessionDays:5};
 const historyEditState={sessionId:null};
 const historyEditDraft={session:null};
+const questionCrudController=createQuestionController({service:questionService,onChange:()=>{}});
 const questionEditController=createEditableCollectionController({service:questionService,clone:cloneRecord,render:renderQuestoes,normalize:draft=>{draft.resolved=Math.max(0,Math.floor(Number(draft.resolved)||0));draft.correct=Math.max(0,Math.min(Math.floor(Number(draft.correct)||0),draft.resolved));normalizeErrorBreakdown(draft);return draft},onSaved:()=>{persistAndRender();showToast('Registro atualizado.');}}),simulationEditController=createEditableCollectionController({service:simulationService,clone:cloneRecord,render:renderSimulados,normalize:draft=>{draft.total=Math.max(0,Math.floor(Number(draft.total)||0));draft.correct=Math.max(0,Math.min(Math.floor(Number(draft.correct)||0),draft.total));return draft},onSaved:()=>{persistAndRender();showToast('Simulado atualizado.');}});
 function cloneRecord(record){ return record?JSON.parse(JSON.stringify(record)):null; }
 function isMobileHistoryLayout(){ return window.matchMedia('(max-width:760px)').matches; }
@@ -2726,10 +2736,10 @@ function renderQuestoes(){
 function addQuestaoRow(){
   listViewState.questionsVisible=LIST_VIEW_STEPS.questions;
   const question={id:uid('question'),date:todayISO(),subjectId:activeSubjects()[0]?.id||null,topicId:null,resolved:0,correct:0,errorBreakdown:emptyErrorBreakdown(),createdAt:nowISO()};
-  questionService.create(question);questionEditController.begin(question.id,{isNew:true});
+  questionCrudController.create(question);questionEditController.begin(question.id,{isNew:true});
 }
 function deleteQuestaoRow(id){
-  showConfirm('Excluir este registro de questões?',()=>{questionService.remove(id);openQuestionErrorIds.delete(id);questionEditController.reset();persistAndRender();showToast('Registro excluído.');});
+  showConfirm('Excluir este registro de questões?',()=>{questionCrudController.remove(id);openQuestionErrorIds.delete(id);questionEditController.reset();persistAndRender();showToast('Registro excluído.');});
 }
 function updateQuestionSubject(id,subjectId){
   const question=state.questoes.find(q=>q.id===id);
@@ -3216,9 +3226,9 @@ function renderExamBlueprintConfig(){
   const blueprint=state.examBlueprint;
   const rows=activeSubjects().map(subject=>{
     const config=blueprint.subjects.find(item=>item.subjectId===subject.id);
-    return `<div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget??''}" placeholder="${blueprint.masteryTarget}" data-delegated-blur="updateExamSubject('${subject.id}','masteryTarget',this.value)"></label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions??''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight??''}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)"></label><label>Prioridade<select data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config||config.priority==='normal'?'selected':''}>Normal</option><option value="high" ${config?.priority==='high'?'selected':''}>Alta</option><option value="low" ${config?.priority==='low'?'selected':''}>Baixa</option></select></label></div>`;
+    return `<div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config||config.priority==='normal'?'selected':''}>Normal</option><option value="high" ${config?.priority==='high'?'selected':''}>Alta</option><option value="low" ${config?.priority==='low'?'selected':''}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget??''}" placeholder="Herdar ${blueprint.masteryTarget}%" data-delegated-blur="updateExamSubject('${subject.id}','masteryTarget',this.value)"></label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions??''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight??''}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)"></label></div>`;
   }).join('');
-  container.innerHTML=`<div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+  container.innerHTML=`<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
   renderExamMasteryMatrix();
 }
 function renderExamMasteryMatrix(){const el=document.getElementById('examMasteryMatrix');if(!el)return;const candidates=intelligenceCandidates(),metrics=Object.fromEntries(candidates.map(c=>[c.topicId,{coverage:c.coverage,mastery:{value:c.mastery,confidence:c.evidenceStrength},retention:{value:c.retention},trend:c.trend,priority:{value:c.score}}])),rows=buildExamMasteryMatrix({subjects:state.subjects,blueprint:state.examBlueprint,metricsByTopic:metrics});el.innerHTML=rows.length?`<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a,b)=>(b.gap??-999)-(a.gap??-999)).map(row=>`<details><summary><strong>${escapeHtml(row.name)}</strong><span>${row.coverage??'—'}%</span><span>${row.mastery??'—'}%</span><span>${row.retention??'—'}%</span><span>${row.gap==null?'—':(row.gap>0?'-':'')+Math.abs(row.gap)+' pts'}</span></summary>${row.topics.map(t=>`<div class="mastery-topic"><span>${escapeHtml(t.name)}</span><span>${t.coverage}%</span><span>${t.mastery??'—'}%</span><span>${t.retention??'—'}%</span><span>${escapeHtml(t.state)}</span></div>`).join('')}</details>`).join('')}</div>`:'<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>'}
@@ -4166,6 +4176,7 @@ function startStudyRecommendation(id){
   const fresh=recommendStudy(intelligenceCandidates(),{availableMinutes:Math.round(metaHoursToday()*60)}).find(item=>item.id===id);
   if(!fresh){renderStudyRecommendation();showToast('As condições mudaram. Confira a recomendação atual.');return;}
   Object.assign(recommendation,fresh);
+  guidedStudyService.next({id});guidedStudyService.start();
   recommendation.strategy=buildStudyStrategy(recommendation,{availableMinutes:recommendation.estimatedMinutes});
   recordRecommendationFeedback(recommendation,{accepted:true});
   let plan=todayDailyStudyPlan();if(!plan){plan={id:uid('plan'),date:todayISO(),availableMinutes:Math.round(metaHoursToday()*60),plannedMinutes:0,flexMinutes:0,createdAt:nowISO(),updatedAt:nowISO(),items:[]};state.dailyPlans.push(plan)}
@@ -4594,15 +4605,12 @@ function renderApprovalDashboard(){
 function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml})}
 function renderStudyTrack32Insights(){
  const close=document.getElementById('weeklyCloseDashboard'),comparison=document.getElementById('periodComparisonDashboard'),gaps=document.getElementById('gapMapDashboard'),history=document.getElementById('decisionHistoryDashboard'),simReplan=document.getElementById('postSimulationReplanDashboard');
- const today=parseLocalDate(todayISO()),start=new Date(today);start.setDate(start.getDate()-6);const from=start.toISOString().slice(0,10),previousEnd=addDays(from,-1),previousStart=addDays(from,-7),sessions=state.studySessions.filter(x=>x.date>=from&&x.date<=todayISO()),questions=state.questoes.filter(x=>x.date>=from&&x.date<=todayISO()),previousSessions=state.studySessions.filter(x=>x.date>=previousStart&&x.date<=previousEnd),previousQuestions=state.questoes.filter(x=>x.date>=previousStart&&x.date<=previousEnd);
- const totals=list=>({resolved:list.reduce((sum,item)=>sum+(Number(item.resolved)||0),0),correct:list.reduce((sum,item)=>sum+(Number(item.correct)||0),0)}),previousTotals=totals(previousQuestions),previousMinutes=Math.round(previousSessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0)/60),hasPrevious=previousSessions.length+previousQuestions.length>0;
- const closeModel=buildWeeklyClose({period:{start:from,end:todayISO()},current:{executedMinutes:Math.round(sessions.reduce((s,x)=>s+(Number(x.durationSeconds)||0),0)/60)},previous:hasPrevious?{executedMinutes:previousMinutes,resolved:previousTotals.resolved,accuracy:previousTotals.resolved?Math.round(previousTotals.correct/previousTotals.resolved*100):null}:{},sessions,questions,recommendations:state.recommendationFeedback,targetAccuracy:Number(state.metas.metaAprovacao)||80});
- if(close)close.innerHTML=closeModel.state==='insufficient'?'<div class="upcoming-empty">Ainda não há evidência suficiente para fechar a semana.</div>':`<div class="kpi-grid"><div class="kpi-cell"><div class="n">${formatPlanMinutes(closeModel.investment.executedMinutes)}</div><div class="l">Tempo estudado</div></div><div class="kpi-cell"><div class="n">${closeModel.questions.accuracy??'—'}%</div><div class="l">Acerto</div></div><div class="kpi-cell"><div class="n">${closeModel.questions.resolved}</div><div class="l">Questões</div></div></div><div class="weekly-assessment"><strong>${closeModel.assessment==='attention'?'Atenção':closeModel.assessment==='on_target'?'Meta alcançada':'Semana em formação'}</strong>${closeModel.bestSignal?`<span><b>Melhor sinal:</b> ${escapeHtml(closeModel.bestSignal.message)}</span>`:''}${closeModel.mainRisk?`<span><b>Principal risco:</b> ${escapeHtml(closeModel.mainRisk.message)}</span>`:''}<span><b>Próxima ação:</b> ${escapeHtml(closeModel.recommendedAction)}</span></div>`;
- if(comparison){const labels={accuracy:'Acerto',minutes:'Tempo estudado',questions:'Questões'},format=(key,item)=>item.delta==null?'Ainda não há uma semana anterior completa para comparação.':key==='accuracy'?`${item.current}% ${item.delta>=0?'▲':'▼'} ${item.delta>=0?'+':''}${item.delta} p.p.`:key==='minutes'?`${formatPlanMinutes(item.current)} ${item.delta>=0?'▲':'▼'} ${item.delta>=0?'+':''}${formatPlanMinutes(Math.abs(item.delta))}`:`${item.current} ${item.delta>=0?'▲':'▼'} ${item.delta>=0?'+':''}${item.delta}`;comparison.innerHTML=`<div class="period-comparison"><strong>Comparação com a semana anterior</strong>${Object.entries(closeModel.comparison).map(([key,item])=>`<div><span>${labels[key]}</span><b>${escapeHtml(format(key,item))}</b></div>`).join('')}</div>`;}
- const rows=intelligenceCandidates().map(item=>({topicId:item.topicId,name:item.topicName||getTopicName(item.topicId)||'Tópico removido',subjectName:item.subjectName||getSubjectName(item.subjectId)||'Disciplina removida',mastery:item.mastery,examImpact:item.examImpact||0,retention:item.retention||0,coverage:item.coverage||0,trendRisk:item.risk||0}));
- if(gaps){const model=buildGapMap(rows);gaps.innerHTML=model.items.length?model.items.slice(0,5).map(item=>`<div class="retention-row"><div class="retention-topic"><strong>${escapeHtml(item.name||item.topicId)}</strong><span>${escapeHtml(item.reason)}</span></div><div class="retention-value">${item.priority}</div></div>`).join(''):'<div class="upcoming-empty">Nenhum gap priorizado com os dados atuais.</div>';}
- if(history){const model=buildDecisionHistory(state.recommendationFeedback,{limit:5,resolveSubjectName:getSubjectName,resolveTopicName:getTopicName});history.innerHTML=model.items.length?model.items.map(item=>`<article class="data-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${escapeHtml(item.strategyLabel)}</span><small>${escapeHtml(item.outcomeLabel)}</small></article>`).join(''):'<div class="upcoming-empty">Nenhuma decisão registrada.</div>';}
- if(simReplan){const latest=[...state.simulados].sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0],weeklyCapacity=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),planned=(planningRepository.getDailyPlans?.()||[]).flatMap(plan=>plan.items||[]).filter(item=>!['completed','skipped'].includes(item.status)).reduce((sum,item)=>sum+(Number(item.plannedMinutes)||0),0),availableMinutes=Math.max(0,weeklyCapacity-planned),proposal=buildPostSimulationReplan({simulation:latest,subjects:state.subjects,availableMinutes,existingSimulationIds:(state.planAdjustments||[]).map(item=>item.simulationId).filter(Boolean)}),need=(proposal.adjustments||[]).reduce((sum,item)=>sum+item.deltaMinutes,0)+(proposal.unallocatedMinutes||0);simReplan.innerHTML=proposal.state==='proposal'?`<div class="replan-summary"><strong>Proposta para ${escapeHtml(proposal.simulationDate||'simulado recente')}</strong><p>${proposal.adjustments.map(item=>`${escapeHtml(item.subjectName)}: +${item.deltaMinutes} min`).join(' · ')}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${availableMinutes} min</dd></div>${proposal.unallocatedMinutes?`<div><dt>Sem alocação</dt><dd>${proposal.unallocatedMinutes} min</dd></div>`:''}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`:`<div class="upcoming-empty">${escapeHtml(proposal.reason||proposal.message)}${latest&&availableMinutes===0?' Sua capacidade semanal já está totalmente alocada.':''}</div>`;}
+ const model=buildStudyTrack32ViewModel({today:todayISO(),sessions:state.studySessions,questions:state.questoes,dailyPlans:planningRepository.getDailyPlans?.()||[],planAdjustments:state.planAdjustments,recommendations:state.recommendationFeedback,simulations:state.simulados,subjects:state.subjects,weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:Number(state.metas.metaAprovacao)||80,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};
+ if(close)close.innerHTML=renderWeeklyClose(model.weeklyClose,options);
+ if(comparison)comparison.innerHTML=renderPeriodComparison(model.weeklyClose,options);
+ if(gaps)gaps.innerHTML=renderGapMap(model.gapMap,options);
+ if(history)history.innerHTML=renderDecisionHistory(model.decisionHistory,options);
+ if(simReplan)simReplan.innerHTML=renderPostSimulationReplan(model.postSimulation,options);
 }
 function renderTopicRetentionDashboard(){
   const el=document.getElementById('topicRetentionDashboard');if(!el)return;

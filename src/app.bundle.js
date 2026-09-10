@@ -653,7 +653,7 @@
   function calculateFactorScore(input = {}, weights = {}) {
     const factors = {}, missingFactors = [];
     let weighted = 0, availableWeight = 0;
-    const totalWeight = Object.values(weights).reduce((sum3, value3) => sum3 + value3, 0);
+    const totalWeight = Object.values(weights).reduce((sum4, value3) => sum4 + value3, 0);
     for (const [key, weight] of Object.entries(weights)) {
       const value3 = input[key];
       if (value3 == null || value3 === "" || !Number.isFinite(Number(value3))) {
@@ -667,7 +667,7 @@
     const value2 = availableWeight ? Math.round(weighted / availableWeight) : null;
     const exactContributions = Object.entries(factors).map(([key, score]) => ({ key, exact: score * weights[key] / availableWeight }));
     const contributionValues = exactContributions.map((item) => Math.floor(item.exact));
-    let remainder = (value2 ?? 0) - contributionValues.reduce((sum3, item) => sum3 + item, 0);
+    let remainder = (value2 ?? 0) - contributionValues.reduce((sum4, item) => sum4 + item, 0);
     exactContributions.map((item, index) => ({ index, fraction: item.exact - Math.floor(item.exact) })).sort((a, b) => b.fraction - a.fraction || a.index - b.index).forEach((item) => {
       if (remainder > 0) {
         contributionValues[item.index]++;
@@ -703,9 +703,9 @@
     const available = entries.filter(([key]) => metrics?.[key]?.available && Number.isFinite(Number(metrics[key].score)));
     const missingFactors = entries.filter(([key]) => !available.some(([availableKey]) => availableKey === key)).map(([key]) => key);
     if (!available.length) return { value: null, confidence: 0, confidenceLabel: "Baixa", state: "empty", factors: Object.fromEntries(entries.map(([key]) => [key, null])), missingFactors, availableFactors: [], evidence: describeScoreEvidence(), reasons: ["sem fatores disponíveis"], algorithmVersion: 1 };
-    const availableWeight = available.reduce((sum3, [, weight]) => sum3 + weight, 0);
-    const value2 = clampMetric(available.reduce((sum3, [key, weight]) => sum3 + Number(metrics[key].score) * weight, 0) / availableWeight);
-    const evidenceConfidence = available.reduce((sum3, [key, weight]) => sum3 + (Number(metrics[key].confidence) || 0) * weight, 0) / availableWeight;
+    const availableWeight = available.reduce((sum4, [, weight]) => sum4 + weight, 0);
+    const value2 = clampMetric(available.reduce((sum4, [key, weight]) => sum4 + Number(metrics[key].score) * weight, 0) / availableWeight);
+    const evidenceConfidence = available.reduce((sum4, [key, weight]) => sum4 + (Number(metrics[key].confidence) || 0) * weight, 0) / availableWeight;
     const coverageFactor = available.length / entries.length;
     const confidence2 = Math.max(0, Math.min(1, evidenceConfidence * (0.55 + 0.45 * coverageFactor)));
     return {
@@ -716,7 +716,7 @@
       factors: Object.fromEntries(entries.map(([key]) => [key, metrics?.[key]?.available ? Number(metrics[key].score) : null])),
       missingFactors,
       availableFactors: available.map(([key]) => key),
-      evidence: describeScoreEvidence({ completeness: availableWeight / entries.reduce((sum3, [, weight]) => sum3 + weight, 0), evidenceStrength: evidenceConfidence }),
+      evidence: describeScoreEvidence({ completeness: availableWeight / entries.reduce((sum4, [, weight]) => sum4 + weight, 0), evidenceStrength: evidenceConfidence }),
       reasons: missingFactors.length ? [missingFactors.length + " fator(es) aguardando dados"] : ["todos os fatores disponíveis"],
       algorithmVersion: 1
     };
@@ -780,11 +780,11 @@
 
   // src/domain/analytics/study-metrics.js
   function summarizeStudyRecords({ sessions = [], questions = [], simulations = [] }) {
-    const seconds = sessions.reduce((sum3, item) => sum3 + (Number(item.durationSeconds) || 0), 0);
-    const sessionQuestions = sessions.reduce((sum3, item) => sum3 + (Number(item.questionsResolved) || 0), 0);
-    const sessionCorrect = sessions.reduce((sum3, item) => sum3 + (Number(item.correctAnswers) || 0), 0);
-    const resolved = sessionQuestions + questions.reduce((sum3, item) => sum3 + (Number(item.resolved) || 0), 0);
-    const correct = sessionCorrect + questions.reduce((sum3, item) => sum3 + (Number(item.correct) || 0), 0);
+    const seconds = sessions.reduce((sum4, item) => sum4 + (Number(item.durationSeconds) || 0), 0);
+    const sessionQuestions = sessions.reduce((sum4, item) => sum4 + (Number(item.questionsResolved) || 0), 0);
+    const sessionCorrect = sessions.reduce((sum4, item) => sum4 + (Number(item.correctAnswers) || 0), 0);
+    const resolved = sessionQuestions + questions.reduce((sum4, item) => sum4 + (Number(item.resolved) || 0), 0);
+    const correct = sessionCorrect + questions.reduce((sum4, item) => sum4 + (Number(item.correct) || 0), 0);
     return { seconds, questions: resolved, correct, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length };
   }
 
@@ -829,7 +829,7 @@
         remaining -= accepted;
       }
     }
-    const categorizedErrors = Object.values(categories).reduce((sum3, value2) => sum3 + value2, 0), orderedDates = dates.sort();
+    const categorizedErrors = Object.values(categories).reduce((sum4, value2) => sum4 + value2, 0), orderedDates = dates.sort();
     return { categories, totalErrors, categorizedErrors, uncategorized: Math.max(0, totalErrors - categorizedErrors), coverage: totalErrors ? Math.round(categorizedErrors / totalErrors * 100) : 0, confidence: cognitiveConfidence(categorizedErrors), sampleSize: records.length, periodStart: orderedDates[0] || null, periodEnd: orderedDates[orderedDates.length - 1] || null };
   }
 
@@ -951,7 +951,7 @@
     const topicsAtRisk = valid.filter((item) => item.retention != null && item.retention < 60 || (item.daysSinceContact || 0) >= 10).sort((a, b) => (b.daysSinceContact || 0) - (a.daysSinceContact || 0));
     const subjectScores = /* @__PURE__ */ new Map();
     opportunities.forEach((item) => subjectScores.set(item.subjectName, (subjectScores.get(item.subjectName) || 0) + item.opportunityScore));
-    const total = [...subjectScores.values()].reduce((sum3, value2) => sum3 + value2, 0);
+    const total = [...subjectScores.values()].reduce((sum4, value2) => sum4 + value2, 0);
     const weeklyFocus = [...subjectScores].map(([subjectName, value2]) => ({ subjectName, percentage: total ? Math.round(value2 / total * 100) : 0 })).sort((a, b) => b.percentage - a.percentage).slice(0, 4);
     return { bottlenecks, opportunities, criticalReviews, topicsAtRisk, weeklyFocus, state: valid.length ? "estimated" : "insufficient" };
   }
@@ -1084,7 +1084,7 @@
       const retentionRisk = retention?.available ? 100 - retention.score : null;
       const reviewHealthRisk = reviewHealth?.value == null ? null : 100 - reviewHealth.value;
       const masteryGap = mastery === null ? null : 100 - mastery;
-      const studiedMinutes = sessions.filter((session) => session.topicId === priority.topicId && session.date <= today && session.type === "study").reduce((sum3, session) => sum3 + Math.max(0, Number(session.durationSeconds) || 0) / 60, 0);
+      const studiedMinutes = sessions.filter((session) => session.topicId === priority.topicId && session.date <= today && session.type === "study").reduce((sum4, session) => sum4 + Math.max(0, Number(session.durationSeconds) || 0) / 60, 0);
       const remainingMinutes = topic?.estimatedStudyMinutes == null ? null : Math.max(0, Math.ceil(topic.estimatedStudyMinutes - studiedMinutes));
       const risk = calculateRiskScore({ masteryRisk: masteryGap, retentionRisk, trendRisk, recencyRisk, examImpact, examProximity }, void 0, { evidenceStrength });
       const candidate = {
@@ -1137,7 +1137,7 @@
     else if (trend.key === "stable") trendScore = 60;
     const completedReviews = reviews.filter((review) => review.status === "Concluído").length;
     const reviewScore = reviews.length ? completedReviews / reviews.length * 100 : topic.status === "Concluído" ? 50 : 20;
-    const recentSeconds = recentSessions.reduce((sum3, item) => sum3 + (Number(item.durationSeconds) || 0), 0);
+    const recentSeconds = recentSessions.reduce((sum4, item) => sum4 + (Number(item.durationSeconds) || 0), 0);
     const studyScore = Math.min(100, recentSeconds / 7200 * 100);
     const confidence2 = Math.min(1, questionConfidence * 0.6 + Math.min(1, reviews.length / 4) * 0.2 + Math.min(1, recentSessions.length / 4) * 0.2);
     const available = performance.resolved > 0 || reviews.length > 0 || recentSeconds > 0;
@@ -1308,7 +1308,7 @@
     if (volume < 20) reasons.push(`Aguardando ${20 - volume} questão(ões) adicional(is)`);
     if (comparable.length < 2) reasons.push("Menos de 2 indicadores comparáveis");
     if (activities > 3) reasons.push("Muitas outras atividades no tópico para atribuir o resultado");
-    const state2 = elapsed < 1 ? "pending" : reasons.length ? "insufficient" : round2(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) >= 3 ? "positive" : round2(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) <= -3 ? "negative" : "neutral";
+    const state2 = elapsed < 1 ? "pending" : reasons.length ? "insufficient" : round2(comparable.reduce((sum4, value2) => sum4 + value2, 0) / comparable.length) >= 3 ? "positive" : round2(comparable.reduce((sum4, value2) => sum4 + value2, 0) / comparable.length) <= -3 ? "negative" : "neutral";
     const confidence2 = Math.min(1, volume / 50 * 0.55 + Math.min(1, elapsed / 7) * 0.2 + comparable.length / METRICS.length * 0.25);
     const evidence = describeScoreEvidence({ completeness: comparable.length / METRICS.length, evidenceStrength: confidence2 });
     return {
@@ -1317,7 +1317,7 @@
       before: normalizedBefore,
       after: normalizedAfter,
       delta,
-      averageDelta: comparable.length ? round2(comparable.reduce((sum3, value2) => sum3 + value2, 0) / comparable.length) : null,
+      averageDelta: comparable.length ? round2(comparable.reduce((sum4, value2) => sum4 + value2, 0) / comparable.length) : null,
       questionVolume: volume,
       daysElapsed: round2(elapsed),
       otherActivities: activities,
@@ -1430,8 +1430,8 @@
     const missingEffort = active.filter((item) => !item.covered && (item.remainingMinutes ?? item.estimatedMinutes) == null).map((item) => item.id);
     const configured = active.filter((item) => effort(item) > 0 && canStudy(item, { ignoreToday: true }));
     const availability = positive(weeklyAvailableMinutes), weeks = Math.max(0, Math.ceil(Number(weeksUntilExam) || 0));
-    const remainingMinutes = active.filter((item) => !item.covered).reduce((sum3, item) => sum3 + effort(item), 0);
-    const maintenanceMinutes = configured.filter((item) => item.covered).reduce((sum3, item) => sum3 + effort(item), 0);
+    const remainingMinutes = active.filter((item) => !item.covered).reduce((sum4, item) => sum4 + effort(item), 0);
+    const maintenanceMinutes = configured.filter((item) => item.covered).reduce((sum4, item) => sum4 + effort(item), 0);
     const weeklyNeedMinutes = weeks > 0 ? Math.ceil(remainingMinutes / weeks) + maintenanceMinutes : null;
     const weeklyBalanceMinutes = weeklyNeedMinutes === null ? null : availability - weeklyNeedMinutes;
     const paceState = weeklyBalanceMinutes === null ? "insufficient" : weeklyBalanceMinutes < 0 ? "deficit" : weeklyBalanceMinutes > 0 ? "surplus" : "balanced";
@@ -1439,9 +1439,9 @@
     if (!configured.length || availability <= 0 || weeks <= 0) return { ...base, state: "insufficient", items: [], subjects: [], activityMix: { theory: 0, questions: 0, reviews: 0 }, confidence: 0 };
     const weeklyBudget = Math.min(availability, weeklyNeedMinutes);
     const scored = configured.map((item) => ({ ...item, ...calculatePriorityScore(item), capacityMinutes: effort(item) })).sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));
-    const totalScore = scored.reduce((sum3, item) => sum3 + Math.max(1, item.score), 0);
+    const totalScore = scored.reduce((sum4, item) => sum4 + Math.max(1, item.score), 0);
     const allocations = new Map(scored.map((item) => [item.id, Math.min(item.capacityMinutes, Math.floor(weeklyBudget * Math.max(1, item.score) / totalScore))]));
-    let unallocated = weeklyBudget - [...allocations.values()].reduce((sum3, value2) => sum3 + value2, 0);
+    let unallocated = weeklyBudget - [...allocations.values()].reduce((sum4, value2) => sum4 + value2, 0);
     for (const item of scored) {
       if (unallocated <= 0) break;
       const current = allocations.get(item.id), extra = Math.min(item.capacityMinutes - current, unallocated);
@@ -1468,22 +1468,22 @@
       current.minutes += item.minutes;
       subjectMap.set(item.subjectId, current);
     });
-    const activityMix = items.reduce((sum3, item) => ({ theory: sum3.theory + item.activityMix.theory, questions: sum3.questions + item.activityMix.questions, reviews: sum3.reviews + item.activityMix.reviews }), { theory: 0, questions: 0, reviews: 0 });
+    const activityMix = items.reduce((sum4, item) => ({ theory: sum4.theory + item.activityMix.theory, questions: sum4.questions + item.activityMix.questions, reviews: sum4.reviews + item.activityMix.reviews }), { theory: 0, questions: 0, reviews: 0 });
     const coverage = active.length ? configured.length / active.length : 0;
     const strategicCoverage = configured.filter((item) => item.examImpact != null).length / configured.length;
     const confidence2 = Math.round((coverage * 0.65 + strategicCoverage * 0.35) * 100) / 100;
     const measured = configured.filter((item) => item.evidenceStrength != null);
-    const evidence = describeScoreEvidence({ completeness: confidence2, evidenceStrength: measured.length ? measured.reduce((sum3, item) => sum3 + item.evidenceStrength, 0) / configured.length : null });
-    return { ...base, maintenanceMinutes: items.filter((item) => item.covered).reduce((sum3, item) => sum3 + item.minutes, 0), state: confidence2 >= 0.75 ? "ready" : "estimated", weeklyPlannedMinutes: items.reduce((sum3, item) => sum3 + item.minutes, 0), items, subjects: [...subjectMap.values()].sort((a, b) => b.minutes - a.minutes), activityMix, confidence: confidence2, confidenceLabel: evidence.completenessLabel, evidence };
+    const evidence = describeScoreEvidence({ completeness: confidence2, evidenceStrength: measured.length ? measured.reduce((sum4, item) => sum4 + item.evidenceStrength, 0) / configured.length : null });
+    return { ...base, maintenanceMinutes: items.filter((item) => item.covered).reduce((sum4, item) => sum4 + item.minutes, 0), state: confidence2 >= 0.75 ? "ready" : "estimated", weeklyPlannedMinutes: items.reduce((sum4, item) => sum4 + item.minutes, 0), items, subjects: [...subjectMap.values()].sort((a, b) => b.minutes - a.minutes), activityMix, confidence: confidence2, confidenceLabel: evidence.completenessLabel, evidence };
   }
 
   // src/application/replan-study.js
   function buildReplanProposal({ plans = [], periodStart, periodEnd, futureDays = [] } = {}) {
     const inPeriod2 = plans.filter((plan) => plan.date >= periodStart && plan.date <= periodEnd);
-    const plannedMinutes = inPeriod2.reduce((sum3, plan) => sum3 + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n3, item) => n3 + (Number(item.plannedMinutes) || 0), 0), 0);
-    const executedMinutes = Math.round(inPeriod2.reduce((sum3, plan) => sum3 + (plan.items || []).reduce((n3, item) => n3 + (Number(item.executedSeconds) || 0) / 60, 0), 0));
+    const plannedMinutes = inPeriod2.reduce((sum4, plan) => sum4 + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n3, item) => n3 + (Number(item.plannedMinutes) || 0), 0), 0);
+    const executedMinutes = Math.round(inPeriod2.reduce((sum4, plan) => sum4 + (plan.items || []).reduce((n3, item) => n3 + (Number(item.executedSeconds) || 0) / 60, 0), 0));
     const pendingItems = inPeriod2.flatMap((plan) => (plan.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).map((item) => ({ sourcePlanId: plan.id, sourceItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || null, remainingMinutes: Math.max(0, Math.round((Number(item.plannedMinutes) || 0) - (Number(item.executedSeconds) || 0) / 60)), priority: Number(item.score) || 0 }))).filter((item) => item.remainingMinutes > 0).sort((a, b) => b.priority - a.priority);
-    const deficitMinutes = pendingItems.reduce((sum3, item) => sum3 + item.remainingMinutes, 0);
+    const deficitMinutes = pendingItems.reduce((sum4, item) => sum4 + item.remainingMinutes, 0);
     const capacities = (futureDays || []).map((day) => ({ date: day.date, remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)) }));
     const allocations = [];
     let remaining = deficitMinutes;
@@ -1498,7 +1498,7 @@
         remaining -= minutes;
       });
     });
-    const redistributedMinutes = allocations.reduce((sum3, item) => sum3 + item.minutes, 0);
+    const redistributedMinutes = allocations.reduce((sum4, item) => sum4 + item.minutes, 0);
     return { state: deficitMinutes ? "proposal" : "balanced", periodStart, periodEnd, plannedMinutes, executedMinutes, deficitMinutes, redistributedMinutes, discardedMinutes: Math.max(0, remaining), pendingItems, allocations, reasons: deficitMinutes ? ["execução abaixo do planejado no período"] : [] };
   }
   function applyReplan({ dailyPlans = [], proposal, operationId, now, idGenerator } = {}) {
@@ -1520,7 +1520,7 @@
       sourcePlan.updatedAt = now;
       const created = { ...sourceItem, id: idGenerator("plan-item"), plannedMinutes: allocation.minutes, executedSeconds: 0, status: "planned", sessionIds: [], originalDate: sourceItem.originalDate || sourcePlan.date, currentDate: allocation.date, rescheduleCount: (Number(sourceItem.rescheduleCount) || 0) + 1, skippedReason: null, rescheduledFromId: sourceItem.id, rescheduleOperationId: operationId, createdAt: now, lastExecutedAt: null };
       destination.items.push(created);
-      destination.plannedMinutes = (destination.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum3, item) => sum3 + (Number(item.plannedMinutes) || 0), 0);
+      destination.plannedMinutes = (destination.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum4, item) => sum4 + (Number(item.plannedMinutes) || 0), 0);
       destination.flexMinutes = Math.max(0, (Number(destination.availableMinutes) || 0) - destination.plannedMinutes);
       destination.updatedAt = now;
       changes.push({ sourcePlanId: sourcePlan.id, sourceItemId: sourceItem.id, sourcePreviousStatus: originalStatuses.get(sourceKey), destinationPlanId: destination.id, destinationItemId: created.id, date: allocation.date, minutes: allocation.minutes });
@@ -1539,7 +1539,7 @@
         continue;
       }
       destination.items = destination.items.filter((candidate) => candidate.id !== item.id);
-      destination.plannedMinutes = destination.items.filter((candidate) => !["skipped", "replaced"].includes(candidate.status)).reduce((sum3, candidate) => sum3 + (Number(candidate.plannedMinutes) || 0), 0);
+      destination.plannedMinutes = destination.items.filter((candidate) => !["skipped", "replaced"].includes(candidate.status)).reduce((sum4, candidate) => sum4 + (Number(candidate.plannedMinutes) || 0), 0);
       destination.flexMinutes = Math.max(0, (Number(destination.availableMinutes) || 0) - destination.plannedMinutes);
       undoneChanges.push(change);
     }
@@ -1564,7 +1564,7 @@
     if (!studyPlan?.id || !Array.isArray(studyPlan.items)) return { state: "insufficient", reason: "Plano semanal ausente.", days: [], plannedMinutes: 0, unallocatedMinutes: 0 };
     const existingKeys = existingSourceKeys(existingPlans, studyPlan.id), ratio = Math.max(0, Math.min(0.4, Number(reserveRatio) || 0));
     const slots = (days || []).map((day) => {
-      const existing = existingPlans.filter((plan) => plan.date === day.date).flatMap((plan) => plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum3, item) => sum3 + clampMinutes(item.plannedMinutes), 0);
+      const existing = existingPlans.filter((plan) => plan.date === day.date).flatMap((plan) => plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum4, item) => sum4 + clampMinutes(item.plannedMinutes), 0);
       const available = clampMinutes(day.availableMinutes), reserve = Math.round(available * ratio), capacity = Math.max(0, available - reserve - existing);
       return { date: day.date, availableMinutes: available, reserveMinutes: reserve, existingMinutes: existing, remaining: capacity, items: [] };
     });
@@ -1591,8 +1591,8 @@
       }
       unallocatedMinutes += remaining;
     }
-    const proposalDays = slots.filter((slot) => slot.items.length).map((slot) => ({ ...slot, plannedMinutes: slot.items.reduce((sum3, item) => sum3 + item.minutes, 0), flexMinutes: slot.reserveMinutes + slot.remaining }));
-    const plannedMinutes = proposalDays.reduce((sum3, day) => sum3 + day.plannedMinutes, 0);
+    const proposalDays = slots.filter((slot) => slot.items.length).map((slot) => ({ ...slot, plannedMinutes: slot.items.reduce((sum4, item) => sum4 + item.minutes, 0), flexMinutes: slot.reserveMinutes + slot.remaining }));
+    const plannedMinutes = proposalDays.reduce((sum4, day) => sum4 + day.plannedMinutes, 0);
     return { state: plannedMinutes ? "proposal" : "insufficient", studyPlanId: studyPlan.id, days: proposalDays, plannedMinutes, unallocatedMinutes, existingLinkedItems: existingKeys.size, reserveRatio: ratio, reason: plannedMinutes ? null : "Não há capacidade ou itens novos para distribuir." };
   }
   function applyDailyPlanProposal({ dailyPlans = [], proposal, operationId, now, idGenerator } = {}) {
@@ -1613,7 +1613,7 @@
         plan.items.push({ id: idGenerator("plan-item"), subjectId: source.subjectId, topicId: source.topicId, subjectName: source.subjectName, topicName: source.topicName, type: source.type, plannedMinutes: source.minutes, executedSeconds: 0, status: "planned", sessionIds: [], position: plan.items.length + 1, statusIcon: "📅", statusLabel: "Plano semanal", reason: source.origin === "review" ? "Revisão prevista para o período" : "Distribuição confirmada do plano semanal", action: source.type === "questions" ? "Resolver questões" : source.type === "review" ? "Revisar o tópico" : "Estudar o tópico", recommendedQuestions: 0, originalDate: day.date, currentDate: day.date, rescheduleCount: 0, skippedReason: null, recommendationId: null, studyPlanId: proposal.studyPlanId, studyPlanItemId: source.studyPlanItemId, generationOperationId: operationId, createdAt: now });
         createdItems++;
       });
-      plan.plannedMinutes = (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum3, item) => sum3 + clampMinutes(item.plannedMinutes), 0);
+      plan.plannedMinutes = (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum4, item) => sum4 + clampMinutes(item.plannedMinutes), 0);
       plan.flexMinutes = Math.max(0, plan.availableMinutes - plan.plannedMinutes);
       plan.updatedAt = now;
     });
@@ -1634,7 +1634,7 @@
         removedItems++;
         return false;
       });
-      plan.plannedMinutes = plan.items.filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum3, item) => sum3 + clampMinutes(item.plannedMinutes), 0);
+      plan.plannedMinutes = plan.items.filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((sum4, item) => sum4 + clampMinutes(item.plannedMinutes), 0);
       plan.flexMinutes = Math.max(0, (Number(plan.availableMinutes) || 0) - plan.plannedMinutes);
       if (!plan.items.length && plan.generationOperationId === operationId) dailyPlans.splice(index, 1);
     }
@@ -1732,7 +1732,7 @@
       if (!found) return null;
       const linked = repository.listByPlanItem(planItemId), latest = [...linked].sort((a, b) => String(a.endedAt || "").localeCompare(String(b.endedAt || ""))).pop();
       found.item.sessionIds = linked.map((item) => item.id);
-      found.item.executedSeconds = linked.reduce((sum3, item) => sum3 + Math.max(0, Number(item.durationSeconds) || 0), 0);
+      found.item.executedSeconds = linked.reduce((sum4, item) => sum4 + Math.max(0, Number(item.durationSeconds) || 0), 0);
       found.item.status = !linked.length ? "planned" : found.item.plannedMinutes > 0 && found.item.executedSeconds >= found.item.plannedMinutes * 60 ? "completed" : "partial";
       found.item.lastExecutedAt = latest?.endedAt || null;
       found.plan.updatedAt = clock.nowISO();
@@ -2085,7 +2085,7 @@
   }
 
   // src/ui/controllers/editable-collection-controller.js
-  function createEditableCollectionController({ service, clone: clone2 = (value2) => structuredClone(value2), render: render2 = () => {
+  function createEditableCollectionController({ service, clone: clone3 = (value2) => structuredClone(value2), render: render2 = () => {
   }, normalize = (value2) => value2, onSaved = () => {
   }, initialState = {} } = {}) {
     if (!service || typeof service.find !== "function") throw new TypeError("Controlador de edição requer serviço de coleção.");
@@ -2095,7 +2095,7 @@
       if (state2.editingIsNew && state2.editingId !== id) service.remove(state2.editingId);
       const item = service.find(id);
       if (!item) return null;
-      Object.assign(state2, { editingId: id, editingIsNew: isNew, draft: clone2(item) });
+      Object.assign(state2, { editingId: id, editingIsNew: isNew, draft: clone3(item) });
       render2();
       return state2.draft;
     }, update: (field, value2) => {
@@ -2108,7 +2108,7 @@
       render2();
     }, save: () => {
       if (!state2.draft || !service.find(state2.editingId)) return null;
-      const saved = service.update(state2.editingId, normalize(clone2(state2.draft)));
+      const saved = service.update(state2.editingId, normalize(clone3(state2.draft)));
       reset();
       onSaved(saved);
       return saved;
@@ -2342,7 +2342,7 @@
   var clampHours = (value2) => Math.max(0, Math.min(24, Number(value2) || 0));
   function buildWeeklyAvailability(hoursByDay = {}) {
     const days = Array.from({ length: 7 }, (_, day) => ({ day, hours: clampHours(hoursByDay[String(day)] ?? hoursByDay[day]) }));
-    const totalHours = Math.round(days.reduce((sum3, item) => sum3 + item.hours, 0) * 100) / 100;
+    const totalHours = Math.round(days.reduce((sum4, item) => sum4 + item.hours, 0) * 100) / 100;
     const activeDays = days.filter((item) => item.hours > 0).length;
     const averageHours = activeDays ? Math.round(totalHours / activeDays * 100) / 100 : 0;
     const peakHours = Math.max(0, ...days.map((item) => item.hours));
@@ -2404,9 +2404,70 @@
   }
 
   // src/application/analytics/build-header-view-model.js
-  function buildHeaderViewModel({ readiness = {}, subjects = [], topics = [], upcomingReviews = 0, streak = 0, examDate = null, planNumber = "" } = {}) {
-    const activeTopics2 = topics.filter((item) => !item.archived), completed = activeTopics2.filter((item) => item.status === "Concluído").length, inProgress = activeTopics2.filter((item) => item.status === "Em andamento").length;
-    return { readinessValue: readiness.value ?? null, readinessConfidence: readiness.confidenceLabel || "Baixa", availableFactors: readiness.availableFactors?.length || 0, totalFactors: (readiness.availableFactors?.length || 0) + (readiness.missingFactors?.length || 0), contentPercent: activeTopics2.length ? Math.round(completed / activeTopics2.length * 100) : 0, subjects: subjects.filter((item) => !item.archived).length, topics: activeTopics2.length, completed, inProgress, upcomingReviews, streak, examDate, planNumber };
+  function buildHeaderViewModel({ readiness = {}, subjects = [], topics = [], upcomingReviews = 0, streak = 0, examDate = null, planNumber = "", today = null, brand = "StudyTrack" } = {}) {
+    const activeTopics2 = topics.filter((item) => !item.archived), completed = activeTopics2.filter((item) => item.status === "Concluído").length, inProgress = activeTopics2.filter((item) => item.status === "Em andamento").length, availableFactors = readiness.availableFactors?.length || 0, totalFactors = availableFactors + (readiness.missingFactors?.length || 0), contentPercent = activeTopics2.length ? Math.round(completed / activeTopics2.length * 100) : 0, daysRemaining = examDate && today ? Math.max(0, Math.ceil((Date.parse(examDate + "T00:00:00Z") - Date.parse(today + "T00:00:00Z")) / 864e5)) : null, flat = { readinessValue: readiness.value ?? null, readinessConfidence: readiness.confidenceLabel || "Baixa", availableFactors, totalFactors, contentPercent, subjects: subjects.filter((item) => !item.archived).length, topics: activeTopics2.length, completed, inProgress, upcomingReviews, streak, examDate, planNumber };
+    return { ...flat, brand: { name: brand, kicker: "Extrato de estudos" }, readiness: { value: flat.readinessValue, confidence: flat.readinessConfidence, availableFactors, totalFactors }, exam: { date: examDate, daysRemaining }, plan: { number: planNumber }, stats: { subjects: flat.subjects, contentPercent, inProgress, completed, upcomingReviews }, streak: { days: streak } };
+  }
+
+  // src/ui/renderers/header-renderer.js
+  function renderHeroHeader(model, { document: document2 }) {
+    const readiness = model.readiness, stats = model.stats;
+    document2.getElementById("balanceFigure").innerHTML = `${readiness.value ?? "—"}<span>/100</span>`;
+    document2.getElementById("balanceSub").textContent = readiness.value == null ? "Aguardando evidências" : `${readiness.confidence} · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`;
+    document2.getElementById("statSubjects").textContent = stats.subjects;
+    document2.getElementById("statContent").textContent = stats.contentPercent + "%";
+    document2.getElementById("statAndamento").textContent = stats.inProgress;
+    document2.getElementById("statConcluido").textContent = stats.completed;
+    document2.getElementById("statRevisoes").textContent = stats.upcomingReviews;
+    document2.getElementById("statStreak").textContent = model.streak.days;
+  }
+  function renderCompactHeader(model, { document: document2, formatDate }) {
+    document2.getElementById("compactReadiness").textContent = model.readiness.value == null ? "—" : model.readiness.value + "/100";
+    const exam = document2.getElementById("compactExamDate");
+    exam.textContent = model.exam.date ? formatDate(model.exam.date) : "";
+    exam.hidden = !model.exam.date;
+    document2.getElementById("compactPlanNumber").textContent = model.plan.number;
+  }
+
+  // src/application/analytics/build-studytrack32-view-model.js
+  var sum2 = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
+  var inRange = (item, start, end) => Boolean(item?.date && item.date >= start && item.date <= end);
+  function selectWeeklyPlans(dailyPlans = [], start, end) {
+    const plans = (Array.isArray(dailyPlans) ? dailyPlans : []).filter((plan) => inRange(plan, start, end));
+    const items = plans.flatMap((plan) => (plan.items || []).map((item) => ({ ...item, date: plan.date })));
+    const eligible = items.filter((item) => !["skipped", "replaced", "discarded"].includes(item.status));
+    return { plans: eligible, plannedMinutes: sum2(eligible, (item) => item.plannedMinutes) };
+  }
+  function buildStudyTrack32ViewModel({ today, sessions = [], questions = [], dailyPlans = [], planAdjustments = [], recommendations = [], simulations = [], subjects = [], weeklyCapacityMinutes = 0, targetAccuracy = 80, algorithmServices = {}, nameResolvers = {} } = {}) {
+    const { addDays: addDays2, buildWeeklyClose: buildWeeklyClose2, buildGapMap: buildGapMap2, buildDecisionHistory: buildDecisionHistory2, buildPostSimulationReplan: buildPostSimulationReplan2, buildCandidates } = algorithmServices;
+    const start = addDays2(today, -6), previousEnd = addDays2(start, -1), previousStart = addDays2(start, -7), currentSessions = sessions.filter((item) => inRange(item, start, today)), currentQuestions = questions.filter((item) => inRange(item, start, today)), previousSessions = sessions.filter((item) => inRange(item, previousStart, previousEnd)), previousQuestions = questions.filter((item) => inRange(item, previousStart, previousEnd)), currentPlan = selectWeeklyPlans(dailyPlans, start, today), previousPlan = selectWeeklyPlans(dailyPlans, previousStart, previousEnd);
+    const questionTotals = (list) => ({ resolved: sum2(list, (item) => item.resolved), correct: sum2(list, (item) => item.correct) }), previousTotals = questionTotals(previousQuestions), hasPrevious = previousSessions.length + previousQuestions.length + previousPlan.plans.length > 0, executedMinutes = Math.round(sum2(currentSessions, (item) => item.durationSeconds) / 60), previousExecutedMinutes = Math.round(sum2(previousSessions, (item) => item.durationSeconds) / 60);
+    const weeklyClose = buildWeeklyClose2({ period: { start, end: today }, current: { plannedMinutes: currentPlan.plannedMinutes, executedMinutes }, previous: hasPrevious ? { plannedMinutes: previousPlan.plannedMinutes, executedMinutes: previousExecutedMinutes, resolved: previousTotals.resolved, accuracy: previousTotals.resolved ? Math.round(previousTotals.correct / previousTotals.resolved * 100) : null } : {}, plans: currentPlan.plans, sessions: currentSessions, questions: currentQuestions, recommendations, targetAccuracy });
+    const candidates = buildCandidates(), gapRows = candidates.map((item) => ({ topicId: item.topicId, name: item.topicName || nameResolvers.topic(item.topicId) || "Tópico removido", subjectName: item.subjectName || nameResolvers.subject(item.subjectId) || "Disciplina removida", mastery: item.mastery, examImpact: item.examImpact, retention: item.retention, coverage: item.coverage, trendRisk: item.trendRisk ?? item.risk?.value ?? null })), gapMap = buildGapMap2(gapRows), decisionHistory = buildDecisionHistory2(recommendations, { limit: 5, resolveSubjectName: nameResolvers.subject, resolveTopicName: nameResolvers.topic });
+    const latestSimulation = [...simulations].sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))[0], plannedOpen = sum2(dailyPlans.flatMap((plan) => plan.items || []).filter((item) => !["completed", "skipped", "replaced", "discarded"].includes(item.status)), (item) => item.plannedMinutes), availableMinutes = Math.max(0, weeklyCapacityMinutes - plannedOpen), postSimulation = buildPostSimulationReplan2({ simulation: latestSimulation, subjects, availableMinutes, existingSimulationIds: planAdjustments.map((item) => item.simulationId).filter(Boolean) });
+    return { period: { start, end: today, previousStart, previousEnd }, weeklyClose, gapMap, decisionHistory, postSimulation: { ...postSimulation, availableMinutes } };
+  }
+
+  // src/ui/renderers/studytrack32-renderer.js
+  var safe = (escapeHtml2, value2) => escapeHtml2(String(value2 ?? ""));
+  function renderWeeklyClose(model, { escapeHtml: escapeHtml2, formatMinutes }) {
+    if (model.state === "insufficient") return '<div class="upcoming-empty">Ainda não há evidência suficiente para fechar a semana.</div>';
+    return `<div class="kpi-grid"><div class="kpi-cell"><div class="n">${formatMinutes(model.investment.executedMinutes)}</div><div class="l">Tempo estudado</div></div><div class="kpi-cell"><div class="n">${model.questions.accuracy ?? "—"}%</div><div class="l">Acerto</div></div><div class="kpi-cell"><div class="n">${model.questions.resolved}</div><div class="l">Questões</div></div></div><section class="weekly-assessment"><strong>${model.assessment === "attention" ? "Atenção" : model.assessment === "on_target" ? "Meta alcançada" : "Semana em formação"}</strong>${model.bestSignal ? `<span><b>Melhor sinal:</b> ${safe(escapeHtml2, model.bestSignal.message)}</span>` : ""}${model.mainRisk ? `<span><b>Principal risco:</b> ${safe(escapeHtml2, model.mainRisk.message)}</span>` : ""}<span><b>Próxima ação:</b> ${safe(escapeHtml2, model.recommendedAction)}</span></section>`;
+  }
+  function renderPeriodComparison(model, { escapeHtml: escapeHtml2, formatMinutes }) {
+    const labels = { accuracy: "Acerto", minutes: "Tempo estudado", questions: "Questões" }, value2 = (key, n3) => key === "accuracy" ? `${n3}%` : key === "minutes" ? formatMinutes(n3) : String(n3), delta = (key, n3) => key === "accuracy" ? `${n3 > 0 ? "+" : ""}${n3} p.p.` : key === "minutes" ? `${n3 > 0 ? "+" : ""}${formatMinutes(Math.abs(n3))}` : `${n3 > 0 ? "+" : ""}${n3}`;
+    return `<div class="period-comparison"><strong>Comparação com a semana anterior</strong><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${Object.entries(model.comparison).map(([key, item]) => item.delta == null ? `<div><span>${labels[key]}</span><small>Sem semana anterior comparável</small></div>` : `<div><span>${labels[key]}</span><b>${safe(escapeHtml2, value2(key, item.previous))}</b><b>${safe(escapeHtml2, value2(key, item.current))}</b><b>${safe(escapeHtml2, delta(key, item.delta))}</b></div>`).join("")}</div>`;
+  }
+  function renderGapMap(model, { escapeHtml: escapeHtml2 }) {
+    return model.items.length ? model.items.slice(0, 5).map((item) => `<article class="data-row"><strong>${safe(escapeHtml2, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Gap de domínio ${item.gap ?? "—"} pts · impacto ${item.factors.examImpact ?? "—"}%</span></article>`).join("") : '<div class="upcoming-empty">Nenhuma lacuna priorizada com os dados atuais.</div>';
+  }
+  function renderDecisionHistory(model, { escapeHtml: escapeHtml2 }) {
+    return model.items.length ? model.items.map((item) => `<article class="data-row"><strong>${safe(escapeHtml2, item.subjectName)} — ${safe(escapeHtml2, item.topicName)}</strong><span>${safe(escapeHtml2, item.strategyLabel)}</span><small>${safe(escapeHtml2, item.outcomeLabel)}</small></article>`).join("") : '<div class="upcoming-empty">Nenhuma decisão registrada.</div>';
+  }
+  function renderPostSimulationReplan(model, { escapeHtml: escapeHtml2 }) {
+    const need = (model.adjustments || []).reduce((sum4, item) => sum4 + item.deltaMinutes, 0) + (model.unallocatedMinutes || 0);
+    if (model.state !== "proposal") return `<div class="upcoming-empty">${safe(escapeHtml2, model.reason || model.message)}</div>`;
+    return `<div class="replan-summary"><strong>Proposta para ${safe(escapeHtml2, model.simulationDate || "simulado recente")}</strong><p>${model.adjustments.map((item) => `${safe(escapeHtml2, item.subjectName)}: +${item.deltaMinutes} min`).join(" · ")}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${model.availableMinutes} min</dd></div>${model.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${model.unallocatedMinutes} min</dd></div>` : ""}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`;
   }
 
   // src/application/alert-lifecycle.js
@@ -2486,7 +2547,7 @@
   function buildPerformanceForecast({ currentValue = null, currentConfidence = 0, targetScore = 80, observations = [] } = {}) {
     const current = currentValue === null || currentValue === void 0 ? NaN : Number(currentValue), confidence2 = clamp7(Number(currentConfidence) || 0, 0, 1), target = clamp7(Number(targetScore) || 80);
     const normalized = normalizeObservations(observations);
-    const sampleSize = normalized.reduce((sum3, item) => sum3 + item.sampleSize, 0);
+    const sampleSize = normalized.reduce((sum4, item) => sum4 + item.sampleSize, 0);
     const observationCount = normalized.length;
     const periodStart = normalized[0]?.date || null, periodEnd = normalized.at(-1)?.date || null;
     const spanDays = periodStart && periodEnd ? Math.round(dayNumber(periodEnd) - dayNumber(periodStart)) : 0;
@@ -2497,8 +2558,8 @@
     const margin = Math.max(4, Math.round(18 * (1 - confidence2)));
     const currentBand = { central: Math.round(current), low: Math.round(clamp7(current - margin)), high: Math.round(clamp7(current + margin)), confidence: confidence2, confidenceLabel: confidenceLabel2(confidence2) };
     const gap = { minimum: Math.max(0, Math.round(target - currentBand.high)), maximum: Math.max(0, Math.round(target - currentBand.low)), target };
-    const recent = normalized.slice(-3), recentSample = recent.reduce((sum3, item) => sum3 + item.sampleSize, 0);
-    const movingAverage = recentSample ? Math.round(recent.reduce((sum3, item) => sum3 + item.value * item.sampleSize, 0) / recentSample) : null;
+    const recent = normalized.slice(-3), recentSample = recent.reduce((sum4, item) => sum4 + item.sampleSize, 0);
+    const movingAverage = recentSample ? Math.round(recent.reduce((sum4, item) => sum4 + item.value * item.sampleSize, 0) / recentSample) : null;
     if (observationCount < 4 || sampleSize < 120 || spanDays < 21) {
       const needs = [];
       if (observationCount < 4) needs.push(`${4 - observationCount} semana(s) adicional(is)`);
@@ -2507,10 +2568,10 @@
       return { algorithmVersion: PERFORMANCE_FORECAST_VERSION, available: true, currentBand, gap, movingAverage, forecast30: { available: false, reason: `Aguardando ${needs.join(", ")}.` }, evidence };
     }
     const origin = dayNumber(periodStart), points = normalized.map((item) => ({ x: dayNumber(item.date) - origin, y: item.value, w: item.sampleSize }));
-    const weight = points.reduce((sum3, item) => sum3 + item.w, 0);
-    const meanX = points.reduce((sum3, item) => sum3 + item.x * item.w, 0) / weight, meanY = points.reduce((sum3, item) => sum3 + item.y * item.w, 0) / weight;
-    const denominator = points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) ** 2, 0);
-    const rawSlope = denominator ? points.reduce((sum3, item) => sum3 + item.w * (item.x - meanX) * (item.y - meanY), 0) / denominator : 0;
+    const weight = points.reduce((sum4, item) => sum4 + item.w, 0);
+    const meanX = points.reduce((sum4, item) => sum4 + item.x * item.w, 0) / weight, meanY = points.reduce((sum4, item) => sum4 + item.y * item.w, 0) / weight;
+    const denominator = points.reduce((sum4, item) => sum4 + item.w * (item.x - meanX) ** 2, 0);
+    const rawSlope = denominator ? points.reduce((sum4, item) => sum4 + item.w * (item.x - meanX) * (item.y - meanY), 0) / denominator : 0;
     const forecastConfidence = clamp7(Math.min(1, observationCount / 8) * 0.35 + Math.min(1, sampleSize / 300) * 0.4 + Math.min(1, spanDays / 56) * 0.25);
     const slopePerDay = clamp7(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
     const projected = clamp7(normalized.at(-1).value + slopePerDay * 30);
@@ -2707,7 +2768,7 @@
       return { id: `demo-daily-plan-${index + 1}`, date: date2, availableMinutes: 120, plannedMinutes: 80, flexMinutes: 40, createdAt: timestamp(date2), updatedAt: timestamp(date2), items };
     });
     const planItems = activeTopics2.slice(0, 12).map((entry, index) => ({ id: `demo-study-plan-topic-${index + 1}`, subjectId: entry.subject.id, subjectName: entry.subject.name, topicId: entry.topic.id, topicName: entry.topic.name, minutes: 45 + index % 3 * 15, estimatedMinutes: entry.topic.estimatedStudyMinutes, activityMix: { theory: 20, questions: 20, reviews: 5 } }));
-    state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum3, item) => sum3 + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject2) => ({ subjectId: subject2.id, subjectName: subject2.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
+    state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum4, item) => sum4 + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject2) => ({ subjectId: subject2.id, subjectName: subject2.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
     state2.planAdjustments = [{ id: "demo-adjustment-1", periodStart: shiftDate(today, -7), periodEnd: shiftDate(today, 7), plannedMinutes: 480, executedMinutes: 350, deficitMinutes: 130, redistributedMinutes: 100, discardedMinutes: 30, allocations: [{ date: shiftDate(today, 1), minutes: 50 }, { date: shiftDate(today, 2), minutes: 50 }], confirmedAt: timestamp(shiftDate(today, -1)), status: "confirmed" }];
     state2.recommendationFeedback = Array.from({ length: 6 }, (_, index) => ({ id: `demo-feedback-${index + 1}`, recommendationId: `demo-recommendation-${index + 1}`, date: shiftDate(today, -index * 5), subjectId: state2.subjects[index % state2.subjects.length].id, topicId: activeTopics2[index].topic.id, accepted: index !== 4, completed: index < 3, useful: index < 3 ? index !== 2 : null, reasonSkipped: index === 4 ? "Preferiu outra disciplina" : null, resultingSessionId: index < 3 ? state2.studySessions[index].id : null, baseline: { accuracy: 52 + index * 3, questionVolume: 24 + index * 4, retentionScore: 45 + index * 2, daysSinceContact: 8 - index, measuredAt: timestamp(shiftDate(today, -index * 5)) }, outcome: index < 3 ? { accuracyAfter: 64 + index * 3, questionVolumeAfter: 22 + index * 12, nextReviewRating: index === 0 ? "Bom" : null, retentionAfter: 54 + index * 3, measuredAt: timestamp(shiftDate(today, -index * 5 + 2)), confidence: index === 0 ? "Estimativa" : "Mais confiável", attributionEligible: true, reasons: [] } : null, createdAt: timestamp(shiftDate(today, -index * 5)), completedAt: index < 3 ? timestamp(shiftDate(today, -index * 5)) : null }));
     state2.topicHistory = activeTopics2.flatMap((entry, index) => [{ id: `demo-history-start-${index + 1}`, type: "topic_created", date: shiftDate(today, -89 + index % 15), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -89 + index % 15)) }, ...entry.topic.status === "Concluído" ? [{ id: `demo-history-done-${index + 1}`, type: "topic_completed", date: shiftDate(today, -30 - index % 20), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -30 - index % 20)) }] : []]);
@@ -3024,6 +3085,171 @@
     return `<tr class="row-editing" data-id="${item.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateCalendarDraft('date',this.value)"></label><label>Semana<input type="text" value="${escapeAttr2(draft.week || "")}" data-delegated-input="updateCalendarDraft('week',this.value)"></label><label>Disciplina<select data-delegated-change="updateCalendarDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Status<select data-delegated-change="updateCalendarDraft('status',this.value)">${statusOptions}</select></label><label>Tipo de revisão<select data-delegated-change="updateCalendarDraft('reviewType',this.value)">${reviewOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelCalendarEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveCalendarEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteCalRow('${item.id}')">Excluir</button></div></div></td></tr>`;
   }
 
+  // src/ui/calendar/calendar-state.js
+  function createCalendarState(initial = {}) {
+    return { month: initial.month instanceof Date ? new Date(initial.month) : /* @__PURE__ */ new Date(), filters: { subjectId: initial.filters?.subjectId || "", status: initial.filters?.status || "", month: initial.filters?.month || "", type: initial.filters?.type || "" }, view: initial.view || "month", visible: Number(initial.visible) || 10, editingId: null, draft: null, isNew: false, selectedId: null, expandedIds: /* @__PURE__ */ new Set() };
+  }
+
+  // src/ui/calendar/calendar-controller.js
+  var clone2 = (value2) => value2 == null ? value2 : JSON.parse(JSON.stringify(value2));
+  var localToday = () => {
+    const date2 = /* @__PURE__ */ new Date(), pad = (value2) => String(value2).padStart(2, "0");
+    return `${date2.getFullYear()}-${pad(date2.getMonth() + 1)}-${pad(date2.getDate())}`;
+  };
+  function createCalendarController({ service, state: state2, onChange = () => {
+  }, clock = { today: localToday } } = {}) {
+    if (!service) throw new Error("calendar service is required");
+    const refresh = () => onChange(state2), resetEdit = () => {
+      state2.editingId = null;
+      state2.draft = null;
+      state2.isNew = false;
+    };
+    return { create(draft = {}) {
+      const item = service.create({ ...draft, date: draft.date || clock.today() });
+      state2.editingId = item.id;
+      state2.draft = clone2(item);
+      state2.isNew = true;
+      refresh();
+      return item;
+    }, beginEdit(id) {
+      state2.editingId = id;
+      state2.draft = clone2(service.getById?.(id));
+      state2.isNew = false;
+      refresh();
+    }, update(field, value2) {
+      if (state2.draft) state2.draft[field] = value2;
+      refresh();
+    }, cancelEdit() {
+      if (state2.isNew && state2.editingId) service.remove(state2.editingId);
+      resetEdit();
+      refresh();
+    }, save() {
+      if (!state2.draft) return null;
+      const result = service.update(state2.editingId, state2.draft);
+      resetEdit();
+      refresh();
+      return result;
+    }, complete(id) {
+      const item = service.getById?.(id);
+      if (!item || item.status === "Concluído") return item;
+      const result = service.update(id, { ...item, status: "Concluído" });
+      refresh();
+      return result;
+    }, remove(id) {
+      const result = service.remove(id);
+      if (state2.selectedId === id) state2.selectedId = null;
+      if (state2.editingId === id) resetEdit();
+      refresh();
+      return result;
+    }, setFilter(name, value2) {
+      if (name in state2.filters) state2.filters[name] = value2;
+      state2.visible = 10;
+      refresh();
+    }, clearFilters() {
+      Object.keys(state2.filters).forEach((key) => state2.filters[key] = "");
+      state2.visible = 10;
+      refresh();
+    }, setView(view) {
+      state2.view = view === "agenda" ? "agenda" : "month";
+      refresh();
+    }, select(id) {
+      state2.selectedId = id;
+      refresh();
+    }, clearSelection() {
+      state2.selectedId = null;
+      refresh();
+    }, showMore(step = 10) {
+      state2.visible += Math.max(1, Number(step) || 10);
+      refresh();
+    }, showLess() {
+      state2.visible = 10;
+      refresh();
+    }, setMonth(month) {
+      state2.month = month instanceof Date ? new Date(month) : new Date(month);
+      state2.visible = 10;
+      refresh();
+    }, goToPreviousMonth() {
+      const date2 = new Date(state2.month);
+      date2.setMonth(date2.getMonth() - 1);
+      state2.month = date2;
+      refresh();
+    }, goToNextMonth() {
+      const date2 = new Date(state2.month);
+      date2.setMonth(date2.getMonth() + 1);
+      state2.month = date2;
+      refresh();
+    }, goToCurrentMonth() {
+      state2.month = /* @__PURE__ */ new Date();
+      refresh();
+    }, toggleExpanded(id) {
+      state2.expandedIds.has(id) ? state2.expandedIds.delete(id) : state2.expandedIds.add(id);
+      refresh();
+    } };
+  }
+
+  // src/application/questions/question-controller.js
+  function createQuestionController({ service, onChange = () => {
+  } } = {}) {
+    if (!service) throw new Error("question service is required");
+    const refresh = () => onChange(service.list());
+    return { create(input) {
+      const value2 = service.create(input);
+      refresh();
+      return value2;
+    }, update(id, changes) {
+      const value2 = service.update(id, changes);
+      refresh();
+      return value2;
+    }, remove(id) {
+      const value2 = service.remove(id);
+      refresh();
+      return value2;
+    }, refresh };
+  }
+
+  // src/application/subjects/edital-import-facade.js
+  function createEditalImportFacade({ catalog, importService } = {}) {
+    if (!catalog || !importService) throw new TypeError("Edital facade requires catalog and service");
+    let selection = null;
+    return { presets: () => catalog, begin: (presetId) => {
+      selection = catalog.find((item) => item.id === presetId) || null;
+      return selection;
+    }, preview: (selectedSubjectIds, selectedTopicIds) => selection ? importService.preview({ preset: selection, selectedSubjectIds, selectedTopicIds }) : null, confirm: (selectedSubjectIds, selectedTopicIds) => selection ? importService.importExamStructure({ preset: selection, selectedSubjectIds, selectedTopicIds, duplicateStrategy: "merge" }) : null, cancel: () => {
+      selection = null;
+    } };
+  }
+
+  // src/application/guided-study/guided-study-service.js
+  function createGuidedStudyService({ recommend, sessionService: sessionService2, clock = { nowISO: () => (/* @__PURE__ */ new Date()).toISOString() } } = {}) {
+    if (typeof recommend !== "function" || !sessionService2) throw new TypeError("Guided study requires recommendation and session services");
+    let active = null;
+    return { next(options = {}) {
+      const recommendation = recommend(options)[0] || null;
+      active = recommendation ? { recommendation, startedAt: null, paused: false } : null;
+      return active;
+    }, start() {
+      if (!active) return null;
+      active.startedAt = clock.nowISO();
+      active.paused = false;
+      return active;
+    }, pause() {
+      if (!active) return null;
+      active.paused = true;
+      return active;
+    }, resume() {
+      if (!active) return null;
+      active.paused = false;
+      return active;
+    }, complete(result = {}) {
+      if (!active) return null;
+      const session = sessionService2.complete({ ...result, recommendationId: active.recommendation.recommendationId || active.recommendation.id, topicId: result.topicId ?? active.recommendation.topicId, subjectId: result.subjectId ?? active.recommendation.subjectId, startedAt: result.startedAt || active.startedAt, endedAt: result.endedAt || clock.nowISO(), durationSeconds: result.durationSeconds || 0, questionsResolved: result.questionsResolved || 0, correctAnswers: result.correctAnswers || 0, type: result.type || "study", source: "recommendation" });
+      active = null;
+      return session;
+    }, reset() {
+      active = null;
+    }, current: () => active };
+  }
+
   // src/ui/view-models/question-view-model.js
   function buildQuestionViewModel(item, { formatDate, getSubjectName: getSubjectName2, getTopicName: getTopicName2, subjectIdOf, accuracy: accuracy2 } = {}) {
     const resolved = Number(item.resolved) || 0, correct = Number(item.correct) || 0;
@@ -3114,7 +3340,7 @@
   var finite = (value2) => Number.isFinite(Number(value2)) ? Math.max(0, Math.min(100, Number(value2))) : null;
   function buildGapMap(rows = [], { limit = 10 } = {}) {
     const weights = { masteryGap: 0.3, examImpact: 0.3, retentionRisk: 0.2, trendRisk: 0.1, coverageGap: 0.1 }, list = (Array.isArray(rows) ? rows : []).map((row) => {
-      const mastery = finite(row.mastery), impact = finite(row.examImpact), retention = finite(row.retention), trendRisk = finite(row.trendRisk), coverage = finite(row.coverage), factors = { masteryGap: mastery == null ? null : 100 - mastery, examImpact: impact, retentionRisk: retention == null ? null : 100 - retention, trendRisk, coverageGap: coverage == null ? null : 100 - coverage }, available = Object.entries(factors).filter(([, value2]) => value2 != null), weight = available.reduce((sum3, [key]) => sum3 + weights[key], 0), score = weight ? Math.round(available.reduce((sum3, [key, value2]) => sum3 + value2 * weights[key], 0) / weight) : null, confidence2 = available.length / Object.keys(weights).length;
+      const mastery = finite(row.mastery), impact = finite(row.examImpact), retention = finite(row.retention), trendRisk = finite(row.trendRisk), coverage = finite(row.coverage), factors = { masteryGap: mastery == null ? null : 100 - mastery, examImpact: impact, retentionRisk: retention == null ? null : 100 - retention, trendRisk, coverageGap: coverage == null ? null : 100 - coverage }, available = Object.entries(factors).filter(([, value2]) => value2 != null), weight = available.reduce((sum4, [key]) => sum4 + weights[key], 0), score = weight ? Math.round(available.reduce((sum4, [key, value2]) => sum4 + value2 * weights[key], 0) / weight) : null, confidence2 = available.length / Object.keys(weights).length;
       return { ...row, gap: factors.masteryGap, priority: score, severity: score == null ? "insufficient" : score >= 70 ? "critical" : score >= 45 ? "high" : score >= 25 ? "medium" : "low", confidence: confidence2, evidence: { availableFactors: available.map(([key]) => key), missingFactors: Object.keys(weights).filter((key) => factors[key] == null) }, factors, reason: factors.masteryGap == null ? "Sem evidência de domínio" : `Gap de ${factors.masteryGap} pontos com impacto de prova ${impact ?? "não informado"}%`, recommendedAction: (score ?? 0) >= 60 ? "Revisar e resolver questões" : "Manter revisão espaçada" };
     }).sort((a, b) => (b.priority ?? -1) - (a.priority ?? -1));
     return { algorithmVersion: GAP_MAP_VERSION, state: list.length ? "available" : "insufficient", items: list.slice(0, limit), total: list.length };
@@ -3147,12 +3373,12 @@
       const deltaMinutes = Math.min(item.requestedMinutes, remaining);
       remaining -= deltaMinutes;
       return { ...item, deltaMinutes, unallocatedMinutes: item.requestedMinutes - deltaMinutes };
-    }).filter((item) => item.deltaMinutes > 0), unallocatedMinutes = requested.reduce((sum3, item) => sum3 + item.requestedMinutes, 0) - adjustments.reduce((sum3, item) => sum3 + item.deltaMinutes, 0);
+    }).filter((item) => item.deltaMinutes > 0), unallocatedMinutes = requested.reduce((sum4, item) => sum4 + item.requestedMinutes, 0) - adjustments.reduce((sum4, item) => sum4 + item.deltaMinutes, 0);
     return { algorithmVersion: POST_SIMULATION_REPLAN_VERSION, state: adjustments.length ? "proposal" : requested.length ? "insufficient_capacity" : "balanced", simulationId: simulation.id, simulationDate: simulation.date, adjustments, unallocatedMinutes, evidence: { rows: rows.length, minimumQuestions, measuredRows: rows.length, availableMinutes: Number.isFinite(Number(availableMinutes)) ? Number(availableMinutes) : null }, message: adjustments.length ? "Proposta aguardando confirmação explícita." : requested.length ? "Sem capacidade disponível para redistribuição." : "O simulado não indica redistribuição imediata." };
   }
 
   // src/reports/report-data.js
-  var sum2 = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
+  var sum3 = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
   var shiftDate2 = (iso, days) => {
     const [year, month, day] = iso.split("-").map(Number), date2 = new Date(Date.UTC(year, month - 1, day + days));
     return date2.toISOString().slice(0, 10);
@@ -3170,11 +3396,11 @@
   function buildStrategicReport({ state: state2, generatedAt, isDemo = false, readiness = null, diagnosis = null, forecast = null, period } = {}) {
     const range = resolveReportPeriod({ ...period, generatedAt }), subjects = (state2.subjects || []).filter((item) => !item.archived), topics = subjects.flatMap((subject2) => (subject2.topics || []).filter((item) => !item.archived));
     const sessions = (state2.studySessions || []).filter((item) => inPeriod(item, range.start, range.end)), questions = (state2.questoes || []).filter((item) => inPeriod(item, range.start, range.end)), simulations = (state2.simulados || []).filter((item) => inPeriod(item, range.start, range.end)), reviews = (state2.reviewAgenda || []).filter((item) => inPeriod(item, range.start, range.end));
-    const resolved = sum2(questions, (item) => item.resolved), correct = sum2(questions, (item) => item.correct), studySeconds = sum2(sessions, (item) => item.durationSeconds), simulationTotal = sum2(simulations, (item) => item.total), simulationCorrect = sum2(simulations, (item) => item.correct), activePlan = [...state2.studyPlans || []].reverse().find((item) => !item.undoneAt) || null, adjustments = (state2.planAdjustments || []).filter((item) => inPeriod(item, range.start, range.end)), feedback = (state2.recommendationFeedback || []).filter((item) => inPeriod(item, range.start, range.end));
+    const resolved = sum3(questions, (item) => item.resolved), correct = sum3(questions, (item) => item.correct), studySeconds = sum3(sessions, (item) => item.durationSeconds), simulationTotal = sum3(simulations, (item) => item.total), simulationCorrect = sum3(simulations, (item) => item.correct), activePlan = [...state2.studyPlans || []].reverse().find((item) => !item.undoneAt) || null, adjustments = (state2.planAdjustments || []).filter((item) => inPeriod(item, range.start, range.end)), feedback = (state2.recommendationFeedback || []).filter((item) => inPeriod(item, range.start, range.end));
     const bySubject = subjects.map((subject2) => {
-      const subjectSessions = sessions.filter((item) => item.subjectId === subject2.id), subjectQuestions = questions.filter((item) => item.subjectId === subject2.id), volume = sum2(subjectQuestions, (item) => item.resolved), hits = sum2(subjectQuestions, (item) => item.correct);
-      return { id: subject2.id, name: subject2.name, studySeconds: sum2(subjectSessions, (item) => item.durationSeconds), questions: volume, accuracy: volume ? Math.round(hits / volume * 100) : null, completed: (subject2.topics || []).filter((item) => !item.archived && item.status === "Concluído").length, total: (subject2.topics || []).filter((item) => !item.archived).length };
-    }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum2(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum2(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60), subjectNames = Object.fromEntries(subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(subjects.flatMap((subject2) => (subject2.topics || []).map((topic) => [topic.id, topic.name]))), weeklyMinutes = Object.values(state2.metas?.horasPorDia || {}).reduce((total, value2) => total + (Number(value2) || 0) * 60, 0);
+      const subjectSessions = sessions.filter((item) => item.subjectId === subject2.id), subjectQuestions = questions.filter((item) => item.subjectId === subject2.id), volume = sum3(subjectQuestions, (item) => item.resolved), hits = sum3(subjectQuestions, (item) => item.correct);
+      return { id: subject2.id, name: subject2.name, studySeconds: sum3(subjectSessions, (item) => item.durationSeconds), questions: volume, accuracy: volume ? Math.round(hits / volume * 100) : null, completed: (subject2.topics || []).filter((item) => !item.archived && item.status === "Concluído").length, total: (subject2.topics || []).filter((item) => !item.archived).length };
+    }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum3(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum3(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60), subjectNames = Object.fromEntries(subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(subjects.flatMap((subject2) => (subject2.topics || []).map((topic) => [topic.id, topic.name]))), weeklyMinutes = Object.values(state2.metas?.horasPorDia || {}).reduce((total, value2) => total + (Number(value2) || 0) * 60, 0);
     const rawErrors = Object.entries(questions.reduce((totals, item) => {
       Object.entries(item.errorBreakdown || {}).forEach(([key, value2]) => totals[key] = (totals[key] || 0) + (Number(value2) || 0));
       return totals;
@@ -3715,6 +3941,7 @@
   var dailyPlanService = createDailyPlanService({ repository: planningRepository, buildProposal: buildDailyPlanProposal, applyProposal: applyDailyPlanProposal, undoGeneration: undoDailyPlanGeneration, clock: appClock, idGenerator: uid });
   var replanService = createReplanService({ repository: planningRepository, buildProposal: buildReplanProposal, applyProposal: applyReplan, undoProposal: undoReplan, clock: appClock, idGenerator: uid });
   var sessionService = createSessionService({ repository: appContext.repositories.studySessions, questionsRepository: appContext.repositories.questoes, historyRepository: appContext.repositories.topicHistory, planningRepository, recommendationsRepository: appContext.repositories.recommendationFeedback, clock: appClock, idGenerator: uid, normalizeQuestion: normalizeErrorBreakdown, completeRecommendation: completeRecommendationFeedback, onCompleted: measureRecommendationResults });
+  var guidedStudyService = createGuidedStudyService({ recommend: ({ id } = {}) => currentStudyRecommendations.filter((item) => !id || item.id === id), sessionService, clock: appClock });
   var calendarService = createRecordService({ repository: appContext.repositories.calendar, clock: appClock, idGenerator: uid, prefix: "calendar" });
   var questionService = createRecordService({ repository: appContext.repositories.questoes, clock: appClock, idGenerator: uid, prefix: "question", normalize: (item) => {
     item.resolved = Math.max(0, Math.floor(Number(item.resolved) || 0));
@@ -4366,7 +4593,7 @@
   }
   function backupSummary(data, version) {
     const subjectCount = data.subjects.length;
-    const topicCount = data.subjects.reduce((sum3, subject2) => sum3 + (Array.isArray(subject2.topics) ? subject2.topics.length : 0), 0);
+    const topicCount = data.subjects.reduce((sum4, subject2) => sum4 + (Array.isArray(subject2.topics) ? subject2.topics.length : 0), 0);
     const sessionCount = Array.isArray(data.studySessions) ? data.studySessions.length : 0;
     const questionCount = Array.isArray(data.questoes) ? data.questoes.length : 0;
     const updated = Date.parse(data.updatedAt || "");
@@ -4605,6 +4832,7 @@
     active.hiddenAt = null;
     timerStartedAt = active.startedAt;
     timerRunning = true;
+    if (guidedStudyService.current()) guidedStudyService.resume();
     clearInterval(timerIntervalId);
     timerIntervalId = setInterval(timerTick, 1e3);
     timerTick();
@@ -4618,6 +4846,7 @@
     state.activeTimer.isRunning = false;
     state.activeTimer.hiddenAt = null;
     timerRunning = false;
+    if (guidedStudyService.current()) guidedStudyService.pause();
     clearInterval(timerIntervalId);
     timerIntervalId = null;
     updateTimerDisplay();
@@ -4630,6 +4859,7 @@
     timerSeconds = 0;
     timerStartedAt = null;
     Object.assign(state.activeTimer, { startedAt: null, runStartedAt: null, accumulatedSeconds: 0, isRunning: false, hiddenAt: null, planItemId: null, targetMinutes: null, strategy: null, strategyStep: 0 });
+    guidedStudyService.reset();
     updateTimerDisplay();
     updateTimerControls();
     scheduleSave();
@@ -4738,7 +4968,8 @@
       notes,
       planItemId: state.activeTimer.planItemId || null
     };
-    sessionService.complete(session);
+    if (guidedStudyService.current()) guidedStudyService.complete(session);
+    else sessionService.complete(session);
     persistAndRender();
     showToast(resolved > 0 ? "Sessão e questões registradas." : "Sessão de estudo registrada.");
     closeSessionModal();
@@ -4779,11 +5010,12 @@
     { id: "allsubjects", icon: "🗂️", name: "Plano completo", desc: "Todas as disciplinas 100%", check: () => activeSubjects().length > 0 && activeSubjects().every((s) => s.topics.some((t) => !t.archived) && subjectProgress(s) === 100) },
     { id: "topics10", icon: "✅", name: "Dez tópicos", desc: "10 tópicos concluídos", check: () => allTopics().filter((t) => t.status === "Concluído").length >= 10 },
     { id: "topics50", icon: "📚", name: "Cinquenta tópicos", desc: "50 tópicos concluídos", check: () => allTopics().filter((t) => t.status === "Concluído").length >= 50 },
-    { id: "q100", icon: "✍️", name: "Cem questões", desc: "100 questões resolvidas", check: () => state.questoes.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0) >= 100 },
-    { id: "q500", icon: "🧠", name: "Quinhentas questões", desc: "500 questões resolvidas", check: () => state.questoes.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0) >= 500 },
-    { id: "q1000", icon: "✦", name: "Mil questões", desc: "1.000 questões resolvidas", check: () => state.questoes.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0) >= 1e3 },
-    { id: "hours10", icon: "◷", name: "Dez horas", desc: "10 horas de estudo registradas", check: () => state.studySessions.reduce((sum3, item) => sum3 + (Number(item.durationSeconds) || 0), 0) >= 36e3 },
-    { id: "hours50", icon: "◷", name: "Cinquenta horas", desc: "50 horas de estudo registradas", check: () => state.studySessions.reduce((sum3, item) => sum3 + (Number(item.durationSeconds) || 0), 0) >= 18e4 },
+    { id: "q100", icon: "✍️", name: "Cem questões", desc: "100 questões resolvidas", check: () => state.questoes.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0) >= 100 },
+    { id: "q500", icon: "🧠", name: "Quinhentas questões", desc: "500 questões resolvidas", check: () => state.questoes.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0) >= 500 },
+    { id: "q1000", icon: "✦", name: "Mil questões", desc: "1.000 questões resolvidas", check: () => state.questoes.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0) >= 1e3 },
+    { id: "hours10", icon: "◷", name: "Dez horas", desc: "10 horas de estudo registradas", check: () => state.studySessions.reduce((sum4, item) => sum4 + (Number(item.durationSeconds) || 0), 0) >= 36e3 },
+    { id: "hours50", icon: "◷", name: "Cinquenta horas", desc: "50 horas de estudo registradas", check: () => state.studySessions.reduce((sum4, item) => sum4 + (Number(item.durationSeconds) || 0), 0) >= 18e4 },
+    { id: "hours100", icon: "◷", name: "Cem horas", desc: "100 horas de estudo registradas", check: () => state.studySessions.reduce((sum4, item) => sum4 + (Number(item.durationSeconds) || 0), 0) >= 36e4 },
     { id: "sim1", icon: "📝", name: "Primeiro simulado", desc: "Completou o primeiro simulado", check: () => state.simulados.length >= 1 },
     { id: "sim5", icon: "🏅", name: "Cinco simulados", desc: "Completou 5 simulados", check: () => state.simulados.length >= 5 },
     { id: "reviews25", icon: "↻", name: "Revisor disciplinado", desc: "25 revisões concluídas", check: () => state.reviewAgenda.filter((item) => item.status === "Concluído").length >= 25 },
@@ -5052,18 +5284,9 @@
     document.getElementById("statAndamento").textContent = andamento;
     document.getElementById("statConcluido").textContent = done;
     const revisoesPrevistas = state.calendar.filter((c) => c.date >= todayISO()).length + state.reviewAgenda.filter((a) => a.date >= todayISO() && a.status !== "Concluído").length;
-    const model = buildHeaderViewModel({ readiness, subjects: state.subjects, topics, upcomingReviews: revisoesPrevistas, streak: computeStreak(getActivityDates()), examDate: state.examDate, planNumber: document.getElementById("planNumber").textContent });
-    document.getElementById("balanceFigure").innerHTML = `${model.readinessValue ?? "—"}<span>/100</span>`;
-    document.getElementById("balanceSub").textContent = model.readinessValue == null ? "Aguardando evidências" : `${model.readinessConfidence} · ${model.availableFactors} de ${model.totalFactors} fatores disponíveis`;
-    document.getElementById("statSubjects").textContent = model.subjects;
-    document.getElementById("statContent").textContent = model.contentPercent + "%";
-    document.getElementById("statAndamento").textContent = model.inProgress;
-    document.getElementById("statConcluido").textContent = model.completed;
-    document.getElementById("statRevisoes").textContent = model.upcomingReviews;
-    document.getElementById("statStreak").textContent = model.streak;
-    document.getElementById("compactReadiness").textContent = model.readinessValue == null ? "—" : model.readinessValue + "/100";
-    document.getElementById("compactExamDate").textContent = model.examDate ? formatDatePt(model.examDate) : "";
-    document.getElementById("compactPlanNumber").textContent = model.planNumber;
+    const model = buildHeaderViewModel({ readiness, subjects: state.subjects, topics, upcomingReviews: revisoesPrevistas, streak: computeStreak(getActivityDates()), examDate: state.examDate, planNumber: document.getElementById("planNumber").textContent, today: todayISO() });
+    renderHeroHeader(model, { document });
+    renderCompactHeader(model, { document, formatDate: formatDatePt });
     recordProgressSnapshot(pct2);
     renderExamCountdown();
   }
@@ -5398,6 +5621,7 @@
   }
   document.getElementById("loadDefaultSubjectsBtn").addEventListener("click", carregarDisciplinasPadrao);
   var examImportService = createExamImportService({ subjectService, getSubjects: () => state.subjects });
+  var editalImportFacade = createEditalImportFacade({ catalog: EXAM_PRESETS, importService: examImportService });
   var examImportState = { step: 1, presetId: EXAM_PRESETS[0].id, subjectIds: /* @__PURE__ */ new Set(), topicIds: /* @__PURE__ */ new Set(), previousFocus: null };
   function syncExamSelection(preset) {
     examImportState.subjectIds = new Set(preset.subjects.map((item) => item.id));
@@ -5416,7 +5640,7 @@
       return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key) ? "checked" : ""}>${escapeHtml(topic.name)}</label>`;
     }).join("")}</div></section>`).join("")}</div>` : "<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>";
     else {
-      const preview = examImportService.preview({ preset, selectedSubjectIds: examImportState.subjectIds, selectedTopicIds: examImportState.topicIds });
+      const preview = editalImportFacade.preview(examImportState.subjectIds, examImportState.topicIds);
       content.innerHTML = `<p>Confira as alterações antes de importar.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.existingSubjects}</strong><br>disciplinas existentes</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos existentes</div></div>${preview.warnings.map((item) => `<p class="form-hint">${escapeHtml(item)}</p>`).join("")}`;
       next.disabled = preview.addedSubjects + preview.addedTopics === 0;
     }
@@ -5424,6 +5648,7 @@
   function openExamImport() {
     examImportState.step = 1;
     examImportState.presetId = EXAM_PRESETS[0].id;
+    editalImportFacade.begin(examImportState.presetId);
     syncExamSelection(EXAM_PRESETS[0]);
     examImportState.previousFocus = document.activeElement;
     document.getElementById("examImportOverlay").classList.add("show");
@@ -5431,12 +5656,14 @@
     document.querySelector('[name="examPreset"]')?.focus();
   }
   function closeExamImport() {
+    editalImportFacade.cancel();
     document.getElementById("examImportOverlay").classList.remove("show");
     examImportState.previousFocus?.focus();
   }
   document.getElementById("examImportContent").addEventListener("change", (event) => {
     if (event.target.name === "examPreset") {
       examImportState.presetId = event.target.value;
+      editalImportFacade.begin(examImportState.presetId);
       syncExamSelection(selectedExamPreset());
     }
     if (event.target.dataset.examSubject) {
@@ -5463,7 +5690,7 @@
       renderExamImport();
       return;
     }
-    const result = examImportService.importExamStructure({ preset: selectedExamPreset(), selectedSubjectIds: examImportState.subjectIds, selectedTopicIds: examImportState.topicIds, duplicateStrategy: "merge" });
+    const result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
     persistAndRender();
     closeExamImport();
     showToast(`${pluralize(result.addedSubjects, "disciplina")} e ${pluralize(result.addedTopics, "tópico")} adicionados.`);
@@ -5498,12 +5725,12 @@
       reviews: state.reviewAgenda.filter((item) => entitySubjectId(item) === subjectId || topicIds.has(item.topicId || item.topicRef)).length,
       goals: state.metasPorDisciplina.filter((item) => entitySubjectId(item) === subjectId).length,
       history: state.topicHistory.filter((item) => (item.subjectId === subjectId || topicIds.has(item.topicId)) && !["subject_archived", "subject_restored"].includes(item.type)).length,
-      simulatedBreakdowns: state.simulados.reduce((sum3, sim) => sum3 + (sim.breakdown || []).filter((item) => entitySubjectId(item) === subjectId).length, 0),
+      simulatedBreakdowns: state.simulados.reduce((sum4, sim) => sum4 + (sim.breakdown || []).filter((item) => entitySubjectId(item) === subjectId).length, 0),
       activeTimer: state.activeTimer.subjectId === subjectId || topicIds.has(state.activeTimer.topicId) ? 1 : 0
     };
   }
   function dependencyTotal(dependencies) {
-    return Object.values(dependencies).reduce((sum3, value2) => sum3 + (Number(value2) || 0), 0);
+    return Object.values(dependencies).reduce((sum4, value2) => sum4 + (Number(value2) || 0), 0);
   }
   function requestPermanentSubjectDelete(id) {
     const subject2 = getSubjectById(id);
@@ -5690,11 +5917,16 @@
     <div class="kpi-cell"><div class="n">${proximos7}</div><div class="l">Próximos 7 dias</div></div>
   `;
   }
-  var currentMonthDate = /* @__PURE__ */ new Date();
+  var calendarUiState = createCalendarState();
+  var calendarController = createCalendarController({ service: calendarService, state: calendarUiState, clock: appClock, onChange: () => {
+    renderCalendar();
+    renderMonthCalendar();
+  } });
   var MONTH_MAX_EVENTS_PER_DAY = 3;
   function renderMonthCalendar() {
     const container = document.getElementById("monthCalendar");
     if (!container) return;
+    const currentMonthDate = calendarUiState.month;
     const filterSubject = document.getElementById("calFilterSubject").value;
     const filterStatus = document.getElementById("calFilterStatus").value;
     const events = getRevisoesUnificadas().filter((e) => !filterSubject || e.subjectId === filterSubject).filter((e) => !filterStatus || e.status === filterStatus);
@@ -5741,16 +5973,13 @@
     container.innerHTML = html;
   }
   document.getElementById("monthPrevBtn").addEventListener("click", () => {
-    currentMonthDate.setMonth(currentMonthDate.getMonth() - 1);
-    renderMonthCalendar();
+    calendarController.goToPreviousMonth();
   });
   document.getElementById("monthNextBtn").addEventListener("click", () => {
-    currentMonthDate.setMonth(currentMonthDate.getMonth() + 1);
-    renderMonthCalendar();
+    calendarController.goToNextMonth();
   });
   document.getElementById("monthTodayBtn").addEventListener("click", () => {
-    currentMonthDate = /* @__PURE__ */ new Date();
-    renderMonthCalendar();
+    calendarController.goToCurrentMonth();
   });
   function renderCalendarFilters() {
     const sel = document.getElementById("calFilterSubject");
@@ -5778,6 +6007,7 @@
   }
   function setCalendarMobileView(view) {
     const normalized = view === "agenda" ? "agenda" : "month";
+    calendarUiState.view = normalized;
     document.getElementById("panel-calendario")?.setAttribute("data-calendar-view", normalized);
     document.querySelectorAll(".calendar-view-btn").forEach((button) => {
       const active = button.dataset.calendarView === normalized;
@@ -5786,22 +6016,30 @@
       button.setAttribute("aria-pressed", String(active));
     });
   }
-  document.querySelectorAll(".calendar-view-btn").forEach((button) => button.addEventListener("click", () => setCalendarMobileView(button.dataset.calendarView)));
-  var calendarEditController = createEditableCollectionController({ service: calendarService, clone: cloneRecord, render: renderCalendar, onSaved: () => {
-    persistAndRender();
-    showToast("Item do calendário atualizado.");
-  }, initialState: { visible: 10 } });
-  var calendarUiState = calendarEditController.state;
+  document.querySelectorAll(".calendar-view-btn").forEach((button) => button.addEventListener("click", () => {
+    calendarController.setView(button.dataset.calendarView);
+    setCalendarMobileView(calendarUiState.view);
+  }));
+  var calendarEditController = { state: calendarUiState, begin: (id, options = {}) => options.isNew ? calendarController.beginEdit(id) : calendarController.beginEdit(id), update: calendarController.update, cancel: calendarController.cancelEdit, save: () => {
+    const result = calendarController.save();
+    if (result) {
+      persistAndRender();
+      showToast("Item do calendário atualizado.");
+    }
+    return result;
+  }, reset: () => {
+    calendarUiState.editingId = null;
+    calendarUiState.draft = null;
+    calendarUiState.isNew = false;
+  } };
   function calendarViewModel(item) {
     return buildCalendarItemViewModel(item, { formatDate: formatDatePt, getSubjectName, subjectIdOf: entitySubjectId });
   }
   function changeCalendarLimit(delta) {
-    calendarUiState.visible = Math.max(10, calendarUiState.visible + Number(delta || 0));
-    renderCalendar();
+    calendarController.showMore(delta);
   }
   function resetCalendarLimit() {
-    calendarUiState.visible = 10;
-    renderCalendar();
+    calendarController.showLess();
   }
   function editCalendarItem(id) {
     calendarEditController.begin(id);
@@ -5816,11 +6054,11 @@
     if (!calendarEditController.save()) cancelCalendarEdit();
   }
   function completeCalendarItem(id) {
-    const item = state.calendar.find((entry) => entry.id === id);
-    if (!item || item.status === "Concluído") return;
-    item.status = "Concluído";
-    persistAndRender();
-    showToast("Item concluído.");
+    const item = calendarController.complete(id);
+    if (item) {
+      persistAndRender();
+      showToast("Item concluído.");
+    }
   }
   function renderCalendarReadRow(item) {
     return renderCalendarRead({ item, view: calendarViewModel(item), mobile: isMobileHistoryLayout(), escapeHtml, daysPill: diasParaRevisaoPill(item.date, item.status), statusClass: STATUS_CLASS, today: todayISO() });
@@ -5847,13 +6085,11 @@
     body.innerHTML = visible.map((item) => calendarUiState.editingId === item.id ? renderCalendarEditRow(item) : renderCalendarReadRow(item)).join("") + renderCollectionFooter({ total: rows.length, visible: calendarUiState.visible, showMoreAction: "changeCalendarLimit(10)", showLessAction: calendarUiState.visible > 10 ? "resetCalendarLimit()" : "", colspan: 7, label: "itens" });
   }
   function addCalRow() {
-    const item = calendarService.create({ date: todayISO(), week: "", subjectId: activeSubjects()[0]?.id || null, topicId: null, status: "Não iniciado", reviewType: "—" });
-    calendarEditController.begin(item.id, { isNew: true });
+    calendarController.create({ date: todayISO(), week: "", subjectId: activeSubjects()[0]?.id || null, topicId: null, status: "Não iniciado", reviewType: "—" });
   }
   function deleteCalRow(id) {
     showConfirm("Excluir este item do calendário?", () => {
-      calendarService.remove(id);
-      calendarEditController.reset();
+      calendarController.remove(id);
       persistAndRender();
       showToast("Item excluído.");
     });
@@ -5863,24 +6099,10 @@
     c[field] = value2;
     persistAndRender();
   }
-  document.getElementById("calFilterSubject").addEventListener("change", () => {
-    calendarUiState.visible = 10;
-    renderCalendar();
-    renderMonthCalendar();
-  });
-  document.getElementById("calFilterStatus").addEventListener("change", () => {
-    calendarUiState.visible = 10;
-    renderCalendar();
-    renderMonthCalendar();
-  });
-  document.getElementById("calFilterMes").addEventListener("change", () => {
-    calendarUiState.visible = 10;
-    renderCalendar();
-  });
-  document.getElementById("calFilterTipo").addEventListener("change", () => {
-    calendarUiState.visible = 10;
-    renderCalendar();
-  });
+  document.getElementById("calFilterSubject").addEventListener("change", (event) => calendarController.setFilter("subjectId", event.target.value));
+  document.getElementById("calFilterStatus").addEventListener("change", (event) => calendarController.setFilter("status", event.target.value));
+  document.getElementById("calFilterMes").addEventListener("change", (event) => calendarController.setFilter("month", event.target.value));
+  document.getElementById("calFilterTipo").addEventListener("change", (event) => calendarController.setFilter("type", event.target.value));
   document.getElementById("addSubjectBtn").addEventListener("click", addSubject);
   document.getElementById("addCalRowBtn").addEventListener("click", addCalRow);
   function addDays(iso, days) {
@@ -6220,6 +6442,8 @@
   var LIST_VIEW_STEPS = { questions: 10, simulations: 5, sessionDays: 5 };
   var historyEditState = { sessionId: null };
   var historyEditDraft = { session: null };
+  var questionCrudController = createQuestionController({ service: questionService, onChange: () => {
+  } });
   var questionEditController = createEditableCollectionController({ service: questionService, clone: cloneRecord, render: renderQuestoes, normalize: (draft) => {
     draft.resolved = Math.max(0, Math.floor(Number(draft.resolved) || 0));
     draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.resolved));
@@ -6265,7 +6489,7 @@
       normalized[key] = Math.max(0, Math.floor(Number(question?.errorBreakdown?.[key]) || 0));
     });
     const realErrors = Math.max(0, (Number(question?.resolved) || 0) - (Number(question?.correct) || 0));
-    let excess = Object.values(normalized).reduce((sum3, value2) => sum3 + value2, 0) - realErrors;
+    let excess = Object.values(normalized).reduce((sum4, value2) => sum4 + value2, 0) - realErrors;
     [...Object.keys(normalized)].reverse().forEach((key) => {
       if (excess <= 0) return;
       const cut = Math.min(normalized[key], excess);
@@ -6288,7 +6512,7 @@
     renderQuestionAnalytics();
   }
   function questionCategorizedErrors(question) {
-    return Object.values(normalizeErrorBreakdown(question)).reduce((sum3, value2) => sum3 + value2, 0);
+    return Object.values(normalizeErrorBreakdown(question)).reduce((sum4, value2) => sum4 + value2, 0);
   }
   function renderQuestionErrorFields(question) {
     const realErrors = Math.max(0, (Number(question.resolved) || 0) - (Number(question.correct) || 0));
@@ -6372,12 +6596,12 @@
   function addQuestaoRow() {
     listViewState.questionsVisible = LIST_VIEW_STEPS.questions;
     const question = { id: uid("question"), date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topicId: null, resolved: 0, correct: 0, errorBreakdown: emptyErrorBreakdown(), createdAt: nowISO2() };
-    questionService.create(question);
+    questionCrudController.create(question);
     questionEditController.begin(question.id, { isNew: true });
   }
   function deleteQuestaoRow(id) {
     showConfirm("Excluir este registro de questões?", () => {
-      questionService.remove(id);
+      questionCrudController.remove(id);
       openQuestionErrorIds.delete(id);
       questionEditController.reset();
       persistAndRender();
@@ -6389,7 +6613,7 @@
     if (!question || !ERROR_CATEGORIES2[key]) return;
     normalizeErrorBreakdown(question);
     const realErrors = Math.max(0, (Number(question.resolved) || 0) - (Number(question.correct) || 0));
-    const others = Object.entries(question.errorBreakdown).reduce((sum3, [category, count]) => category === key ? sum3 : sum3 + count, 0);
+    const others = Object.entries(question.errorBreakdown).reduce((sum4, [category, count]) => category === key ? sum4 : sum4 + count, 0);
     const requested = Math.max(0, Math.floor(Number(value2) || 0));
     const allowed = Math.max(0, realErrors - others);
     question.errorBreakdown[key] = Math.min(requested, allowed);
@@ -6411,8 +6635,8 @@
   }
   function getTopicPerformance(topicId) {
     const records = validQuestionRecords().filter((q) => q.topicId === topicId);
-    const resolved = records.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
-    const correct = records.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0);
+    const resolved = records.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
+    const correct = records.reduce((sum4, q) => sum4 + (Number(q.correct) || 0), 0);
     return { resolved, correct, accuracy: accuracyFromCounts(correct, resolved) };
   }
   function getSubjectTopicPerformance(subjectId) {
@@ -6468,8 +6692,8 @@
   }
   function getSubjectPerformanceBetween(subjectId, start, end) {
     const records = validQuestionRecords().filter((question) => entitySubjectId(question) === subjectId && question.date >= start && question.date <= end);
-    const resolved = records.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
-    const correct = records.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0);
+    const resolved = records.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
+    const correct = records.reduce((sum4, q) => sum4 + (Number(q.correct) || 0), 0);
     return { start, end, resolved, correct, accuracy: accuracyFromCounts(correct, resolved), insufficientData: resolved < MIN_WEEKLY_QUESTIONS };
   }
   function getSubjectWeeklyTrend(subjectId, weeks = 8) {
@@ -6480,8 +6704,8 @@
   }
   function getTopicPerformanceBetween(topicId, start, end) {
     const records = validQuestionRecords().filter((question) => question.topicId === topicId && question.date >= start && question.date <= end);
-    const resolved = records.reduce((sum3, question) => sum3 + (Number(question.resolved) || 0), 0);
-    const correct = records.reduce((sum3, question) => sum3 + (Number(question.correct) || 0), 0);
+    const resolved = records.reduce((sum4, question) => sum4 + (Number(question.resolved) || 0), 0);
+    const correct = records.reduce((sum4, question) => sum4 + (Number(question.correct) || 0), 0);
     return { start, end, resolved, correct, accuracy: accuracyFromCounts(correct, resolved), insufficientData: resolved < MIN_WEEKLY_QUESTIONS };
   }
   function getTopicWeeklyTrend(topicId, weeks = 8) {
@@ -6602,9 +6826,9 @@
       return;
     }
     const records = validQuestionRecords().filter((question) => entitySubjectId(question) === performanceSubjectId);
-    const resolved = records.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
-    const correct = records.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0);
-    const identified = records.filter((q) => q.topicId).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
+    const resolved = records.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
+    const correct = records.reduce((sum4, q) => sum4 + (Number(q.correct) || 0), 0);
+    const identified = records.filter((q) => q.topicId).reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
     const coverage = resolved ? Math.round(identified / resolved * 100) : 0;
     const accuracy2 = accuracyFromCounts(correct, resolved);
     const weekly = getSubjectWeeklyTrend(performanceSubjectId);
@@ -6797,7 +7021,7 @@
     return ids.size;
   }
   function somarQuestoesNaSemana() {
-    return state.questoes.filter((q) => isSameWeek(q.date)).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
+    return state.questoes.filter((q) => isSameWeek(q.date)).reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
   }
   function contarSimuladosNaSemana() {
     return state.simulados.filter((s) => isSameWeek(s.date)).length;
@@ -6868,9 +7092,9 @@
     const blueprint = state.examBlueprint;
     const rows = activeSubjects().map((subject2) => {
       const config = blueprint.subjects.find((item) => item.subjectId === subject2.id);
-      return `<div class="exam-subject-row"><strong>${escapeHtml(subject2.name)}</strong><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="${blueprint.masteryTarget}" data-delegated-blur="updateExamSubject('${subject2.id}','masteryTarget',this.value)"></label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject2.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject2.id}','questionWeight',this.value)"></label><label>Prioridade<select data-delegated-change="updateExamSubject('${subject2.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label></div>`;
+      return `<div class="exam-subject-row"><strong>${escapeHtml(subject2.name)}</strong><label>Prioridade<select data-delegated-change="updateExamSubject('${subject2.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="Herdar ${blueprint.masteryTarget}%" data-delegated-blur="updateExamSubject('${subject2.id}','masteryTarget',this.value)"></label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject2.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject2.id}','questionWeight',this.value)"></label></div>`;
     }).join("");
-    container.innerHTML = `<div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+    container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
     renderExamMasteryMatrix();
   }
   function renderExamMasteryMatrix() {
@@ -6886,7 +7110,7 @@
   }
   function calculateStudyPlanPreview() {
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
-    const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum3, hours) => sum3 + Math.max(0, Number(hours) || 0) * 60, 0);
+    const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0);
     studyPlanPreview = studyPlanService.calculate({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
     renderStudyPlanBuilder();
   }
@@ -6992,7 +7216,7 @@
     persistAndRender();
   }
   function somarQuestoesDisciplinaNaSemana(subjectId) {
-    return state.questoes.filter((q) => entitySubjectId(q) === subjectId && isSameWeek(q.date)).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
+    return state.questoes.filter((q) => entitySubjectId(q) === subjectId && isSameWeek(q.date)).reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
   }
   function renderMetasPorDisciplina() {
     const sel = document.getElementById("novaMetaDisciplinaSelect");
@@ -7065,7 +7289,7 @@
       const weekStart = getWeekStartMinus(i);
       const weekEnd = addDays(weekStart, 6);
       const topicsConcl = uniqueTopicsCompletedBetween(weekStart, weekEnd);
-      const questoesResolved = state.questoes.filter((q) => q.date >= weekStart && q.date <= weekEnd).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
+      const questoesResolved = state.questoes.filter((q) => q.date >= weekStart && q.date <= weekEnd).reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
       const simuladosCount = state.simulados.filter((s) => s.date >= weekStart && s.date <= weekEnd).length;
       weeks.push({
         weekStart,
@@ -7171,14 +7395,14 @@
   }
   function taxaAcertoGeral() {
     const simCounts = state.simulados.map((s) => simuladoEffectiveCounts(s));
-    const totalResolvidas = state.questoes.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0) + simCounts.reduce((sum3, c) => sum3 + c.total, 0);
-    const totalCorretas = state.questoes.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0) + simCounts.reduce((sum3, c) => sum3 + c.correct, 0);
+    const totalResolvidas = state.questoes.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0) + simCounts.reduce((sum4, c) => sum4 + c.total, 0);
+    const totalCorretas = state.questoes.reduce((sum4, q) => sum4 + (Number(q.correct) || 0), 0) + simCounts.reduce((sum4, c) => sum4 + c.correct, 0);
     if (totalResolvidas <= 0) return 0;
     return Math.round(totalCorretas / totalResolvidas * 1e3) / 10;
   }
   function mediaSimulados() {
     if (state.simulados.length === 0) return 0;
-    const soma = state.simulados.reduce((sum3, s) => sum3 + simuladoNota(s), 0);
+    const soma = state.simulados.reduce((sum4, s) => sum4 + simuladoNota(s), 0);
     return Math.round(soma / state.simulados.length * 10) / 10;
   }
   function revisoesAtrasadas() {
@@ -7304,8 +7528,8 @@
     const topics = subject2.topics.filter((topic) => !topic.archived), coverage = topics.length ? subjectProgress(subject2) : null;
     const masteryValues = topics.map((topic) => topicMasteryIndex(subject2.id, topic.id)).filter((item) => item.confidence > 0);
     const retentionValues = topics.map((topic) => topicRetentionScore(subject2.id, topic.id)).filter((item) => item.available);
-    const mastery = masteryValues.length ? masteryValues.reduce((sum3, item) => sum3 + item.score, 0) / masteryValues.length : null;
-    const retention = retentionValues.length ? retentionValues.reduce((sum3, item) => sum3 + item.score, 0) / retentionValues.length : null;
+    const mastery = masteryValues.length ? masteryValues.reduce((sum4, item) => sum4 + item.score, 0) / masteryValues.length : null;
+    const retention = retentionValues.length ? retentionValues.reduce((sum4, item) => sum4 + item.score, 0) / retentionValues.length : null;
     const last = ultimaAtividadeDisciplina(subject2.id), distance = last ? diasParaRevisao(last) : null, daysSinceContact = distance === null ? null : Math.max(0, -distance);
     const cutoff = addDays(todayISO(), -27), activeDates = /* @__PURE__ */ new Set();
     state.studySessions.filter((item) => entitySubjectId(item) === subject2.id && item.date >= cutoff).forEach((item) => activeDates.add(item.date));
@@ -7413,7 +7637,7 @@
   }
   function totalStudySeconds(filterFn) {
     const fn = filterFn || (() => true);
-    return state.studySessions.filter(fn).reduce((sum3, s) => sum3 + (Number(s.durationSeconds) || 0), 0);
+    return state.studySessions.filter(fn).reduce((sum4, s) => sum4 + (Number(s.durationSeconds) || 0), 0);
   }
   function segundosEstudadosHoje() {
     return totalStudySeconds((s) => s.date === todayISO());
@@ -7423,8 +7647,8 @@
   }
   function questionsPerHour() {
     const sessions = state.studySessions.filter((s) => (Number(s.durationSeconds) || 0) >= 300 && (Number(s.questionsResolved) || 0) > 0);
-    const seconds = sessions.reduce((sum3, s) => sum3 + (Number(s.durationSeconds) || 0), 0);
-    const questions = sessions.reduce((sum3, s) => sum3 + (Number(s.questionsResolved) || 0), 0);
+    const seconds = sessions.reduce((sum4, s) => sum4 + (Number(s.durationSeconds) || 0), 0);
+    const questions = sessions.reduce((sum4, s) => sum4 + (Number(s.questionsResolved) || 0), 0);
     return seconds > 0 ? Math.round(questions / (seconds / 3600)) : 0;
   }
   function studySecondsByDate(sessions = state.studySessions) {
@@ -7465,7 +7689,7 @@
       const date2 = addDays(todayISO(), -i);
       data.push({ date: date2, seconds: byDate[date2] || 0 });
     }
-    const total = data.reduce((sum3, d) => sum3 + d.seconds, 0);
+    const total = data.reduce((sum4, d) => sum4 + d.seconds, 0);
     if (total <= 0) {
       container.innerHTML = `<div class="progress-chart-empty">Registre sessões para visualizar a evolução das horas.</div>`;
       return;
@@ -7497,7 +7721,7 @@
       container.innerHTML = `<div class="upcoming-empty">Nenhuma sessão registrada.</div>`;
       return;
     }
-    const total = rows.reduce((sum3, row) => sum3 + row[1], 0);
+    const total = rows.reduce((sum4, row) => sum4 + row[1], 0);
     container.innerHTML = rows.map(([subjectId, seconds]) => {
       const name = subjectId === "__none" ? "Sem disciplina" : getSubjectName(subjectId);
       const pct2 = total > 0 ? Math.round(seconds / total * 100) : 0;
@@ -7668,9 +7892,9 @@
     }
     const html = [];
     visibleGroups.forEach(([date2, sessions]) => {
-      const seconds = sessions.reduce((sum3, s) => sum3 + (Number(s.durationSeconds) || 0), 0);
-      const questions = sessions.reduce((sum3, s) => sum3 + (Number(s.questionsResolved) || 0), 0);
-      const correct = sessions.reduce((sum3, s) => sum3 + (Number(s.correctAnswers) || 0), 0);
+      const seconds = sessions.reduce((sum4, s) => sum4 + (Number(s.durationSeconds) || 0), 0);
+      const questions = sessions.reduce((sum4, s) => sum4 + (Number(s.questionsResolved) || 0), 0);
+      const correct = sessions.reduce((sum4, s) => sum4 + (Number(s.correctAnswers) || 0), 0);
       const accuracy2 = questions > 0 ? ` · ${Math.round(correct / questions * 100)}% de acerto` : "";
       const expanded = expandedSessionDays.has(date2);
       html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date2)}')"><span>${date2 === "Sem data" ? date2 : formatDatePt(date2)} · ${pluralize(sessions.length, "sessão", "sessões")} · ${formatDuration(seconds)} · ${pluralize(questions, "questão", "questões")}${accuracy2}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
@@ -7698,7 +7922,7 @@
     });
     const topics = intelligenceCandidates().map((item) => ({ topicId: item.topicId, subjectId: item.subjectId, name: item.topicName, mastery: item.mastery, examImpact: item.examImpact, evidenceStrength: item.evidenceStrength }));
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
-    const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum3, hours) => sum3 + Math.max(0, Number(hours) || 0) * 60, 0);
+    const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0);
     const plan = buildStudyPlan({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
     const dayOfWeek = (/* @__PURE__ */ new Date(today + "T00:00:00")).getDay(), elapsed = dayOfWeek === 0 ? 7 : dayOfWeek, expectedFrac = elapsed / 7;
     const weekStart = startOfWeek(today), achieved = uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6));
@@ -7778,7 +8002,7 @@
     <section><h4>Oportunidades</h4>${list(section("opportunities"), "Configure pesos e esforço para revelar oportunidades.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>Retorno ${item.opportunityScore}/100</b><span>Dados ${Math.round(item.confidence * 100)}%</span><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><small>${item.missingFactors.includes("examImpact") ? "Informe o peso da prova para aumentar a confiança." : "Boa relação entre impacto, lacuna e esforço."}</small></article>`)}</section>
     <section><h4>Revisões críticas e risco</h4>${list(section("risk"), "Nenhuma revisão crítica identificada.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>${item.reviewUrgency > 0 ? "Urgência " + Math.round(item.reviewUrgency) + "/100" : item.daysSinceContact + " dias sem contato"}</b></div><small>${escapeHtml(item.reason || item.reasons?.[0] || "Revisão requer atenção pelos indicadores atuais.")}</small></article>`)}</section>
     <section><h4>Foco da semana</h4>${list(section("focus"), "Sem distribuição confiável.", (item) => {
-      const weeklyMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum3, hours) => sum3 + (Number(hours) || 0) * 60, 0);
+      const weeklyMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0);
       return `<article class="diagnostic-row diagnostic-focus"><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% · ${formatPlanMinutes(Math.round(weeklyMinutes * item.percentage / 100))}</span><div class="diagnostic-progress" style="--progress:${Math.min(100, item.percentage)}%"><i></i></div></article>`;
     })}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
@@ -7848,7 +8072,7 @@
     if (!session?.topicId) return;
     const measuredAt = nowISO2();
     state.recommendationFeedback.filter((item) => item.accepted && item.completed && item.topicId === session.topicId && item.baseline && (!item.outcome || ["pending", "insufficient"].includes(item.outcome.state))).forEach((feedback) => {
-      const since = Date.parse(feedback.baseline.measuredAt) || 0, records = validQuestionRecords().filter((item) => item.topicId === session.topicId && Date.parse(item.createdAt || `${item.date}T23:59:59Z`) >= since), volume = records.reduce((sum3, item) => sum3 + (Number(item.resolved) || 0), 0), correct = records.reduce((sum3, item) => sum3 + (Number(item.correct) || 0), 0), activities = state.studySessions.filter((item) => item.topicId === session.topicId && item.id !== session.id && Date.parse(item.createdAt || item.startedAt || 0) >= since).length, candidate = intelligenceCandidates().find((item) => item.topicId === session.topicId);
+      const since = Date.parse(feedback.baseline.measuredAt) || 0, records = validQuestionRecords().filter((item) => item.topicId === session.topicId && Date.parse(item.createdAt || `${item.date}T23:59:59Z`) >= since), volume = records.reduce((sum4, item) => sum4 + (Number(item.resolved) || 0), 0), correct = records.reduce((sum4, item) => sum4 + (Number(item.correct) || 0), 0), activities = state.studySessions.filter((item) => item.topicId === session.topicId && item.id !== session.id && Date.parse(item.createdAt || item.startedAt || 0) >= since).length, candidate = intelligenceCandidates().find((item) => item.topicId === session.topicId);
       measureRecommendationOutcome(feedback, { masteryAfter: candidate?.mastery, accuracyAfter: volume ? Math.round(correct / volume * 1e3) / 10 : null, questionVolumeAfter: volume, retentionAfter: candidate?.retention, reviewHealthAfter: candidate?.reviewHealth?.value, riskAfter: candidate?.risk?.value, measuredAt, daysElapsed: Math.max(0, (Date.parse(measuredAt) - since) / 864e5), otherActivities: activities });
     });
   }
@@ -7888,6 +8112,8 @@
       return;
     }
     Object.assign(recommendation, fresh);
+    guidedStudyService.next({ id });
+    guidedStudyService.start();
     recommendation.strategy = buildStudyStrategy(recommendation, { availableMinutes: recommendation.estimatedMinutes });
     recordRecommendationFeedback(recommendation, { accepted: true });
     let plan = todayDailyStudyPlan();
@@ -7913,7 +8139,7 @@
     const start = startOfWeek(todayISO()), end = addDays(start, 6), futureDays = [];
     for (let date2 = addDays(todayISO(), 1); date2 <= end; date2 = addDays(date2, 1)) {
       const capacity = metaHoursForDate(date2) * 60;
-      const planned = state.dailyPlans.filter((plan) => plan.date === date2).reduce((sum3, plan) => sum3 + (plan.items || []).reduce((n3, item) => n3 + (Number(item.plannedMinutes) || 0), 0), 0);
+      const planned = state.dailyPlans.filter((plan) => plan.date === date2).reduce((sum4, plan) => sum4 + (plan.items || []).reduce((n3, item) => n3 + (Number(item.plannedMinutes) || 0), 0), 0);
       futureDays.push({ date: date2, availableMinutes: Math.max(0, capacity - planned) });
     }
     replanPreview = replanService.calculate({ plans: planningRepository.getDailyPlans().filter((plan) => plan.date >= start && plan.date <= todayISO()), periodStart: start, periodEnd: end, futureDays });
@@ -7976,7 +8202,7 @@
       remaining -= minutes;
       if (remaining <= 0) break;
     }
-    return { items, plannedMinutes: items.reduce((sum3, item) => sum3 + item.minutes, 0), flexMinutes: remaining };
+    return { items, plannedMinutes: items.reduce((sum4, item) => sum4 + item.minutes, 0), flexMinutes: remaining };
   }
   function materializeDailyStudyPlan(priorities, availableMinutes) {
     const calculated = buildDailyStudyPlan(priorities, availableMinutes);
@@ -8062,7 +8288,7 @@
     </div>
   `;
     }).join("");
-    const executedSeconds = plan.items.reduce((sum3, item) => sum3 + (Number(item.executedSeconds) || 0), 0);
+    const executedSeconds = plan.items.reduce((sum4, item) => sum4 + (Number(item.executedSeconds) || 0), 0);
     const executionPct = plan.plannedMinutes > 0 ? Math.min(100, Math.round(executedSeconds / (plan.plannedMinutes * 60) * 100)) : 0;
     container.innerHTML = `
     ${listaHtml}
@@ -8079,7 +8305,7 @@
     const today = todayISO();
     const topicosHoje = uniqueTopicsCompletedBetween(today, today);
     const metaTopicosHoje = Math.max(1, Math.round(state.metas.semanal / 7));
-    const questoesHoje = state.questoes.filter((q) => q.date === today).reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
+    const questoesHoje = state.questoes.filter((q) => q.date === today).reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
     const metaQuestoesHoje = Math.max(1, Math.round(state.metas.questoesSemanal / 7));
     const revisoesHoje = getRevisoesUnificadas().filter((r) => r.date === today);
     const revisoesConcluidasHoje = revisoesHoje.filter((r) => r.status === "Concluído").length;
@@ -8121,7 +8347,7 @@
     return Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
   }
   function average(values) {
-    return values.length ? values.reduce((sum3, n3) => sum3 + n3, 0) / values.length : 0;
+    return values.length ? values.reduce((sum4, n3) => sum4 + n3, 0) / values.length : 0;
   }
   function approvalSimuladosMetric() {
     const completed = state.simulados.filter((sim) => simuladoEffectiveCounts(sim).total > 0).sort((a, b) => (a.date || "").localeCompare(b.date || "")).slice(-5);
@@ -8138,8 +8364,8 @@
     return { score: clampScore(50 + (raw - 50) * confidence2), confidence: confidence2, available: true, raw, detail: `${completed.length} simulado${completed.length === 1 ? "" : "s"} · média recente ${Math.round(raw)}%` };
   }
   function approvalAcertosMetric() {
-    const total = state.questoes.reduce((sum3, q) => sum3 + (Number(q.resolved) || 0), 0);
-    const correct = state.questoes.reduce((sum3, q) => sum3 + (Number(q.correct) || 0), 0);
+    const total = state.questoes.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
+    const correct = state.questoes.reduce((sum4, q) => sum4 + (Number(q.correct) || 0), 0);
     if (total === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem questões registradas" };
     const raw = correct / total * 100;
     const confidence2 = Math.min(1, total / 300);
@@ -8160,10 +8386,10 @@
     const values = topics.map((topic) => topicMasteryIndex(topic.subjectId, topic.id));
     const evidenced = values.filter((item) => item.confidence > 0);
     if (evidenced.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Ainda não há evidências de domínio" };
-    const weightTotal = evidenced.reduce((sum3, item) => sum3 + Math.max(0.15, item.confidence), 0);
-    const raw = evidenced.reduce((sum3, item) => sum3 + item.score * Math.max(0.15, item.confidence), 0) / weightTotal;
+    const weightTotal = evidenced.reduce((sum4, item) => sum4 + Math.max(0.15, item.confidence), 0);
+    const raw = evidenced.reduce((sum4, item) => sum4 + item.score * Math.max(0.15, item.confidence), 0) / weightTotal;
     const coverage = evidenced.length / topics.length;
-    const evidence = evidenced.reduce((sum3, item) => sum3 + item.confidence, 0) / evidenced.length;
+    const evidence = evidenced.reduce((sum4, item) => sum4 + item.confidence, 0) / evidenced.length;
     const confidence2 = Math.min(1, coverage * 0.55 + evidence * 0.45);
     return { score: clampScore(50 + (raw - 50) * confidence2), confidence: confidence2, available: true, raw, detail: Math.round(raw) + "/100 em " + evidenced.length + " de " + topics.length + " tópicos" };
   }
@@ -8173,9 +8399,9 @@
     if (due.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem revisões vencidas até hoje" };
     const completed = due.filter((r) => r.status === "Concluído").length;
     const pending = due.filter((r) => r.status !== "Concluído");
-    const severity = pending.reduce((sum3, r) => {
+    const severity = pending.reduce((sum4, r) => {
       const daysLate = Math.max(0, -(diasParaRevisao(r.date) || 0));
-      return sum3 + Math.min(1, daysLate / 14);
+      return sum4 + Math.min(1, daysLate / 14);
     }, 0);
     const raw = Math.max(0, completed / due.length * 100 - severity / due.length * 20);
     const confidence2 = Math.min(1, due.length / 10);
@@ -8234,12 +8460,12 @@
     let central = weighted / totalWeight;
     if (m.tendencia.available) central += (m.tendencia.score - 50) * 0.08;
     central = Math.max(0, Math.min(100, central));
-    const sourceCoverage = sources.reduce((sum3, source) => sum3 + source.weight, 0);
-    const evidence = sources.reduce((sum3, source) => sum3 + source.metric.confidence * source.weight, 0) / sourceCoverage;
+    const sourceCoverage = sources.reduce((sum4, source) => sum4 + source.weight, 0);
+    const evidence = sources.reduce((sum4, source) => sum4 + source.metric.confidence * source.weight, 0) / sourceCoverage;
     const confidence2 = Math.min(1, evidence * 0.75 + sourceCoverage * 0.25);
     const result = buildPerformanceForecast({ currentValue: central, currentConfidence: confidence2, targetScore: state.metas.metaAprovacao, observations: performanceForecastObservations() });
     const { low, high } = result.currentBand;
-    const weeklyMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum3, hours) => sum3 + (Number(hours) || 0) * 60, 0), scenarios = buildPerformanceScenarios(result, { weeklyMinutes });
+    const weeklyMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), scenarios = buildPerformanceScenarios(result, { weeklyMinutes });
     return {
       available: true,
       low,
@@ -8258,8 +8484,8 @@
   function performanceForecastObservations() {
     return Array.from({ length: 12 }, (_, index) => getWeekRange(11 - index)).map(({ start, end }) => {
       const questions = validQuestionRecords().filter((item) => item.date >= start && item.date <= end);
-      let total = questions.reduce((sum3, item) => sum3 + (Number(item.resolved) || 0), 0);
-      let correct = questions.reduce((sum3, item) => sum3 + (Number(item.correct) || 0), 0);
+      let total = questions.reduce((sum4, item) => sum4 + (Number(item.resolved) || 0), 0);
+      let correct = questions.reduce((sum4, item) => sum4 + (Number(item.correct) || 0), 0);
       state.simulados.filter((item) => item.date >= start && item.date <= end).forEach((item) => {
         const counts = simuladoEffectiveCounts(item);
         total += counts.total;
@@ -8291,7 +8517,7 @@
     const lastReviewDate = localDateFromTimestamp2(topic.lastReviewedAt);
     const daysSinceReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
     const evidenceValues = [masteryResult?.confidence, retentionResult?.confidence].filter((value2) => Number.isFinite(Number(value2)));
-    const evidenceStrength = evidenceValues.length ? evidenceValues.reduce((sum3, value2) => sum3 + Number(value2), 0) / evidenceValues.length : null;
+    const evidenceStrength = evidenceValues.length ? evidenceValues.reduce((sum4, value2) => sum4 + Number(value2), 0) / evidenceValues.length : null;
     return calculateReviewHealth({
       daysSinceReview,
       hasPriorStudy: topic.status !== "Não iniciado" || Boolean(diagnosis?.performance?.resolved) || Boolean(diagnosis?.studySeconds),
@@ -8373,29 +8599,12 @@
   }
   function renderStudyTrack32Insights() {
     const close = document.getElementById("weeklyCloseDashboard"), comparison2 = document.getElementById("periodComparisonDashboard"), gaps = document.getElementById("gapMapDashboard"), history = document.getElementById("decisionHistoryDashboard"), simReplan = document.getElementById("postSimulationReplanDashboard");
-    const today = parseLocalDate(todayISO()), start = new Date(today);
-    start.setDate(start.getDate() - 6);
-    const from = start.toISOString().slice(0, 10), previousEnd = addDays(from, -1), previousStart = addDays(from, -7), sessions = state.studySessions.filter((x) => x.date >= from && x.date <= todayISO()), questions = state.questoes.filter((x) => x.date >= from && x.date <= todayISO()), previousSessions = state.studySessions.filter((x) => x.date >= previousStart && x.date <= previousEnd), previousQuestions = state.questoes.filter((x) => x.date >= previousStart && x.date <= previousEnd);
-    const totals = (list) => ({ resolved: list.reduce((sum3, item) => sum3 + (Number(item.resolved) || 0), 0), correct: list.reduce((sum3, item) => sum3 + (Number(item.correct) || 0), 0) }), previousTotals = totals(previousQuestions), previousMinutes = Math.round(previousSessions.reduce((sum3, item) => sum3 + (Number(item.durationSeconds) || 0), 0) / 60), hasPrevious = previousSessions.length + previousQuestions.length > 0;
-    const closeModel = buildWeeklyClose({ period: { start: from, end: todayISO() }, current: { executedMinutes: Math.round(sessions.reduce((s, x) => s + (Number(x.durationSeconds) || 0), 0) / 60) }, previous: hasPrevious ? { executedMinutes: previousMinutes, resolved: previousTotals.resolved, accuracy: previousTotals.resolved ? Math.round(previousTotals.correct / previousTotals.resolved * 100) : null } : {}, sessions, questions, recommendations: state.recommendationFeedback, targetAccuracy: Number(state.metas.metaAprovacao) || 80 });
-    if (close) close.innerHTML = closeModel.state === "insufficient" ? '<div class="upcoming-empty">Ainda não há evidência suficiente para fechar a semana.</div>' : `<div class="kpi-grid"><div class="kpi-cell"><div class="n">${formatPlanMinutes(closeModel.investment.executedMinutes)}</div><div class="l">Tempo estudado</div></div><div class="kpi-cell"><div class="n">${closeModel.questions.accuracy ?? "—"}%</div><div class="l">Acerto</div></div><div class="kpi-cell"><div class="n">${closeModel.questions.resolved}</div><div class="l">Questões</div></div></div><div class="weekly-assessment"><strong>${closeModel.assessment === "attention" ? "Atenção" : closeModel.assessment === "on_target" ? "Meta alcançada" : "Semana em formação"}</strong>${closeModel.bestSignal ? `<span><b>Melhor sinal:</b> ${escapeHtml(closeModel.bestSignal.message)}</span>` : ""}${closeModel.mainRisk ? `<span><b>Principal risco:</b> ${escapeHtml(closeModel.mainRisk.message)}</span>` : ""}<span><b>Próxima ação:</b> ${escapeHtml(closeModel.recommendedAction)}</span></div>`;
-    if (comparison2) {
-      const labels = { accuracy: "Acerto", minutes: "Tempo estudado", questions: "Questões" }, format = (key, item) => item.delta == null ? "Ainda não há uma semana anterior completa para comparação." : key === "accuracy" ? `${item.current}% ${item.delta >= 0 ? "▲" : "▼"} ${item.delta >= 0 ? "+" : ""}${item.delta} p.p.` : key === "minutes" ? `${formatPlanMinutes(item.current)} ${item.delta >= 0 ? "▲" : "▼"} ${item.delta >= 0 ? "+" : ""}${formatPlanMinutes(Math.abs(item.delta))}` : `${item.current} ${item.delta >= 0 ? "▲" : "▼"} ${item.delta >= 0 ? "+" : ""}${item.delta}`;
-      comparison2.innerHTML = `<div class="period-comparison"><strong>Comparação com a semana anterior</strong>${Object.entries(closeModel.comparison).map(([key, item]) => `<div><span>${labels[key]}</span><b>${escapeHtml(format(key, item))}</b></div>`).join("")}</div>`;
-    }
-    const rows = intelligenceCandidates().map((item) => ({ topicId: item.topicId, name: item.topicName || getTopicName(item.topicId) || "Tópico removido", subjectName: item.subjectName || getSubjectName(item.subjectId) || "Disciplina removida", mastery: item.mastery, examImpact: item.examImpact || 0, retention: item.retention || 0, coverage: item.coverage || 0, trendRisk: item.risk || 0 }));
-    if (gaps) {
-      const model = buildGapMap(rows);
-      gaps.innerHTML = model.items.length ? model.items.slice(0, 5).map((item) => `<div class="retention-row"><div class="retention-topic"><strong>${escapeHtml(item.name || item.topicId)}</strong><span>${escapeHtml(item.reason)}</span></div><div class="retention-value">${item.priority}</div></div>`).join("") : '<div class="upcoming-empty">Nenhum gap priorizado com os dados atuais.</div>';
-    }
-    if (history) {
-      const model = buildDecisionHistory(state.recommendationFeedback, { limit: 5, resolveSubjectName: getSubjectName, resolveTopicName: getTopicName });
-      history.innerHTML = model.items.length ? model.items.map((item) => `<article class="data-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><span>${escapeHtml(item.strategyLabel)}</span><small>${escapeHtml(item.outcomeLabel)}</small></article>`).join("") : '<div class="upcoming-empty">Nenhuma decisão registrada.</div>';
-    }
-    if (simReplan) {
-      const latest = [...state.simulados].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0], weeklyCapacity = Object.values(state.metas.horasPorDia || {}).reduce((sum3, hours) => sum3 + (Number(hours) || 0) * 60, 0), planned = (planningRepository.getDailyPlans?.() || []).flatMap((plan) => plan.items || []).filter((item) => !["completed", "skipped"].includes(item.status)).reduce((sum3, item) => sum3 + (Number(item.plannedMinutes) || 0), 0), availableMinutes = Math.max(0, weeklyCapacity - planned), proposal = buildPostSimulationReplan({ simulation: latest, subjects: state.subjects, availableMinutes, existingSimulationIds: (state.planAdjustments || []).map((item) => item.simulationId).filter(Boolean) }), need = (proposal.adjustments || []).reduce((sum3, item) => sum3 + item.deltaMinutes, 0) + (proposal.unallocatedMinutes || 0);
-      simReplan.innerHTML = proposal.state === "proposal" ? `<div class="replan-summary"><strong>Proposta para ${escapeHtml(proposal.simulationDate || "simulado recente")}</strong><p>${proposal.adjustments.map((item) => `${escapeHtml(item.subjectName)}: +${item.deltaMinutes} min`).join(" · ")}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${availableMinutes} min</dd></div>${proposal.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${proposal.unallocatedMinutes} min</dd></div>` : ""}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason || proposal.message)}${latest && availableMinutes === 0 ? " Sua capacidade semanal já está totalmente alocada." : ""}</div>`;
-    }
+    const model = buildStudyTrack32ViewModel({ today: todayISO(), sessions: state.studySessions, questions: state.questoes, dailyPlans: planningRepository.getDailyPlans?.() || [], planAdjustments: state.planAdjustments, recommendations: state.recommendationFeedback, simulations: state.simulados, subjects: state.subjects, weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), targetAccuracy: Number(state.metas.metaAprovacao) || 80, algorithmServices: { addDays, buildWeeklyClose, buildGapMap, buildDecisionHistory, buildPostSimulationReplan, buildCandidates: intelligenceCandidates }, nameResolvers: { subject: getSubjectName, topic: getTopicName } }), options = { escapeHtml, formatMinutes: formatPlanMinutes };
+    if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, options);
+    if (comparison2) comparison2.innerHTML = renderPeriodComparison(model.weeklyClose, options);
+    if (gaps) gaps.innerHTML = renderGapMap(model.gapMap, options);
+    if (history) history.innerHTML = renderDecisionHistory(model.decisionHistory, options);
+    if (simReplan) simReplan.innerHTML = renderPostSimulationReplan(model.postSimulation, options);
   }
   function renderTopicRetentionDashboard() {
     const el = document.getElementById("topicRetentionDashboard");

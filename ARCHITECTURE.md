@@ -124,3 +124,5 @@ O Índice de Prontidão usa cobertura (30%), domínio (25%), retenção (20%), c
 O ciclo atual mantém as regras de data local centralizadas em `study-session.js` e prepara a extração do Calendário por meio de `calendar-state.js` e `calendar-controller.js`. Controladores recebem serviços e callbacks explicitamente; renderizadores permanecem sem persistência.
 
 O contrato de `report-data.js` resolve nomes e estados antes da impressão; `report-template.js` nunca usa IDs internos como texto visível. O fechamento semanal versionado recebe os dois períodos da camada de aplicação e devolve deltas tipados, diagnóstico e ação recomendada.
+
+O ciclo analítico 3.2 é preparado por um view-model sem DOM e entregue a renderizadores independentes. O composition root conecta os controladores de Calendário e Questões, a fachada de importação do edital e o serviço de estudo guiado aos fluxos reais da interface; módulos de domínio continuam responsáveis pelos cálculos e pela persistência coordenada.

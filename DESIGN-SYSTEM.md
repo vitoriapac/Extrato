@@ -27,6 +27,8 @@ A escala oficial é 4, 8, 12, 16, 20, 24 e 32 px, exposta nos tokens `--space-1`
 - `select-control`: aparência comum dos seletores, com variantes `--compact` e `--wide`.
 - `data-row`: histórico traduzido com título, ação e estado.
 - `weekly-assessment` e `period-comparison`: interpretação semanal e deltas por unidade.
+- `Header`: um único modelo alimenta as apresentações hero e compacta.
+- `exam-subject-row`: nome e quatro campos estratégicos alinhados em uma linha no desktop e empilhados no mobile; valores ausentes comunicam herança da meta geral.
 
 Cards representam agrupamentos. Dentro deles, use linhas, espaço e tipografia para estabelecer hierarquia em vez de criar novos cards.
 
