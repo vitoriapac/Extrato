@@ -1904,7 +1904,7 @@
   }
 
   // src/ui/controllers/navigation-controller.js
-  var MAIN_TABS = Object.freeze(["dashboard", "hoje", "disciplinas", "calendario", "agenda", "questoes", "metas"]);
+  var MAIN_TABS = Object.freeze(["dashboard", "hoje", "disciplinas", "calendario", "agenda", "questoes", "metas", "instrucoes"]);
   function nextNavigationIndex(current, length, key) {
     if (!length) return -1;
     if (key === "Home") return 0;
@@ -1919,7 +1919,7 @@
     if (!document2 || !window2) throw new TypeError("Controlador de navegação requer documento e janela.");
     const moreButton = document2.getElementById("moreTabButton"), moreMenu = document2.getElementById("mobileMoreMenu");
     const syncMore = (tabName) => {
-      const secondary = ["agenda", "questoes", "metas"].includes(tabName);
+      const secondary = ["agenda", "questoes", "metas", "instrucoes"].includes(tabName);
       moreButton?.classList.toggle("active", secondary);
       moreMenu?.querySelectorAll("[data-more-tab]").forEach((item) => item.classList.toggle("active", item.dataset.moreTab === tabName));
     };
@@ -1939,8 +1939,6 @@
         item.tabIndex = active ? 0 : -1;
       });
       document2.querySelectorAll(".panel").forEach((item) => item.classList.toggle("active", item === panel));
-      document2.querySelector(".statement")?.classList.toggle("statement--compact", tabName !== "dashboard");
-      document2.querySelector(".global-search-row")?.classList.toggle("global-search-row--compact", tabName !== "dashboard");
       syncMore(tabName);
       button.scrollIntoView?.({ block: "nearest", inline: "nearest", behavior: "smooth" });
       render2(tabName);
@@ -2012,7 +2010,7 @@
         }
         return;
       }
-      if (!typing && /^[1-7]$/.test(event.key)) activate(MAIN_TABS[Number(event.key) - 1]);
+      if (!typing && /^[1-8]$/.test(event.key)) activate(MAIN_TABS[Number(event.key) - 1]);
     });
     return Object.freeze({ activate, closeMore, registerShortcuts });
   }
@@ -2459,14 +2457,14 @@
     return `<div class="period-comparison"><strong>Comparação com a semana anterior</strong><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${Object.entries(model.comparison).map(([key, item]) => item.delta == null ? `<div><span>${labels[key]}</span><small>Sem semana anterior comparável</small></div>` : `<div><span>${labels[key]}</span><b>${safe(escapeHtml2, value2(key, item.previous))}</b><b>${safe(escapeHtml2, value2(key, item.current))}</b><b>${safe(escapeHtml2, delta(key, item.delta))}</b></div>`).join("")}</div>`;
   }
   function renderGapMap(model, { escapeHtml: escapeHtml2 }) {
-    return model.items.length ? model.items.slice(0, 5).map((item) => `<article class="data-row"><strong>${safe(escapeHtml2, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Gap de domínio ${item.gap ?? "—"} pts · impacto ${item.factors.examImpact ?? "—"}%</span></article>`).join("") : '<div class="upcoming-empty">Nenhuma lacuna priorizada com os dados atuais.</div>';
+    return model.items.length ? model.items.slice(0, 5).map((item) => `<article class="data-row"><strong>${safe(escapeHtml2, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Gap de domínio ${item.gap ?? "—"} pts · impacto ${item.factors.examImpact ?? "—"}%</span></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">◎</span><div><strong>Nenhuma lacuna priorizada</strong><p>As lacunas aparecerão quando houver tópicos e evidências suficientes.</p></div></div>';
   }
   function renderDecisionHistory(model, { escapeHtml: escapeHtml2 }) {
-    return model.items.length ? model.items.map((item) => `<article class="data-row"><strong>${safe(escapeHtml2, item.subjectName)} — ${safe(escapeHtml2, item.topicName)}</strong><span>${safe(escapeHtml2, item.strategyLabel)}</span><small>${safe(escapeHtml2, item.outcomeLabel)}</small></article>`).join("") : '<div class="upcoming-empty">Nenhuma decisão registrada.</div>';
+    return model.items.length ? model.items.map((item) => `<article class="data-row"><strong>${safe(escapeHtml2, item.subjectName)} — ${safe(escapeHtml2, item.topicName)}</strong><span>${safe(escapeHtml2, item.strategyLabel)}</span><small>${safe(escapeHtml2, item.outcomeLabel)}</small></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
   }
   function renderPostSimulationReplan(model, { escapeHtml: escapeHtml2 }) {
     const need = (model.adjustments || []).reduce((sum4, item) => sum4 + item.deltaMinutes, 0) + (model.unallocatedMinutes || 0);
-    if (model.state !== "proposal") return `<div class="upcoming-empty">${safe(escapeHtml2, model.reason || model.message)}</div>`;
+    if (model.state !== "proposal") return `<div class="analytics-empty"><span aria-hidden="true">±</span><div><strong>Replanejamento indisponível</strong><p>${safe(escapeHtml2, model.reason || model.message)}</p></div></div>`;
     return `<div class="replan-summary"><strong>Proposta para ${safe(escapeHtml2, model.simulationDate || "simulado recente")}</strong><p>${model.adjustments.map((item) => `${safe(escapeHtml2, item.subjectName)}: +${item.deltaMinutes} min`).join(" · ")}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${model.availableMinutes} min</dd></div>${model.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${model.unallocatedMinutes} min</dd></div>` : ""}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`;
   }
 
@@ -6933,10 +6931,10 @@
     return `<tr class="history-read-row history-desktop-row" data-id="${sim.id}"><td>${escapeHtml(vm.date)}</td><td><div class="row-primary">${escapeHtml(vm.name)}</div></td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.total}</td><td class="number-cell">${vm.score}%</td><td>${details}</td><td><button class="btn ghost small" data-delegated-click="editSimulation('${sim.id}')">Editar</button></td></tr>${openBreakdownIds.has(sim.id) ? renderSimulationBreakdown(sim) : ""}`;
   }
   function renderSimulationBreakdown(sim) {
-    return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><strong class="breakdown-title">Desempenho por disciplina</strong>${(sim.breakdown || []).map((b) => {
+    return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><strong class="breakdown-title">Desempenho por disciplina</strong><div class="breakdown-list">${(sim.breakdown || []).map((b) => {
       const total = Number(b.total) || 0, correct = Number(b.correct) || 0, accuracy2 = total ? Math.round(correct / total * 100) : null;
-      return `<div class="breakdown-line"><label><span>Disciplina</span><select data-delegated-change="updateBreakdownRow('${sim.id}','${b.id}','subjectId',this.value)"><option value="">—</option>${subjectsForSelection(entitySubjectId(b)).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === entitySubjectId(b) ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}</select></label><label><span>Acertos</span><input type="number" min="0" value="${correct}" placeholder="Acertos" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','correct',this.value)"></label><label><span>Questões</span><input type="number" min="0" value="${total}" placeholder="Questões" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','total',this.value)"></label><strong>${accuracy2 == null ? "—" : accuracy2 + "%"}</strong><button class="icon-btn" aria-label="Excluir disciplina do simulado" data-delegated-click="deleteBreakdownRow('${sim.id}','${b.id}')">✕</button></div>`;
-    }).join("")}<button class="btn ghost small breakdown-add-btn" data-delegated-click="addBreakdownRow('${sim.id}')">+ Adicionar disciplina</button></div></td></tr>`;
+      return `<div class="breakdown-line"><label class="breakdown-subject"><span>Disciplina</span><select class="select-control" data-delegated-change="updateBreakdownRow('${sim.id}','${b.id}','subjectId',this.value)"><option value="">Selecione</option>${subjectsForSelection(entitySubjectId(b)).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === entitySubjectId(b) ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}</select></label><label><span>Acertos</span><input type="number" min="0" max="${total || 999}" value="${correct}" placeholder="0" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','correct',this.value)"></label><label><span>Questões</span><input type="number" min="0" value="${total}" placeholder="0" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','total',this.value)"></label><div class="breakdown-result"><span>Aproveitamento</span><strong>${accuracy2 == null ? "—" : accuracy2 + "%"}</strong></div><button class="icon-btn" aria-label="Excluir disciplina do simulado" data-delegated-click="deleteBreakdownRow('${sim.id}','${b.id}')">✕</button></div>`;
+    }).join("")}</div><button class="btn ghost small breakdown-add-btn" data-delegated-click="addBreakdownRow('${sim.id}')">+ Adicionar disciplina</button></div></td></tr>`;
   }
   function renderSimulationEditRow(sim) {
     const d = simulationEditController.state.draft;
@@ -7177,7 +7175,7 @@
       return;
     }
     const plan = studyPlanPreview;
-    const blockedNote = plan.blockedTopics?.length ? `<p class="confidence-note">Aguardando pré-requisitos: ${plan.blockedTopics.map((item) => escapeHtml(item.topicName || item.id) + " (" + item.prerequisites.map((id) => escapeHtml(getTopicName(id) || id)).join(", ") + ")").join("; ")}. Conclua a base ou reforce seu domínio e recalcule a proposta.</p>` : "";
+    const blockedNote = plan.blockedTopics?.length ? `<details class="blocked-topics-note"><summary>${plan.blockedTopics.length} tópico${plan.blockedTopics.length === 1 ? " aguarda" : "s aguardam"} pré-requisitos</summary><p>${plan.blockedTopics.slice(0, 5).map((item) => escapeHtml(item.topicName || item.id) + " — requer " + item.prerequisites.map((id) => escapeHtml(getTopicName(id) || id)).join(", ")).join("; ")}${plan.blockedTopics.length > 5 ? ` · e mais ${plan.blockedTopics.length - 5}` : ""}.</p><small>Conclua a base ou reforce o domínio e recalcule a proposta.</small></details>` : "";
     if (plan.state === "insufficient") {
       container.innerHTML = `<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;
       return;

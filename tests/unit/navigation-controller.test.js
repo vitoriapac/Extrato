@@ -1,3 +1,3 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {MAIN_TABS,nextNavigationIndex} from '../../src/ui/controllers/navigation-controller.js';
-test('ordem dos atalhos permanece estável',()=>{assert.deepEqual(MAIN_TABS,['dashboard','hoje','disciplinas','calendario','agenda','questoes','metas'])});
+test('ordem dos atalhos permanece estável',()=>{assert.deepEqual(MAIN_TABS,['dashboard','hoje','disciplinas','calendario','agenda','questoes','metas','instrucoes'])});
 test('navegação circular respeita setas, início e fim',()=>{assert.equal(nextNavigationIndex(0,7,'ArrowLeft'),6);assert.equal(nextNavigationIndex(6,7,'ArrowRight'),0);assert.equal(nextNavigationIndex(3,7,'Home'),0);assert.equal(nextNavigationIndex(3,7,'End'),6)});

@@ -90,12 +90,14 @@
     <button class="tab-btn tab-secondary" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda">Agenda de Revisões</button>
     <button class="tab-btn tab-secondary" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes">Questões &amp; Simulados</button>
     <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Metas</button>
+    <button class="tab-btn tab-secondary" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes">Instruções</button>
   </div>
   <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu">Mais</button>
   <div class="mobile-more-menu" id="mobileMoreMenu" role="menu" hidden>
     <button type="button" role="menuitem" data-more-tab="agenda">Agenda de Revisões</button>
     <button type="button" role="menuitem" data-more-tab="questoes">Questões e Simulados</button>
     <button type="button" role="menuitem" data-more-tab="metas">Metas</button>
+    <button type="button" role="menuitem" data-more-tab="instrucoes">Instruções</button>
   </div>
 
   <!-- DASHBOARD -->
@@ -575,6 +577,30 @@
     </div>
   </div>
 
+  <!-- INSTRUÇÕES -->
+  <div class="panel" id="panel-instrucoes" role="tabpanel" aria-labelledby="tab-instrucoes">
+    <header class="instructions-hero">
+      <div><span class="section-eyebrow">Guia da aplicação</span><h2>Como usar o StudyTrack</h2><p>Um roteiro para transformar edital, disponibilidade e registros de estudo em decisões semanais.</p></div>
+      <nav aria-label="Atalhos das instruções"><a href="#guide-start">Primeiros passos</a><a href="#guide-routine">Rotina</a><a href="#guide-data">Entenda os dados</a><a href="#guide-safety">Seus dados</a></nav>
+    </header>
+    <section class="instructions-section" id="guide-start"><h3>Primeiros passos</h3><div class="instruction-grid">
+      <article><b>1</b><div><h4>Monte o edital</h4><p>Em Disciplinas, importe um edital ou cadastre matérias e tópicos. Defina esforço estimado e pré-requisitos quando souber.</p></div></article>
+      <article><b>2</b><div><h4>Informe sua disponibilidade</h4><p>Em Metas, registre as horas disponíveis por dia, a data da prova e a meta geral. Isso limita o plano à sua capacidade real.</p></div></article>
+      <article><b>3</b><div><h4>Registre evidências</h4><p>Use o cronômetro, conclua revisões e lance questões e simulados. Quanto mais registros, maior a confiança dos diagnósticos.</p></div></article>
+      <article><b>4</b><div><h4>Confirme o plano</h4><p>Calcule a proposta semanal, confira matérias, tópicos e carga, e confirme somente quando a distribuição fizer sentido.</p></div></article>
+    </div></section>
+    <section class="instructions-section" id="guide-routine"><h3>Rotina recomendada</h3><div class="guide-flow"><article><strong>Hoje</strong><p>Veja prioridades, atividades atrasadas e a próxima ação sugerida.</p></article><span>→</span><article><strong>Estudar</strong><p>Inicie uma atividade pelo plano ou use o cronômetro livre.</p></article><span>→</span><article><strong>Registrar</strong><p>Finalize a sessão e informe questões, acertos e tipo de erro.</p></article><span>→</span><article><strong>Revisar</strong><p>Feche a semana, avalie lacunas e ajuste o próximo plano.</p></article></div></section>
+    <section class="instructions-section" id="guide-data"><h3>Como interpretar os dados</h3><div class="guide-glossary">
+      <article><h4>Prontidão</h4><p>Índice de 0 a 100 que reúne cobertura, domínio, retenção, consistência e simulados. Fatores ausentes reduzem a confiança.</p></article>
+      <article><h4>Domínio e retenção</h4><p>Domínio resume desempenho observado. Retenção considera revisões no prazo, acertos recentes e tempo desde a última revisão.</p></article>
+      <article><h4>Prioridade e lacuna</h4><p>A prioridade combina distância da meta, impacto na prova, risco de esquecimento, tendência e cobertura disponível.</p></article>
+      <article><h4>Confiança</h4><p>Indica a força da amostra. “Insuficiente” significa que o sistema preservou a ausência de evidência em vez de inventar um valor.</p></article>
+      <article><h4>Fechamento semanal</h4><p>Compara planejado e executado, tempo, questões e acerto. O diagnóstico destaca risco, melhor sinal e próxima ação.</p></article>
+      <article><h4>Projeções e cenários</h4><p>São faixas estimadas e simulações de capacidade. Não representam probabilidade de aprovação nem garantia de resultado.</p></article>
+    </div></section>
+    <section class="instructions-section" id="guide-safety"><h3>Dados, backup e demonstração</h3><div class="instruction-note"><strong>Os dados ficam neste navegador.</strong><p>Exporte backups regularmente para restaurar o histórico em outro dispositivo. A base de exemplo fica separada e pode ser reiniciada sem alterar seus registros reais.</p></div></section>
+  </div>
+
   <div class="backup-block">
     <div>
       <div class="backup-title">Backup dos dados</div>
@@ -594,7 +620,7 @@
   </div>
 
   <footer>Salvo automaticamente no seu navegador — extrato.gerado localmente<br>
-    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>1–7</strong> troca de aba · <strong>Esc</strong> fecha</span>
+    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>1–8</strong> troca de aba · <strong>Esc</strong> fecha</span>
   </footer>
 </main>
 
