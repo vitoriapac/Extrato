@@ -24,3 +24,9 @@ test('normaliza pesos e versões de algoritmos',()=>{
   assert.deepEqual(blueprint.subjects[0],{subjectId:'subject-1',expectedQuestions:20,questionWeight:2,priority:'high',masteryTarget:null});
   assert.deepEqual(normalizeAlgorithmVersions({readiness:2,retention:0}),{readiness:2,retention:1,reviewHealth:1,recommendations:3,recommendationOutcomes:1,adaptiveReview:1,forecasts:1});
 });
+
+test('preserva meta disciplinar nula como herança da meta geral',()=>{
+  const blueprint=normalizeExamBlueprint({masteryTarget:80,subjects:[{subjectId:'subject-1',masteryTarget:null},{subjectId:'subject-2',masteryTarget:0}]});
+  assert.equal(blueprint.subjects[0].masteryTarget,null);
+  assert.equal(blueprint.subjects[1].masteryTarget,0);
+});

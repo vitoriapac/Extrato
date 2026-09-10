@@ -447,7 +447,7 @@
         expectedQuestions: Math.max(0, Math.round(Number(item?.expectedQuestions) || 0)),
         questionWeight: Math.max(0, Number(item?.questionWeight) || 1),
         priority: EXAM_PRIORITIES.includes(item?.priority) ? item.priority : "normal",
-        masteryTarget: Number.isFinite(Number(item?.masteryTarget)) ? Math.max(0, Math.min(100, Number(item.masteryTarget))) : null
+        masteryTarget: item?.masteryTarget == null || item.masteryTarget === "" ? null : Number.isFinite(Number(item.masteryTarget)) ? Math.max(0, Math.min(100, Number(item.masteryTarget))) : null
       })) : []
     };
   }
@@ -867,7 +867,7 @@
   // src/ui/renderers/error-analysis-renderer.js
   function renderErrorAnalysis(model, { toolbar = "", escapeHtml: escapeHtml2 = (value2) => String(value2) } = {}) {
     if (model.state === "empty") return toolbar + '<div class="empty-state"><p>' + escapeHtml2(model.message) + "</p></div>";
-    const items = model.items.map((item) => '<div class="error-profile-item"><span>' + item.icon + " " + escapeHtml2(item.label) + "</span><strong>" + item.value + "</strong><small>" + (model.hasPrevious ? (item.delta >= 0 ? "+" : "") + item.delta + " vs. período anterior" : "Sem período anterior") + "</small></div>").join("");
+    const items = model.items.map((item) => '<div class="error-profile-item"><span class="error-profile-label">' + item.icon + " " + escapeHtml2(item.label) + '</span><strong class="error-profile-value">' + item.value + '</strong><small class="error-profile-delta">' + (model.hasPrevious ? (item.delta >= 0 ? "+" : "") + item.delta + " vs. período anterior" : "Sem período anterior") + "</small></div>").join("");
     const diagnosis = '<section class="error-diagnosis ' + model.state + '"><div><span>Diagnóstico</span><strong>' + escapeHtml2(model.diagnosis) + "</strong></div><div><span>Ação</span><strong>" + escapeHtml2(model.action) + "</strong></div></section>";
     return toolbar + diagnosis + '<div class="error-profile-grid">' + items + '</div><div class="analytics-note">' + model.coverage + "% dos " + model.totalErrors + " erros estão categorizados · confiança " + escapeHtml2(model.confidence.label.toLowerCase()) + " · " + escapeHtml2(model.periodLabel) + ".</div>";
   }
@@ -2413,13 +2413,13 @@
   function renderHeroHeader(model, { document: document2 }) {
     const readiness = model.readiness, stats = model.stats;
     document2.getElementById("balanceFigure").innerHTML = `${readiness.value ?? "—"}<span>/100</span>`;
-    document2.getElementById("balanceSub").textContent = readiness.value == null ? "Aguardando evidências" : `${readiness.confidence} · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`;
+    document2.getElementById("balanceSub").textContent = readiness.value == null ? "Aguardando evidências" : `Confiança ${readiness.confidence.toLowerCase()} · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`;
     document2.getElementById("statSubjects").textContent = stats.subjects;
     document2.getElementById("statContent").textContent = stats.contentPercent + "%";
     document2.getElementById("statAndamento").textContent = stats.inProgress;
     document2.getElementById("statConcluido").textContent = stats.completed;
     document2.getElementById("statRevisoes").textContent = stats.upcomingReviews;
-    document2.getElementById("statStreak").textContent = model.streak.days;
+    document2.getElementById("statStreak").textContent = `${model.streak.days} ${model.streak.days === 1 ? "dia" : "dias"}`;
   }
   function renderCompactHeader(model, { document: document2, formatDate }) {
     document2.getElementById("compactReadiness").textContent = model.readiness.value == null ? "—" : model.readiness.value + "/100";
@@ -2452,7 +2452,7 @@
   var safe = (escapeHtml2, value2) => escapeHtml2(String(value2 ?? ""));
   function renderWeeklyClose(model, { escapeHtml: escapeHtml2, formatMinutes }) {
     if (model.state === "insufficient") return '<div class="upcoming-empty">Ainda não há evidência suficiente para fechar a semana.</div>';
-    return `<div class="kpi-grid"><div class="kpi-cell"><div class="n">${formatMinutes(model.investment.executedMinutes)}</div><div class="l">Tempo estudado</div></div><div class="kpi-cell"><div class="n">${model.questions.accuracy ?? "—"}%</div><div class="l">Acerto</div></div><div class="kpi-cell"><div class="n">${model.questions.resolved}</div><div class="l">Questões</div></div></div><section class="weekly-assessment"><strong>${model.assessment === "attention" ? "Atenção" : model.assessment === "on_target" ? "Meta alcançada" : "Semana em formação"}</strong>${model.bestSignal ? `<span><b>Melhor sinal:</b> ${safe(escapeHtml2, model.bestSignal.message)}</span>` : ""}${model.mainRisk ? `<span><b>Principal risco:</b> ${safe(escapeHtml2, model.mainRisk.message)}</span>` : ""}<span><b>Próxima ação:</b> ${safe(escapeHtml2, model.recommendedAction)}</span></section>`;
+    return `<div class="weekly-kpis"><div><strong>${formatMinutes(model.investment.executedMinutes)}</strong><span>Tempo estudado</span></div><div><strong>${model.questions.accuracy ?? "—"}%</strong><span>Acerto</span></div><div><strong>${model.questions.resolved}</strong><span>Questões</span></div></div><section class="weekly-assessment"><small>Diagnóstico</small><strong>${model.assessment === "attention" ? "Atenção" : model.assessment === "on_target" ? "Meta alcançada" : "Semana em formação"}</strong>${model.mainRisk ? `<p class="weekly-risk"><b>Principal risco</b>${safe(escapeHtml2, model.mainRisk.message)}</p>` : ""}${model.bestSignal ? `<p><b>Melhor sinal</b>${safe(escapeHtml2, model.bestSignal.message)}</p>` : ""}<p class="weekly-action"><b>Próxima ação</b>${safe(escapeHtml2, model.recommendedAction)}</p></section>`;
   }
   function renderPeriodComparison(model, { escapeHtml: escapeHtml2, formatMinutes }) {
     const labels = { accuracy: "Acerto", minutes: "Tempo estudado", questions: "Questões" }, value2 = (key, n3) => key === "accuracy" ? `${n3}%` : key === "minutes" ? formatMinutes(n3) : String(n3), delta = (key, n3) => key === "accuracy" ? `${n3 > 0 ? "+" : ""}${n3} p.p.` : key === "minutes" ? `${n3 > 0 ? "+" : ""}${formatMinutes(Math.abs(n3))}` : `${n3 > 0 ? "+" : ""}${n3}`;
@@ -4757,10 +4757,10 @@
         const planItem = findDailyPlanItem(state.activeTimer.planItemId)?.item;
         const context = planItem ? `${planItem.subjectName} — ${planItem.topicName} · ` : "";
         targetEl.textContent = context + `meta ${formatPlanMinutes(targetMinutes)} · ${difference >= 0 ? formatDuration(difference) + " restantes" : formatDuration(Math.abs(difference)) + " além da meta"}`;
-        targetEl.style.display = "block";
+        targetEl.hidden = false;
       } else {
         targetEl.textContent = "";
-        targetEl.style.display = "none";
+        targetEl.hidden = true;
       }
     }
     renderGuidedStrategy();
@@ -7092,7 +7092,7 @@
     const blueprint = state.examBlueprint;
     const rows = activeSubjects().map((subject2) => {
       const config = blueprint.subjects.find((item) => item.subjectId === subject2.id);
-      return `<div class="exam-subject-row"><strong>${escapeHtml(subject2.name)}</strong><label>Prioridade<select data-delegated-change="updateExamSubject('${subject2.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="Herdar ${blueprint.masteryTarget}%" data-delegated-blur="updateExamSubject('${subject2.id}','masteryTarget',this.value)"></label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject2.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject2.id}','questionWeight',this.value)"></label></div>`;
+      return `<div class="exam-subject-row"><strong>${escapeHtml(subject2.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${subject2.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="${blueprint.masteryTarget}% (geral)" data-delegated-blur="updateExamSubject('${subject2.id}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ""}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject2.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject2.id}','questionWeight',this.value)"></label></div>`;
     }).join("");
     container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
     renderExamMasteryMatrix();

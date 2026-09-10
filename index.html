@@ -131,9 +131,9 @@
       <h3>Cronômetro de estudo</h3>
       <div class="timer-block">
         <div class="timer-context" aria-label="Contexto da sessão">
-          <select id="timerSubjectSelect" aria-label="Disciplina da sessão"></select>
-          <select id="timerTopicSelect" aria-label="Tópico da sessão"></select>
-          <select id="timerTypeSelect" aria-label="Tipo da sessão">
+          <select class="select-control" id="timerSubjectSelect" aria-label="Disciplina da sessão"></select>
+          <select class="select-control" id="timerTopicSelect" aria-label="Tópico da sessão"></select>
+          <select class="select-control" id="timerTypeSelect" aria-label="Tipo da sessão">
             <option value="study">Estudo teórico</option>
             <option value="review">Revisão</option>
             <option value="questions">Questões</option>
@@ -141,7 +141,7 @@
           </select>
         </div>
         <div class="timer-display" id="studyTimerDisplay">00:00</div>
-      <div class="timer-target" id="studyTimerTarget" style="display:none;"></div>
+      <div class="timer-target" id="studyTimerTarget" hidden></div>
       <div id="guidedStrategy" class="guided-strategy" hidden></div>
         <div class="timer-actions">
           <button class="btn" id="timerStartBtn">▶ Iniciar</button>
@@ -164,14 +164,14 @@
       </div>
       <button class="btn ghost small mobile-filter-toggle" id="studySessionsFilterToggle" type="button" aria-expanded="false" aria-controls="studySessionsFilters" data-delegated-click="toggleFilterPanel('sessions')">Filtros ▾</button>
       <div class="cal-filters responsive-filters" id="studySessionsFilters" style="margin-top:14px;">
-        <select id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
+        <select class="select-control" id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
           <option value="7">Últimos 7 dias</option>
           <option value="30" selected>Últimos 30 dias</option>
           <option value="90">Últimos 90 dias</option>
           <option value="all">Todo o período</option>
         </select>
-        <select id="studySessionsSubjectFilter" aria-label="Disciplina do histórico" data-delegated-change="updateSessionHistoryFilter('subjectId',this.value)"></select>
-        <select id="studySessionsTypeFilter" aria-label="Tipo de sessão do histórico" data-delegated-change="updateSessionHistoryFilter('type',this.value)">
+        <select class="select-control" id="studySessionsSubjectFilter" aria-label="Disciplina do histórico" data-delegated-change="updateSessionHistoryFilter('subjectId',this.value)"></select>
+        <select class="select-control" id="studySessionsTypeFilter" aria-label="Tipo de sessão do histórico" data-delegated-change="updateSessionHistoryFilter('type',this.value)">
           <option value="">Todos os tipos</option>
           <option value="study">Estudo teórico</option>
           <option value="review">Revisão</option>
@@ -190,15 +190,15 @@
           <button class="btn small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button>
         </div>
       </div>
-      <div class="log-table-wrap study-sessions-table-wrap" id="studySessionsTableWrap" style="margin-bottom:0;">
+      <div class="log-table-wrap study-sessions-table-wrap" id="studySessionsTableWrap">
         <table class="log responsive-history-table study-sessions-table">
           <thead>
             <tr>
-              <th style="width:150px;">Data</th>
-              <th style="width:100px;">Duração</th>
+              <th>Data</th>
+              <th>Duração</th>
               <th>Estudo</th>
-              <th style="width:190px;">Desempenho</th>
-              <th style="width:180px;">Ações</th>
+              <th>Desempenho</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody id="studySessionsBody"></tbody>
@@ -347,16 +347,16 @@
     </div>
     <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="calendarFilters" data-delegated-click="toggleFilterPanel('calendar')">Filtros</button>
     <div class="cal-filters responsive-filters" id="calendarFilters">
-                <select id="calFilterSubject" aria-label="Filtrar calendário por disciplina"><option value="">Todas as disciplinas</option></select>
-                <select id="calFilterStatus" aria-label="Filtrar calendário por status">
+                <select class="select-control" id="calFilterSubject" aria-label="Filtrar calendário por disciplina"><option value="">Todas as disciplinas</option></select>
+                <select class="select-control" id="calFilterStatus" aria-label="Filtrar calendário por status">
         <option value="">Todos os status</option>
         <option>Não iniciado</option>
         <option>Em andamento</option>
         <option>Revisão</option>
         <option>Concluído</option>
       </select>
-                <select id="calFilterMes" aria-label="Filtrar calendário por mês"><option value="">Todos os meses</option></select>
-                <select id="calFilterTipo" aria-label="Filtrar calendário por tipo"><option value="">Todos os tipos de revisão</option></select>
+                <select class="select-control" id="calFilterMes" aria-label="Filtrar calendário por mês"><option value="">Todos os meses</option></select>
+                <select class="select-control" id="calFilterTipo" aria-label="Filtrar calendário por tipo"><option value="">Todos os tipos de revisão</option></select>
     </div>
 
     <div class="chart-card calendar-month-card" id="calendarMonthCard">
@@ -409,8 +409,8 @@
     </p>
     <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
     <div class="cal-filters responsive-filters" id="agendaFilters">
-                <select id="agendaFilterSubject" aria-label="Filtrar agenda por disciplina"><option value="">Todas as disciplinas</option></select>
-                <select id="agendaFilterStatus" aria-label="Filtrar agenda por status">
+                <select class="select-control" id="agendaFilterSubject" aria-label="Filtrar agenda por disciplina"><option value="">Todas as disciplinas</option></select>
+                <select class="select-control" id="agendaFilterStatus" aria-label="Filtrar agenda por status">
         <option value="">Todos os status</option>
         <option>Não iniciado</option>
         <option>Em andamento</option>
@@ -418,8 +418,8 @@
         <option>Concluído</option>
         <option value="Atrasadas">Atrasadas</option>
       </select>
-                <select id="agendaFilterMes" aria-label="Filtrar agenda por mês"><option value="">Todos os meses</option></select>
-                <select id="agendaFilterTipo" aria-label="Filtrar agenda por tipo"><option value="">Todos os tipos</option></select>
+                <select class="select-control" id="agendaFilterMes" aria-label="Filtrar agenda por mês"><option value="">Todos os meses</option></select>
+                <select class="select-control" id="agendaFilterTipo" aria-label="Filtrar agenda por tipo"><option value="">Todos os tipos</option></select>
     </div>
     <div class="cal-table-wrap">
       <table class="cal responsive-history-table">
@@ -471,7 +471,7 @@
         <span class="subject-progress-pill" id="questionDataCoverage">0% identificadas</span>
       </div>
       <div class="analytics-toolbar">
-        <select id="performanceSubjectSelect" aria-label="Disciplina analisada" data-delegated-change="performanceSubjectId=this.value;renderQuestionAnalytics()"></select>
+        <select class="select-control" id="performanceSubjectSelect" aria-label="Disciplina analisada" data-delegated-change="performanceSubjectId=this.value;renderQuestionAnalytics()"></select>
         <span class="analytics-note">A tendência exige pelo menos 30 questões em cada janela comparada.</span>
       </div>
       <div class="stat-grid" id="questionAnalyticsSummary" style="margin-bottom:16px;"></div>
@@ -562,7 +562,7 @@
       Meta de questões resolvidas por semana, específica por disciplina.
     </p>
     <div class="meta-disciplina-add">
-                <select id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
+                <select class="select-control" id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
                 <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de tópicos da nova meta" min="1" value="20" style="width:80px;">
       <span class="metadata-text">questões/semana</span>
       <button class="btn small" id="addMetaDisciplinaBtn">+ Adicionar meta</button>
@@ -631,10 +631,10 @@
 <div class="modal-overlay" id="sessionModalOverlay" role="dialog" aria-modal="true" aria-label="Finalizar sessão de estudo">
   <div class="modal-box">
     <p>Sessão de <strong id="sessionModalDuration">00:00</strong> finalizada. Quer registrar o que você estudou?</p>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-          <select id="sessionModalSubject" aria-label="Disciplina da sessão" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);"></select>
-          <select id="sessionModalTopic" aria-label="Tópico da sessão" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);"></select>
-          <select id="sessionModalType" aria-label="Tipo da sessão" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);">
+    <div class="session-modal-fields">
+          <select class="select-control select-control--wide" id="sessionModalSubject" aria-label="Disciplina da sessão" ></select>
+          <select class="select-control select-control--wide" id="sessionModalTopic" aria-label="Tópico da sessão" ></select>
+          <select class="select-control select-control--wide" id="sessionModalType" aria-label="Tipo da sessão" >
         <option value="study">Estudo teórico</option>
         <option value="review">Revisão</option>
         <option value="questions">Questões</option>
