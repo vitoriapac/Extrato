@@ -39,3 +39,13 @@ test('regressão visual dos componentes críticos em desktop',async({page})=>{
   await activateTab(page,'metas');
   await expect(page.locator('#examBlueprintConfig')).toHaveScreenshot('configuracao-estrategica-desktop.png',screenshotOptions);
 });
+
+test('regressão visual do assistente de edital inteligente',async({page})=>{
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto('/');
+  await activateTab(page,'disciplinas');
+  await page.getByRole('button',{name:/Carregar disciplinas do edital/i}).click();
+  await page.getByRole('button',{name:'Continuar'}).click();
+  await page.evaluate(()=>document.fonts.ready);
+  await expect(page.locator('.exam-import-box')).toHaveScreenshot('edital-inteligente-desktop.png',screenshotOptions);
+});

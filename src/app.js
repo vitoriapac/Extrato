@@ -735,6 +735,7 @@ function subjectsForSelection(selectedId=null){
   return state.subjects.filter(subject=>!subject.archived||subject.id===selectedId);
 }
 function activeTopics(){ return allTopics().filter(topic=>!topic.subjectArchived&&!topic.topicArchived); }
+function topicInActiveExamScope(topic){const active=state.examBlueprint?.activeExamTags||[];return !active.length||!(topic?.examTags||[]).length||topic.examTags.some(tag=>active.includes(tag))}
 function subjectProgress(subject){
   return calculateTopicCoverage(subject.topics).value;
 }
@@ -1767,7 +1768,9 @@ function renderDashboard(){
 /* ===== RENDER: DISCIPLINAS ===== */
 function renderSubjects(){
   const container = document.getElementById('subjectsContainer');
-  const subjects=activeSubjects();
+  const allActiveSubjects=activeSubjects();
+  const topicMatchesExam=topic=>subjectExamFilter==='all'||(subjectExamFilter==='common'?(topic.institutions||[]).includes('bb')&&(topic.institutions||[]).includes('caixa'):(topic.institutions||[]).includes(subjectExamFilter));
+  const subjects=subjectExamFilter==='all'?allActiveSubjects:allActiveSubjects.filter(subject=>(subject.topics||[]).some(topic=>topicMatchesExam(topic)));
   const archived=archivedSubjects();
   if(subjects.length === 0 && archived.length===0){
     container.innerHTML = `<div class="empty-state">
@@ -1779,7 +1782,7 @@ function renderSubjects(){
 
   const activeHtml = subjects.length===0 ? `<div class="empty-state"><p>Nenhuma disciplina ativa.</p><button class="btn" data-delegated-click="addSubject()">+ Adicionar disciplina</button></div>` : subjects.map((s, idx) => {
     const pct = subjectProgress(s);
-    const subjectTopics=s.topics.filter(t=>!t.archived);
+    const subjectTopics=s.topics.filter(t=>!t.archived&&topicMatchesExam(t));
     const topicFilter=subjectTopicFilters.get(s.id)||{status:'',difficulty:''};
     const allVisibleTopics=subjectTopics.filter(topic=>(!topicFilter.status||topic.status===topicFilter.status)&&(!topicFilter.difficulty||topic.difficulty===topicFilter.difficulty));
     const topicLimit=subjectTopicLimits.get(s.id)||10;
@@ -1824,7 +1827,7 @@ function renderSubjects(){
                 <td>
                   <input type="text" value="${escapeAttr(t.name)}" placeholder="Nome do tópico"
                      data-delegated-blur="updateTopic('${s.id}','${t.id}','name', this.value)">
-                  ${t.tags && t.tags.length ? `<div class="tag-chips">${t.tags.map(tag=>`<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+                  ${(t.examTags||[]).length||t.tags?.length?`<div class="tag-chips">${examBadges(t)}${(t.tags||[]).map(tag=>`<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}</div>`:''}
                 </td>
                 <td>
                   <input type="url" value="${escapeAttr(t.link||'')}" placeholder="https://..."
@@ -1888,10 +1891,11 @@ function renderSubjects(){
       <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
     </div>`).join('')}
   </div>`:'';
-  container.innerHTML=activeHtml+archivedHtml;
+  container.innerHTML=`<div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">${[['all','Todos'],['bb','BB'],['caixa','Caixa'],['common','Comuns']].map(([value,label])=>`<button class="btn ghost small ${subjectExamFilter===value?'active':''}" data-delegated-click="setSubjectExamFilter('${value}')">${label}</button>`).join('')}</div>`+activeHtml+archivedHtml;
 }
 
 let openNotesIds = new Set();
+let subjectExamFilter='all';
 const subjectTopicLimits=new Map();
 const subjectTopicFilters=new Map();
 function toggleNotes(topicId){
@@ -1903,6 +1907,8 @@ function changeSubjectTopicLimit(subjectId,delta){subjectTopicLimits.set(subject
 function showAllSubjectTopics(subjectId){subjectTopicLimits.set(subjectId,Number.MAX_SAFE_INTEGER);renderSubjects()}
 function resetSubjectTopicLimit(subjectId){subjectTopicLimits.set(subjectId,10);renderSubjects()}
 function setSubjectTopicFilter(subjectId,field,value){const current=subjectTopicFilters.get(subjectId)||{status:'',difficulty:''};if(field==='status'||field==='difficulty')current[field]=value;subjectTopicFilters.set(subjectId,current);subjectTopicLimits.set(subjectId,10);renderSubjects()}
+function setSubjectExamFilter(value){if(['all','bb','caixa','common'].includes(value))subjectExamFilter=value;renderSubjects()}
+function examBadges(topic){const institutions=topic.institutions||[];return `${institutions.includes('bb')?'<span class="exam-tag exam-tag--bb">BB</span>':''}${institutions.includes('caixa')?'<span class="exam-tag exam-tag--caixa">CAIXA</span>':''}`}
 function updateTopicTags(subjectId, topicId, value){
   subjectService.updateTopic(subjectId,topicId,{tags:value.split(',').map(tag=>tag.trim()).filter(Boolean)});
   persistAndRender();
@@ -1996,18 +2002,20 @@ document.getElementById('loadDefaultSubjectsBtn').addEventListener('click', carr
 
 const examImportService=createExamImportService({subjectService,getSubjects:()=>state.subjects});
 const editalImportFacade=createEditalImportFacade({catalog:EXAM_PRESETS,importService:examImportService});
-const examImportState={step:1,presetId:EXAM_PRESETS[0].id,subjectIds:new Set(),topicIds:new Set(),previousFocus:null};
+const examImportState={step:1,presetId:EXAM_PRESETS[0].id,subjectIds:new Set(),topicIds:new Set(),query:'',previousFocus:null};
 function syncExamSelection(preset){examImportState.subjectIds=new Set(preset.subjects.map(item=>item.id));examImportState.topicIds=new Set(preset.subjects.flatMap(item=>(item.topics||[]).map(topic=>`${item.id}:${topic.id}`)))}
 function selectedExamPreset(){return getExamPreset(examImportState.presetId)||EXAM_PRESETS[0]}
 function renderExamImport(){
   const content=document.getElementById('examImportContent'),back=document.getElementById('examImportBackBtn'),next=document.getElementById('examImportNextBtn'),preset=selectedExamPreset();back.hidden=examImportState.step===1;next.textContent=examImportState.step===3?'Importar':'Continuar';
-  if(examImportState.step===1)content.innerHTML=`<p>Escolha uma estrutura pronta.</p><div class="exam-preset-list">${EXAM_PRESETS.map((item,index)=>`<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id===examImportState.presetId?'checked':''}><span><strong>${escapeHtml(item.name)}</strong><small>${item.subjects.length?`${item.subjects.length} disciplinas · versão ${escapeHtml(item.version)}`:'Começar sem conteúdo predefinido'}</small></span></label>`).join('')}</div>`;
-  else if(examImportState.step===2)content.innerHTML=preset.subjects.length?`<p>Selecione as disciplinas e os tópicos que deseja importar.</p><div class="exam-subject-list">${preset.subjects.map(subject=>`<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject.id)}" ${examImportState.subjectIds.has(subject.id)?'checked':''}>${escapeHtml(subject.name)}</label><div class="exam-topic-list">${subject.topics.map(topic=>{const key=`${subject.id}:${topic.id}`;return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key)?'checked':''}>${escapeHtml(topic.name)}</label>`}).join('')}</div></section>`).join('')}</div>`:'<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>';
-  else {const preview=editalImportFacade.preview(examImportState.subjectIds,examImportState.topicIds);content.innerHTML=`<p>Confira as alterações antes de importar.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.existingSubjects}</strong><br>disciplinas existentes</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos existentes</div></div>${preview.warnings.map(item=>`<p class="form-hint">${escapeHtml(item)}</p>`).join('')}`;next.disabled=preview.addedSubjects+preview.addedTopics===0;}
+  if(examImportState.step===1)content.innerHTML=`<p>Escolha o concurso. Os presets usam o catálogo mestre versão ${escapeHtml(preset.version)}.</p><div class="exam-preset-list">${EXAM_PRESETS.map(item=>`<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id===examImportState.presetId?'checked':''}><span><strong>${escapeHtml(item.name)}</strong><small>${item.subjects.length?`${item.subjects.length} disciplinas · ${item.subjects.reduce((sum,subject)=>sum+subject.topics.length,0)} tópicos · versão ${escapeHtml(item.version)}`:'Começar sem conteúdo predefinido'}</small></span></label>`).join('')}</div>`;
+  else if(examImportState.step===2){const query=examImportState.query.trim().toLocaleLowerCase('pt-BR'),visible=preset.subjects.map(subject=>({...subject,topics:subject.topics.filter(topic=>!query||subject.name.toLocaleLowerCase('pt-BR').includes(query)||topic.name.toLocaleLowerCase('pt-BR').includes(query))})).filter(subject=>subject.topics.length);content.innerHTML=preset.subjects.length?`<p>Selecione as disciplinas e os tópicos que deseja importar. Conteúdos comuns mantêm um único histórico.</p><div class="exam-import-tools"><input type="search" id="examImportSearch" value="${escapeAttr(examImportState.query)}" placeholder="Buscar disciplina ou tópico..." aria-label="Buscar no edital"><div><button class="btn ghost small" data-exam-select="all">Selecionar tudo</button><button class="btn ghost small" data-exam-select="common">Somente comuns</button><button class="btn ghost small" data-exam-select="bb">Somente BB</button><button class="btn ghost small" data-exam-select="caixa">Somente Caixa</button><button class="btn ghost small" data-exam-select="none">Limpar</button></div></div><div class="exam-selection-count">${examImportState.topicIds.size} de ${preset.subjects.reduce((sum,subject)=>sum+subject.topics.length,0)} tópicos selecionados</div><div class="exam-subject-list">${visible.map(subject=>`<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject.id)}" ${examImportState.subjectIds.has(subject.id)?'checked':''}><span>${escapeHtml(subject.name)} <small>${subject.topics.length} tópicos</small></span></label><div class="exam-topic-list">${subject.topics.map(topic=>{const key=`${subject.id}:${topic.id}`;return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key)?'checked':''}><span>${escapeHtml(topic.name)} <small>${examBadges(topic)}</small></span></label>`}).join('')}</div></section>`).join('')}</div>`:'<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>'}
+  else {const preview=editalImportFacade.preview(examImportState.subjectIds,examImportState.topicIds),total=preview.addedTopics+preview.existingTopics;content.innerHTML=`<p>Confira as alterações. IDs, progresso e histórico existentes serão preservados.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects+preview.existingSubjects}</strong><br>disciplinas selecionadas</div><div><strong>${total}</strong><br>tópicos selecionados</div><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.existingSubjects}</strong><br>disciplinas existentes</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos preservados</div></div>${preview.warnings.map(item=>`<p class="form-hint">${escapeHtml(item)}</p>`).join('')}`;next.disabled=preview.addedSubjects+preview.addedTopics===0;}
 }
-function openExamImport(){examImportState.step=1;examImportState.presetId=EXAM_PRESETS[0].id;editalImportFacade.begin(examImportState.presetId);syncExamSelection(EXAM_PRESETS[0]);examImportState.previousFocus=document.activeElement;document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
+function openExamImport(){examImportState.step=1;examImportState.query='';examImportState.presetId=EXAM_PRESETS[0].id;editalImportFacade.begin(examImportState.presetId);syncExamSelection(EXAM_PRESETS[0]);examImportState.previousFocus=document.activeElement;document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
 function closeExamImport(){editalImportFacade.cancel();document.getElementById('examImportOverlay').classList.remove('show');examImportState.previousFocus?.focus()}
 document.getElementById('examImportContent').addEventListener('change',event=>{if(event.target.name==='examPreset'){examImportState.presetId=event.target.value;editalImportFacade.begin(examImportState.presetId);syncExamSelection(selectedExamPreset())}if(event.target.dataset.examSubject){const id=event.target.dataset.examSubject;event.target.checked?examImportState.subjectIds.add(id):examImportState.subjectIds.delete(id);selectedExamPreset().subjects.find(item=>item.id===id)?.topics.forEach(topic=>{const key=`${id}:${topic.id}`;event.target.checked?examImportState.topicIds.add(key):examImportState.topicIds.delete(key)});renderExamImport()}if(event.target.dataset.examTopic){event.target.checked?examImportState.topicIds.add(event.target.dataset.examTopic):examImportState.topicIds.delete(event.target.dataset.examTopic)}});
+document.getElementById('examImportContent').addEventListener('input',event=>{if(event.target.id==='examImportSearch'){examImportState.query=event.target.value;renderExamImport();document.getElementById('examImportSearch')?.focus()}});
+document.getElementById('examImportContent').addEventListener('click',event=>{const action=event.target.closest('[data-exam-select]')?.dataset.examSelect;if(!action)return;const preset=selectedExamPreset();examImportState.subjectIds.clear();examImportState.topicIds.clear();for(const subject of preset.subjects)for(const topic of subject.topics){const institutions=topic.institutions||[],include=action==='all'||action==='bb'&&institutions.includes('bb')||action==='caixa'&&institutions.includes('caixa')||action==='common'&&institutions.includes('bb')&&institutions.includes('caixa');if(include){examImportState.subjectIds.add(subject.id);examImportState.topicIds.add(`${subject.id}:${topic.id}`)}}renderExamImport()});
 document.getElementById('examImportCancelBtn').addEventListener('click',closeExamImport);document.getElementById('examImportBackBtn').addEventListener('click',()=>{examImportState.step--;renderExamImport()});document.getElementById('examImportNextBtn').addEventListener('click',()=>{if(examImportState.step<3){examImportState.step++;renderExamImport();return}const result=editalImportFacade.confirm(examImportState.subjectIds,examImportState.topicIds);persistAndRender();closeExamImport();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados.`)});
 document.getElementById('examImportOverlay').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeExamImport()}});
 
@@ -3228,7 +3236,7 @@ function renderExamBlueprintConfig(){
     const config=blueprint.subjects.find(item=>item.subjectId===subject.id);
     return `<div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config||config.priority==='normal'?'selected':''}>Normal</option><option value="high" ${config?.priority==='high'?'selected':''}>Alta</option><option value="low" ${config?.priority==='low'?'selected':''}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget??''}" placeholder="Usar meta geral" data-delegated-blur="updateExamSubject('${subject.id}','masteryTarget',this.value)">${config?.masteryTarget==null?`<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>`:''}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions??''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight??''}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)"></label></div>`;
   }).join('');
-  container.innerHTML=`<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+  container.innerHTML=`<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[['bb-escriturario','Banco do Brasil'],['caixa-tbn','Caixa TBN'],['caixa-tbn-ti','Caixa TBN TI']].map(([tag,label])=>`<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags||[]).includes(tag)?'checked':''}> ${label}</label>`).join('')}<small>Nenhuma seleção mantém todo o conteúdo elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
   renderExamMasteryMatrix();
 }
 function renderExamMasteryMatrix(){const el=document.getElementById('examMasteryMatrix');if(!el)return;const candidates=intelligenceCandidates(),metrics=Object.fromEntries(candidates.map(c=>[c.topicId,{coverage:c.coverage,mastery:{value:c.mastery,confidence:c.evidenceStrength},retention:{value:c.retention},trend:c.trend,priority:{value:c.score}}])),rows=buildExamMasteryMatrix({subjects:state.subjects,blueprint:state.examBlueprint,metricsByTopic:metrics});el.innerHTML=rows.length?`<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a,b)=>(b.gap??-999)-(a.gap??-999)).map(row=>`<details><summary><strong>${escapeHtml(row.name)}</strong><span>${row.coverage??'—'}%</span><span>${row.mastery??'—'}%</span><span>${row.retention??'—'}%</span><span>${row.gap==null?'—':(row.gap>0?'-':'')+Math.abs(row.gap)+' pts'}</span></summary>${row.topics.map(t=>`<div class="mastery-topic"><span>${escapeHtml(t.name)}</span><span>${t.coverage}%</span><span>${t.mastery??'—'}%</span><span>${t.retention??'—'}%</span><span>${escapeHtml(t.state)}</span></div>`).join('')}</details>`).join('')}</div>`:'<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>'}
@@ -3295,6 +3303,7 @@ function updateExamSubject(subjectId,field,value){
   if(field==='masteryTarget')config.masteryTarget=value===''?null:Math.max(0,Math.min(100,Number(value)||0));
   state.examBlueprint.configuredAt=nowISO();persistAndRender();
 }
+function toggleActiveExamTag(tag,checked){const valid=['bb-escriturario','caixa-tbn','caixa-tbn-ti'];if(!valid.includes(tag))return;const values=new Set(state.examBlueprint.activeExamTags||[]);checked?values.add(tag):values.delete(tag);state.examBlueprint.activeExamTags=[...values];studyPlanPreview=null;persistAndRender()}
 
 /* ===== METAS POR DISCIPLINA ===== */
 function somarQuestoesDisciplinaNaSemana(subjectId){
@@ -3576,7 +3585,7 @@ function collectStudyCandidates(){
     .filter(review=>{
       const subjectId=entitySubjectId(review);
       const topicId=review.topicId||review.topicRef||null;
-      return review.status!=='Concluído'&&review.date&&review.date<=today&&isActiveStudyReference(subjectId,topicId);
+      return review.status!=='Concluído'&&review.date&&review.date<=today&&isActiveStudyReference(subjectId,topicId)&&(!topicId||topicInActiveExamScope(getTopicById(topicId)?.topic));
     })
     .forEach(review=>{
       const subjectId=entitySubjectId(review);
@@ -3593,7 +3602,7 @@ function collectStudyCandidates(){
       });
     });
 
-  activeTopics()
+  activeTopics().filter(topic=>topicInActiveExamScope(topic))
     .filter(topic=>(topic.name||'').trim()!=='')
     .forEach(topic=>{
       if(candidateMap.has(topic.id)) return;
@@ -4711,7 +4720,7 @@ const DELEGATED_ACTION_HANDLERS={
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
   editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
   advanceGuidedStrategy,dismissIntelligentAlert,dismissStudyRecommendation,markRecommendationNotUseful,rateRecommendationOutcome,startStudyRecommendation,
-  requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRadarSubject,setRetentionFilter,setSubjectTopicFilter,
+  requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRadarSubject,setRetentionFilter,setSubjectExamFilter,setSubjectTopicFilter,toggleActiveExamTag,
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
   toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleSessionDetails,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
   updateMetaDisciplina,updateMetaHoursDay,updateQuestionDraft,updateQuestionError,updateSessionHistoryFilter,
@@ -4722,6 +4731,7 @@ function delegatedArgument(expression,element){
   if(value==='this.value')return element.value;
   if(value==='this.value||null')return element.value||null;
   if(value==='this.textContent')return element.textContent;
+  if(value==='this.checked')return Boolean(element.checked);
   if(value==='this')return element;
   if(value==='true')return true;
   if(value==='false')return false;

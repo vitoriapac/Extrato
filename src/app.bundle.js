@@ -426,13 +426,13 @@
   // src/state/strategic.js
   var DEFAULT_ALGORITHM_VERSIONS = Object.freeze({ readiness: 1, retention: 1, reviewHealth: 1, recommendations: 3, recommendationOutcomes: 1, adaptiveReview: 1, forecasts: 1 });
   var EXAM_PRIORITIES = Object.freeze(["low", "normal", "high"]);
-  function normalizeTopicStrategy(topic) {
-    const importance = topic.examImportance == null || topic.examImportance === "" ? NaN : Number(topic.examImportance);
-    topic.examImportance = Number.isFinite(importance) ? Math.max(0, Math.min(1, importance)) : null;
-    const minutes = Number(topic.estimatedStudyMinutes);
-    topic.estimatedStudyMinutes = Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes) : null;
-    topic.prerequisites = Array.isArray(topic.prerequisites) ? [...new Set(topic.prerequisites.filter((value2) => typeof value2 === "string" && value2 !== topic.id))] : [];
-    return topic;
+  function normalizeTopicStrategy(topic2) {
+    const importance = topic2.examImportance == null || topic2.examImportance === "" ? NaN : Number(topic2.examImportance);
+    topic2.examImportance = Number.isFinite(importance) ? Math.max(0, Math.min(1, importance)) : null;
+    const minutes = Number(topic2.estimatedStudyMinutes);
+    topic2.estimatedStudyMinutes = Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes) : null;
+    topic2.prerequisites = Array.isArray(topic2.prerequisites) ? [...new Set(topic2.prerequisites.filter((value2) => typeof value2 === "string" && value2 !== topic2.id))] : [];
+    return topic2;
   }
   function normalizeExamBlueprint(value2 = {}, legacyExamDate = "") {
     const source = value2 && typeof value2 === "object" && !Array.isArray(value2) ? value2 : {};
@@ -441,6 +441,7 @@
       examDate: typeof source.examDate === "string" && source.examDate ? source.examDate : legacyExamDate || null,
       targetScore: Number.isFinite(target) ? Math.max(0, Math.min(100, target)) : 80,
       masteryTarget: Number.isFinite(Number(source.masteryTarget)) ? Math.max(0, Math.min(100, Number(source.masteryTarget))) : 80,
+      activeExamTags: Array.isArray(source.activeExamTags) ? [...new Set(source.activeExamTags.filter((value3) => ["bb-escriturario", "caixa-tbn", "caixa-tbn-ti"].includes(value3)))] : [],
       configuredAt: typeof source.configuredAt === "string" ? source.configuredAt : null,
       subjects: Array.isArray(source.subjects) ? source.subjects.map((item) => ({
         subjectId: item?.subjectId || null,
@@ -502,7 +503,7 @@
         horasPorDia: { "0": 2.5, "1": 2.5, "2": 2.5, "3": 2.5, "4": 2.5, "5": 2.5, "6": 2.5 }
       },
       examDate: "",
-      examBlueprint: { examDate: null, targetScore: 80, masteryTarget: 80, configuredAt: null, subjects: [] },
+      examBlueprint: { examDate: null, targetScore: 80, masteryTarget: 80, activeExamTags: [], configuredAt: null, subjects: [] },
       algorithmVersions: { ...DEFAULT_ALGORITHM_VERSIONS },
       progressHistory: [],
       studySessions: [],
@@ -724,9 +725,9 @@
 
   // src/domain/analytics/coverage.js
   function calculateTopicCoverage(topics = []) {
-    const active = topics.filter((topic) => !topic.archived);
+    const active = topics.filter((topic2) => !topic2.archived);
     if (!active.length) return { value: 0, completed: 0, total: 0, available: false };
-    const completed = active.filter((topic) => topic.status === "Concluído").length;
+    const completed = active.filter((topic2) => topic2.status === "Concluído").length;
     return { value: Math.round(completed / active.length * 100), completed, total: active.length, available: true };
   }
 
@@ -1001,7 +1002,7 @@
     const desired = Number(item.sessionMinutes ?? item.estimatedMinutes) || 30;
     return Math.min(available, 60, Math.max(MIN_SESSION_MINUTES, Math.round(desired)));
   }
-  function prerequisiteBlockers(topic, topics = []) {
+  function prerequisiteBlockers(topic2, topics = []) {
     const byId = new Map(topics.map((item) => [item.id, item]));
     const blockers = /* @__PURE__ */ new Set();
     const visit = (id, path) => {
@@ -1020,7 +1021,7 @@
       next.add(id);
       for (const parent of base.prerequisites || []) visit(parent, next);
     };
-    for (const id of topic.prerequisites || []) visit(id, /* @__PURE__ */ new Set([topic.id]));
+    for (const id of topic2.prerequisites || []) visit(id, /* @__PURE__ */ new Set([topic2.id]));
     return [...blockers];
   }
   function withPrerequisiteEligibility(candidates, topics = candidates) {
@@ -1065,16 +1066,16 @@
 
   // src/application/build-study-candidates.js
   function buildStudyCandidates({ priorities = [], topics = [], retentions = {}, reviewHealths = {}, blueprint = [], sessions = [], today, examProximity = null } = {}) {
-    const catalog = new Map(topics.map((topic) => [topic.id, topic]));
+    const catalog = new Map(topics.map((topic2) => [topic2.id, topic2]));
     const candidates = priorities.map((priority) => {
-      const topic = catalog.get(priority.topicId), diagnosis = priority.diagnosis;
+      const topic2 = catalog.get(priority.topicId), diagnosis = priority.diagnosis;
       const retention = retentions[priority.topicId];
       const reviewHealth = reviewHealths[priority.topicId];
       const exam = blueprint.find((item) => item.subjectId === priority.subjectId);
-      const examImpact = topic?.examImportance != null ? topic.examImportance * 100 : exam ? Math.min(100, (Number(exam.expectedQuestions) || 0) * 4 * (Number(exam.questionWeight) || 1)) : null;
+      const examImpact = topic2?.examImportance != null ? topic2.examImportance * 100 : exam ? Math.min(100, (Number(exam.expectedQuestions) || 0) * 4 * (Number(exam.questionWeight) || 1)) : null;
       const mastery = diagnosis?.mastery?.confidence > 0 ? diagnosis.mastery.score : null;
       const daysSinceContact = diagnosis?.lastActivity ? Math.max(0, Number(priority.diasSemEstudar) || 0) : null;
-      const covered = topic?.status === "Concluído";
+      const covered = topic2?.status === "Concluído";
       const reviewUrgency = priority.tipo === "revisão" ? Math.min(100, 40 + Math.max(0, Number(priority.diasAtrasado) || 0) * 12) : 0;
       const sessionMinutes2 = Math.max(15, Math.min(60, Number(priority.estimatedMinutes) || 30));
       const trend = diagnosis?.trend;
@@ -1085,17 +1086,17 @@
       const reviewHealthRisk = reviewHealth?.value == null ? null : 100 - reviewHealth.value;
       const masteryGap = mastery === null ? null : 100 - mastery;
       const studiedMinutes = sessions.filter((session) => session.topicId === priority.topicId && session.date <= today && session.type === "study").reduce((sum4, session) => sum4 + Math.max(0, Number(session.durationSeconds) || 0) / 60, 0);
-      const remainingMinutes = topic?.estimatedStudyMinutes == null ? null : Math.max(0, Math.ceil(topic.estimatedStudyMinutes - studiedMinutes));
+      const remainingMinutes = topic2?.estimatedStudyMinutes == null ? null : Math.max(0, Math.ceil(topic2.estimatedStudyMinutes - studiedMinutes));
       const risk = calculateRiskScore({ masteryRisk: masteryGap, retentionRisk, trendRisk, recencyRisk, examImpact, examProximity }, void 0, { evidenceStrength });
       const candidate = {
         ...priority,
         id: priority.topicId || priority.id,
-        archived: Boolean(topic?.topicArchived || topic?.subjectArchived || topic?.archived),
+        archived: Boolean(topic2?.topicArchived || topic2?.subjectArchived || topic2?.archived),
         covered,
         completed: sessions.some((session) => session.date === today && session.topicId === priority.topicId && (!priority.topicId ? session.subjectId === priority.subjectId : true) && Number(session.durationSeconds) > 0),
-        prerequisites: topic?.prerequisites || [],
+        prerequisites: topic2?.prerequisites || [],
         remainingMinutes,
-        totalEstimatedMinutes: topic?.estimatedStudyMinutes ?? null,
+        totalEstimatedMinutes: topic2?.estimatedStudyMinutes ?? null,
         estimatedMinutes: sessionMinutes2,
         sessionMinutes: sessionMinutes2,
         action: priority.recommendedAction,
@@ -1109,7 +1110,7 @@
         reviewHealth,
         reviewHealthRisk,
         reviewUrgency,
-        coverage: covered ? 100 : topic?.status === "Em andamento" ? 50 : 0,
+        coverage: covered ? 100 : topic2?.status === "Em andamento" ? 50 : 0,
         frequency: daysSinceContact === null ? null : Math.max(0, 100 - daysSinceContact * 5),
         daysSinceContact,
         recencyRisk,
@@ -1122,13 +1123,13 @@
       };
       return { ...candidate, ...calculatePriorityScore(candidate) };
     });
-    const prerequisites = topics.map((topic) => ({ ...topic, covered: topic.status === "Concluído", archived: topic.archived || topic.topicArchived || topic.subjectArchived, mastery: candidates.find((item) => item.topicId === topic.id)?.mastery ?? null }));
+    const prerequisites = topics.map((topic2) => ({ ...topic2, covered: topic2.status === "Concluído", archived: topic2.archived || topic2.topicArchived || topic2.subjectArchived, mastery: candidates.find((item) => item.topicId === topic2.id)?.mastery ?? null }));
     return withPrerequisiteEligibility(candidates, prerequisites);
   }
 
   // src/domain/analytics/topic-metrics.js
   var clamp4 = (value2) => Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
-  function calculateTopicMastery({ topic = {}, performance = { resolved: 0, accuracy: null }, trend = { key: "insufficient" }, reviews = [], recentSessions = [], periodStart = null, periodEnd = null } = {}) {
+  function calculateTopicMastery({ topic: topic2 = {}, performance = { resolved: 0, accuracy: null }, trend = { key: "insufficient" }, reviews = [], recentSessions = [], periodStart = null, periodEnd = null } = {}) {
     const questionConfidence = Math.min(1, performance.resolved / 50);
     const performanceScore = performance.accuracy === null ? 0 : performance.accuracy * questionConfidence + 40 * (1 - questionConfidence);
     let trendScore = 50;
@@ -1136,7 +1137,7 @@
     else if (trend.key === "down") trendScore = Math.max(0, 40 - Math.abs(trend.delta || 0) * 2);
     else if (trend.key === "stable") trendScore = 60;
     const completedReviews = reviews.filter((review) => review.status === "Concluído").length;
-    const reviewScore = reviews.length ? completedReviews / reviews.length * 100 : topic.status === "Concluído" ? 50 : 20;
+    const reviewScore = reviews.length ? completedReviews / reviews.length * 100 : topic2.status === "Concluído" ? 50 : 20;
     const recentSeconds = recentSessions.reduce((sum4, item) => sum4 + (Number(item.durationSeconds) || 0), 0);
     const studyScore = Math.min(100, recentSeconds / 7200 * 100);
     const confidence2 = Math.min(1, questionConfidence * 0.6 + Math.min(1, reviews.length / 4) * 0.2 + Math.min(1, recentSessions.length / 4) * 0.2);
@@ -1847,17 +1848,25 @@
   // src/application/subjects/exam-import-service.js
   var normalizeName = (value2) => String(value2 || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR");
   var selected = (id, set) => !set || set.has(id);
-  function previewExamStructureImport({ preset, selectedSubjectIds = null, selectedTopicIds = null, subjects = [] } = {}) {
-    if (!preset || !Array.isArray(preset.subjects)) throw new TypeError("Preset de edital inválido.");
+  var unique = (...values) => [...new Set(values.flat().filter(Boolean))];
+  var matchesCatalogItem = (local, source) => {
+    if (local?.catalogId && source?.catalogId && local.catalogId === source.catalogId) return true;
+    const localNames = unique(local?.name, local?.aliases).map(normalizeName), sourceNames = unique(source?.name, source?.aliases).map(normalizeName);
+    return localNames.some((name) => sourceNames.includes(name));
+  };
+  var findMatch = (items, source) => (items || []).find((item) => matchesCatalogItem(item, source));
+  var metadata = (current, source) => ({ catalogId: current.catalogId || source.catalogId || source.id, examTags: unique(current.examTags, source.examTags), institutions: unique(current.institutions, source.institutions), sourceRefs: unique(current.sourceRefs, source.sourceRefs), aliases: unique(current.aliases, source.aliases) });
+  function previewExamStructureImport({ preset: preset2, selectedSubjectIds = null, selectedTopicIds = null, subjects = [] } = {}) {
+    if (!preset2 || !Array.isArray(preset2.subjects)) throw new TypeError("Preset de edital inválido.");
     const subjectSet = selectedSubjectIds ? new Set(selectedSubjectIds) : null, topicSet = selectedTopicIds ? new Set(selectedTopicIds) : null;
     const result = { addedSubjects: 0, existingSubjects: 0, addedTopics: 0, existingTopics: 0, warnings: [], selection: [] };
-    for (const source of preset.subjects) {
+    for (const source of preset2.subjects) {
       if (!selected(source.id, subjectSet)) continue;
-      const existing = (subjects || []).find((item) => normalizeName(item.name) === normalizeName(source.name));
+      const existing = findMatch(subjects, source);
       existing ? result.existingSubjects++ : result.addedSubjects++;
-      const topics = (source.topics || []).filter((topic) => selected(`${source.id}:${topic.id}`, topicSet));
-      for (const topic of topics) {
-        if ((existing?.topics || []).some((item) => normalizeName(item.name) === normalizeName(topic.name))) result.existingTopics++;
+      const topics = (source.topics || []).filter((topic2) => selected(`${source.id}:${topic2.id}`, topicSet));
+      for (const topic2 of topics) {
+        if (findMatch(existing?.topics, topic2)) result.existingTopics++;
         else result.addedTopics++;
       }
       result.selection.push({ subject: source, existing, topics });
@@ -1873,7 +1882,12 @@
       try {
         for (const entry of preview.selection) {
           const target = entry.existing || subjectService2.create(entry.subject.name);
-          for (const topic of entry.topics) if (!(target.topics || []).some((item) => normalizeName(item.name) === normalizeName(topic.name))) subjectService2.addTopic(target.id, { name: topic.name });
+          Object.assign(target, metadata(target, entry.subject));
+          for (const topic2 of entry.topics) {
+            const existingTopic = findMatch(target.topics, topic2);
+            if (existingTopic) subjectService2.updateTopic(target.id, existingTopic.id, metadata(existingTopic, topic2));
+            else subjectService2.addTopic(target.id, { name: topic2.name, ...metadata({}, topic2) });
+          }
         }
       } catch (error) {
         list.splice(0, list.length, ...snapshot);
@@ -1883,22 +1897,42 @@
     } });
   }
 
+  // src/domain/exams/exam-catalog.js
+  var CATALOG_VERSION = "2.0.0";
+  var EXAM_TAGS = Object.freeze({ BB: "bb-escriturario", CAIXA: "caixa-tbn", CAIXA_TI: "caixa-tbn-ti" });
+  var { BB, CAIXA, CAIXA_TI } = EXAM_TAGS;
+  var common = [BB, CAIXA, CAIXA_TI];
+  var caixa = [CAIXA, CAIXA_TI];
+  var slug = (value2) => String(value2).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  var topic = (name, examTags = common, extra = {}) => Object.freeze({ id: extra.id || slug(name), catalogId: extra.id || slug(name), name, examTags: [...examTags], institutions: [...new Set(examTags.map((tag) => tag.startsWith("bb") ? "bb" : "caixa"))], aliases: extra.aliases || [], sourceRefs: extra.sourceRefs || examTags.map((tag) => tag === "bb-escriturario" ? "bb-2023" : tag) });
+  var subject = (id, name, names, { aliases = [], defaultTags = common } = {}) => Object.freeze({ id, catalogId: id, name, aliases, topics: names.map((item) => Array.isArray(item) ? topic(item[0], item[1] || defaultTags, item[2] || {}) : topic(item, defaultTags)) });
+  var EXAM_CATALOG = Object.freeze([
+    subject("lingua-portuguesa", "Língua Portuguesa", ["Compreensão e interpretação de textos", "Tipologia e gêneros textuais", "Ortografia oficial", "Acentuação gráfica", "Classes de palavras", "Sintaxe da oração e do período", "Concordância nominal e verbal", "Regência nominal e verbal", "Crase", "Pontuação", "Coesão e coerência", "Significação das palavras", "Redação oficial"], { aliases: ["Português"] }),
+    subject("lingua-inglesa", "Língua Inglesa", [["Compreensão de textos em língua inglesa", [CAIXA_TI]], ["Vocabulário e aspectos gramaticais", [CAIXA_TI]]], { defaultTags: [CAIXA_TI] }),
+    subject("matematica", "Matemática", [["Números inteiros e racionais", [BB]], ["Razão e proporção", [BB]], ["Regra de três simples e composta", [BB]], ["Porcentagem", [BB]], ["Equações e sistemas", [BB]], ["Funções", [BB]], ["Progressões aritméticas e geométricas", [BB]], ["Geometria plana e espacial", [BB]], ["Análise combinatória", [BB]], ["Probabilidade básica", [BB]]]),
+    subject("matematica-financeira", "Matemática Financeira", ["Conceitos gerais e valor do dinheiro no tempo", "Juros simples", "Juros compostos", "Taxas nominal, efetiva e equivalente", "Descontos simples e compostos", "Séries uniformes", "Sistemas de amortização", "Fluxo de caixa", "Valor presente e valor futuro"]),
+    subject("probabilidade-estatistica", "Probabilidade e Estatística", [["Estatística descritiva", caixa], ["Medidas de posição e dispersão", caixa], ["Distribuições de probabilidade", caixa], ["Probabilidade condicional", caixa], ["Variáveis aleatórias", caixa], ["Amostragem e estimação", caixa], ["Correlação e regressão", caixa]], { defaultTags: caixa }),
+    subject("conhecimentos-bancarios", "Conhecimentos Bancários", ["Sistema Financeiro Nacional", "Conselho Monetário Nacional", "Banco Central do Brasil", "Comissão de Valores Mobiliários", "Instituições financeiras", "Mercado monetário", "Mercado de crédito", "Mercado de capitais", "Mercado de câmbio", "Política monetária", "Taxa Selic", "Inflação e índices de preços", "Garantias do Sistema Financeiro Nacional"]),
+    subject("produtos-servicos-bancarios", "Produtos e Serviços Bancários", ["Contas correntes e depósitos", "Cartões de crédito e débito", "Crédito direto ao consumidor", "Crédito rural", "Financiamento habitacional", "Capitalização", "Previdência privada", "Seguros", "Consórcios", "Investimentos e fundos", "Títulos de renda fixa", "PIX", "Open Finance", "Correspondentes bancários"]),
+    subject("mercado-transformacao", "Mercado Financeiro e Transformação Digital", ["Fintechs e bancos digitais", "Startups e big techs", "Moedas digitais e criptomoedas", "Blockchain", "Marketplace", "Banking as a Service", "Sistemas de pagamentos instantâneos", "Transformação digital no sistema financeiro", "Novos modelos de negócio", "Experiência digital do cliente"]),
+    subject("vendas-negociacao", "Vendas e Negociação", [["Noções de estratégia empresarial", [BB]], ["Segmentação de mercado", [BB]], ["Gestão da experiência do cliente", [BB]], ["Técnicas de vendas", [BB]], ["Técnicas de negociação", [BB]], ["Marketing digital", [BB]], ["Ética em vendas", [BB]], ["Padrões de qualidade no atendimento", [BB]], ["Comportamento do consumidor", [BB]]]),
+    subject("atendimento-bancario", "Atendimento Bancário", ["Atendimento e relacionamento com o cliente", "Código de Defesa do Consumidor", "Ouvidoria", "Atendimento prioritário", "Acessibilidade e inclusão", "Qualidade em serviços", "Resolução de conflitos", "Comunicação assertiva"]),
+    subject("informatica-tic", "Informática e TIC", ["Sistemas operacionais", "Pacote Microsoft Office", "Internet e intranet", "Navegadores e correio eletrônico", "Redes de computadores", "Segurança da informação", "Computação em nuvem", "Ferramentas de colaboração", "Proteção de estações de trabalho"], { aliases: ["Informática"] }),
+    subject("tecnologia-ia", "Tecnologia e Inteligência Artificial", [["Lógica de programação", [CAIXA_TI]], ["Algoritmos e estruturas de dados", [CAIXA_TI]], ["Programação Java", [CAIXA_TI]], ["Programação Python", [CAIXA_TI]], ["Bancos de dados relacionais", [CAIXA_TI]], ["Bancos de dados NoSQL", [CAIXA_TI]], ["Engenharia de software", [CAIXA_TI]], ["Arquitetura de software", [CAIXA_TI]], ["APIs e microsserviços", [CAIXA_TI]], ["DevOps e DevSecOps", [CAIXA_TI]], ["Contêineres e orquestração", [CAIXA_TI]], ["Testes de software", [CAIXA_TI]], ["Métodos ágeis", [CAIXA_TI]], ["Ciência de dados", [CAIXA_TI]], ["Aprendizado de máquina", [CAIXA_TI]], ["Inteligência artificial generativa", [CAIXA_TI]], ["Governança de TI", [CAIXA_TI]], ["Segurança cibernética", [CAIXA_TI]]], { defaultTags: [CAIXA_TI], aliases: ["Tecnologia da Informação", "TI"] }),
+    subject("compliance-etica", "Compliance, Ética e Legislação Bancária", ["Prevenção à lavagem de dinheiro", "Financiamento ao terrorismo", "Lei Anticorrupção", "Lei Geral de Proteção de Dados", "Sigilo bancário", "Ética profissional", "Governança corporativa", "Responsabilidade socioambiental", "Controles internos", "Gestão de riscos", "Segurança cibernética no setor bancário"]),
+    subject("comportamentos-digitais", "Conhecimentos e Comportamentos Digitais", [["Growth mindset", caixa], ["Intraempreendedorismo", caixa], ["Design Thinking", caixa], ["Scrum", caixa], ["Resolução de problemas complexos", caixa], ["Liderança e autoliderança", caixa], ["Inteligência emocional", caixa], ["Objetivos de Desenvolvimento Sustentável", caixa], ["OKR", caixa], ["Produtividade pessoal", caixa], ["Trabalho remoto e colaboração", caixa], ["Lifelong learning", caixa]], { defaultTags: caixa }),
+    subject("caixa-especificos", "Caixa Econômica Federal — Específicos", [["FGTS", [CAIXA], { sourceRefs: [] }], ["Seguro-desemprego", [CAIXA], { sourceRefs: [] }], ["Abono salarial", [CAIXA], { sourceRefs: [] }], ["PIS", [CAIXA], { sourceRefs: [] }], ["Programas sociais", [CAIXA], { sourceRefs: [] }], ["Financiamento habitacional da Caixa", [CAIXA], { sourceRefs: [] }]], { defaultTags: [CAIXA] }),
+    subject("bb-especificos", "Banco do Brasil — Específicos", [["Código de Ética do Banco do Brasil", [BB]], ["Estratégia corporativa do Banco do Brasil", [BB]], ["Políticas de responsabilidade socioambiental do BB", [BB]], ["Estrutura e atuação do Banco do Brasil", [BB]]], { defaultTags: [BB] }),
+    subject("redacao", "Redação", [["Estrutura do texto dissertativo-argumentativo", [BB]], ["Tema, tese e argumentação", [BB]], ["Coesão e coerência na redação", [BB]], ["Norma-padrão aplicada à redação", [BB]], ["Proposta de intervenção", [BB]]], { defaultTags: [BB] })
+  ]);
+  function catalogForExamTags(examTags = []) {
+    const selected2 = new Set(examTags);
+    return EXAM_CATALOG.map((group) => ({ ...group, topics: group.topics.filter((item) => item.examTags.some((tag) => selected2.has(tag))) })).filter((group) => group.topics.length);
+  }
+
   // src/domain/exams/exam-presets.js
-  var subject = (id, name, topics) => ({ id, name, topics: topics.map(([topicId, topicName]) => ({ id: topicId, name: topicName })) });
-  var common = [subject("portugues", "Língua Portuguesa", [["interpretacao", "Interpretação de textos"], ["ortografia", "Ortografia"], ["pontuacao", "Pontuação"], ["concordancia", "Concordância"], ["regencia", "Regência e crase"]]), subject("matematica", "Matemática", [["porcentagem", "Porcentagem"], ["razao", "Razão e proporção"], ["probabilidade", "Probabilidade"], ["estatistica", "Estatística básica"]]), subject("mat-financeira", "Matemática Financeira", [["juros-simples", "Juros simples"], ["juros-compostos", "Juros compostos"], ["descontos", "Descontos"], ["sistemas-amortizacao", "Sistemas de amortização"]]), subject("bancarios", "Conhecimentos Bancários", [["sf-nacional", "Sistema Financeiro Nacional"], ["produtos-bancarios", "Produtos bancários"], ["mercado-financeiro", "Mercado financeiro"], ["prevencao-lavagem", "Prevenção à lavagem de dinheiro"]]), subject("informatica", "Informática", [["sistemas-operacionais", "Sistemas operacionais"], ["office", "Ferramentas de escritório"], ["internet", "Internet e redes"], ["seguranca-informacao", "Segurança da informação"]])];
-  var bbOnly = [subject("vendas", "Vendas e Negociação", [["estrategia-vendas", "Estratégia de vendas"], ["experiencia-cliente", "Experiência do cliente"], ["tecnicas-negociacao", "Técnicas de negociação"]]), subject("atualidades-mf", "Atualidades do Mercado Financeiro", [["fintechs", "Fintechs e bancos digitais"], ["open-finance", "Open Finance"], ["transformacao-digital", "Transformação digital"]])];
-  var caixaOnly = [subject("etica-compliance", "Ética e Compliance", [["etica", "Ética no serviço"], ["compliance", "Compliance"], ["governanca", "Governança corporativa"]]), subject("atendimento", "Atendimento Bancário", [["atendimento", "Atendimento ao cliente"], ["inclusao", "Inclusão e acessibilidade"], ["cdc", "Direitos do consumidor"]])];
-  var clone = (value2) => JSON.parse(JSON.stringify(value2));
-  var mergeCatalog = (...groups) => {
-    const result = [];
-    for (const item of groups.flat()) {
-      const found = result.find((entry) => entry.id === item.id);
-      if (!found) result.push(clone(item));
-      else for (const topic of item.topics) if (!found.topics.some((entry) => entry.id === topic.id)) found.topics.push(clone(topic));
-    }
-    return result;
-  };
-  var EXAM_PRESETS = Object.freeze([{ id: "bb-escriturario", name: "Banco do Brasil — Escriturário", version: "1.0.0", sources: ["bb"], subjects: mergeCatalog(common, bbOnly) }, { id: "caixa-tbn", name: "Caixa — Técnico Bancário Novo", version: "1.0.0", sources: ["caixa"], subjects: mergeCatalog(common, caixaOnly) }, { id: "bb-caixa", name: "BB + Caixa — conteúdo combinado", version: "1.0.0", sources: ["bb", "caixa"], subjects: mergeCatalog(common, bbOnly, caixaOnly) }, { id: "empty", name: "Estrutura vazia", version: "1.0.0", sources: [], subjects: [] }]);
+  var preset = (id, name, examTags, sources) => Object.freeze({ id, name, version: CATALOG_VERSION, examTags, sources, subjects: catalogForExamTags(examTags) });
+  var EXAM_PRESETS = Object.freeze([preset("bb-escriturario", "Banco do Brasil — Escriturário", [EXAM_TAGS.BB], ["bb-2023"]), preset("caixa-tbn", "Caixa — Técnico Bancário Novo", [EXAM_TAGS.CAIXA], ["caixa-tbn"]), preset("caixa-tbn-ti", "Caixa — TBN Tecnologia da Informação", [EXAM_TAGS.CAIXA_TI], ["caixa-tbn-ti"]), preset("bb-caixa", "BB + Caixa — preparação combinada", [EXAM_TAGS.BB, EXAM_TAGS.CAIXA], ["bb-2023", "caixa-tbn"]), Object.freeze({ id: "empty", name: "Estrutura vazia", version: CATALOG_VERSION, examTags: [], sources: [], subjects: [] })]);
   function getExamPreset(id) {
     return EXAM_PRESETS.find((item) => item.id === id) || null;
   }
@@ -2083,7 +2117,7 @@
   }
 
   // src/ui/controllers/editable-collection-controller.js
-  function createEditableCollectionController({ service, clone: clone3 = (value2) => structuredClone(value2), render: render2 = () => {
+  function createEditableCollectionController({ service, clone: clone2 = (value2) => structuredClone(value2), render: render2 = () => {
   }, normalize = (value2) => value2, onSaved = () => {
   }, initialState = {} } = {}) {
     if (!service || typeof service.find !== "function") throw new TypeError("Controlador de edição requer serviço de coleção.");
@@ -2093,7 +2127,7 @@
       if (state2.editingIsNew && state2.editingId !== id) service.remove(state2.editingId);
       const item = service.find(id);
       if (!item) return null;
-      Object.assign(state2, { editingId: id, editingIsNew: isNew, draft: clone3(item) });
+      Object.assign(state2, { editingId: id, editingIsNew: isNew, draft: clone2(item) });
       render2();
       return state2.draft;
     }, update: (field, value2) => {
@@ -2106,7 +2140,7 @@
       render2();
     }, save: () => {
       if (!state2.draft || !service.find(state2.editingId)) return null;
-      const saved = service.update(state2.editingId, normalize(clone3(state2.draft)));
+      const saved = service.update(state2.editingId, normalize(clone2(state2.draft)));
       reset();
       onSaved(saved);
       return saved;
@@ -2523,9 +2557,9 @@
     });
     if (Number.isFinite(weeklyBalanceMinutes) && weeklyBalanceMinutes < 0) alerts.push(createDiagnosticAlert({ type: "weekly_deficit", severity: weeklyBalanceMinutes <= -120 ? "high" : "medium", createdAt: today, reason: "A necessidade semanal excede a capacidade em " + Math.abs(weeklyBalanceMinutes) + " minutos.", recommendedAction: "Aumente a disponibilidade ou reduza a carga antes da prova." }));
     if (Number.isFinite(weeklyGoalGap) && weeklyGoalGap > 0) alerts.push(createDiagnosticAlert({ id: "weekly-goal-risk", type: "weekly_deficit", severity: "medium", createdAt: today, reason: "A meta semanal está " + weeklyGoalGap + "% abaixo do esperado para hoje.", recommendedAction: "Realoque uma sessão nesta semana para recuperar o ritmo." }));
-    topics.filter((topic) => Number(topic.mastery) < 50 && Number(topic.examImpact) >= 70).slice(0, 3).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "low_mastery_high_exam_impact", severity: "high", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: topic.name + " combina baixo domínio com alto impacto na prova.", recommendedAction: "Priorize teoria dirigida, questões e uma revisão curta." })));
+    topics.filter((topic2) => Number(topic2.mastery) < 50 && Number(topic2.examImpact) >= 70).slice(0, 3).forEach((topic2) => alerts.push(createDiagnosticAlert({ type: "low_mastery_high_exam_impact", severity: "high", subjectId: topic2.subjectId, topicId: topic2.topicId, createdAt: today, reason: topic2.name + " combina baixo domínio com alto impacto na prova.", recommendedAction: "Priorize teoria dirigida, questões e uma revisão curta." })));
     if (hardTopicsWithoutReview > 0) alerts.push(createDiagnosticAlert({ id: "hard-topics-no-review", type: "review_critical", severity: "low", createdAt: today, reason: hardTopicsWithoutReview + " tópico" + (hardTopicsWithoutReview === 1 ? "" : "s") + " " + (hardTopicsWithoutReview === 1 ? "difícil" : "difíceis") + " sem revisão agendada.", recommendedAction: "Agende revisões para os tópicos difíceis." }));
-    topics.filter((topic) => topic.evidenceStrength != null && Number(topic.evidenceStrength) < 0.25).slice(0, 1).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "insufficient_evidence", severity: "low", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: "Ainda há pouca evidência para avaliar " + topic.name + ".", recommendedAction: "Registre uma sessão com questões para melhorar a confiança da análise." })));
+    topics.filter((topic2) => topic2.evidenceStrength != null && Number(topic2.evidenceStrength) < 0.25).slice(0, 1).forEach((topic2) => alerts.push(createDiagnosticAlert({ type: "insufficient_evidence", severity: "low", subjectId: topic2.subjectId, topicId: topic2.topicId, createdAt: today, reason: "Ainda há pouca evidência para avaliar " + topic2.name + ".", recommendedAction: "Registre uma sessão com questões para melhorar a confiança da análise." })));
     return alerts;
   }
 
@@ -2724,7 +2758,7 @@
         return { id: `demo-topic-${subjectIndex + 1}-${topicIndex + 1}`, name: topicName, link: "", status, archived, archivedAt: archived ? timestamp(shiftDate(today, -12)) : null, notes: topicIndex % 3 === 0 ? "Revisar pontos marcados no material principal." : "", tags: topicIndex % 2 ? ["edital"] : ["prioridade"], difficulty: ["Fácil", "Médio", "Difícil"][(topicIndex + subjectIndex) % 3], createdAt, firstCompletedAt: status === "Concluído" ? timestamp(shiftDate(today, -50)) : null, lastCompletedAt: status === "Concluído" ? timestamp(lastDate) : null, completionCount: status === "Concluído" ? 2 : 0, lastReviewedAt: status === "Revisão" || status === "Concluído" ? timestamp(lastDate) : null, reviewCount: status === "Revisão" || status === "Concluído" ? 1 + topicIndex % 3 : 0, examImportance: Math.round((0.45 + random() * 0.5) * 100) / 100, estimatedStudyMinutes: 120 + Math.floor(random() * 300), prerequisites: topicIndex === 0 ? [] : [`demo-topic-${subjectIndex + 1}-${topicIndex}`] };
       })
     }));
-    const activeTopics2 = state2.subjects.flatMap((subject2) => subject2.topics.filter((topic) => !topic.archived).map((topic) => ({ subject: subject2, topic })));
+    const activeTopics2 = state2.subjects.flatMap((subject2) => subject2.topics.filter((topic2) => !topic2.archived).map((topic2) => ({ subject: subject2, topic: topic2 })));
     state2.studySessions = [];
     state2.questoes = [];
     const activeAges = Array.from({ length: 90 }, (_, age) => age).filter((age) => age % 7 !== 0 && age % 11 !== 0);
@@ -2898,8 +2932,8 @@
     const subjects = () => Array.isArray(getState()?.subjects) ? getState().subjects : [];
     const findTopic = (topicId) => {
       for (const subject2 of subjects()) {
-        const topic = (subject2.topics || []).find((item) => item.id === topicId);
-        if (topic) return { subject: subject2, topic };
+        const topic2 = (subject2.topics || []).find((item) => item.id === topicId);
+        if (topic2) return { subject: subject2, topic: topic2 };
       }
       return null;
     };
@@ -2918,11 +2952,11 @@
     }, remove: (id) => {
       const list = subjects(), index = list.findIndex((item) => item.id === id);
       return index < 0 ? null : list.splice(index, 1)[0];
-    }, addTopic: (subjectId, topic) => {
+    }, addTopic: (subjectId, topic2) => {
       const subject2 = subjects().find((item) => item.id === subjectId);
       if (!subject2) return null;
-      (subject2.topics || (subject2.topics = [])).push(topic);
-      return topic;
+      (subject2.topics || (subject2.topics = [])).push(topic2);
+      return topic2;
     }, updateTopic: (subjectId, topicId, changes) => {
       const found = findTopic(topicId);
       if (!found || found.subject.id !== subjectId) return null;
@@ -3021,14 +3055,14 @@
       rescheduleReview: (id, date2) => repository.update(id, { date: date2, manualDate: true, adaptive: false }),
       restoreAdaptiveSchedule: (id, suggestion) => repository.update(id, { date: suggestion.date, suggestedDate: suggestion.date, adaptiveReason: suggestion.reason, manualDate: false, adaptive: true }),
       rateReview: (id, rating, { label: label2 = "adaptativa" } = {}) => {
-        const review = repository.findById(id), topicId = topicIdOf(review), topic = topicId ? findTopic(topicId) : null;
-        if (!review || !topicId || !topic || typeof calculateAdaptiveState !== "function") return null;
-        const adaptiveState = calculateAdaptiveState(topic.adaptiveReview, rating, { reviewDate: clock.today(), algorithmVersion: algorithmVersion() });
-        topic.adaptiveReview = adaptiveState;
+        const review = repository.findById(id), topicId = topicIdOf(review), topic2 = topicId ? findTopic(topicId) : null;
+        if (!review || !topicId || !topic2 || typeof calculateAdaptiveState !== "function") return null;
+        const adaptiveState = calculateAdaptiveState(topic2.adaptiveReview, rating, { reviewDate: clock.today(), algorithmVersion: algorithmVersion() });
+        topic2.adaptiveReview = adaptiveState;
         repository.update(id, { lastRating: rating, adaptiveState: structuredClone(adaptiveState), adaptiveReason: `Avaliação: ${label2} · próximo intervalo: ${adaptiveState.intervalDays} dia${adaptiveState.intervalDays === 1 ? "" : "s"}` });
         complete(review);
         let next = null;
-        if (!repository.hasPendingForTopic(topicId, adaptiveState.nextReviewDate, { exceptId: id })) next = repository.add({ id: idGenerator("review"), subjectId: review.subjectId || null, topicId, topicRef: topicId, topic: topic.name || review.topic || "", date: adaptiveState.nextReviewDate, suggestedDate: adaptiveState.nextReviewDate, baseIntervalDays: adaptiveState.intervalDays, adaptive: true, manualDate: false, adaptiveReason: `Agendada após avaliação ${label2}.`, tipo: reviewTypeForDays(adaptiveState.intervalDays), status: "Não iniciado", lastRating: null, adaptiveState: structuredClone(adaptiveState), createdAt: clock.nowISO(), completedAt: null });
+        if (!repository.hasPendingForTopic(topicId, adaptiveState.nextReviewDate, { exceptId: id })) next = repository.add({ id: idGenerator("review"), subjectId: review.subjectId || null, topicId, topicRef: topicId, topic: topic2.name || review.topic || "", date: adaptiveState.nextReviewDate, suggestedDate: adaptiveState.nextReviewDate, baseIntervalDays: adaptiveState.intervalDays, adaptive: true, manualDate: false, adaptiveReason: `Agendada após avaliação ${label2}.`, tipo: reviewTypeForDays(adaptiveState.intervalDays), status: "Não iniciado", lastRating: null, adaptiveState: structuredClone(adaptiveState), createdAt: clock.nowISO(), completedAt: null });
         onEvent("adaptive_review_rated", review, { reviewId: id, rating, intervalDays: adaptiveState.intervalDays, nextReviewDate: adaptiveState.nextReviewDate, algorithmVersion: adaptiveState.algorithmVersion });
         onTopicChanged(topicId);
         return { review, next, adaptiveState };
@@ -3089,7 +3123,7 @@
   }
 
   // src/ui/calendar/calendar-controller.js
-  var clone2 = (value2) => value2 == null ? value2 : JSON.parse(JSON.stringify(value2));
+  var clone = (value2) => value2 == null ? value2 : JSON.parse(JSON.stringify(value2));
   var localToday = () => {
     const date2 = /* @__PURE__ */ new Date(), pad = (value2) => String(value2).padStart(2, "0");
     return `${date2.getFullYear()}-${pad(date2.getMonth() + 1)}-${pad(date2.getDate())}`;
@@ -3105,13 +3139,13 @@
     return { create(draft = {}) {
       const item = service.create({ ...draft, date: draft.date || clock.today() });
       state2.editingId = item.id;
-      state2.draft = clone2(item);
+      state2.draft = clone(item);
       state2.isNew = true;
       refresh();
       return item;
     }, beginEdit(id) {
       state2.editingId = id;
-      state2.draft = clone2(service.getById?.(id));
+      state2.draft = clone(service.getById?.(id));
       state2.isNew = false;
       refresh();
     }, update(field, value2) {
@@ -3268,9 +3302,9 @@
   function buildExamMasteryMatrix({ subjects = [], blueprint = {}, metricsByTopic = {}, masteryTargets = {} } = {}) {
     const general = Number(blueprint.masteryTarget ?? 80);
     return subjects.filter((s) => !s.archived).map((subject2) => {
-      const config = (blueprint.subjects || []).find((x) => x.subjectId === subject2.id), target = Number(config?.masteryTarget ?? masteryTargets[subject2.id] ?? general), topics = (subject2.topics || []).filter((t) => !t.archived).map((topic) => {
-        const m = metricsByTopic[topic.id] || {}, mastery = m.mastery?.value ?? m.mastery?.score ?? null, coverage = m.coverage ?? (topic.status === "Concluído" ? 100 : topic.status === "Em andamento" ? 50 : 0);
-        return { subjectId: subject2.id, topicId: topic.id, name: topic.name, coverage, mastery, retention: m.retention?.value ?? m.retention?.score ?? null, trend: m.trend || null, priority: m.priority?.value ?? m.priority?.score ?? null, confidence: m.mastery?.confidence ?? 0, target, gap: mastery == null ? null : Math.round((target - mastery) * 10) / 10, state: mastery == null ? coverage ? "without_evidence" : "not_started" : mastery < target ? "fragile" : "on_target" };
+      const config = (blueprint.subjects || []).find((x) => x.subjectId === subject2.id), target = Number(config?.masteryTarget ?? masteryTargets[subject2.id] ?? general), topics = (subject2.topics || []).filter((t) => !t.archived).map((topic2) => {
+        const m = metricsByTopic[topic2.id] || {}, mastery = m.mastery?.value ?? m.mastery?.score ?? null, coverage = m.coverage ?? (topic2.status === "Concluído" ? 100 : topic2.status === "Em andamento" ? 50 : 0);
+        return { subjectId: subject2.id, topicId: topic2.id, name: topic2.name, coverage, mastery, retention: m.retention?.value ?? m.retention?.score ?? null, trend: m.trend || null, priority: m.priority?.value ?? m.priority?.score ?? null, confidence: m.mastery?.confidence ?? 0, target, gap: mastery == null ? null : Math.round((target - mastery) * 10) / 10, state: mastery == null ? coverage ? "without_evidence" : "not_started" : mastery < target ? "fragile" : "on_target" };
       });
       const known = topics.filter((t) => t.mastery != null), avg = (key) => {
         const rows = topics.filter((t) => t[key] != null);
@@ -3385,10 +3419,10 @@
     const date2 = item.date || String(item.endedAt || item.createdAt || "").slice(0, 10);
     return Boolean(date2 && date2 >= start && date2 <= end);
   };
-  function resolveReportPeriod({ preset = "30", start = null, end = null, generatedAt } = {}) {
+  function resolveReportPeriod({ preset: preset2 = "30", start = null, end = null, generatedAt } = {}) {
     const today = String(generatedAt || (/* @__PURE__ */ new Date()).toISOString()).slice(0, 10);
-    if (preset === "custom" && start && end && start <= end) return { preset, start, end, label: `${start} a ${end}` };
-    const days = Math.max(1, Number(preset) || 30);
+    if (preset2 === "custom" && start && end && start <= end) return { preset: preset2, start, end, label: `${start} a ${end}` };
+    const days = Math.max(1, Number(preset2) || 30);
     return { preset: String(days), start: shiftDate2(today, -(days - 1)), end: today, label: `Últimos ${days} dias` };
   }
   function buildStrategicReport({ state: state2, generatedAt, isDemo = false, readiness = null, diagnosis = null, forecast = null, period } = {}) {
@@ -3398,7 +3432,7 @@
     const bySubject = subjects.map((subject2) => {
       const subjectSessions = sessions.filter((item) => item.subjectId === subject2.id), subjectQuestions = questions.filter((item) => item.subjectId === subject2.id), volume = sum3(subjectQuestions, (item) => item.resolved), hits = sum3(subjectQuestions, (item) => item.correct);
       return { id: subject2.id, name: subject2.name, studySeconds: sum3(subjectSessions, (item) => item.durationSeconds), questions: volume, accuracy: volume ? Math.round(hits / volume * 100) : null, completed: (subject2.topics || []).filter((item) => !item.archived && item.status === "Concluído").length, total: (subject2.topics || []).filter((item) => !item.archived).length };
-    }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum3(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum3(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60), subjectNames = Object.fromEntries(subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(subjects.flatMap((subject2) => (subject2.topics || []).map((topic) => [topic.id, topic.name]))), weeklyMinutes = Object.values(state2.metas?.horasPorDia || {}).reduce((total, value2) => total + (Number(value2) || 0) * 60, 0);
+    }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum3(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum3(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60), subjectNames = Object.fromEntries(subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(subjects.flatMap((subject2) => (subject2.topics || []).map((topic2) => [topic2.id, topic2.name]))), weeklyMinutes = Object.values(state2.metas?.horasPorDia || {}).reduce((total, value2) => total + (Number(value2) || 0) * 60, 0);
     const rawErrors = Object.entries(questions.reduce((totals, item) => {
       Object.entries(item.errorBreakdown || {}).forEach(([key, value2]) => totals[key] = (totals[key] || 0) + (Number(value2) || 0));
       return totals;
@@ -3463,7 +3497,7 @@
   document.getElementById("themeToggleBtn").addEventListener("click", toggleTheme);
   preferencesController.sync();
   document.getElementById("exportReportBtn")?.addEventListener("click", () => {
-    const preset = document.getElementById("reportPeriodSelect")?.value || "30", period = { preset, start: document.getElementById("reportPeriodStart")?.value || null, end: document.getElementById("reportPeriodEnd")?.value || null };
+    const preset2 = document.getElementById("reportPeriodSelect")?.value || "30", period = { preset: preset2, start: document.getElementById("reportPeriodStart")?.value || null, end: document.getElementById("reportPeriodEnd")?.value || null };
     const diagnosis = generateDiagnosis(intelligenceCandidates()), report = buildStrategicReport({ state, generatedAt: nowISO2(), isDemo: IS_DEMO_MODE, readiness: readinessResult(computeApprovalMetrics()), diagnosis, forecast: projectPerformance(), period });
     printStrategicReport({ document, window, report, render: renderStrategicReport });
   });
@@ -3502,8 +3536,8 @@
   }
   function getTopicById(topicId) {
     for (const subject2 of state.subjects) {
-      const topic = subject2.topics.find((t) => t.id === topicId);
-      if (topic) return { subject: subject2, topic };
+      const topic2 = subject2.topics.find((t) => t.id === topicId);
+      if (topic2) return { subject: subject2, topic: topic2 };
     }
     return null;
   }
@@ -3543,9 +3577,9 @@
       subject2.createdAt = subject2.createdAt || nowISO2();
       if (!Array.isArray(subject2.topics)) subject2.topics = [];
       subjectIdByName.set(subject2.name, subject2.id);
-      subject2.topics.forEach((topic) => {
-        if (!topic.id) topic.id = uid("topic");
-        topic.createdAt = topic.createdAt || nowISO2();
+      subject2.topics.forEach((topic2) => {
+        if (!topic2.id) topic2.id = uid("topic");
+        topic2.createdAt = topic2.createdAt || nowISO2();
       });
     });
     (data.questoes || []).forEach((q) => {
@@ -3588,12 +3622,12 @@
     return data;
   }
   function migrateV2toV3(data) {
-    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach((topic) => {
-      topic.firstCompletedAt = topic.firstCompletedAt || (topic.completedAt ? `${topic.completedAt}T12:00:00.000Z` : null);
-      topic.lastCompletedAt = topic.lastCompletedAt || topic.firstCompletedAt || null;
-      topic.completionCount = Number(topic.completionCount) || (topic.completedAt ? 1 : 0);
-      topic.lastReviewedAt = topic.lastReviewedAt || null;
-      topic.reviewCount = Number(topic.reviewCount) || 0;
+    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach((topic2) => {
+      topic2.firstCompletedAt = topic2.firstCompletedAt || (topic2.completedAt ? `${topic2.completedAt}T12:00:00.000Z` : null);
+      topic2.lastCompletedAt = topic2.lastCompletedAt || topic2.firstCompletedAt || null;
+      topic2.completionCount = Number(topic2.completionCount) || (topic2.completedAt ? 1 : 0);
+      topic2.lastReviewedAt = topic2.lastReviewedAt || null;
+      topic2.reviewCount = Number(topic2.reviewCount) || 0;
     }));
     if (!Array.isArray(data.topicHistory)) data.topicHistory = [];
     data.topicHistory.forEach((event) => {
@@ -3601,10 +3635,10 @@
       if (!event.occurredAt) event.occurredAt = event.date || nowISO2();
       if (!event.date) event.date = event.occurredAt;
     });
-    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach((topic) => {
-      if (topic.completedAt && !data.topicHistory.some((event) => event.type === "topic_completed" && event.topicId === topic.id)) {
-        const occurredAt = topic.lastCompletedAt || `${topic.completedAt}T12:00:00.000Z`;
-        data.topicHistory.push({ id: uid("history"), date: occurredAt, occurredAt, type: "topic_completed", subjectId: subject2.id, topicId: topic.id, metadata: { migrated: true } });
+    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach((topic2) => {
+      if (topic2.completedAt && !data.topicHistory.some((event) => event.type === "topic_completed" && event.topicId === topic2.id)) {
+        const occurredAt = topic2.lastCompletedAt || `${topic2.completedAt}T12:00:00.000Z`;
+        data.topicHistory.push({ id: uid("history"), date: occurredAt, occurredAt, type: "topic_completed", subjectId: subject2.id, topicId: topic2.id, metadata: { migrated: true } });
       }
     }));
     (data.reviewAgenda || []).forEach((review) => {
@@ -3620,9 +3654,9 @@
     (data.subjects || []).forEach((subject2) => {
       if (!("archived" in subject2)) subject2.archived = false;
       if (!("archivedAt" in subject2)) subject2.archivedAt = null;
-      (subject2.topics || []).forEach((topic) => {
-        if (!("archived" in topic)) topic.archived = false;
-        if (!("archivedAt" in topic)) topic.archivedAt = null;
+      (subject2.topics || []).forEach((topic2) => {
+        if (!("archived" in topic2)) topic2.archived = false;
+        if (!("archivedAt" in topic2)) topic2.archivedAt = null;
       });
     });
     data.schemaVersion = 4;
@@ -3738,8 +3772,8 @@
   function migrateV14toV15(data) {
     data.algorithmVersions = normalizeAlgorithmVersions(data.algorithmVersions);
     data.algorithmVersions.adaptiveReview = Math.max(2, Number(data.algorithmVersions.adaptiveReview) || 2);
-    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach((topic) => {
-      topic.adaptiveReview = topic.adaptiveReview ? createAdaptiveReviewState(topic.adaptiveReview) : null;
+    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach((topic2) => {
+      topic2.adaptiveReview = topic2.adaptiveReview ? createAdaptiveReviewState(topic2.adaptiveReview) : null;
     }));
     (data.reviewAgenda || []).forEach((review) => {
       review.lastRating = REVIEW_RATINGS[review.lastRating] ? review.lastRating : null;
@@ -4167,7 +4201,7 @@
   function topicsForSelection(subjectOrId, selectedTopicId) {
     const subject2 = subjectOrId && typeof subjectOrId === "object" ? subjectOrId : getSubjectById(subjectOrId);
     if (!subject2 || !Array.isArray(subject2.topics)) return [];
-    return subject2.topics.filter((topic) => !topic.archived || topic.id === selectedTopicId);
+    return subject2.topics.filter((topic2) => !topic2.archived || topic2.id === selectedTopicId);
   }
   function isActiveSubjectId(subjectId) {
     const subject2 = getSubjectById(subjectId);
@@ -4185,7 +4219,11 @@
     return state.subjects.filter((subject2) => !subject2.archived || subject2.id === selectedId);
   }
   function activeTopics() {
-    return allTopics().filter((topic) => !topic.subjectArchived && !topic.topicArchived);
+    return allTopics().filter((topic2) => !topic2.subjectArchived && !topic2.topicArchived);
+  }
+  function topicInActiveExamScope(topic2) {
+    const active = state.examBlueprint?.activeExamTags || [];
+    return !active.length || !(topic2?.examTags || []).length || topic2.examTags.some((tag) => active.includes(tag));
   }
   function subjectProgress(subject2) {
     return calculateTopicCoverage(subject2.topics).value;
@@ -4486,17 +4524,17 @@
       if (idError) return fail(idError);
       subjectIds.add(subject2.id);
       if (!textOk(subject2.name, 300) || !Array.isArray(subject2.topics) || subject2.topics.length > 1e4) return fail("Uma disciplina possui nome ou lista de tópicos inválida.");
-      for (const topic of subject2.topics) {
-        if (!isPlainObject(topic)) return fail("Um tópico não é um objeto válido.");
-        const topicIdError = registerId(topic.id, "Um tópico");
+      for (const topic2 of subject2.topics) {
+        if (!isPlainObject(topic2)) return fail("Um tópico não é um objeto válido.");
+        const topicIdError = registerId(topic2.id, "Um tópico");
         if (topicIdError) return fail(topicIdError);
-        topicIds.add(topic.id);
-        if (!textOk(topic.name, 500) || !textOk(topic.link || "", 2e3) || !textOk(topic.notes || "", 2e4)) return fail("Um tópico excede os limites de texto permitidos.");
-        if (!STATUS_OPTIONS.includes(topic.status) || !DIFFICULTY_OPTIONS.includes(topic.difficulty)) return fail("Um tópico possui status ou dificuldade inválida.");
-        if (!Array.isArray(topic.tags) || topic.tags.length > 100 || topic.tags.some((tag) => !textOk(tag, 100))) return fail("Um tópico possui tags inválidas.");
-        if (topic.examImportance !== null && (!Number.isFinite(Number(topic.examImportance)) || Number(topic.examImportance) < 0 || Number(topic.examImportance) > 1)) return fail("Um tópico possui importância de prova inválida.");
-        if (topic.estimatedStudyMinutes !== null && (!isFiniteNonNegative(topic.estimatedStudyMinutes) || Number(topic.estimatedStudyMinutes) <= 0)) return fail("Um tópico possui esforço estimado inválido.");
-        if (!Array.isArray(topic.prerequisites) || topic.prerequisites.length > 100 || topic.prerequisites.some((id) => !isSafeId(id))) return fail("Um tópico possui pré-requisitos inválidos.");
+        topicIds.add(topic2.id);
+        if (!textOk(topic2.name, 500) || !textOk(topic2.link || "", 2e3) || !textOk(topic2.notes || "", 2e4)) return fail("Um tópico excede os limites de texto permitidos.");
+        if (!STATUS_OPTIONS.includes(topic2.status) || !DIFFICULTY_OPTIONS.includes(topic2.difficulty)) return fail("Um tópico possui status ou dificuldade inválida.");
+        if (!Array.isArray(topic2.tags) || topic2.tags.length > 100 || topic2.tags.some((tag) => !textOk(tag, 100))) return fail("Um tópico possui tags inválidas.");
+        if (topic2.examImportance !== null && (!Number.isFinite(Number(topic2.examImportance)) || Number(topic2.examImportance) < 0 || Number(topic2.examImportance) > 1)) return fail("Um tópico possui importância de prova inválida.");
+        if (topic2.estimatedStudyMinutes !== null && (!isFiniteNonNegative(topic2.estimatedStudyMinutes) || Number(topic2.estimatedStudyMinutes) <= 0)) return fail("Um tópico possui esforço estimado inválido.");
+        if (!Array.isArray(topic2.prerequisites) || topic2.prerequisites.length > 100 || topic2.prerequisites.some((id) => !isSafeId(id))) return fail("Um tópico possui pré-requisitos inválidos.");
       }
     }
     const validateEntity = (item, label2) => {
@@ -4573,7 +4611,7 @@
       if (!isFiniteNonNegative(item.meta)) return fail("Uma meta por disciplina possui valor inválido.");
     }
     const validRef = (value2, set) => value2 == null || isSafeId(value2) && set.has(value2);
-    if (data.subjects.some((subject2) => subject2.topics.some((topic) => topic.prerequisites.some((id) => !topicIds.has(id) || id === topic.id)))) return fail("O backup contém pré-requisito de tópico inexistente ou circular direto.");
+    if (data.subjects.some((subject2) => subject2.topics.some((topic2) => topic2.prerequisites.some((id) => !topicIds.has(id) || id === topic2.id)))) return fail("O backup contém pré-requisito de tópico inexistente ou circular direto.");
     const referenceCollections = [...data.calendar, ...data.reviewAgenda, ...data.questoes, ...data.studySessions, ...data.metasPorDisciplina];
     if (referenceCollections.some((item) => !validRef(item.subjectId, subjectIds) || !validRef(item.topicId, topicIds))) return fail("O backup contém referência para disciplina ou tópico inexistente.");
     if (data.simulados.some((sim) => sim.breakdown.some((item) => !validRef(item.subjectId, subjectIds)))) return fail("O backup contém detalhamento de simulado para uma disciplina inexistente.");
@@ -4796,7 +4834,7 @@
     const select = document.getElementById("timerTopicSelect");
     if (!select) return;
     const subject2 = getSubjectById(subjectId);
-    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject2 ? topicsForSelection(subject2, selectedTopicId).map((topic) => `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || "(tópico sem nome)")}</option>`).join("") : "");
+    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject2 ? topicsForSelection(subject2, selectedTopicId).map((topic2) => `<option value="${escapeAttr(topic2.id)}">${escapeHtml(topic2.name || "(tópico sem nome)")}</option>`).join("") : "");
     select.value = selectedTopicId || "";
     if (select.value !== (selectedTopicId || "")) state.activeTimer.topicId = null;
   }
@@ -4891,7 +4929,7 @@
   function populateSessionTopicSelect(subjectId, selectedTopicId = null) {
     const select = document.getElementById("sessionModalTopic");
     const subject2 = getSubjectById(subjectId);
-    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject2 ? topicsForSelection(subject2, selectedTopicId).map((topic) => `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || "(tópico sem nome)")}</option>`).join("") : "");
+    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject2 ? topicsForSelection(subject2, selectedTopicId).map((topic2) => `<option value="${escapeAttr(topic2.id)}">${escapeHtml(topic2.name || "(tópico sem nome)")}</option>`).join("") : "");
   }
   function showSessionModal() {
     const overlay = document.getElementById("sessionModalOverlay");
@@ -5350,7 +5388,9 @@
   }
   function renderSubjects() {
     const container = document.getElementById("subjectsContainer");
-    const subjects = activeSubjects();
+    const allActiveSubjects = activeSubjects();
+    const topicMatchesExam = (topic2) => subjectExamFilter === "all" || (subjectExamFilter === "common" ? (topic2.institutions || []).includes("bb") && (topic2.institutions || []).includes("caixa") : (topic2.institutions || []).includes(subjectExamFilter));
+    const subjects = subjectExamFilter === "all" ? allActiveSubjects : allActiveSubjects.filter((subject2) => (subject2.topics || []).some((topic2) => topicMatchesExam(topic2)));
     const archived = archivedSubjects();
     if (subjects.length === 0 && archived.length === 0) {
       container.innerHTML = `<div class="empty-state">
@@ -5361,9 +5401,9 @@
     }
     const activeHtml = subjects.length === 0 ? `<div class="empty-state"><p>Nenhuma disciplina ativa.</p><button class="btn" data-delegated-click="addSubject()">+ Adicionar disciplina</button></div>` : subjects.map((s, idx) => {
       const pct2 = subjectProgress(s);
-      const subjectTopics = s.topics.filter((t) => !t.archived);
+      const subjectTopics = s.topics.filter((t) => !t.archived && topicMatchesExam(t));
       const topicFilter = subjectTopicFilters.get(s.id) || { status: "", difficulty: "" };
-      const allVisibleTopics = subjectTopics.filter((topic) => (!topicFilter.status || topic.status === topicFilter.status) && (!topicFilter.difficulty || topic.difficulty === topicFilter.difficulty));
+      const allVisibleTopics = subjectTopics.filter((topic2) => (!topicFilter.status || topic2.status === topicFilter.status) && (!topicFilter.difficulty || topic2.difficulty === topicFilter.difficulty));
       const topicLimit = subjectTopicLimits.get(s.id) || 10;
       const visibleTopics = allVisibleTopics.slice(0, topicLimit);
       const archivedTopics = s.topics.filter((t) => t.archived);
@@ -5406,7 +5446,7 @@
                 <td>
                   <input type="text" value="${escapeAttr(t.name)}" placeholder="Nome do tópico"
                      data-delegated-blur="updateTopic('${s.id}','${t.id}','name', this.value)">
-                  ${t.tags && t.tags.length ? `<div class="tag-chips">${t.tags.map((tag) => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
+                  ${(t.examTags || []).length || t.tags?.length ? `<div class="tag-chips">${examBadges(t)}${(t.tags || []).map((tag) => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
                 </td>
                 <td>
                   <input type="url" value="${escapeAttr(t.link || "")}" placeholder="https://..."
@@ -5470,9 +5510,10 @@
       <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
     </div>`).join("")}
   </div>` : "";
-    container.innerHTML = activeHtml + archivedHtml;
+    container.innerHTML = `<div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">${[["all", "Todos"], ["bb", "BB"], ["caixa", "Caixa"], ["common", "Comuns"]].map(([value2, label2]) => `<button class="btn ghost small ${subjectExamFilter === value2 ? "active" : ""}" data-delegated-click="setSubjectExamFilter('${value2}')">${label2}</button>`).join("")}</div>` + activeHtml + archivedHtml;
   }
   var openNotesIds = /* @__PURE__ */ new Set();
+  var subjectExamFilter = "all";
   var subjectTopicLimits = /* @__PURE__ */ new Map();
   var subjectTopicFilters = /* @__PURE__ */ new Map();
   function toggleNotes(topicId) {
@@ -5502,6 +5543,14 @@
     subjectTopicLimits.set(subjectId, 10);
     renderSubjects();
   }
+  function setSubjectExamFilter(value2) {
+    if (["all", "bb", "caixa", "common"].includes(value2)) subjectExamFilter = value2;
+    renderSubjects();
+  }
+  function examBadges(topic2) {
+    const institutions = topic2.institutions || [];
+    return `${institutions.includes("bb") ? '<span class="exam-tag exam-tag--bb">BB</span>' : ""}${institutions.includes("caixa") ? '<span class="exam-tag exam-tag--caixa">CAIXA</span>' : ""}`;
+  }
   function updateTopicTags(subjectId, topicId, value2) {
     subjectService.updateTopic(subjectId, topicId, { tags: value2.split(",").map((tag) => tag.trim()).filter(Boolean) });
     persistAndRender();
@@ -5518,16 +5567,16 @@
     subjectService.updateTopic(subjectId, topicId, found.topic);
     persistAndRender();
   }
-  function renderTopicAnalyticsState(subject2, topic) {
-    const coverage = topic.status === "Concluído" ? 100 : topic.status === "Em andamento" || topic.status === "Revisão" ? 50 : 0;
-    const masteryResult = topicMasteryIndex(subject2.id, topic.id), retentionResult = topicRetentionScore(subject2.id, topic.id);
+  function renderTopicAnalyticsState(subject2, topic2) {
+    const coverage = topic2.status === "Concluído" ? 100 : topic2.status === "Em andamento" || topic2.status === "Revisão" ? 50 : 0;
+    const masteryResult = topicMasteryIndex(subject2.id, topic2.id), retentionResult = topicRetentionScore(subject2.id, topic2.id);
     const mastery = masteryResult.confidence > 0 ? masteryResult.score : null, retention = retentionResult.available ? retentionResult.score : null;
-    const diagnosis = diagnoseTopic(subject2.id, topic.id), reviewHealth = topicReviewHealthScore(topic, masteryResult, retentionResult, diagnosis);
+    const diagnosis = diagnoseTopic(subject2.id, topic2.id), reviewHealth = topicReviewHealthScore(topic2, masteryResult, retentionResult, diagnosis);
     const lastContact = diagnosis?.lastActivity ? Math.max(0, -(diasParaRevisao(diagnosis.lastActivity) ?? 0)) : null;
-    const lastReviewDate = localDateFromTimestamp2(topic.lastReviewedAt);
+    const lastReviewDate = localDateFromTimestamp2(topic2.lastReviewedAt);
     const lastReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
     const performance = diagnosis?.performance?.accuracy ?? null, trend = diagnosis?.trend;
-    const blockers = prerequisiteBlockers({ ...topic, mastery, covered: coverage === 100 }, allTopics().map((item) => ({ ...item, covered: item.status === "Concluído", mastery: topicMasteryIndex(item.subjectId, item.id).confidence > 0 ? topicMasteryIndex(item.subjectId, item.id).score : null })));
+    const blockers = prerequisiteBlockers({ ...topic2, mastery, covered: coverage === 100 }, allTopics().map((item) => ({ ...item, covered: item.status === "Concluído", mastery: topicMasteryIndex(item.subjectId, item.id).confidence > 0 ? topicMasteryIndex(item.subjectId, item.id).score : null })));
     let label2 = "Não iniciado";
     if (coverage > 0 && mastery === null) label2 = "Em estudo · aguardando questões";
     else if (coverage === 100 && mastery < 50) label2 = "Coberto, não consolidado";
@@ -5620,31 +5669,34 @@
   document.getElementById("loadDefaultSubjectsBtn").addEventListener("click", carregarDisciplinasPadrao);
   var examImportService = createExamImportService({ subjectService, getSubjects: () => state.subjects });
   var editalImportFacade = createEditalImportFacade({ catalog: EXAM_PRESETS, importService: examImportService });
-  var examImportState = { step: 1, presetId: EXAM_PRESETS[0].id, subjectIds: /* @__PURE__ */ new Set(), topicIds: /* @__PURE__ */ new Set(), previousFocus: null };
-  function syncExamSelection(preset) {
-    examImportState.subjectIds = new Set(preset.subjects.map((item) => item.id));
-    examImportState.topicIds = new Set(preset.subjects.flatMap((item) => (item.topics || []).map((topic) => `${item.id}:${topic.id}`)));
+  var examImportState = { step: 1, presetId: EXAM_PRESETS[0].id, subjectIds: /* @__PURE__ */ new Set(), topicIds: /* @__PURE__ */ new Set(), query: "", previousFocus: null };
+  function syncExamSelection(preset2) {
+    examImportState.subjectIds = new Set(preset2.subjects.map((item) => item.id));
+    examImportState.topicIds = new Set(preset2.subjects.flatMap((item) => (item.topics || []).map((topic2) => `${item.id}:${topic2.id}`)));
   }
   function selectedExamPreset() {
     return getExamPreset(examImportState.presetId) || EXAM_PRESETS[0];
   }
   function renderExamImport() {
-    const content = document.getElementById("examImportContent"), back = document.getElementById("examImportBackBtn"), next = document.getElementById("examImportNextBtn"), preset = selectedExamPreset();
+    const content = document.getElementById("examImportContent"), back = document.getElementById("examImportBackBtn"), next = document.getElementById("examImportNextBtn"), preset2 = selectedExamPreset();
     back.hidden = examImportState.step === 1;
     next.textContent = examImportState.step === 3 ? "Importar" : "Continuar";
-    if (examImportState.step === 1) content.innerHTML = `<p>Escolha uma estrutura pronta.</p><div class="exam-preset-list">${EXAM_PRESETS.map((item, index) => `<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id === examImportState.presetId ? "checked" : ""}><span><strong>${escapeHtml(item.name)}</strong><small>${item.subjects.length ? `${item.subjects.length} disciplinas · versão ${escapeHtml(item.version)}` : "Começar sem conteúdo predefinido"}</small></span></label>`).join("")}</div>`;
-    else if (examImportState.step === 2) content.innerHTML = preset.subjects.length ? `<p>Selecione as disciplinas e os tópicos que deseja importar.</p><div class="exam-subject-list">${preset.subjects.map((subject2) => `<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject2.id)}" ${examImportState.subjectIds.has(subject2.id) ? "checked" : ""}>${escapeHtml(subject2.name)}</label><div class="exam-topic-list">${subject2.topics.map((topic) => {
-      const key = `${subject2.id}:${topic.id}`;
-      return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key) ? "checked" : ""}>${escapeHtml(topic.name)}</label>`;
-    }).join("")}</div></section>`).join("")}</div>` : "<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>";
-    else {
-      const preview = editalImportFacade.preview(examImportState.subjectIds, examImportState.topicIds);
-      content.innerHTML = `<p>Confira as alterações antes de importar.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.existingSubjects}</strong><br>disciplinas existentes</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos existentes</div></div>${preview.warnings.map((item) => `<p class="form-hint">${escapeHtml(item)}</p>`).join("")}`;
+    if (examImportState.step === 1) content.innerHTML = `<p>Escolha o concurso. Os presets usam o catálogo mestre versão ${escapeHtml(preset2.version)}.</p><div class="exam-preset-list">${EXAM_PRESETS.map((item) => `<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id === examImportState.presetId ? "checked" : ""}><span><strong>${escapeHtml(item.name)}</strong><small>${item.subjects.length ? `${item.subjects.length} disciplinas · ${item.subjects.reduce((sum4, subject2) => sum4 + subject2.topics.length, 0)} tópicos · versão ${escapeHtml(item.version)}` : "Começar sem conteúdo predefinido"}</small></span></label>`).join("")}</div>`;
+    else if (examImportState.step === 2) {
+      const query = examImportState.query.trim().toLocaleLowerCase("pt-BR"), visible = preset2.subjects.map((subject2) => ({ ...subject2, topics: subject2.topics.filter((topic2) => !query || subject2.name.toLocaleLowerCase("pt-BR").includes(query) || topic2.name.toLocaleLowerCase("pt-BR").includes(query)) })).filter((subject2) => subject2.topics.length);
+      content.innerHTML = preset2.subjects.length ? `<p>Selecione as disciplinas e os tópicos que deseja importar. Conteúdos comuns mantêm um único histórico.</p><div class="exam-import-tools"><input type="search" id="examImportSearch" value="${escapeAttr(examImportState.query)}" placeholder="Buscar disciplina ou tópico..." aria-label="Buscar no edital"><div><button class="btn ghost small" data-exam-select="all">Selecionar tudo</button><button class="btn ghost small" data-exam-select="common">Somente comuns</button><button class="btn ghost small" data-exam-select="bb">Somente BB</button><button class="btn ghost small" data-exam-select="caixa">Somente Caixa</button><button class="btn ghost small" data-exam-select="none">Limpar</button></div></div><div class="exam-selection-count">${examImportState.topicIds.size} de ${preset2.subjects.reduce((sum4, subject2) => sum4 + subject2.topics.length, 0)} tópicos selecionados</div><div class="exam-subject-list">${visible.map((subject2) => `<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject2.id)}" ${examImportState.subjectIds.has(subject2.id) ? "checked" : ""}><span>${escapeHtml(subject2.name)} <small>${subject2.topics.length} tópicos</small></span></label><div class="exam-topic-list">${subject2.topics.map((topic2) => {
+        const key = `${subject2.id}:${topic2.id}`;
+        return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key) ? "checked" : ""}><span>${escapeHtml(topic2.name)} <small>${examBadges(topic2)}</small></span></label>`;
+      }).join("")}</div></section>`).join("")}</div>` : "<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>";
+    } else {
+      const preview = editalImportFacade.preview(examImportState.subjectIds, examImportState.topicIds), total = preview.addedTopics + preview.existingTopics;
+      content.innerHTML = `<p>Confira as alterações. IDs, progresso e histórico existentes serão preservados.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects + preview.existingSubjects}</strong><br>disciplinas selecionadas</div><div><strong>${total}</strong><br>tópicos selecionados</div><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.existingSubjects}</strong><br>disciplinas existentes</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos preservados</div></div>${preview.warnings.map((item) => `<p class="form-hint">${escapeHtml(item)}</p>`).join("")}`;
       next.disabled = preview.addedSubjects + preview.addedTopics === 0;
     }
   }
   function openExamImport() {
     examImportState.step = 1;
+    examImportState.query = "";
     examImportState.presetId = EXAM_PRESETS[0].id;
     editalImportFacade.begin(examImportState.presetId);
     syncExamSelection(EXAM_PRESETS[0]);
@@ -5667,8 +5719,8 @@
     if (event.target.dataset.examSubject) {
       const id = event.target.dataset.examSubject;
       event.target.checked ? examImportState.subjectIds.add(id) : examImportState.subjectIds.delete(id);
-      selectedExamPreset().subjects.find((item) => item.id === id)?.topics.forEach((topic) => {
-        const key = `${id}:${topic.id}`;
+      selectedExamPreset().subjects.find((item) => item.id === id)?.topics.forEach((topic2) => {
+        const key = `${id}:${topic2.id}`;
         event.target.checked ? examImportState.topicIds.add(key) : examImportState.topicIds.delete(key);
       });
       renderExamImport();
@@ -5676,6 +5728,28 @@
     if (event.target.dataset.examTopic) {
       event.target.checked ? examImportState.topicIds.add(event.target.dataset.examTopic) : examImportState.topicIds.delete(event.target.dataset.examTopic);
     }
+  });
+  document.getElementById("examImportContent").addEventListener("input", (event) => {
+    if (event.target.id === "examImportSearch") {
+      examImportState.query = event.target.value;
+      renderExamImport();
+      document.getElementById("examImportSearch")?.focus();
+    }
+  });
+  document.getElementById("examImportContent").addEventListener("click", (event) => {
+    const action = event.target.closest("[data-exam-select]")?.dataset.examSelect;
+    if (!action) return;
+    const preset2 = selectedExamPreset();
+    examImportState.subjectIds.clear();
+    examImportState.topicIds.clear();
+    for (const subject2 of preset2.subjects) for (const topic2 of subject2.topics) {
+      const institutions = topic2.institutions || [], include = action === "all" || action === "bb" && institutions.includes("bb") || action === "caixa" && institutions.includes("caixa") || action === "common" && institutions.includes("bb") && institutions.includes("caixa");
+      if (include) {
+        examImportState.subjectIds.add(subject2.id);
+        examImportState.topicIds.add(`${subject2.id}:${topic2.id}`);
+      }
+    }
+    renderExamImport();
   });
   document.getElementById("examImportCancelBtn").addEventListener("click", closeExamImport);
   document.getElementById("examImportBackBtn").addEventListener("click", () => {
@@ -5786,10 +5860,10 @@
     subjectService.updateTopic(subjectId, topicId, { [field]: value2 });
     persistAndRender();
   }
-  function addHistoryEvent(type, subjectId, topicId = null, metadata = {}) {
+  function addHistoryEvent(type, subjectId, topicId = null, metadata2 = {}) {
     if (!Array.isArray(state.topicHistory)) state.topicHistory = [];
     const occurredAt = nowISO2();
-    const event = { id: uid("history"), date: occurredAt, occurredAt, localDate: todayISO(), type, subjectId: subjectId || null, topicId: topicId || null, metadata };
+    const event = { id: uid("history"), date: occurredAt, occurredAt, localDate: todayISO(), type, subjectId: subjectId || null, topicId: topicId || null, metadata: metadata2 };
     state.topicHistory.push(event);
     return event;
   }
@@ -5822,14 +5896,14 @@
     found.topic.lastReviewedAt = dates.length ? dates[dates.length - 1] : null;
   }
   function refreshAllTopicReviewStats() {
-    state.subjects.forEach((subject2) => subject2.topics.forEach((topic) => refreshTopicReviewStats(topic.id)));
+    state.subjects.forEach((subject2) => subject2.topics.forEach((topic2) => refreshTopicReviewStats(topic2.id)));
   }
-  function markTopicCompleted(topic) {
+  function markTopicCompleted(topic2) {
     const now = nowISO2();
-    if (!topic.firstCompletedAt) topic.firstCompletedAt = now;
-    topic.lastCompletedAt = now;
-    topic.completedAt = todayISO();
-    topic.completionCount = (Number(topic.completionCount) || 0) + 1;
+    if (!topic2.firstCompletedAt) topic2.firstCompletedAt = now;
+    topic2.lastCompletedAt = now;
+    topic2.completedAt = todayISO();
+    topic2.completionCount = (Number(topic2.completionCount) || 0) + 1;
   }
   function updateTopicStatus(subjectId, topicId, selectEl) {
     const s = getSubjectById(subjectId);
@@ -6239,7 +6313,7 @@
     const draft = agendaUiState.draft;
     if (!draft) return;
     draft[field] = value2;
-    if (field === "subjectId" && draft.topicId && !topicsForSelection(value2, draft.topicId).some((topic) => topic.id === draft.topicId)) draft.topicId = null;
+    if (field === "subjectId" && draft.topicId && !topicsForSelection(value2, draft.topicId).some((topic2) => topic2.id === draft.topicId)) draft.topicId = null;
   }
   function applyAgendaField(item, field, value2) {
     const oldStatus = item.status, oldValue = item[field];
@@ -6640,9 +6714,9 @@
   function getSubjectTopicPerformance(subjectId) {
     const subject2 = state.subjects.find((item) => item.id === subjectId);
     if (!subject2) return [];
-    return subject2.topics.filter((topic) => !topic.archived).map((topic) => {
-      const performance = getTopicPerformance(topic.id);
-      return { ...topic, ...performance, confidence: performanceConfidence(performance.resolved), classification: classifyAccuracy(performance.accuracy) };
+    return subject2.topics.filter((topic2) => !topic2.archived).map((topic2) => {
+      const performance = getTopicPerformance(topic2.id);
+      return { ...topic2, ...performance, confidence: performanceConfidence(performance.resolved), classification: classifyAccuracy(performance.accuracy) };
     }).sort((a, b) => {
       if (a.accuracy === null) return 1;
       if (b.accuracy === null) return -1;
@@ -6839,17 +6913,17 @@
       ["Tendência", `${trend.icon} ${trend.label}`]
     ].map(([label2, value2]) => `<div class="stat-cell"><div class="n">${value2}</div><div class="l">${label2}</div></div>`).join("");
     const topicPerformance = getSubjectTopicPerformance(performanceSubjectId);
-    const mature = topicPerformance.filter((topic) => topic.resolved >= 30), insufficient = topicPerformance.filter((topic) => topic.resolved > 0 && topic.resolved < 30);
+    const mature = topicPerformance.filter((topic2) => topic2.resolved >= 30), insufficient = topicPerformance.filter((topic2) => topic2.resolved > 0 && topic2.resolved < 30);
     if (performanceViewMode === "with-data" && !mature.length && insufficient.length) performanceViewMode = "insufficient";
-    const filteredPerformance = performanceViewMode === "all" ? topicPerformance : topicPerformance.filter((topic) => performanceViewMode === "without-data" ? topic.resolved === 0 : performanceViewMode === "insufficient" ? topic.resolved > 0 && topic.resolved < 30 : topic.resolved >= 30);
+    const filteredPerformance = performanceViewMode === "all" ? topicPerformance : topicPerformance.filter((topic2) => performanceViewMode === "without-data" ? topic2.resolved === 0 : performanceViewMode === "insufficient" ? topic2.resolved > 0 && topic2.resolved < 30 : topic2.resolved >= 30);
     const visiblePerformance = filteredPerformance.slice(0, performanceVisible);
     const performanceTabs = `<div class="analytics-view-tabs" role="group" aria-label="Filtrar desempenho por dados"><button class="btn small ${performanceViewMode === "with-data" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('with-data')">Com dados</button><button class="btn small ${performanceViewMode === "insufficient" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('insufficient')">Amostra insuficiente</button><button class="btn small ${performanceViewMode === "without-data" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('without-data')">Sem dados</button><button class="btn small ${performanceViewMode === "all" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('all')">Todos</button></div>`;
-    bars2.innerHTML = performanceTabs + (filteredPerformance.length ? visiblePerformance.map((topic) => {
-      const width = topic.accuracy === null ? 0 : topic.accuracy;
+    bars2.innerHTML = performanceTabs + (filteredPerformance.length ? visiblePerformance.map((topic2) => {
+      const width = topic2.accuracy === null ? 0 : topic2.accuracy;
       return `<div class="performance-row">
-      <div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId, topic.id).score}/100</div></div>
-      <div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div>
-      <div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? "—" : topic.accuracy + "%"}</div>
+      <div class="performance-name">${escapeHtml(topic2.name)}<div class="performance-meta">${topic2.resolved} questões · ${topic2.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId, topic2.id).score}/100</div></div>
+      <div class="performance-track"><div class="performance-fill ${topic2.classification.key}" style="width:${width}%"></div></div>
+      <div class="performance-value">${topic2.classification.icon} ${topic2.accuracy === null ? "—" : topic2.accuracy + "%"}</div>
     </div>`;
     }).join("") + renderCollectionFooter({ variant: "block", total: filteredPerformance.length, visible: visiblePerformance.length, step: 8, label: "tópicos", showMoreAction: "changePerformanceLimit(8)", showAllAction: "showAllPerformance()", showLessAction: performanceVisible > 8 ? "resetPerformanceLimit()" : "" }) : `<div class="empty-state empty-state--compact"><strong>${performanceViewMode === "with-data" ? "Nenhum tópico possui amostra suficiente" : "Nenhum tópico nesta categoria"}</strong><p>${performanceViewMode === "with-data" ? "São necessárias pelo menos 30 questões por tópico para esta visualização." : "Altere o filtro para visualizar os demais tópicos."}</p></div>`);
     weeklyEl.innerHTML = `<div class="trend-grid">${weekly.map((week) => `
@@ -6859,13 +6933,13 @@
       <small>${week.resolved} questões</small>
     </div>`).join("")}</div>
     <div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta === null ? "" : ` · ${trend.delta > 0 ? "+" : ""}${trend.delta.toFixed(1)} p.p.`}</div>`;
-    const subjectTopics = activeTopics().filter((topic) => topic.subjectId === performanceSubjectId);
-    if (errorAnalysisView.topicId && !subjectTopics.some((topic) => topic.id === errorAnalysisView.topicId)) errorAnalysisView.topicId = "";
+    const subjectTopics = activeTopics().filter((topic2) => topic2.subjectId === performanceSubjectId);
+    if (errorAnalysisView.topicId && !subjectTopics.some((topic2) => topic2.id === errorAnalysisView.topicId)) errorAnalysisView.topicId = "";
     const currentStart = addDays(todayISO(), -(errorAnalysisView.days - 1)), previousEnd = addDays(currentStart, -1), previousStart = addDays(previousEnd, -(errorAnalysisView.days - 1));
     const scopedRecords = validQuestionRecords().filter((question) => entitySubjectId(question) === performanceSubjectId && (!errorAnalysisView.topicId || question.topicId === errorAnalysisView.topicId));
     const profile = buildErrorProfile(scopedRecords.filter((question) => question.date >= currentStart && question.date <= todayISO()));
     const previousProfile = buildErrorProfile(scopedRecords.filter((question) => question.date >= previousStart && question.date <= previousEnd));
-    const errorToolbar = `<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7, 30, 60, 90].map((days) => `<option value="${days}" ${errorAnalysisView.days === days ? "selected" : ""}>Últimos ${days} dias</option>`).join("")}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${subjectTopics.map((topic) => `<option value="${escapeAttr(topic.id)}" ${errorAnalysisView.topicId === topic.id ? "selected" : ""}>${escapeHtml(topic.name)}</option>`).join("")}</select></div>`;
+    const errorToolbar = `<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7, 30, 60, 90].map((days) => `<option value="${days}" ${errorAnalysisView.days === days ? "selected" : ""}>Últimos ${days} dias</option>`).join("")}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${subjectTopics.map((topic2) => `<option value="${escapeAttr(topic2.id)}" ${errorAnalysisView.topicId === topic2.id ? "selected" : ""}>${escapeHtml(topic2.name)}</option>`).join("")}</select></div>`;
     const errorModel = buildErrorAnalysisViewModel({ current: profile, previous: previousProfile, periodLabel: formatDatePt(currentStart) + " a " + formatDatePt(todayISO()) });
     profileEl.innerHTML = renderErrorAnalysis(errorModel, { toolbar: errorToolbar, escapeHtml });
   }
@@ -7092,7 +7166,7 @@
       const config = blueprint.subjects.find((item) => item.subjectId === subject2.id);
       return `<div class="exam-subject-row"><strong>${escapeHtml(subject2.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${subject2.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="Usar meta geral" data-delegated-blur="updateExamSubject('${subject2.id}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ""}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject2.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject2.id}','questionWeight',this.value)"></label></div>`;
     }).join("");
-    container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+    container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[["bb-escriturario", "Banco do Brasil"], ["caixa-tbn", "Caixa TBN"], ["caixa-tbn-ti", "Caixa TBN TI"]].map(([tag, label2]) => `<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags || []).includes(tag) ? "checked" : ""}> ${label2}</label>`).join("")}<small>Nenhuma seleção mantém todo o conteúdo elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
     renderExamMasteryMatrix();
   }
   function renderExamMasteryMatrix() {
@@ -7211,6 +7285,15 @@
     if (field === "priority" && EXAM_PRIORITIES.includes(value2)) config.priority = value2;
     if (field === "masteryTarget") config.masteryTarget = value2 === "" ? null : Math.max(0, Math.min(100, Number(value2) || 0));
     state.examBlueprint.configuredAt = nowISO2();
+    persistAndRender();
+  }
+  function toggleActiveExamTag(tag, checked) {
+    const valid = ["bb-escriturario", "caixa-tbn", "caixa-tbn-ti"];
+    if (!valid.includes(tag)) return;
+    const values = new Set(state.examBlueprint.activeExamTags || []);
+    checked ? values.add(tag) : values.delete(tag);
+    state.examBlueprint.activeExamTags = [...values];
+    studyPlanPreview = null;
     persistAndRender();
   }
   function somarQuestoesDisciplinaNaSemana(subjectId) {
@@ -7460,7 +7543,7 @@
     state.reviewAgenda.filter((review) => {
       const subjectId = entitySubjectId(review);
       const topicId = review.topicId || review.topicRef || null;
-      return review.status !== "Concluído" && review.date && review.date <= today && isActiveStudyReference(subjectId, topicId);
+      return review.status !== "Concluído" && review.date && review.date <= today && isActiveStudyReference(subjectId, topicId) && (!topicId || topicInActiveExamScope(getTopicById(topicId)?.topic));
     }).forEach((review) => {
       const subjectId = entitySubjectId(review);
       const topicId = review.topicId || review.topicRef || null;
@@ -7479,19 +7562,19 @@
         diagnosis
       });
     });
-    activeTopics().filter((topic) => (topic.name || "").trim() !== "").forEach((topic) => {
-      if (candidateMap.has(topic.id)) return;
-      const diagnosis = diagnoseTopic(topic.subjectId, topic.id);
-      addCandidate(topic.id, {
-        subjectId: topic.subjectId,
-        topicId: topic.id,
-        subjectName: topic.subjectName,
-        topicName: topic.name,
-        tipo: topic.status === "Concluído" ? "manutenção" : topic.status === "Em andamento" ? "continuar" : "novo tópico",
-        dificuldade: topic.difficulty || "Médio",
+    activeTopics().filter((topic2) => topicInActiveExamScope(topic2)).filter((topic2) => (topic2.name || "").trim() !== "").forEach((topic2) => {
+      if (candidateMap.has(topic2.id)) return;
+      const diagnosis = diagnoseTopic(topic2.subjectId, topic2.id);
+      addCandidate(topic2.id, {
+        subjectId: topic2.subjectId,
+        topicId: topic2.id,
+        subjectName: topic2.subjectName,
+        topicName: topic2.name,
+        tipo: topic2.status === "Concluído" ? "manutenção" : topic2.status === "Em andamento" ? "continuar" : "novo tópico",
+        dificuldade: topic2.difficulty || "Médio",
         diasAtrasado: 0,
-        erroQuestoes: diagnosis?.effectiveErrorRate ?? taxaErroDisciplina(topic.subjectId),
-        diasSemEstudar: diagnosis?.daysSinceStudy ?? diasSemEstudarDisciplina(topic.subjectId),
+        erroQuestoes: diagnosis?.effectiveErrorRate ?? taxaErroDisciplina(topic2.subjectId),
+        diasSemEstudar: diagnosis?.daysSinceStudy ?? diasSemEstudarDisciplina(topic2.subjectId),
         diagnosis
       });
     });
@@ -7523,9 +7606,9 @@
   }
   var radarView = { subjectIds: [] };
   function subjectRadarModel(subject2) {
-    const topics = subject2.topics.filter((topic) => !topic.archived), coverage = topics.length ? subjectProgress(subject2) : null;
-    const masteryValues = topics.map((topic) => topicMasteryIndex(subject2.id, topic.id)).filter((item) => item.confidence > 0);
-    const retentionValues = topics.map((topic) => topicRetentionScore(subject2.id, topic.id)).filter((item) => item.available);
+    const topics = subject2.topics.filter((topic2) => !topic2.archived), coverage = topics.length ? subjectProgress(subject2) : null;
+    const masteryValues = topics.map((topic2) => topicMasteryIndex(subject2.id, topic2.id)).filter((item) => item.confidence > 0);
+    const retentionValues = topics.map((topic2) => topicRetentionScore(subject2.id, topic2.id)).filter((item) => item.available);
     const mastery = masteryValues.length ? masteryValues.reduce((sum4, item) => sum4 + item.score, 0) / masteryValues.length : null;
     const retention = retentionValues.length ? retentionValues.reduce((sum4, item) => sum4 + item.score, 0) / retentionValues.length : null;
     const last = ultimaAtividadeDisciplina(subject2.id), distance = last ? diasParaRevisao(last) : null, daysSinceContact = distance === null ? null : Math.max(0, -distance);
@@ -7926,7 +8009,7 @@
     const weekStart = startOfWeek(today), achieved = uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6));
     const actualFrac = state.metas.semanal > 0 ? achieved / state.metas.semanal : 1;
     const weeklyGoalGap = expectedFrac >= 0.5 && actualFrac < expectedFrac - 0.15 ? Math.round((expectedFrac - actualFrac) * 100) : null;
-    const hardTopicsWithoutReview = activeTopics().filter((topic) => topic.difficulty === "Difícil" && topic.status !== "Concluído" && !state.reviewAgenda.some((review) => (review.topicId || review.topicRef) === topic.id && review.status !== "Concluído")).length;
+    const hardTopicsWithoutReview = activeTopics().filter((topic2) => topic2.difficulty === "Difícil" && topic2.status !== "Concluído" && !state.reviewAgenda.some((review) => (review.topicId || review.topicRef) === topic2.id && review.status !== "Concluído")).length;
     return buildIntelligentAlerts({ today, overdueReviews: revisoesAtrasadas(), subjects, topics, weeklyBalanceMinutes: plan.weeklyBalanceMinutes, hardTopicsWithoutReview, weeklyGoalGap });
   }
   function renderAlertasInteligentes() {
@@ -7960,8 +8043,8 @@
     const metrics = computeApprovalMetrics(), readiness = readinessResult(metrics), pace = computeRitmo(), priorities = computeStudyPriorities();
     const topPriority = priorities[0] ? { ...priorities[0], reason: motivoPrioridade(priorities[0]) } : null;
     const risks = computeAlertasInteligentes();
-    const configuredTopics = activeTopics().filter((topic) => topic.examImportance !== null && topic.estimatedStudyMinutes !== null);
-    const opportunityCount = configuredTopics.filter((topic) => priorities.some((priority) => priority.topicId === topic.id)).length;
+    const configuredTopics = activeTopics().filter((topic2) => topic2.examImportance !== null && topic2.estimatedStudyMinutes !== null);
+    const opportunityCount = configuredTopics.filter((topic2) => priorities.some((priority) => priority.topicId === topic2.id)).length;
     const weekStart = startOfWeek(todayISO()), weeklyGoal = { achieved: uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6)), target: state.metas.semanal };
     const summary = buildExecutiveSummary({ readiness, daysToExam: state.examDate ? diasParaRevisao(state.examDate) ?? null : null, pace, topPriority, riskCount: risks.length, weeklyGoal, opportunityCount });
     container.innerHTML = `<div class="executive-kpis">${summary.cards.map((card) => `<div class="executive-kpi"><strong>${escapeHtml(card.value)}</strong><span>${escapeHtml(card.label)}</span><small>${escapeHtml(card.detail)}</small></div>`).join("")}</div>
@@ -7972,8 +8055,8 @@
   var currentStudyRecommendations = [];
   function intelligenceCandidates() {
     const priorities = collectStudyCandidates(), topics = allTopics();
-    const retentions = Object.fromEntries(topics.map((topic) => [topic.id, topicRetentionScore(topic.subjectId, topic.id)]));
-    const reviewHealths = Object.fromEntries(topics.map((topic) => [topic.id, topicReviewHealthScore(topic, topicMasteryIndex(topic.subjectId, topic.id), retentions[topic.id])]));
+    const retentions = Object.fromEntries(topics.map((topic2) => [topic2.id, topicRetentionScore(topic2.subjectId, topic2.id)]));
+    const reviewHealths = Object.fromEntries(topics.map((topic2) => [topic2.id, topicReviewHealthScore(topic2, topicMasteryIndex(topic2.subjectId, topic2.id), retentions[topic2.id])]));
     return buildStudyCandidates({
       priorities,
       topics,
@@ -8381,7 +8464,7 @@
   function approvalDominioMetric() {
     const topics = activeTopics();
     if (topics.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem tópicos ativos" };
-    const values = topics.map((topic) => topicMasteryIndex(topic.subjectId, topic.id));
+    const values = topics.map((topic2) => topicMasteryIndex(topic2.subjectId, topic2.id));
     const evidenced = values.filter((item) => item.confidence > 0);
     if (evidenced.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Ainda não há evidências de domínio" };
     const weightTotal = evidenced.reduce((sum4, item) => sum4 + Math.max(0.15, item.confidence), 0);
@@ -8511,18 +8594,18 @@
     const daysSince = lastReview ? Math.max(0, -(diasParaRevisao(lastReview) ?? 0)) : null;
     return calculateTopicRetention({ due, resolved, correct, lastReview, daysSince, onTime, periodStart: cutoff, periodEnd: today });
   }
-  function topicReviewHealthScore(topic, masteryResult = topicMasteryIndex(topic.subjectId, topic.id), retentionResult = topicRetentionScore(topic.subjectId, topic.id), diagnosis = diagnoseTopic(topic.subjectId, topic.id)) {
-    const lastReviewDate = localDateFromTimestamp2(topic.lastReviewedAt);
+  function topicReviewHealthScore(topic2, masteryResult = topicMasteryIndex(topic2.subjectId, topic2.id), retentionResult = topicRetentionScore(topic2.subjectId, topic2.id), diagnosis = diagnoseTopic(topic2.subjectId, topic2.id)) {
+    const lastReviewDate = localDateFromTimestamp2(topic2.lastReviewedAt);
     const daysSinceReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
     const evidenceValues = [masteryResult?.confidence, retentionResult?.confidence].filter((value2) => Number.isFinite(Number(value2)));
     const evidenceStrength = evidenceValues.length ? evidenceValues.reduce((sum4, value2) => sum4 + Number(value2), 0) / evidenceValues.length : null;
     return calculateReviewHealth({
       daysSinceReview,
-      hasPriorStudy: topic.status !== "Não iniciado" || Boolean(diagnosis?.performance?.resolved) || Boolean(diagnosis?.studySeconds),
+      hasPriorStudy: topic2.status !== "Não iniciado" || Boolean(diagnosis?.performance?.resolved) || Boolean(diagnosis?.studySeconds),
       retention: retentionResult?.available ? retentionResult.score : null,
       mastery: masteryResult?.confidence > 0 ? masteryResult.score : null,
       recentPerformance: diagnosis?.performance?.accuracy ?? null,
-      examImpact: topic.examImportance == null ? null : Number(topic.examImportance) * 100,
+      examImpact: topic2.examImportance == null ? null : Number(topic2.examImportance) * 100,
       evidenceStrength
     });
   }
@@ -8592,7 +8675,7 @@
   function renderRecommendationCalibration() {
     const el = document.getElementById("recommendationCalibration");
     if (!el) return;
-    const subjectNames = Object.fromEntries(state.subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(state.subjects.flatMap((subject2) => (subject2.topics || []).map((topic) => [topic.id, topic.name]))), model = buildRecommendationCalibration(state.recommendationFeedback, { minimumSample: 5, subjectNames, topicNames });
+    const subjectNames = Object.fromEntries(state.subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(state.subjects.flatMap((subject2) => (subject2.topics || []).map((topic2) => [topic2.id, topic2.name]))), model = buildRecommendationCalibration(state.recommendationFeedback, { minimumSample: 5, subjectNames, topicNames });
     el.innerHTML = renderRecommendationCalibrationModel(model, { escapeHtml });
   }
   function renderStudyTrack32Insights() {
@@ -8844,7 +8927,9 @@
     setPerformanceViewMode,
     setRadarSubject,
     setRetentionFilter,
+    setSubjectExamFilter,
     setSubjectTopicFilter,
+    toggleActiveExamTag,
     saveSimulationEdit,
     saveStudySessionEdit,
     selectSessionHistoryDate,
@@ -8891,6 +8976,7 @@
     if (value2 === "this.value") return element.value;
     if (value2 === "this.value||null") return element.value || null;
     if (value2 === "this.textContent") return element.textContent;
+    if (value2 === "this.checked") return Boolean(element.checked);
     if (value2 === "this") return element;
     if (value2 === "true") return true;
     if (value2 === "false") return false;

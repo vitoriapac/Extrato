@@ -16,6 +16,7 @@ export function normalizeExamBlueprint(value={},legacyExamDate=''){
   return {
     examDate:typeof source.examDate==='string'&&source.examDate?source.examDate:(legacyExamDate||null),
     targetScore:Number.isFinite(target)?Math.max(0,Math.min(100,target)):80,masteryTarget:Number.isFinite(Number(source.masteryTarget))?Math.max(0,Math.min(100,Number(source.masteryTarget))):80,
+    activeExamTags:Array.isArray(source.activeExamTags)?[...new Set(source.activeExamTags.filter(value=>['bb-escriturario','caixa-tbn','caixa-tbn-ti'].includes(value)))]:[],
     configuredAt:typeof source.configuredAt==='string'?source.configuredAt:null,
     subjects:Array.isArray(source.subjects)?source.subjects.map(item=>({
       subjectId:item?.subjectId||null,

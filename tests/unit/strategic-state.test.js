@@ -15,7 +15,7 @@ test('limita importância e normaliza esforço e pré-requisitos',()=>{
 });
 
 test('migra a data legada para a configuração da prova',()=>{
-  assert.deepEqual(normalizeExamBlueprint({},'2026-12-15'),{examDate:'2026-12-15',targetScore:80,masteryTarget:80,configuredAt:null,subjects:[]});
+  assert.deepEqual(normalizeExamBlueprint({},'2026-12-15'),{examDate:'2026-12-15',targetScore:80,masteryTarget:80,activeExamTags:[],configuredAt:null,subjects:[]});
 });
 
 test('normaliza pesos e versões de algoritmos',()=>{
