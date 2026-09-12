@@ -1946,6 +1946,12 @@
     const delta = ["ArrowRight", "ArrowDown"].includes(key) ? 1 : -1;
     return (current + delta + length) % length;
   }
+  function shortcutTabIndex(event = {}) {
+    const modifier = Boolean(event.ctrlKey || event.metaKey);
+    if (!modifier || !event.shiftKey || event.altKey) return -1;
+    const match = /^Digit([1-8])$/.exec(event.code || "");
+    return match ? Number(match[1]) - 1 : -1;
+  }
   function createNavigationController({ document: document2, window: window2, render: render2 = () => {
   }, trapModalTab: trapModalTab2 = () => {
   }, closeReview = () => {
@@ -2019,7 +2025,7 @@
     });
     const registerShortcuts = () => document2.addEventListener("keydown", (event) => {
       trapModalTab2(event);
-      const modifier = window2.navigator.platform.toUpperCase().includes("MAC") ? event.metaKey : event.ctrlKey, active = document2.activeElement, typing = ["INPUT", "TEXTAREA", "SELECT"].includes(active?.tagName) || active?.isContentEditable;
+      const modifier = window2.navigator.platform.toUpperCase().includes("MAC") ? event.metaKey : event.ctrlKey, active = document2.activeElement, typing = ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(active?.tagName) || active?.isContentEditable;
       if (modifier && event.key.toLowerCase() === "k") {
         event.preventDefault();
         document2.getElementById("globalSearchInput")?.focus();
@@ -2044,7 +2050,11 @@
         }
         return;
       }
-      if (!typing && /^[1-8]$/.test(event.key)) activate(MAIN_TABS[Number(event.key) - 1]);
+      const shortcut = shortcutTabIndex(event);
+      if (!typing && shortcut >= 0) {
+        event.preventDefault();
+        activate(MAIN_TABS[shortcut]);
+      }
     });
     return Object.freeze({ activate, closeMore, registerShortcuts });
   }
@@ -9079,6 +9089,19 @@
     render();
   }
   navigationController.registerShortcuts();
+  var backToTopBtn = document.getElementById("backToTopBtn");
+  if (backToTopBtn) {
+    const syncBackToTop = () => {
+      backToTopBtn.hidden = window.scrollY < 600;
+    };
+    window.addEventListener("scroll", syncBackToTop, { passive: true });
+    backToTopBtn.addEventListener("click", () => {
+      const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+      document.getElementById("mainContent")?.focus({ preventScroll: true });
+    });
+    syncBackToTop();
+  }
   registerApplicationLifecycle({ window, onBeforeUnload: () => {
     if (!TEST_MODE && !suppressBeforeUnloadSave) writeLocalState(JSON.stringify(state));
   }, onResponsiveChange: () => {

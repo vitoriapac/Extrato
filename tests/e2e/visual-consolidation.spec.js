@@ -19,6 +19,12 @@ test('componentes visuais não transbordam e controles usam o padrão comum',asy
 
 test('cronômetro não reserva espaço vazio e instruções explicam dados e rotina',async({page})=>{await page.goto('/');await expect(page.locator('#studyTimerTarget')).toBeHidden();await expect(page.locator('#guidedStrategy')).toBeHidden();await activateTab(page,'instrucoes');await expect(page.getByRole('heading',{name:'Como usar o StudyTrack'})).toBeVisible();await expect(page.locator('#guide-start')).toContainText('Monte o edital');await expect(page.locator('#guide-data')).toContainText('Prontidão');await expect(page.locator('#guide-safety')).toContainText('Os dados ficam neste navegador')});
 
+test('instruções detalham áreas, fluxos, atalhos e dúvidas',async({page})=>{await page.goto('/');await activateTab(page,'instrucoes');await expect(page.locator('#guide-areas')).toContainText('Questões e Simulados');await expect(page.locator('#guide-workflows')).toContainText('Planejar a semana');await expect(page.locator('#guide-shortcuts')).toContainText('Ctrl');await expect(page.locator('#guide-faq details')).toHaveCount(5)});
+
+test('atalho modificado navega sem capturar números isolados',async({page})=>{await page.goto('/');await page.keyboard.press('2');await expect(page.locator('#panel-dashboard')).toHaveClass(/active/);await page.keyboard.press('Control+Shift+Digit2');await expect(page.locator('#panel-hoje')).toHaveClass(/active/)});
+
+test('botão de retorno aparece após rolagem e volta ao topo',async({page})=>{await openDemo(page);await page.evaluate(()=>scrollTo(0,900));await expect(page.locator('#backToTopBtn')).toBeVisible();await page.locator('#backToTopBtn').click();await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);await expect(page.locator('#mainContent')).toBeFocused()});
+
 test('fechamento semanal e configuração estratégica preservam a hierarquia visual',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await openDemo(page);

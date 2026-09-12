@@ -20,7 +20,7 @@
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
-  <main class="wrap" id="mainContent">
+  <main class="wrap" id="mainContent" tabindex="-1">
   <h1 class="sr-only">StudyTrack — Extrato de estudos</h1>
   <h2 class="sr-only">Painel de acompanhamento e planejamento</h2>
 
@@ -581,7 +581,7 @@
   <div class="panel" id="panel-instrucoes" role="tabpanel" aria-labelledby="tab-instrucoes">
     <header class="instructions-hero">
       <div><span class="section-eyebrow">Guia da aplicação</span><h2>Como usar o StudyTrack</h2><p>Um roteiro para transformar edital, disponibilidade e registros de estudo em decisões semanais.</p></div>
-      <nav aria-label="Atalhos das instruções"><a href="#guide-start">Primeiros passos</a><a href="#guide-routine">Rotina</a><a href="#guide-data">Entenda os dados</a><a href="#guide-safety">Seus dados</a></nav>
+      <nav aria-label="Atalhos das instruções"><a href="#guide-start">Primeiros passos</a><a href="#guide-areas">Áreas</a><a href="#guide-routine">Rotina</a><a href="#guide-data">Entenda os dados</a><a href="#guide-safety">Seus dados</a><a href="#guide-shortcuts">Atalhos</a><a href="#guide-faq">Dúvidas</a></nav>
     </header>
     <section class="instructions-section" id="guide-start"><h3>Primeiros passos</h3><div class="instruction-grid">
       <article><b>1</b><div><h4>Monte o edital</h4><p>Em Disciplinas, importe um edital ou cadastre matérias e tópicos. Defina esforço estimado e pré-requisitos quando souber.</p></div></article>
@@ -589,7 +589,23 @@
       <article><b>3</b><div><h4>Registre evidências</h4><p>Use o cronômetro, conclua revisões e lance questões e simulados. Quanto mais registros, maior a confiança dos diagnósticos.</p></div></article>
       <article><b>4</b><div><h4>Confirme o plano</h4><p>Calcule a proposta semanal, confira matérias, tópicos e carga, e confirme somente quando a distribuição fizer sentido.</p></div></article>
     </div></section>
+    <section class="instructions-section" id="guide-areas"><h3>O que fazer em cada área</h3><div class="guide-glossary">
+      <article><h4>Visão Geral</h4><p>Acompanhe prontidão, retenção, evolução, riscos e próximas ações. Use os indicadores como ponto de partida para decidir, não como uma nota isolada.</p></article>
+      <article><h4>Hoje</h4><p>Concentre a execução diária: veja a prioridade sugerida, atividades planejadas ou atrasadas e inicie a próxima sessão.</p></article>
+      <article><h4>Disciplinas</h4><p>Cadastre matérias e tópicos do edital. Atualize importância, dificuldade, esforço e pré-requisitos para melhorar a ordem das recomendações.</p></article>
+      <article><h4>Calendário</h4><p>Visualize sessões, revisões e atividades distribuídas por data. Use os filtros para investigar a carga de um período ou disciplina.</p></article>
+      <article><h4>Agenda de Revisões</h4><p>Conclua revisões previstas e trate primeiro as atrasadas. A regularidade dessas confirmações ajuda a estimar retenção.</p></article>
+      <article><h4>Questões e Simulados</h4><p>Registre volume, acertos e categorias de erro. Esses dados revelam se a lacuna vem de conteúdo, interpretação, atenção, tempo ou chute.</p></article>
+      <article><h4>Metas</h4><p>Defina disponibilidade, data da prova e domínio desejado. Gere o plano, confira a carga proposta e confirme apenas uma distribuição viável.</p></article>
+      <article><h4>Instruções</h4><p>Consulte este guia quando precisar entender um indicador, recuperar dados, conhecer atalhos ou revisar o fluxo recomendado.</p></article>
+    </div></section>
     <section class="instructions-section" id="guide-routine"><h3>Rotina recomendada</h3><div class="guide-flow"><article><strong>Hoje</strong><p>Veja prioridades, atividades atrasadas e a próxima ação sugerida.</p></article><span>→</span><article><strong>Estudar</strong><p>Inicie uma atividade pelo plano ou use o cronômetro livre.</p></article><span>→</span><article><strong>Registrar</strong><p>Finalize a sessão e informe questões, acertos e tipo de erro.</p></article><span>→</span><article><strong>Revisar</strong><p>Feche a semana, avalie lacunas e ajuste o próximo plano.</p></article></div></section>
+    <section class="instructions-section" id="guide-workflows"><h3>Fluxos importantes</h3><div class="instruction-grid">
+      <article><b>1</b><div><h4>Planejar a semana</h4><p>Revise sua disponibilidade em Metas, calcule a proposta e compare a carga com seus compromissos. Confirme o plano e distribua as atividades pelos dias.</p></div></article>
+      <article><b>2</b><div><h4>Registrar uma sessão</h4><p>Escolha disciplina, tópico e tipo no cronômetro. Ao finalizar, confirme a duração e registre questões ou observações relevantes para preservar a evidência.</p></div></article>
+      <article><b>3</b><div><h4>Tratar uma revisão atrasada</h4><p>Abra Hoje ou Agenda, faça a revisão e marque-a como concluída. Se os atrasos se acumularem, reduza a carga ou gere um novo plano realista.</p></div></article>
+      <article><b>4</b><div><h4>Analisar um simulado</h4><p>Registre o resultado e classifique os erros. Compare disciplinas, identifique a causa dominante e avalie a proposta de replanejamento antes de aplicá-la.</p></div></article>
+    </div></section>
     <section class="instructions-section" id="guide-data"><h3>Como interpretar os dados</h3><div class="guide-glossary">
       <article><h4>Prontidão</h4><p>Índice de 0 a 100 que reúne cobertura, domínio, retenção, consistência e simulados. Fatores ausentes reduzem a confiança.</p></article>
       <article><h4>Domínio e retenção</h4><p>Domínio resume desempenho observado. Retenção considera revisões no prazo, acertos recentes e tempo desde a última revisão.</p></article>
@@ -598,7 +614,20 @@
       <article><h4>Fechamento semanal</h4><p>Compara planejado e executado, tempo, questões e acerto. O diagnóstico destaca risco, melhor sinal e próxima ação.</p></article>
       <article><h4>Projeções e cenários</h4><p>São faixas estimadas e simulações de capacidade. Não representam probabilidade de aprovação nem garantia de resultado.</p></article>
     </div></section>
-    <section class="instructions-section" id="guide-safety"><h3>Dados, backup e demonstração</h3><div class="instruction-note"><strong>Os dados ficam neste navegador.</strong><p>Exporte backups regularmente para restaurar o histórico em outro dispositivo. A base de exemplo fica separada e pode ser reiniciada sem alterar seus registros reais.</p></div></section>
+    <section class="instructions-section" id="guide-safety"><h3>Dados, backup e demonstração</h3><div class="instruction-note"><strong>Os dados ficam neste navegador.</strong><p>O StudyTrack não envia sua base para um servidor. Exporte backups regularmente para restaurar o histórico em outro dispositivo ou após limpar o navegador. A importação substitui a base atual somente depois da validação. O relatório PDF é uma fotografia do período escolhido, não um backup restaurável. A demonstração usa dados fictícios separados e pode ser reiniciada sem alterar seus registros reais.</p></div></section>
+    <section class="instructions-section" id="guide-shortcuts"><h3>Atalhos de teclado</h3><div class="guide-glossary">
+      <article><h4>Buscar</h4><p><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> leva o foco para a busca global.</p></article>
+      <article><h4>Trocar de área</h4><p><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>1–8</kbd> abre, na ordem, Visão Geral, Hoje, Disciplinas, Calendário, Agenda, Questões, Metas e Instruções.</p></article>
+      <article><h4>Fechar</h4><p><kbd>Esc</kbd> fecha a busca, o menu ou o modal ativo.</p></article>
+      <article><h4>Navegar nas abas</h4><p>Com uma aba em foco, use as setas esquerda e direita. <kbd>Home</kbd> e <kbd>End</kbd> levam à primeira e à última aba.</p></article>
+    </div></section>
+    <section class="instructions-section" id="guide-faq"><h3>Dúvidas frequentes</h3><div class="guide-faq">
+      <details><summary>Por que meu índice ainda tem baixa confiança?</summary><p>O sistema precisa de sessões, questões, revisões e simulados suficientes. Baixa confiança indica pouca evidência; não significa automaticamente baixo desempenho.</p></details>
+      <details><summary>Prontidão é uma probabilidade de aprovação?</summary><p>Não. É um índice composto para acompanhar cobertura, domínio, retenção, consistência e simulados. Projeções são faixas estimadas, nunca garantia de resultado.</p></details>
+      <details><summary>O que acontece se eu perder um dia do plano?</summary><p>Registre o que realmente foi feito e trate as pendências em Hoje. Se a carga deixar de ser viável, ajuste a disponibilidade e refaça o planejamento.</p></details>
+      <details><summary>Como levar meus dados para outro dispositivo?</summary><p>Exporte um backup JSON na área abaixo, transfira o arquivo com segurança e importe-o no outro navegador. Um relatório PDF não restaura os dados.</p></details>
+      <details><summary>O aplicativo funciona sem internet?</summary><p>Depois do primeiro carregamento completo por HTTP e da instalação do aplicativo, o shell pode abrir offline. Os dados continuam armazenados localmente no navegador.</p></details>
+    </div></section>
   </div>
 
   <div class="backup-block">
@@ -620,9 +649,11 @@
   </div>
 
   <footer>Salvo automaticamente no seu navegador — extrato.gerado localmente<br>
-    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>1–8</strong> troca de aba · <strong>Esc</strong> fecha</span>
+    <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>Ctrl/⌘+Shift+1–8</strong> troca de área · <strong>Esc</strong> fecha</span>
   </footer>
 </main>
+
+<button class="back-to-top" id="backToTopBtn" type="button" aria-label="Voltar ao topo" title="Voltar ao topo" hidden>↑<span>Topo</span></button>
 
 <div class="save-indicator" id="saveIndicator" role="status" aria-live="polite">✓ Salvo</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

@@ -53,6 +53,8 @@ import {createRecordService} from './application/records/record-service.js';
 import {createSubjectService} from './application/subjects/subject-service.js';
 import {createExamImportService} from './application/subjects/exam-import-service.js';
 import {EXAM_PRESETS,getExamPreset} from './domain/exams/exam-presets.js';
+import {EXAM_TAGS,CATALOG_VERSION,EXAM_SOURCES} from './domain/exams/exam-catalog.js';
+import {isTopicInExamScope,isCommonTopic,topicExamScopeLabel} from './domain/exams/exam-scope.js';
 import {createNavigationController} from './ui/controllers/navigation-controller.js';
 import {createModalController} from './ui/controllers/modal-controller.js';
 import {createEditableCollectionController} from './ui/controllers/editable-collection-controller.js';
@@ -735,7 +737,7 @@ function subjectsForSelection(selectedId=null){
   return state.subjects.filter(subject=>!subject.archived||subject.id===selectedId);
 }
 function activeTopics(){ return allTopics().filter(topic=>!topic.subjectArchived&&!topic.topicArchived); }
-function topicInActiveExamScope(topic){const active=state.examBlueprint?.activeExamTags||[];return !active.length||!(topic?.examTags||[]).length||topic.examTags.some(tag=>active.includes(tag))}
+function topicInActiveExamScope(topic){return isTopicInExamScope(topic,state.examBlueprint?.activeExamTags||[])}
 function subjectProgress(subject){
   return calculateTopicCoverage(subject.topics).value;
 }
@@ -1769,7 +1771,7 @@ function renderDashboard(){
 function renderSubjects(){
   const container = document.getElementById('subjectsContainer');
   const allActiveSubjects=activeSubjects();
-  const topicMatchesExam=topic=>subjectExamFilter==='all'||(subjectExamFilter==='common'?(topic.institutions||[]).includes('bb')&&(topic.institutions||[]).includes('caixa'):(topic.institutions||[]).includes(subjectExamFilter));
+  const topicMatchesExam=topic=>subjectExamFilter==='all'||subjectExamFilter==='common'&&isCommonTopic(topic,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA])||subjectExamFilter==='bb'&&(topic.examTags||[]).includes(EXAM_TAGS.BB)||subjectExamFilter==='caixa'&&(topic.examTags||[]).includes(EXAM_TAGS.CAIXA)||subjectExamFilter==='caixa-ti'&&(topic.examTags||[]).includes(EXAM_TAGS.CAIXA_TI);
   const subjects=subjectExamFilter==='all'?allActiveSubjects:allActiveSubjects.filter(subject=>(subject.topics||[]).some(topic=>topicMatchesExam(topic)));
   const archived=archivedSubjects();
   if(subjects.length === 0 && archived.length===0){
@@ -1891,7 +1893,7 @@ function renderSubjects(){
       <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
     </div>`).join('')}
   </div>`:'';
-  container.innerHTML=`<div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">${[['all','Todos'],['bb','BB'],['caixa','Caixa'],['common','Comuns']].map(([value,label])=>`<button class="btn ghost small ${subjectExamFilter===value?'active':''}" data-delegated-click="setSubjectExamFilter('${value}')">${label}</button>`).join('')}</div>`+activeHtml+archivedHtml;
+  container.innerHTML=`<div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">${[['all','Todos'],['bb','BB'],['caixa','Caixa'],['caixa-ti','Caixa TI'],['common','Comuns']].map(([value,label])=>`<button class="btn ghost small ${subjectExamFilter===value?'active':''}" data-delegated-click="setSubjectExamFilter('${value}')">${label}</button>`).join('')}</div>`+activeHtml+archivedHtml;
 }
 
 let openNotesIds = new Set();
@@ -1907,8 +1909,8 @@ function changeSubjectTopicLimit(subjectId,delta){subjectTopicLimits.set(subject
 function showAllSubjectTopics(subjectId){subjectTopicLimits.set(subjectId,Number.MAX_SAFE_INTEGER);renderSubjects()}
 function resetSubjectTopicLimit(subjectId){subjectTopicLimits.set(subjectId,10);renderSubjects()}
 function setSubjectTopicFilter(subjectId,field,value){const current=subjectTopicFilters.get(subjectId)||{status:'',difficulty:''};if(field==='status'||field==='difficulty')current[field]=value;subjectTopicFilters.set(subjectId,current);subjectTopicLimits.set(subjectId,10);renderSubjects()}
-function setSubjectExamFilter(value){if(['all','bb','caixa','common'].includes(value))subjectExamFilter=value;renderSubjects()}
-function examBadges(topic){const institutions=topic.institutions||[];return `${institutions.includes('bb')?'<span class="exam-tag exam-tag--bb">BB</span>':''}${institutions.includes('caixa')?'<span class="exam-tag exam-tag--caixa">CAIXA</span>':''}`}
+function setSubjectExamFilter(value){if(['all','bb','caixa','caixa-ti','common'].includes(value))subjectExamFilter=value;renderSubjects()}
+function examBadges(topic){const tags=topic.examTags||[];return `${tags.includes(EXAM_TAGS.BB)?'<span class="exam-tag exam-tag--bb">BB</span>':''}${tags.includes(EXAM_TAGS.CAIXA)?'<span class="exam-tag exam-tag--caixa">CAIXA</span>':''}${tags.includes(EXAM_TAGS.CAIXA_TI)?'<span class="exam-tag exam-tag--caixa">CAIXA TI</span>':''}`}
 function updateTopicTags(subjectId, topicId, value){
   subjectService.updateTopic(subjectId,topicId,{tags:value.split(',').map(tag=>tag.trim()).filter(Boolean)});
   persistAndRender();
@@ -4818,6 +4820,19 @@ function renderAll(){ render(); }
 
 /* ===== ATALHOS DE TECLADO ===== */
 navigationController.registerShortcuts();
+
+/* ===== VOLTAR AO TOPO ===== */
+const backToTopBtn=document.getElementById('backToTopBtn');
+if(backToTopBtn){
+  const syncBackToTop=()=>{backToTopBtn.hidden=window.scrollY<600};
+  window.addEventListener('scroll',syncBackToTop,{passive:true});
+  backToTopBtn.addEventListener('click',()=>{
+    const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({top:0,behavior:reducedMotion?'auto':'smooth'});
+    document.getElementById('mainContent')?.focus({preventScroll:true});
+  });
+  syncBackToTop();
+}
 registerApplicationLifecycle({window,onBeforeUnload:()=>{if(!TEST_MODE&&!suppressBeforeUnloadSave)writeLocalState(JSON.stringify(state))},onResponsiveChange:()=>{renderQuestoes();renderSimulados();renderStudySessionsHistory();renderAgenda();renderCalendar()}});
 
 setCalendarMobileView('month');

@@ -74,7 +74,7 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 ## Atalhos
 
 - `Ctrl+K` ou `Cmd+K`: abrir a busca global.
-- `1` a `7`: alternar entre as áreas.
+- `Ctrl+Shift+1` a `Ctrl+Shift+8` ou `Cmd+Shift+1` a `Cmd+Shift+8`: alternar entre as oito áreas.
 - `Esc`: fechar busca, menu ou modal ativo.
 
 ## Roadmap
