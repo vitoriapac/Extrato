@@ -1,4 +1,4 @@
-const CACHE_NAME='studytrack-v6';
+const CACHE_NAME='studytrack-v7';
 const APP_SHELL=[
   './','./index.html','./styles/tokens.css','./styles/app.css','./styles/print.css',
   './src/theme-bootstrap.js','./src/app.bundle.js','./src/pwa.js','./manifest.webmanifest',
