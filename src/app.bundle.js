@@ -426,13 +426,13 @@
   // src/state/strategic.js
   var DEFAULT_ALGORITHM_VERSIONS = Object.freeze({ readiness: 1, retention: 1, reviewHealth: 1, recommendations: 3, recommendationOutcomes: 1, adaptiveReview: 1, forecasts: 1 });
   var EXAM_PRIORITIES = Object.freeze(["low", "normal", "high"]);
-  function normalizeTopicStrategy(topic2) {
-    const importance = topic2.examImportance == null || topic2.examImportance === "" ? NaN : Number(topic2.examImportance);
-    topic2.examImportance = Number.isFinite(importance) ? Math.max(0, Math.min(1, importance)) : null;
-    const minutes = Number(topic2.estimatedStudyMinutes);
-    topic2.estimatedStudyMinutes = Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes) : null;
-    topic2.prerequisites = Array.isArray(topic2.prerequisites) ? [...new Set(topic2.prerequisites.filter((value2) => typeof value2 === "string" && value2 !== topic2.id))] : [];
-    return topic2;
+  function normalizeTopicStrategy(topic) {
+    const importance = topic.examImportance == null || topic.examImportance === "" ? NaN : Number(topic.examImportance);
+    topic.examImportance = Number.isFinite(importance) ? Math.max(0, Math.min(1, importance)) : null;
+    const minutes = Number(topic.estimatedStudyMinutes);
+    topic.estimatedStudyMinutes = Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes) : null;
+    topic.prerequisites = Array.isArray(topic.prerequisites) ? [...new Set(topic.prerequisites.filter((value2) => typeof value2 === "string" && value2 !== topic.id))] : [];
+    return topic;
   }
   function normalizeExamBlueprint(value2 = {}, legacyExamDate = "") {
     const source = value2 && typeof value2 === "object" && !Array.isArray(value2) ? value2 : {};
@@ -448,7 +448,10 @@
         expectedQuestions: Math.max(0, Math.round(Number(item?.expectedQuestions) || 0)),
         questionWeight: Math.max(0, Number(item?.questionWeight) || 1),
         priority: EXAM_PRIORITIES.includes(item?.priority) ? item.priority : "normal",
-        masteryTarget: item?.masteryTarget == null || item.masteryTarget === "" ? null : Number.isFinite(Number(item.masteryTarget)) ? Math.max(0, Math.min(100, Number(item.masteryTarget))) : null
+        masteryTarget: item?.masteryTarget == null || item.masteryTarget === "" ? null : Number.isFinite(Number(item.masteryTarget)) ? Math.max(0, Math.min(100, Number(item.masteryTarget))) : null,
+        ...typeof item?.sourceRef === "string" ? { sourceRef: item.sourceRef } : {},
+        ..."official" in (item || {}) ? { official: Boolean(item.official) } : {},
+        ...typeof item?.mappingType === "string" ? { mappingType: item.mappingType } : {}
       })) : []
     };
   }
@@ -725,9 +728,9 @@
 
   // src/domain/analytics/coverage.js
   function calculateTopicCoverage(topics = []) {
-    const active = topics.filter((topic2) => !topic2.archived);
+    const active = topics.filter((topic) => !topic.archived);
     if (!active.length) return { value: 0, completed: 0, total: 0, available: false };
-    const completed = active.filter((topic2) => topic2.status === "Concluído").length;
+    const completed = active.filter((topic) => topic.status === "Concluído").length;
     return { value: Math.round(completed / active.length * 100), completed, total: active.length, available: true };
   }
 
@@ -1002,7 +1005,7 @@
     const desired = Number(item.sessionMinutes ?? item.estimatedMinutes) || 30;
     return Math.min(available, 60, Math.max(MIN_SESSION_MINUTES, Math.round(desired)));
   }
-  function prerequisiteBlockers(topic2, topics = []) {
+  function prerequisiteBlockers(topic, topics = []) {
     const byId = new Map(topics.map((item) => [item.id, item]));
     const blockers = /* @__PURE__ */ new Set();
     const visit = (id, path) => {
@@ -1021,7 +1024,7 @@
       next.add(id);
       for (const parent of base.prerequisites || []) visit(parent, next);
     };
-    for (const id of topic2.prerequisites || []) visit(id, /* @__PURE__ */ new Set([topic2.id]));
+    for (const id of topic.prerequisites || []) visit(id, /* @__PURE__ */ new Set([topic.id]));
     return [...blockers];
   }
   function withPrerequisiteEligibility(candidates, topics = candidates) {
@@ -1065,19 +1068,20 @@
   }
 
   // src/application/build-study-candidates.js
-  function buildStudyCandidates({ priorities = [], topics = [], retentions = {}, reviewHealths = {}, blueprint = [], sessions = [], today, examProximity = null } = {}) {
-    const catalog = new Map(topics.map((topic2) => [topic2.id, topic2]));
+  function buildStudyCandidates({ priorities = [], topics = [], retentions = {}, reviewHealths = {}, blueprint = [], sessions = [], today, examProximity = null, activeExamTags = [] } = {}) {
+    const catalog = new Map(topics.map((topic) => [topic.id, topic]));
     const candidates = priorities.map((priority) => {
-      const topic2 = catalog.get(priority.topicId), diagnosis = priority.diagnosis;
+      const topic = catalog.get(priority.topicId), diagnosis = priority.diagnosis;
       const retention = retentions[priority.topicId];
       const reviewHealth = reviewHealths[priority.topicId];
       const exam = blueprint.find((item) => item.subjectId === priority.subjectId);
-      const examImpact = topic2?.examImportance != null ? topic2.examImportance * 100 : exam ? Math.min(100, (Number(exam.expectedQuestions) || 0) * 4 * (Number(exam.questionWeight) || 1)) : null;
+      const estimates = Object.entries(topic?.examImportanceEstimates || {}).filter(([profile]) => !activeExamTags.length || activeExamTags.some((tag) => profile.startsWith(tag))).map(([, value2]) => Number(value2)).filter(Number.isFinite), catalogEstimate = estimates.length ? Math.max(...estimates) : null;
+      const examImpact = topic?.examImportance != null ? topic.examImportance * 100 : catalogEstimate != null ? catalogEstimate * 100 : exam ? Math.min(100, (Number(exam.expectedQuestions) || 0) * 4 * (Number(exam.questionWeight) || 1)) : null;
       const mastery = diagnosis?.mastery?.confidence > 0 ? diagnosis.mastery.score : null;
       const daysSinceContact = diagnosis?.lastActivity ? Math.max(0, Number(priority.diasSemEstudar) || 0) : null;
-      const covered = topic2?.status === "Concluído";
+      const covered = topic?.status === "Concluído";
       const reviewUrgency = priority.tipo === "revisão" ? Math.min(100, 40 + Math.max(0, Number(priority.diasAtrasado) || 0) * 12) : 0;
-      const sessionMinutes2 = Math.max(15, Math.min(60, Number(priority.estimatedMinutes) || 30));
+      const difficultyMinutes = topic?.difficulty === "Difícil" ? 55 : topic?.difficulty === "Fácil" ? 30 : 40, sessionMinutes2 = Math.max(15, Math.min(60, Number(priority.estimatedMinutes) || difficultyMinutes));
       const trend = diagnosis?.trend;
       const trendRisk = trendToRisk(trend);
       const evidenceStrength = ((diagnosis?.mastery?.confidence || 0) + (retention?.confidence || 0)) / 2;
@@ -1086,17 +1090,17 @@
       const reviewHealthRisk = reviewHealth?.value == null ? null : 100 - reviewHealth.value;
       const masteryGap = mastery === null ? null : 100 - mastery;
       const studiedMinutes = sessions.filter((session) => session.topicId === priority.topicId && session.date <= today && session.type === "study").reduce((sum4, session) => sum4 + Math.max(0, Number(session.durationSeconds) || 0) / 60, 0);
-      const remainingMinutes = topic2?.estimatedStudyMinutes == null ? null : Math.max(0, Math.ceil(topic2.estimatedStudyMinutes - studiedMinutes));
+      const remainingMinutes = topic?.estimatedStudyMinutes == null ? null : Math.max(0, Math.ceil(topic.estimatedStudyMinutes - studiedMinutes));
       const risk = calculateRiskScore({ masteryRisk: masteryGap, retentionRisk, trendRisk, recencyRisk, examImpact, examProximity }, void 0, { evidenceStrength });
       const candidate = {
         ...priority,
         id: priority.topicId || priority.id,
-        archived: Boolean(topic2?.topicArchived || topic2?.subjectArchived || topic2?.archived),
+        archived: Boolean(topic?.topicArchived || topic?.subjectArchived || topic?.archived),
         covered,
         completed: sessions.some((session) => session.date === today && session.topicId === priority.topicId && (!priority.topicId ? session.subjectId === priority.subjectId : true) && Number(session.durationSeconds) > 0),
-        prerequisites: topic2?.prerequisites || [],
+        prerequisites: topic?.prerequisites || [],
         remainingMinutes,
-        totalEstimatedMinutes: topic2?.estimatedStudyMinutes ?? null,
+        totalEstimatedMinutes: topic?.estimatedStudyMinutes ?? null,
         estimatedMinutes: sessionMinutes2,
         sessionMinutes: sessionMinutes2,
         action: priority.recommendedAction,
@@ -1110,7 +1114,7 @@
         reviewHealth,
         reviewHealthRisk,
         reviewUrgency,
-        coverage: covered ? 100 : topic2?.status === "Em andamento" ? 50 : 0,
+        coverage: covered ? 100 : topic?.status === "Em andamento" ? 50 : 0,
         frequency: daysSinceContact === null ? null : Math.max(0, 100 - daysSinceContact * 5),
         daysSinceContact,
         recencyRisk,
@@ -1123,13 +1127,13 @@
       };
       return { ...candidate, ...calculatePriorityScore(candidate) };
     });
-    const prerequisites = topics.map((topic2) => ({ ...topic2, covered: topic2.status === "Concluído", archived: topic2.archived || topic2.topicArchived || topic2.subjectArchived, mastery: candidates.find((item) => item.topicId === topic2.id)?.mastery ?? null }));
+    const prerequisites = topics.map((topic) => ({ ...topic, covered: topic.status === "Concluído", archived: topic.archived || topic.topicArchived || topic.subjectArchived, mastery: candidates.find((item) => item.topicId === topic.id)?.mastery ?? null }));
     return withPrerequisiteEligibility(candidates, prerequisites);
   }
 
   // src/domain/analytics/topic-metrics.js
   var clamp4 = (value2) => Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
-  function calculateTopicMastery({ topic: topic2 = {}, performance = { resolved: 0, accuracy: null }, trend = { key: "insufficient" }, reviews = [], recentSessions = [], periodStart = null, periodEnd = null } = {}) {
+  function calculateTopicMastery({ topic = {}, performance = { resolved: 0, accuracy: null }, trend = { key: "insufficient" }, reviews = [], recentSessions = [], periodStart = null, periodEnd = null } = {}) {
     const questionConfidence = Math.min(1, performance.resolved / 50);
     const performanceScore = performance.accuracy === null ? 0 : performance.accuracy * questionConfidence + 40 * (1 - questionConfidence);
     let trendScore = 50;
@@ -1137,7 +1141,7 @@
     else if (trend.key === "down") trendScore = Math.max(0, 40 - Math.abs(trend.delta || 0) * 2);
     else if (trend.key === "stable") trendScore = 60;
     const completedReviews = reviews.filter((review) => review.status === "Concluído").length;
-    const reviewScore = reviews.length ? completedReviews / reviews.length * 100 : topic2.status === "Concluído" ? 50 : 20;
+    const reviewScore = reviews.length ? completedReviews / reviews.length * 100 : topic.status === "Concluído" ? 50 : 20;
     const recentSeconds = recentSessions.reduce((sum4, item) => sum4 + (Number(item.durationSeconds) || 0), 0);
     const studyScore = Math.min(100, recentSeconds / 7200 * 100);
     const confidence2 = Math.min(1, questionConfidence * 0.6 + Math.min(1, reviews.length / 4) * 0.2 + Math.min(1, recentSessions.length / 4) * 0.2);
@@ -1849,92 +1853,13898 @@
   var normalizeName = (value2) => String(value2 || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR");
   var selected = (id, set) => !set || set.has(id);
   var unique = (...values) => [...new Set(values.flat().filter(Boolean))];
+  var canonical = (value2) => Array.isArray(value2) ? value2.map(canonical) : value2 && typeof value2 === "object" ? Object.fromEntries(Object.keys(value2).sort().map((key) => [key, canonical(value2[key])])) : value2;
+  var stable = (value2) => JSON.stringify(canonical(value2));
+  var clone = (value2) => value2 == null ? value2 : structuredClone(value2);
   var matchesCatalogItem = (local, source) => {
     if (local?.catalogId && source?.catalogId && local.catalogId === source.catalogId) return true;
     const localNames = unique(local?.name, local?.aliases).map(normalizeName), sourceNames = unique(source?.name, source?.aliases).map(normalizeName);
     return localNames.some((name) => sourceNames.includes(name));
   };
   var findMatch = (items, source) => (items || []).find((item) => matchesCatalogItem(item, source));
-  var metadata = (current, source) => ({ catalogId: current.catalogId || source.catalogId || source.id, examTags: unique(current.examTags, source.examTags), institutions: unique(current.institutions, source.institutions), sourceRefs: unique(current.sourceRefs, source.sourceRefs), aliases: unique(current.aliases, source.aliases) });
+  function buildCatalogMetadata(current = {}, source = {}, options = {}) {
+    const sourceDifficulty = source.catalogDifficulty || source.difficulty || null;
+    const patch = { catalogId: current.catalogId || source.catalogId || source.id, examTags: unique(current.examTags, source.examTags), institutions: unique(current.institutions, source.institutions), sourceRefs: unique(current.sourceRefs, source.sourceRefs), aliases: unique(current.aliases, source.aliases), examMetrics: { ...current.examMetrics || {}, ...clone(source.examMetrics || {}) } };
+    if (sourceDifficulty) patch.catalogDifficulty = clone(sourceDifficulty);
+    if (source.incidence) patch.incidence = clone(source.incidence);
+    const estimates = Object.fromEntries(Object.entries(source.examMetrics || {}).filter(([, metric]) => metric?.examImportanceEstimate != null).map(([key, metric]) => [key, Number(metric.examImportanceEstimate)]));
+    if (Object.keys(estimates).length) patch.examImportanceEstimates = { ...current.examImportanceEstimates || {}, ...estimates };
+    if (!options.existing && sourceDifficulty?.level) patch.difficulty = sourceDifficulty.level;
+    if (!options.existing && source.examImportanceEstimate != null) patch.examImportanceEstimate = source.examImportanceEstimate;
+    return patch;
+  }
+  function needsMetadataUpdate(current = {}, source = {}) {
+    const patch = buildCatalogMetadata(current, source, { existing: true });
+    return Object.entries(patch).some(([key, value2]) => stable(current[key]) !== stable(value2));
+  }
   function previewExamStructureImport({ preset: preset2, selectedSubjectIds = null, selectedTopicIds = null, subjects = [] } = {}) {
     if (!preset2 || !Array.isArray(preset2.subjects)) throw new TypeError("Preset de edital inválido.");
     const subjectSet = selectedSubjectIds ? new Set(selectedSubjectIds) : null, topicSet = selectedTopicIds ? new Set(selectedTopicIds) : null;
-    const result = { addedSubjects: 0, existingSubjects: 0, addedTopics: 0, existingTopics: 0, warnings: [], selection: [] };
+    const result = { addedSubjects: 0, existingSubjects: 0, addedTopics: 0, existingTopics: 0, metadataUpdates: 0, metadataUpdateSubjects: 0, metadataUpdateTopics: 0, preservedRecords: 0, warnings: [], catalogVersion: preset2.version || null, sources: [...preset2.sources || []], selection: [] };
     for (const source of preset2.subjects) {
       if (!selected(source.id, subjectSet)) continue;
-      const existing = findMatch(subjects, source);
+      const existing = findMatch(subjects, source), subjectNeedsUpdate = Boolean(existing && needsMetadataUpdate(existing, source));
       existing ? result.existingSubjects++ : result.addedSubjects++;
-      const topics = (source.topics || []).filter((topic2) => selected(`${source.id}:${topic2.id}`, topicSet));
-      for (const topic2 of topics) {
-        if (findMatch(existing?.topics, topic2)) result.existingTopics++;
-        else result.addedTopics++;
+      if (subjectNeedsUpdate) {
+        result.metadataUpdates++;
+        result.metadataUpdateSubjects++;
       }
-      result.selection.push({ subject: source, existing, topics });
+      const topics = (source.topics || []).filter((topic) => selected(`${source.id}:${topic.id}`, topicSet));
+      const topicEntries = topics.map((topic) => {
+        const existingTopic = findMatch(existing?.topics, topic), metadataUpdate = Boolean(existingTopic && needsMetadataUpdate(existingTopic, topic));
+        if (existingTopic) {
+          result.existingTopics++;
+          result.preservedRecords++;
+          if (metadataUpdate) {
+            result.metadataUpdates++;
+            result.metadataUpdateTopics++;
+          }
+        } else result.addedTopics++;
+        return { source: topic, existing: existingTopic, metadataUpdate };
+      });
+      result.selection.push({ subject: source, existing, subjectNeedsUpdate, topics, topicEntries });
     }
     if (!result.selection.length) result.warnings.push("Nenhuma disciplina foi selecionada.");
     return result;
   }
   function createExamImportService({ subjectService: subjectService2, getSubjects } = {}) {
     if (!subjectService2 || typeof getSubjects !== "function") throw new TypeError("Importação requer serviço e estado de disciplinas.");
-    return Object.freeze({ preview: (input) => previewExamStructureImport({ ...input, subjects: getSubjects() }), importExamStructure(input = {}) {
-      if ((input.duplicateStrategy || "merge") !== "merge") throw new TypeError("Apenas a estratégia merge é suportada.");
-      const preview = previewExamStructureImport({ ...input, subjects: getSubjects() }), list = getSubjects(), snapshot = structuredClone(list);
-      try {
-        for (const entry of preview.selection) {
-          const target = entry.existing || subjectService2.create(entry.subject.name);
-          Object.assign(target, metadata(target, entry.subject));
-          for (const topic2 of entry.topics) {
-            const existingTopic = findMatch(target.topics, topic2);
-            if (existingTopic) subjectService2.updateTopic(target.id, existingTopic.id, metadata(existingTopic, topic2));
-            else subjectService2.addTopic(target.id, { name: topic2.name, ...metadata({}, topic2) });
+    return Object.freeze({
+      preview: (input) => previewExamStructureImport({ ...input, subjects: getSubjects() }),
+      importExamStructure(input = {}) {
+        if ((input.duplicateStrategy || "merge") !== "merge") throw new TypeError("Apenas a estratégia merge é suportada.");
+        const preview = previewExamStructureImport({ ...input, subjects: getSubjects() }), list = getSubjects(), snapshot = structuredClone(list);
+        try {
+          for (const entry of preview.selection) {
+            const target = entry.existing || subjectService2.create(entry.subject.name);
+            Object.assign(target, buildCatalogMetadata(target, entry.subject, { existing: Boolean(entry.existing) }));
+            for (const topicEntry of entry.topicEntries) {
+              const topic = topicEntry.source;
+              if (topicEntry.existing) subjectService2.updateTopic(target.id, topicEntry.existing.id, buildCatalogMetadata(topicEntry.existing, topic, { existing: true }));
+              else subjectService2.addTopic(target.id, { name: topic.name, ...buildCatalogMetadata({}, topic, { existing: false }) });
+            }
           }
+        } catch (error) {
+          list.splice(0, list.length, ...snapshot);
+          throw error;
         }
-      } catch (error) {
-        list.splice(0, list.length, ...snapshot);
-        throw error;
+        return { ...preview, selection: void 0 };
       }
-      return { ...preview, selection: void 0 };
-    } });
+    });
   }
 
+  // src/domain/exams/exam-catalog-data.json
+  var exam_catalog_data_default = {
+    schemaVersion: "1.1.0",
+    catalogVersion: "2.2.0",
+    catalogId: "concursos-bancarios-bb-caixa",
+    name: "Concursos Bancários — BB + Caixa",
+    description: "Catálogo consolidado de disciplinas e tópicos para importação no StudyTrack.",
+    examTags: [
+      {
+        id: "bb-escriturario",
+        label: "Banco do Brasil — Escriturário",
+        institution: "bb"
+      },
+      {
+        id: "caixa-tbn",
+        label: "Caixa — Técnico Bancário Novo",
+        institution: "caixa"
+      }
+    ],
+    subjects: [
+      {
+        id: "lingua-portuguesa",
+        catalogId: "lingua-portuguesa",
+        name: "Língua Portuguesa",
+        aliases: [],
+        topics: [
+          {
+            id: "interpretacao-e-compreensao-de-textos",
+            catalogId: "interpretacao-e-compreensao-de-textos",
+            name: "Interpretação e compreensão de textos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "tipologia-textual",
+            catalogId: "tipologia-textual",
+            name: "Tipologia textual",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "coesao-e-coerencia",
+            catalogId: "coesao-e-coerencia",
+            name: "Coesão e coerência",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "significacao-de-palavras",
+            catalogId: "significacao-de-palavras",
+            name: "Significação de palavras",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "ortografia",
+            catalogId: "ortografia",
+            name: "Ortografia",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "acentuacao",
+            catalogId: "acentuacao",
+            name: "Acentuação",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "classes-de-palavras",
+            catalogId: "classes-de-palavras",
+            name: "Classes de palavras",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "crase",
+            catalogId: "crase",
+            name: "Crase",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "sintaxe-da-oracao-e-do-periodo",
+            catalogId: "sintaxe-da-oracao-e-do-periodo",
+            name: "Sintaxe da oração e do período",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "concordancia-verbal",
+            catalogId: "concordancia-verbal",
+            name: "Concordância verbal",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "concordancia-nominal",
+            catalogId: "concordancia-nominal",
+            name: "Concordância nominal",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "regencia-verbal",
+            catalogId: "regencia-verbal",
+            name: "Regência verbal",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "regencia-nominal",
+            catalogId: "regencia-nominal",
+            name: "Regência nominal",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pontuacao",
+            catalogId: "pontuacao",
+            name: "Pontuação",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "colocacao-pronominal",
+            catalogId: "colocacao-pronominal",
+            name: "Colocação pronominal",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "argumentacao-e-persuasao",
+            catalogId: "argumentacao-e-persuasao",
+            name: "Argumentação e persuasão",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "comunicacao-assertiva",
+            catalogId: "comunicacao-assertiva",
+            name: "Comunicação assertiva",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "redacao-oficial",
+            catalogId: "redacao-oficial",
+            name: "Redação oficial",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Língua Portuguesa",
+            mappingType: "direct",
+            expectedQuestions: 10,
+            questionWeight: 1.5,
+            totalPoints: 15,
+            officialDisciplineQuestions: 10,
+            officialDisciplineTotalPoints: 15,
+            official: true
+          },
+          "caixa-tbn-2024": {
+            officialDiscipline: "Língua Portuguesa",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1,
+            totalPoints: 5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 5,
+            official: true
+          }
+        }
+      },
+      {
+        id: "lingua-inglesa",
+        catalogId: "lingua-inglesa",
+        name: "Língua Inglesa",
+        aliases: [],
+        topics: [
+          {
+            id: "interpretacao-de-textos",
+            catalogId: "interpretacao-de-textos",
+            name: "Interpretação de textos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0588,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "compreensao-de-textos",
+            catalogId: "compreensao-de-textos",
+            name: "Compreensão de textos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0588,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "vocabulario",
+            catalogId: "vocabulario",
+            name: "Vocabulário",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "cognatos-e-falsos-cognatos",
+            catalogId: "cognatos-e-falsos-cognatos",
+            name: "Cognatos e falsos cognatos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "gramatica-aplicada-a-leitura",
+            catalogId: "gramatica-aplicada-a-leitura",
+            name: "Gramática aplicada à leitura",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pronomes",
+            catalogId: "pronomes",
+            name: "Pronomes",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "verbos-e-tempos-verbais",
+            catalogId: "verbos-e-tempos-verbais",
+            name: "Verbos e tempos verbais",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "conectivos",
+            catalogId: "conectivos",
+            name: "Conectivos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "preposicoes",
+            catalogId: "preposicoes",
+            name: "Preposições",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Língua Inglesa",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1,
+            totalPoints: 5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 5,
+            official: true
+          },
+          "caixa-tbn-2024": {
+            officialDiscipline: "Língua Inglesa",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1,
+            totalPoints: 5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 5,
+            official: true
+          }
+        }
+      },
+      {
+        id: "matematica",
+        catalogId: "matematica",
+        name: "Matemática",
+        aliases: [],
+        topics: [
+          {
+            id: "numeros-inteiros-racionais-e-reais",
+            catalogId: "numeros-inteiros-racionais-e-reais",
+            name: "Números inteiros, racionais e reais",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "operacoes-fundamentais",
+            catalogId: "operacoes-fundamentais",
+            name: "Operações fundamentais",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "razao-e-proporcao",
+            catalogId: "razao-e-proporcao",
+            name: "Razão e proporção",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "regra-de-tres-simples",
+            catalogId: "regra-de-tres-simples",
+            name: "Regra de três simples",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "regra-de-tres-composta",
+            catalogId: "regra-de-tres-composta",
+            name: "Regra de três composta",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "porcentagem",
+            catalogId: "porcentagem",
+            name: "Porcentagem",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0881,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "problemas-de-contagem",
+            catalogId: "problemas-de-contagem",
+            name: "Problemas de contagem",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "sistema-de-medidas",
+            catalogId: "sistema-de-medidas",
+            name: "Sistema de medidas",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "conjuntos",
+            catalogId: "conjuntos",
+            name: "Conjuntos",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "logica-proposicional",
+            catalogId: "logica-proposicional",
+            name: "Lógica proposicional",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "relacoes-e-funcoes",
+            catalogId: "relacoes-e-funcoes",
+            name: "Relações e funções",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "funcao-polinomial",
+            catalogId: "funcao-polinomial",
+            name: "Função polinomial",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "funcao-exponencial",
+            catalogId: "funcao-exponencial",
+            name: "Função exponencial",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "funcao-logaritmica",
+            catalogId: "funcao-logaritmica",
+            name: "Função logarítmica",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "matrizes",
+            catalogId: "matrizes",
+            name: "Matrizes",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "determinantes",
+            catalogId: "determinantes",
+            name: "Determinantes",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "sistemas-lineares",
+            catalogId: "sistemas-lineares",
+            name: "Sistemas lineares",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "sequencias",
+            catalogId: "sequencias",
+            name: "Sequências",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "progressao-aritmetica",
+            catalogId: "progressao-aritmetica",
+            name: "Progressão Aritmética",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "progressao-geometrica",
+            catalogId: "progressao-geometrica",
+            name: "Progressão Geométrica",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Matemática",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1.5,
+            totalPoints: 7.5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 7.5,
+            official: true
+          }
+        }
+      },
+      {
+        id: "matematica-financeira",
+        catalogId: "matematica-financeira",
+        name: "Matemática Financeira",
+        aliases: [],
+        topics: [
+          {
+            id: "conceitos-fundamentais",
+            catalogId: "conceitos-fundamentais",
+            name: "Conceitos fundamentais",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "capital-juros-e-taxa",
+            catalogId: "capital-juros-e-taxa",
+            name: "Capital, juros e taxa",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "valor-presente-e-valor-futuro",
+            catalogId: "valor-presente-e-valor-futuro",
+            name: "Valor presente e valor futuro",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "juros-simples",
+            catalogId: "juros-simples",
+            name: "Juros simples",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "juros-compostos",
+            catalogId: "juros-compostos",
+            name: "Juros compostos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0881,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "taxas-equivalentes",
+            catalogId: "taxas-equivalentes",
+            name: "Taxas equivalentes",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "equivalencia-de-capitais",
+            catalogId: "equivalencia-de-capitais",
+            name: "Equivalência de capitais",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "fluxo-de-caixa",
+            catalogId: "fluxo-de-caixa",
+            name: "Fluxo de caixa",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "series-uniformes",
+            catalogId: "series-uniformes",
+            name: "Séries uniformes",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "sistema-de-amortizacao-constante-sac",
+            catalogId: "sistema-de-amortizacao-constante-sac",
+            name: "Sistema de Amortização Constante — SAC",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "sistema-price",
+            catalogId: "sistema-price",
+            name: "Sistema PRICE",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "desconto-racional",
+            catalogId: "desconto-racional",
+            name: "Desconto racional",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "desconto-comercial",
+            catalogId: "desconto-comercial",
+            name: "Desconto comercial",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "taxas-de-retorno",
+            catalogId: "taxas-de-retorno",
+            name: "Taxas de retorno",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0788,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Matemática Financeira",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1.5,
+            totalPoints: 7.5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 7.5,
+            official: true
+          },
+          "caixa-tbn-2024": {
+            officialDiscipline: "Matemática Financeira",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1,
+            totalPoints: 5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 5,
+            official: true
+          }
+        }
+      },
+      {
+        id: "probabilidade-e-estatistica",
+        catalogId: "probabilidade-e-estatistica",
+        name: "Probabilidade e Estatística",
+        aliases: [],
+        topics: [
+          {
+            id: "populacao-e-amostra",
+            catalogId: "populacao-e-amostra",
+            name: "População e amostra",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "variaveis-estatisticas",
+            catalogId: "variaveis-estatisticas",
+            name: "Variáveis estatísticas",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "frequencia-absoluta-e-relativa",
+            catalogId: "frequencia-absoluta-e-relativa",
+            name: "Frequência absoluta e relativa",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "tabelas",
+            catalogId: "tabelas",
+            name: "Tabelas",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "graficos",
+            catalogId: "graficos",
+            name: "Gráficos",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "media-aritmetica",
+            catalogId: "media-aritmetica",
+            name: "Média aritmética",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "media-ponderada",
+            catalogId: "media-ponderada",
+            name: "Média ponderada",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "media-geometrica",
+            catalogId: "media-geometrica",
+            name: "Média geométrica",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "moda",
+            catalogId: "moda",
+            name: "Moda",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "mediana",
+            catalogId: "mediana",
+            name: "Mediana",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "quartis",
+            catalogId: "quartis",
+            name: "Quartis",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "percentis",
+            catalogId: "percentis",
+            name: "Percentis",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "amplitude",
+            catalogId: "amplitude",
+            name: "Amplitude",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "variancia",
+            catalogId: "variancia",
+            name: "Variância",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "desvio-padrao",
+            catalogId: "desvio-padrao",
+            name: "Desvio padrão",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "coeficiente-de-variacao",
+            catalogId: "coeficiente-de-variacao",
+            name: "Coeficiente de variação",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "conceitos-de-probabilidade",
+            catalogId: "conceitos-de-probabilidade",
+            name: "Conceitos de probabilidade",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "espaco-amostral",
+            catalogId: "espaco-amostral",
+            name: "Espaço amostral",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "eventos",
+            catalogId: "eventos",
+            name: "Eventos",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "probabilidade-condicional",
+            catalogId: "probabilidade-condicional",
+            name: "Probabilidade condicional",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "independencia-de-eventos",
+            catalogId: "independencia-de-eventos",
+            name: "Independência de eventos",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "distribuicao-binomial",
+            catalogId: "distribuicao-binomial",
+            name: "Distribuição binomial",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "caixa-tbn-2024": {
+            officialDiscipline: "Noções de Probabilidade e Estatística",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1,
+            totalPoints: 5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 5,
+            official: true
+          }
+        }
+      },
+      {
+        id: "conhecimentos-bancarios",
+        catalogId: "conhecimentos-bancarios",
+        name: "Conhecimentos Bancários",
+        aliases: [],
+        topics: [
+          {
+            id: "estrutura-do-sistema-financeiro-nacional",
+            catalogId: "estrutura-do-sistema-financeiro-nacional",
+            name: "Estrutura do Sistema Financeiro Nacional",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2938,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "orgaos-normativos",
+            catalogId: "orgaos-normativos",
+            name: "Órgãos normativos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "entidades-supervisoras",
+            catalogId: "entidades-supervisoras",
+            name: "Entidades supervisoras",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "instituicoes-financeiras",
+            catalogId: "instituicoes-financeiras",
+            name: "Instituições financeiras",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "banco-central",
+            catalogId: "banco-central",
+            name: "Banco Central",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2938,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "conselho-monetario-nacional",
+            catalogId: "conselho-monetario-nacional",
+            name: "Conselho Monetário Nacional",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2938,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "comissao-de-valores-mobiliarios",
+            catalogId: "comissao-de-valores-mobiliarios",
+            name: "Comissão de Valores Mobiliários",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "mercado-monetario",
+            catalogId: "mercado-monetario",
+            name: "Mercado monetário",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "mercado-de-credito",
+            catalogId: "mercado-de-credito",
+            name: "Mercado de crédito",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2938,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "mercado-de-capitais",
+            catalogId: "mercado-de-capitais",
+            name: "Mercado de capitais",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2938,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "mercado-cambial",
+            catalogId: "mercado-cambial",
+            name: "Mercado cambial",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "moeda-e-suas-funcoes",
+            catalogId: "moeda-e-suas-funcoes",
+            name: "Moeda e suas funções",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "politica-monetaria",
+            catalogId: "politica-monetaria",
+            name: "Política monetária",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "politica-monetaria-convencional",
+            catalogId: "politica-monetaria-convencional",
+            name: "Política monetária convencional",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "politica-monetaria-nao-convencional",
+            catalogId: "politica-monetaria-nao-convencional",
+            name: "Política monetária não convencional",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "selic",
+            catalogId: "selic",
+            name: "SELIC",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2938,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "operacoes-compromissadas",
+            catalogId: "operacoes-compromissadas",
+            name: "Operações compromissadas",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "depositos-remunerados",
+            catalogId: "depositos-remunerados",
+            name: "Depósitos remunerados",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "orcamento-publico",
+            catalogId: "orcamento-publico",
+            name: "Orçamento público",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "titulos-publicos",
+            catalogId: "titulos-publicos",
+            name: "Títulos públicos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "divida-publica",
+            catalogId: "divida-publica",
+            name: "Dívida pública",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "mercado-interbancario",
+            catalogId: "mercado-interbancario",
+            name: "Mercado interbancário",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "tesouraria-bancaria",
+            catalogId: "tesouraria-bancaria",
+            name: "Tesouraria bancária",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "varejo-bancario",
+            catalogId: "varejo-bancario",
+            name: "Varejo bancário",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "recuperacao-de-credito",
+            catalogId: "recuperacao-de-credito",
+            name: "Recuperação de crédito",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "curva-de-juros",
+            catalogId: "curva-de-juros",
+            name: "Curva de juros",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "juros-nominais-e-reais",
+            catalogId: "juros-nominais-e-reais",
+            name: "Juros nominais e reais",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Conhecimentos Bancários",
+            mappingType: "direct",
+            expectedQuestions: 10,
+            questionWeight: 1.5,
+            totalPoints: 15,
+            officialDisciplineQuestions: 10,
+            officialDisciplineTotalPoints: 15,
+            official: true
+          },
+          "caixa-tbn-2024": {
+            officialDiscipline: "Conhecimentos Bancários",
+            mappingType: "direct",
+            expectedQuestions: 15,
+            questionWeight: 1,
+            totalPoints: 15,
+            officialDisciplineQuestions: 15,
+            officialDisciplineTotalPoints: 15,
+            official: true
+          }
+        }
+      },
+      {
+        id: "produtos-e-servicos-bancarios",
+        catalogId: "produtos-e-servicos-bancarios",
+        name: "Produtos e Serviços Bancários",
+        aliases: [],
+        topics: [
+          {
+            id: "conta-corrente",
+            catalogId: "conta-corrente",
+            name: "Conta corrente",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "conta-poupanca",
+            catalogId: "conta-poupanca",
+            name: "Conta poupança",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "cartao-de-credito",
+            catalogId: "cartao-de-credito",
+            name: "Cartão de crédito",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "cartao-de-debito",
+            catalogId: "cartao-de-debito",
+            name: "Cartão de débito",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "credito-direto-ao-consumidor",
+            catalogId: "credito-direto-ao-consumidor",
+            name: "Crédito Direto ao Consumidor",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "credito-rural",
+            catalogId: "credito-rural",
+            name: "Crédito rural",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "emprestimos",
+            catalogId: "emprestimos",
+            name: "Empréstimos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "financiamentos",
+            catalogId: "financiamentos",
+            name: "Financiamentos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "investimentos",
+            catalogId: "investimentos",
+            name: "Investimentos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "fundos-de-investimento",
+            catalogId: "fundos-de-investimento",
+            name: "Fundos de investimento",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "previdencia-privada",
+            catalogId: "previdencia-privada",
+            name: "Previdência privada",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "seguros",
+            catalogId: "seguros",
+            name: "Seguros",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "capitalizacao",
+            catalogId: "capitalizacao",
+            name: "Capitalização",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "consorcios",
+            catalogId: "consorcios",
+            name: "Consórcios",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "garantias-bancarias",
+            catalogId: "garantias-bancarias",
+            name: "Garantias bancárias",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "aval",
+            catalogId: "aval",
+            name: "Aval",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "fianca",
+            catalogId: "fianca",
+            name: "Fiança",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "penhor",
+            catalogId: "penhor",
+            name: "Penhor",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Baixa",
+              score: 0.35,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Baixa",
+                incidenceScore: 0.35,
+                examImportanceEstimate: 0.1388,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Baixa",
+                incidenceScore: 0.35,
+                examImportanceEstimate: 0.2313,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "hipoteca",
+            catalogId: "hipoteca",
+            name: "Hipoteca",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Baixa",
+              score: 0.35,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Baixa",
+                incidenceScore: 0.35,
+                examImportanceEstimate: 0.1388,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Baixa",
+                incidenceScore: 0.35,
+                examImportanceEstimate: 0.2313,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "alienacao-fiduciaria",
+            catalogId: "alienacao-fiduciaria",
+            name: "Alienação fiduciária",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Conhecimentos Bancários",
+            mappingType: "subset",
+            expectedQuestions: null,
+            questionWeight: 1.5,
+            totalPoints: null,
+            officialDisciplineQuestions: 10,
+            officialDisciplineTotalPoints: 15,
+            official: true
+          },
+          "caixa-tbn-2024": {
+            officialDiscipline: "Conhecimentos Bancários",
+            mappingType: "subset",
+            expectedQuestions: null,
+            questionWeight: 1,
+            totalPoints: null,
+            officialDisciplineQuestions: 15,
+            officialDisciplineTotalPoints: 15,
+            official: true
+          }
+        }
+      },
+      {
+        id: "mercado-financeiro-e-transformacao-digital",
+        catalogId: "mercado-financeiro-e-transformacao-digital",
+        name: "Mercado Financeiro e Transformação Digital",
+        aliases: [],
+        topics: [
+          {
+            id: "bancos-na-era-digital",
+            catalogId: "bancos-na-era-digital",
+            name: "Bancos na era digital",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "internet-banking",
+            catalogId: "internet-banking",
+            name: "Internet Banking",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "mobile-banking",
+            catalogId: "mobile-banking",
+            name: "Mobile Banking",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "bancos-digitais",
+            catalogId: "bancos-digitais",
+            name: "Bancos digitais",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "fintechs",
+            catalogId: "fintechs",
+            name: "Fintechs",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "startups",
+            catalogId: "startups",
+            name: "Startups",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "big-techs",
+            catalogId: "big-techs",
+            name: "Big Techs",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "shadow-banking",
+            catalogId: "shadow-banking",
+            name: "Shadow Banking",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "marketplace",
+            catalogId: "marketplace",
+            name: "Marketplace",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "open-banking",
+            catalogId: "open-banking",
+            name: "Open Banking",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "open-finance",
+            catalogId: "open-finance",
+            name: "Open Finance",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0588,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2938,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pix",
+            catalogId: "pix",
+            name: "PIX",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0588,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2938,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "arranjos-de-pagamento",
+            catalogId: "arranjos-de-pagamento",
+            name: "Arranjos de pagamento",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "correspondentes-bancarios",
+            catalogId: "correspondentes-bancarios",
+            name: "Correspondentes bancários",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "blockchain",
+            catalogId: "blockchain",
+            name: "Blockchain",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "bitcoin",
+            catalogId: "bitcoin",
+            name: "Bitcoin",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "criptomoedas-e-criptoativos",
+            catalogId: "criptomoedas-e-criptoativos",
+            name: "Criptomoedas e criptoativos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "drex",
+            catalogId: "drex",
+            name: "DREX",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "transformacao-digital-no-sistema-financeiro",
+            catalogId: "transformacao-digital-no-sistema-financeiro",
+            name: "Transformação digital no sistema financeiro",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0525,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Atualidades do Mercado Financeiro",
+            mappingType: "subset",
+            expectedQuestions: null,
+            questionWeight: 1,
+            totalPoints: null,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 5,
+            official: true
+          },
+          "caixa-tbn-2024": {
+            officialDiscipline: "Conhecimentos Bancários",
+            mappingType: "subset",
+            expectedQuestions: null,
+            questionWeight: 1,
+            totalPoints: null,
+            officialDisciplineQuestions: 15,
+            officialDisciplineTotalPoints: 15,
+            official: true
+          }
+        }
+      },
+      {
+        id: "vendas-e-negociacao",
+        catalogId: "vendas-e-negociacao",
+        name: "Vendas e Negociação",
+        aliases: [],
+        topics: [
+          {
+            id: "estrategia-empresarial",
+            catalogId: "estrategia-empresarial",
+            name: "Estratégia empresarial",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "segmentacao-de-mercado",
+            catalogId: "segmentacao-de-mercado",
+            name: "Segmentação de mercado",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "caracteristicas-dos-servicos",
+            catalogId: "caracteristicas-dos-servicos",
+            name: "Características dos serviços",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "gestao-da-qualidade",
+            catalogId: "gestao-da-qualidade",
+            name: "Gestão da qualidade",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "valor-percebido-pelo-cliente",
+            catalogId: "valor-percebido-pelo-cliente",
+            name: "Valor percebido pelo cliente",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "experiencia-do-cliente",
+            catalogId: "experiencia-do-cliente",
+            name: "Experiência do cliente",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "comportamento-do-consumidor",
+            catalogId: "comportamento-do-consumidor",
+            name: "Comportamento do consumidor",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "tecnicas-de-vendas",
+            catalogId: "tecnicas-de-vendas",
+            name: "Técnicas de vendas",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pre-abordagem",
+            catalogId: "pre-abordagem",
+            name: "Pré-abordagem",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "abordagem",
+            catalogId: "abordagem",
+            name: "Abordagem",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "identificacao-de-necessidades",
+            catalogId: "identificacao-de-necessidades",
+            name: "Identificação de necessidades",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "negociacao",
+            catalogId: "negociacao",
+            name: "Negociação",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "tratamento-de-objecoes",
+            catalogId: "tratamento-de-objecoes",
+            name: "Tratamento de objeções",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "fechamento",
+            catalogId: "fechamento",
+            name: "Fechamento",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pos-venda",
+            catalogId: "pos-venda",
+            name: "Pós-venda",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "marketing-digital",
+            catalogId: "marketing-digital",
+            name: "Marketing digital",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "leads",
+            catalogId: "leads",
+            name: "Leads",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "copywriting",
+            catalogId: "copywriting",
+            name: "Copywriting",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "gatilhos-mentais",
+            catalogId: "gatilhos-mentais",
+            name: "Gatilhos mentais",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "inbound-marketing",
+            catalogId: "inbound-marketing",
+            name: "Inbound Marketing",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "etica-em-vendas",
+            catalogId: "etica-em-vendas",
+            name: "Ética em vendas",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Vendas e Negociação",
+            mappingType: "direct",
+            expectedQuestions: 15,
+            questionWeight: 1.5,
+            totalPoints: 22.5,
+            officialDisciplineQuestions: 15,
+            officialDisciplineTotalPoints: 22.5,
+            official: true
+          }
+        }
+      },
+      {
+        id: "atendimento-bancario",
+        catalogId: "atendimento-bancario",
+        name: "Atendimento Bancário",
+        aliases: [],
+        topics: [
+          {
+            id: "qualidade-no-atendimento",
+            catalogId: "qualidade-no-atendimento",
+            name: "Qualidade no atendimento",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1958,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "experiencia-do-cliente",
+            catalogId: "experiencia-do-cliente",
+            name: "Experiência do cliente",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "clientecentrismo",
+            catalogId: "clientecentrismo",
+            name: "Clientecentrismo",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "comunicacao-assertiva",
+            catalogId: "comunicacao-assertiva",
+            name: "Comunicação assertiva",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "escuta-ativa",
+            catalogId: "escuta-ativa",
+            name: "Escuta ativa",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "empatia",
+            catalogId: "empatia",
+            name: "Empatia",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "atendimento-presencial",
+            catalogId: "atendimento-presencial",
+            name: "Atendimento presencial",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1958,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "atendimento-remoto",
+            catalogId: "atendimento-remoto",
+            name: "Atendimento remoto",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1958,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "atendimento-em-canais-digitais",
+            catalogId: "atendimento-em-canais-digitais",
+            name: "Atendimento em canais digitais",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1958,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "politica-de-relacionamento-com-clientes",
+            catalogId: "politica-de-relacionamento-com-clientes",
+            name: "Política de relacionamento com clientes",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "ouvidoria",
+            catalogId: "ouvidoria",
+            name: "Ouvidoria",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "codigo-de-defesa-do-consumidor",
+            catalogId: "codigo-de-defesa-do-consumidor",
+            name: "Código de Defesa do Consumidor",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1958,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "direitos-do-consumidor",
+            catalogId: "direitos-do-consumidor",
+            name: "Direitos do consumidor",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "atendimento-prioritario",
+            catalogId: "atendimento-prioritario",
+            name: "Atendimento prioritário",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1958,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pessoas-com-deficiencia",
+            catalogId: "pessoas-com-deficiencia",
+            name: "Pessoas com deficiência",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "acessibilidade",
+            catalogId: "acessibilidade",
+            name: "Acessibilidade",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "atendimento-a-pessoa-idosa",
+            catalogId: "atendimento-a-pessoa-idosa",
+            name: "Atendimento à pessoa idosa",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1958,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "consumidor-vulneravel",
+            catalogId: "consumidor-vulneravel",
+            name: "Consumidor vulnerável",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "atendimento-a-pessoa-com-tea",
+            catalogId: "atendimento-a-pessoa-com-tea",
+            name: "Atendimento à pessoa com TEA",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1958,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "nome-social",
+            catalogId: "nome-social",
+            name: "Nome social",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Baixa",
+              score: 0.35,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Baixa",
+                incidenceScore: 0.35,
+                examImportanceEstimate: 0.2081,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Baixa",
+                incidenceScore: 0.35,
+                examImportanceEstimate: 0.1542,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "diversidade-e-inclusao",
+            catalogId: "diversidade-e-inclusao",
+            name: "Diversidade e inclusão",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.175,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Vendas e Negociação",
+            mappingType: "subset",
+            expectedQuestions: null,
+            questionWeight: 1.5,
+            totalPoints: null,
+            officialDisciplineQuestions: 15,
+            officialDisciplineTotalPoints: 22.5,
+            official: true
+          },
+          "caixa-tbn-2024": {
+            officialDiscipline: "Atendimento Bancário",
+            mappingType: "direct",
+            expectedQuestions: 10,
+            questionWeight: 1,
+            totalPoints: 10,
+            officialDisciplineQuestions: 10,
+            officialDisciplineTotalPoints: 10,
+            official: true
+          }
+        }
+      },
+      {
+        id: "informatica-e-tic",
+        catalogId: "informatica-e-tic",
+        name: "Informática e TIC",
+        aliases: [],
+        topics: [
+          {
+            id: "windows",
+            catalogId: "windows",
+            name: "Windows",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "linux",
+            catalogId: "linux",
+            name: "Linux",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "arquivos-e-pastas",
+            catalogId: "arquivos-e-pastas",
+            name: "Arquivos e pastas",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "microsoft-word",
+            catalogId: "microsoft-word",
+            name: "Microsoft Word",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "microsoft-excel",
+            catalogId: "microsoft-excel",
+            name: "Microsoft Excel",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "microsoft-powerpoint",
+            catalogId: "microsoft-powerpoint",
+            name: "Microsoft PowerPoint",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "correio-eletronico",
+            catalogId: "correio-eletronico",
+            name: "Correio eletrônico",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "internet",
+            catalogId: "internet",
+            name: "Internet",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "intranet",
+            catalogId: "intranet",
+            name: "Intranet",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "navegadores",
+            catalogId: "navegadores",
+            name: "Navegadores",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "redes-de-computadores",
+            catalogId: "redes-de-computadores",
+            name: "Redes de computadores",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "redes-sociais",
+            catalogId: "redes-sociais",
+            name: "Redes sociais",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "seguranca-da-informacao",
+            catalogId: "seguranca-da-informacao",
+            name: "Segurança da informação",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.2644,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "malware",
+            catalogId: "malware",
+            name: "Malware",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "antivirus",
+            catalogId: "antivirus",
+            name: "Antivírus",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "firewall",
+            catalogId: "firewall",
+            name: "Firewall",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "hardening",
+            catalogId: "hardening",
+            name: "Hardening",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "backup",
+            catalogId: "backup",
+            name: "Backup",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "google-drive",
+            catalogId: "google-drive",
+            name: "Google Drive",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "microsoft-teams",
+            catalogId: "microsoft-teams",
+            name: "Microsoft Teams",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "ferramentas-de-trabalho-remoto",
+            catalogId: "ferramentas-de-trabalho-remoto",
+            name: "Ferramentas de trabalho remoto",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "sistemas-de-apoio-a-decisao",
+            catalogId: "sistemas-de-apoio-a-decisao",
+            name: "Sistemas de apoio à decisão",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "analise-de-dados",
+            catalogId: "analise-de-dados",
+            name: "Análise de dados",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2363,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Conhecimentos de Informática",
+            mappingType: "direct",
+            expectedQuestions: 15,
+            questionWeight: 1.5,
+            totalPoints: 22.5,
+            officialDisciplineQuestions: 15,
+            officialDisciplineTotalPoints: 22.5,
+            official: true
+          },
+          "caixa-tbn-2024": {
+            officialDiscipline: "Conhecimentos de Tecnologia da Informação e Comunicação",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1,
+            totalPoints: 5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 5,
+            official: true
+          }
+        }
+      },
+      {
+        id: "tecnologia-e-inteligencia-artificial",
+        catalogId: "tecnologia-e-inteligencia-artificial",
+        name: "Tecnologia e Inteligência Artificial",
+        aliases: [],
+        topics: [
+          {
+            id: "inteligencia-artificial",
+            catalogId: "inteligencia-artificial",
+            name: "Inteligência Artificial",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "ia-generativa",
+            catalogId: "ia-generativa",
+            name: "IA generativa",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "chatgpt-e-ferramentas-generativas",
+            catalogId: "chatgpt-e-ferramentas-generativas",
+            name: "ChatGPT e ferramentas generativas",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "engenharia-e-edicao-de-prompts",
+            catalogId: "engenharia-e-edicao-de-prompts",
+            name: "Engenharia e edição de prompts",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "machine-learning",
+            catalogId: "machine-learning",
+            name: "Machine Learning",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "ciencia-de-dados",
+            catalogId: "ciencia-de-dados",
+            name: "Ciência de Dados",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "analytics",
+            catalogId: "analytics",
+            name: "Analytics",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "cloud-computing",
+            catalogId: "cloud-computing",
+            name: "Cloud Computing",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Difícil",
+              score: 3,
+              source: "curated_heuristic_v1",
+              confidence: "medium"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "robotica",
+            catalogId: "robotica",
+            name: "Robótica",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Baixa",
+              score: 0.35,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "metaverso",
+            catalogId: "metaverso",
+            name: "Metaverso",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Baixa",
+              score: 0.35,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "transformacao-digital",
+            catalogId: "transformacao-digital",
+            name: "Transformação digital",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "inovacao",
+            catalogId: "inovacao",
+            name: "Inovação",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "cultura-digital",
+            catalogId: "cultura-digital",
+            name: "Cultura digital",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          }
+        ],
+        examMetrics: {}
+      },
+      {
+        id: "compliance-etica-e-legislacao-bancaria",
+        catalogId: "compliance-etica-e-legislacao-bancaria",
+        name: "Compliance, Ética e Legislação Bancária",
+        aliases: [],
+        topics: [
+          {
+            id: "etica-profissional",
+            catalogId: "etica-profissional",
+            name: "Ética profissional",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "etica-empresarial",
+            catalogId: "etica-empresarial",
+            name: "Ética empresarial",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "prevencao-a-lavagem-de-dinheiro",
+            catalogId: "prevencao-a-lavagem-de-dinheiro",
+            name: "Prevenção à lavagem de dinheiro",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "lei-n-9-613-1998",
+            catalogId: "lei-n-9-613-1998",
+            name: "Lei nº 9.613/1998",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "circular-bcb-n-3-978",
+            catalogId: "circular-bcb-n-3-978",
+            name: "Circular BCB nº 3.978",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "carta-circular-bcb-n-4-001",
+            catalogId: "carta-circular-bcb-n-4-001",
+            name: "Carta Circular BCB nº 4.001",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "sigilo-bancario",
+            catalogId: "sigilo-bancario",
+            name: "Sigilo bancário",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "lc-n-105-2001",
+            catalogId: "lc-n-105-2001",
+            name: "LC nº 105/2001",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "lgpd",
+            catalogId: "lgpd",
+            name: "LGPD",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.1762,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Alta",
+                incidenceScore: 0.85,
+                examImportanceEstimate: 0.0979,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "lei-anticorrupcao",
+            catalogId: "lei-anticorrupcao",
+            name: "Lei Anticorrupção",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "decreto-n-11-129-2022",
+            catalogId: "decreto-n-11-129-2022",
+            name: "Decreto nº 11.129/2022",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "seguranca-cibernetica",
+            catalogId: "seguranca-cibernetica",
+            name: "Segurança cibernética",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "governanca-corporativa",
+            catalogId: "governanca-corporativa",
+            name: "Governança corporativa",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "resolucao-cvm-n-50",
+            catalogId: "resolucao-cvm-n-50",
+            name: "Resolução CVM nº 50",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "principios-do-art-37-da-constituicao",
+            catalogId: "principios-do-art-37-da-constituicao",
+            name: "Princípios do art. 37 da Constituição",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "assedio-moral",
+            catalogId: "assedio-moral",
+            name: "Assédio moral",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "assedio-sexual",
+            catalogId: "assedio-sexual",
+            name: "Assédio sexual",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              },
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Conhecimentos Bancários",
+            mappingType: "subset",
+            expectedQuestions: null,
+            questionWeight: 1.5,
+            totalPoints: null,
+            officialDisciplineQuestions: 10,
+            officialDisciplineTotalPoints: 15,
+            official: true
+          },
+          "caixa-tbn-2024": {
+            officialDiscipline: "Comportamentos Éticos e Compliance",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1,
+            totalPoints: 5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 5,
+            official: true
+          }
+        }
+      },
+      {
+        id: "conhecimentos-e-comportamentos-digitais",
+        catalogId: "conhecimentos-e-comportamentos-digitais",
+        name: "Conhecimentos e Comportamentos Digitais",
+        aliases: [],
+        topics: [
+          {
+            id: "growth-mindset",
+            catalogId: "growth-mindset",
+            name: "Growth Mindset",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "paradigma-da-abundancia",
+            catalogId: "paradigma-da-abundancia",
+            name: "Paradigma da abundância",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Baixa",
+              score: 0.35,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Baixa",
+                incidenceScore: 0.35,
+                examImportanceEstimate: 0.0771,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "intraempreendedorismo",
+            catalogId: "intraempreendedorismo",
+            name: "Intraempreendedorismo",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "design-thinking",
+            catalogId: "design-thinking",
+            name: "Design Thinking",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "design-de-servico",
+            catalogId: "design-de-servico",
+            name: "Design de Serviço",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "metodologias-ageis",
+            catalogId: "metodologias-ageis",
+            name: "Metodologias ágeis",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "manifesto-agil",
+            catalogId: "manifesto-agil",
+            name: "Manifesto Ágil",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "scrum",
+            catalogId: "scrum",
+            name: "Scrum",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "lean",
+            catalogId: "lean",
+            name: "Lean",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "resolucao-de-problemas-complexos",
+            catalogId: "resolucao-de-problemas-complexos",
+            name: "Resolução de problemas complexos",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "visao-sistemica",
+            catalogId: "visao-sistemica",
+            name: "Visão sistêmica",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pensamento-computacional",
+            catalogId: "pensamento-computacional",
+            name: "Pensamento computacional",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "analise-de-negocios",
+            catalogId: "analise-de-negocios",
+            name: "Análise de negócios",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "lideranca",
+            catalogId: "lideranca",
+            name: "Liderança",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "autolideranca",
+            catalogId: "autolideranca",
+            name: "Autoliderança",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "inteligencia-emocional",
+            catalogId: "inteligencia-emocional",
+            name: "Inteligência emocional",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "experiencia-do-consumidor",
+            catalogId: "experiencia-do-consumidor",
+            name: "Experiência do consumidor",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "objetivos-de-desenvolvimento-sustentavel",
+            catalogId: "objetivos-de-desenvolvimento-sustentavel",
+            name: "Objetivos de Desenvolvimento Sustentável",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pacto-global",
+            catalogId: "pacto-global",
+            name: "Pacto Global",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Baixa",
+              score: 0.35,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Baixa",
+                incidenceScore: 0.35,
+                examImportanceEstimate: 0.0771,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "okr",
+            catalogId: "okr",
+            name: "OKR",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "gestao-do-tempo",
+            catalogId: "gestao-do-tempo",
+            name: "Gestão do tempo",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "produtividade",
+            catalogId: "produtividade",
+            name: "Produtividade",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "trabalho-remoto",
+            catalogId: "trabalho-remoto",
+            name: "Trabalho remoto",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "lifelong-learning",
+            catalogId: "lifelong-learning",
+            name: "Lifelong Learning",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.0875,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "caixa-tbn-2024": {
+            officialDiscipline: "Conhecimentos e Comportamentos Digitais",
+            mappingType: "direct",
+            expectedQuestions: 5,
+            questionWeight: 1,
+            totalPoints: 5,
+            officialDisciplineQuestions: 5,
+            officialDisciplineTotalPoints: 5,
+            official: true
+          }
+        }
+      },
+      {
+        id: "caixa-economica-federal-especificos",
+        catalogId: "caixa-economica-federal-especificos",
+        name: "Caixa Econômica Federal — Específicos",
+        aliases: [],
+        topics: [
+          {
+            id: "estatuto-social-da-caixa",
+            catalogId: "estatuto-social-da-caixa",
+            name: "Estatuto Social da Caixa",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "codigo-de-etica-conduta-e-integridade-da-caixa",
+            catalogId: "codigo-de-etica-conduta-e-integridade-da-caixa",
+            name: "Código de Ética, Conduta e Integridade da Caixa",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pis",
+            catalogId: "pis",
+            name: "PIS",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "fgts",
+            catalogId: "fgts",
+            name: "FGTS",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "lei-n-8-036-1990",
+            catalogId: "lei-n-8-036-1990",
+            name: "Lei nº 8.036/1990",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "hipoteses-de-saque-do-fgts",
+            catalogId: "hipoteses-de-saque-do-fgts",
+            name: "Hipóteses de saque do FGTS",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "certificado-de-regularidade-do-fgts",
+            catalogId: "certificado-de-regularidade-do-fgts",
+            name: "Certificado de Regularidade do FGTS",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "guia-de-recolhimento-do-fgts",
+            catalogId: "guia-de-recolhimento-do-fgts",
+            name: "Guia de Recolhimento do FGTS",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "seguro-desemprego",
+            catalogId: "seguro-desemprego",
+            name: "Seguro-desemprego",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "abono-salarial",
+            catalogId: "abono-salarial",
+            name: "Abono salarial",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "programas-sociais",
+            catalogId: "programas-sociais",
+            name: "Programas sociais",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "beneficios-do-trabalhador",
+            catalogId: "beneficios-do-trabalhador",
+            name: "Benefícios do trabalhador",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "abertura-de-contas",
+            catalogId: "abertura-de-contas",
+            name: "Abertura de contas",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "documentacao-para-abertura-de-contas",
+            catalogId: "documentacao-para-abertura-de-contas",
+            name: "Documentação para abertura de contas",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "pessoa-fisica-e-pessoa-juridica",
+            catalogId: "pessoa-fisica-e-pessoa-juridica",
+            name: "Pessoa física e pessoa jurídica",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "capacidade-civil",
+            catalogId: "capacidade-civil",
+            name: "Capacidade civil",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "incapacidade-civil",
+            catalogId: "incapacidade-civil",
+            name: "Incapacidade civil",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "representacao",
+            catalogId: "representacao",
+            name: "Representação",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.2625,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "domicilio",
+            catalogId: "domicilio",
+            name: "Domicílio",
+            examTags: [
+              "caixa-tbn"
+            ],
+            institutions: [
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Baixa",
+              score: 0.35,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "caixa-tbn-2024": {
+                questionWeight: 1,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Baixa",
+                incidenceScore: 0.35,
+                examImportanceEstimate: 0.2313,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "caixa-tbn-2024": {
+            officialDiscipline: "Conhecimentos Bancários",
+            mappingType: "subset",
+            expectedQuestions: null,
+            questionWeight: 1,
+            totalPoints: null,
+            officialDisciplineQuestions: 15,
+            officialDisciplineTotalPoints: 15,
+            official: true
+          }
+        }
+      },
+      {
+        id: "banco-do-brasil-especificos",
+        catalogId: "banco-do-brasil-especificos",
+        name: "Banco do Brasil — Específicos",
+        aliases: [],
+        topics: [
+          {
+            id: "codigo-de-etica-do-banco-do-brasil",
+            catalogId: "codigo-de-etica-do-banco-do-brasil",
+            name: "Código de Ética do Banco do Brasil",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "codigo-de-conduta",
+            catalogId: "codigo-de-conduta",
+            name: "Código de Conduta",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "responsabilidade-socioambiental",
+            catalogId: "responsabilidade-socioambiental",
+            name: "Responsabilidade socioambiental",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "sustentabilidade-no-banco-do-brasil",
+            catalogId: "sustentabilidade-no-banco-do-brasil",
+            name: "Sustentabilidade no Banco do Brasil",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          },
+          {
+            id: "estrutura-e-caracteristicas-do-banco-do-brasil",
+            catalogId: "estrutura-e-caracteristicas-do-banco-do-brasil",
+            name: "Estrutura e características do Banco do Brasil",
+            examTags: [
+              "bb-escriturario"
+            ],
+            institutions: [
+              "bb"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {
+              "bb-escriturario-2023": {
+                questionWeight: 1.5,
+                expectedQuestions: null,
+                officialQuestionWeight: true,
+                incidenceLevel: "Média",
+                incidenceScore: 0.6,
+                examImportanceEstimate: 0.1575,
+                importanceSource: "official_discipline_weight_x_curated_topic_incidence",
+                note: "A incidência por tópico é estimada; o edital não fixa número de questões por tópico."
+              }
+            }
+          }
+        ],
+        examMetrics: {
+          "bb-escriturario-2023": {
+            officialDiscipline: "Conhecimentos Bancários",
+            mappingType: "subset",
+            expectedQuestions: null,
+            questionWeight: 1.5,
+            totalPoints: null,
+            officialDisciplineQuestions: 10,
+            officialDisciplineTotalPoints: 15,
+            official: true
+          }
+        }
+      },
+      {
+        id: "redacao",
+        catalogId: "redacao",
+        name: "Redação",
+        aliases: [],
+        topics: [
+          {
+            id: "estrutura-dissertativo-argumentativa",
+            catalogId: "estrutura-dissertativo-argumentativa",
+            name: "Estrutura dissertativo-argumentativa",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "introducao",
+            catalogId: "introducao",
+            name: "Introdução",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "desenvolvimento",
+            catalogId: "desenvolvimento",
+            name: "Desenvolvimento",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "conclusao",
+            catalogId: "conclusao",
+            name: "Conclusão",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Fácil",
+              score: 1,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "construcao-da-tese",
+            catalogId: "construcao-da-tese",
+            name: "Construção da tese",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "argumentacao",
+            catalogId: "argumentacao",
+            name: "Argumentação",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "repertorio",
+            catalogId: "repertorio",
+            name: "Repertório",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "coesao",
+            catalogId: "coesao",
+            name: "Coesão",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "coerencia",
+            catalogId: "coerencia",
+            name: "Coerência",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "conectivos",
+            catalogId: "conectivos",
+            name: "Conectivos",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "norma-padrao",
+            catalogId: "norma-padrao",
+            name: "Norma-padrão",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "pontuacao-aplicada-a-redacao",
+            catalogId: "pontuacao-aplicada-a-redacao",
+            name: "Pontuação aplicada à redação",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Alta",
+              score: 0.85,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "paragrafacao",
+            catalogId: "paragrafacao",
+            name: "Paragrafação",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "planejamento-do-texto",
+            catalogId: "planejamento-do-texto",
+            name: "Planejamento do texto",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "revisao-textual",
+            catalogId: "revisao-textual",
+            name: "Revisão textual",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Média",
+              score: 0.6,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          },
+          {
+            id: "redacoes-anteriores-da-cesgranrio",
+            catalogId: "redacoes-anteriores-da-cesgranrio",
+            name: "Redações anteriores da Cesgranrio",
+            examTags: [
+              "bb-escriturario",
+              "caixa-tbn"
+            ],
+            institutions: [
+              "bb",
+              "caixa"
+            ],
+            aliases: [],
+            sourceRefs: [],
+            difficulty: {
+              level: "Médio",
+              score: 2,
+              source: "curated_heuristic_v1",
+              confidence: "low"
+            },
+            incidence: {
+              level: "Baixa",
+              score: 0.35,
+              source: "curated_estimate_v1",
+              confidence: "low"
+            },
+            examMetrics: {}
+          }
+        ],
+        examMetrics: {}
+      }
+    ],
+    examProfiles: {
+      "bb-escriturario-2023": {
+        label: "Banco do Brasil — Escriturário (Agente Comercial) 2023",
+        totalQuestions: 70,
+        totalObjectivePoints: 100,
+        disciplines: {
+          "Língua Portuguesa": {
+            questions: 10,
+            questionWeight: 1.5,
+            totalPoints: 15
+          },
+          "Língua Inglesa": {
+            questions: 5,
+            questionWeight: 1,
+            totalPoints: 5
+          },
+          Matemática: {
+            questions: 5,
+            questionWeight: 1.5,
+            totalPoints: 7.5
+          },
+          "Atualidades do Mercado Financeiro": {
+            questions: 5,
+            questionWeight: 1,
+            totalPoints: 5
+          },
+          "Matemática Financeira": {
+            questions: 5,
+            questionWeight: 1.5,
+            totalPoints: 7.5
+          },
+          "Conhecimentos Bancários": {
+            questions: 10,
+            questionWeight: 1.5,
+            totalPoints: 15
+          },
+          "Conhecimentos de Informática": {
+            questions: 15,
+            questionWeight: 1.5,
+            totalPoints: 22.5
+          },
+          "Vendas e Negociação": {
+            questions: 15,
+            questionWeight: 1.5,
+            totalPoints: 22.5
+          }
+        }
+      },
+      "caixa-tbn-2024": {
+        label: "Caixa — Técnico Bancário Novo 2024",
+        totalQuestions: 60,
+        totalObjectivePoints: 60,
+        disciplines: {
+          "Língua Portuguesa": {
+            questions: 5,
+            questionWeight: 1,
+            totalPoints: 5
+          },
+          "Língua Inglesa": {
+            questions: 5,
+            questionWeight: 1,
+            totalPoints: 5
+          },
+          "Matemática Financeira": {
+            questions: 5,
+            questionWeight: 1,
+            totalPoints: 5
+          },
+          "Noções de Probabilidade e Estatística": {
+            questions: 5,
+            questionWeight: 1,
+            totalPoints: 5
+          },
+          "Comportamentos Éticos e Compliance": {
+            questions: 5,
+            questionWeight: 1,
+            totalPoints: 5
+          },
+          "Conhecimentos Bancários": {
+            questions: 15,
+            questionWeight: 1,
+            totalPoints: 15
+          },
+          "Conhecimentos de Tecnologia da Informação e Comunicação": {
+            questions: 5,
+            questionWeight: 1,
+            totalPoints: 5
+          },
+          "Conhecimentos e Comportamentos Digitais": {
+            questions: 5,
+            questionWeight: 1,
+            totalPoints: 5
+          },
+          "Atendimento Bancário": {
+            questions: 10,
+            questionWeight: 1,
+            totalPoints: 10
+          }
+        }
+      }
+    },
+    metadataModel: {
+      difficulty: {
+        levels: [
+          "Fácil",
+          "Médio",
+          "Difícil"
+        ],
+        note: "Estimativa pedagógica editável, não oficial."
+      },
+      incidence: {
+        levels: [
+          "Baixa",
+          "Média",
+          "Alta"
+        ],
+        note: "Estimativa curada por tópico, não frequência oficial garantida."
+      },
+      questionWeight: {
+        note: "Peso oficial por questão quando há correspondência com disciplina do edital; expectedQuestions fica null para subdivisões para evitar dupla contagem."
+      }
+    }
+  };
+
   // src/domain/exams/exam-catalog.js
-  var CATALOG_VERSION = "2.0.0";
+  var CATALOG_VERSION = exam_catalog_data_default.catalogVersion;
   var EXAM_TAGS = Object.freeze({ BB: "bb-escriturario", CAIXA: "caixa-tbn", CAIXA_TI: "caixa-tbn-ti" });
-  var { BB, CAIXA, CAIXA_TI } = EXAM_TAGS;
-  var common = [BB, CAIXA, CAIXA_TI];
-  var caixa = [CAIXA, CAIXA_TI];
+  var INSTITUTIONS = Object.freeze({ BB: "bb", CAIXA: "caixa" });
+  var EXAM_SOURCES = Object.freeze({
+    "bb-escriturario-2023": Object.freeze({ institution: "bb", year: 2023, role: "Escriturário", official: true, label: "Edital BB 2023" }),
+    "caixa-tbn-2024": Object.freeze({ institution: "caixa", year: 2024, role: "Técnico Bancário Novo", official: true, label: "Edital Caixa 2024" }),
+    "studytrack-curated-ti": Object.freeze({ institution: "caixa", role: "TBN TI", official: false, label: "Catálogo curado StudyTrack" })
+  });
+  var clone2 = (value2) => structuredClone(value2);
+  var deepFreeze = (value2) => {
+    if (value2 && typeof value2 === "object" && !Object.isFrozen(value2)) {
+      Object.freeze(value2);
+      Object.values(value2).forEach(deepFreeze);
+    }
+    return value2;
+  };
   var slug = (value2) => String(value2).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  var topic = (name, examTags = common, extra = {}) => Object.freeze({ id: extra.id || slug(name), catalogId: extra.id || slug(name), name, examTags: [...examTags], institutions: [...new Set(examTags.map((tag) => tag.startsWith("bb") ? "bb" : "caixa"))], aliases: extra.aliases || [], sourceRefs: extra.sourceRefs || examTags.map((tag) => tag === "bb-escriturario" ? "bb-2023" : tag) });
-  var subject = (id, name, names, { aliases = [], defaultTags = common } = {}) => Object.freeze({ id, catalogId: id, name, aliases, topics: names.map((item) => Array.isArray(item) ? topic(item[0], item[1] || defaultTags, item[2] || {}) : topic(item, defaultTags)) });
-  var EXAM_CATALOG = Object.freeze([
-    subject("lingua-portuguesa", "Língua Portuguesa", ["Compreensão e interpretação de textos", "Tipologia e gêneros textuais", "Ortografia oficial", "Acentuação gráfica", "Classes de palavras", "Sintaxe da oração e do período", "Concordância nominal e verbal", "Regência nominal e verbal", "Crase", "Pontuação", "Coesão e coerência", "Significação das palavras", "Redação oficial"], { aliases: ["Português"] }),
-    subject("lingua-inglesa", "Língua Inglesa", [["Compreensão de textos em língua inglesa", [CAIXA_TI]], ["Vocabulário e aspectos gramaticais", [CAIXA_TI]]], { defaultTags: [CAIXA_TI] }),
-    subject("matematica", "Matemática", [["Números inteiros e racionais", [BB]], ["Razão e proporção", [BB]], ["Regra de três simples e composta", [BB]], ["Porcentagem", [BB]], ["Equações e sistemas", [BB]], ["Funções", [BB]], ["Progressões aritméticas e geométricas", [BB]], ["Geometria plana e espacial", [BB]], ["Análise combinatória", [BB]], ["Probabilidade básica", [BB]]]),
-    subject("matematica-financeira", "Matemática Financeira", ["Conceitos gerais e valor do dinheiro no tempo", "Juros simples", "Juros compostos", "Taxas nominal, efetiva e equivalente", "Descontos simples e compostos", "Séries uniformes", "Sistemas de amortização", "Fluxo de caixa", "Valor presente e valor futuro"]),
-    subject("probabilidade-estatistica", "Probabilidade e Estatística", [["Estatística descritiva", caixa], ["Medidas de posição e dispersão", caixa], ["Distribuições de probabilidade", caixa], ["Probabilidade condicional", caixa], ["Variáveis aleatórias", caixa], ["Amostragem e estimação", caixa], ["Correlação e regressão", caixa]], { defaultTags: caixa }),
-    subject("conhecimentos-bancarios", "Conhecimentos Bancários", ["Sistema Financeiro Nacional", "Conselho Monetário Nacional", "Banco Central do Brasil", "Comissão de Valores Mobiliários", "Instituições financeiras", "Mercado monetário", "Mercado de crédito", "Mercado de capitais", "Mercado de câmbio", "Política monetária", "Taxa Selic", "Inflação e índices de preços", "Garantias do Sistema Financeiro Nacional"]),
-    subject("produtos-servicos-bancarios", "Produtos e Serviços Bancários", ["Contas correntes e depósitos", "Cartões de crédito e débito", "Crédito direto ao consumidor", "Crédito rural", "Financiamento habitacional", "Capitalização", "Previdência privada", "Seguros", "Consórcios", "Investimentos e fundos", "Títulos de renda fixa", "PIX", "Open Finance", "Correspondentes bancários"]),
-    subject("mercado-transformacao", "Mercado Financeiro e Transformação Digital", ["Fintechs e bancos digitais", "Startups e big techs", "Moedas digitais e criptomoedas", "Blockchain", "Marketplace", "Banking as a Service", "Sistemas de pagamentos instantâneos", "Transformação digital no sistema financeiro", "Novos modelos de negócio", "Experiência digital do cliente"]),
-    subject("vendas-negociacao", "Vendas e Negociação", [["Noções de estratégia empresarial", [BB]], ["Segmentação de mercado", [BB]], ["Gestão da experiência do cliente", [BB]], ["Técnicas de vendas", [BB]], ["Técnicas de negociação", [BB]], ["Marketing digital", [BB]], ["Ética em vendas", [BB]], ["Padrões de qualidade no atendimento", [BB]], ["Comportamento do consumidor", [BB]]]),
-    subject("atendimento-bancario", "Atendimento Bancário", ["Atendimento e relacionamento com o cliente", "Código de Defesa do Consumidor", "Ouvidoria", "Atendimento prioritário", "Acessibilidade e inclusão", "Qualidade em serviços", "Resolução de conflitos", "Comunicação assertiva"]),
-    subject("informatica-tic", "Informática e TIC", ["Sistemas operacionais", "Pacote Microsoft Office", "Internet e intranet", "Navegadores e correio eletrônico", "Redes de computadores", "Segurança da informação", "Computação em nuvem", "Ferramentas de colaboração", "Proteção de estações de trabalho"], { aliases: ["Informática"] }),
-    subject("tecnologia-ia", "Tecnologia e Inteligência Artificial", [["Lógica de programação", [CAIXA_TI]], ["Algoritmos e estruturas de dados", [CAIXA_TI]], ["Programação Java", [CAIXA_TI]], ["Programação Python", [CAIXA_TI]], ["Bancos de dados relacionais", [CAIXA_TI]], ["Bancos de dados NoSQL", [CAIXA_TI]], ["Engenharia de software", [CAIXA_TI]], ["Arquitetura de software", [CAIXA_TI]], ["APIs e microsserviços", [CAIXA_TI]], ["DevOps e DevSecOps", [CAIXA_TI]], ["Contêineres e orquestração", [CAIXA_TI]], ["Testes de software", [CAIXA_TI]], ["Métodos ágeis", [CAIXA_TI]], ["Ciência de dados", [CAIXA_TI]], ["Aprendizado de máquina", [CAIXA_TI]], ["Inteligência artificial generativa", [CAIXA_TI]], ["Governança de TI", [CAIXA_TI]], ["Segurança cibernética", [CAIXA_TI]]], { defaultTags: [CAIXA_TI], aliases: ["Tecnologia da Informação", "TI"] }),
-    subject("compliance-etica", "Compliance, Ética e Legislação Bancária", ["Prevenção à lavagem de dinheiro", "Financiamento ao terrorismo", "Lei Anticorrupção", "Lei Geral de Proteção de Dados", "Sigilo bancário", "Ética profissional", "Governança corporativa", "Responsabilidade socioambiental", "Controles internos", "Gestão de riscos", "Segurança cibernética no setor bancário"]),
-    subject("comportamentos-digitais", "Conhecimentos e Comportamentos Digitais", [["Growth mindset", caixa], ["Intraempreendedorismo", caixa], ["Design Thinking", caixa], ["Scrum", caixa], ["Resolução de problemas complexos", caixa], ["Liderança e autoliderança", caixa], ["Inteligência emocional", caixa], ["Objetivos de Desenvolvimento Sustentável", caixa], ["OKR", caixa], ["Produtividade pessoal", caixa], ["Trabalho remoto e colaboração", caixa], ["Lifelong learning", caixa]], { defaultTags: caixa }),
-    subject("caixa-especificos", "Caixa Econômica Federal — Específicos", [["FGTS", [CAIXA], { sourceRefs: [] }], ["Seguro-desemprego", [CAIXA], { sourceRefs: [] }], ["Abono salarial", [CAIXA], { sourceRefs: [] }], ["PIS", [CAIXA], { sourceRefs: [] }], ["Programas sociais", [CAIXA], { sourceRefs: [] }], ["Financiamento habitacional da Caixa", [CAIXA], { sourceRefs: [] }]], { defaultTags: [CAIXA] }),
-    subject("bb-especificos", "Banco do Brasil — Específicos", [["Código de Ética do Banco do Brasil", [BB]], ["Estratégia corporativa do Banco do Brasil", [BB]], ["Políticas de responsabilidade socioambiental do BB", [BB]], ["Estrutura e atuação do Banco do Brasil", [BB]]], { defaultTags: [BB] }),
-    subject("redacao", "Redação", [["Estrutura do texto dissertativo-argumentativo", [BB]], ["Tema, tese e argumentação", [BB]], ["Coesão e coerência na redação", [BB]], ["Norma-padrão aplicada à redação", [BB]], ["Proposta de intervenção", [BB]]], { defaultTags: [BB] })
-  ]);
+  function institutionForExamTag(tag) {
+    return tag === EXAM_TAGS.BB ? INSTITUTIONS.BB : [EXAM_TAGS.CAIXA, EXAM_TAGS.CAIXA_TI].includes(tag) ? INSTITUTIONS.CAIXA : null;
+  }
+  function normalizeTopic(topic) {
+    const topicAliases = {
+      "estrutura-do-sistema-financeiro-nacional": ["Sistema Financeiro Nacional", "SFN"],
+      "prevencao-a-lavagem-de-dinheiro": ["PLD", "PLD/FT"],
+      "lei-geral-de-protecao-de-dados": ["LGPD"],
+      "programacao-python": ["Python"],
+      "programacao-java": ["Java"]
+    };
+    const examTags = [...new Set((topic.examTags || []).filter((tag) => Object.values(EXAM_TAGS).includes(tag)))];
+    return {
+      ...topic,
+      id: topic.id || topic.catalogId || slug(topic.name),
+      catalogId: topic.catalogId || topic.id || slug(topic.name),
+      examTags,
+      institutions: [...new Set((topic.institutions || examTags.map(institutionForExamTag)).filter(Boolean))],
+      aliases: [.../* @__PURE__ */ new Set([...topic.aliases || [], ...topicAliases[topic.catalogId || topic.id] || []])],
+      sourceRefs: [.../* @__PURE__ */ new Set([...topic.sourceRefs || [], ...Object.keys(topic.examMetrics || {})])],
+      catalogDifficulty: topic.difficulty ? clone2(topic.difficulty) : null,
+      difficulty: topic.difficulty ? clone2(topic.difficulty) : null,
+      incidence: topic.incidence ? clone2(topic.incidence) : null,
+      examMetrics: clone2(topic.examMetrics || {})
+    };
+  }
+  function normalizeSubject(subject) {
+    const aliases = { "lingua-portuguesa": ["Português"], "informatica-e-tic": ["Informática", "TIC"], "probabilidade-e-estatistica": ["Probabilidade e Estatística"], "mercado-financeiro-e-transformacao-digital": ["Atualidades do Mercado Financeiro"], "tecnologia-e-inteligencia-artificial": ["Tecnologia da Informação", "TI"], "compliance-etica-e-legislacao-bancaria": ["Compliance"] }[subject.catalogId || subject.id] || [];
+    return { ...subject, id: subject.id || subject.catalogId || slug(subject.name), catalogId: subject.catalogId || subject.id || slug(subject.name), aliases: [.../* @__PURE__ */ new Set([...subject.aliases || [], ...aliases])], examMetrics: clone2(subject.examMetrics || {}), topics: (subject.topics || []).map(normalizeTopic) };
+  }
+  var tiNames = ["Lógica de programação", "Algoritmos e estruturas de dados", "Programação Java", "Programação Python", "Bancos de dados relacionais", "Bancos de dados NoSQL", "Engenharia de software", "Arquitetura de software", "APIs e microsserviços", "DevOps e DevSecOps", "Contêineres e orquestração", "Testes de software", "Métodos ágeis", "Ciência de dados", "Aprendizado de máquina", "Inteligência artificial generativa", "Governança de TI", "Segurança cibernética"];
+  var tiTopics = tiNames.map((name) => normalizeTopic({ id: slug(name), catalogId: slug(name), name, examTags: [EXAM_TAGS.CAIXA_TI], institutions: ["caixa"], aliases: [], sourceRefs: ["studytrack-curated-ti"], difficulty: null, incidence: null, examMetrics: {} }));
+  var enrichedSubjects = exam_catalog_data_default.subjects.map(normalizeSubject);
+  var EXAM_CATALOG = deepFreeze(enrichedSubjects);
+  var CURATED_TI_TOPICS = deepFreeze(tiTopics);
+  var EXAM_PROFILES = deepFreeze(clone2(exam_catalog_data_default.examProfiles || {}));
+  var CATALOG_METADATA = deepFreeze({ schemaVersion: exam_catalog_data_default.schemaVersion, catalogVersion: CATALOG_VERSION, catalogId: exam_catalog_data_default.catalogId, name: exam_catalog_data_default.name, description: exam_catalog_data_default.description, metadataModel: clone2(exam_catalog_data_default.metadataModel || {}) });
   function catalogForExamTags(examTags = []) {
-    const selected2 = new Set(examTags);
-    return EXAM_CATALOG.map((group) => ({ ...group, topics: group.topics.filter((item) => item.examTags.some((tag) => selected2.has(tag))) })).filter((group) => group.topics.length);
+    const selected2 = new Set(examTags), result = EXAM_CATALOG.map((group) => ({ ...clone2(group), topics: group.topics.filter((item) => item.examTags.some((tag) => selected2.has(tag))).map(clone2) })).filter((group) => group.topics.length);
+    if (selected2.has(EXAM_TAGS.CAIXA_TI)) {
+      const source = EXAM_CATALOG.find((subject) => subject.catalogId === "tecnologia-e-inteligencia-artificial"), existing = result.find((subject) => subject.catalogId === source?.catalogId);
+      if (existing) existing.topics.push(...clone2(tiTopics));
+      else if (source) result.push({ ...clone2(source), topics: clone2(tiTopics) });
+    }
+    return result;
   }
 
   // src/domain/exams/exam-presets.js
-  var preset = (id, name, examTags, sources) => Object.freeze({ id, name, version: CATALOG_VERSION, examTags, sources, subjects: catalogForExamTags(examTags) });
-  var EXAM_PRESETS = Object.freeze([preset("bb-escriturario", "Banco do Brasil — Escriturário", [EXAM_TAGS.BB], ["bb-2023"]), preset("caixa-tbn", "Caixa — Técnico Bancário Novo", [EXAM_TAGS.CAIXA], ["caixa-tbn"]), preset("caixa-tbn-ti", "Caixa — TBN Tecnologia da Informação", [EXAM_TAGS.CAIXA_TI], ["caixa-tbn-ti"]), preset("bb-caixa", "BB + Caixa — preparação combinada", [EXAM_TAGS.BB, EXAM_TAGS.CAIXA], ["bb-2023", "caixa-tbn"]), Object.freeze({ id: "empty", name: "Estrutura vazia", version: CATALOG_VERSION, examTags: [], sources: [], subjects: [] })]);
+  var preset = (id, name, examTags, sources, description) => Object.freeze({ id, name, version: CATALOG_VERSION, examTags, sources, description, subjects: catalogForExamTags(examTags) });
+  var EXAM_PRESETS = Object.freeze([
+    preset("bb-escriturario", "Banco do Brasil — Escriturário", [EXAM_TAGS.BB], ["bb-escriturario-2023"], "Conteúdo e pesos do edital BB 2023; incidência por tópico estimada."),
+    preset("caixa-tbn", "Caixa — Técnico Bancário Novo", [EXAM_TAGS.CAIXA], ["caixa-tbn-2024"], "Conteúdo e pesos do edital Caixa 2024; incidência por tópico estimada."),
+    preset("caixa-tbn-ti", "Caixa — TBN Tecnologia da Informação", [EXAM_TAGS.CAIXA_TI], ["studytrack-curated-ti"], "Catálogo curado para preparação em TI."),
+    preset("bb-caixa", "BB + Caixa — preparação combinada", [EXAM_TAGS.BB, EXAM_TAGS.CAIXA], ["bb-escriturario-2023", "caixa-tbn-2024"], "Conteúdo único dos dois concursos, sem duplicar tópicos comuns."),
+    Object.freeze({ id: "empty", name: "Estrutura vazia", version: CATALOG_VERSION, examTags: [], sources: [], description: "Começar sem conteúdo predefinido.", subjects: [] })
+  ]);
   function getExamPreset(id) {
     return EXAM_PRESETS.find((item) => item.id === id) || null;
+  }
+
+  // src/domain/exams/exam-scope.js
+  var tagsOf = (topic) => Array.isArray(topic?.examTags) ? topic.examTags : [];
+  function isTopicInExamScope(topic, activeExamTags = []) {
+    const active = new Set(activeExamTags || []), tags = tagsOf(topic);
+    return active.size === 0 || tags.length === 0 || tags.some((tag) => active.has(tag));
+  }
+  function isCommonTopic(topic, examTags = [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]) {
+    const tags = new Set(tagsOf(topic));
+    return examTags.length > 1 && examTags.every((tag) => tags.has(tag));
+  }
+  function topicExamScopeLabel(topic) {
+    const tags = tagsOf(topic);
+    if (!tags.length) return "Conteúdo pessoal";
+    return tags.map((tag) => tag === EXAM_TAGS.BB ? "BB" : tag === EXAM_TAGS.CAIXA ? "CAIXA" : tag === EXAM_TAGS.CAIXA_TI ? "CAIXA TI" : tag).join(" · ");
   }
 
   // src/ui/controllers/navigation-controller.js
@@ -2127,7 +15937,7 @@
   }
 
   // src/ui/controllers/editable-collection-controller.js
-  function createEditableCollectionController({ service, clone: clone2 = (value2) => structuredClone(value2), render: render2 = () => {
+  function createEditableCollectionController({ service, clone: clone4 = (value2) => structuredClone(value2), render: render2 = () => {
   }, normalize = (value2) => value2, onSaved = () => {
   }, initialState = {} } = {}) {
     if (!service || typeof service.find !== "function") throw new TypeError("Controlador de edição requer serviço de coleção.");
@@ -2137,7 +15947,7 @@
       if (state2.editingIsNew && state2.editingId !== id) service.remove(state2.editingId);
       const item = service.find(id);
       if (!item) return null;
-      Object.assign(state2, { editingId: id, editingIsNew: isNew, draft: clone2(item) });
+      Object.assign(state2, { editingId: id, editingIsNew: isNew, draft: clone4(item) });
       render2();
       return state2.draft;
     }, update: (field, value2) => {
@@ -2150,7 +15960,7 @@
       render2();
     }, save: () => {
       if (!state2.draft || !service.find(state2.editingId)) return null;
-      const saved = service.update(state2.editingId, normalize(clone2(state2.draft)));
+      const saved = service.update(state2.editingId, normalize(clone4(state2.draft)));
       reset();
       onSaved(saved);
       return saved;
@@ -2561,15 +16371,15 @@
   function buildIntelligentAlerts({ today = null, overdueReviews = 0, subjects = [], topics = [], weeklyBalanceMinutes = null, hardTopicsWithoutReview = 0, weeklyGoalGap = null } = {}) {
     const alerts = [];
     if (overdueReviews > 0) alerts.push(createDiagnosticAlert({ id: "reviews-overdue", type: "review_critical", severity: "high", createdAt: today, reason: overdueReviews + " revisão" + (overdueReviews === 1 ? "" : "ões") + " atrasada" + (overdueReviews === 1 ? "" : "s") + ".", recommendedAction: "Conclua primeiro as revisões vencidas." }));
-    subjects.forEach((subject2) => {
-      if (subject2.trend?.direction === "down") alerts.push(createDiagnosticAlert({ type: "performance_decline", severity: subject2.trend.state === "strong_down" ? "high" : "medium", subjectId: subject2.subjectId, createdAt: today, reason: subject2.name + " caiu " + Math.abs(subject2.trend.delta || 0) + " pontos no período analisado.", recommendedAction: "Revise os erros recentes e reduza conteúdo novo nesta disciplina." }));
-      if (Number(subject2.daysSinceStudy) >= 14) alerts.push(createDiagnosticAlert({ type: "subject_neglected", severity: Number(subject2.daysSinceStudy) >= 28 ? "high" : "medium", subjectId: subject2.subjectId, createdAt: today, reason: subject2.name + " está há " + subject2.daysSinceStudy + " dias sem estudo registrado.", recommendedAction: "Reserve uma sessão curta para retomar a disciplina." }));
+    subjects.forEach((subject) => {
+      if (subject.trend?.direction === "down") alerts.push(createDiagnosticAlert({ type: "performance_decline", severity: subject.trend.state === "strong_down" ? "high" : "medium", subjectId: subject.subjectId, createdAt: today, reason: subject.name + " caiu " + Math.abs(subject.trend.delta || 0) + " pontos no período analisado.", recommendedAction: "Revise os erros recentes e reduza conteúdo novo nesta disciplina." }));
+      if (Number(subject.daysSinceStudy) >= 14) alerts.push(createDiagnosticAlert({ type: "subject_neglected", severity: Number(subject.daysSinceStudy) >= 28 ? "high" : "medium", subjectId: subject.subjectId, createdAt: today, reason: subject.name + " está há " + subject.daysSinceStudy + " dias sem estudo registrado.", recommendedAction: "Reserve uma sessão curta para retomar a disciplina." }));
     });
     if (Number.isFinite(weeklyBalanceMinutes) && weeklyBalanceMinutes < 0) alerts.push(createDiagnosticAlert({ type: "weekly_deficit", severity: weeklyBalanceMinutes <= -120 ? "high" : "medium", createdAt: today, reason: "A necessidade semanal excede a capacidade em " + Math.abs(weeklyBalanceMinutes) + " minutos.", recommendedAction: "Aumente a disponibilidade ou reduza a carga antes da prova." }));
     if (Number.isFinite(weeklyGoalGap) && weeklyGoalGap > 0) alerts.push(createDiagnosticAlert({ id: "weekly-goal-risk", type: "weekly_deficit", severity: "medium", createdAt: today, reason: "A meta semanal está " + weeklyGoalGap + "% abaixo do esperado para hoje.", recommendedAction: "Realoque uma sessão nesta semana para recuperar o ritmo." }));
-    topics.filter((topic2) => Number(topic2.mastery) < 50 && Number(topic2.examImpact) >= 70).slice(0, 3).forEach((topic2) => alerts.push(createDiagnosticAlert({ type: "low_mastery_high_exam_impact", severity: "high", subjectId: topic2.subjectId, topicId: topic2.topicId, createdAt: today, reason: topic2.name + " combina baixo domínio com alto impacto na prova.", recommendedAction: "Priorize teoria dirigida, questões e uma revisão curta." })));
+    topics.filter((topic) => Number(topic.mastery) < 50 && Number(topic.examImpact) >= 70).slice(0, 3).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "low_mastery_high_exam_impact", severity: "high", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: topic.name + " combina baixo domínio com alto impacto na prova.", recommendedAction: "Priorize teoria dirigida, questões e uma revisão curta." })));
     if (hardTopicsWithoutReview > 0) alerts.push(createDiagnosticAlert({ id: "hard-topics-no-review", type: "review_critical", severity: "low", createdAt: today, reason: hardTopicsWithoutReview + " tópico" + (hardTopicsWithoutReview === 1 ? "" : "s") + " " + (hardTopicsWithoutReview === 1 ? "difícil" : "difíceis") + " sem revisão agendada.", recommendedAction: "Agende revisões para os tópicos difíceis." }));
-    topics.filter((topic2) => topic2.evidenceStrength != null && Number(topic2.evidenceStrength) < 0.25).slice(0, 1).forEach((topic2) => alerts.push(createDiagnosticAlert({ type: "insufficient_evidence", severity: "low", subjectId: topic2.subjectId, topicId: topic2.topicId, createdAt: today, reason: "Ainda há pouca evidência para avaliar " + topic2.name + ".", recommendedAction: "Registre uma sessão com questões para melhorar a confiança da análise." })));
+    topics.filter((topic) => topic.evidenceStrength != null && Number(topic.evidenceStrength) < 0.25).slice(0, 1).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "insufficient_evidence", severity: "low", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: "Ainda há pouca evidência para avaliar " + topic.name + ".", recommendedAction: "Registre uma sessão com questões para melhorar a confiança da análise." })));
     return alerts;
   }
 
@@ -2768,7 +16578,7 @@
         return { id: `demo-topic-${subjectIndex + 1}-${topicIndex + 1}`, name: topicName, link: "", status, archived, archivedAt: archived ? timestamp(shiftDate(today, -12)) : null, notes: topicIndex % 3 === 0 ? "Revisar pontos marcados no material principal." : "", tags: topicIndex % 2 ? ["edital"] : ["prioridade"], difficulty: ["Fácil", "Médio", "Difícil"][(topicIndex + subjectIndex) % 3], createdAt, firstCompletedAt: status === "Concluído" ? timestamp(shiftDate(today, -50)) : null, lastCompletedAt: status === "Concluído" ? timestamp(lastDate) : null, completionCount: status === "Concluído" ? 2 : 0, lastReviewedAt: status === "Revisão" || status === "Concluído" ? timestamp(lastDate) : null, reviewCount: status === "Revisão" || status === "Concluído" ? 1 + topicIndex % 3 : 0, examImportance: Math.round((0.45 + random() * 0.5) * 100) / 100, estimatedStudyMinutes: 120 + Math.floor(random() * 300), prerequisites: topicIndex === 0 ? [] : [`demo-topic-${subjectIndex + 1}-${topicIndex}`] };
       })
     }));
-    const activeTopics2 = state2.subjects.flatMap((subject2) => subject2.topics.filter((topic2) => !topic2.archived).map((topic2) => ({ subject: subject2, topic: topic2 })));
+    const activeTopics2 = state2.subjects.flatMap((subject) => subject.topics.filter((topic) => !topic.archived).map((topic) => ({ subject, topic })));
     state2.studySessions = [];
     state2.questoes = [];
     const activeAges = Array.from({ length: 90 }, (_, age) => age).filter((age) => age % 7 !== 0 && age % 11 !== 0);
@@ -2786,9 +16596,9 @@
     const simulationRates = [61, 64, 63, 67, 69, 72, 74, 76, 70];
     state2.simulados = simulationRates.map((rate, index) => {
       const date2 = shiftDate(today, -(80 - index * 10)), total = 100, correct = rate;
-      return { id: `demo-simulation-${index + 1}`, date: date2, nome: `Simulado ${index + 1}`, total, correct, breakdown: state2.subjects.map((subject2, subjectIndex) => {
+      return { id: `demo-simulation-${index + 1}`, date: date2, nome: `Simulado ${index + 1}`, total, correct, breakdown: state2.subjects.map((subject, subjectIndex) => {
         const rowTotal = subjectIndex < 4 ? 17 : 16, rowCorrect = Math.max(0, Math.min(rowTotal, Math.round(rowTotal * (rate + (subjectIndex - 2) * 2) / 100)));
-        return { id: `demo-simulation-row-${index + 1}-${subjectIndex + 1}`, subjectId: subject2.id, total: rowTotal, correct: rowCorrect };
+        return { id: `demo-simulation-row-${index + 1}-${subjectIndex + 1}`, subjectId: subject.id, total: rowTotal, correct: rowCorrect };
       }), createdAt: timestamp(date2) };
     });
     state2.reviewAgenda = Array.from({ length: 42 }, (_, index) => {
@@ -2802,15 +16612,15 @@
     state2.progressHistory = Array.from({ length: 90 }, (_, index) => ({ date: shiftDate(today, index - 89), pct: Math.min(82, 18 + Math.floor(index * 0.65)) }));
     state2.metas = { semanal: 12, mensal: 48, questoesSemanal: 220, simuladosSemanal: 1, metaAprovacao: 80, horasDiarias: 2.2, horasPorDia: { "0": 0, "1": 2.5, "2": 2.5, "3": 2, "4": 2.5, "5": 2, "6": 1 } };
     state2.examDate = shiftDate(today, 90);
-    state2.examBlueprint = { examDate: state2.examDate, targetScore: 80, configuredAt: timestamp(today), subjects: state2.subjects.map((subject2, index) => ({ subjectId: subject2.id, expectedQuestions: index < 4 ? 18 : 14, questionWeight: index === 2 ? 1.5 : 1, priority: index < 2 ? "high" : index === 5 ? "low" : "normal" })) };
-    state2.metasPorDisciplina = state2.subjects.map((subject2, index) => ({ id: `demo-subject-goal-${index + 1}`, subjectId: subject2.id, meta: 30 + index * 5, createdAt }));
+    state2.examBlueprint = { examDate: state2.examDate, targetScore: 80, configuredAt: timestamp(today), subjects: state2.subjects.map((subject, index) => ({ subjectId: subject.id, expectedQuestions: index < 4 ? 18 : 14, questionWeight: index === 2 ? 1.5 : 1, priority: index < 2 ? "high" : index === 5 ? "low" : "normal" })) };
+    state2.metasPorDisciplina = state2.subjects.map((subject, index) => ({ id: `demo-subject-goal-${index + 1}`, subjectId: subject.id, meta: 30 + index * 5, createdAt }));
     state2.dailyPlans = Array.from({ length: 14 }, (_, index) => {
       const date2 = shiftDate(today, index - 6), entryA = activeTopics2[index * 2 % activeTopics2.length], entryB = activeTopics2[(index * 2 + 1) % activeTopics2.length], past = index < 6;
       const items = [entryA, entryB].map((entry, itemIndex) => ({ id: `demo-plan-item-${index + 1}-${itemIndex + 1}`, subjectId: entry.subject.id, topicId: entry.topic.id, type: itemIndex ? "questions" : "study", plannedMinutes: itemIndex ? 35 : 45, executedSeconds: past ? itemIndex ? 2100 : 1800 : 0, status: past ? itemIndex ? "completed" : "partial" : "planned", originalDate: date2, currentDate: date2, rescheduleCount: index === 5 && itemIndex === 0 ? 1 : 0, skippedReason: null, recommendationId: null, lastExecutedAt: past ? timestamp(date2) : null }));
       return { id: `demo-daily-plan-${index + 1}`, date: date2, availableMinutes: 120, plannedMinutes: 80, flexMinutes: 40, createdAt: timestamp(date2), updatedAt: timestamp(date2), items };
     });
     const planItems = activeTopics2.slice(0, 12).map((entry, index) => ({ id: `demo-study-plan-topic-${index + 1}`, subjectId: entry.subject.id, subjectName: entry.subject.name, topicId: entry.topic.id, topicName: entry.topic.name, minutes: 45 + index % 3 * 15, estimatedMinutes: entry.topic.estimatedStudyMinutes, activityMix: { theory: 20, questions: 20, reviews: 5 } }));
-    state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum4, item) => sum4 + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject2) => ({ subjectId: subject2.id, subjectName: subject2.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
+    state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum4, item) => sum4 + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject) => ({ subjectId: subject.id, subjectName: subject.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
     state2.planAdjustments = [{ id: "demo-adjustment-1", periodStart: shiftDate(today, -7), periodEnd: shiftDate(today, 7), plannedMinutes: 480, executedMinutes: 350, deficitMinutes: 130, redistributedMinutes: 100, discardedMinutes: 30, allocations: [{ date: shiftDate(today, 1), minutes: 50 }, { date: shiftDate(today, 2), minutes: 50 }], confirmedAt: timestamp(shiftDate(today, -1)), status: "confirmed" }];
     state2.recommendationFeedback = Array.from({ length: 6 }, (_, index) => ({ id: `demo-feedback-${index + 1}`, recommendationId: `demo-recommendation-${index + 1}`, date: shiftDate(today, -index * 5), subjectId: state2.subjects[index % state2.subjects.length].id, topicId: activeTopics2[index].topic.id, accepted: index !== 4, completed: index < 3, useful: index < 3 ? index !== 2 : null, reasonSkipped: index === 4 ? "Preferiu outra disciplina" : null, resultingSessionId: index < 3 ? state2.studySessions[index].id : null, baseline: { accuracy: 52 + index * 3, questionVolume: 24 + index * 4, retentionScore: 45 + index * 2, daysSinceContact: 8 - index, measuredAt: timestamp(shiftDate(today, -index * 5)) }, outcome: index < 3 ? { accuracyAfter: 64 + index * 3, questionVolumeAfter: 22 + index * 12, nextReviewRating: index === 0 ? "Bom" : null, retentionAfter: 54 + index * 3, measuredAt: timestamp(shiftDate(today, -index * 5 + 2)), confidence: index === 0 ? "Estimativa" : "Mais confiável", attributionEligible: true, reasons: [] } : null, createdAt: timestamp(shiftDate(today, -index * 5)), completedAt: index < 3 ? timestamp(shiftDate(today, -index * 5)) : null }));
     state2.topicHistory = activeTopics2.flatMap((entry, index) => [{ id: `demo-history-start-${index + 1}`, type: "topic_created", date: shiftDate(today, -89 + index % 15), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -89 + index % 15)) }, ...entry.topic.status === "Concluído" ? [{ id: `demo-history-done-${index + 1}`, type: "topic_completed", date: shiftDate(today, -30 - index % 20), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -30 - index % 20)) }] : []]);
@@ -2845,7 +16655,7 @@
     if (version > currentVersion) return { valid: false, message: `Este backup usa a versão ${version}, mas este aplicativo aceita até a versão ${currentVersion}. Abra-o em uma versão mais recente do aplicativo.` };
     const invalidField = arrayFields.find((field) => field in data && !Array.isArray(data[field]));
     if (invalidField) return { valid: false, message: `O campo "${invalidField}" está em um formato incompatível.` };
-    if (data.subjects.some((subject2) => !subject2 || typeof subject2 !== "object" || "topics" in subject2 && !Array.isArray(subject2.topics))) return { valid: false, message: "Uma ou mais disciplinas do backup estão em formato incompatível." };
+    if (data.subjects.some((subject) => !subject || typeof subject !== "object" || "topics" in subject && !Array.isArray(subject.topics))) return { valid: false, message: "Uma ou mais disciplinas do backup estão em formato incompatível." };
     if ("metas" in data && (!data.metas || typeof data.metas !== "object" || Array.isArray(data.metas))) return { valid: false, message: "As metas do backup estão em formato incompatível." };
     return { valid: true, version };
   }
@@ -2941,42 +16751,42 @@
     if (typeof getState !== "function") throw new TypeError("Repositório de disciplinas requer acesso ao estado.");
     const subjects = () => Array.isArray(getState()?.subjects) ? getState().subjects : [];
     const findTopic = (topicId) => {
-      for (const subject2 of subjects()) {
-        const topic2 = (subject2.topics || []).find((item) => item.id === topicId);
-        if (topic2) return { subject: subject2, topic: topic2 };
+      for (const subject of subjects()) {
+        const topic = (subject.topics || []).find((item) => item.id === topicId);
+        if (topic) return { subject, topic };
       }
       return null;
     };
-    return Object.freeze({ all: () => subjects(), findById: (id) => subjects().find((item) => item.id === id) || null, findTopic, add: (subject2) => {
-      subjects().push(subject2);
-      return subject2;
-    }, insertAfter: (afterId, subject2) => {
+    return Object.freeze({ all: () => subjects(), findById: (id) => subjects().find((item) => item.id === id) || null, findTopic, add: (subject) => {
+      subjects().push(subject);
+      return subject;
+    }, insertAfter: (afterId, subject) => {
       const index = subjects().findIndex((item) => item.id === afterId);
-      subjects().splice(index < 0 ? subjects().length : index + 1, 0, subject2);
-      return subject2;
+      subjects().splice(index < 0 ? subjects().length : index + 1, 0, subject);
+      return subject;
     }, update: (id, changes) => {
-      const subject2 = subjects().find((item) => item.id === id);
-      if (!subject2) return null;
-      Object.assign(subject2, changes);
-      return subject2;
+      const subject = subjects().find((item) => item.id === id);
+      if (!subject) return null;
+      Object.assign(subject, changes);
+      return subject;
     }, remove: (id) => {
       const list = subjects(), index = list.findIndex((item) => item.id === id);
       return index < 0 ? null : list.splice(index, 1)[0];
-    }, addTopic: (subjectId, topic2) => {
-      const subject2 = subjects().find((item) => item.id === subjectId);
-      if (!subject2) return null;
-      (subject2.topics || (subject2.topics = [])).push(topic2);
-      return topic2;
+    }, addTopic: (subjectId, topic) => {
+      const subject = subjects().find((item) => item.id === subjectId);
+      if (!subject) return null;
+      (subject.topics || (subject.topics = [])).push(topic);
+      return topic;
     }, updateTopic: (subjectId, topicId, changes) => {
       const found = findTopic(topicId);
       if (!found || found.subject.id !== subjectId) return null;
       Object.assign(found.topic, changes);
       return found.topic;
     }, removeTopic: (subjectId, topicId) => {
-      const subject2 = subjects().find((item) => item.id === subjectId);
-      if (!subject2) return null;
-      const index = (subject2.topics || []).findIndex((item) => item.id === topicId);
-      return index < 0 ? null : subject2.topics.splice(index, 1)[0];
+      const subject = subjects().find((item) => item.id === subjectId);
+      if (!subject) return null;
+      const index = (subject.topics || []).findIndex((item) => item.id === topicId);
+      return index < 0 ? null : subject.topics.splice(index, 1)[0];
     }, swap: (firstId, secondId) => {
       const list = subjects(), first = list.findIndex((item) => item.id === firstId), second = list.findIndex((item) => item.id === secondId);
       if (first < 0 || second < 0) return false;
@@ -3065,14 +16875,14 @@
       rescheduleReview: (id, date2) => repository.update(id, { date: date2, manualDate: true, adaptive: false }),
       restoreAdaptiveSchedule: (id, suggestion) => repository.update(id, { date: suggestion.date, suggestedDate: suggestion.date, adaptiveReason: suggestion.reason, manualDate: false, adaptive: true }),
       rateReview: (id, rating, { label: label2 = "adaptativa" } = {}) => {
-        const review = repository.findById(id), topicId = topicIdOf(review), topic2 = topicId ? findTopic(topicId) : null;
-        if (!review || !topicId || !topic2 || typeof calculateAdaptiveState !== "function") return null;
-        const adaptiveState = calculateAdaptiveState(topic2.adaptiveReview, rating, { reviewDate: clock.today(), algorithmVersion: algorithmVersion() });
-        topic2.adaptiveReview = adaptiveState;
+        const review = repository.findById(id), topicId = topicIdOf(review), topic = topicId ? findTopic(topicId) : null;
+        if (!review || !topicId || !topic || typeof calculateAdaptiveState !== "function") return null;
+        const adaptiveState = calculateAdaptiveState(topic.adaptiveReview, rating, { reviewDate: clock.today(), algorithmVersion: algorithmVersion() });
+        topic.adaptiveReview = adaptiveState;
         repository.update(id, { lastRating: rating, adaptiveState: structuredClone(adaptiveState), adaptiveReason: `Avaliação: ${label2} · próximo intervalo: ${adaptiveState.intervalDays} dia${adaptiveState.intervalDays === 1 ? "" : "s"}` });
         complete(review);
         let next = null;
-        if (!repository.hasPendingForTopic(topicId, adaptiveState.nextReviewDate, { exceptId: id })) next = repository.add({ id: idGenerator("review"), subjectId: review.subjectId || null, topicId, topicRef: topicId, topic: topic2.name || review.topic || "", date: adaptiveState.nextReviewDate, suggestedDate: adaptiveState.nextReviewDate, baseIntervalDays: adaptiveState.intervalDays, adaptive: true, manualDate: false, adaptiveReason: `Agendada após avaliação ${label2}.`, tipo: reviewTypeForDays(adaptiveState.intervalDays), status: "Não iniciado", lastRating: null, adaptiveState: structuredClone(adaptiveState), createdAt: clock.nowISO(), completedAt: null });
+        if (!repository.hasPendingForTopic(topicId, adaptiveState.nextReviewDate, { exceptId: id })) next = repository.add({ id: idGenerator("review"), subjectId: review.subjectId || null, topicId, topicRef: topicId, topic: topic.name || review.topic || "", date: adaptiveState.nextReviewDate, suggestedDate: adaptiveState.nextReviewDate, baseIntervalDays: adaptiveState.intervalDays, adaptive: true, manualDate: false, adaptiveReason: `Agendada após avaliação ${label2}.`, tipo: reviewTypeForDays(adaptiveState.intervalDays), status: "Não iniciado", lastRating: null, adaptiveState: structuredClone(adaptiveState), createdAt: clock.nowISO(), completedAt: null });
         onEvent("adaptive_review_rated", review, { reviewId: id, rating, intervalDays: adaptiveState.intervalDays, nextReviewDate: adaptiveState.nextReviewDate, algorithmVersion: adaptiveState.algorithmVersion });
         onTopicChanged(topicId);
         return { review, next, adaptiveState };
@@ -3133,7 +16943,7 @@
   }
 
   // src/ui/calendar/calendar-controller.js
-  var clone = (value2) => value2 == null ? value2 : JSON.parse(JSON.stringify(value2));
+  var clone3 = (value2) => value2 == null ? value2 : JSON.parse(JSON.stringify(value2));
   var localToday = () => {
     const date2 = /* @__PURE__ */ new Date(), pad = (value2) => String(value2).padStart(2, "0");
     return `${date2.getFullYear()}-${pad(date2.getMonth() + 1)}-${pad(date2.getDate())}`;
@@ -3149,13 +16959,13 @@
     return { create(draft = {}) {
       const item = service.create({ ...draft, date: draft.date || clock.today() });
       state2.editingId = item.id;
-      state2.draft = clone(item);
+      state2.draft = clone3(item);
       state2.isNew = true;
       refresh();
       return item;
     }, beginEdit(id) {
       state2.editingId = id;
-      state2.draft = clone(service.getById?.(id));
+      state2.draft = clone3(service.getById?.(id));
       state2.isNew = false;
       refresh();
     }, update(field, value2) {
@@ -3309,19 +17119,20 @@
   }
 
   // src/domain/analytics/exam-mastery-matrix.js
-  function buildExamMasteryMatrix({ subjects = [], blueprint = {}, metricsByTopic = {}, masteryTargets = {} } = {}) {
+  function buildExamMasteryMatrix({ subjects = [], blueprint = {}, metricsByTopic = {}, masteryTargets = {}, activeExamTags = blueprint.activeExamTags || [] } = {}) {
     const general = Number(blueprint.masteryTarget ?? 80);
-    return subjects.filter((s) => !s.archived).map((subject2) => {
-      const config = (blueprint.subjects || []).find((x) => x.subjectId === subject2.id), target = Number(config?.masteryTarget ?? masteryTargets[subject2.id] ?? general), topics = (subject2.topics || []).filter((t) => !t.archived).map((topic2) => {
-        const m = metricsByTopic[topic2.id] || {}, mastery = m.mastery?.value ?? m.mastery?.score ?? null, coverage = m.coverage ?? (topic2.status === "Concluído" ? 100 : topic2.status === "Em andamento" ? 50 : 0);
-        return { subjectId: subject2.id, topicId: topic2.id, name: topic2.name, coverage, mastery, retention: m.retention?.value ?? m.retention?.score ?? null, trend: m.trend || null, priority: m.priority?.value ?? m.priority?.score ?? null, confidence: m.mastery?.confidence ?? 0, target, gap: mastery == null ? null : Math.round((target - mastery) * 10) / 10, state: mastery == null ? coverage ? "without_evidence" : "not_started" : mastery < target ? "fragile" : "on_target" };
+    return subjects.filter((subject) => !subject.archived).map((subject) => {
+      const config = (blueprint.subjects || []).find((item) => item.subjectId === subject.id), target = Number(config?.masteryTarget ?? masteryTargets[subject.id] ?? general);
+      const topics = (subject.topics || []).filter((topic) => !topic.archived && isTopicInExamScope(topic, activeExamTags)).map((topic) => {
+        const metrics = metricsByTopic[topic.id] || {}, mastery = metrics.mastery?.value ?? metrics.mastery?.score ?? null, coverage = metrics.coverage ?? (topic.status === "Concluído" ? 100 : topic.status === "Em andamento" ? 50 : 0);
+        return { subjectId: subject.id, topicId: topic.id, name: topic.name, coverage, mastery, retention: metrics.retention?.value ?? metrics.retention?.score ?? null, trend: metrics.trend || null, priority: metrics.priority?.value ?? metrics.priority?.score ?? null, confidence: metrics.mastery?.confidence ?? 0, target, gap: mastery == null ? null : Math.round((target - mastery) * 10) / 10, state: mastery == null ? coverage ? "without_evidence" : "not_started" : mastery < target ? "fragile" : "on_target", examMetrics: topic.examMetrics || {}, incidence: topic.incidence || null };
       });
-      const known = topics.filter((t) => t.mastery != null), avg = (key) => {
-        const rows = topics.filter((t) => t[key] != null);
-        return rows.length ? Math.round(rows.reduce((n3, t) => n3 + t[key], 0) / rows.length) : null;
+      const known = topics.filter((topic) => topic.mastery != null), average2 = (key) => {
+        const rows = topics.filter((topic) => topic[key] != null);
+        return rows.length ? Math.round(rows.reduce((total, topic) => total + topic[key], 0) / rows.length) : null;
       };
-      return { subjectId: subject2.id, name: subject2.name, target, coverage: avg("coverage"), mastery: avg("mastery"), retention: avg("retention"), gap: known.length ? Math.round((target - avg("mastery")) * 10) / 10 : null, topics };
-    });
+      return { subjectId: subject.id, name: subject.name, target, coverage: average2("coverage"), mastery: average2("mastery"), retention: average2("retention"), gap: known.length ? Math.round((target - average2("mastery")) * 10) / 10 : null, topics };
+    }).filter((subject) => subject.topics.length);
   }
 
   // src/domain/recommendations/study-strategy.js
@@ -3409,8 +17220,8 @@
     if (existingSimulationIds.includes(simulation.id)) return { algorithmVersion: POST_SIMULATION_REPLAN_VERSION, state: "duplicate", reason: "Este simulado já possui uma proposta registrada.", adjustments: [], simulationId: simulation.id };
     let remaining = Math.max(0, Number(availableMinutes));
     const requested = rows.map((row) => {
-      const total = n2(row.total) || 0, correct = n2(row.correct) || 0, accuracy2 = Math.round(correct / total * 100), subject2 = subjectMap.get(row.subjectId), requestedMinutes = accuracy2 < 50 ? 30 : accuracy2 < 70 ? 15 : 0;
-      return { subjectId: row.subjectId || null, subjectName: subject2?.name || "Disciplina não identificada", accuracy: accuracy2, requestedMinutes, reason: requestedMinutes ? `Desempenho de ${accuracy2}% no simulado; reforçar questões e revisão.` : "Desempenho sem déficit crítico identificado." };
+      const total = n2(row.total) || 0, correct = n2(row.correct) || 0, accuracy2 = Math.round(correct / total * 100), subject = subjectMap.get(row.subjectId), requestedMinutes = accuracy2 < 50 ? 30 : accuracy2 < 70 ? 15 : 0;
+      return { subjectId: row.subjectId || null, subjectName: subject?.name || "Disciplina não identificada", accuracy: accuracy2, requestedMinutes, reason: requestedMinutes ? `Desempenho de ${accuracy2}% no simulado; reforçar questões e revisão.` : "Desempenho sem déficit crítico identificado." };
     }).filter((item) => item.requestedMinutes > 0).sort((a, b) => a.accuracy - b.accuracy), adjustments = requested.map((item) => {
       const deltaMinutes = Math.min(item.requestedMinutes, remaining);
       remaining -= deltaMinutes;
@@ -3436,13 +17247,13 @@
     return { preset: String(days), start: shiftDate2(today, -(days - 1)), end: today, label: `Últimos ${days} dias` };
   }
   function buildStrategicReport({ state: state2, generatedAt, isDemo = false, readiness = null, diagnosis = null, forecast = null, period } = {}) {
-    const range = resolveReportPeriod({ ...period, generatedAt }), subjects = (state2.subjects || []).filter((item) => !item.archived), topics = subjects.flatMap((subject2) => (subject2.topics || []).filter((item) => !item.archived));
+    const range = resolveReportPeriod({ ...period, generatedAt }), activeExamTags = state2.examBlueprint?.activeExamTags || [], subjects = (state2.subjects || []).filter((item) => !item.archived && (item.topics || []).some((topic) => !topic.archived && isTopicInExamScope(topic, activeExamTags))), topics = subjects.flatMap((subject) => (subject.topics || []).filter((item) => !item.archived && isTopicInExamScope(item, activeExamTags)));
     const sessions = (state2.studySessions || []).filter((item) => inPeriod(item, range.start, range.end)), questions = (state2.questoes || []).filter((item) => inPeriod(item, range.start, range.end)), simulations = (state2.simulados || []).filter((item) => inPeriod(item, range.start, range.end)), reviews = (state2.reviewAgenda || []).filter((item) => inPeriod(item, range.start, range.end));
     const resolved = sum3(questions, (item) => item.resolved), correct = sum3(questions, (item) => item.correct), studySeconds = sum3(sessions, (item) => item.durationSeconds), simulationTotal = sum3(simulations, (item) => item.total), simulationCorrect = sum3(simulations, (item) => item.correct), activePlan = [...state2.studyPlans || []].reverse().find((item) => !item.undoneAt) || null, adjustments = (state2.planAdjustments || []).filter((item) => inPeriod(item, range.start, range.end)), feedback = (state2.recommendationFeedback || []).filter((item) => inPeriod(item, range.start, range.end));
-    const bySubject = subjects.map((subject2) => {
-      const subjectSessions = sessions.filter((item) => item.subjectId === subject2.id), subjectQuestions = questions.filter((item) => item.subjectId === subject2.id), volume = sum3(subjectQuestions, (item) => item.resolved), hits = sum3(subjectQuestions, (item) => item.correct);
-      return { id: subject2.id, name: subject2.name, studySeconds: sum3(subjectSessions, (item) => item.durationSeconds), questions: volume, accuracy: volume ? Math.round(hits / volume * 100) : null, completed: (subject2.topics || []).filter((item) => !item.archived && item.status === "Concluído").length, total: (subject2.topics || []).filter((item) => !item.archived).length };
-    }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum3(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum3(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60), subjectNames = Object.fromEntries(subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(subjects.flatMap((subject2) => (subject2.topics || []).map((topic2) => [topic2.id, topic2.name]))), weeklyMinutes = Object.values(state2.metas?.horasPorDia || {}).reduce((total, value2) => total + (Number(value2) || 0) * 60, 0);
+    const bySubject = subjects.map((subject) => {
+      const scopedTopics = (subject.topics || []).filter((item) => !item.archived && isTopicInExamScope(item, activeExamTags)), subjectSessions = sessions.filter((item) => item.subjectId === subject.id), subjectQuestions = questions.filter((item) => item.subjectId === subject.id), volume = sum3(subjectQuestions, (item) => item.resolved), hits = sum3(subjectQuestions, (item) => item.correct);
+      return { id: subject.id, name: subject.name, studySeconds: sum3(subjectSessions, (item) => item.durationSeconds), questions: volume, accuracy: volume ? Math.round(hits / volume * 100) : null, completed: scopedTopics.filter((item) => item.status === "Concluído").length, total: scopedTopics.length };
+    }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum3(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum3(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60), subjectNames = Object.fromEntries(subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(subjects.flatMap((subject) => (subject.topics || []).map((topic) => [topic.id, topic.name]))), weeklyMinutes = Object.values(state2.metas?.horasPorDia || {}).reduce((total, value2) => total + (Number(value2) || 0) * 60, 0);
     const rawErrors = Object.entries(questions.reduce((totals, item) => {
       Object.entries(item.errorBreakdown || {}).forEach(([key, value2]) => totals[key] = (totals[key] || 0) + (Number(value2) || 0));
       return totals;
@@ -3451,7 +17262,8 @@
       const snapshot = item.snapshot || {}, subjectId = item.subjectId || snapshot.subjectId, topicId = item.topicId || snapshot.topicId;
       return { subjectName: subjectNames[subjectId] || "Disciplina removida", topicName: topicNames[topicId] || "Tópico removido", action: snapshot.strategy?.label || item.recommendedAction || "Recomendação de estudo", result: { positive: "Resultado positivo", neutral: "Resultado neutro", negative: "Resultado negativo", insufficient: "Resultado ainda insuficiente" }[item.outcome?.state] || "Resultado em acompanhamento" };
     });
-    return { title: isDemo ? "Relatório estratégico de demonstração" : "Relatório estratégico", isDemo, generatedAt, period: range, exam: { date: state2.examDate || state2.examBlueprint?.examDate || null, target: state2.examBlueprint?.targetScore ?? state2.metas?.metaAprovacao ?? null }, planNumber: state2.planNumber || activePlan?.number || "Não informado", overview: { subjects: subjects.length, topics: topics.length, completedTopics: topics.filter((item) => item.status === "Concluído").length, contentPercent: topics.length ? Math.round(topics.filter((item) => item.status === "Concluído").length / topics.length * 100) : 0, studySeconds, resolved, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length, simulationAverage: simulationTotal ? Math.round(simulationCorrect / simulationTotal * 100) : null, pendingReviews: reviews.filter((item) => item.status !== "Concluído").length, completedReviews: reviews.filter((item) => item.status === "Concluído").length }, readiness, forecast, activePlan, bySubject, simulations: simulations.map((item) => ({ date: item.date, name: item.nome || "Simulado", score: item.total ? Math.round(item.correct / item.total * 100) : null })), latestSimulation: latestSimulation ? { date: latestSimulation.date, name: latestSimulation.nome || "Simulado", breakdown: latestBreakdown } : null, execution: { plannedMinutes: planned, executedMinutes: executed, adherence: planned ? Math.round(executed / planned * 100) : null, dailyPlans: (state2.dailyPlans || []).filter((item) => inPeriod(item, range.start, range.end)).length, replans: adjustments.filter((item) => ["applied", "confirmed"].includes(item.status)).length, undoneReplans: adjustments.filter((item) => item.status === "undone").length }, risks: (diagnosis?.bottlenecks || []).slice(0, 5), opportunities: (diagnosis?.opportunities || []).slice(0, 5), criticalReviews: (diagnosis?.criticalReviews || []).slice(0, 5), priorities: [...diagnosis?.bottlenecks || [], ...diagnosis?.opportunities || []].slice(0, 5), focus, recommendations: { decisions: feedback.length, accepted: feedback.filter((item) => item.accepted).length, completed: feedback.filter((item) => item.completed).length, useful: feedback.filter((item) => item.useful === true).length, measured: feedback.filter((item) => item.outcome).length }, decisions, errors, errorDiagnosis: dominantError ? { message: `${Math.round(dominantError.count / errorTotal * 100)}% dos erros categorizados vêm de ${dominantError.label.toLowerCase()}.`, action: dominantError.label === "Chute" ? "Reforçar conceitos antes de voltar às questões." : "Priorizar revisão dirigida e questões comentadas." } : null, methodology: { readiness: readiness?.algorithmVersion || "versão atual", projection: forecast?.algorithmVersion || "versão atual", period: range.label, evidence: readiness?.confidenceLabel || "Baixa" } };
+    const examLabels = { [EXAM_TAGS.BB]: "Banco do Brasil — Escriturário", [EXAM_TAGS.CAIXA]: "Caixa — TBN", [EXAM_TAGS.CAIXA_TI]: "Caixa — TBN TI" };
+    return { title: isDemo ? "Relatório estratégico de demonstração" : "Relatório estratégico", isDemo, generatedAt, period: range, exam: { date: state2.examDate || state2.examBlueprint?.examDate || null, target: state2.examBlueprint?.targetScore ?? state2.metas?.metaAprovacao ?? null, activeTags: [...activeExamTags], activeLabels: activeExamTags.length ? activeExamTags.map((tag) => examLabels[tag] || tag) : ["Todo o conteúdo"], catalogVersion: CATALOG_VERSION }, planNumber: state2.planNumber || activePlan?.number || "Não informado", overview: { subjects: subjects.length, topics: topics.length, completedTopics: topics.filter((item) => item.status === "Concluído").length, contentPercent: topics.length ? Math.round(topics.filter((item) => item.status === "Concluído").length / topics.length * 100) : 0, studySeconds, resolved, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length, simulationAverage: simulationTotal ? Math.round(simulationCorrect / simulationTotal * 100) : null, pendingReviews: reviews.filter((item) => item.status !== "Concluído").length, completedReviews: reviews.filter((item) => item.status === "Concluído").length }, readiness, forecast, activePlan, bySubject, simulations: simulations.map((item) => ({ date: item.date, name: item.nome || "Simulado", score: item.total ? Math.round(item.correct / item.total * 100) : null })), latestSimulation: latestSimulation ? { date: latestSimulation.date, name: latestSimulation.nome || "Simulado", breakdown: latestBreakdown } : null, execution: { plannedMinutes: planned, executedMinutes: executed, adherence: planned ? Math.round(executed / planned * 100) : null, dailyPlans: (state2.dailyPlans || []).filter((item) => inPeriod(item, range.start, range.end)).length, replans: adjustments.filter((item) => ["applied", "confirmed"].includes(item.status)).length, undoneReplans: adjustments.filter((item) => item.status === "undone").length }, risks: (diagnosis?.bottlenecks || []).slice(0, 5), opportunities: (diagnosis?.opportunities || []).slice(0, 5), criticalReviews: (diagnosis?.criticalReviews || []).slice(0, 5), priorities: [...diagnosis?.bottlenecks || [], ...diagnosis?.opportunities || []].slice(0, 5), focus, recommendations: { decisions: feedback.length, accepted: feedback.filter((item) => item.accepted).length, completed: feedback.filter((item) => item.completed).length, useful: feedback.filter((item) => item.useful === true).length, measured: feedback.filter((item) => item.outcome).length }, decisions, errors, errorDiagnosis: dominantError ? { message: `${Math.round(dominantError.count / errorTotal * 100)}% dos erros categorizados vêm de ${dominantError.label.toLowerCase()}.`, action: dominantError.label === "Chute" ? "Reforçar conceitos antes de voltar às questões." : "Priorizar revisão dirigida e questões comentadas." } : null, methodology: { readiness: readiness?.algorithmVersion || "versão atual", projection: forecast?.algorithmVersion || "versão atual", period: range.label, evidence: readiness?.confidenceLabel || "Baixa" } };
   }
 
   // src/reports/report-template.js
@@ -3465,7 +17277,7 @@
   };
   function renderStrategicReport(report) {
     const readiness = report.readiness?.value ?? report.readiness?.score ?? null, forecast = report.forecast?.forecast30, list = (items, formatter, empty) => items.length ? items.map(formatter).join("") : `<li>${empty}</li>`;
-    return `<header><p class="report-kicker">STUDYTRACK</p><h1>${escape(report.title)}</h1><p>${escape(report.period.label)} · ${date(report.period.start)} a ${date(report.period.end)} · Gerado em ${escape(new Date(report.generatedAt).toLocaleString("pt-BR"))}${report.isDemo ? " · DADOS FICTÍCIOS" : ""}</p></header><div class="report-page-meta">${report.isDemo ? "DEMONSTRAÇÃO · " : ""}${escape(report.period.label)}</div>
+    return `<header><p class="report-kicker">STUDYTRACK</p><h1>${escape(report.title)}</h1><p>${escape(report.period.label)} · ${date(report.period.start)} a ${date(report.period.end)} · Gerado em ${escape(new Date(report.generatedAt).toLocaleString("pt-BR"))}${report.isDemo ? " · DADOS FICTÍCIOS" : ""}</p><p><strong>Concursos ativos:</strong> ${escape((report.exam?.activeLabels || ["Todo o conteúdo"]).join(" · "))} · catálogo ${escape(report.exam?.catalogVersion || "não informado")}</p></header><div class="report-page-meta">${report.isDemo ? "DEMONSTRAÇÃO · " : ""}${escape(report.period.label)}</div>
 <section><h2>Resumo executivo</h2><p>Prova: <strong>${date(report.exam.date)}</strong> · Meta: <strong>${value(report.exam.target == null ? null : report.exam.target + "%")}</strong> · Plano: <strong>${escape(report.planNumber)}</strong></p><div class="report-kpis"><div><strong>${value(readiness == null ? null : Math.round(readiness) + "/100")}</strong><span>Índice de prontidão</span></div><div><strong>${escape(report.readiness?.confidenceLabel || "Baixa")}</strong><span>Confiança</span></div><div><strong>${report.overview.contentPercent}%</strong><span>Conteúdo concluído</span></div><div><strong>${duration(report.overview.studySeconds)}</strong><span>Tempo estudado</span></div></div></section>
 <section><h2>Planejamento versus execução</h2><div class="report-kpis report-kpis--three"><div><strong>${report.execution.plannedMinutes} min</strong><span>Planejado</span></div><div><strong>${report.execution.executedMinutes} min</strong><span>Executado</span></div><div><strong>${value(report.execution.adherence == null ? null : report.execution.adherence + "%")}</strong><span>Aderência</span></div></div></section>
 <section><h2>Evolução e distribuição por disciplina</h2>${bars(report.bySubject, (item) => Math.round(item.studySeconds / 60), (item) => item.name)}<table><thead><tr><th>Disciplina</th><th>Conteúdo</th><th>Questões</th><th>Acerto</th></tr></thead><tbody>${report.bySubject.map((item) => `<tr><td>${escape(item.name)}</td><td>${item.completed}/${item.total}</td><td>${item.questions}</td><td>${value(item.accuracy == null ? null : item.accuracy + "%")}</td></tr>`).join("")}</tbody></table></section>
@@ -3545,9 +17357,9 @@
     return state.subjects.find((s) => s.id === subjectId) || null;
   }
   function getTopicById(topicId) {
-    for (const subject2 of state.subjects) {
-      const topic2 = subject2.topics.find((t) => t.id === topicId);
-      if (topic2) return { subject: subject2, topic: topic2 };
+    for (const subject of state.subjects) {
+      const topic = subject.topics.find((t) => t.id === topicId);
+      if (topic) return { subject, topic };
     }
     return null;
   }
@@ -3581,15 +17393,15 @@
   }
   function migrateV1toV2(data) {
     const subjectIdByName = /* @__PURE__ */ new Map();
-    (data.subjects || []).forEach((subject2) => {
-      if (!subject2.id) subject2.id = uid("subject");
-      subject2.archived = Boolean(subject2.archived);
-      subject2.createdAt = subject2.createdAt || nowISO2();
-      if (!Array.isArray(subject2.topics)) subject2.topics = [];
-      subjectIdByName.set(subject2.name, subject2.id);
-      subject2.topics.forEach((topic2) => {
-        if (!topic2.id) topic2.id = uid("topic");
-        topic2.createdAt = topic2.createdAt || nowISO2();
+    (data.subjects || []).forEach((subject) => {
+      if (!subject.id) subject.id = uid("subject");
+      subject.archived = Boolean(subject.archived);
+      subject.createdAt = subject.createdAt || nowISO2();
+      if (!Array.isArray(subject.topics)) subject.topics = [];
+      subjectIdByName.set(subject.name, subject.id);
+      subject.topics.forEach((topic) => {
+        if (!topic.id) topic.id = uid("topic");
+        topic.createdAt = topic.createdAt || nowISO2();
       });
     });
     (data.questoes || []).forEach((q) => {
@@ -3632,12 +17444,12 @@
     return data;
   }
   function migrateV2toV3(data) {
-    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach((topic2) => {
-      topic2.firstCompletedAt = topic2.firstCompletedAt || (topic2.completedAt ? `${topic2.completedAt}T12:00:00.000Z` : null);
-      topic2.lastCompletedAt = topic2.lastCompletedAt || topic2.firstCompletedAt || null;
-      topic2.completionCount = Number(topic2.completionCount) || (topic2.completedAt ? 1 : 0);
-      topic2.lastReviewedAt = topic2.lastReviewedAt || null;
-      topic2.reviewCount = Number(topic2.reviewCount) || 0;
+    (data.subjects || []).forEach((subject) => (subject.topics || []).forEach((topic) => {
+      topic.firstCompletedAt = topic.firstCompletedAt || (topic.completedAt ? `${topic.completedAt}T12:00:00.000Z` : null);
+      topic.lastCompletedAt = topic.lastCompletedAt || topic.firstCompletedAt || null;
+      topic.completionCount = Number(topic.completionCount) || (topic.completedAt ? 1 : 0);
+      topic.lastReviewedAt = topic.lastReviewedAt || null;
+      topic.reviewCount = Number(topic.reviewCount) || 0;
     }));
     if (!Array.isArray(data.topicHistory)) data.topicHistory = [];
     data.topicHistory.forEach((event) => {
@@ -3645,10 +17457,10 @@
       if (!event.occurredAt) event.occurredAt = event.date || nowISO2();
       if (!event.date) event.date = event.occurredAt;
     });
-    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach((topic2) => {
-      if (topic2.completedAt && !data.topicHistory.some((event) => event.type === "topic_completed" && event.topicId === topic2.id)) {
-        const occurredAt = topic2.lastCompletedAt || `${topic2.completedAt}T12:00:00.000Z`;
-        data.topicHistory.push({ id: uid("history"), date: occurredAt, occurredAt, type: "topic_completed", subjectId: subject2.id, topicId: topic2.id, metadata: { migrated: true } });
+    (data.subjects || []).forEach((subject) => (subject.topics || []).forEach((topic) => {
+      if (topic.completedAt && !data.topicHistory.some((event) => event.type === "topic_completed" && event.topicId === topic.id)) {
+        const occurredAt = topic.lastCompletedAt || `${topic.completedAt}T12:00:00.000Z`;
+        data.topicHistory.push({ id: uid("history"), date: occurredAt, occurredAt, type: "topic_completed", subjectId: subject.id, topicId: topic.id, metadata: { migrated: true } });
       }
     }));
     (data.reviewAgenda || []).forEach((review) => {
@@ -3661,12 +17473,12 @@
     return data;
   }
   function migrateV3toV4(data) {
-    (data.subjects || []).forEach((subject2) => {
-      if (!("archived" in subject2)) subject2.archived = false;
-      if (!("archivedAt" in subject2)) subject2.archivedAt = null;
-      (subject2.topics || []).forEach((topic2) => {
-        if (!("archived" in topic2)) topic2.archived = false;
-        if (!("archivedAt" in topic2)) topic2.archivedAt = null;
+    (data.subjects || []).forEach((subject) => {
+      if (!("archived" in subject)) subject.archived = false;
+      if (!("archivedAt" in subject)) subject.archivedAt = null;
+      (subject.topics || []).forEach((topic) => {
+        if (!("archived" in topic)) topic.archived = false;
+        if (!("archivedAt" in topic)) topic.archivedAt = null;
       });
     });
     data.schemaVersion = 4;
@@ -3718,7 +17530,7 @@
   function migrateV8toV9(data) {
     data.examBlueprint = normalizeExamBlueprint(data.examBlueprint, data.examDate);
     data.algorithmVersions = normalizeAlgorithmVersions(data.algorithmVersions);
-    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach(normalizeTopicStrategy));
+    (data.subjects || []).forEach((subject) => (subject.topics || []).forEach(normalizeTopicStrategy));
     data.schemaVersion = 9;
     return data;
   }
@@ -3782,8 +17594,8 @@
   function migrateV14toV15(data) {
     data.algorithmVersions = normalizeAlgorithmVersions(data.algorithmVersions);
     data.algorithmVersions.adaptiveReview = Math.max(2, Number(data.algorithmVersions.adaptiveReview) || 2);
-    (data.subjects || []).forEach((subject2) => (subject2.topics || []).forEach((topic2) => {
-      topic2.adaptiveReview = topic2.adaptiveReview ? createAdaptiveReviewState(topic2.adaptiveReview) : null;
+    (data.subjects || []).forEach((subject) => (subject.topics || []).forEach((topic) => {
+      topic.adaptiveReview = topic.adaptiveReview ? createAdaptiveReviewState(topic.adaptiveReview) : null;
     }));
     (data.reviewAgenda || []).forEach((review) => {
       review.lastRating = REVIEW_RATINGS[review.lastRating] ? review.lastRating : null;
@@ -4203,19 +18015,19 @@
     return state.subjects.flatMap((s) => s.topics.map((t) => ({ ...t, subjectName: s.name, subjectId: s.id, subjectArchived: Boolean(s.archived), topicArchived: Boolean(t.archived) })));
   }
   function activeSubjects() {
-    return state.subjects.filter((subject2) => !subject2.archived);
+    return state.subjects.filter((subject) => !subject.archived);
   }
   function archivedSubjects() {
-    return state.subjects.filter((subject2) => subject2.archived);
+    return state.subjects.filter((subject) => subject.archived);
   }
   function topicsForSelection(subjectOrId, selectedTopicId) {
-    const subject2 = subjectOrId && typeof subjectOrId === "object" ? subjectOrId : getSubjectById(subjectOrId);
-    if (!subject2 || !Array.isArray(subject2.topics)) return [];
-    return subject2.topics.filter((topic2) => !topic2.archived || topic2.id === selectedTopicId);
+    const subject = subjectOrId && typeof subjectOrId === "object" ? subjectOrId : getSubjectById(subjectOrId);
+    if (!subject || !Array.isArray(subject.topics)) return [];
+    return subject.topics.filter((topic) => !topic.archived || topic.id === selectedTopicId);
   }
   function isActiveSubjectId(subjectId) {
-    const subject2 = getSubjectById(subjectId);
-    return Boolean(subject2 && !subject2.archived);
+    const subject = getSubjectById(subjectId);
+    return Boolean(subject && !subject.archived);
   }
   function isActiveTopicId(topicId) {
     const found = getTopicById(topicId);
@@ -4226,17 +18038,19 @@
     return !topicId || isActiveTopicId(topicId);
   }
   function subjectsForSelection(selectedId = null) {
-    return state.subjects.filter((subject2) => !subject2.archived || subject2.id === selectedId);
+    return state.subjects.filter((subject) => !subject.archived || subject.id === selectedId);
   }
   function activeTopics() {
-    return allTopics().filter((topic2) => !topic2.subjectArchived && !topic2.topicArchived);
+    return allTopics().filter((topic) => !topic.subjectArchived && !topic.topicArchived);
   }
-  function topicInActiveExamScope(topic2) {
-    const active = state.examBlueprint?.activeExamTags || [];
-    return !active.length || !(topic2?.examTags || []).length || topic2.examTags.some((tag) => active.includes(tag));
+  function topicInActiveExamScope(topic) {
+    return isTopicInExamScope(topic, state.examBlueprint?.activeExamTags || []);
   }
-  function subjectProgress(subject2) {
-    return calculateTopicCoverage(subject2.topics).value;
+  function examScopedTopics() {
+    return activeTopics().filter(topicInActiveExamScope);
+  }
+  function subjectProgress(subject) {
+    return calculateTopicCoverage(subject.topics).value;
   }
   function localDateISO(value2) {
     if (arguments.length === 0) value2 = /* @__PURE__ */ new Date();
@@ -4528,23 +18342,23 @@
       return "";
     };
     const textOk = (value2, max = 5e3) => typeof value2 === "string" && value2.length <= max;
-    for (const subject2 of data.subjects) {
-      if (!isPlainObject(subject2)) return fail("Uma disciplina não é um objeto válido.");
-      const idError = registerId(subject2.id, "Uma disciplina");
+    for (const subject of data.subjects) {
+      if (!isPlainObject(subject)) return fail("Uma disciplina não é um objeto válido.");
+      const idError = registerId(subject.id, "Uma disciplina");
       if (idError) return fail(idError);
-      subjectIds.add(subject2.id);
-      if (!textOk(subject2.name, 300) || !Array.isArray(subject2.topics) || subject2.topics.length > 1e4) return fail("Uma disciplina possui nome ou lista de tópicos inválida.");
-      for (const topic2 of subject2.topics) {
-        if (!isPlainObject(topic2)) return fail("Um tópico não é um objeto válido.");
-        const topicIdError = registerId(topic2.id, "Um tópico");
+      subjectIds.add(subject.id);
+      if (!textOk(subject.name, 300) || !Array.isArray(subject.topics) || subject.topics.length > 1e4) return fail("Uma disciplina possui nome ou lista de tópicos inválida.");
+      for (const topic of subject.topics) {
+        if (!isPlainObject(topic)) return fail("Um tópico não é um objeto válido.");
+        const topicIdError = registerId(topic.id, "Um tópico");
         if (topicIdError) return fail(topicIdError);
-        topicIds.add(topic2.id);
-        if (!textOk(topic2.name, 500) || !textOk(topic2.link || "", 2e3) || !textOk(topic2.notes || "", 2e4)) return fail("Um tópico excede os limites de texto permitidos.");
-        if (!STATUS_OPTIONS.includes(topic2.status) || !DIFFICULTY_OPTIONS.includes(topic2.difficulty)) return fail("Um tópico possui status ou dificuldade inválida.");
-        if (!Array.isArray(topic2.tags) || topic2.tags.length > 100 || topic2.tags.some((tag) => !textOk(tag, 100))) return fail("Um tópico possui tags inválidas.");
-        if (topic2.examImportance !== null && (!Number.isFinite(Number(topic2.examImportance)) || Number(topic2.examImportance) < 0 || Number(topic2.examImportance) > 1)) return fail("Um tópico possui importância de prova inválida.");
-        if (topic2.estimatedStudyMinutes !== null && (!isFiniteNonNegative(topic2.estimatedStudyMinutes) || Number(topic2.estimatedStudyMinutes) <= 0)) return fail("Um tópico possui esforço estimado inválido.");
-        if (!Array.isArray(topic2.prerequisites) || topic2.prerequisites.length > 100 || topic2.prerequisites.some((id) => !isSafeId(id))) return fail("Um tópico possui pré-requisitos inválidos.");
+        topicIds.add(topic.id);
+        if (!textOk(topic.name, 500) || !textOk(topic.link || "", 2e3) || !textOk(topic.notes || "", 2e4)) return fail("Um tópico excede os limites de texto permitidos.");
+        if (!STATUS_OPTIONS.includes(topic.status) || !DIFFICULTY_OPTIONS.includes(topic.difficulty)) return fail("Um tópico possui status ou dificuldade inválida.");
+        if (!Array.isArray(topic.tags) || topic.tags.length > 100 || topic.tags.some((tag) => !textOk(tag, 100))) return fail("Um tópico possui tags inválidas.");
+        if (topic.examImportance !== null && (!Number.isFinite(Number(topic.examImportance)) || Number(topic.examImportance) < 0 || Number(topic.examImportance) > 1)) return fail("Um tópico possui importância de prova inválida.");
+        if (topic.estimatedStudyMinutes !== null && (!isFiniteNonNegative(topic.estimatedStudyMinutes) || Number(topic.estimatedStudyMinutes) <= 0)) return fail("Um tópico possui esforço estimado inválido.");
+        if (!Array.isArray(topic.prerequisites) || topic.prerequisites.length > 100 || topic.prerequisites.some((id) => !isSafeId(id))) return fail("Um tópico possui pré-requisitos inválidos.");
       }
     }
     const validateEntity = (item, label2) => {
@@ -4621,7 +18435,7 @@
       if (!isFiniteNonNegative(item.meta)) return fail("Uma meta por disciplina possui valor inválido.");
     }
     const validRef = (value2, set) => value2 == null || isSafeId(value2) && set.has(value2);
-    if (data.subjects.some((subject2) => subject2.topics.some((topic2) => topic2.prerequisites.some((id) => !topicIds.has(id) || id === topic2.id)))) return fail("O backup contém pré-requisito de tópico inexistente ou circular direto.");
+    if (data.subjects.some((subject) => subject.topics.some((topic) => topic.prerequisites.some((id) => !topicIds.has(id) || id === topic.id)))) return fail("O backup contém pré-requisito de tópico inexistente ou circular direto.");
     const referenceCollections = [...data.calendar, ...data.reviewAgenda, ...data.questoes, ...data.studySessions, ...data.metasPorDisciplina];
     if (referenceCollections.some((item) => !validRef(item.subjectId, subjectIds) || !validRef(item.topicId, topicIds))) return fail("O backup contém referência para disciplina ou tópico inexistente.");
     if (data.simulados.some((sim) => sim.breakdown.some((item) => !validRef(item.subjectId, subjectIds)))) return fail("O backup contém detalhamento de simulado para uma disciplina inexistente.");
@@ -4639,7 +18453,7 @@
   }
   function backupSummary(data, version) {
     const subjectCount = data.subjects.length;
-    const topicCount = data.subjects.reduce((sum4, subject2) => sum4 + (Array.isArray(subject2.topics) ? subject2.topics.length : 0), 0);
+    const topicCount = data.subjects.reduce((sum4, subject) => sum4 + (Array.isArray(subject.topics) ? subject.topics.length : 0), 0);
     const sessionCount = Array.isArray(data.studySessions) ? data.studySessions.length : 0;
     const questionCount = Array.isArray(data.questoes) ? data.questoes.length : 0;
     const updated = Date.parse(data.updatedAt || "");
@@ -4843,8 +18657,8 @@
   function populateTimerTopicSelect(subjectId, selectedTopicId) {
     const select = document.getElementById("timerTopicSelect");
     if (!select) return;
-    const subject2 = getSubjectById(subjectId);
-    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject2 ? topicsForSelection(subject2, selectedTopicId).map((topic2) => `<option value="${escapeAttr(topic2.id)}">${escapeHtml(topic2.name || "(tópico sem nome)")}</option>`).join("") : "");
+    const subject = getSubjectById(subjectId);
+    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject ? topicsForSelection(subject, selectedTopicId).map((topic) => `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || "(tópico sem nome)")}</option>`).join("") : "");
     select.value = selectedTopicId || "";
     if (select.value !== (selectedTopicId || "")) state.activeTimer.topicId = null;
   }
@@ -4852,7 +18666,7 @@
     const subjectSelect = document.getElementById("timerSubjectSelect");
     const typeSelect = document.getElementById("timerTypeSelect");
     if (!subjectSelect || !typeSelect) return;
-    subjectSelect.innerHTML = `<option value="">Sem disciplina específica</option>` + subjectsForSelection(state.activeTimer.subjectId).map((subject2) => `<option value="${escapeAttr(subject2.id)}">${escapeHtml(subject2.name)}${subject2.archived ? " (arquivada)" : ""}</option>`).join("");
+    subjectSelect.innerHTML = `<option value="">Sem disciplina específica</option>` + subjectsForSelection(state.activeTimer.subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}">${escapeHtml(subject.name)}${subject.archived ? " (arquivada)" : ""}</option>`).join("");
     subjectSelect.value = state.activeTimer.subjectId || "";
     if (subjectSelect.value !== (state.activeTimer.subjectId || "")) state.activeTimer.subjectId = null;
     populateTimerTopicSelect(state.activeTimer.subjectId, state.activeTimer.topicId);
@@ -4938,8 +18752,8 @@
   }
   function populateSessionTopicSelect(subjectId, selectedTopicId = null) {
     const select = document.getElementById("sessionModalTopic");
-    const subject2 = getSubjectById(subjectId);
-    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject2 ? topicsForSelection(subject2, selectedTopicId).map((topic2) => `<option value="${escapeAttr(topic2.id)}">${escapeHtml(topic2.name || "(tópico sem nome)")}</option>`).join("") : "");
+    const subject = getSubjectById(subjectId);
+    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject ? topicsForSelection(subject, selectedTopicId).map((topic) => `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || "(tópico sem nome)")}</option>`).join("") : "");
   }
   function showSessionModal() {
     const overlay = document.getElementById("sessionModalOverlay");
@@ -5115,7 +18929,7 @@
     document.getElementById("heatmapContainer").innerHTML = `
     <div class="heatmap-toolbar" aria-label="Período da sequência">
       <select aria-label="Métrica do heatmap" data-delegated-change="setHeatmapFilter('metric',this.value)"><option value="hours" ${streakView.metric === "hours" ? "selected" : ""}>Horas</option><option value="questions" ${streakView.metric === "questions" ? "selected" : ""}>Questões</option><option value="reviews" ${streakView.metric === "reviews" ? "selected" : ""}>Revisões</option><option value="simulations" ${streakView.metric === "simulations" ? "selected" : ""}>Simulados</option></select>
-      <select aria-label="Disciplina do heatmap" data-delegated-change="setHeatmapFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map((subject2) => `<option value="${escapeAttr(subject2.id)}" ${streakView.subjectId === subject2.id ? "selected" : ""}>${escapeHtml(subject2.name)}</option>`).join("")}</select>
+      <select aria-label="Disciplina do heatmap" data-delegated-change="setHeatmapFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map((subject) => `<option value="${escapeAttr(subject.id)}" ${streakView.subjectId === subject.id ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("")}</select>
       <span>${streakView.expanded ? "Período completo" : `Últimas ${DEFAULT_STREAK_WEEKS} semanas`}</span>
       <button class="btn ghost small" data-delegated-click="toggleStreakExpanded()">${streakView.expanded ? "Mostrar menos" : "Ver período completo"}</button>
       <button class="btn ghost small" aria-pressed="${streakView.onlyActiveDays}" data-delegated-click="toggleStreakActiveDays()">${streakView.onlyActiveDays ? "Mostrar todos os dias" : "Apenas dias com atividade"}</button>
@@ -5399,8 +19213,8 @@
   function renderSubjects() {
     const container = document.getElementById("subjectsContainer");
     const allActiveSubjects = activeSubjects();
-    const topicMatchesExam = (topic2) => subjectExamFilter === "all" || (subjectExamFilter === "common" ? (topic2.institutions || []).includes("bb") && (topic2.institutions || []).includes("caixa") : (topic2.institutions || []).includes(subjectExamFilter));
-    const subjects = subjectExamFilter === "all" ? allActiveSubjects : allActiveSubjects.filter((subject2) => (subject2.topics || []).some((topic2) => topicMatchesExam(topic2)));
+    const topicMatchesExam = (topic) => subjectExamFilter === "all" || subjectExamFilter === "common" && isCommonTopic(topic, [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]) || subjectExamFilter === "bb" && (topic.examTags || []).includes(EXAM_TAGS.BB) || subjectExamFilter === "caixa" && (topic.examTags || []).includes(EXAM_TAGS.CAIXA) || subjectExamFilter === "caixa-ti" && (topic.examTags || []).includes(EXAM_TAGS.CAIXA_TI);
+    const subjects = subjectExamFilter === "all" ? allActiveSubjects : allActiveSubjects.filter((subject) => (subject.topics || []).some((topic) => topicMatchesExam(topic)));
     const archived = archivedSubjects();
     if (subjects.length === 0 && archived.length === 0) {
       container.innerHTML = `<div class="empty-state">
@@ -5413,7 +19227,7 @@
       const pct2 = subjectProgress(s);
       const subjectTopics = s.topics.filter((t) => !t.archived && topicMatchesExam(t));
       const topicFilter = subjectTopicFilters.get(s.id) || { status: "", difficulty: "" };
-      const allVisibleTopics = subjectTopics.filter((topic2) => (!topicFilter.status || topic2.status === topicFilter.status) && (!topicFilter.difficulty || topic2.difficulty === topicFilter.difficulty));
+      const allVisibleTopics = subjectTopics.filter((topic) => (!topicFilter.status || topic.status === topicFilter.status) && (!topicFilter.difficulty || topic.difficulty === topicFilter.difficulty));
       const topicLimit = subjectTopicLimits.get(s.id) || 10;
       const visibleTopics = allVisibleTopics.slice(0, topicLimit);
       const archivedTopics = s.topics.filter((t) => t.archived);
@@ -5520,7 +19334,7 @@
       <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
     </div>`).join("")}
   </div>` : "";
-    container.innerHTML = `<div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">${[["all", "Todos"], ["bb", "BB"], ["caixa", "Caixa"], ["common", "Comuns"]].map(([value2, label2]) => `<button class="btn ghost small ${subjectExamFilter === value2 ? "active" : ""}" data-delegated-click="setSubjectExamFilter('${value2}')">${label2}</button>`).join("")}</div>` + activeHtml + archivedHtml;
+    container.innerHTML = `<div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">${[["all", "Todos"], ["bb", "BB"], ["caixa", "Caixa"], ["caixa-ti", "Caixa TI"], ["common", "Comuns"]].map(([value2, label2]) => `<button class="btn ghost small ${subjectExamFilter === value2 ? "active" : ""}" data-delegated-click="setSubjectExamFilter('${value2}')">${label2}</button>`).join("")}</div>` + activeHtml + archivedHtml;
   }
   var openNotesIds = /* @__PURE__ */ new Set();
   var subjectExamFilter = "all";
@@ -5554,12 +19368,12 @@
     renderSubjects();
   }
   function setSubjectExamFilter(value2) {
-    if (["all", "bb", "caixa", "common"].includes(value2)) subjectExamFilter = value2;
+    if (["all", "bb", "caixa", "caixa-ti", "common"].includes(value2)) subjectExamFilter = value2;
     renderSubjects();
   }
-  function examBadges(topic2) {
-    const institutions = topic2.institutions || [];
-    return `${institutions.includes("bb") ? '<span class="exam-tag exam-tag--bb">BB</span>' : ""}${institutions.includes("caixa") ? '<span class="exam-tag exam-tag--caixa">CAIXA</span>' : ""}`;
+  function examBadges(topic) {
+    const tags = topic.examTags || [];
+    return `${tags.includes(EXAM_TAGS.BB) ? '<span class="exam-tag exam-tag--bb">BB</span>' : ""}${tags.includes(EXAM_TAGS.CAIXA) ? '<span class="exam-tag exam-tag--caixa">CAIXA</span>' : ""}${tags.includes(EXAM_TAGS.CAIXA_TI) ? '<span class="exam-tag exam-tag--caixa">CAIXA TI</span>' : ""}`;
   }
   function updateTopicTags(subjectId, topicId, value2) {
     subjectService.updateTopic(subjectId, topicId, { tags: value2.split(",").map((tag) => tag.trim()).filter(Boolean) });
@@ -5577,16 +19391,16 @@
     subjectService.updateTopic(subjectId, topicId, found.topic);
     persistAndRender();
   }
-  function renderTopicAnalyticsState(subject2, topic2) {
-    const coverage = topic2.status === "Concluído" ? 100 : topic2.status === "Em andamento" || topic2.status === "Revisão" ? 50 : 0;
-    const masteryResult = topicMasteryIndex(subject2.id, topic2.id), retentionResult = topicRetentionScore(subject2.id, topic2.id);
+  function renderTopicAnalyticsState(subject, topic) {
+    const coverage = topic.status === "Concluído" ? 100 : topic.status === "Em andamento" || topic.status === "Revisão" ? 50 : 0;
+    const masteryResult = topicMasteryIndex(subject.id, topic.id), retentionResult = topicRetentionScore(subject.id, topic.id);
     const mastery = masteryResult.confidence > 0 ? masteryResult.score : null, retention = retentionResult.available ? retentionResult.score : null;
-    const diagnosis = diagnoseTopic(subject2.id, topic2.id), reviewHealth = topicReviewHealthScore(topic2, masteryResult, retentionResult, diagnosis);
+    const diagnosis = diagnoseTopic(subject.id, topic.id), reviewHealth = topicReviewHealthScore(topic, masteryResult, retentionResult, diagnosis);
     const lastContact = diagnosis?.lastActivity ? Math.max(0, -(diasParaRevisao(diagnosis.lastActivity) ?? 0)) : null;
-    const lastReviewDate = localDateFromTimestamp2(topic2.lastReviewedAt);
+    const lastReviewDate = localDateFromTimestamp2(topic.lastReviewedAt);
     const lastReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
     const performance = diagnosis?.performance?.accuracy ?? null, trend = diagnosis?.trend;
-    const blockers = prerequisiteBlockers({ ...topic2, mastery, covered: coverage === 100 }, allTopics().map((item) => ({ ...item, covered: item.status === "Concluído", mastery: topicMasteryIndex(item.subjectId, item.id).confidence > 0 ? topicMasteryIndex(item.subjectId, item.id).score : null })));
+    const blockers = prerequisiteBlockers({ ...topic, mastery, covered: coverage === 100 }, allTopics().map((item) => ({ ...item, covered: item.status === "Concluído", mastery: topicMasteryIndex(item.subjectId, item.id).confidence > 0 ? topicMasteryIndex(item.subjectId, item.id).score : null })));
     let label2 = "Não iniciado";
     if (coverage > 0 && mastery === null) label2 = "Em estudo · aguardando questões";
     else if (coverage === 100 && mastery < 50) label2 = "Coberto, não consolidado";
@@ -5665,7 +19479,7 @@
   function addSubject() {
     showPrompt("Criar uma nova disciplina", { label: "Nome da disciplina", placeholder: "Ex.: Conhecimentos Bancários", confirmLabel: "Criar", validate: (name) => {
       if (!name) return "Informe o nome da disciplina.";
-      if (state.subjects.some((subject2) => subject2.name.trim().toLocaleLowerCase("pt-BR") === name.toLocaleLowerCase("pt-BR"))) return "Já existe uma disciplina com esse nome.";
+      if (state.subjects.some((subject) => subject.name.trim().toLocaleLowerCase("pt-BR") === name.toLocaleLowerCase("pt-BR"))) return "Já existe uma disciplina com esse nome.";
       return "";
     } }, (name) => {
       subjectService.create(name);
@@ -5682,26 +19496,53 @@
   var examImportState = { step: 1, presetId: EXAM_PRESETS[0].id, subjectIds: /* @__PURE__ */ new Set(), topicIds: /* @__PURE__ */ new Set(), query: "", previousFocus: null };
   function syncExamSelection(preset2) {
     examImportState.subjectIds = new Set(preset2.subjects.map((item) => item.id));
-    examImportState.topicIds = new Set(preset2.subjects.flatMap((item) => (item.topics || []).map((topic2) => `${item.id}:${topic2.id}`)));
+    examImportState.topicIds = new Set(preset2.subjects.flatMap((item) => (item.topics || []).map((topic) => `${item.id}:${topic.id}`)));
   }
   function selectedExamPreset() {
     return getExamPreset(examImportState.presetId) || EXAM_PRESETS[0];
+  }
+  function applyPresetBlueprintDefaults(preset2) {
+    const source = (preset2.sources || []).length === 1 ? preset2.sources[0] : null;
+    if (!source || !EXAM_SOURCES[source]?.official) return;
+    for (const subject of state.subjects) {
+      if (state.examBlueprint.subjects.some((item) => item.subjectId === subject.id)) continue;
+      const metric = subject.examMetrics?.[source];
+      if (!metric || metric.mappingType !== "direct" || metric.expectedQuestions == null) continue;
+      state.examBlueprint.subjects.push({ subjectId: subject.id, expectedQuestions: metric.expectedQuestions, questionWeight: metric.questionWeight, priority: "normal", masteryTarget: null, sourceRef: source, official: Boolean(metric.official), mappingType: metric.mappingType });
+    }
+    state.examBlueprint.activeExamTags = [...preset2.examTags || []];
+    state.examBlueprint.configuredAt = nowISO2();
+  }
+  var normalizeExamSearch = (value2) => String(value2 || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
+  function syncExamSubjectCheckboxes() {
+    document.querySelectorAll("[data-exam-subject]").forEach((input) => {
+      const subject = selectedExamPreset().subjects.find((item) => item.id === input.dataset.examSubject), keys = (subject?.topics || []).map((topic) => `${subject.id}:${topic.id}`), count = keys.filter((key) => examImportState.topicIds.has(key)).length;
+      input.checked = keys.length > 0 && count === keys.length;
+      input.indeterminate = count > 0 && count < keys.length;
+    });
   }
   function renderExamImport() {
     const content = document.getElementById("examImportContent"), back = document.getElementById("examImportBackBtn"), next = document.getElementById("examImportNextBtn"), preset2 = selectedExamPreset();
     back.hidden = examImportState.step === 1;
     next.textContent = examImportState.step === 3 ? "Importar" : "Continuar";
-    if (examImportState.step === 1) content.innerHTML = `<p>Escolha o concurso. Os presets usam o catálogo mestre versão ${escapeHtml(preset2.version)}.</p><div class="exam-preset-list">${EXAM_PRESETS.map((item) => `<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id === examImportState.presetId ? "checked" : ""}><span><strong>${escapeHtml(item.name)}</strong><small>${item.subjects.length ? `${item.subjects.length} disciplinas · ${item.subjects.reduce((sum4, subject2) => sum4 + subject2.topics.length, 0)} tópicos · versão ${escapeHtml(item.version)}` : "Começar sem conteúdo predefinido"}</small></span></label>`).join("")}</div>`;
+    if (examImportState.step === 1) content.innerHTML = `<p>Escolha o concurso. Os presets usam o catálogo mestre versão ${escapeHtml(preset2.version)}.</p><div class="exam-preset-list">${EXAM_PRESETS.map((item) => `<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id === examImportState.presetId ? "checked" : ""}><span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description || "")}${item.subjects.length ? ` · ${item.subjects.length} disciplinas · ${item.subjects.reduce((sum4, subject) => sum4 + subject.topics.length, 0)} tópicos · versão ${escapeHtml(item.version)}` : ""}</small></span></label>`).join("")}</div>`;
     else if (examImportState.step === 2) {
-      const query = examImportState.query.trim().toLocaleLowerCase("pt-BR"), visible = preset2.subjects.map((subject2) => ({ ...subject2, topics: subject2.topics.filter((topic2) => !query || subject2.name.toLocaleLowerCase("pt-BR").includes(query) || topic2.name.toLocaleLowerCase("pt-BR").includes(query)) })).filter((subject2) => subject2.topics.length);
-      content.innerHTML = preset2.subjects.length ? `<p>Selecione as disciplinas e os tópicos que deseja importar. Conteúdos comuns mantêm um único histórico.</p><div class="exam-import-tools"><input type="search" id="examImportSearch" value="${escapeAttr(examImportState.query)}" placeholder="Buscar disciplina ou tópico..." aria-label="Buscar no edital"><div><button class="btn ghost small" data-exam-select="all">Selecionar tudo</button><button class="btn ghost small" data-exam-select="common">Somente comuns</button><button class="btn ghost small" data-exam-select="bb">Somente BB</button><button class="btn ghost small" data-exam-select="caixa">Somente Caixa</button><button class="btn ghost small" data-exam-select="none">Limpar</button></div></div><div class="exam-selection-count">${examImportState.topicIds.size} de ${preset2.subjects.reduce((sum4, subject2) => sum4 + subject2.topics.length, 0)} tópicos selecionados</div><div class="exam-subject-list">${visible.map((subject2) => `<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject2.id)}" ${examImportState.subjectIds.has(subject2.id) ? "checked" : ""}><span>${escapeHtml(subject2.name)} <small>${subject2.topics.length} tópicos</small></span></label><div class="exam-topic-list">${subject2.topics.map((topic2) => {
-        const key = `${subject2.id}:${topic2.id}`;
-        return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key) ? "checked" : ""}><span>${escapeHtml(topic2.name)} <small>${examBadges(topic2)}</small></span></label>`;
-      }).join("")}</div></section>`).join("")}</div>` : "<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>";
+      const query = normalizeExamSearch(examImportState.query.trim()), visible = preset2.subjects.map((subject) => ({ ...subject, topics: subject.topics.filter((topic) => {
+        const haystack = normalizeExamSearch([subject.name, topic.name, ...subject.aliases || [], ...topic.aliases || [], topicExamScopeLabel(topic), ...topic.sourceRefs || []].join(" "));
+        return !query || haystack.includes(query);
+      }) })).filter((subject) => subject.topics.length);
+      content.innerHTML = preset2.subjects.length ? `<p>Selecione as disciplinas e os tópicos que deseja importar. Conteúdos comuns mantêm um único histórico.</p><div class="exam-import-tools"><input type="search" id="examImportSearch" value="${escapeAttr(examImportState.query)}" placeholder="Buscar disciplina, tópico, alias ou origem..." aria-label="Buscar no edital"><div><button class="btn ghost small" data-exam-select="all">Selecionar tudo</button><button class="btn ghost small" data-exam-select="common">Somente comuns</button><button class="btn ghost small" data-exam-select="bb">Somente BB</button><button class="btn ghost small" data-exam-select="caixa">Somente Caixa</button><button class="btn ghost small" data-exam-select="caixa-ti">Somente Caixa TI</button><button class="btn ghost small" data-exam-select="none">Limpar</button></div></div><div class="exam-selection-count">${examImportState.topicIds.size} de ${preset2.subjects.reduce((sum4, subject) => sum4 + subject.topics.length, 0)} tópicos selecionados</div><div class="exam-subject-list">${visible.map((subject) => {
+        const selectedCount = subject.topics.filter((topic) => examImportState.topicIds.has(`${subject.id}:${topic.id}`)).length;
+        return `<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)} <small>${selectedCount} / ${subject.topics.length} selecionados</small></span></label><div class="exam-topic-list">${subject.topics.map((topic) => {
+          const key = `${subject.id}:${topic.id}`;
+          return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key) ? "checked" : ""}><span>${escapeHtml(topic.name)} <small>${examBadges(topic)}</small></span></label>`;
+        }).join("")}</div></section>`;
+      }).join("")}</div>` : "<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>";
+      syncExamSubjectCheckboxes();
     } else {
       const preview = editalImportFacade.preview(examImportState.subjectIds, examImportState.topicIds), total = preview.addedTopics + preview.existingTopics;
-      content.innerHTML = `<p>Confira as alterações. IDs, progresso e histórico existentes serão preservados.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects + preview.existingSubjects}</strong><br>disciplinas selecionadas</div><div><strong>${total}</strong><br>tópicos selecionados</div><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.existingSubjects}</strong><br>disciplinas existentes</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos preservados</div></div>${preview.warnings.map((item) => `<p class="form-hint">${escapeHtml(item)}</p>`).join("")}`;
-      next.disabled = preview.addedSubjects + preview.addedTopics === 0;
+      content.innerHTML = `<p>Confira as alterações do catálogo ${escapeHtml(preview.catalogVersion || CATALOG_VERSION)}. IDs, progresso, sessões e revisões serão preservados.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects + preview.existingSubjects}</strong><br>disciplinas selecionadas</div><div><strong>${total}</strong><br>tópicos selecionados</div><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos preservados</div><div><strong>${preview.metadataUpdates}</strong><br>vínculos atualizados</div></div><p class="form-hint">Preservação: IDs, progresso, sessões, revisões e escolhas personalizadas.</p>${preview.sources.length ? `<p class="form-hint">Fontes: ${preview.sources.map((source) => escapeHtml(EXAM_SOURCES[source]?.label || source)).join(" · ")}</p>` : ""}${preview.warnings.map((item) => `<p class="form-hint">${escapeHtml(item)}</p>`).join("")}`;
+      next.disabled = preview.addedSubjects + preview.addedTopics + preview.metadataUpdates === 0;
     }
   }
   function openExamImport() {
@@ -5729,14 +19570,15 @@
     if (event.target.dataset.examSubject) {
       const id = event.target.dataset.examSubject;
       event.target.checked ? examImportState.subjectIds.add(id) : examImportState.subjectIds.delete(id);
-      selectedExamPreset().subjects.find((item) => item.id === id)?.topics.forEach((topic2) => {
-        const key = `${id}:${topic2.id}`;
+      selectedExamPreset().subjects.find((item) => item.id === id)?.topics.forEach((topic) => {
+        const key = `${id}:${topic.id}`;
         event.target.checked ? examImportState.topicIds.add(key) : examImportState.topicIds.delete(key);
       });
       renderExamImport();
     }
     if (event.target.dataset.examTopic) {
       event.target.checked ? examImportState.topicIds.add(event.target.dataset.examTopic) : examImportState.topicIds.delete(event.target.dataset.examTopic);
+      renderExamImport();
     }
   });
   document.getElementById("examImportContent").addEventListener("input", (event) => {
@@ -5752,11 +19594,11 @@
     const preset2 = selectedExamPreset();
     examImportState.subjectIds.clear();
     examImportState.topicIds.clear();
-    for (const subject2 of preset2.subjects) for (const topic2 of subject2.topics) {
-      const institutions = topic2.institutions || [], include = action === "all" || action === "bb" && institutions.includes("bb") || action === "caixa" && institutions.includes("caixa") || action === "common" && institutions.includes("bb") && institutions.includes("caixa");
+    for (const subject of preset2.subjects) for (const topic of subject.topics) {
+      const tags = topic.examTags || [], include = action === "all" || action === "bb" && tags.includes(EXAM_TAGS.BB) || action === "caixa" && tags.includes(EXAM_TAGS.CAIXA) || action === "caixa-ti" && tags.includes(EXAM_TAGS.CAIXA_TI) || action === "common" && isCommonTopic(topic, [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]);
       if (include) {
-        examImportState.subjectIds.add(subject2.id);
-        examImportState.topicIds.add(`${subject2.id}:${topic2.id}`);
+        examImportState.subjectIds.add(subject.id);
+        examImportState.topicIds.add(`${subject.id}:${topic.id}`);
       }
     }
     renderExamImport();
@@ -5772,10 +19614,11 @@
       renderExamImport();
       return;
     }
-    const result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
+    const preset2 = selectedExamPreset(), result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
+    applyPresetBlueprintDefaults(preset2);
     persistAndRender();
     closeExamImport();
-    showToast(`${pluralize(result.addedSubjects, "disciplina")} e ${pluralize(result.addedTopics, "tópico")} adicionados.`);
+    showToast(`${pluralize(result.addedSubjects, "disciplina")}, ${pluralize(result.addedTopics, "tópico")} e ${pluralize(result.metadataUpdates, "vínculo")} atualizados.`);
   });
   document.getElementById("examImportOverlay").addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -5784,22 +19627,22 @@
     }
   });
   function archiveSubject(id) {
-    const subject2 = getSubjectById(id);
-    if (!subject2) return showToast("Disciplina não encontrada.");
+    const subject = getSubjectById(id);
+    if (!subject) return showToast("Disciplina não encontrada.");
     subjectService.archive(id);
     persistAndRender();
-    showToast(`"${subject2.name}" foi arquivada.`);
+    showToast(`"${subject.name}" foi arquivada.`);
   }
   function restoreSubject(id) {
-    const subject2 = getSubjectById(id);
-    if (!subject2) return;
+    const subject = getSubjectById(id);
+    if (!subject) return;
     subjectService.restore(id);
     persistAndRender();
-    showToast(`"${subject2.name}" foi restaurada.`);
+    showToast(`"${subject.name}" foi restaurada.`);
   }
   function getSubjectDependencies(subjectId) {
-    const subject2 = getSubjectById(subjectId);
-    const topicIds = new Set((subject2?.topics || []).map((t) => t.id));
+    const subject = getSubjectById(subjectId);
+    const topicIds = new Set((subject?.topics || []).map((t) => t.id));
     return {
       questoes: state.questoes.filter((item) => entitySubjectId(item) === subjectId || topicIds.has(item.topicId)).length,
       sessions: state.studySessions.filter((item) => entitySubjectId(item) === subjectId || topicIds.has(item.topicId)).length,
@@ -5815,12 +19658,12 @@
     return Object.values(dependencies).reduce((sum4, value2) => sum4 + (Number(value2) || 0), 0);
   }
   function requestPermanentSubjectDelete(id) {
-    const subject2 = getSubjectById(id);
-    if (!subject2) return;
-    if (!subject2.archived) return showToast("Arquive a disciplina antes de solicitar a exclusão definitiva.");
+    const subject = getSubjectById(id);
+    if (!subject) return;
+    if (!subject.archived) return showToast("Arquive a disciplina antes de solicitar a exclusão definitiva.");
     const total = dependencyTotal(getSubjectDependencies(id));
     if (total > 0) return showToast(`A disciplina possui ${pluralize(total, "registro")} ${total === 1 ? "vinculado" : "vinculados"} e não pode ser excluída.`);
-    showConfirm(`Excluir definitivamente "${subject2.name}"? Esta ação não pode ser desfeita.`, () => {
+    showConfirm(`Excluir definitivamente "${subject.name}"? Esta ação não pode ser desfeita.`, () => {
       subjectService.remove(id);
       persistAndRender();
       showToast("Disciplina excluída definitivamente.");
@@ -5870,10 +19713,10 @@
     subjectService.updateTopic(subjectId, topicId, { [field]: value2 });
     persistAndRender();
   }
-  function addHistoryEvent(type, subjectId, topicId = null, metadata2 = {}) {
+  function addHistoryEvent(type, subjectId, topicId = null, metadata = {}) {
     if (!Array.isArray(state.topicHistory)) state.topicHistory = [];
     const occurredAt = nowISO2();
-    const event = { id: uid("history"), date: occurredAt, occurredAt, localDate: todayISO(), type, subjectId: subjectId || null, topicId: topicId || null, metadata: metadata2 };
+    const event = { id: uid("history"), date: occurredAt, occurredAt, localDate: todayISO(), type, subjectId: subjectId || null, topicId: topicId || null, metadata };
     state.topicHistory.push(event);
     return event;
   }
@@ -5906,14 +19749,14 @@
     found.topic.lastReviewedAt = dates.length ? dates[dates.length - 1] : null;
   }
   function refreshAllTopicReviewStats() {
-    state.subjects.forEach((subject2) => subject2.topics.forEach((topic2) => refreshTopicReviewStats(topic2.id)));
+    state.subjects.forEach((subject) => subject.topics.forEach((topic) => refreshTopicReviewStats(topic.id)));
   }
-  function markTopicCompleted(topic2) {
+  function markTopicCompleted(topic) {
     const now = nowISO2();
-    if (!topic2.firstCompletedAt) topic2.firstCompletedAt = now;
-    topic2.lastCompletedAt = now;
-    topic2.completedAt = todayISO();
-    topic2.completionCount = (Number(topic2.completionCount) || 0) + 1;
+    if (!topic.firstCompletedAt) topic.firstCompletedAt = now;
+    topic.lastCompletedAt = now;
+    topic.completedAt = todayISO();
+    topic.completionCount = (Number(topic.completionCount) || 0) + 1;
   }
   function updateTopicStatus(subjectId, topicId, selectEl) {
     const s = getSubjectById(subjectId);
@@ -5956,9 +19799,9 @@
     return [...doCalendario, ...daAgenda];
   }
   function unifiedItemLabel(item) {
-    const subject2 = String(item?.subject || "").trim(), label2 = String(item?.label || "").trim();
-    if (!subject2 || !label2) return label2 || "Revisão";
-    const escaped = subject2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const subject = String(item?.subject || "").trim(), label2 = String(item?.label || "").trim();
+    if (!subject || !label2) return label2 || "Revisão";
+    const escaped = subject.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     return label2.replace(new RegExp(`^${escaped}\\s*[·•—-]\\s*`, "i"), "").trim() || "Revisão";
   }
   var overdueGroupLimits = { calAtrasadas: 3, hojeAtrasadas: 3 };
@@ -6147,7 +19990,7 @@
   }
   function renderCalendarEditRow(item) {
     const draft = calendarUiState.draft, subjectId = entitySubjectId(draft);
-    return renderCalendarEdit({ item, draft, subjectOptions: subjectsForSelection(subjectId).map((subject2) => `<option value="${escapeAttr(subject2.id)}" ${subject2.id === subjectId ? "selected" : ""}>${escapeHtml(subject2.name)}</option>`).join(""), statusOptions: STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft?.status ? "selected" : ""}>${option}</option>`).join(""), reviewOptions: REVIEW_OPTIONS.map((option) => `<option value="${option}" ${option === draft?.reviewType ? "selected" : ""}>${option}</option>`).join(""), escapeAttr });
+    return renderCalendarEdit({ item, draft, subjectOptions: subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join(""), statusOptions: STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft?.status ? "selected" : ""}>${option}</option>`).join(""), reviewOptions: REVIEW_OPTIONS.map((option) => `<option value="${option}" ${option === draft?.reviewType ? "selected" : ""}>${option}</option>`).join(""), escapeAttr });
   }
   function renderCalendar() {
     const body = document.getElementById("calBody");
@@ -6323,7 +20166,7 @@
     const draft = agendaUiState.draft;
     if (!draft) return;
     draft[field] = value2;
-    if (field === "subjectId" && draft.topicId && !topicsForSelection(value2, draft.topicId).some((topic2) => topic2.id === draft.topicId)) draft.topicId = null;
+    if (field === "subjectId" && draft.topicId && !topicsForSelection(value2, draft.topicId).some((topic) => topic.id === draft.topicId)) draft.topicId = null;
   }
   function applyAgendaField(item, field, value2) {
     const oldStatus = item.status, oldValue = item[field];
@@ -6392,7 +20235,7 @@
   function renderAgendaEditRow(item) {
     const draft = agendaUiState.draft, subjectId = entitySubjectId(draft);
     if (!draft) return "";
-    return renderReviewEdit({ item, draft, subjectOptions: subjectsForSelection(subjectId).map((subject2) => `<option value="${escapeAttr(subject2.id)}" ${subject2.id === subjectId ? "selected" : ""}>${escapeHtml(subject2.name)}</option>`).join(""), topicName: draft.topicId ? getTopicName(draft.topicId) : draft.topic || "", typeOptions: TIPO_AGENDA_OPTIONS.map((option) => `<option value="${option}" ${option === draft.tipo ? "selected" : ""}>${option}</option>`).join(""), statusOptions: STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft.status ? "selected" : ""}>${option}</option>`).join(""), escapeAttr });
+    return renderReviewEdit({ item, draft, subjectOptions: subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join(""), topicName: draft.topicId ? getTopicName(draft.topicId) : draft.topic || "", typeOptions: TIPO_AGENDA_OPTIONS.map((option) => `<option value="${option}" ${option === draft.tipo ? "selected" : ""}>${option}</option>`).join(""), statusOptions: STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft.status ? "selected" : ""}>${option}</option>`).join(""), escapeAttr });
   }
   function renderAgenda() {
     const body = document.getElementById("agendaBody");
@@ -6722,11 +20565,11 @@
     return { resolved, correct, accuracy: accuracyFromCounts(correct, resolved) };
   }
   function getSubjectTopicPerformance(subjectId) {
-    const subject2 = state.subjects.find((item) => item.id === subjectId);
-    if (!subject2) return [];
-    return subject2.topics.filter((topic2) => !topic2.archived).map((topic2) => {
-      const performance = getTopicPerformance(topic2.id);
-      return { ...topic2, ...performance, confidence: performanceConfidence(performance.resolved), classification: classifyAccuracy(performance.accuracy) };
+    const subject = state.subjects.find((item) => item.id === subjectId);
+    if (!subject) return [];
+    return subject.topics.filter((topic) => !topic.archived).map((topic) => {
+      const performance = getTopicPerformance(topic.id);
+      return { ...topic, ...performance, confidence: performanceConfidence(performance.resolved), classification: classifyAccuracy(performance.accuracy) };
     }).sort((a, b) => {
       if (a.accuracy === null) return 1;
       if (b.accuracy === null) return -1;
@@ -6892,10 +20735,10 @@
     const select = document.getElementById("performanceSubjectSelect");
     if (!select) return;
     const subjects = activeSubjects();
-    if (!subjects.some((subject2) => subject2.id === performanceSubjectId)) {
-      performanceSubjectId = subjects.find((subject2) => validQuestionRecords().some((question) => entitySubjectId(question) === subject2.id))?.id || subjects[0]?.id || null;
+    if (!subjects.some((subject) => subject.id === performanceSubjectId)) {
+      performanceSubjectId = subjects.find((subject) => validQuestionRecords().some((question) => entitySubjectId(question) === subject.id))?.id || subjects[0]?.id || null;
     }
-    select.innerHTML = subjects.map((subject2) => `<option value="${escapeAttr(subject2.id)}" ${subject2.id === performanceSubjectId ? "selected" : ""}>${escapeHtml(subject2.name)}</option>`).join("");
+    select.innerHTML = subjects.map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === performanceSubjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("");
     const summary = document.getElementById("questionAnalyticsSummary");
     const bars2 = document.getElementById("topicPerformanceBars");
     const weeklyEl = document.getElementById("subjectWeeklyTrend");
@@ -6923,17 +20766,17 @@
       ["Tendência", `${trend.icon} ${trend.label}`]
     ].map(([label2, value2]) => `<div class="stat-cell"><div class="n">${value2}</div><div class="l">${label2}</div></div>`).join("");
     const topicPerformance = getSubjectTopicPerformance(performanceSubjectId);
-    const mature = topicPerformance.filter((topic2) => topic2.resolved >= 30), insufficient = topicPerformance.filter((topic2) => topic2.resolved > 0 && topic2.resolved < 30);
+    const mature = topicPerformance.filter((topic) => topic.resolved >= 30), insufficient = topicPerformance.filter((topic) => topic.resolved > 0 && topic.resolved < 30);
     if (performanceViewMode === "with-data" && !mature.length && insufficient.length) performanceViewMode = "insufficient";
-    const filteredPerformance = performanceViewMode === "all" ? topicPerformance : topicPerformance.filter((topic2) => performanceViewMode === "without-data" ? topic2.resolved === 0 : performanceViewMode === "insufficient" ? topic2.resolved > 0 && topic2.resolved < 30 : topic2.resolved >= 30);
+    const filteredPerformance = performanceViewMode === "all" ? topicPerformance : topicPerformance.filter((topic) => performanceViewMode === "without-data" ? topic.resolved === 0 : performanceViewMode === "insufficient" ? topic.resolved > 0 && topic.resolved < 30 : topic.resolved >= 30);
     const visiblePerformance = filteredPerformance.slice(0, performanceVisible);
     const performanceTabs = `<div class="analytics-view-tabs" role="group" aria-label="Filtrar desempenho por dados"><button class="btn small ${performanceViewMode === "with-data" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('with-data')">Com dados</button><button class="btn small ${performanceViewMode === "insufficient" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('insufficient')">Amostra insuficiente</button><button class="btn small ${performanceViewMode === "without-data" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('without-data')">Sem dados</button><button class="btn small ${performanceViewMode === "all" ? "" : "ghost"}" data-delegated-click="setPerformanceViewMode('all')">Todos</button></div>`;
-    bars2.innerHTML = performanceTabs + (filteredPerformance.length ? visiblePerformance.map((topic2) => {
-      const width = topic2.accuracy === null ? 0 : topic2.accuracy;
+    bars2.innerHTML = performanceTabs + (filteredPerformance.length ? visiblePerformance.map((topic) => {
+      const width = topic.accuracy === null ? 0 : topic.accuracy;
       return `<div class="performance-row">
-      <div class="performance-name">${escapeHtml(topic2.name)}<div class="performance-meta">${topic2.resolved} questões · ${topic2.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId, topic2.id).score}/100</div></div>
-      <div class="performance-track"><div class="performance-fill ${topic2.classification.key}" style="width:${width}%"></div></div>
-      <div class="performance-value">${topic2.classification.icon} ${topic2.accuracy === null ? "—" : topic2.accuracy + "%"}</div>
+      <div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId, topic.id).score}/100</div></div>
+      <div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div>
+      <div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? "—" : topic.accuracy + "%"}</div>
     </div>`;
     }).join("") + renderCollectionFooter({ variant: "block", total: filteredPerformance.length, visible: visiblePerformance.length, step: 8, label: "tópicos", showMoreAction: "changePerformanceLimit(8)", showAllAction: "showAllPerformance()", showLessAction: performanceVisible > 8 ? "resetPerformanceLimit()" : "" }) : `<div class="empty-state empty-state--compact"><strong>${performanceViewMode === "with-data" ? "Nenhum tópico possui amostra suficiente" : "Nenhum tópico nesta categoria"}</strong><p>${performanceViewMode === "with-data" ? "São necessárias pelo menos 30 questões por tópico para esta visualização." : "Altere o filtro para visualizar os demais tópicos."}</p></div>`);
     weeklyEl.innerHTML = `<div class="trend-grid">${weekly.map((week) => `
@@ -6943,13 +20786,13 @@
       <small>${week.resolved} questões</small>
     </div>`).join("")}</div>
     <div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta === null ? "" : ` · ${trend.delta > 0 ? "+" : ""}${trend.delta.toFixed(1)} p.p.`}</div>`;
-    const subjectTopics = activeTopics().filter((topic2) => topic2.subjectId === performanceSubjectId);
-    if (errorAnalysisView.topicId && !subjectTopics.some((topic2) => topic2.id === errorAnalysisView.topicId)) errorAnalysisView.topicId = "";
+    const subjectTopics = activeTopics().filter((topic) => topic.subjectId === performanceSubjectId);
+    if (errorAnalysisView.topicId && !subjectTopics.some((topic) => topic.id === errorAnalysisView.topicId)) errorAnalysisView.topicId = "";
     const currentStart = addDays(todayISO(), -(errorAnalysisView.days - 1)), previousEnd = addDays(currentStart, -1), previousStart = addDays(previousEnd, -(errorAnalysisView.days - 1));
     const scopedRecords = validQuestionRecords().filter((question) => entitySubjectId(question) === performanceSubjectId && (!errorAnalysisView.topicId || question.topicId === errorAnalysisView.topicId));
     const profile = buildErrorProfile(scopedRecords.filter((question) => question.date >= currentStart && question.date <= todayISO()));
     const previousProfile = buildErrorProfile(scopedRecords.filter((question) => question.date >= previousStart && question.date <= previousEnd));
-    const errorToolbar = `<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7, 30, 60, 90].map((days) => `<option value="${days}" ${errorAnalysisView.days === days ? "selected" : ""}>Últimos ${days} dias</option>`).join("")}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${subjectTopics.map((topic2) => `<option value="${escapeAttr(topic2.id)}" ${errorAnalysisView.topicId === topic2.id ? "selected" : ""}>${escapeHtml(topic2.name)}</option>`).join("")}</select></div>`;
+    const errorToolbar = `<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7, 30, 60, 90].map((days) => `<option value="${days}" ${errorAnalysisView.days === days ? "selected" : ""}>Últimos ${days} dias</option>`).join("")}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${subjectTopics.map((topic) => `<option value="${escapeAttr(topic.id)}" ${errorAnalysisView.topicId === topic.id ? "selected" : ""}>${escapeHtml(topic.name)}</option>`).join("")}</select></div>`;
     const errorModel = buildErrorAnalysisViewModel({ current: profile, previous: previousProfile, periodLabel: formatDatePt(currentStart) + " a " + formatDatePt(todayISO()) });
     profileEl.innerHTML = renderErrorAnalysis(errorModel, { toolbar: errorToolbar, escapeHtml });
   }
@@ -7172,18 +21015,25 @@
     const container = document.getElementById("examBlueprintConfig");
     if (!container) return;
     const blueprint = state.examBlueprint;
-    const rows = activeSubjects().map((subject2) => {
-      const config = blueprint.subjects.find((item) => item.subjectId === subject2.id);
-      return `<div class="exam-subject-row"><strong>${escapeHtml(subject2.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${subject2.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="Usar meta geral" data-delegated-blur="updateExamSubject('${subject2.id}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ""}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject2.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject2.id}','questionWeight',this.value)"></label></div>`;
+    const rows = activeSubjects().map((subject) => {
+      const config = blueprint.subjects.find((item) => item.subjectId === subject.id);
+      return `<div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="Usar meta geral" data-delegated-blur="updateExamSubject('${subject.id}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ""}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)">${config?.sourceRef ? `<small class="field-inheritance">${escapeHtml(EXAM_SOURCES[config.sourceRef]?.label || config.sourceRef)}${config.official ? " · oficial" : ""}</small>` : ""}</label></div>`;
     }).join("");
-    container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[["bb-escriturario", "Banco do Brasil"], ["caixa-tbn", "Caixa TBN"], ["caixa-tbn-ti", "Caixa TBN TI"]].map(([tag, label2]) => `<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags || []).includes(tag) ? "checked" : ""}> ${label2}</label>`).join("")}<small>Nenhuma seleção mantém todo o conteúdo elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+    container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[["bb-escriturario", "Banco do Brasil — Escriturário"], ["caixa-tbn", "Caixa — TBN"], ["caixa-tbn-ti", "Caixa — TBN TI"]].map(([tag, label2]) => `<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags || []).includes(tag) ? "checked" : ""}> ${label2}</label>`).join("")}<small>Somente os concursos marcados influenciam prontidão, prioridade e planejamento. Se nenhum for selecionado, todo o conteúdo continuará elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
     renderExamMasteryMatrix();
+  }
+  function topicExamMetricForActiveScope(topic) {
+    const active = state.examBlueprint.activeExamTags || [], entries = Object.entries(topic.examMetrics || {}).filter(([profile]) => !active.length || active.some((tag) => profile.startsWith(tag)));
+    return entries[0]?.[1] || null;
   }
   function renderExamMasteryMatrix() {
     const el = document.getElementById("examMasteryMatrix");
     if (!el) return;
-    const candidates = intelligenceCandidates(), metrics = Object.fromEntries(candidates.map((c) => [c.topicId, { coverage: c.coverage, mastery: { value: c.mastery, confidence: c.evidenceStrength }, retention: { value: c.retention }, trend: c.trend, priority: { value: c.score } }])), rows = buildExamMasteryMatrix({ subjects: state.subjects, blueprint: state.examBlueprint, metricsByTopic: metrics });
-    el.innerHTML = rows.length ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a, b) => (b.gap ?? -999) - (a.gap ?? -999)).map((row) => `<details><summary><strong>${escapeHtml(row.name)}</strong><span>${row.coverage ?? "—"}%</span><span>${row.mastery ?? "—"}%</span><span>${row.retention ?? "—"}%</span><span>${row.gap == null ? "—" : (row.gap > 0 ? "-" : "") + Math.abs(row.gap) + " pts"}</span></summary>${row.topics.map((t) => `<div class="mastery-topic"><span>${escapeHtml(t.name)}</span><span>${t.coverage}%</span><span>${t.mastery ?? "—"}%</span><span>${t.retention ?? "—"}%</span><span>${escapeHtml(t.state)}</span></div>`).join("")}</details>`).join("")}</div>` : '<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>';
+    const candidates = intelligenceCandidates(), metrics = Object.fromEntries(candidates.map((c) => [c.topicId, { coverage: c.coverage, mastery: { value: c.mastery, confidence: c.evidenceStrength }, retention: { value: c.retention }, trend: c.trend, priority: { value: c.score } }])), rows = buildExamMasteryMatrix({ subjects: state.subjects, blueprint: state.examBlueprint, metricsByTopic: metrics, activeExamTags: state.examBlueprint.activeExamTags || [] });
+    el.innerHTML = rows.length ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a, b) => (b.gap ?? -999) - (a.gap ?? -999)).map((row) => `<details><summary><strong>${escapeHtml(row.name)}</strong><span>${row.coverage ?? "—"}%</span><span>${row.mastery ?? "—"}%</span><span>${row.retention ?? "—"}%</span><span>${row.gap == null ? "—" : (row.gap > 0 ? "-" : "") + Math.abs(row.gap) + " pts"}</span></summary>${row.topics.map((t) => {
+      const metric = topicExamMetricForActiveScope(t), meta = [metric?.questionWeight != null ? metric.questionWeight + " pt/questão" : null, t.incidence?.level ? "incidência " + t.incidence.level.toLowerCase() : null].filter(Boolean).join(" · ");
+      return `<div class="mastery-topic"><span>${escapeHtml(t.name)}${meta ? `<small>${escapeHtml(meta)} · estimativa por tópico</small>` : ""}</span><span>${t.coverage}%</span><span>${t.mastery ?? "—"}%</span><span>${t.retention ?? "—"}%</span><span>${escapeHtml(t.state)}</span></div>`;
+    }).join("")}</details>`).join("")}</div>` : '<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>';
   }
   var studyPlanPreview = null;
   var dailyPlanPreview = null;
@@ -7292,6 +21142,11 @@
     }
     if (field === "expectedQuestions") config.expectedQuestions = Math.max(0, Math.round(Number(value2) || 0));
     if (field === "questionWeight") config.questionWeight = Math.max(0.1, Number(value2) || 1);
+    if (field === "expectedQuestions" || field === "questionWeight") {
+      config.sourceRef = null;
+      config.official = false;
+      config.mappingType = null;
+    }
     if (field === "priority" && EXAM_PRIORITIES.includes(value2)) config.priority = value2;
     if (field === "masteryTarget") config.masteryTarget = value2 === "" ? null : Math.max(0, Math.min(100, Number(value2) || 0));
     state.examBlueprint.configuredAt = nowISO2();
@@ -7572,19 +21427,19 @@
         diagnosis
       });
     });
-    activeTopics().filter((topic2) => topicInActiveExamScope(topic2)).filter((topic2) => (topic2.name || "").trim() !== "").forEach((topic2) => {
-      if (candidateMap.has(topic2.id)) return;
-      const diagnosis = diagnoseTopic(topic2.subjectId, topic2.id);
-      addCandidate(topic2.id, {
-        subjectId: topic2.subjectId,
-        topicId: topic2.id,
-        subjectName: topic2.subjectName,
-        topicName: topic2.name,
-        tipo: topic2.status === "Concluído" ? "manutenção" : topic2.status === "Em andamento" ? "continuar" : "novo tópico",
-        dificuldade: topic2.difficulty || "Médio",
+    activeTopics().filter((topic) => topicInActiveExamScope(topic)).filter((topic) => (topic.name || "").trim() !== "").forEach((topic) => {
+      if (candidateMap.has(topic.id)) return;
+      const diagnosis = diagnoseTopic(topic.subjectId, topic.id);
+      addCandidate(topic.id, {
+        subjectId: topic.subjectId,
+        topicId: topic.id,
+        subjectName: topic.subjectName,
+        topicName: topic.name,
+        tipo: topic.status === "Concluído" ? "manutenção" : topic.status === "Em andamento" ? "continuar" : "novo tópico",
+        dificuldade: topic.difficulty || "Médio",
         diasAtrasado: 0,
-        erroQuestoes: diagnosis?.effectiveErrorRate ?? taxaErroDisciplina(topic2.subjectId),
-        diasSemEstudar: diagnosis?.daysSinceStudy ?? diasSemEstudarDisciplina(topic2.subjectId),
+        erroQuestoes: diagnosis?.effectiveErrorRate ?? taxaErroDisciplina(topic.subjectId),
+        diasSemEstudar: diagnosis?.daysSinceStudy ?? diasSemEstudarDisciplina(topic.subjectId),
         diagnosis
       });
     });
@@ -7615,18 +21470,18 @@
     return priority.tipo === "revisão" ? "Revisão de hoje" : "Tópico novo";
   }
   var radarView = { subjectIds: [] };
-  function subjectRadarModel(subject2) {
-    const topics = subject2.topics.filter((topic2) => !topic2.archived), coverage = topics.length ? subjectProgress(subject2) : null;
-    const masteryValues = topics.map((topic2) => topicMasteryIndex(subject2.id, topic2.id)).filter((item) => item.confidence > 0);
-    const retentionValues = topics.map((topic2) => topicRetentionScore(subject2.id, topic2.id)).filter((item) => item.available);
+  function subjectRadarModel(subject) {
+    const topics = subject.topics.filter((topic) => !topic.archived), coverage = topics.length ? subjectProgress(subject) : null;
+    const masteryValues = topics.map((topic) => topicMasteryIndex(subject.id, topic.id)).filter((item) => item.confidence > 0);
+    const retentionValues = topics.map((topic) => topicRetentionScore(subject.id, topic.id)).filter((item) => item.available);
     const mastery = masteryValues.length ? masteryValues.reduce((sum4, item) => sum4 + item.score, 0) / masteryValues.length : null;
     const retention = retentionValues.length ? retentionValues.reduce((sum4, item) => sum4 + item.score, 0) / retentionValues.length : null;
-    const last = ultimaAtividadeDisciplina(subject2.id), distance = last ? diasParaRevisao(last) : null, daysSinceContact = distance === null ? null : Math.max(0, -distance);
+    const last = ultimaAtividadeDisciplina(subject.id), distance = last ? diasParaRevisao(last) : null, daysSinceContact = distance === null ? null : Math.max(0, -distance);
     const cutoff = addDays(todayISO(), -27), activeDates = /* @__PURE__ */ new Set();
-    state.studySessions.filter((item) => entitySubjectId(item) === subject2.id && item.date >= cutoff).forEach((item) => activeDates.add(item.date));
-    state.questoes.filter((item) => entitySubjectId(item) === subject2.id && item.date >= cutoff).forEach((item) => activeDates.add(item.date));
+    state.studySessions.filter((item) => entitySubjectId(item) === subject.id && item.date >= cutoff).forEach((item) => activeDates.add(item.date));
+    state.questoes.filter((item) => entitySubjectId(item) === subject.id && item.date >= cutoff).forEach((item) => activeDates.add(item.date));
     const result = calculateSubjectRadar({ coverage, mastery, retention, daysSinceContact, activeDays: activeDates.size || null });
-    return { ...result, id: subject2.id, name: subject2.name };
+    return { ...result, id: subject.id, name: subject.name };
   }
   function setRadarSubject(slot, value2) {
     const index = Math.max(0, Math.min(1, Number(slot) || 0));
@@ -7642,9 +21497,9 @@
       container.innerHTML = `<div class="radar-empty">Cadastre uma disciplina com tópicos para ver o radar.</div>`;
       return;
     }
-    if (!radarView.subjectIds[0] || !subjects.some((subject2) => subject2.id === radarView.subjectIds[0])) radarView.subjectIds[0] = subjects[0].id;
+    if (!radarView.subjectIds[0] || !subjects.some((subject) => subject.id === radarView.subjectIds[0])) radarView.subjectIds[0] = subjects[0].id;
     radarView.subjectIds = radarView.subjectIds.slice(0, 2);
-    const selected2 = radarView.subjectIds.map((id) => subjects.find((subject2) => subject2.id === id)).filter(Boolean).map(subjectRadarModel);
+    const selected2 = radarView.subjectIds.map((id) => subjects.find((subject) => subject.id === id)).filter(Boolean).map(subjectRadarModel);
     const axisMeta = [["coverage", "Cobertura"], ["mastery", "Domínio"], ["retention", "Retenção"], ["frequency", "Frequência"], ["consistency", "Consistência"]];
     const N = axisMeta.length, W = 560, H = 430, cx = W / 2, cy = 190, maxR = 125;
     const angleFor = (i) => Math.PI * 2 * i / N - Math.PI / 2;
@@ -7684,7 +21539,7 @@
       }).join("");
       return shape + dots;
     }).join("");
-    const options = (selectedId = "") => `<option value="">Nenhuma</option>` + subjects.map((subject2) => `<option value="${escapeAttr(subject2.id)}" ${subject2.id === selectedId ? "selected" : ""}>${escapeHtml(subject2.name)}</option>`).join("");
+    const options = (selectedId = "") => `<option value="">Nenhuma</option>` + subjects.map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === selectedId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("");
     container.innerHTML = `
     <div class="radar-toolbar"><label>Disciplina 1<select data-delegated-change="setRadarSubject(0,this.value)">${options(radarView.subjectIds[0])}</select></label><label>Comparar com<select data-delegated-change="setRadarSubject(1,this.value)">${options(radarView.subjectIds[1])}</select></label></div>
     <svg class="radar-svg" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:460px;height:auto;display:block;margin:0 auto;">
@@ -7870,12 +21725,12 @@
   }
   function renderSessionHistoryFilterControls() {
     const period = document.getElementById("studySessionsPeriod");
-    const subject2 = document.getElementById("studySessionsSubjectFilter");
+    const subject = document.getElementById("studySessionsSubjectFilter");
     const type = document.getElementById("studySessionsTypeFilter");
-    if (!period || !subject2 || !type) return;
+    if (!period || !subject || !type) return;
     period.value = sessionHistoryFilters.period;
-    subject2.innerHTML = `<option value="">Todas as disciplinas</option>` + state.subjects.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join("");
-    subject2.value = sessionHistoryFilters.subjectId;
+    subject.innerHTML = `<option value="">Todas as disciplinas</option>` + state.subjects.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join("");
+    subject.value = sessionHistoryFilters.subjectId;
     type.value = sessionHistoryFilters.type;
     const active = countActiveFilters(sessionHistoryFilters, { period: "30", subjectId: "", type: "", date: "" });
     const toggle = document.getElementById("studySessionsFilterToggle");
@@ -7950,8 +21805,8 @@
   function renderStudySessionEditRow(session) {
     const d = historyEditDraft.session;
     const subjectId = entitySubjectId(d);
-    const subject2 = getSubjectById(subjectId);
-    const topics = subject2 ? subject2.topics : [];
+    const subject = getSubjectById(subjectId);
+    const topics = subject ? subject.topics : [];
     return `<tr class="row-editing" data-id="${session.id}"><td colspan="10"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date || ""}" data-delegated-change="updateStudySessionDraft('date',this.value)"></label><label>Duração (min)<input type="number" min="0" value="${Math.floor((Number(d.durationSeconds) || 0) / 60)}" data-delegated-input="updateStudySessionDraft('durationMinutes',this.value)"></label><label>Tipo<select data-delegated-change="updateStudySessionDraft('type',this.value)">${sessionTypeOptions(d.type || "study")}</select></label><label>Disciplina<select data-delegated-change="updateStudySessionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === subjectId ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}</select></label><label>Tópico<select data-delegated-change="updateStudySessionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map((t) => `<option value="${escapeAttr(t.id)}" ${t.id === d.topicId ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}</select></label><label>Questões<input type="number" min="0" value="${Number(d.questionsResolved) || 0}" data-delegated-input="updateStudySessionDraft('questionsResolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correctAnswers) || 0}" data-delegated-input="updateStudySessionDraft('correctAnswers',this.value)"></label><label class="edit-notes-field">Observação<textarea data-delegated-input="updateStudySessionDraft('notes',this.value)">${escapeHtml(d.notes || "")}</textarea></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelStudySessionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveStudySessionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteStudySession('${session.id}')">Excluir</button></div></div></td></tr>`;
   }
   function renderStudySessionsHistory() {
@@ -8005,11 +21860,11 @@
   }
   function computeAlertasInteligentes() {
     const today = todayISO();
-    const subjects = activeSubjects().map((subject2) => {
-      const trend = calculateWeightedTrend(getSubjectWeeklyTrend(subject2.id));
-      const lastSession = state.studySessions.filter((session) => entitySubjectId(session) === subject2.id && session.date).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+    const subjects = activeSubjects().map((subject) => {
+      const trend = calculateWeightedTrend(getSubjectWeeklyTrend(subject.id));
+      const lastSession = state.studySessions.filter((session) => entitySubjectId(session) === subject.id && session.date).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
       const daysSinceStudy = lastSession ? Math.max(0, Math.floor((/* @__PURE__ */ new Date(today + "T00:00:00") - /* @__PURE__ */ new Date(lastSession.date + "T00:00:00")) / 864e5)) : null;
-      return { subjectId: subject2.id, name: subject2.name, trend: { direction: trend.key === "down" ? "down" : trend.key === "up" ? "up" : "stable", state: trend.state, delta: trend.delta }, daysSinceStudy };
+      return { subjectId: subject.id, name: subject.name, trend: { direction: trend.key === "down" ? "down" : trend.key === "up" ? "up" : "stable", state: trend.state, delta: trend.delta }, daysSinceStudy };
     });
     const topics = intelligenceCandidates().map((item) => ({ topicId: item.topicId, subjectId: item.subjectId, name: item.topicName, mastery: item.mastery, examImpact: item.examImpact, evidenceStrength: item.evidenceStrength }));
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
@@ -8019,7 +21874,7 @@
     const weekStart = startOfWeek(today), achieved = uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6));
     const actualFrac = state.metas.semanal > 0 ? achieved / state.metas.semanal : 1;
     const weeklyGoalGap = expectedFrac >= 0.5 && actualFrac < expectedFrac - 0.15 ? Math.round((expectedFrac - actualFrac) * 100) : null;
-    const hardTopicsWithoutReview = activeTopics().filter((topic2) => topic2.difficulty === "Difícil" && topic2.status !== "Concluído" && !state.reviewAgenda.some((review) => (review.topicId || review.topicRef) === topic2.id && review.status !== "Concluído")).length;
+    const hardTopicsWithoutReview = activeTopics().filter((topic) => topic.difficulty === "Difícil" && topic.status !== "Concluído" && !state.reviewAgenda.some((review) => (review.topicId || review.topicRef) === topic.id && review.status !== "Concluído")).length;
     return buildIntelligentAlerts({ today, overdueReviews: revisoesAtrasadas(), subjects, topics, weeklyBalanceMinutes: plan.weeklyBalanceMinutes, hardTopicsWithoutReview, weeklyGoalGap });
   }
   function renderAlertasInteligentes() {
@@ -8053,8 +21908,8 @@
     const metrics = computeApprovalMetrics(), readiness = readinessResult(metrics), pace = computeRitmo(), priorities = computeStudyPriorities();
     const topPriority = priorities[0] ? { ...priorities[0], reason: motivoPrioridade(priorities[0]) } : null;
     const risks = computeAlertasInteligentes();
-    const configuredTopics = activeTopics().filter((topic2) => topic2.examImportance !== null && topic2.estimatedStudyMinutes !== null);
-    const opportunityCount = configuredTopics.filter((topic2) => priorities.some((priority) => priority.topicId === topic2.id)).length;
+    const configuredTopics = examScopedTopics().filter((topic) => (topic.examImportance !== null || Object.keys(topic.examImportanceEstimates || {}).length) && topic.estimatedStudyMinutes !== null);
+    const opportunityCount = configuredTopics.filter((topic) => priorities.some((priority) => priority.topicId === topic.id)).length;
     const weekStart = startOfWeek(todayISO()), weeklyGoal = { achieved: uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6)), target: state.metas.semanal };
     const summary = buildExecutiveSummary({ readiness, daysToExam: state.examDate ? diasParaRevisao(state.examDate) ?? null : null, pace, topPriority, riskCount: risks.length, weeklyGoal, opportunityCount });
     container.innerHTML = `<div class="executive-kpis">${summary.cards.map((card) => `<div class="executive-kpi"><strong>${escapeHtml(card.value)}</strong><span>${escapeHtml(card.label)}</span><small>${escapeHtml(card.detail)}</small></div>`).join("")}</div>
@@ -8065,8 +21920,8 @@
   var currentStudyRecommendations = [];
   function intelligenceCandidates() {
     const priorities = collectStudyCandidates(), topics = allTopics();
-    const retentions = Object.fromEntries(topics.map((topic2) => [topic2.id, topicRetentionScore(topic2.subjectId, topic2.id)]));
-    const reviewHealths = Object.fromEntries(topics.map((topic2) => [topic2.id, topicReviewHealthScore(topic2, topicMasteryIndex(topic2.subjectId, topic2.id), retentions[topic2.id])]));
+    const retentions = Object.fromEntries(topics.map((topic) => [topic.id, topicRetentionScore(topic.subjectId, topic.id)]));
+    const reviewHealths = Object.fromEntries(topics.map((topic) => [topic.id, topicReviewHealthScore(topic, topicMasteryIndex(topic.subjectId, topic.id), retentions[topic.id])]));
     return buildStudyCandidates({
       priorities,
       topics,
@@ -8075,7 +21930,8 @@
       blueprint: state.examBlueprint.subjects,
       sessions: state.studySessions,
       today: todayISO(),
-      examProximity: state.examDate ? proximidadeProvaScore() : null
+      examProximity: state.examDate ? proximidadeProvaScore() : null,
+      activeExamTags: state.examBlueprint.activeExamTags || []
     });
   }
   function renderDiagnosisCenter() {
@@ -8463,7 +22319,7 @@
     return { score: clampScore(50 + (raw - 50) * confidence2), confidence: confidence2, available: true, raw, detail: `${total} questões · acerto bruto ${Math.round(raw)}%` };
   }
   function approvalEditalMetric() {
-    const topics = activeTopics();
+    const topics = examScopedTopics();
     if (topics.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem tópicos cadastrados" };
     const concluded = topics.filter((t) => t.status === "Concluído").length;
     const raw = concluded / topics.length * 100;
@@ -8472,9 +22328,9 @@
     return { score: clampScore(50 + (raw - 50) * confidence2), confidence: confidence2, available: true, raw, detail: `${concluded} de ${topics.length} tópicos concluídos` };
   }
   function approvalDominioMetric() {
-    const topics = activeTopics();
+    const topics = examScopedTopics();
     if (topics.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem tópicos ativos" };
-    const values = topics.map((topic2) => topicMasteryIndex(topic2.subjectId, topic2.id));
+    const values = topics.map((topic) => topicMasteryIndex(topic.subjectId, topic.id));
     const evidenced = values.filter((item) => item.confidence > 0);
     if (evidenced.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Ainda não há evidências de domínio" };
     const weightTotal = evidenced.reduce((sum4, item) => sum4 + Math.max(0.15, item.confidence), 0);
@@ -8604,23 +22460,23 @@
     const daysSince = lastReview ? Math.max(0, -(diasParaRevisao(lastReview) ?? 0)) : null;
     return calculateTopicRetention({ due, resolved, correct, lastReview, daysSince, onTime, periodStart: cutoff, periodEnd: today });
   }
-  function topicReviewHealthScore(topic2, masteryResult = topicMasteryIndex(topic2.subjectId, topic2.id), retentionResult = topicRetentionScore(topic2.subjectId, topic2.id), diagnosis = diagnoseTopic(topic2.subjectId, topic2.id)) {
-    const lastReviewDate = localDateFromTimestamp2(topic2.lastReviewedAt);
+  function topicReviewHealthScore(topic, masteryResult = topicMasteryIndex(topic.subjectId, topic.id), retentionResult = topicRetentionScore(topic.subjectId, topic.id), diagnosis = diagnoseTopic(topic.subjectId, topic.id)) {
+    const lastReviewDate = localDateFromTimestamp2(topic.lastReviewedAt);
     const daysSinceReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
     const evidenceValues = [masteryResult?.confidence, retentionResult?.confidence].filter((value2) => Number.isFinite(Number(value2)));
     const evidenceStrength = evidenceValues.length ? evidenceValues.reduce((sum4, value2) => sum4 + Number(value2), 0) / evidenceValues.length : null;
     return calculateReviewHealth({
       daysSinceReview,
-      hasPriorStudy: topic2.status !== "Não iniciado" || Boolean(diagnosis?.performance?.resolved) || Boolean(diagnosis?.studySeconds),
+      hasPriorStudy: topic.status !== "Não iniciado" || Boolean(diagnosis?.performance?.resolved) || Boolean(diagnosis?.studySeconds),
       retention: retentionResult?.available ? retentionResult.score : null,
       mastery: masteryResult?.confidence > 0 ? masteryResult.score : null,
       recentPerformance: diagnosis?.performance?.accuracy ?? null,
-      examImpact: topic2.examImportance == null ? null : Number(topic2.examImportance) * 100,
+      examImpact: topic.examImportance == null ? null : Number(topic.examImportance) * 100,
       evidenceStrength
     });
   }
   function approvalRetencaoMetric() {
-    const topics = activeTopics(), values = topics.map((t) => topicRetentionScore(t.subjectId, t.id)).filter((x) => x.available);
+    const topics = examScopedTopics(), values = topics.map((t) => topicRetentionScore(t.subjectId, t.id)).filter((x) => x.available);
     if (!values.length) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem evidências de retenção por tópico" };
     const weight = values.reduce((n3, x) => n3 + Math.max(0.15, x.confidence), 0), raw = values.reduce((n3, x) => n3 + x.score * Math.max(0.15, x.confidence), 0) / weight;
     const confidence2 = Math.min(1, values.reduce((n3, x) => n3 + x.confidence, 0) / values.length * 0.65 + values.length / topics.length * 0.35);
@@ -8685,7 +22541,7 @@
   function renderRecommendationCalibration() {
     const el = document.getElementById("recommendationCalibration");
     if (!el) return;
-    const subjectNames = Object.fromEntries(state.subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(state.subjects.flatMap((subject2) => (subject2.topics || []).map((topic2) => [topic2.id, topic2.name]))), model = buildRecommendationCalibration(state.recommendationFeedback, { minimumSample: 5, subjectNames, topicNames });
+    const subjectNames = Object.fromEntries(state.subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(state.subjects.flatMap((subject) => (subject.topics || []).map((topic) => [topic.id, topic.name]))), model = buildRecommendationCalibration(state.recommendationFeedback, { minimumSample: 5, subjectNames, topicNames });
     el.innerHTML = renderRecommendationCalibrationModel(model, { escapeHtml });
   }
   function renderStudyTrack32Insights() {
@@ -8710,7 +22566,7 @@
       const score = retentionView.order === "desc" ? bv - av : av - bv;
       return score || a.r.confidence - b.r.confidence || a.subjectName.localeCompare(b.subjectName) || a.name.localeCompare(b.name);
     });
-    const toolbar = `<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map((subject2) => `<option value="${escapeAttr(subject2.id)}" ${retentionView.subjectId === subject2.id ? "selected" : ""}>${escapeHtml(subject2.name)}</option>`).join("")}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${retentionView.order === "asc" ? "selected" : ""}>Menor retenção</option><option value="desc" ${retentionView.order === "desc" ? "selected" : ""}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${retentionView.confidence === "alta" ? "selected" : ""}>Confiança alta</option><option value="média" ${retentionView.confidence === "média" ? "selected" : ""}>Confiança média</option><option value="baixa" ${retentionView.confidence === "baixa" ? "selected" : ""}>Confiança baixa</option></select></div>`;
+    const toolbar = `<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map((subject) => `<option value="${escapeAttr(subject.id)}" ${retentionView.subjectId === subject.id ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("")}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${retentionView.order === "asc" ? "selected" : ""}>Menor retenção</option><option value="desc" ${retentionView.order === "desc" ? "selected" : ""}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${retentionView.confidence === "alta" ? "selected" : ""}>Confiança alta</option><option value="média" ${retentionView.confidence === "média" ? "selected" : ""}>Confiança média</option><option value="baixa" ${retentionView.confidence === "baixa" ? "selected" : ""}>Confiança baixa</option></select></div>`;
     if (!rows.length) {
       el.innerHTML = toolbar + '<div class="upcoming-empty">Nenhum tópico corresponde aos filtros atuais.</div>';
       return;
@@ -8743,8 +22599,8 @@
       const d = eventLocalDate(x);
       if (d) dates.push(d);
     });
-    state.subjects.forEach((subject2) => {
-      const d = localDateFromTimestamp2(subject2.createdAt);
+    state.subjects.forEach((subject) => {
+      const d = localDateFromTimestamp2(subject.createdAt);
       if (d) dates.push(d);
     });
     const valid = dates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && (!state.examDate || d <= state.examDate)).sort();
