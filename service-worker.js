@@ -1,6 +1,6 @@
-const CACHE_NAME='studytrack-v8';
+const CACHE_NAME='studytrack-v9';
 const APP_SHELL=[
-  './','./index.html','./styles/tokens.css','./styles/app.css?v=8','./styles/print.css',
+  './','./index.html','./styles/tokens.css','./styles/app.css?v=9','./styles/print.css',
   './src/theme-bootstrap.js','./src/app.bundle.js?v=8','./src/pwa.js','./manifest.webmanifest',
   './icons/app-icon.svg','./icons/icon-192.png','./icons/icon-512.png',
   './icons/icon-maskable-512.png','./icons/apple-touch-icon.png'
