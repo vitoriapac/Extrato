@@ -22166,12 +22166,13 @@
   }
   function dismissStudyRecommendation(id) {
     const recommendation = currentStudyRecommendations.find((item) => item.id === id);
-    if (recommendation) {
-      recordRecommendationFeedback(recommendation, { accepted: false, reasonSkipped: "swapped" });
+    if (!recommendation) return;
+    showPrompt("Por que trocar esta recomendação?", { label: "Motivo opcional", placeholder: "Ex.: não tenho tempo hoje", confirmLabel: "Trocar", required: false }, (reason) => {
+      recordRecommendationFeedback(recommendation, { accepted: false, reasonSkipped: reason?.trim() || "swapped" });
+      dismissedRecommendationIds.add(id);
       scheduleSave();
-    }
-    dismissedRecommendationIds.add(id);
-    renderStudyRecommendation();
+      renderStudyRecommendation();
+    });
   }
   function markRecommendationNotUseful(id) {
     const recommendation = currentStudyRecommendations.find((item) => item.id === id);
