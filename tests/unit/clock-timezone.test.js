@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {spawnSync} from 'node:child_process';
+const clockUrl=new URL('../../src/core/clock.js',import.meta.url).href;
+const run=timezone=>spawnSync(process.execPath,['--input-type=module','-e',`import {createClock} from ${JSON.stringify(clockUrl)};const clock=createClock({now:()=>new Date('2026-09-14T01:00:00.000Z')});process.stdout.write(JSON.stringify({today:clock.today(),instant:clock.nowISO()}));`],{encoding:'utf8',env:{...process.env,TZ:timezone}});
+test('relógio separa instante UTC da data civil em fusos distintos',()=>{const utc=run('UTC'),sp=run('America/Sao_Paulo');assert.equal(utc.status,0,utc.stderr);assert.equal(sp.status,0,sp.stderr);assert.deepEqual(JSON.parse(utc.stdout),{today:'2026-09-14',instant:'2026-09-14T01:00:00.000Z'});assert.deepEqual(JSON.parse(sp.stdout),{today:'2026-09-13',instant:'2026-09-14T01:00:00.000Z'})});

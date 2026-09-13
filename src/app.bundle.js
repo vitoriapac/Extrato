@@ -15790,6 +15790,134 @@
     return Object.freeze({ content, sessions: partition(sessions), questions: partition(questions), reviews: partition(reviews), activeExamTags: [...content.activeExamTags] });
   }
 
+  // src/application/exams/exam-scope-transition.js
+  var DERIVED_FIELDS = Object.freeze(["diagnosis", "forecast", "weeklyFocus", "readiness", "masteryMatrix", "pdfPreview"]);
+  function setActiveExamTags(state2, tags = [], { configuredAt = null } = {}) {
+    if (!state2?.examBlueprint) throw new TypeError("Estado da prova inválido.");
+    const next = [...new Set((tags || []).filter(Boolean))], changed = JSON.stringify(next) !== JSON.stringify(state2.examBlueprint.activeExamTags || []);
+    if (!changed) return false;
+    state2.examBlueprint.activeExamTags = next;
+    if (configuredAt) state2.examBlueprint.configuredAt = configuredAt;
+    for (const field of DERIVED_FIELDS) if (field in state2) state2[field] = null;
+    return true;
+  }
+
+  // src/features/exam-import/exam-import-state.js
+  function createExamImportState(preset2) {
+    const state2 = { step: 1, presetId: preset2?.id || null, subjectIds: /* @__PURE__ */ new Set(), topicIds: /* @__PURE__ */ new Set(), query: "", previousFocus: null };
+    syncExamImportSelection(state2, preset2);
+    return state2;
+  }
+  function syncExamImportSelection(state2, preset2) {
+    state2.subjectIds = new Set((preset2?.subjects || []).map((item) => item.id));
+    state2.topicIds = new Set((preset2?.subjects || []).flatMap((item) => (item.topics || []).map((topic) => `${item.id}:${topic.id}`)));
+    return state2;
+  }
+  function resetExamImportState(state2, preset2, previousFocus = null) {
+    Object.assign(state2, { step: 1, presetId: preset2?.id || null, query: "", previousFocus });
+    return syncExamImportSelection(state2, preset2);
+  }
+
+  // src/features/exam-import/exam-import-view-model.js
+  var normalizeExamImportSearch = (value2) => String(value2 || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
+  function buildExamImportViewModel({ state: state2, preset: preset2, topicLabel = () => "", preview = null } = {}) {
+    const query = normalizeExamImportSearch(state2?.query?.trim()), subjects = (preset2?.subjects || []).map((subject) => ({ ...subject, topics: (subject.topics || []).filter((topic) => !query || normalizeExamImportSearch([subject.name, topic.name, ...subject.aliases || [], ...topic.aliases || [], topicLabel(topic), ...topic.sourceRefs || []].join(" ")).includes(query)) })).filter((subject) => subject.topics.length);
+    return { step: state2.step, preset: preset2, subjects, selectedTopics: state2.topicIds.size, totalTopics: (preset2?.subjects || []).reduce((sum4, subject) => sum4 + (subject.topics || []).length, 0), preview };
+  }
+
+  // src/features/exam-import/exam-import-renderer.js
+  function syncExamSubjectCheckboxes(document2, state2, preset2) {
+    document2.querySelectorAll("[data-exam-subject]").forEach((input) => {
+      const subject = (preset2?.subjects || []).find((item) => item.id === input.dataset.examSubject), keys = (subject?.topics || []).map((topic) => `${subject.id}:${topic.id}`), count = keys.filter((key) => state2.topicIds.has(key)).length;
+      input.checked = keys.length > 0 && count === keys.length;
+      input.indeterminate = count > 0 && count < keys.length;
+    });
+  }
+
+  // src/features/exam-import/exam-import-actions.js
+  function toggleExamSubject(state2, preset2, subjectId, checked) {
+    const subject = (preset2?.subjects || []).find((item) => item.id === subjectId);
+    checked ? state2.subjectIds.add(subjectId) : state2.subjectIds.delete(subjectId);
+    for (const topic of subject?.topics || []) {
+      const key = `${subjectId}:${topic.id}`;
+      checked ? state2.topicIds.add(key) : state2.topicIds.delete(key);
+    }
+    return state2;
+  }
+  function toggleExamTopic(state2, key, checked) {
+    checked ? state2.topicIds.add(key) : state2.topicIds.delete(key);
+    return state2;
+  }
+  function selectExamTopics(state2, preset2, predicate) {
+    state2.subjectIds.clear();
+    state2.topicIds.clear();
+    for (const subject of preset2?.subjects || []) for (const topic of subject.topics || []) if (predicate(topic, subject)) {
+      state2.subjectIds.add(subject.id);
+      state2.topicIds.add(`${subject.id}:${topic.id}`);
+    }
+    return state2;
+  }
+
+  // src/features/exam-import/exam-import-controller.js
+  function createExamImportController({ document: document2, state: state2, getPreset, facade, render: render2, close, confirm, includeTopic } = {}) {
+    const content = document2.getElementById("examImportContent"), cancel = document2.getElementById("examImportCancelBtn"), back = document2.getElementById("examImportBackBtn"), next = document2.getElementById("examImportNextBtn"), overlay = document2.getElementById("examImportOverlay");
+    const change = (event) => {
+      if (event.target.name === "examPreset") {
+        state2.presetId = event.target.value;
+        facade.begin(state2.presetId);
+        const preset2 = getPreset();
+        state2.subjectIds = new Set(preset2.subjects.map((item) => item.id));
+        state2.topicIds = new Set(preset2.subjects.flatMap((item) => (item.topics || []).map((topic) => `${item.id}:${topic.id}`)));
+      }
+      if (event.target.dataset.examSubject) {
+        toggleExamSubject(state2, getPreset(), event.target.dataset.examSubject, event.target.checked);
+        render2();
+      }
+      if (event.target.dataset.examTopic) {
+        toggleExamTopic(state2, event.target.dataset.examTopic, event.target.checked);
+        render2();
+      }
+    };
+    const input = (event) => {
+      if (event.target.id === "examImportSearch") {
+        state2.query = event.target.value;
+        render2();
+        document2.getElementById("examImportSearch")?.focus();
+      }
+    };
+    const click = (event) => {
+      const action = event.target.closest("[data-exam-select]")?.dataset.examSelect;
+      if (!action) return;
+      selectExamTopics(state2, getPreset(), (topic) => includeTopic(action, topic));
+      render2();
+    };
+    const keydown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+      }
+    };
+    return { mount() {
+      content.addEventListener("change", change);
+      content.addEventListener("input", input);
+      content.addEventListener("click", click);
+      cancel.addEventListener("click", close);
+      back.addEventListener("click", () => {
+        state2.step--;
+        render2();
+      });
+      next.addEventListener("click", () => {
+        if (state2.step < 3) {
+          state2.step++;
+          render2();
+          return;
+        }
+        confirm();
+      });
+      overlay.addEventListener("keydown", keydown);
+    } };
+  }
+
   // src/ui/controllers/navigation-controller.js
   var MAIN_TABS = Object.freeze(["dashboard", "hoje", "disciplinas", "calendario", "agenda", "questoes", "metas", "instrucoes"]);
   function nextNavigationIndex(current, length, key) {
@@ -19564,11 +19692,7 @@
   document.getElementById("loadDefaultSubjectsBtn").addEventListener("click", carregarDisciplinasPadrao);
   var examImportService = createExamImportService({ subjectService, getSubjects: () => state.subjects });
   var editalImportFacade = createEditalImportFacade({ catalog: EXAM_PRESETS, importService: examImportService });
-  var examImportState = { step: 1, presetId: EXAM_PRESETS[0].id, subjectIds: /* @__PURE__ */ new Set(), topicIds: /* @__PURE__ */ new Set(), query: "", previousFocus: null };
-  function syncExamSelection(preset2) {
-    examImportState.subjectIds = new Set(preset2.subjects.map((item) => item.id));
-    examImportState.topicIds = new Set(preset2.subjects.flatMap((item) => (item.topics || []).map((topic) => `${item.id}:${topic.id}`)));
-  }
+  var examImportState = createExamImportState(EXAM_PRESETS[0]);
   function selectedExamPreset() {
     return getExamPreset(examImportState.presetId) || EXAM_PRESETS[0];
   }
@@ -19584,13 +19708,8 @@
     state.examBlueprint.activeExamTags = [...preset2.examTags || []];
     state.examBlueprint.configuredAt = nowISO2();
   }
-  var normalizeExamSearch = (value2) => String(value2 || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
-  function syncExamSubjectCheckboxes() {
-    document.querySelectorAll("[data-exam-subject]").forEach((input) => {
-      const subject = selectedExamPreset().subjects.find((item) => item.id === input.dataset.examSubject), keys = (subject?.topics || []).map((topic) => `${subject.id}:${topic.id}`), count = keys.filter((key) => examImportState.topicIds.has(key)).length;
-      input.checked = keys.length > 0 && count === keys.length;
-      input.indeterminate = count > 0 && count < keys.length;
-    });
+  function syncExamSubjectCheckboxes2() {
+    syncExamSubjectCheckboxes(document, examImportState, selectedExamPreset());
   }
   function renderExamImport() {
     const content = document.getElementById("examImportContent"), back = document.getElementById("examImportBackBtn"), next = document.getElementById("examImportNextBtn"), preset2 = selectedExamPreset();
@@ -19598,10 +19717,7 @@
     next.textContent = examImportState.step === 3 ? "Importar" : "Continuar";
     if (examImportState.step === 1) content.innerHTML = `<p>Escolha o concurso. Os presets usam o catálogo mestre versão ${escapeHtml(preset2.version)}.</p><div class="exam-preset-list">${EXAM_PRESETS.map((item) => `<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id === examImportState.presetId ? "checked" : ""}><span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description || "")}${item.subjects.length ? ` · ${item.subjects.length} disciplinas · ${item.subjects.reduce((sum4, subject) => sum4 + subject.topics.length, 0)} tópicos · versão ${escapeHtml(item.version)}` : ""}</small></span></label>`).join("")}</div>`;
     else if (examImportState.step === 2) {
-      const query = normalizeExamSearch(examImportState.query.trim()), visible = preset2.subjects.map((subject) => ({ ...subject, topics: subject.topics.filter((topic) => {
-        const haystack = normalizeExamSearch([subject.name, topic.name, ...subject.aliases || [], ...topic.aliases || [], topicExamScopeLabel(topic), ...topic.sourceRefs || []].join(" "));
-        return !query || haystack.includes(query);
-      }) })).filter((subject) => subject.topics.length);
+      const visible = buildExamImportViewModel({ state: examImportState, preset: preset2, topicLabel: topicExamScopeLabel }).subjects;
       content.innerHTML = preset2.subjects.length ? `<p>Selecione as disciplinas e os tópicos que deseja importar. Conteúdos comuns mantêm um único histórico.</p><div class="exam-import-tools"><input type="search" id="examImportSearch" value="${escapeAttr(examImportState.query)}" placeholder="Buscar disciplina, tópico, alias ou origem..." aria-label="Buscar no edital"><div><button class="btn ghost small" data-exam-select="all">Selecionar tudo</button><button class="btn ghost small" data-exam-select="common">Somente comuns</button><button class="btn ghost small" data-exam-select="bb">Somente BB</button><button class="btn ghost small" data-exam-select="caixa">Somente Caixa</button><button class="btn ghost small" data-exam-select="caixa-ti">Somente Caixa TI</button><button class="btn ghost small" data-exam-select="none">Limpar</button></div></div><div class="exam-selection-count">${examImportState.topicIds.size} de ${preset2.subjects.reduce((sum4, subject) => sum4 + subject.topics.length, 0)} tópicos selecionados</div><div class="exam-subject-list">${visible.map((subject) => {
         const selectedCount = subject.topics.filter((topic) => examImportState.topicIds.has(`${subject.id}:${topic.id}`)).length;
         return `<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)} <small>${selectedCount} / ${subject.topics.length} selecionados</small></span></label><div class="exam-topic-list">${subject.topics.map((topic) => {
@@ -19609,7 +19725,7 @@
           return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key) ? "checked" : ""}><span>${escapeHtml(topic.name)} <small>${examBadges(topic)}</small></span></label>`;
         }).join("")}</div></section>`;
       }).join("")}</div>` : "<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>";
-      syncExamSubjectCheckboxes();
+      syncExamSubjectCheckboxes2();
     } else {
       const preview = editalImportFacade.preview(examImportState.subjectIds, examImportState.topicIds), total = preview.addedTopics + preview.existingTopics;
       content.innerHTML = `<p>Confira as alterações do catálogo ${escapeHtml(preview.catalogVersion || CATALOG_VERSION)}. IDs, progresso, sessões e revisões serão preservados.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects + preview.existingSubjects}</strong><br>disciplinas selecionadas</div><div><strong>${total}</strong><br>tópicos selecionados</div><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos preservados</div><div><strong>${preview.metadataUpdates}</strong><br>vínculos atualizados</div></div><p class="form-hint">Preservação: IDs, progresso, sessões, revisões e escolhas personalizadas.</p>${preview.sources.length ? `<p class="form-hint">Fontes: ${preview.sources.map((source) => escapeHtml(EXAM_SOURCES[source]?.label || source)).join(" · ")}</p>` : ""}${preview.warnings.map((item) => `<p class="form-hint">${escapeHtml(item)}</p>`).join("")}`;
@@ -19617,12 +19733,8 @@
     }
   }
   function openExamImport() {
-    examImportState.step = 1;
-    examImportState.query = "";
-    examImportState.presetId = EXAM_PRESETS[0].id;
+    resetExamImportState(examImportState, EXAM_PRESETS[0], document.activeElement);
     editalImportFacade.begin(examImportState.presetId);
-    syncExamSelection(EXAM_PRESETS[0]);
-    examImportState.previousFocus = document.activeElement;
     document.getElementById("examImportOverlay").classList.add("show");
     renderExamImport();
     document.querySelector('[name="examPreset"]')?.focus();
@@ -19632,71 +19744,17 @@
     document.getElementById("examImportOverlay").classList.remove("show");
     examImportState.previousFocus?.focus();
   }
-  document.getElementById("examImportContent").addEventListener("change", (event) => {
-    if (event.target.name === "examPreset") {
-      examImportState.presetId = event.target.value;
-      editalImportFacade.begin(examImportState.presetId);
-      syncExamSelection(selectedExamPreset());
-    }
-    if (event.target.dataset.examSubject) {
-      const id = event.target.dataset.examSubject;
-      event.target.checked ? examImportState.subjectIds.add(id) : examImportState.subjectIds.delete(id);
-      selectedExamPreset().subjects.find((item) => item.id === id)?.topics.forEach((topic) => {
-        const key = `${id}:${topic.id}`;
-        event.target.checked ? examImportState.topicIds.add(key) : examImportState.topicIds.delete(key);
-      });
-      renderExamImport();
-    }
-    if (event.target.dataset.examTopic) {
-      event.target.checked ? examImportState.topicIds.add(event.target.dataset.examTopic) : examImportState.topicIds.delete(event.target.dataset.examTopic);
-      renderExamImport();
-    }
-  });
-  document.getElementById("examImportContent").addEventListener("input", (event) => {
-    if (event.target.id === "examImportSearch") {
-      examImportState.query = event.target.value;
-      renderExamImport();
-      document.getElementById("examImportSearch")?.focus();
-    }
-  });
-  document.getElementById("examImportContent").addEventListener("click", (event) => {
-    const action = event.target.closest("[data-exam-select]")?.dataset.examSelect;
-    if (!action) return;
-    const preset2 = selectedExamPreset();
-    examImportState.subjectIds.clear();
-    examImportState.topicIds.clear();
-    for (const subject of preset2.subjects) for (const topic of subject.topics) {
-      const tags = topic.examTags || [], include = action === "all" || action === "bb" && tags.includes(EXAM_TAGS.BB) || action === "caixa" && tags.includes(EXAM_TAGS.CAIXA) || action === "caixa-ti" && tags.includes(EXAM_TAGS.CAIXA_TI) || action === "common" && isCommonTopic(topic, [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]);
-      if (include) {
-        examImportState.subjectIds.add(subject.id);
-        examImportState.topicIds.add(`${subject.id}:${topic.id}`);
-      }
-    }
-    renderExamImport();
-  });
-  document.getElementById("examImportCancelBtn").addEventListener("click", closeExamImport);
-  document.getElementById("examImportBackBtn").addEventListener("click", () => {
-    examImportState.step--;
-    renderExamImport();
-  });
-  document.getElementById("examImportNextBtn").addEventListener("click", () => {
-    if (examImportState.step < 3) {
-      examImportState.step++;
-      renderExamImport();
-      return;
-    }
+  var examImportController = createExamImportController({ document, state: examImportState, getPreset: selectedExamPreset, facade: editalImportFacade, render: renderExamImport, close: closeExamImport, includeTopic: (action, topic) => {
+    const tags = topic.examTags || [];
+    return action === "all" || action === "bb" && tags.includes(EXAM_TAGS.BB) || action === "caixa" && tags.includes(EXAM_TAGS.CAIXA) || action === "caixa-ti" && tags.includes(EXAM_TAGS.CAIXA_TI) || action === "common" && isCommonTopic(topic, [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]);
+  }, confirm: () => {
     const preset2 = selectedExamPreset(), result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
     applyPresetBlueprintDefaults(preset2);
     persistAndRender();
     closeExamImport();
     showToast(`${pluralize(result.addedSubjects, "disciplina")}, ${pluralize(result.addedTopics, "tópico")} e ${pluralize(result.metadataUpdates, "vínculo")} atualizados.`);
-  });
-  document.getElementById("examImportOverlay").addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeExamImport();
-    }
-  });
+  } });
+  examImportController.mount();
   function archiveSubject(id) {
     const subject = getSubjectById(id);
     if (!subject) return showToast("Disciplina não encontrada.");
@@ -21228,9 +21286,10 @@
     if (!valid.includes(tag)) return;
     const values = new Set(state.examBlueprint.activeExamTags || []);
     checked ? values.add(tag) : values.delete(tag);
-    state.examBlueprint.activeExamTags = [...values];
-    studyPlanPreview = null;
-    persistAndRender();
+    if (setActiveExamTags(state, [...values], { configuredAt: nowISO2() })) {
+      studyPlanPreview = null;
+      persistAndRender();
+    }
   }
   function somarQuestoesDisciplinaNaSemana(subjectId) {
     return state.questoes.filter((q) => entitySubjectId(q) === subjectId && isSameWeek(q.date)).reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);

@@ -1,0 +1,3 @@
+export function createExamImportState(preset){const state={step:1,presetId:preset?.id||null,subjectIds:new Set(),topicIds:new Set(),query:'',previousFocus:null};syncExamImportSelection(state,preset);return state}
+export function syncExamImportSelection(state,preset){state.subjectIds=new Set((preset?.subjects||[]).map(item=>item.id));state.topicIds=new Set((preset?.subjects||[]).flatMap(item=>(item.topics||[]).map(topic=>`${item.id}:${topic.id}`)));return state}
+export function resetExamImportState(state,preset,previousFocus=null){Object.assign(state,{step:1,presetId:preset?.id||null,query:'',previousFocus});return syncExamImportSelection(state,preset)}

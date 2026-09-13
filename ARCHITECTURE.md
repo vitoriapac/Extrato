@@ -137,3 +137,7 @@ O ciclo analítico 3.2 é preparado por um view-model sem DOM e entregue a rende
 | Global | tempo histórico total e quantidade patrimonial de sessões | não muda ao trocar o concurso |
 
 Consumidores de planejamento, candidatos, matriz Edital × Domínio, prontidão, alertas, forecast, fechamento semanal e PDF recebem conteúdo ou evidência já resolvidos pelo contrato de escopo. O PDF apresenta separadamente valores atribuídos ao edital e registros sem tópico elegível.
+
+Trocas em `activeExamTags` passam por `src/application/exams/exam-scope-transition.js`, que invalida derivados persistidos. O importador mantém estado, ações e view-model em `src/features/exam-import/`; a camada de aplicação continua responsável pelo serviço e pela persistência.
+
+O relógio separa o instante UTC da data civil local. A CI executa a suíte em `UTC` e `America/Sao_Paulo` para detectar dependências acidentais do fuso do executor.
