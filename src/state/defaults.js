@@ -16,7 +16,7 @@ export function createDefaultState(){
         examImportance: null, estimatedStudyMinutes: null, prerequisites: []
       }]
     }],
-    calendar: [], reviewAgenda: [], questoes: [], simulados: [],
+    calendar: [], reviewAgenda: [], questoes: [], simulados: [], executionMode:'agenda',
     metas: {
       semanal: 5, mensal: 20, questoesSemanal: 150, simuladosSemanal: 1,
       metaAprovacao: 70, horasDiarias: 2.5,

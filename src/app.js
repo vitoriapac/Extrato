@@ -398,6 +398,7 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.reviewAgenda)) state.reviewAgenda = [];
   if(!Array.isArray(state.questoes)) state.questoes = [];
   if(!Array.isArray(state.simulados)) state.simulados = [];
+  if(!['agenda','sequence'].includes(state.executionMode)) state.executionMode='agenda';
   const metaDefaults={semanal:5,mensal:20,questoesSemanal:150,simuladosSemanal:1,metaAprovacao:70,horasDiarias:2.5};
   if(!state.metas||typeof state.metas!=='object') state.metas={};
   Object.entries(metaDefaults).forEach(([key,value])=>{
@@ -4300,6 +4301,8 @@ function planItemStatusLabel(status){
 function renderPlanoHoje(){
   const container=document.getElementById('planoHojeContent');
   if(!container) return;
+  const agendaBtn=document.getElementById('executionAgendaBtn'),sequenceBtn=document.getElementById('executionSequenceBtn');
+  if(agendaBtn&&sequenceBtn){agendaBtn.setAttribute('aria-pressed',String(state.executionMode==='agenda'));sequenceBtn.setAttribute('aria-pressed',String(state.executionMode==='sequence'))}
   const priorities=computeStudyPriorities();
   const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
   const plan=ensureTodayDailyStudyPlan(priorities,availableMinutes);
@@ -4313,7 +4316,8 @@ function renderPlanoHoje(){
     return;
   }
 
-  const listaHtml=plan.items.map(item=>{
+  const items=state.executionMode==='sequence'?[...plan.items].sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0)):plan.items;
+  const listaHtml=items.map(item=>{
     const progress=item.plannedMinutes>0?Math.min(100,Math.round(item.executedSeconds/(item.plannedMinutes*60)*100)):0;
     const active=state.activeTimer.planItemId===item.id&&state.activeTimer.isRunning;
     const canStart=!['completed','deferred','replaced','skipped'].includes(item.status)&&!active;
@@ -4858,6 +4862,8 @@ document.querySelectorAll('[data-go-home]').forEach(button=>button.addEventListe
 document.getElementById('guidedSetExamBtn')?.addEventListener('click',()=>{activateTab('metas');document.getElementById('examDateInput')?.focus()});
 document.getElementById('guidedImportExamBtn')?.addEventListener('click',()=>openExamImport());
 document.getElementById('guidedGoTodayBtn')?.addEventListener('click',()=>activateTab('hoje'));
+document.getElementById('executionAgendaBtn')?.addEventListener('click',()=>{state.executionMode='agenda';scheduleSave();renderPlanoHoje()});
+document.getElementById('executionSequenceBtn')?.addEventListener('click',()=>{state.executionMode='sequence';scheduleSave();renderPlanoHoje()});
 
 /* ===== VOLTAR AO TOPO ===== */
 const backToTopBtn=document.getElementById('backToTopBtn');
