@@ -19753,10 +19753,15 @@
     const tags = topic.examTags || [];
     return action === "all" || action === "bb" && tags.includes(EXAM_TAGS.BB) || action === "caixa" && tags.includes(EXAM_TAGS.CAIXA) || action === "caixa-ti" && tags.includes(EXAM_TAGS.CAIXA_TI) || action === "common" && isCommonTopic(topic, [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]);
   }, confirm: () => {
+    const isFirstUse = !state.examDate && !state.studySessions.length && !state.questoes.length;
     const preset2 = selectedExamPreset(), result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
     applyPresetBlueprintDefaults(preset2);
     persistAndRender();
     closeExamImport();
+    if (isFirstUse) {
+      activateTab("hoje");
+      requestAnimationFrame(() => document.querySelector("#planoHojeContent .btn")?.focus());
+    }
     showToast(`${pluralize(result.addedSubjects, "disciplina")}, ${pluralize(result.addedTopics, "tópico")} e ${pluralize(result.metadataUpdates, "vínculo")} atualizados.`);
   } });
   examImportController.mount();
