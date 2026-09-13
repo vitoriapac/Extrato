@@ -705,11 +705,11 @@
         <option value="questions">Questões</option>
         <option value="simulation">Simulado</option>
       </select>
-      <div style="display:flex;gap:10px;">
+      <details class="session-extra-details"><summary>Adicionar detalhes</summary><div style="display:flex;gap:10px;">
           <input type="number" id="sessionModalResolved" aria-label="Questões resolvidas" placeholder="Questões resolvidas" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
           <input type="number" id="sessionModalCorrect" aria-label="Quantidade de acertos" placeholder="Acertos" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
       </div>
-        <textarea id="sessionModalNotes" aria-label="Observação da sessão" placeholder="Observação opcional" style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);resize:vertical;min-height:58px;"></textarea>
+        <textarea id="sessionModalNotes" aria-label="Observação da sessão" placeholder="Observação opcional" style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);resize:vertical;min-height:58px;"></textarea></details>
     </div>
     <div class="modal-actions">
       <button class="btn ghost small" id="sessionModalSkipBtn">Só zerar o cronômetro</button>
