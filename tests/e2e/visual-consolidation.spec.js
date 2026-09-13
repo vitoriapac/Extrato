@@ -24,6 +24,7 @@ test('instruções detalham áreas, fluxos, atalhos e dúvidas',async({page})=>{
 test('atalho modificado navega sem capturar números isolados',async({page})=>{await page.goto('/');await page.keyboard.press('2');await expect(page.locator('#panel-dashboard')).toHaveClass(/active/);await page.keyboard.press('Control+Shift+Digit2');await expect(page.locator('#panel-hoje')).toHaveClass(/active/)});
 
 test('botão de retorno permanece visível e volta ao topo',async({page})=>{await openDemo(page);await expect(page.locator('#backToTopBtn')).toBeVisible();await page.evaluate(()=>scrollTo(0,900));await expect(page.locator('#backToTopBtn')).toBeVisible();await page.locator('#backToTopBtn').click();await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);await expect(page.locator('#mainContent')).toBeFocused()});
+test('marca do cabeçalho volta para a Visão Geral e ao topo',async({page})=>{await openDemo(page);await activateTab(page,'metas');await page.evaluate(()=>scrollTo(0,900));await page.locator('[data-go-home]').first().click();await expect(page.locator('#panel-dashboard')).toHaveClass(/active/);await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);await expect(page.locator('[data-go-home]').first()).toBeFocused()});
 
 test('fechamento semanal e configuração estratégica preservam a hierarquia visual',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});

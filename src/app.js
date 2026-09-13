@@ -4827,6 +4827,11 @@ function renderAll(){ render(); }
 /* ===== ATALHOS DE TECLADO ===== */
 navigationController.registerShortcuts();
 
+document.querySelectorAll('[data-go-home]').forEach(button=>button.addEventListener('click',()=>{
+  activateTab('dashboard');
+  window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}));
+
 /* ===== VOLTAR AO TOPO ===== */
 const backToTopBtn=document.getElementById('backToTopBtn');
 if(backToTopBtn){

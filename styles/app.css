@@ -54,6 +54,9 @@
     margin:4px 0 0;
     letter-spacing:-0.01em;
   }
+  .brand-home{border:0;background:transparent;color:inherit;cursor:pointer;padding:0;text-align:left}
+  .brand-home:hover,.brand-home:focus-visible{color:var(--gold-bright);text-decoration:underline;text-underline-offset:4px}
+  .compact-brand{font:var(--font-weight-semibold) 17px var(--font-display);text-transform:none;letter-spacing:0;white-space:nowrap}
   .statement-account{
     font-family:'IBM Plex Mono',monospace;
     font-size:12px;color:rgba(246,243,236,0.7);
