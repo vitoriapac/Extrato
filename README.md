@@ -90,3 +90,4 @@ O StudyTrack 3.1 conecta o edital às metas de domínio, à matriz de lacunas e 
 ## Licença
 
 Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE).
+Veja também a [jornada do produto](docs/product-journey.md), com cenários e medidas de referência para o primeiro uso e semanas irregulares.
