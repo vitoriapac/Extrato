@@ -1,10 +1,11 @@
 import {EXAM_TAGS,institutionForExamTag} from './exam-catalog.js';
 
 const tagsOf=topic=>Array.isArray(topic?.examTags)?topic.examTags:[];
+export const normalizeExamTags=tags=>[...new Set((Array.isArray(tags)?tags:[]).filter(Boolean).map(String))].sort();
 export function isTopicInExamScope(topic,activeExamTags=[]){const active=new Set(activeExamTags||[]),tags=tagsOf(topic);return active.size===0||tags.length===0||tags.some(tag=>active.has(tag))}
 export function filterTopicsByExamScope(topics=[],activeExamTags=[]){return topics.filter(topic=>isTopicInExamScope(topic,activeExamTags))}
 export function resolveExamScope(topics=[],activeExamTags=[]){
-  const activeTags=[...new Set((activeExamTags||[]).filter(Boolean))],eligibleTopics=[],excludedTopics=[],catalogTopics=[],personalTopics=[];
+  const activeTags=normalizeExamTags(activeExamTags),eligibleTopics=[],excludedTopics=[],catalogTopics=[],personalTopics=[];
   for(const topic of topics||[]){
     if(topic?.archived)continue;
     const personal=tagsOf(topic).length===0;

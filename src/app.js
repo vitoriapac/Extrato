@@ -54,7 +54,7 @@ import {createSubjectService} from './application/subjects/subject-service.js';
 import {createExamImportService} from './application/subjects/exam-import-service.js';
 import {EXAM_PRESETS,getExamPreset} from './domain/exams/exam-presets.js';
 import {EXAM_TAGS,CATALOG_VERSION,EXAM_SOURCES} from './domain/exams/exam-catalog.js';
-import {isTopicInExamScope,isCommonTopic,topicExamScopeLabel} from './domain/exams/exam-scope.js';
+import {isTopicInExamScope,isCommonTopic,topicExamScopeLabel,normalizeExamTags} from './domain/exams/exam-scope.js';
 import {classifyEvidenceScope,resolveExamEvidenceScope} from './domain/exams/exam-evidence-scope.js';
 import {setActiveExamTags} from './application/exams/exam-scope-transition.js';
 import {createExamImportState,resetExamImportState} from './features/exam-import/exam-import-state.js';
@@ -2030,7 +2030,7 @@ const examImportService=createExamImportService({subjectService,getSubjects:()=>
 const editalImportFacade=createEditalImportFacade({catalog:EXAM_PRESETS,importService:examImportService});
 const examImportState=createExamImportState(EXAM_PRESETS[0]);
 function selectedExamPreset(){return getExamPreset(examImportState.presetId)||EXAM_PRESETS[0]}
-function applyPresetBlueprintDefaults(preset){const source=(preset.sources||[]).length===1?preset.sources[0]:null;if(!source||!EXAM_SOURCES[source]?.official)return;for(const subject of state.subjects){if(state.examBlueprint.subjects.some(item=>item.subjectId===subject.id))continue;const metric=subject.examMetrics?.[source];if(!metric||metric.mappingType!=='direct'||metric.expectedQuestions==null)continue;state.examBlueprint.subjects.push({subjectId:subject.id,expectedQuestions:metric.expectedQuestions,questionWeight:metric.questionWeight,priority:'normal',masteryTarget:null,sourceRef:source,official:Boolean(metric.official),mappingType:metric.mappingType})}state.examBlueprint.activeExamTags=[...(preset.examTags||[])];state.examBlueprint.configuredAt=nowISO()}
+function applyPresetBlueprintDefaults(preset){const source=(preset.sources||[]).length===1?preset.sources[0]:null;if(!source||!EXAM_SOURCES[source]?.official)return;for(const subject of state.subjects){if(state.examBlueprint.subjects.some(item=>item.subjectId===subject.id))continue;const metric=subject.examMetrics?.[source];if(!metric||metric.mappingType!=='direct'||metric.expectedQuestions==null)continue;state.examBlueprint.subjects.push({subjectId:subject.id,expectedQuestions:metric.expectedQuestions,questionWeight:metric.questionWeight,priority:'normal',masteryTarget:null,sourceRef:source,official:Boolean(metric.official),mappingType:metric.mappingType})}setActiveExamTags(state,normalizeExamTags(preset.examTags||[]),{configuredAt:nowISO()})}
 function syncExamSubjectCheckboxes(){syncExamSubjectCheckboxesView(document,examImportState,selectedExamPreset())}
 function renderExamImport(){
   const content=document.getElementById('examImportContent'),back=document.getElementById('examImportBackBtn'),next=document.getElementById('examImportNextBtn'),preset=selectedExamPreset();back.hidden=examImportState.step===1;next.textContent=examImportState.step===3?'Importar':'Continuar';

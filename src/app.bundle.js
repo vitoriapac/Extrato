@@ -15737,12 +15737,13 @@
 
   // src/domain/exams/exam-scope.js
   var tagsOf = (topic) => Array.isArray(topic?.examTags) ? topic.examTags : [];
+  var normalizeExamTags = (tags) => [...new Set((Array.isArray(tags) ? tags : []).filter(Boolean).map(String))].sort();
   function isTopicInExamScope(topic, activeExamTags = []) {
     const active = new Set(activeExamTags || []), tags = tagsOf(topic);
     return active.size === 0 || tags.length === 0 || tags.some((tag) => active.has(tag));
   }
   function resolveExamScope(topics = [], activeExamTags = []) {
-    const activeTags = [...new Set((activeExamTags || []).filter(Boolean))], eligibleTopics = [], excludedTopics = [], catalogTopics = [], personalTopics = [];
+    const activeTags = normalizeExamTags(activeExamTags), eligibleTopics = [], excludedTopics = [], catalogTopics = [], personalTopics = [];
     for (const topic of topics || []) {
       if (topic?.archived) continue;
       const personal = tagsOf(topic).length === 0;
@@ -15798,7 +15799,7 @@
   var DERIVED_FIELDS = Object.freeze(["diagnosis", "forecast", "weeklyFocus", "readiness", "masteryMatrix", "pdfPreview"]);
   function setActiveExamTags(state2, tags = [], { configuredAt = null } = {}) {
     if (!state2?.examBlueprint) throw new TypeError("Estado da prova inválido.");
-    const next = [...new Set((tags || []).filter(Boolean))], changed = JSON.stringify(next) !== JSON.stringify(state2.examBlueprint.activeExamTags || []);
+    const next = normalizeExamTags(tags), changed = JSON.stringify(next) !== JSON.stringify(normalizeExamTags(state2.examBlueprint.activeExamTags));
     if (!changed) return false;
     state2.examBlueprint.activeExamTags = next;
     if (configuredAt) state2.examBlueprint.configuredAt = configuredAt;
@@ -19712,8 +19713,7 @@
       if (!metric || metric.mappingType !== "direct" || metric.expectedQuestions == null) continue;
       state.examBlueprint.subjects.push({ subjectId: subject.id, expectedQuestions: metric.expectedQuestions, questionWeight: metric.questionWeight, priority: "normal", masteryTarget: null, sourceRef: source, official: Boolean(metric.official), mappingType: metric.mappingType });
     }
-    state.examBlueprint.activeExamTags = [...preset2.examTags || []];
-    state.examBlueprint.configuredAt = nowISO2();
+    setActiveExamTags(state, normalizeExamTags(preset2.examTags || []), { configuredAt: nowISO2() });
   }
   function syncExamSubjectCheckboxes2() {
     syncExamSubjectCheckboxes(document, examImportState, selectedExamPreset());
