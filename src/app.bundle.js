@@ -1505,7 +1505,10 @@
       });
     });
     const redistributedMinutes = allocations.reduce((sum4, item) => sum4 + item.minutes, 0);
-    return { state: deficitMinutes ? "proposal" : "balanced", periodStart, periodEnd, plannedMinutes, executedMinutes, deficitMinutes, redistributedMinutes, discardedMinutes: Math.max(0, remaining), pendingItems, allocations, reasons: deficitMinutes ? ["execução abaixo do planejado no período"] : [] };
+    const allocatedBySource = /* @__PURE__ */ new Map();
+    allocations.forEach((item) => allocatedBySource.set(item.sourceItemId, (allocatedBySource.get(item.sourceItemId) || 0) + item.minutes));
+    const retainedItems = pendingItems.filter((item) => (allocatedBySource.get(item.sourceItemId) || 0) < item.remainingMinutes).map((item) => ({ ...item, unallocatedMinutes: item.remainingMinutes - (allocatedBySource.get(item.sourceItemId) || 0) }));
+    return { state: deficitMinutes ? "proposal" : "balanced", periodStart, periodEnd, plannedMinutes, executedMinutes, deficitMinutes, redistributedMinutes, discardedMinutes: Math.max(0, remaining), pendingItems, allocations, retainedItems, reasons: deficitMinutes ? ["execução abaixo do planejado no período"] : [] };
   }
   function applyReplan({ dailyPlans = [], proposal, operationId, now, idGenerator } = {}) {
     if (proposal?.state !== "proposal" || !operationId || typeof idGenerator !== "function") return { changes: [], createdItems: 0 };
@@ -22261,7 +22264,9 @@
     const allocationByDate = /* @__PURE__ */ new Map();
     replanPreview.allocations.forEach((item) => allocationByDate.set(item.date, (allocationByDate.get(item.date) || 0) + item.minutes));
     const allocations = [...allocationByDate].map(([date2, minutes]) => `<div><strong>${formatDatePt(date2)}</strong><span>+ ${formatPlanMinutes(minutes)}</span></div>`).join("");
-    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(replanPreview.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(replanPreview.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatPlanMinutes(replanPreview.deficitMinutes)}</strong><span>Déficit</span></div><div><strong>${formatPlanMinutes(replanPreview.redistributedMinutes)}</strong><span>Redistribuição possível</span></div></div><div class="replan-allocations">${allocations || "<span>Sem capacidade restante nesta semana.</span>"}</div>${replanPreview.discardedMinutes ? `<p class="confidence-note">${formatPlanMinutes(replanPreview.discardedMinutes)} não cabem na disponibilidade restante e não serão acumulados automaticamente.</p>` : ""}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
+    const retained = replanPreview.retainedItems?.length ? `<div class="replan-group"><strong>Mantidas para depois</strong><span>${replanPreview.retainedItems.length} atividades · ${formatPlanMinutes(replanPreview.retainedItems.reduce((sum4, item) => sum4 + item.unallocatedMinutes, 0))}</span></div>` : "";
+    const overflow = replanPreview.discardedMinutes ? `<div class="replan-group is-warning"><strong>Sem capacidade disponível</strong><span>${formatPlanMinutes(replanPreview.discardedMinutes)} não cabem sem ultrapassar seus horários.</span></div>` : "";
+    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(replanPreview.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(replanPreview.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatPlanMinutes(replanPreview.deficitMinutes)}</strong><span>Déficit</span></div><div><strong>${formatPlanMinutes(replanPreview.redistributedMinutes)}</strong><span>Redistribuídas</span></div></div><div class="replan-group-list"><div class="replan-group"><strong>Redistribuídas</strong><span>${allocations || "Nenhuma atividade coube nos próximos dias."}</span></div>${retained}${overflow}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
   }
   function formatPlanMinutes(minutes) {
     const value2 = Math.max(0, Math.round(Number(minutes) || 0));

@@ -8,7 +8,9 @@ export function buildReplanProposal({plans=[],periodStart,periodEnd,futureDays=[
   const allocations=[];let remaining=deficitMinutes;
   pendingItems.forEach(item=>{let itemRemaining=item.remainingMinutes;capacities.forEach(day=>{if(itemRemaining<=0||day.remaining<=0)return;const minutes=Math.min(itemRemaining,day.remaining);allocations.push({...item,date:day.date,minutes});itemRemaining-=minutes;day.remaining-=minutes;remaining-=minutes})});
   const redistributedMinutes=allocations.reduce((sum,item)=>sum+item.minutes,0);
-  return {state:deficitMinutes?'proposal':'balanced',periodStart,periodEnd,plannedMinutes,executedMinutes,deficitMinutes,redistributedMinutes,discardedMinutes:Math.max(0,remaining),pendingItems,allocations,reasons:deficitMinutes?['execução abaixo do planejado no período']:[]};
+  const allocatedBySource=new Map();allocations.forEach(item=>allocatedBySource.set(item.sourceItemId,(allocatedBySource.get(item.sourceItemId)||0)+item.minutes));
+  const retainedItems=pendingItems.filter(item=>(allocatedBySource.get(item.sourceItemId)||0)<item.remainingMinutes).map(item=>({...item,unallocatedMinutes:item.remainingMinutes-(allocatedBySource.get(item.sourceItemId)||0)}));
+  return {state:deficitMinutes?'proposal':'balanced',periodStart,periodEnd,plannedMinutes,executedMinutes,deficitMinutes,redistributedMinutes,discardedMinutes:Math.max(0,remaining),pendingItems,allocations,retainedItems,reasons:deficitMinutes?['execução abaixo do planejado no período']:[]};
 }
 
 export function applyReplan({dailyPlans=[],proposal,operationId,now,idGenerator}={}){
