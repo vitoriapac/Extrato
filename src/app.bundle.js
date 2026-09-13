@@ -16610,7 +16610,7 @@
       return { id: `demo-calendar-${index + 1}`, date: date2, week: "", subjectId: entry.subject.id, topicId: entry.topic.id, subject: entry.subject.name, topic: entry.topic.name, status: index < 4 ? "Concluído" : "Não iniciado", reviewType: index % 2 ? "Questões" : "Revisão rápida", createdAt: timestamp(shiftDate(date2, -5)) };
     });
     state2.progressHistory = Array.from({ length: 90 }, (_, index) => ({ date: shiftDate(today, index - 89), pct: Math.min(82, 18 + Math.floor(index * 0.65)) }));
-    state2.metas = { semanal: 12, mensal: 48, questoesSemanal: 220, simuladosSemanal: 1, metaAprovacao: 80, horasDiarias: 2.2, horasPorDia: { "0": 0, "1": 2.5, "2": 2.5, "3": 2, "4": 2.5, "5": 2, "6": 1 } };
+    state2.metas = { semanal: 12, mensal: 48, questoesSemanal: 220, simuladosSemanal: 1, metaAprovacao: 80, horasDiarias: 2.2, horasPorDia: { "0": 1, "1": 2.5, "2": 2.5, "3": 2, "4": 2.5, "5": 2, "6": 1 } };
     state2.examDate = shiftDate(today, 90);
     state2.examBlueprint = { examDate: state2.examDate, targetScore: 80, configuredAt: timestamp(today), subjects: state2.subjects.map((subject, index) => ({ subjectId: subject.id, expectedQuestions: index < 4 ? 18 : 14, questionWeight: index === 2 ? 1.5 : 1, priority: index < 2 ? "high" : index === 5 ? "low" : "normal" })) };
     state2.metasPorDisciplina = state2.subjects.map((subject, index) => ({ id: `demo-subject-goal-${index + 1}`, subjectId: subject.id, meta: 30 + index * 5, createdAt }));
