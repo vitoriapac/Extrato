@@ -1352,3 +1352,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
   .primary-nav-shell .mobile-more-menu{right:0}
   .overview-nav{top:var(--sticky-stack-height,46px);z-index:80;margin-bottom:24px}
 }
+/* Jornada inicial guiada */
+.guided-onboarding{border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 8%,var(--surface)),var(--surface))}
+.guided-onboarding-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0;color:var(--muted);font-size:.86rem}.guided-onboarding-steps span{display:flex;align-items:center;gap:8px}.guided-onboarding-steps b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:.75rem}
+@media(max-width:700px){.guided-onboarding-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}

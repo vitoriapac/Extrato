@@ -4343,6 +4343,12 @@ function renderPlanoHoje(){
     </div>
   `;
 }
+function renderGuidedOnboarding(){
+  const el=document.getElementById('guidedOnboarding');
+  if(!el)return;
+  const hasHistory=state.studySessions.length||state.questoes.length||state.subjects.some(subject=>(subject.topics||[]).some(topic=>topic.status&&topic.status!=='Não iniciado'));
+  el.hidden=Boolean(state.examDate||hasHistory||IS_DEMO_MODE);
+}
 
 function renderMetasHoje(){
   const container = document.getElementById('hojeMetas');
@@ -4779,7 +4785,7 @@ function resolveDelegatedSpecial(normalized,event,element){
 createDelegatedEventsController({document,handlers:DELEGATED_ACTION_HANDLERS,parseArgument:delegatedArgument,resolveSpecial:resolveDelegatedSpecial,onError:error=>{console.error('Evento delegado bloqueado',error);showToast('Uma ação inválida foi bloqueada por segurança.')}}).register();
 /* ===== MASTER RENDER ===== */
 const RENDER_SCOPE_SECTIONS={
-  dashboard:new Set(['dashboard de aprovação','controles do cronômetro','evolução do progresso','heatmap','conquistas','radar','visão geral','horas estudadas','histórico de sessões']),
+  dashboard:new Set(['primeiro uso','dashboard de aprovação','controles do cronômetro','evolução do progresso','heatmap','conquistas','radar','visão geral','horas estudadas','histórico de sessões']),
   disciplinas:new Set(['disciplinas']),
   calendario:new Set(['indicadores do calendário','tarefas de hoje','tarefas atrasadas','filtros do calendário','calendário','calendário mensal']),
   agenda:new Set(['filtros da agenda','agenda']),
@@ -4791,6 +4797,7 @@ function activeTabName(){return document.querySelector('.tab-btn.active')?.datas
 const applicationRenderer=createApplicationRenderer({
   sections:[
     ['indicadores',renderKPIs],
+    ['primeiro uso',renderGuidedOnboarding],
     ['dashboard de aprovação',renderApprovalDashboard],
     ['controles do cronômetro',populateTimerContextControls],
     ['cabeçalho',renderHeader],
@@ -4848,6 +4855,9 @@ document.querySelectorAll('[data-go-home]').forEach(button=>button.addEventListe
   activateTab('dashboard');
   window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }));
+document.getElementById('guidedSetExamBtn')?.addEventListener('click',()=>{activateTab('metas');document.getElementById('examDateInput')?.focus()});
+document.getElementById('guidedImportExamBtn')?.addEventListener('click',()=>openExamImport());
+document.getElementById('guidedGoTodayBtn')?.addEventListener('click',()=>activateTab('hoje'));
 
 /* ===== VOLTAR AO TOPO ===== */
 const backToTopBtn=document.getElementById('backToTopBtn');
