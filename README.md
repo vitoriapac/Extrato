@@ -91,3 +91,12 @@ O StudyTrack 3.1 conecta o edital às metas de domínio, à matriz de lacunas e 
 
 Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE).
 Veja também a [jornada do produto](docs/product-journey.md), com cenários e medidas de referência para o primeiro uso e semanas irregulares.
+
+## Fluxos entregues
+
+- Primeiro uso guiado com importação de edital e encaminhamento para **Hoje**.
+- Execução por **Agenda** ou **Sequência flexível**, usando as mesmas atividades.
+- Recuperação de atrasos com confirmação, desfazer e declaração de excedente.
+- Recomendações com ação direta, vínculo à sessão, resultado posterior e motivo opcional ao trocar.
+- Fechamento semanal com diagnóstico e até três prioridades estimadas.
+- Registro de sessão enxuto, com detalhes adicionais recolhidos.
