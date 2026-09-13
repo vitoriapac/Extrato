@@ -63,6 +63,12 @@ O projeto usa JavaScript vanilla e separa estado, domínio, aplicação, reposit
 
 A aplicação não possui servidor de dados. Sessões, questões, simulados, planos e preferências permanecem no IndexedDB ou no armazenamento local do navegador. A versão publicada no GitHub Pages serve somente arquivos estáticos.
 
+## Escopo de concurso e precisão dos dados
+
+Os concursos ativos podem ser Banco do Brasil — Escriturário, Caixa — TBN, Caixa — TBN TI ou uma combinação. Tópicos explicitamente compartilhados entram em todos os editais indicados; conteúdo pessoal sem tags permanece elegível. Sem concurso selecionado, todo o conteúdo não arquivado é considerado.
+
+Métricas de conteúdo, como cobertura, domínio, retenção, lacuna e prioridade, usam somente tópicos elegíveis. Tempo, questões, erros e sessões só são atribuídos a um edital específico quando o registro possui um tópico elegível identificado. Registros somente da disciplina continuam preservados como histórico geral e aparecem separadamente no relatório. Peso oficial é identificado como tal; incidência, dificuldade pedagógica e esforço por tópico podem ser estimativas.
+
 ## Relatório e PDF
 
 O relatório estratégico permite escolher o período e reúne planejamento versus execução, desempenho, simulados, revisões, riscos, oportunidades, recomendações e perfil de erros. Use a impressão do navegador para salvar o relatório em PDF no formato A4.

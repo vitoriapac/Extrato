@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {EXAM_TAGS} from '../../src/domain/exams/exam-catalog.js';
-import {isTopicInExamScope,isCommonTopic,topicExamScopeLabel} from '../../src/domain/exams/exam-scope.js';
+import {isTopicInExamScope,isCommonTopic,resolveExamScope,topicExamScopeLabel} from '../../src/domain/exams/exam-scope.js';
 
 test('escopo distingue BB, Caixa, Caixa TI e conteúdo pessoal',()=>{const bb={examTags:[EXAM_TAGS.BB]},caixa={examTags:[EXAM_TAGS.CAIXA]},ti={examTags:[EXAM_TAGS.CAIXA_TI]},manual={examTags:[]};assert.equal(isTopicInExamScope(bb,[EXAM_TAGS.BB]),true);assert.equal(isTopicInExamScope(caixa,[EXAM_TAGS.BB]),false);assert.equal(isTopicInExamScope(ti,[EXAM_TAGS.CAIXA]),false);assert.equal(isTopicInExamScope(manual,[EXAM_TAGS.BB]),true)});
 test('comum exige as tags específicas e não confunde Caixa TI',()=>{const common={examTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA]},falseCommon={examTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA_TI]};assert.equal(isCommonTopic(common,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA]),true);assert.equal(isCommonTopic(falseCommon,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA]),false);assert.equal(topicExamScopeLabel(common),'BB · CAIXA')});
+test('tabela de verdade preserva comuns, específicos e conteúdo pessoal',()=>{const topics=[{id:'common',examTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA]},{id:'bb',examTags:[EXAM_TAGS.BB]},{id:'caixa',examTags:[EXAM_TAGS.CAIXA]},{id:'ti',examTags:[EXAM_TAGS.CAIXA_TI]},{id:'personal',examTags:[]}],ids=tags=>resolveExamScope(topics,tags).eligibleTopics.map(item=>item.id);assert.deepEqual(ids([]),['common','bb','caixa','ti','personal']);assert.deepEqual(ids([EXAM_TAGS.BB]),['common','bb','personal']);assert.deepEqual(ids([EXAM_TAGS.CAIXA]),['common','caixa','personal']);assert.deepEqual(ids([EXAM_TAGS.CAIXA_TI]),['ti','personal']);assert.deepEqual(ids([EXAM_TAGS.BB,EXAM_TAGS.CAIXA]),['common','bb','caixa','personal'])});

@@ -602,14 +602,14 @@
   }
 
   // src/ui/session-history.js
-  function filterStudySessions(sessions, filters, { today, addDays: addDays2, subjectIdOf }) {
+  function filterStudySessions(sessions, filters, { today, addDays: addDays2, subjectIdOf: subjectIdOf2 }) {
     let rows = [...sessions || []];
     if (filters.date) rows = rows.filter((item) => item.date === filters.date);
     else if (filters.period !== "all") {
       const days = Math.max(1, Number(filters.period) || 30), cutoff = addDays2(today, -(days - 1));
       rows = rows.filter((item) => item.date && item.date >= cutoff && item.date <= today);
     }
-    if (filters.subjectId) rows = rows.filter((item) => subjectIdOf(item) === filters.subjectId);
+    if (filters.subjectId) rows = rows.filter((item) => subjectIdOf2(item) === filters.subjectId);
     if (filters.type) rows = rows.filter((item) => (item.type || "study") === filters.type);
     return rows.sort((a, b) => (b.endedAt || b.date || "").localeCompare(a.endedAt || a.date || ""));
   }
@@ -15737,6 +15737,16 @@
     const active = new Set(activeExamTags || []), tags = tagsOf(topic);
     return active.size === 0 || tags.length === 0 || tags.some((tag) => active.has(tag));
   }
+  function resolveExamScope(topics = [], activeExamTags = []) {
+    const activeTags = [...new Set((activeExamTags || []).filter(Boolean))], eligibleTopics = [], excludedTopics = [], catalogTopics = [], personalTopics = [];
+    for (const topic of topics || []) {
+      if (topic?.archived) continue;
+      const personal = tagsOf(topic).length === 0;
+      (personal ? personalTopics : catalogTopics).push(topic);
+      (isTopicInExamScope(topic, activeTags) ? eligibleTopics : excludedTopics).push(topic);
+    }
+    return Object.freeze({ eligibleTopics, catalogTopics, personalTopics, excludedTopics, activeExamTags: activeTags });
+  }
   function isCommonTopic(topic, examTags = [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]) {
     const tags = new Set(tagsOf(topic));
     return examTags.length > 1 && examTags.every((tag) => tags.has(tag));
@@ -15745,6 +15755,39 @@
     const tags = tagsOf(topic);
     if (!tags.length) return "Conteúdo pessoal";
     return tags.map((tag) => tag === EXAM_TAGS.BB ? "BB" : tag === EXAM_TAGS.CAIXA ? "CAIXA" : tag === EXAM_TAGS.CAIXA_TI ? "CAIXA TI" : tag).join(" · ");
+  }
+
+  // src/domain/exams/exam-evidence-scope.js
+  var topicIdOf = (record) => record?.topicId || record?.topicRef || null;
+  var subjectIdOf = (record) => record?.subjectId || record?.disciplinaId || null;
+  function indexExamTopics(subjects = []) {
+    const topics = [], byId = /* @__PURE__ */ new Map();
+    for (const subject of subjects || []) if (!subject?.archived) {
+      for (const topic of subject.topics || []) if (!topic?.archived) {
+        const normalized = { ...topic, subjectId: topic.subjectId || subject.id };
+        topics.push(normalized);
+        byId.set(normalized.id, normalized);
+      }
+    }
+    return { topics, byId };
+  }
+  function classifyEvidenceScope(record, subjects = [], activeExamTags = []) {
+    const { byId } = indexExamTopics(subjects), topicId = topicIdOf(record), subjectId = subjectIdOf(record), hasSpecificScope = (activeExamTags || []).length > 0;
+    if (topicId) {
+      const topic = byId.get(topicId);
+      return Object.freeze({ state: topic ? "topic_scoped" : "unscoped", includedInExamMetrics: Boolean(topic && isTopicInExamScope(topic, activeExamTags)), subjectId: subjectId || topic?.subjectId || null, topicId });
+    }
+    if (subjectId) return Object.freeze({ state: "subject_only", includedInExamMetrics: !hasSpecificScope, subjectId, topicId: null });
+    return Object.freeze({ state: "unscoped", includedInExamMetrics: !hasSpecificScope, subjectId: null, topicId: null });
+  }
+  function resolveExamEvidenceScope({ subjects = [], activeExamTags = [], sessions = [], questions = [], reviews = [] } = {}) {
+    const { topics } = indexExamTopics(subjects), content = resolveExamScope(topics, activeExamTags);
+    const classify = (list) => (list || []).map((record) => ({ record, scope: classifyEvidenceScope(record, subjects, activeExamTags) }));
+    const partition = (list) => {
+      const classified = classify(list);
+      return { classified, included: classified.filter((item) => item.scope.includedInExamMetrics).map((item) => item.record), subjectOnly: classified.filter((item) => item.scope.state === "subject_only").map((item) => item.record), excluded: classified.filter((item) => !item.scope.includedInExamMetrics).map((item) => item.record) };
+    };
+    return Object.freeze({ content, sessions: partition(sessions), questions: partition(questions), reviews: partition(reviews), activeExamTags: [...content.activeExamTags] });
   }
 
   // src/ui/controllers/navigation-controller.js
@@ -16860,12 +16903,12 @@
     if (!repository || typeof repository.findById !== "function") throw new TypeError("Serviço de revisões requer repositório.");
     if (!clock || typeof clock.today !== "function" || typeof clock.nowISO !== "function") throw new TypeError("Serviço de revisões requer relógio.");
     if (typeof idGenerator !== "function") throw new TypeError("Serviço de revisões requer gerador de IDs.");
-    const topicIdOf = (review) => review?.topicId || review?.topicRef || null;
+    const topicIdOf2 = (review) => review?.topicId || review?.topicRef || null;
     const complete = (review, completedAt = clock.nowISO()) => {
       if (!review || review.status === "Concluído") return review || null;
       repository.update(review.id, { status: "Concluído", completedAt });
       onEvent("review_completed", review, { reviewId: review.id, reviewType: review.tipo });
-      if (topicIdOf(review)) onTopicChanged(topicIdOf(review));
+      if (topicIdOf2(review)) onTopicChanged(topicIdOf2(review));
       return review;
     };
     return Object.freeze({
@@ -16875,7 +16918,7 @@
       rescheduleReview: (id, date2) => repository.update(id, { date: date2, manualDate: true, adaptive: false }),
       restoreAdaptiveSchedule: (id, suggestion) => repository.update(id, { date: suggestion.date, suggestedDate: suggestion.date, adaptiveReason: suggestion.reason, manualDate: false, adaptive: true }),
       rateReview: (id, rating, { label: label2 = "adaptativa" } = {}) => {
-        const review = repository.findById(id), topicId = topicIdOf(review), topic = topicId ? findTopic(topicId) : null;
+        const review = repository.findById(id), topicId = topicIdOf2(review), topic = topicId ? findTopic(topicId) : null;
         if (!review || !topicId || !topic || typeof calculateAdaptiveState !== "function") return null;
         const adaptiveState = calculateAdaptiveState(topic.adaptiveReview, rating, { reviewDate: clock.today(), algorithmVersion: algorithmVersion() });
         topic.adaptiveReview = adaptiveState;
@@ -16923,8 +16966,8 @@
   }
 
   // src/ui/view-models/calendar-view-model.js
-  function buildCalendarItemViewModel(item, { formatDate, getSubjectName: getSubjectName2, subjectIdOf } = {}) {
-    return { date: item.date ? formatDate(item.date) : "Sem data", week: item.week || "—", subject: getSubjectName2(subjectIdOf(item)), status: item.status || "Não iniciado", reviewType: item.reviewType && item.reviewType !== "—" ? item.reviewType : "Sem revisão", pending: item.status !== "Concluído" };
+  function buildCalendarItemViewModel(item, { formatDate, getSubjectName: getSubjectName2, subjectIdOf: subjectIdOf2 } = {}) {
+    return { date: item.date ? formatDate(item.date) : "Sem data", week: item.week || "—", subject: getSubjectName2(subjectIdOf2(item)), status: item.status || "Não iniciado", reviewType: item.reviewType && item.reviewType !== "—" ? item.reviewType : "Sem revisão", pending: item.status !== "Concluído" };
   }
 
   // src/ui/renderers/calendar-renderer.js
@@ -17103,9 +17146,9 @@
   }
 
   // src/ui/view-models/question-view-model.js
-  function buildQuestionViewModel(item, { formatDate, getSubjectName: getSubjectName2, getTopicName: getTopicName2, subjectIdOf, accuracy: accuracy2 } = {}) {
+  function buildQuestionViewModel(item, { formatDate, getSubjectName: getSubjectName2, getTopicName: getTopicName2, subjectIdOf: subjectIdOf2, accuracy: accuracy2 } = {}) {
     const resolved = Number(item.resolved) || 0, correct = Number(item.correct) || 0;
-    return { date: item.date ? formatDate(item.date) : "Sem data", subject: getSubjectName2(subjectIdOf(item)) || "Sem disciplina", topic: item.topicId ? getTopicName2(item.topicId) : "Sem tópico", resolved, correct, accuracy: accuracy2(correct, resolved), errors: Math.max(0, resolved - correct) };
+    return { date: item.date ? formatDate(item.date) : "Sem data", subject: getSubjectName2(subjectIdOf2(item)) || "Sem disciplina", topic: item.topicId ? getTopicName2(item.topicId) : "Sem tópico", resolved, correct, accuracy: accuracy2(correct, resolved), errors: Math.max(0, resolved - correct) };
   }
 
   // src/ui/renderers/questions-renderer.js
@@ -17248,11 +17291,11 @@
   }
   function buildStrategicReport({ state: state2, generatedAt, isDemo = false, readiness = null, diagnosis = null, forecast = null, period } = {}) {
     const range = resolveReportPeriod({ ...period, generatedAt }), activeExamTags = state2.examBlueprint?.activeExamTags || [], subjects = (state2.subjects || []).filter((item) => !item.archived && (item.topics || []).some((topic) => !topic.archived && isTopicInExamScope(topic, activeExamTags))), topics = subjects.flatMap((subject) => (subject.topics || []).filter((item) => !item.archived && isTopicInExamScope(item, activeExamTags)));
-    const sessions = (state2.studySessions || []).filter((item) => inPeriod(item, range.start, range.end)), questions = (state2.questoes || []).filter((item) => inPeriod(item, range.start, range.end)), simulations = (state2.simulados || []).filter((item) => inPeriod(item, range.start, range.end)), reviews = (state2.reviewAgenda || []).filter((item) => inPeriod(item, range.start, range.end));
-    const resolved = sum3(questions, (item) => item.resolved), correct = sum3(questions, (item) => item.correct), studySeconds = sum3(sessions, (item) => item.durationSeconds), simulationTotal = sum3(simulations, (item) => item.total), simulationCorrect = sum3(simulations, (item) => item.correct), activePlan = [...state2.studyPlans || []].reverse().find((item) => !item.undoneAt) || null, adjustments = (state2.planAdjustments || []).filter((item) => inPeriod(item, range.start, range.end)), feedback = (state2.recommendationFeedback || []).filter((item) => inPeriod(item, range.start, range.end));
+    const allSessions = (state2.studySessions || []).filter((item) => inPeriod(item, range.start, range.end)), allQuestions = (state2.questoes || []).filter((item) => inPeriod(item, range.start, range.end)), simulations = (state2.simulados || []).filter((item) => inPeriod(item, range.start, range.end)), allReviews = (state2.reviewAgenda || []).filter((item) => inPeriod(item, range.start, range.end)), evidenceScope = resolveExamEvidenceScope({ subjects: state2.subjects || [], activeExamTags, sessions: allSessions, questions: allQuestions, reviews: allReviews }), sessions = evidenceScope.sessions.included, questions = evidenceScope.questions.included, reviews = evidenceScope.reviews.included;
+    const resolved = sum3(questions, (item) => item.resolved), correct = sum3(questions, (item) => item.correct), studySeconds = sum3(sessions, (item) => item.durationSeconds), unscopedStudySeconds = sum3(evidenceScope.sessions.excluded, (item) => item.durationSeconds), unscopedResolved = sum3(evidenceScope.questions.excluded, (item) => item.resolved), simulationTotal = sum3(simulations, (item) => item.total), simulationCorrect = sum3(simulations, (item) => item.correct), activePlan = [...state2.studyPlans || []].reverse().find((item) => !item.undoneAt) || null, adjustments = (state2.planAdjustments || []).filter((item) => inPeriod(item, range.start, range.end)), feedback = (state2.recommendationFeedback || []).filter((item) => inPeriod(item, range.start, range.end));
     const bySubject = subjects.map((subject) => {
-      const scopedTopics = (subject.topics || []).filter((item) => !item.archived && isTopicInExamScope(item, activeExamTags)), subjectSessions = sessions.filter((item) => item.subjectId === subject.id), subjectQuestions = questions.filter((item) => item.subjectId === subject.id), volume = sum3(subjectQuestions, (item) => item.resolved), hits = sum3(subjectQuestions, (item) => item.correct);
-      return { id: subject.id, name: subject.name, studySeconds: sum3(subjectSessions, (item) => item.durationSeconds), questions: volume, accuracy: volume ? Math.round(hits / volume * 100) : null, completed: scopedTopics.filter((item) => item.status === "Concluído").length, total: scopedTopics.length };
+      const scopedTopics = (subject.topics || []).filter((item) => !item.archived && isTopicInExamScope(item, activeExamTags)), subjectSessions = sessions.filter((item) => item.subjectId === subject.id), unscopedSubjectSessions = evidenceScope.sessions.excluded.filter((item) => item.subjectId === subject.id), subjectQuestions = questions.filter((item) => item.subjectId === subject.id), unscopedSubjectQuestions = evidenceScope.questions.excluded.filter((item) => item.subjectId === subject.id), volume = sum3(subjectQuestions, (item) => item.resolved), hits = sum3(subjectQuestions, (item) => item.correct);
+      return { id: subject.id, name: subject.name, studySeconds: sum3(subjectSessions, (item) => item.durationSeconds), unscopedStudySeconds: sum3(unscopedSubjectSessions, (item) => item.durationSeconds), questions: volume, unscopedQuestions: sum3(unscopedSubjectQuestions, (item) => item.resolved), accuracy: volume ? Math.round(hits / volume * 100) : null, completed: scopedTopics.filter((item) => item.status === "Concluído").length, total: scopedTopics.length };
     }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum3(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum3(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60), subjectNames = Object.fromEntries(subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(subjects.flatMap((subject) => (subject.topics || []).map((topic) => [topic.id, topic.name]))), weeklyMinutes = Object.values(state2.metas?.horasPorDia || {}).reduce((total, value2) => total + (Number(value2) || 0) * 60, 0);
     const rawErrors = Object.entries(questions.reduce((totals, item) => {
       Object.entries(item.errorBreakdown || {}).forEach(([key, value2]) => totals[key] = (totals[key] || 0) + (Number(value2) || 0));
@@ -17263,7 +17306,7 @@
       return { subjectName: subjectNames[subjectId] || "Disciplina removida", topicName: topicNames[topicId] || "Tópico removido", action: snapshot.strategy?.label || item.recommendedAction || "Recomendação de estudo", result: { positive: "Resultado positivo", neutral: "Resultado neutro", negative: "Resultado negativo", insufficient: "Resultado ainda insuficiente" }[item.outcome?.state] || "Resultado em acompanhamento" };
     });
     const examLabels = { [EXAM_TAGS.BB]: "Banco do Brasil — Escriturário", [EXAM_TAGS.CAIXA]: "Caixa — TBN", [EXAM_TAGS.CAIXA_TI]: "Caixa — TBN TI" };
-    return { title: isDemo ? "Relatório estratégico de demonstração" : "Relatório estratégico", isDemo, generatedAt, period: range, exam: { date: state2.examDate || state2.examBlueprint?.examDate || null, target: state2.examBlueprint?.targetScore ?? state2.metas?.metaAprovacao ?? null, activeTags: [...activeExamTags], activeLabels: activeExamTags.length ? activeExamTags.map((tag) => examLabels[tag] || tag) : ["Todo o conteúdo"], catalogVersion: CATALOG_VERSION }, planNumber: state2.planNumber || activePlan?.number || "Não informado", overview: { subjects: subjects.length, topics: topics.length, completedTopics: topics.filter((item) => item.status === "Concluído").length, contentPercent: topics.length ? Math.round(topics.filter((item) => item.status === "Concluído").length / topics.length * 100) : 0, studySeconds, resolved, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length, simulationAverage: simulationTotal ? Math.round(simulationCorrect / simulationTotal * 100) : null, pendingReviews: reviews.filter((item) => item.status !== "Concluído").length, completedReviews: reviews.filter((item) => item.status === "Concluído").length }, readiness, forecast, activePlan, bySubject, simulations: simulations.map((item) => ({ date: item.date, name: item.nome || "Simulado", score: item.total ? Math.round(item.correct / item.total * 100) : null })), latestSimulation: latestSimulation ? { date: latestSimulation.date, name: latestSimulation.nome || "Simulado", breakdown: latestBreakdown } : null, execution: { plannedMinutes: planned, executedMinutes: executed, adherence: planned ? Math.round(executed / planned * 100) : null, dailyPlans: (state2.dailyPlans || []).filter((item) => inPeriod(item, range.start, range.end)).length, replans: adjustments.filter((item) => ["applied", "confirmed"].includes(item.status)).length, undoneReplans: adjustments.filter((item) => item.status === "undone").length }, risks: (diagnosis?.bottlenecks || []).slice(0, 5), opportunities: (diagnosis?.opportunities || []).slice(0, 5), criticalReviews: (diagnosis?.criticalReviews || []).slice(0, 5), priorities: [...diagnosis?.bottlenecks || [], ...diagnosis?.opportunities || []].slice(0, 5), focus, recommendations: { decisions: feedback.length, accepted: feedback.filter((item) => item.accepted).length, completed: feedback.filter((item) => item.completed).length, useful: feedback.filter((item) => item.useful === true).length, measured: feedback.filter((item) => item.outcome).length }, decisions, errors, errorDiagnosis: dominantError ? { message: `${Math.round(dominantError.count / errorTotal * 100)}% dos erros categorizados vêm de ${dominantError.label.toLowerCase()}.`, action: dominantError.label === "Chute" ? "Reforçar conceitos antes de voltar às questões." : "Priorizar revisão dirigida e questões comentadas." } : null, methodology: { readiness: readiness?.algorithmVersion || "versão atual", projection: forecast?.algorithmVersion || "versão atual", period: range.label, evidence: readiness?.confidenceLabel || "Baixa" } };
+    return { title: isDemo ? "Relatório estratégico de demonstração" : "Relatório estratégico", isDemo, generatedAt, period: range, exam: { date: state2.examDate || state2.examBlueprint?.examDate || null, target: state2.examBlueprint?.targetScore ?? state2.metas?.metaAprovacao ?? null, activeTags: [...activeExamTags], activeLabels: activeExamTags.length ? activeExamTags.map((tag) => examLabels[tag] || tag) : ["Todo o conteúdo"], catalogVersion: CATALOG_VERSION }, planNumber: state2.planNumber || activePlan?.number || "Não informado", overview: { subjects: subjects.length, topics: topics.length, completedTopics: topics.filter((item) => item.status === "Concluído").length, contentPercent: topics.length ? Math.round(topics.filter((item) => item.status === "Concluído").length / topics.length * 100) : 0, studySeconds, unscopedStudySeconds, resolved, unscopedResolved, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length, simulationAverage: simulationTotal ? Math.round(simulationCorrect / simulationTotal * 100) : null, pendingReviews: reviews.filter((item) => item.status !== "Concluído").length, completedReviews: reviews.filter((item) => item.status === "Concluído").length }, readiness, forecast, activePlan, bySubject, simulations: simulations.map((item) => ({ date: item.date, name: item.nome || "Simulado", score: item.total ? Math.round(item.correct / item.total * 100) : null })), latestSimulation: latestSimulation ? { date: latestSimulation.date, name: latestSimulation.nome || "Simulado", breakdown: latestBreakdown } : null, execution: { plannedMinutes: planned, executedMinutes: executed, adherence: planned ? Math.round(executed / planned * 100) : null, dailyPlans: (state2.dailyPlans || []).filter((item) => inPeriod(item, range.start, range.end)).length, replans: adjustments.filter((item) => ["applied", "confirmed"].includes(item.status)).length, undoneReplans: adjustments.filter((item) => item.status === "undone").length }, risks: (diagnosis?.bottlenecks || []).slice(0, 5), opportunities: (diagnosis?.opportunities || []).slice(0, 5), criticalReviews: (diagnosis?.criticalReviews || []).slice(0, 5), priorities: [...diagnosis?.bottlenecks || [], ...diagnosis?.opportunities || []].slice(0, 5), focus, recommendations: { decisions: feedback.length, accepted: feedback.filter((item) => item.accepted).length, completed: feedback.filter((item) => item.completed).length, useful: feedback.filter((item) => item.useful === true).length, measured: feedback.filter((item) => item.outcome).length }, decisions, errors, errorDiagnosis: dominantError ? { message: `${Math.round(dominantError.count / errorTotal * 100)}% dos erros categorizados vêm de ${dominantError.label.toLowerCase()}.`, action: dominantError.label === "Chute" ? "Reforçar conceitos antes de voltar às questões." : "Priorizar revisão dirigida e questões comentadas." } : null, methodology: { readiness: readiness?.algorithmVersion || "versão atual", projection: forecast?.algorithmVersion || "versão atual", period: range.label, evidence: readiness?.confidenceLabel || "Baixa", examEvidence: activeExamTags.length ? "Métricas do edital incluem somente registros vinculados a tópicos elegíveis. Registros apenas da disciplina são apresentados separadamente." : "Sem filtro de concurso; todo o histórico é considerado." } };
   }
 
   // src/reports/report-template.js
@@ -17278,9 +17321,9 @@
   function renderStrategicReport(report) {
     const readiness = report.readiness?.value ?? report.readiness?.score ?? null, forecast = report.forecast?.forecast30, list = (items, formatter, empty) => items.length ? items.map(formatter).join("") : `<li>${empty}</li>`;
     return `<header><p class="report-kicker">STUDYTRACK</p><h1>${escape(report.title)}</h1><p>${escape(report.period.label)} · ${date(report.period.start)} a ${date(report.period.end)} · Gerado em ${escape(new Date(report.generatedAt).toLocaleString("pt-BR"))}${report.isDemo ? " · DADOS FICTÍCIOS" : ""}</p><p><strong>Concursos ativos:</strong> ${escape((report.exam?.activeLabels || ["Todo o conteúdo"]).join(" · "))} · catálogo ${escape(report.exam?.catalogVersion || "não informado")}</p></header><div class="report-page-meta">${report.isDemo ? "DEMONSTRAÇÃO · " : ""}${escape(report.period.label)}</div>
-<section><h2>Resumo executivo</h2><p>Prova: <strong>${date(report.exam.date)}</strong> · Meta: <strong>${value(report.exam.target == null ? null : report.exam.target + "%")}</strong> · Plano: <strong>${escape(report.planNumber)}</strong></p><div class="report-kpis"><div><strong>${value(readiness == null ? null : Math.round(readiness) + "/100")}</strong><span>Índice de prontidão</span></div><div><strong>${escape(report.readiness?.confidenceLabel || "Baixa")}</strong><span>Confiança</span></div><div><strong>${report.overview.contentPercent}%</strong><span>Conteúdo concluído</span></div><div><strong>${duration(report.overview.studySeconds)}</strong><span>Tempo estudado</span></div></div></section>
+<section><h2>Resumo executivo</h2><p>Prova: <strong>${date(report.exam.date)}</strong> · Meta: <strong>${value(report.exam.target == null ? null : report.exam.target + "%")}</strong> · Plano: <strong>${escape(report.planNumber)}</strong></p><div class="report-kpis"><div><strong>${value(readiness == null ? null : Math.round(readiness) + "/100")}</strong><span>Índice de prontidão</span></div><div><strong>${escape(report.readiness?.confidenceLabel || "Baixa")}</strong><span>Confiança</span></div><div><strong>${report.overview.contentPercent}%</strong><span>Conteúdo concluído</span></div><div><strong>${duration(report.overview.studySeconds)}</strong><span>${report.exam.activeTags.length ? "Tempo atribuído ao edital" : "Tempo estudado"}</span></div></div>${report.exam.activeTags.length && report.overview.unscopedStudySeconds ? `<p><strong>${duration(report.overview.unscopedStudySeconds)}</strong> adicionais não foram atribuídos ao edital porque não possuem tópico elegível identificado.</p>` : ""}</section>
 <section><h2>Planejamento versus execução</h2><div class="report-kpis report-kpis--three"><div><strong>${report.execution.plannedMinutes} min</strong><span>Planejado</span></div><div><strong>${report.execution.executedMinutes} min</strong><span>Executado</span></div><div><strong>${value(report.execution.adherence == null ? null : report.execution.adherence + "%")}</strong><span>Aderência</span></div></div></section>
-<section><h2>Evolução e distribuição por disciplina</h2>${bars(report.bySubject, (item) => Math.round(item.studySeconds / 60), (item) => item.name)}<table><thead><tr><th>Disciplina</th><th>Conteúdo</th><th>Questões</th><th>Acerto</th></tr></thead><tbody>${report.bySubject.map((item) => `<tr><td>${escape(item.name)}</td><td>${item.completed}/${item.total}</td><td>${item.questions}</td><td>${value(item.accuracy == null ? null : item.accuracy + "%")}</td></tr>`).join("")}</tbody></table></section>
+<section><h2>Evolução e distribuição por disciplina</h2>${bars(report.bySubject, (item) => Math.round(item.studySeconds / 60), (item) => item.name)}<table><thead><tr><th>Disciplina</th><th>Conteúdo</th><th>Questões</th><th>Acerto</th><th>Sem tópico</th></tr></thead><tbody>${report.bySubject.map((item) => `<tr><td>${escape(item.name)}</td><td>${item.completed}/${item.total}</td><td>${item.questions}</td><td>${value(item.accuracy == null ? null : item.accuracy + "%")}</td><td>${item.unscopedStudySeconds || item.unscopedQuestions ? `${duration(item.unscopedStudySeconds)} · ${item.unscopedQuestions} questões` : "—"}</td></tr>`).join("")}</tbody></table></section>
 <section class="report-columns"><div><h2>Simulados</h2><ul>${list(report.simulations, (item) => `<li><strong>${escape(item.name)} · ${value(item.score == null ? null : item.score + "%")}</strong><span>${date(item.date)}</span></li>`, "Nenhum simulado no período.")}</ul></div><div><h2>Retenção e revisões</h2><p>${report.overview.completedReviews} concluídas · ${report.overview.pendingReviews} pendentes.</p><p>${forecast ? `Projeção em 30 dias: ${forecast.low}–${forecast.high}% (centro ${forecast.central}%).` : "Projeção ainda sem amostra suficiente."}</p>${report.forecast?.scenarios?.available ? `<ul>${report.forecast.scenarios.scenarios.map((item) => `<li><strong>${escape(item.label)}: ${item.low}–${item.high}%</strong><span>Simulação de capacidade</span></li>`).join("")}</ul>` : ""}</div></section>
 <section class="report-columns"><div><h2>Diagnóstico</h2><ul>${list(report.risks, (item) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>${escape(item.reason || "Requer atenção")}</span></li>`, "Nenhum gargalo relevante.")}</ul></div><div><h2>Oportunidades</h2><ul>${list(report.opportunities, (item) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>Retorno ${value(item.opportunityScore)}/100</span></li>`, "Nenhuma oportunidade calculada.")}</ul></div></section>
 <section><h2>Foco recomendado</h2>${bars(report.focus, (item) => item.minutes, (item) => `${item.subjectName} · ${item.percentage}%`)}</section>
@@ -18048,6 +18091,20 @@
   }
   function examScopedTopics() {
     return activeTopics().filter(topicInActiveExamScope);
+  }
+  function examEvidenceContext() {
+    return resolveExamEvidenceScope({ subjects: state.subjects, activeExamTags: state.examBlueprint?.activeExamTags || [], sessions: state.studySessions, questions: state.questoes, reviews: state.reviewAgenda });
+  }
+  function examScopedRecords(records = []) {
+    return records.filter((record) => classifyEvidenceScope(record, state.subjects, state.examBlueprint?.activeExamTags || []).includedInExamMetrics);
+  }
+  function examScopedSimulations() {
+    const active = state.examBlueprint?.activeExamTags || [];
+    if (!active.length) return state.simulados;
+    return state.simulados.filter((item) => {
+      const tags = Array.isArray(item.examTags) ? item.examTags : item.examTag ? [item.examTag] : [];
+      return tags.some((tag) => active.includes(tag));
+    });
   }
   function subjectProgress(subject) {
     return calculateTopicCoverage(subject.topics).value;
@@ -19132,8 +19189,22 @@
   var headerObserver = new IntersectionObserver((entries) => {
     const hero = entries[0], shell = document.querySelector(".sticky-shell");
     shell?.classList.toggle("is-compact", !hero.isIntersecting && hero.boundingClientRect.bottom < 0);
+    syncStickyMetrics();
   }, { threshold: 0 });
   headerObserver.observe(document.querySelector(".statement"));
+  var stickyShell = document.querySelector(".sticky-shell");
+  var overviewNav = document.querySelector(".overview-nav");
+  var syncStickyMetrics = () => {
+    document.documentElement.style.setProperty("--sticky-stack-height", `${Math.ceil(stickyShell?.getBoundingClientRect().height || 0)}px`);
+    document.documentElement.style.setProperty("--overview-nav-height", `${Math.ceil(overviewNav?.getBoundingClientRect().height || 0)}px`);
+  };
+  if ("ResizeObserver" in window) {
+    const stickyMetricsObserver = new ResizeObserver(syncStickyMetrics);
+    if (stickyShell) stickyMetricsObserver.observe(stickyShell);
+    if (overviewNav) stickyMetricsObserver.observe(overviewNav);
+  }
+  window.addEventListener("resize", syncStickyMetrics, { passive: true });
+  window.requestAnimationFrame(syncStickyMetrics);
   function renderHeader() {
     const topics = activeTopics();
     const total = topics.length;
@@ -20615,16 +20686,16 @@
     const start = addDays(currentStart, -7 * weeksAgo);
     return { start, end: addDays(start, 6) };
   }
-  function getSubjectPerformanceBetween(subjectId, start, end) {
-    const records = validQuestionRecords().filter((question) => entitySubjectId(question) === subjectId && question.date >= start && question.date <= end);
+  function getSubjectPerformanceBetween(subjectId, start, end, records = validQuestionRecords()) {
+    records = records.filter((question) => entitySubjectId(question) === subjectId && question.date >= start && question.date <= end);
     const resolved = records.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
     const correct = records.reduce((sum4, q) => sum4 + (Number(q.correct) || 0), 0);
     return { start, end, resolved, correct, accuracy: accuracyFromCounts(correct, resolved), insufficientData: resolved < MIN_WEEKLY_QUESTIONS };
   }
-  function getSubjectWeeklyTrend(subjectId, weeks = 8) {
+  function getSubjectWeeklyTrend(subjectId, weeks = 8, records = validQuestionRecords()) {
     return Array.from({ length: weeks }, (_, index) => {
       const range = getWeekRange(weeks - 1 - index);
-      return getSubjectPerformanceBetween(subjectId, range.start, range.end);
+      return getSubjectPerformanceBetween(subjectId, range.start, range.end, records);
     });
   }
   function getTopicPerformanceBetween(topicId, start, end) {
@@ -21859,10 +21930,11 @@
     body.innerHTML = html.join("");
   }
   function computeAlertasInteligentes() {
-    const today = todayISO();
-    const subjects = activeSubjects().map((subject) => {
-      const trend = calculateWeightedTrend(getSubjectWeeklyTrend(subject.id));
-      const lastSession = state.studySessions.filter((session) => entitySubjectId(session) === subject.id && session.date).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+    const today = todayISO(), scope = examEvidenceContext(), scopedQuestions = scope.questions.included;
+    const eligibleSubjectIds = new Set(examScopedTopics().map((topic) => topic.subjectId));
+    const subjects = activeSubjects().filter((subject) => eligibleSubjectIds.has(subject.id)).map((subject) => {
+      const trend = calculateWeightedTrend(getSubjectWeeklyTrend(subject.id, 8, scopedQuestions));
+      const lastSession = scope.sessions.included.filter((session) => entitySubjectId(session) === subject.id && session.date).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
       const daysSinceStudy = lastSession ? Math.max(0, Math.floor((/* @__PURE__ */ new Date(today + "T00:00:00") - /* @__PURE__ */ new Date(lastSession.date + "T00:00:00")) / 864e5)) : null;
       return { subjectId: subject.id, name: subject.name, trend: { direction: trend.key === "down" ? "down" : trend.key === "up" ? "up" : "stable", state: trend.state, delta: trend.delta }, daysSinceStudy };
     });
@@ -21874,8 +21946,8 @@
     const weekStart = startOfWeek(today), achieved = uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6));
     const actualFrac = state.metas.semanal > 0 ? achieved / state.metas.semanal : 1;
     const weeklyGoalGap = expectedFrac >= 0.5 && actualFrac < expectedFrac - 0.15 ? Math.round((expectedFrac - actualFrac) * 100) : null;
-    const hardTopicsWithoutReview = activeTopics().filter((topic) => topic.difficulty === "Difícil" && topic.status !== "Concluído" && !state.reviewAgenda.some((review) => (review.topicId || review.topicRef) === topic.id && review.status !== "Concluído")).length;
-    return buildIntelligentAlerts({ today, overdueReviews: revisoesAtrasadas(), subjects, topics, weeklyBalanceMinutes: plan.weeklyBalanceMinutes, hardTopicsWithoutReview, weeklyGoalGap });
+    const scopedReviews = examScopedRecords(getRevisoesUnificadas()), hardTopicsWithoutReview = examScopedTopics().filter((topic) => topic.difficulty === "Difícil" && topic.status !== "Concluído" && !scopedReviews.some((review) => (review.topicId || review.topicRef) === topic.id && review.status !== "Concluído")).length;
+    return buildIntelligentAlerts({ today, overdueReviews: scopedReviews.filter((review) => review.date < today && review.status !== "Concluído").length, subjects, topics, weeklyBalanceMinutes: plan.weeklyBalanceMinutes, hardTopicsWithoutReview, weeklyGoalGap });
   }
   function renderAlertasInteligentes() {
     const container = document.getElementById("alertasInteligentesList");
@@ -22297,7 +22369,7 @@
     return values.length ? values.reduce((sum4, n3) => sum4 + n3, 0) / values.length : 0;
   }
   function approvalSimuladosMetric() {
-    const completed = state.simulados.filter((sim) => simuladoEffectiveCounts(sim).total > 0).sort((a, b) => (a.date || "").localeCompare(b.date || "")).slice(-5);
+    const completed = examScopedSimulations().filter((sim) => simuladoEffectiveCounts(sim).total > 0).sort((a, b) => (a.date || "").localeCompare(b.date || "")).slice(-5);
     if (completed.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem simulados concluídos" };
     let weighted = 0, weights = 0, totalQuestions = 0;
     completed.forEach((sim, index) => {
@@ -22311,8 +22383,8 @@
     return { score: clampScore(50 + (raw - 50) * confidence2), confidence: confidence2, available: true, raw, detail: `${completed.length} simulado${completed.length === 1 ? "" : "s"} · média recente ${Math.round(raw)}%` };
   }
   function approvalAcertosMetric() {
-    const total = state.questoes.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
-    const correct = state.questoes.reduce((sum4, q) => sum4 + (Number(q.correct) || 0), 0);
+    const questions = examEvidenceContext().questions.included, total = questions.reduce((sum4, q) => sum4 + (Number(q.resolved) || 0), 0);
+    const correct = questions.reduce((sum4, q) => sum4 + (Number(q.correct) || 0), 0);
     if (total === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem questões registradas" };
     const raw = correct / total * 100;
     const confidence2 = Math.min(1, total / 300);
@@ -22342,7 +22414,7 @@
   }
   function approvalRevisoesMetric() {
     const today = todayISO();
-    const due = getRevisoesUnificadas().filter((r) => r.date && r.date <= today);
+    const due = examScopedRecords(getRevisoesUnificadas()).filter((r) => r.date && r.date <= today);
     if (due.length === 0) return { score: 50, confidence: 0, available: false, raw: null, detail: "Sem revisões vencidas até hoje" };
     const completed = due.filter((r) => r.status === "Concluído").length;
     const pending = due.filter((r) => r.status !== "Concluído");
@@ -22356,7 +22428,7 @@
     return { score: clampScore(50 + (raw - 50) * evidence), confidence: confidence2, available: true, raw, detail: `${completed} de ${due.length} revisões em dia` };
   }
   function approvalTendenciaMetric() {
-    const simulations = state.simulados.filter((sim) => simuladoEffectiveCounts(sim).total > 0).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    const simulations = examScopedSimulations().filter((sim) => simuladoEffectiveCounts(sim).total > 0).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
     if (simulations.length < 2) return { score: 50, confidence: 0, available: false, raw: null, detail: "São necessários pelo menos 2 simulados" };
     const windowSize = Math.min(3, Math.floor(simulations.length / 2));
     const previous = simulations.slice(-(windowSize * 2), -windowSize).map(simuladoNota);
@@ -22433,7 +22505,7 @@
       const questions = validQuestionRecords().filter((item) => item.date >= start && item.date <= end);
       let total = questions.reduce((sum4, item) => sum4 + (Number(item.resolved) || 0), 0);
       let correct = questions.reduce((sum4, item) => sum4 + (Number(item.correct) || 0), 0);
-      state.simulados.filter((item) => item.date >= start && item.date <= end).forEach((item) => {
+      examScopedSimulations().filter((item) => item.date >= start && item.date <= end).forEach((item) => {
         const counts = simuladoEffectiveCounts(item);
         total += counts.total;
         correct += counts.correct;
@@ -22491,7 +22563,7 @@
     return { score: clampScore(50 + (raw - 50) * Math.max(0.25, confidence2)), confidence: confidence2, available: true, raw, detail: "Domínio dos tópicos (65%) + cobertura do edital (35%)" };
   }
   function approvalConsistenciaMetric() {
-    const today = todayISO(), byDate = studySecondsByDate(state.studySessions);
+    const today = todayISO(), byDate = studySecondsByDate(examEvidenceContext().sessions.included);
     const days = [];
     for (let n3 = 27; n3 >= 0; n3--) {
       const date2 = addDays(today, -n3);
@@ -22546,7 +22618,7 @@
   }
   function renderStudyTrack32Insights() {
     const close = document.getElementById("weeklyCloseDashboard"), comparison2 = document.getElementById("periodComparisonDashboard"), gaps = document.getElementById("gapMapDashboard"), history = document.getElementById("decisionHistoryDashboard"), simReplan = document.getElementById("postSimulationReplanDashboard");
-    const model = buildStudyTrack32ViewModel({ today: todayISO(), sessions: state.studySessions, questions: state.questoes, dailyPlans: planningRepository.getDailyPlans?.() || [], planAdjustments: state.planAdjustments, recommendations: state.recommendationFeedback, simulations: state.simulados, subjects: state.subjects, weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), targetAccuracy: Number(state.metas.metaAprovacao) || 80, algorithmServices: { addDays, buildWeeklyClose, buildGapMap, buildDecisionHistory, buildPostSimulationReplan, buildCandidates: intelligenceCandidates }, nameResolvers: { subject: getSubjectName, topic: getTopicName } }), options = { escapeHtml, formatMinutes: formatPlanMinutes };
+    const scope = examEvidenceContext(), scopedSubjectIds = new Set(scope.content.eligibleTopics.map((item) => item.subjectId)), model = buildStudyTrack32ViewModel({ today: todayISO(), sessions: scope.sessions.included, questions: scope.questions.included, dailyPlans: planningRepository.getDailyPlans?.() || [], planAdjustments: state.planAdjustments, recommendations: state.recommendationFeedback, simulations: examScopedSimulations(), subjects: state.subjects.filter((subject) => scopedSubjectIds.has(subject.id)), weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), targetAccuracy: Number(state.metas.metaAprovacao) || 80, algorithmServices: { addDays, buildWeeklyClose, buildGapMap, buildDecisionHistory, buildPostSimulationReplan, buildCandidates: intelligenceCandidates }, nameResolvers: { subject: getSubjectName, topic: getTopicName } }), options = { escapeHtml, formatMinutes: formatPlanMinutes };
     if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, options);
     if (comparison2) comparison2.innerHTML = renderPeriodComparison(model.weeklyClose, options);
     if (gaps) gaps.innerHTML = renderGapMap(model.gapMap, options);

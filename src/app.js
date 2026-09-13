@@ -55,6 +55,7 @@ import {createExamImportService} from './application/subjects/exam-import-servic
 import {EXAM_PRESETS,getExamPreset} from './domain/exams/exam-presets.js';
 import {EXAM_TAGS,CATALOG_VERSION,EXAM_SOURCES} from './domain/exams/exam-catalog.js';
 import {isTopicInExamScope,isCommonTopic,topicExamScopeLabel} from './domain/exams/exam-scope.js';
+import {classifyEvidenceScope,resolveExamEvidenceScope} from './domain/exams/exam-evidence-scope.js';
 import {createNavigationController} from './ui/controllers/navigation-controller.js';
 import {createModalController} from './ui/controllers/modal-controller.js';
 import {createEditableCollectionController} from './ui/controllers/editable-collection-controller.js';
@@ -739,6 +740,9 @@ function subjectsForSelection(selectedId=null){
 function activeTopics(){ return allTopics().filter(topic=>!topic.subjectArchived&&!topic.topicArchived); }
 function topicInActiveExamScope(topic){return isTopicInExamScope(topic,state.examBlueprint?.activeExamTags||[])}
 function examScopedTopics(){return activeTopics().filter(topicInActiveExamScope)}
+function examEvidenceContext(){return resolveExamEvidenceScope({subjects:state.subjects,activeExamTags:state.examBlueprint?.activeExamTags||[],sessions:state.studySessions,questions:state.questoes,reviews:state.reviewAgenda})}
+function examScopedRecords(records=[]){return records.filter(record=>classifyEvidenceScope(record,state.subjects,state.examBlueprint?.activeExamTags||[]).includedInExamMetrics)}
+function examScopedSimulations(){const active=state.examBlueprint?.activeExamTags||[];if(!active.length)return state.simulados;return state.simulados.filter(item=>{const tags=Array.isArray(item.examTags)?item.examTags:item.examTag?[item.examTag]:[];return tags.some(tag=>active.includes(tag))})}
 function subjectProgress(subject){
   return calculateTopicCoverage(subject.topics).value;
 }
@@ -1682,7 +1686,20 @@ document.getElementById('globalSearchInput').addEventListener('focus', renderGlo
 document.getElementById('globalSearchInput').addEventListener('blur', () => {
   setTimeout(()=> document.getElementById('globalSearchResults').classList.remove('show'), 150);
 });
-const headerObserver=new IntersectionObserver(entries=>{const hero=entries[0],shell=document.querySelector('.sticky-shell');shell?.classList.toggle('is-compact',!hero.isIntersecting&&hero.boundingClientRect.bottom<0)},{threshold:0});headerObserver.observe(document.querySelector('.statement'));
+const headerObserver=new IntersectionObserver(entries=>{const hero=entries[0],shell=document.querySelector('.sticky-shell');shell?.classList.toggle('is-compact',!hero.isIntersecting&&hero.boundingClientRect.bottom<0);syncStickyMetrics()},{threshold:0});headerObserver.observe(document.querySelector('.statement'));
+const stickyShell=document.querySelector('.sticky-shell');
+const overviewNav=document.querySelector('.overview-nav');
+const syncStickyMetrics=()=>{
+  document.documentElement.style.setProperty('--sticky-stack-height',`${Math.ceil(stickyShell?.getBoundingClientRect().height||0)}px`);
+  document.documentElement.style.setProperty('--overview-nav-height',`${Math.ceil(overviewNav?.getBoundingClientRect().height||0)}px`);
+};
+if('ResizeObserver' in window){
+  const stickyMetricsObserver=new ResizeObserver(syncStickyMetrics);
+  if(stickyShell)stickyMetricsObserver.observe(stickyShell);
+  if(overviewNav)stickyMetricsObserver.observe(overviewNav);
+}
+window.addEventListener('resize',syncStickyMetrics,{passive:true});
+window.requestAnimationFrame(syncStickyMetrics);
 
 /* ===== RENDER: HEADER STATS ===== */
 function renderHeader(){
@@ -2864,16 +2881,16 @@ function getWeekRange(weeksAgo){
   const start=addDays(currentStart,-7*weeksAgo);
   return {start,end:addDays(start,6)};
 }
-function getSubjectPerformanceBetween(subjectId,start,end){
-  const records=validQuestionRecords().filter(question=>entitySubjectId(question)===subjectId&&question.date>=start&&question.date<=end);
+function getSubjectPerformanceBetween(subjectId,start,end,records=validQuestionRecords()){
+  records=records.filter(question=>entitySubjectId(question)===subjectId&&question.date>=start&&question.date<=end);
   const resolved=records.reduce((sum,q)=>sum+(Number(q.resolved)||0),0);
   const correct=records.reduce((sum,q)=>sum+(Number(q.correct)||0),0);
   return {start,end,resolved,correct,accuracy:accuracyFromCounts(correct,resolved),insufficientData:resolved<MIN_WEEKLY_QUESTIONS};
 }
-function getSubjectWeeklyTrend(subjectId,weeks=8){
+function getSubjectWeeklyTrend(subjectId,weeks=8,records=validQuestionRecords()){
   return Array.from({length:weeks},(_,index)=>{
     const range=getWeekRange(weeks-1-index);
-    return getSubjectPerformanceBetween(subjectId,range.start,range.end);
+    return getSubjectPerformanceBetween(subjectId,range.start,range.end,records);
   });
 }
 function getTopicPerformanceBetween(topicId,start,end){
@@ -4057,10 +4074,11 @@ function renderStudySessionsHistory(){
 
 /* ===== ALERTAS INTELIGENTES ===== */
 function computeAlertasInteligentes(){
-  const today=todayISO();
-  const subjects=activeSubjects().map(subject=>{
-    const trend=calculateWeightedTrend(getSubjectWeeklyTrend(subject.id));
-    const lastSession=state.studySessions.filter(session=>entitySubjectId(session)===subject.id&&session.date).sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];
+  const today=todayISO(),scope=examEvidenceContext(),scopedQuestions=scope.questions.included;
+  const eligibleSubjectIds=new Set(examScopedTopics().map(topic=>topic.subjectId));
+  const subjects=activeSubjects().filter(subject=>eligibleSubjectIds.has(subject.id)).map(subject=>{
+    const trend=calculateWeightedTrend(getSubjectWeeklyTrend(subject.id,8,scopedQuestions));
+    const lastSession=scope.sessions.included.filter(session=>entitySubjectId(session)===subject.id&&session.date).sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];
     const daysSinceStudy=lastSession?Math.max(0,Math.floor((new Date(today+'T00:00:00')-new Date(lastSession.date+'T00:00:00'))/86400000)):null;
     return {subjectId:subject.id,name:subject.name,trend:{direction:trend.key==='down'?'down':trend.key==='up'?'up':'stable',state:trend.state,delta:trend.delta},daysSinceStudy};
   });
@@ -4072,8 +4090,8 @@ function computeAlertasInteligentes(){
   const weekStart=startOfWeek(today),achieved=uniqueTopicsCompletedBetween(weekStart,addDays(weekStart,6));
   const actualFrac=state.metas.semanal>0?achieved/state.metas.semanal:1;
   const weeklyGoalGap=expectedFrac>=.5&&actualFrac<expectedFrac-.15?Math.round((expectedFrac-actualFrac)*100):null;
-  const hardTopicsWithoutReview=activeTopics().filter(topic=>topic.difficulty==='Difícil'&&topic.status!=='Concluído'&&!state.reviewAgenda.some(review=>(review.topicId||review.topicRef)===topic.id&&review.status!=='Concluído')).length;
-  return buildIntelligentAlerts({today,overdueReviews:revisoesAtrasadas(),subjects,topics,weeklyBalanceMinutes:plan.weeklyBalanceMinutes,hardTopicsWithoutReview,weeklyGoalGap});
+  const scopedReviews=examScopedRecords(getRevisoesUnificadas()),hardTopicsWithoutReview=examScopedTopics().filter(topic=>topic.difficulty==='Difícil'&&topic.status!=='Concluído'&&!scopedReviews.some(review=>(review.topicId||review.topicRef)===topic.id&&review.status!=='Concluído')).length;
+  return buildIntelligentAlerts({today,overdueReviews:scopedReviews.filter(review=>review.date<today&&review.status!=='Concluído').length,subjects,topics,weeklyBalanceMinutes:plan.weeklyBalanceMinutes,hardTopicsWithoutReview,weeklyGoalGap});
 }
 
 function renderAlertasInteligentes(){
@@ -4381,7 +4399,7 @@ function clampScore(value){ return Math.max(0,Math.min(100,Math.round(Number(val
 function average(values){ return values.length ? values.reduce((sum,n)=>sum+n,0)/values.length : 0; }
 
 function approvalSimuladosMetric(){
-  const completed = state.simulados
+  const completed = examScopedSimulations()
     .filter(sim=>simuladoEffectiveCounts(sim).total>0)
     .sort((a,b)=>(a.date||'').localeCompare(b.date||''))
     .slice(-5);
@@ -4399,8 +4417,8 @@ function approvalSimuladosMetric(){
 }
 
 function approvalAcertosMetric(){
-  const total=state.questoes.reduce((sum,q)=>sum+(Number(q.resolved)||0),0);
-  const correct=state.questoes.reduce((sum,q)=>sum+(Number(q.correct)||0),0);
+  const questions=examEvidenceContext().questions.included,total=questions.reduce((sum,q)=>sum+(Number(q.resolved)||0),0);
+  const correct=questions.reduce((sum,q)=>sum+(Number(q.correct)||0),0);
   if(total===0) return {score:50,confidence:0,available:false,raw:null,detail:'Sem questões registradas'};
   const raw=(correct/total)*100;
   const confidence=Math.min(1,total/300);
@@ -4433,7 +4451,7 @@ function approvalDominioMetric(){
 
 function approvalRevisoesMetric(){
   const today=todayISO();
-  const due=getRevisoesUnificadas().filter(r=>r.date&&r.date<=today);
+  const due=examScopedRecords(getRevisoesUnificadas()).filter(r=>r.date&&r.date<=today);
   if(due.length===0) return {score:50,confidence:0,available:false,raw:null,detail:'Sem revisões vencidas até hoje'};
   const completed=due.filter(r=>r.status==='Concluído').length;
   const pending=due.filter(r=>r.status!=='Concluído');
@@ -4448,7 +4466,7 @@ function approvalRevisoesMetric(){
 }
 
 function approvalTendenciaMetric(){
-  const simulations=state.simulados
+  const simulations=examScopedSimulations()
     .filter(sim=>simuladoEffectiveCounts(sim).total>0)
     .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   if(simulations.length<2) return {score:50,confidence:0,available:false,raw:null,detail:'São necessários pelo menos 2 simulados'};
@@ -4531,7 +4549,7 @@ function performanceForecastObservations(){
     const questions=validQuestionRecords().filter(item=>item.date>=start&&item.date<=end);
     let total=questions.reduce((sum,item)=>sum+(Number(item.resolved)||0),0);
     let correct=questions.reduce((sum,item)=>sum+(Number(item.correct)||0),0);
-    state.simulados.filter(item=>item.date>=start&&item.date<=end).forEach(item=>{const counts=simuladoEffectiveCounts(item);total+=counts.total;correct+=counts.correct});
+    examScopedSimulations().filter(item=>item.date>=start&&item.date<=end).forEach(item=>{const counts=simuladoEffectiveCounts(item);total+=counts.total;correct+=counts.correct});
     return {date:end,value:accuracyFromCounts(correct,total),sampleSize:total};
   });
 }
@@ -4580,7 +4598,7 @@ function approvalConhecimentoMetric(base){
   return {score:clampScore(50+(raw-50)*Math.max(.25,confidence)),confidence,available:true,raw,detail:'Domínio dos tópicos (65%) + cobertura do edital (35%)'};
 }
 function approvalConsistenciaMetric(){
-  const today=todayISO(),byDate=studySecondsByDate(state.studySessions);
+  const today=todayISO(),byDate=studySecondsByDate(examEvidenceContext().sessions.included);
   const days=[];for(let n=27;n>=0;n--){const date=addDays(today,-n);days.push({targetSeconds:metaHoursForDate(date)*3600,studiedSeconds:byDate[date]||0})}
   const result=calculateGoalConsistency(days);
   if(!result.applicable)return {score:50,confidence:0,available:false,raw:null,detail:'Defina metas de horas para medir consistência'};
@@ -4622,7 +4640,7 @@ function renderApprovalDashboard(){
 function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml})}
 function renderStudyTrack32Insights(){
  const close=document.getElementById('weeklyCloseDashboard'),comparison=document.getElementById('periodComparisonDashboard'),gaps=document.getElementById('gapMapDashboard'),history=document.getElementById('decisionHistoryDashboard'),simReplan=document.getElementById('postSimulationReplanDashboard');
- const model=buildStudyTrack32ViewModel({today:todayISO(),sessions:state.studySessions,questions:state.questoes,dailyPlans:planningRepository.getDailyPlans?.()||[],planAdjustments:state.planAdjustments,recommendations:state.recommendationFeedback,simulations:state.simulados,subjects:state.subjects,weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:Number(state.metas.metaAprovacao)||80,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};
+ const scope=examEvidenceContext(),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),model=buildStudyTrack32ViewModel({today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:planningRepository.getDailyPlans?.()||[],planAdjustments:state.planAdjustments,recommendations:state.recommendationFeedback,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:Number(state.metas.metaAprovacao)||80,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};
  if(close)close.innerHTML=renderWeeklyClose(model.weeklyClose,options);
  if(comparison)comparison.innerHTML=renderPeriodComparison(model.weeklyClose,options);
  if(gaps)gaps.innerHTML=renderGapMap(model.gapMap,options);

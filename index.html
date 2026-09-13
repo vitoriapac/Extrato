@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=9">
+<link rel="stylesheet" href="styles/app.css?v=10">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -68,8 +68,6 @@
     </div>
   </div>
 
-  <div class="sticky-shell">
-  <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">StudyTrack</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
   <div class="global-search-row">
     <div class="global-search">
           <label class="sr-only" for="globalSearchInput">Busca global</label>
@@ -80,24 +78,28 @@
       <span id="themeToggleIcon">🌙</span>
     </button>
   </div>
-  </div>
 
-  <div class="tabs" role="tablist" aria-label="Seções do extrato">
-    <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard">Visão geral</button>
-    <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje">🎯 Hoje</button>
-    <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas">Disciplinas</button>
-    <button class="tab-btn" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario">Calendário</button>
-    <button class="tab-btn tab-secondary" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda">Agenda de Revisões</button>
-    <button class="tab-btn tab-secondary" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes">Questões &amp; Simulados</button>
-    <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Metas</button>
-    <button class="tab-btn tab-secondary" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes">Instruções</button>
-  </div>
-  <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu">Mais</button>
-  <div class="mobile-more-menu" id="mobileMoreMenu" role="menu" hidden>
-    <button type="button" role="menuitem" data-more-tab="agenda">Agenda de Revisões</button>
-    <button type="button" role="menuitem" data-more-tab="questoes">Questões e Simulados</button>
-    <button type="button" role="menuitem" data-more-tab="metas">Metas</button>
-    <button type="button" role="menuitem" data-more-tab="instrucoes">Instruções</button>
+  <div class="sticky-shell">
+    <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">StudyTrack</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
+    <div class="primary-nav-shell">
+      <div class="tabs" role="tablist" aria-label="Seções do extrato">
+        <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard">Visão geral</button>
+        <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje">🎯 Hoje</button>
+        <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas">Disciplinas</button>
+        <button class="tab-btn" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario">Calendário</button>
+        <button class="tab-btn tab-secondary" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda">Agenda de Revisões</button>
+        <button class="tab-btn tab-secondary" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes">Questões &amp; Simulados</button>
+        <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Metas</button>
+        <button class="tab-btn tab-secondary" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes">Instruções</button>
+      </div>
+      <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu">Mais</button>
+      <div class="mobile-more-menu" id="mobileMoreMenu" role="menu" hidden>
+        <button type="button" role="menuitem" data-more-tab="agenda">Agenda de Revisões</button>
+        <button type="button" role="menuitem" data-more-tab="questoes">Questões e Simulados</button>
+        <button type="button" role="menuitem" data-more-tab="metas">Metas</button>
+        <button type="button" role="menuitem" data-more-tab="instrucoes">Instruções</button>
+      </div>
+    </div>
   </div>
 
   <!-- DASHBOARD -->
@@ -723,7 +725,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=8"></script>
+  <script src="src/app.bundle.js?v=10"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

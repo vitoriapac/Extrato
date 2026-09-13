@@ -1326,3 +1326,29 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 .intelligence-column{display:block}.intelligence-column>.analytics-card{padding:22px 0;margin:0;border:0;border-top:1px solid var(--paper-line);background:transparent}.intelligence-column>.analytics-card:first-of-type{margin-top:22px}.intelligence-column>.analytics-card>h3{margin:0 0 16px;font:600 16px var(--font-display)}
 .weekly-kpis{gap:0;margin-bottom:24px}.weekly-kpis>div{padding:16px}.weekly-assessment{margin-top:0;padding-top:20px}.period-comparison{margin-top:20px;padding-top:20px}.period-comparison>strong{margin-bottom:8px;font:600 15px var(--font-display)}
 @media(max-width:760px){.statement-body{gap:24px}.mini-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:18px 14px}.mini-stat{padding-top:8px;border-top:1px solid rgba(246,243,236,.14)}.intelligence-column>.analytics-card{padding-block:18px}}
+
+/* ===== PILHA ÚNICA DE NAVEGAÇÃO STICKY ===== */
+.global-search-row{position:relative;z-index:1}
+.sticky-shell{position:sticky;top:0;z-index:90;margin-top:var(--space-3);background:var(--paper);box-shadow:0 2px 0 var(--heading)}
+.sticky-shell .compact-header{box-shadow:none}
+.primary-nav-shell{position:relative;display:flex;align-items:stretch;min-width:0;background:var(--paper)}
+.primary-nav-shell .tabs{position:static;z-index:auto;flex:1 1 auto;min-width:0;margin:0;padding-top:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;box-shadow:none}
+.primary-nav-shell .tab-btn{flex:0 0 auto;white-space:nowrap}
+.primary-nav-shell .mobile-more-menu{top:100%;right:0}
+.overview-nav{position:sticky;top:var(--sticky-stack-height,52px);z-index:80;flex-wrap:nowrap;overflow-x:auto}
+[id^="overview-"]{scroll-margin-top:calc(var(--sticky-stack-height,52px) + var(--overview-nav-height,54px) + 16px)}
+
+@media(max-width:760px){
+  .sticky-shell{top:0}
+  .compact-header{min-height:40px;padding:7px 10px;gap:8px;flex-wrap:nowrap}
+  .compact-header .compact-brand{font-size:15px}
+  .compact-header .compact-meta{width:auto;min-width:0;margin-left:auto;gap:10px;flex-wrap:nowrap;font-size:9px}
+  .compact-header .compact-plan{margin-left:0}
+  #compactExamDate{display:none}
+  .primary-nav-shell .tabs{display:flex;grid-template-columns:none;overflow-x:auto;scrollbar-width:none}
+  .primary-nav-shell .tabs::-webkit-scrollbar{display:none}
+  .primary-nav-shell .tab-btn{min-height:42px;padding:8px 10px;font-size:9px;white-space:nowrap;overflow-wrap:normal}
+  .primary-nav-shell .more-tab-btn{display:block;flex:0 0 auto;min-width:48px;border-left:1px solid var(--paper-line);border-bottom:2px solid var(--heading);border-radius:0}
+  .primary-nav-shell .mobile-more-menu{right:0}
+  .overview-nav{top:var(--sticky-stack-height,46px);z-index:80;margin-bottom:24px}
+}

@@ -126,3 +126,14 @@ O ciclo atual mantém as regras de data local centralizadas em `study-session.js
 O contrato de `report-data.js` resolve nomes e estados antes da impressão; `report-template.js` nunca usa IDs internos como texto visível. O fechamento semanal versionado recebe os dois períodos da camada de aplicação e devolve deltas tipados, diagnóstico e ação recomendada.
 
 O ciclo analítico 3.2 é preparado por um view-model sem DOM e entregue a renderizadores independentes. O composition root conecta os controladores de Calendário e Questões, a fachada de importação do edital e o serviço de estudo guiado aos fluxos reais da interface; módulos de domínio continuam responsáveis pelos cálculos e pela persistência coordenada.
+# Escopo analítico por concurso
+
+`src/domain/exams/exam-scope.js` é a única autoridade para elegibilidade de conteúdo. `resolveExamScope` separa tópicos elegíveis, pessoais, catalogados e excluídos. `src/domain/exams/exam-evidence-scope.js` classifica registros históricos como `topic_scoped`, `subject_only` ou `unscoped` e impede que evidência sem tópico seja atribuída a um edital específico.
+
+| Família | Exemplos | Regra |
+| --- | --- | --- |
+| Estritamente filtrável | cobertura, domínio, retenção, gap, prioridade e revisões por tópico | usa tópicos elegíveis |
+| Parcialmente filtrável | tempo, sessões, questões e erros | exige tópico elegível para métricas específicas; registros só da disciplina permanecem gerais |
+| Global | tempo histórico total e quantidade patrimonial de sessões | não muda ao trocar o concurso |
+
+Consumidores de planejamento, candidatos, matriz Edital × Domínio, prontidão, alertas, forecast, fechamento semanal e PDF recebem conteúdo ou evidência já resolvidos pelo contrato de escopo. O PDF apresenta separadamente valores atribuídos ao edital e registros sem tópico elegível.
