@@ -85,30 +85,30 @@
         };
       });
     };
-    return { get: (key) => transaction("readonly", (store) => store.get(key)), set: (key, value2) => transaction("readwrite", (store) => store.put(value2, key)), remove: (key) => transaction("readwrite", (store) => store.delete(key)) };
+    return { get: (key2) => transaction("readonly", (store) => store.get(key2)), set: (key2, value2) => transaction("readwrite", (store) => store.put(value2, key2)), remove: (key2) => transaction("readwrite", (store) => store.delete(key2)) };
   }
 
   // src/storage/local-storage-provider.js
   function createLocalStorageProvider(storage = globalThis.localStorage) {
     return {
-      get(key) {
+      get(key2) {
         try {
-          return storage?.getItem(key) || null;
+          return storage?.getItem(key2) || null;
         } catch (error) {
           return null;
         }
       },
-      set(key, value2) {
+      set(key2, value2) {
         try {
-          storage?.setItem(key, value2);
+          storage?.setItem(key2, value2);
           return true;
         } catch (error) {
           return false;
         }
       },
-      remove(key) {
+      remove(key2) {
         try {
-          storage?.removeItem(key);
+          storage?.removeItem(key2);
           return true;
         } catch (error) {
           return false;
@@ -119,11 +119,11 @@
 
   // src/storage/repository.js
   var localProvider = createLocalStorageProvider();
-  function repositoryReadLocalState(key) {
-    return localProvider.get(key);
+  function repositoryReadLocalState(key2) {
+    return localProvider.get(key2);
   }
-  function repositoryWriteLocalState(value2, key) {
-    return localProvider.set(key, value2);
+  function repositoryWriteLocalState(value2, key2) {
+    return localProvider.set(key2, value2);
   }
   function serializedTimestamp(value2) {
     try {
@@ -135,62 +135,62 @@
   function createStorageManager(config) {
     const indexedDb = createIndexedDbProvider(config);
     return {
-      async get(key) {
+      async get(key2) {
         const values = [];
         try {
-          const value2 = await indexedDb.get(key);
+          const value2 = await indexedDb.get(key2);
           if (value2) values.push(value2);
         } catch (error) {
           console.warn("IndexedDB indisponível", error);
         }
         if (globalThis.storage && typeof globalThis.storage.get === "function") {
           try {
-            const result = await globalThis.storage.get(key, false);
+            const result = await globalThis.storage.get(key2, false);
             if (result?.value) values.push(result.value);
           } catch (error) {
             console.warn("window.storage indisponível", error);
           }
         }
-        const localValue = repositoryReadLocalState(key);
+        const localValue = repositoryReadLocalState(key2);
         if (localValue) values.push(localValue);
         return values.sort((a, b) => serializedTimestamp(b) - serializedTimestamp(a))[0] || null;
       },
-      async set(key, value2) {
+      async set(key2, value2) {
         let success = false;
         try {
-          await indexedDb.set(key, value2);
+          await indexedDb.set(key2, value2);
           success = true;
         } catch (error) {
           console.warn("Falha no IndexedDB", error);
         }
         if (globalThis.storage && typeof globalThis.storage.set === "function") {
           try {
-            await globalThis.storage.set(key, value2, false);
+            await globalThis.storage.set(key2, value2, false);
             success = true;
           } catch (error) {
             console.warn("Falha no window.storage", error);
           }
         }
-        if (repositoryWriteLocalState(value2, key)) success = true;
+        if (repositoryWriteLocalState(value2, key2)) success = true;
         return success;
       },
-      async remove(key) {
+      async remove(key2) {
         let success = false;
         try {
-          await indexedDb.remove(key);
+          await indexedDb.remove(key2);
           success = true;
         } catch (error) {
           console.warn("Falha ao remover do IndexedDB", error);
         }
         if (globalThis.storage && typeof globalThis.storage.delete === "function") {
           try {
-            await globalThis.storage.delete(key, false);
+            await globalThis.storage.delete(key2, false);
             success = true;
           } catch (error) {
             console.warn("Falha ao remover do window.storage", error);
           }
         }
-        if (localProvider.remove(key)) success = true;
+        if (localProvider.remove(key2)) success = true;
         return success;
       }
     };
@@ -212,15 +212,15 @@
     if (!manager || ["get", "set", "remove"].some((method) => typeof manager[method] !== "function")) throw new TypeError("O provider real requer um gerenciador persistente.");
     if (typeof readLocal !== "function" || typeof writeLocal !== "function") throw new TypeError("O provider real requer acesso ao armazenamento local.");
     return assertStorageProvider({
-      get: (key) => manager.get(key),
-      set: (key, value2) => manager.set(key, value2),
-      remove: async (key) => {
-        const removed = await manager.remove(key);
-        if (typeof removeLocal === "function") removeLocal(key);
+      get: (key2) => manager.get(key2),
+      set: (key2, value2) => manager.set(key2, value2),
+      remove: async (key2) => {
+        const removed = await manager.remove(key2);
+        if (typeof removeLocal === "function") removeLocal(key2);
         return removed;
       },
-      readLocal: (key) => readLocal(key),
-      writeLocal: (key, value2) => writeLocal(value2, key),
+      readLocal: (key2) => readLocal(key2),
+      writeLocal: (key2, value2) => writeLocal(value2, key2),
       mode: "real"
     });
   }
@@ -229,7 +229,7 @@
   function createDemoStorageProvider({ storage, stateKey, demoKey, generate } = {}) {
     if (!storage || typeof storage.getItem !== "function" || typeof storage.setItem !== "function") throw new TypeError("O provider demo requer um armazenamento de sessão.");
     if (typeof generate !== "function") throw new TypeError("O provider demo requer um gerador de estado.");
-    const keyFor = (key) => key === stateKey ? demoKey : `${demoKey}:${key}`;
+    const keyFor = (key2) => key2 === stateKey ? demoKey : `${demoKey}:${key2}`;
     const ensureState = () => {
       let value2 = storage.getItem(demoKey);
       if (!value2) {
@@ -239,22 +239,22 @@
       return value2;
     };
     return assertStorageProvider({
-      async get(key) {
-        return key === stateKey ? ensureState() : storage.getItem(keyFor(key));
+      async get(key2) {
+        return key2 === stateKey ? ensureState() : storage.getItem(keyFor(key2));
       },
-      async set(key, value2) {
-        storage.setItem(keyFor(key), value2);
+      async set(key2, value2) {
+        storage.setItem(keyFor(key2), value2);
         return true;
       },
-      async remove(key) {
-        storage.removeItem(keyFor(key));
+      async remove(key2) {
+        storage.removeItem(keyFor(key2));
         return true;
       },
-      readLocal(key) {
-        return key === stateKey ? ensureState() : storage.getItem(keyFor(key));
+      readLocal(key2) {
+        return key2 === stateKey ? ensureState() : storage.getItem(keyFor(key2));
       },
-      writeLocal(key, value2) {
-        storage.setItem(keyFor(key), value2);
+      writeLocal(key2, value2) {
+        storage.setItem(keyFor(key2), value2);
         return true;
       },
       mode: "demo"
@@ -457,7 +457,7 @@
   }
   function normalizeAlgorithmVersions(value2 = {}) {
     const source = value2 && typeof value2 === "object" && !Array.isArray(value2) ? value2 : {};
-    return Object.fromEntries(Object.entries(DEFAULT_ALGORITHM_VERSIONS).map(([key, fallback]) => [key, Math.max(1, Math.floor(Number(source[key]) || fallback))]));
+    return Object.fromEntries(Object.entries(DEFAULT_ALGORITHM_VERSIONS).map(([key2, fallback]) => [key2, Math.max(1, Math.floor(Number(source[key2]) || fallback))]));
   }
 
   // src/state/defaults.js
@@ -594,8 +594,8 @@
 
   // src/ui/filter-panel.js
   function countActiveFilters(filters, defaults = {}) {
-    return Object.entries(filters || {}).reduce((total, [key, value2]) => {
-      const baseline = Object.prototype.hasOwnProperty.call(defaults, key) ? defaults[key] : "";
+    return Object.entries(filters || {}).reduce((total, [key2, value2]) => {
+      const baseline = Object.prototype.hasOwnProperty.call(defaults, key2) ? defaults[key2] : "";
       return total + (value2 !== baseline && value2 !== "" && value2 != null ? 1 : 0);
     }, 0);
   }
@@ -660,18 +660,18 @@
     const factors = {}, missingFactors = [];
     let weighted = 0, availableWeight = 0;
     const totalWeight = Object.values(weights).reduce((sum4, value3) => sum4 + value3, 0);
-    for (const [key, weight] of Object.entries(weights)) {
-      const value3 = input[key];
+    for (const [key2, weight] of Object.entries(weights)) {
+      const value3 = input[key2];
       if (value3 == null || value3 === "" || !Number.isFinite(Number(value3))) {
-        missingFactors.push(key);
+        missingFactors.push(key2);
         continue;
       }
-      factors[key] = Math.max(0, Math.min(100, Number(value3)));
-      weighted += factors[key] * weight;
+      factors[key2] = Math.max(0, Math.min(100, Number(value3)));
+      weighted += factors[key2] * weight;
       availableWeight += weight;
     }
     const value2 = availableWeight ? Math.round(weighted / availableWeight) : null;
-    const exactContributions = Object.entries(factors).map(([key, score]) => ({ key, exact: score * weights[key] / availableWeight }));
+    const exactContributions = Object.entries(factors).map(([key2, score]) => ({ key: key2, exact: score * weights[key2] / availableWeight }));
     const contributionValues = exactContributions.map((item) => Math.floor(item.exact));
     let remainder = (value2 ?? 0) - contributionValues.reduce((sum4, item) => sum4 + item, 0);
     exactContributions.map((item, index) => ({ index, fraction: item.exact - Math.floor(item.exact) })).sort((a, b) => b.fraction - a.fraction || a.index - b.index).forEach((item) => {
@@ -706,12 +706,12 @@
   var READINESS_WEIGHTS = Object.freeze({ coverage: 0.3, mastery: 0.25, retention: 0.2, consistency: 0.15, simulations: 0.1 });
   function calculateReadinessScore(metrics, weights = READINESS_WEIGHTS) {
     const entries = Object.entries(weights);
-    const available = entries.filter(([key]) => metrics?.[key]?.available && Number.isFinite(Number(metrics[key].score)));
-    const missingFactors = entries.filter(([key]) => !available.some(([availableKey]) => availableKey === key)).map(([key]) => key);
-    if (!available.length) return { value: null, confidence: 0, confidenceLabel: "Baixa", state: "empty", factors: Object.fromEntries(entries.map(([key]) => [key, null])), missingFactors, availableFactors: [], evidence: describeScoreEvidence(), reasons: ["sem fatores disponíveis"], algorithmVersion: 1 };
+    const available = entries.filter(([key2]) => metrics?.[key2]?.available && Number.isFinite(Number(metrics[key2].score)));
+    const missingFactors = entries.filter(([key2]) => !available.some(([availableKey]) => availableKey === key2)).map(([key2]) => key2);
+    if (!available.length) return { value: null, confidence: 0, confidenceLabel: "Baixa", state: "empty", factors: Object.fromEntries(entries.map(([key2]) => [key2, null])), missingFactors, availableFactors: [], evidence: describeScoreEvidence(), reasons: ["sem fatores disponíveis"], algorithmVersion: 1 };
     const availableWeight = available.reduce((sum4, [, weight]) => sum4 + weight, 0);
-    const value2 = clampMetric(available.reduce((sum4, [key, weight]) => sum4 + Number(metrics[key].score) * weight, 0) / availableWeight);
-    const evidenceConfidence = available.reduce((sum4, [key, weight]) => sum4 + (Number(metrics[key].confidence) || 0) * weight, 0) / availableWeight;
+    const value2 = clampMetric(available.reduce((sum4, [key2, weight]) => sum4 + Number(metrics[key2].score) * weight, 0) / availableWeight);
+    const evidenceConfidence = available.reduce((sum4, [key2, weight]) => sum4 + (Number(metrics[key2].confidence) || 0) * weight, 0) / availableWeight;
     const coverageFactor = available.length / entries.length;
     const confidence2 = Math.max(0, Math.min(1, evidenceConfidence * (0.55 + 0.45 * coverageFactor)));
     return {
@@ -719,9 +719,9 @@
       confidence: confidence2,
       confidenceLabel: confidence2 >= 0.7 ? "Alta" : confidence2 >= 0.35 ? "Média" : "Baixa",
       state: available.length < 2 ? "insufficient" : "estimated",
-      factors: Object.fromEntries(entries.map(([key]) => [key, metrics?.[key]?.available ? Number(metrics[key].score) : null])),
+      factors: Object.fromEntries(entries.map(([key2]) => [key2, metrics?.[key2]?.available ? Number(metrics[key2].score) : null])),
       missingFactors,
-      availableFactors: available.map(([key]) => key),
+      availableFactors: available.map(([key2]) => key2),
       evidence: describeScoreEvidence({ completeness: availableWeight / entries.reduce((sum4, [, weight]) => sum4 + weight, 0), evidenceStrength: evidenceConfidence }),
       reasons: missingFactors.length ? [missingFactors.length + " fator(es) aguardando dados"] : ["todos os fatores disponíveis"],
       algorithmVersion: 1
@@ -821,7 +821,7 @@
     return { key: "high", label: "Alta" };
   }
   function buildCognitiveProfile(records = [], categoryKeys = []) {
-    const categories = Object.fromEntries(categoryKeys.map((key) => [key, 0]));
+    const categories = Object.fromEntries(categoryKeys.map((key2) => [key2, 0]));
     let totalErrors = 0;
     const dates = [];
     for (const record of records) {
@@ -829,9 +829,9 @@
       totalErrors += errors;
       if (record.date) dates.push(record.date);
       let remaining = errors;
-      for (const key of categoryKeys) {
-        const value2 = Math.max(0, Math.floor(Number(record.errorBreakdown?.[key]) || 0)), accepted = Math.min(value2, remaining);
-        categories[key] += accepted;
+      for (const key2 of categoryKeys) {
+        const value2 = Math.max(0, Math.floor(Number(record.errorBreakdown?.[key2]) || 0)), accepted = Math.min(value2, remaining);
+        categories[key2] += accepted;
         remaining -= accepted;
       }
     }
@@ -864,7 +864,7 @@
   var ICONS = { naoSabia: "📚", esqueci: "🧠", interpretacao: "📖", calculo: "➗", desatencao: "⚠️", chute: "🎲" };
   function buildErrorAnalysisViewModel({ current, previous = null, periodLabel = "" } = {}) {
     if (!current || current.state === "empty") return { state: "empty", totalErrors: 0, items: [], message: "Nenhum erro registrado neste recorte." };
-    const items = [...Object.keys(LABELS).map((key) => ({ key, label: LABELS[key], icon: ICONS[key], value: current.categories[key] || 0, previous: previous?.categories?.[key] || 0 })), { key: "uncategorized", label: "Sem categoria", icon: "○", value: current.uncategorized || 0, previous: previous?.uncategorized || 0 }].map((item) => ({ ...item, delta: item.value - item.previous }));
+    const items = [...Object.keys(LABELS).map((key2) => ({ key: key2, label: LABELS[key2], icon: ICONS[key2], value: current.categories[key2] || 0, previous: previous?.categories?.[key2] || 0 })), { key: "uncategorized", label: "Sem categoria", icon: "○", value: current.uncategorized || 0, previous: previous?.uncategorized || 0 }].map((item) => ({ ...item, delta: item.value - item.previous }));
     const dominant = current.dominant, diagnosis = dominant ? dominant.share + "% dos erros categorizados vêm de " + LABELS[dominant.key].toLowerCase() + "." : "Ainda não há evidência suficiente para definir uma causa dominante.";
     const action = dominant ? dominant.recommendation.action : "Continue categorizando os erros para receber uma ação confiável.";
     return { state: current.state, totalErrors: current.totalErrors, categorizedErrors: current.categorizedErrors, coverage: current.coverage, confidence: current.confidence, periodLabel, items, dominant, diagnosis, action, recommendedMode: current.recommendedMode, hasPrevious: Boolean(previous?.totalErrors), algorithmVersion: current.algorithmVersion };
@@ -940,13 +940,13 @@
     const opportunities = valid.map((item) => {
       let weighted = 0, availableWeight = 0;
       const factors = {}, missingFactors = [];
-      Object.entries(opportunityWeights).forEach(([key, weight]) => {
-        if (item[key] == null) {
-          missingFactors.push(key);
+      Object.entries(opportunityWeights).forEach(([key2, weight]) => {
+        if (item[key2] == null) {
+          missingFactors.push(key2);
           return;
         }
-        factors[key] = clamp3(item[key]);
-        weighted += factors[key] * weight;
+        factors[key2] = clamp3(item[key2]);
+        weighted += factors[key2] * weight;
         availableWeight += weight;
       });
       const opportunityScore = availableWeight ? Math.round(weighted / availableWeight) : null;
@@ -1051,7 +1051,7 @@
     const result = calculateFactorScore(factors, weights);
     const evidence = describeScoreEvidence({ completeness: result.completeness, evidenceStrength: evidenceStrength ?? result.completeness });
     const value2 = result.value;
-    const reasons = Object.entries(result.contributions).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([key]) => key);
+    const reasons = Object.entries(result.contributions).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([key2]) => key2);
     return {
       ...result,
       ...createScoreResult({
@@ -1331,13 +1331,13 @@
   var numeric = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Math.max(0, Math.min(100, Number(value2)));
   var round2 = (value2) => Math.round(value2 * 10) / 10;
   function normalizeRecommendationMetrics(value2 = {}) {
-    return Object.fromEntries(METRICS.map((key) => [key, numeric(value2?.[key])]));
+    return Object.fromEntries(METRICS.map((key2) => [key2, numeric(value2?.[key2])]));
   }
   function evaluateRecommendationOutcome({ before = {}, after = {}, questionVolume = 0, daysElapsed = 0, otherActivities = 0, measuredAt = null } = {}) {
     const normalizedBefore = normalizeRecommendationMetrics(before), normalizedAfter = normalizeRecommendationMetrics(after);
-    const delta = Object.fromEntries(METRICS.map((key) => {
-      const start = normalizedBefore[key], end = normalizedAfter[key];
-      return [key, start == null || end == null ? null : round2(key === "risk" ? start - end : end - start)];
+    const delta = Object.fromEntries(METRICS.map((key2) => {
+      const start = normalizedBefore[key2], end = normalizedAfter[key2];
+      return [key2, start == null || end == null ? null : round2(key2 === "risk" ? start - end : end - start)];
     }));
     const comparable = Object.values(delta).filter((value2) => value2 !== null);
     const volume = Math.max(0, Math.floor(Number(questionVolume) || 0)), elapsed = Math.max(0, Number(daysElapsed) || 0), activities = Math.max(0, Math.floor(Number(otherActivities) || 0));
@@ -1420,9 +1420,9 @@
     const feedback = measured[0];
     if (!feedback) return { state: "empty", available: false, metrics: [] };
     const outcome = feedback.outcome, before = outcome.before || feedback.snapshot?.before || feedback.baseline || {}, after = outcome.after || {}, deltas = outcome.delta || {};
-    const metrics = Object.keys(LABELS2).map((key) => {
-      const start = numeric2(before[key]), end = numeric2(after[key] ?? outcome[key + "After"]), delta = numeric2(deltas[key]);
-      return { key, label: LABELS2[key], before: start, after: end, delta, available: start !== null && end !== null };
+    const metrics = Object.keys(LABELS2).map((key2) => {
+      const start = numeric2(before[key2]), end = numeric2(after[key2] ?? outcome[key2 + "After"]), delta = numeric2(deltas[key2]);
+      return { key: key2, label: LABELS2[key2], before: start, after: end, delta, available: start !== null && end !== null };
     }).filter((item) => item.available);
     const state2 = STATE_MAP[outcome.state] || "insufficient", confidence2 = numeric2(outcome.confidence);
     return { state: state2, available: true, title: STATE_LABELS[state2], metrics, confidence: confidence2, confidenceLabel: outcome.confidenceLabel || outcome.evidence?.evidenceLabel || null, evidenceLabel: outcome.evidence?.evidenceLabel || null, reasons: Array.isArray(outcome.reasons) ? outcome.reasons : [], questionVolume: Math.max(0, Number(outcome.questionVolumeAfter ?? outcome.questionVolume) || 0), measuredAt: outcome.measuredAt || null, recommendationId: feedback.recommendationId, algorithmVersion: Number(outcome.algorithmVersion) || 1 };
@@ -1525,9 +1525,9 @@
       const questions = item.covered ? minutes - reviews : Math.min(minutes - reviews, Math.round(minutes * (item.masteryGap >= 60 ? 0.4 : 0.3)));
       const activityMix2 = { theory: minutes - reviews - questions, questions, reviews };
       const largest = Object.keys(activityMix2).sort((a, b) => activityMix2[b] - activityMix2[a])[0];
-      for (const key of Object.keys(activityMix2)) if (key !== largest && activityMix2[key] > 0 && activityMix2[key] < 15) {
-        activityMix2[largest] += activityMix2[key];
-        activityMix2[key] = 0;
+      for (const key2 of Object.keys(activityMix2)) if (key2 !== largest && activityMix2[key2] > 0 && activityMix2[key2] < 15) {
+        activityMix2[largest] += activityMix2[key2];
+        activityMix2[key2] = 0;
       }
       return { ...item, minutes, activityMix: activityMix2 };
     }).filter((item) => item.minutes > 0);
@@ -1681,9 +1681,9 @@
         createdPlans++;
       }
       day.items.forEach((source, index) => {
-        const key = `${source.studyPlanItemId}:${source.type}:${day.date}`;
-        if (existing.has(key)) return;
-        existing.add(key);
+        const key2 = `${source.studyPlanItemId}:${source.type}:${day.date}`;
+        if (existing.has(key2)) return;
+        existing.add(key2);
         plan.items.push({ id: idGenerator("plan-item"), subjectId: source.subjectId, topicId: source.topicId, subjectName: source.subjectName, topicName: source.topicName, type: source.type, plannedMinutes: source.minutes, executedSeconds: 0, status: "planned", sessionIds: [], position: plan.items.length + 1, statusIcon: "📅", statusLabel: "Plano semanal", reason: source.origin === "review" ? "Revisão prevista para o período" : "Distribuição confirmada do plano semanal", action: source.type === "questions" ? "Resolver questões" : source.type === "review" ? "Revisar o tópico" : "Estudar o tópico", recommendedQuestions: 0, originalDate: day.date, currentDate: day.date, rescheduleCount: 0, skippedReason: null, recommendationId: null, studyPlanId: proposal.studyPlanId, studyPlanItemId: source.studyPlanItemId, generationOperationId: operationId, createdAt: now });
         createdItems++;
       });
@@ -1960,7 +1960,7 @@
   var normalizeName = (value2) => String(value2 || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR");
   var selected = (id, set) => !set || set.has(id);
   var unique = (...values) => [...new Set(values.flat().filter(Boolean))];
-  var canonical = (value2) => Array.isArray(value2) ? value2.map(canonical) : value2 && typeof value2 === "object" ? Object.fromEntries(Object.keys(value2).sort().map((key) => [key, canonical(value2[key])])) : value2;
+  var canonical = (value2) => Array.isArray(value2) ? value2.map(canonical) : value2 && typeof value2 === "object" ? Object.fromEntries(Object.keys(value2).sort().map((key2) => [key2, canonical(value2[key2])])) : value2;
   var stable = (value2) => JSON.stringify(canonical(value2));
   var clone = (value2) => value2 == null ? value2 : structuredClone(value2);
   var matchesCatalogItem = (local, source) => {
@@ -1974,7 +1974,7 @@
     const patch = { catalogId: current.catalogId || source.catalogId || source.id, examTags: unique(current.examTags, source.examTags), institutions: unique(current.institutions, source.institutions), sourceRefs: unique(current.sourceRefs, source.sourceRefs), aliases: unique(current.aliases, source.aliases), examMetrics: { ...current.examMetrics || {}, ...clone(source.examMetrics || {}) } };
     if (sourceDifficulty) patch.catalogDifficulty = clone(sourceDifficulty);
     if (source.incidence) patch.incidence = clone(source.incidence);
-    const estimates = Object.fromEntries(Object.entries(source.examMetrics || {}).filter(([, metric]) => metric?.examImportanceEstimate != null).map(([key, metric]) => [key, Number(metric.examImportanceEstimate)]));
+    const estimates = Object.fromEntries(Object.entries(source.examMetrics || {}).filter(([, metric]) => metric?.examImportanceEstimate != null).map(([key2, metric]) => [key2, Number(metric.examImportanceEstimate)]));
     if (Object.keys(estimates).length) patch.examImportanceEstimates = { ...current.examImportanceEstimates || {}, ...estimates };
     if (!options.existing && sourceDifficulty?.level) patch.difficulty = sourceDifficulty.level;
     if (!options.existing && source.examImportanceEstimate != null) patch.examImportanceEstimate = source.examImportanceEstimate;
@@ -1982,7 +1982,7 @@
   }
   function needsMetadataUpdate(current = {}, source = {}) {
     const patch = buildCatalogMetadata(current, source, { existing: true });
-    return Object.entries(patch).some(([key, value2]) => stable(current[key]) !== stable(value2));
+    return Object.entries(patch).some(([key2, value2]) => stable(current[key2]) !== stable(value2));
   }
   function previewExamStructureImport({ preset: preset2, selectedSubjectIds = null, selectedTopicIds = null, subjects = [] } = {}) {
     if (!preset2 || !Array.isArray(preset2.subjects)) throw new TypeError("Preset de edital inválido.");
@@ -15977,8 +15977,8 @@
   }
   function pickPersistentState(source = {}) {
     const result = {};
-    for (const key of ["schemaVersion", "executionMode", "examDate", "lastBackupAt", "updatedAt", ...PERSISTENT_COLLECTIONS, ...PERSISTENT_OBJECTS]) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) result[key] = source[key];
+    for (const key2 of ["schemaVersion", "executionMode", "examDate", "lastBackupAt", "updatedAt", ...PERSISTENT_COLLECTIONS, ...PERSISTENT_OBJECTS]) {
+      if (Object.prototype.hasOwnProperty.call(source, key2)) result[key2] = source[key2];
     }
     return result;
   }
@@ -16004,8 +16004,8 @@
   function buildExamImportViewModel({ state: state2, preset: preset2, presets = [], topicLabel = () => "", preview = null } = {}) {
     const query = normalizeExamImportSearch(state2?.query?.trim()), visibleSubjects = (preset2?.subjects || []).map((subject) => {
       const allTopics2 = subject.topics || [], topics = allTopics2.filter((topic) => !query || normalizeExamImportSearch([subject.name, topic.name, ...subject.aliases || [], ...topic.aliases || [], topicLabel(topic), ...topic.sourceRefs || []].join(" ")).includes(query)).map((topic) => {
-        const key = `${subject.id}:${topic.id}`;
-        return { ...topic, key, checked: state2.topicIds.has(key), scopeLabel: topicLabel(topic) };
+        const key2 = `${subject.id}:${topic.id}`;
+        return { ...topic, key: key2, checked: state2.topicIds.has(key2), scopeLabel: topicLabel(topic) };
       });
       const selectedCount = allTopics2.filter((topic) => state2.topicIds.has(`${subject.id}:${topic.id}`)).length;
       return { ...subject, topics, checked: allTopics2.length > 0 && selectedCount === allTopics2.length, indeterminate: selectedCount > 0 && selectedCount < allTopics2.length, selectedCount, totalCount: allTopics2.length };
@@ -16032,7 +16032,7 @@
   }
   function syncExamSubjectCheckboxes(document2, state2, preset2) {
     document2.querySelectorAll("[data-exam-subject]").forEach((input) => {
-      const subject = (preset2?.subjects || []).find((item) => item.id === input.dataset.examSubject), keys = (subject?.topics || []).map((topic) => `${subject.id}:${topic.id}`), count = keys.filter((key) => state2.topicIds.has(key)).length;
+      const subject = (preset2?.subjects || []).find((item) => item.id === input.dataset.examSubject), keys = (subject?.topics || []).map((topic) => `${subject.id}:${topic.id}`), count = keys.filter((key2) => state2.topicIds.has(key2)).length;
       input.checked = keys.length > 0 && count === keys.length;
       input.indeterminate = count > 0 && count < keys.length;
     });
@@ -16043,13 +16043,13 @@
     const subject = (preset2?.subjects || []).find((item) => item.id === subjectId);
     checked ? state2.subjectIds.add(subjectId) : state2.subjectIds.delete(subjectId);
     for (const topic of subject?.topics || []) {
-      const key = `${subjectId}:${topic.id}`;
-      checked ? state2.topicIds.add(key) : state2.topicIds.delete(key);
+      const key2 = `${subjectId}:${topic.id}`;
+      checked ? state2.topicIds.add(key2) : state2.topicIds.delete(key2);
     }
     return state2;
   }
-  function toggleExamTopic(state2, key, checked) {
-    checked ? state2.topicIds.add(key) : state2.topicIds.delete(key);
+  function toggleExamTopic(state2, key2, checked) {
+    checked ? state2.topicIds.add(key2) : state2.topicIds.delete(key2);
     return state2;
   }
   function selectExamTopics(state2, preset2, predicate) {
@@ -16124,11 +16124,11 @@
 
   // src/ui/controllers/navigation-controller.js
   var MAIN_TABS = Object.freeze(["dashboard", "hoje", "disciplinas", "calendario", "agenda", "questoes", "metas", "instrucoes"]);
-  function nextNavigationIndex(current, length, key) {
+  function nextNavigationIndex(current, length, key2) {
     if (!length) return -1;
-    if (key === "Home") return 0;
-    if (key === "End") return length - 1;
-    const delta = ["ArrowRight", "ArrowDown"].includes(key) ? 1 : -1;
+    if (key2 === "Home") return 0;
+    if (key2 === "End") return length - 1;
+    const delta = ["ArrowRight", "ArrowDown"].includes(key2) ? 1 : -1;
     return (current + delta + length) % length;
   }
   function shortcutTabIndex(event = {}) {
@@ -16343,7 +16343,7 @@
   }
 
   // src/ui/controllers/preferences-controller.js
-  function createPreferencesController({ document: document2, storage, key = "bb-premium-theme" } = {}) {
+  function createPreferencesController({ document: document2, storage, key: key2 = "bb-premium-theme" } = {}) {
     if (!document2) throw new TypeError("Controlador de preferências requer documento.");
     const current = () => document2.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
     const sync = () => {
@@ -16356,7 +16356,7 @@
       const normalized = theme === "dark" ? "dark" : "light";
       document2.documentElement.setAttribute("data-theme", normalized);
       try {
-        storage?.setItem(key, normalized);
+        storage?.setItem(key2, normalized);
       } catch (error) {
       }
       sync();
@@ -16520,10 +16520,10 @@
     const register = () => {
       eventTypes.forEach((type) => {
         const listener = (event) => {
-          const key = `delegated${type[0].toUpperCase() + type.slice(1)}`, attribute = `data-${key.replace(/[A-Z]/g, (char) => "-" + char.toLowerCase())}`, element = event.target?.closest?.(`[${attribute}]`);
+          const key2 = `delegated${type[0].toUpperCase() + type.slice(1)}`, attribute = `data-${key2.replace(/[A-Z]/g, (char) => "-" + char.toLowerCase())}`, element = event.target?.closest?.(`[${attribute}]`);
           if (!element) return;
           try {
-            dispatch(element.dataset[key], event, element);
+            dispatch(element.dataset[key2], event, element);
           } catch (error) {
             onError(error, event, element);
           }
@@ -16607,6 +16607,174 @@
     return api;
   }
 
+  // src/ui/controllers/structured-content-import-controller.js
+  function createStructuredContentImportController({ document: document2, window: window2, parse, service, confirm, notify, onImported, maxBytes = 2 * 1024 * 1024 } = {}) {
+    const input = document2?.getElementById("structuredContentFile"), open = document2?.getElementById("structuredContentImportBtn"), listeners = [];
+    const listen = (target, event, handler) => {
+      if (!target) return;
+      target.addEventListener(event, handler);
+      listeners.push(() => target.removeEventListener?.(event, handler));
+    };
+    const read = (file) => {
+      if (!file) return;
+      if (file.size > maxBytes) {
+        notify("O arquivo excede o limite de 2 MB.");
+        return;
+      }
+      const reader = new window2.FileReader();
+      reader.onerror = () => notify("Não foi possível ler o arquivo.");
+      reader.onload = () => {
+        try {
+          const subjects = parse(String(reader.result || ""), { fileName: file.name || "" }), preview = service.preview(subjects), message = `Importar ${preview.totalTopics} tópicos em ${preview.addedSubjects + preview.existingSubjects} disciplinas? Serão criados ${preview.addedSubjects} disciplinas e ${preview.addedTopics} tópicos; ${preview.updatedTopics} tópicos existentes receberão apenas os campos informados.`;
+          confirm(message, () => {
+            const result = service.import(subjects);
+            onImported(result);
+          });
+        } catch (error) {
+          notify(error?.message || "Arquivo inválido.");
+        }
+      };
+      reader.readAsText(file);
+    };
+    const mount = () => {
+      listen(open, "click", () => input?.click());
+      listen(input, "change", () => {
+        read(input.files?.[0]);
+        input.value = "";
+      });
+      return api;
+    }, unmount = () => listeners.splice(0).forEach((remove) => remove()), api = Object.freeze({ mount, unmount, read });
+    return api;
+  }
+
+  // src/application/subjects/structured-content-import.js
+  var clean = (value2) => String(value2 ?? "").trim();
+  var key = (value2) => clean(value2).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, " ").trim().toLocaleLowerCase("pt-BR");
+  var finite2 = (value2) => value2 === "" || value2 == null ? null : Number.isFinite(Number(value2)) ? Number(value2) : null;
+  var DIFFICULTIES = /* @__PURE__ */ new Set(["Fácil", "Médio", "Difícil"]);
+  var headerAliases = { disciplina: "subject", materia: "subject", subject: "subject", topico: "topic", conteudo: "topic", topic: "topic", dificuldade: "difficulty", difficulty: "difficulty", importancia: "importance", impacto: "importance", examimportance: "importance", esforco: "effort", minutos: "effort", estimatedstudyminutes: "effort", tags: "tags", etiquetas: "tags" };
+  function parseCsvRows(text) {
+    const rows = [];
+    let row = [], field = "", quoted = false;
+    for (let index = 0; index < text.length; index++) {
+      const char = text[index], next = text[index + 1];
+      if (char === '"' && quoted && next === '"') {
+        field += '"';
+        index++;
+        continue;
+      }
+      if (char === '"') {
+        quoted = !quoted;
+        continue;
+      }
+      if ((char === "," || char === ";" || char === "	") && !quoted) {
+        row.push(field);
+        field = "";
+        continue;
+      }
+      if ((char === "\n" || char === "\r") && !quoted) {
+        if (char === "\r" && next === "\n") index++;
+        row.push(field);
+        if (row.some((value2) => clean(value2))) rows.push(row);
+        row = [];
+        field = "";
+        continue;
+      }
+      field += char;
+    }
+    row.push(field);
+    if (row.some((value2) => clean(value2))) rows.push(row);
+    if (quoted) throw new TypeError("O CSV possui aspas não fechadas.");
+    return rows;
+  }
+  function normalizeTopic2(input = {}) {
+    const name = clean(input.name ?? input.topic ?? input.topico ?? input.conteudo);
+    if (!name) throw new TypeError("Todo tópico precisa ter um nome.");
+    const rawDifficulty = clean(input.difficulty ?? input.dificuldade), difficulty = DIFFICULTIES.has(rawDifficulty) ? rawDifficulty : null;
+    const importance = finite2(input.importance ?? input.importancia ?? input.examImportance), effort = finite2(input.effort ?? input.esforco ?? input.estimatedStudyMinutes);
+    if (importance != null && (importance < 0 || importance > 100)) throw new TypeError(`A importância de "${name}" deve estar entre 0 e 100.`);
+    if (effort != null && effort <= 0) throw new TypeError(`O esforço de "${name}" deve ser maior que zero.`);
+    const rawTags = input.tags ?? input.etiquetas ?? [], tags = [...new Set((Array.isArray(rawTags) ? rawTags : String(rawTags).split("|")).map(clean).filter(Boolean))];
+    return { name, ...difficulty ? { difficulty } : {}, ...importance == null ? {} : { examImportance: importance / 100 }, ...effort == null ? {} : { estimatedStudyMinutes: Math.round(effort) }, ...tags.length ? { tags } : {} };
+  }
+  function normalizeSubjects(subjects) {
+    if (!Array.isArray(subjects) || !subjects.length) throw new TypeError("O arquivo não contém disciplinas.");
+    if (subjects.length > 500) throw new TypeError("O arquivo excede o limite de 500 disciplinas.");
+    let topicCount = 0;
+    const result = subjects.map((input) => {
+      const name = clean(input?.name ?? input?.subject ?? input?.disciplina ?? input?.materia);
+      if (!name) throw new TypeError("Toda disciplina precisa ter um nome.");
+      const topics = (input?.topics ?? input?.topicos ?? []).map(normalizeTopic2);
+      topicCount += topics.length;
+      return { name, topics };
+    });
+    if (topicCount > 1e4) throw new TypeError("O arquivo excede o limite de 10.000 tópicos.");
+    return result;
+  }
+  function parseStructuredStudyContent(text, { fileName = "" } = {}) {
+    if (typeof text !== "string" || !text.trim()) throw new TypeError("O arquivo está vazio.");
+    const json = /\.json$/i.test(fileName) || /^[\s]*[\[{]/.test(text);
+    if (json) {
+      let value2;
+      try {
+        value2 = JSON.parse(text);
+      } catch {
+        throw new TypeError("O JSON não pôde ser interpretado.");
+      }
+      return normalizeSubjects(Array.isArray(value2) ? value2 : value2?.subjects ?? value2?.disciplinas);
+    }
+    const rows = parseCsvRows(text);
+    if (rows.length < 2) throw new TypeError("O CSV precisa de cabeçalho e ao menos uma linha.");
+    const headers = rows.shift().map((value2) => headerAliases[key(value2)] || null);
+    if (!headers.includes("subject") || !headers.includes("topic")) throw new TypeError("O CSV precisa das colunas disciplina e topico.");
+    const grouped = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const record = Object.fromEntries(headers.map((header, index) => [header, row[index]]).filter(([header]) => header));
+      const subject = clean(record.subject);
+      if (!subject) throw new TypeError("Toda linha do CSV precisa informar a disciplina.");
+      const id = key(subject);
+      if (!grouped.has(id)) grouped.set(id, { name: subject, topics: [] });
+      grouped.get(id).topics.push(record);
+    });
+    return normalizeSubjects([...grouped.values()]);
+  }
+  function createStructuredContentImportService({ subjectService: subjectService2, getSubjects } = {}) {
+    if (!subjectService2 || typeof getSubjects !== "function") throw new TypeError("Importação estruturada requer serviço e estado de disciplinas.");
+    const inspect = (subjects) => {
+      const current = getSubjects(), summary = { addedSubjects: 0, existingSubjects: 0, addedTopics: 0, updatedTopics: 0, totalTopics: 0 };
+      for (const source of subjects) {
+        const subject = current.find((item) => key(item.name) === key(source.name));
+        subject ? summary.existingSubjects++ : summary.addedSubjects++;
+        for (const topic of source.topics) {
+          summary.totalTopics++;
+          subject?.topics?.some((item) => key(item.name) === key(topic.name)) ? summary.updatedTopics++ : summary.addedTopics++;
+        }
+      }
+      return summary;
+    };
+    return Object.freeze({ preview: inspect, import(subjects) {
+      const current = getSubjects(), snapshot = structuredClone(current), summary = inspect(subjects);
+      try {
+        for (const source of subjects) {
+          let subject = current.find((item) => key(item.name) === key(source.name));
+          if (!subject) subject = subjectService2.create(source.name);
+          for (const imported of source.topics) {
+            const existing = subject.topics.find((item) => key(item.name) === key(imported.name));
+            if (existing) {
+              const patch = { ...imported, tags: [.../* @__PURE__ */ new Set([...existing.tags || [], ...imported.tags || []])] };
+              delete patch.name;
+              subjectService2.updateTopic(subject.id, existing.id, patch);
+            } else subjectService2.addTopic(subject.id, imported);
+          }
+        }
+      } catch (error) {
+        current.splice(0, current.length, ...snapshot);
+        throw error;
+      }
+      return summary;
+    } });
+  }
+
   // src/ui/renderers/application-renderer.js
   function createApplicationRenderer({ sections = [], scopes = {}, globalSections = [], getActiveScope = () => null, afterRender = () => {
   }, onError = () => {
@@ -16650,7 +16818,7 @@
         repository.updateDailyHours(0, 0);
         repository.updateDailyHours(6, 0);
       },
-      update: (key, value2) => repository.updateGoal(key, key === "metaAprovacao" ? clamp6(value2, 0, 100) : clamp6(value2))
+      update: (key2, value2) => repository.updateGoal(key2, key2 === "metaAprovacao" ? clamp6(value2, 0, 100) : clamp6(value2))
     });
   }
 
@@ -16680,11 +16848,11 @@
     const evidenceStrength = Number(item.evidence?.evidenceStrength) || 0;
     const state2 = item.blockedPrerequisites?.length ? "blocked" : item.reviewHealth?.level === "critical" ? "review" : evidenceStrength < 0.35 ? "limited" : score >= 70 ? "high" : "calculated";
     const stateLabels = { blocked: "Bloqueado por pré-requisito", review: "Revisão recomendada", limited: "Poucos dados", high: "Prioridade elevada", calculated: "Prioridade calculada" };
-    const contributionRows = Object.entries(item.contributions || {}).map(([key, value2]) => ({
-      key,
-      label: PRIORITY_FACTOR_LABELS[key] || key,
+    const contributionRows = Object.entries(item.contributions || {}).map(([key2, value2]) => ({
+      key: key2,
+      label: PRIORITY_FACTOR_LABELS[key2] || key2,
       value: Math.max(0, Math.round(Number(value2) || 0)),
-      factor: item.factors?.[key] ?? null
+      factor: item.factors?.[key2] ?? null
     })).sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
     return {
       position,
@@ -16772,8 +16940,8 @@
     return `<div class="weekly-kpis"><div><strong>${formatMinutes(model.investment.executedMinutes)}</strong><span>Tempo estudado</span></div><div><strong>${model.questions.accuracy ?? "—"}%</strong><span>Acerto</span></div><div><strong>${model.questions.resolved}</strong><span>Questões</span></div></div><section class="weekly-assessment"><small>Diagnóstico</small><strong>${model.assessment === "attention" ? "Atenção" : model.assessment === "on_target" ? "Meta alcançada" : "Semana em formação"}</strong>${model.mainRisk ? `<p class="weekly-risk"><b>Principal risco</b>${safe(escapeHtml2, model.mainRisk.message)}</p>` : ""}${model.bestSignal ? `<p><b>Melhor sinal</b>${safe(escapeHtml2, model.bestSignal.message)}</p>` : ""}<p class="weekly-action"><b>Próxima ação</b>${safe(escapeHtml2, model.recommendedAction)}</p>${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ""}</section>`;
   }
   function renderPeriodComparison(model, { escapeHtml: escapeHtml2, formatMinutes }) {
-    const labels = { accuracy: "Acerto", minutes: "Tempo estudado", questions: "Questões" }, value2 = (key, n3) => key === "accuracy" ? `${n3}%` : key === "minutes" ? formatMinutes(n3) : String(n3), delta = (key, n3) => key === "accuracy" ? `${n3 > 0 ? "+" : ""}${n3} p.p.` : key === "minutes" ? `${n3 > 0 ? "+" : ""}${formatMinutes(Math.abs(n3))}` : `${n3 > 0 ? "+" : ""}${n3}`;
-    return `<div class="period-comparison"><strong>Comparação com a semana anterior</strong><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${Object.entries(model.comparison).map(([key, item]) => item.delta == null ? `<div><span>${labels[key]}</span><small>Sem semana anterior comparável</small></div>` : `<div><span>${labels[key]}</span><b>${safe(escapeHtml2, value2(key, item.previous))}</b><b>${safe(escapeHtml2, value2(key, item.current))}</b><b>${safe(escapeHtml2, delta(key, item.delta))}</b></div>`).join("")}</div>`;
+    const labels = { accuracy: "Acerto", minutes: "Tempo estudado", questions: "Questões" }, value2 = (key2, n3) => key2 === "accuracy" ? `${n3}%` : key2 === "minutes" ? formatMinutes(n3) : String(n3), delta = (key2, n3) => key2 === "accuracy" ? `${n3 > 0 ? "+" : ""}${n3} p.p.` : key2 === "minutes" ? `${n3 > 0 ? "+" : ""}${formatMinutes(Math.abs(n3))}` : `${n3 > 0 ? "+" : ""}${n3}`;
+    return `<div class="period-comparison"><strong>Comparação com a semana anterior</strong><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${Object.entries(model.comparison).map(([key2, item]) => item.delta == null ? `<div><span>${labels[key2]}</span><small>Sem semana anterior comparável</small></div>` : `<div><span>${labels[key2]}</span><b>${safe(escapeHtml2, value2(key2, item.previous))}</b><b>${safe(escapeHtml2, value2(key2, item.current))}</b><b>${safe(escapeHtml2, delta(key2, item.delta))}</b></div>`).join("")}</div>`;
   }
   function renderGapMap(model, { escapeHtml: escapeHtml2 }) {
     return model.items.length ? model.items.slice(0, 5).map((item) => `<article class="data-row"><strong>${safe(escapeHtml2, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Gap de domínio ${item.gap ?? "—"} pts · impacto ${item.factors.examImpact ?? "—"}%</span></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">◎</span><div><strong>Nenhuma lacuna priorizada</strong><p>As lacunas aparecerão quando houver tópicos e evidências suficientes.</p></div></div>';
@@ -16916,10 +17084,10 @@
   var priorityBand = (value2) => value2 == null ? "Não identificado" : value2 >= 80 ? "80–100" : value2 >= 60 ? "60–79" : value2 >= 40 ? "40–59" : "0–39";
   var label = (value2) => value2 == null || value2 === "" ? "Não identificado" : String(value2);
   var confidence = (eligible, total) => eligible >= 20 ? "Alta" : eligible >= 10 ? "Média" : total >= 5 ? "Baixa" : "Insuficiente";
-  function summarize(items, key, getLabel, minimumSample) {
+  function summarize(items, key2, getLabel, minimumSample) {
     const buckets = /* @__PURE__ */ new Map();
     for (const item of items) {
-      const value2 = label(key(item)), bucket = buckets.get(value2) || { key: value2, label: getLabel?.(value2, item) || value2, total: 0, positive: 0, neutral: 0, negative: 0, insufficient: 0 };
+      const value2 = label(key2(item)), bucket = buckets.get(value2) || { key: value2, label: getLabel?.(value2, item) || value2, total: 0, positive: 0, neutral: 0, negative: 0, insufficient: 0 };
       bucket.total++;
       const state2 = item.outcome?.state;
       if (state2 === "positive") bucket.positive++;
@@ -17018,11 +17186,11 @@
     return `${date2}T${String(hour).padStart(2, "0")}:00:00.000Z`;
   }
   function distributeErrors(errors, random) {
-    const result = Object.fromEntries(ERROR_KEYS.map((key) => [key, 0]));
+    const result = Object.fromEntries(ERROR_KEYS.map((key2) => [key2, 0]));
     let remaining = errors;
-    ERROR_KEYS.forEach((key, index) => {
+    ERROR_KEYS.forEach((key2, index) => {
       const count = index === ERROR_KEYS.length - 1 ? remaining : Math.min(remaining, Math.floor(random() * Math.max(1, errors * 0.32)));
-      result[key] = count;
+      result[key2] = count;
       remaining -= count;
     });
     return result;
@@ -17267,8 +17435,8 @@
     const state2 = () => getState();
     return Object.freeze({
       getGoals: () => state2().metas,
-      updateGoal: (key, value2) => {
-        state2().metas[key] = value2;
+      updateGoal: (key2, value2) => {
+        state2().metas[key2] = value2;
         return state2().metas;
       },
       updateDailyHours: (day, value2) => {
@@ -17464,7 +17632,7 @@
       state2.visible = 10;
       refresh();
     }, clearFilters() {
-      Object.keys(state2.filters).forEach((key) => state2.filters[key] = "");
+      Object.keys(state2.filters).forEach((key2) => state2.filters[key2] = "");
       state2.visible = 10;
       refresh();
     }, setView(view) {
@@ -17636,9 +17804,9 @@
         const metrics = metricsByTopic[topic.id] || {}, mastery = metrics.mastery?.value ?? metrics.mastery?.score ?? null, coverage = metrics.coverage ?? (topic.status === "Concluído" ? 100 : topic.status === "Em andamento" ? 50 : 0);
         return { subjectId: subject.id, topicId: topic.id, name: topic.name, coverage, mastery, retention: metrics.retention?.value ?? metrics.retention?.score ?? null, trend: metrics.trend || null, priority: metrics.priority?.value ?? metrics.priority?.score ?? null, confidence: metrics.mastery?.confidence ?? 0, target, gap: mastery == null ? null : Math.round((target - mastery) * 10) / 10, state: mastery == null ? coverage ? "without_evidence" : "not_started" : mastery < target ? "fragile" : "on_target", examMetrics: topic.examMetrics || {}, incidence: topic.incidence || null };
       });
-      const known = topics.filter((topic) => topic.mastery != null), average2 = (key) => {
-        const rows = topics.filter((topic) => topic[key] != null);
-        return rows.length ? Math.round(rows.reduce((total, topic) => total + topic[key], 0) / rows.length) : null;
+      const known = topics.filter((topic) => topic.mastery != null), average2 = (key2) => {
+        const rows = topics.filter((topic) => topic[key2] != null);
+        return rows.length ? Math.round(rows.reduce((total, topic) => total + topic[key2], 0) / rows.length) : null;
       };
       return { subjectId: subject.id, name: subject.name, target, coverage: average2("coverage"), mastery: average2("mastery"), retention: average2("retention"), gap: known.length ? Math.round((target - average2("mastery")) * 10) / 10 : null, topics };
     }).filter((subject) => subject.topics.length);
@@ -17826,11 +17994,11 @@
 
   // src/domain/analytics/gap-map.js
   var GAP_MAP_VERSION = "2.0.0";
-  var finite2 = (value2) => Number.isFinite(Number(value2)) ? Math.max(0, Math.min(100, Number(value2))) : null;
+  var finite3 = (value2) => Number.isFinite(Number(value2)) ? Math.max(0, Math.min(100, Number(value2))) : null;
   function buildGapMap(rows = [], { limit = 10 } = {}) {
     const weights = { masteryGap: 0.3, examImpact: 0.3, retentionRisk: 0.2, trendRisk: 0.1, coverageGap: 0.1 }, list = (Array.isArray(rows) ? rows : []).map((row) => {
-      const mastery = finite2(row.mastery), impact = finite2(row.examImpact), retention = finite2(row.retention), trendRisk = finite2(row.trendRisk), coverage = finite2(row.coverage), factors = { masteryGap: mastery == null ? null : 100 - mastery, examImpact: impact, retentionRisk: retention == null ? null : 100 - retention, trendRisk, coverageGap: coverage == null ? null : 100 - coverage }, available = Object.entries(factors).filter(([, value2]) => value2 != null), weight = available.reduce((sum4, [key]) => sum4 + weights[key], 0), score = weight ? Math.round(available.reduce((sum4, [key, value2]) => sum4 + value2 * weights[key], 0) / weight) : null, confidence2 = available.length / Object.keys(weights).length;
-      return { ...row, gap: factors.masteryGap, priority: score, severity: score == null ? "insufficient" : score >= 70 ? "critical" : score >= 45 ? "high" : score >= 25 ? "medium" : "low", confidence: confidence2, evidence: { availableFactors: available.map(([key]) => key), missingFactors: Object.keys(weights).filter((key) => factors[key] == null) }, factors, reason: factors.masteryGap == null ? "Sem evidência de domínio" : `Gap de ${factors.masteryGap} pontos com impacto de prova ${impact ?? "não informado"}%`, recommendedAction: (score ?? 0) >= 60 ? "Revisar e resolver questões" : "Manter revisão espaçada" };
+      const mastery = finite3(row.mastery), impact = finite3(row.examImpact), retention = finite3(row.retention), trendRisk = finite3(row.trendRisk), coverage = finite3(row.coverage), factors = { masteryGap: mastery == null ? null : 100 - mastery, examImpact: impact, retentionRisk: retention == null ? null : 100 - retention, trendRisk, coverageGap: coverage == null ? null : 100 - coverage }, available = Object.entries(factors).filter(([, value2]) => value2 != null), weight = available.reduce((sum4, [key2]) => sum4 + weights[key2], 0), score = weight ? Math.round(available.reduce((sum4, [key2, value2]) => sum4 + value2 * weights[key2], 0) / weight) : null, confidence2 = available.length / Object.keys(weights).length;
+      return { ...row, gap: factors.masteryGap, priority: score, severity: score == null ? "insufficient" : score >= 70 ? "critical" : score >= 45 ? "high" : score >= 25 ? "medium" : "low", confidence: confidence2, evidence: { availableFactors: available.map(([key2]) => key2), missingFactors: Object.keys(weights).filter((key2) => factors[key2] == null) }, factors, reason: factors.masteryGap == null ? "Sem evidência de domínio" : `Gap de ${factors.masteryGap} pontos com impacto de prova ${impact ?? "não informado"}%`, recommendedAction: (score ?? 0) >= 60 ? "Revisar e resolver questões" : "Manter revisão espaçada" };
     }).sort((a, b) => (b.priority ?? -1) - (a.priority ?? -1));
     return { algorithmVersion: GAP_MAP_VERSION, state: list.length ? "available" : "insufficient", items: list.slice(0, limit), total: list.length };
   }
@@ -17891,9 +18059,9 @@
       return { id: subject.id, name: subject.name, studySeconds: sum3(subjectSessions, (item) => item.durationSeconds), unscopedStudySeconds: sum3(unscopedSubjectSessions, (item) => item.durationSeconds), questions: volume, unscopedQuestions: sum3(unscopedSubjectQuestions, (item) => item.resolved), accuracy: volume ? Math.round(hits / volume * 100) : null, completed: scopedTopics.filter((item) => item.status === "Concluído").length, total: scopedTopics.length };
     }).sort((a, b) => b.studySeconds - a.studySeconds), planned = sum3(state2.dailyPlans || [], (plan) => inPeriod(plan, range.start, range.end) ? sum3(plan.items || [], (item) => item.plannedMinutes) : 0), executed = Math.round(studySeconds / 60), subjectNames = Object.fromEntries(subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(subjects.flatMap((subject) => (subject.topics || []).map((topic) => [topic.id, topic.name]))), weeklyMinutes = Object.values(state2.metas?.horasPorDia || {}).reduce((total, value2) => total + (Number(value2) || 0) * 60, 0);
     const rawErrors = Object.entries(questions.reduce((totals, item) => {
-      Object.entries(item.errorBreakdown || {}).forEach(([key, value2]) => totals[key] = (totals[key] || 0) + (Number(value2) || 0));
+      Object.entries(item.errorBreakdown || {}).forEach(([key2, value2]) => totals[key2] = (totals[key2] || 0) + (Number(value2) || 0));
       return totals;
-    }, {})).sort((a, b) => b[1] - a[1]), errorLabels = { didnt_know: "Não sabia", forgot: "Esqueci", interpretation: "Interpretação", calculation: "Cálculo", inattention: "Desatenção", guess: "Chute", nao_sabia: "Não sabia", esqueci: "Esqueci", interpretacao: "Interpretação", calculo: "Cálculo", desatencao: "Desatenção", chute: "Chute" }, errors = rawErrors.map(([key, count]) => ({ key, label: errorLabels[key] || key, count })), errorTotal = errors.reduce((total, item) => total + item.count, 0), dominantError = errors[0] || null;
+    }, {})).sort((a, b) => b[1] - a[1]), errorLabels = { didnt_know: "Não sabia", forgot: "Esqueci", interpretation: "Interpretação", calculation: "Cálculo", inattention: "Desatenção", guess: "Chute", nao_sabia: "Não sabia", esqueci: "Esqueci", interpretacao: "Interpretação", calculo: "Cálculo", desatencao: "Desatenção", chute: "Chute" }, errors = rawErrors.map(([key2, count]) => ({ key: key2, label: errorLabels[key2] || key2, count })), errorTotal = errors.reduce((total, item) => total + item.count, 0), dominantError = errors[0] || null;
     const latestSimulation = [...simulations].sort((a, b) => String(b.date).localeCompare(String(a.date)))[0] || null, latestBreakdown = (latestSimulation?.breakdown || []).map((item) => ({ subjectName: subjectNames[item.subjectId || item.disciplinaId] || "Disciplina removida", correct: Number(item.correct) || 0, total: Number(item.total) || 0, accuracy: Number(item.total) ? Math.round(Number(item.correct || 0) / Number(item.total) * 100) : null })), focus = (diagnosis?.weeklyFocus || []).map((item) => ({ ...item, minutes: Math.round(weeklyMinutes * (Number(item.percentage) || 0) / 100) })), decisions = feedback.slice(-5).reverse().map((item) => {
       const snapshot = item.snapshot || {}, subjectId = item.subjectId || snapshot.subjectId, topicId = item.topicId || snapshot.topicId;
       return { subjectName: subjectNames[subjectId] || "Disciplina removida", topicName: topicNames[topicId] || "Tópico removido", action: snapshot.strategy?.label || item.recommendedAction || "Recomendação de estudo", result: { positive: "Resultado positivo", neutral: "Resultado neutro", negative: "Resultado negativo", insufficient: "Resultado ainda insuficiente" }[item.outcome?.state] || "Resultado em acompanhamento" };
@@ -18131,8 +18299,8 @@
       question.topicId = question.topicId || null;
       const source = question.errorBreakdown || {};
       question.errorBreakdown = {};
-      Object.keys(ERROR_CATEGORIES2).forEach((key) => {
-        question.errorBreakdown[key] = Math.max(0, Math.floor(Number(source[key]) || 0));
+      Object.keys(ERROR_CATEGORIES2).forEach((key2) => {
+        question.errorBreakdown[key2] = Math.max(0, Math.floor(Number(source[key2]) || 0));
       });
     });
     data.schemaVersion = 5;
@@ -18291,9 +18459,9 @@
     if (!["agenda", "sequence"].includes(state.executionMode)) state.executionMode = "agenda";
     const metaDefaults = { semanal: 5, mensal: 20, questoesSemanal: 150, simuladosSemanal: 1, metaAprovacao: 70, horasDiarias: 2.5 };
     if (!state.metas || typeof state.metas !== "object") state.metas = {};
-    Object.entries(metaDefaults).forEach(([key, value2]) => {
-      if (!Number.isFinite(Number(state.metas[key]))) state.metas[key] = value2;
-      else state.metas[key] = Number(state.metas[key]);
+    Object.entries(metaDefaults).forEach(([key2, value2]) => {
+      if (!Number.isFinite(Number(state.metas[key2]))) state.metas[key2] = value2;
+      else state.metas[key2] = Number(state.metas[key2]);
     });
     const hoursSource = state.metas.horasPorDia && typeof state.metas.horasPorDia === "object" ? state.metas.horasPorDia : {};
     state.metas.horasPorDia = {};
@@ -18421,9 +18589,9 @@
     refreshAllTopicReviewStats();
   }
   var persistentStorageManager = createStorageManager({ dbName: DB_NAME, dbVersion: DB_VERSION, storeName: STORE_NAME });
-  var realStorageProvider = createRealStorageProvider({ manager: persistentStorageManager, readLocal: repositoryReadLocalState, writeLocal: repositoryWriteLocalState, removeLocal: (key) => {
+  var realStorageProvider = createRealStorageProvider({ manager: persistentStorageManager, readLocal: repositoryReadLocalState, writeLocal: repositoryWriteLocalState, removeLocal: (key2) => {
     try {
-      localStorage.removeItem(key);
+      localStorage.removeItem(key2);
     } catch (error) {
     }
   } });
@@ -18466,11 +18634,11 @@
   var INSTANCE_ID = uid("instance");
   var STATE_CHANNEL = !IS_DEMO_MODE && typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
   var applyingRemoteState = false;
-  function readLocalState(key = STORAGE_KEY) {
-    return appContext.storage.readLocal(key);
+  function readLocalState(key2 = STORAGE_KEY) {
+    return appContext.storage.readLocal(key2);
   }
-  function writeLocalState(value2, key = STORAGE_KEY) {
-    return appContext.storage.writeLocal(key, value2);
+  function writeLocalState(value2, key2 = STORAGE_KEY) {
+    return appContext.storage.writeLocal(key2, value2);
   }
   function normalizeAndValidateState(raw) {
     const parsed = typeof raw === "string" ? JSON.parse(raw) : structuredCloneSafe(raw);
@@ -18559,13 +18727,13 @@
       console.warn("Índice de backups inválido; iniciando um novo.", e);
     }
     const slot = Math.max(0, Number(index.nextSlot) || 0) % slotCount;
-    const key = `${backupKey}-${slot}`;
+    const key2 = `${backupKey}-${slot}`;
     const checksum = await sha256(previousRaw);
-    const saved = await StorageManager.set(key, previousRaw);
+    const saved = await StorageManager.set(key2, previousRaw);
     if (!saved) return false;
-    const verification = await StorageManager.get(key);
+    const verification = await StorageManager.get(key2);
     if (verification !== previousRaw || checksum && await sha256(verification) !== checksum) return false;
-    const snapshot = { slot, key, createdAt: nowISO2(), stateUpdatedAt: previous.updatedAt || null, checksum, bytes: new Blob([previousRaw]).size };
+    const snapshot = { slot, key: key2, createdAt: nowISO2(), stateUpdatedAt: previous.updatedAt || null, checksum, bytes: new Blob([previousRaw]).size };
     index.snapshots = index.snapshots.filter((item) => item && item.slot !== slot).concat(snapshot).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     index.nextSlot = (slot + 1) % slotCount;
     index.version = 1;
@@ -18753,9 +18921,9 @@
     if (!iso) return null;
     return iso.slice(0, 7);
   }
-  function monthLabel(key) {
-    if (!key) return "";
-    const [y, m] = key.split("-");
+  function monthLabel(key2) {
+    if (!key2) return "";
+    const [y, m] = key2.split("-");
     return `${MESES_PT[parseInt(m, 10) - 1]} de ${y}`;
   }
   function collectMonthKeys(...arrays) {
@@ -19105,7 +19273,7 @@
     if (data.topicHistory.some((item) => item.subjectId != null && !isSafeId(item.subjectId) || item.topicId != null && !isSafeId(item.topicId))) return fail("O backup contém histórico com identificador inseguro.");
     if (data.questoes.some((item) => item.studySessionId != null && !validRef(item.studySessionId, sessionIds))) return fail("O backup contém questões vinculadas a uma sessão inexistente.");
     if (data.studySessions.some((item) => item.planItemId != null && !validRef(item.planItemId, planItemIds))) return fail("O backup contém sessão vinculada a um item de plano inexistente.");
-    if (!isPlainObject(data.metas) || Object.entries(data.metas).some(([key, value2]) => key !== "horasPorDia" && !isFiniteNonNegative(value2)) || !isPlainObject(data.metas.horasPorDia) || Object.values(data.metas.horasPorDia).some((value2) => !isFiniteNonNegative(value2))) return fail("O backup contém metas globais inválidas.");
+    if (!isPlainObject(data.metas) || Object.entries(data.metas).some(([key2, value2]) => key2 !== "horasPorDia" && !isFiniteNonNegative(value2)) || !isPlainObject(data.metas.horasPorDia) || Object.values(data.metas.horasPorDia).some((value2) => !isFiniteNonNegative(value2))) return fail("O backup contém metas globais inválidas.");
     if (!isPlainObject(data.activeTimer) || !isFiniteNonNegative(data.activeTimer.accumulatedSeconds) || !validRef(data.activeTimer.subjectId, subjectIds) || !validRef(data.activeTimer.topicId, topicIds) || !validRef(data.activeTimer.planItemId, planItemIds)) return fail("O backup contém um cronômetro ativo inválido.");
     if (!isPlainObject(data.examBlueprint) || !(data.examBlueprint.examDate === null || isISODate(data.examBlueprint.examDate)) || !Number.isFinite(Number(data.examBlueprint.targetScore)) || Number(data.examBlueprint.targetScore) < 0 || Number(data.examBlueprint.targetScore) > 100 || !isOptionalTimestamp(data.examBlueprint.configuredAt) || !Array.isArray(data.examBlueprint.subjects) || data.examBlueprint.subjects.length > 1e3) return fail("O backup contém configuração de prova inválida.");
     if (data.examBlueprint.subjects.some((item) => !isPlainObject(item) || !validRef(item.subjectId, subjectIds) || !isFiniteNonNegative(item.expectedQuestions) || !isFiniteNonNegative(item.questionWeight) || !EXAM_PRIORITIES.includes(item.priority))) return fail("O backup contém peso de disciplina inválido.");
@@ -19141,7 +19309,7 @@
   backupController.mount();
   document.getElementById("clearAllDataBtn").addEventListener("click", () => showConfirm("Esta ação excluirá disciplinas, sessões, revisões, questões, simulados, metas, histórico e configurações. Exporte um backup antes de continuar.", () => showPrompt("Digite LIMPAR para confirmar a exclusão definitiva.", { label: "Confirmação", placeholder: "LIMPAR", confirmLabel: "Limpar dados", validate: (value2) => value2 === "LIMPAR" ? "" : "Digite LIMPAR exatamente como exibido." }, async () => {
     const keys = [STORAGE_KEY, BACKUP_KEY, BACKUP_INDEX_KEY, ...Array.from({ length: AUTOMATIC_BACKUP_SLOTS }, (_, index) => `${BACKUP_KEY}-${index}`)];
-    await Promise.all(keys.map((key) => appContext.storage.remove(key)));
+    await Promise.all(keys.map((key2) => appContext.storage.remove(key2)));
     state = createDefaultState();
     ensureStateDefaults();
     suppressBeforeUnloadSave = true;
@@ -20130,10 +20298,10 @@
     renderSubjects();
   }
   function renameSubject(id, name) {
-    const clean = name.trim() || "Disciplina sem nome";
+    const clean2 = name.trim() || "Disciplina sem nome";
     const s = appContext.repositories.subjects.findById(id);
-    if (s?.name !== clean) {
-      subjectService.rename(id, clean);
+    if (s?.name !== clean2) {
+      subjectService.rename(id, clean2);
       persistAndRender();
     } else {
       renderAll();
@@ -20155,6 +20323,12 @@
   }
   document.getElementById("loadDefaultSubjectsBtn").addEventListener("click", carregarDisciplinasPadrao);
   var examImportService = createExamImportService({ subjectService, getSubjects: () => state.subjects });
+  var structuredContentImportService = createStructuredContentImportService({ subjectService, getSubjects: () => state.subjects });
+  createStructuredContentImportController({ document, window, parse: parseStructuredStudyContent, service: structuredContentImportService, confirm: showConfirm, notify: showToast, onImported: (result) => {
+    studyPlanPreview = null;
+    persistAndRender();
+    showToast(`${pluralize(result.addedSubjects, "disciplina")} e ${pluralize(result.addedTopics, "tópico")} adicionados; ${pluralize(result.updatedTopics, "tópico")} atualizados.`);
+  } }).mount();
   var editalImportFacade = createEditalImportFacade({ catalog: EXAM_PRESETS, importService: examImportService });
   var examImportState = createExamImportState(EXAM_PRESETS[0]);
   var examImportOrigin = null;
@@ -20724,8 +20898,8 @@
     renderAgenda();
   }
   function changeAgendaLimit(group, delta) {
-    const key = `${group}Visible`, minimum = group === "completed" ? 10 : 5;
-    agendaUiState[key] = Math.max(minimum, agendaUiState[key] + Number(delta || 0));
+    const key2 = `${group}Visible`, minimum = group === "completed" ? 10 : 5;
+    agendaUiState[key2] = Math.max(minimum, agendaUiState[key2] + Number(delta || 0));
     renderAgenda();
   }
   function resetAgendaLimit(group) {
@@ -20816,7 +20990,7 @@
     showToast(`Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState.nextReviewDate)}.`);
   }
   function renderAgendaReadRow(item) {
-    return renderReviewRead({ item, view: agendaViewModel(item), mobile: isMobileHistoryLayout(), escapeHtml, escapeAttr, daysPill: diasParaRevisaoPill(item.date, item.status), difficultyClass: DIFFICULTY_CLASS, statusClass: STATUS_CLASS, ratingLabel: (key) => REVIEW_RATINGS[key]?.label || key, today: todayISO() });
+    return renderReviewRead({ item, view: agendaViewModel(item), mobile: isMobileHistoryLayout(), escapeHtml, escapeAttr, daysPill: diasParaRevisaoPill(item.date, item.status), difficultyClass: DIFFICULTY_CLASS, statusClass: STATUS_CLASS, ratingLabel: (key2) => REVIEW_RATINGS[key2]?.label || key2, today: todayISO() });
   }
   function renderAgendaEditRow(item) {
     const draft = agendaUiState.draft, subjectId = entitySubjectId(draft);
@@ -20986,25 +21160,25 @@
     ${visible > step ? `<button class="btn ghost small" type="button" data-delegated-click="${showLessAction}">Mostrar menos</button>` : ""}
   </div></td></tr>`;
   }
-  function changeListLimit(key, delta, renderFn) {
-    const minimum = LIST_VIEW_STEPS[key];
-    listViewState[`${key}Visible`] = Math.max(minimum, listViewState[`${key}Visible`] + delta);
+  function changeListLimit(key2, delta, renderFn) {
+    const minimum = LIST_VIEW_STEPS[key2];
+    listViewState[`${key2}Visible`] = Math.max(minimum, listViewState[`${key2}Visible`] + delta);
     renderFn();
   }
   function emptyErrorBreakdown() {
-    return Object.fromEntries(Object.keys(ERROR_CATEGORIES2).map((key) => [key, 0]));
+    return Object.fromEntries(Object.keys(ERROR_CATEGORIES2).map((key2) => [key2, 0]));
   }
   function normalizeErrorBreakdown(question) {
     const normalized = emptyErrorBreakdown();
-    Object.keys(normalized).forEach((key) => {
-      normalized[key] = Math.max(0, Math.floor(Number(question?.errorBreakdown?.[key]) || 0));
+    Object.keys(normalized).forEach((key2) => {
+      normalized[key2] = Math.max(0, Math.floor(Number(question?.errorBreakdown?.[key2]) || 0));
     });
     const realErrors = Math.max(0, (Number(question?.resolved) || 0) - (Number(question?.correct) || 0));
     let excess = Object.values(normalized).reduce((sum4, value2) => sum4 + value2, 0) - realErrors;
-    [...Object.keys(normalized)].reverse().forEach((key) => {
+    [...Object.keys(normalized)].reverse().forEach((key2) => {
       if (excess <= 0) return;
-      const cut = Math.min(normalized[key], excess);
-      normalized[key] -= cut;
+      const cut = Math.min(normalized[key2], excess);
+      normalized[key2] -= cut;
       excess -= cut;
     });
     question.errorBreakdown = normalized;
@@ -21037,11 +21211,11 @@
             <span>${categorized} de ${realErrors} erros categorizados</span>
           </div>
           <div class="error-breakdown-grid">
-            ${Object.entries(ERROR_CATEGORIES2).map(([key, meta]) => `
+            ${Object.entries(ERROR_CATEGORIES2).map(([key2, meta]) => `
               <label class="error-breakdown-field">
                 <span>${meta.icon} ${meta.label}</span>
-                <input type="number" min="0" max="${realErrors}" value="${question.errorBreakdown[key] || 0}"
-                  data-delegated-blur="updateQuestionError('${question.id}','${key}',this.value)">
+                <input type="number" min="0" max="${realErrors}" value="${question.errorBreakdown[key2] || 0}"
+                  data-delegated-blur="updateQuestionError('${question.id}','${key2}',this.value)">
               </label>
             `).join("")}
           </div>
@@ -21120,15 +21294,15 @@
       showToast("Registro excluído.");
     });
   }
-  function updateQuestionError(id, key, value2) {
+  function updateQuestionError(id, key2, value2) {
     const question = state.questoes.find((q) => q.id === id);
-    if (!question || !ERROR_CATEGORIES2[key]) return;
+    if (!question || !ERROR_CATEGORIES2[key2]) return;
     normalizeErrorBreakdown(question);
     const realErrors = Math.max(0, (Number(question.resolved) || 0) - (Number(question.correct) || 0));
-    const others = Object.entries(question.errorBreakdown).reduce((sum4, [category, count]) => category === key ? sum4 : sum4 + count, 0);
+    const others = Object.entries(question.errorBreakdown).reduce((sum4, [category, count]) => category === key2 ? sum4 : sum4 + count, 0);
     const requested = Math.max(0, Math.floor(Number(value2) || 0));
     const allowed = Math.max(0, realErrors - others);
-    question.errorBreakdown[key] = Math.min(requested, allowed);
+    question.errorBreakdown[key2] = Math.min(requested, allowed);
     if (requested > allowed) showToast("A categorização foi limitada ao total real de erros.");
     persistAndRender();
   }
@@ -21594,8 +21768,8 @@
       </div>
     </div>`;
   }
-  function updateMeta(key, value2) {
-    goalsService.update(key, value2);
+  function updateMeta(key2, value2) {
+    goalsService.update(key2, value2);
     persistAndRender();
   }
   function renderExamBlueprintConfig() {
@@ -21989,9 +22163,9 @@
   function collectStudyCandidates() {
     const today = todayISO();
     const candidateMap = /* @__PURE__ */ new Map();
-    const addCandidate = (key, candidate) => {
-      const current = candidateMap.get(key);
-      if (!current || candidate.diasAtrasado > current.diasAtrasado || candidate.tipo === "revisão" && current.tipo !== "revisão") candidateMap.set(key, candidate);
+    const addCandidate = (key2, candidate) => {
+      const current = candidateMap.get(key2);
+      if (!current || candidate.diasAtrasado > current.diasAtrasado || candidate.tipo === "revisão" && current.tipo !== "revisão") candidateMap.set(key2, candidate);
     };
     state.reviewAgenda.filter((review) => {
       const subjectId = entitySubjectId(review);
@@ -22112,7 +22286,7 @@
       return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle">${label2}</text>`;
     }).join("");
     const series = selected2.map((model, seriesIndex) => {
-      const values = axisMeta.map(([key]) => model.axes[key]);
+      const values = axisMeta.map(([key2]) => model.axes[key2]);
       const complete = values.every((value2) => value2 !== null);
       const points = values.map((value2, index) => {
         if (value2 === null) return "";
@@ -22136,7 +22310,7 @@
       ${series}
       ${labels}
     </svg>
-    <div class="radar-analysis">${selected2.map((model, index) => `<section><h4><span class="radar-key radar-key-${index + 1}"></span>${escapeHtml(model.name)}</h4><p>${escapeHtml(model.interpretation)}</p><small>${model.availableAxes} de 5 eixos · confiança ${model.confidenceLabel.toLowerCase()}</small><dl>${axisMeta.map(([key, label2]) => `<div><dt>${label2}</dt><dd>${model.axes[key] === null ? "Aguardando dados" : model.axes[key] + "/100"}</dd></div>`).join("")}</dl></section>`).join("")}</div>
+    <div class="radar-analysis">${selected2.map((model, index) => `<section><h4><span class="radar-key radar-key-${index + 1}"></span>${escapeHtml(model.name)}</h4><p>${escapeHtml(model.interpretation)}</p><small>${model.availableAxes} de 5 eixos · confiança ${model.confidenceLabel.toLowerCase()}</small><dl>${axisMeta.map(([key2, label2]) => `<div><dt>${label2}</dt><dd>${model.axes[key2] === null ? "Aguardando dados" : model.axes[key2] + "/100"}</dd></div>`).join("")}</dl></section>`).join("")}</div>
   `;
   }
   function renderSimuladosPlanejados() {
@@ -22247,8 +22421,8 @@
     if (!container) return;
     const map = {};
     state.studySessions.forEach((session) => {
-      const key = entitySubjectId(session) || "__none";
-      map[key] = (map[key] || 0) + (Number(session.durationSeconds) || 0);
+      const key2 = entitySubjectId(session) || "__none";
+      map[key2] = (map[key2] || 0) + (Number(session.durationSeconds) || 0);
     });
     const rows = Object.entries(map).filter(([, seconds]) => seconds > 0).sort((a, b) => b[1] - a[1]);
     if (rows.length === 0) {
@@ -22532,7 +22706,7 @@
       return;
     }
     const list = (items, empty, formatter) => items.length ? items.slice(0, 4).map(formatter).join("") : `<p class="diagnosis-empty">${empty}</p>`;
-    const section = (key) => model.sections.find((item) => item.key === key)?.items || [];
+    const section = (key2) => model.sections.find((item) => item.key === key2)?.items || [];
     container.innerHTML = `<div class="diagnosis-summary">
     <section><h4>Gargalos</h4>${list(section("bottlenecks"), "Nenhum gargalo relevante agora.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>Risco ${item.risk?.value ?? item.severity}/100</b><span>Dados ${Math.round((item.risk?.evidence?.completeness || 0) * 100)}%</span><span>Evidência ${(item.risk?.evidence?.evidenceLabel || "Não avaliada").toLowerCase()}</span></div><small>${escapeHtml(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</small></article>`)}</section>
     <section><h4>Oportunidades</h4>${list(section("opportunities"), "Configure pesos e esforço para revelar oportunidades.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>Retorno ${item.opportunityScore}/100</b><span>Dados ${Math.round(item.confidence * 100)}%</span><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><small>${item.missingFactors.includes("examImpact") ? "Informe o peso da prova para aumentar a confiança." : "Boa relação entre impacto, lacuna e esforço."}</small></article>`)}</section>
@@ -23209,7 +23383,7 @@
       return `<div class="bar-row metric-row metric-row--${dataState}" title="${escapeAttr(item.detail)}"><div class="bar-label">${label2}<small>${metricStateLabel(item)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${dataState === "empty" ? 0 : item.score}%"></div></div><div class="bar-pct">${dataState === "empty" ? "—" : item.score + "%"}</div></div>`;
     }).join("")}
   ${projection.available ? `<section class="performance-forecast" aria-label="Projeção de desempenho"><div><span class="section-eyebrow">PROJEÇÃO DE DESEMPENHO</span><strong>Faixa atual: ${projection.low}–${projection.high}%</strong><small>${projection.gap.minimum === 0 ? "A meta de " + projection.gap.target + "% está dentro da faixa atual." : "Gap estimado até a meta: " + projection.gap.minimum + "–" + projection.gap.maximum + " p.p."}</small></div><div><strong>${projection.forecast30.available ? "Em 30 dias: " + projection.forecast30.low + "–" + projection.forecast30.high + "%" : "Projeção de 30 dias aguardando dados"}</strong><small>${projection.forecast30.available ? "Média móvel: " + projection.movingAverage + "% · tendência " + (projection.forecast30.slopePerWeek >= 0 ? "+" : "") + projection.forecast30.slopePerWeek + " p.p./semana · confiança " + projection.forecast30.confidenceLabel : escapeHtml(projection.forecast30.reason)}</small></div>${renderPerformanceScenarios(projection.scenarios, { escapeHtml })}<p>${projection.evidence.observationCount} semanas · ${projection.evidence.sampleSize} questões/simulações na amostra. Cenários são simulações de capacidade; não representam garantia nem efeito causal.</p></section>` : ""}
-  <details class="readiness-explanation"><summary>Como este índice foi calculado?</summary><p>Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e nunca recebem nota zero.</p><ul>${factors.map(([label2, item, key]) => `<li><strong>${label2}</strong>: ${item.available ? item.score + "/100 · confiança " + Math.round(item.confidence * 100) + "%" : "aguardando dados"}${item.detail ? " · " + escapeHtml(item.detail) : ""}</li>`).join("")}</ul></details>
+  <details class="readiness-explanation"><summary>Como este índice foi calculado?</summary><p>Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e nunca recebem nota zero.</p><ul>${factors.map(([label2, item, key2]) => `<li><strong>${label2}</strong>: ${item.available ? item.score + "/100 · confiança " + Math.round(item.confidence * 100) + "%" : "aguardando dados"}${item.detail ? " · " + escapeHtml(item.detail) : ""}</li>`).join("")}</ul></details>
   <div class="approval-scale"><span class="approval-scale-danger">🔴 0–49</span><span class="approval-scale-warn">🟠 50–69</span><span class="approval-scale-good">🟢 70–84</span><span class="approval-scale-great">🏆 85+</span></div>
   <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`;
     renderTopicRetentionDashboard();

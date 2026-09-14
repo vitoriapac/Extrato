@@ -104,7 +104,7 @@ Depois dos seis pacotes, as próximas entregas podem ser tratadas separadamente:
 
 - prioridade de tópicos com edição e explicação mais ricas — primeira etapa concluída: impacto efetivo com origem visível, esforço explicado e pré-requisitos editáveis com prevenção de ciclos;
 - cenário demonstrativo determinístico com 130 dias — concluído, com 170 sessões e 13 simulados distribuídos na janela;
-- importação estruturada em JSON e CSV;
+- importação estruturada em JSON e CSV — concluída com prévia, limites de segurança, mesclagem idempotente e preservação do progresso existente;
 - gamificação discreta e opcional;
 - camada explicativa com IA, condicionada a backend, privacidade e gestão de chaves;
 - interpretação automática de PDF, somente após o importador estruturado.

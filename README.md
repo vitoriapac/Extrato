@@ -23,6 +23,8 @@ Acesse a [demo online](https://vitoriapac.github.io/Extrato/) e selecione **Expl
 
 Os dados ficam no navegador. Exporte um backup JSON regularmente pela área de dados. A importação valida o formato e a versão antes de substituir o estado local.
 
+Na área **Disciplinas**, a opção **Importar JSON ou CSV** adiciona conteúdo sem substituir o histórico. O CSV aceita as colunas `disciplina`, `topico`, `dificuldade`, `importancia`, `esforco` e `tags`; somente as duas primeiras são obrigatórias. No JSON, use `subjects: [{ name, topics: [{ name }] }]`. A importância é informada de 0 a 100, o esforço em minutos e múltiplas tags são separadas por `|`.
+
 ## Instalação como PWA
 
 No Chrome ou Edge, abra a versão publicada e use a opção **Instalar StudyTrack** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.

@@ -75,6 +75,8 @@ import {createBackupController} from './ui/controllers/backup-controller.js';
 import {createDelegatedEventsController} from './ui/controllers/delegated-events-controller.js';
 import {createErrorBoundaryController} from './ui/controllers/error-boundary-controller.js';
 import {createDemoController} from './ui/controllers/demo-controller.js';
+import {createStructuredContentImportController} from './ui/controllers/structured-content-import-controller.js';
+import {parseStructuredStudyContent,createStructuredContentImportService} from './application/subjects/structured-content-import.js';
 import {createApplicationRenderer} from './ui/renderers/application-renderer.js';
 import {createGoalService} from './application/goals/goal-service.js';
 import {buildWeeklyAvailability} from './application/goals/weekly-availability.js';
@@ -2044,6 +2046,8 @@ function carregarDisciplinasPadrao(){
 document.getElementById('loadDefaultSubjectsBtn').addEventListener('click', carregarDisciplinasPadrao);
 
 const examImportService=createExamImportService({subjectService,getSubjects:()=>state.subjects});
+const structuredContentImportService=createStructuredContentImportService({subjectService,getSubjects:()=>state.subjects});
+createStructuredContentImportController({document,window,parse:parseStructuredStudyContent,service:structuredContentImportService,confirm:showConfirm,notify:showToast,onImported:result=>{studyPlanPreview=null;persistAndRender();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados; ${pluralize(result.updatedTopics,'tópico')} atualizados.`)}}).mount();
 const editalImportFacade=createEditalImportFacade({catalog:EXAM_PRESETS,importService:examImportService});
 const examImportState=createExamImportState(EXAM_PRESETS[0]);
 let examImportOrigin=null;
