@@ -1,0 +1,3 @@
+export const WEEKLY_CLOSE_SNAPSHOT_VERSION=1;
+export function createWeeklyCloseSnapshot(model,{savedAt,id}={}){if(!model?.period||model.weeklyClose?.state==='insufficient')return null;return{id,period:{...model.period},savedAt,version:WEEKLY_CLOSE_SNAPSHOT_VERSION,algorithmVersion:model.weeklyClose.algorithmVersion,weeklyClose:structuredClone(model.weeklyClose),gapMap:structuredClone(model.gapMap),decisionHistory:structuredClone(model.decisionHistory)}}
+export function upsertWeeklyCloseSnapshot(list,snapshot){if(!snapshot)return false;const index=list.findIndex(item=>item.period?.start===snapshot.period.start&&item.period?.end===snapshot.period.end);if(index>=0)list[index]=snapshot;else list.push(snapshot);return true}

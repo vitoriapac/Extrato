@@ -515,6 +515,7 @@
       studyPlans: [],
       planAdjustments: [],
       recommendationFeedback: [],
+      weeklyCloseSnapshots: [],
       alertStates: [],
       activeTimer: {
         startedAt: null,
@@ -1484,11 +1485,12 @@
   }
 
   // src/application/replan-study.js
+  var recoveryReason = (item) => item.reviewUrgency >= 60 ? "revisão próxima do vencimento" : item.score >= 70 ? "alta prioridade por risco e impacto na prova" : item.executedSeconds > 0 ? "atividade iniciada e ainda incompleta" : item.reason || "atividade pendente do período";
   function buildReplanProposal({ plans = [], periodStart, periodEnd, futureDays = [] } = {}) {
     const inPeriod2 = plans.filter((plan) => plan.date >= periodStart && plan.date <= periodEnd);
     const plannedMinutes = inPeriod2.reduce((sum4, plan) => sum4 + (plan.items || []).filter((item) => !["skipped", "replaced"].includes(item.status)).reduce((n3, item) => n3 + (Number(item.plannedMinutes) || 0), 0), 0);
     const executedMinutes = Math.round(inPeriod2.reduce((sum4, plan) => sum4 + (plan.items || []).reduce((n3, item) => n3 + (Number(item.executedSeconds) || 0) / 60, 0), 0));
-    const pendingItems = inPeriod2.flatMap((plan) => (plan.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).map((item) => ({ sourcePlanId: plan.id, sourceItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || null, remainingMinutes: Math.max(0, Math.round((Number(item.plannedMinutes) || 0) - (Number(item.executedSeconds) || 0) / 60)), priority: Number(item.score) || 0 }))).filter((item) => item.remainingMinutes > 0).sort((a, b) => b.priority - a.priority);
+    const pendingItems = inPeriod2.flatMap((plan) => (plan.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).map((item) => ({ sourcePlanId: plan.id, sourceItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || null, remainingMinutes: Math.max(0, Math.round((Number(item.plannedMinutes) || 0) - (Number(item.executedSeconds) || 0) / 60)), priority: Number(item.score) || 0, reason: recoveryReason(item) }))).filter((item) => item.remainingMinutes > 0).sort((a, b) => b.priority - a.priority);
     const deficitMinutes = pendingItems.reduce((sum4, item) => sum4 + item.remainingMinutes, 0);
     const capacities = (futureDays || []).map((day) => ({ date: day.date, remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)) }));
     const allocations = [];
@@ -17286,6 +17288,13 @@
     }, current: () => active };
   }
 
+  // src/application/onboarding/build-onboarding-view-model.js
+  function buildOnboardingViewModel({ examDate = null, hoursByDay = {}, subjects = [], sessions = [], questions = [], dailyPlans = [] } = {}) {
+    const hasGoal = Boolean(examDate), availableMinutes = Object.values(hoursByDay || {}).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0), hasAvailability = availableMinutes > 0, hasContent = (subjects || []).some((subject) => !subject.archived && (subject.topics || []).some((topic) => !topic.archived)), hasPlan = (dailyPlans || []).some((plan) => (plan.items || []).length > 0), hasHistory = (sessions || []).length > 0 || (questions || []).length > 0;
+    const steps = [{ id: "goal", label: "Objetivo e data", complete: hasGoal }, { id: "availability", label: "Disponibilidade", complete: hasAvailability }, { id: "content", label: "Edital ou matérias", complete: hasContent }, { id: "plan", label: "Prévia e Hoje", complete: hasPlan || hasHistory }], next = steps.find((step) => !step.complete) || null;
+    return { visible: !hasHistory && !hasPlan, steps, next, completed: steps.filter((step) => step.complete).length, availableMinutes };
+  }
+
   // src/ui/view-models/question-view-model.js
   function buildQuestionViewModel(item, { formatDate, getSubjectName: getSubjectName2, getTopicName: getTopicName2, subjectIdOf: subjectIdOf2, accuracy: accuracy2 } = {}) {
     const resolved = Number(item.resolved) || 0, correct = Number(item.correct) || 0;
@@ -17371,6 +17380,20 @@
     const recommendedAction = mainRisk?.type === "accuracy_below_target" ? "Priorizar questões e revisão dos tópicos com maior lacuna." : mainRisk?.type === "execution_deficit" ? "Readequar a carga da próxima semana à capacidade disponível." : "Manter o plano e consolidar os tópicos com revisão espaçada.";
     const priorities = state2 === "insufficient" ? [] : recommendations.filter((item) => item && item.accepted !== false).slice(0, 3).map((item) => ({ topicId: item.topicId || null, reason: item.reason || item.reasons?.[0] || "Prioridade identificada no diagnóstico", action: item.action || "Praticar o tópico", estimatedMinutes: Math.max(0, Math.round(Number(item.estimatedMinutes) || 0)) }));
     return { algorithmVersion: WEEKLY_CLOSE_VERSION, period, state: state2, investment: { plannedMinutes: planned, executedMinutes: executed, deficitMinutes: Math.max(0, planned - executed), adherence }, execution: { plannedItems: plannedCount, completedItems: completedCount, rate: plannedCount ? pct(completedCount, plannedCount) : null }, questions: { resolved, correct, accuracy: accuracy2 }, recommendations: { total: recommendations.length, accepted: recommendations.filter((x) => x.accepted || x.status === "accepted").length }, comparison: comparisons, assessment: accuracyGap == null ? "insufficient" : accuracyGap >= 0 ? "on_target" : "attention", bestSignal, mainRisk, recommendedAction, priorities, reasons: state2 === "insufficient" ? ["Registre sessões, planos ou questões para fechar a semana."] : [] };
+  }
+
+  // src/application/analytics/weekly-close-snapshot.js
+  var WEEKLY_CLOSE_SNAPSHOT_VERSION = 1;
+  function createWeeklyCloseSnapshot(model, { savedAt, id } = {}) {
+    if (!model?.period || model.weeklyClose?.state === "insufficient") return null;
+    return { id, period: { ...model.period }, savedAt, version: WEEKLY_CLOSE_SNAPSHOT_VERSION, algorithmVersion: model.weeklyClose.algorithmVersion, weeklyClose: structuredClone(model.weeklyClose), gapMap: structuredClone(model.gapMap), decisionHistory: structuredClone(model.decisionHistory) };
+  }
+  function upsertWeeklyCloseSnapshot(list, snapshot) {
+    if (!snapshot) return false;
+    const index = list.findIndex((item) => item.period?.start === snapshot.period.start && item.period?.end === snapshot.period.end);
+    if (index >= 0) list[index] = snapshot;
+    else list.push(snapshot);
+    return true;
   }
 
   // src/domain/analytics/gap-map.js
@@ -17825,6 +17848,7 @@
     if (!Array.isArray(state.reviewAgenda)) state.reviewAgenda = [];
     if (!Array.isArray(state.questoes)) state.questoes = [];
     if (!Array.isArray(state.simulados)) state.simulados = [];
+    if (!Array.isArray(state.weeklyCloseSnapshots)) state.weeklyCloseSnapshots = [];
     if (!["agenda", "sequence"].includes(state.executionMode)) state.executionMode = "agenda";
     const metaDefaults = { semanal: 5, mensal: 20, questoesSemanal: 150, simuladosSemanal: 1, metaAprovacao: 70, horasDiarias: 2.5 };
     if (!state.metas || typeof state.metas !== "object") state.metas = {};
@@ -18529,7 +18553,7 @@
   }
   function validateNormalizedBackup(data) {
     const fail = (message) => ({ valid: false, message });
-    const collections = ["subjects", "calendar", "reviewAgenda", "questoes", "simulados", "progressHistory", "studySessions", "dailyPlans", "studyPlans", "planAdjustments", "recommendationFeedback", "alertStates", "topicHistory", "metasPorDisciplina"];
+    const collections = ["subjects", "calendar", "reviewAgenda", "questoes", "simulados", "progressHistory", "studySessions", "dailyPlans", "studyPlans", "planAdjustments", "recommendationFeedback", "weeklyCloseSnapshots", "alertStates", "topicHistory", "metasPorDisciplina"];
     for (const field of collections) {
       if (!Array.isArray(data[field])) return fail(`O campo "${field}" deve ser uma lista.`);
       if (data[field].length > 5e4) return fail(`O campo "${field}" excede o limite seguro de 50.000 registros.`);
@@ -22408,8 +22432,13 @@
   function renderGuidedOnboarding() {
     const el = document.getElementById("guidedOnboarding");
     if (!el) return;
-    const hasHistory = state.studySessions.length || state.questoes.length || state.subjects.some((subject) => (subject.topics || []).some((topic) => topic.status && topic.status !== "Não iniciado"));
-    el.hidden = Boolean(state.examDate || hasHistory || IS_DEMO_MODE);
+    const model = buildOnboardingViewModel({ examDate: state.examDate, hoursByDay: state.metas.horasPorDia, subjects: state.subjects, sessions: state.studySessions, questions: state.questoes, dailyPlans: state.dailyPlans });
+    el.hidden = !model.visible || IS_DEMO_MODE;
+    model.steps.forEach((step) => {
+      const item = el.querySelector(`[data-onboarding-step="${step.id}"]`);
+      item?.classList.toggle("is-complete", step.complete);
+      item?.classList.toggle("is-next", model.next?.id === step.id);
+    });
   }
   function renderMetasHoje() {
     const container = document.getElementById("hojeMetas");
@@ -22709,14 +22738,23 @@
     const subjectNames = Object.fromEntries(state.subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(state.subjects.flatMap((subject) => (subject.topics || []).map((topic) => [topic.id, topic.name]))), model = buildRecommendationCalibration(state.recommendationFeedback, { minimumSample: 5, subjectNames, topicNames });
     el.innerHTML = renderRecommendationCalibrationModel(model, { escapeHtml });
   }
+  var currentStudyTrackModel = null;
   function renderStudyTrack32Insights() {
     const close = document.getElementById("weeklyCloseDashboard"), comparison2 = document.getElementById("periodComparisonDashboard"), gaps = document.getElementById("gapMapDashboard"), history = document.getElementById("decisionHistoryDashboard"), simReplan = document.getElementById("postSimulationReplanDashboard");
     const scope = examEvidenceContext(), scopedSubjectIds = new Set(scope.content.eligibleTopics.map((item) => item.subjectId)), model = buildStudyTrack32ViewModel({ today: todayISO(), sessions: scope.sessions.included, questions: scope.questions.included, dailyPlans: planningRepository.getDailyPlans?.() || [], planAdjustments: state.planAdjustments, recommendations: state.recommendationFeedback, simulations: examScopedSimulations(), subjects: state.subjects.filter((subject) => scopedSubjectIds.has(subject.id)), weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), targetAccuracy: Number(state.metas.metaAprovacao) || 80, algorithmServices: { addDays, buildWeeklyClose, buildGapMap, buildDecisionHistory, buildPostSimulationReplan, buildCandidates: intelligenceCandidates }, nameResolvers: { subject: getSubjectName, topic: getTopicName } }), options = { escapeHtml, formatMinutes: formatPlanMinutes };
-    if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, options);
+    currentStudyTrackModel = model;
+    if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, options) + (model.weeklyClose.state === "insufficient" ? "" : `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`);
     if (comparison2) comparison2.innerHTML = renderPeriodComparison(model.weeklyClose, options);
     if (gaps) gaps.innerHTML = renderGapMap(model.gapMap, options);
     if (history) history.innerHTML = renderDecisionHistory(model.decisionHistory, options);
     if (simReplan) simReplan.innerHTML = renderPostSimulationReplan(model.postSimulation, options);
+  }
+  function saveWeeklyCloseSnapshot() {
+    const snapshot = createWeeklyCloseSnapshot(currentStudyTrackModel, { savedAt: nowISO2(), id: uid("weekly-close") });
+    if (!snapshot) return showToast("Ainda não há dados suficientes para salvar o fechamento.");
+    upsertWeeklyCloseSnapshot(state.weeklyCloseSnapshots, snapshot);
+    scheduleSave();
+    showToast("Fechamento semanal salvo como retrato deste período.");
   }
   function renderTopicRetentionDashboard() {
     const el = document.getElementById("topicRetentionDashboard");
@@ -22898,6 +22936,7 @@
     clearReplanPreview,
     confirmReplan,
     undoPlanAdjustment,
+    saveWeeklyCloseSnapshot,
     cancelAgendaEdit,
     cancelCalendarEdit,
     cancelQuestionEdit,

@@ -1,8 +1,9 @@
+const recoveryReason=item=>item.reviewUrgency>=60?'revisão próxima do vencimento':item.score>=70?'alta prioridade por risco e impacto na prova':item.executedSeconds>0?'atividade iniciada e ainda incompleta':item.reason||'atividade pendente do período';
 export function buildReplanProposal({plans=[],periodStart,periodEnd,futureDays=[]}={}){
   const inPeriod=plans.filter(plan=>plan.date>=periodStart&&plan.date<=periodEnd);
   const plannedMinutes=inPeriod.reduce((sum,plan)=>sum+(plan.items||[]).filter(item=>!['skipped','replaced'].includes(item.status)).reduce((n,item)=>n+(Number(item.plannedMinutes)||0),0),0);
   const executedMinutes=Math.round(inPeriod.reduce((sum,plan)=>sum+(plan.items||[]).reduce((n,item)=>n+(Number(item.executedSeconds)||0)/60,0),0));
-  const pendingItems=inPeriod.flatMap(plan=>(plan.items||[]).filter(item=>!['completed','skipped','replaced','deferred'].includes(item.status)).map(item=>({sourcePlanId:plan.id,sourceItemId:item.id,subjectId:item.subjectId||null,topicId:item.topicId||null,remainingMinutes:Math.max(0,Math.round((Number(item.plannedMinutes)||0)-(Number(item.executedSeconds)||0)/60)),priority:Number(item.score)||0}))).filter(item=>item.remainingMinutes>0).sort((a,b)=>b.priority-a.priority);
+  const pendingItems=inPeriod.flatMap(plan=>(plan.items||[]).filter(item=>!['completed','skipped','replaced','deferred'].includes(item.status)).map(item=>({sourcePlanId:plan.id,sourceItemId:item.id,subjectId:item.subjectId||null,topicId:item.topicId||null,remainingMinutes:Math.max(0,Math.round((Number(item.plannedMinutes)||0)-(Number(item.executedSeconds)||0)/60)),priority:Number(item.score)||0,reason:recoveryReason(item)}))).filter(item=>item.remainingMinutes>0).sort((a,b)=>b.priority-a.priority);
   const deficitMinutes=pendingItems.reduce((sum,item)=>sum+item.remainingMinutes,0);
   const capacities=(futureDays||[]).map(day=>({date:day.date,remaining:Math.max(0,Math.round(Number(day.availableMinutes)||0))}));
   const allocations=[];let remaining=deficitMinutes;

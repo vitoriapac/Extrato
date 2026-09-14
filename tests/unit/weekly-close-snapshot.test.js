@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createWeeklyCloseSnapshot,upsertWeeklyCloseSnapshot} from '../../src/application/analytics/weekly-close-snapshot.js';
+
+test('salva retrato versionado e substitui somente o mesmo período',()=>{const model={period:{start:'2026-09-01',end:'2026-09-07'},weeklyClose:{state:'available',algorithmVersion:'2.0.0',questions:{resolved:10}},gapMap:{items:[]},decisionHistory:{items:[]}},list=[],first=createWeeklyCloseSnapshot(model,{id:'one',savedAt:'2026-09-07T12:00:00Z'});assert.equal(upsertWeeklyCloseSnapshot(list,first),true);model.weeklyClose.questions.resolved=20;const second=createWeeklyCloseSnapshot(model,{id:'two',savedAt:'2026-09-07T13:00:00Z'});upsertWeeklyCloseSnapshot(list,second);assert.equal(list.length,1);assert.equal(list[0].id,'two');assert.equal(first.weeklyClose.questions.resolved,10)});
+test('não salva semana sem evidência',()=>{assert.equal(createWeeklyCloseSnapshot({period:{},weeklyClose:{state:'insufficient'}}),null)});
