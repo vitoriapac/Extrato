@@ -102,7 +102,7 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 
 Depois dos seis pacotes, as próximas entregas podem ser tratadas separadamente:
 
-- prioridade de tópicos com edição e explicação mais ricas;
+- prioridade de tópicos com edição e explicação mais ricas — primeira etapa concluída: impacto efetivo com origem visível, esforço explicado e pré-requisitos editáveis com prevenção de ciclos;
 - cenário demonstrativo determinístico com 130 dias;
 - importação estruturada em JSON e CSV;
 - gamificação discreta e opcional;

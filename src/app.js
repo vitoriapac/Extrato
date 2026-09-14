@@ -34,6 +34,7 @@ import {recommendStudy} from './application/recommend-study.js';
 import {buildStudyCandidates} from './application/build-study-candidates.js';
 import {calculateTopicMastery,calculateTopicRetention} from './domain/analytics/topic-metrics.js';
 import {PRIORITY_ALGORITHM_VERSION} from './domain/analytics/priority-score.js';
+import {resolveTopicExamImpact,wouldCreatePrerequisiteCycle} from './domain/analytics/topic-strategy.js';
 import {calculateReviewHealth} from './domain/analytics/review-health.js';
 import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eligibility.js';
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
@@ -1880,10 +1881,7 @@ function renderSubjects(){
               <tr class="notes-row">
                 <td colspan="6">
                   ${renderTopicAnalyticsState(s,t)}
-                  <div class="topic-strategy-fields">
-                    <label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Não definida" value="${t.examImportance==null?'':Math.round(t.examImportance*100)}" data-delegated-blur="updateTopicStrategy('${s.id}','${t.id}','examImportance',this.value)"></label>
-                    <label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${t.estimatedStudyMinutes==null?'':t.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${s.id}','${t.id}','estimatedStudyMinutes',this.value)"></label>
-                  </div>
+                  ${renderTopicStrategyEditor(s,t)}
                   <input type="text" class="topic-tags-input" placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
                     value="${escapeAttr((t.tags||[]).join(', '))}"
                     data-delegated-blur="updateTopicTags('${s.id}','${t.id}', this.value)">
@@ -1942,6 +1940,26 @@ function updateTopicStrategy(subjectId,topicId,field,value){
   studyPlanPreview=null;
   const found=getTopicById(topicId);if(!found||found.subject.id!==subjectId)return;
   const changes={};if(field==='examImportance')changes.examImportance=value===''?null:Number(value)/100;if(field==='estimatedStudyMinutes')changes.estimatedStudyMinutes=value===''?null:Number(value);Object.assign(found.topic,changes);normalizeTopicStrategy(found.topic);subjectService.updateTopic(subjectId,topicId,found.topic);persistAndRender();
+}
+function toggleTopicPrerequisite(subjectId,topicId,prerequisiteId,checked){
+  studyPlanPreview=null;
+  const found=getTopicById(topicId);if(!found||found.subject.id!==subjectId)return;
+  const topics=allTopics();
+  if(checked&&wouldCreatePrerequisiteCycle(topicId,prerequisiteId,topics)){showToast('Esse vínculo criaria um ciclo entre pré-requisitos.');renderSubjects();return}
+  const next=new Set(found.topic.prerequisites||[]);if(checked)next.add(prerequisiteId);else next.delete(prerequisiteId);
+  subjectService.updateTopic(subjectId,topicId,{prerequisites:[...next]});persistAndRender();
+}
+function renderTopicStrategyEditor(subject,topic){
+  const subjectConfig=state.examBlueprint.subjects.find(item=>item.subjectId===subject.id)||null;
+  const impact=resolveTopicExamImpact({topic,subjectConfig,activeExamTags:state.examBlueprint.activeExamTags||[]});
+  const candidates=activeTopics().filter(item=>item.id!==topic.id);
+  const prerequisites=new Set(topic.prerequisites||[]);
+  const choices=candidates.map(candidate=>{
+    const checked=prerequisites.has(candidate.id),cyclic=!checked&&wouldCreatePrerequisiteCycle(topic.id,candidate.id,allTopics());
+    return `<label class="topic-prerequisite-choice"><input type="checkbox" ${checked?'checked':''} ${cyclic?'disabled':''} data-delegated-change="toggleTopicPrerequisite('${subject.id}','${topic.id}','${candidate.id}',this.checked)"><span>${escapeHtml(candidate.subjectName)} — ${escapeHtml(candidate.name||'Tópico sem nome')}${cyclic?' · criaria ciclo':''}</span></label>`;
+  }).join('');
+  const value=impact.value==null?'—':Math.round(impact.value)+'%';
+  return `<div class="topic-strategy-summary"><strong>Impacto usado na prioridade: ${value}</strong><span>${escapeHtml(impact.sourceLabel)}. Alterações invalidam a proposta semanal ainda não confirmada.</span></div><div class="topic-strategy-fields"><label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Herdar automaticamente" value="${topic.examImportance==null?'':Math.round(topic.examImportance*100)}" data-delegated-blur="updateTopicStrategy('${subject.id}','${topic.id}','examImportance',this.value)"><small>Deixe vazio para usar catálogo ou peso da disciplina.</small></label><label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${topic.estimatedStudyMinutes==null?'':topic.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${subject.id}','${topic.id}','estimatedStudyMinutes',this.value)"><small>Define a carga restante, sem limitar cada sessão.</small></label></div><details class="topic-prerequisites"><summary>Pré-requisitos (${prerequisites.size})</summary><p>O tópico só entra no plano quando as bases estiverem concluídas ou com domínio suficiente.</p><div>${choices||'<small>Não há outros tópicos disponíveis.</small>'}</div></details>`;
 }
 function renderTopicAnalyticsState(subject,topic){
   const coverage=topic.status==='Concluído'?100:topic.status==='Em andamento'||topic.status==='Revisão'?50:0;
@@ -4772,7 +4790,7 @@ const DELEGATED_ACTION_HANDLERS={
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
   toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleSessionDetails,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
   updateMetaDisciplina,updateMetaHoursDay,updateQuestionDraft,updateQuestionError,updateSessionHistoryFilter,
-  setErrorAnalysisFilter,updateSimulationDraft,updateStudySessionDraft,updateTopic,updateTopicStatus,updateTopicTags,updateTopicStrategy,updateExamBlueprint,updateExamSubject
+  setErrorAnalysisFilter,updateSimulationDraft,updateStudySessionDraft,updateTopic,updateTopicStatus,updateTopicTags,updateTopicStrategy,toggleTopicPrerequisite,updateExamBlueprint,updateExamSubject
 };
 function delegatedArgument(expression,element){
   const value=expression.trim();

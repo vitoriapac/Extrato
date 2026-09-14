@@ -1069,6 +1069,38 @@
     };
   }
 
+  // src/domain/analytics/topic-strategy.js
+  var finite = (value2) => Number.isFinite(Number(value2)) ? Number(value2) : null;
+  function resolveTopicExamImpact({ topic = {}, subjectConfig = null, activeExamTags = [] } = {}) {
+    if (topic.examImportance != null) {
+      const value2 = Math.max(0, Math.min(100, Number(topic.examImportance) * 100));
+      return { value: value2, source: "manual", sourceLabel: "Definido manualmente no tópico" };
+    }
+    const estimates = Object.entries(topic.examImportanceEstimates || {}).filter(([profile]) => !activeExamTags.length || activeExamTags.some((tag) => profile.startsWith(tag))).map(([, value2]) => finite(value2)).filter((value2) => value2 != null);
+    if (estimates.length) {
+      return { value: Math.max(...estimates) * 100, source: "catalog", sourceLabel: "Estimativa do catálogo para o concurso ativo" };
+    }
+    if (subjectConfig) {
+      const questions = Math.max(0, finite(subjectConfig.expectedQuestions) || 0);
+      const weight = Math.max(0, finite(subjectConfig.questionWeight) || 1);
+      return { value: Math.min(100, questions * 4 * weight), source: "subject", sourceLabel: "Herdado do peso configurado para a disciplina" };
+    }
+    return { value: null, source: "missing", sourceLabel: "Sem impacto de prova configurado" };
+  }
+  function wouldCreatePrerequisiteCycle(topicId, candidateId, topics = []) {
+    if (!topicId || !candidateId || topicId === candidateId) return true;
+    const byId = new Map(topics.map((topic) => [topic.id, topic]));
+    const visited = /* @__PURE__ */ new Set();
+    const reachesTopic = (id) => {
+      if (id === topicId) return true;
+      if (visited.has(id)) return false;
+      visited.add(id);
+      const topic = byId.get(id);
+      return (topic?.prerequisites || []).some(reachesTopic);
+    };
+    return reachesTopic(candidateId);
+  }
+
   // src/application/build-study-candidates.js
   function buildStudyCandidates({ priorities = [], topics = [], retentions = {}, reviewHealths = {}, blueprint = [], sessions = [], today, examProximity = null, activeExamTags = [] } = {}) {
     const catalog = new Map(topics.map((topic) => [topic.id, topic]));
@@ -1077,8 +1109,7 @@
       const retention = retentions[priority.topicId];
       const reviewHealth = reviewHealths[priority.topicId];
       const exam = blueprint.find((item) => item.subjectId === priority.subjectId);
-      const estimates = Object.entries(topic?.examImportanceEstimates || {}).filter(([profile]) => !activeExamTags.length || activeExamTags.some((tag) => profile.startsWith(tag))).map(([, value2]) => Number(value2)).filter(Number.isFinite), catalogEstimate = estimates.length ? Math.max(...estimates) : null;
-      const examImpact = topic?.examImportance != null ? topic.examImportance * 100 : catalogEstimate != null ? catalogEstimate * 100 : exam ? Math.min(100, (Number(exam.expectedQuestions) || 0) * 4 * (Number(exam.questionWeight) || 1)) : null;
+      const examImpact = resolveTopicExamImpact({ topic, subjectConfig: exam, activeExamTags }).value;
       const mastery = diagnosis?.mastery?.confidence > 0 ? diagnosis.mastery.score : null;
       const daysSinceContact = diagnosis?.lastActivity ? Math.max(0, Number(priority.diasSemEstudar) || 0) : null;
       const covered = topic?.status === "Concluído";
@@ -17794,10 +17825,10 @@
 
   // src/domain/analytics/gap-map.js
   var GAP_MAP_VERSION = "2.0.0";
-  var finite = (value2) => Number.isFinite(Number(value2)) ? Math.max(0, Math.min(100, Number(value2))) : null;
+  var finite2 = (value2) => Number.isFinite(Number(value2)) ? Math.max(0, Math.min(100, Number(value2))) : null;
   function buildGapMap(rows = [], { limit = 10 } = {}) {
     const weights = { masteryGap: 0.3, examImpact: 0.3, retentionRisk: 0.2, trendRisk: 0.1, coverageGap: 0.1 }, list = (Array.isArray(rows) ? rows : []).map((row) => {
-      const mastery = finite(row.mastery), impact = finite(row.examImpact), retention = finite(row.retention), trendRisk = finite(row.trendRisk), coverage = finite(row.coverage), factors = { masteryGap: mastery == null ? null : 100 - mastery, examImpact: impact, retentionRisk: retention == null ? null : 100 - retention, trendRisk, coverageGap: coverage == null ? null : 100 - coverage }, available = Object.entries(factors).filter(([, value2]) => value2 != null), weight = available.reduce((sum4, [key]) => sum4 + weights[key], 0), score = weight ? Math.round(available.reduce((sum4, [key, value2]) => sum4 + value2 * weights[key], 0) / weight) : null, confidence2 = available.length / Object.keys(weights).length;
+      const mastery = finite2(row.mastery), impact = finite2(row.examImpact), retention = finite2(row.retention), trendRisk = finite2(row.trendRisk), coverage = finite2(row.coverage), factors = { masteryGap: mastery == null ? null : 100 - mastery, examImpact: impact, retentionRisk: retention == null ? null : 100 - retention, trendRisk, coverageGap: coverage == null ? null : 100 - coverage }, available = Object.entries(factors).filter(([, value2]) => value2 != null), weight = available.reduce((sum4, [key]) => sum4 + weights[key], 0), score = weight ? Math.round(available.reduce((sum4, [key, value2]) => sum4 + value2 * weights[key], 0) / weight) : null, confidence2 = available.length / Object.keys(weights).length;
       return { ...row, gap: factors.masteryGap, priority: score, severity: score == null ? "insufficient" : score >= 70 ? "critical" : score >= 45 ? "high" : score >= 25 ? "medium" : "low", confidence: confidence2, evidence: { availableFactors: available.map(([key]) => key), missingFactors: Object.keys(weights).filter((key) => factors[key] == null) }, factors, reason: factors.masteryGap == null ? "Sem evidência de domínio" : `Gap de ${factors.masteryGap} pontos com impacto de prova ${impact ?? "não informado"}%`, recommendedAction: (score ?? 0) >= 60 ? "Revisar e resolver questões" : "Manter revisão espaçada" };
     }).sort((a, b) => (b.priority ?? -1) - (a.priority ?? -1));
     return { algorithmVersion: GAP_MAP_VERSION, state: list.length ? "available" : "insufficient", items: list.slice(0, limit), total: list.length };
@@ -19904,10 +19935,7 @@
               <tr class="notes-row">
                 <td colspan="6">
                   ${renderTopicAnalyticsState(s, t)}
-                  <div class="topic-strategy-fields">
-                    <label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Não definida" value="${t.examImportance == null ? "" : Math.round(t.examImportance * 100)}" data-delegated-blur="updateTopicStrategy('${s.id}','${t.id}','examImportance',this.value)"></label>
-                    <label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${t.estimatedStudyMinutes == null ? "" : t.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${s.id}','${t.id}','estimatedStudyMinutes',this.value)"></label>
-                  </div>
+                  ${renderTopicStrategyEditor(s, t)}
                   <input type="text" class="topic-tags-input" placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
                     value="${escapeAttr((t.tags || []).join(", "))}"
                     data-delegated-blur="updateTopicTags('${s.id}','${t.id}', this.value)">
@@ -19996,6 +20024,34 @@
     normalizeTopicStrategy(found.topic);
     subjectService.updateTopic(subjectId, topicId, found.topic);
     persistAndRender();
+  }
+  function toggleTopicPrerequisite(subjectId, topicId, prerequisiteId, checked) {
+    studyPlanPreview = null;
+    const found = getTopicById(topicId);
+    if (!found || found.subject.id !== subjectId) return;
+    const topics = allTopics();
+    if (checked && wouldCreatePrerequisiteCycle(topicId, prerequisiteId, topics)) {
+      showToast("Esse vínculo criaria um ciclo entre pré-requisitos.");
+      renderSubjects();
+      return;
+    }
+    const next = new Set(found.topic.prerequisites || []);
+    if (checked) next.add(prerequisiteId);
+    else next.delete(prerequisiteId);
+    subjectService.updateTopic(subjectId, topicId, { prerequisites: [...next] });
+    persistAndRender();
+  }
+  function renderTopicStrategyEditor(subject, topic) {
+    const subjectConfig = state.examBlueprint.subjects.find((item) => item.subjectId === subject.id) || null;
+    const impact = resolveTopicExamImpact({ topic, subjectConfig, activeExamTags: state.examBlueprint.activeExamTags || [] });
+    const candidates = activeTopics().filter((item) => item.id !== topic.id);
+    const prerequisites = new Set(topic.prerequisites || []);
+    const choices = candidates.map((candidate) => {
+      const checked = prerequisites.has(candidate.id), cyclic = !checked && wouldCreatePrerequisiteCycle(topic.id, candidate.id, allTopics());
+      return `<label class="topic-prerequisite-choice"><input type="checkbox" ${checked ? "checked" : ""} ${cyclic ? "disabled" : ""} data-delegated-change="toggleTopicPrerequisite('${subject.id}','${topic.id}','${candidate.id}',this.checked)"><span>${escapeHtml(candidate.subjectName)} — ${escapeHtml(candidate.name || "Tópico sem nome")}${cyclic ? " · criaria ciclo" : ""}</span></label>`;
+    }).join("");
+    const value2 = impact.value == null ? "—" : Math.round(impact.value) + "%";
+    return `<div class="topic-strategy-summary"><strong>Impacto usado na prioridade: ${value2}</strong><span>${escapeHtml(impact.sourceLabel)}. Alterações invalidam a proposta semanal ainda não confirmada.</span></div><div class="topic-strategy-fields"><label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Herdar automaticamente" value="${topic.examImportance == null ? "" : Math.round(topic.examImportance * 100)}" data-delegated-blur="updateTopicStrategy('${subject.id}','${topic.id}','examImportance',this.value)"><small>Deixe vazio para usar catálogo ou peso da disciplina.</small></label><label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${topic.estimatedStudyMinutes == null ? "" : topic.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${subject.id}','${topic.id}','estimatedStudyMinutes',this.value)"><small>Define a carga restante, sem limitar cada sessão.</small></label></div><details class="topic-prerequisites"><summary>Pré-requisitos (${prerequisites.size})</summary><p>O tópico só entra no plano quando as bases estiverem concluídas ou com domínio suficiente.</p><div>${choices || "<small>Não há outros tópicos disponíveis.</small>"}</div></details>`;
   }
   function renderTopicAnalyticsState(subject, topic) {
     const coverage = topic.status === "Concluído" ? 100 : topic.status === "Em andamento" || topic.status === "Revisão" ? 50 : 0;
@@ -23498,6 +23554,7 @@
     updateTopicStatus,
     updateTopicTags,
     updateTopicStrategy,
+    toggleTopicPrerequisite,
     updateExamBlueprint,
     updateExamSubject
   };

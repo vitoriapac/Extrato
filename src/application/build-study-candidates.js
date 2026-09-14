@@ -2,6 +2,7 @@ import {calculatePriorityScore} from '../domain/analytics/priority-score.js';
 import {calculateRiskScore} from '../domain/diagnostics/risk-score.js';
 import {withPrerequisiteEligibility} from '../domain/study-eligibility.js';
 import {trendToRisk} from '../domain/analytics/trends.js';
+import {resolveTopicExamImpact} from '../domain/analytics/topic-strategy.js';
 
 export function buildStudyCandidates({priorities=[],topics=[],retentions={},reviewHealths={},blueprint=[],sessions=[],today,examProximity=null,activeExamTags=[]}={}){
   const catalog=new Map(topics.map(topic=>[topic.id,topic]));
@@ -10,8 +11,7 @@ export function buildStudyCandidates({priorities=[],topics=[],retentions={},revi
     const retention=retentions[priority.topicId];
     const reviewHealth=reviewHealths[priority.topicId];
     const exam=blueprint.find(item=>item.subjectId===priority.subjectId);
-    const estimates=Object.entries(topic?.examImportanceEstimates||{}).filter(([profile])=>!activeExamTags.length||activeExamTags.some(tag=>profile.startsWith(tag))).map(([,value])=>Number(value)).filter(Number.isFinite),catalogEstimate=estimates.length?Math.max(...estimates):null;
-    const examImpact=topic?.examImportance!=null?topic.examImportance*100:catalogEstimate!=null?catalogEstimate*100:exam?Math.min(100,(Number(exam.expectedQuestions)||0)*4*(Number(exam.questionWeight)||1)):null;
+    const examImpact=resolveTopicExamImpact({topic,subjectConfig:exam,activeExamTags}).value;
     const mastery=diagnosis?.mastery?.confidence>0?diagnosis.mastery.score:null;
     const daysSinceContact=diagnosis?.lastActivity?Math.max(0,Number(priority.diasSemEstudar)||0):null;
     const covered=topic?.status==='Concluído';
