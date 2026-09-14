@@ -40,6 +40,7 @@ import {createRecommendationPresentation,recordRecommendationDecision,completeRe
 import {captureRecommendationBaseline,captureRecommendationSnapshot,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
 import {buildRecommendationOutcomeViewModel} from './application/recommendations/build-recommendation-outcome-view-model.js';
 import {recommendationActionKind,recommendationActionLabel} from './application/recommendations/recommendation-action.js';
+import {createRecommendationController} from './application/recommendations/recommendation-controller.js';
 import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
 import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
 import {buildStudyPlan} from './application/build-study-plan.js';
@@ -4237,14 +4238,13 @@ function startStudyRecommendation(id){
   if(!item){item={id:uid('plan-item'),subjectId:recommendation.subjectId,topicId:recommendation.topicId,subjectName:recommendation.subjectName,topicName:recommendation.topicName,type:recommendation.studyType||'study',plannedMinutes:recommendation.estimatedMinutes,executedSeconds:0,status:'planned',sessionIds:[],score:recommendation.score,tier:recommendation.score>=70?'Alta':recommendation.score>=40?'Média':'Baixa',position:plan.items.length+1,statusIcon:'🎯',statusLabel:'Recomendação inteligente',reason:recommendation.reasons.join(' · '),action:recommendation.action,recommendedQuestions:0,originalDate:todayISO(),currentDate:todayISO(),rescheduleCount:0,skippedReason:null,recommendationId:recommendation.recommendationId,createdAt:nowISO()};plan.items.push(item);plan.plannedMinutes+=item.plannedMinutes;plan.updatedAt=nowISO();scheduleSave()}
   state.activeTimer.strategy=structuredClone(recommendation.strategy);state.activeTimer.strategyStep=0;startPlannedActivity(item.id);
 }
-function executeStudyRecommendation(id){
-  const recommendation=currentStudyRecommendations.find(item=>item.id===id);if(!recommendation)return;
-  const kind=recommendationActionKind(recommendation);
-  if(kind==='questions'){const feedback=recordRecommendationFeedback(recommendation,{accepted:true}),question=addQuestaoRow({subjectId:recommendation.subjectId,topicId:recommendation.topicId,recommendationId:recommendation.recommendationId});feedback.actionKind=kind;feedback.resultingQuestionId=question.id;scheduleSave();activateTab('questoes');showToast('Registro de questões aberto e vinculado à recomendação.');return}
-  if(kind==='review'){const feedback=recordRecommendationFeedback(recommendation,{accepted:true});let review=state.reviewAgenda.find(item=>(item.topicId||item.topicRef)===recommendation.topicId&&item.status!=='Concluído');if(!review){review={id:uid('review'),subjectId:recommendation.subjectId,topicId:recommendation.topicId,date:todayISO(),suggestedDate:todayISO(),baseIntervalDays:1,adaptive:true,manualDate:false,tipo:'Revisão livre',status:'Não iniciado',createdAt:nowISO(),completedAt:null};state.reviewAgenda.push(review)}feedback.actionKind=kind;feedback.resultingReviewId=review.id;scheduleSave();activateTab('agenda');completeAgendaReview(review.id);return}
-  if(kind==='prerequisite'&&recommendation.blockedPrerequisites?.[0]){const blocker=getTopicById(recommendation.blockedPrerequisites[0]);if(blocker){const feedback=recordRecommendationFeedback(recommendation,{accepted:true});feedback.actionKind=kind;feedback.targetTopicId=blocker.topic.id;scheduleSave();activateTab('disciplinas');showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);return}}
-  if(kind==='study')startStudyRecommendation(id);
-}
+const recommendationController=createRecommendationController({getRecommendations:()=>currentStudyRecommendations,actionKind:recommendationActionKind,
+  onQuestions:(recommendation,kind)=>{const feedback=recordRecommendationFeedback(recommendation,{accepted:true}),question=addQuestaoRow({subjectId:recommendation.subjectId,topicId:recommendation.topicId,recommendationId:recommendation.recommendationId});feedback.actionKind=kind;feedback.resultingQuestionId=question.id;scheduleSave();activateTab('questoes');showToast('Registro de questões aberto e vinculado à recomendação.');return question},
+  onReview:(recommendation,kind)=>{const feedback=recordRecommendationFeedback(recommendation,{accepted:true});let review=state.reviewAgenda.find(item=>(item.topicId||item.topicRef)===recommendation.topicId&&item.status!=='Concluído');if(!review)review=reviewService.createManualReview({subjectId:recommendation.subjectId,topicId:recommendation.topicId,date:todayISO(),suggestedDate:todayISO(),baseIntervalDays:1,adaptive:true,manualDate:false,tipo:'Revisão livre'});feedback.actionKind=kind;feedback.resultingReviewId=review.id;scheduleSave();activateTab('agenda');completeAgendaReview(review.id);return review},
+  onPrerequisite:(recommendation,kind)=>{const blocker=getTopicById(recommendation.blockedPrerequisites?.[0]);if(!blocker)return null;const feedback=recordRecommendationFeedback(recommendation,{accepted:true});feedback.actionKind=kind;feedback.targetTopicId=blocker.topic.id;scheduleSave();activateTab('disciplinas');showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);return blocker.topic},
+  onStudy:recommendation=>startStudyRecommendation(recommendation.id)
+});
+function executeStudyRecommendation(id){return recommendationController.execute(id)}
 
 let replanPreview=null;
 function calculateReplanPreview(){

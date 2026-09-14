@@ -1408,6 +1408,26 @@
     return { questions: "Resolver questões", review: "Iniciar revisão", prerequisite: "Estudar pré-requisito", study: "Iniciar estudo" }[recommendationActionKind(item)];
   }
 
+  // src/application/recommendations/recommendation-controller.js
+  function createRecommendationController({ getRecommendations, actionKind, onQuestions, onReview, onPrerequisite, onStudy, onMissing = () => {
+  } } = {}) {
+    if (typeof getRecommendations !== "function" || typeof actionKind !== "function") throw new TypeError("Controlador de recomendações requer coleção e classificador de ação.");
+    const execute = (id) => {
+      const recommendation = getRecommendations().find((item) => item.id === id);
+      if (!recommendation) {
+        onMissing(id);
+        return null;
+      }
+      const kind = actionKind(recommendation), handler = { questions: onQuestions, review: onReview, prerequisite: onPrerequisite, study: onStudy }[kind];
+      if (typeof handler !== "function") {
+        onMissing(id);
+        return null;
+      }
+      return handler(recommendation, kind);
+    };
+    return Object.freeze({ execute });
+  }
+
   // src/application/analytics/build-analytics-view-model.js
   function buildHeatmapViewModel({ summaries = [], metric = "hours", selectedDate = null } = {}) {
     const normalizedMetric = HEATMAP_METRICS.includes(metric) ? metric : "hours";
@@ -22533,46 +22553,44 @@
     state.activeTimer.strategyStep = 0;
     startPlannedActivity(item.id);
   }
-  function executeStudyRecommendation(id) {
-    const recommendation = currentStudyRecommendations.find((item) => item.id === id);
-    if (!recommendation) return;
-    const kind = recommendationActionKind(recommendation);
-    if (kind === "questions") {
+  var recommendationController = createRecommendationController({
+    getRecommendations: () => currentStudyRecommendations,
+    actionKind: recommendationActionKind,
+    onQuestions: (recommendation, kind) => {
       const feedback = recordRecommendationFeedback(recommendation, { accepted: true }), question = addQuestaoRow({ subjectId: recommendation.subjectId, topicId: recommendation.topicId, recommendationId: recommendation.recommendationId });
       feedback.actionKind = kind;
       feedback.resultingQuestionId = question.id;
       scheduleSave();
       activateTab("questoes");
       showToast("Registro de questões aberto e vinculado à recomendação.");
-      return;
-    }
-    if (kind === "review") {
+      return question;
+    },
+    onReview: (recommendation, kind) => {
       const feedback = recordRecommendationFeedback(recommendation, { accepted: true });
       let review = state.reviewAgenda.find((item) => (item.topicId || item.topicRef) === recommendation.topicId && item.status !== "Concluído");
-      if (!review) {
-        review = { id: uid("review"), subjectId: recommendation.subjectId, topicId: recommendation.topicId, date: todayISO(), suggestedDate: todayISO(), baseIntervalDays: 1, adaptive: true, manualDate: false, tipo: "Revisão livre", status: "Não iniciado", createdAt: nowISO2(), completedAt: null };
-        state.reviewAgenda.push(review);
-      }
+      if (!review) review = reviewService.createManualReview({ subjectId: recommendation.subjectId, topicId: recommendation.topicId, date: todayISO(), suggestedDate: todayISO(), baseIntervalDays: 1, adaptive: true, manualDate: false, tipo: "Revisão livre" });
       feedback.actionKind = kind;
       feedback.resultingReviewId = review.id;
       scheduleSave();
       activateTab("agenda");
       completeAgendaReview(review.id);
-      return;
-    }
-    if (kind === "prerequisite" && recommendation.blockedPrerequisites?.[0]) {
-      const blocker = getTopicById(recommendation.blockedPrerequisites[0]);
-      if (blocker) {
-        const feedback = recordRecommendationFeedback(recommendation, { accepted: true });
-        feedback.actionKind = kind;
-        feedback.targetTopicId = blocker.topic.id;
-        scheduleSave();
-        activateTab("disciplinas");
-        showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);
-        return;
-      }
-    }
-    if (kind === "study") startStudyRecommendation(id);
+      return review;
+    },
+    onPrerequisite: (recommendation, kind) => {
+      const blocker = getTopicById(recommendation.blockedPrerequisites?.[0]);
+      if (!blocker) return null;
+      const feedback = recordRecommendationFeedback(recommendation, { accepted: true });
+      feedback.actionKind = kind;
+      feedback.targetTopicId = blocker.topic.id;
+      scheduleSave();
+      activateTab("disciplinas");
+      showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);
+      return blocker.topic;
+    },
+    onStudy: (recommendation) => startStudyRecommendation(recommendation.id)
+  });
+  function executeStudyRecommendation(id) {
+    return recommendationController.execute(id);
   }
   var replanPreview = null;
   function calculateReplanPreview() {
