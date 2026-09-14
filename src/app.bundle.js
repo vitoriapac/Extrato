@@ -16430,6 +16430,27 @@
     return api;
   }
 
+  // src/ui/controllers/error-boundary-controller.js
+  function createErrorBoundaryController({ document: document2, onRetry = () => {
+  } } = {}) {
+    const container = document2?.getElementById("appErrorState"), message = document2?.getElementById("appErrorMessage"), retry = document2?.getElementById("appErrorRetryBtn");
+    const clear = () => {
+      if (container) container.hidden = true;
+      if (message) message.textContent = "";
+    };
+    const report = (error, context = "aplicação") => {
+      console.error(`Falha em ${context}`, error);
+      if (message) message.textContent = `Não foi possível atualizar ${context}. Seus dados permanecem salvos.`;
+      if (container) container.hidden = false;
+      return error;
+    };
+    retry?.addEventListener("click", () => {
+      clear();
+      onRetry();
+    });
+    return Object.freeze({ report, clear });
+  }
+
   // src/ui/renderers/application-renderer.js
   function createApplicationRenderer({ sections = [], scopes = {}, globalSections = [], getActiveScope = () => null, afterRender = () => {
   }, onError = () => {
@@ -17552,6 +17573,57 @@
       unallocated += left;
     });
     return { selectedCount: selected2.length, allocations, unallocatedMinutes: unallocated, capacityByDay: capacity.map((day) => ({ date: day.date, availableMinutes: day.availableMinutes, allocatedMinutes: day.availableMinutes - day.remaining, remainingMinutes: day.remaining })), snapshotId };
+  }
+
+  // src/application/analytics/weekly-close-controller.js
+  function createWeeklyCloseController({ getModel, getState, buildProposal, createSnapshot, upsertSnapshot, clock, idGenerator, getDailyCapacity, onChanged = () => {
+  }, onApplied = () => {
+  } } = {}) {
+    if (typeof getModel !== "function" || typeof getState !== "function" || typeof buildProposal !== "function" || typeof createSnapshot !== "function") throw new TypeError("Controlador de fechamento semanal requer dependências de aplicação.");
+    let draft = { selectedIds: [], proposal: null };
+    const view = () => ({ selectedIds: [...draft.selectedIds], proposal: draft.proposal });
+    const toggle = (id, checked) => {
+      draft.selectedIds = checked ? [.../* @__PURE__ */ new Set([...draft.selectedIds, id])] : draft.selectedIds.filter((item) => item !== id);
+      draft.proposal = null;
+      onChanged(view());
+      return view();
+    };
+    const preview = () => {
+      const model = getModel(), close = model?.weeklyClose;
+      if (!close) return null;
+      const days = Array.from({ length: 7 }, (_, index) => {
+        const date2 = clock.addDays(clock.today(), index + 1);
+        return { date: date2, availableMinutes: Math.round(getDailyCapacity(date2)) };
+      });
+      draft.proposal = buildProposal({ priorities: close.priorities, selectedIds: draft.selectedIds, futureDays: days });
+      onChanged(view());
+      return draft.proposal;
+    };
+    const apply = () => {
+      const model = getModel(), proposal = draft.proposal;
+      if (!model || !proposal?.allocations?.length) return null;
+      const state2 = getState(), snapshot = createSnapshot(model, { savedAt: clock.nowISO(), id: idGenerator("weekly-close") });
+      if (!snapshot) return null;
+      upsertSnapshot(state2.weeklyCloseSnapshots, snapshot);
+      for (const item of proposal.allocations) {
+        let plan = state2.dailyPlans.find((candidate) => candidate.date === item.date);
+        if (!plan) {
+          plan = { id: idGenerator("plan"), date: item.date, availableMinutes: Math.round(getDailyCapacity(item.date)), plannedMinutes: 0, flexMinutes: 0, createdAt: clock.nowISO(), updatedAt: clock.nowISO(), items: [] };
+          state2.dailyPlans.push(plan);
+        }
+        plan.items.push({ id: idGenerator("plan-item"), subjectId: item.subjectId, topicId: item.topicId, plannedMinutes: item.minutes, executedSeconds: 0, status: "planned", type: "study", sessionIds: [], reason: item.reason, action: item.action, weeklyCloseSnapshotId: snapshot.id, priorityId: item.priorityId, originalDate: item.date, currentDate: item.date, createdAt: clock.nowISO() });
+        plan.plannedMinutes = plan.items.reduce((sum4, row) => sum4 + (Number(row.plannedMinutes) || 0), 0);
+        plan.flexMinutes = Math.max(0, plan.availableMinutes - plan.plannedMinutes);
+        plan.updatedAt = clock.nowISO();
+      }
+      snapshot.priorityDecisions = (model.weeklyClose.priorities || []).map((item) => ({ priorityId: item.priorityId, accepted: draft.selectedIds.includes(item.priorityId) }));
+      snapshot.appliedAt = clock.nowISO();
+      const result = { snapshot, proposal };
+      draft = { selectedIds: [], proposal: null };
+      onApplied(result);
+      return result;
+    };
+    return Object.freeze({ view, toggle, preview, apply });
   }
 
   // src/application/history/topic-history-service.js
@@ -23020,12 +23092,12 @@
     el.innerHTML = renderRecommendationCalibrationModel(model, { escapeHtml });
   }
   var currentStudyTrackModel = null;
-  var weeklyCloseDraft = { selectedIds: [], proposal: null };
+  var weeklyCloseController = null;
   function renderStudyTrack32Insights() {
     const close = document.getElementById("weeklyCloseDashboard"), comparison2 = document.getElementById("periodComparisonDashboard"), gaps = document.getElementById("gapMapDashboard"), history = document.getElementById("decisionHistoryDashboard"), simReplan = document.getElementById("postSimulationReplanDashboard");
     const scope = examEvidenceContext(), scopedSubjectIds = new Set(scope.content.eligibleTopics.map((item) => item.subjectId)), model = buildStudyTrack32ViewModel({ today: todayISO(), sessions: scope.sessions.included, questions: scope.questions.included, dailyPlans: planningRepository.getDailyPlans?.() || [], planAdjustments: state.planAdjustments, recommendations: state.recommendationFeedback, simulations: examScopedSimulations(), subjects: state.subjects.filter((subject) => scopedSubjectIds.has(subject.id)), weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), targetAccuracy: Number(state.metas.metaAprovacao) || 80, algorithmServices: { addDays, buildWeeklyClose, buildGapMap, buildDecisionHistory, buildPostSimulationReplan, buildCandidates: intelligenceCandidates }, nameResolvers: { subject: getSubjectName, topic: getTopicName } }), options = { escapeHtml, formatMinutes: formatPlanMinutes };
     currentStudyTrackModel = model;
-    if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, { ...options, selectedPriorityIds: weeklyCloseDraft.selectedIds }) + (model.weeklyClose.state === "insufficient" ? "" : renderWeeklyCloseActions(model.weeklyClose)) + renderWeeklySnapshotHistory();
+    if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, { ...options, selectedPriorityIds: weeklyCloseController?.view().selectedIds || [] }) + (model.weeklyClose.state === "insufficient" ? "" : renderWeeklyCloseActions(model.weeklyClose)) + renderWeeklySnapshotHistory();
     if (comparison2) comparison2.innerHTML = renderPeriodComparison(model.weeklyClose, options);
     if (gaps) gaps.innerHTML = renderGapMap(model.gapMap, options);
     if (history) history.innerHTML = renderDecisionHistory(model.decisionHistory, options);
@@ -23037,54 +23109,28 @@
   function renderWeeklyCloseActions(close) {
     const priorities = close.priorities || [];
     if (!priorities.length) return `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`;
-    const checks = priorities.map((item, index) => {
+    const draft = weeklyCloseController.view(), checks = priorities.map((item, index) => {
       const id = item.priorityId || item.topicId || String(index);
-      return `<label class="weekly-priority-choice"><input type="checkbox" data-delegated-change="toggleWeeklyPriority('${escapeAttr(id)}',this.checked)" ${weeklyCloseDraft.selectedIds.includes(id) ? "checked" : ""}><span>${escapeHtml(item.action)} · ${formatPlanMinutes(item.estimatedMinutes)}</span></label>`;
+      return `<label class="weekly-priority-choice"><input type="checkbox" data-delegated-change="toggleWeeklyPriority('${escapeAttr(id)}',this.checked)" ${draft.selectedIds.includes(id) ? "checked" : ""}><span>${escapeHtml(item.action)} · ${formatPlanMinutes(item.estimatedMinutes)}</span></label>`;
     }).join("");
-    const proposal = weeklyCloseDraft.proposal;
+    const proposal = draft.proposal;
     return `<section class="weekly-close-actions"><h4>Decida as prioridades</h4>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()">Conferir impacto</button>${proposal ? `<div class="weekly-action-preview"><strong>${proposal.allocations.length} alocações · ${formatPlanMinutes(proposal.unallocatedMinutes)} sem capacidade</strong><button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button></div>` : ""}<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button></section>`;
   }
   function previewWeeklyCloseActions() {
-    const close = currentStudyTrackModel?.weeklyClose;
-    if (!close) return;
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const date2 = addDays(todayISO(), i + 1);
-      return { date: date2, availableMinutes: Math.round(metaHoursForDate(date2) * 60) };
-    });
-    weeklyCloseDraft.proposal = buildWeeklyCloseActionProposal({ priorities: close.priorities, selectedIds: weeklyCloseDraft.selectedIds, futureDays: days });
-    renderStudyTrack32Insights();
+    weeklyCloseController.preview();
   }
   function toggleWeeklyPriority(id, checked) {
-    weeklyCloseDraft.selectedIds = checked ? [.../* @__PURE__ */ new Set([...weeklyCloseDraft.selectedIds, id])] : weeklyCloseDraft.selectedIds.filter((item) => item !== id);
-    weeklyCloseDraft.proposal = null;
-    renderStudyTrack32Insights();
+    weeklyCloseController.toggle(id, checked);
   }
   function confirmWeeklyCloseActions() {
-    const proposal = weeklyCloseDraft.proposal;
-    if (!proposal || !proposal.allocations.length) return;
-    const snapshot = createWeeklyCloseSnapshot(currentStudyTrackModel, { savedAt: nowISO2(), id: uid("weekly-close") });
-    if (!snapshot) return;
-    upsertWeeklyCloseSnapshot(state.weeklyCloseSnapshots, snapshot);
-    proposal.allocations.forEach((item) => {
-      let plan = state.dailyPlans.find((candidate) => candidate.date === item.date);
-      if (!plan) {
-        plan = { id: uid("plan"), date: item.date, availableMinutes: Math.round(metaHoursForDate(item.date) * 60), plannedMinutes: 0, flexMinutes: 0, createdAt: nowISO2(), updatedAt: nowISO2(), items: [] };
-        state.dailyPlans.push(plan);
-      }
-      ;
-      plan.items.push({ id: uid("plan-item"), subjectId: item.subjectId, topicId: item.topicId, plannedMinutes: item.minutes, executedSeconds: 0, status: "planned", type: "study", sessionIds: [], reason: item.reason, action: item.action, weeklyCloseSnapshotId: snapshot.id, priorityId: item.priorityId, originalDate: item.date, currentDate: item.date, createdAt: nowISO2() });
-      plan.plannedMinutes = (plan.items || []).reduce((sum4, row) => sum4 + (Number(row.plannedMinutes) || 0), 0);
-      plan.flexMinutes = Math.max(0, plan.availableMinutes - plan.plannedMinutes);
-      plan.updatedAt = nowISO2();
-    });
-    snapshot.priorityDecisions = (currentStudyTrackModel.weeklyClose.priorities || []).map((item) => ({ priorityId: item.priorityId, accepted: weeklyCloseDraft.selectedIds.includes(item.priorityId) }));
-    snapshot.appliedAt = nowISO2();
-    weeklyCloseDraft = { selectedIds: [], proposal: null };
+    weeklyCloseController.apply();
+  }
+  weeklyCloseController = createWeeklyCloseController({ getModel: () => currentStudyTrackModel, getState: () => state, buildProposal: buildWeeklyCloseActionProposal, createSnapshot: createWeeklyCloseSnapshot, upsertSnapshot: upsertWeeklyCloseSnapshot, clock: { today: todayISO, nowISO: nowISO2, addDays }, idGenerator: uid, getDailyCapacity: (date2) => metaHoursForDate(date2) * 60, onChanged: renderStudyTrack32Insights, onApplied: () => {
     scheduleSave();
     renderStudyTrack32Insights();
     renderPlanoHoje();
     showToast("Prioridades aceitas aplicadas ao plano diário.");
-  }
+  } });
   function saveWeeklyCloseSnapshot() {
     const snapshot = createWeeklyCloseSnapshot(currentStudyTrackModel, { savedAt: nowISO2(), id: uid("weekly-close") });
     if (!snapshot) return showToast("Ainda não há dados suficientes para salvar o fechamento.");
@@ -23427,7 +23473,9 @@
   function activeTabName() {
     return document.querySelector(".tab-btn.active")?.dataset.tab || "dashboard";
   }
-  var applicationRenderer = createApplicationRenderer({
+  var applicationRenderer;
+  var errorBoundary = createErrorBoundaryController({ document, onRetry: () => render("active") });
+  applicationRenderer = createApplicationRenderer({
     sections: [
       ["indicadores", renderKPIs],
       ["primeiro uso", renderGuidedOnboarding],
@@ -23477,11 +23525,15 @@
     globalSections: ["indicadores", "cabeçalho"],
     getActiveScope: activeTabName,
     afterRender: labelDynamicControls,
-    onError: (error, name) => console.error("Falha ao renderizar " + name, error)
+    onError: (error, name) => errorBoundary.report(error, name)
   });
   function render(scope = "all") {
     const result = applicationRenderer.render(scope);
-    renderStudyTrack32Insights();
+    try {
+      renderStudyTrack32Insights();
+    } catch (error) {
+      errorBoundary.report(error, "análises estratégicas");
+    }
     return result;
   }
   function persistAndRender() {

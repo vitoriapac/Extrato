@@ -666,6 +666,10 @@
 
 <div class="save-indicator" id="saveIndicator" role="status" aria-live="polite">✓ Salvo</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<aside class="app-error-state" id="appErrorState" role="alert" hidden>
+  <span id="appErrorMessage">Não foi possível atualizar esta área.</span>
+  <button class="btn ghost small" id="appErrorRetryBtn" type="button">Tentar novamente</button>
+</aside>
 <article id="strategicPrintReport" class="strategic-print-report" aria-label="Relatório estratégico"></article>
 <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalMessage">
   <div class="modal-box">
@@ -677,7 +681,7 @@
     </div>
     <div class="modal-actions">
       <button class="btn ghost small" id="modalCancelBtn">Cancelar</button>
-      <button class="btn danger" id="modalConfirmBtn" style="padding:9px 16px;font-size:12px;">Confirmar</button>
+      <button class="btn danger modal-primary-action" id="modalConfirmBtn">Confirmar</button>
     </div>
   </div>
 </div>
@@ -706,15 +710,15 @@
         <option value="questions">Questões</option>
         <option value="simulation">Simulado</option>
       </select>
-      <details class="session-extra-details"><summary>Adicionar detalhes</summary><div style="display:flex;gap:10px;">
-          <input type="number" id="sessionModalResolved" aria-label="Questões resolvidas" placeholder="Questões resolvidas" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
-          <input type="number" id="sessionModalCorrect" aria-label="Quantidade de acertos" placeholder="Acertos" min="0" style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;">
+      <details class="session-extra-details"><summary>Adicionar detalhes</summary><div class="session-question-fields">
+          <input class="session-detail-control" type="number" id="sessionModalResolved" aria-label="Questões resolvidas" placeholder="Questões resolvidas" min="0">
+          <input class="session-detail-control" type="number" id="sessionModalCorrect" aria-label="Quantidade de acertos" placeholder="Acertos" min="0">
       </div>
-        <textarea id="sessionModalNotes" aria-label="Observação da sessão" placeholder="Observação opcional" style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:9px;border:1px solid var(--paper-line);border-radius:2px;background:var(--paper);resize:vertical;min-height:58px;"></textarea></details>
+        <textarea class="session-detail-control session-notes" id="sessionModalNotes" aria-label="Observação da sessão" placeholder="Observação opcional"></textarea></details>
     </div>
     <div class="modal-actions">
       <button class="btn ghost small" id="sessionModalSkipBtn">Só zerar o cronômetro</button>
-      <button class="btn" id="sessionModalSaveBtn" style="padding:9px 16px;font-size:12px;">Salvar sessão</button>
+      <button class="btn modal-primary-action" id="sessionModalSaveBtn">Salvar sessão</button>
     </div>
   </div>
 </div>
