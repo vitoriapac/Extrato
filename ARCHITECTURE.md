@@ -141,3 +141,18 @@ Consumidores de planejamento, candidatos, matriz Edital × Domínio, prontidão,
 Trocas em `activeExamTags` passam por `src/application/exams/exam-scope-transition.js`, que invalida derivados persistidos. O importador mantém estado, ações e view-model em `src/features/exam-import/`; a camada de aplicação continua responsável pelo serviço e pela persistência.
 
 O relógio separa o instante UTC da data civil local. A CI executa a suíte em `UTC` e `America/Sao_Paulo` para detectar dependências acidentais do fuso do executor.
+## Prontidão dos testes E2E
+
+Os helpers em `tests/e2e/helpers/app-state.js` centralizam quatro estados observáveis: aplicação pronta, importador pronto, estado persistido e renderização estável. Testes devem aguardar esses estados em vez de usar atrasos temporais. Elementos críticos do wizard usam `data-testid`; falhas retêm trace, screenshot e vídeo.
+
+## Fluxo do Edital Inteligente
+
+```text
+DOM event → controller → action → state → view-model → renderer
+```
+
+`exam-import-state.js` é a autoridade da seleção. O controller apenas orquestra eventos; `exam-import-view-model.js` entrega `visibleSubjects`, contadores e estados `checked`/`indeterminate`; o renderer recebe esse contrato sem acessar o estado global.
+
+## Transição de escopo
+
+Toda mudança de concursos ativos passa por `setActiveExamTags()`. As tags são deduplicadas e ordenadas antes da comparação, e somente campos derivados do edital são invalidados. Sessões, questões, revisões e histórico nunca são apagados pela troca de escopo.

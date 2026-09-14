@@ -15825,9 +15825,16 @@
 
   // src/features/exam-import/exam-import-view-model.js
   var normalizeExamImportSearch = (value2) => String(value2 || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
-  function buildExamImportViewModel({ state: state2, preset: preset2, topicLabel = () => "", preview = null } = {}) {
-    const query = normalizeExamImportSearch(state2?.query?.trim()), subjects = (preset2?.subjects || []).map((subject) => ({ ...subject, topics: (subject.topics || []).filter((topic) => !query || normalizeExamImportSearch([subject.name, topic.name, ...subject.aliases || [], ...topic.aliases || [], topicLabel(topic), ...topic.sourceRefs || []].join(" ")).includes(query)) })).filter((subject) => subject.topics.length);
-    return { step: state2.step, preset: preset2, subjects, selectedTopics: state2.topicIds.size, totalTopics: (preset2?.subjects || []).reduce((sum4, subject) => sum4 + (subject.topics || []).length, 0), preview };
+  function buildExamImportViewModel({ state: state2, preset: preset2, presets = [], topicLabel = () => "", preview = null } = {}) {
+    const query = normalizeExamImportSearch(state2?.query?.trim()), visibleSubjects = (preset2?.subjects || []).map((subject) => {
+      const allTopics2 = subject.topics || [], topics = allTopics2.filter((topic) => !query || normalizeExamImportSearch([subject.name, topic.name, ...subject.aliases || [], ...topic.aliases || [], topicLabel(topic), ...topic.sourceRefs || []].join(" ")).includes(query)).map((topic) => {
+        const key = `${subject.id}:${topic.id}`;
+        return { ...topic, key, checked: state2.topicIds.has(key), scopeLabel: topicLabel(topic) };
+      });
+      const selectedCount = allTopics2.filter((topic) => state2.topicIds.has(`${subject.id}:${topic.id}`)).length;
+      return { ...subject, topics, checked: allTopics2.length > 0 && selectedCount === allTopics2.length, indeterminate: selectedCount > 0 && selectedCount < allTopics2.length, selectedCount, totalCount: allTopics2.length };
+    }).filter((subject) => subject.topics.length);
+    return { step: state2.step, preset: preset2, presets, visibleSubjects, subjects: visibleSubjects, selectedTopics: state2.topicIds.size, totalTopics: (preset2?.subjects || []).reduce((sum4, subject) => sum4 + (subject.topics || []).length, 0), canContinue: state2.step !== 2 || state2.topicIds.size > 0, preview };
   }
 
   // src/features/exam-import/exam-import-renderer.js
@@ -15870,9 +15877,9 @@
       if (event.target.name === "examPreset") {
         state2.presetId = event.target.value;
         facade.begin(state2.presetId);
-        const preset2 = getPreset();
-        state2.subjectIds = new Set(preset2.subjects.map((item) => item.id));
-        state2.topicIds = new Set(preset2.subjects.flatMap((item) => (item.topics || []).map((topic) => `${item.id}:${topic.id}`)));
+        syncExamImportSelection(state2, getPreset());
+        render2();
+        return;
       }
       if (event.target.dataset.examSubject) {
         toggleExamSubject(state2, getPreset(), event.target.dataset.examSubject, event.target.checked);

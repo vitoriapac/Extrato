@@ -323,7 +323,7 @@
     <div class="section-head">
       <div class="section-title">Disciplinas &amp; tópicos</div>
       <div style="display:flex;gap:8px;">
-        <button class="btn ghost" id="loadDefaultSubjectsBtn">📋 Carregar disciplinas do edital</button>
+        <button class="btn ghost" id="loadDefaultSubjectsBtn" data-testid="open-exam-import">📋 Carregar disciplinas do edital</button>
         <button class="btn" id="addSubjectBtn">+ Nova disciplina</button>
       </div>
     </div>
@@ -688,7 +688,7 @@
     <div class="modal-actions">
       <button class="btn ghost small" id="examImportCancelBtn">Cancelar</button>
       <button class="btn ghost small" id="examImportBackBtn" hidden>Voltar</button>
-      <button class="btn" id="examImportNextBtn">Continuar</button>
+      <button class="btn" id="examImportNextBtn" data-testid="confirm-exam-import">Continuar</button>
     </div>
   </div>
 </div>

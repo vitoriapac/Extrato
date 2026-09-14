@@ -1,4 +1,18 @@
-import {test,expect} from '@playwright/test';import {activateTab} from './helpers.js';
-test('troca e combina concursos sem reutilizar a matriz anterior',async({page})=>{await page.goto('/?test=1');await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),subject=state.subjects[0],base=subject.topics[0];subject.topics=[{...base,id:'scope-bb',subjectId:subject.id,name:'Tópico exclusivo BB',examTags:['bb-escriturario'],archived:false},{...base,id:'scope-caixa',subjectId:subject.id,name:'Tópico exclusivo Caixa',examTags:['caixa-tbn'],archived:false}];state.examBlueprint.subjects=[{subjectId:subject.id,priority:'normal',expectedQuestions:10,questionWeight:1,masteryTarget:null}];state.examBlueprint.activeExamTags=[];api.setState(state);api.renderAll()});await activateTab(page,'metas');const checks=page.locator('#examBlueprintConfig .active-exams label'),bb=checks.nth(0),caixa=checks.nth(1);await bb.waitFor({state:'attached'});await bb.click({force:true,timeout:10000});await expect(bb).toBeChecked();await expect(caixa).not.toBeChecked();await caixa.click({force:true});await expect(bb).toBeChecked();await expect(caixa).toBeChecked();await bb.waitFor({state:'attached'});await bb.click({force:true,timeout:10000});await expect(bb).not.toBeChecked();await expect(caixa).toBeChecked();const tags=await page.evaluate(()=>window.__EXTRATO_TEST__.getState().examBlueprint.activeExamTags);expect(tags).toEqual(['caixa-tbn'])});
+import {test,expect} from '@playwright/test';
+import {activateTab} from './helpers.js';
 
-
+test('troca e combina concursos sem reutilizar a matriz anterior',async({page})=>{
+  await page.goto('/?test=1');
+  await page.evaluate(()=>{
+    const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),subject=state.subjects[0],base=subject.topics[0];
+    subject.topics=[{...base,id:'scope-bb',subjectId:subject.id,name:'Tópico exclusivo BB',examTags:['bb-escriturario'],archived:false},{...base,id:'scope-caixa',subjectId:subject.id,name:'Tópico exclusivo Caixa',examTags:['caixa-tbn'],archived:false}];
+    state.examBlueprint.subjects=[{subjectId:subject.id,priority:'normal',expectedQuestions:10,questionWeight:1,masteryTarget:null}];state.examBlueprint.activeExamTags=[];api.setState(state);api.renderAll();
+  });
+  await activateTab(page,'metas');
+  const checks=page.locator('#examBlueprintConfig .active-exams input[type=checkbox]'),bb=checks.nth(0),caixa=checks.nth(1);
+  await expect(bb).toBeAttached();
+  await bb.evaluate(input=>input.click());await expect(bb).toBeChecked();await expect(caixa).not.toBeChecked();
+  await caixa.evaluate(input=>input.click());await expect(bb).toBeChecked();await expect(caixa).toBeChecked();
+  await bb.evaluate(input=>input.click());await expect(bb).not.toBeChecked();await expect(caixa).toBeChecked();
+  expect(await page.evaluate(()=>window.__EXTRATO_TEST__.getState().examBlueprint.activeExamTags)).toEqual(['caixa-tbn']);
+});
