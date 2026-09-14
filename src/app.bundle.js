@@ -17554,6 +17554,47 @@
     return { selectedCount: selected2.length, allocations, unallocatedMinutes: unallocated, capacityByDay: capacity.map((day) => ({ date: day.date, availableMinutes: day.availableMinutes, allocatedMinutes: day.availableMinutes - day.remaining, remainingMinutes: day.remaining })), snapshotId };
   }
 
+  // src/application/history/topic-history-service.js
+  var IGNORED_ACTIVITY_TYPES = /* @__PURE__ */ new Set(["topic_archived", "topic_restored", "subject_archived", "subject_restored"]);
+  function historyEventLocalDate(event, toLocalDate = (value2) => value2) {
+    if (typeof event?.localDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(event.localDate)) return event.localDate;
+    if (typeof event?.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(event.date)) return event.date;
+    return toLocalDate(event?.occurredAt || event?.date) || null;
+  }
+  function createTopicHistoryService({ getState, clock, idGenerator, toLocalDate = (value2) => value2 } = {}) {
+    if (typeof getState !== "function" || !clock || typeof idGenerator !== "function") throw new TypeError("Serviço de histórico requer estado, relógio e gerador de IDs.");
+    const records = () => {
+      const state2 = getState();
+      if (!Array.isArray(state2.topicHistory)) state2.topicHistory = [];
+      return state2.topicHistory;
+    };
+    const referenceOf = (metadata) => metadata?.sessionId || metadata?.reviewId || metadata?.operationId || null;
+    const add = (type, subjectId, topicId = null, metadata = {}, options = {}) => {
+      const reference = referenceOf(metadata);
+      if (reference) {
+        const existing = records().find((event2) => event2.type === type && referenceOf(event2.metadata) === reference);
+        if (existing) return existing;
+      }
+      const occurredAt = options.occurredAt || clock.nowISO(), localDate = options.localDate || clock.today();
+      const event = { id: idGenerator("history"), date: occurredAt, occurredAt, localDate, type, subjectId: subjectId || null, topicId: topicId || null, examScope: Array.isArray(options.examScope) ? [...options.examScope] : null, metadata: { ...metadata } };
+      records().push(event);
+      return event;
+    };
+    const list = ({ type, subjectId, topicId, start, end, includeLifecycle = true } = {}) => records().filter((event) => {
+      if (type && event.type !== type) return false;
+      if (subjectId && event.subjectId !== subjectId) return false;
+      if (topicId && event.topicId !== topicId) return false;
+      if (!includeLifecycle && IGNORED_ACTIVITY_TYPES.has(event.type)) return false;
+      const date2 = historyEventLocalDate(event, toLocalDate);
+      return (!start || date2 >= start) && (!end || date2 <= end);
+    });
+    const lastActivity = (filter) => list({ ...filter, includeLifecycle: false }).reduce((latest, event) => {
+      const date2 = historyEventLocalDate(event, toLocalDate);
+      return date2 && (!latest || date2 > latest) ? date2 : latest;
+    }, null);
+    return Object.freeze({ add, list, lastActivity, eventLocalDate: (event) => historyEventLocalDate(event, toLocalDate) });
+  }
+
   // src/domain/analytics/gap-map.js
   var GAP_MAP_VERSION = "2.0.0";
   var finite = (value2) => Number.isFinite(Number(value2)) ? Math.max(0, Math.min(100, Number(value2))) : null;
@@ -18191,6 +18232,7 @@
   var subjectGoalService = createRecordService({ repository: appContext.repositories.metasPorDisciplina, clock: appClock, idGenerator: uid, prefix: "goal" });
   var goalsService = createGoalService({ repository: appContext.repositories.settings, getDayOfWeek: (date2) => parseLocalDate(date2)?.getDay() ?? (/* @__PURE__ */ new Date()).getDay() });
   var subjectService = createSubjectService({ repository: appContext.repositories.subjects, clock: appClock, idGenerator: uid, onEvent: addHistoryEvent });
+  var topicHistoryService = createTopicHistoryService({ getState: () => state, clock: appClock, idGenerator: uid, toLocalDate: timestampToLocalDateISO });
   var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
   var STATE_CHANNEL = !IS_DEMO_MODE && typeof BroadcastChannel === "function" ? new BroadcastChannel("extrato-estudos-state") : null;
@@ -19984,7 +20026,7 @@
       calendar: state.calendar.filter((item) => entitySubjectId(item) === subjectId || topicIds.has(item.topicId)).length,
       reviews: state.reviewAgenda.filter((item) => entitySubjectId(item) === subjectId || topicIds.has(item.topicId || item.topicRef)).length,
       goals: state.metasPorDisciplina.filter((item) => entitySubjectId(item) === subjectId).length,
-      history: state.topicHistory.filter((item) => (item.subjectId === subjectId || topicIds.has(item.topicId)) && !["subject_archived", "subject_restored"].includes(item.type)).length,
+      history: topicHistoryService.list({ includeLifecycle: false }).filter((item) => item.subjectId === subjectId || topicIds.has(item.topicId)).length,
       simulatedBreakdowns: state.simulados.reduce((sum4, sim) => sum4 + (sim.breakdown || []).filter((item) => entitySubjectId(item) === subjectId).length, 0),
       activeTimer: state.activeTimer.subjectId === subjectId || topicIds.has(state.activeTimer.topicId) ? 1 : 0
     };
@@ -20028,7 +20070,7 @@
       sessions: state.studySessions.filter((item) => item.topicId === topicId).length,
       reviews: state.reviewAgenda.filter((item) => item.topicId === topicId || item.topicRef === topicId).length,
       calendar: state.calendar.filter((item) => item.topicId === topicId).length,
-      history: state.topicHistory.filter((item) => item.topicId === topicId && !["topic_archived", "topic_restored"].includes(item.type)).length,
+      history: topicHistoryService.list({ topicId, includeLifecycle: false }).length,
       activeTimer: state.activeTimer.topicId === topicId ? 1 : 0
     };
   }
@@ -20049,17 +20091,13 @@
     persistAndRender();
   }
   function addHistoryEvent(type, subjectId, topicId = null, metadata = {}) {
-    if (!Array.isArray(state.topicHistory)) state.topicHistory = [];
-    const occurredAt = nowISO2();
-    const event = { id: uid("history"), date: occurredAt, occurredAt, localDate: todayISO(), type, subjectId: subjectId || null, topicId: topicId || null, metadata };
-    state.topicHistory.push(event);
-    return event;
+    return topicHistoryService.add(type, subjectId, topicId, metadata, { examScope: evidenceScopeForTopic(topicId) });
   }
   function historyEvents(type) {
-    return state.topicHistory.filter((event) => event.type === type);
+    return topicHistoryService.list({ type });
   }
   function eventLocalDate(event) {
-    return event.localDate || historicalLocalDate(event.occurredAt || event.date);
+    return topicHistoryService.eventLocalDate(event);
   }
   function topicCompletionEvents() {
     return historyEvents("topic_completed");
@@ -20983,7 +21021,7 @@
     const bump = (date2) => {
       if (date2 && (!last || date2 > last)) last = date2;
     };
-    state.topicHistory.filter((event) => event.topicId === topicId && !["topic_archived", "topic_restored"].includes(event.type)).forEach((event) => bump(eventLocalDate(event)));
+    topicHistoryService.list({ topicId, includeLifecycle: false }).forEach((event) => bump(eventLocalDate(event)));
     state.questoes.filter((question) => question.topicId === topicId).forEach((question) => bump(question.date));
     state.studySessions.filter((session) => session.topicId === topicId).forEach((session) => bump(session.date));
     state.calendar.filter((item) => item.topicId === topicId && item.status === "Concluído").forEach((item) => bump(item.date));
@@ -21715,7 +21753,7 @@
     const bump = (d) => {
       if (d && (!last || d > last)) last = d;
     };
-    state.topicHistory.filter((event) => event.subjectId === subjectId).forEach((event) => bump(eventLocalDate(event)));
+    topicHistoryService.list({ subjectId, includeLifecycle: false }).forEach((event) => bump(eventLocalDate(event)));
     state.questoes.filter((q) => entitySubjectId(q) === subjectId).forEach((q) => bump(q.date));
     state.calendar.filter((c) => entitySubjectId(c) === subjectId && c.status === "Concluído").forEach((c) => bump(c.date));
     state.reviewAgenda.filter((a) => entitySubjectId(a) === subjectId && a.status === "Concluído").forEach((a) => bump(a.date));

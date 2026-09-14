@@ -112,6 +112,7 @@ import {buildStudyStrategy} from './domain/recommendations/study-strategy.js';
 import {buildWeeklyClose} from './domain/analytics/weekly-close.js';
 import {createWeeklyCloseSnapshot,upsertWeeklyCloseSnapshot} from './application/analytics/weekly-close-snapshot.js';
 import {buildWeeklyCloseActionProposal} from './application/analytics/weekly-close-actions.js';
+import {createTopicHistoryService} from './application/history/topic-history-service.js';
 import {buildGapMap} from './domain/analytics/gap-map.js';
 import {buildDecisionHistory} from './domain/recommendations/decision-history.js';
 import {buildPostSimulationReplan} from './domain/planning/post-simulation-replan.js';
@@ -547,6 +548,7 @@ const guidedStudyService=createGuidedStudyService({recommend:({id}={})=>currentS
 const calendarService=createRecordService({repository:appContext.repositories.calendar,clock:appClock,idGenerator:uid,prefix:'calendar'}),questionService=createRecordService({repository:appContext.repositories.questoes,clock:appClock,idGenerator:uid,prefix:'question',normalize:item=>{item.resolved=Math.max(0,Math.floor(Number(item.resolved)||0));item.correct=Math.min(item.resolved,Math.max(0,Math.floor(Number(item.correct)||0)));normalizeErrorBreakdown(item);return item}}),simulationService=createRecordService({repository:appContext.repositories.simulados,clock:appClock,idGenerator:uid,prefix:'simulado',normalize:item=>{item.total=Math.max(0,Math.floor(Number(item.total)||0));item.correct=Math.min(item.total,Math.max(0,Math.floor(Number(item.correct)||0)));return item}}),subjectGoalService=createRecordService({repository:appContext.repositories.metasPorDisciplina,clock:appClock,idGenerator:uid,prefix:'goal'});
 const goalsService=createGoalService({repository:appContext.repositories.settings,getDayOfWeek:date=>parseLocalDate(date)?.getDay()??new Date().getDay()});
 const subjectService=createSubjectService({repository:appContext.repositories.subjects,clock:appClock,idGenerator:uid,onEvent:addHistoryEvent});
+const topicHistoryService=createTopicHistoryService({getState:()=>state,clock:appClock,idGenerator:uid,toLocalDate:timestampToLocalDateISO});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
 const STATE_CHANNEL=!IS_DEMO_MODE&&typeof BroadcastChannel==='function'?new BroadcastChannel('extrato-estudos-state'):null;
@@ -2081,7 +2083,7 @@ function getSubjectDependencies(subjectId){
     calendar:state.calendar.filter(item=>entitySubjectId(item)===subjectId||topicIds.has(item.topicId)).length,
     reviews:state.reviewAgenda.filter(item=>entitySubjectId(item)===subjectId||topicIds.has(item.topicId||item.topicRef)).length,
     goals:state.metasPorDisciplina.filter(item=>entitySubjectId(item)===subjectId).length,
-    history:state.topicHistory.filter(item=>(item.subjectId===subjectId||topicIds.has(item.topicId))&&!['subject_archived','subject_restored'].includes(item.type)).length,
+    history:topicHistoryService.list({includeLifecycle:false}).filter(item=>item.subjectId===subjectId||topicIds.has(item.topicId)).length,
     simulatedBreakdowns:state.simulados.reduce((sum,sim)=>sum+(sim.breakdown||[]).filter(item=>entitySubjectId(item)===subjectId).length,0),
     activeTimer:state.activeTimer.subjectId===subjectId||topicIds.has(state.activeTimer.topicId)?1:0
   };
@@ -2123,7 +2125,7 @@ function getTopicDependencies(topicId){
     sessions:state.studySessions.filter(item=>item.topicId===topicId).length,
     reviews:state.reviewAgenda.filter(item=>item.topicId===topicId||item.topicRef===topicId).length,
     calendar:state.calendar.filter(item=>item.topicId===topicId).length,
-    history:state.topicHistory.filter(item=>item.topicId===topicId&&!['topic_archived','topic_restored'].includes(item.type)).length,
+    history:topicHistoryService.list({topicId,includeLifecycle:false}).length,
     activeTimer:state.activeTimer.topicId===topicId?1:0
   };
 }
@@ -2144,14 +2146,10 @@ function updateTopic(subjectId, topicId, field, value){
   persistAndRender();
 }
 function addHistoryEvent(type,subjectId,topicId=null,metadata={}){
-  if(!Array.isArray(state.topicHistory)) state.topicHistory = [];
-  const occurredAt=nowISO();
-  const event={id:uid('history'),date:occurredAt,occurredAt,localDate:todayISO(),type,subjectId:subjectId||null,topicId:topicId||null,metadata};
-  state.topicHistory.push(event);
-  return event;
+  return topicHistoryService.add(type,subjectId,topicId,metadata,{examScope:evidenceScopeForTopic(topicId)});
 }
-function historyEvents(type){ return state.topicHistory.filter(event=>event.type===type); }
-function eventLocalDate(event){ return event.localDate||historicalLocalDate(event.occurredAt||event.date); }
+function historyEvents(type){ return topicHistoryService.list({type}); }
+function eventLocalDate(event){ return topicHistoryService.eventLocalDate(event); }
 function topicCompletionEvents(){ return historyEvents('topic_completed'); }
 function uniqueTopicsCompletedBetween(startDate,endDate){
   const ids=new Set();
@@ -2928,7 +2926,7 @@ function calculateWeightedTrend(weeklyData,minWindow=MIN_TREND_WINDOW_QUESTIONS)
 function topicLastActivityDate(topicId){
   let last=null;
   const bump=date=>{if(date&&(!last||date>last)) last=date;};
-  state.topicHistory.filter(event=>event.topicId===topicId&&!['topic_archived','topic_restored'].includes(event.type)).forEach(event=>bump(eventLocalDate(event)));
+  topicHistoryService.list({topicId,includeLifecycle:false}).forEach(event=>bump(eventLocalDate(event)));
   state.questoes.filter(question=>question.topicId===topicId).forEach(question=>bump(question.date));
   state.studySessions.filter(session=>session.topicId===topicId).forEach(session=>bump(session.date));
   state.calendar.filter(item=>item.topicId===topicId&&item.status==='Concluído').forEach(item=>bump(item.date));
@@ -3585,7 +3583,7 @@ function taxaAcertoDisciplina(subjectId){
 function ultimaAtividadeDisciplina(subjectId){
   let last=null;
   const bump=d=>{if(d&&(!last||d>last)) last=d;};
-  state.topicHistory.filter(event=>event.subjectId===subjectId).forEach(event=>bump(eventLocalDate(event)));
+  topicHistoryService.list({subjectId,includeLifecycle:false}).forEach(event=>bump(eventLocalDate(event)));
   state.questoes.filter(q=>entitySubjectId(q)===subjectId).forEach(q=>bump(q.date));
   state.calendar.filter(c=>entitySubjectId(c)===subjectId&&c.status==='Concluído').forEach(c=>bump(c.date));
   state.reviewAgenda.filter(a=>entitySubjectId(a)===subjectId&&a.status==='Concluído').forEach(a=>bump(a.date));
