@@ -22743,11 +22743,16 @@
     const close = document.getElementById("weeklyCloseDashboard"), comparison2 = document.getElementById("periodComparisonDashboard"), gaps = document.getElementById("gapMapDashboard"), history = document.getElementById("decisionHistoryDashboard"), simReplan = document.getElementById("postSimulationReplanDashboard");
     const scope = examEvidenceContext(), scopedSubjectIds = new Set(scope.content.eligibleTopics.map((item) => item.subjectId)), model = buildStudyTrack32ViewModel({ today: todayISO(), sessions: scope.sessions.included, questions: scope.questions.included, dailyPlans: planningRepository.getDailyPlans?.() || [], planAdjustments: state.planAdjustments, recommendations: state.recommendationFeedback, simulations: examScopedSimulations(), subjects: state.subjects.filter((subject) => scopedSubjectIds.has(subject.id)), weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), targetAccuracy: Number(state.metas.metaAprovacao) || 80, algorithmServices: { addDays, buildWeeklyClose, buildGapMap, buildDecisionHistory, buildPostSimulationReplan, buildCandidates: intelligenceCandidates }, nameResolvers: { subject: getSubjectName, topic: getTopicName } }), options = { escapeHtml, formatMinutes: formatPlanMinutes };
     currentStudyTrackModel = model;
-    if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, options) + (model.weeklyClose.state === "insufficient" ? "" : `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`);
+    if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, options) + (model.weeklyClose.state === "insufficient" ? "" : `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`) + renderWeeklySnapshotHistory();
     if (comparison2) comparison2.innerHTML = renderPeriodComparison(model.weeklyClose, options);
     if (gaps) gaps.innerHTML = renderGapMap(model.gapMap, options);
     if (history) history.innerHTML = renderDecisionHistory(model.decisionHistory, options);
     if (simReplan) simReplan.innerHTML = renderPostSimulationReplan(model.postSimulation, options);
+  }
+  function renderWeeklySnapshotHistory() {
+    const items = [...state.weeklyCloseSnapshots || []].sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt))).slice(0, 4);
+    if (!items.length) return "";
+    return `<details class="weekly-snapshot-history"><summary>Fechamentos salvos (${state.weeklyCloseSnapshots.length})</summary>${items.map((item) => `<article><strong>${formatDatePt(item.period.start)} a ${formatDatePt(item.period.end)}</strong><span>${formatPlanMinutes(item.weeklyClose?.investment?.executedMinutes || 0)} estudados · ${item.weeklyClose?.questions?.accuracy ?? "—"}% de acerto</span><small>Salvo em ${formatDatePt(String(item.savedAt).slice(0, 10))} · regra ${escapeHtml(item.algorithmVersion || "—")}</small></article>`).join("")}</details>`;
   }
   function saveWeeklyCloseSnapshot() {
     const snapshot = createWeeklyCloseSnapshot(currentStudyTrackModel, { savedAt: nowISO2(), id: uid("weekly-close") });
