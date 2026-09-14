@@ -1734,6 +1734,43 @@
     });
   }
 
+  // src/application/planning/replan-controller.js
+  function createReplanController({ service, repository, getState, clock, getDailyCapacity, onChanged = () => {
+  }, onConfirmed = () => {
+  }, onUndone = () => {
+  } } = {}) {
+    if (!service || !repository || typeof getState !== "function" || !clock) throw new TypeError("Controlador de replanejamento requer serviço, repositório, estado e relógio.");
+    let preview = null;
+    const view = () => preview;
+    const calculate = () => {
+      const today = clock.today(), start = clock.startOfWeek(today), end = clock.addDays(start, 6), state2 = getState(), futureDays = [];
+      for (let date2 = clock.addDays(today, 1); date2 <= end; date2 = clock.addDays(date2, 1)) {
+        const planned = state2.dailyPlans.filter((plan) => plan.date === date2).reduce((sum4, plan) => sum4 + (plan.items || []).reduce((total, item) => total + (Number(item.plannedMinutes) || 0), 0), 0);
+        futureDays.push({ date: date2, availableMinutes: Math.max(0, getDailyCapacity(date2) - planned) });
+      }
+      preview = service.calculate({ plans: repository.getDailyPlans().filter((plan) => plan.date >= start && plan.date <= today), periodStart: start, periodEnd: end, futureDays });
+      onChanged(preview);
+      return preview;
+    };
+    const clear = () => {
+      preview = null;
+      onChanged(null);
+    };
+    const confirm = () => {
+      if (preview?.state !== "proposal") return null;
+      const result = service.confirm(preview);
+      preview = null;
+      onConfirmed(result);
+      return result;
+    };
+    const undo = (id) => {
+      const result = service.undo(id);
+      if (result) onUndone(result);
+      return result;
+    };
+    return Object.freeze({ view, calculate, clear, confirm, undo });
+  }
+
   // src/domain/sessions/study-session.js
   var STUDY_SESSION_TYPES = Object.freeze(["study", "review", "questions", "simulation"]);
   var STUDY_SESSION_SOURCES = Object.freeze(["manual", "plan", "recommendation", "import"]);
@@ -22592,51 +22629,43 @@
   function executeStudyRecommendation(id) {
     return recommendationController.execute(id);
   }
-  var replanPreview = null;
-  function calculateReplanPreview() {
-    const start = startOfWeek(todayISO()), end = addDays(start, 6), futureDays = [];
-    for (let date2 = addDays(todayISO(), 1); date2 <= end; date2 = addDays(date2, 1)) {
-      const capacity = metaHoursForDate(date2) * 60;
-      const planned = state.dailyPlans.filter((plan) => plan.date === date2).reduce((sum4, plan) => sum4 + (plan.items || []).reduce((n3, item) => n3 + (Number(item.plannedMinutes) || 0), 0), 0);
-      futureDays.push({ date: date2, availableMinutes: Math.max(0, capacity - planned) });
-    }
-    replanPreview = replanService.calculate({ plans: planningRepository.getDailyPlans().filter((plan) => plan.date >= start && plan.date <= todayISO()), periodStart: start, periodEnd: end, futureDays });
-    renderWeeklyReplan();
-  }
-  function clearReplanPreview() {
-    replanPreview = null;
-    renderWeeklyReplan();
-  }
-  function confirmReplan() {
-    if (!replanPreview || replanPreview.state !== "proposal") return;
-    const { result } = replanService.confirm(replanPreview);
-    replanPreview = null;
+  var replanController = createReplanController({ service: replanService, repository: planningRepository, getState: () => state, clock: { today: todayISO, startOfWeek, addDays }, getDailyCapacity: (date2) => metaHoursForDate(date2) * 60, onChanged: renderWeeklyReplan, onConfirmed: ({ result }) => {
     scheduleSave();
     renderWeeklyReplan();
     renderPlanoHoje();
     showToast(`${pluralize(result.createdItems, "atividade")} redistribuída${result.createdItems === 1 ? "" : "s"} para os próximos dias.`);
-  }
-  function undoPlanAdjustment(id) {
-    const result = replanService.undo(id);
-    if (!result) return;
+  }, onUndone: (result) => {
     scheduleSave();
     renderWeeklyReplan();
     renderPlanoHoje();
     showToast(result.protectedItems.length ? "Itens já executados foram preservados; os demais retornaram à origem." : "Redistribuição desfeita com segurança.");
+  } });
+  function calculateReplanPreview() {
+    return replanController.calculate();
+  }
+  function clearReplanPreview() {
+    return replanController.clear();
+  }
+  function confirmReplan() {
+    return replanController.confirm();
+  }
+  function undoPlanAdjustment(id) {
+    return replanController.undo(id);
   }
   function renderWeeklyReplan() {
     const container = document.getElementById("weeklyReplan");
     if (!container) return;
     const latest = [...state.planAdjustments].sort((a, b) => (b.confirmedAt || "").localeCompare(a.confirmedAt || ""))[0];
-    if (!replanPreview) {
+    const preview = replanController.view();
+    if (!preview) {
       container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt ? "desfeito" : "aplicado"}</strong><span>${formatPlanMinutes(latest.redistributedMinutes)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes)} sem capacidade</span></div>` : ""}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest && !latest.undoneAt && latest.status !== "undone" && latest.changes?.length ? `<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>` : ""}</div>`;
       return;
     }
-    if (replanPreview.state === "balanced") {
+    if (preview.state === "balanced") {
       container.innerHTML = '<div class="upcoming-empty">Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';
       return;
     }
-    container.innerHTML = `${renderReplanProposal(replanPreview, { escapeHtml, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
+    container.innerHTML = `${renderReplanProposal(preview, { escapeHtml, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
   }
   function formatPlanMinutes(minutes) {
     const value2 = Math.max(0, Math.round(Number(minutes) || 0));
