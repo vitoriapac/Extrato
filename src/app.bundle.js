@@ -1397,6 +1397,17 @@
     return { state: state2, available: true, title: STATE_LABELS[state2], metrics, confidence: confidence2, confidenceLabel: outcome.confidenceLabel || outcome.evidence?.evidenceLabel || null, evidenceLabel: outcome.evidence?.evidenceLabel || null, reasons: Array.isArray(outcome.reasons) ? outcome.reasons : [], questionVolume: Math.max(0, Number(outcome.questionVolumeAfter ?? outcome.questionVolume) || 0), measuredAt: outcome.measuredAt || null, recommendationId: feedback.recommendationId, algorithmVersion: Number(outcome.algorithmVersion) || 1 };
   }
 
+  // src/application/recommendations/recommendation-action.js
+  function recommendationActionKind(item = {}) {
+    if ((item.blockedPrerequisites || []).length) return "prerequisite";
+    if (item.studyType === "questions") return "questions";
+    if (item.studyType === "review") return "review";
+    return "study";
+  }
+  function recommendationActionLabel(item) {
+    return { questions: "Resolver questões", review: "Iniciar revisão", prerequisite: "Estudar pré-requisito", study: "Iniciar estudo" }[recommendationActionKind(item)];
+  }
+
   // src/application/analytics/build-analytics-view-model.js
   function buildHeatmapViewModel({ summaries = [], metric = "hours", selectedDate = null } = {}) {
     const normalizedMetric = HEATMAP_METRICS.includes(metric) ? metric : "hours";
@@ -17431,7 +17442,7 @@
     const accuracyGap = accuracy2 == null ? null : Math.round((accuracy2 - targetAccuracy) * 10) / 10, bestSignal = comparisons.accuracy.delta > 0 ? { type: "accuracy", message: `O acerto avançou ${comparisons.accuracy.delta} p.p.` } : comparisons.minutes.delta > 0 ? { type: "minutes", message: "O tempo de estudo aumentou." } : resolved > 0 ? { type: "questions", message: `Você resolveu ${resolved} questões.` } : null;
     const mainRisk = accuracyGap != null && accuracyGap < 0 ? { type: "accuracy_below_target", message: `O acerto ficou ${Math.abs(accuracyGap)} p.p. abaixo da meta de ${targetAccuracy}%.` } : planned > executed ? { type: "execution_deficit", message: `Faltaram ${planned - executed} min para executar o planejado.` } : null;
     const recommendedAction = mainRisk?.type === "accuracy_below_target" ? "Priorizar questões e revisão dos tópicos com maior lacuna." : mainRisk?.type === "execution_deficit" ? "Readequar a carga da próxima semana à capacidade disponível." : "Manter o plano e consolidar os tópicos com revisão espaçada.";
-    const priorities = state2 === "insufficient" ? [] : recommendations.filter((item) => item && item.accepted !== false).slice(0, 3).map((item) => ({ topicId: item.topicId || null, reason: item.reason || item.reasons?.[0] || "Prioridade identificada no diagnóstico", action: item.action || "Praticar o tópico", estimatedMinutes: Math.max(0, Math.round(Number(item.estimatedMinutes) || 0)) }));
+    const priorities = state2 === "insufficient" ? [] : recommendations.filter((item) => item && item.accepted !== false).slice(0, 3).map((item, index) => ({ priorityId: item.id || item.recommendationId || item.topicId || String(index), topicId: item.topicId || null, subjectId: item.subjectId || null, reason: item.reason || item.reasons?.[0] || "Prioridade identificada no diagnóstico", action: item.action || "Praticar o tópico", estimatedMinutes: Math.max(0, Math.round(Number(item.estimatedMinutes) || 0)) }));
     return { algorithmVersion: WEEKLY_CLOSE_VERSION, period, state: state2, investment: { plannedMinutes: planned, executedMinutes: executed, deficitMinutes: Math.max(0, planned - executed), adherence }, execution: { plannedItems: plannedCount, completedItems: completedCount, rate: plannedCount ? pct(completedCount, plannedCount) : null }, questions: { resolved, correct, accuracy: accuracy2 }, recommendations: { total: recommendations.length, accepted: recommendations.filter((x) => x.accepted || x.status === "accepted").length }, comparison: comparisons, assessment: accuracyGap == null ? "insufficient" : accuracyGap >= 0 ? "on_target" : "attention", bestSignal, mainRisk, recommendedAction, priorities, reasons: state2 === "insufficient" ? ["Registre sessões, planos ou questões para fechar a semana."] : [] };
   }
 
@@ -17447,6 +17458,26 @@
     if (index >= 0) list[index] = snapshot;
     else list.push(snapshot);
     return true;
+  }
+
+  // src/application/analytics/weekly-close-actions.js
+  function buildWeeklyCloseActionProposal({ priorities = [], selectedIds = [], futureDays = [], snapshotId = null } = {}) {
+    const selected2 = priorities.filter((item, index) => selectedIds.includes(item.priorityId || item.topicId || String(index)));
+    const capacity = (futureDays || []).map((day) => ({ date: day.date, remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)), availableMinutes: Math.max(0, Math.round(Number(day.availableMinutes) || 0)) }));
+    const allocations = [];
+    let unallocated = 0;
+    selected2.forEach((item, index) => {
+      let left = Math.max(0, Math.round(Number(item.estimatedMinutes) || 0));
+      for (const day of capacity) {
+        if (!left || !day.remaining) continue;
+        const minutes = Math.min(left, day.remaining);
+        allocations.push({ priorityId: item.priorityId || item.topicId || String(index), topicId: item.topicId || null, subjectId: item.subjectId || null, minutes, date: day.date, action: item.action, reason: item.reason, snapshotId });
+        left -= minutes;
+        day.remaining -= minutes;
+      }
+      unallocated += left;
+    });
+    return { selectedCount: selected2.length, allocations, unallocatedMinutes: unallocated, capacityByDay: capacity.map((day) => ({ date: day.date, availableMinutes: day.availableMinutes, allocatedMinutes: day.availableMinutes - day.remaining, remainingMinutes: day.remaining })), snapshotId };
   }
 
   // src/domain/analytics/gap-map.js
@@ -20738,11 +20769,12 @@
       "registros"
     );
   }
-  function addQuestaoRow() {
+  function addQuestaoRow(initial = {}) {
     listViewState.questionsVisible = LIST_VIEW_STEPS.questions;
-    const question = { id: uid("question"), date: todayISO(), subjectId: activeSubjects()[0]?.id || null, topicId: null, resolved: 0, correct: 0, errorBreakdown: emptyErrorBreakdown(), createdAt: nowISO2() };
+    const question = { id: uid("question"), date: todayISO(), subjectId: initial.subjectId || activeSubjects()[0]?.id || null, topicId: initial.topicId || null, resolved: 0, correct: 0, errorBreakdown: emptyErrorBreakdown(), recommendationId: initial.recommendationId || null, createdAt: nowISO2() };
     questionCrudController.create(question);
     questionEditController.begin(question.id, { isNew: true });
+    return question;
   }
   function deleteQuestaoRow(id) {
     showConfirm("Excluir este registro de questões?", () => {
@@ -22214,12 +22246,9 @@
       const model = buildPriorityViewModel(item, index + 1);
       const contributionRows = model.contributionRows.map((row) => `<div><span>${escapeHtml(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100, row.value * 4)}%"></i></span><strong>+${row.value}</strong></div>`).join("");
       const stateIcon = { review: "↻", limited: "⚠", high: "★", calculated: "○", blocked: "🔒" }[model.state] || "○";
-      return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || "Estudar agora")}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p><div class="priority-reasons">${model.reasons.slice(0, 4).map((reason) => `<span>+ ${escapeHtml(reason)}</span>`).join("")}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(model.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar estudo</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
+      return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || "Estudar agora")}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p><div class="priority-reasons">${model.reasons.slice(0, 4).map((reason) => `<span>+ ${escapeHtml(reason)}</span>`).join("")}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(model.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="executeStudyRecommendation('${escapeAttr(item.id)}')">▶ ${escapeHtml(recommendationActionLabel(item))}</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
     }).join("");
     container.innerHTML = `${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · mostrando ${visible.length} ${visible.length === 1 ? "prioridade elegível" : "prioridades elegíveis"}</span></div><div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
-    container.querySelectorAll(".study-recommendation .recommendation-actions .btn:first-child").forEach((button, index) => {
-      button.textContent = `▶ ${visible[index]?.studyType === "questions" ? "Resolver questões" : visible[index]?.studyType === "review" ? "Iniciar revisão" : visible[index]?.blockedPrerequisites?.length ? "Estudar pré-requisito" : "Iniciar estudo"}`;
-    });
   }
   function recommendationBaseline(recommendation) {
     const topicId = recommendation.topicId, performance = getTopicPerformance(topicId), found = getTopicById(topicId), last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
@@ -22309,6 +22338,47 @@
     state.activeTimer.strategy = structuredClone(recommendation.strategy);
     state.activeTimer.strategyStep = 0;
     startPlannedActivity(item.id);
+  }
+  function executeStudyRecommendation(id) {
+    const recommendation = currentStudyRecommendations.find((item) => item.id === id);
+    if (!recommendation) return;
+    const kind = recommendationActionKind(recommendation);
+    if (kind === "questions") {
+      const feedback = recordRecommendationFeedback(recommendation, { accepted: true }), question = addQuestaoRow({ subjectId: recommendation.subjectId, topicId: recommendation.topicId, recommendationId: recommendation.recommendationId });
+      feedback.actionKind = kind;
+      feedback.resultingQuestionId = question.id;
+      scheduleSave();
+      activateTab("questoes");
+      showToast("Registro de questões aberto e vinculado à recomendação.");
+      return;
+    }
+    if (kind === "review") {
+      const feedback = recordRecommendationFeedback(recommendation, { accepted: true });
+      let review = state.reviewAgenda.find((item) => (item.topicId || item.topicRef) === recommendation.topicId && item.status !== "Concluído");
+      if (!review) {
+        review = { id: uid("review"), subjectId: recommendation.subjectId, topicId: recommendation.topicId, date: todayISO(), suggestedDate: todayISO(), baseIntervalDays: 1, adaptive: true, manualDate: false, tipo: "Revisão livre", status: "Não iniciado", createdAt: nowISO2(), completedAt: null };
+        state.reviewAgenda.push(review);
+      }
+      feedback.actionKind = kind;
+      feedback.resultingReviewId = review.id;
+      scheduleSave();
+      activateTab("agenda");
+      completeAgendaReview(review.id);
+      return;
+    }
+    if (kind === "prerequisite" && recommendation.blockedPrerequisites?.[0]) {
+      const blocker = getTopicById(recommendation.blockedPrerequisites[0]);
+      if (blocker) {
+        const feedback = recordRecommendationFeedback(recommendation, { accepted: true });
+        feedback.actionKind = kind;
+        feedback.targetTopicId = blocker.topic.id;
+        scheduleSave();
+        activateTab("disciplinas");
+        showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);
+        return;
+      }
+    }
+    if (kind === "study") startStudyRecommendation(id);
   }
   var replanPreview = null;
   function calculateReplanPreview() {
@@ -22828,20 +22898,70 @@
     el.innerHTML = renderRecommendationCalibrationModel(model, { escapeHtml });
   }
   var currentStudyTrackModel = null;
+  var weeklyCloseDraft = { selectedIds: [], proposal: null };
   function renderStudyTrack32Insights() {
     const close = document.getElementById("weeklyCloseDashboard"), comparison2 = document.getElementById("periodComparisonDashboard"), gaps = document.getElementById("gapMapDashboard"), history = document.getElementById("decisionHistoryDashboard"), simReplan = document.getElementById("postSimulationReplanDashboard");
     const scope = examEvidenceContext(), scopedSubjectIds = new Set(scope.content.eligibleTopics.map((item) => item.subjectId)), model = buildStudyTrack32ViewModel({ today: todayISO(), sessions: scope.sessions.included, questions: scope.questions.included, dailyPlans: planningRepository.getDailyPlans?.() || [], planAdjustments: state.planAdjustments, recommendations: state.recommendationFeedback, simulations: examScopedSimulations(), subjects: state.subjects.filter((subject) => scopedSubjectIds.has(subject.id)), weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), targetAccuracy: Number(state.metas.metaAprovacao) || 80, algorithmServices: { addDays, buildWeeklyClose, buildGapMap, buildDecisionHistory, buildPostSimulationReplan, buildCandidates: intelligenceCandidates }, nameResolvers: { subject: getSubjectName, topic: getTopicName } }), options = { escapeHtml, formatMinutes: formatPlanMinutes };
     currentStudyTrackModel = model;
-    if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, options) + (model.weeklyClose.state === "insufficient" ? "" : `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`) + renderWeeklySnapshotHistory();
+    if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, { ...options, selectedPriorityIds: weeklyCloseDraft.selectedIds }) + (model.weeklyClose.state === "insufficient" ? "" : renderWeeklyCloseActions(model.weeklyClose)) + renderWeeklySnapshotHistory();
     if (comparison2) comparison2.innerHTML = renderPeriodComparison(model.weeklyClose, options);
     if (gaps) gaps.innerHTML = renderGapMap(model.gapMap, options);
     if (history) history.innerHTML = renderDecisionHistory(model.decisionHistory, options);
     if (simReplan) simReplan.innerHTML = renderPostSimulationReplan(model.postSimulation, options);
   }
   function renderWeeklySnapshotHistory() {
-    const items = [...state.weeklyCloseSnapshots || []].sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt))).slice(0, 4);
-    if (!items.length) return "";
-    return `<details class="weekly-snapshot-history"><summary>Fechamentos salvos (${state.weeklyCloseSnapshots.length})</summary>${items.map((item) => `<article><strong>${formatDatePt(item.period.start)} a ${formatDatePt(item.period.end)}</strong><span>${formatPlanMinutes(item.weeklyClose?.investment?.executedMinutes || 0)} estudados · ${item.weeklyClose?.questions?.accuracy ?? "—"}% de acerto</span><small>Salvo em ${formatDatePt(String(item.savedAt).slice(0, 10))} · regra ${escapeHtml(item.algorithmVersion || "—")}</small></article>`).join("")}</details>`;
+    return "";
+  }
+  function renderWeeklyCloseActions(close) {
+    const priorities = close.priorities || [];
+    if (!priorities.length) return `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`;
+    const checks = priorities.map((item, index) => {
+      const id = item.priorityId || item.topicId || String(index);
+      return `<label class="weekly-priority-choice"><input type="checkbox" data-delegated-change="toggleWeeklyPriority('${escapeAttr(id)}',this.checked)" ${weeklyCloseDraft.selectedIds.includes(id) ? "checked" : ""}><span>${escapeHtml(item.action)} · ${formatPlanMinutes(item.estimatedMinutes)}</span></label>`;
+    }).join("");
+    const proposal = weeklyCloseDraft.proposal;
+    return `<section class="weekly-close-actions"><h4>Decida as prioridades</h4>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()">Conferir impacto</button>${proposal ? `<div class="weekly-action-preview"><strong>${proposal.allocations.length} alocações · ${formatPlanMinutes(proposal.unallocatedMinutes)} sem capacidade</strong><button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button></div>` : ""}<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button></section>`;
+  }
+  function previewWeeklyCloseActions() {
+    const close = currentStudyTrackModel?.weeklyClose;
+    if (!close) return;
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const date2 = addDays(todayISO(), i + 1);
+      return { date: date2, availableMinutes: Math.round(metaHoursForDate(date2) * 60) };
+    });
+    weeklyCloseDraft.proposal = buildWeeklyCloseActionProposal({ priorities: close.priorities, selectedIds: weeklyCloseDraft.selectedIds, futureDays: days });
+    renderStudyTrack32Insights();
+  }
+  function toggleWeeklyPriority(id, checked) {
+    weeklyCloseDraft.selectedIds = checked ? [.../* @__PURE__ */ new Set([...weeklyCloseDraft.selectedIds, id])] : weeklyCloseDraft.selectedIds.filter((item) => item !== id);
+    weeklyCloseDraft.proposal = null;
+    renderStudyTrack32Insights();
+  }
+  function confirmWeeklyCloseActions() {
+    const proposal = weeklyCloseDraft.proposal;
+    if (!proposal || !proposal.allocations.length) return;
+    const snapshot = createWeeklyCloseSnapshot(currentStudyTrackModel, { savedAt: nowISO2(), id: uid("weekly-close") });
+    if (!snapshot) return;
+    upsertWeeklyCloseSnapshot(state.weeklyCloseSnapshots, snapshot);
+    proposal.allocations.forEach((item) => {
+      let plan = state.dailyPlans.find((candidate) => candidate.date === item.date);
+      if (!plan) {
+        plan = { id: uid("plan"), date: item.date, availableMinutes: Math.round(metaHoursForDate(item.date) * 60), plannedMinutes: 0, flexMinutes: 0, createdAt: nowISO2(), updatedAt: nowISO2(), items: [] };
+        state.dailyPlans.push(plan);
+      }
+      ;
+      plan.items.push({ id: uid("plan-item"), subjectId: item.subjectId, topicId: item.topicId, plannedMinutes: item.minutes, executedSeconds: 0, status: "planned", type: "study", sessionIds: [], reason: item.reason, action: item.action, weeklyCloseSnapshotId: snapshot.id, priorityId: item.priorityId, originalDate: item.date, currentDate: item.date, createdAt: nowISO2() });
+      plan.plannedMinutes = (plan.items || []).reduce((sum4, row) => sum4 + (Number(row.plannedMinutes) || 0), 0);
+      plan.flexMinutes = Math.max(0, plan.availableMinutes - plan.plannedMinutes);
+      plan.updatedAt = nowISO2();
+    });
+    snapshot.priorityDecisions = (currentStudyTrackModel.weeklyClose.priorities || []).map((item) => ({ priorityId: item.priorityId, accepted: weeklyCloseDraft.selectedIds.includes(item.priorityId) }));
+    snapshot.appliedAt = nowISO2();
+    weeklyCloseDraft = { selectedIds: [], proposal: null };
+    scheduleSave();
+    renderStudyTrack32Insights();
+    renderPlanoHoje();
+    showToast("Prioridades aceitas aplicadas ao plano diário.");
   }
   function saveWeeklyCloseSnapshot() {
     const snapshot = createWeeklyCloseSnapshot(currentStudyTrackModel, { savedAt: nowISO2(), id: uid("weekly-close") });
@@ -23031,6 +23151,10 @@
     confirmReplan,
     undoPlanAdjustment,
     saveWeeklyCloseSnapshot,
+    previewWeeklyCloseActions,
+    confirmWeeklyCloseActions,
+    toggleWeeklyPriority,
+    executeStudyRecommendation,
     cancelAgendaEdit,
     cancelCalendarEdit,
     cancelQuestionEdit,
@@ -23234,7 +23358,9 @@
     onError: (error, name) => console.error("Falha ao renderizar " + name, error)
   });
   function render(scope = "all") {
-    return applicationRenderer.render(scope);
+    const result = applicationRenderer.render(scope);
+    renderStudyTrack32Insights();
+    return result;
   }
   function persistAndRender() {
     render("active");

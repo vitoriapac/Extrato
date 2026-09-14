@@ -1,0 +1,2 @@
+export function recommendationActionKind(item={}){if((item.blockedPrerequisites||[]).length)return'prerequisite';if(item.studyType==='questions')return'questions';if(item.studyType==='review')return'review';return'study'}
+export function recommendationActionLabel(item){return({questions:'Resolver questões',review:'Iniciar revisão',prerequisite:'Estudar pré-requisito',study:'Iniciar estudo'})[recommendationActionKind(item)]}

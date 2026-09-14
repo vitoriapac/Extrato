@@ -65,7 +65,7 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 
 **Status:** entregue com matriz UTC/São Paulo, diagnóstico Playwright preservado em falhas e deploy do Pages condicionado ao sucesso do workflow principal.
 
-## P5 — Ações especializadas das recomendações
+## P5 — Ações especializadas das recomendações — concluído
 
 **Objetivo:** fazer cada recomendação abrir a ferramenta apropriada, e não apenas alterar o rótulo do botão.
 
@@ -80,9 +80,9 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 
 **Critérios de aceite:** cada tipo cria o registro correto e mantém vínculo auditável com a recomendação de origem.
 
-**Dependências:** P3 e P4.
+**Status:** entregue. Questões, revisões e pré-requisitos possuem destinos próprios; estudo mantém o cronômetro guiado e cada decisão registra o tipo e o vínculo criado.
 
-## P6 — Fechamento semanal aplicável
+## P6 — Fechamento semanal aplicável — concluído
 
 **Objetivo:** transformar o diagnóstico semanal salvo em decisões que possam ser avaliadas e aplicadas com segurança.
 
@@ -96,7 +96,7 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 
 **Critérios de aceite:** o plano só muda após confirmação, nunca excede capacidade silenciosamente e preserva o snapshot que originou a decisão.
 
-**Dependências:** P3, P4 e P5.
+**Status:** entregue com seleção individual, prévia de impacto, verificação de capacidade, aplicação confirmada e vínculo ao snapshot versionado.
 
 ## Evoluções posteriores
 

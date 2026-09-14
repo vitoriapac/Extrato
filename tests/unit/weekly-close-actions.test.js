@@ -1,0 +1,4 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {buildWeeklyCloseActionProposal} from '../../src/application/analytics/weekly-close-actions.js';
+test('fecha prioridades individualmente dentro da capacidade e informa excedente',()=>{const result=buildWeeklyCloseActionProposal({priorities:[{priorityId:'a',topicId:'t1',estimatedMinutes:50,action:'Revisar',reason:'lacuna'},{priorityId:'b',topicId:'t2',estimatedMinutes:40,action:'Praticar',reason:'risco'}],selectedIds:['a','b'],futureDays:[{date:'2026-09-15',availableMinutes:60},{date:'2026-09-16',availableMinutes:20}]});assert.equal(result.allocations.reduce((sum,item)=>sum+item.minutes,0),80);assert.equal(result.unallocatedMinutes,10);assert.equal(result.capacityByDay[0].remainingMinutes,0);assert.equal(result.allocations[0].snapshotId,null)});
