@@ -2,7 +2,7 @@
 
 Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem reduz risco: primeiro conclui a experiência principal, depois separa a arquitetura, reforça a entrega e somente então amplia os fluxos especializados.
 
-## P1 — Entrada guiada completa
+## P1 — Entrada guiada completa — concluído
 
 **Objetivo:** permitir que uma pessoa sem dados chegue ao primeiro plano sem depender de navegação lateral ou conhecimento prévio do produto.
 
@@ -17,9 +17,9 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 
 **Critérios de aceite:** o fluxo funciona com base vazia, não aparece para quem já possui plano ou histórico e mantém dados existentes intactos.
 
-**Dependências:** nenhuma. Este é o próximo pacote recomendado.
+**Status:** entregue com navegação de avançar e voltar, seleção de concurso, data, disponibilidade semanal, importação ou cadastro manual, níveis iniciais, prévia de capacidade e criação dos planos semanal e diário.
 
-## P2 — Importador totalmente modular
+## P2 — Importador totalmente modular — concluído
 
 **Objetivo:** remover de `src/app.js` a marcação e as decisões visuais específicas do assistente de importação.
 
@@ -32,7 +32,7 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 
 **Critérios de aceite:** importação, cancelamento e reimportação continuam idempotentes; nenhum HTML específico das etapas permanece no orquestrador.
 
-**Dependências:** P1, para evitar duas refatorações simultâneas no primeiro uso.
+**Status:** entregue. As três etapas são compostas pelo view-model e pelos renderers do recurso; `src/app.js` conserva somente a integração com serviços, estado e navegação.
 
 ## P3 — Recuperação explicável
 
@@ -119,4 +119,3 @@ Depois dos seis pacotes, as próximas entregas podem ser tratadas separadamente:
 | 3.5 | P4 | publicação protegida pelo gate |
 | 3.6 | P5 | recomendações com ações próprias |
 | 3.7 | P6 | fechamento semanal aplicável |
-

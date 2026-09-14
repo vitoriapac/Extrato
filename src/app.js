@@ -59,7 +59,7 @@ import {classifyEvidenceScope,resolveExamEvidenceScope} from './domain/exams/exa
 import {setActiveExamTags} from './application/exams/exam-scope-transition.js';
 import {createExamImportState,resetExamImportState} from './features/exam-import/exam-import-state.js';
 import {buildExamImportViewModel} from './features/exam-import/exam-import-view-model.js';
-import {syncExamSubjectCheckboxes as syncExamSubjectCheckboxesView} from './features/exam-import/exam-import-renderer.js';
+import {renderExamImport as renderExamImportView,syncExamSubjectCheckboxes as syncExamSubjectCheckboxesView} from './features/exam-import/exam-import-renderer.js';
 import {createExamImportController} from './features/exam-import/exam-import-controller.js';
 import {createNavigationController} from './ui/controllers/navigation-controller.js';
 import {createModalController} from './ui/controllers/modal-controller.js';
@@ -100,6 +100,7 @@ import {createQuestionController} from './application/questions/question-control
 import {createEditalImportFacade} from './application/subjects/edital-import-facade.js';
 import {createGuidedStudyService} from './application/guided-study/guided-study-service.js';
 import {buildOnboardingViewModel} from './application/onboarding/build-onboarding-view-model.js';
+import {renderOnboardingContent,renderOnboardingActions} from './features/onboarding/onboarding-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
 import {renderQuestionRead,renderQuestionEdit} from './ui/renderers/questions-renderer.js';
 import {buildExamMasteryMatrix} from './domain/analytics/exam-mastery-matrix.js';
@@ -161,6 +162,8 @@ const DIAGNOSIS_STATUS_ICON = {'Crítico':'🔴','Atenção':'🟠','Acompanhame
 
 
 let state = createDefaultState();
+let onboardingStep=null;
+let onboardingPresetId=EXAM_PRESETS[0]?.id||null;
 
 function getSubjectById(subjectId){
   return state.subjects.find(s => s.id === subjectId) || null;
@@ -2032,18 +2035,19 @@ document.getElementById('loadDefaultSubjectsBtn').addEventListener('click', carr
 const examImportService=createExamImportService({subjectService,getSubjects:()=>state.subjects});
 const editalImportFacade=createEditalImportFacade({catalog:EXAM_PRESETS,importService:examImportService});
 const examImportState=createExamImportState(EXAM_PRESETS[0]);
+let examImportOrigin=null;
 function selectedExamPreset(){return getExamPreset(examImportState.presetId)||EXAM_PRESETS[0]}
 function applyPresetBlueprintDefaults(preset){const source=(preset.sources||[]).length===1?preset.sources[0]:null;if(!source||!EXAM_SOURCES[source]?.official)return;for(const subject of state.subjects){if(state.examBlueprint.subjects.some(item=>item.subjectId===subject.id))continue;const metric=subject.examMetrics?.[source];if(!metric||metric.mappingType!=='direct'||metric.expectedQuestions==null)continue;state.examBlueprint.subjects.push({subjectId:subject.id,expectedQuestions:metric.expectedQuestions,questionWeight:metric.questionWeight,priority:'normal',masteryTarget:null,sourceRef:source,official:Boolean(metric.official),mappingType:metric.mappingType})}setActiveExamTags(state,normalizeExamTags(preset.examTags||[]),{configuredAt:nowISO()})}
 function syncExamSubjectCheckboxes(){syncExamSubjectCheckboxesView(document,examImportState,selectedExamPreset())}
 function renderExamImport(){
-  const content=document.getElementById('examImportContent'),back=document.getElementById('examImportBackBtn'),next=document.getElementById('examImportNextBtn'),preset=selectedExamPreset();back.hidden=examImportState.step===1;next.textContent=examImportState.step===3?'Importar':'Continuar';
-  if(examImportState.step===1)content.innerHTML=`<p>Escolha o concurso. Os presets usam o catálogo mestre versão ${escapeHtml(preset.version)}.</p><div class="exam-preset-list">${EXAM_PRESETS.map(item=>`<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id===examImportState.presetId?'checked':''}><span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description||'')}${item.subjects.length?` · ${item.subjects.length} disciplinas · ${item.subjects.reduce((sum,subject)=>sum+subject.topics.length,0)} tópicos · versão ${escapeHtml(item.version)}`:''}</small></span></label>`).join('')}</div>`;
-  else if(examImportState.step===2){const visible=buildExamImportViewModel({state:examImportState,preset,topicLabel:topicExamScopeLabel}).subjects;content.innerHTML=preset.subjects.length?`<p>Selecione as disciplinas e os tópicos que deseja importar. Conteúdos comuns mantêm um único histórico.</p><div class="exam-import-tools"><input type="search" id="examImportSearch" value="${escapeAttr(examImportState.query)}" placeholder="Buscar disciplina, tópico, alias ou origem..." aria-label="Buscar no edital"><div><button class="btn ghost small" data-exam-select="all">Selecionar tudo</button><button class="btn ghost small" data-exam-select="common">Somente comuns</button><button class="btn ghost small" data-exam-select="bb">Somente BB</button><button class="btn ghost small" data-exam-select="caixa">Somente Caixa</button><button class="btn ghost small" data-exam-select="caixa-ti">Somente Caixa TI</button><button class="btn ghost small" data-exam-select="none">Limpar</button></div></div><div class="exam-selection-count">${examImportState.topicIds.size} de ${preset.subjects.reduce((sum,subject)=>sum+subject.topics.length,0)} tópicos selecionados</div><div class="exam-subject-list">${visible.map(subject=>{const selectedCount=subject.topics.filter(topic=>examImportState.topicIds.has(`${subject.id}:${topic.id}`)).length;return `<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)} <small>${selectedCount} / ${subject.topics.length} selecionados</small></span></label><div class="exam-topic-list">${subject.topics.map(topic=>{const key=`${subject.id}:${topic.id}`;return `<label><input type="checkbox" data-exam-topic="${escapeAttr(key)}" ${examImportState.topicIds.has(key)?'checked':''}><span>${escapeHtml(topic.name)} <small>${examBadges(topic)}</small></span></label>`}).join('')}</div></section>`}).join('')}</div>`:'<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>';syncExamSubjectCheckboxes()}
-  else {const preview=editalImportFacade.preview(examImportState.subjectIds,examImportState.topicIds),total=preview.addedTopics+preview.existingTopics;content.innerHTML=`<p>Confira as alterações do catálogo ${escapeHtml(preview.catalogVersion||CATALOG_VERSION)}. IDs, progresso, sessões e revisões serão preservados.</p><div class="exam-import-summary"><div><strong>${preview.addedSubjects+preview.existingSubjects}</strong><br>disciplinas selecionadas</div><div><strong>${total}</strong><br>tópicos selecionados</div><div><strong>${preview.addedSubjects}</strong><br>disciplinas novas</div><div><strong>${preview.addedTopics}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics}</strong><br>tópicos preservados</div><div><strong>${preview.metadataUpdates}</strong><br>vínculos atualizados</div></div><p class="form-hint">Preservação: IDs, progresso, sessões, revisões e escolhas personalizadas.</p>${preview.sources.length?`<p class="form-hint">Fontes: ${preview.sources.map(source=>escapeHtml(EXAM_SOURCES[source]?.label||source)).join(' · ')}</p>`:''}${preview.warnings.map(item=>`<p class="form-hint">${escapeHtml(item)}</p>`).join('')}`;next.disabled=preview.addedSubjects+preview.addedTopics+preview.metadataUpdates===0;}
+  const content=document.getElementById('examImportContent'),back=document.getElementById('examImportBackBtn'),next=document.getElementById('examImportNextBtn'),preset=selectedExamPreset(),preview=examImportState.step===3?editalImportFacade.preview(examImportState.subjectIds,examImportState.topicIds):null,model=buildExamImportViewModel({state:examImportState,preset,presets:EXAM_PRESETS,topicLabel:topicExamScopeLabel,preview});
+  back.hidden=model.step===1;next.textContent=model.step===3?'Importar':'Continuar';next.disabled=model.step===3?preview.addedSubjects+preview.addedTopics+preview.metadataUpdates===0:!model.canContinue;
+  content.innerHTML=renderExamImportView(model,{escapeHtml,escapeAttr,renderBadges:examBadges,sourceLabel:source=>EXAM_SOURCES[source]?.label||source});
+  if(model.step===2)syncExamSubjectCheckboxes();
 }
-function openExamImport(){resetExamImportState(examImportState,EXAM_PRESETS[0],document.activeElement);editalImportFacade.begin(examImportState.presetId);document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
-function closeExamImport(){editalImportFacade.cancel();document.getElementById('examImportOverlay').classList.remove('show');examImportState.previousFocus?.focus()}
-const examImportController=createExamImportController({document,state:examImportState,getPreset:selectedExamPreset,facade:editalImportFacade,render:renderExamImport,close:closeExamImport,includeTopic:(action,topic)=>{const tags=topic.examTags||[];return action==='all'||action==='bb'&&tags.includes(EXAM_TAGS.BB)||action==='caixa'&&tags.includes(EXAM_TAGS.CAIXA)||action==='caixa-ti'&&tags.includes(EXAM_TAGS.CAIXA_TI)||action==='common'&&isCommonTopic(topic,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA])},confirm:()=>{const isFirstUse=!state.examDate&&!state.studySessions.length&&!state.questoes.length;const preset=selectedExamPreset(),result=editalImportFacade.confirm(examImportState.subjectIds,examImportState.topicIds);applyPresetBlueprintDefaults(preset);persistAndRender();closeExamImport();if(isFirstUse){activateTab('hoje');requestAnimationFrame(()=>document.querySelector('#planoHojeContent .btn')?.focus())}showToast(`${pluralize(result.addedSubjects,'disciplina')}, ${pluralize(result.addedTopics,'tópico')} e ${pluralize(result.metadataUpdates,'vínculo')} atualizados.`)}});examImportController.mount();
+function openExamImport(initialPreset=EXAM_PRESETS[0],origin=null){const preset=typeof initialPreset==='string'?getExamPreset(initialPreset):initialPreset;examImportOrigin=origin;resetExamImportState(examImportState,preset||EXAM_PRESETS[0],document.activeElement);editalImportFacade.begin(examImportState.presetId);document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
+function closeExamImport(){editalImportFacade.cancel();document.getElementById('examImportOverlay').classList.remove('show');examImportState.previousFocus?.focus();examImportOrigin=null}
+const examImportController=createExamImportController({document,state:examImportState,getPreset:selectedExamPreset,facade:editalImportFacade,render:renderExamImport,close:closeExamImport,includeTopic:(action,topic)=>{const tags=topic.examTags||[];return action==='all'||action==='bb'&&tags.includes(EXAM_TAGS.BB)||action==='caixa'&&tags.includes(EXAM_TAGS.CAIXA)||action==='caixa-ti'&&tags.includes(EXAM_TAGS.CAIXA_TI)||action==='common'&&isCommonTopic(topic,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA])},confirm:()=>{const inOnboarding=examImportOrigin==='onboarding'||Boolean(examImportState.previousFocus?.closest?.('#guidedOnboarding'));const preset=selectedExamPreset(),result=editalImportFacade.confirm(examImportState.subjectIds,examImportState.topicIds);applyPresetBlueprintDefaults(preset);onboardingPresetId=preset.id;if(inOnboarding)onboardingStep='plan';persistAndRender();closeExamImport();if(inOnboarding){activateTab('dashboard');requestAnimationFrame(()=>document.getElementById('guidedOnboarding')?.scrollIntoView({behavior:'smooth',block:'start'}))}showToast(`${pluralize(result.addedSubjects,'disciplina')}, ${pluralize(result.addedTopics,'tópico')} e ${pluralize(result.metadataUpdates,'vínculo')} atualizados.`)}});examImportController.mount();
 
 function archiveSubject(id){
   const subject=getSubjectById(id);
@@ -4356,10 +4360,18 @@ function renderPlanoHoje(){
 function renderGuidedOnboarding(){
   const el=document.getElementById('guidedOnboarding');
   if(!el)return;
-  const model=buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans});
+  const model=buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,studyPlans:state.studyPlans,currentStep:onboardingStep,today:todayISO(),presets:EXAM_PRESETS,presetId:onboardingPresetId});
+  if(!onboardingStep)onboardingStep=model.current.id;
   el.hidden=!model.visible||IS_DEMO_MODE;
   model.steps.forEach(step=>{const item=el.querySelector(`[data-onboarding-step="${step.id}"]`);item?.classList.toggle('is-complete',step.complete);item?.classList.toggle('is-next',model.next?.id===step.id)});
+  document.getElementById('guidedOnboardingContent').innerHTML=renderOnboardingContent(model,{escapeHtml,escapeAttr,formatMinutes:formatPlanMinutes});
+  document.getElementById('guidedOnboardingActions').innerHTML=renderOnboardingActions(model);
 }
+function onboardingModel(){return buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,studyPlans:state.studyPlans,currentStep:onboardingStep,today:todayISO(),presets:EXAM_PRESETS,presetId:onboardingPresetId})}
+function moveOnboarding(direction){const model=onboardingModel(),index=Math.max(0,Math.min(model.steps.length-1,model.currentIndex+direction));onboardingStep=model.steps[index].id;renderGuidedOnboarding()}
+function setGuidedSubjectLevel(subjectId,level){if(!DIFFICULTY_OPTIONS.includes(level))return;const subject=getSubjectById(subjectId);if(!subject)return;for(const topic of subject.topics.filter(item=>!item.archived)){subjectService.updateTopic(subjectId,topic.id,{...topic,difficulty:level,estimatedStudyMinutes:topic.estimatedStudyMinutes??(level==='Difícil'?120:level==='Fácil'?45:75)})}persistAndRender()}
+function applyGuidedEffortDefaults(){for(const subject of activeSubjects())for(const topic of subject.topics.filter(item=>!item.archived))if(topic.estimatedStudyMinutes==null)topic.estimatedStudyMinutes=topic.difficulty==='Difícil'?120:topic.difficulty==='Fácil'?45:75}
+function createGuidedInitialPlan(){applyGuidedEffortDefaults();calculateStudyPlanPreview();if(!studyPlanPreview||studyPlanPreview.state==='insufficient'||!studyPlanPreview.items.length){activateTab('metas');document.getElementById('examStudyPlan')?.scrollIntoView({behavior:'smooth',block:'center'});showToast('Confira os dados indicados antes de confirmar o plano.');return}confirmStudyPlan();calculateDailyPlanPreview();if(dailyPlanPreview?.state==='proposal')confirmDailyPlanPreview();onboardingStep='plan';render();activateTab('hoje');requestAnimationFrame(()=>document.querySelector('#planoHojeContent .btn')?.focus())}
 
 function renderMetasHoje(){
   const container = document.getElementById('hojeMetas');
@@ -4869,9 +4881,20 @@ document.querySelectorAll('[data-go-home]').forEach(button=>button.addEventListe
   activateTab('dashboard');
   window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }));
-document.getElementById('guidedSetExamBtn')?.addEventListener('click',()=>{activateTab('metas');document.getElementById('examDateInput')?.focus()});
-document.getElementById('guidedImportExamBtn')?.addEventListener('click',()=>openExamImport());
-document.getElementById('guidedGoTodayBtn')?.addEventListener('click',()=>activateTab('hoje'));
+document.getElementById('guidedOnboarding')?.addEventListener('change',event=>{
+  if(event.target.id==='guidedExamPreset'){onboardingPresetId=event.target.value;return}
+  if(event.target.id==='guidedExamDate'){updateExamBlueprint('examDate',event.target.value);return}
+  if(event.target.dataset.guidedDay!==undefined){updateMetaHoursDay(event.target.dataset.guidedDay,event.target.value);return}
+  if(event.target.dataset.guidedLevel)setGuidedSubjectLevel(event.target.dataset.guidedLevel,event.target.value);
+});
+document.getElementById('guidedOnboarding')?.addEventListener('click',event=>{
+  const action=event.target.closest('[data-guided-action]')?.dataset.guidedAction;if(!action)return;
+  if(action==='back')moveOnboarding(-1);
+  if(action==='next')moveOnboarding(1);
+  if(action==='import')openExamImport(onboardingPresetId,'onboarding');
+  if(action==='manual'){activateTab('disciplinas');document.getElementById('addSubjectBtn')?.focus()}
+  if(action==='create-plan')createGuidedInitialPlan();
+});
 document.getElementById('executionAgendaBtn')?.addEventListener('click',()=>{state.executionMode='agenda';scheduleSave();renderPlanoHoje()});
 document.getElementById('executionSequenceBtn')?.addEventListener('click',()=>{state.executionMode='sequence';scheduleSave();renderPlanoHoje()});
 
