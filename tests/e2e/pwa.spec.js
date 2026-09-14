@@ -25,4 +25,4 @@ test('abre a aplicação offline depois de instalar o service worker',async({pag
   await context.setOffline(false);
 });
 
-test('remove caches antigos ao ativar a versão atual',async({page})=>{await page.goto('/');await page.evaluate(async()=>{await caches.open('studytrack-v5');const registration=await navigator.serviceWorker.ready;await registration.update()});await page.reload();await page.waitForFunction(async()=>!(await caches.keys()).includes('studytrack-v5'));expect(await page.evaluate(()=>caches.keys())).not.toContain('studytrack-v5')});
+test('remove caches antigos ao ativar a versão atual',async({page})=>{await page.goto('/');await page.evaluate(async()=>{await caches.open('studytrack-v5');const registration=await navigator.serviceWorker.ready;await registration.unregister()});await page.reload();await page.evaluate(()=>navigator.serviceWorker.ready);await page.waitForFunction(async()=>!(await caches.keys()).includes('studytrack-v5'));expect(await page.evaluate(()=>caches.keys())).not.toContain('studytrack-v5')});

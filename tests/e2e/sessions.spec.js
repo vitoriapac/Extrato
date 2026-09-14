@@ -6,6 +6,7 @@ test('conclui uma sessão pelo cronômetro e registra o histórico uma única ve
   await expect.poll(()=>page.locator('#studyTimerDisplay').textContent()).not.toBe('00:00');
   await page.locator('#timerFinishBtn').click();
   await expect(page.locator('#sessionModalOverlay')).toHaveClass(/show/);await expect(page.locator('#sessionModalOverlay')).toBeVisible({timeout:10000});
+  await page.locator('.session-extra-details summary').click();
   await page.locator('#sessionModalResolved').waitFor({state:'visible'});
   await page.locator('#sessionModalResolved').fill('10');
   await page.locator('#sessionModalCorrect').fill('7');

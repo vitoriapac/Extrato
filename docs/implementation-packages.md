@@ -34,7 +34,7 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 
 **Status:** entregue. As três etapas são compostas pelo view-model e pelos renderers do recurso; `src/app.js` conserva somente a integração com serviços, estado e navegação.
 
-## P3 — Recuperação explicável
+## P3 — Recuperação explicável — concluído
 
 **Objetivo:** tornar a proposta de replanejamento verificável antes de aplicá-la.
 
@@ -47,9 +47,9 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 
 **Critérios de aceite:** nenhuma atividade é movida sem aparecer na prévia e a soma dos itens coincide com os totais exibidos.
 
-**Dependências:** pode começar após P1 e usar as razões já produzidas pela camada de aplicação.
+**Status:** entregue com movimentações individualizadas, motivo, destino, minutos, excedente e conferência do uso e saldo de capacidade por dia.
 
-## P4 — Gate de qualidade e publicação
+## P4 — Gate de qualidade e publicação — concluído
 
 **Objetivo:** fazer da mesma validação usada no desenvolvimento o requisito único para publicar no GitHub Pages.
 
@@ -63,7 +63,7 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 
 **Critérios de aceite:** `npm run check:all` passa nas duas zonas de horário e uma falha impede a publicação.
 
-**Dependências:** P2 e P3, para consolidar os fluxos antes de fixar os baselines.
+**Status:** entregue com matriz UTC/São Paulo, diagnóstico Playwright preservado em falhas e deploy do Pages condicionado ao sucesso do workflow principal.
 
 ## P5 — Ações especializadas das recomendações
 

@@ -5,13 +5,14 @@ export function buildReplanProposal({plans=[],periodStart,periodEnd,futureDays=[
   const executedMinutes=Math.round(inPeriod.reduce((sum,plan)=>sum+(plan.items||[]).reduce((n,item)=>n+(Number(item.executedSeconds)||0)/60,0),0));
   const pendingItems=inPeriod.flatMap(plan=>(plan.items||[]).filter(item=>!['completed','skipped','replaced','deferred'].includes(item.status)).map(item=>({sourcePlanId:plan.id,sourceItemId:item.id,subjectId:item.subjectId||null,topicId:item.topicId||null,remainingMinutes:Math.max(0,Math.round((Number(item.plannedMinutes)||0)-(Number(item.executedSeconds)||0)/60)),priority:Number(item.score)||0,reason:recoveryReason(item)}))).filter(item=>item.remainingMinutes>0).sort((a,b)=>b.priority-a.priority);
   const deficitMinutes=pendingItems.reduce((sum,item)=>sum+item.remainingMinutes,0);
-  const capacities=(futureDays||[]).map(day=>({date:day.date,remaining:Math.max(0,Math.round(Number(day.availableMinutes)||0))}));
+  const capacities=(futureDays||[]).map(day=>({date:day.date,availableMinutes:Math.max(0,Math.round(Number(day.availableMinutes)||0)),remaining:Math.max(0,Math.round(Number(day.availableMinutes)||0))}));
   const allocations=[];let remaining=deficitMinutes;
   pendingItems.forEach(item=>{let itemRemaining=item.remainingMinutes;capacities.forEach(day=>{if(itemRemaining<=0||day.remaining<=0)return;const minutes=Math.min(itemRemaining,day.remaining);allocations.push({...item,date:day.date,minutes});itemRemaining-=minutes;day.remaining-=minutes;remaining-=minutes})});
   const redistributedMinutes=allocations.reduce((sum,item)=>sum+item.minutes,0);
   const allocatedBySource=new Map();allocations.forEach(item=>allocatedBySource.set(item.sourceItemId,(allocatedBySource.get(item.sourceItemId)||0)+item.minutes));
   const retainedItems=pendingItems.filter(item=>(allocatedBySource.get(item.sourceItemId)||0)<item.remainingMinutes).map(item=>({...item,unallocatedMinutes:item.remainingMinutes-(allocatedBySource.get(item.sourceItemId)||0)}));
-  return {state:deficitMinutes?'proposal':'balanced',periodStart,periodEnd,plannedMinutes,executedMinutes,deficitMinutes,redistributedMinutes,discardedMinutes:Math.max(0,remaining),pendingItems,allocations,retainedItems,reasons:deficitMinutes?['execução abaixo do planejado no período']:[]};
+  const capacityByDay=capacities.map(day=>({date:day.date,availableMinutes:day.availableMinutes,allocatedMinutes:day.availableMinutes-day.remaining,remainingMinutes:day.remaining}));
+  return {state:deficitMinutes?'proposal':'balanced',periodStart,periodEnd,plannedMinutes,executedMinutes,deficitMinutes,redistributedMinutes,discardedMinutes:Math.max(0,remaining),pendingItems,allocations,retainedItems,capacityByDay,reasons:deficitMinutes?['execução abaixo do planejado no período']:[]};
 }
 
 export function applyReplan({dailyPlans=[],proposal,operationId,now,idGenerator}={}){

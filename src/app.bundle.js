@@ -1492,7 +1492,7 @@
     const executedMinutes = Math.round(inPeriod2.reduce((sum4, plan) => sum4 + (plan.items || []).reduce((n3, item) => n3 + (Number(item.executedSeconds) || 0) / 60, 0), 0));
     const pendingItems = inPeriod2.flatMap((plan) => (plan.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).map((item) => ({ sourcePlanId: plan.id, sourceItemId: item.id, subjectId: item.subjectId || null, topicId: item.topicId || null, remainingMinutes: Math.max(0, Math.round((Number(item.plannedMinutes) || 0) - (Number(item.executedSeconds) || 0) / 60)), priority: Number(item.score) || 0, reason: recoveryReason(item) }))).filter((item) => item.remainingMinutes > 0).sort((a, b) => b.priority - a.priority);
     const deficitMinutes = pendingItems.reduce((sum4, item) => sum4 + item.remainingMinutes, 0);
-    const capacities = (futureDays || []).map((day) => ({ date: day.date, remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)) }));
+    const capacities = (futureDays || []).map((day) => ({ date: day.date, availableMinutes: Math.max(0, Math.round(Number(day.availableMinutes) || 0)), remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)) }));
     const allocations = [];
     let remaining = deficitMinutes;
     pendingItems.forEach((item) => {
@@ -1510,7 +1510,8 @@
     const allocatedBySource = /* @__PURE__ */ new Map();
     allocations.forEach((item) => allocatedBySource.set(item.sourceItemId, (allocatedBySource.get(item.sourceItemId) || 0) + item.minutes));
     const retainedItems = pendingItems.filter((item) => (allocatedBySource.get(item.sourceItemId) || 0) < item.remainingMinutes).map((item) => ({ ...item, unallocatedMinutes: item.remainingMinutes - (allocatedBySource.get(item.sourceItemId) || 0) }));
-    return { state: deficitMinutes ? "proposal" : "balanced", periodStart, periodEnd, plannedMinutes, executedMinutes, deficitMinutes, redistributedMinutes, discardedMinutes: Math.max(0, remaining), pendingItems, allocations, retainedItems, reasons: deficitMinutes ? ["execução abaixo do planejado no período"] : [] };
+    const capacityByDay = capacities.map((day) => ({ date: day.date, availableMinutes: day.availableMinutes, allocatedMinutes: day.availableMinutes - day.remaining, remainingMinutes: day.remaining }));
+    return { state: deficitMinutes ? "proposal" : "balanced", periodStart, periodEnd, plannedMinutes, executedMinutes, deficitMinutes, redistributedMinutes, discardedMinutes: Math.max(0, remaining), pendingItems, allocations, retainedItems, capacityByDay, reasons: deficitMinutes ? ["execução abaixo do planejado no período"] : [] };
   }
   function applyReplan({ dailyPlans = [], proposal, operationId, now, idGenerator } = {}) {
     if (proposal?.state !== "proposal" || !operationId || typeof idGenerator !== "function") return { changes: [], createdItems: 0 };
@@ -17338,6 +17339,15 @@
     return `${previous}<button class="btn" data-guided-action="next" ${model.canAdvance ? "" : "disabled"}>Continuar</button>`;
   }
 
+  // src/features/replan/replan-renderer.js
+  function renderReplanProposal(model, { escapeHtml: escapeHtml2 = String, formatDate = (value2) => value2, formatMinutes = (value2) => `${value2} min`, subjectName = () => "", topicName = () => "" } = {}) {
+    const name = (item) => [subjectName(item.subjectId), topicName(item.topicId)].filter(Boolean).map(escapeHtml2).join(" — ") || "Atividade sem conteúdo identificado";
+    const allocationRows = (model.allocations || []).map((item) => `<article class="replan-detail-row"><div><strong>${name(item)}</strong><small>${escapeHtml2(item.reason || "atividade pendente")}</small></div><span><b>${formatMinutes(item.minutes)}</b><small>${formatDate(item.date)}</small></span></article>`).join("");
+    const retainedRows = (model.retainedItems || []).map((item) => `<article class="replan-detail-row is-warning"><div><strong>${name(item)}</strong><small>${escapeHtml2(item.reason || "atividade pendente")}</small></div><span><b>${formatMinutes(item.unallocatedMinutes)}</b><small>sem nova data</small></span></article>`).join("");
+    const capacityRows = (model.capacityByDay || []).map((day) => `<div class="replan-capacity-row"><strong>${formatDate(day.date)}</strong><span>${formatMinutes(day.allocatedMinutes)} usados · ${formatMinutes(day.remainingMinutes)} livres de ${formatMinutes(day.availableMinutes)}</span></div>`).join("");
+    return `<div class="study-plan-summary"><div><strong>${formatMinutes(model.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(model.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatMinutes(model.deficitMinutes)}</strong><span>Déficit</span></div><div><strong>${formatMinutes(model.redistributedMinutes)}</strong><span>Redistribuídas</span></div></div><section class="replan-detail"><h4>Movimentações propostas</h4>${allocationRows || '<div class="upcoming-empty">Nenhuma atividade coube nos próximos dias.</div>'}</section>${retainedRows ? `<section class="replan-detail"><h4>Excedente mantido para decisão posterior</h4>${retainedRows}</section>` : ""}<details class="replan-capacity"><summary>Conferir capacidade por dia</summary>${capacityRows || "<p>Nenhum dia futuro disponível nesta semana.</p>"}</details>${model.discardedMinutes ? `<div class="replan-group is-warning"><strong>Sem capacidade disponível</strong><span>${formatMinutes(model.discardedMinutes)} não cabem sem ultrapassar seus horários.</span></div>` : ""}`;
+  }
+
   // src/ui/view-models/question-view-model.js
   function buildQuestionViewModel(item, { formatDate, getSubjectName: getSubjectName2, getTopicName: getTopicName2, subjectIdOf: subjectIdOf2, accuracy: accuracy2 } = {}) {
     const resolved = Number(item.resolved) || 0, correct = Number(item.correct) || 0;
@@ -22344,12 +22354,7 @@
       container.innerHTML = '<div class="upcoming-empty">Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';
       return;
     }
-    const allocationByDate = /* @__PURE__ */ new Map();
-    replanPreview.allocations.forEach((item) => allocationByDate.set(item.date, (allocationByDate.get(item.date) || 0) + item.minutes));
-    const allocations = [...allocationByDate].map(([date2, minutes]) => `<div><strong>${formatDatePt(date2)}</strong><span>+ ${formatPlanMinutes(minutes)}</span></div>`).join("");
-    const retained = replanPreview.retainedItems?.length ? `<div class="replan-group"><strong>Mantidas para depois</strong><span>${replanPreview.retainedItems.length} atividades · ${formatPlanMinutes(replanPreview.retainedItems.reduce((sum4, item) => sum4 + item.unallocatedMinutes, 0))}</span></div>` : "";
-    const overflow = replanPreview.discardedMinutes ? `<div class="replan-group is-warning"><strong>Sem capacidade disponível</strong><span>${formatPlanMinutes(replanPreview.discardedMinutes)} não cabem sem ultrapassar seus horários.</span></div>` : "";
-    container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(replanPreview.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(replanPreview.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatPlanMinutes(replanPreview.deficitMinutes)}</strong><span>Déficit</span></div><div><strong>${formatPlanMinutes(replanPreview.redistributedMinutes)}</strong><span>Redistribuídas</span></div></div><div class="replan-group-list"><div class="replan-group"><strong>Redistribuídas</strong><span>${allocations || "Nenhuma atividade coube nos próximos dias."}</span></div>${retained}${overflow}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
+    container.innerHTML = `${renderReplanProposal(replanPreview, { escapeHtml, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
   }
   function formatPlanMinutes(minutes) {
     const value2 = Math.max(0, Math.round(Number(minutes) || 0));

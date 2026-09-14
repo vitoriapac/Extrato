@@ -9,8 +9,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        timezone: [UTC, America/Sao_Paulo]
+        include:
+          - label: utc
+            timezone: UTC
+          - label: sao-paulo
+            timezone: America/Sao_Paulo
     env:
       TZ: ${{ matrix.timezone }}
     steps:
@@ -22,3 +27,11 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run check:all
+      - name: Upload Playwright diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ matrix.label }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 14

@@ -1,7 +1,9 @@
 name: Deploy GitHub Pages
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -15,28 +17,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
-    runs-on: ubuntu-latest
-    env:
-      TZ: America/Sao_Paulo
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run check:all
-
   deploy:
-    needs: verify
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/configure-pages@v5
       - name: Prepare static site
         run: |

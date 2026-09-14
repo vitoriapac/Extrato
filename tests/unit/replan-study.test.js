@@ -10,6 +10,7 @@ test('informa excedente que não cabe na disponibilidade',()=>{
   const result=buildReplanProposal({periodStart:'2026-09-01',periodEnd:'2026-09-07',plans:[{date:'2026-09-01',items:[{plannedMinutes:90,executedSeconds:0,status:'planned'}]}],futureDays:[{date:'2026-09-02',availableMinutes:30}]});
   assert.equal(result.redistributedMinutes,30);assert.equal(result.discardedMinutes,60);
 });
+test('expõe uso e saldo de capacidade para cada dia futuro',()=>{const result=buildReplanProposal({periodStart:'2026-09-01',periodEnd:'2026-09-07',plans:[{date:'2026-09-01',items:[{plannedMinutes:45,executedSeconds:0,status:'planned'}]}],futureDays:[{date:'2026-09-02',availableMinutes:60}]});assert.deepEqual(result.capacityByDay,[{date:'2026-09-02',availableMinutes:60,allocatedMinutes:45,remainingMinutes:15}])});
 test('explica por que uma atividade foi selecionada para recuperação',()=>{const result=buildReplanProposal({periodStart:'2026-09-01',periodEnd:'2026-09-07',plans:[{date:'2026-09-01',items:[{id:'urgent',plannedMinutes:30,executedSeconds:0,status:'planned',score:85}]}],futureDays:[{date:'2026-09-08',availableMinutes:30}]});assert.match(result.allocations[0].reason,/alta prioridade/i)});
 
 test('não cria déficit para itens descartados ou substituídos',()=>{
