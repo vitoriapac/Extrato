@@ -87,6 +87,8 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 
 O StudyTrack 3.1 conecta o edital às metas de domínio, à matriz de lacunas e às estratégias automáticas. Recomendações podem iniciar sessões guiadas por etapas no cronômetro existente, com estado recuperável. Questões, Agenda/Revisões, Calendário e os painéis analíticos possuem view-models e renderers modulares; `src/app.js` conserva a orquestração e a compatibilidade temporária.
 
+As próximas entregas estão organizadas em [pacotes de implementação](docs/implementation-packages.md), com dependências e critérios de aceite versionados junto ao código.
+
 ## Licença
 
 Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE).
