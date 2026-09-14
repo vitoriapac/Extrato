@@ -73,6 +73,7 @@ import {createPreferencesController} from './ui/controllers/preferences-controll
 import {createBackupController} from './ui/controllers/backup-controller.js';
 import {createDelegatedEventsController} from './ui/controllers/delegated-events-controller.js';
 import {createErrorBoundaryController} from './ui/controllers/error-boundary-controller.js';
+import {createDemoController} from './ui/controllers/demo-controller.js';
 import {createApplicationRenderer} from './ui/renderers/application-renderer.js';
 import {createGoalService} from './application/goals/goal-service.js';
 import {buildWeeklyAvailability} from './application/goals/weekly-availability.js';
@@ -1130,19 +1131,8 @@ function reloadWithModeChange(){
   pendingSave=null;
   location.reload();
 }
-function configureDemoModeUi(){
-  const banner=document.getElementById('demoBanner'),enterButton=document.getElementById('enterDemoBtn'),emptyCta=document.getElementById('demoEmptyCta');
-  banner.hidden=!IS_DEMO_MODE;enterButton.hidden=IS_DEMO_MODE;
-  if(emptyCta)emptyCta.hidden=IS_DEMO_MODE||state.subjects.length>0||state.studySessions.length>0;
-  document.querySelectorAll('[data-demo-protected]').forEach(button=>{button.disabled=IS_DEMO_MODE;button.title=IS_DEMO_MODE?'Indisponível para proteger seus dados reais.':''});
-}
-document.getElementById('enterDemoBtn').addEventListener('click',()=>showConfirm('Explorar a demonstração com três meses de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.',()=>{enterDemoMode(sessionStorage);reloadWithModeChange()}));
-document.getElementById('enterDemoEmptyBtn').addEventListener('click',()=>document.getElementById('enterDemoBtn').click());
-document.querySelectorAll('[data-demo-target]').forEach(button=>button.addEventListener('click',()=>activateTab(button.dataset.demoTarget)));
-document.getElementById('demoReportShortcut').addEventListener('click',()=>document.getElementById('exportReportBtn').click());
-document.getElementById('resetDemoBtn').addEventListener('click',()=>showConfirm('Reiniciar todos os dados fictícios da demonstração?',()=>{resetDemoMode(sessionStorage,DEMO_STORAGE_KEY);reloadWithModeChange()}));
-document.getElementById('exitDemoBtn').addEventListener('click',()=>{exitDemoMode(sessionStorage,DEMO_STORAGE_KEY);sessionStorage.setItem(MODE_FLASH_KEY,'Demonstração encerrada. Seus dados pessoais foram restaurados.');reloadWithModeChange()});
-configureDemoModeUi();
+const demoController=createDemoController({document,storage:sessionStorage,demoKey:DEMO_STORAGE_KEY,flashKey:MODE_FLASH_KEY,isDemo:IS_DEMO_MODE,getState:()=>state,enterMode:enterDemoMode,resetMode:resetDemoMode,exitMode:exitDemoMode,confirm:showConfirm,reload:reloadWithModeChange,activateTab});
+demoController.mount();
 
 /* ===== CRONÔMETRO DE SESSÃO DE ESTUDO ===== */
 let timerSeconds = 0;

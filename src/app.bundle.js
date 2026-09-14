@@ -16508,6 +16508,54 @@
     return Object.freeze({ report, clear });
   }
 
+  // src/ui/controllers/demo-controller.js
+  function createDemoController({ document: document2, storage, demoKey, flashKey, isDemo, getState, enterMode, resetMode, exitMode, confirm, reload, activateTab: activateTab2 } = {}) {
+    if (!document2 || !storage || typeof getState !== "function") throw new TypeError("Controlador da demonstração requer documento, armazenamento e estado.");
+    const listeners = [];
+    const listen = (target, event, handler) => {
+      if (!target) return;
+      target.addEventListener(event, handler);
+      listeners.push(() => target.removeEventListener?.(event, handler));
+    };
+    const enter = () => confirm("Explorar a demonstração com três meses de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.", () => {
+      enterMode(storage);
+      reload();
+    });
+    const reset = () => confirm("Reiniciar todos os dados fictícios da demonstração?", () => {
+      resetMode(storage, demoKey);
+      reload();
+    });
+    const exit = () => {
+      exitMode(storage, demoKey);
+      storage.setItem(flashKey, "Demonstração encerrada. Seus dados pessoais foram restaurados.");
+      reload();
+    };
+    const sync = () => {
+      const state2 = getState(), banner = document2.getElementById("demoBanner"), enterButton = document2.getElementById("enterDemoBtn"), emptyCta = document2.getElementById("demoEmptyCta");
+      if (banner) banner.hidden = !isDemo;
+      if (enterButton) enterButton.hidden = isDemo;
+      if (emptyCta) emptyCta.hidden = isDemo || state2.subjects.length > 0 || state2.studySessions.length > 0;
+      document2.querySelectorAll("[data-demo-protected]").forEach((button) => {
+        button.disabled = isDemo;
+        button.title = isDemo ? "Indisponível para proteger seus dados reais." : "";
+      });
+    };
+    const mount = () => {
+      const enterButton = document2.getElementById("enterDemoBtn");
+      listen(enterButton, "click", enter);
+      listen(document2.getElementById("enterDemoEmptyBtn"), "click", () => enterButton?.click());
+      listen(document2.getElementById("resetDemoBtn"), "click", reset);
+      listen(document2.getElementById("exitDemoBtn"), "click", exit);
+      document2.querySelectorAll("[data-demo-target]").forEach((button) => listen(button, "click", () => activateTab2(button.dataset.demoTarget)));
+      listen(document2.getElementById("demoReportShortcut"), "click", () => document2.getElementById("exportReportBtn")?.click());
+      sync();
+      return api;
+    };
+    const unmount = () => listeners.splice(0).forEach((remove) => remove());
+    const api = Object.freeze({ mount, unmount, sync, enter, reset, exit });
+    return api;
+  }
+
   // src/ui/renderers/application-renderer.js
   function createApplicationRenderer({ sections = [], scopes = {}, globalSections = [], getActiveScope = () => null, afterRender = () => {
   }, onError = () => {
@@ -19069,33 +19117,8 @@
     pendingSave = null;
     location.reload();
   }
-  function configureDemoModeUi() {
-    const banner = document.getElementById("demoBanner"), enterButton = document.getElementById("enterDemoBtn"), emptyCta = document.getElementById("demoEmptyCta");
-    banner.hidden = !IS_DEMO_MODE;
-    enterButton.hidden = IS_DEMO_MODE;
-    if (emptyCta) emptyCta.hidden = IS_DEMO_MODE || state.subjects.length > 0 || state.studySessions.length > 0;
-    document.querySelectorAll("[data-demo-protected]").forEach((button) => {
-      button.disabled = IS_DEMO_MODE;
-      button.title = IS_DEMO_MODE ? "Indisponível para proteger seus dados reais." : "";
-    });
-  }
-  document.getElementById("enterDemoBtn").addEventListener("click", () => showConfirm("Explorar a demonstração com três meses de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.", () => {
-    enterDemoMode(sessionStorage);
-    reloadWithModeChange();
-  }));
-  document.getElementById("enterDemoEmptyBtn").addEventListener("click", () => document.getElementById("enterDemoBtn").click());
-  document.querySelectorAll("[data-demo-target]").forEach((button) => button.addEventListener("click", () => activateTab(button.dataset.demoTarget)));
-  document.getElementById("demoReportShortcut").addEventListener("click", () => document.getElementById("exportReportBtn").click());
-  document.getElementById("resetDemoBtn").addEventListener("click", () => showConfirm("Reiniciar todos os dados fictícios da demonstração?", () => {
-    resetDemoMode(sessionStorage, DEMO_STORAGE_KEY);
-    reloadWithModeChange();
-  }));
-  document.getElementById("exitDemoBtn").addEventListener("click", () => {
-    exitDemoMode(sessionStorage, DEMO_STORAGE_KEY);
-    sessionStorage.setItem(MODE_FLASH_KEY, "Demonstração encerrada. Seus dados pessoais foram restaurados.");
-    reloadWithModeChange();
-  });
-  configureDemoModeUi();
+  var demoController = createDemoController({ document, storage: sessionStorage, demoKey: DEMO_STORAGE_KEY, flashKey: MODE_FLASH_KEY, isDemo: IS_DEMO_MODE, getState: () => state, enterMode: enterDemoMode, resetMode: resetDemoMode, exitMode: exitDemoMode, confirm: showConfirm, reload: reloadWithModeChange, activateTab });
+  demoController.mount();
   var timerSeconds = 0;
   var timerRunning = false;
   var timerIntervalId = null;
