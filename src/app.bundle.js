@@ -5,7 +5,7 @@
   var BACKUP_KEY = STORAGE_KEY + "-automatic-backup";
   var BACKUP_INDEX_KEY = BACKUP_KEY + "-index";
   var AUTOMATIC_BACKUP_SLOTS = 5;
-  var CURRENT_SCHEMA_VERSION = 18;
+  var CURRENT_SCHEMA_VERSION = 19;
   var MAX_BACKUP_FILE_SIZE = 10 * 1024 * 1024;
   var DB_NAME = "extrato-estudos-db";
   var DB_VERSION = 1;
@@ -1736,7 +1736,7 @@
 
   // src/application/sessions/session-service.js
   function createSessionService({ repository, questionsRepository, historyRepository, planningRepository: planningRepository2, recommendationsRepository, clock, idGenerator, normalizeSession = normalizeStudySession, normalizeQuestion = () => {
-  }, completeRecommendation = () => {
+  }, resolveEvidenceScope = () => null, completeRecommendation = () => {
   }, onCompleted = () => {
   } } = {}) {
     if (!repository || typeof repository.add !== "function") throw new TypeError("Serviço de sessões requer repositório.");
@@ -1769,7 +1769,7 @@
         if (existing) questionsRepository.remove(existing.id);
         return null;
       }
-      const values = { date: session.date, subjectId: session.subjectId || null, topicId: session.topicId || null, resolved: session.questionsResolved, correct: session.correctAnswers, studySessionId: session.id };
+      const values = { date: session.date, subjectId: session.subjectId || null, topicId: session.topicId || null, examScope: Array.isArray(session.examScope) ? session.examScope : resolveEvidenceScope(session.topicId), resolved: session.questionsResolved, correct: session.correctAnswers, studySessionId: session.id };
       const question = existing ? questionsRepository.update(existing.id, values) : questionsRepository.add({ id: idGenerator("question"), createdAt: clock.nowISO(), ...values });
       normalizeQuestion(question);
       return question;
@@ -1780,6 +1780,7 @@
         const session = normalize({
           id: idGenerator("session"),
           createdAt: clock.nowISO(),
+          examScope: Array.isArray(input.examScope) ? input.examScope : resolveEvidenceScope(input.topicId),
           ...input,
           source: input.source || (recommendationId ? "recommendation" : linkedItem ? "plan" : "manual"),
           recommendationId,
@@ -1789,7 +1790,7 @@
         syncQuestion(saved);
         syncPlan(saved.planItemId);
         const occurredAt = clock.nowISO();
-        historyRepository?.add?.({ id: idGenerator("history"), date: occurredAt, occurredAt, localDate: saved.date || clock.today(), type: "study_session", subjectId: saved.subjectId || null, topicId: saved.topicId || null, metadata: { sessionId: saved.id, durationSeconds: saved.durationSeconds, recommendationId: saved.recommendationId || null } });
+        historyRepository?.add?.({ id: idGenerator("history"), date: occurredAt, occurredAt, localDate: saved.date || clock.today(), type: "study_session", subjectId: saved.subjectId || null, topicId: saved.topicId || null, examScope: saved.examScope, metadata: { sessionId: saved.id, durationSeconds: saved.durationSeconds, recommendationId: saved.recommendationId || null } });
         onCompleted(saved);
         return saved;
       },
@@ -15792,6 +15793,10 @@
   }
   function classifyEvidenceScope(record, subjects = [], activeExamTags = []) {
     const { byId } = indexExamTopics(subjects), topicId = topicIdOf(record), subjectId = subjectIdOf(record), hasSpecificScope = (activeExamTags || []).length > 0;
+    if (Array.isArray(record?.examScope)) {
+      const recordScope = new Set(record.examScope), includedInExamMetrics = !hasSpecificScope || recordScope.size === 0 || (activeExamTags || []).some((tag) => recordScope.has(tag));
+      return Object.freeze({ state: recordScope.size ? "record_scoped" : "personal", includedInExamMetrics, subjectId, topicId, examScope: [...recordScope] });
+    }
     if (topicId) {
       const topic = byId.get(topicId);
       return Object.freeze({ state: topic ? "topic_scoped" : "unscoped", includedInExamMetrics: Boolean(topic && isTopicInExamScope(topic, activeExamTags)), subjectId: subjectId || topic?.subjectId || null, topicId });
@@ -15819,6 +15824,75 @@
     if (configuredAt) state2.examBlueprint.configuredAt = configuredAt;
     for (const field of DERIVED_FIELDS) if (field in state2) state2[field] = null;
     return true;
+  }
+
+  // src/application/exams/evidence-scope-migration.js
+  var topicIdOf2 = (record) => record?.topicId || record?.topicRef || null;
+  function buildTopicScopeIndex(subjects = []) {
+    const index = /* @__PURE__ */ new Map();
+    for (const subject of subjects || []) for (const topic of subject?.topics || []) {
+      if (topic?.id) index.set(topic.id, normalizeExamTags(topic.examTags));
+    }
+    return index;
+  }
+  function snapshotEvidenceScopes(data = {}) {
+    const topicScopes = buildTopicScopeIndex(data.subjects);
+    const collections = ["studySessions", "questoes", "reviewAgenda", "calendar", "topicHistory"];
+    for (const field of collections) for (const record of data[field] || []) {
+      if (Array.isArray(record.examScope)) record.examScope = normalizeExamTags(record.examScope);
+      else {
+        const topicId = topicIdOf2(record);
+        record.examScope = topicId && topicScopes.has(topicId) ? topicScopes.get(topicId) : null;
+      }
+    }
+    for (const simulation of data.simulados || []) {
+      if (Array.isArray(simulation.examScope)) simulation.examScope = normalizeExamTags(simulation.examScope);
+      else simulation.examScope = normalizeExamTags(Array.isArray(simulation.examTags) ? simulation.examTags : simulation.examTag ? [simulation.examTag] : []);
+    }
+    return data;
+  }
+
+  // src/state/state-boundaries.js
+  var PERSISTENT_COLLECTIONS = Object.freeze([
+    "subjects",
+    "calendar",
+    "reviewAgenda",
+    "questoes",
+    "simulados",
+    "progressHistory",
+    "studySessions",
+    "dailyPlans",
+    "studyPlans",
+    "planAdjustments",
+    "recommendationFeedback",
+    "weeklyCloseSnapshots",
+    "alertStates",
+    "topicHistory",
+    "metasPorDisciplina"
+  ]);
+  var PERSISTENT_OBJECTS = Object.freeze([
+    "metas",
+    "examBlueprint",
+    "algorithmVersions",
+    "activeTimer",
+    "achievementsUnlocked"
+  ]);
+  function createUiState(overrides = {}) {
+    return {
+      activeTab: "visao-geral",
+      openModal: null,
+      onboarding: { open: false, currentStep: null, presetId: null, previousFocus: null, dismissedForSession: false },
+      filters: {},
+      previews: {},
+      ...overrides
+    };
+  }
+  function pickPersistentState(source = {}) {
+    const result = {};
+    for (const key of ["schemaVersion", "executionMode", "examDate", "lastBackupAt", "updatedAt", ...PERSISTENT_COLLECTIONS, ...PERSISTENT_OBJECTS]) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) result[key] = source[key];
+    }
+    return result;
   }
 
   // src/features/exam-import/exam-import-state.js
@@ -17068,35 +17142,35 @@
   function reviewTypeForDays(days) {
     return REVIEW_TYPES[Number(days)] || "Revisão livre";
   }
-  function createReviewService({ repository, clock, idGenerator, findTopic = () => null, calculateAdaptiveState, algorithmVersion = () => 1, onEvent = () => {
+  function createReviewService({ repository, clock, idGenerator, findTopic = () => null, resolveEvidenceScope = () => null, calculateAdaptiveState, algorithmVersion = () => 1, onEvent = () => {
   }, onTopicChanged = () => {
   } } = {}) {
     if (!repository || typeof repository.findById !== "function") throw new TypeError("Serviço de revisões requer repositório.");
     if (!clock || typeof clock.today !== "function" || typeof clock.nowISO !== "function") throw new TypeError("Serviço de revisões requer relógio.");
     if (typeof idGenerator !== "function") throw new TypeError("Serviço de revisões requer gerador de IDs.");
-    const topicIdOf2 = (review) => review?.topicId || review?.topicRef || null;
+    const topicIdOf3 = (review) => review?.topicId || review?.topicRef || null;
     const complete = (review, completedAt = clock.nowISO()) => {
       if (!review || review.status === "Concluído") return review || null;
       repository.update(review.id, { status: "Concluído", completedAt });
       onEvent("review_completed", review, { reviewId: review.id, reviewType: review.tipo });
-      if (topicIdOf2(review)) onTopicChanged(topicIdOf2(review));
+      if (topicIdOf3(review)) onTopicChanged(topicIdOf3(review));
       return review;
     };
     return Object.freeze({
       completeReview: (id) => complete(repository.findById(id)),
-      createManualReview: (input) => repository.add({ id: idGenerator("review"), topicId: null, date: clock.today(), subjectId: null, topic: "", tipo: "Revisão livre", status: "Não iniciado", adaptive: false, manualDate: true, adaptiveReason: null, suggestedDate: null, baseIntervalDays: 7, createdAt: clock.nowISO(), completedAt: null, ...input }),
+      createManualReview: (input) => repository.add({ id: idGenerator("review"), topicId: null, date: clock.today(), subjectId: null, topic: "", tipo: "Revisão livre", status: "Não iniciado", adaptive: false, manualDate: true, adaptiveReason: null, suggestedDate: null, baseIntervalDays: 7, createdAt: clock.nowISO(), completedAt: null, ...input, examScope: Array.isArray(input.examScope) ? input.examScope : resolveEvidenceScope(input.topicId || input.topicRef) }),
       removeReview: (id) => repository.remove(id),
       rescheduleReview: (id, date2) => repository.update(id, { date: date2, manualDate: true, adaptive: false }),
       restoreAdaptiveSchedule: (id, suggestion) => repository.update(id, { date: suggestion.date, suggestedDate: suggestion.date, adaptiveReason: suggestion.reason, manualDate: false, adaptive: true }),
       rateReview: (id, rating, { label: label2 = "adaptativa" } = {}) => {
-        const review = repository.findById(id), topicId = topicIdOf2(review), topic = topicId ? findTopic(topicId) : null;
+        const review = repository.findById(id), topicId = topicIdOf3(review), topic = topicId ? findTopic(topicId) : null;
         if (!review || !topicId || !topic || typeof calculateAdaptiveState !== "function") return null;
         const adaptiveState = calculateAdaptiveState(topic.adaptiveReview, rating, { reviewDate: clock.today(), algorithmVersion: algorithmVersion() });
         topic.adaptiveReview = adaptiveState;
         repository.update(id, { lastRating: rating, adaptiveState: structuredClone(adaptiveState), adaptiveReason: `Avaliação: ${label2} · próximo intervalo: ${adaptiveState.intervalDays} dia${adaptiveState.intervalDays === 1 ? "" : "s"}` });
         complete(review);
         let next = null;
-        if (!repository.hasPendingForTopic(topicId, adaptiveState.nextReviewDate, { exceptId: id })) next = repository.add({ id: idGenerator("review"), subjectId: review.subjectId || null, topicId, topicRef: topicId, topic: topic.name || review.topic || "", date: adaptiveState.nextReviewDate, suggestedDate: adaptiveState.nextReviewDate, baseIntervalDays: adaptiveState.intervalDays, adaptive: true, manualDate: false, adaptiveReason: `Agendada após avaliação ${label2}.`, tipo: reviewTypeForDays(adaptiveState.intervalDays), status: "Não iniciado", lastRating: null, adaptiveState: structuredClone(adaptiveState), createdAt: clock.nowISO(), completedAt: null });
+        if (!repository.hasPendingForTopic(topicId, adaptiveState.nextReviewDate, { exceptId: id })) next = repository.add({ id: idGenerator("review"), subjectId: review.subjectId || null, topicId, topicRef: topicId, topic: topic.name || review.topic || "", date: adaptiveState.nextReviewDate, suggestedDate: adaptiveState.nextReviewDate, baseIntervalDays: adaptiveState.intervalDays, adaptive: true, manualDate: false, adaptiveReason: `Agendada após avaliação ${label2}.`, tipo: reviewTypeForDays(adaptiveState.intervalDays), status: "Não iniciado", lastRating: null, adaptiveState: structuredClone(adaptiveState), createdAt: clock.nowISO(), completedAt: null, examScope: Array.isArray(review.examScope) ? review.examScope : resolveEvidenceScope(topicId) });
         onEvent("adaptive_review_rated", review, { reviewId: id, rating, intervalDays: adaptiveState.intervalDays, nextReviewDate: adaptiveState.nextReviewDate, algorithmVersion: adaptiveState.algorithmVersion });
         onTopicChanged(topicId);
         return { review, next, adaptiveState };
@@ -17645,8 +17719,8 @@
   };
   var DIAGNOSIS_STATUS_ICON = { "Crítico": "🔴", "Atenção": "🟠", "Acompanhamento": "🟡", "Em dia": "🟢" };
   var state = createDefaultState();
-  var onboardingStep = null;
-  var onboardingPresetId = EXAM_PRESETS[0]?.id || null;
+  var uiState = createUiState();
+  uiState.onboarding.presetId = EXAM_PRESETS[0]?.id || null;
   function getSubjectById(subjectId) {
     return state.subjects.find((s) => s.id === subjectId) || null;
   }
@@ -17656,6 +17730,10 @@
       if (topic) return { subject, topic };
     }
     return null;
+  }
+  function evidenceScopeForTopic(topicId) {
+    const found = getTopicById(topicId);
+    return found ? normalizeExamTags(found.topic.examTags) : null;
   }
   function getSubjectName(subjectId) {
     return getSubjectById(subjectId)?.name || "Disciplina removida";
@@ -17924,8 +18002,13 @@
     data.schemaVersion = 18;
     return data;
   }
+  function migrateV18toV19(data) {
+    snapshotEvidenceScopes(data);
+    data.schemaVersion = 19;
+    return data;
+  }
   function migrateState(data) {
-    return runStateMigrations(data, { currentVersion: CURRENT_SCHEMA_VERSION, migrations: { 1: migrateV1toV2, 2: migrateV2toV3, 3: migrateV3toV4, 4: migrateV4toV5, 5: migrateV5toV6, 6: migrateV6toV7, 7: migrateV7toV8, 8: migrateV8toV9, 9: migrateV9toV10, 10: migrateV10toV11, 11: migrateV11toV12, 12: migrateV12toV13, 13: migrateV13toV14, 14: migrateV14toV15, 15: migrateV15toV16, 16: migrateV16toV17, 17: migrateV17toV18 } });
+    return runStateMigrations(data, { currentVersion: CURRENT_SCHEMA_VERSION, migrations: { 1: migrateV1toV2, 2: migrateV2toV3, 3: migrateV3toV4, 4: migrateV4toV5, 5: migrateV5toV6, 6: migrateV6toV7, 7: migrateV7toV8, 8: migrateV8toV9, 9: migrateV9toV10, 10: migrateV10toV11, 11: migrateV11toV12, 12: migrateV12toV13, 13: migrateV13toV14, 14: migrateV14toV15, 15: migrateV15toV16, 16: migrateV16toV17, 17: migrateV17toV18, 18: migrateV18toV19 } });
   }
   function ensureStateDefaults() {
     if (!state || typeof state !== "object") state = {};
@@ -18081,6 +18164,7 @@
     clock: appClock,
     idGenerator: uid,
     findTopic: (topicId) => getTopicById(topicId)?.topic || null,
+    resolveEvidenceScope: evidenceScopeForTopic,
     calculateAdaptiveState: (current, rating, options) => applyAdaptiveReviewRating(current, rating, options),
     algorithmVersion: () => state.algorithmVersions.adaptiveReview,
     onEvent: (type, review, details) => addHistoryEvent(type, entitySubjectId(review), review.topicId || review.topicRef || null, details),
@@ -18090,7 +18174,7 @@
   var studyPlanService = createStudyPlanService({ repository: planningRepository, calculate: buildStudyPlan, clock: appClock, idGenerator: uid, algorithmVersion: () => state.algorithmVersions.recommendations });
   var dailyPlanService = createDailyPlanService({ repository: planningRepository, buildProposal: buildDailyPlanProposal, applyProposal: applyDailyPlanProposal, undoGeneration: undoDailyPlanGeneration, clock: appClock, idGenerator: uid });
   var replanService = createReplanService({ repository: planningRepository, buildProposal: buildReplanProposal, applyProposal: applyReplan, undoProposal: undoReplan, clock: appClock, idGenerator: uid });
-  var sessionService = createSessionService({ repository: appContext.repositories.studySessions, questionsRepository: appContext.repositories.questoes, historyRepository: appContext.repositories.topicHistory, planningRepository, recommendationsRepository: appContext.repositories.recommendationFeedback, clock: appClock, idGenerator: uid, normalizeQuestion: normalizeErrorBreakdown, completeRecommendation: completeRecommendationFeedback, onCompleted: measureRecommendationResults });
+  var sessionService = createSessionService({ repository: appContext.repositories.studySessions, questionsRepository: appContext.repositories.questoes, historyRepository: appContext.repositories.topicHistory, planningRepository, recommendationsRepository: appContext.repositories.recommendationFeedback, clock: appClock, idGenerator: uid, normalizeQuestion: normalizeErrorBreakdown, resolveEvidenceScope: evidenceScopeForTopic, completeRecommendation: completeRecommendationFeedback, onCompleted: measureRecommendationResults });
   var guidedStudyService = createGuidedStudyService({ recommend: ({ id } = {}) => currentStudyRecommendations.filter((item) => !id || item.id === id), sessionService, clock: appClock });
   var calendarService = createRecordService({ repository: appContext.repositories.calendar, clock: appClock, idGenerator: uid, prefix: "calendar" });
   var questionService = createRecordService({ repository: appContext.repositories.questoes, clock: appClock, idGenerator: uid, prefix: "question", normalize: (item) => {
@@ -18151,7 +18235,7 @@
           const recovered = await readLatestValidSnapshot();
           if (recovered) {
             state = recovered.state;
-            await StorageManager.set(STORAGE_KEY, JSON.stringify(state));
+            await StorageManager.set(STORAGE_KEY, JSON.stringify(pickPersistentState(state)));
             loadWarning = "Os dados principais estavam inválidos e foram recuperados do backup automático mais recente.";
           } else throw error;
         }
@@ -18234,12 +18318,12 @@
   function scheduleSave() {
     const previousRaw = readLocalState(STORAGE_KEY);
     state.updatedAt = nowISO2();
-    const serialized = JSON.stringify(state);
+    const serialized = JSON.stringify(pickPersistentState(state));
     writeLocalState(serialized);
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => enqueueSave(serialized, previousRaw), 350);
   }
-  async function saveState(serialized = JSON.stringify(state), previousRaw = null) {
+  async function saveState(serialized = JSON.stringify(pickPersistentState(state)), previousRaw = null) {
     try {
       let backupWarning = false;
       const lastBackup = state.lastBackupAt ? Date.parse(state.lastBackupAt) : 0;
@@ -19866,8 +19950,8 @@
     const inOnboarding = examImportOrigin === "onboarding" || Boolean(examImportState.previousFocus?.closest?.("#guidedOnboarding"));
     const preset2 = selectedExamPreset(), result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
     applyPresetBlueprintDefaults(preset2);
-    onboardingPresetId = preset2.id;
-    if (inOnboarding) onboardingStep = "plan";
+    uiState.onboarding.presetId = preset2.id;
+    if (inOnboarding) uiState.onboarding.currentStep = "plan";
     persistAndRender();
     closeExamImport();
     if (inOnboarding) {
@@ -22551,8 +22635,8 @@
   function renderGuidedOnboarding() {
     const el = document.getElementById("guidedOnboarding");
     if (!el) return;
-    const model = buildOnboardingViewModel({ examDate: state.examDate, hoursByDay: state.metas.horasPorDia, subjects: state.subjects, sessions: state.studySessions, questions: state.questoes, dailyPlans: state.dailyPlans, studyPlans: state.studyPlans, currentStep: onboardingStep, today: todayISO(), presets: EXAM_PRESETS, presetId: onboardingPresetId });
-    if (!onboardingStep) onboardingStep = model.current.id;
+    const model = buildOnboardingViewModel({ examDate: state.examDate, hoursByDay: state.metas.horasPorDia, subjects: state.subjects, sessions: state.studySessions, questions: state.questoes, dailyPlans: state.dailyPlans, studyPlans: state.studyPlans, currentStep: uiState.onboarding.currentStep, today: todayISO(), presets: EXAM_PRESETS, presetId: uiState.onboarding.presetId });
+    if (!uiState.onboarding.currentStep) uiState.onboarding.currentStep = model.current.id;
     el.hidden = !model.visible || IS_DEMO_MODE;
     model.steps.forEach((step) => {
       const item = el.querySelector(`[data-onboarding-step="${step.id}"]`);
@@ -22563,11 +22647,11 @@
     document.getElementById("guidedOnboardingActions").innerHTML = renderOnboardingActions(model);
   }
   function onboardingModel() {
-    return buildOnboardingViewModel({ examDate: state.examDate, hoursByDay: state.metas.horasPorDia, subjects: state.subjects, sessions: state.studySessions, questions: state.questoes, dailyPlans: state.dailyPlans, studyPlans: state.studyPlans, currentStep: onboardingStep, today: todayISO(), presets: EXAM_PRESETS, presetId: onboardingPresetId });
+    return buildOnboardingViewModel({ examDate: state.examDate, hoursByDay: state.metas.horasPorDia, subjects: state.subjects, sessions: state.studySessions, questions: state.questoes, dailyPlans: state.dailyPlans, studyPlans: state.studyPlans, currentStep: uiState.onboarding.currentStep, today: todayISO(), presets: EXAM_PRESETS, presetId: uiState.onboarding.presetId });
   }
   function moveOnboarding(direction) {
     const model = onboardingModel(), index = Math.max(0, Math.min(model.steps.length - 1, model.currentIndex + direction));
-    onboardingStep = model.steps[index].id;
+    uiState.onboarding.currentStep = model.steps[index].id;
     renderGuidedOnboarding();
   }
   function setGuidedSubjectLevel(subjectId, level) {
@@ -22594,7 +22678,7 @@
     confirmStudyPlan();
     calculateDailyPlanPreview();
     if (dailyPlanPreview?.state === "proposal") confirmDailyPlanPreview();
-    onboardingStep = "plan";
+    uiState.onboarding.currentStep = "plan";
     render();
     activateTab("hoje");
     requestAnimationFrame(() => document.querySelector("#planoHojeContent .btn")?.focus());
@@ -23376,7 +23460,7 @@
   }));
   document.getElementById("guidedOnboarding")?.addEventListener("change", (event) => {
     if (event.target.id === "guidedExamPreset") {
-      onboardingPresetId = event.target.value;
+      uiState.onboarding.presetId = event.target.value;
       return;
     }
     if (event.target.id === "guidedExamDate") {
@@ -23394,7 +23478,7 @@
     if (!action) return;
     if (action === "back") moveOnboarding(-1);
     if (action === "next") moveOnboarding(1);
-    if (action === "import") openExamImport(onboardingPresetId, "onboarding");
+    if (action === "import") openExamImport(uiState.onboarding.presetId, "onboarding");
     if (action === "manual") {
       activateTab("disciplinas");
       document.getElementById("addSubjectBtn")?.focus();
@@ -23425,7 +23509,7 @@
     syncBackToTop();
   }
   registerApplicationLifecycle({ window, onBeforeUnload: () => {
-    if (!TEST_MODE && !suppressBeforeUnloadSave) writeLocalState(JSON.stringify(state));
+    if (!TEST_MODE && !suppressBeforeUnloadSave) writeLocalState(JSON.stringify(pickPersistentState(state)));
   }, onResponsiveChange: () => {
     renderQuestoes();
     renderSimulados();

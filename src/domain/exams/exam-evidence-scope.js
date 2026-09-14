@@ -9,6 +9,10 @@ export function indexExamTopics(subjects=[]){
 }
 export function classifyEvidenceScope(record,subjects=[],activeExamTags=[]){
   const {byId}=indexExamTopics(subjects),topicId=topicIdOf(record),subjectId=subjectIdOf(record),hasSpecificScope=(activeExamTags||[]).length>0;
+  if(Array.isArray(record?.examScope)){
+    const recordScope=new Set(record.examScope),includedInExamMetrics=!hasSpecificScope||recordScope.size===0||(activeExamTags||[]).some(tag=>recordScope.has(tag));
+    return Object.freeze({state:recordScope.size?'record_scoped':'personal',includedInExamMetrics,subjectId,topicId,examScope:[...recordScope]});
+  }
   if(topicId){const topic=byId.get(topicId);return Object.freeze({state:topic?'topic_scoped':'unscoped',includedInExamMetrics:Boolean(topic&&isTopicInExamScope(topic,activeExamTags)),subjectId:subjectId||topic?.subjectId||null,topicId})}
   if(subjectId)return Object.freeze({state:'subject_only',includedInExamMetrics:!hasSpecificScope,subjectId,topicId:null});
   return Object.freeze({state:'unscoped',includedInExamMetrics:!hasSpecificScope,subjectId:null,topicId:null});
