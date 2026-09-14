@@ -13,7 +13,7 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real',asyn
   });
   await openDemo(page);await expect(page.locator('#demoBanner')).toBeVisible();await expect(page.locator('[data-demo-protected]').first()).toBeDisabled();
   const firstDemo=await page.evaluate(()=>sessionStorage.getItem('bb-premium-study-demo'));expect(firstDemo).toBeTruthy();const parsed=JSON.parse(firstDemo);
-  expect(parsed.studySessions.length).toBeGreaterThan(80);expect(parsed.simulados.length).toBeGreaterThanOrEqual(9);
+  expect(parsed.progressHistory).toHaveLength(130);expect(parsed.studySessions).toHaveLength(170);expect(parsed.simulados).toHaveLength(13);
   parsed.subjects[0].name='Alteração fictícia';await page.evaluate(value=>sessionStorage.setItem('bb-premium-study-demo',JSON.stringify(value)),parsed);
   await page.getByRole('button',{name:/Reiniciar demo/i}).click();await page.getByRole('button',{name:'Confirmar'}).click();await expect(page.getByText('MODO DEMONSTRAÇÃO')).toBeVisible();
   const restarted=JSON.parse(await page.evaluate(()=>sessionStorage.getItem('bb-premium-study-demo')));expect(restarted.subjects[0].name).not.toBe('Alteração fictícia');

@@ -103,7 +103,7 @@ Este roteiro transforma as melhorias restantes em entregas incrementais. A ordem
 Depois dos seis pacotes, as próximas entregas podem ser tratadas separadamente:
 
 - prioridade de tópicos com edição e explicação mais ricas — primeira etapa concluída: impacto efetivo com origem visível, esforço explicado e pré-requisitos editáveis com prevenção de ciclos;
-- cenário demonstrativo determinístico com 130 dias;
+- cenário demonstrativo determinístico com 130 dias — concluído, com 170 sessões e 13 simulados distribuídos na janela;
 - importação estruturada em JSON e CSV;
 - gamificação discreta e opcional;
 - camada explicativa com IA, condicionada a backend, privacidade e gestão de chaves;

@@ -27,7 +27,7 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/storage/migration-service.js`: execução ordenada e verificável das migrações de schema.
 - `src/storage/backup-service.js`: serialização, leitura segura e nomes dos arquivos de backup.
 - `src/repositories/collection-repository.js`: contrato uniforme de consulta e mutação das coleções do estado.
-- `src/demo/demo-generator.js`: cenário determinístico móvel de 90 dias para exploração do produto.
+- `src/demo/demo-generator.js`: cenário determinístico móvel de 130 dias para exploração do produto.
 - `src/domain/reviews.js`: regras puras de intervalos e revisões adaptativas.
 - `src/domain/analytics/evidence.js`: contrato comum de amostra, período, confiança e fontes.
 - `src/domain/analytics/score-evidence.js`: separa disponibilidade de dados, força da evidência e incerteza heurística.

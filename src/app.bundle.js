@@ -16568,7 +16568,7 @@
       target.addEventListener(event, handler);
       listeners.push(() => target.removeEventListener?.(event, handler));
     };
-    const enter = () => confirm("Explorar a demonstração com três meses de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.", () => {
+    const enter = () => confirm("Explorar a demonstração com 130 dias de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.", () => {
       enterMode(storage);
       reload();
     });
@@ -16991,7 +16991,7 @@
   ];
   var ERROR_KEYS = ["naoSabia", "esqueci", "interpretacao", "calculo", "desatencao", "chute"];
   var TYPES = ["questions", "study", "questions", "review", "questions"];
-  var DEMO_SCENARIO = Object.freeze({ days: 90, subjects: 6, sessions: 120, simulations: 9, seed: "studytrack-demo-v2" });
+  var DEMO_SCENARIO = Object.freeze({ days: 130, subjects: 6, sessions: 170, simulations: 13, seed: "studytrack-demo-v3" });
   function hashSeed(value2) {
     let hash = 2166136261;
     for (const char of String(value2)) {
@@ -17029,7 +17029,8 @@
   }
   function generateDemoData({ seed = DEMO_SCENARIO.seed, today } = {}) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(today || "")) throw new TypeError("A demonstração requer a data local atual.");
-    const random = randomFactory(`${seed}:${today}`), state2 = createDefaultState(), createdAt = timestamp(shiftDate(today, -89));
+    const oldestAge = DEMO_SCENARIO.days - 1;
+    const random = randomFactory(`${seed}:${today}`), state2 = createDefaultState(), createdAt = timestamp(shiftDate(today, -oldestAge));
     state2.subjects = SUBJECTS.map(([name, topicNames], subjectIndex) => ({
       id: `demo-subject-${subjectIndex + 1}`,
       name,
@@ -17039,28 +17040,28 @@
       createdAt,
       topics: topicNames.map((topicName, topicIndex) => {
         const archived = topicIndex === 7 && subjectIndex === 4, status = topicIndex % 5 === 0 ? "Não iniciado" : topicIndex % 4 === 0 ? "Revisão" : topicIndex % 3 === 0 ? "Concluído" : "Em andamento";
-        const lastDate = shiftDate(today, -Math.min(80, topicIndex * 6 + subjectIndex * 2));
+        const lastDate = shiftDate(today, -Math.min(oldestAge - 9, topicIndex * 6 + subjectIndex * 2));
         return { id: `demo-topic-${subjectIndex + 1}-${topicIndex + 1}`, name: topicName, link: "", status, archived, archivedAt: archived ? timestamp(shiftDate(today, -12)) : null, notes: topicIndex % 3 === 0 ? "Revisar pontos marcados no material principal." : "", tags: topicIndex % 2 ? ["edital"] : ["prioridade"], difficulty: ["Fácil", "Médio", "Difícil"][(topicIndex + subjectIndex) % 3], createdAt, firstCompletedAt: status === "Concluído" ? timestamp(shiftDate(today, -50)) : null, lastCompletedAt: status === "Concluído" ? timestamp(lastDate) : null, completionCount: status === "Concluído" ? 2 : 0, lastReviewedAt: status === "Revisão" || status === "Concluído" ? timestamp(lastDate) : null, reviewCount: status === "Revisão" || status === "Concluído" ? 1 + topicIndex % 3 : 0, examImportance: Math.round((0.45 + random() * 0.5) * 100) / 100, estimatedStudyMinutes: 120 + Math.floor(random() * 300), prerequisites: topicIndex === 0 ? [] : [`demo-topic-${subjectIndex + 1}-${topicIndex}`] };
       })
     }));
     const activeTopics2 = state2.subjects.flatMap((subject) => subject.topics.filter((topic) => !topic.archived).map((topic) => ({ subject, topic })));
     state2.studySessions = [];
     state2.questoes = [];
-    const activeAges = Array.from({ length: 90 }, (_, age) => age).filter((age) => age % 7 !== 0 && age % 11 !== 0);
-    for (let index = 0; index < 120; index++) {
+    const activeAges = Array.from({ length: DEMO_SCENARIO.days }, (_, age) => age).filter((age) => age % 7 !== 0 && age % 11 !== 0);
+    for (let index = 0; index < DEMO_SCENARIO.sessions; index++) {
       const age = activeAges[index % activeAges.length], date2 = shiftDate(today, -age), entry = activeTopics2[index % activeTopics2.length], type = TYPES[index % TYPES.length], durationMinutes = 25 + Math.floor(random() * 66);
       const session = { id: `demo-session-${index + 1}`, date: date2, startedAt: timestamp(date2, 8 + index % 11), endedAt: timestamp(date2, 9 + index % 11), durationSeconds: durationMinutes * 60, subjectId: entry.subject.id, topicId: entry.topic.id, planItemId: null, type, questionsResolved: 0, correctAnswers: 0, notes: index % 9 === 0 ? "Sessão demonstrativa com observação de progresso." : "", createdAt: timestamp(date2) };
       if (type === "questions") {
-        const resolved = 22 + Math.floor(random() * 15), progress = (89 - age) / 89, subjectPenalty = entry.subject.id === "demo-subject-4" && age < 28 ? -10 : 0, rate = Math.max(42, Math.min(88, 54 + progress * 24 + subjectPenalty + (random() - 0.5) * 10)), correct = Math.round(resolved * rate / 100), errors = resolved - correct;
+        const resolved = 22 + Math.floor(random() * 15), progress = (oldestAge - age) / oldestAge, subjectPenalty = entry.subject.id === "demo-subject-4" && age < 28 ? -10 : 0, rate = Math.max(42, Math.min(88, 54 + progress * 24 + subjectPenalty + (random() - 0.5) * 10)), correct = Math.round(resolved * rate / 100), errors = resolved - correct;
         session.questionsResolved = resolved;
         session.correctAnswers = correct;
         state2.questoes.push({ id: `demo-question-${state2.questoes.length + 1}`, date: date2, subjectId: entry.subject.id, topicId: entry.topic.id, resolved, correct, errorBreakdown: distributeErrors(errors, random), studySessionId: session.id, createdAt: timestamp(date2) });
       }
       state2.studySessions.push(session);
     }
-    const simulationRates = [61, 64, 63, 67, 69, 72, 74, 76, 70];
-    state2.simulados = simulationRates.map((rate, index) => {
-      const date2 = shiftDate(today, -(80 - index * 10)), total = 100, correct = rate;
+    const simulationRates = [55, 58, 60, 61, 64, 63, 67, 69, 72, 74, 76, 78, 73];
+    state2.simulados = simulationRates.slice(0, DEMO_SCENARIO.simulations).map((rate, index) => {
+      const date2 = shiftDate(today, -(oldestAge - 9 - index * 10)), total = 100, correct = rate;
       return { id: `demo-simulation-${index + 1}`, date: date2, nome: `Simulado ${index + 1}`, total, correct, breakdown: state2.subjects.map((subject, subjectIndex) => {
         const rowTotal = subjectIndex < 4 ? 17 : 16, rowCorrect = Math.max(0, Math.min(rowTotal, Math.round(rowTotal * (rate + (subjectIndex - 2) * 2) / 100)));
         return { id: `demo-simulation-row-${index + 1}-${subjectIndex + 1}`, subjectId: subject.id, total: rowTotal, correct: rowCorrect };
@@ -17074,7 +17075,7 @@
       const entry = activeTopics2[index * 3 % activeTopics2.length], date2 = shiftDate(today, index - 6);
       return { id: `demo-calendar-${index + 1}`, date: date2, week: "", subjectId: entry.subject.id, topicId: entry.topic.id, subject: entry.subject.name, topic: entry.topic.name, status: index < 4 ? "Concluído" : "Não iniciado", reviewType: index % 2 ? "Questões" : "Revisão rápida", createdAt: timestamp(shiftDate(date2, -5)) };
     });
-    state2.progressHistory = Array.from({ length: 90 }, (_, index) => ({ date: shiftDate(today, index - 89), pct: Math.min(82, 18 + Math.floor(index * 0.65)) }));
+    state2.progressHistory = Array.from({ length: DEMO_SCENARIO.days }, (_, index) => ({ date: shiftDate(today, index - oldestAge), pct: Math.min(82, 18 + Math.floor(index * (64 / oldestAge))) }));
     state2.metas = { semanal: 12, mensal: 48, questoesSemanal: 220, simuladosSemanal: 1, metaAprovacao: 80, horasDiarias: 2.2, horasPorDia: { "0": 1, "1": 2.5, "2": 2.5, "3": 2, "4": 2.5, "5": 2, "6": 1 } };
     state2.examDate = shiftDate(today, 90);
     state2.examBlueprint = { examDate: state2.examDate, targetScore: 80, configuredAt: timestamp(today), subjects: state2.subjects.map((subject, index) => ({ subjectId: subject.id, expectedQuestions: index < 4 ? 18 : 14, questionWeight: index === 2 ? 1.5 : 1, priority: index < 2 ? "high" : index === 5 ? "low" : "normal" })) };
@@ -17088,9 +17089,9 @@
     state2.studyPlans = [{ id: "demo-study-plan-1", state: "ready", confirmedAt: timestamp(shiftDate(today, -9)), examDate: state2.examDate, weeklyAvailableMinutes: 900, weeklyPlannedMinutes: planItems.reduce((sum4, item) => sum4 + item.minutes, 0), weeksUntilExam: 13, remainingMinutes: 6200, missingEffort: [], items: planItems, subjects: state2.subjects.map((subject) => ({ subjectId: subject.id, subjectName: subject.name, minutes: 120 })), activityMix: { theory: 300, questions: 300, reviews: 120 }, confidence: 0.84, confidenceLabel: "Alta", algorithmVersion: 1 }];
     state2.planAdjustments = [{ id: "demo-adjustment-1", periodStart: shiftDate(today, -7), periodEnd: shiftDate(today, 7), plannedMinutes: 480, executedMinutes: 350, deficitMinutes: 130, redistributedMinutes: 100, discardedMinutes: 30, allocations: [{ date: shiftDate(today, 1), minutes: 50 }, { date: shiftDate(today, 2), minutes: 50 }], confirmedAt: timestamp(shiftDate(today, -1)), status: "confirmed" }];
     state2.recommendationFeedback = Array.from({ length: 6 }, (_, index) => ({ id: `demo-feedback-${index + 1}`, recommendationId: `demo-recommendation-${index + 1}`, date: shiftDate(today, -index * 5), subjectId: state2.subjects[index % state2.subjects.length].id, topicId: activeTopics2[index].topic.id, accepted: index !== 4, completed: index < 3, useful: index < 3 ? index !== 2 : null, reasonSkipped: index === 4 ? "Preferiu outra disciplina" : null, resultingSessionId: index < 3 ? state2.studySessions[index].id : null, baseline: { accuracy: 52 + index * 3, questionVolume: 24 + index * 4, retentionScore: 45 + index * 2, daysSinceContact: 8 - index, measuredAt: timestamp(shiftDate(today, -index * 5)) }, outcome: index < 3 ? { accuracyAfter: 64 + index * 3, questionVolumeAfter: 22 + index * 12, nextReviewRating: index === 0 ? "Bom" : null, retentionAfter: 54 + index * 3, measuredAt: timestamp(shiftDate(today, -index * 5 + 2)), confidence: index === 0 ? "Estimativa" : "Mais confiável", attributionEligible: true, reasons: [] } : null, createdAt: timestamp(shiftDate(today, -index * 5)), completedAt: index < 3 ? timestamp(shiftDate(today, -index * 5)) : null }));
-    state2.topicHistory = activeTopics2.flatMap((entry, index) => [{ id: `demo-history-start-${index + 1}`, type: "topic_created", date: shiftDate(today, -89 + index % 15), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -89 + index % 15)) }, ...entry.topic.status === "Concluído" ? [{ id: `demo-history-done-${index + 1}`, type: "topic_completed", date: shiftDate(today, -30 - index % 20), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -30 - index % 20)) }] : []]);
+    state2.topicHistory = activeTopics2.flatMap((entry, index) => [{ id: `demo-history-start-${index + 1}`, type: "topic_created", date: shiftDate(today, -oldestAge + index % 15), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -oldestAge + index % 15)) }, ...entry.topic.status === "Concluído" ? [{ id: `demo-history-done-${index + 1}`, type: "topic_completed", date: shiftDate(today, -30 - index % 20), subjectId: entry.subject.id, topicId: entry.topic.id, createdAt: timestamp(shiftDate(today, -30 - index % 20)) }] : []]);
     state2.alertStates = [];
-    state2.achievementsUnlocked = { primeira_sessao: timestamp(shiftDate(today, -88)), cem_questoes: timestamp(shiftDate(today, -70)) };
+    state2.achievementsUnlocked = { primeira_sessao: timestamp(shiftDate(today, -oldestAge + 1)), cem_questoes: timestamp(shiftDate(today, -oldestAge + 20)) };
     state2.lastBackupAt = timestamp(today);
     state2.updatedAt = timestamp(today);
     return state2;
@@ -18885,8 +18886,8 @@
       state.progressHistory.push({ date: today, pct: pct2 });
     }
     state.progressHistory.sort((a, b) => a.date.localeCompare(b.date));
-    if (state.progressHistory.length > 90) {
-      state.progressHistory = state.progressHistory.slice(-90);
+    if (state.progressHistory.length > 180) {
+      state.progressHistory = state.progressHistory.slice(-180);
     }
   }
   function renderProgressChart() {

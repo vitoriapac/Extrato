@@ -923,8 +923,8 @@ function recordProgressSnapshot(pct){
   if(existing){ existing.pct = pct; }
   else { state.progressHistory.push({ date: today, pct }); }
   state.progressHistory.sort((a,b)=> a.date.localeCompare(b.date));
-  if(state.progressHistory.length > 90){
-    state.progressHistory = state.progressHistory.slice(-90);
+  if(state.progressHistory.length > 180){
+    state.progressHistory = state.progressHistory.slice(-180);
   }
 }
 function renderProgressChart(){

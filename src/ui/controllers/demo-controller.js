@@ -2,7 +2,7 @@ export function createDemoController({document,storage,demoKey,flashKey,isDemo,g
   if(!document||!storage||typeof getState!=='function')throw new TypeError('Controlador da demonstração requer documento, armazenamento e estado.');
   const listeners=[];
   const listen=(target,event,handler)=>{if(!target)return;target.addEventListener(event,handler);listeners.push(()=>target.removeEventListener?.(event,handler))};
-  const enter=()=>confirm('Explorar a demonstração com três meses de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.',()=>{enterMode(storage);reload()});
+  const enter=()=>confirm('Explorar a demonstração com 130 dias de estudos, questões, simulados e planejamento? Seus dados atuais não serão alterados.',()=>{enterMode(storage);reload()});
   const reset=()=>confirm('Reiniciar todos os dados fictícios da demonstração?',()=>{resetMode(storage,demoKey);reload()});
   const exit=()=>{exitMode(storage,demoKey);storage.setItem(flashKey,'Demonstração encerrada. Seus dados pessoais foram restaurados.');reload()};
   const sync=()=>{const state=getState(),banner=document.getElementById('demoBanner'),enterButton=document.getElementById('enterDemoBtn'),emptyCta=document.getElementById('demoEmptyCta');if(banner)banner.hidden=!isDemo;if(enterButton)enterButton.hidden=isDemo;if(emptyCta)emptyCta.hidden=isDemo||state.subjects.length>0||state.studySessions.length>0;document.querySelectorAll('[data-demo-protected]').forEach(button=>{button.disabled=isDemo;button.title=isDemo?'Indisponível para proteger seus dados reais.':''})};

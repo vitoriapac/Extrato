@@ -14,7 +14,7 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Diagnóstico de erros e alertas com motivo e ação recomendada.
 - Resultado mensurável das recomendações, comparando métricas antes e depois.
 - Relatório estratégico em PDF e backup completo em JSON.
-- Modo demonstração isolado com 90 dias de dados fictícios.
+- Modo demonstração isolado com 130 dias de dados fictícios.
 - Tema claro/escuro, layout responsivo e navegação por teclado.
 
 ## Uso
