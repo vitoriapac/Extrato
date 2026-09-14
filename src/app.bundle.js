@@ -22169,6 +22169,9 @@
       return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || "Estudar agora")}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p><div class="priority-reasons">${model.reasons.slice(0, 4).map((reason) => `<span>+ ${escapeHtml(reason)}</span>`).join("")}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(model.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="startStudyRecommendation('${escapeAttr(item.id)}')">▶ Iniciar estudo</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
     }).join("");
     container.innerHTML = `${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · mostrando ${visible.length} ${visible.length === 1 ? "prioridade elegível" : "prioridades elegíveis"}</span></div><div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
+    container.querySelectorAll(".study-recommendation .recommendation-actions .btn:first-child").forEach((button, index) => {
+      button.textContent = `▶ ${visible[index]?.studyType === "questions" ? "Resolver questões" : visible[index]?.studyType === "review" ? "Iniciar revisão" : visible[index]?.blockedPrerequisites?.length ? "Estudar pré-requisito" : "Iniciar estudo"}`;
+    });
   }
   function recommendationBaseline(recommendation) {
     const topicId = recommendation.topicId, performance = getTopicPerformance(topicId), found = getTopicById(topicId), last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
@@ -22244,7 +22247,10 @@
       state.dailyPlans.push(plan);
     }
     let item = plan.items.find((candidate) => candidate.topicId === recommendation.topicId && !["completed", "skipped"].includes(candidate.status));
-    if (item) item.recommendationId = recommendation.recommendationId;
+    if (item) {
+      item.recommendationId = recommendation.recommendationId;
+      item.type = recommendation.studyType || item.type || "study";
+    }
     if (!item) {
       item = { id: uid("plan-item"), subjectId: recommendation.subjectId, topicId: recommendation.topicId, subjectName: recommendation.subjectName, topicName: recommendation.topicName, type: recommendation.studyType || "study", plannedMinutes: recommendation.estimatedMinutes, executedSeconds: 0, status: "planned", sessionIds: [], score: recommendation.score, tier: recommendation.score >= 70 ? "Alta" : recommendation.score >= 40 ? "Média" : "Baixa", position: plan.items.length + 1, statusIcon: "🎯", statusLabel: "Recomendação inteligente", reason: recommendation.reasons.join(" · "), action: recommendation.action, recommendedQuestions: 0, originalDate: todayISO(), currentDate: todayISO(), rescheduleCount: 0, skippedReason: null, recommendationId: recommendation.recommendationId, createdAt: nowISO2() };
       plan.items.push(item);
