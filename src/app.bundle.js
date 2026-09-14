@@ -16335,7 +16335,8 @@
   }
 
   // src/ui/controllers/backup-controller.js
-  function createBackupController({ document: document2, window: window2, serialize, fileName, validate, onImport, notify, isDisabled = () => false, maxBytes = 10 * 1024 * 1024 } = {}) {
+  function createBackupController({ document: document2, window: window2, serialize, fileName, validate, onImport, notify, isDisabled = () => false, maxBytes = 10 * 1024 * 1024, getState = () => null, getDate = () => "", exportAutomatic = () => {
+  } } = {}) {
     if (!document2 || !window2 || typeof serialize !== "function") throw new TypeError("Controlador de backup requer dependências do navegador.");
     const download = (raw, name) => {
       const blob = new window2.Blob([raw], { type: "application/json" }), url = window2.URL.createObjectURL(blob), anchor = document2.createElement("a");
@@ -16384,7 +16385,26 @@
       reader.onerror = () => notify("Não foi possível ler o arquivo selecionado.");
       reader.readAsText(file);
     };
-    return Object.freeze({ download, exportState, importFile });
+    const listeners = [];
+    const listen = (target, event, handler) => {
+      if (!target) return;
+      target.addEventListener(event, handler);
+      listeners.push(() => target.removeEventListener?.(event, handler));
+    };
+    const mount = () => {
+      const fileInput = document2.getElementById("importBackupFile");
+      listen(document2.getElementById("exportBackupBtn"), "click", () => exportState(getState(), getDate()));
+      listen(document2.getElementById("exportAutomaticBackupBtn"), "click", exportAutomatic);
+      listen(document2.getElementById("importBackupBtn"), "click", () => fileInput?.click());
+      listen(fileInput, "change", () => {
+        if (fileInput.files?.[0]) importFile(fileInput.files[0]);
+        fileInput.value = "";
+      });
+      return api;
+    };
+    const unmount = () => listeners.splice(0).forEach((remove) => remove());
+    const api = Object.freeze({ download, exportState, importFile, mount, unmount });
+    return api;
   }
 
   // src/ui/controllers/delegated-events-controller.js
@@ -18871,13 +18891,10 @@
     </svg>
   `;
   }
-  var backupController = createBackupController({ document, window, serialize: serializeBackup, fileName: backupFileName, validate: validateBackupData, notify: showToast, isDisabled: () => IS_DEMO_MODE, maxBytes: MAX_BACKUP_FILE_SIZE, onImport: ({ normalized, version }) => {
+  var backupController = createBackupController({ document, window, serialize: serializeBackup, fileName: backupFileName, validate: validateBackupData, notify: showToast, isDisabled: () => IS_DEMO_MODE, maxBytes: MAX_BACKUP_FILE_SIZE, getState: () => state, getDate: todayISO, exportAutomatic: exportLatestAutomaticBackup, onImport: ({ normalized, version }) => {
     const summary = backupSummary(normalized, version);
     showConfirm(`${summary} Importar vai substituir todos os dados atuais. Continuar?`, () => applyImportedBackup(normalized));
   } });
-  function exportBackup() {
-    backupController.exportState(state, todayISO());
-  }
   function downloadJsonBackup(raw, name) {
     backupController.download(raw, name);
   }
@@ -19089,20 +19106,7 @@
       showToast("O backup passou pela validação inicial, mas não pôde ser convertido. Seus dados atuais foram preservados.");
     }
   }
-  function importBackupFromFile(file) {
-    backupController.importFile(file);
-  }
-  document.getElementById("exportBackupBtn").addEventListener("click", exportBackup);
-  document.getElementById("exportAutomaticBackupBtn").addEventListener("click", exportLatestAutomaticBackup);
-  document.getElementById("importBackupBtn").addEventListener("click", () => {
-    document.getElementById("importBackupFile").click();
-  });
-  document.getElementById("importBackupFile").addEventListener("change", function() {
-    if (this.files && this.files[0]) {
-      importBackupFromFile(this.files[0]);
-      this.value = "";
-    }
-  });
+  backupController.mount();
   document.getElementById("clearAllDataBtn").addEventListener("click", () => showConfirm("Esta ação excluirá disciplinas, sessões, revisões, questões, simulados, metas, histórico e configurações. Exporte um backup antes de continuar.", () => showPrompt("Digite LIMPAR para confirmar a exclusão definitiva.", { label: "Confirmação", placeholder: "LIMPAR", confirmLabel: "Limpar dados", validate: (value2) => value2 === "LIMPAR" ? "" : "Digite LIMPAR exatamente como exibido." }, async () => {
     const keys = [STORAGE_KEY, BACKUP_KEY, BACKUP_INDEX_KEY, ...Array.from({ length: AUTOMATIC_BACKUP_SLOTS }, (_, index) => `${BACKUP_KEY}-${index}`)];
     await Promise.all(keys.map((key) => appContext.storage.remove(key)));

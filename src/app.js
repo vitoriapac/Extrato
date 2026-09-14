@@ -966,8 +966,7 @@ function renderProgressChart(){
 }
 
 /* ===== BACKUP: EXPORTAR / IMPORTAR ===== */
-const backupController=createBackupController({document,window,serialize:serializeBackup,fileName:backupFileName,validate:validateBackupData,notify:showToast,isDisabled:()=>IS_DEMO_MODE,maxBytes:MAX_BACKUP_FILE_SIZE,onImport:({normalized,version})=>{const summary=backupSummary(normalized,version);showConfirm(`${summary} Importar vai substituir todos os dados atuais. Continuar?`,()=>applyImportedBackup(normalized))}});
-function exportBackup(){backupController.exportState(state,todayISO())}
+const backupController=createBackupController({document,window,serialize:serializeBackup,fileName:backupFileName,validate:validateBackupData,notify:showToast,isDisabled:()=>IS_DEMO_MODE,maxBytes:MAX_BACKUP_FILE_SIZE,getState:()=>state,getDate:todayISO,exportAutomatic:exportLatestAutomaticBackup,onImport:({normalized,version})=>{const summary=backupSummary(normalized,version);showConfirm(`${summary} Importar vai substituir todos os dados atuais. Continuar?`,()=>applyImportedBackup(normalized))}});
 function downloadJsonBackup(raw,name){backupController.download(raw,name)}
 async function exportLatestAutomaticBackup(){
   if(IS_DEMO_MODE){showToast('A recuperação real fica indisponível durante a demonstração.');return}
@@ -1112,18 +1111,7 @@ function backupSummary(data,version){
   return `Backup v${version}: ${pluralize(subjectCount,'disciplina')}, ${pluralize(topicCount,'tópico')}, ${pluralize(sessionCount,'sessão','sessões')} e ${pluralize(questionCount,'registro')} de questões. Última atualização: ${updatedLabel}.`;
 }
 function applyImportedBackup(importedState){const previousState=state;try{state=importedState;ensureStateDefaults();restoreTimerFromState();persistAndRender();showToast('Backup importado com sucesso.')}catch(error){state=previousState;restoreTimerFromState();render();console.error('Erro ao importar backup',error);showToast('O backup passou pela validação inicial, mas não pôde ser convertido. Seus dados atuais foram preservados.')}}
-function importBackupFromFile(file){backupController.importFile(file)}
-document.getElementById('exportBackupBtn').addEventListener('click', exportBackup);
-document.getElementById('exportAutomaticBackupBtn').addEventListener('click', exportLatestAutomaticBackup);
-document.getElementById('importBackupBtn').addEventListener('click', () => {
-  document.getElementById('importBackupFile').click();
-});
-document.getElementById('importBackupFile').addEventListener('change', function(){
-  if(this.files && this.files[0]){
-    importBackupFromFile(this.files[0]);
-    this.value = '';
-  }
-});
+backupController.mount();
 document.getElementById('clearAllDataBtn').addEventListener('click',()=>showConfirm('Esta ação excluirá disciplinas, sessões, revisões, questões, simulados, metas, histórico e configurações. Exporte um backup antes de continuar.',()=>showPrompt('Digite LIMPAR para confirmar a exclusão definitiva.',{label:'Confirmação',placeholder:'LIMPAR',confirmLabel:'Limpar dados',validate:value=>value==='LIMPAR'?'':'Digite LIMPAR exatamente como exibido.'},async()=>{const keys=[STORAGE_KEY,BACKUP_KEY,BACKUP_INDEX_KEY,...Array.from({length:AUTOMATIC_BACKUP_SLOTS},(_,index)=>`${BACKUP_KEY}-${index}`)];await Promise.all(keys.map(key=>appContext.storage.remove(key)));state=createDefaultState();ensureStateDefaults();suppressBeforeUnloadSave=true;location.reload()})));
 function reloadWithModeChange(){
   suppressBeforeUnloadSave=true;
