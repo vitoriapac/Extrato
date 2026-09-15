@@ -1,3 +1,5 @@
+import {addLocalDays} from '../core/date-utils.js';
+
 export const AGENDA_INTERVALS=[
   {dias:1,tipo:'Revisão 24h'},
   {dias:7,tipo:'Revisão 7 dias'},
@@ -59,11 +61,6 @@ export function createAdaptiveReviewState(source={}){
     lastRating:REVIEW_RATINGS[source.lastRating]?source.lastRating:null,
     algorithmVersion:Math.max(1,Number(source.algorithmVersion)||2)
   };
-}
-
-function addLocalDays(iso,days){
-  const [year,month,day]=String(iso).split('-').map(Number),date=new Date(year,month-1,day);date.setDate(date.getDate()+days);
-  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 }
 
 export function applyAdaptiveReviewRating(source,rating,{reviewDate,algorithmVersion=2}={}){

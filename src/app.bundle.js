@@ -317,6 +317,27 @@
     } });
   }
 
+  // src/core/date-utils.js
+  var ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+  function parseLocalDate(value2) {
+    if (value2 instanceof Date) return new Date(value2.getTime());
+    if (typeof value2 !== "string" || !ISO_DATE.test(value2)) return null;
+    const [year, month, day] = value2.split("-").map(Number);
+    const date2 = new Date(year, month - 1, day, 12, 0, 0, 0);
+    return date2.getFullYear() === year && date2.getMonth() === month - 1 && date2.getDate() === day ? date2 : null;
+  }
+  function formatLocalDate(value2) {
+    const date2 = parseLocalDate(value2);
+    if (!date2) return null;
+    return `${date2.getFullYear()}-${String(date2.getMonth() + 1).padStart(2, "0")}-${String(date2.getDate()).padStart(2, "0")}`;
+  }
+  function addLocalDays(value2, amount) {
+    const date2 = parseLocalDate(value2);
+    if (!date2) return null;
+    date2.setDate(date2.getDate() + Number(amount || 0));
+    return formatLocalDate(date2);
+  }
+
   // src/domain/reviews.js
   var AGENDA_INTERVALS = [
     { dias: 1, tipo: "Revisão 24h" },
@@ -400,11 +421,6 @@
       lastRating: REVIEW_RATINGS[source.lastRating] ? source.lastRating : null,
       algorithmVersion: Math.max(1, Number(source.algorithmVersion) || 2)
     };
-  }
-  function addLocalDays(iso, days) {
-    const [year, month, day] = String(iso).split("-").map(Number), date2 = new Date(year, month - 1, day);
-    date2.setDate(date2.getDate() + days);
-    return `${date2.getFullYear()}-${String(date2.getMonth() + 1).padStart(2, "0")}-${String(date2.getDate()).padStart(2, "0")}`;
   }
   function applyAdaptiveReviewRating(source, rating, { reviewDate, algorithmVersion = 2 } = {}) {
     if (!REVIEW_RATINGS[rating]) throw new Error("Avaliação de revisão inválida.");
@@ -18627,7 +18643,7 @@
     return item;
   } });
   var subjectGoalService = createRecordService({ repository: appContext.repositories.metasPorDisciplina, clock: appClock, idGenerator: uid, prefix: "goal" });
-  var goalsService = createGoalService({ repository: appContext.repositories.settings, getDayOfWeek: (date2) => parseLocalDate(date2)?.getDay() ?? (/* @__PURE__ */ new Date()).getDay() });
+  var goalsService = createGoalService({ repository: appContext.repositories.settings, getDayOfWeek: (date2) => parseLocalDate2(date2)?.getDay() ?? (/* @__PURE__ */ new Date()).getDay() });
   var subjectService = createSubjectService({ repository: appContext.repositories.subjects, clock: appClock, idGenerator: uid, onEvent: addHistoryEvent });
   var topicHistoryService = createTopicHistoryService({ getState: () => state, clock: appClock, idGenerator: uid, toLocalDate: timestampToLocalDateISO });
   var StorageManager = appContext.storage;
@@ -18901,7 +18917,7 @@
   function timestampToLocalDateISO(value2) {
     return localDateISO(value2);
   }
-  function parseLocalDate(iso) {
+  function parseLocalDate2(iso) {
     if (!iso || typeof iso !== "string") return null;
     const [year, month, day] = iso.split("-").map(Number);
     if (!year || !month || !day) return null;
@@ -18935,7 +18951,7 @@
     return [...set].sort();
   }
   function startOfWeek(d) {
-    const date2 = parseLocalDate(d);
+    const date2 = parseLocalDate2(d);
     if (!date2) return "";
     const day = date2.getDay();
     const diff = (day === 0 ? -6 : 1) - day;
@@ -18951,8 +18967,8 @@
     return monthKey(iso) === monthKey(todayISO());
   }
   function diasParaRevisao(iso) {
-    const alvo = parseLocalDate(iso);
-    const hoje = parseLocalDate(todayISO());
+    const alvo = parseLocalDate2(iso);
+    const hoje = parseLocalDate2(todayISO());
     if (!alvo || !hoje) return null;
     return Math.round((alvo - hoje) / 864e5);
   }
@@ -19698,7 +19714,7 @@
   function renderHeatmap() {
     const activityDates = getActivityDates();
     const earliest = [...activityDates].sort()[0];
-    const historyDays = earliest ? Math.max(1, Math.round((parseLocalDate(todayISO()) - parseLocalDate(earliest)) / 864e5) + 1) : DEFAULT_STREAK_WEEKS * 7;
+    const historyDays = earliest ? Math.max(1, Math.round((parseLocalDate2(todayISO()) - parseLocalDate2(earliest)) / 864e5) + 1) : DEFAULT_STREAK_WEEKS * 7;
     const days = streakView.expanded ? historyDays : DEFAULT_STREAK_WEEKS * 7;
     const today = todayISO();
     const cells = [];
@@ -20791,7 +20807,7 @@
   document.getElementById("addSubjectBtn").addEventListener("click", addSubject);
   document.getElementById("addCalRowBtn").addEventListener("click", addCalRow);
   function addDays(iso, days) {
-    const d = parseLocalDate(iso);
+    const d = parseLocalDate2(iso);
     if (!d) return "";
     d.setDate(d.getDate() + Number(days || 0));
     return localDateISO(d);
@@ -21675,7 +21691,7 @@
   }
   function updateMetaHoursDay(day, value2) {
     studyPlanPreview = null;
-    goalsService.updateDailyHours(day, value2, { isToday: Number(day) === parseLocalDate(todayISO()).getDay() });
+    goalsService.updateDailyHours(day, value2, { isToday: Number(day) === parseLocalDate2(todayISO()).getDay() });
     persistAndRender();
   }
   function applyTodayGoalToAllDays() {
@@ -21692,7 +21708,7 @@
   function renderWeeklyHoursGoals() {
     const container = document.getElementById("weeklyHoursGoals");
     if (!container) return;
-    const todayDay = parseLocalDate(todayISO()).getDay();
+    const todayDay = parseLocalDate2(todayISO()).getDay();
     const availability = buildWeeklyAvailability(state.metas.horasPorDia);
     container.innerHTML = `<div class="weekly-availability-summary"><div><strong>${formatPlanMinutes(availability.totalMinutes)}</strong><span>disponíveis por semana</span></div><div><strong>${availability.activeDays}</strong><span>dias com estudo</span></div><div><strong>${formatPlanMinutes(Math.round(availability.averageHours * 60))}</strong><span>média por dia ativo</span></div><div><strong>${formatPlanMinutes(Math.round(metaHoursToday() * 60))}</strong><span>disponíveis hoje</span></div></div>${availability.state === "empty" ? '<p class="availability-warning">Defina ao menos um dia para habilitar recomendações e planejamento.</p>' : ""}<div class="weekday-goal-actions"><button class="btn ghost small" data-delegated-click="applyTodayGoalToAllDays()">Aplicar hoje a todos</button><button class="btn ghost small" data-delegated-click="clearWeekendGoals()">Limpar fim de semana</button></div><div class="weekday-goals">${WEEKDAY_LABELS.map(
       (label2, day) => `<label class="weekday-goal ${day === todayDay ? "today" : ""}"><span>${label2}${day === todayDay ? " · hoje" : ""}</span><div><input type="number" min="0" max="24" step="0.25" value="${metaHoursForDate(addDays(startOfWeek(todayISO()), day === 0 ? 6 : day - 1))}" data-delegated-blur="updateMetaHoursDay(${day},this.value)" aria-label="Disponibilidade em horas de ${label2}"><small>h</small></div></label>`
@@ -23505,7 +23521,7 @@
     }
     el.style.display = "grid";
     const today = todayISO(), start = planStartDate(), exam = state.examDate;
-    const diff = (a, b) => Math.max(0, Math.round((parseLocalDate(b) - parseLocalDate(a)) / 864e5));
+    const diff = (a, b) => Math.max(0, Math.round((parseLocalDate2(b) - parseLocalDate2(a)) / 864e5));
     const total = Math.max(1, diff(start, exam)), elapsed = Math.min(total, diff(start, today)), remaining = Math.max(0, diasParaRevisao(exam) ?? 0), pct2 = Math.max(0, Math.min(100, Math.round(elapsed / total * 100)));
     el.innerHTML = `<span class="exam-progress-label">Hoje</span><div class="exam-progress-track" role="progressbar" aria-label="Progresso até a prova" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct2}"><div class="exam-progress-fill" style="width:${pct2}%"></div></div><strong>${pct2}%</strong><span class="exam-progress-days">${total} dias totais · ${elapsed} passaram · ${remaining} faltam</span>`;
   }
@@ -23743,7 +23759,7 @@
     if (value2 === "true") return true;
     if (value2 === "false") return false;
     if (value2 === "null") return null;
-    if (value2 === "parseLocalDate(todayISO()).getDay()") return parseLocalDate(todayISO()).getDay();
+    if (value2 === "parseLocalDate(todayISO()).getDay()") return parseLocalDate2(todayISO()).getDay();
     if (/^-?\d+(?:\.\d+)?$/.test(value2)) return Number(value2);
     if (value2.startsWith("'") && value2.endsWith("'") || value2.startsWith('"') && value2.endsWith('"')) return value2.slice(1, -1).replace(/\\(['"\\])/g, "$1");
     throw new Error("Argumento de evento não permitido: " + value2);
@@ -23942,7 +23958,7 @@
       isSameWeek,
       addDays,
       diasParaRevisao,
-      parseLocalDate,
+      parseLocalDate: parseLocalDate2,
       todayISO,
       localDateFromTimestamp: localDateFromTimestamp2,
       calculateAdaptiveInterval,
