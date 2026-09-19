@@ -53,3 +53,17 @@ test('modal fecha com Escape e devolve o foco ao card',async({page})=>{
   await expect(page.locator('#guidedOnboardingOverlay')).toBeHidden();
   await expect(open).toBeFocused();
 });
+
+for(const viewport of [{name:'celular',width:375,height:812},{name:'tablet',width:768,height:900},{name:'desktop',width:1440,height:900}])test(`modal permanece navegável em ${viewport.name}`,async({page})=>{
+  await page.setViewportSize({width:viewport.width,height:viewport.height});
+  await page.locator('#guidedOnboarding [data-guided-action="open"]').evaluate(button=>button.click());
+  const overlay=page.locator('#guidedOnboardingOverlay'),modal=overlay.locator('.onboarding-modal');
+  await expect(overlay).toBeVisible();
+  const bounds=await modal.boundingBox();
+  expect(bounds.x).toBeGreaterThanOrEqual(0);expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width+1);expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height+1);
+  await expect(page.locator('#guidedOnboardingClose')).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(overlay.locator('[data-guided-action="cancel"]')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#guidedOnboardingClose')).toBeFocused();
+});

@@ -78,7 +78,9 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/application/subjects/structured-content-import.js`: interpretação validada de JSON/CSV, diagnóstico agregado por linha e mesclagem transacional por nomes normalizados. O serviço distingue campos vindos da importação de ajustes manuais e preserva estes últimos.
 - `src/features/structured-import/`: controlador, view-model e renderer do fluxo de prévia e confirmação. O estado pendente permanece somente na interface até a confirmação explícita.
 - `src/application/analytics/build-overview-view-model.js`: composição das métricas de tempo da Visão Geral sem dependência do DOM.
+- `src/core/date-utils.js`: interpretação, formatação e intervalos de datas civis locais usados pela aplicação e pelos view-models.
 - `src/domain/analytics/topic-strategy.js`: resolução única do impacto efetivo do tópico e validação de ciclos entre pré-requisitos.
+- `src/features/topic-strategy/topic-strategy-renderer.js`: apresentação isolada dos campos de impacto, esforço e pré-requisitos dos tópicos.
 - `src/repositories/settings-repository.js`: alterações controladas das metas e configurações persistentes.
 - `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
 - `src/ui/filter-panel.js`: contagem e rótulos puros dos filtros responsivos.

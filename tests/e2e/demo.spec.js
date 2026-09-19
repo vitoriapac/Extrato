@@ -35,3 +35,17 @@ test('roteiro da demonstração navega pelas áreas preservando o cenário',asyn
   await openDemo(page);await expect(page.locator('.demo-tour')).toBeVisible();
   for(const target of ['hoje','dashboard','agenda','metas']){await page.locator(`[data-demo-target="${target}"]`).click();await expect(page.locator(`#panel-${target}`)).toBeVisible()}
 });
+
+test('cenário de 130 dias renderiza todas as áreas sem perder dados',async({page})=>{
+  const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
+  await openDemo(page);
+  const baseline=await page.evaluate(()=>{const state=JSON.parse(sessionStorage.getItem('bb-premium-study-demo'));return{history:state.progressHistory.length,sessions:state.studySessions.length,simulations:state.simulados.length}});
+  expect(baseline).toEqual({history:130,sessions:170,simulations:13});
+  for(const name of ['dashboard','hoje','disciplinas','calendario','agenda','questoes','metas','instrucoes']){
+    await page.locator(`[data-tab="${name}"]`).evaluate(button=>button.click());
+    const panel=page.locator(`#panel-${name}`);await expect(panel).toBeVisible();await expect(panel).not.toBeEmpty();
+    expect(await panel.locator('text=/NaN|Invalid Date|undefined/').count(),`${name} exibiu valor inválido`).toBe(0);
+  }
+  const after=await page.evaluate(()=>{const state=JSON.parse(sessionStorage.getItem('bb-premium-study-demo'));return{history:state.progressHistory.length,sessions:state.studySessions.length,simulations:state.simulados.length}});
+  expect(after).toEqual(baseline);expect(pageErrors).toEqual([]);
+});

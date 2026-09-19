@@ -8,6 +8,7 @@ import {createStorageManager,repositoryReadLocalState,repositoryWriteLocalState}
 import {createRealStorageProvider} from './storage/real-storage-provider.js';
 import {createDemoStorageProvider} from './storage/demo-storage-provider.js';
 import {createClock} from './core/clock.js';
+import {parseLocalDate} from './core/date-utils.js';
 import {createAppContext} from './application/create-app-context.js';
 import {bootstrapApplication} from './bootstrap/bootstrap-application.js';
 import {registerApplicationLifecycle} from './bootstrap/register-lifecycle.js';
@@ -34,7 +35,7 @@ import {recommendStudy} from './application/recommend-study.js';
 import {buildStudyCandidates} from './application/build-study-candidates.js';
 import {calculateTopicMastery,calculateTopicRetention} from './domain/analytics/topic-metrics.js';
 import {PRIORITY_ALGORITHM_VERSION} from './domain/analytics/priority-score.js';
-import {resolveTopicExamImpact,wouldCreatePrerequisiteCycle} from './domain/analytics/topic-strategy.js';
+import {wouldCreatePrerequisiteCycle} from './domain/analytics/topic-strategy.js';
 import {calculateReviewHealth} from './domain/analytics/review-health.js';
 import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eligibility.js';
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
@@ -112,6 +113,7 @@ import {createEditalImportFacade} from './application/subjects/edital-import-fac
 import {createGuidedStudyService} from './application/guided-study/guided-study-service.js';
 import {buildOnboardingViewModel} from './application/onboarding/build-onboarding-view-model.js';
 import {renderOnboardingEntry,renderOnboardingProgress,renderOnboardingContent,renderOnboardingHelp,renderOnboardingActions} from './features/onboarding/onboarding-renderer.js';
+import {renderTopicStrategyEditor as renderTopicStrategyEditorView} from './features/topic-strategy/topic-strategy-renderer.js';
 import {renderReplanProposal} from './features/replan/replan-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
 import {renderQuestionRead,renderQuestionEdit} from './ui/renderers/questions-renderer.js';
@@ -790,13 +792,6 @@ function localDateISO(value){
 }
 function localDateFromTimestamp(value){ return localDateISO(value); }
 function timestampToLocalDateISO(value){ return localDateISO(value); }
-function parseLocalDate(iso){
-  if(!iso||typeof iso!=='string') return null;
-  const [year,month,day]=iso.split('-').map(Number);
-  if(!year||!month||!day) return null;
-  const date=new Date(year,month-1,day,12,0,0,0);
-  return Number.isNaN(date.getTime())?null:date;
-}
 function todayISO(){ return appContext.clock.today(); }
 function formatDatePt(iso){
   if(!iso) return '—';
@@ -1955,15 +1950,7 @@ function toggleTopicPrerequisite(subjectId,topicId,prerequisiteId,checked){
 }
 function renderTopicStrategyEditor(subject,topic){
   const subjectConfig=state.examBlueprint.subjects.find(item=>item.subjectId===subject.id)||null;
-  const impact=resolveTopicExamImpact({topic,subjectConfig,activeExamTags:state.examBlueprint.activeExamTags||[]});
-  const candidates=activeTopics().filter(item=>item.id!==topic.id);
-  const prerequisites=new Set(topic.prerequisites||[]);
-  const choices=candidates.map(candidate=>{
-    const checked=prerequisites.has(candidate.id),cyclic=!checked&&wouldCreatePrerequisiteCycle(topic.id,candidate.id,allTopics());
-    return `<label class="topic-prerequisite-choice"><input type="checkbox" ${checked?'checked':''} ${cyclic?'disabled':''} data-delegated-change="toggleTopicPrerequisite('${subject.id}','${topic.id}','${candidate.id}',this.checked)"><span>${escapeHtml(candidate.subjectName)} — ${escapeHtml(candidate.name||'Tópico sem nome')}${cyclic?' · criaria ciclo':''}</span></label>`;
-  }).join('');
-  const value=impact.value==null?'—':Math.round(impact.value)+'%';
-  return `<div class="topic-strategy-summary"><strong>Impacto usado na prioridade: ${value}</strong><span>${escapeHtml(impact.sourceLabel)}. Alterações invalidam a proposta semanal ainda não confirmada.</span></div><div class="topic-strategy-fields"><label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Herdar automaticamente" value="${topic.examImportance==null?'':Math.round(topic.examImportance*100)}" data-delegated-blur="updateTopicStrategy('${subject.id}','${topic.id}','examImportance',this.value)"><small>Deixe vazio para usar catálogo ou peso da disciplina.</small></label><label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${topic.estimatedStudyMinutes==null?'':topic.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${subject.id}','${topic.id}','estimatedStudyMinutes',this.value)"><small>Define a carga restante, sem limitar cada sessão.</small></label></div><details class="topic-prerequisites"><summary>Pré-requisitos (${prerequisites.size})</summary><p>O tópico só entra no plano quando as bases estiverem concluídas ou com domínio suficiente.</p><div>${choices||'<small>Não há outros tópicos disponíveis.</small>'}</div></details>`;
+  return renderTopicStrategyEditorView({subject,topic,subjectConfig,activeExamTags:state.examBlueprint.activeExamTags||[],topics:allTopics()});
 }
 function renderTopicAnalyticsState(subject,topic){
   const coverage=topic.status==='Concluído'?100:topic.status==='Em andamento'||topic.status==='Revisão'?50:0;

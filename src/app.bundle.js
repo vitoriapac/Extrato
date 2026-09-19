@@ -282,6 +282,27 @@
     });
   }
 
+  // src/core/date-utils.js
+  var ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+  function parseLocalDate(value2) {
+    if (value2 instanceof Date) return new Date(value2.getTime());
+    if (typeof value2 !== "string" || !ISO_DATE.test(value2)) return null;
+    const [year, month, day] = value2.split("-").map(Number);
+    const date2 = new Date(year, month - 1, day, 12, 0, 0, 0);
+    return date2.getFullYear() === year && date2.getMonth() === month - 1 && date2.getDate() === day ? date2 : null;
+  }
+  function formatLocalDate(value2) {
+    const date2 = parseLocalDate(value2);
+    if (!date2) return null;
+    return `${date2.getFullYear()}-${String(date2.getMonth() + 1).padStart(2, "0")}-${String(date2.getDate()).padStart(2, "0")}`;
+  }
+  function addLocalDays(value2, amount) {
+    const date2 = parseLocalDate(value2);
+    if (!date2) return null;
+    date2.setDate(date2.getDate() + Number(amount || 0));
+    return formatLocalDate(date2);
+  }
+
   // src/application/create-app-context.js
   var REQUIRED_STORAGE_METHODS = ["get", "set", "remove"];
   function createAppContext({ storage, repositories = {}, clock, idGenerator } = {}) {
@@ -315,27 +336,6 @@
       window2.removeEventListener("beforeunload", beforeUnload);
       media.removeEventListener("change", responsive);
     } });
-  }
-
-  // src/core/date-utils.js
-  var ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-  function parseLocalDate(value2) {
-    if (value2 instanceof Date) return new Date(value2.getTime());
-    if (typeof value2 !== "string" || !ISO_DATE.test(value2)) return null;
-    const [year, month, day] = value2.split("-").map(Number);
-    const date2 = new Date(year, month - 1, day, 12, 0, 0, 0);
-    return date2.getFullYear() === year && date2.getMonth() === month - 1 && date2.getDate() === day ? date2 : null;
-  }
-  function formatLocalDate(value2) {
-    const date2 = parseLocalDate(value2);
-    if (!date2) return null;
-    return `${date2.getFullYear()}-${String(date2.getMonth() + 1).padStart(2, "0")}-${String(date2.getDate()).padStart(2, "0")}`;
-  }
-  function addLocalDays(value2, amount) {
-    const date2 = parseLocalDate(value2);
-    if (!date2) return null;
-    date2.setDate(date2.getDate() + Number(amount || 0));
-    return formatLocalDate(date2);
   }
 
   // src/domain/reviews.js
@@ -887,11 +887,11 @@
   }
 
   // src/ui/renderers/error-analysis-renderer.js
-  function renderErrorAnalysis(model, { toolbar = "", escapeHtml: escapeHtml2 = (value2) => String(value2) } = {}) {
-    if (model.state === "empty") return toolbar + '<div class="empty-state"><p>' + escapeHtml2(model.message) + "</p></div>";
-    const items = model.items.map((item) => '<div class="error-profile-item"><span class="error-profile-label">' + item.icon + " " + escapeHtml2(item.label) + '</span><strong class="error-profile-value">' + item.value + '</strong><small class="error-profile-delta">' + (model.hasPrevious ? (item.delta >= 0 ? "+" : "") + item.delta + " vs. período anterior" : "Sem período anterior") + "</small></div>").join("");
-    const diagnosis = '<section class="error-diagnosis ' + model.state + '"><div><span>Diagnóstico</span><strong>' + escapeHtml2(model.diagnosis) + "</strong></div><div><span>Ação</span><strong>" + escapeHtml2(model.action) + "</strong></div></section>";
-    return toolbar + diagnosis + '<div class="error-profile-grid">' + items + '</div><div class="analytics-note">' + model.coverage + "% dos " + model.totalErrors + " erros estão categorizados · confiança " + escapeHtml2(model.confidence.label.toLowerCase()) + " · " + escapeHtml2(model.periodLabel) + ".</div>";
+  function renderErrorAnalysis(model, { toolbar = "", escapeHtml: escapeHtml3 = (value2) => String(value2) } = {}) {
+    if (model.state === "empty") return toolbar + '<div class="empty-state"><p>' + escapeHtml3(model.message) + "</p></div>";
+    const items = model.items.map((item) => '<div class="error-profile-item"><span class="error-profile-label">' + item.icon + " " + escapeHtml3(item.label) + '</span><strong class="error-profile-value">' + item.value + '</strong><small class="error-profile-delta">' + (model.hasPrevious ? (item.delta >= 0 ? "+" : "") + item.delta + " vs. período anterior" : "Sem período anterior") + "</small></div>").join("");
+    const diagnosis = '<section class="error-diagnosis ' + model.state + '"><div><span>Diagnóstico</span><strong>' + escapeHtml3(model.diagnosis) + "</strong></div><div><span>Ação</span><strong>" + escapeHtml3(model.action) + "</strong></div></section>";
+    return toolbar + diagnosis + '<div class="error-profile-grid">' + items + '</div><div class="analytics-note">' + model.coverage + "% dos " + model.totalErrors + " erros estão categorizados · confiança " + escapeHtml3(model.confidence.label.toLowerCase()) + " · " + escapeHtml3(model.periodLabel) + ".</div>";
   }
 
   // src/domain/analytics/heatmap.js
@@ -16031,16 +16031,16 @@
   }
 
   // src/features/exam-import/exam-import-renderer.js
-  function renderPresetStep(model, { escapeHtml: escapeHtml2 = String, escapeAttr: escapeAttr2 = escapeHtml2 } = {}) {
-    return `<p>Escolha o concurso. Os presets usam o catálogo mestre versão ${escapeHtml2(model.preset?.version || "")}.</p><div class="exam-preset-list">${(model.presets || []).map((item) => `<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr2(item.id)}" ${item.id === model.preset?.id ? "checked" : ""}><span><strong>${escapeHtml2(item.name)}</strong><small>${escapeHtml2(item.description || "")}${item.subjects?.length ? ` · ${item.subjects.length} disciplinas · ${item.subjects.reduce((sum4, subject) => sum4 + (subject.topics || []).length, 0)} tópicos · versão ${escapeHtml2(item.version || "")}` : ""}</small></span></label>`).join("")}</div>`;
+  function renderPresetStep(model, { escapeHtml: escapeHtml3 = String, escapeAttr: escapeAttr3 = escapeHtml3 } = {}) {
+    return `<p>Escolha o concurso. Os presets usam o catálogo mestre versão ${escapeHtml3(model.preset?.version || "")}.</p><div class="exam-preset-list">${(model.presets || []).map((item) => `<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr3(item.id)}" ${item.id === model.preset?.id ? "checked" : ""}><span><strong>${escapeHtml3(item.name)}</strong><small>${escapeHtml3(item.description || "")}${item.subjects?.length ? ` · ${item.subjects.length} disciplinas · ${item.subjects.reduce((sum4, subject) => sum4 + (subject.topics || []).length, 0)} tópicos · versão ${escapeHtml3(item.version || "")}` : ""}</small></span></label>`).join("")}</div>`;
   }
-  function renderSelectionStep(model, { escapeHtml: escapeHtml2 = String, escapeAttr: escapeAttr2 = escapeHtml2, renderBadges: renderBadges2 = (topic) => escapeHtml2(topic.scopeLabel || "") } = {}) {
+  function renderSelectionStep(model, { escapeHtml: escapeHtml3 = String, escapeAttr: escapeAttr3 = escapeHtml3, renderBadges: renderBadges2 = (topic) => escapeHtml3(topic.scopeLabel || "") } = {}) {
     if (!model.preset?.subjects?.length && !(model.visibleSubjects || []).length) return "<p>O modelo vazio não adiciona disciplinas. Você poderá cadastrá-las manualmente.</p>";
-    return `<p>Selecione as disciplinas e os tópicos que deseja importar. Conteúdos comuns mantêm um único histórico.</p><div class="exam-import-tools"><input type="search" id="examImportSearch" value="${escapeAttr2(model.query || "")}" placeholder="Buscar disciplina, tópico, alias ou origem..." aria-label="Buscar no edital"><div><button class="btn ghost small" data-exam-select="all">Selecionar tudo</button><button class="btn ghost small" data-exam-select="common">Somente comuns</button><button class="btn ghost small" data-exam-select="bb">Somente BB</button><button class="btn ghost small" data-exam-select="caixa">Somente Caixa</button><button class="btn ghost small" data-exam-select="caixa-ti">Somente Caixa TI</button><button class="btn ghost small" data-exam-select="none">Limpar</button></div></div><div class="exam-selection-count">${model.selectedTopics || 0} de ${model.totalTopics || 0} tópicos selecionados</div><div class="exam-subject-list">${(model.visibleSubjects || []).map((subject) => `<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr2(subject.id)}" ${subject.checked ? "checked" : ""}><span>${escapeHtml2(subject.name)} <small>${subject.selectedCount || 0} / ${subject.totalCount || 0} selecionados</small></span></label><div class="exam-topic-list">${(subject.topics || []).map((topic) => `<label><input type="checkbox" data-exam-topic="${escapeAttr2(topic.key)}" ${topic.checked ? "checked" : ""}><span>${escapeHtml2(topic.name)} <small>${renderBadges2(topic)}</small></span></label>`).join("")}</div></section>`).join("")}</div>`;
+    return `<p>Selecione as disciplinas e os tópicos que deseja importar. Conteúdos comuns mantêm um único histórico.</p><div class="exam-import-tools"><input type="search" id="examImportSearch" value="${escapeAttr3(model.query || "")}" placeholder="Buscar disciplina, tópico, alias ou origem..." aria-label="Buscar no edital"><div><button class="btn ghost small" data-exam-select="all">Selecionar tudo</button><button class="btn ghost small" data-exam-select="common">Somente comuns</button><button class="btn ghost small" data-exam-select="bb">Somente BB</button><button class="btn ghost small" data-exam-select="caixa">Somente Caixa</button><button class="btn ghost small" data-exam-select="caixa-ti">Somente Caixa TI</button><button class="btn ghost small" data-exam-select="none">Limpar</button></div></div><div class="exam-selection-count">${model.selectedTopics || 0} de ${model.totalTopics || 0} tópicos selecionados</div><div class="exam-subject-list">${(model.visibleSubjects || []).map((subject) => `<section class="exam-subject-choice"><label><input type="checkbox" data-exam-subject="${escapeAttr3(subject.id)}" ${subject.checked ? "checked" : ""}><span>${escapeHtml3(subject.name)} <small>${subject.selectedCount || 0} / ${subject.totalCount || 0} selecionados</small></span></label><div class="exam-topic-list">${(subject.topics || []).map((topic) => `<label><input type="checkbox" data-exam-topic="${escapeAttr3(topic.key)}" ${topic.checked ? "checked" : ""}><span>${escapeHtml3(topic.name)} <small>${renderBadges2(topic)}</small></span></label>`).join("")}</div></section>`).join("")}</div>`;
   }
-  function renderPreviewStep(model, { escapeHtml: escapeHtml2 = String, sourceLabel = (value2) => value2 } = {}) {
+  function renderPreviewStep(model, { escapeHtml: escapeHtml3 = String, sourceLabel = (value2) => value2 } = {}) {
     const preview = model.preview || {}, total = (preview.addedTopics || 0) + (preview.existingTopics || 0);
-    return `<p>Confira as alterações do catálogo ${escapeHtml2(preview.catalogVersion || "")}. IDs, progresso, sessões e revisões serão preservados.</p><div class="exam-import-summary"><div><strong>${(preview.addedSubjects || 0) + (preview.existingSubjects || 0)}</strong><br>disciplinas selecionadas</div><div><strong>${total}</strong><br>tópicos selecionados</div><div><strong>${preview.addedSubjects || 0}</strong><br>disciplinas novas</div><div><strong>${preview.addedTopics || 0}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics || 0}</strong><br>tópicos preservados</div><div><strong>${preview.metadataUpdates || 0}</strong><br>vínculos atualizados</div></div><p class="form-hint">Preservação: IDs, progresso, sessões, revisões e escolhas personalizadas.</p>${preview.sources?.length ? `<p class="form-hint">Fontes: ${preview.sources.map((source) => escapeHtml2(sourceLabel(source))).join(" · ")}</p>` : ""}${(preview.warnings || []).map((item) => `<p class="form-hint">${escapeHtml2(item)}</p>`).join("")}`;
+    return `<p>Confira as alterações do catálogo ${escapeHtml3(preview.catalogVersion || "")}. IDs, progresso, sessões e revisões serão preservados.</p><div class="exam-import-summary"><div><strong>${(preview.addedSubjects || 0) + (preview.existingSubjects || 0)}</strong><br>disciplinas selecionadas</div><div><strong>${total}</strong><br>tópicos selecionados</div><div><strong>${preview.addedSubjects || 0}</strong><br>disciplinas novas</div><div><strong>${preview.addedTopics || 0}</strong><br>tópicos novos</div><div><strong>${preview.existingTopics || 0}</strong><br>tópicos preservados</div><div><strong>${preview.metadataUpdates || 0}</strong><br>vínculos atualizados</div></div><p class="form-hint">Preservação: IDs, progresso, sessões, revisões e escolhas personalizadas.</p>${preview.sources?.length ? `<p class="form-hint">Fontes: ${preview.sources.map((source) => escapeHtml3(sourceLabel(source))).join(" · ")}</p>` : ""}${(preview.warnings || []).map((item) => `<p class="form-hint">${escapeHtml3(item)}</p>`).join("")}`;
   }
   function renderExamImport(model, options = {}) {
     if (model.step === 1) return renderPresetStep(model, options);
@@ -17057,26 +17057,26 @@
   }
 
   // src/ui/renderers/studytrack32-renderer.js
-  var safe2 = (escapeHtml2, value2) => escapeHtml2(String(value2 ?? ""));
-  function renderWeeklyClose(model, { escapeHtml: escapeHtml2, formatMinutes }) {
+  var safe2 = (escapeHtml3, value2) => escapeHtml3(String(value2 ?? ""));
+  function renderWeeklyClose(model, { escapeHtml: escapeHtml3, formatMinutes }) {
     if (model.state === "insufficient") return '<div class="upcoming-empty">Ainda não há evidência suficiente para fechar a semana.</div>';
-    const priorities = (model.priorities || []).map((item, index) => `<li><strong>${index + 1}. ${safe2(escapeHtml2, item.action)}</strong><span>${safe2(escapeHtml2, item.reason)} · ${formatMinutes(item.estimatedMinutes)}</span></li>`).join("");
-    return `<div class="weekly-kpis"><div><strong>${formatMinutes(model.investment.executedMinutes)}</strong><span>Tempo estudado</span></div><div><strong>${model.questions.accuracy ?? "—"}%</strong><span>Acerto</span></div><div><strong>${model.questions.resolved}</strong><span>Questões</span></div></div><section class="weekly-assessment"><small>Diagnóstico</small><strong>${model.assessment === "attention" ? "Atenção" : model.assessment === "on_target" ? "Meta alcançada" : "Semana em formação"}</strong>${model.mainRisk ? `<p class="weekly-risk"><b>Principal risco</b>${safe2(escapeHtml2, model.mainRisk.message)}</p>` : ""}${model.bestSignal ? `<p><b>Melhor sinal</b>${safe2(escapeHtml2, model.bestSignal.message)}</p>` : ""}<p class="weekly-action"><b>Próxima ação</b>${safe2(escapeHtml2, model.recommendedAction)}</p>${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ""}</section>`;
+    const priorities = (model.priorities || []).map((item, index) => `<li><strong>${index + 1}. ${safe2(escapeHtml3, item.action)}</strong><span>${safe2(escapeHtml3, item.reason)} · ${formatMinutes(item.estimatedMinutes)}</span></li>`).join("");
+    return `<div class="weekly-kpis"><div><strong>${formatMinutes(model.investment.executedMinutes)}</strong><span>Tempo estudado</span></div><div><strong>${model.questions.accuracy ?? "—"}%</strong><span>Acerto</span></div><div><strong>${model.questions.resolved}</strong><span>Questões</span></div></div><section class="weekly-assessment"><small>Diagnóstico</small><strong>${model.assessment === "attention" ? "Atenção" : model.assessment === "on_target" ? "Meta alcançada" : "Semana em formação"}</strong>${model.mainRisk ? `<p class="weekly-risk"><b>Principal risco</b>${safe2(escapeHtml3, model.mainRisk.message)}</p>` : ""}${model.bestSignal ? `<p><b>Melhor sinal</b>${safe2(escapeHtml3, model.bestSignal.message)}</p>` : ""}<p class="weekly-action"><b>Próxima ação</b>${safe2(escapeHtml3, model.recommendedAction)}</p>${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ""}</section>`;
   }
-  function renderPeriodComparison(model, { escapeHtml: escapeHtml2, formatMinutes }) {
+  function renderPeriodComparison(model, { escapeHtml: escapeHtml3, formatMinutes }) {
     const labels = { accuracy: "Acerto", minutes: "Tempo estudado", questions: "Questões" }, value2 = (key2, n3) => key2 === "accuracy" ? `${n3}%` : key2 === "minutes" ? formatMinutes(n3) : String(n3), delta = (key2, n3) => key2 === "accuracy" ? `${n3 > 0 ? "+" : ""}${n3} p.p.` : key2 === "minutes" ? `${n3 > 0 ? "+" : ""}${formatMinutes(Math.abs(n3))}` : `${n3 > 0 ? "+" : ""}${n3}`;
-    return `<div class="period-comparison"><strong>Comparação com a semana anterior</strong><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${Object.entries(model.comparison).map(([key2, item]) => item.delta == null ? `<div><span>${labels[key2]}</span><small>Sem semana anterior comparável</small></div>` : `<div><span>${labels[key2]}</span><b>${safe2(escapeHtml2, value2(key2, item.previous))}</b><b>${safe2(escapeHtml2, value2(key2, item.current))}</b><b>${safe2(escapeHtml2, delta(key2, item.delta))}</b></div>`).join("")}</div>`;
+    return `<div class="period-comparison"><strong>Comparação com a semana anterior</strong><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${Object.entries(model.comparison).map(([key2, item]) => item.delta == null ? `<div><span>${labels[key2]}</span><small>Sem semana anterior comparável</small></div>` : `<div><span>${labels[key2]}</span><b>${safe2(escapeHtml3, value2(key2, item.previous))}</b><b>${safe2(escapeHtml3, value2(key2, item.current))}</b><b>${safe2(escapeHtml3, delta(key2, item.delta))}</b></div>`).join("")}</div>`;
   }
-  function renderGapMap(model, { escapeHtml: escapeHtml2 }) {
-    return model.items.length ? model.items.slice(0, 5).map((item) => `<article class="data-row"><strong>${safe2(escapeHtml2, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Gap de domínio ${item.gap ?? "—"} pts · impacto ${item.factors.examImpact ?? "—"}%</span></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">◎</span><div><strong>Nenhuma lacuna priorizada</strong><p>As lacunas aparecerão quando houver tópicos e evidências suficientes.</p></div></div>';
+  function renderGapMap(model, { escapeHtml: escapeHtml3 }) {
+    return model.items.length ? model.items.slice(0, 5).map((item) => `<article class="data-row"><strong>${safe2(escapeHtml3, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Gap de domínio ${item.gap ?? "—"} pts · impacto ${item.factors.examImpact ?? "—"}%</span></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">◎</span><div><strong>Nenhuma lacuna priorizada</strong><p>As lacunas aparecerão quando houver tópicos e evidências suficientes.</p></div></div>';
   }
-  function renderDecisionHistory(model, { escapeHtml: escapeHtml2 }) {
-    return model.items.length ? model.items.map((item) => `<article class="data-row"><strong>${safe2(escapeHtml2, item.subjectName)} — ${safe2(escapeHtml2, item.topicName)}</strong><span>${safe2(escapeHtml2, item.strategyLabel)}</span><small>${safe2(escapeHtml2, item.outcomeLabel)}</small></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
+  function renderDecisionHistory(model, { escapeHtml: escapeHtml3 }) {
+    return model.items.length ? model.items.map((item) => `<article class="data-row"><strong>${safe2(escapeHtml3, item.subjectName)} — ${safe2(escapeHtml3, item.topicName)}</strong><span>${safe2(escapeHtml3, item.strategyLabel)}</span><small>${safe2(escapeHtml3, item.outcomeLabel)}</small></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
   }
-  function renderPostSimulationReplan(model, { escapeHtml: escapeHtml2 }) {
+  function renderPostSimulationReplan(model, { escapeHtml: escapeHtml3 }) {
     const need = (model.adjustments || []).reduce((sum4, item) => sum4 + item.deltaMinutes, 0) + (model.unallocatedMinutes || 0);
-    if (model.state !== "proposal") return `<div class="analytics-empty"><span aria-hidden="true">±</span><div><strong>Replanejamento indisponível</strong><p>${safe2(escapeHtml2, model.reason || model.message)}</p></div></div>`;
-    return `<div class="replan-summary"><strong>Proposta para ${safe2(escapeHtml2, model.simulationDate || "simulado recente")}</strong><p>${model.adjustments.map((item) => `${safe2(escapeHtml2, item.subjectName)}: +${item.deltaMinutes} min`).join(" · ")}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${model.availableMinutes} min</dd></div>${model.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${model.unallocatedMinutes} min</dd></div>` : ""}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`;
+    if (model.state !== "proposal") return `<div class="analytics-empty"><span aria-hidden="true">±</span><div><strong>Replanejamento indisponível</strong><p>${safe2(escapeHtml3, model.reason || model.message)}</p></div></div>`;
+    return `<div class="replan-summary"><strong>Proposta para ${safe2(escapeHtml3, model.simulationDate || "simulado recente")}</strong><p>${model.adjustments.map((item) => `${safe2(escapeHtml3, item.subjectName)}: +${item.deltaMinutes} min`).join(" · ")}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${model.availableMinutes} min</dd></div>${model.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${model.unallocatedMinutes} min</dd></div>` : ""}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`;
   }
 
   // src/application/alert-lifecycle.js
@@ -17235,17 +17235,17 @@
   }
 
   // src/ui/renderers/recommendation-calibration-renderer.js
-  function renderRecommendationCalibrationModel(model, { escapeHtml: escapeHtml2 = (value2) => String(value2) } = {}) {
+  function renderRecommendationCalibrationModel(model, { escapeHtml: escapeHtml3 = (value2) => String(value2) } = {}) {
     const factorRows = model?.groups?.factor || [], strategyRows = model?.groups?.strategy || [];
     if (!factorRows.length && !strategyRows.length) return '<div class="upcoming-empty">Conclua recomendações e registre resultados para iniciar a calibração.</div>';
-    const render2 = (item, kind) => `<article><strong>${escapeHtml2(item.label)}</strong><span>${item.total} resultados · ${item.positive} positivos</span><b>${item.positiveRate === null ? "Amostra insuficiente" : item.positiveRate + "% positivos"}</b><small>${kind} · confiança ${escapeHtml2(item.confidence.toLowerCase())}</small></article>`;
+    const render2 = (item, kind) => `<article><strong>${escapeHtml3(item.label)}</strong><span>${item.total} resultados · ${item.positive} positivos</span><b>${item.positiveRate === null ? "Amostra insuficiente" : item.positiveRate + "% positivos"}</b><small>${kind} · confiança ${escapeHtml3(item.confidence.toLowerCase())}</small></article>`;
     return `${factorRows.length ? `<h4>Fatores dominantes</h4><div class="calibration-grid">${factorRows.map((item) => render2(item, "fator")).join("")}</div>` : ""}${strategyRows.length ? `<h4>Estratégias</h4><div class="calibration-grid">${strategyRows.map((item) => render2(item, "estratégia")).join("")}</div>` : ""}<p class="analytics-note">Amostra mínima: ${model.minimumSample} resultados atribuíveis por grupo · algoritmo ${model.algorithmVersion}. Pesos permanecem manuais.</p>`;
   }
 
   // src/ui/renderers/performance-scenarios-renderer.js
-  function renderPerformanceScenarios(model, { escapeHtml: escapeHtml2 = (value2) => String(value2) } = {}) {
+  function renderPerformanceScenarios(model, { escapeHtml: escapeHtml3 = (value2) => String(value2) } = {}) {
     if (!model?.available) return "";
-    return `<div class="forecast-scenarios">${model.scenarios.map((item) => `<span><strong>${escapeHtml2(item.label)}</strong>${item.low}–${item.high}%</span>`).join("")}</div>`;
+    return `<div class="forecast-scenarios">${model.scenarios.map((item) => `<span><strong>${escapeHtml3(item.label)}</strong>${item.low}–${item.high}%</span>`).join("")}</div>`;
   }
 
   // src/application/demo/demo-mode.js
@@ -17669,15 +17669,15 @@
   }
 
   // src/ui/renderers/reviews-renderer.js
-  function renderReviewRead({ item, view, mobile, escapeHtml: escapeHtml2, escapeAttr: escapeAttr2, daysPill, difficultyClass, statusClass, ratingLabel, today }) {
-    if (mobile) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="8"><article class="mobile-history-card review-mobile-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml2(view.date)} · ${escapeHtml2(view.status)}</div><div class="mobile-card-title">${escapeHtml2(view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml2(view.topic)}</div></div><button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml2(view.type)}</span><span>${escapeHtml2(view.difficulty)}</span><span>${daysPill}</span></div><div class="mobile-card-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}</div></article></td></tr>`;
-    const mode = view.manualDate ? "Manual" : "Adaptativa", rating = view.lastRating ? ` · ${escapeHtml2(ratingLabel(view.lastRating))}` : "";
+  function renderReviewRead({ item, view, mobile, escapeHtml: escapeHtml3, escapeAttr: escapeAttr3, daysPill, difficultyClass, statusClass, ratingLabel, today }) {
+    if (mobile) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="8"><article class="mobile-history-card review-mobile-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml3(view.date)} · ${escapeHtml3(view.status)}</div><div class="mobile-card-title">${escapeHtml3(view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml3(view.topic)}</div></div><button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml3(view.type)}</span><span>${escapeHtml3(view.difficulty)}</span><span>${daysPill}</span></div><div class="mobile-card-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}</div></article></td></tr>`;
+    const mode = view.manualDate ? "Manual" : "Adaptativa", rating = view.lastRating ? ` · ${escapeHtml3(ratingLabel(view.lastRating))}` : "";
     const restore = view.manualDate && item.topicId ? ` · <button type="button" data-delegated-click="resetAdaptiveReviewDate('${item.id}')">usar sugestão</button>` : "";
-    return `<tr class="history-read-row history-desktop-row ${item.date === today ? "today" : ""}" data-id="${item.id}"><td>${escapeHtml2(view.date)}<div class="review-date-mode" title="${escapeAttr2(item.adaptiveReason || "")}">${mode}${rating}${restore}</div></td><td><div class="row-primary">${escapeHtml2(view.subject)}</div></td><td><div class="row-secondary">${escapeHtml2(view.topic)}</div></td><td>${escapeHtml2(view.type)}</td><td><span class="dias-pill ${difficultyClass[view.difficulty] || ""}">${escapeHtml2(view.difficulty)}</span></td><td><span class="history-status ${statusClass[item.status] || ""}">${escapeHtml2(view.status)}</span></td><td>${daysPill}</td><td><div class="row-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}<button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div></td></tr>`;
+    return `<tr class="history-read-row history-desktop-row ${item.date === today ? "today" : ""}" data-id="${item.id}"><td>${escapeHtml3(view.date)}<div class="review-date-mode" title="${escapeAttr3(item.adaptiveReason || "")}">${mode}${rating}${restore}</div></td><td><div class="row-primary">${escapeHtml3(view.subject)}</div></td><td><div class="row-secondary">${escapeHtml3(view.topic)}</div></td><td>${escapeHtml3(view.type)}</td><td><span class="dias-pill ${difficultyClass[view.difficulty] || ""}">${escapeHtml3(view.difficulty)}</span></td><td><span class="history-status ${statusClass[item.status] || ""}">${escapeHtml3(view.status)}</span></td><td>${daysPill}</td><td><div class="row-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeAgendaReview('${item.id}')">Concluir</button>` : ""}<button class="btn ghost small" data-delegated-click="editAgenda('${item.id}')">Editar</button></div></td></tr>`;
   }
-  function renderReviewEdit({ item, draft, subjectOptions, topicName, typeOptions, statusOptions, escapeAttr: escapeAttr2 }) {
+  function renderReviewEdit({ item, draft, subjectOptions, topicName, typeOptions, statusOptions, escapeAttr: escapeAttr3 }) {
     if (!draft) return "";
-    return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateAgendaDraft('date',this.value)"></label><label>Disciplina<select ${draft.topicId ? 'disabled title="Definida pelo tópico vinculado"' : ""} data-delegated-change="updateAgendaDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Tópico<input type="text" value="${escapeAttr2(topicName)}" ${draft.topicId ? "readonly" : ""} data-delegated-input="updateAgendaDraft('topic',this.value)"></label><label>Tipo<select data-delegated-change="updateAgendaDraft('tipo',this.value)">${typeOptions}</select></label><label>Status<select data-delegated-change="updateAgendaDraft('status',this.value)">${statusOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelAgendaEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveAgendaEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteAgendaRow('${item.id}')">Excluir</button></div></div></td></tr>`;
+    return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateAgendaDraft('date',this.value)"></label><label>Disciplina<select ${draft.topicId ? 'disabled title="Definida pelo tópico vinculado"' : ""} data-delegated-change="updateAgendaDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Tópico<input type="text" value="${escapeAttr3(topicName)}" ${draft.topicId ? "readonly" : ""} data-delegated-input="updateAgendaDraft('topic',this.value)"></label><label>Tipo<select data-delegated-change="updateAgendaDraft('tipo',this.value)">${typeOptions}</select></label><label>Status<select data-delegated-change="updateAgendaDraft('status',this.value)">${statusOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelAgendaEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveAgendaEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteAgendaRow('${item.id}')">Excluir</button></div></div></td></tr>`;
   }
 
   // src/ui/view-models/calendar-view-model.js
@@ -17686,13 +17686,13 @@
   }
 
   // src/ui/renderers/calendar-renderer.js
-  function renderCalendarRead({ item, view, mobile, escapeHtml: escapeHtml2, daysPill, statusClass, today }) {
-    if (mobile) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml2(view.date)} · ${escapeHtml2(view.week)}</div><div class="mobile-card-title">${escapeHtml2(view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml2(view.reviewType)}</div></div><button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml2(view.status)}</span><span>${daysPill}</span></div><div class="mobile-card-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>` : ""}</div></article></td></tr>`;
-    return `<tr class="history-read-row history-desktop-row ${item.date === today ? "today" : ""}" data-id="${item.id}"><td>${escapeHtml2(view.date)}</td><td>${escapeHtml2(view.week)}</td><td><div class="row-primary">${escapeHtml2(view.subject)}</div></td><td><span class="history-status ${statusClass[item.status] || ""}">${escapeHtml2(view.status)}</span></td><td>${escapeHtml2(view.reviewType)}</td><td>${daysPill}</td><td><div class="row-actions">${view.pending ? `<button class="btn small" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>` : ""}<button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div></td></tr>`;
+  function renderCalendarRead({ item, view, mobile, escapeHtml: escapeHtml3, daysPill, statusClass, today }) {
+    if (mobile) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml3(view.date)} · ${escapeHtml3(view.week)}</div><div class="mobile-card-title">${escapeHtml3(view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml3(view.reviewType)}</div></div><button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml3(view.status)}</span><span>${daysPill}</span></div><div class="mobile-card-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>` : ""}</div></article></td></tr>`;
+    return `<tr class="history-read-row history-desktop-row ${item.date === today ? "today" : ""}" data-id="${item.id}"><td>${escapeHtml3(view.date)}</td><td>${escapeHtml3(view.week)}</td><td><div class="row-primary">${escapeHtml3(view.subject)}</div></td><td><span class="history-status ${statusClass[item.status] || ""}">${escapeHtml3(view.status)}</span></td><td>${escapeHtml3(view.reviewType)}</td><td>${daysPill}</td><td><div class="row-actions">${view.pending ? `<button class="btn small" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>` : ""}<button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div></td></tr>`;
   }
-  function renderCalendarEdit({ item, draft, subjectOptions, statusOptions, reviewOptions, escapeAttr: escapeAttr2 }) {
+  function renderCalendarEdit({ item, draft, subjectOptions, statusOptions, reviewOptions, escapeAttr: escapeAttr3 }) {
     if (!draft) return "";
-    return `<tr class="row-editing" data-id="${item.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateCalendarDraft('date',this.value)"></label><label>Semana<input type="text" value="${escapeAttr2(draft.week || "")}" data-delegated-input="updateCalendarDraft('week',this.value)"></label><label>Disciplina<select data-delegated-change="updateCalendarDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Status<select data-delegated-change="updateCalendarDraft('status',this.value)">${statusOptions}</select></label><label>Tipo de revisão<select data-delegated-change="updateCalendarDraft('reviewType',this.value)">${reviewOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelCalendarEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveCalendarEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteCalRow('${item.id}')">Excluir</button></div></div></td></tr>`;
+    return `<tr class="row-editing" data-id="${item.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateCalendarDraft('date',this.value)"></label><label>Semana<input type="text" value="${escapeAttr3(draft.week || "")}" data-delegated-input="updateCalendarDraft('week',this.value)"></label><label>Disciplina<select data-delegated-change="updateCalendarDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Status<select data-delegated-change="updateCalendarDraft('status',this.value)">${statusOptions}</select></label><label>Tipo de revisão<select data-delegated-change="updateCalendarDraft('reviewType',this.value)">${reviewOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelCalendarEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveCalendarEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteCalRow('${item.id}')">Excluir</button></div></div></td></tr>`;
   }
 
   // src/ui/calendar/calendar-state.js
@@ -17865,12 +17865,14 @@
     const hasGoal = Boolean(examDate), availableMinutes = Object.values(hoursByDay || {}).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0), hasAvailability = availableMinutes > 0, hasContent = (subjects || []).some((subject) => !subject.archived && (subject.topics || []).some((topic) => !topic.archived)), hasPlan = Array.isArray(studyPlans) ? studyPlans.length > 0 : (dailyPlans || []).some((plan) => (plan.items || []).length > 0), hasHistory = (sessions || []).length > 0 || (questions || []).length > 0;
     const steps = [{ id: "goal", label: "Objetivo e data", complete: hasGoal }, { id: "availability", label: "Disponibilidade", complete: hasAvailability }, { id: "content", label: "Edital ou matérias", complete: hasContent }, { id: "plan", label: "Prévia e Hoje", complete: hasPlan || hasHistory }], next = steps.find((step) => !step.complete) || null;
     const requestedIndex = steps.findIndex((step) => step.id === currentStep), currentIndex = requestedIndex >= 0 ? requestedIndex : Math.max(0, steps.findIndex((step) => step === next)), current = steps[currentIndex];
-    const activeSubjects2 = (subjects || []).filter((subject) => !subject.archived && (subject.topics || []).some((topic) => !topic.archived)), topicCount = activeSubjects2.reduce((sum4, subject) => sum4 + subject.topics.filter((topic) => !topic.archived).length, 0), estimatedNeedMinutes = activeSubjects2.reduce((sum4, subject) => sum4 + subject.topics.filter((topic) => !topic.archived).reduce((total, topic) => total + Math.max(15, Number(topic.estimatedStudyMinutes) || 60), 0), 0), days = examDate && today ? Math.max(0, Math.ceil((/* @__PURE__ */ new Date(`${examDate}T12:00:00`) - /* @__PURE__ */ new Date(`${today}T12:00:00`)) / 864e5)) : null;
+    const examDay = parseLocalDate(examDate), currentDay = parseLocalDate(today);
+    const activeSubjects2 = (subjects || []).filter((subject) => !subject.archived && (subject.topics || []).some((topic) => !topic.archived)), topicCount = activeSubjects2.reduce((sum4, subject) => sum4 + subject.topics.filter((topic) => !topic.archived).length, 0), estimatedNeedMinutes = activeSubjects2.reduce((sum4, subject) => sum4 + subject.topics.filter((topic) => !topic.archived).reduce((total, topic) => total + Math.max(15, Number(topic.estimatedStudyMinutes) || 60), 0), 0), days = examDay && currentDay ? Math.max(0, Math.ceil((examDay - currentDay) / 864e5)) : null;
     const subjectModels = activeSubjects2.map((subject) => {
       const levels = subject.topics.filter((topic) => !topic.archived).map((topic) => topic.difficulty || "Médio"), level = levels.includes("Difícil") ? "Difícil" : levels.every((value2) => value2 === "Fácil") ? "Fácil" : "Médio";
       return { id: subject.id, name: subject.name, level };
     });
-    return { visible: !hasHistory && !hasPlan, steps, next, current, currentIndex, completed: steps.filter((step) => step.complete).length, availableMinutes, hasGoal, hasAvailability, hasContent, canAdvance: current.id === "goal" ? hasGoal : current.id === "availability" ? hasAvailability : true, canCreatePlan: hasGoal && hasAvailability && hasContent, topicCount, estimatedNeedMinutes, weeksUntilExam: days == null ? null : Math.ceil(days / 7), examDate, today, presets, presetId, subjects: subjectModels, weekdays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((label2, day) => ({ day, label: label2, hours: Math.max(0, Number(hoursByDay?.[String(day)]) || 0) })) };
+    const firstActivities = activeSubjects2.flatMap((subject) => subject.topics.filter((topic) => !topic.archived).map((topic) => ({ subject: subject.name, topic: topic.name || "Tópico sem nome", minutes: Math.min(60, Math.max(25, Number(topic.estimatedStudyMinutes) || 45)) }))).slice(0, 3);
+    return { visible: !hasHistory && !hasPlan, steps, next, current, currentIndex, completed: steps.filter((step) => step.complete).length, availableMinutes, hasGoal, hasAvailability, hasContent, canAdvance: current.id === "goal" ? hasGoal : current.id === "availability" ? hasAvailability : true, canCreatePlan: hasGoal && hasAvailability && hasContent, topicCount, estimatedNeedMinutes, weeksUntilExam: days == null ? null : Math.ceil(days / 7), examDate, today, presets, presetId, subjects: subjectModels, firstActivities, weekdays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((label2, day) => ({ day, label: label2, hours: Math.max(0, Number(hoursByDay?.[String(day)]) || 0) })) };
   }
 
   // src/features/onboarding/onboarding-renderer.js
@@ -17880,9 +17882,9 @@
     content: { title: "Quais conteúdos entram no plano?", help: "Importe um edital ou cadastre matérias próprias e indique o nível inicial.", why: "O StudyTrack usa o conteúdo selecionado para comparar domínio, importância e esforço restante.", benefits: ["gerar prioridades por tópico", "evitar duplicidades no edital", "adaptar o esforço à sua base"], tip: "Você pode importar apenas parte do edital e completar as disciplinas manualmente depois." },
     plan: { title: "Confira a capacidade e crie o primeiro plano", help: "A prévia não altera seus dados. O plano só será criado após sua confirmação.", why: "Esta é a conferência final entre prazo, capacidade semanal e carga estimada.", benefits: ["criar atividades para hoje", "distribuir teoria, questões e revisão", "manter margem para ajustes"], tip: "Nada será salvo no calendário antes da confirmação." }
   };
-  function renderOnboardingEntry(model, { escapeHtml: escapeHtml2 = String } = {}) {
+  function renderOnboardingEntry(model, { escapeHtml: escapeHtml3 = String } = {}) {
     const next = model.next || model.current || model.steps?.[0], complete = model.completed || 0, title = complete ? "Configuração incompleta" : "Comece seu plano";
-    const description = complete ? `Falta concluir: ${escapeHtml2(next?.label || "configuração inicial")}. Suas escolhas já feitas serão preservadas.` : "Configure prova, disponibilidade e edital para receber seu primeiro plano de estudos.";
+    const description = complete ? `Falta concluir: ${escapeHtml3(next?.label || "configuração inicial")}. Suas escolhas já feitas serão preservadas.` : "Configure prova, disponibilidade e edital para receber seu primeiro plano de estudos.";
     return `<div class="onboarding-entry-copy"><span class="onboarding-entry-icon" aria-hidden="true">🎯</span><div><span class="onboarding-kicker">${complete} de 4 etapas concluídas</span><h3 id="guidedOnboardingEntryTitle">${title}</h3><p>${description}</p></div></div><button class="btn" type="button" data-guided-action="open">${complete ? "Continuar configuração" : "Montar meu plano"} <span aria-hidden="true">→</span></button>`;
   }
   function renderOnboardingProgress(model) {
@@ -17891,16 +17893,17 @@
       return `<span class="${current ? "is-current" : step.complete ? "is-complete" : ""}" data-onboarding-step="${step.id}" aria-current="${state2}"><b>${step.complete ? "✓" : index + 1}</b><em>${step.label}</em></span>`;
     }).join("");
   }
-  function renderOnboardingHelp(model, { escapeHtml: escapeHtml2 = String } = {}) {
+  function renderOnboardingHelp(model, { escapeHtml: escapeHtml3 = String } = {}) {
     const step = model.current || model.next || model.steps?.[0], copy = stepCopy[step.id] || stepCopy.goal;
-    return `<span class="onboarding-kicker">POR QUE ISSO IMPORTA?</span><h3>${escapeHtml2(copy.why)}</h3><ul>${copy.benefits.map((item) => `<li><span aria-hidden="true">✓</span>${escapeHtml2(item)}</li>`).join("")}</ul><div class="onboarding-tip"><strong>Dica</strong><p>${escapeHtml2(copy.tip)}</p></div>`;
+    return `<span class="onboarding-kicker">POR QUE ISSO IMPORTA?</span><h3>${escapeHtml3(copy.why)}</h3><ul>${copy.benefits.map((item) => `<li><span aria-hidden="true">✓</span>${escapeHtml3(item)}</li>`).join("")}</ul><div class="onboarding-tip"><strong>Dica</strong><p>${escapeHtml3(copy.tip)}</p></div>`;
   }
-  function renderOnboardingContent(model, { escapeHtml: escapeHtml2 = String, escapeAttr: escapeAttr2 = escapeHtml2, formatMinutes = (value2) => `${value2} min` } = {}) {
+  function renderOnboardingContent(model, { escapeHtml: escapeHtml3 = String, escapeAttr: escapeAttr3 = escapeHtml3, formatMinutes = (value2) => `${value2} min` } = {}) {
     const step = model.current || model.next || model.steps?.[0], copy = stepCopy[step.id] || stepCopy.goal;
-    if (step.id === "goal") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><label>Concurso<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso">${model.presets.map((item) => `<option value="${escapeAttr2(item.id)}" ${item.id === model.presetId ? "selected" : ""}>${escapeHtml2(item.name.replace("Tecnologia da Informação", "TI"))}</option>`).join("")}</select></label><label>Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr2(model.today)}" value="${escapeAttr2(model.examDate || "")}"></label></div>`;
-    if (step.id === "availability") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="guided-availability">${model.weekdays.map((item) => `<label><span>${escapeHtml2(item.label)}</span><input type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr2(item.label)}"><small>h</small></label>`).join("")}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div></div>`;
-    if (step.id === "content") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-actions"><button class="btn" data-guided-action="import">Carregar edital</button><button class="btn ghost" data-guided-action="manual">Cadastrar manualmente</button></div>${model.subjects.length ? `<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject) => `<label><span>${escapeHtml2(subject.name)}</span><select data-guided-level="${escapeAttr2(subject.id)}"><option value="Fácil" ${subject.level === "Fácil" ? "selected" : ""}>Tenho boa base</option><option value="Médio" ${subject.level === "Médio" ? "selected" : ""}>Base intermediária</option><option value="Difícil" ${subject.level === "Difícil" ? "selected" : ""}>Preciso começar pela base</option></select></label>`).join("")}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
-    return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? "—" : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${model.canCreatePlan ? '<p class="confidence-note">O StudyTrack reservará parte do tempo para pausas, correções e revisões.</p>' : '<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'}</div>`;
+    if (step.id === "goal") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><label>Concurso<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso">${model.presets.map((item) => `<option value="${escapeAttr3(item.id)}" ${item.id === model.presetId ? "selected" : ""}>${escapeHtml3(item.name.replace("Tecnologia da Informação", "TI"))}</option>`).join("")}</select></label><label>Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr3(model.today)}" value="${escapeAttr3(model.examDate || "")}"></label></div>`;
+    if (step.id === "availability") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="guided-availability">${model.weekdays.map((item) => `<label><span>${escapeHtml3(item.label)}</span><input type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr3(item.label)}"><small>h</small></label>`).join("")}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div></div>`;
+    if (step.id === "content") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-actions"><button class="btn" data-guided-action="import">Carregar edital</button><button class="btn ghost" data-guided-action="manual">Cadastrar manualmente</button></div>${model.subjects.length ? `<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject) => `<label><span>${escapeHtml3(subject.name)}</span><select data-guided-level="${escapeAttr3(subject.id)}"><option value="Fácil" ${subject.level === "Fácil" ? "selected" : ""}>Tenho boa base</option><option value="Médio" ${subject.level === "Médio" ? "selected" : ""}>Base intermediária</option><option value="Difícil" ${subject.level === "Difícil" ? "selected" : ""}>Preciso começar pela base</option></select></label>`).join("")}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
+    const activities = (model.firstActivities || []).map((item) => `<li><span><strong>${escapeHtml3(item.subject)}</strong><small>${escapeHtml3(item.topic)}</small></span><b>${item.minutes} min</b></li>`).join("");
+    return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? "—" : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades</h5><ul>${activities}</ul></section>` : ""}${model.canCreatePlan ? '<p class="confidence-note">O StudyTrack reservará parte do tempo para pausas, correções e revisões.</p>' : '<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'}</div>`;
   }
   function renderOnboardingActions(model) {
     const id = model.current?.id || "goal", previous = model.currentIndex > 0 ? '<button class="btn ghost" data-guided-action="back">← Voltar</button>' : '<button class="btn ghost" data-guided-action="cancel">Cancelar</button>';
@@ -17909,11 +17912,26 @@
     return `${previous}<button class="btn" data-guided-action="next" ${model.canAdvance ? "" : "disabled"}>Continuar →</button>`;
   }
 
+  // src/features/topic-strategy/topic-strategy-renderer.js
+  var escapeHtml = (value2) => String(value2 ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
+  var escapeAttr = escapeHtml;
+  function renderTopicStrategyEditor({ subject, topic, subjectConfig = null, activeExamTags = [], topics = [] } = {}) {
+    const impact = resolveTopicExamImpact({ topic, subjectConfig, activeExamTags });
+    const prerequisites = new Set(topic?.prerequisites || []);
+    const choices = topics.filter((candidate) => candidate.id !== topic?.id && !candidate.subjectArchived && !candidate.topicArchived).map((candidate) => {
+      const checked = prerequisites.has(candidate.id);
+      const cyclic = !checked && wouldCreatePrerequisiteCycle(topic.id, candidate.id, topics);
+      return `<label class="topic-prerequisite-choice"><input type="checkbox" ${checked ? "checked" : ""} ${cyclic ? "disabled" : ""} data-delegated-change="toggleTopicPrerequisite('${escapeAttr(subject.id)}','${escapeAttr(topic.id)}','${escapeAttr(candidate.id)}',this.checked)"><span>${escapeHtml(candidate.subjectName)} — ${escapeHtml(candidate.name || "Tópico sem nome")}${cyclic ? " · criaria ciclo" : ""}</span></label>`;
+    }).join("");
+    const value2 = impact.value == null ? "—" : `${Math.round(impact.value)}%`;
+    return `<div class="topic-strategy-summary"><strong>Impacto usado na prioridade: ${value2}</strong><span>${escapeHtml(impact.sourceLabel)}. Alterações invalidam a proposta semanal ainda não confirmada.</span></div><div class="topic-strategy-fields"><label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Herdar automaticamente" value="${topic.examImportance == null ? "" : Math.round(topic.examImportance * 100)}" data-delegated-blur="updateTopicStrategy('${escapeAttr(subject.id)}','${escapeAttr(topic.id)}','examImportance',this.value)"><small>Deixe vazio para usar catálogo ou peso da disciplina.</small></label><label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${topic.estimatedStudyMinutes == null ? "" : topic.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${escapeAttr(subject.id)}','${escapeAttr(topic.id)}','estimatedStudyMinutes',this.value)"><small>Define a carga restante, sem limitar cada sessão.</small></label></div><details class="topic-prerequisites"><summary>Pré-requisitos (${prerequisites.size})</summary><p>O tópico só entra no plano quando as bases estiverem concluídas ou com domínio suficiente.</p><div>${choices || "<small>Não há outros tópicos disponíveis.</small>"}</div></details>`;
+  }
+
   // src/features/replan/replan-renderer.js
-  function renderReplanProposal(model, { escapeHtml: escapeHtml2 = String, formatDate = (value2) => value2, formatMinutes = (value2) => `${value2} min`, subjectName = () => "", topicName = () => "" } = {}) {
-    const name = (item) => [subjectName(item.subjectId), topicName(item.topicId)].filter(Boolean).map(escapeHtml2).join(" — ") || "Atividade sem conteúdo identificado";
-    const allocationRows = (model.allocations || []).map((item) => `<article class="replan-detail-row"><div><strong>${name(item)}</strong><small>${escapeHtml2(item.reason || "atividade pendente")}</small></div><span><b>${formatMinutes(item.minutes)}</b><small>${formatDate(item.date)}</small></span></article>`).join("");
-    const retainedRows = (model.retainedItems || []).map((item) => `<article class="replan-detail-row is-warning"><div><strong>${name(item)}</strong><small>${escapeHtml2(item.reason || "atividade pendente")}</small></div><span><b>${formatMinutes(item.unallocatedMinutes)}</b><small>sem nova data</small></span></article>`).join("");
+  function renderReplanProposal(model, { escapeHtml: escapeHtml3 = String, formatDate = (value2) => value2, formatMinutes = (value2) => `${value2} min`, subjectName = () => "", topicName = () => "" } = {}) {
+    const name = (item) => [subjectName(item.subjectId), topicName(item.topicId)].filter(Boolean).map(escapeHtml3).join(" — ") || "Atividade sem conteúdo identificado";
+    const allocationRows = (model.allocations || []).map((item) => `<article class="replan-detail-row"><div><strong>${name(item)}</strong><small>${escapeHtml3(item.reason || "atividade pendente")}</small></div><span><b>${formatMinutes(item.minutes)}</b><small>${formatDate(item.date)}</small></span></article>`).join("");
+    const retainedRows = (model.retainedItems || []).map((item) => `<article class="replan-detail-row is-warning"><div><strong>${name(item)}</strong><small>${escapeHtml3(item.reason || "atividade pendente")}</small></div><span><b>${formatMinutes(item.unallocatedMinutes)}</b><small>sem nova data</small></span></article>`).join("");
     const capacityRows = (model.capacityByDay || []).map((day) => `<div class="replan-capacity-row"><strong>${formatDate(day.date)}</strong><span>${formatMinutes(day.allocatedMinutes)} usados · ${formatMinutes(day.remainingMinutes)} livres de ${formatMinutes(day.availableMinutes)}</span></div>`).join("");
     return `<div class="study-plan-summary"><div><strong>${formatMinutes(model.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(model.executedMinutes)}</strong><span>Executado</span></div><div><strong>${formatMinutes(model.deficitMinutes)}</strong><span>Déficit</span></div><div><strong>${formatMinutes(model.redistributedMinutes)}</strong><span>Redistribuídas</span></div></div><section class="replan-detail"><h4>Movimentações propostas</h4>${allocationRows || '<div class="upcoming-empty">Nenhuma atividade coube nos próximos dias.</div>'}</section>${retainedRows ? `<section class="replan-detail"><h4>Excedente mantido para decisão posterior</h4>${retainedRows}</section>` : ""}<details class="replan-capacity"><summary>Conferir capacidade por dia</summary>${capacityRows || "<p>Nenhum dia futuro disponível nesta semana.</p>"}</details>${model.discardedMinutes ? `<div class="replan-group is-warning"><strong>Sem capacidade disponível</strong><span>${formatMinutes(model.discardedMinutes)} não cabem sem ultrapassar seus horários.</span></div>` : ""}`;
   }
@@ -17925,10 +17943,10 @@
   }
 
   // src/ui/renderers/questions-renderer.js
-  function renderQuestionRead({ item, view, categorized, errorsHtml = "", expanded = false, mobile = false, escapeHtml: escapeHtml2 }) {
+  function renderQuestionRead({ item, view, categorized, errorsHtml = "", expanded = false, mobile = false, escapeHtml: escapeHtml3 }) {
     const toggle = `<button class="error-toggle-btn" data-delegated-click="toggleQuestionErrors('${item.id}')">${mobile ? "Erros " : ""}${categorized}/${view.errors}</button>`;
-    if (mobile) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="8"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml2(view.date)}</div><div class="mobile-card-title">${escapeHtml2(view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml2(view.topic)}</div></div><button class="btn ghost small" data-delegated-click="editQuestion('${item.id}')" aria-label="Editar registro">Editar</button></div><div class="mobile-card-metrics"><span>${view.resolved} questões</span><span>${view.correct} acertos</span><strong>${view.accuracy}%</strong>${toggle}</div></article></td></tr>${expanded ? errorsHtml : ""}`;
-    return `<tr class="history-read-row history-desktop-row" data-id="${item.id}"><td>${escapeHtml2(view.date)}</td><td><div class="row-primary">${escapeHtml2(view.subject)}</div></td><td><div class="row-secondary">${escapeHtml2(view.topic)}</div></td><td class="number-cell">${view.resolved}</td><td class="number-cell">${view.correct}</td><td class="number-cell">${view.accuracy}%</td><td>${toggle}</td><td><div class="row-actions"><button class="btn ghost small" data-delegated-click="editQuestion('${item.id}')">Editar</button></div></td></tr>${expanded ? errorsHtml : ""}`;
+    if (mobile) return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="8"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml3(view.date)}</div><div class="mobile-card-title">${escapeHtml3(view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml3(view.topic)}</div></div><button class="btn ghost small" data-delegated-click="editQuestion('${item.id}')" aria-label="Editar registro">Editar</button></div><div class="mobile-card-metrics"><span>${view.resolved} questões</span><span>${view.correct} acertos</span><strong>${view.accuracy}%</strong>${toggle}</div></article></td></tr>${expanded ? errorsHtml : ""}`;
+    return `<tr class="history-read-row history-desktop-row" data-id="${item.id}"><td>${escapeHtml3(view.date)}</td><td><div class="row-primary">${escapeHtml3(view.subject)}</div></td><td><div class="row-secondary">${escapeHtml3(view.topic)}</div></td><td class="number-cell">${view.resolved}</td><td class="number-cell">${view.correct}</td><td class="number-cell">${view.accuracy}%</td><td>${toggle}</td><td><div class="row-actions"><button class="btn ghost small" data-delegated-click="editQuestion('${item.id}')">Editar</button></div></td></tr>${expanded ? errorsHtml : ""}`;
   }
   function renderQuestionEdit({ item, draft, subjectOptions, topicOptions }) {
     return `<tr class="row-editing" data-id="${item.id}"><td colspan="8"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ""}" data-delegated-change="updateQuestionDraft('date',this.value)"></label><label>Disciplina<select data-delegated-change="updateQuestionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Tópico<select data-delegated-change="updateQuestionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topicOptions}</select></label><label>Resolvidas<input type="number" min="0" value="${Number(draft.resolved) || 0}" data-delegated-input="updateQuestionDraft('resolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(draft.correct) || 0}" data-delegated-input="updateQuestionDraft('correct',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelQuestionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveQuestionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteQuestaoRow('${item.id}')">Excluir</button></div></div></td></tr>`;
@@ -18766,7 +18784,7 @@
     return item;
   } });
   var subjectGoalService = createRecordService({ repository: appContext.repositories.metasPorDisciplina, clock: appClock, idGenerator: uid, prefix: "goal" });
-  var goalsService = createGoalService({ repository: appContext.repositories.settings, getDayOfWeek: (date2) => parseLocalDate2(date2)?.getDay() ?? (/* @__PURE__ */ new Date()).getDay() });
+  var goalsService = createGoalService({ repository: appContext.repositories.settings, getDayOfWeek: (date2) => parseLocalDate(date2)?.getDay() ?? (/* @__PURE__ */ new Date()).getDay() });
   var subjectService = createSubjectService({ repository: appContext.repositories.subjects, clock: appClock, idGenerator: uid, onEvent: addHistoryEvent });
   var topicHistoryService = createTopicHistoryService({ getState: () => state, clock: appClock, idGenerator: uid, toLocalDate: timestampToLocalDateISO });
   var StorageManager = appContext.storage;
@@ -19040,13 +19058,6 @@
   function timestampToLocalDateISO(value2) {
     return localDateISO(value2);
   }
-  function parseLocalDate2(iso) {
-    if (!iso || typeof iso !== "string") return null;
-    const [year, month, day] = iso.split("-").map(Number);
-    if (!year || !month || !day) return null;
-    const date2 = new Date(year, month - 1, day, 12, 0, 0, 0);
-    return Number.isNaN(date2.getTime()) ? null : date2;
-  }
   function todayISO() {
     return appContext.clock.today();
   }
@@ -19074,7 +19085,7 @@
     return [...set].sort();
   }
   function startOfWeek(d) {
-    const date2 = parseLocalDate2(d);
+    const date2 = parseLocalDate(d);
     if (!date2) return "";
     const day = date2.getDay();
     const diff = (day === 0 ? -6 : 1) - day;
@@ -19090,8 +19101,8 @@
     return monthKey(iso) === monthKey(todayISO());
   }
   function diasParaRevisao(iso) {
-    const alvo = parseLocalDate2(iso);
-    const hoje = parseLocalDate2(todayISO());
+    const alvo = parseLocalDate(iso);
+    const hoje = parseLocalDate(todayISO());
     if (!alvo || !hoje) return null;
     return Math.round((alvo - hoje) / 864e5);
   }
@@ -19565,7 +19576,7 @@
       return;
     }
     const index = Math.min(state.activeTimer.strategyStep || 0, strategy.steps.length - 1), step = strategy.steps[index];
-    el.innerHTML = `<strong>${escapeHtml(strategy.label)} · etapa ${index + 1}/${strategy.steps.length}</strong><span>${escapeHtml(step.label)} · ${step.minutes} min</span><button class="btn ghost small" data-delegated-click="advanceGuidedStrategy()">${index === strategy.steps.length - 1 ? "Concluir etapas" : "Próxima etapa"}</button>`;
+    el.innerHTML = `<strong>${escapeHtml2(strategy.label)} · etapa ${index + 1}/${strategy.steps.length}</strong><span>${escapeHtml2(step.label)} · ${step.minutes} min</span><button class="btn ghost small" data-delegated-click="advanceGuidedStrategy()">${index === strategy.steps.length - 1 ? "Concluir etapas" : "Próxima etapa"}</button>`;
   }
   function advanceGuidedStrategy() {
     const strategy = state.activeTimer?.strategy;
@@ -19589,7 +19600,7 @@
     const select = document.getElementById("timerTopicSelect");
     if (!select) return;
     const subject = getSubjectById(subjectId);
-    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject ? topicsForSelection(subject, selectedTopicId).map((topic) => `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || "(tópico sem nome)")}</option>`).join("") : "");
+    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject ? topicsForSelection(subject, selectedTopicId).map((topic) => `<option value="${escapeAttr2(topic.id)}">${escapeHtml2(topic.name || "(tópico sem nome)")}</option>`).join("") : "");
     select.value = selectedTopicId || "";
     if (select.value !== (selectedTopicId || "")) state.activeTimer.topicId = null;
   }
@@ -19597,7 +19608,7 @@
     const subjectSelect = document.getElementById("timerSubjectSelect");
     const typeSelect = document.getElementById("timerTypeSelect");
     if (!subjectSelect || !typeSelect) return;
-    subjectSelect.innerHTML = `<option value="">Sem disciplina específica</option>` + subjectsForSelection(state.activeTimer.subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}">${escapeHtml(subject.name)}${subject.archived ? " (arquivada)" : ""}</option>`).join("");
+    subjectSelect.innerHTML = `<option value="">Sem disciplina específica</option>` + subjectsForSelection(state.activeTimer.subjectId).map((subject) => `<option value="${escapeAttr2(subject.id)}">${escapeHtml2(subject.name)}${subject.archived ? " (arquivada)" : ""}</option>`).join("");
     subjectSelect.value = state.activeTimer.subjectId || "";
     if (subjectSelect.value !== (state.activeTimer.subjectId || "")) state.activeTimer.subjectId = null;
     populateTimerTopicSelect(state.activeTimer.subjectId, state.activeTimer.topicId);
@@ -19684,13 +19695,13 @@
   function populateSessionTopicSelect(subjectId, selectedTopicId = null) {
     const select = document.getElementById("sessionModalTopic");
     const subject = getSubjectById(subjectId);
-    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject ? topicsForSelection(subject, selectedTopicId).map((topic) => `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || "(tópico sem nome)")}</option>`).join("") : "");
+    select.innerHTML = `<option value="">Sem tópico específico</option>` + (subject ? topicsForSelection(subject, selectedTopicId).map((topic) => `<option value="${escapeAttr2(topic.id)}">${escapeHtml2(topic.name || "(tópico sem nome)")}</option>`).join("") : "");
   }
   function showSessionModal() {
     const overlay = document.getElementById("sessionModalOverlay");
     document.getElementById("sessionModalDuration").textContent = formatTimer(timerSeconds);
     const sel = document.getElementById("sessionModalSubject");
-    sel.innerHTML = `<option value="">Sem disciplina específica</option>` + subjectsForSelection(state.activeTimer.subjectId).map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}${s.archived ? " (arquivada)" : ""}</option>`).join("");
+    sel.innerHTML = `<option value="">Sem disciplina específica</option>` + subjectsForSelection(state.activeTimer.subjectId).map((s) => `<option value="${escapeAttr2(s.id)}">${escapeHtml2(s.name)}${s.archived ? " (arquivada)" : ""}</option>`).join("");
     sel.value = state.activeTimer.subjectId || "";
     populateSessionTopicSelect(sel.value, state.activeTimer.topicId);
     document.getElementById("sessionModalTopic").value = state.activeTimer.topicId || "";
@@ -19837,7 +19848,7 @@
   function renderHeatmap() {
     const activityDates = getActivityDates();
     const earliest = [...activityDates].sort()[0];
-    const historyDays = earliest ? Math.max(1, Math.round((parseLocalDate2(todayISO()) - parseLocalDate2(earliest)) / 864e5) + 1) : DEFAULT_STREAK_WEEKS * 7;
+    const historyDays = earliest ? Math.max(1, Math.round((parseLocalDate(todayISO()) - parseLocalDate(earliest)) / 864e5) + 1) : DEFAULT_STREAK_WEEKS * 7;
     const days = streakView.expanded ? historyDays : DEFAULT_STREAK_WEEKS * 7;
     const today = todayISO();
     const cells = [];
@@ -19852,7 +19863,7 @@
       const level = summary.level;
       const tooltip = heatmapTooltip(summary);
       const selected2 = streakView.selectedDate === summary.date ? "selected" : "";
-      return `<button type="button" class="heatmap-cell ${level > 0 ? "heat-" + level : ""} ${selected2}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" data-delegated-click="selectHeatmapDay('${summary.date}')"></button>`;
+      return `<button type="button" class="heatmap-cell ${level > 0 ? "heat-" + level : ""} ${selected2}" title="${escapeAttr2(tooltip)}" aria-label="${escapeAttr2(tooltip)}" data-delegated-click="selectHeatmapDay('${summary.date}')"></button>`;
     }).join("");
     const hasMetricActivity = heatmapModel.hasActivity;
     const activityStreak = computeStreak(activityDates);
@@ -19860,7 +19871,7 @@
     document.getElementById("heatmapContainer").innerHTML = `
     <div class="heatmap-toolbar" aria-label="Período da sequência">
       <select aria-label="Métrica do heatmap" data-delegated-change="setHeatmapFilter('metric',this.value)"><option value="hours" ${streakView.metric === "hours" ? "selected" : ""}>Horas</option><option value="questions" ${streakView.metric === "questions" ? "selected" : ""}>Questões</option><option value="reviews" ${streakView.metric === "reviews" ? "selected" : ""}>Revisões</option><option value="simulations" ${streakView.metric === "simulations" ? "selected" : ""}>Simulados</option></select>
-      <select aria-label="Disciplina do heatmap" data-delegated-change="setHeatmapFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map((subject) => `<option value="${escapeAttr(subject.id)}" ${streakView.subjectId === subject.id ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("")}</select>
+      <select aria-label="Disciplina do heatmap" data-delegated-change="setHeatmapFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map((subject) => `<option value="${escapeAttr2(subject.id)}" ${streakView.subjectId === subject.id ? "selected" : ""}>${escapeHtml2(subject.name)}</option>`).join("")}</select>
       <span>${streakView.expanded ? "Período completo" : `Últimas ${DEFAULT_STREAK_WEEKS} semanas`}</span>
       <button class="btn ghost small" data-delegated-click="toggleStreakExpanded()">${streakView.expanded ? "Mostrar menos" : "Ver período completo"}</button>
       <button class="btn ghost small" aria-pressed="${streakView.onlyActiveDays}" data-delegated-click="toggleStreakActiveDays()">${streakView.onlyActiveDays ? "Mostrar todos os dias" : "Apenas dias com atividade"}</button>
@@ -19880,7 +19891,7 @@
       <span>🎯 Meta atingida: ${pluralize(goalStreak, "dia")}</span>
       <span>${streakView.metric === "hours" ? "Cores: <50% · 50–99% · ≥100% da meta diária" : "Intensidade relativa da atividade selecionada"}</span>
     </div>
-    ${streakView.selectedDate ? `<div class="heatmap-detail" role="status">${escapeHtml(heatmapTooltip(getDailyStudySummary(streakView.selectedDate, { subjectId: streakView.subjectId })))} <button class="btn ghost small" data-delegated-click="viewSelectedHeatmapSessions()">Ver sessões deste dia</button></div>` : ""}
+    ${streakView.selectedDate ? `<div class="heatmap-detail" role="status">${escapeHtml2(heatmapTooltip(getDailyStudySummary(streakView.selectedDate, { subjectId: streakView.subjectId })))} <button class="btn ghost small" data-delegated-click="viewSelectedHeatmapSessions()">Ver sessões deste dia</button></div>` : ""}
   `;
   }
   function setHeatmapFilter(field, value2) {
@@ -19927,7 +19938,7 @@
     <line class="chart-grid" x1="${padL}" y1="${yFor(v)}" x2="${W - padR}" y2="${yFor(v)}"></line>
     <text x="2" y="${yFor(v) + 3}">${v}%</text>
   `).join("");
-    const dots = data.map((s, i) => `<circle class="chart-dot" cx="${xFor(i)}" cy="${yFor(notas[i])}" r="3"><title>${escapeHtml(s.nome || "Simulado")} (${formatDatePt(s.date)}): ${notas[i]}%</title></circle>`).join("");
+    const dots = data.map((s, i) => `<circle class="chart-dot" cx="${xFor(i)}" cy="${yFor(notas[i])}" r="3"><title>${escapeHtml2(s.nome || "Simulado")} (${formatDatePt(s.date)}): ${notas[i]}%</title></circle>`).join("");
     const labels = data.map((s, i) => `<text x="${xFor(i)}" y="${H - 6}" text-anchor="middle">${i + 1}</text>`).join("");
     container.innerHTML = `
     <svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">
@@ -20000,15 +20011,15 @@
       const comparison2 = trend.key === "insufficient" ? "Amostra insuficiente" : `${trend.previousAccuracy}% → ${trend.recentAccuracy}% (${trend.delta >= 0 ? "+" : ""}${trend.delta} p.p.)`;
       return `
     <tr>
-      <td>${escapeHtml(p.subject)}</td>
+      <td>${escapeHtml2(p.subject)}</td>
       <td style="text-align:right;">${p.acerto}%</td>
       <td style="text-align:right;">${p.total}</td>
-      <td style="text-align:right;color:${color};font-weight:600;">${trend.icon} ${escapeHtml(trend.label)}<small class="trend-comparison">${escapeHtml(comparison2)}</small></td>
+      <td style="text-align:right;color:${color};font-weight:600;">${trend.icon} ${escapeHtml2(trend.label)}<small class="trend-comparison">${escapeHtml2(comparison2)}</small></td>
     </tr>
   `;
     }).join("");
     const fracos = perf.filter((p) => p.acerto < 70 && p.total >= 5);
-    const alertasHtml = fracos.length ? fracos.map((p) => `<div class="desempenho-alerta">🔴 ${escapeHtml(p.subject)} precisa de atenção.</div>`).join("") : "";
+    const alertasHtml = fracos.length ? fracos.map((p) => `<div class="desempenho-alerta">🔴 ${escapeHtml2(p.subject)} precisa de atenção.</div>`).join("") : "";
     container.innerHTML = `
     <table class="weekly-history-table" style="margin-bottom:${fracos.length ? "12px" : "0"};">
       <thead>
@@ -20044,12 +20055,12 @@
     }
     const results = performGlobalSearch(q);
     if (results.length === 0) {
-      panel.innerHTML = `<div class="search-result-empty">Nada encontrado pra "${escapeHtml(q)}"</div>`;
+      panel.innerHTML = `<div class="search-result-empty">Nada encontrado pra "${escapeHtml2(q)}"</div>`;
     } else {
       panel.innerHTML = results.map((r) => `
       <div class="search-result-item" onmousedown="jumpToTopic('${r.subjectId}','${r.topicId}')">
-        <strong>${escapeHtml(r.topicName)}</strong>
-        <span>${escapeHtml(r.subjectName)}</span>
+        <strong>${escapeHtml2(r.topicName)}</strong>
+        <span>${escapeHtml2(r.subjectName)}</span>
       </div>
     `).join("");
     }
@@ -20128,7 +20139,7 @@
       bars2.innerHTML = activeSubjects().map((s) => {
         const pct2 = subjectProgress(s);
         return `<div class="bar-row">
-        <div class="bar-label" title="${escapeAttr(s.name)}">${escapeHtml(s.name)}</div>
+        <div class="bar-label" title="${escapeAttr2(s.name)}">${escapeHtml2(s.name)}</div>
         <div class="bar-track"><div class="bar-fill" style="width:${pct2}%"></div></div>
         <div class="bar-pct">${pct2}%</div>
       </div>`;
@@ -20148,8 +20159,8 @@
       ul.innerHTML = upcoming.map((c) => `
       <li>
         <span class="upcoming-date">${formatDatePt(c.date)}</span>
-        <span style="flex:1;"><strong>${escapeHtml(c.subject || "—")}</strong> — ${escapeHtml(unifiedItemLabel(c))}<span class="item-origin">${escapeHtml(c.origem)}</span></span>
-        <span class="subject-progress-pill">${escapeHtml(c.status || "Não iniciado")}</span>
+        <span style="flex:1;"><strong>${escapeHtml2(c.subject || "—")}</strong> — ${escapeHtml2(unifiedItemLabel(c))}<span class="item-origin">${escapeHtml2(c.origem)}</span></span>
+        <span class="subject-progress-pill">${escapeHtml2(c.status || "Não iniciado")}</span>
       </li>
     `).join("");
       if (footer) footer.innerHTML = renderCollectionFooter({ variant: "block", total: allUpcoming.length, visible: upcoming.length, step: 5, label: "revisões", showMoreAction: "changeUpcomingLimit(5)", showAllAction: "showAllUpcoming()", showLessAction: upcomingVisible > 5 ? "resetUpcomingLimit()" : "" }) + `<button class="btn ghost small upcoming-calendar-link" data-delegated-click="navigateKpi('calendario')">Ver todas no calendário</button>`;
@@ -20187,7 +20198,7 @@
           <span class="subject-toggle">${s.collapsed ? "▸" : "▾"}</span>
           <span class="subject-name" contenteditable="true"
                 data-delegated-click="event.stopPropagation()"
-                data-delegated-blur="renameSubject('${s.id}', this.textContent)">${escapeHtml(s.name)}</span>
+                data-delegated-blur="renameSubject('${s.id}', this.textContent)">${escapeHtml2(s.name)}</span>
         </div>
         <div class="subject-header-actions">
           <span class="subject-progress-pill">${pct2}% · ${subjectTopics.length} tópico${subjectTopics.length === 1 ? "" : "s"}</span>
@@ -20196,7 +20207,7 @@
         </div>
       </div>
       <div class="subject-body ${s.collapsed ? "collapsed" : ""}">
-        <div class="subject-topic-filters"><select aria-label="Filtrar tópicos de ${escapeAttr(s.name)} por status" data-delegated-change="setSubjectTopicFilter('${s.id}','status',this.value)"><option value="">Todos os status</option>${STATUS_OPTIONS.map((option) => `<option value="${option}" ${topicFilter.status === option ? "selected" : ""}>${option}</option>`).join("")}</select><select aria-label="Filtrar tópicos de ${escapeAttr(s.name)} por dificuldade" data-delegated-change="setSubjectTopicFilter('${s.id}','difficulty',this.value)"><option value="">Todas as dificuldades</option>${DIFFICULTY_OPTIONS.map((option) => `<option value="${option}" ${topicFilter.difficulty === option ? "selected" : ""}>${option}</option>`).join("")}</select></div>
+        <div class="subject-topic-filters"><select aria-label="Filtrar tópicos de ${escapeAttr2(s.name)} por status" data-delegated-change="setSubjectTopicFilter('${s.id}','status',this.value)"><option value="">Todos os status</option>${STATUS_OPTIONS.map((option) => `<option value="${option}" ${topicFilter.status === option ? "selected" : ""}>${option}</option>`).join("")}</select><select aria-label="Filtrar tópicos de ${escapeAttr2(s.name)} por dificuldade" data-delegated-change="setSubjectTopicFilter('${s.id}','difficulty',this.value)"><option value="">Todas as dificuldades</option>${DIFFICULTY_OPTIONS.map((option) => `<option value="${option}" ${topicFilter.difficulty === option ? "selected" : ""}>${option}</option>`).join("")}</select></div>
         <div class="ledger-scroll">
         <table class="ledger">
           <thead>
@@ -20213,12 +20224,12 @@
             ${visibleTopics.map((t) => `
               <tr data-status="${t.status}" id="topic-row-${t.id}">
                 <td>
-                  <input type="text" value="${escapeAttr(t.name)}" placeholder="Nome do tópico"
+                  <input type="text" value="${escapeAttr2(t.name)}" placeholder="Nome do tópico"
                      data-delegated-blur="updateTopic('${s.id}','${t.id}','name', this.value)">
-                  ${(t.examTags || []).length || t.tags?.length ? `<div class="tag-chips">${examBadges(t)}${(t.tags || []).map((tag) => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
+                  ${(t.examTags || []).length || t.tags?.length ? `<div class="tag-chips">${examBadges(t)}${(t.tags || []).map((tag) => `<span class="tag-chip">${escapeHtml2(tag)}</span>`).join("")}</div>` : ""}
                 </td>
                 <td>
-                  <input type="url" value="${escapeAttr(t.link || "")}" placeholder="https://..."
+                  <input type="url" value="${escapeAttr2(t.link || "")}" placeholder="https://..."
                      data-delegated-blur="updateTopic('${s.id}','${t.id}','link', this.value)">
                 </td>
                 <td>
@@ -20243,12 +20254,12 @@
               <tr class="notes-row">
                 <td colspan="6">
                   ${renderTopicAnalyticsState(s, t)}
-                  ${renderTopicStrategyEditor(s, t)}
+                  ${renderTopicStrategyEditor2(s, t)}
                   <input type="text" class="topic-tags-input" placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
-                    value="${escapeAttr((t.tags || []).join(", "))}"
+                    value="${escapeAttr2((t.tags || []).join(", "))}"
                     data-delegated-blur="updateTopicTags('${s.id}','${t.id}', this.value)">
                   <textarea class="topic-notes-textarea" placeholder="Resumo, pegadinha da prova, dúvida pra revisar depois..."
-                    data-delegated-blur="updateTopic('${s.id}','${t.id}','notes', this.value)">${escapeHtml(t.notes || "")}</textarea>
+                    data-delegated-blur="updateTopic('${s.id}','${t.id}','notes', this.value)">${escapeHtml2(t.notes || "")}</textarea>
                 </td>
               </tr>` : ""}
             `).join("")}
@@ -20262,7 +20273,7 @@
         ${archivedTopics.length ? `<div class="archived-section">
           <div class="archived-section-title">Tópicos arquivados</div>
           ${archivedTopics.map((t) => `<div class="archived-item">
-            <div><div class="archived-item-name">${escapeHtml(t.name || "Tópico sem nome")}</div><div class="archived-item-date">Arquivado em ${t.archivedAt ? new Date(t.archivedAt).toLocaleDateString("pt-BR") : "—"}</div></div>
+            <div><div class="archived-item-name">${escapeHtml2(t.name || "Tópico sem nome")}</div><div class="archived-item-date">Arquivado em ${t.archivedAt ? new Date(t.archivedAt).toLocaleDateString("pt-BR") : "—"}</div></div>
             <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreTopic('${s.id}','${t.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentTopicDelete('${s.id}','${t.id}')">Excluir definitivamente</button></div>
           </div>`).join("")}
         </div>` : ""}
@@ -20272,7 +20283,7 @@
     const archivedHtml = archived.length ? `<div class="archived-section">
     <div class="archived-section-title">Disciplinas arquivadas</div>
     ${archived.map((s) => `<div class="archived-item">
-      <div><div class="archived-item-name">${escapeHtml(s.name)}</div><div class="archived-item-date">Arquivada em ${s.archivedAt ? new Date(s.archivedAt).toLocaleDateString("pt-BR") : "—"} · ${pluralize(s.topics.length, "tópico")}</div></div>
+      <div><div class="archived-item-name">${escapeHtml2(s.name)}</div><div class="archived-item-date">Arquivada em ${s.archivedAt ? new Date(s.archivedAt).toLocaleDateString("pt-BR") : "—"} · ${pluralize(s.topics.length, "tópico")}</div></div>
       <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
     </div>`).join("")}
   </div>` : "";
@@ -20350,17 +20361,9 @@
     subjectService.updateTopic(subjectId, topicId, { prerequisites: [...next] });
     persistAndRender();
   }
-  function renderTopicStrategyEditor(subject, topic) {
+  function renderTopicStrategyEditor2(subject, topic) {
     const subjectConfig = state.examBlueprint.subjects.find((item) => item.subjectId === subject.id) || null;
-    const impact = resolveTopicExamImpact({ topic, subjectConfig, activeExamTags: state.examBlueprint.activeExamTags || [] });
-    const candidates = activeTopics().filter((item) => item.id !== topic.id);
-    const prerequisites = new Set(topic.prerequisites || []);
-    const choices = candidates.map((candidate) => {
-      const checked = prerequisites.has(candidate.id), cyclic = !checked && wouldCreatePrerequisiteCycle(topic.id, candidate.id, allTopics());
-      return `<label class="topic-prerequisite-choice"><input type="checkbox" ${checked ? "checked" : ""} ${cyclic ? "disabled" : ""} data-delegated-change="toggleTopicPrerequisite('${subject.id}','${topic.id}','${candidate.id}',this.checked)"><span>${escapeHtml(candidate.subjectName)} — ${escapeHtml(candidate.name || "Tópico sem nome")}${cyclic ? " · criaria ciclo" : ""}</span></label>`;
-    }).join("");
-    const value2 = impact.value == null ? "—" : Math.round(impact.value) + "%";
-    return `<div class="topic-strategy-summary"><strong>Impacto usado na prioridade: ${value2}</strong><span>${escapeHtml(impact.sourceLabel)}. Alterações invalidam a proposta semanal ainda não confirmada.</span></div><div class="topic-strategy-fields"><label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Herdar automaticamente" value="${topic.examImportance == null ? "" : Math.round(topic.examImportance * 100)}" data-delegated-blur="updateTopicStrategy('${subject.id}','${topic.id}','examImportance',this.value)"><small>Deixe vazio para usar catálogo ou peso da disciplina.</small></label><label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${topic.estimatedStudyMinutes == null ? "" : topic.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${subject.id}','${topic.id}','estimatedStudyMinutes',this.value)"><small>Define a carga restante, sem limitar cada sessão.</small></label></div><details class="topic-prerequisites"><summary>Pré-requisitos (${prerequisites.size})</summary><p>O tópico só entra no plano quando as bases estiverem concluídas ou com domínio suficiente.</p><div>${choices || "<small>Não há outros tópicos disponíveis.</small>"}</div></details>`;
+    return renderTopicStrategyEditor({ subject, topic, subjectConfig, activeExamTags: state.examBlueprint.activeExamTags || [], topics: allTopics() });
   }
   function renderTopicAnalyticsState(subject, topic) {
     const coverage = topic.status === "Concluído" ? 100 : topic.status === "Em andamento" || topic.status === "Revisão" ? 50 : 0;
@@ -20381,11 +20384,11 @@
     else if (coverage > 0) label2 = "Em estudo";
     if (blockers.length) label2 = "Bloqueado por pré-requisito";
     else if (coverage === 100 && needsMaintenance({ covered: true, masteryGap: mastery === null ? null : 100 - mastery, retentionRisk: retention === null ? null : 100 - retention, reviewHealthRisk: reviewHealth.value === null ? null : 100 - reviewHealth.value })) label2 = "Estudado, mas precisa consolidação";
-    const pctMetric = (name, value2, detail = "") => `<div class="topic-metric"><span>${name}</span><strong>${value2 === null ? "Aguardando dados" : Math.round(value2) + "%"}</strong><div class="topic-metric-track"><i style="width:${value2 === null ? 0 : Math.round(value2)}%"></i></div>${detail ? `<small>${escapeHtml(detail)}</small>` : ""}</div>`;
-    const textMetric = (name, value2, detail = "") => `<div class="topic-metric"><span>${name}</span><strong>${escapeHtml(value2)}</strong>${detail ? `<small>${escapeHtml(detail)}</small>` : ""}</div>`;
+    const pctMetric = (name, value2, detail = "") => `<div class="topic-metric"><span>${name}</span><strong>${value2 === null ? "Aguardando dados" : Math.round(value2) + "%"}</strong><div class="topic-metric-track"><i style="width:${value2 === null ? 0 : Math.round(value2)}%"></i></div>${detail ? `<small>${escapeHtml2(detail)}</small>` : ""}</div>`;
+    const textMetric = (name, value2, detail = "") => `<div class="topic-metric"><span>${name}</span><strong>${escapeHtml2(value2)}</strong>${detail ? `<small>${escapeHtml2(detail)}</small>` : ""}</div>`;
     const trendText = !trend || trend.key === "insufficient" ? "Aguardando dados" : `${trend.icon} ${trend.label}`;
     const eligibility = blockers.length ? `🔒 Aguarda ${blockers.map((id) => getTopicName(id) || id).join(", ")}` : coverage === 100 && !needsMaintenance({ covered: true, masteryGap: mastery === null ? null : 100 - mastery, retentionRisk: retention === null ? null : 100 - retention, reviewHealthRisk: reviewHealth.value === null ? null : 100 - reviewHealth.value }) ? "✓ Consolidado" : reviewHealth.level === "critical" ? "↻ Revisão recomendada" : masteryResult.evidence?.evidenceStrength < 0.35 ? "⚠ Poucos dados" : "★ Elegível para priorização";
-    return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label2)}</strong><small>${escapeHtml(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric("Cobertura", coverage)}${pctMetric("Domínio", mastery, mastery === null ? "Registre questões deste tópico" : "Evidência " + masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric("Retenção", retention, retention === null ? "Conclua revisões vinculadas" : "Evidência " + retentionResult.evidence.evidenceLabel.toLowerCase())}${pctMetric("Saúde da revisão", reviewHealth.value, reviewHealth.reasons[0])}${textMetric("Último contato", lastContact === null ? "Sem registro" : lastContact === 0 ? "Hoje" : lastContact + " dias")}${textMetric("Última revisão", lastReview === null ? "Sem registro" : lastReview === 0 ? "Hoje" : lastReview + " dias")}${pctMetric("Desempenho recente", performance, diagnosis?.performance?.resolved ? diagnosis.performance.resolved + " questões" : "Sem questões")}${textMetric("Tendência", trendText, trend?.delta == null ? "" : (trend.delta >= 0 ? "+" : "") + trend.delta + " p.p.")}</div></div>`;
+    return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml2(label2)}</strong><small>${escapeHtml2(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric("Cobertura", coverage)}${pctMetric("Domínio", mastery, mastery === null ? "Registre questões deste tópico" : "Evidência " + masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric("Retenção", retention, retention === null ? "Conclua revisões vinculadas" : "Evidência " + retentionResult.evidence.evidenceLabel.toLowerCase())}${pctMetric("Saúde da revisão", reviewHealth.value, reviewHealth.reasons[0])}${textMetric("Último contato", lastContact === null ? "Sem registro" : lastContact === 0 ? "Hoje" : lastContact + " dias")}${textMetric("Última revisão", lastReview === null ? "Sem registro" : lastReview === 0 ? "Hoje" : lastReview + " dias")}${pctMetric("Desempenho recente", performance, diagnosis?.performance?.resolved ? diagnosis.performance.resolved + " questões" : "Sem questões")}${textMetric("Tendência", trendText, trend?.delta == null ? "" : (trend.delta >= 0 ? "+" : "") + trend.delta + " p.p.")}</div></div>`;
   }
   function moveSubject(id, direction) {
     const active = activeSubjects();
@@ -20501,7 +20504,7 @@
     back.hidden = model.step === 1;
     next.textContent = model.step === 3 ? "Importar" : "Continuar";
     next.disabled = model.step === 3 ? preview.addedSubjects + preview.addedTopics + preview.metadataUpdates === 0 : !model.canContinue;
-    content.innerHTML = renderExamImport(model, { escapeHtml, escapeAttr, renderBadges: examBadges, sourceLabel: (source) => EXAM_SOURCES[source]?.label || source });
+    content.innerHTML = renderExamImport(model, { escapeHtml: escapeHtml2, escapeAttr: escapeAttr2, renderBadges: examBadges, sourceLabel: (source) => EXAM_SOURCES[source]?.label || source });
     if (model.step === 2) syncExamSubjectCheckboxes2();
   }
   function openExamImport(initialPreset = EXAM_PRESETS[0], origin = null) {
@@ -20803,7 +20806,7 @@
           else if (dias === 0) cls = "event-hoje";
         }
         const tooltip = `${evt.subject || "—"} · ${evt.label} (${evt.origem})`;
-        html += `<div class="cal-event ${cls}" title="${escapeAttr(tooltip)}">${escapeHtml(evt.subject || evt.label)}</div>`;
+        html += `<div class="cal-event ${cls}" title="${escapeAttr2(tooltip)}">${escapeHtml2(evt.subject || evt.label)}</div>`;
       });
       if (dayEvents.length > MONTH_MAX_EVENTS_PER_DAY) {
         html += `<div class="cal-event-more">+${dayEvents.length - MONTH_MAX_EVENTS_PER_DAY} mais</div>`;
@@ -20826,7 +20829,7 @@
   function renderCalendarFilters() {
     const sel = document.getElementById("calFilterSubject");
     const current = sel.value;
-    sel.innerHTML = `<option value="">Todas as disciplinas</option>` + state.subjects.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join("");
+    sel.innerHTML = `<option value="">Todas as disciplinas</option>` + state.subjects.map((s) => `<option value="${escapeAttr2(s.id)}">${escapeHtml2(s.name)}</option>`).join("");
     sel.value = current;
     const selMes = document.getElementById("calFilterMes");
     const currentMes = selMes.value;
@@ -20903,11 +20906,11 @@
     }
   }
   function renderCalendarReadRow(item) {
-    return renderCalendarRead({ item, view: calendarViewModel(item), mobile: isMobileHistoryLayout(), escapeHtml, daysPill: diasParaRevisaoPill(item.date, item.status), statusClass: STATUS_CLASS, today: todayISO() });
+    return renderCalendarRead({ item, view: calendarViewModel(item), mobile: isMobileHistoryLayout(), escapeHtml: escapeHtml2, daysPill: diasParaRevisaoPill(item.date, item.status), statusClass: STATUS_CLASS, today: todayISO() });
   }
   function renderCalendarEditRow(item) {
     const draft = calendarUiState.draft, subjectId = entitySubjectId(draft);
-    return renderCalendarEdit({ item, draft, subjectOptions: subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join(""), statusOptions: STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft?.status ? "selected" : ""}>${option}</option>`).join(""), reviewOptions: REVIEW_OPTIONS.map((option) => `<option value="${option}" ${option === draft?.reviewType ? "selected" : ""}>${option}</option>`).join(""), escapeAttr });
+    return renderCalendarEdit({ item, draft, subjectOptions: subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr2(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml2(subject.name)}</option>`).join(""), statusOptions: STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft?.status ? "selected" : ""}>${option}</option>`).join(""), reviewOptions: REVIEW_OPTIONS.map((option) => `<option value="${option}" ${option === draft?.reviewType ? "selected" : ""}>${option}</option>`).join(""), escapeAttr: escapeAttr2 });
   }
   function renderCalendar() {
     const body = document.getElementById("calBody");
@@ -20948,7 +20951,7 @@
   document.getElementById("addSubjectBtn").addEventListener("click", addSubject);
   document.getElementById("addCalRowBtn").addEventListener("click", addCalRow);
   function addDays(iso, days) {
-    const d = parseLocalDate2(iso);
+    const d = parseLocalDate(iso);
     if (!d) return "";
     d.setDate(d.getDate() + Number(days || 0));
     return localDateISO(d);
@@ -21033,7 +21036,7 @@
   function renderAgendaFilters() {
     const sel = document.getElementById("agendaFilterSubject");
     const current = sel.value;
-    sel.innerHTML = `<option value="">Todas as disciplinas</option>` + state.subjects.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join("");
+    sel.innerHTML = `<option value="">Todas as disciplinas</option>` + state.subjects.map((s) => `<option value="${escapeAttr2(s.id)}">${escapeHtml2(s.name)}</option>`).join("");
     sel.value = current;
     const selMes = document.getElementById("agendaFilterMes");
     const currentMes = selMes.value;
@@ -21147,12 +21150,12 @@
     showToast(`Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState.nextReviewDate)}.`);
   }
   function renderAgendaReadRow(item) {
-    return renderReviewRead({ item, view: agendaViewModel(item), mobile: isMobileHistoryLayout(), escapeHtml, escapeAttr, daysPill: diasParaRevisaoPill(item.date, item.status), difficultyClass: DIFFICULTY_CLASS, statusClass: STATUS_CLASS, ratingLabel: (key2) => REVIEW_RATINGS[key2]?.label || key2, today: todayISO() });
+    return renderReviewRead({ item, view: agendaViewModel(item), mobile: isMobileHistoryLayout(), escapeHtml: escapeHtml2, escapeAttr: escapeAttr2, daysPill: diasParaRevisaoPill(item.date, item.status), difficultyClass: DIFFICULTY_CLASS, statusClass: STATUS_CLASS, ratingLabel: (key2) => REVIEW_RATINGS[key2]?.label || key2, today: todayISO() });
   }
   function renderAgendaEditRow(item) {
     const draft = agendaUiState.draft, subjectId = entitySubjectId(draft);
     if (!draft) return "";
-    return renderReviewEdit({ item, draft, subjectOptions: subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join(""), topicName: draft.topicId ? getTopicName(draft.topicId) : draft.topic || "", typeOptions: TIPO_AGENDA_OPTIONS.map((option) => `<option value="${option}" ${option === draft.tipo ? "selected" : ""}>${option}</option>`).join(""), statusOptions: STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft.status ? "selected" : ""}>${option}</option>`).join(""), escapeAttr });
+    return renderReviewEdit({ item, draft, subjectOptions: subjectsForSelection(subjectId).map((subject) => `<option value="${escapeAttr2(subject.id)}" ${subject.id === subjectId ? "selected" : ""}>${escapeHtml2(subject.name)}</option>`).join(""), topicName: draft.topicId ? getTopicName(draft.topicId) : draft.topic || "", typeOptions: TIPO_AGENDA_OPTIONS.map((option) => `<option value="${option}" ${option === draft.tipo ? "selected" : ""}>${option}</option>`).join(""), statusOptions: STATUS_OPTIONS.map((option) => `<option value="${option}" ${option === draft.status ? "selected" : ""}>${option}</option>`).join(""), escapeAttr: escapeAttr2 });
   }
   function renderAgenda() {
     const body = document.getElementById("agendaBody");
@@ -21403,13 +21406,13 @@
   }
   function renderQuestionReadRow(q) {
     const vm = questionViewModel(q), expanded = openQuestionErrorIds.has(q.id);
-    return renderQuestionRead({ item: q, view: vm, categorized: questionCategorizedErrors(q), errorsHtml: expanded ? renderQuestionErrorFields(q) : "", expanded, mobile: isMobileHistoryLayout(), escapeHtml });
+    return renderQuestionRead({ item: q, view: vm, categorized: questionCategorizedErrors(q), errorsHtml: expanded ? renderQuestionErrorFields(q) : "", expanded, mobile: isMobileHistoryLayout(), escapeHtml: escapeHtml2 });
   }
   function renderQuestionEditRow(q) {
     const d = questionEditController.state.draft;
     const subjectId = entitySubjectId(d);
     const topics = topicsForSelection(subjectId, d.topicId);
-    return renderQuestionEdit({ item: q, draft: d, subjectOptions: subjectsForSelection(subjectId).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === subjectId ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join(""), topicOptions: topics.map((t) => `<option value="${escapeAttr(t.id)}" ${t.id === d.topicId ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("") });
+    return renderQuestionEdit({ item: q, draft: d, subjectOptions: subjectsForSelection(subjectId).map((s) => `<option value="${escapeAttr2(s.id)}" ${s.id === subjectId ? "selected" : ""}>${escapeHtml2(s.name)}</option>`).join(""), topicOptions: topics.map((t) => `<option value="${escapeAttr2(t.id)}" ${t.id === d.topicId ? "selected" : ""}>${escapeHtml2(t.name)}</option>`).join("") });
   }
   function renderQuestoes() {
     const body = document.getElementById("questoesBody");
@@ -21656,7 +21659,7 @@
     if (!subjects.some((subject) => subject.id === performanceSubjectId)) {
       performanceSubjectId = subjects.find((subject) => validQuestionRecords().some((question) => entitySubjectId(question) === subject.id))?.id || subjects[0]?.id || null;
     }
-    select.innerHTML = subjects.map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === performanceSubjectId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("");
+    select.innerHTML = subjects.map((subject) => `<option value="${escapeAttr2(subject.id)}" ${subject.id === performanceSubjectId ? "selected" : ""}>${escapeHtml2(subject.name)}</option>`).join("");
     const summary = document.getElementById("questionAnalyticsSummary");
     const bars2 = document.getElementById("topicPerformanceBars");
     const weeklyEl = document.getElementById("subjectWeeklyTrend");
@@ -21692,7 +21695,7 @@
     bars2.innerHTML = performanceTabs + (filteredPerformance.length ? visiblePerformance.map((topic) => {
       const width = topic.accuracy === null ? 0 : topic.accuracy;
       return `<div class="performance-row">
-      <div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId, topic.id).score}/100</div></div>
+      <div class="performance-name">${escapeHtml2(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId, topic.id).score}/100</div></div>
       <div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div>
       <div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? "—" : topic.accuracy + "%"}</div>
     </div>`;
@@ -21710,9 +21713,9 @@
     const scopedRecords = validQuestionRecords().filter((question) => entitySubjectId(question) === performanceSubjectId && (!errorAnalysisView.topicId || question.topicId === errorAnalysisView.topicId));
     const profile = buildErrorProfile(scopedRecords.filter((question) => question.date >= currentStart && question.date <= todayISO()));
     const previousProfile = buildErrorProfile(scopedRecords.filter((question) => question.date >= previousStart && question.date <= previousEnd));
-    const errorToolbar = `<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7, 30, 60, 90].map((days) => `<option value="${days}" ${errorAnalysisView.days === days ? "selected" : ""}>Últimos ${days} dias</option>`).join("")}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${subjectTopics.map((topic) => `<option value="${escapeAttr(topic.id)}" ${errorAnalysisView.topicId === topic.id ? "selected" : ""}>${escapeHtml(topic.name)}</option>`).join("")}</select></div>`;
+    const errorToolbar = `<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7, 30, 60, 90].map((days) => `<option value="${days}" ${errorAnalysisView.days === days ? "selected" : ""}>Últimos ${days} dias</option>`).join("")}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${subjectTopics.map((topic) => `<option value="${escapeAttr2(topic.id)}" ${errorAnalysisView.topicId === topic.id ? "selected" : ""}>${escapeHtml2(topic.name)}</option>`).join("")}</select></div>`;
     const errorModel = buildErrorAnalysisViewModel({ current: profile, previous: previousProfile, periodLabel: formatDatePt(currentStart) + " a " + formatDatePt(todayISO()) });
-    profileEl.innerHTML = renderErrorAnalysis(errorModel, { toolbar: errorToolbar, escapeHtml });
+    profileEl.innerHTML = renderErrorAnalysis(errorModel, { toolbar: errorToolbar, escapeHtml: escapeHtml2 });
   }
   function simuladoEffectiveCounts(sim) {
     if (sim.breakdown && sim.breakdown.length > 0) {
@@ -21772,19 +21775,19 @@
     const vm = simulationViewModel(sim);
     const hasBreakdown = sim.breakdown && sim.breakdown.length > 0;
     const details = `<button class="btn ghost small ${hasBreakdown ? "has-notes" : ""}" data-delegated-click="toggleBreakdown('${sim.id}')">${openBreakdownIds.has(sim.id) ? "Ocultar detalhes" : "Ver desempenho"}</button>`;
-    if (isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${sim.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)}</div><div class="mobile-card-title">${escapeHtml(vm.name)}</div></div><button class="btn ghost small" data-delegated-click="editSimulation('${sim.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${vm.correct} / ${vm.total}</span><strong>Nota ${vm.score}%</strong>${details}</div></article></td></tr>${openBreakdownIds.has(sim.id) ? renderSimulationBreakdown(sim) : ""}`;
-    return `<tr class="history-read-row history-desktop-row" data-id="${sim.id}"><td>${escapeHtml(vm.date)}</td><td><div class="row-primary">${escapeHtml(vm.name)}</div></td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.total}</td><td class="number-cell">${vm.score}%</td><td>${details}</td><td><button class="btn ghost small" data-delegated-click="editSimulation('${sim.id}')">Editar</button></td></tr>${openBreakdownIds.has(sim.id) ? renderSimulationBreakdown(sim) : ""}`;
+    if (isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${sim.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml2(vm.date)}</div><div class="mobile-card-title">${escapeHtml2(vm.name)}</div></div><button class="btn ghost small" data-delegated-click="editSimulation('${sim.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${vm.correct} / ${vm.total}</span><strong>Nota ${vm.score}%</strong>${details}</div></article></td></tr>${openBreakdownIds.has(sim.id) ? renderSimulationBreakdown(sim) : ""}`;
+    return `<tr class="history-read-row history-desktop-row" data-id="${sim.id}"><td>${escapeHtml2(vm.date)}</td><td><div class="row-primary">${escapeHtml2(vm.name)}</div></td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.total}</td><td class="number-cell">${vm.score}%</td><td>${details}</td><td><button class="btn ghost small" data-delegated-click="editSimulation('${sim.id}')">Editar</button></td></tr>${openBreakdownIds.has(sim.id) ? renderSimulationBreakdown(sim) : ""}`;
   }
   function renderSimulationBreakdown(sim) {
     return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><strong class="breakdown-title">Desempenho por disciplina</strong><div class="breakdown-list">${(sim.breakdown || []).map((b) => {
       const total = Number(b.total) || 0, correct = Number(b.correct) || 0, accuracy2 = total ? Math.round(correct / total * 100) : null;
-      return `<div class="breakdown-line"><label class="breakdown-subject"><span>Disciplina</span><select class="select-control" data-delegated-change="updateBreakdownRow('${sim.id}','${b.id}','subjectId',this.value)"><option value="">Selecione</option>${subjectsForSelection(entitySubjectId(b)).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === entitySubjectId(b) ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}</select></label><label><span>Acertos</span><input type="number" min="0" max="${total || 999}" value="${correct}" placeholder="0" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','correct',this.value)"></label><label><span>Questões</span><input type="number" min="0" value="${total}" placeholder="0" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','total',this.value)"></label><div class="breakdown-result"><span>Aproveitamento</span><strong>${accuracy2 == null ? "—" : accuracy2 + "%"}</strong></div><button class="icon-btn" aria-label="Excluir disciplina do simulado" data-delegated-click="deleteBreakdownRow('${sim.id}','${b.id}')">✕</button></div>`;
+      return `<div class="breakdown-line"><label class="breakdown-subject"><span>Disciplina</span><select class="select-control" data-delegated-change="updateBreakdownRow('${sim.id}','${b.id}','subjectId',this.value)"><option value="">Selecione</option>${subjectsForSelection(entitySubjectId(b)).map((s) => `<option value="${escapeAttr2(s.id)}" ${s.id === entitySubjectId(b) ? "selected" : ""}>${escapeHtml2(s.name)}</option>`).join("")}</select></label><label><span>Acertos</span><input type="number" min="0" max="${total || 999}" value="${correct}" placeholder="0" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','correct',this.value)"></label><label><span>Questões</span><input type="number" min="0" value="${total}" placeholder="0" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','total',this.value)"></label><div class="breakdown-result"><span>Aproveitamento</span><strong>${accuracy2 == null ? "—" : accuracy2 + "%"}</strong></div><button class="icon-btn" aria-label="Excluir disciplina do simulado" data-delegated-click="deleteBreakdownRow('${sim.id}','${b.id}')">✕</button></div>`;
     }).join("")}</div><button class="btn ghost small breakdown-add-btn" data-delegated-click="addBreakdownRow('${sim.id}')">+ Adicionar disciplina</button></div></td></tr>`;
   }
   function renderSimulationEditRow(sim) {
     const d = simulationEditController.state.draft;
     const hasBreakdown = d.breakdown && d.breakdown.length > 0;
-    return `<tr class="row-editing" data-id="${sim.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date || ""}" data-delegated-change="updateSimulationDraft('date',this.value)"></label><label>Nome<input type="text" value="${escapeAttr(d.nome || "")}" data-delegated-input="updateSimulationDraft('nome',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct) || 0}" ${hasBreakdown ? "disabled" : ""} data-delegated-input="updateSimulationDraft('correct',this.value)"></label><label>Total<input type="number" min="0" value="${Number(d.total) || 0}" ${hasBreakdown ? "disabled" : ""} data-delegated-input="updateSimulationDraft('total',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelSimulationEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveSimulationEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteSimuladoRow('${sim.id}')">Excluir</button></div></div></td></tr>`;
+    return `<tr class="row-editing" data-id="${sim.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date || ""}" data-delegated-change="updateSimulationDraft('date',this.value)"></label><label>Nome<input type="text" value="${escapeAttr2(d.nome || "")}" data-delegated-input="updateSimulationDraft('nome',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct) || 0}" ${hasBreakdown ? "disabled" : ""} data-delegated-input="updateSimulationDraft('correct',this.value)"></label><label>Total<input type="number" min="0" value="${Number(d.total) || 0}" ${hasBreakdown ? "disabled" : ""} data-delegated-input="updateSimulationDraft('total',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelSimulationEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveSimulationEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteSimuladoRow('${sim.id}')">Excluir</button></div></div></td></tr>`;
   }
   function renderSimulados() {
     const body = document.getElementById("simuladosBody");
@@ -21832,7 +21835,7 @@
   }
   function updateMetaHoursDay(day, value2) {
     studyPlanPreview = null;
-    goalsService.updateDailyHours(day, value2, { isToday: Number(day) === parseLocalDate2(todayISO()).getDay() });
+    goalsService.updateDailyHours(day, value2, { isToday: Number(day) === parseLocalDate(todayISO()).getDay() });
     persistAndRender();
   }
   function applyTodayGoalToAllDays() {
@@ -21849,7 +21852,7 @@
   function renderWeeklyHoursGoals() {
     const container = document.getElementById("weeklyHoursGoals");
     if (!container) return;
-    const todayDay = parseLocalDate2(todayISO()).getDay();
+    const todayDay = parseLocalDate(todayISO()).getDay();
     const availability = buildWeeklyAvailability(state.metas.horasPorDia);
     container.innerHTML = `<div class="weekly-availability-summary"><div><strong>${formatPlanMinutes(availability.totalMinutes)}</strong><span>disponíveis por semana</span></div><div><strong>${availability.activeDays}</strong><span>dias com estudo</span></div><div><strong>${formatPlanMinutes(Math.round(availability.averageHours * 60))}</strong><span>média por dia ativo</span></div><div><strong>${formatPlanMinutes(Math.round(metaHoursToday() * 60))}</strong><span>disponíveis hoje</span></div></div>${availability.state === "empty" ? '<p class="availability-warning">Defina ao menos um dia para habilitar recomendações e planejamento.</p>' : ""}<div class="weekday-goal-actions"><button class="btn ghost small" data-delegated-click="applyTodayGoalToAllDays()">Aplicar hoje a todos</button><button class="btn ghost small" data-delegated-click="clearWeekendGoals()">Limpar fim de semana</button></div><div class="weekday-goals">${WEEKDAY_LABELS.map(
       (label2, day) => `<label class="weekday-goal ${day === todayDay ? "today" : ""}"><span>${label2}${day === todayDay ? " · hoje" : ""}</span><div><input type="number" min="0" max="24" step="0.25" value="${metaHoursForDate(addDays(startOfWeek(todayISO()), day === 0 ? 6 : day - 1))}" data-delegated-blur="updateMetaHoursDay(${day},this.value)" aria-label="Disponibilidade em horas de ${label2}"><small>h</small></div></label>`
@@ -21888,7 +21891,7 @@
     <div class="meta-card">
       <div class="meta-info">
         <div class="meta-name">${c.label}</div>
-        <div class="meta-formula">=Atingido/Meta · ${escapeHtml(c.desc)}</div>
+        <div class="meta-formula">=Atingido/Meta · ${escapeHtml2(c.desc)}</div>
       </div>
       <div class="meta-progress-block">
         <div class="meta-progress-track">
@@ -21935,9 +21938,9 @@
     const blueprint = state.examBlueprint;
     const rows = activeSubjects().map((subject) => {
       const config = blueprint.subjects.find((item) => item.subjectId === subject.id);
-      return `<div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="Usar meta geral" data-delegated-blur="updateExamSubject('${subject.id}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ""}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)">${config?.sourceRef ? `<small class="field-inheritance">${escapeHtml(EXAM_SOURCES[config.sourceRef]?.label || config.sourceRef)}${config.official ? " · oficial" : ""}</small>` : ""}</label></div>`;
+      return `<div class="exam-subject-row"><strong>${escapeHtml2(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="Usar meta geral" data-delegated-blur="updateExamSubject('${subject.id}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ""}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)">${config?.sourceRef ? `<small class="field-inheritance">${escapeHtml2(EXAM_SOURCES[config.sourceRef]?.label || config.sourceRef)}${config.official ? " · oficial" : ""}</small>` : ""}</label></div>`;
     }).join("");
-    container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[["bb-escriturario", "Banco do Brasil — Escriturário"], ["caixa-tbn", "Caixa — TBN"], ["caixa-tbn-ti", "Caixa — TBN TI"]].map(([tag, label2]) => `<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags || []).includes(tag) ? "checked" : ""}> ${label2}</label>`).join("")}<small>Somente os concursos marcados influenciam prontidão, prioridade e planejamento. Se nenhum for selecionado, todo o conteúdo continuará elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+    container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr2(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[["bb-escriturario", "Banco do Brasil — Escriturário"], ["caixa-tbn", "Caixa — TBN"], ["caixa-tbn-ti", "Caixa — TBN TI"]].map(([tag, label2]) => `<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags || []).includes(tag) ? "checked" : ""}> ${label2}</label>`).join("")}<small>Somente os concursos marcados influenciam prontidão, prioridade e planejamento. Se nenhum for selecionado, todo o conteúdo continuará elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
     renderExamMasteryMatrix();
   }
   function topicExamMetricForActiveScope(topic) {
@@ -21948,9 +21951,9 @@
     const el = document.getElementById("examMasteryMatrix");
     if (!el) return;
     const candidates = intelligenceCandidates(), metrics = Object.fromEntries(candidates.map((c) => [c.topicId, { coverage: c.coverage, mastery: { value: c.mastery, confidence: c.evidenceStrength }, retention: { value: c.retention }, trend: c.trend, priority: { value: c.score } }])), rows = buildExamMasteryMatrix({ subjects: state.subjects, blueprint: state.examBlueprint, metricsByTopic: metrics, activeExamTags: state.examBlueprint.activeExamTags || [] });
-    el.innerHTML = rows.length ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a, b) => (b.gap ?? -999) - (a.gap ?? -999)).map((row) => `<details><summary><strong>${escapeHtml(row.name)}</strong><span>${row.coverage ?? "—"}%</span><span>${row.mastery ?? "—"}%</span><span>${row.retention ?? "—"}%</span><span>${row.gap == null ? "—" : (row.gap > 0 ? "-" : "") + Math.abs(row.gap) + " pts"}</span></summary>${row.topics.map((t) => {
+    el.innerHTML = rows.length ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a, b) => (b.gap ?? -999) - (a.gap ?? -999)).map((row) => `<details><summary><strong>${escapeHtml2(row.name)}</strong><span>${row.coverage ?? "—"}%</span><span>${row.mastery ?? "—"}%</span><span>${row.retention ?? "—"}%</span><span>${row.gap == null ? "—" : (row.gap > 0 ? "-" : "") + Math.abs(row.gap) + " pts"}</span></summary>${row.topics.map((t) => {
       const metric = topicExamMetricForActiveScope(t), meta = [metric?.questionWeight != null ? metric.questionWeight + " pt/questão" : null, t.incidence?.level ? "incidência " + t.incidence.level.toLowerCase() : null].filter(Boolean).join(" · ");
-      return `<div class="mastery-topic"><span>${escapeHtml(t.name)}${meta ? `<small>${escapeHtml(meta)} · estimativa por tópico</small>` : ""}</span><span>${t.coverage}%</span><span>${t.mastery ?? "—"}%</span><span>${t.retention ?? "—"}%</span><span>${escapeHtml(t.state)}</span></div>`;
+      return `<div class="mastery-topic"><span>${escapeHtml2(t.name)}${meta ? `<small>${escapeHtml2(meta)} · estimativa por tópico</small>` : ""}</span><span>${t.coverage}%</span><span>${t.mastery ?? "—"}%</span><span>${t.retention ?? "—"}%</span><span>${escapeHtml2(t.state)}</span></div>`;
     }).join("")}</details>`).join("")}</div>` : '<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>';
   }
   var studyPlanPreview = null;
@@ -22019,7 +22022,7 @@
     if (!studyPlanPreview) {
       if (dailyPlanPreview) {
         const proposal = dailyPlanPreview, rows = proposal.days.map((day) => `<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`).join("");
-        container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${proposal.days.length}</strong><span>Dias utilizados</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Não alocados</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state === "proposal" ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
+        container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${proposal.days.length}</strong><span>Dias utilizados</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Não alocados</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state === "proposal" ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml2(proposal.reason)}</div><button class="btn ghost small" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
         return;
       }
       const activeOperation = [...latest?.dailyPlanOperations || []].reverse().find((item) => !item.undoneAt);
@@ -22027,13 +22030,13 @@
       return;
     }
     const plan = studyPlanPreview;
-    const blockedNote = plan.blockedTopics?.length ? `<details class="blocked-topics-note"><summary>${plan.blockedTopics.length} tópico${plan.blockedTopics.length === 1 ? " aguarda" : "s aguardam"} pré-requisitos</summary><p>${plan.blockedTopics.slice(0, 5).map((item) => escapeHtml(item.topicName || item.id) + " — requer " + item.prerequisites.map((id) => escapeHtml(getTopicName(id) || id)).join(", ")).join("; ")}${plan.blockedTopics.length > 5 ? ` · e mais ${plan.blockedTopics.length - 5}` : ""}.</p><small>Conclua a base ou reforce o domínio e recalcule a proposta.</small></details>` : "";
+    const blockedNote = plan.blockedTopics?.length ? `<details class="blocked-topics-note"><summary>${plan.blockedTopics.length} tópico${plan.blockedTopics.length === 1 ? " aguarda" : "s aguardam"} pré-requisitos</summary><p>${plan.blockedTopics.slice(0, 5).map((item) => escapeHtml2(item.topicName || item.id) + " — requer " + item.prerequisites.map((id) => escapeHtml2(getTopicName(id) || id)).join(", ")).join("; ")}${plan.blockedTopics.length > 5 ? ` · e mais ${plan.blockedTopics.length - 5}` : ""}.</p><small>Conclua a base ou reforce o domínio e recalcule a proposta.</small></details>` : "";
     if (plan.state === "insufficient") {
       container.innerHTML = `<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;
       return;
     }
-    const subjectRows = plan.subjects.map((item) => `<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join("");
-    const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? " · manutenção" : ""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
+    const subjectRows = plan.subjects.map((item) => `<div><strong>${escapeHtml2(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join("");
+    const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml2(item.subjectName)}</strong> — ${escapeHtml2(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? " · manutenção" : ""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
     container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? "-" : "+"}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === "deficit" ? "ritmo insuficiente" : plan.paceState === "surplus" ? "capacidade disponível" : "ritmo equilibrado"}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || "não avaliada"}${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
   }
   function updateExamBlueprint(field, value2) {
@@ -22086,7 +22089,7 @@
   function renderMetasPorDisciplina() {
     const sel = document.getElementById("novaMetaDisciplinaSelect");
     const current = sel.value;
-    sel.innerHTML = activeSubjects().map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join("") || `<option value="">Nenhuma disciplina cadastrada</option>`;
+    sel.innerHTML = activeSubjects().map((s) => `<option value="${escapeAttr2(s.id)}">${escapeHtml2(s.name)}</option>`).join("") || `<option value="">Nenhuma disciplina cadastrada</option>`;
     if (current) sel.value = current;
     const container = document.getElementById("metasPorDisciplinaContainer");
     if (state.metasPorDisciplina.length === 0) {
@@ -22101,7 +22104,7 @@
       return `
     <div class="meta-card">
       <div class="meta-info">
-        <div class="meta-name">${escapeHtml(subjectId ? getSubjectName(subjectId) : "(sem disciplina)")}</div>
+        <div class="meta-name">${escapeHtml2(subjectId ? getSubjectName(subjectId) : "(sem disciplina)")}</div>
         <div class="meta-formula">Questões resolvidas nesta semana</div>
       </div>
       <div class="meta-progress-block">
@@ -22454,11 +22457,11 @@
       const dots = values.map((value2, index) => {
         if (value2 === null) return "";
         const a = angleFor(index), r = maxR * (value2 / 100);
-        return `<circle class="radar-dot radar-series-${seriesIndex + 1}" cx="${cx + r * Math.cos(a)}" cy="${cy + r * Math.sin(a)}" r="4"><title>${escapeHtml(model.name)} · ${axisMeta[index][1]}: ${value2}/100</title></circle>`;
+        return `<circle class="radar-dot radar-series-${seriesIndex + 1}" cx="${cx + r * Math.cos(a)}" cy="${cy + r * Math.sin(a)}" r="4"><title>${escapeHtml2(model.name)} · ${axisMeta[index][1]}: ${value2}/100</title></circle>`;
       }).join("");
       return shape + dots;
     }).join("");
-    const options = (selectedId = "") => `<option value="">Nenhuma</option>` + subjects.map((subject) => `<option value="${escapeAttr(subject.id)}" ${subject.id === selectedId ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("");
+    const options = (selectedId = "") => `<option value="">Nenhuma</option>` + subjects.map((subject) => `<option value="${escapeAttr2(subject.id)}" ${subject.id === selectedId ? "selected" : ""}>${escapeHtml2(subject.name)}</option>`).join("");
     container.innerHTML = `
     <div class="radar-toolbar"><label>Disciplina 1<select data-delegated-change="setRadarSubject(0,this.value)">${options(radarView.subjectIds[0])}</select></label><label>Comparar com<select data-delegated-change="setRadarSubject(1,this.value)">${options(radarView.subjectIds[1])}</select></label></div>
     <svg class="radar-svg" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:460px;height:auto;display:block;margin:0 auto;">
@@ -22467,7 +22470,7 @@
       ${series}
       ${labels}
     </svg>
-    <div class="radar-analysis">${selected2.map((model, index) => `<section><h4><span class="radar-key radar-key-${index + 1}"></span>${escapeHtml(model.name)}</h4><p>${escapeHtml(model.interpretation)}</p><small>${model.availableAxes} de 5 eixos · confiança ${model.confidenceLabel.toLowerCase()}</small><dl>${axisMeta.map(([key2, label2]) => `<div><dt>${label2}</dt><dd>${model.axes[key2] === null ? "Aguardando dados" : model.axes[key2] + "/100"}</dd></div>`).join("")}</dl></section>`).join("")}</div>
+    <div class="radar-analysis">${selected2.map((model, index) => `<section><h4><span class="radar-key radar-key-${index + 1}"></span>${escapeHtml2(model.name)}</h4><p>${escapeHtml2(model.interpretation)}</p><small>${model.availableAxes} de 5 eixos · confiança ${model.confidenceLabel.toLowerCase()}</small><dl>${axisMeta.map(([key2, label2]) => `<div><dt>${label2}</dt><dd>${model.axes[key2] === null ? "Aguardando dados" : model.axes[key2] + "/100"}</dd></div>`).join("")}</dl></section>`).join("")}</div>
   `;
   }
   function renderSimuladosPlanejados() {
@@ -22481,7 +22484,7 @@
       ul.innerHTML = planejados.map((s) => `
       <li>
         <span class="upcoming-date">${formatDatePt(s.date)}</span>
-        <span style="flex:1;">${escapeHtml(s.nome || "Simulado sem nome")}</span>
+        <span style="flex:1;">${escapeHtml2(s.nome || "Simulado sem nome")}</span>
         <span class="subject-progress-pill">${s.date === today ? "hoje" : "planejado"}</span>
       </li>
     `).join("");
@@ -22532,7 +22535,7 @@
     const remaining = Math.max(0, metaSeconds - today);
     const metaLabel = metaSeconds > 0 ? `${todayGoalPct}% · faltam ${formatDuration(remaining)}` : "meta não definida";
     container.innerHTML = `
-    <div class="stat-cell" title="${escapeAttr(metaLabel)}"><div class="n">${formatDuration(today)}</div><div class="l">Estudo hoje</div></div>
+    <div class="stat-cell" title="${escapeAttr2(metaLabel)}"><div class="n">${formatDuration(today)}</div><div class="l">Estudo hoje</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(week)}</div><div class="l">Estudo na semana</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(month)}</div><div class="l">Estudo no mês</div></div>
     <div class="stat-cell"><div class="n">${formatDuration(total)}</div><div class="l">Total acumulado</div></div>
@@ -22590,7 +22593,7 @@
     container.innerHTML = rows.map(([subjectId, seconds]) => {
       const name = subjectId === "__none" ? "Sem disciplina" : getSubjectName(subjectId);
       const pct2 = total > 0 ? Math.round(seconds / total * 100) : 0;
-      return `<div class="bar-row"><div class="bar-label" title="${escapeAttr(name)}">${escapeHtml(name)}</div><div class="bar-track"><div class="bar-fill" style="width:${pct2}%"></div></div><div class="bar-pct" title="${pct2}% do tempo total">${formatDuration(seconds)}</div></div>`;
+      return `<div class="bar-row"><div class="bar-label" title="${escapeAttr2(name)}">${escapeHtml2(name)}</div><div class="bar-track"><div class="bar-fill" style="width:${pct2}%"></div></div><div class="bar-pct" title="${pct2}% do tempo total">${formatDuration(seconds)}</div></div>`;
     }).join("");
   }
   var SESSION_TYPES = { study: "Estudo teórico", review: "Revisão", questions: "Questões", simulation: "Simulado" };
@@ -22648,7 +22651,7 @@
     const type = document.getElementById("studySessionsTypeFilter");
     if (!period || !subject || !type) return;
     period.value = sessionHistoryFilters.period;
-    subject.innerHTML = `<option value="">Todas as disciplinas</option>` + state.subjects.map((s) => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join("");
+    subject.innerHTML = `<option value="">Todas as disciplinas</option>` + state.subjects.map((s) => `<option value="${escapeAttr2(s.id)}">${escapeHtml2(s.name)}</option>`).join("");
     subject.value = sessionHistoryFilters.subjectId;
     type.value = sessionHistoryFilters.type;
     const active = countActiveFilters(sessionHistoryFilters, { period: "30", subjectId: "", type: "", date: "" });
@@ -22718,15 +22721,15 @@
   function renderStudySessionReadRow(session) {
     const vm = sessionViewModel(session);
     const detailsId = `session-details-${session.id}`, expanded = expandedSessionDetails.has(session.id);
-    if (isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${session.id}"><td colspan="5"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)} · ${escapeHtml(vm.time)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>⏱ ${escapeHtml(vm.duration)}</span>${vm.questions ? `<span>${pluralize(vm.questions, "questão", "questões")}</span><strong>${vm.accuracy}%</strong>` : ""}${vm.notes ? `<span title="${escapeAttr(vm.notes)}">📝 ${escapeHtml(vm.notes)}</span>` : ""}</div></article></td></tr>`;
-    return `<tr class="history-read-row history-desktop-row" data-id="${session.id}"><td><div class="row-primary">${escapeHtml(vm.date)}</div><div class="row-secondary">${escapeHtml(vm.time)}</div></td><td class="number-cell">${escapeHtml(vm.duration)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td><div class="row-primary">${vm.questions ? pluralize(vm.questions, "questão", "questões") : "Sem questões"}</div><div class="row-secondary">${vm.accuracy === null ? "—" : vm.accuracy + "% de acerto"}</div></td><td class="session-actions"><button class="btn ghost small" aria-expanded="${expanded}" aria-controls="${detailsId}" data-delegated-click="toggleSessionDetails('${session.id}')">Detalhes</button><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></td></tr>${expanded ? `<tr class="session-details-row" id="${detailsId}"><td colspan="5"><dl><div><dt>Tipo</dt><dd>${escapeHtml(vm.type)}</dd></div><div><dt>Observação</dt><dd>${escapeHtml(vm.notes || "Sem observação")}</dd></div><div><dt>Atividade do plano</dt><dd>${session.planItemId ? "Vinculada ao plano diário" : "Sem vínculo"}</dd></div></dl></td></tr>` : ""}`;
+    if (isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${session.id}"><td colspan="5"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml2(vm.date)} · ${escapeHtml2(vm.time)}</div><div class="mobile-card-title">${escapeHtml2(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml2(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml2(vm.type)}</span><span>⏱ ${escapeHtml2(vm.duration)}</span>${vm.questions ? `<span>${pluralize(vm.questions, "questão", "questões")}</span><strong>${vm.accuracy}%</strong>` : ""}${vm.notes ? `<span title="${escapeAttr2(vm.notes)}">📝 ${escapeHtml2(vm.notes)}</span>` : ""}</div></article></td></tr>`;
+    return `<tr class="history-read-row history-desktop-row" data-id="${session.id}"><td><div class="row-primary">${escapeHtml2(vm.date)}</div><div class="row-secondary">${escapeHtml2(vm.time)}</div></td><td class="number-cell">${escapeHtml2(vm.duration)}</td><td><div class="row-primary">${escapeHtml2(vm.subject)}</div><div class="row-secondary">${escapeHtml2(vm.topic)}</div></td><td><div class="row-primary">${vm.questions ? pluralize(vm.questions, "questão", "questões") : "Sem questões"}</div><div class="row-secondary">${vm.accuracy === null ? "—" : vm.accuracy + "% de acerto"}</div></td><td class="session-actions"><button class="btn ghost small" aria-expanded="${expanded}" aria-controls="${detailsId}" data-delegated-click="toggleSessionDetails('${session.id}')">Detalhes</button><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></td></tr>${expanded ? `<tr class="session-details-row" id="${detailsId}"><td colspan="5"><dl><div><dt>Tipo</dt><dd>${escapeHtml2(vm.type)}</dd></div><div><dt>Observação</dt><dd>${escapeHtml2(vm.notes || "Sem observação")}</dd></div><div><dt>Atividade do plano</dt><dd>${session.planItemId ? "Vinculada ao plano diário" : "Sem vínculo"}</dd></div></dl></td></tr>` : ""}`;
   }
   function renderStudySessionEditRow(session) {
     const d = historyEditDraft.session;
     const subjectId = entitySubjectId(d);
     const subject = getSubjectById(subjectId);
     const topics = subject ? subject.topics : [];
-    return `<tr class="row-editing" data-id="${session.id}"><td colspan="10"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date || ""}" data-delegated-change="updateStudySessionDraft('date',this.value)"></label><label>Duração (min)<input type="number" min="0" value="${Math.floor((Number(d.durationSeconds) || 0) / 60)}" data-delegated-input="updateStudySessionDraft('durationMinutes',this.value)"></label><label>Tipo<select data-delegated-change="updateStudySessionDraft('type',this.value)">${sessionTypeOptions(d.type || "study")}</select></label><label>Disciplina<select data-delegated-change="updateStudySessionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map((s) => `<option value="${escapeAttr(s.id)}" ${s.id === subjectId ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}</select></label><label>Tópico<select data-delegated-change="updateStudySessionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map((t) => `<option value="${escapeAttr(t.id)}" ${t.id === d.topicId ? "selected" : ""}>${escapeHtml(t.name)}</option>`).join("")}</select></label><label>Questões<input type="number" min="0" value="${Number(d.questionsResolved) || 0}" data-delegated-input="updateStudySessionDraft('questionsResolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correctAnswers) || 0}" data-delegated-input="updateStudySessionDraft('correctAnswers',this.value)"></label><label class="edit-notes-field">Observação<textarea data-delegated-input="updateStudySessionDraft('notes',this.value)">${escapeHtml(d.notes || "")}</textarea></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelStudySessionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveStudySessionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteStudySession('${session.id}')">Excluir</button></div></div></td></tr>`;
+    return `<tr class="row-editing" data-id="${session.id}"><td colspan="10"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date || ""}" data-delegated-change="updateStudySessionDraft('date',this.value)"></label><label>Duração (min)<input type="number" min="0" value="${Math.floor((Number(d.durationSeconds) || 0) / 60)}" data-delegated-input="updateStudySessionDraft('durationMinutes',this.value)"></label><label>Tipo<select data-delegated-change="updateStudySessionDraft('type',this.value)">${sessionTypeOptions(d.type || "study")}</select></label><label>Disciplina<select data-delegated-change="updateStudySessionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map((s) => `<option value="${escapeAttr2(s.id)}" ${s.id === subjectId ? "selected" : ""}>${escapeHtml2(s.name)}</option>`).join("")}</select></label><label>Tópico<select data-delegated-change="updateStudySessionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map((t) => `<option value="${escapeAttr2(t.id)}" ${t.id === d.topicId ? "selected" : ""}>${escapeHtml2(t.name)}</option>`).join("")}</select></label><label>Questões<input type="number" min="0" value="${Number(d.questionsResolved) || 0}" data-delegated-input="updateStudySessionDraft('questionsResolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correctAnswers) || 0}" data-delegated-input="updateStudySessionDraft('correctAnswers',this.value)"></label><label class="edit-notes-field">Observação<textarea data-delegated-input="updateStudySessionDraft('notes',this.value)">${escapeHtml2(d.notes || "")}</textarea></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelStudySessionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveStudySessionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteStudySession('${session.id}')">Excluir</button></div></div></td></tr>`;
   }
   function renderStudySessionsHistory() {
     const body = document.getElementById("studySessionsBody");
@@ -22762,7 +22765,7 @@
       const correct = sessions.reduce((sum4, s) => sum4 + (Number(s.correctAnswers) || 0), 0);
       const accuracy2 = questions > 0 ? ` · ${Math.round(correct / questions * 100)}% de acerto` : "";
       const expanded = expandedSessionDays.has(date2);
-      html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date2)}')"><span>${date2 === "Sem data" ? date2 : formatDatePt(date2)} · ${pluralize(sessions.length, "sessão", "sessões")} · ${formatDuration(seconds)} · ${pluralize(questions, "questão", "questões")}${accuracy2}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
+      html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr2(date2)}')"><span>${date2 === "Sem data" ? date2 : formatDatePt(date2)} · ${pluralize(sessions.length, "sessão", "sessões")} · ${formatDuration(seconds)} · ${pluralize(questions, "questão", "questões")}${accuracy2}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
       if (!expanded) return;
       sessions.forEach((session) => html.push(historyEditState.sessionId === session.id ? renderStudySessionEditRow(session) : renderStudySessionReadRow(session)));
     });
@@ -22813,7 +22816,7 @@
     container.innerHTML = alertas.map((a) => `
     <div class="alerta-item alerta-${a.nivel}">
       <span class="alerta-icon">${a.icon}</span>
-      <span><strong>${escapeHtml(a.reason || a.texto)}</strong><small>${escapeHtml(a.recommendedAction || "")}</small></span>${a.severity !== "ok" ? `<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(a.id)}')">Dispensar 7 dias</button>` : ""}
+      <span><strong>${escapeHtml2(a.reason || a.texto)}</strong><small>${escapeHtml2(a.recommendedAction || "")}</small></span>${a.severity !== "ok" ? `<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr2(a.id)}')">Dispensar 7 dias</button>` : ""}
     </div>
   `).join("");
   }
@@ -22832,9 +22835,9 @@
     const opportunityCount = configuredTopics.filter((topic) => priorities.some((priority) => priority.topicId === topic.id)).length;
     const weekStart = startOfWeek(todayISO()), weeklyGoal = { achieved: uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6)), target: state.metas.semanal };
     const summary = buildExecutiveSummary({ readiness, daysToExam: state.examDate ? diasParaRevisao(state.examDate) ?? null : null, pace, topPriority, riskCount: risks.length, weeklyGoal, opportunityCount });
-    container.innerHTML = `<div class="executive-kpis">${summary.cards.map((card) => `<div class="executive-kpi"><strong>${escapeHtml(card.value)}</strong><span>${escapeHtml(card.label)}</span><small>${escapeHtml(card.detail)}</small></div>`).join("")}</div>
-    <div class="executive-decision-grid"><section><h4>Prioridade principal</h4>${summary.primaryAction ? `<strong>${escapeHtml(summary.primaryAction.title)}</strong><p>${escapeHtml(summary.primaryAction.subject || "")} · ${escapeHtml(summary.primaryAction.topic || "")} · ${formatPlanMinutes(summary.primaryAction.duration)}</p><small>${escapeHtml(summary.primaryAction.reason)}</small>` : "<p>Ainda não há uma prioridade confiável. Cadastre tópicos ou revisões pendentes.</p>"}</section>
-    <section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount === 1 ? "" : "s"} com evidência atual.</p><small>${escapeHtml(summary.opportunityMessage)}</small></section></div>`;
+    container.innerHTML = `<div class="executive-kpis">${summary.cards.map((card) => `<div class="executive-kpi"><strong>${escapeHtml2(card.value)}</strong><span>${escapeHtml2(card.label)}</span><small>${escapeHtml2(card.detail)}</small></div>`).join("")}</div>
+    <div class="executive-decision-grid"><section><h4>Prioridade principal</h4>${summary.primaryAction ? `<strong>${escapeHtml2(summary.primaryAction.title)}</strong><p>${escapeHtml2(summary.primaryAction.subject || "")} · ${escapeHtml2(summary.primaryAction.topic || "")} · ${formatPlanMinutes(summary.primaryAction.duration)}</p><small>${escapeHtml2(summary.primaryAction.reason)}</small>` : "<p>Ainda não há uma prioridade confiável. Cadastre tópicos ou revisões pendentes.</p>"}</section>
+    <section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount === 1 ? "" : "s"} com evidência atual.</p><small>${escapeHtml2(summary.opportunityMessage)}</small></section></div>`;
   }
   var dismissedRecommendationIds = /* @__PURE__ */ new Set();
   var currentStudyRecommendations = [];
@@ -22865,20 +22868,20 @@
     const list = (items, empty, formatter) => items.length ? items.slice(0, 4).map(formatter).join("") : `<p class="diagnosis-empty">${empty}</p>`;
     const section = (key2) => model.sections.find((item) => item.key === key2)?.items || [];
     container.innerHTML = `<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(section("bottlenecks"), "Nenhum gargalo relevante agora.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>Risco ${item.risk?.value ?? item.severity}/100</b><span>Dados ${Math.round((item.risk?.evidence?.completeness || 0) * 100)}%</span><span>Evidência ${(item.risk?.evidence?.evidenceLabel || "Não avaliada").toLowerCase()}</span></div><small>${escapeHtml(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</small></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(section("opportunities"), "Configure pesos e esforço para revelar oportunidades.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>Retorno ${item.opportunityScore}/100</b><span>Dados ${Math.round(item.confidence * 100)}%</span><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><small>${item.missingFactors.includes("examImpact") ? "Informe o peso da prova para aumentar a confiança." : "Boa relação entre impacto, lacuna e esforço."}</small></article>`)}</section>
-    <section><h4>Revisões críticas e risco</h4>${list(section("risk"), "Nenhuma revisão crítica identificada.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>${item.reviewUrgency > 0 ? "Urgência " + Math.round(item.reviewUrgency) + "/100" : item.daysSinceContact + " dias sem contato"}</b></div><small>${escapeHtml(item.reason || item.reasons?.[0] || "Revisão requer atenção pelos indicadores atuais.")}</small></article>`)}</section>
+    <section><h4>Gargalos</h4>${list(section("bottlenecks"), "Nenhum gargalo relevante agora.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><b>Risco ${item.risk?.value ?? item.severity}/100</b><span>Dados ${Math.round((item.risk?.evidence?.completeness || 0) * 100)}%</span><span>Evidência ${(item.risk?.evidence?.evidenceLabel || "Não avaliada").toLowerCase()}</span></div><small>${escapeHtml2(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</small></article>`)}</section>
+    <section><h4>Oportunidades</h4>${list(section("opportunities"), "Configure pesos e esforço para revelar oportunidades.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><b>Retorno ${item.opportunityScore}/100</b><span>Dados ${Math.round(item.confidence * 100)}%</span><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><small>${item.missingFactors.includes("examImpact") ? "Informe o peso da prova para aumentar a confiança." : "Boa relação entre impacto, lacuna e esforço."}</small></article>`)}</section>
+    <section><h4>Revisões críticas e risco</h4>${list(section("risk"), "Nenhuma revisão crítica identificada.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><b>${item.reviewUrgency > 0 ? "Urgência " + Math.round(item.reviewUrgency) + "/100" : item.daysSinceContact + " dias sem contato"}</b></div><small>${escapeHtml2(item.reason || item.reasons?.[0] || "Revisão requer atenção pelos indicadores atuais.")}</small></article>`)}</section>
     <section><h4>Foco da semana</h4>${list(section("focus"), "Sem distribuição confiável.", (item) => {
       const weeklyMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0);
-      return `<article class="diagnostic-row diagnostic-focus"><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% · ${formatPlanMinutes(Math.round(weeklyMinutes * item.percentage / 100))}</span><div class="diagnostic-progress" style="--progress:${Math.min(100, item.percentage)}%"><i></i></div></article>`;
+      return `<article class="diagnostic-row diagnostic-focus"><strong>${escapeHtml2(item.subjectName)}</strong><span>${item.percentage}% · ${formatPlanMinutes(Math.round(weeklyMinutes * item.percentage / 100))}</span><div class="diagnostic-progress" style="--progress:${Math.min(100, item.percentage)}%"><i></i></div></article>`;
     })}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
   }
   function renderRecommendationImpact(model) {
     if (!model.available) return "";
-    const metrics = model.metrics.map((metric) => `<div><span>${escapeHtml(metric.label)}</span><strong>${metric.before} → ${metric.after}</strong><small class="${metric.delta >= 0 ? "positive" : "negative"}">${metric.delta >= 0 ? "+" : ""}${metric.delta} ${metric.key === "risk" ? "de melhora" : "p.p."}</small></div>`).join("");
-    const reasons = model.reasons.length ? `<small class="recommendation-impact-reasons">${escapeHtml(model.reasons.join(" · "))}</small>` : "";
-    return `<section class="recommendation-impact ${escapeAttr(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml(model.title)}</strong><small>Confiança ${escapeHtml((model.confidenceLabel || "não calculada").toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics || "<p>Indicadores comparáveis ainda indisponíveis.</p>"}</div>${reasons}</section>`;
+    const metrics = model.metrics.map((metric) => `<div><span>${escapeHtml2(metric.label)}</span><strong>${metric.before} → ${metric.after}</strong><small class="${metric.delta >= 0 ? "positive" : "negative"}">${metric.delta >= 0 ? "+" : ""}${metric.delta} ${metric.key === "risk" ? "de melhora" : "p.p."}</small></div>`).join("");
+    const reasons = model.reasons.length ? `<small class="recommendation-impact-reasons">${escapeHtml2(model.reasons.join(" · "))}</small>` : "";
+    return `<section class="recommendation-impact ${escapeAttr2(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml2(model.title)}</strong><small>Confiança ${escapeHtml2((model.confidenceLabel || "não calculada").toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics || "<p>Indicadores comparáveis ainda indisponíveis.</p>"}</div>${reasons}</section>`;
   }
   function renderStudyRecommendation() {
     const container = document.getElementById("studyRecommendation");
@@ -22892,7 +22895,7 @@
     });
     const visible = currentStudyRecommendations.slice(0, 3);
     const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null), summary = summarizeRecommendationFeedback(state.recommendationFeedback), impact = renderRecommendationImpact(buildRecommendationOutcomeViewModel(state.recommendationFeedback));
-    const outcome = impact + (pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>` : "");
+    const outcome = impact + (pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr2(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr2(pending.recommendationId)}',false)">Não</button></div>` : "");
     const history = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
     const visibleIds = new Set(visible.map((item) => item.id));
     const excluded = candidates.filter((item) => !visibleIds.has(item.id)).map((item) => {
@@ -22903,16 +22906,16 @@
       if (dismissedRecommendationIds.has(item.id)) return { ...item, stateIcon: "○", stateText: "Ocultado nesta sessão" };
       return { ...item, stateIcon: item.examImpact != null && item.examImpact < 30 ? "○" : "★", stateText: item.examImpact != null && item.examImpact < 30 ? "Baixa relevância configurada para a prova" : "Prioridade inferior às três recomendações atuais" };
     }).filter(Boolean).slice(0, 6);
-    const excludedHtml = excluded.length ? `<details class="recommendation-exclusions"><summary>Por que outros tópicos não aparecem?</summary>${excluded.map((item) => `<div><span>${item.stateIcon}</span><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><small>${escapeHtml(item.stateText)}</small></div>`).join("")}</details>` : "";
+    const excludedHtml = excluded.length ? `<details class="recommendation-exclusions"><summary>Por que outros tópicos não aparecem?</summary>${excluded.map((item) => `<div><span>${item.stateIcon}</span><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><small>${escapeHtml2(item.stateText)}</small></div>`).join("")}</details>` : "";
     if (!visible.length) {
       container.innerHTML = `${outcome}<div class="upcoming-empty">${availableMinutes < 15 ? "Defina pelo menos 15 minutos na meta de hoje." : "Nenhuma atividade está elegível neste momento."}</div>${excludedHtml}${history}`;
       return;
     }
     const cards = visible.map((item, index) => {
       const model = buildPriorityViewModel(item, index + 1);
-      const contributionRows = model.contributionRows.map((row) => `<div><span>${escapeHtml(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100, row.value * 4)}%"></i></span><strong>+${row.value}</strong></div>`).join("");
+      const contributionRows = model.contributionRows.map((row) => `<div><span>${escapeHtml2(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100, row.value * 4)}%"></i></span><strong>+${row.value}</strong></div>`).join("");
       const stateIcon = { review: "↻", limited: "⚠", high: "★", calculated: "○", blocked: "🔒" }[model.state] || "○";
-      return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || "Estudar agora")}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p><div class="priority-reasons">${model.reasons.slice(0, 4).map((reason) => `<span>+ ${escapeHtml(reason)}</span>`).join("")}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(model.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="executeStudyRecommendation('${escapeAttr(item.id)}')">▶ ${escapeHtml(recommendationActionLabel(item))}</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
+      return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</h4><strong>${escapeHtml2(item.action || "Estudar agora")}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${stateIcon} ${escapeHtml2(model.stateLabel)}</p><div class="priority-reasons">${model.reasons.slice(0, 4).map((reason) => `<span>+ ${escapeHtml2(reason)}</span>`).join("")}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml2(model.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="executeStudyRecommendation('${escapeAttr2(item.id)}')">▶ ${escapeHtml2(recommendationActionLabel(item))}</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr2(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr2(item.id)}')">Não foi útil</button></div></article>`;
     }).join("");
     container.innerHTML = `${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · mostrando ${visible.length} ${visible.length === 1 ? "prioridade elegível" : "prioridades elegíveis"}</span></div><div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
   }
@@ -23080,7 +23083,7 @@
       container.innerHTML = '<div class="upcoming-empty">Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';
       return;
     }
-    container.innerHTML = `${renderReplanProposal(preview, { escapeHtml, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
+    container.innerHTML = `${renderReplanProposal(preview, { escapeHtml: escapeHtml2, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
   }
   function formatPlanMinutes(minutes) {
     const value2 = Math.max(0, Math.round(Number(minutes) || 0));
@@ -23181,14 +23184,14 @@
       const canStart = !["completed", "deferred", "replaced", "skipped"].includes(item.status) && !active;
       return `
     <div class="plano-item ${active ? "is-active" : ""} ${item.status === "completed" ? "is-completed" : ""}">
-      <div class="plano-item-head">${escapeHtml(item.statusIcon || "📌")} ${escapeHtml(item.statusLabel || planItemStatusLabel(item.status))} · ${Number.isFinite(Number(item.score)) ? Math.round(Number(item.score)) + "/100" : "prioridade não calculada"}</div>
-      <div class="plano-item-title">${escapeHtml(item.subjectName || getSubjectName(item.subjectId) || "Disciplina")} — ${escapeHtml(item.topicName || getTopicName(item.topicId) || "Tópico")}</div>
-      <div class="plano-item-reason">${escapeHtml(item.reason)}</div>
-      <div class="plano-item-reason">⏱️ ${formatPlanMinutes(item.plannedMinutes)} · ${escapeHtml(item.action)}${item.recommendedQuestions ? " · " + item.recommendedQuestions + " questões" : ""}</div>
+      <div class="plano-item-head">${escapeHtml2(item.statusIcon || "📌")} ${escapeHtml2(item.statusLabel || planItemStatusLabel(item.status))} · ${Number.isFinite(Number(item.score)) ? Math.round(Number(item.score)) + "/100" : "prioridade não calculada"}</div>
+      <div class="plano-item-title">${escapeHtml2(item.subjectName || getSubjectName(item.subjectId) || "Disciplina")} — ${escapeHtml2(item.topicName || getTopicName(item.topicId) || "Tópico")}</div>
+      <div class="plano-item-reason">${escapeHtml2(item.reason)}</div>
+      <div class="plano-item-reason">⏱️ ${formatPlanMinutes(item.plannedMinutes)} · ${escapeHtml2(item.action)}${item.recommendedQuestions ? " · " + item.recommendedQuestions + " questões" : ""}</div>
       <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>
       <div class="plano-item-actions">
-        ${canStart ? `<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds > 0 ? "▶ Continuar" : "▶ Iniciar"}</button>` : ""}
-        <span class="plano-item-status">${active ? "Cronômetro ativo" : escapeHtml(planItemStatusLabel(item.status))} · ${formatDuration(item.executedSeconds)} executado</span>
+        ${canStart ? `<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr2(item.id)}')">${item.executedSeconds > 0 ? "▶ Continuar" : "▶ Iniciar"}</button>` : ""}
+        <span class="plano-item-status">${active ? "Cronômetro ativo" : escapeHtml2(planItemStatusLabel(item.status))} · ${formatDuration(item.executedSeconds)} executado</span>
       </div>
     </div>
   `;
@@ -23211,7 +23214,7 @@
     if (!uiState.onboarding.currentStep) uiState.onboarding.currentStep = model.current.id;
     const visible = model.visible && !IS_DEMO_MODE;
     entry.hidden = !visible;
-    document.getElementById("guidedOnboardingEntry").innerHTML = visible ? renderOnboardingEntry(model, { escapeHtml }) : "";
+    document.getElementById("guidedOnboardingEntry").innerHTML = visible ? renderOnboardingEntry(model, { escapeHtml: escapeHtml2 }) : "";
     overlay.hidden = !visible || !uiState.onboarding.open;
     overlay.classList.toggle("show", visible && uiState.onboarding.open);
     if (!visible) {
@@ -23219,8 +23222,8 @@
       return;
     }
     document.getElementById("guidedOnboardingProgress").innerHTML = renderOnboardingProgress(model);
-    document.getElementById("guidedOnboardingContent").innerHTML = renderOnboardingContent(model, { escapeHtml, escapeAttr, formatMinutes: formatPlanMinutes });
-    document.getElementById("guidedOnboardingHelp").innerHTML = renderOnboardingHelp(model, { escapeHtml });
+    document.getElementById("guidedOnboardingContent").innerHTML = renderOnboardingContent(model, { escapeHtml: escapeHtml2, escapeAttr: escapeAttr2, formatMinutes: formatPlanMinutes });
+    document.getElementById("guidedOnboardingHelp").innerHTML = renderOnboardingHelp(model, { escapeHtml: escapeHtml2 });
     document.getElementById("guidedOnboardingActions").innerHTML = renderOnboardingActions(model);
   }
   function onboardingModel() {
@@ -23563,12 +23566,12 @@
   </div>
   ${factors.map(([label2, item]) => {
       const dataState = getMetricDataState(item);
-      return `<div class="bar-row metric-row metric-row--${dataState}" title="${escapeAttr(item.detail)}"><div class="bar-label">${label2}<small>${metricStateLabel(item)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${dataState === "empty" ? 0 : item.score}%"></div></div><div class="bar-pct">${dataState === "empty" ? "—" : item.score + "%"}</div></div>`;
+      return `<div class="bar-row metric-row metric-row--${dataState}" title="${escapeAttr2(item.detail)}"><div class="bar-label">${label2}<small>${metricStateLabel(item)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${dataState === "empty" ? 0 : item.score}%"></div></div><div class="bar-pct">${dataState === "empty" ? "—" : item.score + "%"}</div></div>`;
     }).join("")}
-  ${projection.available ? `<section class="performance-forecast" aria-label="Projeção de desempenho"><div><span class="section-eyebrow">PROJEÇÃO DE DESEMPENHO</span><strong>Faixa atual: ${projection.low}–${projection.high}%</strong><small>${projection.gap.minimum === 0 ? "A meta de " + projection.gap.target + "% está dentro da faixa atual." : "Gap estimado até a meta: " + projection.gap.minimum + "–" + projection.gap.maximum + " p.p."}</small></div><div><strong>${projection.forecast30.available ? "Em 30 dias: " + projection.forecast30.low + "–" + projection.forecast30.high + "%" : "Projeção de 30 dias aguardando dados"}</strong><small>${projection.forecast30.available ? "Média móvel: " + projection.movingAverage + "% · tendência " + (projection.forecast30.slopePerWeek >= 0 ? "+" : "") + projection.forecast30.slopePerWeek + " p.p./semana · confiança " + projection.forecast30.confidenceLabel : escapeHtml(projection.forecast30.reason)}</small></div>${renderPerformanceScenarios(projection.scenarios, { escapeHtml })}<p>${projection.evidence.observationCount} semanas · ${projection.evidence.sampleSize} questões/simulações na amostra. Cenários são simulações de capacidade; não representam garantia nem efeito causal.</p></section>` : ""}
-  <details class="readiness-explanation"><summary>Como este índice foi calculado?</summary><p>Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e nunca recebem nota zero.</p><ul>${factors.map(([label2, item, key2]) => `<li><strong>${label2}</strong>: ${item.available ? item.score + "/100 · confiança " + Math.round(item.confidence * 100) + "%" : "aguardando dados"}${item.detail ? " · " + escapeHtml(item.detail) : ""}</li>`).join("")}</ul></details>
+  ${projection.available ? `<section class="performance-forecast" aria-label="Projeção de desempenho"><div><span class="section-eyebrow">PROJEÇÃO DE DESEMPENHO</span><strong>Faixa atual: ${projection.low}–${projection.high}%</strong><small>${projection.gap.minimum === 0 ? "A meta de " + projection.gap.target + "% está dentro da faixa atual." : "Gap estimado até a meta: " + projection.gap.minimum + "–" + projection.gap.maximum + " p.p."}</small></div><div><strong>${projection.forecast30.available ? "Em 30 dias: " + projection.forecast30.low + "–" + projection.forecast30.high + "%" : "Projeção de 30 dias aguardando dados"}</strong><small>${projection.forecast30.available ? "Média móvel: " + projection.movingAverage + "% · tendência " + (projection.forecast30.slopePerWeek >= 0 ? "+" : "") + projection.forecast30.slopePerWeek + " p.p./semana · confiança " + projection.forecast30.confidenceLabel : escapeHtml2(projection.forecast30.reason)}</small></div>${renderPerformanceScenarios(projection.scenarios, { escapeHtml: escapeHtml2 })}<p>${projection.evidence.observationCount} semanas · ${projection.evidence.sampleSize} questões/simulações na amostra. Cenários são simulações de capacidade; não representam garantia nem efeito causal.</p></section>` : ""}
+  <details class="readiness-explanation"><summary>Como este índice foi calculado?</summary><p>Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e nunca recebem nota zero.</p><ul>${factors.map(([label2, item, key2]) => `<li><strong>${label2}</strong>: ${item.available ? item.score + "/100 · confiança " + Math.round(item.confidence * 100) + "%" : "aguardando dados"}${item.detail ? " · " + escapeHtml2(item.detail) : ""}</li>`).join("")}</ul></details>
   <div class="approval-scale"><span class="approval-scale-danger">🔴 0–49</span><span class="approval-scale-warn">🟠 50–69</span><span class="approval-scale-good">🟢 70–84</span><span class="approval-scale-great">🏆 85+</span></div>
-  <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`;
+  <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map((x) => `<li>${escapeHtml2(x)}</li>`).join("")}</ul>`;
     renderTopicRetentionDashboard();
     renderRecommendationCalibration();
     renderStudyTrack32Insights();
@@ -23577,13 +23580,13 @@
     const el = document.getElementById("recommendationCalibration");
     if (!el) return;
     const subjectNames = Object.fromEntries(state.subjects.map((item) => [item.id, item.name])), topicNames = Object.fromEntries(state.subjects.flatMap((subject) => (subject.topics || []).map((topic) => [topic.id, topic.name]))), model = buildRecommendationCalibration(state.recommendationFeedback, { minimumSample: 5, subjectNames, topicNames });
-    el.innerHTML = renderRecommendationCalibrationModel(model, { escapeHtml });
+    el.innerHTML = renderRecommendationCalibrationModel(model, { escapeHtml: escapeHtml2 });
   }
   var currentStudyTrackModel = null;
   var weeklyCloseController = null;
   function renderStudyTrack32Insights() {
     const close = document.getElementById("weeklyCloseDashboard"), comparison2 = document.getElementById("periodComparisonDashboard"), gaps = document.getElementById("gapMapDashboard"), history = document.getElementById("decisionHistoryDashboard"), simReplan = document.getElementById("postSimulationReplanDashboard");
-    const scope = examEvidenceContext(), scopedSubjectIds = new Set(scope.content.eligibleTopics.map((item) => item.subjectId)), model = buildStudyTrack32ViewModel({ today: todayISO(), sessions: scope.sessions.included, questions: scope.questions.included, dailyPlans: planningRepository.getDailyPlans?.() || [], planAdjustments: state.planAdjustments, recommendations: state.recommendationFeedback, simulations: examScopedSimulations(), subjects: state.subjects.filter((subject) => scopedSubjectIds.has(subject.id)), weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), targetAccuracy: Number(state.metas.metaAprovacao) || 80, algorithmServices: { addDays, buildWeeklyClose, buildGapMap, buildDecisionHistory, buildPostSimulationReplan, buildCandidates: intelligenceCandidates }, nameResolvers: { subject: getSubjectName, topic: getTopicName } }), options = { escapeHtml, formatMinutes: formatPlanMinutes };
+    const scope = examEvidenceContext(), scopedSubjectIds = new Set(scope.content.eligibleTopics.map((item) => item.subjectId)), model = buildStudyTrack32ViewModel({ today: todayISO(), sessions: scope.sessions.included, questions: scope.questions.included, dailyPlans: planningRepository.getDailyPlans?.() || [], planAdjustments: state.planAdjustments, recommendations: state.recommendationFeedback, simulations: examScopedSimulations(), subjects: state.subjects.filter((subject) => scopedSubjectIds.has(subject.id)), weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce((sum4, hours) => sum4 + (Number(hours) || 0) * 60, 0), targetAccuracy: Number(state.metas.metaAprovacao) || 80, algorithmServices: { addDays, buildWeeklyClose, buildGapMap, buildDecisionHistory, buildPostSimulationReplan, buildCandidates: intelligenceCandidates }, nameResolvers: { subject: getSubjectName, topic: getTopicName } }), options = { escapeHtml: escapeHtml2, formatMinutes: formatPlanMinutes };
     currentStudyTrackModel = model;
     if (close) close.innerHTML = renderWeeklyClose(model.weeklyClose, { ...options, selectedPriorityIds: weeklyCloseController?.view().selectedIds || [] }) + (model.weeklyClose.state === "insufficient" ? "" : renderWeeklyCloseActions(model.weeklyClose)) + renderWeeklySnapshotHistory();
     if (comparison2) comparison2.innerHTML = renderPeriodComparison(model.weeklyClose, options);
@@ -23599,7 +23602,7 @@
     if (!priorities.length) return `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`;
     const draft = weeklyCloseController.view(), checks = priorities.map((item, index) => {
       const id = item.priorityId || item.topicId || String(index);
-      return `<label class="weekly-priority-choice"><input type="checkbox" data-delegated-change="toggleWeeklyPriority('${escapeAttr(id)}',this.checked)" ${draft.selectedIds.includes(id) ? "checked" : ""}><span>${escapeHtml(item.action)} · ${formatPlanMinutes(item.estimatedMinutes)}</span></label>`;
+      return `<label class="weekly-priority-choice"><input type="checkbox" data-delegated-change="toggleWeeklyPriority('${escapeAttr2(id)}',this.checked)" ${draft.selectedIds.includes(id) ? "checked" : ""}><span>${escapeHtml2(item.action)} · ${formatPlanMinutes(item.estimatedMinutes)}</span></label>`;
     }).join("");
     const proposal = draft.proposal;
     return `<section class="weekly-close-actions"><h4>Decida as prioridades</h4>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()">Conferir impacto</button>${proposal ? `<div class="weekly-action-preview"><strong>${proposal.allocations.length} alocações · ${formatPlanMinutes(proposal.unallocatedMinutes)} sem capacidade</strong><button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button></div>` : ""}<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button></section>`;
@@ -23639,7 +23642,7 @@
       const score = retentionView.order === "desc" ? bv - av : av - bv;
       return score || a.r.confidence - b.r.confidence || a.subjectName.localeCompare(b.subjectName) || a.name.localeCompare(b.name);
     });
-    const toolbar = `<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map((subject) => `<option value="${escapeAttr(subject.id)}" ${retentionView.subjectId === subject.id ? "selected" : ""}>${escapeHtml(subject.name)}</option>`).join("")}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${retentionView.order === "asc" ? "selected" : ""}>Menor retenção</option><option value="desc" ${retentionView.order === "desc" ? "selected" : ""}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${retentionView.confidence === "alta" ? "selected" : ""}>Confiança alta</option><option value="média" ${retentionView.confidence === "média" ? "selected" : ""}>Confiança média</option><option value="baixa" ${retentionView.confidence === "baixa" ? "selected" : ""}>Confiança baixa</option></select></div>`;
+    const toolbar = `<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map((subject) => `<option value="${escapeAttr2(subject.id)}" ${retentionView.subjectId === subject.id ? "selected" : ""}>${escapeHtml2(subject.name)}</option>`).join("")}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${retentionView.order === "asc" ? "selected" : ""}>Menor retenção</option><option value="desc" ${retentionView.order === "desc" ? "selected" : ""}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${retentionView.confidence === "alta" ? "selected" : ""}>Confiança alta</option><option value="média" ${retentionView.confidence === "média" ? "selected" : ""}>Confiança média</option><option value="baixa" ${retentionView.confidence === "baixa" ? "selected" : ""}>Confiança baixa</option></select></div>`;
     if (!rows.length) {
       el.innerHTML = toolbar + '<div class="upcoming-empty">Nenhum tópico corresponde aos filtros atuais.</div>';
       return;
@@ -23654,7 +23657,7 @@
     const repeatedSummary = repeated && repeated[1] >= 4 ? `<div class="retention-pattern-note">${repeated[1]} tópicos apresentam retenção estimada em ${repeated[0]}%. Compare a confiança antes de interpretar o resultado como definitivo.</div>` : "";
     el.innerHTML = toolbar + repeatedSummary + visible.map((x) => {
       const score = x.r.available ? x.r.score : x.h.value, c = score >= 70 ? "ok" : score >= 50 ? "warn" : "";
-      return `<div class="retention-row" title="${escapeAttr(x.r.detail || x.h.reasons[0])}"><div class="retention-topic"><strong>${escapeHtml(x.name)}</strong><span>${escapeHtml(x.subjectName)} · retenção ${x.r.available ? x.r.score + "%" : "—"} · saúde ${x.h.value === null ? "—" : x.h.value + "%"}</span></div><div class="retention-track"><div class="retention-fill ${c}" style="width:${score}%"></div></div><div class="retention-value">${score}%</div></div>`;
+      return `<div class="retention-row" title="${escapeAttr2(x.r.detail || x.h.reasons[0])}"><div class="retention-topic"><strong>${escapeHtml2(x.name)}</strong><span>${escapeHtml2(x.subjectName)} · retenção ${x.r.available ? x.r.score + "%" : "—"} · saúde ${x.h.value === null ? "—" : x.h.value + "%"}</span></div><div class="retention-track"><div class="retention-fill ${c}" style="width:${score}%"></div></div><div class="retention-value">${score}%</div></div>`;
     }).join("") + renderCollectionFooter({ variant: "block", total: rows.length, visible: visible.length, step: 8, label: "tópicos", showMoreAction: "showAllRetention()", showAllAction: "showAllRetention()", showLessAction: retentionShowAll ? "resetRetentionLimit()" : "" });
   }
   function planStartDate() {
@@ -23688,7 +23691,7 @@
     }
     el.style.display = "grid";
     const today = todayISO(), start = planStartDate(), exam = state.examDate;
-    const diff = (a, b) => Math.max(0, Math.round((parseLocalDate2(b) - parseLocalDate2(a)) / 864e5));
+    const diff = (a, b) => Math.max(0, Math.round((parseLocalDate(b) - parseLocalDate(a)) / 864e5));
     const total = Math.max(1, diff(start, exam)), elapsed = Math.min(total, diff(start, today)), remaining = Math.max(0, diasParaRevisao(exam) ?? 0), pct2 = Math.max(0, Math.min(100, Math.round(elapsed / total * 100)));
     el.innerHTML = `<span class="exam-progress-label">Hoje</span><div class="exam-progress-track" role="progressbar" aria-label="Progresso até a prova" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct2}"><div class="exam-progress-fill" style="width:${pct2}%"></div></div><strong>${pct2}%</strong><span class="exam-progress-days">${total} dias totais · ${elapsed} passaram · ${remaining} faltam</span>`;
   }
@@ -23730,7 +23733,7 @@
   }
   function quickReviewButton(item, elId) {
     if (!String(elId || "").startsWith("hoje") || item.status === "Concluído") return "";
-    return `<button type="button" class="btn small quick-review-btn" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">✓ Revisar</button>`;
+    return `<button type="button" class="btn small quick-review-btn" data-delegated-click="completeUnifiedReview('${escapeAttr2(item.id)}','${escapeAttr2(item.origem)}')">✓ Revisar</button>`;
   }
   function renderCalTarefasHoje(elId) {
     elId = elId || "calTarefasHoje";
@@ -23741,7 +23744,7 @@
       ul.innerHTML = '<li class="upcoming-empty">Nenhuma tarefa para hoje. 🎉</li>';
       return;
     }
-    ul.innerHTML = items.map((x) => `<li><span class="dias-pill dias-hoje" style="margin-right:6px">hoje</span><span style="flex:1">${escapeHtml(x.subject || "—")} · ${escapeHtml(unifiedItemLabel(x))} <span class="item-origin">(${x.origem})</span></span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x, elId)}</li>`).join("");
+    ul.innerHTML = items.map((x) => `<li><span class="dias-pill dias-hoje" style="margin-right:6px">hoje</span><span style="flex:1">${escapeHtml2(x.subject || "—")} · ${escapeHtml2(unifiedItemLabel(x))} <span class="item-origin">(${x.origem})</span></span><span class="subject-progress-pill">${escapeHtml2(x.status)}</span>${quickReviewButton(x, elId)}</li>`).join("");
   }
   function renderCalAtrasadas(elId) {
     elId = elId || "calAtrasadas";
@@ -23764,7 +23767,7 @@
     }
     ul.innerHTML = `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>` + visible.map(([date2, dateItems]) => {
       const expanded = overdueExpandedDates[elId].has(date2);
-      return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date2}')"><span><strong>${formatDatePt(date2)}</strong><small>${dateItems.length} revisão(ões) · ${Math.abs(diasParaRevisao(date2) || 0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? "" : "hidden"}>${dateItems.map((x) => `<li><span style="flex:1">${escapeHtml(x.subject || "—")} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join("")}</ul></li>`;
+      return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date2}')"><span><strong>${formatDatePt(date2)}</strong><small>${dateItems.length} revisão(ões) · ${Math.abs(diasParaRevisao(date2) || 0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? "" : "hidden"}>${dateItems.map((x) => `<li><span style="flex:1">${escapeHtml2(x.subject || "—")} — ${escapeHtml2(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join("")}</ul></li>`;
     }).join("") + `<li class="overdue-list-footer">${renderCollectionFooter({ variant: "block", total: entries.length, visible: visible.length, step: 3, label: "datas", showMoreAction: `changeOverdueGroupLimit('${elId}',3)`, showAllAction: `showAllOverdueGroups('${elId}')`, showLessAction: limit > 3 ? `resetOverdueGroupLimit('${elId}')` : "" })}</li>`;
   }
   function renderKPIs() {
@@ -23777,11 +23780,11 @@
     <button type="button" class="kpi-cell kpi-link ${late > 0 ? "warn" : ""}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
     <button type="button" class="kpi-cell kpi-link ${hasResults ? accuracy2 >= target ? "ok" : "warn" : ""}" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de aprovação</div></button>`;
   }
-  function escapeHtml(str) {
+  function escapeHtml2(str) {
     return String(str || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]);
   }
-  function escapeAttr(str) {
-    return escapeHtml(str);
+  function escapeAttr2(str) {
+    return escapeHtml2(str);
   }
   var DELEGATED_ACTION_HANDLERS = {
     addAgendaRow,
@@ -23926,7 +23929,7 @@
     if (value2 === "true") return true;
     if (value2 === "false") return false;
     if (value2 === "null") return null;
-    if (value2 === "parseLocalDate(todayISO()).getDay()") return parseLocalDate2(todayISO()).getDay();
+    if (value2 === "parseLocalDate(todayISO()).getDay()") return parseLocalDate(todayISO()).getDay();
     if (/^-?\d+(?:\.\d+)?$/.test(value2)) return Number(value2);
     if (value2.startsWith("'") && value2.endsWith("'") || value2.startsWith('"') && value2.endsWith('"')) return value2.slice(1, -1).replace(/\\(['"\\])/g, "$1");
     throw new Error("Argumento de evento não permitido: " + value2);
@@ -24137,7 +24140,7 @@
       isSameWeek,
       addDays,
       diasParaRevisao,
-      parseLocalDate: parseLocalDate2,
+      parseLocalDate,
       todayISO,
       localDateFromTimestamp: localDateFromTimestamp2,
       calculateAdaptiveInterval,
