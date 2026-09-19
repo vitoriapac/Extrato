@@ -1,9 +1,24 @@
 const stepCopy={
-  goal:{title:'Qual é o seu objetivo?',help:'Defina a prova e a data para calcular o ritmo necessário.'},
-  availability:{title:'Quanto tempo cabe na sua semana?',help:'Informe horas realistas. Você poderá alterar a disponibilidade depois.'},
-  content:{title:'Quais conteúdos entram no plano?',help:'Importe um edital ou cadastre matérias próprias e indique o nível inicial.'},
-  plan:{title:'Confira a capacidade e crie o primeiro plano',help:'A prévia não altera seus dados. O plano só será criado após sua confirmação.'}
+  goal:{title:'Qual é o seu objetivo?',help:'Defina a prova e a data para calcular o ritmo necessário.',why:'A data da prova permite distribuir a carga sem concentrar tudo nas últimas semanas.',benefits:['calcular o ritmo necessário','medir a urgência de cada tópico','priorizar o que mais impacta a prova'],tip:'Se a data ainda não foi publicada, use uma estimativa conservadora. Você poderá alterá-la depois.'},
+  availability:{title:'Quanto tempo cabe na sua semana?',help:'Informe horas realistas. Você poderá alterar a disponibilidade depois.',why:'O plano respeita o tempo que realmente cabe na sua rotina, incluindo dias sem estudo.',benefits:['limitar a carga diária','reservar espaço para revisões','identificar déficit de capacidade'],tip:'Prefira uma disponibilidade sustentável. Consistência costuma valer mais que uma meta difícil de manter.'},
+  content:{title:'Quais conteúdos entram no plano?',help:'Importe um edital ou cadastre matérias próprias e indique o nível inicial.',why:'O StudyTrack usa o conteúdo selecionado para comparar domínio, importância e esforço restante.',benefits:['gerar prioridades por tópico','evitar duplicidades no edital','adaptar o esforço à sua base'],tip:'Você pode importar apenas parte do edital e completar as disciplinas manualmente depois.'},
+  plan:{title:'Confira a capacidade e crie o primeiro plano',help:'A prévia não altera seus dados. O plano só será criado após sua confirmação.',why:'Esta é a conferência final entre prazo, capacidade semanal e carga estimada.',benefits:['criar atividades para hoje','distribuir teoria, questões e revisão','manter margem para ajustes'],tip:'Nada será salvo no calendário antes da confirmação.'}
 };
+
+export function renderOnboardingEntry(model,{escapeHtml=String}={}){
+  const next=model.next||model.current||model.steps?.[0],complete=model.completed||0,title=complete?'Configuração incompleta':'Comece seu plano';
+  const description=complete?`Falta concluir: ${escapeHtml(next?.label||'configuração inicial')}. Suas escolhas já feitas serão preservadas.`:'Configure prova, disponibilidade e edital para receber seu primeiro plano de estudos.';
+  return `<div class="onboarding-entry-copy"><span class="onboarding-entry-icon" aria-hidden="true">🎯</span><div><span class="onboarding-kicker">${complete} de 4 etapas concluídas</span><h3 id="guidedOnboardingEntryTitle">${title}</h3><p>${description}</p></div></div><button class="btn" type="button" data-guided-action="open">${complete?'Continuar configuração':'Montar meu plano'} <span aria-hidden="true">→</span></button>`;
+}
+
+export function renderOnboardingProgress(model){
+  return model.steps.map((step,index)=>{const current=step.id===model.current?.id,state=current?'step':step.complete?'true':'false';return `<span class="${current?'is-current':step.complete?'is-complete':''}" data-onboarding-step="${step.id}" aria-current="${state}"><b>${step.complete?'✓':index+1}</b><em>${step.label}</em></span>`}).join('');
+}
+
+export function renderOnboardingHelp(model,{escapeHtml=String}={}){
+  const step=model.current||model.next||model.steps?.[0],copy=stepCopy[step.id]||stepCopy.goal;
+  return `<span class="onboarding-kicker">POR QUE ISSO IMPORTA?</span><h3>${escapeHtml(copy.why)}</h3><ul>${copy.benefits.map(item=>`<li><span aria-hidden="true">✓</span>${escapeHtml(item)}</li>`).join('')}</ul><div class="onboarding-tip"><strong>Dica</strong><p>${escapeHtml(copy.tip)}</p></div>`;
+}
 
 export function renderOnboardingContent(model,{escapeHtml=String,escapeAttr=escapeHtml,formatMinutes=value=>`${value} min`}={}){
   const step=model.current||model.next||model.steps?.[0],copy=stepCopy[step.id]||stepCopy.goal;
@@ -13,4 +28,4 @@ export function renderOnboardingContent(model,{escapeHtml=String,escapeAttr=esca
   return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam==null?'—':model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${model.canCreatePlan?'<p class="confidence-note">O StudyTrack reservará parte do tempo para pausas, correções e revisões.</p>':'<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'}</div>`;
 }
 
-export function renderOnboardingActions(model){const id=model.current?.id||'goal',previous=model.currentIndex>0?'<button class="btn ghost" data-guided-action="back">Voltar</button>':'';if(id==='content')return `${previous}<button class="btn" data-guided-action="next" ${model.hasContent?'':'disabled'}>Ver prévia</button>`;if(id==='plan')return `${previous}<button class="btn" data-guided-action="create-plan" ${model.canCreatePlan?'':'disabled'}>Confirmar e criar meu plano</button>`;return `${previous}<button class="btn" data-guided-action="next" ${model.canAdvance?'':'disabled'}>Continuar</button>`}
+export function renderOnboardingActions(model){const id=model.current?.id||'goal',previous=model.currentIndex>0?'<button class="btn ghost" data-guided-action="back">← Voltar</button>':'<button class="btn ghost" data-guided-action="cancel">Cancelar</button>';if(id==='content')return `${previous}<button class="btn" data-guided-action="next" ${model.hasContent?'':'disabled'}>Ver prévia →</button>`;if(id==='plan')return `${previous}<button class="btn" data-guided-action="create-plan" ${model.canCreatePlan?'':'disabled'}>Confirmar e criar meu plano</button>`;return `${previous}<button class="btn" data-guided-action="next" ${model.canAdvance?'':'disabled'}>Continuar →</button>`}

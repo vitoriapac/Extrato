@@ -17767,11 +17767,26 @@
 
   // src/features/onboarding/onboarding-renderer.js
   var stepCopy = {
-    goal: { title: "Qual é o seu objetivo?", help: "Defina a prova e a data para calcular o ritmo necessário." },
-    availability: { title: "Quanto tempo cabe na sua semana?", help: "Informe horas realistas. Você poderá alterar a disponibilidade depois." },
-    content: { title: "Quais conteúdos entram no plano?", help: "Importe um edital ou cadastre matérias próprias e indique o nível inicial." },
-    plan: { title: "Confira a capacidade e crie o primeiro plano", help: "A prévia não altera seus dados. O plano só será criado após sua confirmação." }
+    goal: { title: "Qual é o seu objetivo?", help: "Defina a prova e a data para calcular o ritmo necessário.", why: "A data da prova permite distribuir a carga sem concentrar tudo nas últimas semanas.", benefits: ["calcular o ritmo necessário", "medir a urgência de cada tópico", "priorizar o que mais impacta a prova"], tip: "Se a data ainda não foi publicada, use uma estimativa conservadora. Você poderá alterá-la depois." },
+    availability: { title: "Quanto tempo cabe na sua semana?", help: "Informe horas realistas. Você poderá alterar a disponibilidade depois.", why: "O plano respeita o tempo que realmente cabe na sua rotina, incluindo dias sem estudo.", benefits: ["limitar a carga diária", "reservar espaço para revisões", "identificar déficit de capacidade"], tip: "Prefira uma disponibilidade sustentável. Consistência costuma valer mais que uma meta difícil de manter." },
+    content: { title: "Quais conteúdos entram no plano?", help: "Importe um edital ou cadastre matérias próprias e indique o nível inicial.", why: "O StudyTrack usa o conteúdo selecionado para comparar domínio, importância e esforço restante.", benefits: ["gerar prioridades por tópico", "evitar duplicidades no edital", "adaptar o esforço à sua base"], tip: "Você pode importar apenas parte do edital e completar as disciplinas manualmente depois." },
+    plan: { title: "Confira a capacidade e crie o primeiro plano", help: "A prévia não altera seus dados. O plano só será criado após sua confirmação.", why: "Esta é a conferência final entre prazo, capacidade semanal e carga estimada.", benefits: ["criar atividades para hoje", "distribuir teoria, questões e revisão", "manter margem para ajustes"], tip: "Nada será salvo no calendário antes da confirmação." }
   };
+  function renderOnboardingEntry(model, { escapeHtml: escapeHtml2 = String } = {}) {
+    const next = model.next || model.current || model.steps?.[0], complete = model.completed || 0, title = complete ? "Configuração incompleta" : "Comece seu plano";
+    const description = complete ? `Falta concluir: ${escapeHtml2(next?.label || "configuração inicial")}. Suas escolhas já feitas serão preservadas.` : "Configure prova, disponibilidade e edital para receber seu primeiro plano de estudos.";
+    return `<div class="onboarding-entry-copy"><span class="onboarding-entry-icon" aria-hidden="true">🎯</span><div><span class="onboarding-kicker">${complete} de 4 etapas concluídas</span><h3 id="guidedOnboardingEntryTitle">${title}</h3><p>${description}</p></div></div><button class="btn" type="button" data-guided-action="open">${complete ? "Continuar configuração" : "Montar meu plano"} <span aria-hidden="true">→</span></button>`;
+  }
+  function renderOnboardingProgress(model) {
+    return model.steps.map((step, index) => {
+      const current = step.id === model.current?.id, state2 = current ? "step" : step.complete ? "true" : "false";
+      return `<span class="${current ? "is-current" : step.complete ? "is-complete" : ""}" data-onboarding-step="${step.id}" aria-current="${state2}"><b>${step.complete ? "✓" : index + 1}</b><em>${step.label}</em></span>`;
+    }).join("");
+  }
+  function renderOnboardingHelp(model, { escapeHtml: escapeHtml2 = String } = {}) {
+    const step = model.current || model.next || model.steps?.[0], copy = stepCopy[step.id] || stepCopy.goal;
+    return `<span class="onboarding-kicker">POR QUE ISSO IMPORTA?</span><h3>${escapeHtml2(copy.why)}</h3><ul>${copy.benefits.map((item) => `<li><span aria-hidden="true">✓</span>${escapeHtml2(item)}</li>`).join("")}</ul><div class="onboarding-tip"><strong>Dica</strong><p>${escapeHtml2(copy.tip)}</p></div>`;
+  }
   function renderOnboardingContent(model, { escapeHtml: escapeHtml2 = String, escapeAttr: escapeAttr2 = escapeHtml2, formatMinutes = (value2) => `${value2} min` } = {}) {
     const step = model.current || model.next || model.steps?.[0], copy = stepCopy[step.id] || stepCopy.goal;
     if (step.id === "goal") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><label>Concurso<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso">${model.presets.map((item) => `<option value="${escapeAttr2(item.id)}" ${item.id === model.presetId ? "selected" : ""}>${escapeHtml2(item.name.replace("Tecnologia da Informação", "TI"))}</option>`).join("")}</select></label><label>Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr2(model.today)}" value="${escapeAttr2(model.examDate || "")}"></label></div>`;
@@ -17780,10 +17795,10 @@
     return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? "—" : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${model.canCreatePlan ? '<p class="confidence-note">O StudyTrack reservará parte do tempo para pausas, correções e revisões.</p>' : '<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'}</div>`;
   }
   function renderOnboardingActions(model) {
-    const id = model.current?.id || "goal", previous = model.currentIndex > 0 ? '<button class="btn ghost" data-guided-action="back">Voltar</button>' : "";
-    if (id === "content") return `${previous}<button class="btn" data-guided-action="next" ${model.hasContent ? "" : "disabled"}>Ver prévia</button>`;
+    const id = model.current?.id || "goal", previous = model.currentIndex > 0 ? '<button class="btn ghost" data-guided-action="back">← Voltar</button>' : '<button class="btn ghost" data-guided-action="cancel">Cancelar</button>';
+    if (id === "content") return `${previous}<button class="btn" data-guided-action="next" ${model.hasContent ? "" : "disabled"}>Ver prévia →</button>`;
     if (id === "plan") return `${previous}<button class="btn" data-guided-action="create-plan" ${model.canCreatePlan ? "" : "disabled"}>Confirmar e criar meu plano</button>`;
-    return `${previous}<button class="btn" data-guided-action="next" ${model.canAdvance ? "" : "disabled"}>Continuar</button>`;
+    return `${previous}<button class="btn" data-guided-action="next" ${model.canAdvance ? "" : "disabled"}>Continuar →</button>`;
   }
 
   // src/features/replan/replan-renderer.js
@@ -18842,7 +18857,7 @@
   function showPrompt(message, options, onConfirm, onCancel) {
     return modalController.prompt(message, options, onConfirm, onCancel);
   }
-  var navigationController = createNavigationController({ document, window, render: (tab) => render(tab), trapModalTab: (event) => trapModalTab(event, [document.getElementById("examImportOverlay"), document.getElementById("reviewRatingOverlay"), document.getElementById("sessionModalOverlay"), document.getElementById("modalOverlay")]), closeReview: closeReviewRating });
+  var navigationController = createNavigationController({ document, window, render: (tab) => render(tab), trapModalTab: (event) => trapModalTab(event, [document.getElementById("guidedOnboardingOverlay"), document.getElementById("examImportOverlay"), document.getElementById("reviewRatingOverlay"), document.getElementById("sessionModalOverlay"), document.getElementById("modalOverlay")]), closeReview: closeReviewRating });
   function activateTab(tabName, updateHash = true) {
     return navigationController.activate(tabName, updateHash);
   }
@@ -20392,16 +20407,22 @@
     const tags = topic.examTags || [];
     return action === "all" || action === "bb" && tags.includes(EXAM_TAGS.BB) || action === "caixa" && tags.includes(EXAM_TAGS.CAIXA) || action === "caixa-ti" && tags.includes(EXAM_TAGS.CAIXA_TI) || action === "common" && isCommonTopic(topic, [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]);
   }, confirm: () => {
-    const inOnboarding = examImportOrigin === "onboarding" || Boolean(examImportState.previousFocus?.closest?.("#guidedOnboarding"));
+    const inOnboarding = examImportOrigin === "onboarding" || Boolean(examImportState.previousFocus?.closest?.("#guidedOnboardingOverlay"));
     const preset2 = selectedExamPreset(), result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
     applyPresetBlueprintDefaults(preset2);
     uiState.onboarding.presetId = preset2.id;
-    if (inOnboarding) uiState.onboarding.currentStep = "plan";
+    if (inOnboarding) {
+      uiState.onboarding.currentStep = "plan";
+      uiState.onboarding.open = true;
+    }
     persistAndRender();
     closeExamImport();
     if (inOnboarding) {
       activateTab("dashboard");
-      requestAnimationFrame(() => document.getElementById("guidedOnboarding")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      requestAnimationFrame(() => {
+        document.getElementById("guidedOnboardingOverlay")?.removeAttribute("hidden");
+        document.getElementById("guidedOnboardingContent")?.focus();
+      });
     }
     showToast(`${pluralize(result.addedSubjects, "disciplina")}, ${pluralize(result.addedTopics, "tópico")} e ${pluralize(result.metadataUpdates, "vínculo")} atualizados.`);
   } });
@@ -23064,17 +23085,22 @@
   `;
   }
   function renderGuidedOnboarding() {
-    const el = document.getElementById("guidedOnboarding");
-    if (!el) return;
+    const entry = document.getElementById("guidedOnboarding"), overlay = document.getElementById("guidedOnboardingOverlay");
+    if (!entry || !overlay) return;
     const model = buildOnboardingViewModel({ examDate: state.examDate, hoursByDay: state.metas.horasPorDia, subjects: state.subjects, sessions: state.studySessions, questions: state.questoes, dailyPlans: state.dailyPlans, studyPlans: state.studyPlans, currentStep: uiState.onboarding.currentStep, today: todayISO(), presets: EXAM_PRESETS, presetId: uiState.onboarding.presetId });
     if (!uiState.onboarding.currentStep) uiState.onboarding.currentStep = model.current.id;
-    el.hidden = !model.visible || IS_DEMO_MODE;
-    model.steps.forEach((step) => {
-      const item = el.querySelector(`[data-onboarding-step="${step.id}"]`);
-      item?.classList.toggle("is-complete", step.complete);
-      item?.classList.toggle("is-next", model.next?.id === step.id);
-    });
+    const visible = model.visible && !IS_DEMO_MODE;
+    entry.hidden = !visible;
+    document.getElementById("guidedOnboardingEntry").innerHTML = visible ? renderOnboardingEntry(model, { escapeHtml }) : "";
+    overlay.hidden = !visible || !uiState.onboarding.open;
+    overlay.classList.toggle("show", visible && uiState.onboarding.open);
+    if (!visible) {
+      uiState.onboarding.open = false;
+      return;
+    }
+    document.getElementById("guidedOnboardingProgress").innerHTML = renderOnboardingProgress(model);
     document.getElementById("guidedOnboardingContent").innerHTML = renderOnboardingContent(model, { escapeHtml, escapeAttr, formatMinutes: formatPlanMinutes });
+    document.getElementById("guidedOnboardingHelp").innerHTML = renderOnboardingHelp(model, { escapeHtml });
     document.getElementById("guidedOnboardingActions").innerHTML = renderOnboardingActions(model);
   }
   function onboardingModel() {
@@ -23084,6 +23110,25 @@
     const model = onboardingModel(), index = Math.max(0, Math.min(model.steps.length - 1, model.currentIndex + direction));
     uiState.onboarding.currentStep = model.steps[index].id;
     renderGuidedOnboarding();
+  }
+  function openGuidedOnboarding() {
+    const model = onboardingModel();
+    uiState.onboarding.previousFocus = document.activeElement;
+    uiState.onboarding.open = true;
+    uiState.onboarding.currentStep = uiState.onboarding.currentStep || model.next?.id || model.current.id;
+    document.body.classList.add("onboarding-open");
+    renderGuidedOnboarding();
+    requestAnimationFrame(() => document.getElementById("guidedOnboardingClose")?.focus());
+  }
+  function closeGuidedOnboarding() {
+    const previousFocus = uiState.onboarding.previousFocus;
+    uiState.onboarding.open = false;
+    uiState.onboarding.dismissedForSession = true;
+    document.body.classList.remove("onboarding-open");
+    renderGuidedOnboarding();
+    const focusTarget = previousFocus?.isConnected ? previousFocus : document.querySelector('#guidedOnboarding [data-guided-action="open"]');
+    focusTarget?.focus?.();
+    uiState.onboarding.previousFocus = null;
   }
   function setGuidedSubjectLevel(subjectId, level) {
     if (!DIFFICULTY_OPTIONS.includes(level)) return;
@@ -23101,6 +23146,7 @@
     applyGuidedEffortDefaults();
     calculateStudyPlanPreview();
     if (!studyPlanPreview || studyPlanPreview.state === "insufficient" || !studyPlanPreview.items.length) {
+      closeGuidedOnboarding();
       activateTab("metas");
       document.getElementById("examStudyPlan")?.scrollIntoView({ behavior: "smooth", block: "center" });
       showToast("Confira os dados indicados antes de confirmar o plano.");
@@ -23110,6 +23156,7 @@
     calculateDailyPlanPreview();
     if (dailyPlanPreview?.state === "proposal") confirmDailyPlanPreview();
     uiState.onboarding.currentStep = "plan";
+    uiState.onboarding.open = false;
     render();
     activateTab("hoje");
     requestAnimationFrame(() => document.querySelector("#planoHojeContent .btn")?.focus());
@@ -23870,7 +23917,7 @@
     activateTab("dashboard");
     window.scrollTo({ top: 0, behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }));
-  document.getElementById("guidedOnboarding")?.addEventListener("change", (event) => {
+  document.getElementById("guidedOnboardingOverlay")?.addEventListener("change", (event) => {
     if (event.target.id === "guidedExamPreset") {
       uiState.onboarding.presetId = event.target.value;
       return;
@@ -23886,16 +23933,28 @@
     if (event.target.dataset.guidedLevel) setGuidedSubjectLevel(event.target.dataset.guidedLevel, event.target.value);
   });
   document.getElementById("guidedOnboarding")?.addEventListener("click", (event) => {
+    if (event.target.closest('[data-guided-action="open"]')) openGuidedOnboarding();
+  });
+  document.getElementById("guidedOnboardingOverlay")?.addEventListener("click", (event) => {
     const action = event.target.closest("[data-guided-action]")?.dataset.guidedAction;
     if (!action) return;
+    if (action === "cancel") closeGuidedOnboarding();
     if (action === "back") moveOnboarding(-1);
     if (action === "next") moveOnboarding(1);
     if (action === "import") openExamImport(uiState.onboarding.presetId, "onboarding");
     if (action === "manual") {
+      closeGuidedOnboarding();
       activateTab("disciplinas");
       document.getElementById("addSubjectBtn")?.focus();
     }
     if (action === "create-plan") createGuidedInitialPlan();
+  });
+  document.getElementById("guidedOnboardingClose")?.addEventListener("click", closeGuidedOnboarding);
+  document.getElementById("guidedOnboardingOverlay")?.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeGuidedOnboarding();
+    }
   });
   document.getElementById("executionAgendaBtn")?.addEventListener("click", () => {
     state.executionMode = "agenda";

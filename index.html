@@ -104,11 +104,8 @@
 
   <!-- DASHBOARD -->
   <div class="panel active" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
-    <section class="chart-card guided-onboarding" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingTitle">
-      <div class="section-head"><div><h3 id="guidedOnboardingTitle">Comece seu plano em quatro passos</h3><p class="helper-text">Escolha a prova, informe seu tempo e receba atividades concretas para hoje.</p></div><span class="subject-progress-pill">Primeiro uso</span></div>
-      <div class="guided-onboarding-steps"><span data-onboarding-step="goal"><b>1</b> Objetivo e data</span><span data-onboarding-step="availability"><b>2</b> Disponibilidade</span><span data-onboarding-step="content"><b>3</b> Edital ou matérias</span><span data-onboarding-step="plan"><b>4</b> Prévia e Hoje</span></div>
-      <div id="guidedOnboardingContent"></div>
-      <div class="study-plan-actions" id="guidedOnboardingActions"></div>
+    <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingEntryTitle">
+      <div id="guidedOnboardingEntry"></div>
     </section>
     <div class="print-report-meta" id="printReportMeta"></div>
     <div class="kpi-grid" id="kpiGrid"></div>
@@ -673,6 +670,20 @@
   <button class="btn ghost small" id="appErrorRetryBtn" type="button">Tentar novamente</button>
 </aside>
 <article id="strategicPrintReport" class="strategic-print-report" aria-label="Relatório estratégico"></article>
+<div id="guidedOnboardingOverlay" class="onboarding-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="guidedOnboardingTitle" aria-describedby="guidedOnboardingSubtitle">
+  <div class="onboarding-modal" role="document">
+    <header class="onboarding-modal-header">
+      <div><span class="onboarding-kicker">PRIMEIRA CONFIGURAÇÃO</span><h2 id="guidedOnboardingTitle">🎯 Vamos montar o seu plano?</h2><p id="guidedOnboardingSubtitle">Em apenas quatro passos, o StudyTrack transforma sua rotina e seu edital em um plano possível de executar.</p></div>
+      <button class="onboarding-close" id="guidedOnboardingClose" type="button" aria-label="Fechar configuração">×</button>
+    </header>
+    <div class="guided-onboarding-steps" id="guidedOnboardingProgress" aria-label="Progresso da configuração"></div>
+    <div class="onboarding-modal-body">
+      <main id="guidedOnboardingContent"></main>
+      <aside id="guidedOnboardingHelp" class="onboarding-help" aria-label="Como esta etapa será usada"></aside>
+    </div>
+    <footer class="onboarding-modal-actions" id="guidedOnboardingActions"></footer>
+  </div>
+</div>
 <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalMessage">
   <div class="modal-box">
     <p id="modalMessage">Tem certeza?</p>

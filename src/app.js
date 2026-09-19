@@ -110,7 +110,7 @@ import {createQuestionController} from './application/questions/question-control
 import {createEditalImportFacade} from './application/subjects/edital-import-facade.js';
 import {createGuidedStudyService} from './application/guided-study/guided-study-service.js';
 import {buildOnboardingViewModel} from './application/onboarding/build-onboarding-view-model.js';
-import {renderOnboardingContent,renderOnboardingActions} from './features/onboarding/onboarding-renderer.js';
+import {renderOnboardingEntry,renderOnboardingProgress,renderOnboardingContent,renderOnboardingHelp,renderOnboardingActions} from './features/onboarding/onboarding-renderer.js';
 import {renderReplanProposal} from './features/replan/replan-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
 import {renderQuestionRead,renderQuestionEdit} from './ui/renderers/questions-renderer.js';
@@ -739,7 +739,7 @@ function showConfirm(message,onConfirm,onCancel,options={}){return modalControll
 function showPrompt(message,options,onConfirm,onCancel){return modalController.prompt(message,options,onConfirm,onCancel)}
 
 /* ===== TABS ===== */
-const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('examImportOverlay'),document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
+const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('guidedOnboardingOverlay'),document.getElementById('examImportOverlay'),document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
 function activateTab(tabName,updateHash=true){return navigationController.activate(tabName,updateHash)}
 
 /* ===== HELPERS ===== */
@@ -2062,7 +2062,7 @@ function renderExamImport(){
 }
 function openExamImport(initialPreset=EXAM_PRESETS[0],origin=null){const preset=typeof initialPreset==='string'?getExamPreset(initialPreset):initialPreset;examImportOrigin=origin;resetExamImportState(examImportState,preset||EXAM_PRESETS[0],document.activeElement);editalImportFacade.begin(examImportState.presetId);document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
 function closeExamImport(){editalImportFacade.cancel();document.getElementById('examImportOverlay').classList.remove('show');examImportState.previousFocus?.focus();examImportOrigin=null}
-const examImportController=createExamImportController({document,state:examImportState,getPreset:selectedExamPreset,facade:editalImportFacade,render:renderExamImport,close:closeExamImport,includeTopic:(action,topic)=>{const tags=topic.examTags||[];return action==='all'||action==='bb'&&tags.includes(EXAM_TAGS.BB)||action==='caixa'&&tags.includes(EXAM_TAGS.CAIXA)||action==='caixa-ti'&&tags.includes(EXAM_TAGS.CAIXA_TI)||action==='common'&&isCommonTopic(topic,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA])},confirm:()=>{const inOnboarding=examImportOrigin==='onboarding'||Boolean(examImportState.previousFocus?.closest?.('#guidedOnboarding'));const preset=selectedExamPreset(),result=editalImportFacade.confirm(examImportState.subjectIds,examImportState.topicIds);applyPresetBlueprintDefaults(preset);uiState.onboarding.presetId=preset.id;if(inOnboarding)uiState.onboarding.currentStep='plan';persistAndRender();closeExamImport();if(inOnboarding){activateTab('dashboard');requestAnimationFrame(()=>document.getElementById('guidedOnboarding')?.scrollIntoView({behavior:'smooth',block:'start'}))}showToast(`${pluralize(result.addedSubjects,'disciplina')}, ${pluralize(result.addedTopics,'tópico')} e ${pluralize(result.metadataUpdates,'vínculo')} atualizados.`)}});examImportController.mount();
+const examImportController=createExamImportController({document,state:examImportState,getPreset:selectedExamPreset,facade:editalImportFacade,render:renderExamImport,close:closeExamImport,includeTopic:(action,topic)=>{const tags=topic.examTags||[];return action==='all'||action==='bb'&&tags.includes(EXAM_TAGS.BB)||action==='caixa'&&tags.includes(EXAM_TAGS.CAIXA)||action==='caixa-ti'&&tags.includes(EXAM_TAGS.CAIXA_TI)||action==='common'&&isCommonTopic(topic,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA])},confirm:()=>{const inOnboarding=examImportOrigin==='onboarding'||Boolean(examImportState.previousFocus?.closest?.('#guidedOnboardingOverlay'));const preset=selectedExamPreset(),result=editalImportFacade.confirm(examImportState.subjectIds,examImportState.topicIds);applyPresetBlueprintDefaults(preset);uiState.onboarding.presetId=preset.id;if(inOnboarding){uiState.onboarding.currentStep='plan';uiState.onboarding.open=true}persistAndRender();closeExamImport();if(inOnboarding){activateTab('dashboard');requestAnimationFrame(()=>{document.getElementById('guidedOnboardingOverlay')?.removeAttribute('hidden');document.getElementById('guidedOnboardingContent')?.focus()})}showToast(`${pluralize(result.addedSubjects,'disciplina')}, ${pluralize(result.addedTopics,'tópico')} e ${pluralize(result.metadataUpdates,'vínculo')} atualizados.`)}});examImportController.mount();
 
 function archiveSubject(id){
   const subject=getSubjectById(id);
@@ -4365,20 +4365,28 @@ function renderPlanoHoje(){
   `;
 }
 function renderGuidedOnboarding(){
-  const el=document.getElementById('guidedOnboarding');
-  if(!el)return;
+  const entry=document.getElementById('guidedOnboarding'),overlay=document.getElementById('guidedOnboardingOverlay');
+  if(!entry||!overlay)return;
   const model=buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,studyPlans:state.studyPlans,currentStep:uiState.onboarding.currentStep,today:todayISO(),presets:EXAM_PRESETS,presetId:uiState.onboarding.presetId});
   if(!uiState.onboarding.currentStep)uiState.onboarding.currentStep=model.current.id;
-  el.hidden=!model.visible||IS_DEMO_MODE;
-  model.steps.forEach(step=>{const item=el.querySelector(`[data-onboarding-step="${step.id}"]`);item?.classList.toggle('is-complete',step.complete);item?.classList.toggle('is-next',model.next?.id===step.id)});
+  const visible=model.visible&&!IS_DEMO_MODE;
+  entry.hidden=!visible;
+  document.getElementById('guidedOnboardingEntry').innerHTML=visible?renderOnboardingEntry(model,{escapeHtml}):'';
+  overlay.hidden=!visible||!uiState.onboarding.open;
+  overlay.classList.toggle('show',visible&&uiState.onboarding.open);
+  if(!visible){uiState.onboarding.open=false;return}
+  document.getElementById('guidedOnboardingProgress').innerHTML=renderOnboardingProgress(model);
   document.getElementById('guidedOnboardingContent').innerHTML=renderOnboardingContent(model,{escapeHtml,escapeAttr,formatMinutes:formatPlanMinutes});
+  document.getElementById('guidedOnboardingHelp').innerHTML=renderOnboardingHelp(model,{escapeHtml});
   document.getElementById('guidedOnboardingActions').innerHTML=renderOnboardingActions(model);
 }
 function onboardingModel(){return buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,studyPlans:state.studyPlans,currentStep:uiState.onboarding.currentStep,today:todayISO(),presets:EXAM_PRESETS,presetId:uiState.onboarding.presetId})}
 function moveOnboarding(direction){const model=onboardingModel(),index=Math.max(0,Math.min(model.steps.length-1,model.currentIndex+direction));uiState.onboarding.currentStep=model.steps[index].id;renderGuidedOnboarding()}
+function openGuidedOnboarding(){const model=onboardingModel();uiState.onboarding.previousFocus=document.activeElement;uiState.onboarding.open=true;uiState.onboarding.currentStep=uiState.onboarding.currentStep||model.next?.id||model.current.id;document.body.classList.add('onboarding-open');renderGuidedOnboarding();requestAnimationFrame(()=>document.getElementById('guidedOnboardingClose')?.focus())}
+function closeGuidedOnboarding(){const previousFocus=uiState.onboarding.previousFocus;uiState.onboarding.open=false;uiState.onboarding.dismissedForSession=true;document.body.classList.remove('onboarding-open');renderGuidedOnboarding();const focusTarget=previousFocus?.isConnected?previousFocus:document.querySelector('#guidedOnboarding [data-guided-action="open"]');focusTarget?.focus?.();uiState.onboarding.previousFocus=null}
 function setGuidedSubjectLevel(subjectId,level){if(!DIFFICULTY_OPTIONS.includes(level))return;const subject=getSubjectById(subjectId);if(!subject)return;for(const topic of subject.topics.filter(item=>!item.archived)){subjectService.updateTopic(subjectId,topic.id,{...topic,difficulty:level,estimatedStudyMinutes:topic.estimatedStudyMinutes??(level==='Difícil'?120:level==='Fácil'?45:75)})}persistAndRender()}
 function applyGuidedEffortDefaults(){for(const subject of activeSubjects())for(const topic of subject.topics.filter(item=>!item.archived))if(topic.estimatedStudyMinutes==null)topic.estimatedStudyMinutes=topic.difficulty==='Difícil'?120:topic.difficulty==='Fácil'?45:75}
-function createGuidedInitialPlan(){applyGuidedEffortDefaults();calculateStudyPlanPreview();if(!studyPlanPreview||studyPlanPreview.state==='insufficient'||!studyPlanPreview.items.length){activateTab('metas');document.getElementById('examStudyPlan')?.scrollIntoView({behavior:'smooth',block:'center'});showToast('Confira os dados indicados antes de confirmar o plano.');return}confirmStudyPlan();calculateDailyPlanPreview();if(dailyPlanPreview?.state==='proposal')confirmDailyPlanPreview();uiState.onboarding.currentStep='plan';render();activateTab('hoje');requestAnimationFrame(()=>document.querySelector('#planoHojeContent .btn')?.focus())}
+function createGuidedInitialPlan(){applyGuidedEffortDefaults();calculateStudyPlanPreview();if(!studyPlanPreview||studyPlanPreview.state==='insufficient'||!studyPlanPreview.items.length){closeGuidedOnboarding();activateTab('metas');document.getElementById('examStudyPlan')?.scrollIntoView({behavior:'smooth',block:'center'});showToast('Confira os dados indicados antes de confirmar o plano.');return}confirmStudyPlan();calculateDailyPlanPreview();if(dailyPlanPreview?.state==='proposal')confirmDailyPlanPreview();uiState.onboarding.currentStep='plan';uiState.onboarding.open=false;render();activateTab('hoje');requestAnimationFrame(()=>document.querySelector('#planoHojeContent .btn')?.focus())}
 
 function renderMetasHoje(){
   const container = document.getElementById('hojeMetas');
@@ -4896,20 +4904,24 @@ document.querySelectorAll('[data-go-home]').forEach(button=>button.addEventListe
   activateTab('dashboard');
   window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }));
-document.getElementById('guidedOnboarding')?.addEventListener('change',event=>{
+document.getElementById('guidedOnboardingOverlay')?.addEventListener('change',event=>{
   if(event.target.id==='guidedExamPreset'){uiState.onboarding.presetId=event.target.value;return}
   if(event.target.id==='guidedExamDate'){updateExamBlueprint('examDate',event.target.value);return}
   if(event.target.dataset.guidedDay!==undefined){updateMetaHoursDay(event.target.dataset.guidedDay,event.target.value);return}
   if(event.target.dataset.guidedLevel)setGuidedSubjectLevel(event.target.dataset.guidedLevel,event.target.value);
 });
-document.getElementById('guidedOnboarding')?.addEventListener('click',event=>{
+document.getElementById('guidedOnboarding')?.addEventListener('click',event=>{if(event.target.closest('[data-guided-action="open"]'))openGuidedOnboarding()});
+document.getElementById('guidedOnboardingOverlay')?.addEventListener('click',event=>{
   const action=event.target.closest('[data-guided-action]')?.dataset.guidedAction;if(!action)return;
+  if(action==='cancel')closeGuidedOnboarding();
   if(action==='back')moveOnboarding(-1);
   if(action==='next')moveOnboarding(1);
   if(action==='import')openExamImport(uiState.onboarding.presetId,'onboarding');
-  if(action==='manual'){activateTab('disciplinas');document.getElementById('addSubjectBtn')?.focus()}
+  if(action==='manual'){closeGuidedOnboarding();activateTab('disciplinas');document.getElementById('addSubjectBtn')?.focus()}
   if(action==='create-plan')createGuidedInitialPlan();
 });
+document.getElementById('guidedOnboardingClose')?.addEventListener('click',closeGuidedOnboarding);
+document.getElementById('guidedOnboardingOverlay')?.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeGuidedOnboarding()}});
 document.getElementById('executionAgendaBtn')?.addEventListener('click',()=>{state.executionMode='agenda';scheduleSave();renderPlanoHoje()});
 document.getElementById('executionSequenceBtn')?.addEventListener('click',()=>{state.executionMode='sequence';scheduleSave();renderPlanoHoje()});
 
