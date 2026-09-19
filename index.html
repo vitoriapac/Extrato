@@ -323,6 +323,7 @@
       <div style="display:flex;gap:8px;">
         <button class="btn ghost" id="loadDefaultSubjectsBtn" data-testid="open-exam-import">📋 Carregar disciplinas do edital</button>
         <button class="btn ghost" id="structuredContentImportBtn">⬆ Importar JSON ou CSV</button>
+        <button class="btn ghost" id="downloadStructuredCsvBtn">Baixar modelo CSV</button>
         <input type="file" id="structuredContentFile" accept=".json,.csv,text/csv,application/json" hidden>
         <button class="btn" id="addSubjectBtn">+ Nova disciplina</button>
       </div>
@@ -670,6 +671,13 @@
   <button class="btn ghost small" id="appErrorRetryBtn" type="button">Tentar novamente</button>
 </aside>
 <article id="strategicPrintReport" class="strategic-print-report" aria-label="Relatório estratégico"></article>
+<div class="modal-overlay" id="structuredImportOverlay" role="dialog" aria-modal="true" aria-labelledby="structuredImportTitle">
+  <div class="modal-box structured-import-box">
+    <h3 id="structuredImportTitle">Prévia da importação</h3>
+    <div id="structuredImportContent"></div>
+    <div class="modal-actions"><button class="btn ghost" id="structuredImportCancelBtn" type="button">Cancelar</button><button class="btn" id="structuredImportConfirmBtn" type="button">Confirmar importação</button></div>
+  </div>
+</div>
 <div id="guidedOnboardingOverlay" class="onboarding-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="guidedOnboardingTitle" aria-describedby="guidedOnboardingSubtitle">
   <div class="onboarding-modal" role="document">
     <header class="onboarding-modal-header">

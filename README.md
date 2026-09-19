@@ -23,7 +23,7 @@ Acesse a [demo online](https://vitoriapac.github.io/Extrato/) e selecione **Expl
 
 Os dados ficam no navegador. Exporte um backup JSON regularmente pela área de dados. A importação valida o formato e a versão antes de substituir o estado local.
 
-Na área **Disciplinas**, a opção **Importar JSON ou CSV** adiciona conteúdo sem substituir o histórico. O CSV aceita as colunas `disciplina`, `topico`, `dificuldade`, `importancia`, `esforco` e `tags`; somente as duas primeiras são obrigatórias. No JSON, use `subjects: [{ name, topics: [{ name }] }]`. A importância é informada de 0 a 100, o esforço em minutos e múltiplas tags são separadas por `|`.
+Na área **Disciplinas**, a opção **Importar JSON ou CSV** abre uma prévia antes de alterar a base. Ela discrimina itens novos, existentes, atualizações e campos preservados; IDs, progresso, sessões, revisões, histórico e ajustes manuais não são sobrescritos. A mesma importação pode ser repetida sem criar duplicatas. O botão **Baixar modelo CSV** fornece um arquivo inicial com as colunas `disciplina`, `topico`, `dificuldade`, `importancia`, `esforco` e `tags`; somente as duas primeiras são obrigatórias. No JSON, use `subjects: [{ name, topics: [{ name }] }]`. A importância é informada de 0 a 100, o esforço em minutos e múltiplas tags são separadas por `|`.
 
 ## Instalação como PWA
 

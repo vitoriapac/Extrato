@@ -75,7 +75,8 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/ui/controllers/delegated-events-controller.js`: roteamento seguro das ações declarativas da interface sem funções globais.
 - `src/ui/renderers/application-renderer.js`: composição resiliente e seletiva das seções visuais.
 - `src/application/goals/goal-service.js`: regras de metas globais e disponibilidade diária.
-- `src/application/subjects/structured-content-import.js`: interpretação validada de JSON/CSV e mesclagem transacional por nomes normalizados.
+- `src/application/subjects/structured-content-import.js`: interpretação validada de JSON/CSV, diagnóstico agregado por linha e mesclagem transacional por nomes normalizados. O serviço distingue campos vindos da importação de ajustes manuais e preserva estes últimos.
+- `src/features/structured-import/`: controlador, view-model e renderer do fluxo de prévia e confirmação. O estado pendente permanece somente na interface até a confirmação explícita.
 - `src/application/analytics/build-overview-view-model.js`: composição das métricas de tempo da Visão Geral sem dependência do DOM.
 - `src/domain/analytics/topic-strategy.js`: resolução única do impacto efetivo do tópico e validação de ciclos entre pré-requisitos.
 - `src/repositories/settings-repository.js`: alterações controladas das metas e configurações persistentes.

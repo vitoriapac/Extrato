@@ -75,7 +75,8 @@ import {createBackupController} from './ui/controllers/backup-controller.js';
 import {createDelegatedEventsController} from './ui/controllers/delegated-events-controller.js';
 import {createErrorBoundaryController} from './ui/controllers/error-boundary-controller.js';
 import {createDemoController} from './ui/controllers/demo-controller.js';
-import {createStructuredContentImportController} from './ui/controllers/structured-content-import-controller.js';
+import {createStructuredImportController} from './features/structured-import/structured-import-controller.js';
+import {renderStructuredImport} from './features/structured-import/structured-import-renderer.js';
 import {parseStructuredStudyContent,createStructuredContentImportService} from './application/subjects/structured-content-import.js';
 import {createApplicationRenderer} from './ui/renderers/application-renderer.js';
 import {createGoalService} from './application/goals/goal-service.js';
@@ -739,7 +740,7 @@ function showConfirm(message,onConfirm,onCancel,options={}){return modalControll
 function showPrompt(message,options,onConfirm,onCancel){return modalController.prompt(message,options,onConfirm,onCancel)}
 
 /* ===== TABS ===== */
-const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('guidedOnboardingOverlay'),document.getElementById('examImportOverlay'),document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
+const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('guidedOnboardingOverlay'),document.getElementById('structuredImportOverlay'),document.getElementById('examImportOverlay'),document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
 function activateTab(tabName,updateHash=true){return navigationController.activate(tabName,updateHash)}
 
 /* ===== HELPERS ===== */
@@ -1935,13 +1936,14 @@ function setSubjectTopicFilter(subjectId,field,value){const current=subjectTopic
 function setSubjectExamFilter(value){if(['all','bb','caixa','caixa-ti','common'].includes(value))subjectExamFilter=value;renderSubjects()}
 function examBadges(topic){const tags=topic.examTags||[];return `${tags.includes(EXAM_TAGS.BB)?'<span class="exam-tag exam-tag--bb">BB</span>':''}${tags.includes(EXAM_TAGS.CAIXA)?'<span class="exam-tag exam-tag--caixa">CAIXA</span>':''}${tags.includes(EXAM_TAGS.CAIXA_TI)?'<span class="exam-tag exam-tag--caixa">CAIXA TI</span>':''}`}
 function updateTopicTags(subjectId, topicId, value){
-  subjectService.updateTopic(subjectId,topicId,{tags:value.split(',').map(tag=>tag.trim()).filter(Boolean)});
+  const found=getTopicById(topicId),fieldOrigins={...(found?.topic?.fieldOrigins||{}),tags:'manual'};
+  subjectService.updateTopic(subjectId,topicId,{tags:value.split(',').map(tag=>tag.trim()).filter(Boolean),fieldOrigins});
   persistAndRender();
 }
 function updateTopicStrategy(subjectId,topicId,field,value){
   studyPlanPreview=null;
   const found=getTopicById(topicId);if(!found||found.subject.id!==subjectId)return;
-  const changes={};if(field==='examImportance')changes.examImportance=value===''?null:Number(value)/100;if(field==='estimatedStudyMinutes')changes.estimatedStudyMinutes=value===''?null:Number(value);Object.assign(found.topic,changes);normalizeTopicStrategy(found.topic);subjectService.updateTopic(subjectId,topicId,found.topic);persistAndRender();
+  const changes={fieldOrigins:{...(found.topic.fieldOrigins||{}),[field]:'manual'}};if(field==='examImportance')changes.examImportance=value===''?null:Number(value)/100;if(field==='estimatedStudyMinutes')changes.estimatedStudyMinutes=value===''?null:Number(value);Object.assign(found.topic,changes);normalizeTopicStrategy(found.topic);subjectService.updateTopic(subjectId,topicId,found.topic);persistAndRender();
 }
 function toggleTopicPrerequisite(subjectId,topicId,prerequisiteId,checked){
   studyPlanPreview=null;
@@ -2047,7 +2049,8 @@ document.getElementById('loadDefaultSubjectsBtn').addEventListener('click', carr
 
 const examImportService=createExamImportService({subjectService,getSubjects:()=>state.subjects});
 const structuredContentImportService=createStructuredContentImportService({subjectService,getSubjects:()=>state.subjects});
-createStructuredContentImportController({document,window,parse:parseStructuredStudyContent,service:structuredContentImportService,confirm:showConfirm,notify:showToast,onImported:result=>{studyPlanPreview=null;persistAndRender();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados; ${pluralize(result.updatedTopics,'tópico')} atualizados.`)}}).mount();
+createStructuredImportController({document,window,parse:parseStructuredStudyContent,service:structuredContentImportService,render:renderStructuredImport,notify:showToast,onImported:result=>{studyPlanPreview=null;persistAndRender();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados; ${pluralize(result.updatedTopics,'tópico')} atualizados.`)}});
+document.getElementById('downloadStructuredCsvBtn')?.addEventListener('click',()=>{const csv='disciplina,topico,dificuldade,importancia,esforco,tags\nPortuguês,Interpretação de texto,Médio,80,120,leitura|prioridade\n',blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='modelo-studytrack.csv';link.click();URL.revokeObjectURL(url)});
 const editalImportFacade=createEditalImportFacade({catalog:EXAM_PRESETS,importService:examImportService});
 const examImportState=createExamImportState(EXAM_PRESETS[0]);
 let examImportOrigin=null;
@@ -2146,7 +2149,11 @@ function requestPermanentTopicDelete(subjectId,topicId){
   });
 }
 function updateTopic(subjectId, topicId, field, value){
-  subjectService.updateTopic(subjectId,topicId,{[field]:value});
+  const found=getTopicById(topicId),patch={[field]:value};
+  if(found&&['difficulty','examImportance','estimatedStudyMinutes'].includes(field)){
+    patch.fieldOrigins={...(found.topic.fieldOrigins||{}),[field]:'manual'};
+  }
+  subjectService.updateTopic(subjectId,topicId,patch);
   persistAndRender();
 }
 function addHistoryEvent(type,subjectId,topicId=null,metadata={}){

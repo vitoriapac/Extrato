@@ -777,6 +777,7 @@
   .modal-prompt input:focus{outline:2px solid var(--gold);outline-offset:1px;}
   .modal-prompt-error{display:block;min-height:17px;margin-top:5px;color:var(--red);font:11px 'IBM Plex Mono',monospace;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;}
+  .structured-import-box{max-width:760px}.structured-import-preview{display:grid;gap:16px}.structured-file{margin:0!important}.structured-import-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--paper-line)}.structured-import-counts section{padding:12px;background:var(--paper)}.structured-import-counts h4,.structured-import-counts p{margin:0}.structured-import-counts p{margin-top:5px!important;font-size:12px!important}.structured-conflicts summary{cursor:pointer;font-weight:600}.structured-conflicts article{display:grid;gap:4px;padding:10px 0;border-bottom:1px solid var(--paper-line)}.structured-conflicts span,.structured-conflicts small{color:var(--muted)}.structured-import-error{padding:14px;border-left:3px solid var(--danger);background:var(--paper)}.structured-import-error h4,.structured-import-error p{margin:0 0 8px}.structured-import-error ol{margin:0;padding-left:22px}.structured-import-error li{margin:5px 0}#structuredImportConfirmBtn[hidden]{display:none!important}
 
   /* ===== TOAST DE AVISO ===== */
   .toast{
@@ -795,6 +796,7 @@
   .session-notes{font-family:'IBM Plex Sans',sans-serif;resize:vertical;min-height:58px}
 
   @media (max-width:640px){
+    .structured-import-counts{grid-template-columns:1fr}
     .balance-figure{font-size:38px;}
     .bar-label{width:110px;font-size:12px;}
     .statement{padding:24px 18px;}

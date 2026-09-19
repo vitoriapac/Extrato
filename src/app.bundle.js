@@ -1087,21 +1087,22 @@
 
   // src/domain/analytics/topic-strategy.js
   var finite = (value2) => Number.isFinite(Number(value2)) ? Number(value2) : null;
+  var TOPIC_IMPACT_SOURCES = Object.freeze({ MANUAL: "manual", CATALOG: "catalog", SUBJECT: "subject", MISSING: "missing" });
   function resolveTopicExamImpact({ topic = {}, subjectConfig = null, activeExamTags = [] } = {}) {
     if (topic.examImportance != null) {
       const value2 = Math.max(0, Math.min(100, Number(topic.examImportance) * 100));
-      return { value: value2, source: "manual", sourceLabel: "Definido manualmente no tópico" };
+      return { value: value2, source: TOPIC_IMPACT_SOURCES.MANUAL, sourceLabel: "Definido manualmente no tópico" };
     }
     const estimates = Object.entries(topic.examImportanceEstimates || {}).filter(([profile]) => !activeExamTags.length || activeExamTags.some((tag) => profile.startsWith(tag))).map(([, value2]) => finite(value2)).filter((value2) => value2 != null);
     if (estimates.length) {
-      return { value: Math.max(...estimates) * 100, source: "catalog", sourceLabel: "Estimativa do catálogo para o concurso ativo" };
+      return { value: Math.max(...estimates) * 100, source: TOPIC_IMPACT_SOURCES.CATALOG, sourceLabel: "Estimativa do catálogo para o concurso ativo" };
     }
     if (subjectConfig) {
       const questions = Math.max(0, finite(subjectConfig.expectedQuestions) || 0);
       const weight = Math.max(0, finite(subjectConfig.questionWeight) || 1);
-      return { value: Math.min(100, questions * 4 * weight), source: "subject", sourceLabel: "Herdado do peso configurado para a disciplina" };
+      return { value: Math.min(100, questions * 4 * weight), source: TOPIC_IMPACT_SOURCES.SUBJECT, sourceLabel: "Herdado do peso configurado para a disciplina" };
     }
-    return { value: null, source: "missing", sourceLabel: "Sem impacto de prova configurado" };
+    return { value: null, source: TOPIC_IMPACT_SOURCES.MISSING, sourceLabel: "Sem impacto de prova configurado" };
   }
   function wouldCreatePrerequisiteCycle(topicId, candidateId, topics = []) {
     if (!topicId || !candidateId || topicId === candidateId) return true;
@@ -16623,13 +16624,26 @@
     return api;
   }
 
-  // src/ui/controllers/structured-content-import-controller.js
-  function createStructuredContentImportController({ document: document2, window: window2, parse, service, confirm, notify, onImported, maxBytes = 2 * 1024 * 1024 } = {}) {
-    const input = document2?.getElementById("structuredContentFile"), open = document2?.getElementById("structuredContentImportBtn"), listeners = [];
-    const listen = (target, event, handler) => {
-      if (!target) return;
-      target.addEventListener(event, handler);
-      listeners.push(() => target.removeEventListener?.(event, handler));
+  // src/features/structured-import/structured-import-view-model.js
+  function buildStructuredImportViewModel({ fileName = "", subjects = [], preview = null, issues = [] } = {}) {
+    return { fileName, subjectCount: subjects.length, topicCount: subjects.reduce((sum4, item) => sum4 + item.topics.length, 0), preview, issues, canConfirm: Boolean(preview && !issues.length) };
+  }
+
+  // src/features/structured-import/structured-import-controller.js
+  function createStructuredImportController({ document: document2, window: window2, parse, service, render: render2, notify, onImported, maxBytes = 2 * 1024 * 1024 } = {}) {
+    const input = document2.getElementById("structuredContentFile"), open = document2.getElementById("structuredContentImportBtn"), overlay = document2.getElementById("structuredImportOverlay"), content = document2.getElementById("structuredImportContent"), confirm = document2.getElementById("structuredImportConfirmBtn"), cancel = document2.getElementById("structuredImportCancelBtn");
+    let pending = null, previousFocus = null;
+    const close = () => {
+      overlay.classList.remove("show");
+      pending = null;
+      previousFocus?.focus?.();
+      previousFocus = null;
+    };
+    const show = (model) => {
+      content.innerHTML = render2(model);
+      confirm.hidden = !model.canConfirm;
+      overlay.classList.add("show");
+      cancel.focus();
     };
     const read = (file) => {
       if (!file) return;
@@ -16641,26 +16655,46 @@
       reader.onerror = () => notify("Não foi possível ler o arquivo.");
       reader.onload = () => {
         try {
-          const subjects = parse(String(reader.result || ""), { fileName: file.name || "" }), preview = service.preview(subjects), message = `Importar ${preview.totalTopics} tópicos em ${preview.addedSubjects + preview.existingSubjects} disciplinas? Serão criados ${preview.addedSubjects} disciplinas e ${preview.addedTopics} tópicos; ${preview.updatedTopics} tópicos existentes receberão apenas os campos informados.`;
-          confirm(message, () => {
-            const result = service.import(subjects);
-            onImported(result);
-          });
+          const subjects = parse(String(reader.result || ""), { fileName: file.name || "" }), preview = service.preview(subjects);
+          pending = { subjects, fileName: file.name || "arquivo" };
+          show(buildStructuredImportViewModel({ ...pending, preview }));
         } catch (error) {
-          notify(error?.message || "Arquivo inválido.");
+          pending = null;
+          show(buildStructuredImportViewModel({ fileName: file.name || "arquivo", issues: error?.issues || [{ message: error?.message || "Arquivo inválido." }] }));
         }
       };
       reader.readAsText(file);
     };
-    const mount = () => {
-      listen(open, "click", () => input?.click());
-      listen(input, "change", () => {
-        read(input.files?.[0]);
-        input.value = "";
-      });
-      return api;
-    }, unmount = () => listeners.splice(0).forEach((remove) => remove()), api = Object.freeze({ mount, unmount, read });
-    return api;
+    open.addEventListener("click", () => {
+      previousFocus = document2.activeElement;
+      input.click();
+    });
+    input.addEventListener("change", () => {
+      read(input.files?.[0]);
+      input.value = "";
+    });
+    cancel.addEventListener("click", close);
+    confirm.addEventListener("click", () => {
+      if (!pending) return;
+      const result = service.import(pending.subjects);
+      close();
+      onImported(result);
+    });
+    overlay.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+      }
+    });
+    return Object.freeze({ read, close });
+  }
+
+  // src/features/structured-import/structured-import-renderer.js
+  var safe = (value2) => String(value2 ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+  function renderStructuredImport(model) {
+    if (model.issues.length) return `<div class="structured-import-error"><h4>Não foi possível importar o arquivo.</h4><p>${model.issues.length} ${model.issues.length === 1 ? "problema encontrado" : "problemas encontrados"}:</p><ol>${model.issues.map((item) => `<li>${item.line ? `Linha ${item.line} — ` : ""}${safe(item.message)}</li>`).join("")}</ol></div>`;
+    const p = model.preview, counts = p?.fieldUpdates || {};
+    return `<div class="structured-import-preview"><p class="structured-file"><strong>Arquivo:</strong> ${safe(model.fileName)}</p><div class="study-plan-summary"><div><strong>${model.subjectCount}</strong><span>disciplinas</span></div><div><strong>${model.topicCount}</strong><span>tópicos</span></div><div><strong>+${p.addedSubjects}</strong><span>novas disciplinas</span></div><div><strong>+${p.addedTopics}</strong><span>novos tópicos</span></div></div><div class="structured-import-counts"><section><h4>Existentes</h4><p>${p.existingSubjects} disciplinas · ${p.existingTopics} tópicos</p></section><section><h4>Atualizações</h4><p>${counts.difficulty} dificuldades · ${counts.examImportance} importâncias · ${counts.estimatedStudyMinutes} esforços · ${counts.tags} tags</p></section><section><h4>Preservados</h4><p>${p.preservedTopics} tópicos sem alteração · IDs e histórico mantidos</p></section></div>${p.conflicts.length ? `<details class="structured-conflicts"><summary>Ver conflitos e preservações (${p.conflicts.length})</summary>${p.conflicts.slice(0, 20).map((item) => `<article><strong>${safe(item.subjectName)} — ${safe(item.topicName)}</strong><span>Status: já existe</span><small>Preservado: ${item.stablePreserved.join(", ")}</small>${item.preserved.length ? `<small>${item.preserved.map((field) => `${safe(field.label)} manual preservada`).join(" · ")}</small>` : ""}${item.updates.length ? `<small>Pode atualizar: ${item.updates.map((field) => safe(field.label)).join(", ")}</small>` : ""}</article>`).join("")}</details>` : ""}</div>`;
   }
 
   // src/application/subjects/structured-content-import.js
@@ -16668,10 +16702,19 @@
   var key = (value2) => clean(value2).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, " ").trim().toLocaleLowerCase("pt-BR");
   var finite2 = (value2) => value2 === "" || value2 == null ? null : Number.isFinite(Number(value2)) ? Number(value2) : null;
   var DIFFICULTIES = /* @__PURE__ */ new Set(["Fácil", "Médio", "Difícil"]);
+  var IMPORTABLE_FIELDS = ["difficulty", "examImportance", "estimatedStudyMinutes"];
   var headerAliases = { disciplina: "subject", materia: "subject", subject: "subject", topico: "topic", conteudo: "topic", topic: "topic", dificuldade: "difficulty", difficulty: "difficulty", importancia: "importance", impacto: "importance", examimportance: "importance", esforco: "effort", minutos: "effort", estimatedstudyminutes: "effort", tags: "tags", etiquetas: "tags" };
+  var StructuredImportError = class extends TypeError {
+    constructor(issues = []) {
+      super("Não foi possível importar o arquivo.");
+      this.name = "StructuredImportError";
+      this.issues = issues;
+    }
+  };
+  var problem = (line, field, code, message) => ({ line, field, code, message });
   function parseCsvRows(text) {
     const rows = [];
-    let row = [], field = "", quoted = false;
+    let row = [], field = "", quoted = false, line = 1, rowLine = 1;
     for (let index = 0; index < text.length; index++) {
       const char = text[index], next = text[index + 1];
       if (char === '"' && quoted && next === '"') {
@@ -16691,104 +16734,169 @@
       if ((char === "\n" || char === "\r") && !quoted) {
         if (char === "\r" && next === "\n") index++;
         row.push(field);
-        if (row.some((value2) => clean(value2))) rows.push(row);
+        if (row.some((value2) => clean(value2))) rows.push({ values: row, line: rowLine });
         row = [];
         field = "";
+        line++;
+        rowLine = line;
         continue;
       }
       field += char;
     }
     row.push(field);
-    if (row.some((value2) => clean(value2))) rows.push(row);
-    if (quoted) throw new TypeError("O CSV possui aspas não fechadas.");
+    if (row.some((value2) => clean(value2))) rows.push({ values: row, line: rowLine });
+    if (quoted) throw new StructuredImportError([problem(line, "arquivo", "unclosed_quote", "Há aspas sem fechamento no CSV.")]);
     return rows;
   }
-  function normalizeTopic2(input = {}) {
-    const name = clean(input.name ?? input.topic ?? input.topico ?? input.conteudo);
-    if (!name) throw new TypeError("Todo tópico precisa ter um nome.");
-    const rawDifficulty = clean(input.difficulty ?? input.dificuldade), difficulty = DIFFICULTIES.has(rawDifficulty) ? rawDifficulty : null;
-    const importance = finite2(input.importance ?? input.importancia ?? input.examImportance), effort = finite2(input.effort ?? input.esforco ?? input.estimatedStudyMinutes);
-    if (importance != null && (importance < 0 || importance > 100)) throw new TypeError(`A importância de "${name}" deve estar entre 0 e 100.`);
-    if (effort != null && effort <= 0) throw new TypeError(`O esforço de "${name}" deve ser maior que zero.`);
+  function normalizedTopic(input = {}, line = null, issues = []) {
+    const name = clean(input.name ?? input.topic ?? input.topico ?? input.conteudo), rawDifficulty = clean(input.difficulty ?? input.dificuldade), importance = finite2(input.importance ?? input.importancia ?? input.examImportance), effort = finite2(input.effort ?? input.esforco ?? input.estimatedStudyMinutes);
+    if (!name) issues.push(problem(line, "topico", "required", 'O campo "topico" está vazio.'));
+    if (rawDifficulty && !DIFFICULTIES.has(rawDifficulty)) issues.push(problem(line, "dificuldade", "invalid", 'Use Fácil, Médio ou Difícil em "dificuldade".'));
+    if ((input.importance ?? input.importancia ?? input.examImportance) !== void 0 && importance == null) issues.push(problem(line, "importancia", "invalid", 'O campo "importancia" precisa ser numérico.'));
+    else if (importance != null && (importance < 0 || importance > 100)) issues.push(problem(line, "importancia", "range", '"importancia" deve estar entre 0 e 100.'));
+    if ((input.effort ?? input.esforco ?? input.estimatedStudyMinutes) !== void 0 && effort == null) issues.push(problem(line, "esforco", "invalid", 'O campo "esforco" precisa ser numérico.'));
+    else if (effort != null && effort <= 0) issues.push(problem(line, "esforco", "range", '"esforco" deve ser maior que 0.'));
     const rawTags = input.tags ?? input.etiquetas ?? [], tags = [...new Set((Array.isArray(rawTags) ? rawTags : String(rawTags).split("|")).map(clean).filter(Boolean))];
-    return { name, ...difficulty ? { difficulty } : {}, ...importance == null ? {} : { examImportance: importance / 100 }, ...effort == null ? {} : { estimatedStudyMinutes: Math.round(effort) }, ...tags.length ? { tags } : {} };
+    return { name, ...DIFFICULTIES.has(rawDifficulty) ? { difficulty: rawDifficulty } : {}, ...importance == null ? {} : { examImportance: importance > 1 ? importance / 100 : importance }, ...effort == null ? {} : { estimatedStudyMinutes: Math.round(effort) }, ...tags.length ? { tags } : {} };
   }
-  function normalizeSubjects(subjects) {
-    if (!Array.isArray(subjects) || !subjects.length) throw new TypeError("O arquivo não contém disciplinas.");
-    if (subjects.length > 500) throw new TypeError("O arquivo excede o limite de 500 disciplinas.");
+  function normalizeSubjects(subjects, lines = []) {
+    const issues = [];
+    if (!Array.isArray(subjects) || !subjects.length) throw new StructuredImportError([problem(null, "arquivo", "empty", "O arquivo não contém disciplinas.")]);
+    if (subjects.length > 500) throw new StructuredImportError([problem(null, "arquivo", "limit", "O arquivo excede o limite de 500 disciplinas.")]);
     let topicCount = 0;
-    const result = subjects.map((input) => {
-      const name = clean(input?.name ?? input?.subject ?? input?.disciplina ?? input?.materia);
-      if (!name) throw new TypeError("Toda disciplina precisa ter um nome.");
-      const topics = (input?.topics ?? input?.topicos ?? []).map(normalizeTopic2);
+    const result = subjects.map((input, index) => {
+      const line = lines[index] ?? null, name = clean(input?.name ?? input?.subject ?? input?.disciplina ?? input?.materia);
+      if (!name) issues.push(problem(line, "disciplina", "required", 'O campo "disciplina" está vazio.'));
+      const topics = (input?.topics ?? input?.topicos ?? []).map((topic) => normalizedTopic(topic, topic.__line ?? line, issues));
       topicCount += topics.length;
       return { name, topics };
     });
-    if (topicCount > 1e4) throw new TypeError("O arquivo excede o limite de 10.000 tópicos.");
+    if (topicCount > 1e4) issues.push(problem(null, "arquivo", "limit", "O arquivo excede o limite de 10.000 tópicos."));
+    if (issues.length) throw new StructuredImportError(issues);
     return result;
   }
   function parseStructuredStudyContent(text, { fileName = "" } = {}) {
-    if (typeof text !== "string" || !text.trim()) throw new TypeError("O arquivo está vazio.");
+    if (typeof text !== "string" || !text.trim()) throw new StructuredImportError([problem(null, "arquivo", "empty", "O arquivo está vazio.")]);
     const json = /\.json$/i.test(fileName) || /^[\s]*[\[{]/.test(text);
     if (json) {
       let value2;
       try {
         value2 = JSON.parse(text);
       } catch {
-        throw new TypeError("O JSON não pôde ser interpretado.");
+        throw new StructuredImportError([problem(null, "arquivo", "invalid_json", "O JSON não pôde ser interpretado. Verifique vírgulas, aspas e chaves.")]);
       }
       return normalizeSubjects(Array.isArray(value2) ? value2 : value2?.subjects ?? value2?.disciplinas);
     }
     const rows = parseCsvRows(text);
-    if (rows.length < 2) throw new TypeError("O CSV precisa de cabeçalho e ao menos uma linha.");
-    const headers = rows.shift().map((value2) => headerAliases[key(value2)] || null);
-    if (!headers.includes("subject") || !headers.includes("topic")) throw new TypeError("O CSV precisa das colunas disciplina e topico.");
+    if (rows.length < 2) throw new StructuredImportError([problem(null, "arquivo", "empty_csv", "O CSV precisa de cabeçalho e ao menos uma linha.")]);
+    const headers = rows.shift().values.map((value2) => headerAliases[key(value2)] || null), missing = [];
+    if (!headers.includes("subject")) missing.push("disciplina");
+    if (!headers.includes("topic")) missing.push("topico");
+    if (missing.length) throw new StructuredImportError(missing.map((field) => problem(1, field, "missing_column", `A coluna obrigatória "${field}" não foi encontrada.`)));
     const grouped = /* @__PURE__ */ new Map();
-    rows.forEach((row) => {
-      const record = Object.fromEntries(headers.map((header, index) => [header, row[index]]).filter(([header]) => header));
-      const subject = clean(record.subject);
-      if (!subject) throw new TypeError("Toda linha do CSV precisa informar a disciplina.");
-      const id = key(subject);
-      if (!grouped.has(id)) grouped.set(id, { name: subject, topics: [] });
-      grouped.get(id).topics.push(record);
+    rows.forEach(({ values: values2, line }) => {
+      const record = Object.fromEntries(headers.map((header, index) => [header, values2[index]]).filter(([header]) => header)), subject = clean(record.subject), id = key(subject) || `linha-${line}`;
+      if (!grouped.has(id)) grouped.set(id, { name: subject, topics: [], __line: line });
+      grouped.get(id).topics.push({ ...record, __line: line });
     });
-    return normalizeSubjects([...grouped.values()]);
+    const values = [...grouped.values()];
+    return normalizeSubjects(values, values.map((item) => item.__line));
+  }
+  var originOf = (topic, field) => topic?.fieldOrigins?.[field] || null;
+  var manualValue = (topic, field) => topic?.[field] != null && originOf(topic, field) !== "import";
+  var fieldLabel = { difficulty: "dificuldade", examImportance: "importância", estimatedStudyMinutes: "esforço" };
+  function compareTopic(existing, imported) {
+    const updates = [], preserved = [];
+    for (const field of IMPORTABLE_FIELDS) {
+      if (!(field in imported)) continue;
+      if (manualValue(existing, field)) preserved.push({ field, label: fieldLabel[field], current: existing[field], imported: imported[field] });
+      else if (existing[field] !== imported[field]) updates.push({ field, label: fieldLabel[field], from: existing[field] ?? null, to: imported[field] });
+    }
+    const importedTags = (imported.tags || []).filter((tag) => !(existing.tags || []).includes(tag));
+    if (importedTags.length) updates.push({ field: "tags", label: "tags", from: existing.tags || [], to: [...existing.tags || [], ...importedTags] });
+    return { updates, preserved };
   }
   function createStructuredContentImportService({ subjectService: subjectService2, getSubjects } = {}) {
-    if (!subjectService2 || typeof getSubjects !== "function") throw new TypeError("Importação estruturada requer serviço e estado de disciplinas.");
+    if (!subjectService2 || typeof getSubjects !== "function") {
+      throw new TypeError("Importação estruturada requer serviço e estado de disciplinas.");
+    }
     const inspect = (subjects) => {
-      const current = getSubjects(), summary = { addedSubjects: 0, existingSubjects: 0, addedTopics: 0, updatedTopics: 0, totalTopics: 0 };
+      const current = getSubjects();
+      const summary = {
+        addedSubjects: 0,
+        existingSubjects: 0,
+        addedTopics: 0,
+        existingTopics: 0,
+        updatedTopics: 0,
+        preservedTopics: 0,
+        totalTopics: 0,
+        fieldUpdates: { difficulty: 0, examImportance: 0, estimatedStudyMinutes: 0, tags: 0 },
+        conflicts: []
+      };
       for (const source of subjects) {
         const subject = current.find((item) => key(item.name) === key(source.name));
         subject ? summary.existingSubjects++ : summary.addedSubjects++;
         for (const topic of source.topics) {
           summary.totalTopics++;
-          subject?.topics?.some((item) => key(item.name) === key(topic.name)) ? summary.updatedTopics++ : summary.addedTopics++;
+          const existing = subject?.topics?.find((item) => key(item.name) === key(topic.name));
+          if (!existing) {
+            summary.addedTopics++;
+            continue;
+          }
+          summary.existingTopics++;
+          const comparison2 = compareTopic(existing, topic);
+          comparison2.updates.forEach((item) => summary.fieldUpdates[item.field]++);
+          if (comparison2.updates.length) summary.updatedTopics++;
+          else summary.preservedTopics++;
+          summary.conflicts.push({
+            subjectName: subject.name,
+            topicName: existing.name,
+            status: "existing",
+            stablePreserved: ["ID", "progresso", "sessões", "revisões", "histórico"],
+            ...comparison2
+          });
         }
       }
       return summary;
     };
-    return Object.freeze({ preview: inspect, import(subjects) {
-      const current = getSubjects(), snapshot = structuredClone(current), summary = inspect(subjects);
-      try {
-        for (const source of subjects) {
-          let subject = current.find((item) => key(item.name) === key(source.name));
-          if (!subject) subject = subjectService2.create(source.name);
-          for (const imported of source.topics) {
-            const existing = subject.topics.find((item) => key(item.name) === key(imported.name));
-            if (existing) {
-              const patch = { ...imported, tags: [.../* @__PURE__ */ new Set([...existing.tags || [], ...imported.tags || []])] };
-              delete patch.name;
-              subjectService2.updateTopic(subject.id, existing.id, patch);
-            } else subjectService2.addTopic(subject.id, imported);
+    return Object.freeze({
+      preview: inspect,
+      import(subjects) {
+        const current = getSubjects();
+        const snapshot = structuredClone(current);
+        const summary = inspect(subjects);
+        try {
+          for (const source of subjects) {
+            let subject = current.find((item) => key(item.name) === key(source.name));
+            if (!subject) subject = subjectService2.create(source.name);
+            for (const imported of source.topics) {
+              const existing = subject.topics.find((item) => key(item.name) === key(imported.name));
+              if (existing) {
+                const comparison2 = compareTopic(existing, imported);
+                const patch = { fieldOrigins: { ...existing.fieldOrigins || {} } };
+                for (const update of comparison2.updates) {
+                  if (update.field === "tags") patch.tags = update.to;
+                  else {
+                    patch[update.field] = update.to;
+                    patch.fieldOrigins[update.field] = "import";
+                  }
+                }
+                subjectService2.updateTopic(subject.id, existing.id, patch);
+              } else {
+                const fieldOrigins = Object.fromEntries(
+                  IMPORTABLE_FIELDS.filter((field) => field in imported).map((field) => [field, "import"])
+                );
+                subjectService2.addTopic(subject.id, { ...imported, fieldOrigins });
+              }
+            }
           }
+        } catch (error) {
+          current.splice(0, current.length, ...snapshot);
+          throw error;
         }
-      } catch (error) {
-        current.splice(0, current.length, ...snapshot);
-        throw error;
+        return summary;
       }
-      return summary;
-    } });
+    });
   }
 
   // src/ui/renderers/application-renderer.js
@@ -16949,26 +17057,26 @@
   }
 
   // src/ui/renderers/studytrack32-renderer.js
-  var safe = (escapeHtml2, value2) => escapeHtml2(String(value2 ?? ""));
+  var safe2 = (escapeHtml2, value2) => escapeHtml2(String(value2 ?? ""));
   function renderWeeklyClose(model, { escapeHtml: escapeHtml2, formatMinutes }) {
     if (model.state === "insufficient") return '<div class="upcoming-empty">Ainda não há evidência suficiente para fechar a semana.</div>';
-    const priorities = (model.priorities || []).map((item, index) => `<li><strong>${index + 1}. ${safe(escapeHtml2, item.action)}</strong><span>${safe(escapeHtml2, item.reason)} · ${formatMinutes(item.estimatedMinutes)}</span></li>`).join("");
-    return `<div class="weekly-kpis"><div><strong>${formatMinutes(model.investment.executedMinutes)}</strong><span>Tempo estudado</span></div><div><strong>${model.questions.accuracy ?? "—"}%</strong><span>Acerto</span></div><div><strong>${model.questions.resolved}</strong><span>Questões</span></div></div><section class="weekly-assessment"><small>Diagnóstico</small><strong>${model.assessment === "attention" ? "Atenção" : model.assessment === "on_target" ? "Meta alcançada" : "Semana em formação"}</strong>${model.mainRisk ? `<p class="weekly-risk"><b>Principal risco</b>${safe(escapeHtml2, model.mainRisk.message)}</p>` : ""}${model.bestSignal ? `<p><b>Melhor sinal</b>${safe(escapeHtml2, model.bestSignal.message)}</p>` : ""}<p class="weekly-action"><b>Próxima ação</b>${safe(escapeHtml2, model.recommendedAction)}</p>${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ""}</section>`;
+    const priorities = (model.priorities || []).map((item, index) => `<li><strong>${index + 1}. ${safe2(escapeHtml2, item.action)}</strong><span>${safe2(escapeHtml2, item.reason)} · ${formatMinutes(item.estimatedMinutes)}</span></li>`).join("");
+    return `<div class="weekly-kpis"><div><strong>${formatMinutes(model.investment.executedMinutes)}</strong><span>Tempo estudado</span></div><div><strong>${model.questions.accuracy ?? "—"}%</strong><span>Acerto</span></div><div><strong>${model.questions.resolved}</strong><span>Questões</span></div></div><section class="weekly-assessment"><small>Diagnóstico</small><strong>${model.assessment === "attention" ? "Atenção" : model.assessment === "on_target" ? "Meta alcançada" : "Semana em formação"}</strong>${model.mainRisk ? `<p class="weekly-risk"><b>Principal risco</b>${safe2(escapeHtml2, model.mainRisk.message)}</p>` : ""}${model.bestSignal ? `<p><b>Melhor sinal</b>${safe2(escapeHtml2, model.bestSignal.message)}</p>` : ""}<p class="weekly-action"><b>Próxima ação</b>${safe2(escapeHtml2, model.recommendedAction)}</p>${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ""}</section>`;
   }
   function renderPeriodComparison(model, { escapeHtml: escapeHtml2, formatMinutes }) {
     const labels = { accuracy: "Acerto", minutes: "Tempo estudado", questions: "Questões" }, value2 = (key2, n3) => key2 === "accuracy" ? `${n3}%` : key2 === "minutes" ? formatMinutes(n3) : String(n3), delta = (key2, n3) => key2 === "accuracy" ? `${n3 > 0 ? "+" : ""}${n3} p.p.` : key2 === "minutes" ? `${n3 > 0 ? "+" : ""}${formatMinutes(Math.abs(n3))}` : `${n3 > 0 ? "+" : ""}${n3}`;
-    return `<div class="period-comparison"><strong>Comparação com a semana anterior</strong><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${Object.entries(model.comparison).map(([key2, item]) => item.delta == null ? `<div><span>${labels[key2]}</span><small>Sem semana anterior comparável</small></div>` : `<div><span>${labels[key2]}</span><b>${safe(escapeHtml2, value2(key2, item.previous))}</b><b>${safe(escapeHtml2, value2(key2, item.current))}</b><b>${safe(escapeHtml2, delta(key2, item.delta))}</b></div>`).join("")}</div>`;
+    return `<div class="period-comparison"><strong>Comparação com a semana anterior</strong><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${Object.entries(model.comparison).map(([key2, item]) => item.delta == null ? `<div><span>${labels[key2]}</span><small>Sem semana anterior comparável</small></div>` : `<div><span>${labels[key2]}</span><b>${safe2(escapeHtml2, value2(key2, item.previous))}</b><b>${safe2(escapeHtml2, value2(key2, item.current))}</b><b>${safe2(escapeHtml2, delta(key2, item.delta))}</b></div>`).join("")}</div>`;
   }
   function renderGapMap(model, { escapeHtml: escapeHtml2 }) {
-    return model.items.length ? model.items.slice(0, 5).map((item) => `<article class="data-row"><strong>${safe(escapeHtml2, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Gap de domínio ${item.gap ?? "—"} pts · impacto ${item.factors.examImpact ?? "—"}%</span></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">◎</span><div><strong>Nenhuma lacuna priorizada</strong><p>As lacunas aparecerão quando houver tópicos e evidências suficientes.</p></div></div>';
+    return model.items.length ? model.items.slice(0, 5).map((item) => `<article class="data-row"><strong>${safe2(escapeHtml2, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Gap de domínio ${item.gap ?? "—"} pts · impacto ${item.factors.examImpact ?? "—"}%</span></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">◎</span><div><strong>Nenhuma lacuna priorizada</strong><p>As lacunas aparecerão quando houver tópicos e evidências suficientes.</p></div></div>';
   }
   function renderDecisionHistory(model, { escapeHtml: escapeHtml2 }) {
-    return model.items.length ? model.items.map((item) => `<article class="data-row"><strong>${safe(escapeHtml2, item.subjectName)} — ${safe(escapeHtml2, item.topicName)}</strong><span>${safe(escapeHtml2, item.strategyLabel)}</span><small>${safe(escapeHtml2, item.outcomeLabel)}</small></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
+    return model.items.length ? model.items.map((item) => `<article class="data-row"><strong>${safe2(escapeHtml2, item.subjectName)} — ${safe2(escapeHtml2, item.topicName)}</strong><span>${safe2(escapeHtml2, item.strategyLabel)}</span><small>${safe2(escapeHtml2, item.outcomeLabel)}</small></article>`).join("") : '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
   }
   function renderPostSimulationReplan(model, { escapeHtml: escapeHtml2 }) {
     const need = (model.adjustments || []).reduce((sum4, item) => sum4 + item.deltaMinutes, 0) + (model.unallocatedMinutes || 0);
-    if (model.state !== "proposal") return `<div class="analytics-empty"><span aria-hidden="true">±</span><div><strong>Replanejamento indisponível</strong><p>${safe(escapeHtml2, model.reason || model.message)}</p></div></div>`;
-    return `<div class="replan-summary"><strong>Proposta para ${safe(escapeHtml2, model.simulationDate || "simulado recente")}</strong><p>${model.adjustments.map((item) => `${safe(escapeHtml2, item.subjectName)}: +${item.deltaMinutes} min`).join(" · ")}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${model.availableMinutes} min</dd></div>${model.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${model.unallocatedMinutes} min</dd></div>` : ""}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`;
+    if (model.state !== "proposal") return `<div class="analytics-empty"><span aria-hidden="true">±</span><div><strong>Replanejamento indisponível</strong><p>${safe2(escapeHtml2, model.reason || model.message)}</p></div></div>`;
+    return `<div class="replan-summary"><strong>Proposta para ${safe2(escapeHtml2, model.simulationDate || "simulado recente")}</strong><p>${model.adjustments.map((item) => `${safe2(escapeHtml2, item.subjectName)}: +${item.deltaMinutes} min`).join(" · ")}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${model.availableMinutes} min</dd></div>${model.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${model.unallocatedMinutes} min</dd></div>` : ""}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`;
   }
 
   // src/application/alert-lifecycle.js
@@ -18857,7 +18965,7 @@
   function showPrompt(message, options, onConfirm, onCancel) {
     return modalController.prompt(message, options, onConfirm, onCancel);
   }
-  var navigationController = createNavigationController({ document, window, render: (tab) => render(tab), trapModalTab: (event) => trapModalTab(event, [document.getElementById("guidedOnboardingOverlay"), document.getElementById("examImportOverlay"), document.getElementById("reviewRatingOverlay"), document.getElementById("sessionModalOverlay"), document.getElementById("modalOverlay")]), closeReview: closeReviewRating });
+  var navigationController = createNavigationController({ document, window, render: (tab) => render(tab), trapModalTab: (event) => trapModalTab(event, [document.getElementById("guidedOnboardingOverlay"), document.getElementById("structuredImportOverlay"), document.getElementById("examImportOverlay"), document.getElementById("reviewRatingOverlay"), document.getElementById("sessionModalOverlay"), document.getElementById("modalOverlay")]), closeReview: closeReviewRating });
   function activateTab(tabName, updateHash = true) {
     return navigationController.activate(tabName, updateHash);
   }
@@ -20210,14 +20318,15 @@
     return `${tags.includes(EXAM_TAGS.BB) ? '<span class="exam-tag exam-tag--bb">BB</span>' : ""}${tags.includes(EXAM_TAGS.CAIXA) ? '<span class="exam-tag exam-tag--caixa">CAIXA</span>' : ""}${tags.includes(EXAM_TAGS.CAIXA_TI) ? '<span class="exam-tag exam-tag--caixa">CAIXA TI</span>' : ""}`;
   }
   function updateTopicTags(subjectId, topicId, value2) {
-    subjectService.updateTopic(subjectId, topicId, { tags: value2.split(",").map((tag) => tag.trim()).filter(Boolean) });
+    const found = getTopicById(topicId), fieldOrigins = { ...found?.topic?.fieldOrigins || {}, tags: "manual" };
+    subjectService.updateTopic(subjectId, topicId, { tags: value2.split(",").map((tag) => tag.trim()).filter(Boolean), fieldOrigins });
     persistAndRender();
   }
   function updateTopicStrategy(subjectId, topicId, field, value2) {
     studyPlanPreview = null;
     const found = getTopicById(topicId);
     if (!found || found.subject.id !== subjectId) return;
-    const changes = {};
+    const changes = { fieldOrigins: { ...found.topic.fieldOrigins || {}, [field]: "manual" } };
     if (field === "examImportance") changes.examImportance = value2 === "" ? null : Number(value2) / 100;
     if (field === "estimatedStudyMinutes") changes.estimatedStudyMinutes = value2 === "" ? null : Number(value2);
     Object.assign(found.topic, changes);
@@ -20355,11 +20464,18 @@
   document.getElementById("loadDefaultSubjectsBtn").addEventListener("click", carregarDisciplinasPadrao);
   var examImportService = createExamImportService({ subjectService, getSubjects: () => state.subjects });
   var structuredContentImportService = createStructuredContentImportService({ subjectService, getSubjects: () => state.subjects });
-  createStructuredContentImportController({ document, window, parse: parseStructuredStudyContent, service: structuredContentImportService, confirm: showConfirm, notify: showToast, onImported: (result) => {
+  createStructuredImportController({ document, window, parse: parseStructuredStudyContent, service: structuredContentImportService, render: renderStructuredImport, notify: showToast, onImported: (result) => {
     studyPlanPreview = null;
     persistAndRender();
     showToast(`${pluralize(result.addedSubjects, "disciplina")} e ${pluralize(result.addedTopics, "tópico")} adicionados; ${pluralize(result.updatedTopics, "tópico")} atualizados.`);
-  } }).mount();
+  } });
+  document.getElementById("downloadStructuredCsvBtn")?.addEventListener("click", () => {
+    const csv = "disciplina,topico,dificuldade,importancia,esforco,tags\nPortuguês,Interpretação de texto,Médio,80,120,leitura|prioridade\n", blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }), url = URL.createObjectURL(blob), link = document.createElement("a");
+    link.href = url;
+    link.download = "modelo-studytrack.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  });
   var editalImportFacade = createEditalImportFacade({ catalog: EXAM_PRESETS, importService: examImportService });
   var examImportState = createExamImportState(EXAM_PRESETS[0]);
   var examImportOrigin = null;
@@ -20511,7 +20627,11 @@
     });
   }
   function updateTopic(subjectId, topicId, field, value2) {
-    subjectService.updateTopic(subjectId, topicId, { [field]: value2 });
+    const found = getTopicById(topicId), patch = { [field]: value2 };
+    if (found && ["difficulty", "examImportance", "estimatedStudyMinutes"].includes(field)) {
+      patch.fieldOrigins = { ...found.topic.fieldOrigins || {}, [field]: "manual" };
+    }
+    subjectService.updateTopic(subjectId, topicId, patch);
     persistAndRender();
   }
   function addHistoryEvent(type, subjectId, topicId = null, metadata = {}) {
