@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import {waitForAppReady} from './helpers/app-state.js';
 import {activateTab} from './helpers.js';
 
@@ -68,4 +69,23 @@ for(const viewport of [{name:'celular',width:375,height:812},{name:'tablet',widt
   await expect(overlay.locator('[data-guided-action="cancel"]')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('#guidedOnboardingClose')).toBeFocused();
+});
+
+for(const theme of ['light','dark'])for(const viewport of [{name:'mobile',width:375,height:812},{name:'desktop',width:1440,height:900}])test(`hierarquia visual cobre quatro etapas em ${theme} ${viewport.name}`,async({page})=>{
+  await page.setViewportSize({width:viewport.width,height:viewport.height});
+  await page.evaluate(selected=>{document.documentElement.dataset.theme=selected;const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.subjects=[{id:'visual-subject',name:'Matemática',archived:false,topics:[{id:'visual-topic',name:'Porcentagem',status:'Não iniciado',difficulty:'Médio',estimatedStudyMinutes:75,archived:false,prerequisites:[]}]}];api.setState(state);api.renderAll()},theme);
+  await page.locator('#guidedOnboarding [data-guided-action="open"]').evaluate(button=>button.click());
+  const overlay=page.locator('#guidedOnboardingOverlay'),next=()=>overlay.locator('[data-guided-action="next"]');
+  const assertLayering=async(expectedCompleted)=>{
+    const colors=await overlay.evaluate(element=>{const modal=element.querySelector('.onboarding-modal'),main=element.querySelector('.onboarding-modal-body>main'),help=element.querySelector('.onboarding-help');return{modal:getComputedStyle(modal).backgroundColor,main:getComputedStyle(main).backgroundColor,help:getComputedStyle(help).backgroundColor}});
+    expect(colors.main).not.toBe(colors.help);expect(colors.modal).not.toBe(colors.help);
+    await expect(overlay.locator('.guided-onboarding-steps .is-current')).toHaveCount(1);await expect(overlay.locator('.guided-onboarding-steps .is-complete')).toHaveCount(expectedCompleted);
+    const bounds=await overlay.locator('.onboarding-modal').boundingBox();expect(bounds.x).toBeGreaterThanOrEqual(0);expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width+1);
+    const accessibility=await new AxeBuilder({page}).include('#guidedOnboardingOverlay').withRules(['color-contrast']).analyze();expect(accessibility.violations).toEqual([]);
+  };
+  await assertLayering(0);
+  const goalControl=page.locator('#guidedExamPreset');expect(await goalControl.evaluate(input=>parseFloat(getComputedStyle(input).borderTopWidth))).toBeGreaterThan(0);expect(await goalControl.evaluate(input=>input.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  await page.locator('#guidedExamDate').fill('2027-03-14');await next().evaluate(button=>button.click());await assertLayering(1);
+  await page.locator('[data-guided-day="1"]').fill('2');await next().evaluate(button=>button.click());await assertLayering(2);
+  await next().evaluate(button=>button.click());await assertLayering(3);await expect(overlay).toContainText('Primeiras atividades priorizadas');
 });

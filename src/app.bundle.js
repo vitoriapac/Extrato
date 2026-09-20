@@ -17892,8 +17892,8 @@
   }
   function renderOnboardingProgress(model) {
     return model.steps.map((step, index) => {
-      const current = step.id === model.current?.id, state2 = current ? "step" : step.complete ? "true" : "false";
-      return `<span class="${current ? "is-current" : step.complete ? "is-complete" : ""}" data-onboarding-step="${step.id}" aria-current="${state2}"><b>${step.complete ? "✓" : index + 1}</b><em>${step.label}</em></span>`;
+      const current = step.id === model.current?.id, complete = step.complete && index < model.currentIndex, state2 = current ? "step" : "false";
+      return `<span class="${current ? "is-current" : complete ? "is-complete" : ""}" data-onboarding-step="${step.id}" aria-current="${state2}"><b>${complete ? "✓" : index + 1}</b><em>${step.label}</em></span>`;
     }).join("");
   }
   function renderOnboardingHelp(model, { escapeHtml: escapeHtml3 = String } = {}) {

@@ -20,3 +20,5 @@ test('renderer separa card de entrada, progresso e ajuda contextual',()=>{
   assert.match(renderOnboardingHelp(model),/POR QUE ISSO IMPORTA/);
   assert.match(renderOnboardingHelp(model),/calcular o ritmo necessário/);
 });
+
+test('stepper conclui somente etapas anteriores à etapa atual',()=>{const model={...base,current:{id:'availability'},currentIndex:1,steps:[{id:'goal',label:'Objetivo',complete:true},{id:'availability',label:'Disponibilidade',complete:true},{id:'content',label:'Conteúdo',complete:true},{id:'plan',label:'Prévia',complete:false}]};const html=renderOnboardingProgress(model);assert.equal((html.match(/is-complete/g)||[]).length,1);assert.match(html,/is-current[^>]*data-onboarding-step="availability"/);assert.match(html,/data-onboarding-step="content" aria-current="false"><b>3/)});

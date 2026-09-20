@@ -12,7 +12,7 @@ export function renderOnboardingEntry(model,{escapeHtml=String}={}){
 }
 
 export function renderOnboardingProgress(model){
-  return model.steps.map((step,index)=>{const current=step.id===model.current?.id,state=current?'step':step.complete?'true':'false';return `<span class="${current?'is-current':step.complete?'is-complete':''}" data-onboarding-step="${step.id}" aria-current="${state}"><b>${step.complete?'✓':index+1}</b><em>${step.label}</em></span>`}).join('');
+  return model.steps.map((step,index)=>{const current=step.id===model.current?.id,complete=step.complete&&index<model.currentIndex,state=current?'step':'false';return `<span class="${current?'is-current':complete?'is-complete':''}" data-onboarding-step="${step.id}" aria-current="${state}"><b>${complete?'✓':index+1}</b><em>${step.label}</em></span>`}).join('');
 }
 
 export function renderOnboardingHelp(model,{escapeHtml=String}={}){
