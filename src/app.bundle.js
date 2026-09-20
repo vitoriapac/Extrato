@@ -16992,13 +16992,17 @@
 
   // src/application/analytics/build-overview-view-model.js
   var sum = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
+  var daySpan = (start, end) => {
+    const first = parseLocalDate(start), last = parseLocalDate(end);
+    return first && last ? Math.floor((last - first) / 864e5) : 0;
+  };
   function buildStudyTimeViewModel({ sessions = [], today, weekStart, monthStart, hoursForDate, addDays: addDays2 } = {}) {
     const dated = sessions.filter((item) => item.date), totalSeconds = sum(dated, (item) => item.durationSeconds), todaySeconds = sum(dated.filter((item) => item.date === today), (item) => item.durationSeconds), weekSeconds = sum(dated.filter((item) => item.date >= weekStart && item.date <= today), (item) => item.durationSeconds), monthSeconds = sum(dated.filter((item) => item.date >= monthStart && item.date <= today), (item) => item.durationSeconds);
     const firstRecent = dated.filter((item) => item.date >= addDays2(today, -29) && item.date <= today).map((item) => item.date).sort()[0] || null;
-    const days = firstRecent ? Math.floor((/* @__PURE__ */ new Date(today + "T00:00:00") - /* @__PURE__ */ new Date(firstRecent + "T00:00:00")) / 864e5) + 1 : 0, recent = firstRecent ? dated.filter((item) => item.date >= firstRecent && item.date <= today) : [], realized = sum(recent, (item) => item.durationSeconds);
+    const days = firstRecent ? daySpan(firstRecent, today) + 1 : 0, recent = firstRecent ? dated.filter((item) => item.date >= firstRecent && item.date <= today) : [], realized = sum(recent, (item) => item.durationSeconds);
     let planned = 0;
     for (let index = 0; index < days; index++) planned += hoursForDate(addDays2(firstRecent, index)) * 3600;
-    const elapsed = Math.floor((/* @__PURE__ */ new Date(today + "T00:00:00") - /* @__PURE__ */ new Date(weekStart + "T00:00:00")) / 864e5) + 1, byDate = Object.groupBy ? Object.groupBy(dated.filter((item) => item.date >= weekStart && item.date <= today), (item) => item.date) : dated.filter((item) => item.date >= weekStart && item.date <= today).reduce((map, item) => {
+    const elapsed = daySpan(weekStart, today) + 1, byDate = Object.groupBy ? Object.groupBy(dated.filter((item) => item.date >= weekStart && item.date <= today), (item) => item.date) : dated.filter((item) => item.date >= weekStart && item.date <= today).reduce((map, item) => {
       var _a;
       return (map[_a = item.date] ?? (map[_a] = [])).push(item), map;
     }, {});
@@ -17303,8 +17307,7 @@
     };
   }
   function shiftDate(iso, days) {
-    const [year, month, day] = iso.split("-").map(Number), date2 = new Date(Date.UTC(year, month - 1, day + days));
-    return date2.toISOString().slice(0, 10);
+    return addLocalDays(iso, days);
   }
   function timestamp(date2, hour = 12) {
     return `${date2}T${String(hour).padStart(2, "0")}:00:00.000Z`;
@@ -17861,7 +17864,7 @@
   }
 
   // src/application/onboarding/build-onboarding-view-model.js
-  function buildOnboardingViewModel({ examDate = null, hoursByDay = {}, subjects = [], sessions = [], questions = [], dailyPlans = [], studyPlans = null, currentStep = null, today = null, presets = [], presetId = null } = {}) {
+  function buildOnboardingViewModel({ examDate = null, hoursByDay = {}, subjects = [], sessions = [], questions = [], dailyPlans = [], studyPlans = null, planPreview = null, currentStep = null, today = null, presets = [], presetId = null } = {}) {
     const hasGoal = Boolean(examDate), availableMinutes = Object.values(hoursByDay || {}).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0), hasAvailability = availableMinutes > 0, hasContent = (subjects || []).some((subject) => !subject.archived && (subject.topics || []).some((topic) => !topic.archived)), hasPlan = Array.isArray(studyPlans) ? studyPlans.length > 0 : (dailyPlans || []).some((plan) => (plan.items || []).length > 0), hasHistory = (sessions || []).length > 0 || (questions || []).length > 0;
     const steps = [{ id: "goal", label: "Objetivo e data", complete: hasGoal }, { id: "availability", label: "Disponibilidade", complete: hasAvailability }, { id: "content", label: "Edital ou matérias", complete: hasContent }, { id: "plan", label: "Prévia e Hoje", complete: hasPlan || hasHistory }], next = steps.find((step) => !step.complete) || null;
     const requestedIndex = steps.findIndex((step) => step.id === currentStep), currentIndex = requestedIndex >= 0 ? requestedIndex : Math.max(0, steps.findIndex((step) => step === next)), current = steps[currentIndex];
@@ -17871,8 +17874,8 @@
       const levels = subject.topics.filter((topic) => !topic.archived).map((topic) => topic.difficulty || "Médio"), level = levels.includes("Difícil") ? "Difícil" : levels.every((value2) => value2 === "Fácil") ? "Fácil" : "Médio";
       return { id: subject.id, name: subject.name, level };
     });
-    const firstActivities = activeSubjects2.flatMap((subject) => subject.topics.filter((topic) => !topic.archived).map((topic) => ({ subject: subject.name, topic: topic.name || "Tópico sem nome", minutes: Math.min(60, Math.max(25, Number(topic.estimatedStudyMinutes) || 45)) }))).slice(0, 3);
-    return { visible: !hasHistory && !hasPlan, steps, next, current, currentIndex, completed: steps.filter((step) => step.complete).length, availableMinutes, hasGoal, hasAvailability, hasContent, canAdvance: current.id === "goal" ? hasGoal : current.id === "availability" ? hasAvailability : true, canCreatePlan: hasGoal && hasAvailability && hasContent, topicCount, estimatedNeedMinutes, weeksUntilExam: days == null ? null : Math.ceil(days / 7), examDate, today, presets, presetId, subjects: subjectModels, firstActivities, weekdays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((label2, day) => ({ day, label: label2, hours: Math.max(0, Number(hoursByDay?.[String(day)]) || 0) })) };
+    const firstActivities = (planPreview?.items || []).slice(0, 3).map((item) => ({ subject: item.subjectName || "Sem disciplina", topic: item.topicName || item.name || "Tópico sem nome", minutes: Math.max(0, Number(item.minutes) || 0) }));
+    return { visible: !hasHistory && !hasPlan, steps, next, current, currentIndex, completed: steps.filter((step) => step.complete).length, availableMinutes, hasGoal, hasAvailability, hasContent, canAdvance: current.id === "goal" ? hasGoal : current.id === "availability" ? hasAvailability : true, canCreatePlan: hasGoal && hasAvailability && hasContent, topicCount, estimatedNeedMinutes, weeksUntilExam: days == null ? null : Math.ceil(days / 7), examDate, today, presets, presetId, subjects: subjectModels, firstActivities, planPreviewState: planPreview?.state || null, weekdays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((label2, day) => ({ day, label: label2, hours: Math.max(0, Number(hoursByDay?.[String(day)]) || 0) })) };
   }
 
   // src/features/onboarding/onboarding-renderer.js
@@ -17903,7 +17906,7 @@
     if (step.id === "availability") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="guided-availability">${model.weekdays.map((item) => `<label><span>${escapeHtml3(item.label)}</span><input type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr3(item.label)}"><small>h</small></label>`).join("")}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div></div>`;
     if (step.id === "content") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-actions"><button class="btn" data-guided-action="import">Carregar edital</button><button class="btn ghost" data-guided-action="manual">Cadastrar manualmente</button></div>${model.subjects.length ? `<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject) => `<label><span>${escapeHtml3(subject.name)}</span><select data-guided-level="${escapeAttr3(subject.id)}"><option value="Fácil" ${subject.level === "Fácil" ? "selected" : ""}>Tenho boa base</option><option value="Médio" ${subject.level === "Médio" ? "selected" : ""}>Base intermediária</option><option value="Difícil" ${subject.level === "Difícil" ? "selected" : ""}>Preciso começar pela base</option></select></label>`).join("")}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
     const activities = (model.firstActivities || []).map((item) => `<li><span><strong>${escapeHtml3(item.subject)}</strong><small>${escapeHtml3(item.topic)}</small></span><b>${item.minutes} min</b></li>`).join("");
-    return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? "—" : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades</h5><ul>${activities}</ul></section>` : ""}${model.canCreatePlan ? '<p class="confidence-note">O StudyTrack reservará parte do tempo para pausas, correções e revisões.</p>' : '<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'}</div>`;
+    return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? "—" : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ""}${model.canCreatePlan ? activities ? '<p class="confidence-note">Esta prévia usa a mesma prioridade, elegibilidade e capacidade do plano que será criado.</p>' : '<p class="availability-warning">Não há atividade elegível. Confira esforços e pré-requisitos antes de criar o plano.</p>' : '<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'}</div>`;
   }
   function renderOnboardingActions(model) {
     const id = model.current?.id || "goal", previous = model.currentIndex > 0 ? '<button class="btn ghost" data-guided-action="back">← Voltar</button>' : '<button class="btn ghost" data-guided-action="cancel">Cancelar</button>';
@@ -17915,16 +17918,63 @@
   // src/features/topic-strategy/topic-strategy-renderer.js
   var escapeHtml = (value2) => String(value2 ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
   var escapeAttr = escapeHtml;
-  function renderTopicStrategyEditor({ subject, topic, subjectConfig = null, activeExamTags = [], topics = [] } = {}) {
+  function renderTopicStrategyEditor(model = {}) {
+    const choices = (model.candidates || []).map((candidate) => {
+      return `<label class="topic-prerequisite-choice"><input type="checkbox" ${candidate.checked ? "checked" : ""} ${candidate.cyclic ? "disabled" : ""} data-delegated-change="toggleTopicPrerequisite('${escapeAttr(model.subjectId)}','${escapeAttr(model.topicId)}','${escapeAttr(candidate.id)}',this.checked)"><span>${escapeHtml(candidate.label)}${candidate.cyclic ? " · criaria ciclo" : ""}</span></label>`;
+    }).join("");
+    const value2 = model.impactValue == null ? "—" : `${model.impactValue}%`;
+    return `<div class="topic-strategy-summary"><strong>Impacto usado na prioridade: ${value2}</strong><span>${escapeHtml(model.impactSourceLabel)}. Alterações invalidam a proposta semanal ainda não confirmada.</span></div><div class="topic-strategy-fields"><label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Herdar automaticamente" value="${model.examImportance}" data-delegated-blur="updateTopicStrategy('${escapeAttr(model.subjectId)}','${escapeAttr(model.topicId)}','examImportance',this.value)"><small>Deixe vazio para usar catálogo ou peso da disciplina.</small></label><label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${model.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${escapeAttr(model.subjectId)}','${escapeAttr(model.topicId)}','estimatedStudyMinutes',this.value)"><small>Define a carga restante, sem limitar cada sessão.</small></label></div><details class="topic-prerequisites"><summary>Pré-requisitos (${model.prerequisiteCount || 0})</summary><p>O tópico só entra no plano quando as bases estiverem concluídas ou com domínio suficiente.</p><div>${choices || "<small>Não há outros tópicos disponíveis.</small>"}</div></details>`;
+  }
+
+  // src/features/topic-strategy/topic-strategy-view-model.js
+  function buildTopicStrategyViewModel({ subject, topic, subjectConfig = null, activeExamTags = [], topics = [] } = {}) {
     const impact = resolveTopicExamImpact({ topic, subjectConfig, activeExamTags });
     const prerequisites = new Set(topic?.prerequisites || []);
-    const choices = topics.filter((candidate) => candidate.id !== topic?.id && !candidate.subjectArchived && !candidate.topicArchived).map((candidate) => {
-      const checked = prerequisites.has(candidate.id);
-      const cyclic = !checked && wouldCreatePrerequisiteCycle(topic.id, candidate.id, topics);
-      return `<label class="topic-prerequisite-choice"><input type="checkbox" ${checked ? "checked" : ""} ${cyclic ? "disabled" : ""} data-delegated-change="toggleTopicPrerequisite('${escapeAttr(subject.id)}','${escapeAttr(topic.id)}','${escapeAttr(candidate.id)}',this.checked)"><span>${escapeHtml(candidate.subjectName)} — ${escapeHtml(candidate.name || "Tópico sem nome")}${cyclic ? " · criaria ciclo" : ""}</span></label>`;
-    }).join("");
-    const value2 = impact.value == null ? "—" : `${Math.round(impact.value)}%`;
-    return `<div class="topic-strategy-summary"><strong>Impacto usado na prioridade: ${value2}</strong><span>${escapeHtml(impact.sourceLabel)}. Alterações invalidam a proposta semanal ainda não confirmada.</span></div><div class="topic-strategy-fields"><label>Importância na prova (%)<input type="number" min="0" max="100" step="1" placeholder="Herdar automaticamente" value="${topic.examImportance == null ? "" : Math.round(topic.examImportance * 100)}" data-delegated-blur="updateTopicStrategy('${escapeAttr(subject.id)}','${escapeAttr(topic.id)}','examImportance',this.value)"><small>Deixe vazio para usar catálogo ou peso da disciplina.</small></label><label>Esforço total estimado (min)<input type="number" min="1" step="5" placeholder="Não definido" value="${topic.estimatedStudyMinutes == null ? "" : topic.estimatedStudyMinutes}" data-delegated-blur="updateTopicStrategy('${escapeAttr(subject.id)}','${escapeAttr(topic.id)}','estimatedStudyMinutes',this.value)"><small>Define a carga restante, sem limitar cada sessão.</small></label></div><details class="topic-prerequisites"><summary>Pré-requisitos (${prerequisites.size})</summary><p>O tópico só entra no plano quando as bases estiverem concluídas ou com domínio suficiente.</p><div>${choices || "<small>Não há outros tópicos disponíveis.</small>"}</div></details>`;
+    const candidates = topics.filter((candidate) => candidate.id !== topic?.id && !candidate.subjectArchived && !candidate.topicArchived).map((candidate) => ({
+      id: candidate.id,
+      label: `${candidate.subjectName} — ${candidate.name || "Tópico sem nome"}`,
+      checked: prerequisites.has(candidate.id),
+      cyclic: !prerequisites.has(candidate.id) && wouldCreatePrerequisiteCycle(topic.id, candidate.id, topics)
+    }));
+    return { subjectId: subject?.id, topicId: topic?.id, impactValue: impact.value == null ? null : Math.round(impact.value), impactSourceLabel: impact.sourceLabel, examImportance: topic?.examImportance == null ? "" : Math.round(topic.examImportance * 100), estimatedStudyMinutes: topic?.estimatedStudyMinutes ?? "", prerequisiteCount: prerequisites.size, candidates };
+  }
+
+  // src/features/topic-strategy/topic-strategy-controller.js
+  function createTopicStrategyController({ findTopic, listTopics, subjectService: subjectService2, normalizeTopic: normalizeTopic2, invalidatePlan = () => {
+  }, onChanged = () => {
+  }, onCycle = () => {
+  } } = {}) {
+    if (typeof findTopic !== "function" || typeof listTopics !== "function" || !subjectService2) throw new TypeError("Controller de estratégia requer tópicos e serviço de disciplinas.");
+    const update = (subjectId, topicId, field, value2) => {
+      const found = findTopic(topicId);
+      if (!found || found.subject.id !== subjectId) return false;
+      const changes = { fieldOrigins: { ...found.topic.fieldOrigins || {}, [field]: "manual" } };
+      if (field === "examImportance") changes.examImportance = value2 === "" ? null : Number(value2) / 100;
+      else if (field === "estimatedStudyMinutes") changes.estimatedStudyMinutes = value2 === "" ? null : Number(value2);
+      else return false;
+      const next = { ...found.topic, ...changes };
+      normalizeTopic2?.(next);
+      invalidatePlan();
+      subjectService2.updateTopic(subjectId, topicId, next);
+      onChanged();
+      return true;
+    };
+    const togglePrerequisite = (subjectId, topicId, prerequisiteId, checked) => {
+      const found = findTopic(topicId);
+      if (!found || found.subject.id !== subjectId) return false;
+      const topics = listTopics();
+      if (checked && wouldCreatePrerequisiteCycle(topicId, prerequisiteId, topics)) {
+        onCycle();
+        return false;
+      }
+      const next = new Set(found.topic.prerequisites || []);
+      checked ? next.add(prerequisiteId) : next.delete(prerequisiteId);
+      invalidatePlan();
+      subjectService2.updateTopic(subjectId, topicId, { prerequisites: [...next] });
+      onChanged();
+      return true;
+    };
+    return Object.freeze({ update, togglePrerequisite });
   }
 
   // src/features/replan/replan-renderer.js
@@ -18193,10 +18243,7 @@
 
   // src/reports/report-data.js
   var sum3 = (items, selector) => items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
-  var shiftDate2 = (iso, days) => {
-    const [year, month, day] = iso.split("-").map(Number), date2 = new Date(Date.UTC(year, month - 1, day + days));
-    return date2.toISOString().slice(0, 10);
-  };
+  var shiftDate2 = (iso, days) => addLocalDays(iso, days);
   var inPeriod = (item, start, end) => {
     const date2 = item.date || String(item.endedAt || item.createdAt || "").slice(0, 10);
     return Boolean(date2 && date2 >= start && date2 <= end);
@@ -18786,6 +18833,12 @@
   var subjectGoalService = createRecordService({ repository: appContext.repositories.metasPorDisciplina, clock: appClock, idGenerator: uid, prefix: "goal" });
   var goalsService = createGoalService({ repository: appContext.repositories.settings, getDayOfWeek: (date2) => parseLocalDate(date2)?.getDay() ?? (/* @__PURE__ */ new Date()).getDay() });
   var subjectService = createSubjectService({ repository: appContext.repositories.subjects, clock: appClock, idGenerator: uid, onEvent: addHistoryEvent });
+  var topicStrategyController = createTopicStrategyController({ findTopic: getTopicById, listTopics: allTopics, subjectService, normalizeTopic: normalizeTopicStrategy, invalidatePlan: () => {
+    studyPlanPreview = null;
+  }, onChanged: persistAndRender, onCycle: () => {
+    showToast("Esse vínculo criaria um ciclo entre pré-requisitos.");
+    renderSubjects();
+  } });
   var topicHistoryService = createTopicHistoryService({ getState: () => state, clock: appClock, idGenerator: uid, toLocalDate: timestampToLocalDateISO });
   var StorageManager = appContext.storage;
   var INSTANCE_ID = uid("instance");
@@ -20334,36 +20387,14 @@
     persistAndRender();
   }
   function updateTopicStrategy(subjectId, topicId, field, value2) {
-    studyPlanPreview = null;
-    const found = getTopicById(topicId);
-    if (!found || found.subject.id !== subjectId) return;
-    const changes = { fieldOrigins: { ...found.topic.fieldOrigins || {}, [field]: "manual" } };
-    if (field === "examImportance") changes.examImportance = value2 === "" ? null : Number(value2) / 100;
-    if (field === "estimatedStudyMinutes") changes.estimatedStudyMinutes = value2 === "" ? null : Number(value2);
-    Object.assign(found.topic, changes);
-    normalizeTopicStrategy(found.topic);
-    subjectService.updateTopic(subjectId, topicId, found.topic);
-    persistAndRender();
+    topicStrategyController.update(subjectId, topicId, field, value2);
   }
   function toggleTopicPrerequisite(subjectId, topicId, prerequisiteId, checked) {
-    studyPlanPreview = null;
-    const found = getTopicById(topicId);
-    if (!found || found.subject.id !== subjectId) return;
-    const topics = allTopics();
-    if (checked && wouldCreatePrerequisiteCycle(topicId, prerequisiteId, topics)) {
-      showToast("Esse vínculo criaria um ciclo entre pré-requisitos.");
-      renderSubjects();
-      return;
-    }
-    const next = new Set(found.topic.prerequisites || []);
-    if (checked) next.add(prerequisiteId);
-    else next.delete(prerequisiteId);
-    subjectService.updateTopic(subjectId, topicId, { prerequisites: [...next] });
-    persistAndRender();
+    topicStrategyController.togglePrerequisite(subjectId, topicId, prerequisiteId, checked);
   }
   function renderTopicStrategyEditor2(subject, topic) {
     const subjectConfig = state.examBlueprint.subjects.find((item) => item.subjectId === subject.id) || null;
-    return renderTopicStrategyEditor({ subject, topic, subjectConfig, activeExamTags: state.examBlueprint.activeExamTags || [], topics: allTopics() });
+    return renderTopicStrategyEditor(buildTopicStrategyViewModel({ subject, topic, subjectConfig, activeExamTags: state.examBlueprint.activeExamTags || [], topics: allTopics() }));
   }
   function renderTopicAnalyticsState(subject, topic) {
     const coverage = topic.status === "Concluído" ? 100 : topic.status === "Em andamento" || topic.status === "Revisão" ? 50 : 0;
@@ -21958,13 +21989,23 @@
   }
   var studyPlanPreview = null;
   var dailyPlanPreview = null;
-  function studyPlanCandidates() {
-    return intelligenceCandidates().filter((item) => item.topicId).map((item) => ({ ...item, completed: false, estimatedMinutes: item.remainingMinutes }));
+  function studyPlanCandidates({ guidedDefaults = false } = {}) {
+    return intelligenceCandidates().filter((item) => item.topicId).map((item) => {
+      let estimatedMinutes = item.remainingMinutes;
+      if (guidedDefaults && estimatedMinutes == null) {
+        const topic = getTopicById(item.topicId)?.topic;
+        estimatedMinutes = topic?.difficulty === "Difícil" ? 120 : topic?.difficulty === "Fácil" ? 45 : 75;
+      }
+      return { ...item, completed: false, estimatedMinutes, remainingMinutes: estimatedMinutes };
+    });
   }
-  function calculateStudyPlanPreview() {
+  function buildCurrentStudyPlanProposal({ guidedDefaults = false } = {}) {
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
     const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0);
-    studyPlanPreview = studyPlanService.calculate({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
+    return studyPlanService.calculate({ topics: studyPlanCandidates({ guidedDefaults }), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
+  }
+  function calculateStudyPlanPreview() {
+    studyPlanPreview = buildCurrentStudyPlanProposal();
     renderStudyPlanBuilder();
   }
   function clearStudyPlanPreview() {
@@ -22786,14 +22827,15 @@
     const subjects = activeSubjects().filter((subject) => eligibleSubjectIds.has(subject.id)).map((subject) => {
       const trend = calculateWeightedTrend(getSubjectWeeklyTrend(subject.id, 8, scopedQuestions));
       const lastSession = scope.sessions.included.filter((session) => entitySubjectId(session) === subject.id && session.date).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
-      const daysSinceStudy = lastSession ? Math.max(0, Math.floor((/* @__PURE__ */ new Date(today + "T00:00:00") - /* @__PURE__ */ new Date(lastSession.date + "T00:00:00")) / 864e5)) : null;
+      const lastStudyDay = parseLocalDate(lastSession?.date);
+      const daysSinceStudy = lastStudyDay ? Math.max(0, Math.floor((parseLocalDate(today) - lastStudyDay) / 864e5)) : null;
       return { subjectId: subject.id, name: subject.name, trend: { direction: trend.key === "down" ? "down" : trend.key === "up" ? "up" : "stable", state: trend.state, delta: trend.delta }, daysSinceStudy };
     });
     const topics = intelligenceCandidates().map((item) => ({ topicId: item.topicId, subjectId: item.subjectId, name: item.topicName, mastery: item.mastery, examImpact: item.examImpact, evidenceStrength: item.evidenceStrength }));
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
     const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0);
     const plan = buildStudyPlan({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
-    const dayOfWeek = (/* @__PURE__ */ new Date(today + "T00:00:00")).getDay(), elapsed = dayOfWeek === 0 ? 7 : dayOfWeek, expectedFrac = elapsed / 7;
+    const dayOfWeek = parseLocalDate(today).getDay(), elapsed = dayOfWeek === 0 ? 7 : dayOfWeek, expectedFrac = elapsed / 7;
     const weekStart = startOfWeek(today), achieved = uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6));
     const actualFrac = state.metas.semanal > 0 ? achieved / state.metas.semanal : 1;
     const weeklyGoalGap = expectedFrac >= 0.5 && actualFrac < expectedFrac - 0.15 ? Math.round((expectedFrac - actualFrac) * 100) : null;
@@ -23210,7 +23252,7 @@
   function renderGuidedOnboarding() {
     const entry = document.getElementById("guidedOnboarding"), overlay = document.getElementById("guidedOnboardingOverlay");
     if (!entry || !overlay) return;
-    const model = buildOnboardingViewModel({ examDate: state.examDate, hoursByDay: state.metas.horasPorDia, subjects: state.subjects, sessions: state.studySessions, questions: state.questoes, dailyPlans: state.dailyPlans, studyPlans: state.studyPlans, currentStep: uiState.onboarding.currentStep, today: todayISO(), presets: EXAM_PRESETS, presetId: uiState.onboarding.presetId });
+    const model = onboardingModel();
     if (!uiState.onboarding.currentStep) uiState.onboarding.currentStep = model.current.id;
     const visible = model.visible && !IS_DEMO_MODE;
     entry.hidden = !visible;
@@ -23227,7 +23269,8 @@
     document.getElementById("guidedOnboardingActions").innerHTML = renderOnboardingActions(model);
   }
   function onboardingModel() {
-    return buildOnboardingViewModel({ examDate: state.examDate, hoursByDay: state.metas.horasPorDia, subjects: state.subjects, sessions: state.studySessions, questions: state.questoes, dailyPlans: state.dailyPlans, studyPlans: state.studyPlans, currentStep: uiState.onboarding.currentStep, today: todayISO(), presets: EXAM_PRESETS, presetId: uiState.onboarding.presetId });
+    const canPreview = Boolean(state.examDate) && Object.values(state.metas.horasPorDia).some((value2) => Number(value2) > 0) && state.subjects.some((subject) => !subject.archived && subject.topics?.some((topic) => !topic.archived));
+    return buildOnboardingViewModel({ examDate: state.examDate, hoursByDay: state.metas.horasPorDia, subjects: state.subjects, sessions: state.studySessions, questions: state.questoes, dailyPlans: state.dailyPlans, studyPlans: state.studyPlans, planPreview: canPreview ? buildCurrentStudyPlanProposal({ guidedDefaults: true }) : null, currentStep: uiState.onboarding.currentStep, today: todayISO(), presets: EXAM_PRESETS, presetId: uiState.onboarding.presetId });
   }
   function moveOnboarding(direction) {
     const model = onboardingModel(), index = Math.max(0, Math.min(model.steps.length - 1, model.currentIndex + direction));

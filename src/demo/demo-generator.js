@@ -1,4 +1,5 @@
 import {createDefaultState} from '../state/defaults.js';
+import {addLocalDays} from '../core/date-utils.js';
 
 const SUBJECTS=[
   ['Português',['Interpretação de texto','Gramática','Concordância','Regência','Crase','Pontuação','Redação oficial','Semântica']],
@@ -14,7 +15,7 @@ export const DEMO_SCENARIO=Object.freeze({days:130,subjects:6,sessions:170,simul
 
 function hashSeed(value){let hash=2166136261;for(const char of String(value)){hash^=char.charCodeAt(0);hash=Math.imul(hash,16777619)}return hash>>>0}
 function randomFactory(seed){let value=hashSeed(seed)||1;return()=>{value+=0x6D2B79F5;let next=value;next=Math.imul(next^next>>>15,next|1);next^=next+Math.imul(next^next>>>7,next|61);return((next^next>>>14)>>>0)/4294967296}}
-function shiftDate(iso,days){const [year,month,day]=iso.split('-').map(Number),date=new Date(Date.UTC(year,month-1,day+days));return date.toISOString().slice(0,10)}
+function shiftDate(iso,days){return addLocalDays(iso,days)}
 function timestamp(date,hour=12){return `${date}T${String(hour).padStart(2,'0')}:00:00.000Z`}
 function distributeErrors(errors,random){const result=Object.fromEntries(ERROR_KEYS.map(key=>[key,0]));let remaining=errors;ERROR_KEYS.forEach((key,index)=>{const count=index===ERROR_KEYS.length-1?remaining:Math.min(remaining,Math.floor(random()*Math.max(1,errors*.32)));result[key]=count;remaining-=count});return result}
 

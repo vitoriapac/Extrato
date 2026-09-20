@@ -35,7 +35,6 @@ import {recommendStudy} from './application/recommend-study.js';
 import {buildStudyCandidates} from './application/build-study-candidates.js';
 import {calculateTopicMastery,calculateTopicRetention} from './domain/analytics/topic-metrics.js';
 import {PRIORITY_ALGORITHM_VERSION} from './domain/analytics/priority-score.js';
-import {wouldCreatePrerequisiteCycle} from './domain/analytics/topic-strategy.js';
 import {calculateReviewHealth} from './domain/analytics/review-health.js';
 import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eligibility.js';
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
@@ -114,6 +113,8 @@ import {createGuidedStudyService} from './application/guided-study/guided-study-
 import {buildOnboardingViewModel} from './application/onboarding/build-onboarding-view-model.js';
 import {renderOnboardingEntry,renderOnboardingProgress,renderOnboardingContent,renderOnboardingHelp,renderOnboardingActions} from './features/onboarding/onboarding-renderer.js';
 import {renderTopicStrategyEditor as renderTopicStrategyEditorView} from './features/topic-strategy/topic-strategy-renderer.js';
+import {buildTopicStrategyViewModel} from './features/topic-strategy/topic-strategy-view-model.js';
+import {createTopicStrategyController} from './features/topic-strategy/topic-strategy-controller.js';
 import {renderReplanProposal} from './features/replan/replan-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
 import {renderQuestionRead,renderQuestionEdit} from './ui/renderers/questions-renderer.js';
@@ -559,6 +560,7 @@ const guidedStudyService=createGuidedStudyService({recommend:({id}={})=>currentS
 const calendarService=createRecordService({repository:appContext.repositories.calendar,clock:appClock,idGenerator:uid,prefix:'calendar'}),questionService=createRecordService({repository:appContext.repositories.questoes,clock:appClock,idGenerator:uid,prefix:'question',normalize:item=>{item.resolved=Math.max(0,Math.floor(Number(item.resolved)||0));item.correct=Math.min(item.resolved,Math.max(0,Math.floor(Number(item.correct)||0)));normalizeErrorBreakdown(item);return item}}),simulationService=createRecordService({repository:appContext.repositories.simulados,clock:appClock,idGenerator:uid,prefix:'simulado',normalize:item=>{item.total=Math.max(0,Math.floor(Number(item.total)||0));item.correct=Math.min(item.total,Math.max(0,Math.floor(Number(item.correct)||0)));return item}}),subjectGoalService=createRecordService({repository:appContext.repositories.metasPorDisciplina,clock:appClock,idGenerator:uid,prefix:'goal'});
 const goalsService=createGoalService({repository:appContext.repositories.settings,getDayOfWeek:date=>parseLocalDate(date)?.getDay()??new Date().getDay()});
 const subjectService=createSubjectService({repository:appContext.repositories.subjects,clock:appClock,idGenerator:uid,onEvent:addHistoryEvent});
+const topicStrategyController=createTopicStrategyController({findTopic:getTopicById,listTopics:allTopics,subjectService,normalizeTopic:normalizeTopicStrategy,invalidatePlan:()=>{studyPlanPreview=null},onChanged:persistAndRender,onCycle:()=>{showToast('Esse vínculo criaria um ciclo entre pré-requisitos.');renderSubjects()}});
 const topicHistoryService=createTopicHistoryService({getState:()=>state,clock:appClock,idGenerator:uid,toLocalDate:timestampToLocalDateISO});
 const StorageManager=appContext.storage;
 const INSTANCE_ID=uid('instance');
@@ -1936,21 +1938,14 @@ function updateTopicTags(subjectId, topicId, value){
   persistAndRender();
 }
 function updateTopicStrategy(subjectId,topicId,field,value){
-  studyPlanPreview=null;
-  const found=getTopicById(topicId);if(!found||found.subject.id!==subjectId)return;
-  const changes={fieldOrigins:{...(found.topic.fieldOrigins||{}),[field]:'manual'}};if(field==='examImportance')changes.examImportance=value===''?null:Number(value)/100;if(field==='estimatedStudyMinutes')changes.estimatedStudyMinutes=value===''?null:Number(value);Object.assign(found.topic,changes);normalizeTopicStrategy(found.topic);subjectService.updateTopic(subjectId,topicId,found.topic);persistAndRender();
+  topicStrategyController.update(subjectId,topicId,field,value);
 }
 function toggleTopicPrerequisite(subjectId,topicId,prerequisiteId,checked){
-  studyPlanPreview=null;
-  const found=getTopicById(topicId);if(!found||found.subject.id!==subjectId)return;
-  const topics=allTopics();
-  if(checked&&wouldCreatePrerequisiteCycle(topicId,prerequisiteId,topics)){showToast('Esse vínculo criaria um ciclo entre pré-requisitos.');renderSubjects();return}
-  const next=new Set(found.topic.prerequisites||[]);if(checked)next.add(prerequisiteId);else next.delete(prerequisiteId);
-  subjectService.updateTopic(subjectId,topicId,{prerequisites:[...next]});persistAndRender();
+  topicStrategyController.togglePrerequisite(subjectId,topicId,prerequisiteId,checked);
 }
 function renderTopicStrategyEditor(subject,topic){
   const subjectConfig=state.examBlueprint.subjects.find(item=>item.subjectId===subject.id)||null;
-  return renderTopicStrategyEditorView({subject,topic,subjectConfig,activeExamTags:state.examBlueprint.activeExamTags||[],topics:allTopics()});
+  return renderTopicStrategyEditorView(buildTopicStrategyViewModel({subject,topic,subjectConfig,activeExamTags:state.examBlueprint.activeExamTags||[],topics:allTopics()}));
 }
 function renderTopicAnalyticsState(subject,topic){
   const coverage=topic.status==='Concluído'?100:topic.status==='Em andamento'||topic.status==='Revisão'?50:0;
@@ -3278,13 +3273,20 @@ function renderExamBlueprintConfig(){
 function topicExamMetricForActiveScope(topic){const active=state.examBlueprint.activeExamTags||[],entries=Object.entries(topic.examMetrics||{}).filter(([profile])=>!active.length||active.some(tag=>profile.startsWith(tag)));return entries[0]?.[1]||null}
 function renderExamMasteryMatrix(){const el=document.getElementById('examMasteryMatrix');if(!el)return;const candidates=intelligenceCandidates(),metrics=Object.fromEntries(candidates.map(c=>[c.topicId,{coverage:c.coverage,mastery:{value:c.mastery,confidence:c.evidenceStrength},retention:{value:c.retention},trend:c.trend,priority:{value:c.score}}])),rows=buildExamMasteryMatrix({subjects:state.subjects,blueprint:state.examBlueprint,metricsByTopic:metrics,activeExamTags:state.examBlueprint.activeExamTags||[]});el.innerHTML=rows.length?`<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a,b)=>(b.gap??-999)-(a.gap??-999)).map(row=>`<details><summary><strong>${escapeHtml(row.name)}</strong><span>${row.coverage??'—'}%</span><span>${row.mastery??'—'}%</span><span>${row.retention??'—'}%</span><span>${row.gap==null?'—':(row.gap>0?'-':'')+Math.abs(row.gap)+' pts'}</span></summary>${row.topics.map(t=>{const metric=topicExamMetricForActiveScope(t),meta=[metric?.questionWeight!=null?metric.questionWeight+' pt/questão':null,t.incidence?.level?'incidência '+t.incidence.level.toLowerCase():null].filter(Boolean).join(' · ');return `<div class="mastery-topic"><span>${escapeHtml(t.name)}${meta?`<small>${escapeHtml(meta)} · estimativa por tópico</small>`:''}</span><span>${t.coverage}%</span><span>${t.mastery??'—'}%</span><span>${t.retention??'—'}%</span><span>${escapeHtml(t.state)}</span></div>`}).join('')}</details>`).join('')}</div>`:'<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>'}
 let studyPlanPreview=null,dailyPlanPreview=null;
-function studyPlanCandidates(){
-  return intelligenceCandidates().filter(item=>item.topicId).map(item=>({...item,completed:false,estimatedMinutes:item.remainingMinutes}));
+function studyPlanCandidates({guidedDefaults=false}={}){
+  return intelligenceCandidates().filter(item=>item.topicId).map(item=>{
+    let estimatedMinutes=item.remainingMinutes;
+    if(guidedDefaults&&estimatedMinutes==null){const topic=getTopicById(item.topicId)?.topic;estimatedMinutes=topic?.difficulty==='Difícil'?120:topic?.difficulty==='Fácil'?45:75}
+    return {...item,completed:false,estimatedMinutes,remainingMinutes:estimatedMinutes};
+  });
 }
-function calculateStudyPlanPreview(){
+function buildCurrentStudyPlanProposal({guidedDefaults=false}={}){
   const days=state.examDate?diasParaRevisao(state.examDate):null;
   const weeklyAvailableMinutes=Object.values(state.metas.horasPorDia).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0);
-  studyPlanPreview=studyPlanService.calculate({topics:studyPlanCandidates(),weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
+  return studyPlanService.calculate({topics:studyPlanCandidates({guidedDefaults}),weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
+}
+function calculateStudyPlanPreview(){
+  studyPlanPreview=buildCurrentStudyPlanProposal();
   renderStudyPlanBuilder();
 }
 function clearStudyPlanPreview(){studyPlanPreview=null;renderStudyPlanBuilder()}
@@ -4092,14 +4094,15 @@ function computeAlertasInteligentes(){
   const subjects=activeSubjects().filter(subject=>eligibleSubjectIds.has(subject.id)).map(subject=>{
     const trend=calculateWeightedTrend(getSubjectWeeklyTrend(subject.id,8,scopedQuestions));
     const lastSession=scope.sessions.included.filter(session=>entitySubjectId(session)===subject.id&&session.date).sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];
-    const daysSinceStudy=lastSession?Math.max(0,Math.floor((new Date(today+'T00:00:00')-new Date(lastSession.date+'T00:00:00'))/86400000)):null;
+    const lastStudyDay=parseLocalDate(lastSession?.date);
+    const daysSinceStudy=lastStudyDay?Math.max(0,Math.floor((parseLocalDate(today)-lastStudyDay)/86400000)):null;
     return {subjectId:subject.id,name:subject.name,trend:{direction:trend.key==='down'?'down':trend.key==='up'?'up':'stable',state:trend.state,delta:trend.delta},daysSinceStudy};
   });
   const topics=intelligenceCandidates().map(item=>({topicId:item.topicId,subjectId:item.subjectId,name:item.topicName,mastery:item.mastery,examImpact:item.examImpact,evidenceStrength:item.evidenceStrength}));
   const days=state.examDate?diasParaRevisao(state.examDate):null;
   const weeklyAvailableMinutes=Object.values(state.metas.horasPorDia).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0);
   const plan=buildStudyPlan({topics:studyPlanCandidates(),weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
-  const dayOfWeek=new Date(today+'T00:00:00').getDay(),elapsed=dayOfWeek===0?7:dayOfWeek,expectedFrac=elapsed/7;
+  const dayOfWeek=parseLocalDate(today).getDay(),elapsed=dayOfWeek===0?7:dayOfWeek,expectedFrac=elapsed/7;
   const weekStart=startOfWeek(today),achieved=uniqueTopicsCompletedBetween(weekStart,addDays(weekStart,6));
   const actualFrac=state.metas.semanal>0?achieved/state.metas.semanal:1;
   const weeklyGoalGap=expectedFrac>=.5&&actualFrac<expectedFrac-.15?Math.round((expectedFrac-actualFrac)*100):null;
@@ -4361,7 +4364,7 @@ function renderPlanoHoje(){
 function renderGuidedOnboarding(){
   const entry=document.getElementById('guidedOnboarding'),overlay=document.getElementById('guidedOnboardingOverlay');
   if(!entry||!overlay)return;
-  const model=buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,studyPlans:state.studyPlans,currentStep:uiState.onboarding.currentStep,today:todayISO(),presets:EXAM_PRESETS,presetId:uiState.onboarding.presetId});
+  const model=onboardingModel();
   if(!uiState.onboarding.currentStep)uiState.onboarding.currentStep=model.current.id;
   const visible=model.visible&&!IS_DEMO_MODE;
   entry.hidden=!visible;
@@ -4374,7 +4377,10 @@ function renderGuidedOnboarding(){
   document.getElementById('guidedOnboardingHelp').innerHTML=renderOnboardingHelp(model,{escapeHtml});
   document.getElementById('guidedOnboardingActions').innerHTML=renderOnboardingActions(model);
 }
-function onboardingModel(){return buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,studyPlans:state.studyPlans,currentStep:uiState.onboarding.currentStep,today:todayISO(),presets:EXAM_PRESETS,presetId:uiState.onboarding.presetId})}
+function onboardingModel(){
+  const canPreview=Boolean(state.examDate)&&Object.values(state.metas.horasPorDia).some(value=>Number(value)>0)&&state.subjects.some(subject=>!subject.archived&&subject.topics?.some(topic=>!topic.archived));
+  return buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,studyPlans:state.studyPlans,planPreview:canPreview?buildCurrentStudyPlanProposal({guidedDefaults:true}):null,currentStep:uiState.onboarding.currentStep,today:todayISO(),presets:EXAM_PRESETS,presetId:uiState.onboarding.presetId});
+}
 function moveOnboarding(direction){const model=onboardingModel(),index=Math.max(0,Math.min(model.steps.length-1,model.currentIndex+direction));uiState.onboarding.currentStep=model.steps[index].id;renderGuidedOnboarding()}
 function openGuidedOnboarding(){const model=onboardingModel();uiState.onboarding.previousFocus=document.activeElement;uiState.onboarding.open=true;uiState.onboarding.currentStep=uiState.onboarding.currentStep||model.next?.id||model.current.id;document.body.classList.add('onboarding-open');renderGuidedOnboarding();requestAnimationFrame(()=>document.getElementById('guidedOnboardingClose')?.focus())}
 function closeGuidedOnboarding(){const previousFocus=uiState.onboarding.previousFocus;uiState.onboarding.open=false;uiState.onboarding.dismissedForSession=true;document.body.classList.remove('onboarding-open');renderGuidedOnboarding();const focusTarget=previousFocus?.isConnected?previousFocus:document.querySelector('#guidedOnboarding [data-guided-action="open"]');focusTarget?.focus?.();uiState.onboarding.previousFocus=null}

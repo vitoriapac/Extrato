@@ -49,3 +49,22 @@ test('cenário de 130 dias renderiza todas as áreas sem perder dados',async({pa
   const after=await page.evaluate(()=>{const state=JSON.parse(sessionStorage.getItem('bb-premium-study-demo'));return{history:state.progressHistory.length,sessions:state.studySessions.length,simulations:state.simulados.length}});
   expect(after).toEqual(baseline);expect(pageErrors).toEqual([]);
 });
+
+test('listas acumulativas da demo limitam, expandem e filtram sem duplicar',async({page})=>{
+  await openDemo(page);
+  const assertUnique=async locator=>{const ids=await locator.evaluateAll(rows=>rows.map(row=>row.dataset.id).filter(Boolean));expect(new Set(ids).size).toBe(ids.length)};
+  await page.locator('[data-tab="dashboard"]').evaluate(button=>button.click());
+  const sessionDays=page.locator('#studySessionsBody .session-day-row');await expect(sessionDays).toHaveCount(5);await page.locator('#studySessionsBody').getByRole('button',{name:'Mostrar mais'}).click();await expect(sessionDays).toHaveCount(10);
+  await page.locator('#studySessionsTypeFilter').selectOption('questions');await expect(page.locator('#studySessionsFilterSummary')).toContainText(/sessões? no filtro atual/);await assertUnique(page.locator('#studySessionsBody tr[data-id]'));
+  await page.locator('[data-tab="questoes"]').evaluate(button=>button.click());
+  const questions=page.locator('#questoesBody tr[data-id]');await expect(questions).toHaveCount(10);await page.locator('#questoesBody').getByRole('button',{name:'Mostrar mais'}).click();expect(await questions.count()).toBeGreaterThan(10);await assertUnique(questions);
+  const simulations=page.locator('#simuladosBody tr[data-id]');await expect(simulations).toHaveCount(5);await page.locator('#simuladosBody').getByRole('button',{name:'Mostrar mais'}).click();expect(await simulations.count()).toBeGreaterThan(5);await assertUnique(simulations);
+  await page.locator('[data-tab="agenda"]').evaluate(button=>button.click());await page.locator('#agendaFilterStatus').selectOption('Atrasadas');await expect(page.locator('#agendaBody')).toContainText('Atrasadas');
+  await page.locator('[data-tab="metas"]').evaluate(button=>button.click());await expect(page.locator('#weeklyCloseDashboard')).toContainText('Diagnóstico');await expect(page.locator('#decisionHistoryDashboard .data-row').first()).toBeAttached();
+});
+
+test('massa de 130 dias mantém navegação completa dentro do orçamento de renderização',async({page})=>{
+  await openDemo(page);const started=Date.now();
+  for(const name of ['dashboard','hoje','disciplinas','calendario','agenda','questoes','metas','instrucoes'])await page.locator(`[data-tab="${name}"]`).evaluate(button=>button.click());
+  expect(Date.now()-started).toBeLessThan(15_000);
+});

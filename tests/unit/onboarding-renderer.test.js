@@ -9,7 +9,7 @@ test('renderer de entrada percorre objetivo, disponibilidade, conteúdo e prévi
   assert.match(renderOnboardingContent({...base,current:{id:'availability'},weekdays:[{day:1,label:'Seg',hours:2}],availableMinutes:120}),/data-guided-day="1"/);
   assert.match(renderOnboardingContent({...base,current:{id:'content'},subjects:[{id:'s1',name:'Português',level:'Médio'}]}),/data-guided-level="s1"/);
   const plan=renderOnboardingContent({...base,current:{id:'plan'},availableMinutes:300,topicCount:4,estimatedNeedMinutes:240,weeksUntilExam:8,canCreatePlan:true,firstActivities:[{subject:'Matemática',topic:'Porcentagem',minutes:45}]});
-  assert.match(plan,/Primeiras atividades/);assert.match(plan,/Porcentagem/);assert.match(plan,/45 min/);
+  assert.match(plan,/Primeiras atividades priorizadas/);assert.match(plan,/Porcentagem/);assert.match(plan,/45 min/);assert.match(plan,/mesma prioridade, elegibilidade e capacidade/);
   assert.match(renderOnboardingActions({...base,current:{id:'plan'},currentIndex:3,canCreatePlan:true}),/Confirmar e criar meu plano/);
 });
 

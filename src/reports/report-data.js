@@ -1,5 +1,6 @@
 const sum=(items,selector)=>items.reduce((total,item)=>total+(Number(selector(item))||0),0);
-const shiftDate=(iso,days)=>{const [year,month,day]=iso.split('-').map(Number),date=new Date(Date.UTC(year,month-1,day+days));return date.toISOString().slice(0,10)};
+import {addLocalDays} from '../core/date-utils.js';
+const shiftDate=(iso,days)=>addLocalDays(iso,days);
 const inPeriod=(item,start,end)=>{const date=item.date||String(item.endedAt||item.createdAt||'').slice(0,10);return Boolean(date&&date>=start&&date<=end)};
 export function resolveReportPeriod({preset='30',start=null,end=null,generatedAt}={}){const today=String(generatedAt||new Date().toISOString()).slice(0,10);if(preset==='custom'&&start&&end&&start<=end)return{preset,start,end,label:`${start} a ${end}`};const days=Math.max(1,Number(preset)||30);return{preset:String(days),start:shiftDate(today,-(days-1)),end:today,label:`Últimos ${days} dias`}}
 export function buildStrategicReport({state,generatedAt,isDemo=false,readiness=null,diagnosis=null,forecast=null,period}={}){

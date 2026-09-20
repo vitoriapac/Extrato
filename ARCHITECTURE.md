@@ -80,7 +80,7 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/application/analytics/build-overview-view-model.js`: composição das métricas de tempo da Visão Geral sem dependência do DOM.
 - `src/core/date-utils.js`: interpretação, formatação e intervalos de datas civis locais usados pela aplicação e pelos view-models.
 - `src/domain/analytics/topic-strategy.js`: resolução única do impacto efetivo do tópico e validação de ciclos entre pré-requisitos.
-- `src/features/topic-strategy/topic-strategy-renderer.js`: apresentação isolada dos campos de impacto, esforço e pré-requisitos dos tópicos.
+- `src/features/topic-strategy/`: view-model, renderer e controller dos campos de impacto, esforço e pré-requisitos dos tópicos.
 - `src/repositories/settings-repository.js`: alterações controladas das metas e configurações persistentes.
 - `src/ui/list-components.js`: cabeçalhos agrupados e rodapés paginados reutilizáveis.
 - `src/ui/filter-panel.js`: contagem e rótulos puros dos filtros responsivos.

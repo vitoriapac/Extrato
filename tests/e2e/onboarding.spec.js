@@ -29,6 +29,8 @@ test('primeiro uso preserva escolhas e chega à prévia do plano',async({page})=
   await page.locator('#examImportNextBtn').evaluate(button=>button.click());
   await page.locator('#examImportNextBtn').evaluate(button=>button.click());
   await expect(overlay).toContainText('Confira a capacidade e crie o primeiro plano');
+  await expect(overlay).toContainText('Primeiras atividades priorizadas');
+  await expect(overlay).toContainText('mesma prioridade, elegibilidade e capacidade');
   await clickButton('Voltar');
   await expect(overlay).toContainText('Nível inicial por disciplina');
   await clickButton('Voltar');
