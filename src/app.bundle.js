@@ -16290,6 +16290,7 @@
         input.removeEventListener("keydown", enter);
         confirmButton.textContent = originalLabel;
         activeCleanup = null;
+        if (!document2.querySelector(".modal-overlay.show,.onboarding-overlay.show")) document2.getElementById("mainContent")?.removeAttribute("inert");
         if (restore && previous?.isConnected) previous.focus();
       };
       const accept = () => {
@@ -16630,12 +16631,15 @@
   }
 
   // src/features/structured-import/structured-import-controller.js
-  function createStructuredImportController({ document: document2, window: window2, parse, service, render: render2, notify, onImported, maxBytes = 2 * 1024 * 1024 } = {}) {
+  function createStructuredImportController({ document: document2, window: window2, parse, service, render: render2, notify, onImported, onCancel = () => {
+  }, onOpen = () => {
+  }, maxBytes = 2 * 1024 * 1024 } = {}) {
     const input = document2.getElementById("structuredContentFile"), open = document2.getElementById("structuredContentImportBtn"), overlay = document2.getElementById("structuredImportOverlay"), content = document2.getElementById("structuredImportContent"), confirm = document2.getElementById("structuredImportConfirmBtn"), cancel = document2.getElementById("structuredImportCancelBtn");
     let pending = null, previousFocus = null;
-    const close = () => {
+    const close = ({ completed = false } = {}) => {
       overlay.classList.remove("show");
       pending = null;
+      onCancel({ completed });
       previousFocus?.focus?.();
       previousFocus = null;
     };
@@ -16665,20 +16669,28 @@
       };
       reader.readAsText(file);
     };
-    open.addEventListener("click", () => {
+    const choose = () => {
       previousFocus = document2.activeElement;
       input.click();
-    });
+    };
+    open.addEventListener("click", choose);
     input.addEventListener("change", () => {
-      read(input.files?.[0]);
+      if (input.files?.[0]) {
+        onOpen();
+        read(input.files[0]);
+      } else onCancel({ completed: false });
       input.value = "";
     });
-    cancel.addEventListener("click", close);
+    cancel.addEventListener("click", () => close());
     confirm.addEventListener("click", () => {
       if (!pending) return;
-      const result = service.import(pending.subjects);
-      close();
-      onImported(result);
+      try {
+        const result = service.import(pending.subjects);
+        close({ completed: true });
+        onImported(result);
+      } catch (error) {
+        notify(error?.message || "A importação falhou. Nenhum dado foi alterado.");
+      }
     });
     overlay.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
@@ -16686,7 +16698,7 @@
         close();
       }
     });
-    return Object.freeze({ read, close });
+    return Object.freeze({ read, close, choose });
   }
 
   // src/features/structured-import/structured-import-renderer.js
@@ -17864,6 +17876,7 @@
   }
 
   // src/application/onboarding/build-onboarding-view-model.js
+  var CONTENT_PATHS = Object.freeze([{ action: "import", label: "Carregar edital do catálogo", primary: true }, { action: "structured", label: "Importar JSON ou CSV" }, { action: "manual", label: "Cadastrar manualmente" }]);
   function buildOnboardingViewModel({ examDate = null, hoursByDay = {}, subjects = [], sessions = [], questions = [], dailyPlans = [], studyPlans = null, planPreview = null, currentStep = null, today = null, presets = [], presetId = null } = {}) {
     const hasGoal = Boolean(examDate), availableMinutes = Object.values(hoursByDay || {}).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0), hasAvailability = availableMinutes > 0, hasContent = (subjects || []).some((subject) => !subject.archived && (subject.topics || []).some((topic) => !topic.archived)), hasPlan = Array.isArray(studyPlans) ? studyPlans.length > 0 : (dailyPlans || []).some((plan) => (plan.items || []).length > 0), hasHistory = (sessions || []).length > 0 || (questions || []).length > 0;
     const steps = [{ id: "goal", label: "Objetivo e data", complete: hasGoal }, { id: "availability", label: "Disponibilidade", complete: hasAvailability }, { id: "content", label: "Edital ou matérias", complete: hasContent }, { id: "plan", label: "Prévia e Hoje", complete: hasPlan || hasHistory }], next = steps.find((step) => !step.complete) || null;
@@ -17875,7 +17888,15 @@
       return { id: subject.id, name: subject.name, level };
     });
     const firstActivities = (planPreview?.items || []).slice(0, 3).map((item) => ({ subject: item.subjectName || "Sem disciplina", topic: item.topicName || item.name || "Tópico sem nome", minutes: Math.max(0, Number(item.minutes) || 0) }));
-    return { visible: !hasHistory && !hasPlan, steps, next, current, currentIndex, completed: steps.filter((step) => step.complete).length, availableMinutes, hasGoal, hasAvailability, hasContent, canAdvance: current.id === "goal" ? hasGoal : current.id === "availability" ? hasAvailability : true, canCreatePlan: hasGoal && hasAvailability && hasContent, topicCount, estimatedNeedMinutes, weeksUntilExam: days == null ? null : Math.ceil(days / 7), examDate, today, presets, presetId, subjects: subjectModels, firstActivities, planPreviewState: planPreview?.state || null, weekdays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((label2, day) => ({ day, label: label2, hours: Math.max(0, Number(hoursByDay?.[String(day)]) || 0) })) };
+    const canConfigurePlan = hasGoal && hasAvailability && hasContent, hasEligibleActivities = planPreview?.state !== "insufficient" && firstActivities.length > 0;
+    const planReasons = [...planPreview?.reasons || []];
+    if (!hasEligibleActivities && canConfigurePlan) {
+      if (planPreview?.reason) planReasons.push(planPreview.reason);
+      if (planPreview?.missingEffort?.length) planReasons.push(`${planPreview.missingEffort.length} tópico(s) sem esforço estimado.`);
+      if (planPreview?.blockedTopics?.length) planReasons.push(`${planPreview.blockedTopics.length} tópico(s) aguardam pré-requisitos.`);
+      if (!planReasons.length) planReasons.push("Revise esforço, pré-requisitos e disponibilidade para liberar atividades.");
+    }
+    return { visible: !hasHistory && !hasPlan, steps, next, current, currentIndex, completed: steps.filter((step) => step.complete).length, availableMinutes, hasGoal, hasAvailability, hasContent, canAdvance: current.id === "goal" ? hasGoal : current.id === "availability" ? hasAvailability : true, canConfigurePlan, hasEligibleActivities, canCreatePlan: canConfigurePlan && hasEligibleActivities, topicCount, estimatedNeedMinutes, weeksUntilExam: days == null ? null : Math.ceil(days / 7), examDate, today, presets, presetId, subjects: subjectModels, contentPaths: CONTENT_PATHS, firstActivities, planPreviewState: planPreview?.state || null, planReasons, weekdays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((label2, day) => ({ day, label: label2, hours: Math.max(0, Number(hoursByDay?.[String(day)]) || 0) })) };
   }
 
   // src/features/onboarding/onboarding-renderer.js
@@ -17888,7 +17909,7 @@
   function renderOnboardingEntry(model, { escapeHtml: escapeHtml3 = String } = {}) {
     const next = model.next || model.current || model.steps?.[0], complete = model.completed || 0, title = complete ? "Configuração incompleta" : "Comece seu plano";
     const description = complete ? `Falta concluir: ${escapeHtml3(next?.label || "configuração inicial")}. Suas escolhas já feitas serão preservadas.` : "Configure prova, disponibilidade e edital para receber seu primeiro plano de estudos.";
-    return `<div class="onboarding-entry-copy"><span class="onboarding-entry-icon" aria-hidden="true">🎯</span><div><span class="onboarding-kicker">${complete} de 4 etapas concluídas</span><h3 id="guidedOnboardingEntryTitle">${title}</h3><p>${description}</p></div></div><button class="btn" type="button" data-guided-action="open">${complete ? "Continuar configuração" : "Montar meu plano"} <span aria-hidden="true">→</span></button>`;
+    return `<div class="onboarding-entry-copy"><span class="onboarding-entry-icon" aria-hidden="true">🎯</span><div><span class="onboarding-kicker">${complete} de ${model.steps.length} etapas concluídas</span><h3 id="guidedOnboardingEntryTitle">${title}</h3><p>${description}</p></div></div><button class="btn" type="button" data-guided-action="open">${complete ? "Continuar configuração" : "Montar meu plano"} <span aria-hidden="true">→</span></button>`;
   }
   function renderOnboardingProgress(model) {
     return model.steps.map((step, index) => {
@@ -17904,9 +17925,9 @@
     const step = model.current || model.next || model.steps?.[0], copy = stepCopy[step.id] || stepCopy.goal;
     if (step.id === "goal") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><label>Concurso<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso">${model.presets.map((item) => `<option value="${escapeAttr3(item.id)}" ${item.id === model.presetId ? "selected" : ""}>${escapeHtml3(item.name.replace("Tecnologia da Informação", "TI"))}</option>`).join("")}</select></label><label>Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr3(model.today)}" value="${escapeAttr3(model.examDate || "")}"></label></div>`;
     if (step.id === "availability") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="guided-availability">${model.weekdays.map((item) => `<label><span>${escapeHtml3(item.label)}</span><input type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr3(item.label)}"><small>h</small></label>`).join("")}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div></div>`;
-    if (step.id === "content") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-actions"><button class="btn" data-guided-action="import">Carregar edital</button><button class="btn ghost" data-guided-action="manual">Cadastrar manualmente</button></div>${model.subjects.length ? `<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject) => `<label><span>${escapeHtml3(subject.name)}</span><select data-guided-level="${escapeAttr3(subject.id)}"><option value="Fácil" ${subject.level === "Fácil" ? "selected" : ""}>Tenho boa base</option><option value="Médio" ${subject.level === "Médio" ? "selected" : ""}>Base intermediária</option><option value="Difícil" ${subject.level === "Difícil" ? "selected" : ""}>Preciso começar pela base</option></select></label>`).join("")}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
+    if (step.id === "content") return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-actions">${(model.contentPaths || []).map((path) => `<button class="btn${path.primary ? "" : " ghost"}" data-guided-action="${escapeAttr3(path.action)}">${escapeHtml3(path.label)}</button>`).join("")}</div>${model.subjects.length ? `<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject) => `<label><span>${escapeHtml3(subject.name)}</span><select data-guided-level="${escapeAttr3(subject.id)}"><option value="Fácil" ${subject.level === "Fácil" ? "selected" : ""}>Tenho boa base</option><option value="Médio" ${subject.level === "Médio" ? "selected" : ""}>Base intermediária</option><option value="Difícil" ${subject.level === "Difícil" ? "selected" : ""}>Preciso começar pela base</option></select></label>`).join("")}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
     const activities = (model.firstActivities || []).map((item) => `<li><span><strong>${escapeHtml3(item.subject)}</strong><small>${escapeHtml3(item.topic)}</small></span><b>${item.minutes} min</b></li>`).join("");
-    return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? "—" : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ""}${model.canCreatePlan ? activities ? '<p class="confidence-note">Esta prévia usa a mesma prioridade, elegibilidade e capacidade do plano que será criado.</p>' : '<p class="availability-warning">Não há atividade elegível. Confira esforços e pré-requisitos antes de criar o plano.</p>' : '<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'}</div>`;
+    return `<div class="guided-onboarding-panel"><h4>${copy.title}</h4><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? "—" : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ""}${model.canCreatePlan ? '<p class="confidence-note">Esta prévia usa a mesma prioridade, elegibilidade e capacidade do plano que será criado.</p>' : model.canConfigurePlan ? `<div class="availability-warning"><p>Não há atividade elegível nesta proposta. ${model.planReasons.map((reason) => escapeHtml3(typeof reason === "string" ? reason : reason.message || reason.reason || "")).filter(Boolean).join(" · ")}</p><div class="study-plan-actions"><button class="btn ghost small" data-guided-action="manual">Revisar tópicos e pré-requisitos</button><button class="btn ghost small" data-guided-action="availability">Ajustar disponibilidade</button></div></div>` : '<p class="availability-warning">Complete data, disponibilidade e conteúdo antes de criar o plano.</p>'}</div>`;
   }
   function renderOnboardingActions(model) {
     const id = model.current?.id || "goal", previous = model.currentIndex > 0 ? '<button class="btn ghost" data-guided-action="back">← Voltar</button>' : '<button class="btn ghost" data-guided-action="cancel">Cancelar</button>';
@@ -20498,11 +20519,22 @@
   document.getElementById("loadDefaultSubjectsBtn").addEventListener("click", carregarDisciplinasPadrao);
   var examImportService = createExamImportService({ subjectService, getSubjects: () => state.subjects });
   var structuredContentImportService = createStructuredContentImportService({ subjectService, getSubjects: () => state.subjects });
-  createStructuredImportController({ document, window, parse: parseStructuredStudyContent, service: structuredContentImportService, render: renderStructuredImport, notify: showToast, onImported: (result) => {
+  var structuredImportOrigin = null;
+  var structuredImportController = createStructuredImportController({ document, window, parse: parseStructuredStudyContent, service: structuredContentImportService, render: renderStructuredImport, notify: showToast, onOpen: () => {
+    if (structuredImportOrigin === "onboarding") suspendGuidedOnboarding();
+  }, onCancel: ({ completed }) => {
+    if (structuredImportOrigin === "onboarding") {
+      resumeGuidedOnboarding(completed ? "plan" : "content");
+      structuredImportOrigin = null;
+    }
+  }, onImported: (result) => {
     studyPlanPreview = null;
     persistAndRender();
     showToast(`${pluralize(result.addedSubjects, "disciplina")} e ${pluralize(result.addedTopics, "tópico")} adicionados; ${pluralize(result.updatedTopics, "tópico")} atualizados.`);
   } });
+  document.getElementById("structuredContentImportBtn")?.addEventListener("click", () => {
+    structuredImportOrigin = null;
+  });
   document.getElementById("downloadStructuredCsvBtn")?.addEventListener("click", () => {
     const csv = "disciplina,topico,dificuldade,importancia,esforco,tags\nPortuguês,Interpretação de texto,Médio,80,120,leitura|prioridade\n", blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }), url = URL.createObjectURL(blob), link = document.createElement("a");
     link.href = url;
@@ -20542,38 +20574,30 @@
     const preset2 = typeof initialPreset === "string" ? getExamPreset(initialPreset) : initialPreset;
     examImportOrigin = origin;
     resetExamImportState(examImportState, preset2 || EXAM_PRESETS[0], document.activeElement);
+    if (origin === "onboarding") suspendGuidedOnboarding();
     editalImportFacade.begin(examImportState.presetId);
     document.getElementById("examImportOverlay").classList.add("show");
     renderExamImport2();
     document.querySelector('[name="examPreset"]')?.focus();
   }
-  function closeExamImport() {
+  function closeExamImport({ completed = false } = {}) {
+    const origin = examImportOrigin;
     editalImportFacade.cancel();
     document.getElementById("examImportOverlay").classList.remove("show");
-    examImportState.previousFocus?.focus();
+    if (origin === "onboarding") resumeGuidedOnboarding(completed ? "plan" : "content");
+    else examImportState.previousFocus?.focus();
     examImportOrigin = null;
   }
-  var examImportController = createExamImportController({ document, state: examImportState, getPreset: selectedExamPreset, facade: editalImportFacade, render: renderExamImport2, close: closeExamImport, includeTopic: (action, topic) => {
+  var examImportController = createExamImportController({ document, state: examImportState, getPreset: selectedExamPreset, facade: editalImportFacade, render: renderExamImport2, close: () => closeExamImport(), includeTopic: (action, topic) => {
     const tags = topic.examTags || [];
     return action === "all" || action === "bb" && tags.includes(EXAM_TAGS.BB) || action === "caixa" && tags.includes(EXAM_TAGS.CAIXA) || action === "caixa-ti" && tags.includes(EXAM_TAGS.CAIXA_TI) || action === "common" && isCommonTopic(topic, [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]);
   }, confirm: () => {
-    const inOnboarding = examImportOrigin === "onboarding" || Boolean(examImportState.previousFocus?.closest?.("#guidedOnboardingOverlay"));
-    const preset2 = selectedExamPreset(), result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
+    const inOnboarding = examImportOrigin === "onboarding", preset2 = selectedExamPreset(), result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
     applyPresetBlueprintDefaults(preset2);
     uiState.onboarding.presetId = preset2.id;
-    if (inOnboarding) {
-      uiState.onboarding.currentStep = "plan";
-      uiState.onboarding.open = true;
-    }
     persistAndRender();
-    closeExamImport();
-    if (inOnboarding) {
-      activateTab("dashboard");
-      requestAnimationFrame(() => {
-        document.getElementById("guidedOnboardingOverlay")?.removeAttribute("hidden");
-        document.getElementById("guidedOnboardingContent")?.focus();
-      });
-    }
+    closeExamImport({ completed: true });
+    if (inOnboarding) activateTab("dashboard");
     showToast(`${pluralize(result.addedSubjects, "disciplina")}, ${pluralize(result.addedTopics, "tópico")} e ${pluralize(result.metadataUpdates, "vínculo")} atualizados.`);
   } });
   examImportController.mount();
@@ -21864,10 +21888,11 @@
   function metaHoursToday() {
     return metaHoursForDate(todayISO());
   }
-  function updateMetaHoursDay(day, value2) {
+  function updateMetaHoursDay(day, value2, { refresh = true } = {}) {
     studyPlanPreview = null;
     goalsService.updateDailyHours(day, value2, { isToday: Number(day) === parseLocalDate(todayISO()).getDay() });
-    persistAndRender();
+    if (refresh) persistAndRender();
+    else scheduleSave();
   }
   function applyTodayGoalToAllDays() {
     const value2 = metaHoursToday();
@@ -22080,7 +22105,7 @@
     const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml2(item.subjectName)}</strong> — ${escapeHtml2(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? " · manutenção" : ""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
     container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? "-" : "+"}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === "deficit" ? "ritmo insuficiente" : plan.paceState === "surplus" ? "capacidade disponível" : "ritmo equilibrado"}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || "não avaliada"}${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
   }
-  function updateExamBlueprint(field, value2) {
+  function updateExamBlueprint(field, value2, { refresh = true } = {}) {
     studyPlanPreview = null;
     if (field === "examDate") {
       state.examBlueprint.examDate = value2 || null;
@@ -22093,7 +22118,8 @@
     }
     if (field === "masteryTarget") state.examBlueprint.masteryTarget = Math.max(0, Math.min(100, Number(value2) || 80));
     state.examBlueprint.configuredAt = nowISO2();
-    persistAndRender();
+    if (refresh) persistAndRender();
+    else scheduleSave();
   }
   function updateExamSubject(subjectId, field, value2) {
     studyPlanPreview = null;
@@ -23267,6 +23293,11 @@
     document.getElementById("guidedOnboardingContent").innerHTML = renderOnboardingContent(model, { escapeHtml: escapeHtml2, escapeAttr: escapeAttr2, formatMinutes: formatPlanMinutes });
     document.getElementById("guidedOnboardingHelp").innerHTML = renderOnboardingHelp(model, { escapeHtml: escapeHtml2 });
     document.getElementById("guidedOnboardingActions").innerHTML = renderOnboardingActions(model);
+    const manualBanner = document.getElementById("guidedManualReturn");
+    if (manualBanner) {
+      manualBanner.hidden = !uiState.onboarding.manualReturn;
+      manualBanner.querySelector("[data-guided-manual-return]").disabled = !model.hasContent;
+    }
   }
   function onboardingModel() {
     const canPreview = Boolean(state.examDate) && Object.values(state.metas.horasPorDia).some((value2) => Number(value2) > 0) && state.subjects.some((subject) => !subject.archived && subject.topics?.some((topic) => !topic.archived));
@@ -23277,44 +23308,60 @@
     uiState.onboarding.currentStep = model.steps[index].id;
     renderGuidedOnboarding();
   }
-  function openGuidedOnboarding() {
+  function openGuidedOnboarding({ step = null } = {}) {
     const model = onboardingModel();
     uiState.onboarding.previousFocus = document.activeElement;
     uiState.onboarding.open = true;
-    uiState.onboarding.currentStep = uiState.onboarding.currentStep || model.next?.id || model.current.id;
+    uiState.onboarding.manualReturn = false;
+    uiState.onboarding.currentStep = step || model.next?.id || model.current.id;
     document.body.classList.add("onboarding-open");
     renderGuidedOnboarding();
     requestAnimationFrame(() => document.getElementById("guidedOnboardingClose")?.focus());
   }
-  function closeGuidedOnboarding() {
+  function suspendGuidedOnboarding() {
+    uiState.onboarding.open = false;
+    renderGuidedOnboarding();
+  }
+  function resumeGuidedOnboarding(step = "content") {
+    const model = onboardingModel();
+    uiState.onboarding.currentStep = step === "plan" && !model.hasContent ? "content" : step;
+    uiState.onboarding.open = true;
+    document.body.classList.add("onboarding-open");
+    renderGuidedOnboarding();
+    requestAnimationFrame(() => document.getElementById("guidedOnboardingClose")?.focus());
+  }
+  function closeGuidedOnboarding({ manual = false } = {}) {
     const previousFocus = uiState.onboarding.previousFocus;
     uiState.onboarding.open = false;
-    uiState.onboarding.dismissedForSession = true;
+    uiState.onboarding.dismissedForSession = !manual;
+    uiState.onboarding.manualReturn = manual;
     document.body.classList.remove("onboarding-open");
     renderGuidedOnboarding();
+    syncModalShell();
     const focusTarget = previousFocus?.isConnected ? previousFocus : document.querySelector('#guidedOnboarding [data-guided-action="open"]');
     focusTarget?.focus?.();
     uiState.onboarding.previousFocus = null;
   }
-  function setGuidedSubjectLevel(subjectId, level) {
+  function setGuidedSubjectLevel(subjectId, level, { refresh = true } = {}) {
     if (!DIFFICULTY_OPTIONS.includes(level)) return;
     const subject = getSubjectById(subjectId);
     if (!subject) return;
     for (const topic of subject.topics.filter((item) => !item.archived)) {
-      subjectService.updateTopic(subjectId, topic.id, { ...topic, difficulty: level, estimatedStudyMinutes: topic.estimatedStudyMinutes ?? (level === "Difícil" ? 120 : level === "Fácil" ? 45 : 75) });
+      subjectService.updateTopic(subjectId, topic.id, { ...topic, difficulty: level, estimatedStudyMinutes: topic.estimatedStudyMinutes ?? (level === "Difícil" ? 120 : level === "Fácil" ? 45 : 75), fieldOrigins: { ...topic.fieldOrigins || {}, difficulty: "manual" } });
     }
-    persistAndRender();
+    if (refresh) persistAndRender();
+    else scheduleSave();
   }
   function applyGuidedEffortDefaults() {
     for (const subject of activeSubjects()) for (const topic of subject.topics.filter((item) => !item.archived)) if (topic.estimatedStudyMinutes == null) topic.estimatedStudyMinutes = topic.difficulty === "Difícil" ? 120 : topic.difficulty === "Fácil" ? 45 : 75;
   }
   function createGuidedInitialPlan() {
+    if (!onboardingModel().canCreatePlan) return;
     applyGuidedEffortDefaults();
     calculateStudyPlanPreview();
     if (!studyPlanPreview || studyPlanPreview.state === "insufficient" || !studyPlanPreview.items.length) {
-      closeGuidedOnboarding();
-      activateTab("metas");
-      document.getElementById("examStudyPlan")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      uiState.onboarding.currentStep = "plan";
+      renderGuidedOnboarding();
       showToast("Confira os dados indicados antes de confirmar o plano.");
       return;
     }
@@ -23323,6 +23370,7 @@
     if (dailyPlanPreview?.state === "proposal") confirmDailyPlanPreview();
     uiState.onboarding.currentStep = "plan";
     uiState.onboarding.open = false;
+    document.body.classList.remove("onboarding-open");
     render();
     activateTab("hoje");
     requestAnimationFrame(() => document.querySelector("#planoHojeContent .btn")?.focus());
@@ -23998,7 +24046,7 @@
   } }).register();
   var RENDER_SCOPE_SECTIONS = {
     dashboard: /* @__PURE__ */ new Set(["primeiro uso", "dashboard de aprovação", "controles do cronômetro", "evolução do progresso", "heatmap", "conquistas", "radar", "visão geral", "horas estudadas", "histórico de sessões"]),
-    disciplinas: /* @__PURE__ */ new Set(["disciplinas"]),
+    disciplinas: /* @__PURE__ */ new Set(["disciplinas", "primeiro uso"]),
     calendario: /* @__PURE__ */ new Set(["indicadores do calendário", "tarefas de hoje", "tarefas atrasadas", "filtros do calendário", "calendário", "calendário mensal"]),
     agenda: /* @__PURE__ */ new Set(["filtros da agenda", "agenda"]),
     questoes: /* @__PURE__ */ new Set(["questões", "análise de questões", "simulados", "gráfico de simulados", "desempenho por disciplina"]),
@@ -24079,6 +24127,15 @@
     render();
   }
   navigationController.registerShortcuts();
+  var modalLayers = [...document.querySelectorAll(".modal-overlay"), document.getElementById("guidedOnboardingOverlay")].filter(Boolean);
+  var syncModalShell = () => {
+    const active = modalLayers.some((layer) => layer.classList.contains("show") && !layer.hidden);
+    document.getElementById("mainContent").inert = active;
+    document.body.classList.toggle("modal-open", active);
+  };
+  var modalObserver = new MutationObserver(syncModalShell);
+  modalLayers.forEach((layer) => modalObserver.observe(layer, { attributes: true, attributeFilter: ["class", "hidden"] }));
+  syncModalShell();
   document.querySelectorAll("[data-go-home]").forEach((button) => button.addEventListener("click", () => {
     activateTab("dashboard");
     window.scrollTo({ top: 0, behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
@@ -24089,14 +24146,18 @@
       return;
     }
     if (event.target.id === "guidedExamDate") {
-      updateExamBlueprint("examDate", event.target.value);
+      updateExamBlueprint("examDate", event.target.value, { refresh: false });
+      document.querySelector('#guidedOnboardingActions [data-guided-action="next"]').disabled = !onboardingModel().canAdvance;
       return;
     }
     if (event.target.dataset.guidedDay !== void 0) {
-      updateMetaHoursDay(event.target.dataset.guidedDay, event.target.value);
+      updateMetaHoursDay(event.target.dataset.guidedDay, event.target.value, { refresh: false });
+      const model = onboardingModel();
+      document.querySelector('#guidedOnboardingActions [data-guided-action="next"]').disabled = !model.canAdvance;
+      document.querySelector("#guidedOnboardingContent .guided-capacity strong").textContent = formatPlanMinutes(model.availableMinutes);
       return;
     }
-    if (event.target.dataset.guidedLevel) setGuidedSubjectLevel(event.target.dataset.guidedLevel, event.target.value);
+    if (event.target.dataset.guidedLevel) setGuidedSubjectLevel(event.target.dataset.guidedLevel, event.target.value, { refresh: false });
   });
   document.getElementById("guidedOnboarding")?.addEventListener("click", (event) => {
     if (event.target.closest('[data-guided-action="open"]')) openGuidedOnboarding();
@@ -24108,14 +24169,26 @@
     if (action === "back") moveOnboarding(-1);
     if (action === "next") moveOnboarding(1);
     if (action === "import") openExamImport(uiState.onboarding.presetId, "onboarding");
+    if (action === "structured") {
+      structuredImportOrigin = "onboarding";
+      structuredImportController.choose();
+    }
     if (action === "manual") {
-      closeGuidedOnboarding();
+      closeGuidedOnboarding({ manual: true });
       activateTab("disciplinas");
       document.getElementById("addSubjectBtn")?.focus();
+    }
+    if (action === "availability") {
+      uiState.onboarding.currentStep = "availability";
+      renderGuidedOnboarding();
     }
     if (action === "create-plan") createGuidedInitialPlan();
   });
   document.getElementById("guidedOnboardingClose")?.addEventListener("click", closeGuidedOnboarding);
+  document.querySelector("[data-guided-manual-return]")?.addEventListener("click", () => {
+    activateTab("dashboard");
+    openGuidedOnboarding({ step: "content" });
+  });
   document.getElementById("guidedOnboardingOverlay")?.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       event.preventDefault();

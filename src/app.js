@@ -2031,7 +2031,9 @@ document.getElementById('loadDefaultSubjectsBtn').addEventListener('click', carr
 
 const examImportService=createExamImportService({subjectService,getSubjects:()=>state.subjects});
 const structuredContentImportService=createStructuredContentImportService({subjectService,getSubjects:()=>state.subjects});
-createStructuredImportController({document,window,parse:parseStructuredStudyContent,service:structuredContentImportService,render:renderStructuredImport,notify:showToast,onImported:result=>{studyPlanPreview=null;persistAndRender();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados; ${pluralize(result.updatedTopics,'tópico')} atualizados.`)}});
+let structuredImportOrigin=null;
+const structuredImportController=createStructuredImportController({document,window,parse:parseStructuredStudyContent,service:structuredContentImportService,render:renderStructuredImport,notify:showToast,onOpen:()=>{if(structuredImportOrigin==='onboarding')suspendGuidedOnboarding()},onCancel:({completed})=>{if(structuredImportOrigin==='onboarding'){resumeGuidedOnboarding(completed?'plan':'content');structuredImportOrigin=null}},onImported:result=>{studyPlanPreview=null;persistAndRender();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados; ${pluralize(result.updatedTopics,'tópico')} atualizados.`)}});
+document.getElementById('structuredContentImportBtn')?.addEventListener('click',()=>{structuredImportOrigin=null});
 document.getElementById('downloadStructuredCsvBtn')?.addEventListener('click',()=>{const csv='disciplina,topico,dificuldade,importancia,esforco,tags\nPortuguês,Interpretação de texto,Médio,80,120,leitura|prioridade\n',blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='modelo-studytrack.csv';link.click();URL.revokeObjectURL(url)});
 const editalImportFacade=createEditalImportFacade({catalog:EXAM_PRESETS,importService:examImportService});
 const examImportState=createExamImportState(EXAM_PRESETS[0]);
@@ -2045,9 +2047,9 @@ function renderExamImport(){
   content.innerHTML=renderExamImportView(model,{escapeHtml,escapeAttr,renderBadges:examBadges,sourceLabel:source=>EXAM_SOURCES[source]?.label||source});
   if(model.step===2)syncExamSubjectCheckboxes();
 }
-function openExamImport(initialPreset=EXAM_PRESETS[0],origin=null){const preset=typeof initialPreset==='string'?getExamPreset(initialPreset):initialPreset;examImportOrigin=origin;resetExamImportState(examImportState,preset||EXAM_PRESETS[0],document.activeElement);editalImportFacade.begin(examImportState.presetId);document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
-function closeExamImport(){editalImportFacade.cancel();document.getElementById('examImportOverlay').classList.remove('show');examImportState.previousFocus?.focus();examImportOrigin=null}
-const examImportController=createExamImportController({document,state:examImportState,getPreset:selectedExamPreset,facade:editalImportFacade,render:renderExamImport,close:closeExamImport,includeTopic:(action,topic)=>{const tags=topic.examTags||[];return action==='all'||action==='bb'&&tags.includes(EXAM_TAGS.BB)||action==='caixa'&&tags.includes(EXAM_TAGS.CAIXA)||action==='caixa-ti'&&tags.includes(EXAM_TAGS.CAIXA_TI)||action==='common'&&isCommonTopic(topic,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA])},confirm:()=>{const inOnboarding=examImportOrigin==='onboarding'||Boolean(examImportState.previousFocus?.closest?.('#guidedOnboardingOverlay'));const preset=selectedExamPreset(),result=editalImportFacade.confirm(examImportState.subjectIds,examImportState.topicIds);applyPresetBlueprintDefaults(preset);uiState.onboarding.presetId=preset.id;if(inOnboarding){uiState.onboarding.currentStep='plan';uiState.onboarding.open=true}persistAndRender();closeExamImport();if(inOnboarding){activateTab('dashboard');requestAnimationFrame(()=>{document.getElementById('guidedOnboardingOverlay')?.removeAttribute('hidden');document.getElementById('guidedOnboardingContent')?.focus()})}showToast(`${pluralize(result.addedSubjects,'disciplina')}, ${pluralize(result.addedTopics,'tópico')} e ${pluralize(result.metadataUpdates,'vínculo')} atualizados.`)}});examImportController.mount();
+function openExamImport(initialPreset=EXAM_PRESETS[0],origin=null){const preset=typeof initialPreset==='string'?getExamPreset(initialPreset):initialPreset;examImportOrigin=origin;resetExamImportState(examImportState,preset||EXAM_PRESETS[0],document.activeElement);if(origin==='onboarding')suspendGuidedOnboarding();editalImportFacade.begin(examImportState.presetId);document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
+function closeExamImport({completed=false}={}){const origin=examImportOrigin;editalImportFacade.cancel();document.getElementById('examImportOverlay').classList.remove('show');if(origin==='onboarding')resumeGuidedOnboarding(completed?'plan':'content');else examImportState.previousFocus?.focus();examImportOrigin=null}
+const examImportController=createExamImportController({document,state:examImportState,getPreset:selectedExamPreset,facade:editalImportFacade,render:renderExamImport,close:()=>closeExamImport(),includeTopic:(action,topic)=>{const tags=topic.examTags||[];return action==='all'||action==='bb'&&tags.includes(EXAM_TAGS.BB)||action==='caixa'&&tags.includes(EXAM_TAGS.CAIXA)||action==='caixa-ti'&&tags.includes(EXAM_TAGS.CAIXA_TI)||action==='common'&&isCommonTopic(topic,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA])},confirm:()=>{const inOnboarding=examImportOrigin==='onboarding',preset=selectedExamPreset(),result=editalImportFacade.confirm(examImportState.subjectIds,examImportState.topicIds);applyPresetBlueprintDefaults(preset);uiState.onboarding.presetId=preset.id;persistAndRender();closeExamImport({completed:true});if(inOnboarding)activateTab('dashboard');showToast(`${pluralize(result.addedSubjects,'disciplina')}, ${pluralize(result.addedTopics,'tópico')} e ${pluralize(result.metadataUpdates,'vínculo')} atualizados.`)}});examImportController.mount();
 
 function archiveSubject(id){
   const subject=getSubjectById(id);
@@ -3155,10 +3157,10 @@ function metaHoursForDate(date=todayISO()){
   return goalsService.hoursForDate(date);
 }
 function metaHoursToday(){return metaHoursForDate(todayISO());}
-function updateMetaHoursDay(day,value){
+function updateMetaHoursDay(day,value,{refresh=true}={}){
   studyPlanPreview=null;
   goalsService.updateDailyHours(day,value,{isToday:Number(day)===parseLocalDate(todayISO()).getDay()});
-  persistAndRender();
+  if(refresh)persistAndRender();else scheduleSave();
 }
 function applyTodayGoalToAllDays(){
   const value=metaHoursToday();
@@ -3325,12 +3327,12 @@ function renderStudyPlanBuilder(){
   const topicRows=plan.items.slice(0,8).map(item=>`<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered?" · manutenção":""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join('');
   container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes<0?'-':'+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState==='deficit'?'ritmo insuficiente':plan.paceState==='surplus'?'capacidade disponível':'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence*100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase()||"não avaliada"}${plan.missingEffort.length?` · ${plan.missingEffort.length} tópico${plan.missingEffort.length===1?'':'s'} sem esforço estimado`:''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes||0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
 }
-function updateExamBlueprint(field,value){
+function updateExamBlueprint(field,value,{refresh=true}={}){
   studyPlanPreview=null;
   if(field==='examDate'){state.examBlueprint.examDate=value||null;state.examDate=value||''}
   if(field==='targetScore'){const target=Math.max(0,Math.min(100,Number(value)||0));state.examBlueprint.targetScore=target;goalsService.update('metaAprovacao',target)}
   if(field==='masteryTarget')state.examBlueprint.masteryTarget=Math.max(0,Math.min(100,Number(value)||80));
-  state.examBlueprint.configuredAt=nowISO();persistAndRender();
+  state.examBlueprint.configuredAt=nowISO();if(refresh)persistAndRender();else scheduleSave();
 }
 function updateExamSubject(subjectId,field,value){
   studyPlanPreview=null;
@@ -4376,17 +4378,21 @@ function renderGuidedOnboarding(){
   document.getElementById('guidedOnboardingContent').innerHTML=renderOnboardingContent(model,{escapeHtml,escapeAttr,formatMinutes:formatPlanMinutes});
   document.getElementById('guidedOnboardingHelp').innerHTML=renderOnboardingHelp(model,{escapeHtml});
   document.getElementById('guidedOnboardingActions').innerHTML=renderOnboardingActions(model);
+  const manualBanner=document.getElementById('guidedManualReturn');
+  if(manualBanner){manualBanner.hidden=!uiState.onboarding.manualReturn;manualBanner.querySelector('[data-guided-manual-return]').disabled=!model.hasContent}
 }
 function onboardingModel(){
   const canPreview=Boolean(state.examDate)&&Object.values(state.metas.horasPorDia).some(value=>Number(value)>0)&&state.subjects.some(subject=>!subject.archived&&subject.topics?.some(topic=>!topic.archived));
   return buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,studyPlans:state.studyPlans,planPreview:canPreview?buildCurrentStudyPlanProposal({guidedDefaults:true}):null,currentStep:uiState.onboarding.currentStep,today:todayISO(),presets:EXAM_PRESETS,presetId:uiState.onboarding.presetId});
 }
 function moveOnboarding(direction){const model=onboardingModel(),index=Math.max(0,Math.min(model.steps.length-1,model.currentIndex+direction));uiState.onboarding.currentStep=model.steps[index].id;renderGuidedOnboarding()}
-function openGuidedOnboarding(){const model=onboardingModel();uiState.onboarding.previousFocus=document.activeElement;uiState.onboarding.open=true;uiState.onboarding.currentStep=uiState.onboarding.currentStep||model.next?.id||model.current.id;document.body.classList.add('onboarding-open');renderGuidedOnboarding();requestAnimationFrame(()=>document.getElementById('guidedOnboardingClose')?.focus())}
-function closeGuidedOnboarding(){const previousFocus=uiState.onboarding.previousFocus;uiState.onboarding.open=false;uiState.onboarding.dismissedForSession=true;document.body.classList.remove('onboarding-open');renderGuidedOnboarding();const focusTarget=previousFocus?.isConnected?previousFocus:document.querySelector('#guidedOnboarding [data-guided-action="open"]');focusTarget?.focus?.();uiState.onboarding.previousFocus=null}
-function setGuidedSubjectLevel(subjectId,level){if(!DIFFICULTY_OPTIONS.includes(level))return;const subject=getSubjectById(subjectId);if(!subject)return;for(const topic of subject.topics.filter(item=>!item.archived)){subjectService.updateTopic(subjectId,topic.id,{...topic,difficulty:level,estimatedStudyMinutes:topic.estimatedStudyMinutes??(level==='Difícil'?120:level==='Fácil'?45:75)})}persistAndRender()}
+function openGuidedOnboarding({step=null}={}){const model=onboardingModel();uiState.onboarding.previousFocus=document.activeElement;uiState.onboarding.open=true;uiState.onboarding.manualReturn=false;uiState.onboarding.currentStep=step||model.next?.id||model.current.id;document.body.classList.add('onboarding-open');renderGuidedOnboarding();requestAnimationFrame(()=>document.getElementById('guidedOnboardingClose')?.focus())}
+function suspendGuidedOnboarding(){uiState.onboarding.open=false;renderGuidedOnboarding()}
+function resumeGuidedOnboarding(step='content'){const model=onboardingModel();uiState.onboarding.currentStep=step==='plan'&&!model.hasContent?'content':step;uiState.onboarding.open=true;document.body.classList.add('onboarding-open');renderGuidedOnboarding();requestAnimationFrame(()=>document.getElementById('guidedOnboardingClose')?.focus())}
+function closeGuidedOnboarding({manual=false}={}){const previousFocus=uiState.onboarding.previousFocus;uiState.onboarding.open=false;uiState.onboarding.dismissedForSession=!manual;uiState.onboarding.manualReturn=manual;document.body.classList.remove('onboarding-open');renderGuidedOnboarding();syncModalShell();const focusTarget=previousFocus?.isConnected?previousFocus:document.querySelector('#guidedOnboarding [data-guided-action="open"]');focusTarget?.focus?.();uiState.onboarding.previousFocus=null}
+function setGuidedSubjectLevel(subjectId,level,{refresh=true}={}){if(!DIFFICULTY_OPTIONS.includes(level))return;const subject=getSubjectById(subjectId);if(!subject)return;for(const topic of subject.topics.filter(item=>!item.archived)){subjectService.updateTopic(subjectId,topic.id,{...topic,difficulty:level,estimatedStudyMinutes:topic.estimatedStudyMinutes??(level==='Difícil'?120:level==='Fácil'?45:75),fieldOrigins:{...(topic.fieldOrigins||{}),difficulty:'manual'}})}if(refresh)persistAndRender();else scheduleSave()}
 function applyGuidedEffortDefaults(){for(const subject of activeSubjects())for(const topic of subject.topics.filter(item=>!item.archived))if(topic.estimatedStudyMinutes==null)topic.estimatedStudyMinutes=topic.difficulty==='Difícil'?120:topic.difficulty==='Fácil'?45:75}
-function createGuidedInitialPlan(){applyGuidedEffortDefaults();calculateStudyPlanPreview();if(!studyPlanPreview||studyPlanPreview.state==='insufficient'||!studyPlanPreview.items.length){closeGuidedOnboarding();activateTab('metas');document.getElementById('examStudyPlan')?.scrollIntoView({behavior:'smooth',block:'center'});showToast('Confira os dados indicados antes de confirmar o plano.');return}confirmStudyPlan();calculateDailyPlanPreview();if(dailyPlanPreview?.state==='proposal')confirmDailyPlanPreview();uiState.onboarding.currentStep='plan';uiState.onboarding.open=false;render();activateTab('hoje');requestAnimationFrame(()=>document.querySelector('#planoHojeContent .btn')?.focus())}
+function createGuidedInitialPlan(){if(!onboardingModel().canCreatePlan)return;applyGuidedEffortDefaults();calculateStudyPlanPreview();if(!studyPlanPreview||studyPlanPreview.state==='insufficient'||!studyPlanPreview.items.length){uiState.onboarding.currentStep='plan';renderGuidedOnboarding();showToast('Confira os dados indicados antes de confirmar o plano.');return}confirmStudyPlan();calculateDailyPlanPreview();if(dailyPlanPreview?.state==='proposal')confirmDailyPlanPreview();uiState.onboarding.currentStep='plan';uiState.onboarding.open=false;document.body.classList.remove('onboarding-open');render();activateTab('hoje');requestAnimationFrame(()=>document.querySelector('#planoHojeContent .btn')?.focus())}
 
 function renderMetasHoje(){
   const container = document.getElementById('hojeMetas');
@@ -4833,7 +4839,7 @@ createDelegatedEventsController({document,handlers:DELEGATED_ACTION_HANDLERS,par
 /* ===== MASTER RENDER ===== */
 const RENDER_SCOPE_SECTIONS={
   dashboard:new Set(['primeiro uso','dashboard de aprovação','controles do cronômetro','evolução do progresso','heatmap','conquistas','radar','visão geral','horas estudadas','histórico de sessões']),
-  disciplinas:new Set(['disciplinas']),
+  disciplinas:new Set(['disciplinas','primeiro uso']),
   calendario:new Set(['indicadores do calendário','tarefas de hoje','tarefas atrasadas','filtros do calendário','calendário','calendário mensal']),
   agenda:new Set(['filtros da agenda','agenda']),
   questoes:new Set(['questões','análise de questões','simulados','gráfico de simulados','desempenho por disciplina']),
@@ -4899,6 +4905,11 @@ function renderAll(){ render(); }
 
 /* ===== ATALHOS DE TECLADO ===== */
 navigationController.registerShortcuts();
+const modalLayers=[...document.querySelectorAll('.modal-overlay'),document.getElementById('guidedOnboardingOverlay')].filter(Boolean);
+const syncModalShell=()=>{const active=modalLayers.some(layer=>layer.classList.contains('show')&&!layer.hidden);document.getElementById('mainContent').inert=active;document.body.classList.toggle('modal-open',active)};
+const modalObserver=new MutationObserver(syncModalShell);
+modalLayers.forEach(layer=>modalObserver.observe(layer,{attributes:true,attributeFilter:['class','hidden']}));
+syncModalShell();
 
 document.querySelectorAll('[data-go-home]').forEach(button=>button.addEventListener('click',()=>{
   activateTab('dashboard');
@@ -4906,9 +4917,9 @@ document.querySelectorAll('[data-go-home]').forEach(button=>button.addEventListe
 }));
 document.getElementById('guidedOnboardingOverlay')?.addEventListener('change',event=>{
   if(event.target.id==='guidedExamPreset'){uiState.onboarding.presetId=event.target.value;return}
-  if(event.target.id==='guidedExamDate'){updateExamBlueprint('examDate',event.target.value);return}
-  if(event.target.dataset.guidedDay!==undefined){updateMetaHoursDay(event.target.dataset.guidedDay,event.target.value);return}
-  if(event.target.dataset.guidedLevel)setGuidedSubjectLevel(event.target.dataset.guidedLevel,event.target.value);
+  if(event.target.id==='guidedExamDate'){updateExamBlueprint('examDate',event.target.value,{refresh:false});document.querySelector('#guidedOnboardingActions [data-guided-action="next"]').disabled=!onboardingModel().canAdvance;return}
+  if(event.target.dataset.guidedDay!==undefined){updateMetaHoursDay(event.target.dataset.guidedDay,event.target.value,{refresh:false});const model=onboardingModel();document.querySelector('#guidedOnboardingActions [data-guided-action="next"]').disabled=!model.canAdvance;document.querySelector('#guidedOnboardingContent .guided-capacity strong').textContent=formatPlanMinutes(model.availableMinutes);return}
+  if(event.target.dataset.guidedLevel)setGuidedSubjectLevel(event.target.dataset.guidedLevel,event.target.value,{refresh:false});
 });
 document.getElementById('guidedOnboarding')?.addEventListener('click',event=>{if(event.target.closest('[data-guided-action="open"]'))openGuidedOnboarding()});
 document.getElementById('guidedOnboardingOverlay')?.addEventListener('click',event=>{
@@ -4917,10 +4928,13 @@ document.getElementById('guidedOnboardingOverlay')?.addEventListener('click',eve
   if(action==='back')moveOnboarding(-1);
   if(action==='next')moveOnboarding(1);
   if(action==='import')openExamImport(uiState.onboarding.presetId,'onboarding');
-  if(action==='manual'){closeGuidedOnboarding();activateTab('disciplinas');document.getElementById('addSubjectBtn')?.focus()}
+  if(action==='structured'){structuredImportOrigin='onboarding';structuredImportController.choose()}
+  if(action==='manual'){closeGuidedOnboarding({manual:true});activateTab('disciplinas');document.getElementById('addSubjectBtn')?.focus()}
+  if(action==='availability'){uiState.onboarding.currentStep='availability';renderGuidedOnboarding()}
   if(action==='create-plan')createGuidedInitialPlan();
 });
 document.getElementById('guidedOnboardingClose')?.addEventListener('click',closeGuidedOnboarding);
+document.querySelector('[data-guided-manual-return]')?.addEventListener('click',()=>{activateTab('dashboard');openGuidedOnboarding({step:'content'})});
 document.getElementById('guidedOnboardingOverlay')?.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeGuidedOnboarding()}});
 document.getElementById('executionAgendaBtn')?.addEventListener('click',()=>{state.executionMode='agenda';scheduleSave();renderPlanoHoje()});
 document.getElementById('executionSequenceBtn')?.addEventListener('click',()=>{state.executionMode='sequence';scheduleSave();renderPlanoHoje()});

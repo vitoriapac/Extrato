@@ -13,7 +13,7 @@ function memoryManager(){
 test('relógio injetável preserva data local e instante ISO',()=>{
   const clock=createClock({now:()=>new Date(2026,7,31,23,30,0)});
   assert.equal(clock.today(),'2026-08-31');
-  assert.match(clock.nowISO(),/^2026-09-01T02:30:00\.000Z$|^2026-08-31T/);
+  assert.equal(clock.nowISO(),new Date(2026,7,31,23,30,0).toISOString());
 });
 
 test('provider real delega persistência sem alterar chaves',async()=>{

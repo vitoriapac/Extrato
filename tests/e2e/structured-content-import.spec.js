@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import {activateTab} from './helpers.js';
 
 test.beforeEach(async({page})=>{await page.goto('/');await page.evaluate(()=>{localStorage.clear();sessionStorage.clear()});await page.reload();await activateTab(page,'disciplinas')});
@@ -33,4 +34,15 @@ test('arquivo inválido exibe erros amigáveis e não altera o estado',async({pa
   await expect(page.locator('#structuredImportConfirmBtn')).toBeHidden();
   await page.locator('#structuredImportCancelBtn').click();
   await expect(page.locator('.subject-block')).toHaveCount(before);
+});
+
+test('prévia estruturada mantém foco no diálogo e não apresenta falhas de acessibilidade',async({page})=>{
+  await page.locator('#structuredContentFile').setInputFiles({name:'edital.csv',mimeType:'text/csv',buffer:Buffer.from('disciplina,topico\nPortuguês,Interpretação')});
+  await expect(page.locator('#structuredImportCancelBtn')).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.locator('#structuredImportConfirmBtn')).toBeFocused();
+  const result=await new AxeBuilder({page}).include('#structuredImportOverlay').analyze();
+  expect(result.violations).toEqual([]);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#structuredImportOverlay')).toBeHidden();
 });
