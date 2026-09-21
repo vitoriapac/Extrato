@@ -24239,6 +24239,13 @@
       APP_MODE,
       IS_DEMO_MODE,
       getState: () => state,
+      settleSaves: async () => {
+        if (saveTimeout) {
+          clearTimeout(saveTimeout);
+          saveTimeout = null;
+        }
+        await saveQueue;
+      },
       setState: (value2) => {
         state = migrateState(structuredCloneSafe(value2));
         ensureStateDefaults();

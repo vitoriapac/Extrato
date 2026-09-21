@@ -4962,6 +4962,7 @@ if(TEST_MODE){
   window.__EXTRATO_TEST__={
     CURRENT_SCHEMA_VERSION,STATUS_OPTIONS,DIFFICULTY_OPTIONS,APP_MODE,IS_DEMO_MODE,
     getState:()=>state,
+    settleSaves:async()=>{if(saveTimeout){clearTimeout(saveTimeout);saveTimeout=null}await saveQueue},
     setState:value=>{state=migrateState(structuredCloneSafe(value));ensureStateDefaults();return state},
     resetState:()=>{state=structuredCloneSafe(pristineTestState);ensureStateDefaults();return state},
     migrateState:value=>migrateState(structuredCloneSafe(value)),validateBackupData,validateNormalizedBackup,

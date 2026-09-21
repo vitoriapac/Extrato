@@ -5,8 +5,10 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real',asyn
   await page.goto('/?test=1');
   await expect(page).toHaveTitle(/OK — Testes do Extrato/);
   const realState=await page.evaluate(async()=>{
-    const state=structuredClone(window.__EXTRATO_TEST__.getState());state.subjects[0].name='Registro real preservado';state.updatedAt='2099-01-01T12:00:00.000Z';
-    window.__EXTRATO_TEST__.setState(state);
+    const api=window.__EXTRATO_TEST__;
+    await api.settleSaves();
+    const state=structuredClone(api.getState());state.subjects[0].name='Registro real preservado';state.updatedAt='2099-01-01T12:00:00.000Z';
+    api.setState(state);
     await new Promise((resolve,reject)=>{const request=indexedDB.deleteDatabase('extrato-estudos-db');request.onsuccess=resolve;request.onerror=()=>reject(request.error);request.onblocked=resolve});
     const serialized=JSON.stringify(state);
     localStorage.setItem('bb-premium-study-data',serialized);
