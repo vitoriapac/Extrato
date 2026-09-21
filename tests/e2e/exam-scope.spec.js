@@ -1,8 +1,10 @@
 import {test,expect} from '@playwright/test';
 import {activateTab} from './helpers.js';
+import {waitForAppReady} from './helpers/app-state.js';
 
 test('troca e combina concursos sem reutilizar a matriz anterior',async({page})=>{
   await page.goto('/?test=1');
+  await waitForAppReady(page);
   await page.evaluate(()=>{
     const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),subject=state.subjects[0],base=subject.topics[0];
     subject.topics=[{...base,id:'scope-bb',subjectId:subject.id,name:'Tópico exclusivo BB',examTags:['bb-escriturario'],archived:false},{...base,id:'scope-caixa',subjectId:subject.id,name:'Tópico exclusivo Caixa',examTags:['caixa-tbn'],archived:false}];
