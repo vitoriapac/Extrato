@@ -1724,6 +1724,12 @@ document.getElementById('globalSearchInput').addEventListener('blur', () => {
 const headerObserver=new IntersectionObserver(entries=>{const hero=entries[0],shell=document.querySelector('.sticky-shell');shell?.classList.toggle('is-compact',!hero.isIntersecting&&hero.boundingClientRect.bottom<0);syncStickyMetrics()},{threshold:0});headerObserver.observe(document.querySelector('.statement'));
 const stickyShell=document.querySelector('.sticky-shell');
 const overviewNav=document.querySelector('.overview-nav');
+document.getElementById('overviewNavSelect')?.addEventListener('change',event=>{
+  const target=document.getElementById(event.target.value);if(!target)return;
+  target.scrollIntoView({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  window.history.replaceState(null,'',`#${target.id}`);
+});
+document.getElementById('overviewAttentionViewAll')?.addEventListener('click',()=>activateTab('hoje'));
 const syncStickyMetrics=()=>{
   document.documentElement.style.setProperty('--sticky-stack-height',`${Math.ceil(stickyShell?.getBoundingClientRect().height||0)}px`);
   document.documentElement.style.setProperty('--overview-nav-height',`${Math.ceil(overviewNav?.getBoundingClientRect().height||0)}px`);
@@ -4175,13 +4181,15 @@ function computeAlertasInteligentes(){
 
 function renderAlertasInteligentes(){
   const container = document.getElementById('alertasInteligentesList');
-  if(!container) return;
+  const overview=document.getElementById('overviewAttention');
+  if(!container&&!overview) return;
   const reconciliation=reconcileAlerts(computeAlertasInteligentes(),state.alertStates,todayISO(),addDays);
   if(JSON.stringify(reconciliation.states)!==JSON.stringify(state.alertStates)){state.alertStates=reconciliation.states;scheduleSave()}
   const alertas = reconciliation.visible;
 
   if(alertas.length === 0){
-    container.innerHTML = `<div class="upcoming-empty">Nenhum alerta no momento — tudo sob controle. 🎉</div>`;
+    if(container)container.innerHTML = `<div class="upcoming-empty">Nenhum alerta no momento — tudo sob controle. 🎉</div>`;
+    if(overview)overview.innerHTML='<p class="overview-alert-empty">Sem alertas prioritários neste momento.</p>';
     return;
   }
   const renderAlert=a => `
@@ -4190,7 +4198,8 @@ function renderAlertasInteligentes(){
       <span><strong>${escapeHtml(a.reason||a.texto)}</strong><small>${escapeHtml(a.recommendedAction||'')}</small></span>${a.severity!=='ok'?`<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(a.id)}')">Dispensar 7 dias</button>`:''}
     </div>
   `;
-  container.innerHTML=alertas.map(renderAlert).join('')+(reconciliation.additional.length?`<details class="alerta-more"><summary>Mostrar mais ${reconciliation.additional.length} alerta${reconciliation.additional.length===1?'':'s'}</summary>${reconciliation.additional.map(renderAlert).join('')}</details>`:'');
+  if(container)container.innerHTML=alertas.map(renderAlert).join('')+(reconciliation.additional.length?`<details class="alerta-more"><summary>Mostrar mais ${reconciliation.additional.length} alerta${reconciliation.additional.length===1?'':'s'}</summary>${reconciliation.additional.map(renderAlert).join('')}</details>`:'');
+  if(overview)overview.innerHTML=`<div class="overview-alert-list">${alertas.slice(0,2).map(alert=>`<article class="overview-alert alerta-${escapeAttr(alert.severity)}"><strong>${escapeHtml(alert.reason||alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction||'')}</small></article>`).join('')}</div>${alertas.length>2?`<p class="overview-alert-empty">+ ${alertas.length-2} alertas ativos</p>`:''}`;
 }
 function dismissIntelligentAlert(id){state.alertStates=dismissAlert(state.alertStates,id,todayISO(),addDays,7);scheduleSave();renderAlertasInteligentes()}
 
@@ -4236,8 +4245,7 @@ function renderRecommendationImpact(model){
   const reasons=model.reasons.length?`<small class="recommendation-impact-reasons">${escapeHtml(model.reasons.join(' · '))}</small>`:'';
   return `<section class="recommendation-impact ${escapeAttr(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml(model.title)}</strong><small>Confiança ${escapeHtml((model.confidenceLabel||'não calculada').toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics||'<p>Indicadores comparáveis ainda indisponíveis.</p>'}</div>${reasons}</section>`;
 }
-function renderStudyRecommendation(){
-  const container=document.getElementById('studyRecommendation');if(!container)return;
+function refreshStudyRecommendationItems(){
   const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
   const candidates=intelligenceCandidates();
   const previous=new Map(currentStudyRecommendations.map(item=>[item.id,item]));
@@ -4247,6 +4255,20 @@ function renderStudyRecommendation(){
       ?{...item,recommendationId:old.recommendationId,shownAt:old.shownAt,algorithmVersion:PRIORITY_ALGORITHM_VERSION}
       :createRecommendationPresentation(item,{id:uid('recommendation'),shownAt:nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION});
   });
+  return {availableMinutes,candidates};
+}
+function renderOverviewNextAction(availableMinutes){
+  const container=document.getElementById('overviewNextAction');if(!container)return;
+  const item=currentStudyRecommendations[0];
+  if(!item){container.innerHTML=`<p class="overview-alert-empty">${availableMinutes<15?'Defina pelo menos 15 minutos para hoje para receber uma sugestão.':'Ainda não há uma atividade elegível com os dados atuais.'}</p><a class="btn ghost small" href="#overview-study">Ver cronômetro e registrar estudo</a>`;return}
+  const model=buildPriorityViewModel(item,1),mastery=item.mastery==null?'Domínio ainda sem evidência':`Domínio ${Math.round(item.mastery)}/100`,reasons=model.reasons.slice(0,3).join(' · ');
+  container.innerHTML=`<article class="overview-action-card"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${formatPlanMinutes(item.estimatedMinutes)}</strong> · ${escapeHtml(recommendationActionLabel(item))} · prioridade ${model.score}/100</p><p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(model.evidenceLabel.toLowerCase())}</p></div><div class="overview-action-buttons"><button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(item.id)}')">▶ ${escapeHtml(recommendationActionLabel(item))}</button></div><details class="overview-action-explanation"><summary>Por que esta é a próxima ação?</summary><p>${escapeHtml(reasons||'Selecionada pela prioridade atual, pelos pré-requisitos e pela disponibilidade de hoje.')}</p></details></article>`;
+}
+function renderOverviewDecisionArea(){const {availableMinutes}=refreshStudyRecommendationItems();renderOverviewNextAction(availableMinutes);renderAlertasInteligentes()}
+function renderStudyRecommendation(){
+  const container=document.getElementById('studyRecommendation');if(!container)return;
+  const {availableMinutes,candidates}=refreshStudyRecommendationItems();
+  renderOverviewNextAction(availableMinutes);
   const visible=currentStudyRecommendations.slice(0,3);
   const pending=state.recommendationFeedback.find(feedback=>feedback.completed&&feedback.useful===null),summary=summarizeRecommendationFeedback(state.recommendationFeedback),impact=renderRecommendationImpact(buildRecommendationOutcomeViewModel(state.recommendationFeedback));
   const outcome=impact+(pending?`<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'');
@@ -4267,8 +4289,9 @@ function renderStudyRecommendation(){
     const contributionRows=model.contributionRows.map(row=>`<div><span>${escapeHtml(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100,row.value*4)}%"></i></span><strong>+${row.value}</strong></div>`).join('');
     const stateIcon={review:'↻',limited:'⚠',high:'★',calculated:'○',blocked:'🔒'}[model.state]||'○';
     return `<article class="study-recommendation ${index===0?'is-primary':''}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action||'Estudar agora')}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions?` · ${pluralize(item.recommendedQuestions,'questão','questões')}`:''} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p><div class="priority-reasons">${model.reasons.slice(0,4).map(reason=>`<span>+ ${escapeHtml(reason)}</span>`).join('')}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(model.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${model.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="executeStudyRecommendation('${escapeAttr(item.id)}')">▶ ${escapeHtml(recommendationActionLabel(item))}</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
-  }).join('');
-  container.innerHTML=`${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · mostrando ${visible.length} ${visible.length===1?'prioridade elegível':'prioridades elegíveis'}</span></div><div class="study-recommendation-list">${cards}</div>${excludedHtml}${history}`;
+  });
+  const moreCards=cards.slice(1).join(''),moreRecommendations=moreCards?`<details class="study-recommendation-more"><summary>Ver outras ${cards.length-1} prioridades</summary><div class="study-recommendation-list">${moreCards}</div></details>`:'';
+  container.innerHTML=`${cards[0]}${moreRecommendations}${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length===1?'prioridade elegível':'prioridades elegíveis'}</span></div>${excludedHtml}${history}`;
 }
 function recommendationBaseline(recommendation){
   const topicId=recommendation.topicId,performance=getTopicPerformance(topicId),found=getTopicById(topicId),last=found?.topic?.lastReviewedAt||found?.topic?.lastCompletedAt||null;
@@ -4903,7 +4926,7 @@ function resolveDelegatedSpecial(normalized,event,element){
 createDelegatedEventsController({document,handlers:DELEGATED_ACTION_HANDLERS,parseArgument:delegatedArgument,resolveSpecial:resolveDelegatedSpecial,onError:error=>{console.error('Evento delegado bloqueado',error);showToast('Uma ação inválida foi bloqueada por segurança.')}}).register();
 /* ===== MASTER RENDER ===== */
 const RENDER_SCOPE_SECTIONS={
-  dashboard:new Set(['primeiro uso','dashboard de aprovação','controles do cronômetro','evolução do progresso','heatmap','conquistas','radar','visão geral','horas estudadas','histórico de sessões']),
+  dashboard:new Set(['primeiro uso','ação e atenção','dashboard de aprovação','controles do cronômetro','evolução do progresso','heatmap','conquistas','radar','visão geral','horas estudadas','histórico de sessões']),
   disciplinas:new Set(['disciplinas','primeiro uso']),
   calendario:new Set(['indicadores do calendário','tarefas de hoje','tarefas atrasadas','filtros do calendário','calendário','calendário mensal']),
   agenda:new Set(['filtros da agenda','agenda']),
@@ -4918,6 +4941,7 @@ applicationRenderer=createApplicationRenderer({
   sections:[
     ['indicadores',renderKPIs],
     ['primeiro uso',renderGuidedOnboarding],
+    ['ação e atenção',renderOverviewDecisionArea],
     ['dashboard de aprovação',renderApprovalDashboard],
     ['controles do cronômetro',populateTimerContextControls],
     ['cabeçalho',renderHeader],

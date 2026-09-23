@@ -106,11 +106,25 @@
       <div id="guidedOnboardingEntry"></div>
     </section>
     <div class="print-report-meta" id="printReportMeta"></div>
+    <section class="overview-now" aria-label="Ação prioritária e atenção">
+      <article class="chart-card overview-now-action">
+        <span class="overview-eyebrow">Agora</span>
+        <h2>Próxima melhor ação</h2>
+        <div id="overviewNextAction"></div>
+      </article>
+      <article class="chart-card overview-now-attention">
+        <span class="overview-eyebrow">Precisa da sua atenção</span>
+        <h2>Alertas prioritários</h2>
+        <div id="overviewAttention"></div>
+        <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver atenção e diagnóstico na aba Hoje</button>
+      </article>
+    </section>
     <div class="kpi-grid" id="kpiGrid"></div>
     <div class="stat-grid" id="quickStats"></div>
 
     <nav class="overview-nav" aria-label="Atalhos da Visão Geral">
-      <a href="#overview-summary">Resumo</a><a href="#overview-performance">Desempenho</a><a href="#overview-study">Estudo</a><a href="#overview-evolution">Evolução</a><a href="#overview-progress">Progresso</a><a href="#overview-next-actions">Próximas ações</a>
+      <div class="overview-nav-links"><a href="#overview-summary">Resumo</a><a href="#overview-performance">Desempenho</a><a href="#overview-study">Estudo</a><a href="#overview-evolution">Evolução</a><a href="#overview-progress">Progresso</a><a href="#overview-next-actions">Próximas ações</a></div>
+      <label class="overview-nav-mobile"><span class="sr-only">Ir para seção da Visão Geral</span><select id="overviewNavSelect" class="select-control" aria-label="Seção da Visão Geral"><option value="overview-summary">Resumo</option><option value="overview-performance">Desempenho</option><option value="overview-study">Estudo</option><option value="overview-evolution">Evolução</option><option value="overview-progress">Progresso</option><option value="overview-next-actions">Próximas ações</option></select></label>
     </nav>
 
     <div class="overview-section-heading" id="overview-summary"><span>Aprovação e retenção</span></div>
@@ -262,9 +276,14 @@
       Só o que importa agora: alertas, plano do dia, prioridades, tarefas, atrasos, simulados planejados e metas. Sem distrações.
     </p>
 
-    <div class="chart-card executive-summary-card">
-      <h3>Resumo executivo</h3>
-      <div id="executiveSummary"></div>
+    <div class="chart-card">
+      <h3>Próxima ação recomendada</h3>
+      <div id="studyRecommendation"></div>
+    </div>
+
+    <div class="chart-card plano-hoje-card">
+      <h3>📋 Plano de hoje</h3>
+      <div id="planoHojeContent"></div>
     </div>
 
     <div class="chart-card">
@@ -272,46 +291,25 @@
       <div id="alertasInteligentesList"></div>
     </div>
 
-    <div class="chart-card">
-      <h3>Central de diagnóstico</h3>
-      <div id="diagnosisCenter"></div>
+    <div class="chart-card today-agenda-card">
+      <h3>Agenda e metas do dia</h3>
+      <div class="today-agenda-grid">
+        <section><h4>Tarefas</h4><ul class="upcoming-list" id="hojeTarefasHoje"></ul></section>
+        <section><h4>Revisões atrasadas</h4><ul class="upcoming-list" id="hojeAtrasadas"></ul></section>
+        <section><h4>Simulados planejados</h4><ul class="upcoming-list" id="hojeSimuladosPlanejados"></ul></section>
+        <section><h4>Metas</h4><div id="hojeMetas"></div></section>
+      </div>
     </div>
 
-    <div class="chart-card">
-      <h3>O que estudar agora?</h3>
-      <div id="studyRecommendation"></div>
-    </div>
+    <details class="chart-card today-analysis-details">
+      <summary>Ver resumo, diagnóstico e replanejamento</summary>
+      <div class="today-analysis-grid">
+        <section class="chart-card executive-summary-card"><h3>Resumo executivo</h3><div id="executiveSummary"></div></section>
+        <section class="chart-card"><h3>Central de diagnóstico</h3><div id="diagnosisCenter"></div></section>
+        <section class="chart-card"><h3>Replanejamento da semana</h3><p class="analytics-note">Compara execução e planejamento e sugere onde absorver o déficit. Nenhum ajuste é aplicado sem confirmação.</p><div id="weeklyReplan"></div></section>
+      </div>
+    </details>
 
-    <div class="chart-card">
-      <h3>Replanejamento da semana</h3>
-      <p class="analytics-note">Compara execução e planejamento e sugere onde absorver o déficit. Nenhum ajuste é aplicado sem confirmação.</p>
-      <div id="weeklyReplan"></div>
-    </div>
-
-    <div class="chart-card plano-hoje-card">
-      <h3>📋 Próximas ações de hoje</h3>
-      <div id="planoHojeContent"></div>
-    </div>
-
-    <div class="chart-card">
-      <h3>Tarefas do dia</h3>
-      <ul class="upcoming-list" id="hojeTarefasHoje"></ul>
-    </div>
-
-    <div class="chart-card">
-      <h3>Revisões atrasadas</h3>
-      <ul class="upcoming-list" id="hojeAtrasadas"></ul>
-    </div>
-
-    <div class="chart-card">
-      <h3>Simulados planejados</h3>
-      <ul class="upcoming-list" id="hojeSimuladosPlanejados"></ul>
-    </div>
-
-    <div class="chart-card">
-      <h3>Metas de hoje</h3>
-      <div id="hojeMetas"></div>
-    </div>
   </div>
 
   <!-- DISCIPLINAS -->
