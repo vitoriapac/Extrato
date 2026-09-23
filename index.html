@@ -167,6 +167,7 @@
           <button class="btn" id="timerPauseBtn" style="display:none;">⏸ Pausar</button>
           <button class="btn ghost" id="timerResetBtn">↺ Zerar</button>
           <button class="btn ghost" id="timerFinishBtn">✓ Finalizar sessão</button>
+          <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()">⛶ Modo foco</button>
         </div>
       </div>
       <div class="stat-grid" id="studyTimeStats" style="margin-top:18px;margin-bottom:0;"></div>
@@ -612,7 +613,7 @@
       <article><h4>Metas</h4><p>Defina disponibilidade, data da prova e domínio desejado. Gere o plano, confira a carga proposta e confirme apenas uma distribuição viável.</p></article>
       <article><h4>Instruções</h4><p>Consulte este guia quando precisar entender um indicador, recuperar dados, conhecer atalhos ou revisar o fluxo recomendado.</p></article>
     </div></section>
-    <section class="instructions-section" id="guide-routine"><h3>Rotina recomendada</h3><div class="guide-flow"><article><strong>Hoje</strong><p>Veja prioridades, atividades atrasadas e a próxima ação sugerida.</p></article><span>→</span><article><strong>Estudar</strong><p>Inicie uma atividade pelo plano ou use o cronômetro livre.</p></article><span>→</span><article><strong>Registrar</strong><p>Finalize a sessão e informe questões, acertos e tipo de erro.</p></article><span>→</span><article><strong>Revisar</strong><p>Feche a semana, avalie lacunas e ajuste o próximo plano.</p></article></div></section>
+    <section class="instructions-section" id="guide-routine"><h3>Rotina recomendada</h3><div class="guide-flow"><article><strong>Hoje</strong><p>Veja prioridades, atividades atrasadas e a próxima ação sugerida.</p></article><span>→</span><article><strong>Estudar</strong><p>Inicie uma atividade pelo plano ou use o cronômetro livre. Ative <b>Modo foco</b> para manter o cronômetro em destaque; pressione Escape para sair.</p></article><span>→</span><article><strong>Registrar</strong><p>Finalize a sessão e informe questões, acertos e tipo de erro.</p></article><span>→</span><article><strong>Revisar</strong><p>Feche a semana, avalie lacunas e ajuste o próximo plano.</p></article></div></section>
     <section class="instructions-section" id="guide-workflows"><h3>Fluxos importantes</h3><div class="instruction-grid">
       <article><b>1</b><div><h4>Planejar a semana</h4><p>Revise sua disponibilidade em Metas, calcule a proposta e compare a carga com seus compromissos. Confirme o plano e distribua as atividades pelos dias.</p></div></article>
       <article><b>2</b><div><h4>Registrar uma sessão</h4><p>Escolha disciplina, tópico e tipo no cronômetro. Ao finalizar, confirme a duração e registre questões ou observações relevantes para preservar a evidência.</p></div></article>

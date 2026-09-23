@@ -1,0 +1,6 @@
+export function renderAchievementGroups(model, { escapeHtml = value => String(value ?? '') } = {}) {
+  const card = item => `<article class="badge-card${item.unlocked ? ' unlocked' : ''}" aria-label="${escapeHtml(item.name)}: ${item.unlocked ? 'desbloqueada' : 'bloqueada'}"><div class="badge-icon" aria-hidden="true">${escapeHtml(item.icon)}</div><div class="badge-name">${escapeHtml(item.name)}</div><div class="badge-desc">${escapeHtml(item.desc)}</div><span class="badge-status">${item.unlocked ? 'Desbloqueada' : 'A conquistar'}</span></article>`;
+  const unlocked = model.unlocked.length ? `<div class="achievement-section"><h4>Desbloqueadas <span>${model.unlockedCount}</span></h4><div class="badges-grid-list">${model.unlocked.map(card).join('')}</div></div>` : '<div class="achievement-empty">Ainda não há conquistas desbloqueadas. Registre seu primeiro estudo para começar.</div>';
+  const locked = model.locked.length ? `<details class="achievement-section achievement-upcoming"><summary>Próximas conquistas <span>${model.remainingCount}</span></summary><div class="badges-grid-list">${model.locked.map(card).join('')}</div></details>` : '';
+  return `<div class="achievement-groups" data-achievements-total="${model.total}">${unlocked}${locked}</div>`;
+}

@@ -1969,6 +1969,28 @@
     return `<section class="adaptive-advice${applied ? " is-applied" : ""}" aria-label="Sugestão de redistribuição semanal"><div class="adaptive-advice-heading"><div><span class="exam-phase-eyebrow">Ajuste sugerido</span><strong>Redistribuir ${escapeHtml3(formatMinutes(advice.transferMinutes))} por semana</strong></div><span class="adaptive-capacity">Capacidade mantida · ${escapeHtml3(formatMinutes(weeklyPlannedMinutes))}</span></div><div class="adaptive-transfer"><div><span>De</span><strong>${escapeHtml3(from.name || "Disciplina de origem")}</strong><small>${escapeHtml3(formatMinutes(from.beforeMinutes || 0))} → ${escapeHtml3(formatMinutes(from.afterMinutes || 0))}</small></div><span class="adaptive-transfer-arrow" aria-hidden="true">→</span><div><span>Para</span><strong>${escapeHtml3(to.name || "Disciplina prioritária")}</strong><small>${escapeHtml3(formatMinutes(to.beforeMinutes || 0))} → ${escapeHtml3(formatMinutes(to.afterMinutes || 0))}</small></div></div><p>${escapeHtml3(advice.reason || "Ajuste baseado nos indicadores disponíveis.")}</p>${applied ? '<small class="adaptive-applied-note" role="status">Aplicado somente à prévia. Confirme o plano para salvar.</small>' : '<button class="btn ghost small" data-delegated-click="useAdaptivePlanAdvice()">Aplicar à prévia</button>'}</section>`;
   }
 
+  // src/application/achievements/build-achievement-view-model.js
+  function buildAchievementViewModel(achievements = []) {
+    const rows = (Array.isArray(achievements) ? achievements : []).map((item) => ({ ...item, unlocked: Boolean(item?.unlocked) }));
+    const unlocked = rows.filter((item) => item.unlocked);
+    const locked = rows.filter((item) => !item.unlocked);
+    return {
+      total: rows.length,
+      unlockedCount: unlocked.length,
+      remainingCount: locked.length,
+      unlocked,
+      locked
+    };
+  }
+
+  // src/ui/renderers/achievement-renderer.js
+  function renderAchievementGroups(model, { escapeHtml: escapeHtml3 = (value2) => String(value2 ?? "") } = {}) {
+    const card = (item) => `<article class="badge-card${item.unlocked ? " unlocked" : ""}" aria-label="${escapeHtml3(item.name)}: ${item.unlocked ? "desbloqueada" : "bloqueada"}"><div class="badge-icon" aria-hidden="true">${escapeHtml3(item.icon)}</div><div class="badge-name">${escapeHtml3(item.name)}</div><div class="badge-desc">${escapeHtml3(item.desc)}</div><span class="badge-status">${item.unlocked ? "Desbloqueada" : "A conquistar"}</span></article>`;
+    const unlocked = model.unlocked.length ? `<div class="achievement-section"><h4>Desbloqueadas <span>${model.unlockedCount}</span></h4><div class="badges-grid-list">${model.unlocked.map(card).join("")}</div></div>` : '<div class="achievement-empty">Ainda não há conquistas desbloqueadas. Registre seu primeiro estudo para começar.</div>';
+    const locked = model.locked.length ? `<details class="achievement-section achievement-upcoming"><summary>Próximas conquistas <span>${model.remainingCount}</span></summary><div class="badges-grid-list">${model.locked.map(card).join("")}</div></details>` : "";
+    return `<div class="achievement-groups" data-achievements-total="${model.total}">${unlocked}${locked}</div>`;
+  }
+
   // src/domain/sessions/study-session.js
   var STUDY_SESSION_TYPES = Object.freeze(["study", "review", "questions", "simulation"]);
   var STUDY_SESSION_SOURCES = Object.freeze(["manual", "plan", "recommendation", "import"]);
@@ -19522,6 +19544,26 @@
     activateTab("dashboard");
     document.getElementById("timerStartBtn")?.focus();
   }
+  function toggleTimerFocus(force = null) {
+    const active = force == null ? !document.body.classList.contains("timer-focus-active") : Boolean(force);
+    document.body.classList.toggle("timer-focus-active", active);
+    const toggle = document.getElementById("timerFocusToggle");
+    if (toggle) {
+      toggle.setAttribute("aria-pressed", String(active));
+      toggle.textContent = active ? "Sair do modo foco" : "⛶ Modo foco";
+    }
+    if (active) {
+      document.querySelector("#panel-dashboard .timer-block")?.scrollIntoView({ block: "center", behavior: "smooth" });
+      requestAnimationFrame(() => document.getElementById(timerRunning ? "timerPauseBtn" : "timerStartBtn")?.focus());
+    } else requestAnimationFrame(() => toggle?.focus());
+    return active;
+  }
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.body.classList.contains("timer-focus-active")) {
+      event.preventDefault();
+      toggleTimerFocus(false);
+    }
+  });
   function recordProgressSnapshot(pct2) {
     const today = todayISO();
     const existing = state.progressHistory.find((p) => p.date === today);
@@ -20154,14 +20196,8 @@
   ];
   function renderBadges() {
     const grid = document.getElementById("badgesGrid");
-    grid.innerHTML = BADGES.map((b) => {
-      const unlocked = b.check();
-      return `<div class="badge-card ${unlocked ? "unlocked" : ""}">
-      <div class="badge-icon">${b.icon}</div>
-      <div class="badge-name">${b.name}</div>
-      <div class="badge-desc">${b.desc}</div>
-    </div>`;
-    }).join("");
+    if (!grid) return;
+    grid.innerHTML = renderAchievementGroups(buildAchievementViewModel(BADGES.map((item) => ({ ...item, unlocked: item.check() }))), { escapeHtml: escapeHtml2 });
   }
   function heatmapTooltip(summary) {
     const parts = [formatDatePt(summary.date), formatDuration(summary.seconds), pluralize(summary.sessions.length, "sessão", "sessões")];
@@ -24332,6 +24368,7 @@
     editSimulation,
     editStudySession,
     focusStudyTimer,
+    toggleTimerFocus,
     gerarAgendaAutomatica,
     moveSubject,
     navigateKpi,

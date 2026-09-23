@@ -54,6 +54,8 @@ import {createReplanController} from './application/planning/replan-controller.j
 import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
 import {applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
 import {renderAdaptiveAllocationAdvice,renderExamPhase} from './ui/renderers/adaptive-planning-renderer.js';
+import {buildAchievementViewModel} from './application/achievements/build-achievement-view-model.js';
+import {renderAchievementGroups} from './ui/renderers/achievement-renderer.js';
 import {createSessionService} from './application/sessions/session-service.js';
 import {normalizeStudySession} from './domain/sessions/study-session.js';
 import {createRecordService} from './application/records/record-service.js';
@@ -923,6 +925,16 @@ function focusStudyTimer(){
   activateTab('dashboard');
   document.getElementById('timerStartBtn')?.focus();
 }
+function toggleTimerFocus(force=null){
+  const active=force==null?!document.body.classList.contains('timer-focus-active'):Boolean(force);
+  document.body.classList.toggle('timer-focus-active',active);
+  const toggle=document.getElementById('timerFocusToggle');
+  if(toggle){toggle.setAttribute('aria-pressed',String(active));toggle.textContent=active?'Sair do modo foco':'⛶ Modo foco'}
+  if(active){document.querySelector('#panel-dashboard .timer-block')?.scrollIntoView({block:'center',behavior:'smooth'});requestAnimationFrame(()=>document.getElementById(timerRunning?'timerPauseBtn':'timerStartBtn')?.focus())}
+  else requestAnimationFrame(()=>toggle?.focus());
+  return active;
+}
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('timer-focus-active')){event.preventDefault();toggleTimerFocus(false)}});
 
 /* ===== GRÁFICO DE EVOLUÇÃO DO PROGRESSO ===== */
 function recordProgressSnapshot(pct){
@@ -1434,14 +1446,8 @@ const BADGES = [
 ];
 function renderBadges(){
   const grid = document.getElementById('badgesGrid');
-  grid.innerHTML = BADGES.map(b => {
-    const unlocked = b.check();
-    return `<div class="badge-card ${unlocked?'unlocked':''}">
-      <div class="badge-icon">${b.icon}</div>
-      <div class="badge-name">${b.name}</div>
-      <div class="badge-desc">${b.desc}</div>
-    </div>`;
-  }).join('');
+  if(!grid)return;
+  grid.innerHTML = renderAchievementGroups(buildAchievementViewModel(BADGES.map(item=>({...item,unlocked:item.check()}))),{escapeHtml});
 }
 
 /* ===== HEATMAP DE HORAS E META DIÁRIA ===== */
@@ -4891,7 +4897,7 @@ const DELEGATED_ACTION_HANDLERS={
   calculateReplanPreview,clearReplanPreview,confirmReplan,undoPlanAdjustment,saveWeeklyCloseSnapshot,previewWeeklyCloseActions,confirmWeeklyCloseActions,toggleWeeklyPriority,executeStudyRecommendation,
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
-  editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
+  editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,toggleTimerFocus,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
   advanceGuidedStrategy,dismissIntelligentAlert,dismissStudyRecommendation,markRecommendationNotUseful,rateRecommendationOutcome,startStudyRecommendation,
   requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRadarSubject,setRetentionFilter,setSubjectExamFilter,setSubjectTopicFilter,toggleActiveExamTag,
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
