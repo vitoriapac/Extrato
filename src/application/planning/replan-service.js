@@ -3,7 +3,7 @@ export function createReplanService({repository,buildProposal,applyProposal,undo
   return Object.freeze({
     calculate:input=>buildProposal({...input,plans:input.plans||repository.getDailyPlans()}),
     confirm:proposal=>{
-      if(proposal?.state!=='proposal')return null;
+      if(proposal?.state!=='proposal'||!proposal.allocations?.length)return null;
       const operationId=idGenerator('replan-operation'),appliedAt=clock.nowISO();
       const result=applyProposal({dailyPlans:repository.getDailyPlans(),proposal,operationId,now:appliedAt,idGenerator});
       const adjustment={...structuredClone(proposal),id:idGenerator('plan-adjustment'),operationId,confirmedAt:appliedAt,appliedAt,status:'applied',changes:result.changes,undoneAt:null};

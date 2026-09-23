@@ -51,6 +51,7 @@ import {createStudyPlanService} from './application/planning/study-plan-service.
 import {createDailyPlanService} from './application/planning/daily-plan-service.js';
 import {createReplanService} from './application/planning/replan-service.js';
 import {createReplanController} from './application/planning/replan-controller.js';
+import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
 import {createSessionService} from './application/sessions/session-service.js';
 import {normalizeStudySession} from './domain/sessions/study-session.js';
 import {createRecordService} from './application/records/record-service.js';
@@ -4260,7 +4261,7 @@ function renderWeeklyReplan(){
   const preview=replanController.view();
   if(!preview){container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt?'desfeito':'aplicado'}</strong><span>${formatPlanMinutes(latest.redistributedMinutes)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes)} sem capacidade</span></div>`:''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest&&!latest.undoneAt&&latest.status!=='undone'&&latest.changes?.length?`<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>`:''}</div>`;return}
   if(preview.state==='balanced'){container.innerHTML='<div class="upcoming-empty">Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';return}
-  container.innerHTML=`${renderReplanProposal(preview,{escapeHtml,formatDate:formatDatePt,formatMinutes:formatPlanMinutes,subjectName:getSubjectName,topicName:getTopicName})}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
+  container.innerHTML=`${renderReplanProposal(preview,{escapeHtml,formatDate:formatDatePt,formatMinutes:formatPlanMinutes,subjectName:getSubjectName,topicName:getTopicName})}<div class="study-plan-actions">${preview.allocations.length?'<button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button>':''}<button class="btn ghost" data-delegated-click="clearReplanPreview()">${preview.allocations.length?'Cancelar':'Fechar'}</button></div>`;
 }
 
 /* ===== PLANO DE HOJE ===== */
@@ -4336,6 +4337,7 @@ function renderPlanoHoje(){
   }
 
   const items=state.executionMode==='sequence'?[...plan.items].sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0)):plan.items;
+  const todayModel=buildTodayViewModel({date:todayISO(),availableMinutes,plan,priorities,pastPlans:state.dailyPlans.filter(row=>row.date>=startOfWeek(todayISO()))});
   const listaHtml=items.map(item=>{
     const progress=item.plannedMinutes>0?Math.min(100,Math.round(item.executedSeconds/(item.plannedMinutes*60)*100)):0;
     const active=state.activeTimer.planItemId===item.id&&state.activeTimer.isRunning;
@@ -4358,6 +4360,8 @@ function renderPlanoHoje(){
   const executionPct=plan.plannedMinutes>0?Math.min(100,Math.round(executedSeconds/(plan.plannedMinutes*60)*100)):0;
 
   container.innerHTML=`
+    <div class="study-plan-summary today-execution-summary"><div><strong>${formatPlanMinutes(todayModel.availableMinutes)}</strong><span>Disponível hoje</span></div><div><strong>${formatPlanMinutes(todayModel.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(todayModel.executedMinutes)}</strong><span>Executado · ${todayModel.progress??0}%</span></div></div>
+    ${todayModel.recoveryMinutes?`<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} pendentes de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>`:''}
     ${listaHtml}
     ${plan.flexMinutes>0?`<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">⏱️ ${formatPlanMinutes(plan.flexMinutes)} para pausas, correção ou continuidade</div></div>`:''}
     <div class="plano-meta">

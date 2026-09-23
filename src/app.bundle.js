@@ -1796,7 +1796,7 @@
     return Object.freeze({
       calculate: (input) => buildProposal({ ...input, plans: input.plans || repository.getDailyPlans() }),
       confirm: (proposal) => {
-        if (proposal?.state !== "proposal") return null;
+        if (proposal?.state !== "proposal" || !proposal.allocations?.length) return null;
         const operationId = idGenerator("replan-operation"), appliedAt = clock.nowISO();
         const result = applyProposal({ dailyPlans: repository.getDailyPlans(), proposal, operationId, now: appliedAt, idGenerator });
         const adjustment = { ...structuredClone(proposal), id: idGenerator("plan-adjustment"), operationId, confirmedAt: appliedAt, appliedAt, status: "applied", changes: result.changes, undoneAt: null };
@@ -1824,10 +1824,10 @@
     const calculate = () => {
       const today = clock.today(), start = clock.startOfWeek(today), end = clock.addDays(start, 6), state2 = getState(), futureDays = [];
       for (let date2 = clock.addDays(today, 1); date2 <= end; date2 = clock.addDays(date2, 1)) {
-        const planned = state2.dailyPlans.filter((plan) => plan.date === date2).reduce((sum4, plan) => sum4 + (plan.items || []).reduce((total, item) => total + (Number(item.plannedMinutes) || 0), 0), 0);
+        const planned = state2.dailyPlans.filter((plan) => plan.date === date2).reduce((sum4, plan) => sum4 + (plan.items || []).filter((item) => !["skipped", "replaced", "deferred"].includes(item.status)).reduce((total, item) => total + (Number(item.plannedMinutes) || 0), 0), 0);
         futureDays.push({ date: date2, availableMinutes: Math.max(0, getDailyCapacity(date2) - planned) });
       }
-      preview = service.calculate({ plans: repository.getDailyPlans().filter((plan) => plan.date >= start && plan.date <= today), periodStart: start, periodEnd: end, futureDays });
+      preview = service.calculate({ plans: repository.getDailyPlans().filter((plan) => plan.date >= start && plan.date < today), periodStart: start, periodEnd: end, futureDays });
       onChanged(preview);
       return preview;
     };
@@ -1848,6 +1848,24 @@
       return result;
     };
     return Object.freeze({ view, calculate, clear, confirm, undo });
+  }
+
+  // src/application/planning/build-today-view-model.js
+  function buildTodayViewModel({ date: date2, availableMinutes = 0, plan = null, priorities = [], pastPlans = [] } = {}) {
+    const minutes = (value2) => Math.max(0, Math.round(Number(value2) || 0));
+    const items = plan?.items || [];
+    const plannedMinutes = items.filter((item) => !["skipped", "replaced", "deferred"].includes(item.status)).reduce((sum4, item) => sum4 + minutes(item.plannedMinutes), 0);
+    const executedMinutes = Math.round(items.reduce((sum4, item) => sum4 + Math.max(0, Number(item.executedSeconds) || 0) / 60, 0));
+    const recoveryMinutes = pastPlans.filter((row) => row.date < date2).flatMap((row) => row.items || []).filter((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)).reduce((sum4, item) => sum4 + Math.max(0, minutes(item.plannedMinutes) - Math.round((Number(item.executedSeconds) || 0) / 60)), 0);
+    return {
+      date: date2,
+      availableMinutes: minutes(availableMinutes),
+      plannedMinutes,
+      executedMinutes,
+      recoveryMinutes,
+      progress: plannedMinutes ? Math.min(100, Math.round(executedMinutes / plannedMinutes * 100)) : null,
+      nextActivity: items.find((item) => !["completed", "skipped", "replaced", "deferred"].includes(item.status)) || priorities[0] || null
+    };
   }
 
   // src/domain/sessions/study-session.js
@@ -23193,7 +23211,7 @@
       container.innerHTML = '<div class="upcoming-empty">Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';
       return;
     }
-    container.innerHTML = `${renderReplanProposal(preview, { escapeHtml: escapeHtml2, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions"><button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button><button class="btn ghost" data-delegated-click="clearReplanPreview()">Cancelar</button></div>`;
+    container.innerHTML = `${renderReplanProposal(preview, { escapeHtml: escapeHtml2, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions">${preview.allocations.length ? '<button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button>' : ""}<button class="btn ghost" data-delegated-click="clearReplanPreview()">${preview.allocations.length ? "Cancelar" : "Fechar"}</button></div>`;
   }
   function formatPlanMinutes(minutes) {
     const value2 = Math.max(0, Math.round(Number(minutes) || 0));
@@ -23288,6 +23306,7 @@
       return;
     }
     const items = state.executionMode === "sequence" ? [...plan.items].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0)) : plan.items;
+    const todayModel = buildTodayViewModel({ date: todayISO(), availableMinutes, plan, priorities, pastPlans: state.dailyPlans.filter((row) => row.date >= startOfWeek(todayISO())) });
     const listaHtml = items.map((item) => {
       const progress = item.plannedMinutes > 0 ? Math.min(100, Math.round(item.executedSeconds / (item.plannedMinutes * 60) * 100)) : 0;
       const active = state.activeTimer.planItemId === item.id && state.activeTimer.isRunning;
@@ -23309,6 +23328,8 @@
     const executedSeconds = plan.items.reduce((sum4, item) => sum4 + (Number(item.executedSeconds) || 0), 0);
     const executionPct = plan.plannedMinutes > 0 ? Math.min(100, Math.round(executedSeconds / (plan.plannedMinutes * 60) * 100)) : 0;
     container.innerHTML = `
+    <div class="study-plan-summary today-execution-summary"><div><strong>${formatPlanMinutes(todayModel.availableMinutes)}</strong><span>Disponível hoje</span></div><div><strong>${formatPlanMinutes(todayModel.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(todayModel.executedMinutes)}</strong><span>Executado · ${todayModel.progress ?? 0}%</span></div></div>
+    ${todayModel.recoveryMinutes ? `<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} pendentes de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>` : ""}
     ${listaHtml}
     ${plan.flexMinutes > 0 ? `<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">⏱️ ${formatPlanMinutes(plan.flexMinutes)} para pausas, correção ou continuidade</div></div>` : ""}
     <div class="plano-meta">
