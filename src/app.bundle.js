@@ -1191,39 +1191,55 @@
 
   // src/domain/analytics/topic-metrics.js
   var clamp4 = (value2) => Math.max(0, Math.min(100, Math.round(Number(value2) || 0)));
+  var MASTERY_ALGORITHM_VERSION = 2;
+  var MASTERY_BANDS = Object.freeze([
+    { min: 90, label: "Dominado" },
+    { min: 75, label: "Bom" },
+    { min: 60, label: "Em desenvolvimento" },
+    { min: 40, label: "Frágil" },
+    { min: 0, label: "Crítico" }
+  ]);
+  function classifyTopicMastery(value2, bands = MASTERY_BANDS) {
+    if (value2 == null) return "Sem dados";
+    return [...bands].sort((a, b) => b.min - a.min).find((band) => value2 >= band.min)?.label || "Sem dados";
+  }
   function calculateTopicMastery({ topic = {}, performance = { resolved: 0, accuracy: null }, trend = { key: "insufficient" }, reviews = [], recentSessions = [], periodStart = null, periodEnd = null } = {}) {
-    const questionConfidence = Math.min(1, performance.resolved / 50);
-    const performanceScore = performance.accuracy === null ? 0 : performance.accuracy * questionConfidence + 40 * (1 - questionConfidence);
-    let trendScore = 50;
-    if (trend.key === "up") trendScore = Math.min(100, 70 + Math.max(0, trend.delta || 0) * 2);
-    else if (trend.key === "down") trendScore = Math.max(0, 40 - Math.abs(trend.delta || 0) * 2);
-    else if (trend.key === "stable") trendScore = 60;
+    const resolved = Math.max(0, Number(performance.resolved) || 0);
+    const hasQuestions = resolved > 0 && performance.accuracy != null && Number.isFinite(Number(performance.accuracy));
+    const questionConfidence = Math.min(1, resolved / 50);
+    const performanceScore = hasQuestions ? Number(performance.accuracy) * questionConfidence + 40 * (1 - questionConfidence) : null;
+    let trendScore = null;
+    if (hasQuestions && trend.key === "up") trendScore = Math.min(100, 70 + Math.max(0, trend.delta || 0) * 2);
+    else if (hasQuestions && trend.key === "down") trendScore = Math.max(0, 40 - Math.abs(trend.delta || 0) * 2);
+    else if (hasQuestions && trend.key === "stable") trendScore = 60;
     const completedReviews = reviews.filter((review) => review.status === "Concluído").length;
-    const reviewScore = reviews.length ? completedReviews / reviews.length * 100 : topic.status === "Concluído" ? 50 : 20;
+    const reviewScore = reviews.length ? 50 + (completedReviews / reviews.length * 100 - 50) * Math.min(1, reviews.length / 4) : null;
     const recentSeconds = recentSessions.reduce((sum4, item) => sum4 + (Number(item.durationSeconds) || 0), 0);
-    const studyScore = Math.min(100, recentSeconds / 7200 * 100);
-    const confidence2 = Math.min(1, questionConfidence * 0.6 + Math.min(1, reviews.length / 4) * 0.2 + Math.min(1, recentSessions.length / 4) * 0.2);
-    const available = performance.resolved > 0 || reviews.length > 0 || recentSeconds > 0;
-    const score = available ? clamp4(performanceScore * 0.4 + trendScore * 0.2 + reviewScore * 0.15 + studyScore * 0.15 + confidence2 * 10) : 0;
-    const classification2 = !available ? "Sem dados" : score >= 80 ? "Dominado" : score >= 60 ? "Em consolidação" : score >= 40 ? "Em desenvolvimento" : "Inicial";
-    const completeness = [performance.resolved > 0, trend.key !== "insufficient", reviews.length > 0, recentSeconds > 0].filter(Boolean).length / 4;
+    const studyScore = recentSeconds > 0 ? Math.min(100, recentSeconds / 7200 * 100) : null;
+    const observed = [[performanceScore, 0.65, "questões"], [trendScore, 0.15, "tendência"], [reviewScore, 0.2, "revisões"]].filter(([value2]) => value2 != null);
+    const available = observed.length > 0;
+    const confidence2 = Math.min(1, questionConfidence * 0.7 + Math.min(1, reviews.length / 4) * 0.2 + (available ? Math.min(1, recentSessions.length / 4) * 0.1 : 0));
+    const score = available ? clamp4(observed.reduce((sum4, [value2, weight]) => sum4 + value2 * weight, 0) / observed.reduce((sum4, [, weight]) => sum4 + weight, 0)) : 0;
+    const completeness = [hasQuestions, trendScore != null, reviews.length > 0, recentSeconds > 0].filter(Boolean).length / 4;
+    const reasons = available ? observed.map(([, , source]) => "Estimativa baseada em " + source) : ["Sem questões ou revisões para estimar domínio"];
+    if (recentSeconds > 0 && !available) reasons.push("Tempo estudado é atividade, não medida de domínio");
     return {
       value: available ? score : null,
-      state: available ? "estimated" : "empty",
+      state: !available ? "empty" : confidence2 < 0.35 ? "insufficient" : "estimated",
       score,
       available,
       confidence: confidence2,
       confidenceLabel: confidenceLabel(confidence2),
-      classification: classification2,
+      classification: classifyTopicMastery(available ? score : null),
       performanceScore,
       trendScore,
       reviewScore,
       studyScore,
       trend,
       factors: { performance: performanceScore, trend: trendScore, reviews: reviewScore, study: studyScore },
-      reasons: available ? [classification2] : ["sem evidências do tópico"],
-      algorithmVersion: 1,
-      evidence: { ...createMetricEvidence({ sampleSize: performance.resolved, periodStart, periodEnd, confidence: confidence2, sources: [performance.resolved ? "questions" : null, reviews.length ? "reviews" : null, recentSeconds ? "sessions" : null] }), ...describeScoreEvidence({ completeness, evidenceStrength: confidence2 }) }
+      reasons,
+      algorithmVersion: MASTERY_ALGORITHM_VERSION,
+      evidence: { ...createMetricEvidence({ sampleSize: resolved, periodStart, periodEnd, confidence: confidence2, sources: [hasQuestions ? "questions" : null, reviews.length ? "reviews" : null, recentSeconds ? "sessions" : null] }), ...describeScoreEvidence({ completeness, evidenceStrength: confidence2 }) }
     };
   }
   function calculateTopicRetention({ due = [], resolved = 0, correct = 0, lastReview = null, daysSince = null, onTime = 0, periodStart = null, periodEnd = null } = {}) {
@@ -21758,7 +21774,7 @@
     bars2.innerHTML = performanceTabs + (filteredPerformance.length ? visiblePerformance.map((topic) => {
       const width = topic.accuracy === null ? 0 : topic.accuracy;
       return `<div class="performance-row">
-      <div class="performance-name">${escapeHtml2(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId, topic.id).score}/100</div></div>
+      <div class="performance-name">${escapeHtml2(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId, topic.id).value == null ? "aguardando dados" : topicMasteryIndex(performanceSubjectId, topic.id).value + "/100"}</div></div>
       <div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div>
       <div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? "—" : topic.accuracy + "%"}</div>
     </div>`;

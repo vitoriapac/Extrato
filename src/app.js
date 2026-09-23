@@ -3034,7 +3034,7 @@ function renderQuestionAnalytics(){
   bars.innerHTML=performanceTabs+(filteredPerformance.length?visiblePerformance.map(topic=>{
     const width=topic.accuracy===null?0:topic.accuracy;
     return `<div class="performance-row">
-      <div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId,topic.id).score}/100</div></div>
+      <div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId,topic.id).value==null?'aguardando dados':topicMasteryIndex(performanceSubjectId,topic.id).value+'/100'}</div></div>
       <div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div>
       <div class="performance-value">${topic.classification.icon} ${topic.accuracy===null?'—':topic.accuracy+'%'}</div>
     </div>`;
