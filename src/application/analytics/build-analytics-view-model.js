@@ -8,9 +8,16 @@ export function buildHeatmapViewModel({summaries=[],metric='hours',selectedDate=
 
 export function buildDiagnosisViewModel(diagnosis,{limit=4}={}){
   if(!diagnosis||diagnosis.state==='insufficient')return {state:'insufficient',sections:[]};
+  const bottlenecks=(diagnosis.bottlenecks||[]).map(item=>{
+    const completeness=Number(item.risk?.evidence?.completeness);
+    const evidenceLimited=Number.isFinite(completeness)?completeness<.35:/baixa|insuficiente/i.test(item.risk?.evidence?.evidenceLabel||'');
+    const score=Number(item.risk?.value??item.severity);
+    return {...item,signalLabel:evidenceLimited?'Evidência limitada':score>=70?'Risco alto':score>=45?'Risco moderado':'Risco baixo',signalTone:evidenceLimited?'neutral':score>=70?'high':score>=45?'medium':'low'};
+  });
+  const opportunities=(diagnosis.opportunities||[]).map(item=>({...item,signalLabel:item.confidence<.35?'Dados limitados':item.opportunityScore>=70?'Retorno alto':item.opportunityScore>=45?'Retorno moderado':'Retorno potencial',signalTone:item.confidence<.35?'neutral':item.opportunityScore>=70?'high':item.opportunityScore>=45?'medium':'low'}));
   return {state:'estimated',sections:[
-    {key:'bottlenecks',title:'Gargalos',items:(diagnosis.bottlenecks||[]).slice(0,limit)},
-    {key:'opportunities',title:'Oportunidades',items:(diagnosis.opportunities||[]).slice(0,limit)},
+    {key:'bottlenecks',title:'Gargalos',items:bottlenecks.slice(0,limit)},
+    {key:'opportunities',title:'Oportunidades',items:opportunities.slice(0,limit)},
     {key:'risk',title:'Revisões críticas e risco',items:((diagnosis.criticalReviews||[]).length?diagnosis.criticalReviews:diagnosis.topicsAtRisk||[]).slice(0,limit)},
     {key:'focus',title:'Foco da semana',items:(diagnosis.weeklyFocus||[]).slice(0,limit)}
   ]};

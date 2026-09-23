@@ -38,3 +38,14 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
   const strategicRow=page.locator('#examBlueprintConfig .exam-subject-row').first();
   expect(await strategicRow.evaluate(row=>row.scrollWidth<=row.clientWidth+1)).toBe(true);
 });
+
+test('diagnóstico separa interpretação do sinal, score e cobertura',async({page})=>{
+  await openDemo(page);
+  await activateTab(page,'hoje');
+  await page.locator('.today-analysis-details > summary').click();
+  const diagnosis=page.locator('#diagnosisCenter');
+  await expect(diagnosis.locator('.diagnostic-row').first()).toBeVisible();
+  await expect(diagnosis.locator('.diagnostic-signal').first()).toBeVisible();
+  await expect(diagnosis.locator('.diagnostic-evidence').first()).toBeVisible();
+  await expect(diagnosis.locator('.diagnostic-score').first()).toContainText(/\d+\/100/);
+});

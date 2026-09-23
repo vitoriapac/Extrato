@@ -17,3 +17,10 @@ test('gera sinais de aprovação explicáveis',()=>{
   const signals=buildApprovalSignals({simulados:{available:false},acertos:{available:true,raw:60,confidence:.2},edital:{available:true,raw:40}},{target:80});
   assert.deepEqual(signals.map(item=>item.level),['warning','warning','info','info']);
 });
+
+test('não interpreta pontuação baixa de evidência como risco alto',()=>{
+  const model=buildDiagnosisViewModel({state:'estimated',bottlenecks:[{severity:92,risk:{value:92,evidence:{completeness:.2,evidenceLabel:'Baixa'}}}],opportunities:[{opportunityScore:88,confidence:.2}],criticalReviews:[],topicsAtRisk:[],weeklyFocus:[]});
+  assert.equal(model.sections[0].items[0].signalLabel,'Evidência limitada');
+  assert.equal(model.sections[0].items[0].signalTone,'neutral');
+  assert.equal(model.sections[1].items[0].signalLabel,'Dados limitados');
+});

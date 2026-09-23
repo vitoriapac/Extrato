@@ -1522,9 +1522,16 @@
   }
   function buildDiagnosisViewModel(diagnosis, { limit = 4 } = {}) {
     if (!diagnosis || diagnosis.state === "insufficient") return { state: "insufficient", sections: [] };
+    const bottlenecks = (diagnosis.bottlenecks || []).map((item) => {
+      const completeness = Number(item.risk?.evidence?.completeness);
+      const evidenceLimited = Number.isFinite(completeness) ? completeness < 0.35 : /baixa|insuficiente/i.test(item.risk?.evidence?.evidenceLabel || "");
+      const score = Number(item.risk?.value ?? item.severity);
+      return { ...item, signalLabel: evidenceLimited ? "Evidência limitada" : score >= 70 ? "Risco alto" : score >= 45 ? "Risco moderado" : "Risco baixo", signalTone: evidenceLimited ? "neutral" : score >= 70 ? "high" : score >= 45 ? "medium" : "low" };
+    });
+    const opportunities = (diagnosis.opportunities || []).map((item) => ({ ...item, signalLabel: item.confidence < 0.35 ? "Dados limitados" : item.opportunityScore >= 70 ? "Retorno alto" : item.opportunityScore >= 45 ? "Retorno moderado" : "Retorno potencial", signalTone: item.confidence < 0.35 ? "neutral" : item.opportunityScore >= 70 ? "high" : item.opportunityScore >= 45 ? "medium" : "low" }));
     return { state: "estimated", sections: [
-      { key: "bottlenecks", title: "Gargalos", items: (diagnosis.bottlenecks || []).slice(0, limit) },
-      { key: "opportunities", title: "Oportunidades", items: (diagnosis.opportunities || []).slice(0, limit) },
+      { key: "bottlenecks", title: "Gargalos", items: bottlenecks.slice(0, limit) },
+      { key: "opportunities", title: "Oportunidades", items: opportunities.slice(0, limit) },
       { key: "risk", title: "Revisões críticas e risco", items: ((diagnosis.criticalReviews || []).length ? diagnosis.criticalReviews : diagnosis.topicsAtRisk || []).slice(0, limit) },
       { key: "focus", title: "Foco da semana", items: (diagnosis.weeklyFocus || []).slice(0, limit) }
     ] };
@@ -1937,6 +1944,29 @@
     next.maintenanceMinutes = next.items.filter((item) => item.covered).reduce((sum5, item) => sum5 + item.minutes, 0);
     next.adaptiveAdvice = { ...advice, transferMinutes: moved, applied: true };
     return next;
+  }
+
+  // src/ui/renderers/adaptive-planning-renderer.js
+  var PHASES = [
+    { id: "construction", label: "Construção" },
+    { id: "consolidation", label: "Consolidação" },
+    { id: "final_stretch", label: "Reta final" },
+    { id: "final_review", label: "Revisão final" }
+  ];
+  function renderExamPhase(phase, { escapeHtml: escapeHtml3 = (value2) => String(value2 ?? "") } = {}) {
+    const current = phase?.state;
+    const undated = current === "undated" || !current;
+    const days = Number.isFinite(Number(phase?.days)) ? `${Math.max(0, Math.floor(Number(phase.days)))} dias restantes` : "Data da prova não definida";
+    const stages = PHASES.map((item) => `<li class="exam-phase-step${item.id === current ? " is-current" : ""}"${item.id === current ? ' aria-current="step"' : ""}><span>${escapeHtml3(item.label)}</span></li>`).join("");
+    return `<section class="exam-phase" aria-label="Fase de preparação para a prova"><div class="exam-phase-heading"><div><span class="exam-phase-eyebrow">Fase até a prova</span><strong>${escapeHtml3(phase?.label || "Fase não definida")}</strong></div><span class="exam-phase-time">${escapeHtml3(days)}</span></div><ol class="exam-phase-steps" aria-label="Etapas de preparação">${stages}</ol><p>${escapeHtml3(phase?.strategy || "Defina a data da prova para ajustar o foco do estudo.")}</p>${undated ? "<small>As etapas serão posicionadas quando você informar a data da prova.</small>" : ""}</section>`;
+  }
+  function renderAdaptiveAllocationAdvice(advice, { weeklyPlannedMinutes = 0, formatMinutes = (value2) => `${value2} min`, escapeHtml: escapeHtml3 = (value2) => String(value2 ?? "") } = {}) {
+    if (advice?.state !== "proposal") {
+      return `<aside class="adaptive-advice is-informative" aria-label="Adaptação de carga"><strong>Adaptação de carga</strong><p>${escapeHtml3(advice?.reason || "Aguardando evidências comparáveis.")}</p></aside>`;
+    }
+    const from = advice.from || {}, to = advice.to || {};
+    const applied = Boolean(advice.applied);
+    return `<section class="adaptive-advice${applied ? " is-applied" : ""}" aria-label="Sugestão de redistribuição semanal"><div class="adaptive-advice-heading"><div><span class="exam-phase-eyebrow">Ajuste sugerido</span><strong>Redistribuir ${escapeHtml3(formatMinutes(advice.transferMinutes))} por semana</strong></div><span class="adaptive-capacity">Capacidade mantida · ${escapeHtml3(formatMinutes(weeklyPlannedMinutes))}</span></div><div class="adaptive-transfer"><div><span>De</span><strong>${escapeHtml3(from.name || "Disciplina de origem")}</strong><small>${escapeHtml3(formatMinutes(from.beforeMinutes || 0))} → ${escapeHtml3(formatMinutes(from.afterMinutes || 0))}</small></div><span class="adaptive-transfer-arrow" aria-hidden="true">→</span><div><span>Para</span><strong>${escapeHtml3(to.name || "Disciplina prioritária")}</strong><small>${escapeHtml3(formatMinutes(to.beforeMinutes || 0))} → ${escapeHtml3(formatMinutes(to.afterMinutes || 0))}</small></div></div><p>${escapeHtml3(advice.reason || "Ajuste baseado nos indicadores disponíveis.")}</p>${applied ? '<small class="adaptive-applied-note" role="status">Aplicado somente à prévia. Confirme o plano para salvar.</small>' : '<button class="btn ghost small" data-delegated-click="useAdaptivePlanAdvice()">Aplicar à prévia</button>'}</section>`;
   }
 
   // src/domain/sessions/study-session.js
@@ -22312,9 +22342,9 @@
     const el = document.getElementById("examMasteryMatrix");
     if (!el) return;
     const candidates = intelligenceCandidates(), metrics = Object.fromEntries(candidates.map((c) => [c.topicId, { coverage: c.coverage, mastery: { value: c.mastery, confidence: c.evidenceStrength }, retention: { value: c.retention }, trend: c.trend, priority: { value: c.score } }])), rows = buildExamMasteryMatrix({ subjects: state.subjects, blueprint: state.examBlueprint, metricsByTopic: metrics, activeExamTags: state.examBlueprint.activeExamTags || [] });
-    el.innerHTML = rows.length ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a, b) => (b.gap ?? -999) - (a.gap ?? -999)).map((row) => `<details><summary><strong>${escapeHtml2(row.name)}</strong><span>${row.coverage ?? "—"}%</span><span>${row.mastery ?? "—"}%</span><span>${row.retention ?? "—"}%</span><span>${row.gap == null ? "—" : (row.gap > 0 ? "-" : "") + Math.abs(row.gap) + " pts"}</span></summary>${row.topics.map((t) => {
+    el.innerHTML = rows.length ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a, b) => (b.gap ?? -999) - (a.gap ?? -999)).map((row) => `<details><summary><strong>${escapeHtml2(row.name)}</strong><span data-label="Cobertura">${row.coverage ?? "—"}%</span><span data-label="Domínio">${row.mastery ?? "—"}%</span><span data-label="Retenção">${row.retention ?? "—"}%</span><span data-label="Gap">${row.gap == null ? "—" : (row.gap > 0 ? "-" : "") + Math.abs(row.gap) + " pts"}</span></summary>${row.topics.map((t) => {
       const metric = topicExamMetricForActiveScope(t), meta = [metric?.questionWeight != null ? metric.questionWeight + " pt/questão" : null, t.incidence?.level ? "incidência " + t.incidence.level.toLowerCase() : null].filter(Boolean).join(" · ");
-      return `<div class="mastery-topic"><span>${escapeHtml2(t.name)}${meta ? `<small>${escapeHtml2(meta)} · estimativa por tópico</small>` : ""}</span><span>${t.coverage}%</span><span>${t.mastery ?? "—"}%</span><span>${t.retention ?? "—"}%</span><span>${escapeHtml2(t.state)}</span></div>`;
+      return `<div class="mastery-topic"><span>${escapeHtml2(t.name)}${meta ? `<small>${escapeHtml2(meta)} · estimativa por tópico</small>` : ""}</span><span data-label="Cobertura">${t.coverage}%</span><span data-label="Domínio">${t.mastery ?? "—"}%</span><span data-label="Retenção">${t.retention ?? "—"}%</span><span data-label="Estado">${escapeHtml2(t.state)}</span></div>`;
     }).join("")}</details>`).join("")}</div>` : '<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>';
   }
   var studyPlanPreview = null;
@@ -22422,8 +22452,8 @@
     container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? "-" : "+"}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === "deficit" ? "ritmo insuficiente" : plan.paceState === "surplus" ? "capacidade disponível" : "ritmo equilibrado"}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || "não avaliada"}${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
     const phase = plan.examPhase;
     const advice = plan.adaptiveAdvice;
-    const adaptiveHtml = advice?.state === "proposal" ? `<div class="replan-group"><strong>Redistribuição sugerida: ${formatPlanMinutes(advice.transferMinutes)}</strong><span>${escapeHtml2(advice.from.name)} → ${escapeHtml2(advice.to.name)}. A capacidade semanal permanece ${formatPlanMinutes(plan.weeklyPlannedMinutes)}.</span>${advice.applied ? "<small>Distribuição adaptativa aplicada nesta prévia; confirme o plano para salvar.</small>" : '<button class="btn ghost small" data-delegated-click="useAdaptivePlanAdvice()">Usar sugestão nesta prévia</button>'}</div>` : `<p class="confidence-note">Adaptação de carga: ${escapeHtml2(advice?.reason || "Aguardando evidências comparáveis.")}</p>`;
-    container.insertAdjacentHTML("afterbegin", `<div class="study-plan-confidence"><strong>Fase até a prova: ${escapeHtml2(phase?.label || "Não definida")}</strong> · ${escapeHtml2(phase?.strategy || "")}</div>${adaptiveHtml}`);
+    const adaptiveHtml = renderAdaptiveAllocationAdvice(advice, { weeklyPlannedMinutes: plan.weeklyPlannedMinutes, formatMinutes: formatPlanMinutes, escapeHtml: escapeHtml2 });
+    container.insertAdjacentHTML("afterbegin", `${renderExamPhase(phase, { escapeHtml: escapeHtml2 })}${adaptiveHtml}`);
   }
   function updateExamBlueprint(field, value2, { refresh = true } = {}) {
     studyPlanPreview = null;
@@ -23278,8 +23308,8 @@
     const list = (items, empty, formatter) => items.length ? items.slice(0, 4).map(formatter).join("") : `<p class="diagnosis-empty">${empty}</p>`;
     const section = (key2) => model.sections.find((item) => item.key === key2)?.items || [];
     container.innerHTML = `<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(section("bottlenecks"), "Nenhum gargalo relevante agora.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><b>Risco ${item.risk?.value ?? item.severity}/100</b><span>Dados ${Math.round((item.risk?.evidence?.completeness || 0) * 100)}%</span><span>Evidência ${(item.risk?.evidence?.evidenceLabel || "Não avaliada").toLowerCase()}</span></div><small>${escapeHtml2(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</small></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(section("opportunities"), "Configure pesos e esforço para revelar oportunidades.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><b>Retorno ${item.opportunityScore}/100</b><span>Dados ${Math.round(item.confidence * 100)}%</span><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><small>${item.missingFactors.includes("examImpact") ? "Informe o peso da prova para aumentar a confiança." : "Boa relação entre impacto, lacuna e esforço."}</small></article>`)}</section>
+    <section><h4>Gargalos</h4>${list(section("bottlenecks"), "Nenhum gargalo relevante agora.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml2(item.signalLabel)}</span><b class="diagnostic-score">${item.risk?.value ?? item.severity}/100</b></div><div class="diagnostic-evidence"><span>Cobertura dos dados <strong>${Math.round((item.risk?.evidence?.completeness || 0) * 100)}%</strong></span><span>Evidência <strong>${escapeHtml2((item.risk?.evidence?.evidenceLabel || "Não avaliada").toLowerCase())}</strong></span></div><small>${escapeHtml2(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</small></article>`)}</section>
+    <section><h4>Oportunidades</h4>${list(section("opportunities"), "Configure pesos e esforço para revelar oportunidades.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml2(item.signalLabel)}</span><b class="diagnostic-score">${item.opportunityScore}/100</b><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><div class="diagnostic-evidence"><span>Confiança dos dados <strong>${Math.round(item.confidence * 100)}%</strong></span></div><small>${item.missingFactors.includes("examImpact") ? "Informe o peso da prova para aumentar a confiança." : "Boa relação entre impacto, lacuna e esforço."}</small></article>`)}</section>
     <section><h4>Revisões críticas e risco</h4>${list(section("risk"), "Nenhuma revisão crítica identificada.", (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><b>${item.reviewUrgency > 0 ? "Urgência " + Math.round(item.reviewUrgency) + "/100" : item.daysSinceContact + " dias sem contato"}</b></div><small>${escapeHtml2(item.reason || item.reasons?.[0] || "Revisão requer atenção pelos indicadores atuais.")}</small></article>`)}</section>
     <section><h4>Foco da semana</h4>${list(section("focus"), "Sem distribuição confiável.", (item) => {
       const weeklyMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum5, hours) => sum5 + (Number(hours) || 0) * 60, 0);

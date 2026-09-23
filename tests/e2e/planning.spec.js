@@ -36,3 +36,22 @@ test('prévia explica fase da prova e sugere adaptação sem salvar automaticame
   await preview.getByRole('button',{name:'Descartar proposta'}).click();
   await expect(preview.getByRole('button',{name:'Calcular proposta semanal'})).toBeVisible();
 });
+
+test('fase e redistribuição do plano se organizam em tela móvel',async({page})=>{
+  await page.setViewportSize({width:375,height:900});
+  await openDemo(page);
+  await activateTab(page,'metas');
+  await page.getByRole('button',{name:'Calcular proposta semanal'}).click();
+  const preview=page.locator('#examStudyPlan');
+  await expect(preview.locator('.exam-phase-steps')).toBeVisible();
+  await expect(preview.locator('.exam-phase-step')).toHaveCount(4);
+  expect(await preview.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+  const config=page.locator('#examBlueprintConfig .exam-subject-row').first();
+  if(await config.count()){
+    expect(await config.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+    const control=config.locator('input,select').first();
+    expect(await control.evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  }
+  const matrix=page.locator('#examMasteryMatrix .mastery-matrix');
+  if(await matrix.count())expect(await matrix.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+});
