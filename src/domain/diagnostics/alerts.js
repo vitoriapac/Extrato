@@ -1,6 +1,6 @@
 export const ALERT_TYPES=Object.freeze([
   'performance_decline','review_critical','subject_neglected','weekly_deficit',
-  'low_mastery_high_exam_impact','insufficient_evidence'
+  'low_mastery_high_exam_impact','insufficient_evidence','error_pattern'
 ]);
 
 const presentation={high:{level:'alta',icon:'🔴'},medium:{level:'media',icon:'🟠'},low:{level:'baixa',icon:'🟡'}};
@@ -21,7 +21,8 @@ export function buildIntelligentAlerts({today=null,overdueReviews=0,subjects=[],
   });
   if(Number.isFinite(weeklyBalanceMinutes)&&weeklyBalanceMinutes<0)alerts.push(createDiagnosticAlert({type:'weekly_deficit',severity:weeklyBalanceMinutes<=-120?'high':'medium',createdAt:today,reason:'A necessidade semanal excede a capacidade em '+Math.abs(weeklyBalanceMinutes)+' minutos.',recommendedAction:'Aumente a disponibilidade ou reduza a carga antes da prova.'}));
   if(Number.isFinite(weeklyGoalGap)&&weeklyGoalGap>0)alerts.push(createDiagnosticAlert({id:'weekly-goal-risk',type:'weekly_deficit',severity:'medium',createdAt:today,reason:'A meta semanal está '+weeklyGoalGap+'% abaixo do esperado para hoje.',recommendedAction:'Realoque uma sessão nesta semana para recuperar o ritmo.'}));
-  topics.filter(topic=>Number(topic.mastery)<50&&Number(topic.examImpact)>=70).slice(0,3).forEach(topic=>alerts.push(createDiagnosticAlert({type:'low_mastery_high_exam_impact',severity:'high',subjectId:topic.subjectId,topicId:topic.topicId,createdAt:today,reason:topic.name+' combina baixo domínio com alto impacto na prova.',recommendedAction:'Priorize teoria dirigida, questões e uma revisão curta.'})));
+  topics.filter(topic=>topic.mastery!=null&&Number(topic.mastery)<50&&Number(topic.examImpact)>=70).slice(0,3).forEach(topic=>alerts.push(createDiagnosticAlert({type:'low_mastery_high_exam_impact',severity:'high',subjectId:topic.subjectId,topicId:topic.topicId,createdAt:today,reason:topic.name+' combina baixo domínio com alto impacto na prova.',recommendedAction:'Priorize teoria dirigida, questões e uma revisão curta.'})));
+  topics.filter(topic=>topic.dominantError?.recommendation&&Number(topic.dominantError.share)>=30).slice(0,3).forEach(topic=>alerts.push(createDiagnosticAlert({type:'error_pattern',severity:Number(topic.dominantError.share)>=50?'high':'medium',subjectId:topic.subjectId,topicId:topic.topicId,createdAt:today,reason:topic.dominantError.share+'% dos erros categorizados em '+topic.name+' são de '+(topic.dominantError.meta?.label||topic.dominantError.label||topic.dominantError.key)+'.',recommendedAction:topic.dominantError.recommendation.action})));
   if(hardTopicsWithoutReview>0)alerts.push(createDiagnosticAlert({id:'hard-topics-no-review',type:'review_critical',severity:'low',createdAt:today,reason:hardTopicsWithoutReview+' tópico'+(hardTopicsWithoutReview===1?'':'s')+' '+(hardTopicsWithoutReview===1?'difícil':'difíceis')+' sem revisão agendada.',recommendedAction:'Agende revisões para os tópicos difíceis.'}));
   topics.filter(topic=>topic.evidenceStrength!=null&&Number(topic.evidenceStrength)<.25).slice(0,1).forEach(topic=>alerts.push(createDiagnosticAlert({type:'insufficient_evidence',severity:'low',subjectId:topic.subjectId,topicId:topic.topicId,createdAt:today,reason:'Ainda há pouca evidência para avaliar '+topic.name+'.',recommendedAction:'Registre uma sessão com questões para melhorar a confiança da análise.'})));
   return alerts;

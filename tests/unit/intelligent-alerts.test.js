@@ -11,3 +11,14 @@ test('gera alertas acionáveis para déficit, tendência, revisão e tópico cr�
   assert.deepEqual(new Set(alerts.map(item=>item.type)),new Set(['review_critical','weekly_deficit','performance_decline','subject_neglected','low_mastery_high_exam_impact','insufficient_evidence']));
   assert.ok(alerts.every(item=>item.reason&&item.recommendedAction));
 });
+
+test('não interpreta domínio ausente como zero e usa erros apenas com diagnóstico suficiente',()=>{
+  const base={topicId:'t1',subjectId:'s1',name:'Probabilidade',mastery:null,examImpact:90,evidenceStrength:.1};
+  const without=buildIntelligentAlerts({topics:[base]});
+  assert.ok(!without.some(item=>item.type==='low_mastery_high_exam_impact'));
+  assert.ok(!without.some(item=>item.type==='error_pattern'));
+  const withPattern=buildIntelligentAlerts({topics:[{...base,dominantError:{key:'calculo',label:'cálculo',share:55,recommendation:{action:'Treinar cálculos guiados'}}}]});
+  const alert=withPattern.find(item=>item.type==='error_pattern');
+  assert.equal(alert.recommendedAction,'Treinar cálculos guiados');
+  assert.equal(alert.topicId,'t1');
+});

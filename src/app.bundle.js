@@ -17139,11 +17139,17 @@
       if (!activeIds.has(id) && !state2.resolvedAt) state2.resolvedAt = today;
     });
     const nextStates = [...stateMap.values()];
-    const visible = alerts.filter((alert) => {
+    const eligible = alerts.filter((alert) => {
       const state2 = stateMap.get(alert.id);
       return !state2?.dismissedUntil || state2.dismissedUntil < today;
-    }).sort((a, b) => (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0)).slice(0, 5);
-    return { visible, states: nextStates };
+    }).sort((a, b) => (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0));
+    const seenTopics = /* @__PURE__ */ new Set(), ranked = [];
+    for (const alert of eligible) {
+      if (alert.topicId && seenTopics.has(alert.topicId)) continue;
+      if (alert.topicId) seenTopics.add(alert.topicId);
+      ranked.push(alert);
+    }
+    return { visible: ranked.slice(0, 3), additional: ranked.slice(3), states: nextStates };
   }
   function dismissAlert(states = [], alertId, today, addDays2, days = 7) {
     const next = states.map((item) => ({ ...item }));
@@ -17163,7 +17169,8 @@
     "subject_neglected",
     "weekly_deficit",
     "low_mastery_high_exam_impact",
-    "insufficient_evidence"
+    "insufficient_evidence",
+    "error_pattern"
   ]);
   var presentation = { high: { level: "alta", icon: "🔴" }, medium: { level: "media", icon: "🟠" }, low: { level: "baixa", icon: "🟡" } };
   function createDiagnosticAlert({ type, severity = "medium", subjectId = null, topicId = null, reason, recommendedAction, createdAt = null, id } = {}) {
@@ -17181,7 +17188,8 @@
     });
     if (Number.isFinite(weeklyBalanceMinutes) && weeklyBalanceMinutes < 0) alerts.push(createDiagnosticAlert({ type: "weekly_deficit", severity: weeklyBalanceMinutes <= -120 ? "high" : "medium", createdAt: today, reason: "A necessidade semanal excede a capacidade em " + Math.abs(weeklyBalanceMinutes) + " minutos.", recommendedAction: "Aumente a disponibilidade ou reduza a carga antes da prova." }));
     if (Number.isFinite(weeklyGoalGap) && weeklyGoalGap > 0) alerts.push(createDiagnosticAlert({ id: "weekly-goal-risk", type: "weekly_deficit", severity: "medium", createdAt: today, reason: "A meta semanal está " + weeklyGoalGap + "% abaixo do esperado para hoje.", recommendedAction: "Realoque uma sessão nesta semana para recuperar o ritmo." }));
-    topics.filter((topic) => Number(topic.mastery) < 50 && Number(topic.examImpact) >= 70).slice(0, 3).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "low_mastery_high_exam_impact", severity: "high", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: topic.name + " combina baixo domínio com alto impacto na prova.", recommendedAction: "Priorize teoria dirigida, questões e uma revisão curta." })));
+    topics.filter((topic) => topic.mastery != null && Number(topic.mastery) < 50 && Number(topic.examImpact) >= 70).slice(0, 3).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "low_mastery_high_exam_impact", severity: "high", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: topic.name + " combina baixo domínio com alto impacto na prova.", recommendedAction: "Priorize teoria dirigida, questões e uma revisão curta." })));
+    topics.filter((topic) => topic.dominantError?.recommendation && Number(topic.dominantError.share) >= 30).slice(0, 3).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "error_pattern", severity: Number(topic.dominantError.share) >= 50 ? "high" : "medium", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: topic.dominantError.share + "% dos erros categorizados em " + topic.name + " são de " + (topic.dominantError.meta?.label || topic.dominantError.label || topic.dominantError.key) + ".", recommendedAction: topic.dominantError.recommendation.action })));
     if (hardTopicsWithoutReview > 0) alerts.push(createDiagnosticAlert({ id: "hard-topics-no-review", type: "review_critical", severity: "low", createdAt: today, reason: hardTopicsWithoutReview + " tópico" + (hardTopicsWithoutReview === 1 ? "" : "s") + " " + (hardTopicsWithoutReview === 1 ? "difícil" : "difíceis") + " sem revisão agendada.", recommendedAction: "Agende revisões para os tópicos difíceis." }));
     topics.filter((topic) => topic.evidenceStrength != null && Number(topic.evidenceStrength) < 0.25).slice(0, 1).forEach((topic) => alerts.push(createDiagnosticAlert({ type: "insufficient_evidence", severity: "low", subjectId: topic.subjectId, topicId: topic.topicId, createdAt: today, reason: "Ainda há pouca evidência para avaliar " + topic.name + ".", recommendedAction: "Registre uma sessão com questões para melhorar a confiança da análise." })));
     return alerts;
@@ -21588,7 +21596,8 @@
     return analyzeErrors(records, { minimumErrors: MIN_ERROR_RECOMMENDATION_COUNT, minimumCoverage: MIN_ERROR_RECOMMENDATION_COVERAGE });
   }
   function getTopicErrorProfile(topicId) {
-    return buildErrorProfile(validQuestionRecords().filter((question) => question.topicId === topicId));
+    const cutoff = addDays(todayISO(), -29);
+    return buildErrorProfile(validQuestionRecords().filter((question) => question.topicId === topicId && question.date >= cutoff && question.date <= todayISO()));
   }
   function getSubjectPerformanceCounts(subjectId) {
     let resolved = 0, correct = 0;
@@ -22889,7 +22898,7 @@
       const daysSinceStudy = lastStudyDay ? Math.max(0, Math.floor((parseLocalDate(today) - lastStudyDay) / 864e5)) : null;
       return { subjectId: subject.id, name: subject.name, trend: { direction: trend.key === "down" ? "down" : trend.key === "up" ? "up" : "stable", state: trend.state, delta: trend.delta }, daysSinceStudy };
     });
-    const topics = intelligenceCandidates().map((item) => ({ topicId: item.topicId, subjectId: item.subjectId, name: item.topicName, mastery: item.mastery, examImpact: item.examImpact, evidenceStrength: item.evidenceStrength }));
+    const topics = intelligenceCandidates().map((item) => ({ topicId: item.topicId, subjectId: item.subjectId, name: item.topicName, mastery: item.mastery, examImpact: item.examImpact, evidenceStrength: item.evidenceStrength, dominantError: item.diagnosis?.dominantError }));
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
     const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0);
     const plan = buildStudyPlan({ topics: studyPlanCandidates(), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
@@ -22913,12 +22922,13 @@
       container.innerHTML = `<div class="upcoming-empty">Nenhum alerta no momento — tudo sob controle. 🎉</div>`;
       return;
     }
-    container.innerHTML = alertas.map((a) => `
+    const renderAlert = (a) => `
     <div class="alerta-item alerta-${a.nivel}">
       <span class="alerta-icon">${a.icon}</span>
       <span><strong>${escapeHtml2(a.reason || a.texto)}</strong><small>${escapeHtml2(a.recommendedAction || "")}</small></span>${a.severity !== "ok" ? `<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr2(a.id)}')">Dispensar 7 dias</button>` : ""}
     </div>
-  `).join("");
+  `;
+    container.innerHTML = alertas.map(renderAlert).join("") + (reconciliation.additional.length ? `<details class="alerta-more"><summary>Mostrar mais ${reconciliation.additional.length} alerta${reconciliation.additional.length === 1 ? "" : "s"}</summary>${reconciliation.additional.map(renderAlert).join("")}</details>` : "");
   }
   function dismissIntelligentAlert(id) {
     state.alertStates = dismissAlert(state.alertStates, id, todayISO(), addDays, 7);

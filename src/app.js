@@ -2857,7 +2857,8 @@ function getSubjectErrorProfile(subjectId){
   return buildErrorProfile(validQuestionRecords().filter(question=>entitySubjectId(question)===subjectId));
 }
 function getTopicErrorProfile(topicId){
-  return buildErrorProfile(validQuestionRecords().filter(question=>question.topicId===topicId));
+  const cutoff=addDays(todayISO(),-29);
+  return buildErrorProfile(validQuestionRecords().filter(question=>question.topicId===topicId&&question.date>=cutoff&&question.date<=todayISO()));
 }
 function getSubjectPerformanceCounts(subjectId){
   let resolved=0,correct=0;
@@ -4101,7 +4102,7 @@ function computeAlertasInteligentes(){
     const daysSinceStudy=lastStudyDay?Math.max(0,Math.floor((parseLocalDate(today)-lastStudyDay)/86400000)):null;
     return {subjectId:subject.id,name:subject.name,trend:{direction:trend.key==='down'?'down':trend.key==='up'?'up':'stable',state:trend.state,delta:trend.delta},daysSinceStudy};
   });
-  const topics=intelligenceCandidates().map(item=>({topicId:item.topicId,subjectId:item.subjectId,name:item.topicName,mastery:item.mastery,examImpact:item.examImpact,evidenceStrength:item.evidenceStrength}));
+  const topics=intelligenceCandidates().map(item=>({topicId:item.topicId,subjectId:item.subjectId,name:item.topicName,mastery:item.mastery,examImpact:item.examImpact,evidenceStrength:item.evidenceStrength,dominantError:item.diagnosis?.dominantError}));
   const days=state.examDate?diasParaRevisao(state.examDate):null;
   const weeklyAvailableMinutes=Object.values(state.metas.horasPorDia).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0);
   const plan=buildStudyPlan({topics:studyPlanCandidates(),weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
@@ -4124,12 +4125,13 @@ function renderAlertasInteligentes(){
     container.innerHTML = `<div class="upcoming-empty">Nenhum alerta no momento — tudo sob controle. 🎉</div>`;
     return;
   }
-  container.innerHTML = alertas.map(a => `
+  const renderAlert=a => `
     <div class="alerta-item alerta-${a.nivel}">
       <span class="alerta-icon">${a.icon}</span>
       <span><strong>${escapeHtml(a.reason||a.texto)}</strong><small>${escapeHtml(a.recommendedAction||'')}</small></span>${a.severity!=='ok'?`<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(a.id)}')">Dispensar 7 dias</button>`:''}
     </div>
-  `).join('');
+  `;
+  container.innerHTML=alertas.map(renderAlert).join('')+(reconciliation.additional.length?`<details class="alerta-more"><summary>Mostrar mais ${reconciliation.additional.length} alerta${reconciliation.additional.length===1?'':'s'}</summary>${reconciliation.additional.map(renderAlert).join('')}</details>`:'');
 }
 function dismissIntelligentAlert(id){state.alertStates=dismissAlert(state.alertStates,id,todayISO(),addDays,7);scheduleSave();renderAlertasInteligentes()}
 
