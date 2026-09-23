@@ -52,6 +52,7 @@ import {createDailyPlanService} from './application/planning/daily-plan-service.
 import {createReplanService} from './application/planning/replan-service.js';
 import {createReplanController} from './application/planning/replan-controller.js';
 import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
+import {applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
 import {createSessionService} from './application/sessions/session-service.js';
 import {normalizeStudySession} from './domain/sessions/study-session.js';
 import {createRecordService} from './application/records/record-service.js';
@@ -3287,11 +3288,18 @@ function studyPlanCandidates({guidedDefaults=false}={}){
 function buildCurrentStudyPlanProposal({guidedDefaults=false}={}){
   const days=state.examDate?diasParaRevisao(state.examDate):null;
   const weeklyAvailableMinutes=Object.values(state.metas.horasPorDia).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0);
-  return studyPlanService.calculate({topics:studyPlanCandidates({guidedDefaults}),weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
+  const candidates=studyPlanCandidates({guidedDefaults});
+  const plan=studyPlanService.calculate({topics:candidates,weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
+  return {...plan,examPhase:resolveExamPhase(days),adaptiveAdvice:buildAdaptivePlanningAdvice({plan,candidates})};
 }
 function calculateStudyPlanPreview(){
   studyPlanPreview=buildCurrentStudyPlanProposal();
   renderStudyPlanBuilder();
+}
+function useAdaptivePlanAdvice(){
+  const adjusted=applyAdaptivePlanningAdvice(studyPlanPreview,studyPlanPreview?.adaptiveAdvice);
+  if(!adjusted){showToast('Não há capacidade livre suficiente nos tópicos indicados para aplicar esta sugestão.');return}
+  studyPlanPreview=adjusted;renderStudyPlanBuilder();
 }
 function clearStudyPlanPreview(){studyPlanPreview=null;renderStudyPlanBuilder()}
 function confirmStudyPlan(){
@@ -3328,6 +3336,10 @@ function renderStudyPlanBuilder(){
   const subjectRows=plan.subjects.map(item=>`<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join('');
   const topicRows=plan.items.slice(0,8).map(item=>`<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}<small>${escapeHtml(item.reasonSummary||'Prioridade calculada pelos fatores disponíveis')}</small></span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered?" · manutenção":""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join('');
   container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes<0?'-':'+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState==='deficit'?'ritmo insuficiente':plan.paceState==='surplus'?'capacidade disponível':'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence*100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase()||"não avaliada"}${plan.missingEffort.length?` · ${plan.missingEffort.length} tópico${plan.missingEffort.length===1?'':'s'} sem esforço estimado`:''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes||0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
+  const phase=plan.examPhase;
+  const advice=plan.adaptiveAdvice;
+  const adaptiveHtml=advice?.state==='proposal'?`<div class="replan-group"><strong>Redistribuição sugerida: ${formatPlanMinutes(advice.transferMinutes)}</strong><span>${escapeHtml(advice.from.name)} → ${escapeHtml(advice.to.name)}. A capacidade semanal permanece ${formatPlanMinutes(plan.weeklyPlannedMinutes)}.</span>${advice.applied?'<small>Distribuição adaptativa aplicada nesta prévia; confirme o plano para salvar.</small>':'<button class="btn ghost small" data-delegated-click="useAdaptivePlanAdvice()">Usar sugestão nesta prévia</button>'}</div>`:`<p class="confidence-note">Adaptação de carga: ${escapeHtml(advice?.reason||'Aguardando evidências comparáveis.')}</p>`;
+  container.insertAdjacentHTML('afterbegin',`<div class="study-plan-confidence"><strong>Fase até a prova: ${escapeHtml(phase?.label||'Não definida')}</strong> · ${escapeHtml(phase?.strategy||'')}</div>${adaptiveHtml}`);
 }
 function updateExamBlueprint(field,value,{refresh=true}={}){
   studyPlanPreview=null;
@@ -4805,7 +4817,7 @@ function escapeAttr(str){ return escapeHtml(str); }
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTION_HANDLERS={
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
-  calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,
+  calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,useAdaptivePlanAdvice,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,
   calculateReplanPreview,clearReplanPreview,confirmReplan,undoPlanAdjustment,saveWeeklyCloseSnapshot,previewWeeklyCloseActions,confirmWeeklyCloseActions,toggleWeeklyPriority,executeStudyRecommendation,
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,

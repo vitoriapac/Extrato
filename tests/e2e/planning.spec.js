@@ -24,3 +24,15 @@ test('confirma, distribui e desfaz um plano sem perder a navegação',async({pag
   await activateTab(page,'hoje');
   await expect(page.locator('#panel-hoje')).toBeVisible();
 });
+
+test('prévia explica fase da prova e sugere adaptação sem salvar automaticamente',async({page})=>{
+  await openDemo(page);
+  await activateTab(page,'metas');
+  await page.getByRole('button',{name:'Calcular proposta semanal'}).click();
+  const preview=page.locator('#examStudyPlan');
+  await expect(preview).toContainText('Fase até a prova');
+  await expect(preview).toContainText(/Adaptação de carga|Redistribuição sugerida/);
+  await expect(preview.getByRole('button',{name:'Confirmar e salvar plano'})).toBeVisible();
+  await preview.getByRole('button',{name:'Descartar proposta'}).click();
+  await expect(preview.getByRole('button',{name:'Calcular proposta semanal'})).toBeVisible();
+});

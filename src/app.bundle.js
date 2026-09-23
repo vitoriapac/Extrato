@@ -1868,6 +1868,70 @@
     };
   }
 
+  // src/domain/planning/adaptive-planning.js
+  var ADAPTIVE_PLANNING_VERSION = 1;
+  var EXAM_PHASE_THRESHOLDS = Object.freeze({ construction: 90, consolidation: 30, finalStretch: 7 });
+  function resolveExamPhase(daysToExam, thresholds = EXAM_PHASE_THRESHOLDS) {
+    if (daysToExam == null || !Number.isFinite(Number(daysToExam))) return { state: "undated", label: "Prova sem data", strategy: "Defina a data da prova para ajustar o foco do estudo." };
+    const days = Math.max(0, Math.floor(Number(daysToExam)));
+    if (days > thresholds.construction) return { state: "construction", label: "Construção", strategy: "Priorize teoria e cobertura do edital.", days };
+    if (days > thresholds.consolidation) return { state: "consolidation", label: "Consolidação", strategy: "Combine questões, revisão e tópicos ainda não cobertos.", days };
+    if (days > thresholds.finalStretch) return { state: "final_stretch", label: "Reta final", strategy: "Concentre-se nas lacunas e nas revisões de maior impacto.", days };
+    return { state: "final_review", label: "Revisão final", strategy: "Priorize revisões críticas, questões e simulados.", days };
+  }
+  function buildAdaptivePlanningAdvice({ plan = null, candidates = [], minimumEvidence = 0.5 } = {}) {
+    const budget = Math.max(0, Number(plan?.weeklyPlannedMinutes) || 0);
+    if (!budget || !Array.isArray(plan?.subjects) || plan.subjects.length < 2) return { state: "insufficient", reason: "É necessário um plano semanal com pelo menos duas disciplinas.", algorithmVersion: ADAPTIVE_PLANNING_VERSION };
+    const measured = (Array.isArray(candidates) ? candidates : []).filter((item) => item.subjectId && item.mastery != null && Number(item.evidenceStrength) >= minimumEvidence);
+    const groups = plan.subjects.map((subject) => {
+      const rows = measured.filter((item) => item.subjectId === subject.subjectId), weight = rows.reduce((sum4, item) => sum4 + Math.max(0.1, Number(item.evidenceStrength) || 0), 0);
+      const mastery = weight ? Math.round(rows.reduce((sum4, item) => sum4 + item.mastery * Math.max(0.1, Number(item.evidenceStrength) || 0), 0) / weight) : null;
+      const impact = rows.length ? Math.max(...rows.map((item) => Number(item.examImpact) || 0)) : null;
+      return { ...subject, mastery, impact, falling: rows.some((item) => item.trend?.direction === "down" || item.trend?.key === "down"), measuredTopics: rows.length };
+    });
+    const source = groups.filter((item) => item.mastery >= 80 && !item.falling && item.minutes >= 45).sort((a, b) => b.mastery - a.mastery)[0];
+    const target = groups.filter((item) => item.subjectId !== source?.subjectId && item.impact >= 50 && (item.mastery <= 60 || item.falling)).sort((a, b) => (a.mastery ?? 100) - (b.mastery ?? 100))[0];
+    if (!source || !target) return { state: "insufficient", reason: "Ainda não há evidência comparável de disciplina consolidada e lacuna prioritária.", algorithmVersion: ADAPTIVE_PLANNING_VERSION };
+    const sourceItem = plan.items?.filter((item) => item.subjectId === source.subjectId && item.minutes > 15).sort((a, b) => b.minutes - a.minutes)[0];
+    const targetItem = plan.items?.filter((item) => item.subjectId === target.subjectId && item.capacityMinutes > item.minutes).sort((a, b) => b.capacityMinutes - b.minutes - (a.capacityMinutes - a.minutes))[0];
+    const transferMinutes = Math.min(40, Math.floor(source.minutes * 0.25), source.minutes - 30, (sourceItem?.minutes || 0) - 15, (targetItem?.capacityMinutes || 0) - (targetItem?.minutes || 0));
+    if (transferMinutes < 15) return { state: "insufficient", reason: "A carga atual não permite redistribuir um bloco útil sem reduzir a manutenção.", algorithmVersion: ADAPTIVE_PLANNING_VERSION };
+    return {
+      state: "proposal",
+      algorithmVersion: ADAPTIVE_PLANNING_VERSION,
+      transferMinutes,
+      weeklyBudgetMinutes: budget,
+      from: { subjectId: source.subjectId, name: source.subjectName, beforeMinutes: source.minutes, afterMinutes: source.minutes - transferMinutes, mastery: source.mastery },
+      to: { subjectId: target.subjectId, name: target.subjectName, beforeMinutes: target.minutes, afterMinutes: target.minutes + transferMinutes, mastery: target.mastery, impact: target.impact, falling: target.falling },
+      reason: "Redistribuição sugerida pelos indicadores disponíveis; a capacidade semanal permanece igual.",
+      applied: false
+    };
+  }
+  var scaleMix = (mix, minutes) => {
+    const keys = ["theory", "questions", "reviews"], total = keys.reduce((sum4, key2) => sum4 + (Number(mix?.[key2]) || 0), 0);
+    if (!total) return { theory: minutes, questions: 0, reviews: 0 };
+    const next = Object.fromEntries(keys.map((key2) => [key2, Math.floor(minutes * (Number(mix[key2]) || 0) / total)]));
+    next[keys.sort((a, b) => (Number(mix[b]) || 0) - (Number(mix[a]) || 0))[0]] += minutes - Object.values(next).reduce((sum4, value2) => sum4 + value2, 0);
+    return next;
+  };
+  function applyAdaptivePlanningAdvice(plan, advice) {
+    if (advice?.state !== "proposal" || advice.applied || !plan?.items?.length) return null;
+    const from = plan.items.filter((item) => item.subjectId === advice.from.subjectId && item.minutes > 15).sort((a, b) => b.minutes - a.minutes)[0];
+    const to = plan.items.filter((item) => item.subjectId === advice.to.subjectId && item.capacityMinutes > item.minutes).sort((a, b) => b.capacityMinutes - b.minutes - (a.capacityMinutes - a.minutes))[0];
+    if (!from || !to) return null;
+    const moved = Math.min(advice.transferMinutes, from.minutes - 15, to.capacityMinutes - to.minutes);
+    if (moved < 15) return null;
+    const next = structuredClone(plan), source = next.items.find((item) => item.id === from.id), target = next.items.find((item) => item.id === to.id);
+    source.minutes -= moved;
+    target.minutes += moved;
+    source.activityMix = scaleMix(source.activityMix, source.minutes);
+    target.activityMix = scaleMix(target.activityMix, target.minutes);
+    next.subjects = next.subjects.map((item) => item.subjectId === advice.from.subjectId ? { ...item, minutes: item.minutes - moved } : item.subjectId === advice.to.subjectId ? { ...item, minutes: item.minutes + moved } : item);
+    next.maintenanceMinutes = next.items.filter((item) => item.covered).reduce((sum4, item) => sum4 + item.minutes, 0);
+    next.adaptiveAdvice = { ...advice, transferMinutes: moved, applied: true };
+    return next;
+  }
+
   // src/domain/sessions/study-session.js
   var STUDY_SESSION_TYPES = Object.freeze(["study", "review", "questions", "simulation"]);
   var STUDY_SESSION_SOURCES = Object.freeze(["manual", "plan", "recommendation", "import"]);
@@ -22085,10 +22149,21 @@
   function buildCurrentStudyPlanProposal({ guidedDefaults = false } = {}) {
     const days = state.examDate ? diasParaRevisao(state.examDate) : null;
     const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce((sum4, hours) => sum4 + Math.max(0, Number(hours) || 0) * 60, 0);
-    return studyPlanService.calculate({ topics: studyPlanCandidates({ guidedDefaults }), weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
+    const candidates = studyPlanCandidates({ guidedDefaults });
+    const plan = studyPlanService.calculate({ topics: candidates, weeklyAvailableMinutes, weeksUntilExam: days === null ? 0 : Math.max(0, days / 7) });
+    return { ...plan, examPhase: resolveExamPhase(days), adaptiveAdvice: buildAdaptivePlanningAdvice({ plan, candidates }) };
   }
   function calculateStudyPlanPreview() {
     studyPlanPreview = buildCurrentStudyPlanProposal();
+    renderStudyPlanBuilder();
+  }
+  function useAdaptivePlanAdvice() {
+    const adjusted = applyAdaptivePlanningAdvice(studyPlanPreview, studyPlanPreview?.adaptiveAdvice);
+    if (!adjusted) {
+      showToast("Não há capacidade livre suficiente nos tópicos indicados para aplicar esta sugestão.");
+      return;
+    }
+    studyPlanPreview = adjusted;
     renderStudyPlanBuilder();
   }
   function clearStudyPlanPreview() {
@@ -22162,6 +22237,10 @@
     const subjectRows = plan.subjects.map((item) => `<div><strong>${escapeHtml2(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join("");
     const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml2(item.subjectName)}</strong> — ${escapeHtml2(item.topicName)}<small>${escapeHtml2(item.reasonSummary || "Prioridade calculada pelos fatores disponíveis")}</small></span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? " · manutenção" : ""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
     container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? "-" : "+"}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === "deficit" ? "ritmo insuficiente" : plan.paceState === "surplus" ? "capacidade disponível" : "ritmo equilibrado"}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || "não avaliada"}${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
+    const phase = plan.examPhase;
+    const advice = plan.adaptiveAdvice;
+    const adaptiveHtml = advice?.state === "proposal" ? `<div class="replan-group"><strong>Redistribuição sugerida: ${formatPlanMinutes(advice.transferMinutes)}</strong><span>${escapeHtml2(advice.from.name)} → ${escapeHtml2(advice.to.name)}. A capacidade semanal permanece ${formatPlanMinutes(plan.weeklyPlannedMinutes)}.</span>${advice.applied ? "<small>Distribuição adaptativa aplicada nesta prévia; confirme o plano para salvar.</small>" : '<button class="btn ghost small" data-delegated-click="useAdaptivePlanAdvice()">Usar sugestão nesta prévia</button>'}</div>` : `<p class="confidence-note">Adaptação de carga: ${escapeHtml2(advice?.reason || "Aguardando evidências comparáveis.")}</p>`;
+    container.insertAdjacentHTML("afterbegin", `<div class="study-plan-confidence"><strong>Fase até a prova: ${escapeHtml2(phase?.label || "Não definida")}</strong> · ${escapeHtml2(phase?.strategy || "")}</div>${adaptiveHtml}`);
   }
   function updateExamBlueprint(field, value2, { refresh = true } = {}) {
     studyPlanPreview = null;
@@ -23955,6 +24034,7 @@
     calculateStudyPlanPreview,
     clearStudyPlanPreview,
     confirmStudyPlan,
+    useAdaptivePlanAdvice,
     calculateDailyPlanPreview,
     clearDailyPlanPreview,
     confirmDailyPlanPreview,
