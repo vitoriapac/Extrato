@@ -70,13 +70,11 @@
 
   <div class="global-search-row">
     <div class="global-search">
-          <label class="sr-only" for="globalSearchInput">Busca global</label>
-          <input type="search" id="globalSearchInput" aria-label="Buscar tópico, nota ou tag" placeholder="🔎 Buscar tópico, nota ou tag... (Ctrl+K)">
+      <label class="sr-only" for="globalSearchInput">Busca global</label>
+      <input type="search" id="globalSearchInput" aria-label="Buscar tópico, nota ou tag" placeholder="🔎 Buscar tópico, nota ou tag... (Ctrl+K)">
       <div class="search-results" id="globalSearchResults"></div>
     </div>
-    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para modo escuro">
-      <span id="themeToggleIcon">🌙</span>
-    </button>
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon">🌙</span></button>
   </div>
 
   <div class="sticky-shell">
@@ -542,6 +540,13 @@
       Progresso = Atingido / Meta. As metas semanal e mensal contam tópicos concluídos; questões e simulados contam o que foi registrado na aba anterior, sempre na semana atual.
     </p>
     <div id="metasContainer"></div>
+
+    <div class="chart-card result-goals-card">
+      <h3>Comparação entre períodos</h3>
+      <p class="analytics-note">Compare registros do mesmo escopo com o intervalo imediatamente anterior. Métricas sem evidência suficiente permanecem sem valor.</p>
+      <div class="period-comparison-controls"><label>Período<select id="periodComparisonPreset" class="select-control"><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="month">Este mês</option><option value="custom">Escolher datas</option></select></label><label id="periodComparisonStartWrap" hidden>De<input id="periodComparisonStart" type="date"></label><label id="periodComparisonEndWrap" hidden>Até<input id="periodComparisonEnd" type="date"></label></div>
+      <div id="periodComparisonResults" aria-live="polite"></div>
+    </div>
 
     <div class="chart-card">
       <h3>Configuração estratégica da prova</h3>

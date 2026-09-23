@@ -82,6 +82,8 @@ import {renderStructuredImport} from './features/structured-import/structured-im
 import {parseStructuredStudyContent,createStructuredContentImportService} from './application/subjects/structured-content-import.js';
 import {createApplicationRenderer} from './ui/renderers/application-renderer.js';
 import {createGoalService} from './application/goals/goal-service.js';
+import {buildResultGoalsViewModel} from './application/goals/build-result-goals-view-model.js';
+import {buildPeriodComparisonViewModel} from './application/analytics/build-period-comparison-view-model.js';
 import {buildWeeklyAvailability} from './application/goals/weekly-availability.js';
 import {buildPriorityViewModel} from './ui/view-models/priority-view-model.js';
 import {buildStudyTimeViewModel} from './application/analytics/build-overview-view-model.js';
@@ -154,6 +156,9 @@ document.getElementById('exportReportBtn')?.addEventListener('click',()=>{
   printStrategicReport({document,window,report,render:renderStrategicReport});
 });
 document.getElementById('reportPeriodSelect')?.addEventListener('change',event=>{const custom=event.target.value==='custom';document.getElementById('reportPeriodStart').hidden=!custom;document.getElementById('reportPeriodEnd').hidden=!custom});
+document.getElementById('periodComparisonPreset')?.addEventListener('change',renderSelectedPeriodComparison);
+document.getElementById('periodComparisonStart')?.addEventListener('change',renderSelectedPeriodComparison);
+document.getElementById('periodComparisonEnd')?.addEventListener('change',renderSelectedPeriodComparison);
 
 const ERROR_CATEGORIES = {
   naoSabia:{label:'Não sabia',icon:'📚'},
@@ -1641,13 +1646,14 @@ function renderDesempenhoDisciplina(){
 }
 
 /* ===== BUSCA GLOBAL ===== */
+const normalizeSearchText=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
 function performGlobalSearch(query){
-  const q = query.trim().toLowerCase();
+  const q = normalizeSearchText(query.trim());
   if(!q) return [];
   const results = [];
   state.subjects.forEach(s => {
     s.topics.forEach(t => {
-      const hay = [t.name||'', t.notes||'', ...(t.tags||[])].join(' ').toLowerCase();
+      const hay = normalizeSearchText([t.name||'', t.notes||'', ...(t.tags||[])].join(' '));
       if(hay.includes(q)){
         results.push({ subjectId: s.id, subjectName: s.name, topicId: t.id, topicName: t.name || '(sem nome)' });
       }
@@ -1655,24 +1661,45 @@ function performGlobalSearch(query){
   });
   return results.slice(0, 8);
 }
+const SEARCH_COMMANDS=[
+  {label:'Visão Geral',keywords:'inicio dashboard resumo prontidao',tab:'dashboard'},
+  {label:'Ir para Hoje',keywords:'hoje tarefa recomendacao estudo',tab:'hoje'},
+  {label:'Abrir Disciplinas',keywords:'materias edital topicos',tab:'disciplinas'},
+  {label:'Abrir Calendário',keywords:'calendario sessoes datas',tab:'calendario'},
+  {label:'Abrir Agenda de Revisões',keywords:'agenda revisao atrasadas',tab:'agenda'},
+  {label:'Abrir Questões e Simulados',keywords:'questoes erros simulados desempenho',tab:'questoes'},
+  {label:'Abrir Metas e Planejamento',keywords:'metas capacidade plano estrategia',tab:'metas'},
+  {label:'Abrir Instruções',keywords:'ajuda guia como usar instrucoes',tab:'instrucoes'},
+  {label:'Exportar relatório PDF',keywords:'pdf relatorio imprimir exportar',action:'report'}
+];
 function renderGlobalSearchResults(){
   const input = document.getElementById('globalSearchInput');
   const panel = document.getElementById('globalSearchResults');
   const q = input.value;
   if(!q.trim()){ panel.classList.remove('show'); panel.innerHTML=''; return; }
-  const results = performGlobalSearch(q);
-  if(results.length === 0){
+  const normalized=normalizeSearchText(q.trim()),commands=SEARCH_COMMANDS.filter(item=>normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalized)).slice(0,4),results = performGlobalSearch(q);
+  if(results.length === 0&&commands.length===0){
     panel.innerHTML = `<div class="search-result-empty">Nada encontrado pra "${escapeHtml(q)}"</div>`;
   } else {
-    panel.innerHTML = results.map(r => `
-      <div class="search-result-item" onmousedown="jumpToTopic('${r.subjectId}','${r.topicId}')">
+    panel.innerHTML = [...commands.map(command=>`<button type="button" class="search-result-item search-command" data-search-tab="${escapeAttr(command.tab||'')}" data-search-action="${escapeAttr(command.action||'')}"><strong>${escapeHtml(command.label)}</strong><span>Ação da aplicação</span></button>`),...results.map(r => `
+      <button type="button" class="search-result-item" data-search-topic="${escapeAttr(r.topicId)}" data-search-subject="${escapeAttr(r.subjectId)}">
         <strong>${escapeHtml(r.topicName)}</strong>
         <span>${escapeHtml(r.subjectName)}</span>
-      </div>
-    `).join('');
+      </button>
+    `)].join('');
   }
   panel.classList.add('show');
+  const inputRect=input.getBoundingClientRect(),left=Math.max(8,inputRect.left),width=Math.min(inputRect.width,innerWidth-left-8),top=Math.min(inputRect.bottom+4,innerHeight-80);
+  panel.style.left=`${left}px`;panel.style.width=`${Math.max(180,width)}px`;panel.style.top=`${Math.max(8,top)}px`;
 }
+document.getElementById('globalSearchResults').addEventListener('click',event=>{
+  const button=event.target.closest('.search-result-item');if(!button)return;
+  if(button.dataset.searchTopic){jumpToTopic(button.dataset.searchSubject,button.dataset.searchTopic);return}
+  if(button.dataset.searchAction==='report'){document.getElementById('exportReportBtn')?.click();document.getElementById('globalSearchResults').classList.remove('show');document.getElementById('globalSearchInput').blur();return}
+  if(button.dataset.searchTab){activateTab(button.dataset.searchTab);document.getElementById('globalSearchResults').classList.remove('show');document.getElementById('globalSearchInput').blur()}
+});
+document.getElementById('globalSearchInput').addEventListener('keydown',event=>{if(event.key==='ArrowDown'){const first=document.querySelector('#globalSearchResults .search-result-item');if(first){event.preventDefault();first.focus()}}});
+document.getElementById('globalSearchResults').addEventListener('keydown',event=>{if(!['ArrowDown','ArrowUp'].includes(event.key))return;const items=[...document.querySelectorAll('#globalSearchResults .search-result-item')],index=items.indexOf(document.activeElement),next=event.key==='ArrowDown'?Math.min(items.length-1,index+1):Math.max(0,index-1);if(items.length){event.preventDefault();items[next]?.focus()}});
 function jumpToTopic(subjectId, topicId){
   const s = state.subjects.find(x=>x.id===subjectId);
   if(s) s.collapsed = false;
@@ -3207,6 +3234,8 @@ function renderMetas(){
   const atingidoMensal = contarTopicosConcluidosNoPeriodo(isSameMonth);
   const atingidoQuestoes = somarQuestoesNaSemana();
   const atingidoSimulados = contarSimuladosNaSemana();
+  const hasAccuracyEvidence=state.questoes.some(item=>Number(item.resolved)>0)||state.simulados.some(item=>Number(item.total)>0);
+  const resultGoals=buildResultGoalsViewModel({goals:m,achieved:{weeklyTopics:atingidoSemanal,monthlyTopics:atingidoMensal,questions:atingidoQuestoes,simulations:atingidoSimulados,accuracy:hasAccuracyEvidence?taxaAcertoGeral():null}});
 
   const cards = [
     { key:'semanal', label:'Meta Semanal', desc:'Tópicos concluídos esta semana', atingido: atingidoSemanal, meta: m.semanal },
@@ -3216,7 +3245,8 @@ function renderMetas(){
   ];
 
   document.getElementById('metasContainer').innerHTML = cards.map(c => {
-    const pct = c.meta > 0 ? Math.round((c.atingido/c.meta)*100) : 0;
+    const goalId={semanal:'weeklyTopics',mensal:'monthlyTopics',questoesSemanal:'questions',simuladosSemanal:'simulations'}[c.key],goal=resultGoals.items.find(item=>item.id===goalId);
+    const pct = goal?.progress??0;
     const pctDisplay = Math.min(pct, 100);
     return `
     <div class="meta-card">
@@ -3229,14 +3259,15 @@ function renderMetas(){
           <div class="meta-progress-fill ${pct>=100?'over':''}" style="width:${pctDisplay}%"></div>
         </div>
         <div class="meta-progress-label">
-          <span>${c.atingido} / ${c.meta}</span>
-          <span>${pct}%</span>
+          <span>${goal?.measured?c.atingido:'Sem dados'} / ${c.meta}</span>
+          <span>${goal?.progress==null?'Aguardando registros':`${pct}%`}</span>
         </div>
       </div>
       <div class="meta-inputs">
         Meta:
         <input type="number" min="0" value="${c.meta}" data-delegated-blur="updateMeta('${c.key}', this.value)">
       </div>
+      <small class="result-goal-status">${goal?.state==='achieved'?'Meta atingida':goal?.remaining!=null?`Faltam ${goal.remaining} para atingir a meta`:'Aguardando registros'}</small>
     </div>`;
   }).join('') + `
     <div class="meta-card">
@@ -3246,10 +3277,10 @@ function renderMetas(){
       </div>
       <div class="meta-progress-block">
         <div class="meta-progress-track">
-          <div class="meta-progress-fill ${taxaAcertoGeral()>=state.metas.metaAprovacao?'over':''}" style="width:${Math.min(taxaAcertoGeral(),100)}%"></div>
+          <div class="meta-progress-fill ${resultGoals.items.find(item=>item.id==='accuracy')?.state==='achieved'?'over':''}" style="width:${resultGoals.items.find(item=>item.id==='accuracy')?.progressClamped||0}%"></div>
         </div>
         <div class="meta-progress-label">
-          <span>Atual: ${taxaAcertoGeral()}%</span>
+          <span>Atual: ${resultGoals.items.find(item=>item.id==='accuracy')?.current==null?'Sem dados':resultGoals.items.find(item=>item.id==='accuracy').current+'%'}</span>
           <span>Meta: ${state.metas.metaAprovacao}%</span>
         </div>
       </div>
@@ -3257,7 +3288,9 @@ function renderMetas(){
         Meta:
         <input type="number" min="0" max="100" value="${state.metas.metaAprovacao}" data-delegated-blur="updateMeta('metaAprovacao', this.value)">%
       </div>
+      <small class="result-goal-status">${resultGoals.items.find(item=>item.id==='accuracy')?.state==='achieved'?'Meta de acerto atingida':hasAccuracyEvidence?'Meta ainda não atingida':'Aguardando questões ou simulados para calcular o acerto'}</small>
     </div>`;
+  renderSelectedPeriodComparison();
 }
 
 function updateMeta(key, value){
@@ -3482,6 +3515,19 @@ function renderHistoricoMetas(){
     </table>
     </div>
   `;
+}
+
+function renderSelectedPeriodComparison(){
+  const container=document.getElementById('periodComparisonResults'),preset=document.getElementById('periodComparisonPreset');if(!container||!preset)return;
+  const startWrap=document.getElementById('periodComparisonStartWrap'),endWrap=document.getElementById('periodComparisonEndWrap'),custom=preset.value==='custom';
+  if(startWrap)startWrap.hidden=!custom;if(endWrap)endWrap.hidden=!custom;
+  const start=document.getElementById('periodComparisonStart')?.value||null,end=document.getElementById('periodComparisonEnd')?.value||null;
+  if(custom&&(!start||!end||start>end)){container.innerHTML='<p class="diagnosis-empty">Escolha um intervalo válido para comparar os períodos.</p>';return}
+  const reviews=state.reviewAgenda.map(item=>({...item,date:item.completedAt?localDateFromTimestamp(item.completedAt):item.date}));
+  const model=buildPeriodComparisonViewModel({sessions:state.studySessions,questions:state.questoes,reviews,today:todayISO(),preset:preset.value,start,end});
+  const format=(metric,value)=>value==null?'Dados insuficientes':metric.unit==='min'?`${Math.floor(value/60)}h ${String(value%60).padStart(2,'0')}min`:metric.unit==='percentage_points'?`${value}%`:String(value);
+  const delta=metric=>metric.delta==null?'Sem comparação':metric.unit==='percentage_points'?`${metric.delta>0?'+':''}${metric.delta} p.p.`:metric.unit==='min'?`${metric.delta>0?'+':'−'}${Math.floor(Math.abs(metric.delta)/60)}h ${String(Math.abs(metric.delta)%60).padStart(2,'0')}min`:`${metric.delta>0?'+':''}${metric.delta}`;
+  container.innerHTML=`<p class="period-comparison-caption"><strong>${escapeHtml(model.currentPeriod.label)}</strong> · ${escapeHtml(model.currentPeriod.start)} a ${escapeHtml(model.currentPeriod.end)} <span>comparado com ${escapeHtml(model.previousPeriod.start)} a ${escapeHtml(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><b>${format(metric,metric.previous)}</b><b>${format(metric,metric.current)}</b><b class="comparison-delta ${metric.state}">${delta(metric)}</b></div>`).join('')}</div>`;
 }
 
 /* ===== ESTIMATIVA DE RITMO ===== */
