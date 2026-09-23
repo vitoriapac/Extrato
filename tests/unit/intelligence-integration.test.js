@@ -24,6 +24,12 @@ test('recomendação e plano usam a mesma pontuação e ordenação para histór
   assert.deepEqual(recommendations.map(item=>item.id),['fraco','forte']);
   assert.deepEqual(plan.items.map(item=>item.id),['fraco','forte']);
   for(const item of plan.items)assert.equal(item.score,recommendations.find(r=>r.id===item.id).score);
+  for(const item of plan.items){
+    const recommendation=recommendations.find(row=>row.id===item.id);
+    assert.equal(item.reasonSummary,recommendation.reasonSummary);
+    assert.equal(item.primaryReason,recommendation.primaryReason);
+    assert.equal(item.algorithmVersion,recommendation.algorithmVersion);
+  }
 });
 
 test('tópico de três horas cabe em sessão de trinta minutos sem reduzir a carga do plano',()=>{

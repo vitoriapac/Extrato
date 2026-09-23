@@ -1,4 +1,4 @@
-import {calculatePriorityScore} from '../domain/analytics/priority-score.js';
+import {scoreStudyDecision} from './study-decision.js';
 import {describeScoreEvidence} from '../domain/analytics/score-evidence.js';
 import {canStudy,needsMaintenance,sessionMinutes,resolveStudyEligibility} from '../domain/study-eligibility.js';
 
@@ -20,7 +20,7 @@ export function buildStudyPlan({topics=[],weeklyAvailableMinutes=0,weeksUntilExa
   const base={weeklyAvailableMinutes:availability,weeksUntilExam:weeks,remainingMinutes,maintenanceMinutes,weeklyNeedMinutes,weeklyBalanceMinutes,paceState,missingEffort,blockedTopics};
   if(!configured.length||availability<=0||weeks<=0)return {...base,state:'insufficient',items:[],subjects:[],activityMix:{theory:0,questions:0,reviews:0},confidence:0};
   const weeklyBudget=Math.min(availability,weeklyNeedMinutes);
-  const scored=configured.map(item=>({...item,...calculatePriorityScore(item),capacityMinutes:effort(item)})).sort((a,b)=>b.score-a.score||String(a.id).localeCompare(String(b.id)));
+  const scored=configured.map(item=>({...scoreStudyDecision(item),capacityMinutes:effort(item)})).sort((a,b)=>b.score-a.score||String(a.id).localeCompare(String(b.id)));
   const totalScore=scored.reduce((sum,item)=>sum+Math.max(1,item.score),0);
   const allocations=new Map(scored.map(item=>[item.id,Math.min(item.capacityMinutes,Math.floor(weeklyBudget*Math.max(1,item.score)/totalScore))]));
   let unallocated=weeklyBudget-[...allocations.values()].reduce((sum,value)=>sum+value,0);

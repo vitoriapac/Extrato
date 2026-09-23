@@ -1009,6 +1009,13 @@
     };
   }
 
+  // src/application/study-decision.js
+  function scoreStudyDecision(candidate = {}) {
+    const score = calculatePriorityScore(candidate);
+    const reasons = score.reasons;
+    return { ...candidate, ...score, primaryReason: reasons[0], reasonSummary: reasons.join(" · ") };
+  }
+
   // src/domain/study-eligibility.js
   var MIN_SESSION_MINUTES = 15;
   function needsMaintenance(item) {
@@ -1057,7 +1064,7 @@
     const availableMinutes = Math.max(0, Number(options.availableMinutes) || 0);
     const excluded = new Set(options.excludedIds || []);
     const eligible = resolveStudyEligibility(candidates, options.topics);
-    return eligible.filter((item) => canStudy(item) && !excluded.has(item.id)).map((item) => ({ ...item, ...calculatePriorityScore(item), estimatedMinutes: sessionMinutes(item, availableMinutes) })).filter((item) => item.estimatedMinutes > 0 && Object.keys(item.factors).length).sort((a, b) => b.score - a.score || a.estimatedMinutes - b.estimatedMinutes || String(a.id).localeCompare(String(b.id)));
+    return eligible.filter((item) => canStudy(item) && !excluded.has(item.id)).map((item) => ({ ...scoreStudyDecision(item), estimatedMinutes: sessionMinutes(item, availableMinutes) })).filter((item) => item.estimatedMinutes > 0 && Object.keys(item.factors).length).sort((a, b) => b.score - a.score || a.estimatedMinutes - b.estimatedMinutes || String(a.id).localeCompare(String(b.id)));
   }
 
   // src/domain/diagnostics/risk-score.js
@@ -1183,7 +1190,7 @@
         improvementPotential: signals.masteryGap,
         effortEfficiency: Math.max(10, 100 - sessionMinutes2)
       };
-      return { ...candidate, ...calculatePriorityScore(candidate) };
+      return scoreStudyDecision(candidate);
     });
     const prerequisites = topics.map((topic) => ({ ...topic, covered: topic.status === "Concluído", archived: topic.archived || topic.topicArchived || topic.subjectArchived, mastery: candidates.find((item) => item.topicId === topic.id)?.mastery ?? null }));
     return withPrerequisiteEligibility(candidates, prerequisites);
@@ -1548,7 +1555,7 @@
     const base = { weeklyAvailableMinutes: availability, weeksUntilExam: weeks, remainingMinutes, maintenanceMinutes, weeklyNeedMinutes, weeklyBalanceMinutes, paceState, missingEffort, blockedTopics };
     if (!configured.length || availability <= 0 || weeks <= 0) return { ...base, state: "insufficient", items: [], subjects: [], activityMix: { theory: 0, questions: 0, reviews: 0 }, confidence: 0 };
     const weeklyBudget = Math.min(availability, weeklyNeedMinutes);
-    const scored = configured.map((item) => ({ ...item, ...calculatePriorityScore(item), capacityMinutes: effort(item) })).sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));
+    const scored = configured.map((item) => ({ ...scoreStudyDecision(item), capacityMinutes: effort(item) })).sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));
     const totalScore = scored.reduce((sum4, item) => sum4 + Math.max(1, item.score), 0);
     const allocations = new Map(scored.map((item) => [item.id, Math.min(item.capacityMinutes, Math.floor(weeklyBudget * Math.max(1, item.score) / totalScore))]));
     let unallocated = weeklyBudget - [...allocations.values()].reduce((sum4, value2) => sum4 + value2, 0);
@@ -22126,7 +22133,7 @@
       return;
     }
     const subjectRows = plan.subjects.map((item) => `<div><strong>${escapeHtml2(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join("");
-    const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml2(item.subjectName)}</strong> — ${escapeHtml2(item.topicName)}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? " · manutenção" : ""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
+    const topicRows = plan.items.slice(0, 8).map((item) => `<div class="study-plan-topic"><span><strong>${escapeHtml2(item.subjectName)}</strong> — ${escapeHtml2(item.topicName)}<small>${escapeHtml2(item.reasonSummary || "Prioridade calculada pelos fatores disponíveis")}</small></span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? " · manutenção" : ""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join("");
     container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? "-" : "+"}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === "deficit" ? "ritmo insuficiente" : plan.paceState === "surplus" ? "capacidade disponível" : "ritmo equilibrado"}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || "não avaliada"}${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? "" : "s"} sem esforço estimado` : ""}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
   }
   function updateExamBlueprint(field, value2, { refresh = true } = {}) {
@@ -22469,6 +22476,7 @@
     return recommendStudy(intelligenceCandidates(), { availableMinutes: Math.round(metaHoursToday() * 60) }).map((item) => ({ ...item, tier: item.score >= 70 ? "Alta" : item.score >= 40 ? "Média" : "Baixa" }));
   }
   function motivoPrioridade(priority) {
+    if (priority.reasonSummary) return priority.reasonSummary;
     if (priority.reasons?.length) return priority.reasons.join(" · ");
     if (priority.diasAtrasado > 0) return "Revisão atrasada (" + priority.diasAtrasado + "d)";
     const diagnosis = priority.diagnosis;

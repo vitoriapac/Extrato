@@ -1,4 +1,4 @@
-import {calculatePriorityScore} from '../domain/analytics/priority-score.js';
+import {scoreStudyDecision} from './study-decision.js';
 import {calculateRiskScore} from '../domain/diagnostics/risk-score.js';
 import {withPrerequisiteEligibility} from '../domain/study-eligibility.js';
 import {resolveTopicExamImpact} from '../domain/analytics/topic-strategy.js';
@@ -29,7 +29,7 @@ export function buildStudyCandidates({priorities=[],topics=[],retentions={},revi
       frequency:daysSinceContact===null?null:Math.max(0,100-daysSinceContact*5),
       planAlignment:priority.tipo==='continuar'?90:priority.tipo==='revisão'?80:55,
       improvementPotential:signals.masteryGap,effortEfficiency:Math.max(10,100-sessionMinutes)};
-    return {...candidate,...calculatePriorityScore(candidate)};
+    return scoreStudyDecision(candidate);
   });
   const prerequisites=topics.map(topic=>({...topic,covered:topic.status==='Concluído',archived:topic.archived||topic.topicArchived||topic.subjectArchived,mastery:candidates.find(item=>item.topicId===topic.id)?.mastery??null}));
   return withPrerequisiteEligibility(candidates,prerequisites);
