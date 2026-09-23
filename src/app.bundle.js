@@ -1118,6 +1118,31 @@
     return reachesTopic(candidateId);
   }
 
+  // src/domain/analytics/topic-signals.js
+  var finite2 = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Math.max(0, Math.min(100, Number(value2)));
+  function buildTopicSignals({ topic = {}, priority = {}, mastery = null, retention = null, reviewHealth = null, examImpact = null, daysSinceContact = null, reviewUrgency = 0, evidenceStrength = 0 } = {}) {
+    const trend = priority.diagnosis?.trend || null;
+    const signals = {
+      topicId: priority.topicId || topic.id || null,
+      subjectId: priority.subjectId || topic.subjectId || null,
+      examImpact: finite2(examImpact),
+      coverage: topic.status === "Concluído" ? 100 : topic.status === "Em andamento" ? 50 : 0,
+      mastery: finite2(mastery),
+      retention: finite2(retention?.available ? retention.score : null),
+      reviewHealth: finite2(reviewHealth?.value),
+      trend,
+      trendRisk: trendToRisk(trend),
+      daysSinceContact: daysSinceContact == null ? null : Math.max(0, Number(daysSinceContact) || 0),
+      reviewUrgency: finite2(reviewUrgency),
+      evidenceStrength: Math.max(0, Math.min(1, Number(evidenceStrength) || 0))
+    };
+    signals.masteryGap = signals.mastery == null ? null : 100 - signals.mastery;
+    signals.retentionRisk = signals.retention == null ? null : 100 - signals.retention;
+    signals.reviewHealthRisk = signals.reviewHealth == null ? null : 100 - signals.reviewHealth;
+    signals.recencyRisk = signals.daysSinceContact == null ? null : Math.min(100, signals.daysSinceContact * 5);
+    return signals;
+  }
+
   // src/application/build-study-candidates.js
   function buildStudyCandidates({ priorities = [], topics = [], retentions = {}, reviewHealths = {}, blueprint = [], sessions = [], today, examProximity = null, activeExamTags = [] } = {}) {
     const catalog = new Map(topics.map((topic) => [topic.id, topic]));
@@ -1132,16 +1157,11 @@
       const covered = topic?.status === "Concluído";
       const reviewUrgency = priority.tipo === "revisão" ? Math.min(100, 40 + Math.max(0, Number(priority.diasAtrasado) || 0) * 12) : 0;
       const difficultyMinutes = topic?.difficulty === "Difícil" ? 55 : topic?.difficulty === "Fácil" ? 30 : 40, sessionMinutes2 = Math.max(15, Math.min(60, Number(priority.estimatedMinutes) || difficultyMinutes));
-      const trend = diagnosis?.trend;
-      const trendRisk = trendToRisk(trend);
       const evidenceStrength = ((diagnosis?.mastery?.confidence || 0) + (retention?.confidence || 0)) / 2;
-      const recencyRisk = daysSinceContact === null ? null : Math.min(100, daysSinceContact * 5);
-      const retentionRisk = retention?.available ? 100 - retention.score : null;
-      const reviewHealthRisk = reviewHealth?.value == null ? null : 100 - reviewHealth.value;
-      const masteryGap = mastery === null ? null : 100 - mastery;
+      const signals = buildTopicSignals({ topic, priority, mastery, retention, reviewHealth, examImpact, daysSinceContact, reviewUrgency, evidenceStrength });
       const studiedMinutes = sessions.filter((session) => session.topicId === priority.topicId && session.date <= today && session.type === "study").reduce((sum4, session) => sum4 + Math.max(0, Number(session.durationSeconds) || 0) / 60, 0);
       const remainingMinutes = topic?.estimatedStudyMinutes == null ? null : Math.max(0, Math.ceil(topic.estimatedStudyMinutes - studiedMinutes));
-      const risk = calculateRiskScore({ masteryRisk: masteryGap, retentionRisk, trendRisk, recencyRisk, examImpact, examProximity }, void 0, { evidenceStrength });
+      const risk = calculateRiskScore({ masteryRisk: signals.masteryGap, retentionRisk: signals.retentionRisk, trendRisk: signals.trendRisk, recencyRisk: signals.recencyRisk, examImpact: signals.examImpact, examProximity }, void 0, { evidenceStrength });
       const candidate = {
         ...priority,
         id: priority.topicId || priority.id,
@@ -1155,25 +1175,13 @@
         sessionMinutes: sessionMinutes2,
         action: priority.recommendedAction,
         risk,
-        examImpact,
-        mastery,
-        masteryGap,
-        retention: retention?.available ? retention.score : null,
-        retentionRisk,
-        retentionNeed: retentionRisk,
+        ...signals,
+        retentionNeed: signals.retentionRisk,
         reviewHealth,
-        reviewHealthRisk,
-        reviewUrgency,
-        coverage: covered ? 100 : topic?.status === "Em andamento" ? 50 : 0,
         frequency: daysSinceContact === null ? null : Math.max(0, 100 - daysSinceContact * 5),
-        daysSinceContact,
-        recencyRisk,
         planAlignment: priority.tipo === "continuar" ? 90 : priority.tipo === "revisão" ? 80 : 55,
-        trend,
-        trendRisk,
-        improvementPotential: masteryGap,
-        effortEfficiency: Math.max(10, 100 - sessionMinutes2),
-        evidenceStrength
+        improvementPotential: signals.masteryGap,
+        effortEfficiency: Math.max(10, 100 - sessionMinutes2)
       };
       return { ...candidate, ...calculatePriorityScore(candidate) };
     });
@@ -16712,7 +16720,7 @@
   // src/application/subjects/structured-content-import.js
   var clean = (value2) => String(value2 ?? "").trim();
   var key = (value2) => clean(value2).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, " ").trim().toLocaleLowerCase("pt-BR");
-  var finite2 = (value2) => value2 === "" || value2 == null ? null : Number.isFinite(Number(value2)) ? Number(value2) : null;
+  var finite3 = (value2) => value2 === "" || value2 == null ? null : Number.isFinite(Number(value2)) ? Number(value2) : null;
   var DIFFICULTIES = /* @__PURE__ */ new Set(["Fácil", "Médio", "Difícil"]);
   var IMPORTABLE_FIELDS = ["difficulty", "examImportance", "estimatedStudyMinutes"];
   var headerAliases = { disciplina: "subject", materia: "subject", subject: "subject", topico: "topic", conteudo: "topic", topic: "topic", dificuldade: "difficulty", difficulty: "difficulty", importancia: "importance", impacto: "importance", examimportance: "importance", esforco: "effort", minutos: "effort", estimatedstudyminutes: "effort", tags: "tags", etiquetas: "tags" };
@@ -16761,7 +16769,7 @@
     return rows;
   }
   function normalizedTopic(input = {}, line = null, issues = []) {
-    const name = clean(input.name ?? input.topic ?? input.topico ?? input.conteudo), rawDifficulty = clean(input.difficulty ?? input.dificuldade), importance = finite2(input.importance ?? input.importancia ?? input.examImportance), effort = finite2(input.effort ?? input.esforco ?? input.estimatedStudyMinutes);
+    const name = clean(input.name ?? input.topic ?? input.topico ?? input.conteudo), rawDifficulty = clean(input.difficulty ?? input.dificuldade), importance = finite3(input.importance ?? input.importancia ?? input.examImportance), effort = finite3(input.effort ?? input.esforco ?? input.estimatedStudyMinutes);
     if (!name) issues.push(problem(line, "topico", "required", 'O campo "topico" está vazio.'));
     if (rawDifficulty && !DIFFICULTIES.has(rawDifficulty)) issues.push(problem(line, "dificuldade", "invalid", 'Use Fácil, Médio ou Difícil em "dificuldade".'));
     if ((input.importance ?? input.importancia ?? input.examImportance) !== void 0 && importance == null) issues.push(problem(line, "importancia", "invalid", 'O campo "importancia" precisa ser numérico.'));
@@ -18222,10 +18230,10 @@
 
   // src/domain/analytics/gap-map.js
   var GAP_MAP_VERSION = "2.0.0";
-  var finite3 = (value2) => Number.isFinite(Number(value2)) ? Math.max(0, Math.min(100, Number(value2))) : null;
+  var finite4 = (value2) => Number.isFinite(Number(value2)) ? Math.max(0, Math.min(100, Number(value2))) : null;
   function buildGapMap(rows = [], { limit = 10 } = {}) {
     const weights = { masteryGap: 0.3, examImpact: 0.3, retentionRisk: 0.2, trendRisk: 0.1, coverageGap: 0.1 }, list = (Array.isArray(rows) ? rows : []).map((row) => {
-      const mastery = finite3(row.mastery), impact = finite3(row.examImpact), retention = finite3(row.retention), trendRisk = finite3(row.trendRisk), coverage = finite3(row.coverage), factors = { masteryGap: mastery == null ? null : 100 - mastery, examImpact: impact, retentionRisk: retention == null ? null : 100 - retention, trendRisk, coverageGap: coverage == null ? null : 100 - coverage }, available = Object.entries(factors).filter(([, value2]) => value2 != null), weight = available.reduce((sum4, [key2]) => sum4 + weights[key2], 0), score = weight ? Math.round(available.reduce((sum4, [key2, value2]) => sum4 + value2 * weights[key2], 0) / weight) : null, confidence2 = available.length / Object.keys(weights).length;
+      const mastery = finite4(row.mastery), impact = finite4(row.examImpact), retention = finite4(row.retention), trendRisk = finite4(row.trendRisk), coverage = finite4(row.coverage), factors = { masteryGap: mastery == null ? null : 100 - mastery, examImpact: impact, retentionRisk: retention == null ? null : 100 - retention, trendRisk, coverageGap: coverage == null ? null : 100 - coverage }, available = Object.entries(factors).filter(([, value2]) => value2 != null), weight = available.reduce((sum4, [key2]) => sum4 + weights[key2], 0), score = weight ? Math.round(available.reduce((sum4, [key2, value2]) => sum4 + value2 * weights[key2], 0) / weight) : null, confidence2 = available.length / Object.keys(weights).length;
       return { ...row, gap: factors.masteryGap, priority: score, severity: score == null ? "insufficient" : score >= 70 ? "critical" : score >= 45 ? "high" : score >= 25 ? "medium" : "low", confidence: confidence2, evidence: { availableFactors: available.map(([key2]) => key2), missingFactors: Object.keys(weights).filter((key2) => factors[key2] == null) }, factors, reason: factors.masteryGap == null ? "Sem evidência de domínio" : `Gap de ${factors.masteryGap} pontos com impacto de prova ${impact ?? "não informado"}%`, recommendedAction: (score ?? 0) >= 60 ? "Revisar e resolver questões" : "Manter revisão espaçada" };
     }).sort((a, b) => (b.priority ?? -1) - (a.priority ?? -1));
     return { algorithmVersion: GAP_MAP_VERSION, state: list.length ? "available" : "insufficient", items: list.slice(0, limit), total: list.length };
