@@ -23,6 +23,7 @@ test('adaptação depende de evidência e preserva carga semanal antes da confir
   assert.equal(buildAdaptivePlanningAdvice({plan,candidates:[{...candidates[0],evidenceStrength:.1},candidates[1]]}).state,'insufficient');
   const advice=buildAdaptivePlanningAdvice({plan,candidates});
   assert.equal(advice.state,'proposal');assert.equal(advice.weeklyBudgetMinutes,180);
+  assert.equal(advice.rationale.length,4);assert.match(advice.rationale.join(' '),/Impacto.*85\/100/);
   assert.equal(plan.subjects[0].minutes,90);
   const adjusted=applyAdaptivePlanningAdvice(plan,advice);
   assert.ok(adjusted);assert.equal(adjusted.weeklyPlannedMinutes,180);

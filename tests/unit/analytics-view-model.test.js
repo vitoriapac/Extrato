@@ -24,3 +24,19 @@ test('não interpreta pontuação baixa de evidência como risco alto',()=>{
   assert.equal(model.sections[0].items[0].signalTone,'neutral');
   assert.equal(model.sections[1].items[0].signalLabel,'Dados limitados');
 });
+
+test('diagnóstico sem conteúdo explica o que falta e oferece destino de cadastro',()=>{
+  const model=buildDiagnosisViewModel({state:'insufficient'},{hasTopics:false});
+  assert.equal(model.state,'insufficient');
+  assert.match(model.message,/Cadastre disciplinas e tópicos/);
+  assert.deepEqual(model.action,{label:'Cadastrar disciplinas e tópicos',tab:'disciplinas'});
+});
+
+test('vazios do diagnóstico distinguem ausência de problema de configuração pendente',()=>{
+  const model=buildDiagnosisViewModel({state:'estimated',bottlenecks:[],opportunities:[],criticalReviews:[],topicsAtRisk:[],weeklyFocus:[]});
+  assert.match(model.sections[0].empty.message,/não indicam/);
+  assert.equal(model.sections[0].empty.action,undefined);
+  assert.match(model.sections[1].empty.message,/configure impacto e esforço/);
+  assert.deepEqual(model.sections[1].empty.action,{label:'Configurar edital e esforço',tab:'metas'});
+  assert.deepEqual(model.sections[3].empty.action,{label:'Revisar planejamento',tab:'metas'});
+});

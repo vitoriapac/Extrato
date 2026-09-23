@@ -71,8 +71,8 @@
   <div class="global-search-row">
     <div class="global-search">
       <label class="sr-only" for="globalSearchInput">Busca global</label>
-      <input type="search" id="globalSearchInput" aria-label="Buscar tópico, nota ou tag" placeholder="🔎 Buscar tópico, nota ou tag... (Ctrl+K)">
-      <div class="search-results" id="globalSearchResults"></div>
+      <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar tópico, nota ou tag" placeholder="🔎 Buscar tópico, nota ou tag... (Ctrl+K)">
+      <div class="search-results" id="globalSearchResults" role="listbox" aria-label="Resultados e comandos"></div>
     </div>
     <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon">🌙</span></button>
   </div>
@@ -159,7 +159,8 @@
             <option value="simulation">Simulado</option>
           </select>
         </div>
-        <div class="timer-display" id="studyTimerDisplay">00:00</div>
+      <div class="timer-display" id="studyTimerDisplay">00:00</div>
+      <progress class="timer-goal-progress" id="studyTimerProgress" max="100" value="0" hidden aria-label="Progresso da meta da sessão"></progress>
       <div class="timer-target" id="studyTimerTarget" hidden></div>
       <div id="guidedStrategy" class="guided-strategy" hidden></div>
         <div class="timer-actions">

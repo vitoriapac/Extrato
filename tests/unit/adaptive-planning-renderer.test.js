@@ -15,8 +15,8 @@ test('fase sem data não inventa posição na sequência',()=>{
 });
 
 test('sugestão mostra origem, destino, capacidade preservada e ação explícita',()=>{
-  const html=renderAdaptiveAllocationAdvice({state:'proposal',transferMinutes:30,from:{name:'Informática',beforeMinutes:90,afterMinutes:60},to:{name:'Matemática',beforeMinutes:60,afterMinutes:90},reason:'Baseado na evidência.'},{weeklyPlannedMinutes:150,formatMinutes:n=>`${n} min`,escapeHtml});
-  assert.match(html,/Informática/);assert.match(html,/Matemática/);assert.match(html,/90 min → 60 min/);assert.match(html,/Capacidade mantida · 150 min/);assert.match(html,/Aplicar à prévia/);
+  const html=renderAdaptiveAllocationAdvice({state:'proposal',transferMinutes:30,from:{name:'Informática',beforeMinutes:90,afterMinutes:60},to:{name:'Matemática',beforeMinutes:60,afterMinutes:90},reason:'Baseado na evidência.',rationale:['Impacto na prova: 85/100.']},{weeklyPlannedMinutes:150,formatMinutes:n=>`${n} min`,escapeHtml});
+  assert.match(html,/Informática/);assert.match(html,/Matemática/);assert.match(html,/90 min → 60 min/);assert.match(html,/Capacidade mantida · 150 min/);assert.match(html,/Aplicar à prévia/);assert.match(html,/Impacto na prova: 85\/100/);
 });
 
 test('sugestão aplicada informa que ainda precisa ser confirmada',()=>{

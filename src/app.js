@@ -1217,6 +1217,7 @@ function updateTimerDisplay(){
   const el = document.getElementById('studyTimerDisplay');
   if(el) el.textContent = formatTimer(timerSeconds);
   const targetEl=document.getElementById('studyTimerTarget');
+  const progressEl=document.getElementById('studyTimerProgress');
   if(targetEl){
     const targetMinutes=Math.max(0,Number(state.activeTimer?.targetMinutes)||0);
     if(targetMinutes>0){
@@ -1226,9 +1227,11 @@ function updateTimerDisplay(){
       const context=planItem?`${planItem.subjectName} — ${planItem.topicName} · `:'';
       targetEl.textContent=context+`meta ${formatPlanMinutes(targetMinutes)} · ${difference>=0?formatDuration(difference)+' restantes':formatDuration(Math.abs(difference))+' além da meta'}`;
       targetEl.hidden=false;
+      if(progressEl){progressEl.value=Math.min(100,Math.round(timerSeconds/targetSeconds*100));progressEl.setAttribute('aria-valuetext',`${formatDuration(timerSeconds)} de ${formatPlanMinutes(targetMinutes)}`);progressEl.hidden=false}
     }else{
       targetEl.textContent='';
       targetEl.hidden=true;
+      if(progressEl){progressEl.value=0;progressEl.removeAttribute('aria-valuetext');progressEl.hidden=true}
     }
   }
   renderGuidedStrategy();
@@ -1447,7 +1450,23 @@ const BADGES = [
 function renderBadges(){
   const grid = document.getElementById('badgesGrid');
   if(!grid)return;
-  grid.innerHTML = renderAchievementGroups(buildAchievementViewModel(BADGES.map(item=>({...item,unlocked:item.check()}))),{escapeHtml});
+  const progressByBadge={
+    topics10:{current:allTopics().filter(item=>!item.archived&&item.status==='Concluído').length,target:10,unit:'tópicos'},
+    topics50:{current:allTopics().filter(item=>!item.archived&&item.status==='Concluído').length,target:50,unit:'tópicos'},
+    q100:{current:state.questoes.reduce((sum,item)=>sum+(Number(item.resolved)||0),0),target:100,unit:'questões'},
+    q500:{current:state.questoes.reduce((sum,item)=>sum+(Number(item.resolved)||0),0),target:500,unit:'questões'},
+    q1000:{current:state.questoes.reduce((sum,item)=>sum+(Number(item.resolved)||0),0),target:1000,unit:'questões'},
+    hours10:{current:state.studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0)/3600,target:10,unit:'horas'},
+    hours50:{current:state.studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0)/3600,target:50,unit:'horas'},
+    hours100:{current:state.studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0)/3600,target:100,unit:'horas'},
+    sim5:{current:state.simulados.length,target:5,unit:'simulados'},
+    reviews25:{current:state.reviewAgenda.filter(item=>item.status==='Concluído').length,target:25,unit:'revisões'},
+    coverage50:{current:allTopics().filter(item=>!item.archived).length?allTopics().filter(item=>!item.archived&&item.status==='Concluído').length/allTopics().filter(item=>!item.archived).length*100:0,target:50,unit:'% de conteúdo'},
+    streak14:{current:computeStreak(getActivityDates()),target:14,unit:'dias'},
+    streak30:{current:computeStreak(getActivityDates()),target:30,unit:'dias'}
+  };
+  const achievements=BADGES.map(item=>{const progress=progressByBadge[item.id];return{...item,unlocked:item.check(),progress:progress?{...progress,current:Math.min(progress.current,progress.target)}:null}});
+  grid.innerHTML = renderAchievementGroups(buildAchievementViewModel(achievements),{escapeHtml});
 }
 
 /* ===== HEATMAP DE HORAS E META DIÁRIA ===== */
@@ -1671,47 +1690,65 @@ function performGlobalSearch(query){
 const SEARCH_COMMANDS=[
   {label:'Visão Geral',keywords:'inicio dashboard resumo prontidao',tab:'dashboard'},
   {label:'Ir para Hoje',keywords:'hoje tarefa recomendacao estudo',tab:'hoje'},
+  {label:'Abrir cronômetro',keywords:'iniciar sessao timer estudar foco',action:'timer'},
   {label:'Abrir Disciplinas',keywords:'materias edital topicos',tab:'disciplinas'},
+  {label:'Carregar edital do catálogo',keywords:'importar edital concurso bb caixa',action:'exam-import'},
+  {label:'Importar JSON ou CSV',keywords:'importar arquivo conteudo disciplinas',action:'structured-import'},
   {label:'Abrir Calendário',keywords:'calendario sessoes datas',tab:'calendario'},
   {label:'Abrir Agenda de Revisões',keywords:'agenda revisao atrasadas',tab:'agenda'},
+  {label:'Adicionar revisão',keywords:'criar nova revisão agenda',action:'add-review'},
   {label:'Abrir Questões e Simulados',keywords:'questoes erros simulados desempenho',tab:'questoes'},
+  {label:'Registrar questões',keywords:'lancar registrar acertos erros',action:'add-questions'},
   {label:'Abrir Metas e Planejamento',keywords:'metas capacidade plano estrategia',tab:'metas'},
+  {label:'Planejar semana',keywords:'plano semanal distribuir carga',tab:'metas'},
   {label:'Abrir Instruções',keywords:'ajuda guia como usar instrucoes',tab:'instrucoes'},
+  {label:'Exportar backup',keywords:'backup salvar dados json',action:'backup'},
   {label:'Exportar relatório PDF',keywords:'pdf relatorio imprimir exportar',action:'report'}
 ];
 function renderGlobalSearchResults(){
   const input = document.getElementById('globalSearchInput');
   const panel = document.getElementById('globalSearchResults');
   const q = input.value;
-  if(!q.trim()){ panel.classList.remove('show'); panel.innerHTML=''; return; }
-  const normalized=normalizeSearchText(q.trim()),commands=SEARCH_COMMANDS.filter(item=>normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalized)).slice(0,4),results = performGlobalSearch(q);
+  if(!q.trim()){ panel.classList.remove('show'); panel.innerHTML='';input.setAttribute('aria-expanded','false');return; }
+  const normalized=normalizeSearchText(q.trim()),commands=SEARCH_COMMANDS.filter(item=>normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalized)).slice(0,8),results = performGlobalSearch(q);
   if(results.length === 0&&commands.length===0){
     panel.innerHTML = `<div class="search-result-empty">Nada encontrado pra "${escapeHtml(q)}"</div>`;
   } else {
-    panel.innerHTML = [...commands.map(command=>`<button type="button" class="search-result-item search-command" data-search-tab="${escapeAttr(command.tab||'')}" data-search-action="${escapeAttr(command.action||'')}"><strong>${escapeHtml(command.label)}</strong><span>Ação da aplicação</span></button>`),...results.map(r => `
-      <button type="button" class="search-result-item" data-search-topic="${escapeAttr(r.topicId)}" data-search-subject="${escapeAttr(r.subjectId)}">
+    panel.innerHTML = [...commands.map(command=>`<button type="button" role="option" aria-selected="false" class="search-result-item search-command" data-search-tab="${escapeAttr(command.tab||'')}" data-search-action="${escapeAttr(command.action||'')}"><strong>${escapeHtml(command.label)}</strong><span>Ação da aplicação</span></button>`),...results.map(r => `
+      <button type="button" role="option" aria-selected="false" class="search-result-item" data-search-topic="${escapeAttr(r.topicId)}" data-search-subject="${escapeAttr(r.subjectId)}">
         <strong>${escapeHtml(r.topicName)}</strong>
         <span>${escapeHtml(r.subjectName)}</span>
       </button>
     `)].join('');
   }
   panel.classList.add('show');
+  input.setAttribute('aria-expanded','true');
   const inputRect=input.getBoundingClientRect(),left=Math.max(8,inputRect.left),width=Math.min(inputRect.width,innerWidth-left-8),top=Math.min(inputRect.bottom+4,innerHeight-80);
   panel.style.left=`${left}px`;panel.style.width=`${Math.max(180,width)}px`;panel.style.top=`${Math.max(8,top)}px`;
 }
 document.getElementById('globalSearchResults').addEventListener('click',event=>{
   const button=event.target.closest('.search-result-item');if(!button)return;
   if(button.dataset.searchTopic){jumpToTopic(button.dataset.searchSubject,button.dataset.searchTopic);return}
-  if(button.dataset.searchAction==='report'){document.getElementById('exportReportBtn')?.click();document.getElementById('globalSearchResults').classList.remove('show');document.getElementById('globalSearchInput').blur();return}
-  if(button.dataset.searchTab){activateTab(button.dataset.searchTab);document.getElementById('globalSearchResults').classList.remove('show');document.getElementById('globalSearchInput').blur()}
+  const action=button.dataset.searchAction,input=document.getElementById('globalSearchInput'),panel=document.getElementById('globalSearchResults');
+  if(action==='report')document.getElementById('exportReportBtn')?.click();
+  else if(action==='backup')document.getElementById('exportBackupBtn')?.click();
+  else if(action==='exam-import'){activateTab('disciplinas');openExamImport()}
+  else if(action==='structured-import'){activateTab('disciplinas');document.getElementById('structuredContentImportBtn')?.click()}
+  else if(action==='add-review'){activateTab('agenda');document.getElementById('addAgendaRowBtn')?.click()}
+  else if(action==='add-questions'){activateTab('questoes');document.getElementById('addQuestaoRowBtn')?.click()}
+  else if(action==='timer'){activateTab('dashboard');document.getElementById('timerSubjectSelect')?.focus()}
+  else if(button.dataset.searchTab)activateTab(button.dataset.searchTab);
+  panel.classList.remove('show');input.setAttribute('aria-expanded','false');input.blur();
 });
-document.getElementById('globalSearchInput').addEventListener('keydown',event=>{if(event.key==='ArrowDown'){const first=document.querySelector('#globalSearchResults .search-result-item');if(first){event.preventDefault();first.focus()}}});
-document.getElementById('globalSearchResults').addEventListener('keydown',event=>{if(!['ArrowDown','ArrowUp'].includes(event.key))return;const items=[...document.querySelectorAll('#globalSearchResults .search-result-item')],index=items.indexOf(document.activeElement),next=event.key==='ArrowDown'?Math.min(items.length-1,index+1):Math.max(0,index-1);if(items.length){event.preventDefault();items[next]?.focus()}});
+const globalSearchInput=document.getElementById('globalSearchInput'),globalSearchResults=document.getElementById('globalSearchResults');
+globalSearchInput.addEventListener('keydown',event=>{if(!['ArrowDown','Enter'].includes(event.key))return;const first=globalSearchResults.querySelector('.search-result-item');if(first){event.preventDefault();if(event.key==='Enter')first.click();else first.focus()}});
+globalSearchResults.addEventListener('keydown',event=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;const items=[...globalSearchResults.querySelectorAll('.search-result-item')],index=items.indexOf(document.activeElement);if(!items.length)return;event.preventDefault();if(event.key==='ArrowUp'&&index===0){globalSearchInput.focus();return}const next=event.key==='Home'?0:event.key==='End'?items.length-1:event.key==='ArrowDown'?Math.min(items.length-1,index+1):Math.max(0,index-1);items[next]?.focus()});
 function jumpToTopic(subjectId, topicId){
   const s = state.subjects.find(x=>x.id===subjectId);
   if(s) s.collapsed = false;
   document.getElementById('globalSearchInput').value = '';
   document.getElementById('globalSearchResults').classList.remove('show');
+  document.getElementById('globalSearchInput').setAttribute('aria-expanded','false');
   document.querySelector('.tab-btn[data-tab="disciplinas"]').click();
   persistAndRender();
   setTimeout(() => {
@@ -1726,7 +1763,7 @@ function jumpToTopic(subjectId, topicId){
 document.getElementById('globalSearchInput').addEventListener('input', renderGlobalSearchResults);
 document.getElementById('globalSearchInput').addEventListener('focus', renderGlobalSearchResults);
 document.getElementById('globalSearchInput').addEventListener('blur', () => {
-  setTimeout(()=> document.getElementById('globalSearchResults').classList.remove('show'), 150);
+  setTimeout(()=>{document.getElementById('globalSearchResults').classList.remove('show');document.getElementById('globalSearchInput').setAttribute('aria-expanded','false')},150);
 });
 const headerObserver=new IntersectionObserver(entries=>{const hero=entries[0],shell=document.querySelector('.sticky-shell');shell?.classList.toggle('is-compact',!hero.isIntersecting&&hero.boundingClientRect.bottom<0);syncStickyMetrics()},{threshold:0});headerObserver.observe(document.querySelector('.statement'));
 const stickyShell=document.querySelector('.sticky-shell');
@@ -2697,7 +2734,7 @@ const historyEditDraft={session:null};
 const questionCrudController=createQuestionController({service:questionService,onChange:()=>{}});
 const questionEditController=createEditableCollectionController({service:questionService,clone:cloneRecord,render:renderQuestoes,normalize:draft=>{draft.resolved=Math.max(0,Math.floor(Number(draft.resolved)||0));draft.correct=Math.max(0,Math.min(Math.floor(Number(draft.correct)||0),draft.resolved));normalizeErrorBreakdown(draft);return draft},onSaved:()=>{persistAndRender();showToast('Registro atualizado.');}}),simulationEditController=createEditableCollectionController({service:simulationService,clone:cloneRecord,render:renderSimulados,normalize:draft=>{draft.total=Math.max(0,Math.floor(Number(draft.total)||0));draft.correct=Math.max(0,Math.min(Math.floor(Number(draft.correct)||0),draft.total));return draft},onSaved:()=>{persistAndRender();showToast('Simulado atualizado.');}});
 function cloneRecord(record){ return record?JSON.parse(JSON.stringify(record)):null; }
-function isMobileHistoryLayout(){ return window.matchMedia('(max-width:760px)').matches; }
+function isMobileHistoryLayout(){ return window.matchMedia('(max-width:850px)').matches; }
 
 function renderListViewFooter(total,visible,step,showMoreAction,showLessAction,colspan,label){
   if(total<=step) return '';
@@ -3540,7 +3577,7 @@ function renderSelectedPeriodComparison(){
   const model=buildPeriodComparisonViewModel({sessions:state.studySessions,questions:state.questoes,reviews,today:todayISO(),preset:preset.value,start,end});
   const format=(metric,value)=>value==null?'Dados insuficientes':metric.unit==='min'?`${Math.floor(value/60)}h ${String(value%60).padStart(2,'0')}min`:metric.unit==='percentage_points'?`${value}%`:String(value);
   const delta=metric=>metric.delta==null?'Sem comparação':metric.unit==='percentage_points'?`${metric.delta>0?'+':''}${metric.delta} p.p.`:metric.unit==='min'?`${metric.delta>0?'+':'−'}${Math.floor(Math.abs(metric.delta)/60)}h ${String(Math.abs(metric.delta)%60).padStart(2,'0')}min`:`${metric.delta>0?'+':''}${metric.delta}`;
-  container.innerHTML=`<p class="period-comparison-caption"><strong>${escapeHtml(model.currentPeriod.label)}</strong> · ${escapeHtml(model.currentPeriod.start)} a ${escapeHtml(model.currentPeriod.end)} <span>comparado com ${escapeHtml(model.previousPeriod.start)} a ${escapeHtml(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><b>${format(metric,metric.previous)}</b><b>${format(metric,metric.current)}</b><b class="comparison-delta ${metric.state}">${delta(metric)}</b></div>`).join('')}</div>`;
+  container.innerHTML=`<p class="period-comparison-caption"><strong>${escapeHtml(model.currentPeriod.label)}</strong> · ${escapeHtml(model.currentPeriod.start)} a ${escapeHtml(model.currentPeriod.end)} <span>comparado com ${escapeHtml(model.previousPeriod.start)} a ${escapeHtml(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><b>${format(metric,metric.previous)}</b><b>${format(metric,metric.current)}</b><b class="comparison-delta ${metric.state}">${delta(metric)}</b></div>`).join('')}</div><aside class="comparison-insight" aria-label="Leitura da comparação"><p>${escapeHtml(model.insights.accuracyMessage)}</p><small>${escapeHtml(model.insights.caveat)}</small></aside>`;
 }
 
 /* ===== ESTIMATIVA DE RITMO ===== */
@@ -4235,15 +4272,16 @@ function intelligenceCandidates(){
 }
 function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
-  const result=generateDiagnosis(intelligenceCandidates()),model=buildDiagnosisViewModel(result);
-  if(model.state==='insufficient'){container.innerHTML='<div class="upcoming-empty">Ainda não há dados suficientes. Cadastre tópicos e registre atividades para gerar o diagnóstico.</div>';return}
-  const list=(items,empty,formatter)=>items.length?items.slice(0,4).map(formatter).join(''):`<p class="diagnosis-empty">${empty}</p>`;
-  const section=key=>model.sections.find(item=>item.key===key)?.items||[];
+  const candidates=intelligenceCandidates(),result=generateDiagnosis(candidates),model=buildDiagnosisViewModel(result,{hasTopics:candidates.length>0});
+  const emptyState=empty=>`<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(empty.title)}</strong><p>${escapeHtml(empty.message)}</p>${empty.action?`<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('${escapeAttr(empty.action.tab)}')">${escapeHtml(empty.action.label)}</button>`:''}</div>`;
+  if(model.state==='insufficient'){container.innerHTML=`<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(model.title)}</strong><p>${escapeHtml(model.message)}</p><button type="button" class="btn small" data-delegated-click="navigateKpi('${escapeAttr(model.action.tab)}')">${escapeHtml(model.action.label)}</button></div>`;return}
+  const list=(section,renderItem)=>section.items.length?section.items.map(renderItem).join(''):emptyState(section.empty);
+  const section=key=>model.sections.find(item=>item.key===key);
   container.innerHTML=`<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(section('bottlenecks'),'Nenhum gargalo relevante agora.',item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml(item.signalLabel)}</span><b class="diagnostic-score">${item.risk?.value??item.severity}/100</b></div><div class="diagnostic-evidence"><span>Cobertura dos dados <strong>${Math.round((item.risk?.evidence?.completeness||0)*100)}%</strong></span><span>Evidência <strong>${escapeHtml((item.risk?.evidence?.evidenceLabel||'Não avaliada').toLowerCase())}</strong></span></div><small>${escapeHtml(item.reason)}${item.risk?.missingFactors?.length?' · '+item.risk.missingFactors.length+' fatores ausentes':''}</small></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(section('opportunities'),'Configure pesos e esforço para revelar oportunidades.',item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml(item.signalLabel)}</span><b class="diagnostic-score">${item.opportunityScore}/100</b><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><div class="diagnostic-evidence"><span>Confiança dos dados <strong>${Math.round(item.confidence*100)}%</strong></span></div><small>${item.missingFactors.includes('examImpact')?'Informe o peso da prova para aumentar a confiança.':'Boa relação entre impacto, lacuna e esforço.'}</small></article>`)}</section>
-    <section><h4>Revisões críticas e risco</h4>${list(section('risk'),'Nenhuma revisão crítica identificada.',item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>${item.reviewUrgency>0?'Urgência '+Math.round(item.reviewUrgency)+'/100':item.daysSinceContact+' dias sem contato'}</b></div><small>${escapeHtml(item.reason||item.reasons?.[0]||'Revisão requer atenção pelos indicadores atuais.')}</small></article>`)}</section>
-    <section><h4>Foco da semana</h4>${list(section('focus'),'Sem distribuição confiável.',item=>{const weeklyMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0);return `<article class="diagnostic-row diagnostic-focus"><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% · ${formatPlanMinutes(Math.round(weeklyMinutes*item.percentage/100))}</span><div class="diagnostic-progress" style="--progress:${Math.min(100,item.percentage)}%"><i></i></div></article>`})}</section>
+    <section><h4>Gargalos</h4>${list(section('bottlenecks'),item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml(item.signalLabel)}</span><b class="diagnostic-score">${item.risk?.value??item.severity}/100</b></div><div class="diagnostic-evidence"><span>Cobertura dos dados <strong>${Math.round((item.risk?.evidence?.completeness||0)*100)}%</strong></span><span>Evidência <strong>${escapeHtml((item.risk?.evidence?.evidenceLabel||'Não avaliada').toLowerCase())}</strong></span></div><small>${escapeHtml(item.reason)}${item.risk?.missingFactors?.length?' · '+item.risk.missingFactors.length+' fatores ausentes':''}</small></article>`)}</section>
+    <section><h4>Oportunidades</h4>${list(section('opportunities'),item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml(item.signalLabel)}</span><b class="diagnostic-score">${item.opportunityScore}/100</b><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><div class="diagnostic-evidence"><span>Confiança dos dados <strong>${Math.round(item.confidence*100)}%</strong></span></div><small>${item.missingFactors.includes('examImpact')?'Informe o peso da prova para aumentar a confiança.':'Boa relação entre impacto, lacuna e esforço.'}</small></article>`)}</section>
+    <section><h4>Revisões críticas e risco</h4>${list(section('risk'),item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>${item.reviewUrgency>0?'Urgência '+Math.round(item.reviewUrgency)+'/100':item.daysSinceContact+' dias sem contato'}</b></div><small>${escapeHtml(item.reason||item.reasons?.[0]||'Revisão requer atenção pelos indicadores atuais.')}</small></article>`)}</section>
+    <section><h4>Foco da semana</h4>${list(section('focus'),item=>{const weeklyMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0);return `<article class="diagnostic-row diagnostic-focus"><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% · ${formatPlanMinutes(Math.round(weeklyMinutes*item.percentage/100))}</span><div class="diagnostic-progress" style="--progress:${Math.min(100,item.percentage)}%"><i></i></div></article>`})}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
 }
 function renderRecommendationImpact(model){
@@ -4290,7 +4328,11 @@ function renderStudyRecommendation(){
     return {...item,stateIcon:item.examImpact!=null&&item.examImpact<30?'○':'★',stateText:item.examImpact!=null&&item.examImpact<30?'Baixa relevância configurada para a prova':'Prioridade inferior às três recomendações atuais'};
   }).filter(Boolean).slice(0,6);
   const excludedHtml=excluded.length?`<details class="recommendation-exclusions"><summary>Por que outros tópicos não aparecem?</summary>${excluded.map(item=>`<div><span>${item.stateIcon}</span><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><small>${escapeHtml(item.stateText)}</small></div>`).join('')}</details>`:'';
-  if(!visible.length){container.innerHTML=`${outcome}<div class="upcoming-empty">${availableMinutes<15?'Defina pelo menos 15 minutos na meta de hoje.':'Nenhuma atividade está elegível neste momento.'}</div>${excludedHtml}${history}`;return}
+  if(!visible.length){
+    const hasContent=activeTopics().length>0,tab=availableMinutes<15||!hasContent?'metas':'disciplinas',label=availableMinutes<15?'Ajustar disponibilidade':!hasContent?'Configurar disciplinas e tópicos':'Revisar elegibilidade e pré-requisitos';
+    const message=availableMinutes<15?'Defina pelo menos 15 minutos disponíveis para hoje.':!hasContent?'Cadastre ou importe disciplinas e tópicos para gerar uma recomendação.':'Não há atividade elegível agora. Confira pré-requisitos, esforço e itens já concluídos.';
+    container.innerHTML=`${outcome}<div class="empty-state empty-state--compact recommendation-empty-state" role="status"><strong>Nenhuma recomendação disponível</strong><p>${escapeHtml(message)}</p><button class="btn ghost small" data-delegated-click="navigateKpi('${tab}')">${escapeHtml(label)}</button></div>${excludedHtml}${history}`;return
+  }
   const cards=visible.map((item,index)=>{
     const model=buildPriorityViewModel(item,index+1);
     const contributionRows=model.contributionRows.map(row=>`<div><span>${escapeHtml(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100,row.value*4)}%"></i></span><strong>+${row.value}</strong></div>`).join('');
@@ -5060,6 +5102,7 @@ if(TEST_MODE){
     getState:()=>state,
     settleSaves:async()=>{if(saveTimeout){clearTimeout(saveTimeout);saveTimeout=null}await saveQueue},
     setState:value=>{state=migrateState(structuredCloneSafe(value));ensureStateDefaults();return state},
+    refreshTimerDisplay:()=>{timerSeconds=currentTimerSeconds();updateTimerDisplay()},
     resetState:()=>{state=structuredCloneSafe(pristineTestState);ensureStateDefaults();return state},
     migrateState:value=>migrateState(structuredCloneSafe(value)),validateBackupData,validateNormalizedBackup,
     startOfWeek,isSameWeek,addDays,diasParaRevisao,parseLocalDate,todayISO,localDateFromTimestamp,

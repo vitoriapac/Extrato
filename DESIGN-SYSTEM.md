@@ -13,6 +13,8 @@ O StudyTrack usa a linguagem visual de um extrato: navy para estrutura, dourado 
 
 A escala oficial é 4, 8, 12, 16, 20, 24 e 32 px, exposta nos tokens `--space-1` a `--space-8`.
 
+As superfícies, textos, divisores e estados semânticos também têm aliases (`--surface-*`, `--text-*`, `--border-subtle` e `--status-*`). Use esses papéis em componentes novos ou revisados; os aliases continuam ligados às cores do tema ativo.
+
 ## Componentes
 
 - `btn`: ação principal; use `ghost`, `danger`, `small` e botões de ícone conforme o contexto.
@@ -34,4 +36,4 @@ Cards representam agrupamentos. Dentro deles, use linhas, espaço e tipografia p
 
 ## Temas e responsividade
 
-Todo componente deve usar tokens de cor, preservar contraste em ambos os temas e funcionar a partir de 375 px sem rolagem horizontal global.
+Todo componente deve usar tokens de cor, preservar contraste em ambos os temas e funcionar a partir de 320 px sem rolagem horizontal global. Para listas, formulários e diagnósticos, permita quebra de nomes longos e empilhe conteúdo antes de reduzir a área de toque.

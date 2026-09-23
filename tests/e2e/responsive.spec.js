@@ -6,6 +6,11 @@ for(const width of [375,768,1366,1440,1920])test(`preserva todas as áreas sem o
   for(const name of ['dashboard','hoje','disciplinas','calendario','agenda','questoes','metas']){await activateTab(page,name);await expectNoPageOverflow(page)}
 });
 
+for(const width of [320,360,390,430])test(`mantém Visão Geral, Hoje e Planejamento sem overflow em ${width}px`,async({page})=>{
+  await page.setViewportSize({width,height:850});await openDemo(page);
+  for(const name of ['dashboard','hoje','metas']){await activateTab(page,name);await expectNoPageOverflow(page)}
+});
+
 test('mantém tema e barras fixas sem sobreposição no celular',async({page})=>{
   await page.setViewportSize({width:375,height:800});await openDemo(page);await page.locator('#themeToggleBtn').click();await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
   await activateTab(page,'dashboard');await page.evaluate(()=>scrollTo(0,1400));

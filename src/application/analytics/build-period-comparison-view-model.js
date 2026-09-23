@@ -1,4 +1,5 @@
 import { addLocalDays, localDateRange } from '../../core/date-utils.js';
+import { buildPeriodComparisonInsights } from '../../domain/analytics/period-comparison-insights.js';
 
 const entryDate = item => item?.date || String(item?.endedAt || item?.createdAt || item?.completedAt || '').slice(0, 10);
 const within = (item, start, end) => { const date = entryDate(item); return date >= start && date <= end; };
@@ -43,5 +44,7 @@ export function buildPeriodComparisonViewModel({ sessions = [], questions = [], 
     const delta = a == null || b == null ? null : a - b;
     return { key, label, unit, current: a, previous: b, delta, state: delta == null ? 'insufficient' : delta > 0 ? 'up' : delta < 0 ? 'down' : 'stable' };
   });
-  return { algorithmVersion: '1.0.0', state: 'available', currentPeriod, previousPeriod, metrics };
+  const comparison = { algorithmVersion: '1.0.0', state: 'available', currentPeriod, previousPeriod, metrics };
+  const insights = buildPeriodComparisonInsights(comparison, { currentQuestionVolume: current.questions, previousQuestionVolume: previous.questions });
+  return { ...comparison, insights };
 }

@@ -3,7 +3,19 @@ test('destaca prontidão e ativa o cabeçalho compacto ao rolar',async({page})=>
 test('cabeçalho principal mantém a composição completa antes da rolagem',async({page})=>{await page.goto('/');await activateTab(page,'agenda');await expect(page.locator('.statement')).not.toHaveClass(/statement--compact/);await expect(page.locator('.balance-label')).toBeVisible();await expect(page.locator('.mini-stats')).toBeVisible()});
 test('limpeza exige confirmação textual e fica desabilitada na demo',async({page})=>{await page.goto('/');await page.evaluate(()=>{localStorage.clear();sessionStorage.clear()});await page.reload();await page.getByRole('button',{name:'Limpar todos os dados'}).click();await expect(page.locator('#modalMessage')).toContainText('excluirá');await page.getByRole('button',{name:'Confirmar'}).click();await expect(page.locator('#modalPromptInput')).toBeVisible();await page.locator('#modalPromptInput').fill('ERRADO');await page.getByRole('button',{name:'Limpar dados'}).click();await expect(page.locator('#modalPromptError')).toContainText('LIMPAR');await page.getByRole('button',{name:'Cancelar'}).click();await openDemo(page);await expect(page.getByRole('button',{name:'Limpar todos os dados'})).toBeDisabled()});
 test('backup mantém ações destrutivas em zona separada',async({page})=>{await page.goto('/');const danger=page.locator('.backup-block > .backup-danger-zone');await expect(danger).toContainText('Zona de perigo');await expect(danger.getByRole('button',{name:'Limpar todos os dados'})).toBeVisible()});
-test('configuração estratégica comunica herança e conquista de cem horas',async({page})=>{await page.goto('/?test=1');await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),subjectId=state.subjects[0].id;state.examBlueprint.masteryTarget=80;state.examBlueprint.subjects=[{subjectId,priority:'normal',expectedQuestions:10,questionWeight:1,masteryTarget:null}];state.studySessions=[{id:'hours-100',date:api.todayISO(),durationSeconds:360000}];api.setState(state);api.renderAll()});await activateTab(page,'metas');await expect(page.locator('#examBlueprintConfig')).toContainText('Configuração por disciplina');await expect(page.locator('#examBlueprintConfig .field-inheritance').first()).toHaveText('80% (geral)');await activateTab(page,'dashboard');await expect(page.locator('#badgesGrid')).toContainText('Cem horas');await expect(page.locator('#badgesGrid .achievement-section h4')).toContainText('Desbloqueadas');await expect(page.locator('#badgesGrid .achievement-upcoming summary')).toContainText('Próximas conquistas')});
+test('configuração estratégica comunica herança e conquista de cem horas',async({page})=>{
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(element=>element.remove());
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),subjectId=state.subjects[0].id;state.examBlueprint.masteryTarget=80;state.examBlueprint.subjects=[{subjectId,priority:'normal',expectedQuestions:10,questionWeight:1,masteryTarget:null}];state.studySessions=[{id:'hours-100',date:api.todayISO(),durationSeconds:360000}];api.setState(state);api.renderAll()});
+  await activateTab(page,'metas');await expect(page.locator('#examBlueprintConfig')).toContainText('Configuração por disciplina');await expect(page.locator('#examBlueprintConfig .field-inheritance').first()).toHaveText('80% (geral)');
+  await activateTab(page,'dashboard');
+  await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0))).toBe(360000);
+  await page.evaluate(()=>window.__EXTRATO_TEST__.renderAll());
+  await expect(page.locator('#badgesGrid .badge-card.unlocked').filter({hasText:'Cem horas'}).first()).toContainText('Cem horas');
+  await expect(page.locator('#badgesGrid .achievement-section h4')).toContainText('Desbloqueadas');
+  await expect(page.locator('#badgesGrid .achievement-upcoming summary')).toContainText('Próximas conquistas');
+});
 
 test('modo foco do cronômetro pode ser encerrado com Escape no celular',async({page})=>{await page.setViewportSize({width:375,height:812});await openDemo(page);const toggle=page.locator('#timerFocusToggle');await toggle.click();await expect(page.locator('body')).toHaveClass(/timer-focus-active/);await expect(toggle).toHaveAttribute('aria-pressed','true');await expect(page.locator('#timerStartBtn')).toBeFocused();expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);await page.keyboard.press('Escape');await expect(page.locator('body')).not.toHaveClass(/timer-focus-active/);await expect(toggle).toHaveAttribute('aria-pressed','false');await expect(toggle).toBeFocused()});
 test('componentes visuais não transbordam e controles usam o padrão comum',async({page})=>{
@@ -20,6 +32,19 @@ test('componentes visuais não transbordam e controles usam o padrão comum',asy
 });
 
 test('cronômetro não reserva espaço vazio e instruções explicam dados e rotina',async({page})=>{await page.goto('/');await expect(page.locator('#studyTimerTarget')).toBeHidden();await expect(page.locator('#guidedStrategy')).toBeHidden();await activateTab(page,'instrucoes');await expect(page.getByRole('heading',{name:'Como usar o StudyTrack'})).toBeVisible();await expect(page.locator('#guide-start')).toContainText('Monte o edital');await expect(page.locator('#guide-data')).toContainText('Prontidão');await expect(page.locator('#guide-safety')).toContainText('Os dados ficam neste navegador')});
+
+test('meta do cronômetro mostra progresso acessível somente quando configurada',async({page})=>{
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(element=>element.remove());
+  await expect(page.locator('#studyTimerProgress')).toBeHidden();
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.activeTimer={...(state.activeTimer||{}),accumulatedSeconds:450,isRunning:false,targetMinutes:15};api.setState(state);api.refreshTimerDisplay()});
+  await activateTab(page,'dashboard');
+  const progress=page.locator('#studyTimerProgress');
+  await expect(progress).toBeVisible();
+  await expect(page.locator('#studyTimerTarget')).toBeVisible();
+  await expect(progress).toHaveAttribute('aria-valuetext',/ de \d+min/);
+});
 
 test('instruções detalham áreas, fluxos, atalhos e dúvidas',async({page})=>{await page.goto('/');await activateTab(page,'instrucoes');await expect(page.locator('#guide-areas')).toContainText('Questões e Simulados');await expect(page.locator('#guide-workflows')).toContainText('Planejar a semana');await expect(page.locator('#guide-shortcuts')).toContainText('Ctrl');await expect(page.locator('#guide-faq details')).toHaveCount(5)});
 
@@ -50,4 +75,18 @@ test('diagnóstico separa interpretação do sinal, score e cobertura',async({pa
   await expect(diagnosis.locator('.diagnostic-signal').first()).toBeVisible();
   await expect(diagnosis.locator('.diagnostic-evidence').first()).toBeVisible();
   await expect(diagnosis.locator('.diagnostic-score').first()).toContainText(/\d+\/100/);
+});
+
+test('diagnóstico vazio orienta o cadastro sem inventar risco',async({page})=>{
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(element=>element.remove());
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.subjects=[];api.setState(state);api.renderAll()});
+  await activateTab(page,'hoje');await page.locator('.today-analysis-details > summary').click();
+  const empty=page.locator('#diagnosisCenter .diagnosis-empty-state');
+  await expect(empty).toContainText('O diagnóstico ainda não pode ser calculado');
+  await expect(empty).toContainText('Cadastre disciplinas e tópicos');
+  await expect(empty.getByRole('button',{name:'Cadastrar disciplinas e tópicos'})).toBeVisible();
+  await empty.getByRole('button',{name:'Cadastrar disciplinas e tópicos'}).click();
+  await expect(page.locator('#panel-disciplinas')).toHaveClass(/active/);
 });

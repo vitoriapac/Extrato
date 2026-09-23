@@ -27,10 +27,16 @@ export function buildAdaptivePlanningAdvice({plan=null,candidates=[],minimumEvid
   const targetItem=plan.items?.filter(item=>item.subjectId===target.subjectId&&item.capacityMinutes>item.minutes).sort((a,b)=>(b.capacityMinutes-b.minutes)-(a.capacityMinutes-a.minutes))[0];
   const transferMinutes=Math.min(40,Math.floor(source.minutes*.25),source.minutes-30,(sourceItem?.minutes||0)-15,(targetItem?.capacityMinutes||0)-(targetItem?.minutes||0));
   if(transferMinutes<15)return {state:'insufficient',reason:'A carga atual não permite redistribuir um bloco útil sem reduzir a manutenção.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
+  const rationale=[
+    `Disciplina de origem consolidada: domínio ${source.mastery}/100${source.falling?' com tendência recente em queda':''}.`,
+    target.falling?'Disciplina de destino com tendência recente em queda.':`Disciplina de destino com domínio ${target.mastery}/100.`,
+    `Impacto da disciplina de destino na prova: ${target.impact}/100.`,
+    `A transferência mantém a carga semanal em ${budget} minutos.`
+  ];
   return {state:'proposal',algorithmVersion:ADAPTIVE_PLANNING_VERSION,transferMinutes,weeklyBudgetMinutes:budget,
     from:{subjectId:source.subjectId,name:source.subjectName,beforeMinutes:source.minutes,afterMinutes:source.minutes-transferMinutes,mastery:source.mastery},
     to:{subjectId:target.subjectId,name:target.subjectName,beforeMinutes:target.minutes,afterMinutes:target.minutes+transferMinutes,mastery:target.mastery,impact:target.impact,falling:target.falling},
-    reason:'Redistribuição sugerida pelos indicadores disponíveis; a capacidade semanal permanece igual.',applied:false};
+    reason:'A proposta move tempo de um conteúdo consolidado para uma lacuna relevante sem aumentar a carga semanal.',rationale,applied:false};
 }
 
 const scaleMix=(mix,minutes)=>{

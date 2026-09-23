@@ -27,3 +27,9 @@ test('mantém estrutura acessível no modo móvel e no modal',async({page})=>{
   await expectAccessible(page,'Modal');
   await expect(page.locator('#modalCancelBtn')).toBeFocused();
 });
+
+test('central de diagnóstico continua acessível quando expandida',async({page})=>{
+  await openDemo(page);await activateTab(page,'hoje');
+  await page.locator('.today-analysis-details > summary').click();
+  await expectAccessible(page,'Central de diagnóstico expandida');
+});
