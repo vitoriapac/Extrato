@@ -1484,22 +1484,53 @@
   }
 
   // src/application/recommendations/recommendation-action.js
+  var STUDY_ACTION_SOURCES = Object.freeze(["overview", "today", "diagnosis", "planning", "review"]);
   function recommendationActionKind(item = {}) {
+    if (item.activityType) return item.activityType;
     if ((item.blockedPrerequisites || []).length) return "prerequisite";
     if (item.studyType === "questions") return "questions";
     if (item.studyType === "review") return "review";
     return "study";
   }
   function recommendationActionLabel(item) {
-    return { questions: "Resolver questões", review: "Iniciar revisão", prerequisite: "Estudar pré-requisito", study: "Iniciar estudo" }[recommendationActionKind(item)];
+    return { questions: "Resolver questões", review: "Iniciar revisão", prerequisite: "Estudar pré-requisito", study: "Iniciar estudo" }[recommendationActionKind(item)] || "Iniciar estudo";
+  }
+  var finiteOrNull = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Number(value2);
+  var sourceOrDefault = (source) => STUDY_ACTION_SOURCES.includes(source) ? source : "overview";
+  function buildStudyAction(recommendation, { source = "overview" } = {}) {
+    if (!recommendation) return null;
+    const recommendationId = recommendation.recommendationId || null;
+    const id = recommendationId || recommendation.id || null;
+    if (!id) return null;
+    const evidence = recommendation.evidence || {};
+    return Object.freeze({
+      id: String(id),
+      recommendationId: recommendationId ? String(recommendationId) : null,
+      source: sourceOrDefault(source),
+      subjectId: recommendation.subjectId || null,
+      topicId: recommendation.topicId || null,
+      activityType: recommendationActionKind(recommendation),
+      suggestedMinutes: finiteOrNull(recommendation.estimatedMinutes),
+      priority: finiteOrNull(recommendation.score),
+      reasons: [...Array.isArray(recommendation.reasons) ? recommendation.reasons : []].filter(Boolean),
+      evidence: Object.freeze({
+        mastery: finiteOrNull(recommendation.mastery),
+        retention: finiteOrNull(recommendation.retention),
+        strength: finiteOrNull(evidence.evidenceStrength),
+        completeness: finiteOrNull(evidence.completeness),
+        label: evidence.evidenceLabel || null,
+        factors: recommendation.factors ? structuredClone(recommendation.factors) : null
+      }),
+      algorithmVersion: finiteOrNull(recommendation.algorithmVersion)
+    });
   }
 
   // src/application/recommendations/recommendation-controller.js
   function createRecommendationController({ getRecommendations, actionKind, onQuestions, onReview, onPrerequisite, onStudy, onMissing = () => {
   } } = {}) {
     if (typeof getRecommendations !== "function" || typeof actionKind !== "function") throw new TypeError("Controlador de recomendações requer coleção e classificador de ação.");
-    const execute = (id) => {
-      const recommendation = getRecommendations().find((item) => item.id === id);
+    const execute = (id, context = {}) => {
+      const recommendation = getRecommendations().find((item) => item.id === id || item.recommendationId === id);
       if (!recommendation) {
         onMissing(id);
         return null;
@@ -1509,7 +1540,7 @@
         onMissing(id);
         return null;
       }
-      return handler(recommendation, kind);
+      return handler(recommendation, kind, context);
     };
     return Object.freeze({ execute });
   }
@@ -2075,7 +2106,7 @@
   var nullable = (value2) => value2 == null || value2 === "" ? null : String(value2);
   var nonNegative = (value2) => Math.max(0, Number(value2) || 0);
   var nonNegativeInteger = (value2) => Math.floor(nonNegative(value2));
-  var finiteOrNull = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Number(value2);
+  var finiteOrNull2 = (value2) => value2 == null || value2 === "" || !Number.isFinite(Number(value2)) ? null : Number(value2);
   var isLocalDate = (value2) => typeof value2 === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value2);
   function localDateFromTimestamp(value2) {
     if (!value2) return null;
@@ -2086,7 +2117,7 @@
   }
   function normalizeStudySession(rawSession = {}, options = {}) {
     const input = rawSession && typeof rawSession === "object" ? rawSession : {}, questionsResolved = nonNegativeInteger(input.questionsResolved), inferredDate = localDateFromTimestamp(input.endedAt || input.startedAt || input.createdAt), fallbackDate = typeof options.today === "function" ? options.today() : options.today, type = STUDY_SESSION_TYPES.includes(input.type) ? input.type : "study", source = STUDY_SESSION_SOURCES.includes(input.source) ? input.source : input.recommendationId ? "recommendation" : input.planItemId ? "plan" : "manual";
-    return { ...input, id: nullable(input.id), date: isLocalDate(input.date) ? input.date : inferredDate || (isLocalDate(fallbackDate) ? fallbackDate : null), createdAt: nullable(input.createdAt), startedAt: nullable(input.startedAt), endedAt: nullable(input.endedAt), durationSeconds: nonNegative(input.durationSeconds), subjectId: nullable(input.subjectId), topicId: nullable(input.topicId), planItemId: nullable(input.planItemId), recommendationId: nullable(input.recommendationId), type, source, questionsResolved, correctAnswers: Math.min(questionsResolved, nonNegativeInteger(input.correctAnswers)), prioritySnapshot: finiteOrNull(input.prioritySnapshot), notes: typeof input.notes === "string" ? input.notes : "" };
+    return { ...input, id: nullable(input.id), date: isLocalDate(input.date) ? input.date : inferredDate || (isLocalDate(fallbackDate) ? fallbackDate : null), createdAt: nullable(input.createdAt), startedAt: nullable(input.startedAt), endedAt: nullable(input.endedAt), durationSeconds: nonNegative(input.durationSeconds), subjectId: nullable(input.subjectId), topicId: nullable(input.topicId), planItemId: nullable(input.planItemId), recommendationId: nullable(input.recommendationId), type, source, questionsResolved, correctAnswers: Math.min(questionsResolved, nonNegativeInteger(input.correctAnswers)), prioritySnapshot: finiteOrNull2(input.prioritySnapshot), notes: typeof input.notes === "string" ? input.notes : "" };
   }
 
   // src/application/sessions/session-service.js
@@ -23576,7 +23607,7 @@
   function renderDiagnosisCenter() {
     const container = document.getElementById("diagnosisCenter");
     if (!container) return;
-    const candidates = intelligenceCandidates(), result = generateDiagnosis(candidates), weeklyCapacityMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum5, hours) => sum5 + (Number(hours) || 0) * 60, 0), model = buildDiagnosisViewModel(result, { hasTopics: candidates.length > 0, weeklyCapacityMinutes });
+    const { candidates } = refreshStudyRecommendationItems(), result = generateDiagnosis(candidates), weeklyCapacityMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum5, hours) => sum5 + (Number(hours) || 0) * 60, 0), model = buildDiagnosisViewModel(result, { hasTopics: candidates.length > 0, weeklyCapacityMinutes });
     const emptyState = (empty) => `<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml2(empty.title)}</strong><p>${escapeHtml2(empty.message)}</p>${empty.action ? `<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('${escapeAttr2(empty.action.tab)}')">${escapeHtml2(empty.action.label)}</button>` : ""}</div>`;
     if (model.state === "insufficient") {
       container.innerHTML = `<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml2(model.title)}</strong><p>${escapeHtml2(model.message)}</p><button type="button" class="btn small" data-delegated-click="navigateKpi('${escapeAttr2(model.action.tab)}')">${escapeHtml2(model.action.label)}</button></div>`;
@@ -23586,9 +23617,10 @@
       const presentation2 = item.presentation, badgeVariant = { high: "danger", medium: "warning", low: "success", info: "info", insufficient: "insufficient" }[presentation2.severity] || "info";
       const evidence = presentation2.evidence.map((row) => `<div><dt>${escapeHtml2(row.label)}</dt><dd>${escapeHtml2(row.value)}</dd></div>`).join("");
       const secondary = presentation2.secondaryReasons.length ? `<ul class="diagnostic-secondary-reasons">${presentation2.secondaryReasons.map((reason) => `<li>${escapeHtml2(reason)}</li>`).join("")}</ul>` : "";
-      const action = presentation2.recommendedAction;
+      const action = presentation2.recommendedAction, recommendation = currentStudyRecommendations.find((candidate) => candidate.subjectId === item.subjectId && candidate.topicId === item.topicId), studyAction = buildStudyAction(recommendation, { source: "diagnosis" });
       const progress = presentation2.type === "focus" ? `<div class="diagnostic-progress" role="progressbar" aria-label="Distribuição do foco semanal para ${escapeAttr2(presentation2.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(item.percentage)}"><i style="--progress:${Math.min(100, Math.max(0, item.percentage))}%"></i></div>` : "";
-      return `<article class="diagnostic-row diagnostic-row--${escapeAttr2(presentation2.type)}"><div class="diagnostic-row-heading"><div class="diagnostic-row-identity"><span class="diagnostic-kicker">${escapeHtml2(presentation2.type === "bottleneck" ? "PONTO DE ATENÇÃO" : presentation2.type === "opportunity" ? "OPORTUNIDADE" : presentation2.type === "review" ? "REVISÃO" : "FOCO DA SEMANA")}</span><strong>${escapeHtml2(presentation2.title)}</strong></div><div class="diagnostic-row-signals"><span class="diagnostic-signal status-badge status-badge--${badgeVariant} is-${item.signalTone}">${escapeHtml2(item.signalLabel)}</span>${metricValue ? `<b class="diagnostic-score">${escapeHtml2(metricLabel)} ${escapeHtml2(metricValue)}</b>` : ""}</div></div><p class="diagnostic-primary-reason">${escapeHtml2(presentation2.primaryReason)}</p>${evidence ? `<dl class="diagnostic-evidence">${evidence}</dl>` : ""}${progress}${secondary}<div class="diagnostic-row-action"><span>AÇÃO RECOMENDADA</span><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('${escapeAttr2(action.targetId)}')">${escapeHtml2(action.label)}</button></div></article>`;
+      const actionButtons = `<div class="diagnostic-row-buttons">${studyAction ? `<button class="btn small" type="button" data-study-action-source="${studyAction.source}" data-study-action-id="${escapeAttr2(studyAction.id)}" data-activity-type="${studyAction.activityType}" data-delegated-click="executeStudyRecommendation('${escapeAttr2(studyAction.id)}','${studyAction.source}')">${escapeHtml2(recommendationActionLabel(studyAction))}</button>` : ""}<button class="btn ghost small" type="button" data-delegated-click="navigateKpi('${escapeAttr2(action.targetId)}')">${escapeHtml2(action.label)}</button></div>`;
+      return `<article class="diagnostic-row diagnostic-row--${escapeAttr2(presentation2.type)}" ${studyAction ? `data-study-action-source="${studyAction.source}" data-study-action-id="${escapeAttr2(studyAction.id)}" data-activity-type="${studyAction.activityType}"` : ""}><div class="diagnostic-row-heading"><div class="diagnostic-row-identity"><span class="diagnostic-kicker">${escapeHtml2(presentation2.type === "bottleneck" ? "PONTO DE ATENÇÃO" : presentation2.type === "opportunity" ? "OPORTUNIDADE" : presentation2.type === "review" ? "REVISÃO" : "FOCO DA SEMANA")}</span><strong>${escapeHtml2(presentation2.title)}</strong></div><div class="diagnostic-row-signals"><span class="diagnostic-signal status-badge status-badge--${badgeVariant} is-${item.signalTone}">${escapeHtml2(item.signalLabel)}</span>${metricValue ? `<b class="diagnostic-score">${escapeHtml2(metricLabel)} ${escapeHtml2(metricValue)}</b>` : ""}</div></div><p class="diagnostic-primary-reason">${escapeHtml2(presentation2.primaryReason)}</p>${evidence ? `<dl class="diagnostic-evidence">${evidence}</dl>` : ""}${progress}${secondary}<div class="diagnostic-row-action"><span>AÇÃO RECOMENDADA</span>${actionButtons}</div></article>`;
     };
     const list = (section2, renderItem) => section2.items.length ? section2.items.map(renderItem).join("") : emptyState(section2.empty);
     const section = (key2) => model.sections.find((item) => item.key === key2);
@@ -23631,8 +23663,8 @@
       container.innerHTML = `${outcome}<p class="overview-alert-empty">${availableMinutes < 15 ? "Defina pelo menos 15 minutos para hoje para receber uma sugestão." : "Ainda não há uma atividade elegível com os dados atuais."}</p><a class="btn ghost small" href="#overview-study">Ver cronômetro e registrar estudo</a>`;
       return;
     }
-    const model = buildPriorityViewModel(item, 1), mastery = item.mastery == null ? "Domínio ainda sem evidência" : `Domínio ${Math.round(item.mastery)}/100`, reasons = model.reasons.slice(0, 3).join(" · ");
-    container.innerHTML = `${outcome}<article class="card card--action overview-action-card"><div><h3>${escapeHtml2(item.subjectName)} · ${escapeHtml2(item.topicName)}</h3><p><strong>${formatPlanMinutes(item.estimatedMinutes)}</strong> · ${escapeHtml2(recommendationActionLabel(item))} · prioridade ${model.score}/100</p><p class="overview-action-reason">${escapeHtml2(mastery)} · ${escapeHtml2(model.evidenceLabel.toLowerCase())}</p></div><div class="overview-action-buttons"><button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr2(item.id)}')">▶ ${escapeHtml2(recommendationActionLabel(item))}</button></div><details class="overview-action-explanation"><summary>Por que esta é a próxima ação?</summary><p>${escapeHtml2(reasons || "Selecionada pela prioridade atual, pelos pré-requisitos e pela disponibilidade de hoje.")}</p></details></article>`;
+    const action = buildStudyAction(item, { source: "overview" }), model = buildPriorityViewModel(item, 1), label2 = recommendationActionLabel(action), mastery = action.evidence.mastery == null ? "Domínio ainda sem evidência" : `Domínio ${Math.round(action.evidence.mastery)}/100`, reasons = action.reasons.slice(0, 3).join(" · "), minutes = action.suggestedMinutes == null ? "Tempo não estimado" : formatPlanMinutes(action.suggestedMinutes);
+    container.innerHTML = `${outcome}<article class="card card--action overview-action-card" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr2(action.id)}" data-activity-type="${action.activityType}"><div><h3>${escapeHtml2(item.subjectName)} · ${escapeHtml2(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml2(label2)} · prioridade ${action.priority ?? "—"}/100</p><p class="overview-action-reason">${escapeHtml2(mastery)} · ${escapeHtml2(action.evidence.label || model.evidenceLabel).toLowerCase()}</p></div><div class="overview-action-buttons"><button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr2(action.id)}','${action.source}')">▶ ${escapeHtml2(label2)}</button></div><details class="overview-action-explanation"><summary>Por que esta é a próxima ação?</summary><p>${escapeHtml2(reasons || "Selecionada pela prioridade atual, pelos pré-requisitos e pela disponibilidade de hoje.")}</p></details></article>`;
   }
   function renderOverviewDecisionArea() {
     const { availableMinutes } = refreshStudyRecommendationItems();
@@ -23665,10 +23697,10 @@
       return;
     }
     const cards = visible.map((item, index) => {
-      const model = buildPriorityViewModel(item, index + 1);
+      const action = buildStudyAction(item, { source: "today" }), model = buildPriorityViewModel(item, index + 1), label2 = recommendationActionLabel(action), minutes = action.suggestedMinutes == null ? "Tempo não estimado" : formatPlanMinutes(action.suggestedMinutes);
       const contributionRows = model.contributionRows.map((row) => `<div><span>${escapeHtml2(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100, row.value * 4)}%"></i></span><strong>+${row.value}</strong></div>`).join("");
       const stateIcon = { review: "↻", limited: "⚠", high: "★", calculated: "○", blocked: "🔒" }[model.state] || "○";
-      return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</h4><strong>${escapeHtml2(item.action || "Estudar agora")}</strong><p>${formatPlanMinutes(item.estimatedMinutes)}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${stateIcon} ${escapeHtml2(model.stateLabel)}</p><div class="priority-reasons">${model.reasons.slice(0, 4).map((reason) => `<span>+ ${escapeHtml2(reason)}</span>`).join("")}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml2(model.evidenceLabel.toLowerCase())}. Algoritmo v${item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="executeStudyRecommendation('${escapeAttr2(item.id)}')">▶ ${escapeHtml2(recommendationActionLabel(item))}</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr2(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr2(item.id)}')">Não foi útil</button></div></article>`;
+      return `<article class="study-recommendation ${index === 0 ? "is-primary" : ""}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr2(action.id)}" data-activity-type="${action.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</h4><strong>${escapeHtml2(item.action || "Estudar agora")}</strong><p>${minutes}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, "questão", "questões")}` : ""} · ${stateIcon} ${escapeHtml2(model.stateLabel)}</p><div class="priority-reasons">${action.reasons.slice(0, 4).map((reason) => `<span>+ ${escapeHtml2(reason)}</span>`).join("")}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml2(action.evidence.label || model.evidenceLabel).toLowerCase()}. Algoritmo v${action.algorithmVersion || item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${action.priority ?? model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? "" : "es"} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ""}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="executeStudyRecommendation('${escapeAttr2(action.id)}','${action.source}')">▶ ${escapeHtml2(label2)}</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr2(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr2(item.id)}')">Não foi útil</button></div></article>`;
     });
     const moreCards = cards.slice(1).join(""), moreRecommendations = moreCards ? `<details class="study-recommendation-more"><summary>Ver outras ${cards.length - 1} prioridades</summary><div class="study-recommendation-list">${moreCards}</div></details>` : "";
     container.innerHTML = `${cards[0]}${moreRecommendations}${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length === 1 ? "prioridade elegível" : "prioridades elegíveis"}</span></div>${excludedHtml}${history}`;
@@ -23688,9 +23720,10 @@
       measuredAt: nowISO2()
     });
   }
-  function recordRecommendationFeedback(recommendation, { accepted, reasonSkipped = null } = {}) {
-    const baseline = recommendationBaseline(recommendation), createdAt = nowISO2();
-    return recordRecommendationDecision(state.recommendationFeedback, recommendation, { accepted, reasonSkipped, baseline, snapshot: captureRecommendationSnapshot(recommendation, { baseline, createdAt }), now: createdAt, idGenerator: uid });
+  function recordRecommendationFeedback(recommendation, { accepted, reasonSkipped = null, source = null } = {}) {
+    const baseline = recommendationBaseline(recommendation), createdAt = nowISO2(), feedback = recordRecommendationDecision(state.recommendationFeedback, recommendation, { accepted, reasonSkipped, baseline, snapshot: captureRecommendationSnapshot(recommendation, { baseline, createdAt }), now: createdAt, idGenerator: uid });
+    if (source) feedback.presentationSource = source;
+    return feedback;
   }
   function measureRecommendationResults(session) {
     if (!session?.topicId) return;
@@ -23727,7 +23760,7 @@
       showToast("Obrigado. Esse retorno melhora a avaliação das recomendações.");
     }
   }
-  function startStudyRecommendation(id) {
+  function startStudyRecommendation(id, source = "today") {
     const recommendation = currentStudyRecommendations.find((item2) => item2.id === id);
     if (!recommendation) return;
     const fresh = recommendStudy(intelligenceCandidates(), { availableMinutes: Math.round(metaHoursToday() * 60) }).find((item2) => item2.id === id);
@@ -23740,7 +23773,7 @@
     guidedStudyService.next({ id });
     guidedStudyService.start();
     recommendation.strategy = buildStudyStrategy(recommendation, { availableMinutes: recommendation.estimatedMinutes });
-    recordRecommendationFeedback(recommendation, { accepted: true });
+    recordRecommendationFeedback(recommendation, { accepted: true, source });
     let plan = todayDailyStudyPlan();
     if (!plan) {
       plan = { id: uid("plan"), date: todayISO(), availableMinutes: Math.round(metaHoursToday() * 60), plannedMinutes: 0, flexMinutes: 0, createdAt: nowISO2(), updatedAt: nowISO2(), items: [] };
@@ -23765,8 +23798,8 @@
   var recommendationController = createRecommendationController({
     getRecommendations: () => currentStudyRecommendations,
     actionKind: recommendationActionKind,
-    onQuestions: (recommendation, kind) => {
-      const feedback = recordRecommendationFeedback(recommendation, { accepted: true }), question = addQuestaoRow({ subjectId: recommendation.subjectId, topicId: recommendation.topicId, recommendationId: recommendation.recommendationId });
+    onQuestions: (recommendation, kind, context = {}) => {
+      const feedback = recordRecommendationFeedback(recommendation, { accepted: true, source: context.source }), question = addQuestaoRow({ subjectId: recommendation.subjectId, topicId: recommendation.topicId, recommendationId: recommendation.recommendationId });
       feedback.actionKind = kind;
       feedback.resultingQuestionId = question.id;
       scheduleSave();
@@ -23774,8 +23807,8 @@
       showToast("Registro de questões aberto e vinculado à recomendação.");
       return question;
     },
-    onReview: (recommendation, kind) => {
-      const feedback = recordRecommendationFeedback(recommendation, { accepted: true });
+    onReview: (recommendation, kind, context = {}) => {
+      const feedback = recordRecommendationFeedback(recommendation, { accepted: true, source: context.source });
       let review = state.reviewAgenda.find((item) => (item.topicId || item.topicRef) === recommendation.topicId && item.status !== "Concluído");
       if (!review) review = reviewService.createManualReview({ subjectId: recommendation.subjectId, topicId: recommendation.topicId, date: todayISO(), suggestedDate: todayISO(), baseIntervalDays: 1, adaptive: true, manualDate: false, tipo: "Revisão livre" });
       feedback.actionKind = kind;
@@ -23785,10 +23818,10 @@
       completeAgendaReview(review.id);
       return review;
     },
-    onPrerequisite: (recommendation, kind) => {
+    onPrerequisite: (recommendation, kind, context = {}) => {
       const blocker = getTopicById(recommendation.blockedPrerequisites?.[0]);
       if (!blocker) return null;
-      const feedback = recordRecommendationFeedback(recommendation, { accepted: true });
+      const feedback = recordRecommendationFeedback(recommendation, { accepted: true, source: context.source });
       feedback.actionKind = kind;
       feedback.targetTopicId = blocker.topic.id;
       scheduleSave();
@@ -23796,10 +23829,10 @@
       showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);
       return blocker.topic;
     },
-    onStudy: (recommendation) => startStudyRecommendation(recommendation.id)
+    onStudy: (recommendation, kind, context = {}) => startStudyRecommendation(recommendation.id, context.source)
   });
-  function executeStudyRecommendation(id) {
-    return recommendationController.execute(id);
+  function executeStudyRecommendation(id, source = "today") {
+    return recommendationController.execute(id, { source });
   }
   var replanController = createReplanController({ service: replanService, repository: planningRepository, getState: () => state, clock: { today: todayISO, startOfWeek, addDays }, getDailyCapacity: (date2) => metaHoursForDate(date2) * 60, onChanged: renderWeeklyReplan, onConfirmed: ({ result }) => {
     scheduleSave();

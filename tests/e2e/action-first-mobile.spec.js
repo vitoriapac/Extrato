@@ -5,13 +5,22 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária',asyn
   await openDemo(page);
   const overviewAction=page.locator('#overviewNextAction .overview-action-card');
   await expect(overviewAction).toBeVisible();
+  await expect(overviewAction).toHaveAttribute('data-study-action-source','overview');
   await expect(page.locator('.overview-now')).toBeVisible();
   const topic=await overviewAction.locator('h3').innerText();
+  const actionId=await overviewAction.getAttribute('data-study-action-id');
   await expect(page.locator('#overviewAttention')).toBeVisible();
   await page.locator('#overviewAttentionViewAll').click();
   await expect(page.locator('#panel-hoje')).toHaveClass(/active/);
-  await expect.poll(async()=> (await page.locator('#studyRecommendation .study-recommendation').first().locator('h4').innerText()).toLocaleLowerCase()).toBe(topic.replace(' · ',' — ').toLocaleLowerCase());
+  const todayAction=page.locator('#studyRecommendation .study-recommendation').first();
+  await expect(todayAction).toHaveAttribute('data-study-action-source','today');
+  await expect(todayAction).toHaveAttribute('data-study-action-id',actionId);
+  await expect.poll(async()=> (await todayAction.locator('h4').innerText()).toLocaleLowerCase()).toBe(topic.replace(' · ',' — ').toLocaleLowerCase());
   await expect(page.locator('#studyRecommendation .recommendation-actions .btn').first()).toBeVisible();
+  await page.locator('.today-analysis-details > summary').click();
+  const diagnosisActions=page.locator('#diagnosisCenter [data-study-action-source="diagnosis"]');
+  await expect(diagnosisActions.first()).toBeVisible();
+  await expect(diagnosisActions.first()).toHaveAttribute('data-activity-type',/study|questions|review|prerequisite/);
 });
 
 test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',async({page})=>{
