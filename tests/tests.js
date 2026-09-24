@@ -28,6 +28,16 @@
     }
   });
 
+  test('migra dificuldade percebida das sessões do schema 19 para o schema atual',()=>{
+    const migrated=api.migrateState({schemaVersion:19,studySessions:[
+      {id:'session-hard',type:'questions',perceivedDifficulty:'hard'},
+      {id:'session-legacy',type:'study',perceivedDifficulty:'very-hard'}
+    ]});
+    equal(migrated.schemaVersion,api.CURRENT_SCHEMA_VERSION);
+    equal(migrated.studySessions[0].perceivedDifficulty,'hard');
+    equal(migrated.studySessions[1].perceivedDifficulty,null);
+  });
+
   test('mantém um estado do schema atual sem perder IDs',()=>{
     const current=cloneState(),subjectId=current.subjects[0].id,topicId=current.subjects[0].topics[0].id;
     const migrated=api.migrateState(current);

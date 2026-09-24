@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=651a89168d41">
+<link rel="stylesheet" href="styles/app.css?v=c086a9b18ea5">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -759,6 +759,17 @@
         </div>
         <small>Os erros são calculados pela diferença entre questões e acertos.</small>
       </section>
+      <section class="session-activity-fields" data-session-fields="study questions" hidden aria-labelledby="sessionDifficultyTitle">
+        <h4 id="sessionDifficultyTitle">Percepção do esforço</h4>
+        <label>Dificuldade percebida
+          <select class="select-control select-control--wide" id="sessionModalDifficulty" aria-label="Dificuldade percebida na sessão">
+            <option value="">Ainda não avaliada</option>
+            <option value="easy">Fácil</option>
+            <option value="medium">Média</option>
+            <option value="hard">Difícil</option>
+          </select>
+        </label>
+      </section>
       <section class="session-activity-fields" data-session-fields="review" hidden aria-labelledby="sessionReviewTitle">
         <h4 id="sessionReviewTitle">Como estava sua retenção?</h4>
         <label>Percepção ao recuperar o conteúdo
@@ -795,7 +806,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=651a89168d41"></script>
+  <script src="src/app.bundle.js?v=c086a9b18ea5"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

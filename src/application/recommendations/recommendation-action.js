@@ -11,6 +11,9 @@ export function recommendationActionKind(item={}){
 export function recommendationActionLabel(item){
   return({questions:'Resolver questões',review:'Iniciar revisão',prerequisite:'Estudar pré-requisito',study:'Iniciar estudo'})[recommendationActionKind(item)]||'Iniciar estudo';
 }
+export function sameStudyActionTarget(left,right){
+  return Boolean(left&&right)&&left.subjectId===right.subjectId&&left.topicId===right.topicId&&recommendationActionKind(left)===recommendationActionKind(right);
+}
 
 const finiteOrNull=value=>value==null||value===''||!Number.isFinite(Number(value))?null:Number(value);
 const sourceOrDefault=source=>STUDY_ACTION_SOURCES.includes(source)?source:'overview';

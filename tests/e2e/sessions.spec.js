@@ -1,6 +1,21 @@
 import {test,expect} from '@playwright/test';
 import {activateTab} from './helpers.js';
 
+test('registra dificuldade percebida na sessão e respeita os campos por atividade',async({page})=>{
+  await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(element=>element.remove());
+  await activateTab(page,'dashboard');
+  await page.locator('#timerTypeSelect').selectOption('questions');await page.locator('#timerStartBtn').click();
+  await expect.poll(()=>page.locator('#studyTimerDisplay').textContent()).not.toBe('00:00');await page.locator('#timerFinishBtn').click();
+  await expect(page.locator('#sessionModalDifficulty')).toBeVisible();
+  await page.locator('#sessionModalDifficulty').selectOption('hard');await page.locator('#sessionModalSaveBtn').click();
+  await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().studySessions.at(-1)?.perceivedDifficulty)).toBe('hard');
+
+  await page.locator('#timerTypeSelect').selectOption('review');await page.locator('#timerStartBtn').click();
+  await expect.poll(()=>page.locator('#studyTimerDisplay').textContent()).not.toBe('00:00');await page.locator('#timerFinishBtn').click();
+  await expect(page.locator('#sessionModalRetention')).toBeVisible();
+  await expect(page.locator('#sessionModalDifficulty')).toBeHidden();
+});
+
 test('conclui uma sessão pelo cronômetro e registra o histórico uma única vez',async({page})=>{
   await page.goto('/');
   await page.locator('#timerTypeSelect').selectOption('questions');
@@ -28,6 +43,7 @@ test('conclusão de revisão registra retenção percebida sem mostrar campos de
   await page.locator('#timerFinishBtn').click();
   await expect(page.locator('[data-session-fields="review"]')).toBeVisible();
   await expect(page.locator('[data-session-fields="questions"]')).toBeHidden();
+  await expect(page.locator('#sessionModalDifficulty')).toBeHidden();
   await page.locator('#sessionModalRetention').selectOption('effortful');
   await page.locator('#sessionModalSaveBtn').click();
   await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__?.getState().studySessions.at(-1)?.perceivedRetention)).toBe('effortful');

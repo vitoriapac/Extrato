@@ -40,7 +40,7 @@ import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eli
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
 import {captureRecommendationBaseline,captureRecommendationSnapshot,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
 import {buildRecommendationOutcomeViewModel} from './application/recommendations/build-recommendation-outcome-view-model.js';
-import {buildStudyAction,recommendationActionKind,recommendationActionLabel,STUDY_ACTION_SOURCES} from './application/recommendations/recommendation-action.js';
+import {buildStudyAction,recommendationActionKind,recommendationActionLabel,sameStudyActionTarget,STUDY_ACTION_SOURCES} from './application/recommendations/recommendation-action.js';
 import {createRecommendationController} from './application/recommendations/recommendation-controller.js';
 import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
 import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
@@ -457,9 +457,10 @@ function migrateV16toV17(data){
 function migrateV17toV18(data){data.examBlueprint=normalizeExamBlueprint(data.examBlueprint,data.examDate);data.activeTimer=data.activeTimer||{};data.activeTimer.strategy=data.activeTimer.strategy||null;data.activeTimer.strategyStep=Math.max(0,Number(data.activeTimer.strategyStep)||0);data.schemaVersion=18;return data}
 
 function migrateV18toV19(data){snapshotEvidenceScopes(data);data.schemaVersion=19;return data}
+function migrateV19toV20(data){data.studySessions=(data.studySessions||[]).map(session=>normalizeStudySession(session));data.schemaVersion=20;return data}
 
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20}});
 }
 
 function ensureStateDefaults(){
@@ -1386,6 +1387,7 @@ function showSessionModal(){
   document.getElementById('sessionModalResolved').value = '';
   document.getElementById('sessionModalCorrect').value = '';
   document.getElementById('sessionModalRetention').value = '';
+  document.getElementById('sessionModalDifficulty').value = '';
   document.getElementById('sessionModalNotes').value = '';
   syncSessionModalActivityFields(document.getElementById('sessionModalType').value||'study');
   overlay.classList.add('show');
@@ -1393,7 +1395,7 @@ function showSessionModal(){
 function syncSessionModalActivityFields(type=document.getElementById('sessionModalType').value||'study'){
   const labels={study:'Registre o que você estudou e atualize seus indicadores.',questions:'Informe volume e acertos para atualizar seu desempenho.',review:'Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.',simulation:'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.'};
   document.getElementById('sessionModalActivityHint').textContent=labels[type]||labels.study;
-  document.querySelectorAll('[data-session-fields]').forEach(section=>{section.hidden=section.dataset.sessionFields!==type});
+  document.querySelectorAll('[data-session-fields]').forEach(section=>{section.hidden=!section.dataset.sessionFields.split(/\s+/).includes(type)});
 }
 function closeSessionModal(){
   document.getElementById('sessionModalOverlay').classList.remove('show');
@@ -1429,19 +1431,25 @@ document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
   const resolved = Number(document.getElementById('sessionModalResolved').value) || 0;
   const correct = Number(document.getElementById('sessionModalCorrect').value) || 0;
   const perceivedRetention=document.getElementById('sessionModalRetention').value||null;
+  const perceivedDifficulty=document.getElementById('sessionModalDifficulty').value||null;
   const notes = document.getElementById('sessionModalNotes').value.trim();
+  const previousPriority=currentStudyRecommendations[0]?{...currentStudyRecommendations[0]}:null;
   const session = {
     id:uid('session'),startedAt:timerStartedAt || nowISO(),endedAt:nowISO(),date:localDateFromTimestamp(timerStartedAt || nowISO()),
     durationSeconds:timerSeconds,subjectId,topicId,type,questionsResolved:resolved,
-    correctAnswers:Math.min(correct,resolved),perceivedRetention,notes,planItemId:state.activeTimer.planItemId||null,
+    correctAnswers:Math.min(correct,resolved),perceivedRetention,perceivedDifficulty,notes,planItemId:state.activeTimer.planItemId||null,
     recommendationId:state.activeTimer.recommendationId||null,recommendationSource:state.activeTimer.recommendationSource||null,
     recommendationType:state.activeTimer.recommendationType||null,prioritySnapshot:state.activeTimer.prioritySnapshot??null
   };
   if(guidedStudyService.current())guidedStudyService.complete(session);else sessionService.complete(session);
   persistAndRender();
+  renderStudyRecommendation();renderDiagnosisCenter();
+  const nextPriority=currentStudyRecommendations[0]||null;
+  const priorityChanged=previousPriority&&nextPriority&&!sameStudyActionTarget(previousPriority,nextPriority);
   const openSimulationFlow=type==='simulation';
   closeSessionModal();
   if(openSimulationFlow){activateTab('questoes');addSimuladoRow();showToast('Sessão registrada. Complete agora os resultados do simulado.');return}
+  if(priorityChanged){showToast(`Sessão registrada. Nova prioridade: ${nextPriority.subjectName} — ${nextPriority.topicName} · ${formatPlanMinutes(nextPriority.estimatedMinutes)}.`);return}
   showToast(type==='questions'&&resolved>0?'Sessão e questões registradas.':'Sessão registrada. Seus indicadores foram atualizados.');
 });
 
