@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=c086a9b18ea5">
+<link rel="stylesheet" href="styles/app.css?v=e8544dc571d4">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -154,6 +154,7 @@
           <span>STUDYTRACK · MODO FOCO</span>
           <h3 id="timerFocusTitle">Sessão de estudo</h3>
           <p id="timerFocusSubtitle">Estudo teórico · Sem meta de tempo</p>
+          <small class="timer-focus-hint">Esc · sair do modo foco</small>
         </section>
         <div class="timer-context" aria-label="Contexto da sessão">
           <select class="select-control" id="timerSubjectSelect" aria-label="Disciplina da sessão"></select>
@@ -283,6 +284,8 @@
     <p class="helper-text">
       Só o que importa agora: alertas, plano do dia, prioridades, tarefas, atrasos, simulados planejados e metas. Sem distrações.
     </p>
+
+    <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
 
     <div class="chart-card">
       <h3>Próxima ação recomendada</h3>
@@ -806,7 +809,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=c086a9b18ea5"></script>
+  <script src="src/app.bundle.js?v=e8544dc571d4"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

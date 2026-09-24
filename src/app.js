@@ -965,6 +965,10 @@ function focusStudyTimer(){
   activateTab('dashboard');
   document.getElementById('timerStartBtn')?.focus();
 }
+function openStudyTimerFocus(){
+  activateTab('dashboard');
+  toggleTimerFocus(true);
+}
 function toggleTimerFocus(force=null){
   const active=force==null?!document.body.classList.contains('timer-focus-active'):Boolean(force);
   document.body.classList.toggle('timer-focus-active',active);
@@ -1230,6 +1234,22 @@ function currentTimerSeconds(){
   }
   return seconds;
 }
+function hasStartedStudyTimer(){
+  const active=state.activeTimer||{};
+  return Boolean(active.startedAt||active.isRunning||Number(active.accumulatedSeconds)>0);
+}
+function activeTimerMatchesRecommendation(recommendation){
+  if(!hasStartedStudyTimer()||!recommendation)return false;
+  const active=state.activeTimer||{},sameTarget=active.subjectId===recommendation.subjectId&&active.topicId===recommendation.topicId;
+  if(!sameTarget)return false;
+  const actionType=recommendationActionKind(recommendation);
+  return !active.recommendationType||active.recommendationType===actionType||active.type===actionType;
+}
+function renderActiveStudyTimerNotice(recommendation){
+  if(!hasStartedStudyTimer()||activeTimerMatchesRecommendation(recommendation))return '';
+  const active=state.activeTimer||{},subject=active.subjectId?getSubjectName(active.subjectId):'Disciplina não selecionada',topic=active.topicId?getTopicName(active.topicId):'Tópico não selecionado',elapsed=formatDuration(currentTimerSeconds()),targetMinutes=Math.max(0,Number(active.targetMinutes)||0),target=targetMinutes?` · meta ${formatPlanMinutes(targetMinutes)}`:'';
+  return `<aside class="active-study-notice" aria-label="Sessão em andamento"><div><strong>Sessão em andamento</strong><span>${escapeHtml(subject)} — ${escapeHtml(topic)} · ${elapsed}${target} · ${active.isRunning?'cronômetro rodando':'pausada'}</span></div><button class="btn ghost small" type="button" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button></aside>`;
+}
 function updateTimerDisplay(){
   const el = document.getElementById('studyTimerDisplay');
   if(el) el.textContent = formatTimer(timerSeconds);
@@ -1275,6 +1295,9 @@ function updateTimerControls(){
     const el=document.getElementById(id); if(el) el.disabled=hasTime;
   });
 }
+function refreshStudyActionViews(){
+  if(document.getElementById('studyRecommendation'))renderStudyRecommendation();
+}
 function populateTimerTopicSelect(subjectId,selectedTopicId){
   const select=document.getElementById('timerTopicSelect');
   if(!select) return;
@@ -1319,6 +1342,7 @@ function startTimer(){
   timerTick();
   updateTimerControls();
   scheduleSave();
+  refreshStudyActionViews();
 }
 function pauseTimer(shouldSave=true){
   timerSeconds=currentTimerSeconds();
@@ -1332,7 +1356,7 @@ function pauseTimer(shouldSave=true){
   timerIntervalId=null;
   updateTimerDisplay();
   updateTimerControls();
-  if(shouldSave) scheduleSave();
+  if(shouldSave){scheduleSave();refreshStudyActionViews()}
 }
 function resetTimer(){
   pauseTimer(false);
@@ -1344,6 +1368,7 @@ function resetTimer(){
   updateTimerDisplay();
   updateTimerControls();
   scheduleSave();
+  refreshStudyActionViews();
 }
 function restoreTimerFromState(){
   clearInterval(timerIntervalId);
@@ -4110,9 +4135,11 @@ function renderOverviewNextAction(availableMinutes){
   const container=document.getElementById('overviewNextAction');if(!container)return;
   const outcome=renderPendingRecommendationOutcome();
   const item=currentStudyRecommendations[0];
-  if(!item){container.innerHTML=`${outcome}<p class="overview-alert-empty">${availableMinutes<15?'Defina pelo menos 15 minutos para hoje para receber uma sugestão.':'Ainda não há uma atividade elegível com os dados atuais.'}</p><a class="btn ghost small" href="#overview-study">Ver cronômetro e registrar estudo</a>`;return}
+  if(!item){container.innerHTML=`${renderActiveStudyTimerNotice(null)}${outcome}<p class="overview-alert-empty">${availableMinutes<15?'Defina pelo menos 15 minutos para hoje para receber uma sugestão.':'Ainda não há uma atividade elegível com os dados atuais.'}</p><a class="btn ghost small" href="#overview-study">Ver cronômetro e registrar estudo</a>`;return}
   const action=buildStudyAction(item,{source:'overview'}),model=buildPriorityViewModel(item,1),label=recommendationActionLabel(action),mastery=action.evidence.mastery==null?'Domínio ainda sem evidência':`Domínio ${Math.round(action.evidence.mastery)}/100`,reasons=action.reasons.slice(0,3).join(' · '),minutes=action.suggestedMinutes==null?'Tempo não estimado':formatPlanMinutes(action.suggestedMinutes);
-  container.innerHTML=`${outcome}<article class="card card--action overview-action-card" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml(label)} · prioridade ${action.priority??'—'}/100</p><p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(action.evidence.label||model.evidenceLabel).toLowerCase()}</p></div><div class="overview-action-buttons"><button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${action.source}')">▶ ${escapeHtml(label)}</button></div><details class="overview-action-explanation"><summary>Por que esta é a próxima ação?</summary><p>${escapeHtml(reasons||'Selecionada pela prioridade atual, pelos pré-requisitos e pela disponibilidade de hoje.')}</p></details></article>`;
+  const inProgress=activeTimerMatchesRecommendation(item),blocked=hasStartedStudyTimer()&&!inProgress,sessionLabel=state.activeTimer?.isRunning?'Cronômetro rodando':'Sessão pausada';
+  const actionButton=inProgress?`<button class="btn" type="button" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`:blocked?'<button class="btn" type="button" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>':`<button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${action.source}')">▶ ${escapeHtml(label)}</button>`;
+  container.innerHTML=`${renderActiveStudyTimerNotice(item)}${outcome}<article class="card card--action overview-action-card ${inProgress?'is-in-progress':''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml(label)} · prioridade ${action.priority??'—'}/100</p><p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(action.evidence.label||model.evidenceLabel).toLowerCase()}</p>${inProgress?`<span class="active-study-status">Em andamento · ${sessionLabel}</span>`:''}</div><div class="overview-action-buttons">${actionButton}</div><details class="overview-action-explanation"><summary>Por que esta é a próxima ação?</summary><p>${escapeHtml(reasons||'Selecionada pela prioridade atual, pelos pré-requisitos e pela disponibilidade de hoje.')}</p></details></article>`;
 }
 function renderOverviewDecisionArea(){const {availableMinutes}=refreshStudyRecommendationItems();renderOverviewNextAction(availableMinutes);renderAlertasInteligentes()}
 function renderStudyRecommendation(){
@@ -4136,16 +4163,18 @@ function renderStudyRecommendation(){
   if(!visible.length){
     const hasContent=activeTopics().length>0,tab=availableMinutes<15||!hasContent?'metas':'disciplinas',label=availableMinutes<15?'Ajustar disponibilidade':!hasContent?'Configurar disciplinas e tópicos':'Revisar elegibilidade e pré-requisitos';
     const message=availableMinutes<15?'Defina pelo menos 15 minutos disponíveis para hoje.':!hasContent?'Cadastre ou importe disciplinas e tópicos para gerar uma recomendação.':'Não há atividade elegível agora. Confira pré-requisitos, esforço e itens já concluídos.';
-    container.innerHTML=`${outcome}<div class="empty-state empty-state--compact recommendation-empty-state" role="status"><strong>Nenhuma recomendação disponível</strong><p>${escapeHtml(message)}</p><button class="btn ghost small" data-delegated-click="navigateKpi('${tab}')">${escapeHtml(label)}</button></div>${excludedHtml}${history}`;return
+    container.innerHTML=`${renderActiveStudyTimerNotice(null)}${outcome}<div class="empty-state empty-state--compact recommendation-empty-state" role="status"><strong>Nenhuma recomendação disponível</strong><p>${escapeHtml(message)}</p><button class="btn ghost small" data-delegated-click="navigateKpi('${tab}')">${escapeHtml(label)}</button></div>${excludedHtml}${history}`;return
   }
   const cards=visible.map((item,index)=>{
     const action=buildStudyAction(item,{source:'today'}),model=buildPriorityViewModel(item,index+1),label=recommendationActionLabel(action),minutes=action.suggestedMinutes==null?'Tempo não estimado':formatPlanMinutes(action.suggestedMinutes);
+    const inProgress=activeTimerMatchesRecommendation(item),blocked=hasStartedStudyTimer()&&!inProgress,sessionLabel=state.activeTimer?.isRunning?'Cronômetro rodando':'Sessão pausada';
     const contributionRows=model.contributionRows.map(row=>`<div><span>${escapeHtml(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100,row.value*4)}%"></i></span><strong>+${row.value}</strong></div>`).join('');
     const stateIcon={review:'↻',limited:'⚠',high:'★',calculated:'○',blocked:'🔒'}[model.state]||'○';
-    return `<article class="study-recommendation ${index===0?'is-primary':''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action||'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions?` · ${pluralize(item.recommendedQuestions,'questão','questões')}`:''} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p><div class="priority-reasons">${action.reasons.slice(0,4).map(reason=>`<span>+ ${escapeHtml(reason)}</span>`).join('')}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(action.evidence.label||model.evidenceLabel).toLowerCase()}. Algoritmo v${action.algorithmVersion||item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${action.priority??model.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details></div><div class="recommendation-actions"><button class="btn" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${action.source}')">▶ ${escapeHtml(label)}</button><button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
+    const actionButton=inProgress?`<button class="btn" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`:blocked?'<button class="btn" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>':`<button class="btn" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${action.source}')">▶ ${escapeHtml(label)}</button>`;
+    return `<article class="study-recommendation ${index===0?'is-primary':''} ${inProgress?'is-in-progress':''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">#${model.position} na fila de estudo</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action||'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions?` · ${pluralize(item.recommendedQuestions,'questão','questões')}`:''} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p>${inProgress?`<span class="active-study-status">Em andamento · ${sessionLabel}</span>`:''}<div class="priority-reasons">${action.reasons.slice(0,4).map(reason=>`<span>+ ${escapeHtml(reason)}</span>`).join('')}</div><details class="recommendation-explanation"><summary>Ver composição da prioridade</summary><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(action.evidence.label||model.evidenceLabel).toLowerCase()}. Algoritmo v${action.algorithmVersion||item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${action.priority??model.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details></div><div class="recommendation-actions">${actionButton}<button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
   });
   const moreCards=cards.slice(1).join(''),moreRecommendations=moreCards?`<details class="study-recommendation-more"><summary>Ver outras ${cards.length-1} prioridades</summary><div class="study-recommendation-list">${moreCards}</div></details>`:'';
-  container.innerHTML=`${cards[0]}${moreRecommendations}${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length===1?'prioridade elegível':'prioridades elegíveis'}</span></div>${excludedHtml}${history}`;
+  container.innerHTML=`${renderActiveStudyTimerNotice(visible[0])}${cards[0]}${moreRecommendations}${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length===1?'prioridade elegível':'prioridades elegíveis'}</span></div>${excludedHtml}${history}`;
 }
 function recommendationBaseline(recommendation){
   const topicId=recommendation.topicId,performance=getTopicPerformance(topicId),found=getTopicById(topicId),last=found?.topic?.lastReviewedAt||found?.topic?.lastCompletedAt||null;
@@ -4254,6 +4283,11 @@ function ensureTodayDailyStudyPlan(priorities,availableMinutes){
 function planItemStatusLabel(status){
   return ({planned:'Planejada',in_progress:'Em andamento',partial:'Parcial',completed:'Concluída',deferred:'Adiada',replaced:'Substituída',skipped:'Ignorada'})[status]||'Planejada';
 }
+function renderTodayExecutionSummary(model){
+  const container=document.getElementById('todayExecutionSummary');if(!container)return;
+  const progress=model.progress,progressLabel=progress===null?'Plano diário ainda não montado':`${progress}% do plano executado`;
+  container.innerHTML=`<section class="study-plan-summary today-execution-summary" aria-label="Resumo de execução de hoje"><div><strong>${formatPlanMinutes(model.availableMinutes)}</strong><span>Disponível hoje</span></div><div><strong>${formatPlanMinutes(model.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(model.executedMinutes)}</strong><span>Executado</span></div><div class="today-execution-progress"><div><span>${escapeHtml(formatDatePt(model.date))} · ${progressLabel}</span>${progress===null?'':'<strong>'+progress+'%</strong>'}</div><progress max="100" value="${progress??0}" aria-label="${escapeAttr(progressLabel)}" ${progress===null?'hidden':''}></progress></div></section>`;
+}
 function renderPlanoHoje(){
   const container=document.getElementById('planoHojeContent');
   if(!container) return;
@@ -4262,6 +4296,8 @@ function renderPlanoHoje(){
   const priorities=computeStudyPriorities();
   const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
   const plan=ensureTodayDailyStudyPlan(priorities,availableMinutes);
+  const todayModel=buildTodayViewModel({date:todayISO(),availableMinutes,plan,priorities,pastPlans:state.dailyPlans.filter(row=>row.date>=startOfWeek(todayISO()))});
+  renderTodayExecutionSummary(todayModel);
 
   if(!plan&&priorities.length===0){
     container.innerHTML='<div class="upcoming-empty">Nenhuma atividade elegível para o tempo disponível. Confira os pré-requisitos e a meta de hoje.</div>';
@@ -4273,11 +4309,11 @@ function renderPlanoHoje(){
   }
 
   const items=state.executionMode==='sequence'?[...plan.items].sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0)):plan.items;
-  const todayModel=buildTodayViewModel({date:todayISO(),availableMinutes,plan,priorities,pastPlans:state.dailyPlans.filter(row=>row.date>=startOfWeek(todayISO()))});
   const listaHtml=items.map(item=>{
     const progress=item.plannedMinutes>0?Math.min(100,Math.round(item.executedSeconds/(item.plannedMinutes*60)*100)):0;
-    const active=state.activeTimer.planItemId===item.id&&state.activeTimer.isRunning;
-    const canStart=!['completed','deferred','replaced','skipped'].includes(item.status)&&!active;
+    const hasTimer=hasStartedStudyTimer(),active=hasTimer&&state.activeTimer.planItemId===item.id,running=active&&state.activeTimer.isRunning;
+    const canStart=!['completed','deferred','replaced','skipped'].includes(item.status)&&!active,blocked=hasTimer&&!active;
+    const actionButton=active?'<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>':canStart&&!blocked?`<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds>0?'▶ Continuar':'▶ Iniciar'}</button>`:canStart&&blocked?'<button type="button" class="btn small" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>':'';
     return `
     <div class="plano-item ${active?'is-active':''} ${item.status==='completed'?'is-completed':''}">
       <div class="plano-item-head">${escapeHtml(item.statusIcon||'📌')} ${escapeHtml(item.statusLabel||planItemStatusLabel(item.status))} · ${Number.isFinite(Number(item.score))?Math.round(Number(item.score))+'/100':'prioridade não calculada'}</div>
@@ -4286,8 +4322,8 @@ function renderPlanoHoje(){
       <div class="plano-item-reason">⏱️ ${formatPlanMinutes(item.plannedMinutes)} · ${escapeHtml(item.action)}${item.recommendedQuestions?' · '+item.recommendedQuestions+' questões':''}</div>
       <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>
       <div class="plano-item-actions">
-        ${canStart?`<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds>0?'▶ Continuar':'▶ Iniciar'}</button>`:''}
-        <span class="plano-item-status">${active?'Cronômetro ativo':escapeHtml(planItemStatusLabel(item.status))} · ${formatDuration(item.executedSeconds)} executado</span>
+        ${actionButton}
+        <span class="plano-item-status">${active?running?'Sessão em andamento · cronômetro rodando':'Sessão em andamento · pausada':escapeHtml(planItemStatusLabel(item.status))} · ${formatDuration(item.executedSeconds)} executado</span>
       </div>
     </div>
   `}).join('');
@@ -4296,7 +4332,6 @@ function renderPlanoHoje(){
   const executionPct=plan.plannedMinutes>0?Math.min(100,Math.round(executedSeconds/(plan.plannedMinutes*60)*100)):0;
 
   container.innerHTML=`
-    <div class="study-plan-summary today-execution-summary"><div><strong>${formatPlanMinutes(todayModel.availableMinutes)}</strong><span>Disponível hoje</span></div><div><strong>${formatPlanMinutes(todayModel.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(todayModel.executedMinutes)}</strong><span>Executado · ${todayModel.progress??0}%</span></div></div>
     ${todayModel.recoveryMinutes?`<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} pendentes de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>`:''}
     ${listaHtml}
     ${plan.flexMinutes>0?`<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">⏱️ ${formatPlanMinutes(plan.flexMinutes)} para pausas, correção ou continuidade</div></div>`:''}
@@ -4739,7 +4774,7 @@ const DELEGATED_ACTION_HANDLERS={
   calculateReplanPreview,clearReplanPreview,confirmReplan,undoPlanAdjustment,saveWeeklyCloseSnapshot,previewWeeklyCloseActions,confirmWeeklyCloseActions,toggleWeeklyPriority,executeStudyRecommendation,
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
-  editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,toggleTimerFocus,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
+  editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,openStudyTimerFocus,toggleTimerFocus,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
   advanceGuidedStrategy,dismissIntelligentAlert,dismissStudyRecommendation,markRecommendationNotUseful,rateRecommendationOutcome,startStudyRecommendation,
   requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRadarSubject,setRetentionFilter,setSubjectExamFilter,setSubjectTopicFilter,toggleActiveExamTag,
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
