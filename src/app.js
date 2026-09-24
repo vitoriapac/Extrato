@@ -12,6 +12,7 @@ import {parseLocalDate} from './core/date-utils.js';
 import {createAppContext} from './application/create-app-context.js';
 import {bootstrapApplication} from './bootstrap/bootstrap-application.js';
 import {registerApplicationLifecycle} from './bootstrap/register-lifecycle.js';
+import {registerMobileInputVisibility} from './ui/mobile-input-visibility.js';
 import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,REVIEW_RATINGS,calculateAdaptiveInterval,createAdaptiveReviewState,applyAdaptiveReviewRating} from './domain/reviews.js';
 import {createDefaultState} from './state/defaults.js';
 import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
@@ -3443,8 +3444,8 @@ function renderSelectedPeriodComparison(){
   const reviews=state.reviewAgenda.map(item=>({...item,date:item.completedAt?localDateFromTimestamp(item.completedAt):item.date}));
   const model=buildPeriodComparisonViewModel({sessions:state.studySessions,questions:state.questoes,reviews,today:todayISO(),preset:preset.value,start,end});
   const format=(metric,value)=>value==null?'Dados insuficientes':metric.unit==='min'?`${Math.floor(value/60)}h ${String(value%60).padStart(2,'0')}min`:metric.unit==='percentage_points'?`${value}%`:String(value);
-  const delta=metric=>metric.delta==null?'Sem comparação':metric.unit==='percentage_points'?`${metric.delta>0?'+':''}${metric.delta} p.p.`:metric.unit==='min'?`${metric.delta>0?'+':'−'}${Math.floor(Math.abs(metric.delta)/60)}h ${String(Math.abs(metric.delta)%60).padStart(2,'0')}min`:`${metric.delta>0?'+':''}${metric.delta}`;
-  container.innerHTML=`<p class="period-comparison-caption"><strong>${escapeHtml(model.currentPeriod.label)}</strong> · ${escapeHtml(model.currentPeriod.start)} a ${escapeHtml(model.currentPeriod.end)} <span>comparado com ${escapeHtml(model.previousPeriod.start)} a ${escapeHtml(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><b>${format(metric,metric.previous)}</b><b>${format(metric,metric.current)}</b><b class="comparison-delta ${metric.state}">${delta(metric)}</b></div>`).join('')}</div><aside class="comparison-insight" aria-label="Leitura da comparação">${model.insights.combinedMessage?`<p class="comparison-insight-combined">${escapeHtml(model.insights.combinedMessage)}</p>`:''}<p>${escapeHtml(model.insights.accuracyMessage)}</p><small>${escapeHtml(model.insights.caveat)}</small></aside>`;
+  const delta=metric=>metric.key==='accuracy'&&model.insights.confidence!=='moderate'?'Amostra insuficiente':metric.delta==null?'Sem comparação':metric.unit==='percentage_points'?`${metric.delta>0?'+':''}${metric.delta} p.p.`:metric.unit==='min'?`${metric.delta>0?'+':'−'}${Math.floor(Math.abs(metric.delta)/60)}h ${String(Math.abs(metric.delta)%60).padStart(2,'0')}min`:`${metric.delta>0?'+':''}${metric.delta}`;
+  container.innerHTML=`<p class="period-comparison-caption"><strong>${escapeHtml(model.currentPeriod.label)}</strong> · ${escapeHtml(model.currentPeriod.start)} a ${escapeHtml(model.currentPeriod.end)} <span>comparado com ${escapeHtml(model.previousPeriod.start)} a ${escapeHtml(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><b>${format(metric,metric.previous)}</b><b>${format(metric,metric.current)}</b><b class="comparison-delta ${metric.key==='accuracy'&&model.insights.confidence!=='moderate'?'insufficient':metric.state}">${delta(metric)}</b></div>`).join('')}</div><aside class="comparison-insight" aria-label="Leitura da comparação">${model.insights.combinedMessage?`<p class="comparison-insight-combined">${escapeHtml(model.insights.combinedMessage)}</p>`:''}<p>${escapeHtml(model.insights.accuracyMessage)}</p><small>${escapeHtml(model.insights.caveat)}</small></aside>`;
 }
 
 /* ===== ESTIMATIVA DE RITMO ===== */
@@ -4925,6 +4926,7 @@ if(backToTopBtn){
   syncBackToTop();
 }
 registerApplicationLifecycle({window,onBeforeUnload:()=>{if(!TEST_MODE&&!suppressBeforeUnloadSave)writeLocalState(JSON.stringify(pickPersistentState(state)))},onResponsiveChange:()=>{renderQuestoes();renderSimulados();renderStudySessionsHistory();renderAgenda();renderCalendar()}});
+registerMobileInputVisibility({window,document});
 
 setCalendarMobileView('month');
 const initialTab = location.hash.replace('#','');

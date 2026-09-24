@@ -1548,3 +1548,4 @@ body.timer-focus-active .timer-context{display:none!important}
 .diagnostic-understanding dt{color:var(--text-secondary);font:10px/1.4 var(--font-data)}
 .diagnostic-understanding dd{margin:0;color:var(--text-primary);font:500 10px/1.4 var(--font-data);overflow-wrap:anywhere}
 @media(max-width:760px){.diagnostic-understanding>summary{min-height:44px}.exam-subject-config>summary{min-height:44px}}
+@media(max-width:760px){.panel input,.panel select,.panel textarea,.panel [contenteditable="true"]{scroll-margin-block:calc(var(--sticky-stack-height,52px) + 12px)}}

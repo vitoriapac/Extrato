@@ -8,7 +8,7 @@ test('resume aumento de volume e acerto apenas com amostra comparável',()=>{
   const model=buildPeriodComparisonInsights(comparison(12,30,5),{currentQuestionVolume:32,previousQuestionVolume:25});
   assert.equal(model.confidence,'moderate');
   assert.equal(model.combinedState,'available');
-  assert.equal(model.combinedMessage,'Você aumentou o volume de questões e também a taxa de acerto.');
+  assert.equal(model.combinedMessage,'Volume e desempenho melhoraram.');
 });
 
 test('explica aumento de tempo com queda no acerto sem alegar causalidade',()=>{
