@@ -128,7 +128,23 @@ npm run check
 
 IndexedDB é usado em conjunto com armazenamento local. Cada estado recebe `updatedAt`; o mais recente é carregado. Backups automáticos rotativos possuem checksum SHA-256. Antes de adotar dados locais ou importados, a aplicação migra e valida toda a estrutura. Abas abertas trocam versões por `BroadcastChannel`.
 
-O schema 19 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo, vínculos auditáveis do planejamento, evidências e resultados das recomendações, estado individual da revisão adaptativa, normalização das sessões e snapshots do escopo de evidências históricas. Dados ausentes são mantidos em estado neutro (`null`) e backups anteriores continuam sendo migrados automaticamente pelas migrações sequenciais até a versão atual.
+O schema 20 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo, vínculos auditáveis do planejamento, evidências e resultados das recomendações, estado individual da revisão adaptativa, normalização das sessões e snapshots do escopo de evidências históricas. Dados ausentes são mantidos em estado neutro (`null`) e backups anteriores continuam sendo migrados automaticamente pelas migrações sequenciais até a versão atual.
+
+## Contrato de ação de estudo
+
+`buildStudyAction` em `src/application/recommendations/recommendation-action.js` é a entrada única para transformar uma recomendação em `StudyAction`. Visão Geral, Hoje e Diagnóstico usam essa função e entregam `id` e `source` ao mesmo `recommendationController.execute`; Estudo Guiado recebe o contexto daí. Uma área nova não deve montar outra estrutura de ação.
+
+| Campo | Contrato | Destino |
+| --- | --- | --- |
+| `id` | Obrigatório; identifica o item acionável na lista atual. | Transitório; usado para localizar e revalidar a recomendação ao executar. |
+| `source` | Obrigatório; `overview`, `today`, `diagnosis`, `planning` ou `review`. | Registrado como `recommendationSource` na sessão e origem da apresentação no feedback. |
+| `subjectId`, `topicId` | Referências do alvo; podem ser `null` quando a recomendação não tem esse nível de detalhe. | Persistidos na sessão; servem de chave para a evidência recalculada. |
+| `activityType` | Obrigatório; derivado de atividade, pré-requisito ou tipo de estudo (`study`, `questions`, `review`, `prerequisite`). | Persistido como `recommendationType`; o tipo efetivamente executado também fica em `session.type`. |
+| `suggestedMinutes`, `priority` | Números finitos ou `null`; são estimativas no momento da recomendação. | Transitórios na ação; o cronômetro guarda a meta e a sessão guarda a duração real. |
+| `reasons`, `evidence` | Lista de motivos e retrato analítico; métricas ausentes permanecem `null`. | Usados na apresentação e no snapshot do feedback, sem substituir a evidência medida depois da sessão. |
+| `recommendationId`, `algorithmVersion` | O primeiro é opcional até a apresentação receber um ID; a versão pode ser `null`. | O ID vincula sessão e feedback; a versão permite interpretar o snapshot histórico. |
+
+O objeto retornado é imutável. Ao clicar, o controlador revalida o candidato antes de iniciar a ação. A conclusão registra sessão e resultado, atualiza questões/revisões quando aplicável, mede a nova evidência e recalcula as recomendações. O próximo `StudyAction` é derivado do estado atualizado; `id` e `priority` anteriores não são reutilizados como verdade persistida.
 
 O Índice de Prontidão usa cobertura (30%), domínio (25%), retenção (20%), consistência (15%) e simulados (10%). Pesos de fatores indisponíveis são redistribuídos entre as evidências existentes; a ausência reduz a confiança, mas não produz nota zero.
 
