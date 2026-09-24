@@ -932,6 +932,7 @@ function focusStudyTimer(){
 function toggleTimerFocus(force=null){
   const active=force==null?!document.body.classList.contains('timer-focus-active'):Boolean(force);
   document.body.classList.toggle('timer-focus-active',active);
+  renderTimerFocusContext();
   const toggle=document.getElementById('timerFocusToggle');
   if(toggle){toggle.setAttribute('aria-pressed',String(active));toggle.textContent=active?'Sair do modo foco':'⛶ Modo foco'}
   if(active){document.querySelector('#panel-dashboard .timer-block')?.scrollIntoView({block:'center',behavior:'smooth'});requestAnimationFrame(()=>document.getElementById(timerRunning?'timerPauseBtn':'timerStartBtn')?.focus())}
@@ -1248,7 +1249,19 @@ function updateTimerDisplay(){
       if(progressEl){progressEl.value=0;progressEl.removeAttribute('aria-valuetext');progressEl.hidden=true}
     }
   }
+  renderTimerFocusContext();
   renderGuidedStrategy();
+}
+function renderTimerFocusContext(){
+  const section=document.getElementById('timerFocusContext');
+  if(!section)return;
+  section.hidden=!document.body.classList.contains('timer-focus-active');
+  if(section.hidden)return;
+  const active=state.activeTimer||{},subject=active.subjectId?getSubjectName(active.subjectId):'Disciplina não selecionada',topic=active.topicId?getTopicName(active.topicId):'Tópico não selecionado';
+  const activityLabels={study:'Estudo teórico',review:'Revisão',questions:'Questões',simulation:'Simulado'};
+  const minutes=Math.max(0,Number(active.targetMinutes)||0);
+  document.getElementById('timerFocusTitle').textContent=`${subject} — ${topic}`;
+  document.getElementById('timerFocusSubtitle').textContent=`${activityLabels[active.type]||activityLabels.study} · ${minutes?`Meta de ${formatPlanMinutes(minutes)}`:'Sem meta de tempo'}`;
 }
 function renderGuidedStrategy(){const el=document.getElementById('guidedStrategy'),strategy=state.activeTimer?.strategy;if(!el)return;el.hidden=!strategy;if(!strategy){el.innerHTML='';return}const index=Math.min(state.activeTimer.strategyStep||0,strategy.steps.length-1),step=strategy.steps[index];el.innerHTML=`<strong>${escapeHtml(strategy.label)} · etapa ${index+1}/${strategy.steps.length}</strong><span>${escapeHtml(step.label)} · ${step.minutes} min</span><button class="btn ghost small" data-delegated-click="advanceGuidedStrategy()">${index===strategy.steps.length-1?'Concluir etapas':'Próxima etapa'}</button>`}
 function advanceGuidedStrategy(){const strategy=state.activeTimer?.strategy;if(!strategy)return;const index=state.activeTimer.strategyStep||0;strategy.steps[index].status='completed';if(index<strategy.steps.length-1)state.activeTimer.strategyStep=index+1;renderGuidedStrategy();scheduleSave()}
@@ -1279,6 +1292,7 @@ function populateTimerContextControls(){
   if(subjectSelect.value!==(state.activeTimer.subjectId||'')) state.activeTimer.subjectId=null;
   populateTimerTopicSelect(state.activeTimer.subjectId,state.activeTimer.topicId);
   typeSelect.value=state.activeTimer.type||'study';
+  renderTimerFocusContext();
   updateTimerControls();
 }
 function timerTick(){
@@ -1390,10 +1404,11 @@ document.getElementById('timerSubjectSelect').addEventListener('change',function
   state.activeTimer.subjectId=this.value||null;
   state.activeTimer.topicId=null;
   populateTimerTopicSelect(state.activeTimer.subjectId,null);
+  renderTimerFocusContext();
   scheduleSave();
 });
-document.getElementById('timerTopicSelect').addEventListener('change',function(){ state.activeTimer.topicId=this.value||null; scheduleSave(); });
-document.getElementById('timerTypeSelect').addEventListener('change',function(){ state.activeTimer.type=this.value||'study'; scheduleSave(); });
+document.getElementById('timerTopicSelect').addEventListener('change',function(){ state.activeTimer.topicId=this.value||null; renderTimerFocusContext(); scheduleSave(); });
+document.getElementById('timerTypeSelect').addEventListener('change',function(){ state.activeTimer.type=this.value||'study'; renderTimerFocusContext(); scheduleSave(); });
 document.getElementById('timerResetBtn').addEventListener('click', () => {
   if(timerSeconds === 0){ return; }
   showConfirm('Zerar o cronômetro? O tempo desta sessão será perdido.', resetTimer);

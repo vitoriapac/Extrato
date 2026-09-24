@@ -19755,6 +19755,7 @@
   function toggleTimerFocus(force = null) {
     const active = force == null ? !document.body.classList.contains("timer-focus-active") : Boolean(force);
     document.body.classList.toggle("timer-focus-active", active);
+    renderTimerFocusContext();
     const toggle = document.getElementById("timerFocusToggle");
     if (toggle) {
       toggle.setAttribute("aria-pressed", String(active));
@@ -20170,7 +20171,19 @@
         }
       }
     }
+    renderTimerFocusContext();
     renderGuidedStrategy();
+  }
+  function renderTimerFocusContext() {
+    const section = document.getElementById("timerFocusContext");
+    if (!section) return;
+    section.hidden = !document.body.classList.contains("timer-focus-active");
+    if (section.hidden) return;
+    const active = state.activeTimer || {}, subject = active.subjectId ? getSubjectName(active.subjectId) : "Disciplina não selecionada", topic = active.topicId ? getTopicName(active.topicId) : "Tópico não selecionado";
+    const activityLabels = { study: "Estudo teórico", review: "Revisão", questions: "Questões", simulation: "Simulado" };
+    const minutes = Math.max(0, Number(active.targetMinutes) || 0);
+    document.getElementById("timerFocusTitle").textContent = `${subject} — ${topic}`;
+    document.getElementById("timerFocusSubtitle").textContent = `${activityLabels[active.type] || activityLabels.study} · ${minutes ? `Meta de ${formatPlanMinutes(minutes)}` : "Sem meta de tempo"}`;
   }
   function renderGuidedStrategy() {
     const el = document.getElementById("guidedStrategy"), strategy = state.activeTimer?.strategy;
@@ -20218,6 +20231,7 @@
     if (subjectSelect.value !== (state.activeTimer.subjectId || "")) state.activeTimer.subjectId = null;
     populateTimerTopicSelect(state.activeTimer.subjectId, state.activeTimer.topicId);
     typeSelect.value = state.activeTimer.type || "study";
+    renderTimerFocusContext();
     updateTimerControls();
   }
   function timerTick() {
@@ -20335,14 +20349,17 @@
     state.activeTimer.subjectId = this.value || null;
     state.activeTimer.topicId = null;
     populateTimerTopicSelect(state.activeTimer.subjectId, null);
+    renderTimerFocusContext();
     scheduleSave();
   });
   document.getElementById("timerTopicSelect").addEventListener("change", function() {
     state.activeTimer.topicId = this.value || null;
+    renderTimerFocusContext();
     scheduleSave();
   });
   document.getElementById("timerTypeSelect").addEventListener("change", function() {
     state.activeTimer.type = this.value || "study";
+    renderTimerFocusContext();
     scheduleSave();
   });
   document.getElementById("timerResetBtn").addEventListener("click", () => {
