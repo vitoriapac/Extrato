@@ -726,23 +726,49 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="sessionModalOverlay" role="dialog" aria-modal="true" aria-label="Finalizar sessão de estudo">
+<div class="modal-overlay" id="sessionModalOverlay" role="dialog" aria-modal="true" aria-labelledby="sessionModalTitle">
   <div class="modal-box">
-    <p>Sessão de <strong id="sessionModalDuration">00:00</strong> finalizada. Quer registrar o que você estudou?</p>
+    <h3 id="sessionModalTitle">Sessão concluída</h3>
+    <p id="sessionModalActivityHint" class="session-modal-hint">Registre o que você estudou e atualize seus indicadores.</p>
+    <p class="session-modal-duration">Tempo registrado: <strong id="sessionModalDuration">00:00</strong></p>
     <div class="session-modal-fields">
-          <select class="select-control select-control--wide" id="sessionModalSubject" aria-label="Disciplina da sessão" ></select>
-          <select class="select-control select-control--wide" id="sessionModalTopic" aria-label="Tópico da sessão" ></select>
-          <select class="select-control select-control--wide" id="sessionModalType" aria-label="Tipo da sessão" >
+      <label>Disciplina
+        <select class="select-control select-control--wide" id="sessionModalSubject" aria-label="Disciplina da sessão"></select>
+      </label>
+      <label>Tópico
+        <select class="select-control select-control--wide" id="sessionModalTopic" aria-label="Tópico da sessão"></select>
+      </label>
+      <label>Atividade
+        <select class="select-control select-control--wide" id="sessionModalType" aria-label="Tipo da sessão">
         <option value="study">Estudo teórico</option>
         <option value="review">Revisão</option>
         <option value="questions">Questões</option>
         <option value="simulation">Simulado</option>
-      </select>
-      <details class="session-extra-details"><summary>Adicionar detalhes</summary><div class="session-question-fields">
-          <input class="session-detail-control" type="number" id="sessionModalResolved" aria-label="Questões resolvidas" placeholder="Questões resolvidas" min="0">
-          <input class="session-detail-control" type="number" id="sessionModalCorrect" aria-label="Quantidade de acertos" placeholder="Acertos" min="0">
-      </div>
-        <textarea class="session-detail-control session-notes" id="sessionModalNotes" aria-label="Observação da sessão" placeholder="Observação opcional"></textarea></details>
+        </select>
+      </label>
+      <section class="session-activity-fields" data-session-fields="questions" hidden aria-labelledby="sessionQuestionsTitle">
+        <h4 id="sessionQuestionsTitle">Resultado das questões</h4>
+        <div class="session-question-fields">
+          <label>Questões resolvidas<input class="session-detail-control" type="number" id="sessionModalResolved" aria-label="Questões resolvidas" placeholder="Quantidade" min="0" inputmode="numeric"></label>
+          <label>Acertos<input class="session-detail-control" type="number" id="sessionModalCorrect" aria-label="Quantidade de acertos" placeholder="Quantidade" min="0" inputmode="numeric"></label>
+        </div>
+        <small>Os erros são calculados pela diferença entre questões e acertos.</small>
+      </section>
+      <section class="session-activity-fields" data-session-fields="review" hidden aria-labelledby="sessionReviewTitle">
+        <h4 id="sessionReviewTitle">Como estava sua retenção?</h4>
+        <label>Percepção ao recuperar o conteúdo
+          <select class="select-control select-control--wide" id="sessionModalRetention" aria-label="Retenção percebida na revisão">
+            <option value="">Ainda não avaliada</option>
+            <option value="easy">Lembrei com facilidade</option>
+            <option value="effortful">Lembrei com esforço</option>
+            <option value="unable">Não consegui recuperar</option>
+          </select>
+        </label>
+      </section>
+      <p class="session-activity-fields session-simulation-hint" data-session-fields="simulation" hidden>Depois de salvar o tempo, você irá para Simulados para registrar nota e desempenho por disciplina.</p>
+      <label class="session-notes-label">Observação opcional
+        <textarea class="session-detail-control session-notes" id="sessionModalNotes" aria-label="Observação da sessão" placeholder="Ex.: conceitos revistos, dúvidas ou próximos passos"></textarea>
+      </label>
     </div>
     <div class="modal-actions">
       <button class="btn ghost small" id="sessionModalSkipBtn">Só zerar o cronômetro</button>

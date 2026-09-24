@@ -8,7 +8,7 @@ test.describe('validação dos fluxos recentes',()=>{
 test('ação de recomendação abre o fluxo especializado',async({page})=>{await openDemo(page);await activateTab(page,'hoje');const recommendation=page.locator('#studyRecommendation'),action=/Iniciar estudo|Iniciar revisão|Resolver questões|Estudar pré-requisito/i;await expect(recommendation).toContainText(action,{timeout:10_000});const start=recommendation.getByRole('button',{name:action}).first();await expect(start).toBeVisible();const label=await start.innerText();await start.click();if(/Resolver questões/i.test(label))await expect(page.locator('#tab-questoes')).toHaveClass(/active/);else if(/revisão/i.test(label))await expect(page.locator('#tab-agenda')).toHaveClass(/active/);else if(/pré-requisito/i.test(label))await expect(page.locator('#tab-disciplinas')).toHaveClass(/active/);else await expect(page.locator('#guidedStrategy')).toBeVisible()});
 test('recomendação guiada registra sessão curta e fecha o vínculo sem perguntas',async({page})=>{
   await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(element=>element.remove());
-  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),topic=state.subjects[0].topics[0];topic.status='Não iniciado';topic.archived=false;topic.estimatedStudyMinutes=35;topic.prerequisites=[];state.studySessions=[];state.questoes=[];state.dailyPlans=[];state.recommendationFeedback=[];api.setState(state);api.renderAll()});
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),topic=state.subjects[0].topics[0];topic.status='Não iniciado';topic.archived=false;topic.estimatedStudyMinutes=35;topic.prerequisites=[];const next=structuredClone(topic);next.id='topic-followup';next.name='SFN';next.status='Não iniciado';next.archived=false;next.estimatedStudyMinutes=40;next.prerequisites=[];state.subjects.push({id:'subject-followup',name:'Conhecimentos Bancários',archived:false,topics:[next]});state.studySessions=[];state.questoes=[];state.dailyPlans=[];state.recommendationFeedback=[];api.setState(state);api.renderAll()});
   await activateTab(page,'hoje');
   const action=page.locator('#studyRecommendation').getByRole('button',{name:/Iniciar estudo/i}).first();
   await expect(action).toBeVisible({timeout:10_000});await action.click();
@@ -16,11 +16,16 @@ test('recomendação guiada registra sessão curta e fecha o vínculo sem pergun
   await expect.poll(()=>page.locator('#studyTimerDisplay').innerText()).not.toBe('00:00');
   await page.locator('#timerFinishBtn').click();await expect(page.locator('#sessionModalOverlay')).toBeVisible();
   await page.locator('#sessionModalSaveBtn').click();
-  await expect(page.locator('#toast')).toContainText('Sessão de estudo registrada.');
+  await expect(page.locator('#toast')).toContainText('Seus indicadores foram atualizados.');
   await expect.poll(()=>page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState(),session=state.studySessions.at(-1);return Boolean(session?.recommendationId&&state.recommendationFeedback.some(item=>item.recommendationId===session.recommendationId&&item.completed&&item.resultingSessionId===session.id))})).toBe(true);
-  const link=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState(),session=state.studySessions.at(-1),feedback=state.recommendationFeedback.find(item=>item.recommendationId===session.recommendationId);return{source:session.source,recommendationId:session.recommendationId,resultingSessionId:feedback.resultingSessionId,snapshot:feedback.snapshot,questionCount:state.questoes.filter(item=>item.studySessionId===session.id).length}});
-  expect(link.source).toBe('recommendation');expect(link.resultingSessionId).toBeTruthy();expect(link.snapshot).toBeTruthy();expect(link.questionCount).toBe(0);
+  const link=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState(),session=state.studySessions.at(-1),feedback=state.recommendationFeedback.find(item=>item.recommendationId===session.recommendationId);return{source:session.source,recommendationSource:session.recommendationSource,recommendationType:session.recommendationType,recommendationId:session.recommendationId,resultingSessionId:feedback.resultingSessionId,snapshot:feedback.snapshot,questionCount:state.questoes.filter(item=>item.studySessionId===session.id).length}});
+  expect(link.source).toBe('recommendation');expect(link.recommendationSource).toBe('today');expect(link.recommendationType).toBe('study');expect(link.resultingSessionId).toBeTruthy();expect(link.snapshot).toBeTruthy();expect(link.questionCount).toBe(0);
   await page.evaluate(()=>window.__EXTRATO_TEST__.renderAll());
+  await activateTab(page,'dashboard');
+  const overviewAction=page.locator('#overviewNextAction .overview-action-card'),overviewId=await overviewAction.getAttribute('data-study-action-id');
+  await activateTab(page,'hoje');
+  await expect(page.locator('#studyRecommendation .study-recommendation').first()).toHaveAttribute('data-study-action-id',overviewId);
+  await activateTab(page,'dashboard');
   await expect(page.locator('#overviewNextAction')).toContainText('Esta recomendação ajudou?');await page.locator('#overviewNextAction').getByRole('button',{name:'Sim',exact:true}).click();
   const afterRating=await page.evaluate(id=>{const feedback=window.__EXTRATO_TEST__.getState().recommendationFeedback.find(item=>item.recommendationId===id);return{useful:feedback.useful,snapshot:feedback.snapshot}},link.recommendationId);
   expect(afterRating.useful).toBe(true);expect(afterRating.snapshot).toEqual(link.snapshot);

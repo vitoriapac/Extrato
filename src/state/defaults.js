@@ -27,7 +27,8 @@ export function createDefaultState(){
     activeTimer: {
       startedAt: null, runStartedAt: null, accumulatedSeconds: 0, isRunning: false,
       subjectId: null, topicId: null, type: 'study', hiddenAt: null,
-      planItemId: null, targetMinutes: null, strategy:null, strategyStep:0
+      planItemId: null, targetMinutes: null, strategy:null, strategyStep:0,
+      recommendationId:null,recommendationSource:null,recommendationType:null,prioritySnapshot:null
     },
     topicHistory: [], achievementsUnlocked: {}, metasPorDisciplina: [],
     lastBackupAt: null, updatedAt: null

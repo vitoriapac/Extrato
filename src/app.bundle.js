@@ -552,7 +552,11 @@
         planItemId: null,
         targetMinutes: null,
         strategy: null,
-        strategyStep: 0
+        strategyStep: 0,
+        recommendationId: null,
+        recommendationSource: null,
+        recommendationType: null,
+        prioritySnapshot: null
       },
       topicHistory: [],
       achievementsUnlocked: {},
@@ -2103,6 +2107,9 @@
   // src/domain/sessions/study-session.js
   var STUDY_SESSION_TYPES = Object.freeze(["study", "review", "questions", "simulation"]);
   var STUDY_SESSION_SOURCES = Object.freeze(["manual", "plan", "recommendation", "import"]);
+  var RECOMMENDATION_SESSION_SOURCES = Object.freeze(["overview", "today", "diagnosis", "planning", "review"]);
+  var RECOMMENDATION_SESSION_TYPES = Object.freeze(["study", "review", "questions", "simulation", "prerequisite"]);
+  var PERCEIVED_RETENTION_VALUES = Object.freeze(["easy", "effortful", "unable"]);
   var nullable = (value2) => value2 == null || value2 === "" ? null : String(value2);
   var nonNegative = (value2) => Math.max(0, Number(value2) || 0);
   var nonNegativeInteger = (value2) => Math.floor(nonNegative(value2));
@@ -2117,7 +2124,8 @@
   }
   function normalizeStudySession(rawSession = {}, options = {}) {
     const input = rawSession && typeof rawSession === "object" ? rawSession : {}, questionsResolved = nonNegativeInteger(input.questionsResolved), inferredDate = localDateFromTimestamp(input.endedAt || input.startedAt || input.createdAt), fallbackDate = typeof options.today === "function" ? options.today() : options.today, type = STUDY_SESSION_TYPES.includes(input.type) ? input.type : "study", source = STUDY_SESSION_SOURCES.includes(input.source) ? input.source : input.recommendationId ? "recommendation" : input.planItemId ? "plan" : "manual";
-    return { ...input, id: nullable(input.id), date: isLocalDate(input.date) ? input.date : inferredDate || (isLocalDate(fallbackDate) ? fallbackDate : null), createdAt: nullable(input.createdAt), startedAt: nullable(input.startedAt), endedAt: nullable(input.endedAt), durationSeconds: nonNegative(input.durationSeconds), subjectId: nullable(input.subjectId), topicId: nullable(input.topicId), planItemId: nullable(input.planItemId), recommendationId: nullable(input.recommendationId), type, source, questionsResolved, correctAnswers: Math.min(questionsResolved, nonNegativeInteger(input.correctAnswers)), prioritySnapshot: finiteOrNull2(input.prioritySnapshot), notes: typeof input.notes === "string" ? input.notes : "" };
+    const recommendationId = nullable(input.recommendationId);
+    return { ...input, id: nullable(input.id), date: isLocalDate(input.date) ? input.date : inferredDate || (isLocalDate(fallbackDate) ? fallbackDate : null), createdAt: nullable(input.createdAt), startedAt: nullable(input.startedAt), endedAt: nullable(input.endedAt), durationSeconds: nonNegative(input.durationSeconds), subjectId: nullable(input.subjectId), topicId: nullable(input.topicId), planItemId: nullable(input.planItemId), recommendationId, type, source, questionsResolved, correctAnswers: Math.min(questionsResolved, nonNegativeInteger(input.correctAnswers)), prioritySnapshot: finiteOrNull2(input.prioritySnapshot), recommendationSource: recommendationId && RECOMMENDATION_SESSION_SOURCES.includes(input.recommendationSource) ? input.recommendationSource : null, recommendationType: recommendationId && RECOMMENDATION_SESSION_TYPES.includes(input.recommendationType) ? input.recommendationType : null, perceivedRetention: PERCEIVED_RETENTION_VALUES.includes(input.perceivedRetention) ? input.perceivedRetention : null, notes: typeof input.notes === "string" ? input.notes : "" };
   }
 
   // src/application/sessions/session-service.js
@@ -18257,31 +18265,53 @@
   function createGuidedStudyService({ recommend, sessionService: sessionService2, clock = { nowISO: () => (/* @__PURE__ */ new Date()).toISOString() } } = {}) {
     if (typeof recommend !== "function" || !sessionService2) throw new TypeError("Guided study requires recommendation and session services");
     let active = null;
-    return { next(options = {}) {
-      const recommendation = recommend(options)[0] || null;
-      active = recommendation ? { recommendation, startedAt: null, paused: false } : null;
-      return active;
-    }, start() {
-      if (!active) return null;
-      active.startedAt = clock.nowISO();
-      active.paused = false;
-      return active;
-    }, pause() {
-      if (!active) return null;
-      active.paused = true;
-      return active;
-    }, resume() {
-      if (!active) return null;
-      active.paused = false;
-      return active;
-    }, complete(result = {}) {
-      if (!active) return null;
-      const session = sessionService2.complete({ ...result, recommendationId: active.recommendation.recommendationId || active.recommendation.id, topicId: result.topicId ?? active.recommendation.topicId, subjectId: result.subjectId ?? active.recommendation.subjectId, startedAt: result.startedAt || active.startedAt, endedAt: result.endedAt || clock.nowISO(), durationSeconds: result.durationSeconds || 0, questionsResolved: result.questionsResolved || 0, correctAnswers: result.correctAnswers || 0, type: result.type || "study", source: "recommendation" });
-      active = null;
-      return session;
-    }, reset() {
-      active = null;
-    }, current: () => active };
+    return {
+      next({ id, source = null, type = null } = {}) {
+        const recommendation = recommend({ id })[0] || null;
+        active = recommendation ? { recommendation, recommendationSource: source, recommendationType: type || recommendation.activityType || recommendation.studyType || "study", startedAt: null, paused: false } : null;
+        return active;
+      },
+      start() {
+        if (!active) return null;
+        active.startedAt = clock.nowISO();
+        active.paused = false;
+        return active;
+      },
+      pause() {
+        if (!active) return null;
+        active.paused = true;
+        return active;
+      },
+      resume() {
+        if (!active) return null;
+        active.paused = false;
+        return active;
+      },
+      complete(result = {}) {
+        if (!active) return null;
+        const session = sessionService2.complete({
+          ...result,
+          recommendationId: active.recommendation.recommendationId || active.recommendation.id,
+          recommendationSource: active.recommendationSource,
+          recommendationType: active.recommendationType,
+          topicId: result.topicId ?? active.recommendation.topicId,
+          subjectId: result.subjectId ?? active.recommendation.subjectId,
+          startedAt: result.startedAt || active.startedAt,
+          endedAt: result.endedAt || clock.nowISO(),
+          durationSeconds: result.durationSeconds || 0,
+          questionsResolved: result.questionsResolved || 0,
+          correctAnswers: result.correctAnswers || 0,
+          type: result.type || "study",
+          source: "recommendation"
+        });
+        active = null;
+        return session;
+      },
+      reset() {
+        active = null;
+      },
+      current: () => active
+    };
   }
 
   // src/application/onboarding/build-onboarding-view-model.js
@@ -19182,6 +19212,10 @@
     state.activeTimer.targetMinutes = Number(state.activeTimer.targetMinutes) || null;
     state.activeTimer.strategy = state.activeTimer.strategy || null;
     state.activeTimer.strategyStep = Math.max(0, Number(state.activeTimer.strategyStep) || 0);
+    state.activeTimer.recommendationId = state.activeTimer.recommendationId || null;
+    state.activeTimer.recommendationSource = STUDY_ACTION_SOURCES.includes(state.activeTimer.recommendationSource) ? state.activeTimer.recommendationSource : null;
+    state.activeTimer.recommendationType = ["study", "review", "questions", "simulation", "prerequisite"].includes(state.activeTimer.recommendationType) ? state.activeTimer.recommendationType : null;
+    state.activeTimer.prioritySnapshot = Number.isFinite(Number(state.activeTimer.prioritySnapshot)) ? Number(state.activeTimer.prioritySnapshot) : null;
     state.dailyPlans.forEach((plan) => {
       if (!plan.id) plan.id = uid("plan");
       if (typeof plan.date !== "string") plan.date = todayISO();
@@ -20231,7 +20265,7 @@
     releaseActivePlanItem();
     timerSeconds = 0;
     timerStartedAt = null;
-    Object.assign(state.activeTimer, { startedAt: null, runStartedAt: null, accumulatedSeconds: 0, isRunning: false, hiddenAt: null, planItemId: null, targetMinutes: null, strategy: null, strategyStep: 0 });
+    Object.assign(state.activeTimer, { startedAt: null, runStartedAt: null, accumulatedSeconds: 0, isRunning: false, hiddenAt: null, planItemId: null, targetMinutes: null, strategy: null, strategyStep: 0, recommendationId: null, recommendationSource: null, recommendationType: null, prioritySnapshot: null });
     guidedStudyService.reset();
     updateTimerDisplay();
     updateTimerControls();
@@ -20279,8 +20313,17 @@
     document.getElementById("sessionModalType").value = state.activeTimer.type || "study";
     document.getElementById("sessionModalResolved").value = "";
     document.getElementById("sessionModalCorrect").value = "";
+    document.getElementById("sessionModalRetention").value = "";
     document.getElementById("sessionModalNotes").value = "";
+    syncSessionModalActivityFields(document.getElementById("sessionModalType").value || "study");
     overlay.classList.add("show");
+  }
+  function syncSessionModalActivityFields(type = document.getElementById("sessionModalType").value || "study") {
+    const labels = { study: "Registre o que você estudou e atualize seus indicadores.", questions: "Informe volume e acertos para atualizar seu desempenho.", review: "Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.", simulation: "O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado." };
+    document.getElementById("sessionModalActivityHint").textContent = labels[type] || labels.study;
+    document.querySelectorAll("[data-session-fields]").forEach((section) => {
+      section.hidden = section.dataset.sessionFields !== type;
+    });
   }
   function closeSessionModal() {
     document.getElementById("sessionModalOverlay").classList.remove("show");
@@ -20320,12 +20363,16 @@
   document.getElementById("sessionModalSubject").addEventListener("change", function() {
     populateSessionTopicSelect(this.value);
   });
+  document.getElementById("sessionModalType").addEventListener("change", function() {
+    syncSessionModalActivityFields(this.value);
+  });
   document.getElementById("sessionModalSaveBtn").addEventListener("click", () => {
     const subjectId = document.getElementById("sessionModalSubject").value || null;
     const topicId = document.getElementById("sessionModalTopic").value || null;
     const type = document.getElementById("sessionModalType").value || "study";
     const resolved = Number(document.getElementById("sessionModalResolved").value) || 0;
     const correct = Number(document.getElementById("sessionModalCorrect").value) || 0;
+    const perceivedRetention = document.getElementById("sessionModalRetention").value || null;
     const notes = document.getElementById("sessionModalNotes").value.trim();
     const session = {
       id: uid("session"),
@@ -20338,14 +20385,26 @@
       type,
       questionsResolved: resolved,
       correctAnswers: Math.min(correct, resolved),
+      perceivedRetention,
       notes,
-      planItemId: state.activeTimer.planItemId || null
+      planItemId: state.activeTimer.planItemId || null,
+      recommendationId: state.activeTimer.recommendationId || null,
+      recommendationSource: state.activeTimer.recommendationSource || null,
+      recommendationType: state.activeTimer.recommendationType || null,
+      prioritySnapshot: state.activeTimer.prioritySnapshot ?? null
     };
     if (guidedStudyService.current()) guidedStudyService.complete(session);
     else sessionService.complete(session);
     persistAndRender();
-    showToast(resolved > 0 ? "Sessão e questões registradas." : "Sessão de estudo registrada.");
+    const openSimulationFlow = type === "simulation";
     closeSessionModal();
+    if (openSimulationFlow) {
+      activateTab("questoes");
+      addSimuladoRow();
+      showToast("Sessão registrada. Complete agora os resultados do simulado.");
+      return;
+    }
+    showToast(type === "questions" && resolved > 0 ? "Sessão e questões registradas." : "Sessão registrada. Seus indicadores foram atualizados.");
   });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
@@ -23770,7 +23829,8 @@
       return;
     }
     Object.assign(recommendation, fresh);
-    guidedStudyService.next({ id });
+    const recommendedType = recommendationActionKind(recommendation);
+    guidedStudyService.next({ id, source, type: recommendedType });
     guidedStudyService.start();
     recommendation.strategy = buildStudyStrategy(recommendation, { availableMinutes: recommendation.estimatedMinutes });
     recordRecommendationFeedback(recommendation, { accepted: true, source });
@@ -23791,8 +23851,7 @@
       plan.updatedAt = nowISO2();
       scheduleSave();
     }
-    state.activeTimer.strategy = structuredClone(recommendation.strategy);
-    state.activeTimer.strategyStep = 0;
+    Object.assign(state.activeTimer, { recommendationId: recommendation.recommendationId || recommendation.id, recommendationSource: source, recommendationType: recommendedType, prioritySnapshot: Number.isFinite(Number(recommendation.score)) ? Number(recommendation.score) : null, strategy: structuredClone(recommendation.strategy), strategyStep: 0 });
     startPlannedActivity(item.id);
   }
   var recommendationController = createRecommendationController({

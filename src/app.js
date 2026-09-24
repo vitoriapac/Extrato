@@ -40,7 +40,7 @@ import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eli
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
 import {captureRecommendationBaseline,captureRecommendationSnapshot,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
 import {buildRecommendationOutcomeViewModel} from './application/recommendations/build-recommendation-outcome-view-model.js';
-import {buildStudyAction,recommendationActionKind,recommendationActionLabel} from './application/recommendations/recommendation-action.js';
+import {buildStudyAction,recommendationActionKind,recommendationActionLabel,STUDY_ACTION_SOURCES} from './application/recommendations/recommendation-action.js';
 import {createRecommendationController} from './application/recommendations/recommendation-controller.js';
 import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
 import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
@@ -477,6 +477,10 @@ function ensureStateDefaults(){
   state.activeTimer.planItemId = state.activeTimer.planItemId || null;
   state.activeTimer.targetMinutes = Number(state.activeTimer.targetMinutes)||null;
   state.activeTimer.strategy=state.activeTimer.strategy||null;state.activeTimer.strategyStep=Math.max(0,Number(state.activeTimer.strategyStep)||0);
+  state.activeTimer.recommendationId=state.activeTimer.recommendationId||null;
+  state.activeTimer.recommendationSource=STUDY_ACTION_SOURCES.includes(state.activeTimer.recommendationSource)?state.activeTimer.recommendationSource:null;
+  state.activeTimer.recommendationType=['study','review','questions','simulation','prerequisite'].includes(state.activeTimer.recommendationType)?state.activeTimer.recommendationType:null;
+  state.activeTimer.prioritySnapshot=Number.isFinite(Number(state.activeTimer.prioritySnapshot))?Number(state.activeTimer.prioritySnapshot):null;
   state.dailyPlans.forEach(plan=>{
     if(!plan.id) plan.id=uid('plan');
     if(typeof plan.date!=='string') plan.date=todayISO();
@@ -1319,7 +1323,7 @@ function resetTimer(){
   releaseActivePlanItem();
   timerSeconds = 0;
   timerStartedAt = null;
-  Object.assign(state.activeTimer,{startedAt:null,runStartedAt:null,accumulatedSeconds:0,isRunning:false,hiddenAt:null,planItemId:null,targetMinutes:null,strategy:null,strategyStep:0});
+  Object.assign(state.activeTimer,{startedAt:null,runStartedAt:null,accumulatedSeconds:0,isRunning:false,hiddenAt:null,planItemId:null,targetMinutes:null,strategy:null,strategyStep:0,recommendationId:null,recommendationSource:null,recommendationType:null,prioritySnapshot:null});
   guidedStudyService.reset();
   updateTimerDisplay();
   updateTimerControls();
@@ -1366,8 +1370,15 @@ function showSessionModal(){
   document.getElementById('sessionModalType').value=state.activeTimer.type||'study';
   document.getElementById('sessionModalResolved').value = '';
   document.getElementById('sessionModalCorrect').value = '';
+  document.getElementById('sessionModalRetention').value = '';
   document.getElementById('sessionModalNotes').value = '';
+  syncSessionModalActivityFields(document.getElementById('sessionModalType').value||'study');
   overlay.classList.add('show');
+}
+function syncSessionModalActivityFields(type=document.getElementById('sessionModalType').value||'study'){
+  const labels={study:'Registre o que você estudou e atualize seus indicadores.',questions:'Informe volume e acertos para atualizar seu desempenho.',review:'Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.',simulation:'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.'};
+  document.getElementById('sessionModalActivityHint').textContent=labels[type]||labels.study;
+  document.querySelectorAll('[data-session-fields]').forEach(section=>{section.hidden=section.dataset.sessionFields!==type});
 }
 function closeSessionModal(){
   document.getElementById('sessionModalOverlay').classList.remove('show');
@@ -1394,22 +1405,28 @@ document.getElementById('timerFinishBtn').addEventListener('click', () => {
 });
 document.getElementById('sessionModalSkipBtn').addEventListener('click', closeSessionModal);
 document.getElementById('sessionModalSubject').addEventListener('change',function(){ populateSessionTopicSelect(this.value); });
+document.getElementById('sessionModalType').addEventListener('change',function(){syncSessionModalActivityFields(this.value)});
 document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
   const subjectId = document.getElementById('sessionModalSubject').value || null;
   const topicId = document.getElementById('sessionModalTopic').value || null;
   const type = document.getElementById('sessionModalType').value || 'study';
   const resolved = Number(document.getElementById('sessionModalResolved').value) || 0;
   const correct = Number(document.getElementById('sessionModalCorrect').value) || 0;
+  const perceivedRetention=document.getElementById('sessionModalRetention').value||null;
   const notes = document.getElementById('sessionModalNotes').value.trim();
   const session = {
     id:uid('session'),startedAt:timerStartedAt || nowISO(),endedAt:nowISO(),date:localDateFromTimestamp(timerStartedAt || nowISO()),
     durationSeconds:timerSeconds,subjectId,topicId,type,questionsResolved:resolved,
-    correctAnswers:Math.min(correct,resolved),notes,planItemId:state.activeTimer.planItemId||null
+    correctAnswers:Math.min(correct,resolved),perceivedRetention,notes,planItemId:state.activeTimer.planItemId||null,
+    recommendationId:state.activeTimer.recommendationId||null,recommendationSource:state.activeTimer.recommendationSource||null,
+    recommendationType:state.activeTimer.recommendationType||null,prioritySnapshot:state.activeTimer.prioritySnapshot??null
   };
   if(guidedStudyService.current())guidedStudyService.complete(session);else sessionService.complete(session);
   persistAndRender();
-  showToast(resolved > 0 ? 'Sessão e questões registradas.' : 'Sessão de estudo registrada.');
+  const openSimulationFlow=type==='simulation';
   closeSessionModal();
+  if(openSimulationFlow){activateTab('questoes');addSimuladoRow();showToast('Sessão registrada. Complete agora os resultados do simulado.');return}
+  showToast(type==='questions'&&resolved>0?'Sessão e questões registradas.':'Sessão registrada. Seus indicadores foram atualizados.');
 });
 
 document.addEventListener('visibilitychange',()=>{
@@ -4401,14 +4418,15 @@ function startStudyRecommendation(id,source='today'){
   const fresh=recommendStudy(intelligenceCandidates(),{availableMinutes:Math.round(metaHoursToday()*60)}).find(item=>item.id===id);
   if(!fresh){renderStudyRecommendation();showToast('As condições mudaram. Confira a recomendação atual.');return;}
   Object.assign(recommendation,fresh);
-  guidedStudyService.next({id});guidedStudyService.start();
+  const recommendedType=recommendationActionKind(recommendation);
+  guidedStudyService.next({id,source,type:recommendedType});guidedStudyService.start();
   recommendation.strategy=buildStudyStrategy(recommendation,{availableMinutes:recommendation.estimatedMinutes});
   recordRecommendationFeedback(recommendation,{accepted:true,source});
   let plan=todayDailyStudyPlan();if(!plan){plan={id:uid('plan'),date:todayISO(),availableMinutes:Math.round(metaHoursToday()*60),plannedMinutes:0,flexMinutes:0,createdAt:nowISO(),updatedAt:nowISO(),items:[]};state.dailyPlans.push(plan)}
   let item=plan.items.find(candidate=>candidate.topicId===recommendation.topicId&&!['completed','skipped'].includes(candidate.status));
   if(item){item.recommendationId=recommendation.recommendationId;item.type=recommendation.studyType||item.type||'study'}
   if(!item){item={id:uid('plan-item'),subjectId:recommendation.subjectId,topicId:recommendation.topicId,subjectName:recommendation.subjectName,topicName:recommendation.topicName,type:recommendation.studyType||'study',plannedMinutes:recommendation.estimatedMinutes,executedSeconds:0,status:'planned',sessionIds:[],score:recommendation.score,tier:recommendation.score>=70?'Alta':recommendation.score>=40?'Média':'Baixa',position:plan.items.length+1,statusIcon:'🎯',statusLabel:'Recomendação inteligente',reason:recommendation.reasons.join(' · '),action:recommendation.action,recommendedQuestions:0,originalDate:todayISO(),currentDate:todayISO(),rescheduleCount:0,skippedReason:null,recommendationId:recommendation.recommendationId,createdAt:nowISO()};plan.items.push(item);plan.plannedMinutes+=item.plannedMinutes;plan.updatedAt=nowISO();scheduleSave()}
-  state.activeTimer.strategy=structuredClone(recommendation.strategy);state.activeTimer.strategyStep=0;startPlannedActivity(item.id);
+  Object.assign(state.activeTimer,{recommendationId:recommendation.recommendationId||recommendation.id,recommendationSource:source,recommendationType:recommendedType,prioritySnapshot:Number.isFinite(Number(recommendation.score))?Number(recommendation.score):null,strategy:structuredClone(recommendation.strategy),strategyStep:0});startPlannedActivity(item.id);
 }
 const recommendationController=createRecommendationController({getRecommendations:()=>currentStudyRecommendations,actionKind:recommendationActionKind,
   onQuestions:(recommendation,kind,context={})=>{const feedback=recordRecommendationFeedback(recommendation,{accepted:true,source:context.source}),question=addQuestaoRow({subjectId:recommendation.subjectId,topicId:recommendation.topicId,recommendationId:recommendation.recommendationId});feedback.actionKind=kind;feedback.resultingQuestionId=question.id;scheduleSave();activateTab('questoes');showToast('Registro de questões aberto e vinculado à recomendação.');return question},
