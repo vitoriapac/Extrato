@@ -33,8 +33,10 @@ const sourceFiles=[
 ].sort();
 const versionHash=createHash('sha256');
 for(const path of sourceFiles){
-  const contents=path==='index.html'?normalizedIndex:await readFile(resolve(projectRoot,path));
-  versionHash.update(path).update('\0').update(contents).update('\0');
+  const isTextFile=/\.(?:css|html|js|json|mjs|svg|webmanifest)$/i.test(path);
+  const contents=path==='index.html'?normalizedIndex:await readFile(resolve(projectRoot,path),isTextFile?'utf8':undefined);
+  const stableContents=typeof contents==='string'?contents.replace(/\r\n/g,'\n'):contents;
+  versionHash.update(path).update('\0').update(stableContents).update('\0');
 }
 const buildVersion=versionHash.digest('hex').slice(0,12);
 const generatedIndex=normalizedIndex.replaceAll(versionPlaceholder,buildVersion);
