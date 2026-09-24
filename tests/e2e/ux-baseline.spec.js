@@ -2,6 +2,8 @@ import {test,expect} from '@playwright/test';
 import {activateTab,openDemo} from './helpers.js';
 
 const screenshotOptions={animations:'disabled',caret:'hide',maxDiffPixelRatio:.08};
+// Keep pixel-exact baselines aligned with the host OS used to render the fonts.
+const screenshotName=name=>name.replace(/\.png$/,`-${process.platform}.png`);
 
 async function prepareDemo(page,{width,height,theme='light'}={}){
   await page.clock.install({time:new Date('2026-09-10T12:00:00-03:00')});
@@ -13,26 +15,26 @@ async function prepareDemo(page,{width,height,theme='light'}={}){
 
 test('baseline visual da ação principal no desktop',async({page})=>{
   await prepareDemo(page,{width:1440,height:900});
-  await expect(page.locator('.overview-now')).toHaveScreenshot('agora-desktop-light.png',screenshotOptions);
+  await expect(page.locator('.overview-now')).toHaveScreenshot(screenshotName('agora-desktop-light.png'),screenshotOptions);
 });
 
 test('baseline visual da ação principal no mobile escuro',async({page})=>{
   await prepareDemo(page,{width:375,height:812,theme:'dark'});
-  await expect(page.locator('.overview-now')).toHaveScreenshot('agora-mobile-dark.png',screenshotOptions);
+  await expect(page.locator('.overview-now')).toHaveScreenshot(screenshotName('agora-mobile-dark.png'),screenshotOptions);
 });
 
 test('baseline visual da Central de Diagnóstico no desktop',async({page})=>{
   await prepareDemo(page,{width:1440,height:900});
   await activateTab(page,'hoje');
   await page.locator('.today-analysis-details > summary').click();
-  await expect(page.locator('#diagnosisCenter')).toHaveScreenshot('diagnostico-desktop-light.png',screenshotOptions);
+  await expect(page.locator('#diagnosisCenter')).toHaveScreenshot(screenshotName('diagnostico-desktop-light.png'),screenshotOptions);
 });
 
 test('baseline visual da Central de Diagnóstico no mobile escuro',async({page})=>{
   await prepareDemo(page,{width:375,height:812,theme:'dark'});
   await activateTab(page,'hoje');
   await page.locator('.today-analysis-details > summary').click();
-  await expect(page.locator('#diagnosisCenter')).toHaveScreenshot('diagnostico-mobile-dark.png',screenshotOptions);
+  await expect(page.locator('#diagnosisCenter')).toHaveScreenshot(screenshotName('diagnostico-mobile-dark.png'),screenshotOptions);
 });
 
 test('tokens do Design System resolvem superfície e status nos dois temas',async({page})=>{
