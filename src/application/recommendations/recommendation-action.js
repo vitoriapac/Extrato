@@ -14,6 +14,12 @@ export function recommendationActionLabel(item){
 
 const finiteOrNull=value=>value==null||value===''||!Number.isFinite(Number(value))?null:Number(value);
 const sourceOrDefault=source=>STUDY_ACTION_SOURCES.includes(source)?source:'overview';
+function freezeDeep(value,seen=new WeakSet()){
+  if(!value||typeof value!=='object'||seen.has(value))return value;
+  seen.add(value);
+  Object.values(value).forEach(child=>freezeDeep(child,seen));
+  return Object.freeze(value);
+}
 
 export function buildStudyAction(recommendation,{source='overview'}={}){
   if(!recommendation)return null;
@@ -21,14 +27,14 @@ export function buildStudyAction(recommendation,{source='overview'}={}){
   const id=recommendationId||recommendation.id||null;
   if(!id)return null;
   const evidence=recommendation.evidence||{};
-  return Object.freeze({
+  return freezeDeep({
     id:String(id),recommendationId:recommendationId?String(recommendationId):null,source:sourceOrDefault(source),
     subjectId:recommendation.subjectId||null,topicId:recommendation.topicId||null,
     activityType:recommendationActionKind(recommendation),suggestedMinutes:finiteOrNull(recommendation.estimatedMinutes),
     priority:finiteOrNull(recommendation.score),reasons:[...(Array.isArray(recommendation.reasons)?recommendation.reasons:[])].filter(Boolean),
-    evidence:Object.freeze({mastery:finiteOrNull(recommendation.mastery),retention:finiteOrNull(recommendation.retention),
+    evidence:{mastery:finiteOrNull(recommendation.mastery),retention:finiteOrNull(recommendation.retention),
       strength:finiteOrNull(evidence.evidenceStrength),completeness:finiteOrNull(evidence.completeness),label:evidence.evidenceLabel||null,
-      factors:recommendation.factors?structuredClone(recommendation.factors):null}),
+      factors:recommendation.factors?structuredClone(recommendation.factors):null},
     algorithmVersion:finiteOrNull(recommendation.algorithmVersion)
   });
 }
