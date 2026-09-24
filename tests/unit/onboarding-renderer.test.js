@@ -15,10 +15,23 @@ test('renderer de entrada percorre objetivo, disponibilidade, conteúdo e prévi
 
 test('renderer separa card de entrada, progresso e ajuda contextual',()=>{
   const model={...base,current:{id:'goal',label:'Objetivo e data'},next:{id:'goal',label:'Objetivo e data'},completed:0};
-  assert.match(renderOnboardingEntry(model),/Montar meu plano/);
+  const entry=renderOnboardingEntry(model);
+  assert.match(entry,/Montar meu plano/);
+  assert.match(entry,/role="progressbar"/);
+  assert.match(entry,/aria-valuenow="0"/);
+  assert.match(entry,/Objetivo e data/);
   assert.match(renderOnboardingProgress(model),/aria-current="step"/);
   assert.match(renderOnboardingHelp(model),/POR QUE ISSO IMPORTA/);
   assert.match(renderOnboardingHelp(model),/calcular o ritmo necessário/);
+});
+
+test('card de configuração informa progresso e próxima etapa sem depender do modal',()=>{
+  const model={...base,current:{id:'content',label:'Edital ou matérias'},next:{id:'content',label:'Edital ou matérias'},completed:2};
+  const entry=renderOnboardingEntry(model);
+  assert.match(entry,/2 de 4 etapas/);
+  assert.match(entry,/Falta concluir Edital ou matérias/);
+  assert.match(entry,/aria-valuenow="2"/);
+  assert.match(entry,/Continuar configuração/);
 });
 
 test('stepper conclui somente etapas anteriores à etapa atual',()=>{const model={...base,current:{id:'availability'},currentIndex:1,steps:[{id:'goal',label:'Objetivo',complete:true},{id:'availability',label:'Disponibilidade',complete:true},{id:'content',label:'Conteúdo',complete:true},{id:'plan',label:'Prévia',complete:false}]};const html=renderOnboardingProgress(model);assert.equal((html.match(/is-complete/g)||[]).length,1);assert.match(html,/is-current[^>]*data-onboarding-step="availability"/);assert.match(html,/data-onboarding-step="content" aria-current="false"><b>3/)});

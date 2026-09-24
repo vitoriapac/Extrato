@@ -11,6 +11,18 @@ test.beforeEach(async({page})=>{
   await activateTab(page,'dashboard');
 });
 
+test('Visão Geral mostra KPIs, tópicos, configuração e ações nessa ordem',async({page})=>{
+  const inOrder=await page.evaluate(()=>{
+    const ids=['kpiGrid','quickStats','guidedOnboarding','overviewNextAction'];
+    const nodes=ids.map(id=>document.getElementById(id));
+    return nodes.every(Boolean)&&nodes.every((node,index)=>index===0||nodes[index-1].compareDocumentPosition(node)&Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  expect(inOrder).toBe(true);
+  await expect(page.locator('#guidedOnboarding')).toBeVisible();
+  await expect(page.locator('#guidedOnboarding')).toContainText('CONFIGURAÇÃO INICIAL');
+  await expect(page.locator('#guidedOnboarding [role="progressbar"]')).toHaveAttribute('aria-valuemax','4');
+});
+
 test('primeiro uso preserva escolhas e chega à prévia do plano',async({page})=>{
   const onboarding=page.locator('#guidedOnboarding');
   const overlay=page.locator('#guidedOnboardingOverlay');
