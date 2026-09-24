@@ -31,7 +31,7 @@ Na área **Disciplinas**, a opção **Importar JSON ou CSV** abre uma prévia an
 
 No Chrome ou Edge, abra a versão publicada e use a opção **Instalar StudyTrack** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.
 
-Quando uma nova versão é publicada, o Service Worker ativa o cache atual e remove caches anteriores.
+Quando uma nova versão é publicada, o Service Worker ativa o cache atual e remove caches anteriores. O catálogo de editais é carregado sob demanda ao abrir o assistente ou o importador; abra um desses fluxos enquanto estiver online para deixá-lo disponível offline neste navegador.
 
 ## Executar localmente
 
@@ -61,7 +61,7 @@ O deploy para GitHub Pages ocorre somente após esse gate passar na branch `main
 
 O projeto usa JavaScript vanilla e separa estado, domínio, aplicação, repositórios, armazenamento e interface. As regras analíticas são puras e versionadas quando seus resultados precisam permanecer auditáveis. Consulte [ARCHITECTURE.md](ARCHITECTURE.md) e [SECURITY-AUDIT.md](SECURITY-AUDIT.md).
 
-`src/app.bundle.js` é gerado pelo esbuild a partir de `src/app.js` e dos módulos importados; não deve ser editado manualmente.
+`src/app.bundle.js` e `src/exam-catalog.bundle.js` são gerados pelo esbuild; não devem ser editados manualmente. O catálogo fica no segundo arquivo e só é carregado quando o assistente inicial ou o importador de edital é aberto.
 
 ## Privacidade
 
@@ -87,11 +87,11 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 - `Ctrl+Shift+1` a `Ctrl+Shift+8` ou `Cmd+Shift+1` a `Cmd+Shift+8`: alternar entre as oito áreas.
 - `Esc`: fechar busca, menu ou modal ativo.
 
-## Roadmap
+## Estado do roadmap
 
-O StudyTrack 3.1 conecta o edital às metas de domínio, à matriz de lacunas e às estratégias automáticas. Recomendações podem iniciar sessões guiadas por etapas no cronômetro existente, com estado recuperável. Questões, Agenda/Revisões, Calendário e os painéis analíticos possuem view-models e renderers modulares; `src/app.js` conserva a orquestração e a compatibilidade temporária.
+Os pacotes 3.2 a 3.7 estão entregues: primeiro uso guiado, importador modular, recuperação explicável, gate de qualidade para publicação, ações especializadas das recomendações e fechamento semanal aplicável. O edital também alimenta as métricas de domínio e a matriz de lacunas; recomendações podem iniciar sessões guiadas no cronômetro. A modularização da interface segue em andamento, com view-models e renderers para Questões, Agenda/Revisões, Calendário e painéis analíticos.
 
-As próximas entregas estão organizadas em [pacotes de implementação](docs/implementation-packages.md), com dependências e critérios de aceite versionados junto ao código.
+As evoluções posteriores e seus critérios estão organizados em [pacotes de implementação](docs/implementation-packages.md). Entre elas estão gamificação opcional e interpretação automática de PDF; explicações com IA dependem de decisões sobre backend, privacidade e gestão de chaves.
 
 ## Licença
 

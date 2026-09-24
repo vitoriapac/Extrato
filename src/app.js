@@ -61,8 +61,8 @@ import {normalizeStudySession} from './domain/sessions/study-session.js';
 import {createRecordService} from './application/records/record-service.js';
 import {createSubjectService} from './application/subjects/subject-service.js';
 import {createExamImportService} from './application/subjects/exam-import-service.js';
-import {EXAM_PRESETS,getExamPreset} from './domain/exams/exam-presets.js';
-import {EXAM_TAGS,CATALOG_VERSION,EXAM_SOURCES} from './domain/exams/exam-catalog.js';
+import {EXAM_TAGS,CATALOG_VERSION,EXAM_SOURCES} from './domain/exams/exam-constants.js';
+import {EXAM_PRESET_OPTIONS} from './domain/exams/exam-preset-options.js';
 import {isTopicInExamScope,isCommonTopic,topicExamScopeLabel,normalizeExamTags} from './domain/exams/exam-scope.js';
 import {classifyEvidenceScope,resolveExamEvidenceScope} from './domain/exams/exam-evidence-scope.js';
 import {setActiveExamTags} from './application/exams/exam-scope-transition.js';
@@ -111,9 +111,10 @@ import {createReviewsController} from './ui/controllers/reviews-controller.js';
 import {createReviewViewModel} from './ui/view-models/review-view-model.js';
 import {renderReviewRead,renderReviewEdit} from './ui/renderers/reviews-renderer.js';
 import {buildCalendarItemViewModel} from './ui/view-models/calendar-view-model.js';
-import {renderCalendarRead,renderCalendarEdit} from './ui/renderers/calendar-renderer.js';
+import {renderCalendarRead,renderCalendarEdit,renderCalendarIndicators,renderCalendarMonth as renderCalendarMonthView,renderCalendarFilterOptions,renderCalendarRows} from './ui/renderers/calendar-renderer.js';
 import {createCalendarState} from './ui/calendar/calendar-state.js';
 import {createCalendarController} from './ui/calendar/calendar-controller.js';
+import {buildUnifiedReviews,unifiedReviewLabel as unifiedItemLabel} from './application/calendar/build-unified-reviews.js';
 import {createQuestionController} from './application/questions/question-controller.js';
 import {createEditalImportFacade} from './application/subjects/edital-import-facade.js';
 import {createGuidedStudyService} from './application/guided-study/guided-study-service.js';
@@ -124,7 +125,16 @@ import {buildTopicStrategyViewModel} from './features/topic-strategy/topic-strat
 import {createTopicStrategyController} from './features/topic-strategy/topic-strategy-controller.js';
 import {renderReplanProposal} from './features/replan/replan-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
-import {renderQuestionRead,renderQuestionEdit} from './ui/renderers/questions-renderer.js';
+import {renderQuestionRead,renderQuestionEdit,renderQuestionErrorFields as renderQuestionErrorFieldsView} from './ui/renderers/questions-renderer.js';
+import {renderQuestionAnalyticsSummary,renderTopicQuestionPerformance,renderWeeklyQuestionTrend,renderQuestionErrorToolbar} from './ui/renderers/question-analytics-renderer.js';
+import {renderGlobalSearchPanel} from './ui/renderers/global-search-renderer.js';
+import {renderHeatmap as renderHeatmapView} from './ui/renderers/heatmap-renderer.js';
+import {renderStudySessionRead,renderStudySessionEdit,renderStudySessionDayHeader} from './ui/renderers/study-sessions-renderer.js';
+import {renderProgressChart as renderProgressChartView,renderStudyHoursChart as renderStudyHoursChartView,renderSubjectHoursBars as renderSubjectHoursBarsView} from './ui/renderers/study-charts-renderer.js';
+import {renderIntelligentAlerts,renderExecutiveSummary as renderExecutiveSummaryView} from './ui/renderers/overview-renderer.js';
+import {renderDiagnosisCenter as renderDiagnosisCenterView} from './ui/renderers/diagnosis-renderer.js';
+import {renderTopicRetentionDashboard as renderTopicRetentionDashboardView} from './ui/renderers/retention-renderer.js';
+import {renderSimulationRead,renderSimulationBreakdown as renderSimulationBreakdownView,renderSimulationEdit,renderSimulationTrendChart,renderSubjectPerformanceRows,renderSimulationRows} from './ui/renderers/simulations-renderer.js';
 import {buildExamMasteryMatrix} from './domain/analytics/exam-mastery-matrix.js';
 import {buildStudyStrategy} from './domain/recommendations/study-strategy.js';
 import {buildWeeklyClose} from './domain/analytics/weekly-close.js';
@@ -191,6 +201,31 @@ const DIAGNOSIS_STATUS_ICON = {'Crítico':'🔴','Atenção':'🟠','Acompanhame
 
 let state = createDefaultState();
 const uiState=createUiState();
+const EXAM_PRESETS=EXAM_PRESET_OPTIONS.map(option=>({...option,version:CATALOG_VERSION,examTags:[],sources:[],description:'',subjects:[]}));
+let examCatalogLoadPromise=null;
+let examCatalogLoaded=false;
+async function ensureExamCatalog(){
+  if(examCatalogLoaded)return EXAM_PRESETS;
+  if(!examCatalogLoadPromise){
+    examCatalogLoadPromise=new Promise((resolve,reject)=>{
+      const accept=()=>{
+        const catalog=window.StudyTrackExamCatalog;
+        if(!Array.isArray(catalog?.EXAM_PRESETS)){reject(new Error('O catálogo de editais não carregou corretamente.'));return}
+        EXAM_PRESETS.splice(0,EXAM_PRESETS.length,...catalog.EXAM_PRESETS);
+        examCatalogLoaded=true;
+        resolve(EXAM_PRESETS);
+      };
+      if(window.StudyTrackExamCatalog){accept();return}
+      const script=document.createElement('script');
+      script.src=new URL(`src/exam-catalog.bundle.js?v=${__STUDYTRACK_BUILD_VERSION__}`,document.baseURI).href;
+      script.async=true;
+      script.onload=accept;
+      script.onerror=()=>reject(new Error('Não foi possível carregar o catálogo. Conecte-se à internet e tente novamente.'));
+      document.head.appendChild(script);
+    }).catch(error=>{examCatalogLoadPromise=null;throw error});
+  }
+  return examCatalogLoadPromise;
+}
 uiState.onboarding.presetId=EXAM_PRESETS[0]?.id||null;
 
 function getSubjectById(subjectId){
@@ -964,41 +999,7 @@ function recordProgressSnapshot(pct){
 }
 function renderProgressChart(){
   const container = document.getElementById('progressChart');
-  const data = state.progressHistory;
-  if(data.length < 2){
-    container.innerHTML = `<div class="progress-chart-empty">Continue estudando — o gráfico aparece a partir do segundo dia com dados.</div>`;
-    return;
-  }
-  const W = 640, H = 160, padL = 30, padR = 12, padT = 12, padB = 22;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
-  const n = data.length;
-  const xFor = i => padL + (n===1 ? 0 : (i/(n-1))*plotW);
-  const yFor = pct => padT + plotH - (pct/100)*plotH;
-
-  const points = data.map((d,i)=>`${xFor(i)},${yFor(d.pct)}`).join(' ');
-  const areaPoints = `${padL},${padT+plotH} ${points} ${xFor(n-1)},${padT+plotH}`;
-
-  const gridLines = [0,25,50,75,100].map(v => `
-    <line class="chart-grid" x1="${padL}" y1="${yFor(v)}" x2="${W-padR}" y2="${yFor(v)}"></line>
-    <text x="2" y="${yFor(v)+3}">${v}%</text>
-  `).join('');
-
-  const stepLabels = n <= 6 ? n : 6;
-  const labelIdxs = Array.from({length: stepLabels}, (_,k)=> Math.round(k*(n-1)/(stepLabels-1||1)));
-  const uniqueLabelIdxs = [...new Set(labelIdxs)];
-  const dateLabels = uniqueLabelIdxs.map(i => `<text x="${xFor(i)}" y="${H-4}" text-anchor="middle">${formatDatePt(data[i].date).slice(0,5)}</text>`).join('');
-
-  const dots = data.map((d,i)=>`<circle class="chart-dot" cx="${xFor(i)}" cy="${yFor(d.pct)}" r="3"><title>${formatDatePt(d.date)}: ${d.pct}%</title></circle>`).join('');
-
-  container.innerHTML = `
-    <svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">
-      ${gridLines}
-      <polygon class="chart-area" points="${areaPoints}"></polygon>
-      <polyline class="chart-line" points="${points}"></polyline>
-      ${dots}
-      ${dateLabels}
-    </svg>
-  `;
+  container.innerHTML=renderProgressChartView({data:state.progressHistory,formatDate:formatDatePt});
 }
 
 /* ===== BACKUP: EXPORTAR / IMPORTAR ===== */
@@ -1512,9 +1513,6 @@ function renderBadges(){
 }
 
 /* ===== HEATMAP DE HORAS E META DIÁRIA ===== */
-function heatmapLevel(summary){
-  return heatmapMetricLevel(summary,streakView.metric);
-}
 function heatmapTooltip(summary){
   const parts=[formatDatePt(summary.date),formatDuration(summary.seconds),pluralize(summary.sessions.length,'sessão','sessões')];
   if(summary.targetSeconds>0) parts.push(`${summary.goalPct}% da meta`);
@@ -1538,40 +1536,27 @@ function renderHeatmap(){
     if(!streakView.onlyActiveDays||active) cells.push(summary);
   }
   const heatmapModel=buildHeatmapViewModel({summaries:cells,metric:streakView.metric,selectedDate:streakView.selectedDate});
-  const cellsHtml = heatmapModel.cells.map(summary => {
-    const level=summary.level;
-    const tooltip=heatmapTooltip(summary);
-    const selected=streakView.selectedDate===summary.date?'selected':'';
-    return `<button type="button" class="heatmap-cell ${level>0?'heat-'+level:''} ${selected}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" data-delegated-click="selectHeatmapDay('${summary.date}')"></button>`;
-  }).join('');
-  const hasMetricActivity=heatmapModel.hasActivity;
   const activityStreak=computeStreak(activityDates);
   const goalStreak=computeStreak(getGoalDates());
-  document.getElementById('heatmapContainer').innerHTML = `
-    <div class="heatmap-toolbar" aria-label="Período da sequência">
-      <select aria-label="Métrica do heatmap" data-delegated-change="setHeatmapFilter('metric',this.value)"><option value="hours" ${streakView.metric==='hours'?'selected':''}>Horas</option><option value="questions" ${streakView.metric==='questions'?'selected':''}>Questões</option><option value="reviews" ${streakView.metric==='reviews'?'selected':''}>Revisões</option><option value="simulations" ${streakView.metric==='simulations'?'selected':''}>Simulados</option></select>
-      <select aria-label="Disciplina do heatmap" data-delegated-change="setHeatmapFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map(subject=>`<option value="${escapeAttr(subject.id)}" ${streakView.subjectId===subject.id?'selected':''}>${escapeHtml(subject.name)}</option>`).join('')}</select>
-      <span>${streakView.expanded?'Período completo':`Últimas ${DEFAULT_STREAK_WEEKS} semanas`}</span>
-      <button class="btn ghost small" data-delegated-click="toggleStreakExpanded()">${streakView.expanded?'Mostrar menos':'Ver período completo'}</button>
-      <button class="btn ghost small" aria-pressed="${streakView.onlyActiveDays}" data-delegated-click="toggleStreakActiveDays()">${streakView.onlyActiveDays?'Mostrar todos os dias':'Apenas dias com atividade'}</button>
-    </div>
-    <div class="heatmap-grid">${cellsHtml}</div>
-    ${hasMetricActivity?'':`<div class="empty-inline heatmap-empty"><p>Nenhuma atividade encontrada para este indicador e disciplina.</p><button class="btn small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button></div>`}
-    <div class="heatmap-legend">
-      0%
-      <span class="heatmap-cell"></span>
-      <span class="heatmap-cell heat-1"></span>
-      <span class="heatmap-cell heat-2"></span>
-      <span class="heatmap-cell heat-3"></span>
-      meta atingida
-    </div>
-    <div class="heatmap-summary">
-      <span>🔥 Atividade: ${pluralize(activityStreak,'dia')}</span>
-      <span>🎯 Meta atingida: ${pluralize(goalStreak,'dia')}</span>
-      <span>${streakView.metric==='hours'?'Cores: <50% · 50–99% · ≥100% da meta diária':'Intensidade relativa da atividade selecionada'}</span>
-    </div>
-    ${streakView.selectedDate?`<div class="heatmap-detail" role="status">${escapeHtml(heatmapTooltip(getDailyStudySummary(streakView.selectedDate,{subjectId:streakView.subjectId})))} <button class="btn ghost small" data-delegated-click="viewSelectedHeatmapSessions()">Ver sessões deste dia</button></div>`:''}
-  `;
+  const selectedSummary=streakView.selectedDate?getDailyStudySummary(streakView.selectedDate,{subjectId:streakView.subjectId}):null;
+  document.getElementById('heatmapContainer').innerHTML=renderHeatmapView({
+    cells:heatmapModel.cells,
+    hasActivity:heatmapModel.hasActivity,
+    metric:streakView.metric,
+    subjectId:streakView.subjectId,
+    subjects:activeSubjects(),
+    expanded:streakView.expanded,
+    onlyActiveDays:streakView.onlyActiveDays,
+    defaultWeeks:DEFAULT_STREAK_WEEKS,
+    activityStreak,
+    goalStreak,
+    selectedDate:streakView.selectedDate,
+    selectedTooltip:selectedSummary?heatmapTooltip(selectedSummary):'',
+    tooltipForSummary:heatmapTooltip,
+    escapeHtml,
+    escapeAttr,
+    pluralize
+  });
 }
 
 function setHeatmapFilter(field,value){if(field==='metric'&&HEATMAP_METRICS.includes(value))streakView.metric=value;if(field==='subjectId')streakView.subjectId=value;streakView.selectedDate=null;renderHeatmap()}
@@ -1595,36 +1580,12 @@ function renderSimuladosChart(){
   const card = document.getElementById('simuladosChartCard');
   const container = document.getElementById('simuladosChart');
   const data = [...state.simulados].sort((a,b)=> (a.date||'').localeCompare(b.date||''));
-
   if(data.length < 2){
     card.style.display = 'none';
     return;
   }
   card.style.display = 'block';
-
-  const W = 640, H = 160, padL = 30, padR = 12, padT = 12, padB = 26;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
-  const n = data.length;
-  const xFor = i => padL + (n===1 ? 0 : (i/(n-1))*plotW);
-  const yFor = pct => padT + plotH - (pct/100)*plotH;
-  const notas = data.map(s => simuladoNota(s));
-
-  const points = notas.map((pct,i)=>`${xFor(i)},${yFor(pct)}`).join(' ');
-  const gridLines = [0,25,50,75,100].map(v => `
-    <line class="chart-grid" x1="${padL}" y1="${yFor(v)}" x2="${W-padR}" y2="${yFor(v)}"></line>
-    <text x="2" y="${yFor(v)+3}">${v}%</text>
-  `).join('');
-  const dots = data.map((s,i)=>`<circle class="chart-dot" cx="${xFor(i)}" cy="${yFor(notas[i])}" r="3"><title>${escapeHtml(s.nome||'Simulado')} (${formatDatePt(s.date)}): ${notas[i]}%</title></circle>`).join('');
-  const labels = data.map((s,i)=>`<text x="${xFor(i)}" y="${H-6}" text-anchor="middle">${i+1}</text>`).join('');
-
-  container.innerHTML = `
-    <svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">
-      ${gridLines}
-      <polyline class="chart-line" points="${points}"></polyline>
-      ${dots}
-      ${labels}
-    </svg>
-  `;
+  container.innerHTML=renderSimulationTrendChart({items:data,scoreFor:simuladoNota,formatDate:formatDatePt,escapeHtml});
 }
 
 function getSubjectQuestionRecords(subjectId){
@@ -1684,33 +1645,8 @@ function renderDesempenhoDisciplina(){
   }
   card.style.display = 'block';
 
-  const rows = perf.map(p => {
-    const trend=calculateWeightedTrend(getSubjectWeeklyTrend(p.subjectId));
-    const color=trend.key==='up'?'var(--green)':trend.key==='down'?'var(--red)':'var(--ink-soft)';
-    const comparison=trend.key==='insufficient'?'Amostra insuficiente':`${trend.previousAccuracy}% → ${trend.recentAccuracy}% (${trend.delta>=0?'+':''}${trend.delta} p.p.)`;
-    return `
-    <tr>
-      <td>${escapeHtml(p.subject)}</td>
-      <td style="text-align:right;">${p.acerto}%</td>
-      <td style="text-align:right;">${p.total}</td>
-      <td style="text-align:right;color:${color};font-weight:600;">${trend.icon} ${escapeHtml(trend.label)}<small class="trend-comparison">${escapeHtml(comparison)}</small></td>
-    </tr>
-  `}).join('');
-
-  const fracos = perf.filter(p => p.acerto < 70 && p.total >= 5);
-  const alertasHtml = fracos.length
-    ? fracos.map(p => `<div class="desempenho-alerta">🔴 ${escapeHtml(p.subject)} precisa de atenção.</div>`).join('')
-    : '';
-
-  container.innerHTML = `
-    <table class="weekly-history-table" style="margin-bottom:${fracos.length?'12px':'0'};">
-      <thead>
-        <tr><th>Disciplina</th><th style="text-align:right;">Acerto</th><th style="text-align:right;">Questões</th><th style="text-align:right;">Tendência · 4 semanas × 4 anteriores</th></tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-    ${alertasHtml}
-  `;
+  const items=perf.map(performance=>({performance,trend:calculateWeightedTrend(getSubjectWeeklyTrend(performance.subjectId))}));
+  container.innerHTML=renderSubjectPerformanceRows({items,escapeHtml});
 }
 
 /* ===== BUSCA GLOBAL ===== */
@@ -1754,16 +1690,7 @@ function renderGlobalSearchResults(){
   const q = input.value;
   if(!q.trim()){ panel.classList.remove('show'); panel.innerHTML='';input.setAttribute('aria-expanded','false');return; }
   const normalized=normalizeSearchText(q.trim()),commands=SEARCH_COMMANDS.filter(item=>normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalized)).slice(0,8),results = performGlobalSearch(q);
-  if(results.length === 0&&commands.length===0){
-    panel.innerHTML = `<div class="search-result-empty">Nada encontrado pra "${escapeHtml(q)}"</div>`;
-  } else {
-    panel.innerHTML = [...commands.map(command=>`<button type="button" role="option" aria-selected="false" class="search-result-item search-command" data-search-tab="${escapeAttr(command.tab||'')}" data-search-action="${escapeAttr(command.action||'')}"><strong>${escapeHtml(command.label)}</strong><span>Ação da aplicação</span></button>`),...results.map(r => `
-      <button type="button" role="option" aria-selected="false" class="search-result-item" data-search-topic="${escapeAttr(r.topicId)}" data-search-subject="${escapeAttr(r.subjectId)}">
-        <strong>${escapeHtml(r.topicName)}</strong>
-        <span>${escapeHtml(r.subjectName)}</span>
-      </button>
-    `)].join('');
-  }
+  panel.innerHTML=renderGlobalSearchPanel({query:q,commands,results,escapeHtml,escapeAttr});
   panel.classList.add('show');
   input.setAttribute('aria-expanded','true');
   const inputRect=input.getBoundingClientRect(),left=Math.max(8,inputRect.left),width=Math.min(inputRect.width,innerWidth-left-8),top=Math.min(inputRect.bottom+4,innerHeight-80);
@@ -2164,7 +2091,7 @@ document.getElementById('downloadStructuredCsvBtn')?.addEventListener('click',()
 const editalImportFacade=createEditalImportFacade({catalog:EXAM_PRESETS,importService:examImportService});
 const examImportState=createExamImportState(EXAM_PRESETS[0]);
 let examImportOrigin=null;
-function selectedExamPreset(){return getExamPreset(examImportState.presetId)||EXAM_PRESETS[0]}
+function selectedExamPreset(){return EXAM_PRESETS.find(item=>item.id===examImportState.presetId)||EXAM_PRESETS[0]}
 function applyPresetBlueprintDefaults(preset){const source=(preset.sources||[]).length===1?preset.sources[0]:null;if(!source||!EXAM_SOURCES[source]?.official)return;for(const subject of state.subjects){if(state.examBlueprint.subjects.some(item=>item.subjectId===subject.id))continue;const metric=subject.examMetrics?.[source];if(!metric||metric.mappingType!=='direct'||metric.expectedQuestions==null)continue;state.examBlueprint.subjects.push({subjectId:subject.id,expectedQuestions:metric.expectedQuestions,questionWeight:metric.questionWeight,priority:'normal',masteryTarget:null,sourceRef:source,official:Boolean(metric.official),mappingType:metric.mappingType})}setActiveExamTags(state,normalizeExamTags(preset.examTags||[]),{configuredAt:nowISO()})}
 function syncExamSubjectCheckboxes(){syncExamSubjectCheckboxesView(document,examImportState,selectedExamPreset())}
 function renderExamImport(){
@@ -2173,7 +2100,7 @@ function renderExamImport(){
   content.innerHTML=renderExamImportView(model,{escapeHtml,escapeAttr,renderBadges:examBadges,sourceLabel:source=>EXAM_SOURCES[source]?.label||source});
   if(model.step===2)syncExamSubjectCheckboxes();
 }
-function openExamImport(initialPreset=EXAM_PRESETS[0],origin=null){const preset=typeof initialPreset==='string'?getExamPreset(initialPreset):initialPreset;examImportOrigin=origin;resetExamImportState(examImportState,preset||EXAM_PRESETS[0],document.activeElement);if(origin==='onboarding')suspendGuidedOnboarding();editalImportFacade.begin(examImportState.presetId);document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}
+async function openExamImport(initialPreset=null,origin=null){try{await ensureExamCatalog();const requestedId=typeof initialPreset==='string'?initialPreset:initialPreset?.id,preset=EXAM_PRESETS.find(item=>item.id===requestedId)||EXAM_PRESETS[0];examImportOrigin=origin;resetExamImportState(examImportState,preset,document.activeElement);if(origin==='onboarding')suspendGuidedOnboarding();editalImportFacade.begin(examImportState.presetId);document.getElementById('examImportOverlay').classList.add('show');renderExamImport();document.querySelector('[name="examPreset"]')?.focus()}catch(error){showToast(error.message||'Não foi possível abrir a importação de edital.')}}
 function closeExamImport({completed=false}={}){const origin=examImportOrigin;editalImportFacade.cancel();document.getElementById('examImportOverlay').classList.remove('show');if(origin==='onboarding')resumeGuidedOnboarding(completed?'plan':'content');else examImportState.previousFocus?.focus();examImportOrigin=null}
 const examImportController=createExamImportController({document,state:examImportState,getPreset:selectedExamPreset,facade:editalImportFacade,render:renderExamImport,close:()=>closeExamImport(),includeTopic:(action,topic)=>{const tags=topic.examTags||[];return action==='all'||action==='bb'&&tags.includes(EXAM_TAGS.BB)||action==='caixa'&&tags.includes(EXAM_TAGS.CAIXA)||action==='caixa-ti'&&tags.includes(EXAM_TAGS.CAIXA_TI)||action==='common'&&isCommonTopic(topic,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA])},confirm:()=>{const inOnboarding=examImportOrigin==='onboarding',preset=selectedExamPreset(),result=editalImportFacade.confirm(examImportState.subjectIds,examImportState.topicIds);applyPresetBlueprintDefaults(preset);uiState.onboarding.presetId=preset.id;persistAndRender();closeExamImport({completed:true});if(inOnboarding)activateTab('dashboard');showToast(`${pluralize(result.addedSubjects,'disciplina')}, ${pluralize(result.addedTopics,'tópico')} e ${pluralize(result.metadataUpdates,'vínculo')} atualizados.`)}});examImportController.mount();
 
@@ -2325,23 +2252,7 @@ function updateTopicStatus(subjectId, topicId, selectEl){
 /* ===== RENDER: CALENDARIO ===== */
 /* ===== INTEGRAÇÃO CALENDÁRIO + AGENDA_REVISOES ===== */
 function getRevisoesUnificadas(){
-  const doCalendario = state.calendar.map(c => ({
-    id: c.id, date: c.date, subjectId: entitySubjectId(c), subject: entitySubjectName(c),
-    label: c.reviewType && c.reviewType !== '—' ? c.reviewType : 'Revisão',
-    status: c.status || 'Não iniciado', origem: 'Calendário'
-  }));
-  const daAgenda = state.reviewAgenda.map(a => ({
-    id: a.id, date: a.date, subjectId: entitySubjectId(a), subject: entitySubjectName(a),
-    label: `${a.topicId ? getTopicName(a.topicId) : (a.topic || 'Tópico')} · ${a.tipo || ''}`,
-    status: a.status || 'Não iniciado', origem: 'Agenda de Revisões'
-  }));
-  return [...doCalendario, ...daAgenda];
-}
-function unifiedItemLabel(item){
-  const subject=String(item?.subject||'').trim(),label=String(item?.label||'').trim();
-  if(!subject||!label) return label||'Revisão';
-  const escaped=subject.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  return label.replace(new RegExp(`^${escaped}\\s*[·•—-]\\s*`,'i'),'').trim()||'Revisão';
+  return buildUnifiedReviews({calendar:state.calendar,reviewAgenda:state.reviewAgenda,subjectIdOf:entitySubjectId,subjectName:entitySubjectName,topicName:getTopicName});
 }
 const overdueGroupLimits={calAtrasadas:3,hojeAtrasadas:3};
 const overdueExpandedDates={calAtrasadas:new Set(),hojeAtrasadas:new Set()};
@@ -2352,22 +2263,7 @@ function resetOverdueGroupLimit(elId){overdueGroupLimits[elId]=3;renderCalAtrasa
 function toggleOverdueDate(elId,date){const dates=overdueExpandedDates[elId]||(overdueExpandedDates[elId]=new Set());if(dates.has(date))dates.delete(date);else dates.add(date);renderCalAtrasadas(elId)}
 
 function renderCalIndicadores(){
-  const todas = getRevisoesUnificadas();
-  const today = todayISO();
-  const total = todas.length;
-  const atrasadas = todas.filter(r => r.date && r.date < today && r.status !== 'Concluído').length;
-  const hoje = todas.filter(r => r.date === today).length;
-  const proximos7 = todas.filter(r => {
-    const d = diasParaRevisao(r.date);
-    return d !== null && d > 0 && d <= 7;
-  }).length;
-
-  document.getElementById('calIndicadores').innerHTML = `
-    <div class="kpi-cell"><div class="n">${total}</div><div class="l">Itens no total</div></div>
-    <div class="kpi-cell ${atrasadas>0?'warn':''}"><div class="n">${atrasadas}</div><div class="l">Atrasadas</div></div>
-    <div class="kpi-cell ${hoje>0?'ok':''}"><div class="n">${hoje}</div><div class="l">Hoje</div></div>
-    <div class="kpi-cell"><div class="n">${proximos7}</div><div class="l">Próximos 7 dias</div></div>
-  `;
+  document.getElementById('calIndicadores').innerHTML=renderCalendarIndicators({items:getRevisoesUnificadas(),today:todayISO(),daysUntil:diasParaRevisao});
 }
 
 /* ===== VISÃO MENSAL DO CALENDÁRIO ===== */
@@ -2375,67 +2271,11 @@ const calendarUiState=createCalendarState(),calendarController=createCalendarCon
 const MONTH_MAX_EVENTS_PER_DAY = 3;
 
 function renderMonthCalendar(){
-  const container = document.getElementById('monthCalendar');
+  const container=document.getElementById('monthCalendar');
   if(!container) return;
-  const currentMonthDate=calendarUiState.month;
-
-  const filterSubject = document.getElementById('calFilterSubject').value;
-  const filterStatus = document.getElementById('calFilterStatus').value;
-
-  const events = getRevisoesUnificadas()
-    .filter(e => !filterSubject || e.subjectId === filterSubject)
-    .filter(e => !filterStatus || e.status === filterStatus);
-
-  const year = currentMonthDate.getFullYear();
-  const month = currentMonthDate.getMonth();
-
-  document.getElementById('calendarMonthTitle').textContent = (() => {
-    const label = currentMonthDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-    return label.charAt(0).toUpperCase() + label.slice(1);
-  })();
-
-  const firstDay = new Date(year, month, 1);
-  const start = new Date(firstDay);
-  start.setDate(start.getDate() - start.getDay());
-
-  let html = `<div class="month-grid-wrap"><div class="month-grid">`;
-  ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(day => {
-    html += `<div class="month-header">${day}</div>`;
-  });
-
-  const cursor = new Date(start);
-  for(let i = 0; i < 42; i++){
-    const iso = localDateISO(cursor);
-    const dayEvents = events.filter(e => e.date === iso);
-    const isToday = iso === todayISO();
-    const outside = cursor.getMonth() !== month;
-
-    html += `<div class="month-day ${outside?'outside':''} ${isToday?'today':''}">
-      <div class="day-number">${cursor.getDate()}</div>`;
-
-    dayEvents.slice(0, MONTH_MAX_EVENTS_PER_DAY).forEach(evt => {
-      let cls = 'event-futura';
-      if(evt.status === 'Concluído'){
-        cls = 'event-concluida';
-      } else {
-        const dias = diasParaRevisao(evt.date);
-        if(dias !== null && dias < 0) cls = 'event-atrasada';
-        else if(dias === 0) cls = 'event-hoje';
-      }
-      const tooltip = `${evt.subject || '—'} · ${evt.label} (${evt.origem})`;
-      html += `<div class="cal-event ${cls}" title="${escapeAttr(tooltip)}">${escapeHtml(evt.subject || evt.label)}</div>`;
-    });
-
-    if(dayEvents.length > MONTH_MAX_EVENTS_PER_DAY){
-      html += `<div class="cal-event-more">+${dayEvents.length - MONTH_MAX_EVENTS_PER_DAY} mais</div>`;
-    }
-
-    html += `</div>`;
-    cursor.setDate(cursor.getDate() + 1);
-  }
-
-  html += `</div></div>`;
-  container.innerHTML = html;
+  const result=renderCalendarMonthView({month:calendarUiState.month,events:getRevisoesUnificadas(),filterSubject:document.getElementById('calFilterSubject').value,filterStatus:document.getElementById('calFilterStatus').value,today:todayISO(),daysUntil:diasParaRevisao,escapeHtml,escapeAttr,maxEventsPerDay:MONTH_MAX_EVENTS_PER_DAY});
+  document.getElementById('calendarMonthTitle').textContent=result.title;
+  container.innerHTML=result.html;
 }
 
 document.getElementById('monthPrevBtn').addEventListener('click', () => {
@@ -2451,21 +2291,14 @@ document.getElementById('monthTodayBtn').addEventListener('click', () => {
 function renderCalendarFilters(){
   const sel = document.getElementById('calFilterSubject');
   const current = sel.value;
-  sel.innerHTML = `<option value="">Todas as disciplinas</option>` +
-    state.subjects.map(s=>`<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('');
+  const selMes=document.getElementById('calFilterMes'),currentMes=selMes.value;
+  const selTipo=document.getElementById('calFilterTipo'),currentTipo=selTipo.value;
+  const options=renderCalendarFilterOptions({subjects:state.subjects,monthKeys:collectMonthKeys(state.calendar),reviewTypes:REVIEW_OPTIONS,selectedSubject:current,selectedMonth:currentMes,selectedType:currentTipo,escapeHtml,escapeAttr,monthLabel});
+  sel.innerHTML=options.subjects;
   sel.value = current;
-
-  const selMes = document.getElementById('calFilterMes');
-  const currentMes = selMes.value;
-  const meses = collectMonthKeys(state.calendar);
-  selMes.innerHTML = `<option value="">Todos os meses</option>` +
-    meses.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join('');
+  selMes.innerHTML=options.months;
   selMes.value = currentMes;
-
-  const selTipo = document.getElementById('calFilterTipo');
-  const currentTipo = selTipo.value;
-  selTipo.innerHTML = `<option value="">Todos os tipos de revisão</option>` +
-    REVIEW_OPTIONS.filter(o=>o!=='—').map(o=>`<option value="${o}">${o}</option>`).join('');
+  selTipo.innerHTML=options.types;
   selTipo.value = currentTipo;
 }
 
@@ -2516,16 +2349,7 @@ function renderCalendar(){
     .filter(c => !filterTipo || c.reviewType === filterTipo)
     .sort((a,b)=> (a.date||'').localeCompare(b.date||''));
 
-  if(rows.length === 0){
-    body.innerHTML = `<tr><td colspan="7"><div class="empty-state" style="border:none;">
-      <p>Nenhum item encontrado com esses filtros.</p>
-      <button class="btn" data-delegated-click="addCalRow()">+ Adicionar item</button>
-    </div></td></tr>`;
-    return;
-  }
-
-  const visible=rows.slice(0,calendarUiState.visible);
-  body.innerHTML=visible.map(item=>calendarUiState.editingId===item.id?renderCalendarEditRow(item):renderCalendarReadRow(item)).join('')+renderCollectionFooter({total:rows.length,visible:calendarUiState.visible,showMoreAction:'changeCalendarLimit(10)',showLessAction:calendarUiState.visible>10?'resetCalendarLimit()':'',colspan:7,label:'itens'});
+  body.innerHTML=renderCalendarRows({rows,visible:calendarUiState.visible,editingId:calendarUiState.editingId,renderReadRow:renderCalendarReadRow,renderEditRow:renderCalendarEditRow,renderFooter:renderCollectionFooter,escapeHtml});
 }
 
 function addCalRow(){
@@ -2836,29 +2660,7 @@ function questionCategorizedErrors(question){
 }
 function renderQuestionErrorFields(question){
   const realErrors=Math.max(0,(Number(question.resolved)||0)-(Number(question.correct)||0));
-  const categorized=questionCategorizedErrors(question);
-  return `
-    <tr class="error-breakdown-row">
-      <td colspan="8">
-        <div class="error-breakdown-box">
-          <div class="error-breakdown-head">
-            <strong>Categorização opcional dos erros</strong>
-            <span>${categorized} de ${realErrors} erros categorizados</span>
-          </div>
-          <div class="error-breakdown-grid">
-            ${Object.entries(ERROR_CATEGORIES).map(([key,meta])=>`
-              <label class="error-breakdown-field">
-                <span>${meta.icon} ${meta.label}</span>
-                <input type="number" min="0" max="${realErrors}" value="${question.errorBreakdown[key]||0}"
-                  data-delegated-blur="updateQuestionError('${question.id}','${key}',this.value)">
-              </label>
-            `).join('')}
-          </div>
-          <small>As categorias não alteram a taxa de acerto; servem para diagnosticar a origem dos erros.</small>
-        </div>
-      </td>
-    </tr>
-  `;
+  return renderQuestionErrorFieldsView({question,categories:ERROR_CATEGORIES,categorized:questionCategorizedErrors(question),totalErrors:realErrors});
 }
 function questionViewModel(q){
   return buildQuestionViewModel(q,{formatDate:formatDatePt,getSubjectName,getTopicName,subjectIdOf:entitySubjectId,accuracy:calcAcertoPct});
@@ -3145,35 +2947,23 @@ function renderQuestionAnalytics(){
   const weekly=getSubjectWeeklyTrend(performanceSubjectId);
   const trend=calculateWeightedTrend(weekly);
   coverageEl.textContent=`${coverage}% identificadas`;
-  summary.innerHTML=[
-    ['Questões analisadas',resolved],
-    ['Taxa de acerto',accuracy===null?'—':`${accuracy}%`],
-    ['Cobertura por tópico',`${coverage}%`],
-    ['Tendência',`${trend.icon} ${trend.label}`]
-  ].map(([label,value])=>`<div class="stat-cell"><div class="n">${value}</div><div class="l">${label}</div></div>`).join('');
+  summary.innerHTML=renderQuestionAnalyticsSummary({resolved,accuracy,coverage,trend});
 
   const topicPerformance=getSubjectTopicPerformance(performanceSubjectId);
   const mature=topicPerformance.filter(topic=>topic.resolved>=30),insufficient=topicPerformance.filter(topic=>topic.resolved>0&&topic.resolved<30);
   if(performanceViewMode==='with-data'&&!mature.length&&insufficient.length)performanceViewMode='insufficient';
   const filteredPerformance=performanceViewMode==='all'?topicPerformance:topicPerformance.filter(topic=>performanceViewMode==='without-data'?topic.resolved===0:performanceViewMode==='insufficient'?topic.resolved>0&&topic.resolved<30:topic.resolved>=30);
-  const visiblePerformance=filteredPerformance.slice(0,performanceVisible);
-  const performanceTabs=`<div class="analytics-view-tabs" role="group" aria-label="Filtrar desempenho por dados"><button class="btn small ${performanceViewMode==='with-data'?'':'ghost'}" data-delegated-click="setPerformanceViewMode('with-data')">Com dados</button><button class="btn small ${performanceViewMode==='insufficient'?'':'ghost'}" data-delegated-click="setPerformanceViewMode('insufficient')">Amostra insuficiente</button><button class="btn small ${performanceViewMode==='without-data'?'':'ghost'}" data-delegated-click="setPerformanceViewMode('without-data')">Sem dados</button><button class="btn small ${performanceViewMode==='all'?'':'ghost'}" data-delegated-click="setPerformanceViewMode('all')">Todos</button></div>`;
-  bars.innerHTML=performanceTabs+(filteredPerformance.length?visiblePerformance.map(topic=>{
-    const width=topic.accuracy===null?0:topic.accuracy;
-    return `<div class="performance-row">
-      <div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${topicMasteryIndex(performanceSubjectId,topic.id).value==null?'aguardando dados':topicMasteryIndex(performanceSubjectId,topic.id).value+'/100'}</div></div>
-      <div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div>
-      <div class="performance-value">${topic.classification.icon} ${topic.accuracy===null?'—':topic.accuracy+'%'}</div>
-    </div>`;
-  }).join('')+renderCollectionFooter({variant:'block',total:filteredPerformance.length,visible:visiblePerformance.length,step:8,label:'tópicos',showMoreAction:'changePerformanceLimit(8)',showAllAction:'showAllPerformance()',showLessAction:performanceVisible>8?'resetPerformanceLimit()':''}):`<div class="empty-state empty-state--compact"><strong>${performanceViewMode==='with-data'?'Nenhum tópico possui amostra suficiente':'Nenhum tópico nesta categoria'}</strong><p>${performanceViewMode==='with-data'?'São necessárias pelo menos 30 questões por tópico para esta visualização.':'Altere o filtro para visualizar os demais tópicos.'}</p></div>`);
+  bars.innerHTML=renderTopicQuestionPerformance({
+    mode:performanceViewMode,
+    topics:filteredPerformance,
+    visible:performanceVisible,
+    masteryForTopic:id=>topicMasteryIndex(performanceSubjectId,id),
+    renderFooter:renderCollectionFooter,
+    visibleLimit:performanceVisible,
+    escapeHtml
+  });
 
-  weeklyEl.innerHTML=`<div class="trend-grid">${weekly.map(week=>`
-    <div class="trend-week ${week.insufficientData?'insufficient':''}">
-      <span>${formatDatePt(week.start).slice(0,5)}</span>
-      <strong>${week.insufficientData?'—':week.accuracy+'%'}</strong>
-      <small>${week.resolved} questões</small>
-    </div>`).join('')}</div>
-    <div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta===null?'':` · ${trend.delta>0?'+':''}${trend.delta.toFixed(1)} p.p.`}</div>`;
+  weeklyEl.innerHTML=renderWeeklyQuestionTrend({weeks:weekly,trend,formatDate:formatDatePt});
 
   const subjectTopics=activeTopics().filter(topic=>topic.subjectId===performanceSubjectId);
   if(errorAnalysisView.topicId&&!subjectTopics.some(topic=>topic.id===errorAnalysisView.topicId))errorAnalysisView.topicId='';
@@ -3181,7 +2971,7 @@ function renderQuestionAnalytics(){
   const scopedRecords=validQuestionRecords().filter(question=>entitySubjectId(question)===performanceSubjectId&&(!errorAnalysisView.topicId||question.topicId===errorAnalysisView.topicId));
   const profile=buildErrorProfile(scopedRecords.filter(question=>question.date>=currentStart&&question.date<=todayISO()));
   const previousProfile=buildErrorProfile(scopedRecords.filter(question=>question.date>=previousStart&&question.date<=previousEnd));
-  const errorToolbar=`<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7,30,60,90].map(days=>`<option value="${days}" ${errorAnalysisView.days===days?'selected':''}>Últimos ${days} dias</option>`).join('')}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${subjectTopics.map(topic=>`<option value="${escapeAttr(topic.id)}" ${errorAnalysisView.topicId===topic.id?'selected':''}>${escapeHtml(topic.name)}</option>`).join('')}</select></div>`;
+  const errorToolbar=renderQuestionErrorToolbar({days:errorAnalysisView.days,topicId:errorAnalysisView.topicId,topics:subjectTopics,escapeHtml,escapeAttr});
   const errorModel=buildErrorAnalysisViewModel({current:profile,previous:previousProfile,periodLabel:formatDatePt(currentStart)+' a '+formatDatePt(todayISO())});
   profileEl.innerHTML=renderErrorAnalysis(errorModel,{toolbar:errorToolbar,escapeHtml});
 }
@@ -3234,30 +3024,18 @@ function saveSimulationEdit(){
   if(!simulationEditController.save())cancelSimulationEdit();
 }
 function renderSimulationReadRow(sim){
-  const vm=simulationViewModel(sim); const hasBreakdown=sim.breakdown&&sim.breakdown.length>0;
-  const details=`<button class="btn ghost small ${hasBreakdown?'has-notes':''}" data-delegated-click="toggleBreakdown('${sim.id}')">${openBreakdownIds.has(sim.id)?'Ocultar detalhes':'Ver desempenho'}</button>`;
-  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${sim.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)}</div><div class="mobile-card-title">${escapeHtml(vm.name)}</div></div><button class="btn ghost small" data-delegated-click="editSimulation('${sim.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${vm.correct} / ${vm.total}</span><strong>Nota ${vm.score}%</strong>${details}</div></article></td></tr>${openBreakdownIds.has(sim.id)?renderSimulationBreakdown(sim):''}`;
-  return `<tr class="history-read-row history-desktop-row" data-id="${sim.id}"><td>${escapeHtml(vm.date)}</td><td><div class="row-primary">${escapeHtml(vm.name)}</div></td><td class="number-cell">${vm.correct}</td><td class="number-cell">${vm.total}</td><td class="number-cell">${vm.score}%</td><td>${details}</td><td><button class="btn ghost small" data-delegated-click="editSimulation('${sim.id}')">Editar</button></td></tr>${openBreakdownIds.has(sim.id)?renderSimulationBreakdown(sim):''}`;
+  const expanded=openBreakdownIds.has(sim.id);
+  return renderSimulationRead({item:sim,view:simulationViewModel(sim),mobile:isMobileHistoryLayout(),expanded,escapeHtml,breakdownHtml:expanded?renderSimulationBreakdown(sim):''});
 }
 function renderSimulationBreakdown(sim){
-  return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><strong class="breakdown-title">Desempenho por disciplina</strong><div class="breakdown-list">${(sim.breakdown||[]).map(b=>{const total=Number(b.total)||0,correct=Number(b.correct)||0,accuracy=total?Math.round(correct/total*100):null;return `<div class="breakdown-line"><label class="breakdown-subject"><span>Disciplina</span><select class="select-control" data-delegated-change="updateBreakdownRow('${sim.id}','${b.id}','subjectId',this.value)"><option value="">Selecione</option>${subjectsForSelection(entitySubjectId(b)).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===entitySubjectId(b)?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select></label><label><span>Acertos</span><input type="number" min="0" max="${total||999}" value="${correct}" placeholder="0" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','correct',this.value)"></label><label><span>Questões</span><input type="number" min="0" value="${total}" placeholder="0" data-delegated-blur="updateBreakdownRow('${sim.id}','${b.id}','total',this.value)"></label><div class="breakdown-result"><span>Aproveitamento</span><strong>${accuracy==null?'—':accuracy+'%'}</strong></div><button class="icon-btn" aria-label="Excluir disciplina do simulado" data-delegated-click="deleteBreakdownRow('${sim.id}','${b.id}')">✕</button></div>`}).join('')}</div><button class="btn ghost small breakdown-add-btn" data-delegated-click="addBreakdownRow('${sim.id}')">+ Adicionar disciplina</button></div></td></tr>`;
+  return renderSimulationBreakdownView({item:sim,subjectOptions:subjectsForSelection,subjectIdOf:entitySubjectId,escapeHtml,escapeAttr});
 }
-function renderSimulationEditRow(sim){ const d=simulationEditController.state.draft; const hasBreakdown=d.breakdown&&d.breakdown.length>0; return `<tr class="row-editing" data-id="${sim.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date||''}" data-delegated-change="updateSimulationDraft('date',this.value)"></label><label>Nome<input type="text" value="${escapeAttr(d.nome||'')}" data-delegated-input="updateSimulationDraft('nome',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correct)||0}" ${hasBreakdown?'disabled':''} data-delegated-input="updateSimulationDraft('correct',this.value)"></label><label>Total<input type="number" min="0" value="${Number(d.total)||0}" ${hasBreakdown?'disabled':''} data-delegated-input="updateSimulationDraft('total',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelSimulationEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveSimulationEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteSimuladoRow('${sim.id}')">Excluir</button></div></div></td></tr>`; }
+function renderSimulationEditRow(sim){return renderSimulationEdit({item:sim,draft:simulationEditController.state.draft,escapeAttr})}
 
 function renderSimulados(){
   const body = document.getElementById('simuladosBody');
   const rows = [...state.simulados].sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-  if(rows.length === 0){
-    body.innerHTML = `<tr><td colspan="7"><div class="empty-state" style="border:none;">
-      <p>Nenhum simulado registrado ainda.</p>
-      <button class="btn small" data-delegated-click="addSimuladoRow()">+ Registrar simulado</button>
-    </div></td></tr>`;
-    return;
-  }
-  const visibleRows=rows.slice(0,listViewState.simulationsVisible);
-  body.innerHTML = visibleRows.map(sim=>simulationEditController.state.editingId===sim.id?renderSimulationEditRow(sim):renderSimulationReadRow(sim)).join('')+renderListViewFooter(rows.length,listViewState.simulationsVisible,LIST_VIEW_STEPS.simulations,
-    "changeListLimit('simulations',LIST_VIEW_STEPS.simulations,renderSimulados)",
-    "changeListLimit('simulations',-listViewState.simulationsVisible,renderSimulados)",7,'simulados');
+  body.innerHTML=renderSimulationRows({items:rows,visible:listViewState.simulationsVisible,editingId:simulationEditController.state.editingId,renderReadRow:renderSimulationReadRow,renderEditRow:renderSimulationEditRow,renderFooter:renderListViewFooter});
 }
 function addSimuladoRow(){
   listViewState.simulationsVisible=LIST_VIEW_STEPS.simulations;
@@ -4044,21 +3822,7 @@ function renderStudyHoursChart(){
   const byDate=studySecondsByDate();
   const data=[];
   for(let i=13;i>=0;i--){ const date=addDays(todayISO(),-i); data.push({date,seconds:byDate[date]||0}); }
-  const total=data.reduce((sum,d)=>sum+d.seconds,0);
-  if(total<=0){ container.innerHTML=`<div class="progress-chart-empty">Registre sessões para visualizar a evolução das horas.</div>`; return; }
-  const W=640,H=180,padL=36,padR=12,padT=16,padB=26;
-  const plotW=W-padL-padR,plotH=H-padT-padB;
-  const target=metaHoursToday()*3600;
-  const maxSeconds=Math.max(target,...data.map(d=>d.seconds),3600);
-  const xFor=i=>padL+(i/(data.length-1))*plotW;
-  const yFor=seconds=>padT+plotH-(seconds/maxSeconds)*plotH;
-  const points=data.map((d,i)=>`${xFor(i)},${yFor(d.seconds)}`).join(' ');
-  const gridValues=[0,maxSeconds/2,maxSeconds];
-  const grid=gridValues.map(seconds=>`<line class="chart-grid" x1="${padL}" y1="${yFor(seconds)}" x2="${W-padR}" y2="${yFor(seconds)}"></line><text x="2" y="${yFor(seconds)+3}">${(seconds/3600).toFixed(seconds%3600?1:0)}h</text>`).join('');
-  const labels=[0,4,9,13].map(i=>`<text x="${xFor(i)}" y="${H-5}" text-anchor="middle">${formatDatePt(data[i].date).slice(0,5)}</text>`).join('');
-  const dots=data.map((d,i)=>`<circle class="chart-dot" cx="${xFor(i)}" cy="${yFor(d.seconds)}" r="3"><title>${formatDatePt(d.date)} · ${formatDuration(d.seconds)}</title></circle>`).join('');
-  const targetLine=target>0?`<line x1="${padL}" y1="${yFor(target)}" x2="${W-padR}" y2="${yFor(target)}" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="5 4"><title>Meta diária: ${formatDuration(target)}</title></line>`:'';
-  container.innerHTML=`<svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${grid}${targetLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg>`;
+  container.innerHTML=renderStudyHoursChartView({data,targetSeconds:metaHoursToday()*3600,formatDate:formatDatePt,formatDuration});
 }
 function renderSubjectHoursBars(){
   const container=document.getElementById('subjectHoursBars');
@@ -4068,14 +3832,8 @@ function renderSubjectHoursBars(){
     const key=entitySubjectId(session)||'__none';
     map[key]=(map[key]||0)+(Number(session.durationSeconds)||0);
   });
-  const rows=Object.entries(map).filter(([,seconds])=>seconds>0).sort((a,b)=>b[1]-a[1]);
-  if(rows.length===0){ container.innerHTML=`<div class="upcoming-empty">Nenhuma sessão registrada.</div>`; return; }
-  const total=rows.reduce((sum,row)=>sum+row[1],0);
-  container.innerHTML=rows.map(([subjectId,seconds])=>{
-    const name=subjectId==='__none'?'Sem disciplina':getSubjectName(subjectId);
-    const pct=total>0?Math.round((seconds/total)*100):0;
-    return `<div class="bar-row"><div class="bar-label" title="${escapeAttr(name)}">${escapeHtml(name)}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-pct" title="${pct}% do tempo total">${formatDuration(seconds)}</div></div>`;
-  }).join('');
+  const rows=Object.entries(map).filter(([,seconds])=>seconds>0).sort((a,b)=>b[1]-a[1]).map(([subjectId,seconds])=>({subjectId,seconds}));
+  container.innerHTML=renderSubjectHoursBarsView({rows,getSubjectName,formatDuration,escapeHtml,escapeAttr});
 }
 
 const SESSION_TYPES={study:'Estudo teórico',review:'Revisão',questions:'Questões',simulation:'Simulado'};
@@ -4205,12 +3963,13 @@ function saveStudySessionEdit(){
 function renderStudySessionReadRow(session){
   const vm=sessionViewModel(session);
   const detailsId=`session-details-${session.id}`,expanded=expandedSessionDetails.has(session.id);
-  if(isMobileHistoryLayout()) return `<tr class="mobile-history-row" data-id="${session.id}"><td colspan="5"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(vm.date)} · ${escapeHtml(vm.time)}</div><div class="mobile-card-title">${escapeHtml(vm.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(vm.topic)}</div></div><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(vm.type)}</span><span>⏱ ${escapeHtml(vm.duration)}</span>${vm.questions?`<span>${pluralize(vm.questions,'questão','questões')}</span><strong>${vm.accuracy}%</strong>`:''}${vm.notes?`<span title="${escapeAttr(vm.notes)}">📝 ${escapeHtml(vm.notes)}</span>`:''}</div></article></td></tr>`;
-  return `<tr class="history-read-row history-desktop-row" data-id="${session.id}"><td><div class="row-primary">${escapeHtml(vm.date)}</div><div class="row-secondary">${escapeHtml(vm.time)}</div></td><td class="number-cell">${escapeHtml(vm.duration)}</td><td><div class="row-primary">${escapeHtml(vm.subject)}</div><div class="row-secondary">${escapeHtml(vm.topic)}</div></td><td><div class="row-primary">${vm.questions?pluralize(vm.questions,'questão','questões'):'Sem questões'}</div><div class="row-secondary">${vm.accuracy===null?'—':vm.accuracy+'% de acerto'}</div></td><td class="session-actions"><button class="btn ghost small" aria-expanded="${expanded}" aria-controls="${detailsId}" data-delegated-click="toggleSessionDetails('${session.id}')">Detalhes</button><button class="btn ghost small" data-delegated-click="editStudySession('${session.id}')">Editar</button></td></tr>${expanded?`<tr class="session-details-row" id="${detailsId}"><td colspan="5"><dl><div><dt>Tipo</dt><dd>${escapeHtml(vm.type)}</dd></div><div><dt>Observação</dt><dd>${escapeHtml(vm.notes||'Sem observação')}</dd></div><div><dt>Atividade do plano</dt><dd>${session.planItemId?'Vinculada ao plano diário':'Sem vínculo'}</dd></div></dl></td></tr>`:''}`;
+  return renderStudySessionRead({session,view:vm,detailsId,expanded,mobile:isMobileHistoryLayout(),escapeHtml,escapeAttr,pluralize});
 }
 function renderStudySessionEditRow(session){
-  const d=historyEditDraft.session; const subjectId=entitySubjectId(d); const subject=getSubjectById(subjectId); const topics=subject?subject.topics:[];
-  return `<tr class="row-editing" data-id="${session.id}"><td colspan="10"><div class="inline-edit-form"><label>Data<input type="date" value="${d.date||''}" data-delegated-change="updateStudySessionDraft('date',this.value)"></label><label>Duração (min)<input type="number" min="0" value="${Math.floor((Number(d.durationSeconds)||0)/60)}" data-delegated-input="updateStudySessionDraft('durationMinutes',this.value)"></label><label>Tipo<select data-delegated-change="updateStudySessionDraft('type',this.value)">${sessionTypeOptions(d.type||'study')}</select></label><label>Disciplina<select data-delegated-change="updateStudySessionDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectsForSelection(subjectId).map(s=>`<option value="${escapeAttr(s.id)}" ${s.id===subjectId?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}</select></label><label>Tópico<select data-delegated-change="updateStudySessionDraft('topicId',this.value||null)"><option value="">Sem tópico</option>${topics.map(t=>`<option value="${escapeAttr(t.id)}" ${t.id===d.topicId?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select></label><label>Questões<input type="number" min="0" value="${Number(d.questionsResolved)||0}" data-delegated-input="updateStudySessionDraft('questionsResolved',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(d.correctAnswers)||0}" data-delegated-input="updateStudySessionDraft('correctAnswers',this.value)"></label><label class="edit-notes-field">Observação<textarea data-delegated-input="updateStudySessionDraft('notes',this.value)">${escapeHtml(d.notes||'')}</textarea></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelStudySessionEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveStudySessionEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteStudySession('${session.id}')">Excluir</button></div></div></td></tr>`;
+  const draft=historyEditDraft.session,subjectId=entitySubjectId(draft),subject=getSubjectById(subjectId),topics=subject?subject.topics:[];
+  const subjectOptions=subjectsForSelection(subjectId).map(item=>`<option value="${escapeAttr(item.id)}" ${item.id===subjectId?'selected':''}>${escapeHtml(item.name)}</option>`).join('');
+  const topicOptions=topics.map(topic=>`<option value="${escapeAttr(topic.id)}" ${topic.id===draft.topicId?'selected':''}>${escapeHtml(topic.name)}</option>`).join('');
+  return renderStudySessionEdit({session,draft,typeOptions:sessionTypeOptions(draft.type||'study'),subjectOptions,topicOptions,escapeHtml});
 }
 function renderStudySessionsHistory(){
   const body=document.getElementById('studySessionsBody');
@@ -4241,12 +4000,8 @@ function renderStudySessionsHistory(){
   }
   const html=[];
   visibleGroups.forEach(([date,sessions])=>{
-    const seconds=sessions.reduce((sum,s)=>sum+(Number(s.durationSeconds)||0),0);
-    const questions=sessions.reduce((sum,s)=>sum+(Number(s.questionsResolved)||0),0);
-    const correct=sessions.reduce((sum,s)=>sum+(Number(s.correctAnswers)||0),0);
-    const accuracy=questions>0?` · ${Math.round((correct/questions)*100)}% de acerto`:'';
     const expanded=expandedSessionDays.has(date);
-    html.push(`<tr class="session-day-row"><td colspan="5"><button type="button" class="session-day-toggle" aria-expanded="${expanded}" data-delegated-click="toggleSessionDay('${escapeAttr(date)}')"><span>${date==='Sem data'?date:formatDatePt(date)} · ${pluralize(sessions.length,'sessão','sessões')} · ${formatDuration(seconds)} · ${pluralize(questions,'questão','questões')}${accuracy}</span><span class="session-day-chevron" aria-hidden="true">›</span></button></td></tr>`);
+    html.push(renderStudySessionDayHeader({date,sessions,expanded,formatDate:formatDatePt,formatDuration,pluralize,escapeAttr}));
     if(!expanded) return;
     sessions.forEach(session=>html.push(historyEditState.sessionId===session.id?renderStudySessionEditRow(session):renderStudySessionReadRow(session)));
   });
@@ -4286,20 +4041,9 @@ function renderAlertasInteligentes(){
   const reconciliation=reconcileAlerts(computeAlertasInteligentes(),state.alertStates,todayISO(),addDays);
   if(JSON.stringify(reconciliation.states)!==JSON.stringify(state.alertStates)){state.alertStates=reconciliation.states;scheduleSave()}
   const alertas = reconciliation.visible;
-
-  if(alertas.length === 0){
-    if(container)container.innerHTML = `<div class="upcoming-empty">Nenhum alerta no momento — tudo sob controle. 🎉</div>`;
-    if(overview)overview.innerHTML='<p class="overview-alert-empty">Sem alertas prioritários neste momento.</p>';
-    return;
-  }
-  const renderAlert=a => `
-    <div class="alerta-item alerta-${a.nivel}">
-      <span class="alerta-icon">${a.icon}</span>
-      <span><strong>${escapeHtml(a.reason||a.texto)}</strong><small>${escapeHtml(a.recommendedAction||'')}</small></span>${a.severity!=='ok'?`<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(a.id)}')">Dispensar 7 dias</button>`:''}
-    </div>
-  `;
-  if(container)container.innerHTML=alertas.map(renderAlert).join('')+(reconciliation.additional.length?`<details class="alerta-more"><summary>Mostrar mais ${reconciliation.additional.length} alerta${reconciliation.additional.length===1?'':'s'}</summary>${reconciliation.additional.map(renderAlert).join('')}</details>`:'');
-  if(overview)overview.innerHTML=`<div class="overview-alert-list">${alertas.slice(0,2).map(alert=>`<article class="overview-alert alerta-${escapeAttr(alert.severity)}"><strong>${escapeHtml(alert.reason||alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction||'')}</small></article>`).join('')}</div>${alertas.length>2?`<p class="overview-alert-empty">+ ${alertas.length-2} alertas ativos</p>`:''}`;
+  const presentation=renderIntelligentAlerts({alerts:alertas,additional:reconciliation.additional,escapeHtml,escapeAttr});
+  if(container)container.innerHTML=presentation.list;
+  if(overview)overview.innerHTML=presentation.overview;
 }
 function dismissIntelligentAlert(id){state.alertStates=dismissAlert(state.alertStates,id,todayISO(),addDays,7);scheduleSave();renderAlertasInteligentes()}
 
@@ -4312,9 +4056,7 @@ function renderExecutiveSummary(){
   const opportunityCount=configuredTopics.filter(topic=>priorities.some(priority=>priority.topicId===topic.id)).length;
   const weekStart=startOfWeek(todayISO()),weeklyGoal={achieved:uniqueTopicsCompletedBetween(weekStart,addDays(weekStart,6)),target:state.metas.semanal};
   const summary=buildExecutiveSummary({readiness,daysToExam:state.examDate?(diasParaRevisao(state.examDate)??null):null,pace,topPriority,riskCount:risks.length,weeklyGoal,opportunityCount});
-  container.innerHTML=`<div class="executive-kpis">${summary.cards.map(card=>`<div class="executive-kpi"><strong>${escapeHtml(card.value)}</strong><span>${escapeHtml(card.label)}</span><small>${escapeHtml(card.detail)}</small></div>`).join('')}</div>
-    <div class="executive-decision-grid"><section><h4>Prioridade principal</h4>${summary.primaryAction?`<strong>${escapeHtml(summary.primaryAction.title)}</strong><p>${escapeHtml(summary.primaryAction.subject||'')} · ${escapeHtml(summary.primaryAction.topic||'')} · ${formatPlanMinutes(summary.primaryAction.duration)}</p><small>${escapeHtml(summary.primaryAction.reason)}</small>`:'<p>Ainda não há uma prioridade confiável. Cadastre tópicos ou revisões pendentes.</p>'}</section>
-    <section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount===1?'':'s'} com evidência atual.</p><small>${escapeHtml(summary.opportunityMessage)}</small></section></div>`;
+  container.innerHTML=renderExecutiveSummaryView({summary,formatMinutes:formatPlanMinutes,escapeHtml});
 }
 
 const dismissedRecommendationIds=new Set();
@@ -4329,25 +4071,10 @@ function intelligenceCandidates(){
 function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
   const {candidates}=refreshStudyRecommendationItems(),result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{hasTopics:candidates.length>0,weeklyCapacityMinutes});
-  const emptyState=empty=>`<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(empty.title)}</strong><p>${escapeHtml(empty.message)}</p>${empty.action?`<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('${escapeAttr(empty.action.tab)}')">${escapeHtml(empty.action.label)}</button>`:''}</div>`;
-  if(model.state==='insufficient'){container.innerHTML=`<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(model.title)}</strong><p>${escapeHtml(model.message)}</p><button type="button" class="btn small" data-delegated-click="navigateKpi('${escapeAttr(model.action.tab)}')">${escapeHtml(model.action.label)}</button></div>`;return}
-  const diagnosticRow=(item,metricLabel,metricValue)=>{
-    const presentation=item.presentation,badgeVariant={high:'danger',medium:'warning',low:'success',info:'info',insufficient:'insufficient'}[presentation.severity]||'info';
-    const evidence=presentation.evidence.map(row=>`<div><dt>${escapeHtml(row.label)}</dt><dd>${escapeHtml(row.value)}</dd></div>`).join('');
-    const secondary=presentation.secondaryReasons.length?`<ul class="diagnostic-secondary-reasons">${presentation.secondaryReasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul>`:'';
-    const action=presentation.recommendedAction,recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),studyAction=buildStudyAction(recommendation,{source:'diagnosis'});
-    const progress=presentation.type==='focus'?`<div class="diagnostic-progress" role="progressbar" aria-label="Distribuição do foco semanal para ${escapeAttr(presentation.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(item.percentage)}"><i style="--progress:${Math.min(100,Math.max(0,item.percentage))}%"></i></div>`:'';
-    const actionButtons=`<div class="diagnostic-row-buttons">${studyAction?`<button class="btn small" type="button" data-study-action-source="${studyAction.source}" data-study-action-id="${escapeAttr(studyAction.id)}" data-activity-type="${studyAction.activityType}" data-delegated-click="executeStudyRecommendation('${escapeAttr(studyAction.id)}','${studyAction.source}')">${escapeHtml(recommendationActionLabel(studyAction))}</button>`:''}<button class="btn ghost small" type="button" data-delegated-click="navigateKpi('${escapeAttr(action.targetId)}')">${escapeHtml(action.label)}</button></div>`;
-    return `<article class="diagnostic-row diagnostic-row--${escapeAttr(presentation.type)}" ${studyAction?`data-study-action-source="${studyAction.source}" data-study-action-id="${escapeAttr(studyAction.id)}" data-activity-type="${studyAction.activityType}"`:''}><div class="diagnostic-row-heading"><div class="diagnostic-row-identity"><span class="diagnostic-kicker">${escapeHtml(presentation.type==='bottleneck'?'PONTO DE ATENÇÃO':presentation.type==='opportunity'?'OPORTUNIDADE':presentation.type==='review'?'REVISÃO':'FOCO DA SEMANA')}</span><strong>${escapeHtml(presentation.title)}</strong></div><div class="diagnostic-row-signals"><span class="diagnostic-signal status-badge status-badge--${badgeVariant} is-${item.signalTone}">${escapeHtml(item.signalLabel)}</span>${metricValue?`<b class="diagnostic-score">${escapeHtml(metricLabel)} ${escapeHtml(metricValue)}</b>`:''}</div></div><p class="diagnostic-primary-reason">${escapeHtml(presentation.primaryReason)}</p>${evidence?`<dl class="diagnostic-evidence">${evidence}</dl>`:''}${progress}${secondary}<div class="diagnostic-row-action"><span>AÇÃO RECOMENDADA</span>${actionButtons}</div></article>`;
-  };
-  const list=(section,renderItem)=>section.items.length?section.items.map(renderItem).join(''):emptyState(section.empty);
-  const section=key=>model.sections.find(item=>item.key===key);
-  container.innerHTML=`<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(section('bottlenecks'),item=>diagnosticRow(item,'Risco',`${Math.round(item.risk?.value??item.severity)}/100`))}</section>
-    <section><h4>Oportunidades</h4>${list(section('opportunities'),item=>diagnosticRow(item,'Potencial',`${Math.round(item.opportunityScore)}/100`))}</section>
-    <section><h4>Revisões críticas e risco</h4>${list(section('risk'),item=>{const urgency=Number(item.reviewUrgency);return diagnosticRow(item,urgency>0?'Urgência':'Intervalo',urgency>0?`${Math.round(urgency)}/100`:item.daysSinceContact==null?'':`${Math.round(item.daysSinceContact)} dias`)})}</section>
-    <section><h4>Foco da semana</h4>${list(section('focus'),item=>diagnosticRow(item,'',''))}</section>
-  </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
+  container.innerHTML=renderDiagnosisCenterView({model,studyActionForItem:item=>{
+    const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
+    return action?{...action,label:recommendationActionLabel(action)}:null;
+  },escapeHtml,escapeAttr});
 }
 function renderRecommendationImpact(model){
   if(!model.available)return '';
@@ -4594,7 +4321,7 @@ function onboardingModel(){
   return buildOnboardingViewModel({examDate:state.examDate,hoursByDay:state.metas.horasPorDia,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,studyPlans:state.studyPlans,planPreview:canPreview?buildCurrentStudyPlanProposal({guidedDefaults:true}):null,currentStep:uiState.onboarding.currentStep,today:todayISO(),presets:EXAM_PRESETS,presetId:uiState.onboarding.presetId});
 }
 function moveOnboarding(direction){const model=onboardingModel(),index=Math.max(0,Math.min(model.steps.length-1,model.currentIndex+direction));uiState.onboarding.currentStep=model.steps[index].id;renderGuidedOnboarding()}
-function openGuidedOnboarding({step=null}={}){const model=onboardingModel();uiState.onboarding.previousFocus=document.activeElement;uiState.onboarding.open=true;uiState.onboarding.manualReturn=false;uiState.onboarding.currentStep=step||model.next?.id||model.current.id;document.body.classList.add('onboarding-open');renderGuidedOnboarding();requestAnimationFrame(()=>document.getElementById('guidedOnboardingClose')?.focus())}
+async function openGuidedOnboarding({step=null}={}){try{await ensureExamCatalog();const model=onboardingModel();uiState.onboarding.previousFocus=document.activeElement;uiState.onboarding.open=true;uiState.onboarding.manualReturn=false;uiState.onboarding.currentStep=step||model.next?.id||model.current.id;document.body.classList.add('onboarding-open');renderGuidedOnboarding();requestAnimationFrame(()=>document.getElementById('guidedOnboardingClose')?.focus())}catch(error){showToast(error.message||'Não foi possível abrir a configuração inicial.')}}
 function suspendGuidedOnboarding(){uiState.onboarding.open=false;renderGuidedOnboarding()}
 function resumeGuidedOnboarding(step='content'){const model=onboardingModel();uiState.onboarding.currentStep=step==='plan'&&!model.hasContent?'content':step;uiState.onboarding.open=true;document.body.classList.add('onboarding-open');renderGuidedOnboarding();requestAnimationFrame(()=>document.getElementById('guidedOnboardingClose')?.focus())}
 function closeGuidedOnboarding({manual=false}={}){const previousFocus=uiState.onboarding.previousFocus;uiState.onboarding.open=false;uiState.onboarding.dismissedForSession=!manual;uiState.onboarding.manualReturn=manual;document.body.classList.remove('onboarding-open');renderGuidedOnboarding();syncModalShell();const focusTarget=previousFocus?.isConnected?previousFocus:document.querySelector('#guidedOnboarding [data-guided-action="open"]');focusTarget?.focus?.();uiState.onboarding.previousFocus=null}
@@ -4922,13 +4649,7 @@ function renderTopicRetentionDashboard(){
     const score=retentionView.order==='desc'?bv-av:av-bv;
     return score||a.r.confidence-b.r.confidence||a.subjectName.localeCompare(b.subjectName)||a.name.localeCompare(b.name);
   });
-  const toolbar=`<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${activeSubjects().map(subject=>`<option value="${escapeAttr(subject.id)}" ${retentionView.subjectId===subject.id?'selected':''}>${escapeHtml(subject.name)}</option>`).join('')}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${retentionView.order==='asc'?'selected':''}>Menor retenção</option><option value="desc" ${retentionView.order==='desc'?'selected':''}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${retentionView.confidence==='alta'?'selected':''}>Confiança alta</option><option value="média" ${retentionView.confidence==='média'?'selected':''}>Confiança média</option><option value="baixa" ${retentionView.confidence==='baixa'?'selected':''}>Confiança baixa</option></select></div>`;
-  if(!rows.length){el.innerHTML=toolbar+'<div class="upcoming-empty">Nenhum tópico corresponde aos filtros atuais.</div>';return;}
-  const visible=retentionShowAll?rows:rows.slice(0,8);
-  const scoreCounts=new Map();rows.forEach(row=>{const score=row.r.available?row.r.score:row.h.value;scoreCounts.set(score,(scoreCounts.get(score)||0)+1)});
-  const repeated=[...scoreCounts.entries()].sort((a,b)=>b[1]-a[1])[0];
-  const repeatedSummary=repeated&&repeated[1]>=4?`<div class="retention-pattern-note">${repeated[1]} tópicos apresentam retenção estimada em ${repeated[0]}%. Compare a confiança antes de interpretar o resultado como definitivo.</div>`:'';
-  el.innerHTML=toolbar+repeatedSummary+visible.map(x=>{const score=x.r.available?x.r.score:x.h.value,c=score>=70?'ok':score>=50?'warn':'';return `<div class="retention-row" title="${escapeAttr(x.r.detail||x.h.reasons[0])}"><div class="retention-topic"><strong>${escapeHtml(x.name)}</strong><span>${escapeHtml(x.subjectName)} · retenção ${x.r.available?x.r.score+'%':'—'} · saúde ${x.h.value===null?'—':x.h.value+'%'}</span></div><div class="retention-track"><div class="retention-fill ${c}" style="width:${score}%"></div></div><div class="retention-value">${score}%</div></div>`}).join('')+renderCollectionFooter({variant:'block',total:rows.length,visible:visible.length,step:8,label:'tópicos',showMoreAction:'showAllRetention()',showAllAction:'showAllRetention()',showLessAction:retentionShowAll?'resetRetentionLimit()':''});
+  el.innerHTML=renderTopicRetentionDashboardView({rows,subjects:activeSubjects(),filters:retentionView,showAll:retentionShowAll,renderFooter:renderCollectionFooter,escapeHtml,escapeAttr});
 }
 
 function planStartDate(){

@@ -23,7 +23,7 @@ export function buildStrategicReport({state,generatedAt,isDemo=false,readiness=n
 }
 import {isTopicInExamScope} from '../domain/exams/exam-scope.js';
 import {resolveExamEvidenceScope} from '../domain/exams/exam-evidence-scope.js';
-import {CATALOG_VERSION,EXAM_TAGS} from '../domain/exams/exam-catalog.js';
+import {CATALOG_VERSION,EXAM_TAGS} from '../domain/exams/exam-constants.js';
 import {buildPeriodComparison} from '../domain/analytics/period-comparison.js';
 import {buildPeriodComparisonInsights} from '../domain/analytics/period-comparison-insights.js';
 import {localDateRange} from '../core/date-utils.js';

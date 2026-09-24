@@ -1,4 +1,5 @@
-import {CATALOG_VERSION,EXAM_TAGS,catalogForExamTags} from './exam-catalog.js';
+import {CATALOG_VERSION,EXAM_TAGS} from './exam-constants.js';
+import {catalogForExamTags} from './exam-catalog.js';
 const preset=(id,name,examTags,sources,description)=>Object.freeze({id,name,version:CATALOG_VERSION,examTags,sources,description,subjects:catalogForExamTags(examTags)});
 export const EXAM_PRESETS=Object.freeze([
   preset('bb-escriturario','Banco do Brasil — Escriturário',[EXAM_TAGS.BB],['bb-escriturario-2023'],'Conteúdo e pesos do edital BB 2023; incidência por tópico estimada.'),

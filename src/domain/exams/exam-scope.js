@@ -1,4 +1,4 @@
-import {EXAM_TAGS,institutionForExamTag} from './exam-catalog.js';
+import {EXAM_TAGS,institutionForExamTag} from './exam-constants.js';
 
 const tagsOf=topic=>Array.isArray(topic?.examTags)?topic.examTags:[];
 export const normalizeExamTags=tags=>[...new Set((Array.isArray(tags)?tags:[]).filter(Boolean).map(String))].sort();

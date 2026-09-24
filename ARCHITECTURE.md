@@ -54,17 +54,32 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/domain/study-eligibility.js`: sessões curtas, manutenção de tópicos concluídos e validação transitiva de pré-requisitos.
 - `src/application/sessions/session-service.js`: ciclo de vida das sessões e sincronização de questões, planejamento, histórico e recomendações.
 - `src/application/records/record-service.js`: operações normalizadas para calendário, questões, simulados e metas.
+- `src/application/calendar/build-unified-reviews.js`: normaliza itens do Calendário e da Agenda de Revisões para indicadores e telas compartilhadas.
 - `src/application/subjects/subject-service.js`: ciclo de vida de disciplinas e tópicos, incluindo arquivamento auditável.
 - `src/repositories/subjects-repository.js`: acesso à coleção e às entidades aninhadas de tópicos.
 - `src/application/recommendations/outcome-service.js`: linha de base, resultado e confiança das recomendações sem ajuste automático de pesos.
 - `src/domain/recommendations/recommendation-outcome.js`: comparação imutável entre os estados anterior e posterior, com deltas, confiança e estados de resultado.
 - `src/application/subjects/exam-import-service.js`: preview e importação atômica de estruturas de edital com merge idempotente.
-- `src/domain/exams/exam-presets.js`: catálogo versionado de estruturas BB, Caixa e combinada.
+- `src/domain/exams/exam-constants.js`: tags, fontes e versão leve do catálogo de editais, sem carregar a lista completa de tópicos.
+- `src/domain/exams/exam-preset-options.js`: nomes dos editais usados nos primeiros passos da interface.
+- `src/domain/exams/exam-catalog.js` e `src/domain/exams/exam-presets.js`: normalização, validação e estruturas completas de BB, Caixa e combinada.
+- `src/domain/exams/exam-catalog-runtime.js`: entrada do bundle sob demanda que expõe as estruturas completas ao navegador.
 - `src/domain/analytics/recommendation-calibration.js`: leitura agregada dos resultados reais sem ajuste automático de pesos.
 - `src/domain/forecasts/performance-scenarios.js`: simulações conservadoras de capacidade sobre a projeção de 30 dias.
 - `src/domain/analytics/exam-mastery-matrix.js`: matriz explicável de cobertura, domínio, retenção e lacunas por edital.
 - `src/domain/recommendations/study-strategy.js`: estratégia versionada e etapas executáveis pelo cronômetro existente.
 - `src/ui/view-models/` e `src/ui/renderers/`: Questões, Agenda/Revisões, Calendário, calibração e cenários mantêm preparação de dados e HTML fora do composition root.
+- `src/ui/renderers/calendar-renderer.js`: indicadores, mês, opções de filtro e linhas do Calendário são renderizados fora de `src/app.js`.
+- `src/ui/renderers/question-analytics-renderer.js`: cartões de resumo, desempenho por tópico, tendência semanal e filtros do perfil de erros são apresentados fora de `src/app.js`.
+- `src/ui/renderers/questions-renderer.js`: linhas de leitura/edição e campos de categorização dos erros das Questões são apresentados fora de `src/app.js`.
+- `src/ui/renderers/global-search-renderer.js`: resultados de comandos e tópicos da busca global são apresentados fora de `src/app.js`.
+- `src/ui/renderers/heatmap-renderer.js`: controles, células, legenda e resumo do mapa de atividade são apresentados fora de `src/app.js`; o view-model continua fornecendo os níveis calculados.
+- `src/ui/renderers/study-sessions-renderer.js`: linhas de leitura e edição e cabeçalhos diários do histórico de sessões são apresentados fora de `src/app.js`.
+- `src/ui/renderers/study-charts-renderer.js`: SVGs de evolução de progresso/horas e barras de tempo por disciplina são gerados fora de `src/app.js`.
+- `src/ui/renderers/overview-renderer.js`: alertas da Visão Geral e cartões do resumo executivo são apresentados fora de `src/app.js`.
+- `src/ui/renderers/diagnosis-renderer.js`: centro de diagnóstico, sinais, evidências e ações recomendadas são apresentados a partir do view-model sem montar HTML no `src/app.js`.
+- `src/ui/renderers/retention-renderer.js`: filtros, padrões e linhas do painel de retenção são apresentados fora de `src/app.js`.
+- `src/ui/renderers/simulations-renderer.js`: linhas e edição de simulados, detalhamento por disciplina, gráfico de evolução e tabela comparativa são apresentados fora de `src/app.js`.
 - `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.
 - `src/ui/accessibility.js`: rotulagem dinâmica e controle de foco em modais.
 - `src/ui/controllers/navigation-controller.js`: abas, menu móvel, atalhos numéricos, busca e fechamento por Escape.
@@ -90,6 +105,7 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 - `src/reports/print-report.js`: coordenação isolada da impressão/“Salvar como PDF”.
 - `src/app.js`: raiz de composição, compatibilidade dos fluxos legados e registro explícito das dependências.
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
+- `service-worker.template.js`: fonte do service worker; `service-worker.js` é gerado com a versão do cache.
 - `styles/print.css`: apresentação A4 do relatório exportado pela impressão do navegador.
 
 ## Fluxo de dependências
@@ -98,7 +114,7 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 
 ## Build e verificações
 
-Após alterar qualquer arquivo em `src/`, execute no PowerShell:
+Após alterar fontes, estilos ou assets, execute no PowerShell:
 
 ```powershell
 npm install
@@ -106,13 +122,13 @@ npm run build
 npm run check
 ```
 
-O bundle é gerado pelo esbuild e não deve ser editado manualmente. `build.ps1` é um atalho para `npm run build`.
+`src/app.bundle.js`, `src/exam-catalog.bundle.js`, `index.html` e `service-worker.js` são artefatos gerados e não devem ser editados para alterar suas versões manualmente. O build calcula um fingerprint determinístico dos fontes e assets, aplica o mesmo valor às URLs versionadas e ao nome do cache PWA, e injeta essa versão no carregamento sob demanda do catálogo. A implantação no GitHub Pages executa `npm ci` e `npm run build` antes de preparar o site. `npm run check:bundle` verifica a reprodução dos bundles e dos arquivos versionados. O bundle principal não incorpora os dados completos do catálogo; o segundo bundle é carregado ao abrir o assistente ou o importador. `build.ps1` é um atalho para `npm run build`.
 
 ## Persistência
 
 IndexedDB é usado em conjunto com armazenamento local. Cada estado recebe `updatedAt`; o mais recente é carregado. Backups automáticos rotativos possuem checksum SHA-256. Antes de adotar dados locais ou importados, a aplicação migra e valida toda a estrutura. Abas abertas trocam versões por `BroadcastChannel`.
 
-O schema 15 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo, vínculos auditáveis do planejamento, evidências das recomendações e o estado individual da revisão adaptativa. Dados ausentes são mantidos em estado neutro (`null`) e backups anteriores continuam sendo migrados automaticamente.
+O schema 19 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo, vínculos auditáveis do planejamento, evidências e resultados das recomendações, estado individual da revisão adaptativa, normalização das sessões e snapshots do escopo de evidências históricas. Dados ausentes são mantidos em estado neutro (`null`) e backups anteriores continuam sendo migrados automaticamente pelas migrações sequenciais até a versão atual.
 
 O Índice de Prontidão usa cobertura (30%), domínio (25%), retenção (20%), consistência (15%) e simulados (10%). Pesos de fatores indisponíveis são redistribuídos entre as evidências existentes; a ausência reduz a confiança, mas não produz nota zero.
 
@@ -126,7 +142,7 @@ O Índice de Prontidão usa cobertura (30%), domínio (25%), retenção (20%), c
 - `app.bundle.js` continua sendo artefato gerado; a fonte de verdade permanece nos módulos de `src/`.
 ## Ciclo de estabilização
 
-O ciclo atual mantém as regras de data local centralizadas em `study-session.js` e prepara a extração do Calendário por meio de `calendar-state.js` e `calendar-controller.js`. Controladores recebem serviços e callbacks explicitamente; renderizadores permanecem sem persistência.
+O Calendário mantém navegação e edição em `calendar-controller.js`; a composição da raiz injeta estado e serviços, enquanto `build-unified-reviews.js` prepara os itens compartilhados e `calendar-renderer.js` gera a apresentação sem persistência.
 
 O contrato de `report-data.js` resolve nomes e estados antes da impressão; `report-template.js` nunca usa IDs internos como texto visível. O fechamento semanal versionado recebe os dois períodos da camada de aplicação e devolve deltas tipados, diagnóstico e ação recomendada.
 
