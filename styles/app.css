@@ -1539,3 +1539,12 @@ body.timer-focus-active .timer-context{display:none!important}
   body.timer-focus-active .timer-actions .btn{width:100%;white-space:normal}
   .toast{bottom:max(18px,env(safe-area-inset-bottom));width:min(calc(100vw - 24px),520px);text-align:center}
 }
+
+.diagnostic-understanding{min-width:0;border-left:2px solid var(--border-subtle);padding-left:10px}
+.diagnostic-understanding>summary{display:flex;align-items:center;min-height:32px;color:var(--gold-deep);font:600 11px var(--font-data);cursor:pointer}
+.diagnostic-understanding>p{margin:2px 0 8px;color:var(--text-secondary);font:11px/1.5 var(--font-body)}
+.diagnostic-understanding>dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin:0}
+.diagnostic-understanding>dl>div{display:grid;gap:2px;min-width:0}
+.diagnostic-understanding dt{color:var(--text-secondary);font:10px/1.4 var(--font-data)}
+.diagnostic-understanding dd{margin:0;color:var(--text-primary);font:500 10px/1.4 var(--font-data);overflow-wrap:anywhere}
+@media(max-width:760px){.diagnostic-understanding>summary{min-height:44px}.exam-subject-config>summary{min-height:44px}}

@@ -11,7 +11,7 @@ const titleFor=item=>[item.subjectName,item.topicName].filter(Boolean).join(' �
 const evidenceRow=(label,value)=>value==null||value===''?null:{label,value:String(value)};
 const numericValue=value=>value==null||value===''?null:Number.isFinite(Number(value))?Number(value):null;
 
-function presentDiagnosisItem(item,{type,reason,action,confidence=null,insufficient=false,evidence=[],secondaryReasons=[]}={}){
+function presentDiagnosisItem(item,{type,reason,action,confidence=null,insufficient=false,evidence=[],explanation=[],secondaryReasons=[]}={}){
   const confidenceValue=numericValue(confidence);
   const normalizedConfidence=confidenceValue==null?null:Math.max(0,Math.min(1,confidenceValue));
   const limited=insufficient||(normalizedConfidence!=null&&normalizedConfidence<.35);
@@ -20,10 +20,16 @@ function presentDiagnosisItem(item,{type,reason,action,confidence=null,insuffici
   const signalLabel=limited?'Evidência limitada':type==='focus'?'Distribuição sugerida':type==='review'?'Revisão prioritária':type==='opportunity'
     ?score>=70?'Retorno alto':score>=45?'Retorno moderado':'Retorno potencial'
     :severity==='high'?'Risco alto':severity==='medium'?'Risco moderado':'Risco baixo';
-  const validEvidence=evidence.filter(Boolean);
-  return {...item,signalLabel,signalTone:severity==='insufficient'?'neutral':severity==='high'?'high':severity==='medium'?'medium':'low',presentation:{
+  const validEvidence=evidence.filter(Boolean),validExplanation=[...evidence,...explanation].filter(Boolean);
+  const explanationSummary={
+    bottleneck:'A leitura combina domínio, retenção, tendência, recência e impacto na prova quando esses dados estão disponíveis.',
+    opportunity:'O potencial considera a lacuna de domínio, a relevância na prova e o esforço estimado quando configurados.',
+    review:'A urgência considera o tempo sem contato, a retenção e o domínio disponíveis para este tópico.',
+    focus:'A distribuição usa a prioridade das disciplinas e a disponibilidade semanal informada.'
+  }[type];
+  return {...item,diagnosisExplanation:validExplanation,diagnosisExplanationSummary:explanationSummary,signalLabel,signalTone:severity==='insufficient'?'neutral':severity==='high'?'high':severity==='medium'?'medium':'low',presentation:{
     type,severity,confidence:normalizedConfidence,title:titleFor(item),summary:reason,primaryReason:reason,
-    secondaryReasons:secondaryReasons.filter(Boolean).slice(0,2),evidence:validEvidence,
+    secondaryReasons:secondaryReasons.filter(Boolean).slice(0,2),evidence:validEvidence.slice(0,2),
     recommendedAction:{label:action.label,type:'navigate',targetId:action.tab}
   }};
 }
@@ -45,9 +51,13 @@ export function buildDiagnosisViewModel(diagnosis,{limit=4,hasTopics=true,weekly
     const insufficient=completeness==null&&/baixa|insuficiente/i.test(evidenceLabel||'');
     return presentDiagnosisItem(item,{type:'bottleneck',reason,confidence,insufficient,action:{label:'Abrir Questões',tab:'questoes'},evidence:[
       evidenceRow('Cobertura dos dados',Number.isFinite(completeness)?`${Math.round(completeness*100)}%`:null),
-      evidenceRow('Força da evidência',evidenceLabel?String(evidenceLabel).toLowerCase():null),
+      evidenceRow('Força da evidência',evidenceLabel?String(evidenceLabel).toLowerCase():null)
+    ],explanation:[
       evidenceRow('Domínio',item.mastery==null?null:`${Math.round(item.mastery)}/100`),
-      evidenceRow('Questões',item.questionVolume??item.resolved)
+      evidenceRow('Retenção',item.retention==null?null:`${Math.round(item.retention)}/100`),
+      evidenceRow('Impacto na prova',item.examImpact==null?null:`${Math.round(item.examImpact)}/100`),
+      evidenceRow('Questões consideradas',item.questionVolume??item.resolved),
+      evidenceRow('Tempo sem contato',item.daysSinceContact==null?null:`${Math.max(0,Math.round(item.daysSinceContact))} dias`)
     ],secondaryReasons:[item.risk?.missingFactors?.length?`${item.risk.missingFactors.length} indicadores ainda sem dados.`:null]});
   });
   const opportunities=(diagnosis.opportunities||[]).map(item=>{
@@ -56,6 +66,11 @@ export function buildDiagnosisViewModel(diagnosis,{limit=4,hasTopics=true,weekly
       evidenceRow('Confiança dos dados',numericValue(item.confidence)==null?null:`${Math.round(Number(item.confidence)*100)}%`),
       evidenceRow('Esforço estimado',numericValue(item.estimatedMinutes)==null?null:`${Math.round(Number(item.estimatedMinutes))} min`),
       evidenceRow('Impacto na prova',item.examImpact==null?null:`${Math.round(item.examImpact)}/100`)
+    ],explanation:[
+      evidenceRow('Domínio',item.mastery==null?null:`${Math.round(item.mastery)}/100`),
+      evidenceRow('Retenção',item.retention==null?null:`${Math.round(item.retention)}/100`),
+      evidenceRow('Questões consideradas',item.questionVolume??item.resolved),
+      evidenceRow('Força da evidência',item.evidenceStrength==null?null:`${Math.round(Number(item.evidenceStrength)*100)}%`)
     ],secondaryReasons:item.missingFactors?.includes('examImpact')?['Configure o impacto da prova para aumentar a confiança da estimativa.']:[]});
   });
   const reviewItems=((diagnosis.criticalReviews||[]).length?diagnosis.criticalReviews:diagnosis.topicsAtRisk||[]).map(item=>{
@@ -63,8 +78,12 @@ export function buildDiagnosisViewModel(diagnosis,{limit=4,hasTopics=true,weekly
     const reason=item.reason||item.reasons?.[0]||'Uma revisão vencida ou um intervalo longo sem contato pede atenção.';
     return presentDiagnosisItem(item,{type:'review',reason,confidence:item.evidenceStrength,action:{label:'Abrir Agenda',tab:'agenda'},evidence:[
       evidenceRow('Urgência da revisão',urgency>0?`${Math.round(urgency)}/100`:null),
-      evidenceRow('Tempo sem contato',Number.isFinite(days)?`${Math.max(0,Math.round(days))} dias`:null),
-      evidenceRow('Retenção',item.retention==null?null:`${Math.round(item.retention)}/100`)
+      evidenceRow('Tempo sem contato',Number.isFinite(days)?`${Math.max(0,Math.round(days))} dias`:null)
+    ],explanation:[
+      evidenceRow('Retenção',item.retention==null?null:`${Math.round(item.retention)}/100`),
+      evidenceRow('Domínio',item.mastery==null?null:`${Math.round(item.mastery)}/100`),
+      evidenceRow('Impacto na prova',item.examImpact==null?null:`${Math.round(item.examImpact)}/100`),
+      evidenceRow('Força da evidência',item.evidenceStrength==null?null:`${Math.round(Number(item.evidenceStrength)*100)}%`)
     ]});
   });
   const weeklyFocus=(diagnosis.weeklyFocus||[]).map(item=>{
@@ -74,7 +93,7 @@ export function buildDiagnosisViewModel(diagnosis,{limit=4,hasTopics=true,weekly
     return presentDiagnosisItem(item,{type:'focus',reason:'Esta é a parcela sugerida do foco semanal para a disciplina.',confidence:null,action:{label:'Rever planejamento',tab:'metas'},evidence:[
       evidenceRow('Parte do foco semanal',`${Math.round(percentage)}%`),
       evidenceRow('Tempo estimado',allocated==null?null:`${allocated} min`)
-    ]});
+    ],explanation:[evidenceRow('Capacidade semanal',capacity==null?null:`${Math.round(capacity)} min`)]});
   });
   const sections=[
     {key:'bottlenecks',title:'Gargalos',items:bottlenecks.slice(0,limit),empty:{title:'Nenhum gargalo prioritário',message:'Os sinais disponíveis não indicam um tópico que precise de atenção imediata.'}},
