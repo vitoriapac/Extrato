@@ -21,7 +21,7 @@ for(const width of [320,375,430,768,1440])test(`matriz visual crítica não tran
     await expect(page.locator('#weeklyCloseDashboard')).toBeVisible();
     await activateTab(page,'hoje');
     const analyses=page.locator('.today-analysis-details');
-    if(await analyses.count()&&!await analyses.first().evaluate(element=>element.open))await analyses.first().locator('summary').click();
+    if(await analyses.count()&&!await analyses.first().evaluate(element=>element.open))await analyses.first().locator(':scope > summary').click();
     await expectNoPageOverflow(page);
     await expect(page.locator('#diagnosisCenter')).toBeVisible();
     await activateTab(page,'metas');await expectNoPageOverflow(page);
