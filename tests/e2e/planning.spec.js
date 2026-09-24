@@ -48,10 +48,32 @@ test('fase e redistribuição do plano se organizam em tela móvel',async({page}
   expect(await preview.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
   const config=page.locator('#examBlueprintConfig .exam-subject-row').first();
   if(await config.count()){
+    await page.locator('#examBlueprintConfig .exam-subject-config').first().locator('summary').click();
     expect(await config.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
     const control=config.locator('input,select').first();
     expect(await control.evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
   }
   const matrix=page.locator('#examMasteryMatrix .mastery-matrix');
   if(await matrix.count())expect(await matrix.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+});
+
+test('configuração por disciplina começa recolhida e mantém herança nula',async({page})=>{
+  await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();
+  await page.evaluate(()=>{document.getElementById('testReport')?.remove();const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),subject=state.subjects[0];state.examBlueprint.masteryTarget=80;state.examBlueprint.subjects=[{subjectId:subject.id,priority:'normal',masteryTarget:null}];api.setState(state);api.renderAll()});
+  await activateTab(page,'metas');
+  const disclosure=page.locator('#examBlueprintConfig .exam-subject-config').first();
+  await expect(disclosure).not.toHaveAttribute('open','');
+  await expect(disclosure.locator('summary')).toContainText('Herdar 80% (geral)');
+  await disclosure.locator('summary').click();
+  await expect(disclosure.locator('input[placeholder="Herdar 80% (geral)"]')).toBeVisible();
+  const target=page.locator('#examBlueprintConfig .exam-blueprint-main label').nth(2).locator('input');
+  await target.fill('85');await target.press('Tab');
+  await expect(page.locator('#examBlueprintConfig .exam-subject-config').first().locator('summary')).toContainText('Herdar 85% (geral)');
+  expect(await page.evaluate(()=>window.__EXTRATO_TEST__.getState().examBlueprint.subjects[0].masteryTarget)).toBeNull();
+});
+
+test('Visão Geral mostra a fase compacta atual da preparação',async({page})=>{
+  await openDemo(page);
+  await expect(page.locator('#overviewExamPhase')).toContainText('Fase atual');
+  await expect(page.locator('#overviewExamPhase')).toContainText(/Construção|Consolidação|Reta final|Revisão final/);
 });

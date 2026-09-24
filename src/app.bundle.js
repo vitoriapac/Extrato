@@ -1520,23 +1520,79 @@
     const cells = summaries.map((summary) => ({ ...summary, level: heatmapMetricLevel(summary, normalizedMetric), selected: summary.date === selectedDate }));
     return { metric: normalizedMetric, cells, hasActivity: cells.some((item) => item.level > 0), selected: cells.find((item) => item.selected) || null };
   }
-  function buildDiagnosisViewModel(diagnosis, { limit = 4, hasTopics = true } = {}) {
+  var severityFor = (score, insufficient = false) => insufficient ? "insufficient" : score >= 70 ? "high" : score >= 45 ? "medium" : "low";
+  var titleFor = (item) => [item.subjectName, item.topicName].filter(Boolean).join(" — ") || "Tópico sem nome";
+  var evidenceRow = (label2, value2) => value2 == null || value2 === "" ? null : { label: label2, value: String(value2) };
+  var numericValue = (value2) => value2 == null || value2 === "" ? null : Number.isFinite(Number(value2)) ? Number(value2) : null;
+  function presentDiagnosisItem(item, { type, reason, action, confidence: confidence2 = null, insufficient = false, evidence = [], secondaryReasons = [] } = {}) {
+    const confidenceValue = numericValue(confidence2);
+    const normalizedConfidence = confidenceValue == null ? null : Math.max(0, Math.min(1, confidenceValue));
+    const limited = insufficient || normalizedConfidence != null && normalizedConfidence < 0.35;
+    const score = Number(item.risk?.value ?? item.severity ?? item.opportunityScore ?? item.reviewUrgency);
+    const severity = type === "focus" ? "info" : severityFor(Number.isFinite(score) ? score : 0, limited);
+    const signalLabel = limited ? "Evidência limitada" : type === "focus" ? "Distribuição sugerida" : type === "review" ? "Revisão prioritária" : type === "opportunity" ? score >= 70 ? "Retorno alto" : score >= 45 ? "Retorno moderado" : "Retorno potencial" : severity === "high" ? "Risco alto" : severity === "medium" ? "Risco moderado" : "Risco baixo";
+    const validEvidence = evidence.filter(Boolean);
+    return { ...item, signalLabel, signalTone: severity === "insufficient" ? "neutral" : severity === "high" ? "high" : severity === "medium" ? "medium" : "low", presentation: {
+      type,
+      severity,
+      confidence: normalizedConfidence,
+      title: titleFor(item),
+      summary: reason,
+      primaryReason: reason,
+      secondaryReasons: secondaryReasons.filter(Boolean).slice(0, 2),
+      evidence: validEvidence,
+      recommendedAction: { label: action.label, type: "navigate", targetId: action.tab }
+    } };
+  }
+  function buildDiagnosisViewModel(diagnosis, { limit = 4, hasTopics = true, weeklyCapacityMinutes = null } = {}) {
     if (!diagnosis || diagnosis.state === "insufficient") {
       const action = hasTopics ? { label: "Abrir o Modo Hoje", tab: "hoje" } : { label: "Cadastrar disciplinas e tópicos", tab: "disciplinas" };
       return { state: "insufficient", title: "O diagnóstico ainda não pode ser calculado", message: hasTopics ? "Há tópicos cadastrados, mas ainda faltam registros de estudo ou questões para formar uma leitura confiável." : "Cadastre disciplinas e tópicos para o StudyTrack identificar prioridades e revisões.", action, sections: [] };
     }
     const bottlenecks = (diagnosis.bottlenecks || []).map((item) => {
-      const completeness = Number(item.risk?.evidence?.completeness);
-      const evidenceLimited = Number.isFinite(completeness) ? completeness < 0.35 : /baixa|insuficiente/i.test(item.risk?.evidence?.evidenceLabel || "");
-      const score = Number(item.risk?.value ?? item.severity);
-      return { ...item, signalLabel: evidenceLimited ? "Evidência limitada" : score >= 70 ? "Risco alto" : score >= 45 ? "Risco moderado" : "Risco baixo", signalTone: evidenceLimited ? "neutral" : score >= 70 ? "high" : score >= 45 ? "medium" : "low" };
+      const completeness = numericValue(item.risk?.evidence?.completeness);
+      const confidence2 = completeness;
+      const evidenceLabel = item.risk?.evidence?.evidenceLabel;
+      const reason = item.reason || `${item.factor || "Os indicadores atuais"} requerem atenção neste tópico.`;
+      const insufficient = completeness == null && /baixa|insuficiente/i.test(evidenceLabel || "");
+      return presentDiagnosisItem(item, { type: "bottleneck", reason, confidence: confidence2, insufficient, action: { label: "Abrir Questões", tab: "questoes" }, evidence: [
+        evidenceRow("Cobertura dos dados", Number.isFinite(completeness) ? `${Math.round(completeness * 100)}%` : null),
+        evidenceRow("Força da evidência", evidenceLabel ? String(evidenceLabel).toLowerCase() : null),
+        evidenceRow("Domínio", item.mastery == null ? null : `${Math.round(item.mastery)}/100`),
+        evidenceRow("Questões", item.questionVolume ?? item.resolved)
+      ], secondaryReasons: [item.risk?.missingFactors?.length ? `${item.risk.missingFactors.length} indicadores ainda sem dados.` : null] });
     });
-    const opportunities = (diagnosis.opportunities || []).map((item) => ({ ...item, signalLabel: item.confidence < 0.35 ? "Dados limitados" : item.opportunityScore >= 70 ? "Retorno alto" : item.opportunityScore >= 45 ? "Retorno moderado" : "Retorno potencial", signalTone: item.confidence < 0.35 ? "neutral" : item.opportunityScore >= 70 ? "high" : item.opportunityScore >= 45 ? "medium" : "low" }));
+    const opportunities = (diagnosis.opportunities || []).map((item) => {
+      const reason = item.missingFactors?.includes("examImpact") ? "O impacto desta matéria na prova ainda não foi configurado." : "Este tópico combina potencial de melhora, relevância e esforço estimado.";
+      return presentDiagnosisItem(item, { type: "opportunity", reason, confidence: item.confidence, action: { label: "Ver tópico em Disciplinas", tab: "disciplinas" }, evidence: [
+        evidenceRow("Confiança dos dados", numericValue(item.confidence) == null ? null : `${Math.round(Number(item.confidence) * 100)}%`),
+        evidenceRow("Esforço estimado", numericValue(item.estimatedMinutes) == null ? null : `${Math.round(Number(item.estimatedMinutes))} min`),
+        evidenceRow("Impacto na prova", item.examImpact == null ? null : `${Math.round(item.examImpact)}/100`)
+      ], secondaryReasons: item.missingFactors?.includes("examImpact") ? ["Configure o impacto da prova para aumentar a confiança da estimativa."] : [] });
+    });
+    const reviewItems = ((diagnosis.criticalReviews || []).length ? diagnosis.criticalReviews : diagnosis.topicsAtRisk || []).map((item) => {
+      const urgency = numericValue(item.reviewUrgency), days = numericValue(item.daysSinceContact);
+      const reason = item.reason || item.reasons?.[0] || "Uma revisão vencida ou um intervalo longo sem contato pede atenção.";
+      return presentDiagnosisItem(item, { type: "review", reason, confidence: item.evidenceStrength, action: { label: "Abrir Agenda", tab: "agenda" }, evidence: [
+        evidenceRow("Urgência da revisão", urgency > 0 ? `${Math.round(urgency)}/100` : null),
+        evidenceRow("Tempo sem contato", Number.isFinite(days) ? `${Math.max(0, Math.round(days))} dias` : null),
+        evidenceRow("Retenção", item.retention == null ? null : `${Math.round(item.retention)}/100`)
+      ] });
+    });
+    const weeklyFocus = (diagnosis.weeklyFocus || []).map((item) => {
+      const percentage = Math.max(0, Number(item.percentage) || 0);
+      const capacity = numericValue(weeklyCapacityMinutes);
+      const allocated = capacity == null ? null : Math.round(Math.max(0, capacity) * percentage / 100);
+      return presentDiagnosisItem(item, { type: "focus", reason: "Esta é a parcela sugerida do foco semanal para a disciplina.", confidence: null, action: { label: "Rever planejamento", tab: "metas" }, evidence: [
+        evidenceRow("Parte do foco semanal", `${Math.round(percentage)}%`),
+        evidenceRow("Tempo estimado", allocated == null ? null : `${allocated} min`)
+      ] });
+    });
     const sections = [
       { key: "bottlenecks", title: "Gargalos", items: bottlenecks.slice(0, limit), empty: { title: "Nenhum gargalo prioritário", message: "Os sinais disponíveis não indicam um tópico que precise de atenção imediata." } },
       { key: "opportunities", title: "Oportunidades", items: opportunities.slice(0, limit), empty: { title: "Ainda não há oportunidade priorizada", message: "Registre sessões e questões ou configure impacto e esforço dos tópicos para melhorar esta estimativa.", action: { label: "Configurar edital e esforço", tab: "metas" } } },
-      { key: "risk", title: "Revisões críticas e risco", items: ((diagnosis.criticalReviews || []).length ? diagnosis.criticalReviews : diagnosis.topicsAtRisk || []).slice(0, limit), empty: { title: "Nenhuma revisão crítica identificada", message: "As revisões disponíveis não apresentam atraso ou risco que exija ação agora." } },
-      { key: "focus", title: "Foco da semana", items: (diagnosis.weeklyFocus || []).slice(0, limit), empty: { title: "Sem distribuição semanal confiável", message: "Defina sua disponibilidade e configure o esforço dos tópicos para estimar uma divisão semanal.", action: { label: "Revisar planejamento", tab: "metas" } } }
+      { key: "risk", title: "Revisões críticas e risco", items: reviewItems.slice(0, limit), empty: { title: "Nenhuma revisão crítica identificada", message: "As revisões disponíveis não apresentam atraso ou risco que exija ação agora." } },
+      { key: "focus", title: "Foco da semana", items: weeklyFocus.slice(0, limit), empty: { title: "Sem distribuição semanal confiável", message: "Defina sua disponibilidade e configure o esforço dos tópicos para estimar uma divisão semanal.", action: { label: "Revisar planejamento", tab: "metas" } } }
     ];
     return { state: "estimated", sections };
   }
@@ -1971,6 +2027,10 @@
     const stages = PHASES.map((item) => `<li class="exam-phase-step${item.id === current ? " is-current" : ""}"${item.id === current ? ' aria-current="step"' : ""}><span>${escapeHtml3(item.label)}</span></li>`).join("");
     return `<section class="exam-phase" aria-label="Fase de preparação para a prova"><div class="exam-phase-heading"><div><span class="exam-phase-eyebrow">Fase até a prova</span><strong>${escapeHtml3(phase?.label || "Fase não definida")}</strong></div><span class="exam-phase-time">${escapeHtml3(days)}</span></div><ol class="exam-phase-steps" aria-label="Etapas de preparação">${stages}</ol><p>${escapeHtml3(phase?.strategy || "Defina a data da prova para ajustar o foco do estudo.")}</p>${undated ? "<small>As etapas serão posicionadas quando você informar a data da prova.</small>" : ""}</section>`;
   }
+  function renderExamPhaseCompact(phase, { escapeHtml: escapeHtml3 = (value2) => String(value2 ?? "") } = {}) {
+    const label2 = phase?.label || "Prova sem data", days = Number.isFinite(Number(phase?.days)) ? `${Math.max(0, Math.floor(Number(phase.days)))} dias restantes` : "Data da prova não definida";
+    return `<aside class="exam-phase-compact" aria-label="Fase atual da preparação"><span>Fase atual</span><strong>${escapeHtml3(label2)}</strong><small>${escapeHtml3(days)}</small><p>${escapeHtml3(phase?.strategy || "Defina a data da prova para ajustar o foco do estudo.")}</p></aside>`;
+  }
   function renderAdaptiveAllocationAdvice(advice, { weeklyPlannedMinutes = 0, formatMinutes = (value2) => `${value2} min`, escapeHtml: escapeHtml3 = (value2) => String(value2 ?? "") } = {}) {
     if (advice?.state !== "proposal") {
       return `<aside class="adaptive-advice is-informative" aria-label="Adaptação de carga"><strong>Adaptação de carga</strong><p>${escapeHtml3(advice?.reason || "Aguardando evidências comparáveis.")}</p></aside>`;
@@ -1978,7 +2038,7 @@
     const from = advice.from || {}, to = advice.to || {};
     const applied = Boolean(advice.applied);
     const rationale = Array.isArray(advice.rationale) && advice.rationale.length ? `<ul class="adaptive-rationale">${advice.rationale.map((reason) => `<li>${escapeHtml3(reason)}</li>`).join("")}</ul>` : "";
-    return `<section class="adaptive-advice${applied ? " is-applied" : ""}" aria-label="Sugestão de redistribuição semanal"><div class="adaptive-advice-heading"><div><span class="exam-phase-eyebrow">Ajuste sugerido</span><strong>Redistribuir ${escapeHtml3(formatMinutes(advice.transferMinutes))} por semana</strong></div><span class="adaptive-capacity">Capacidade mantida · ${escapeHtml3(formatMinutes(weeklyPlannedMinutes))}</span></div><div class="adaptive-transfer"><div><span>De</span><strong>${escapeHtml3(from.name || "Disciplina de origem")}</strong><small>${escapeHtml3(formatMinutes(from.beforeMinutes || 0))} → ${escapeHtml3(formatMinutes(from.afterMinutes || 0))}</small></div><span class="adaptive-transfer-arrow" aria-hidden="true">→</span><div><span>Para</span><strong>${escapeHtml3(to.name || "Disciplina prioritária")}</strong><small>${escapeHtml3(formatMinutes(to.beforeMinutes || 0))} → ${escapeHtml3(formatMinutes(to.afterMinutes || 0))}</small></div></div><p>${escapeHtml3(advice.reason || "Ajuste baseado nos indicadores disponíveis.")}</p>${rationale}${applied ? '<small class="adaptive-applied-note" role="status">Aplicado somente à prévia. Confirme o plano para salvar.</small>' : '<button class="btn ghost small" data-delegated-click="useAdaptivePlanAdvice()">Aplicar à prévia</button>'}</section>`;
+    return `<section class="adaptive-advice${applied ? " is-applied" : ""}" aria-label="Sugestão de redistribuição semanal"><div class="adaptive-advice-heading"><div><span class="exam-phase-eyebrow">Ajuste sugerido</span><strong>Redistribuir ${escapeHtml3(formatMinutes(advice.transferMinutes))} por semana</strong></div><span class="adaptive-capacity">Capacidade mantida · ${escapeHtml3(formatMinutes(weeklyPlannedMinutes))}</span></div><div class="adaptive-transfer"><div><span>De</span><strong>${escapeHtml3(from.name || "Disciplina de origem")}</strong><small>${escapeHtml3(formatMinutes(from.beforeMinutes || 0))} → ${escapeHtml3(formatMinutes(from.afterMinutes || 0))}</small></div><span class="adaptive-transfer-arrow" aria-hidden="true">→</span><div><span>Para</span><strong>${escapeHtml3(to.name || "Disciplina prioritária")}</strong><small>${escapeHtml3(formatMinutes(to.beforeMinutes || 0))} → ${escapeHtml3(formatMinutes(to.afterMinutes || 0))}</small></div></div><p>${escapeHtml3(advice.reason || "Ajuste baseado nos indicadores disponíveis.")}</p>${rationale}${applied ? '<small class="adaptive-applied-note" role="status">Aplicado somente à prévia. Confirme o plano para salvar.</small>' : '<button class="btn ghost small" data-delegated-click="useAdaptivePlanAdvice()">Aplicar à prévia</button>'}<p class="adaptive-unsaved-note">Nenhuma alteração será salva até você confirmar o plano.</p></section>`;
   }
 
   // src/application/achievements/build-achievement-view-model.js
@@ -2045,6 +2105,12 @@
       }
       return null;
     };
+    const markRecommendationCompleted = (recommendationId, session) => {
+      if (!recommendationId) return null;
+      const feedback = (recommendationsRepository?.all?.() || []).find((item) => item.recommendationId === recommendationId && item.accepted);
+      if (!feedback || feedback.completed) return feedback;
+      return completeRecommendation(recommendationsRepository?.all?.() || [], recommendationId, { sessionId: session.id, completedAt: session.endedAt || clock.nowISO() });
+    };
     const syncPlan = (planItemId) => {
       const found = findPlanItem(planItemId);
       if (!found) return null;
@@ -2054,7 +2120,7 @@
       found.item.status = !linked.length ? "planned" : found.item.plannedMinutes > 0 && found.item.executedSeconds >= found.item.plannedMinutes * 60 ? "completed" : "partial";
       found.item.lastExecutedAt = latest?.endedAt || null;
       found.plan.updatedAt = clock.nowISO();
-      if (latest && found.item.recommendationId && found.item.status === "completed") completeRecommendation(recommendationsRepository?.all?.() || [], found.item.recommendationId, { sessionId: latest.id, completedAt: found.item.lastExecutedAt });
+      if (latest && found.item.recommendationId && found.item.status === "completed") markRecommendationCompleted(found.item.recommendationId, latest);
       return found.item;
     };
     const syncQuestion = (session) => {
@@ -2084,6 +2150,7 @@
         const saved = repository.add(session);
         syncQuestion(saved);
         syncPlan(saved.planItemId);
+        markRecommendationCompleted(recommendationId, saved);
         const occurredAt = clock.nowISO();
         historyRepository?.add?.({ id: idGenerator("history"), date: occurredAt, occurredAt, localDate: saved.date || clock.today(), type: "study_session", subjectId: saved.subjectId || null, topicId: saved.topicId || null, examScope: saved.examScope, metadata: { sessionId: saved.id, durationSeconds: saved.durationSeconds, recommendationId: saved.recommendationId || null } });
         onCompleted(saved);
@@ -17186,7 +17253,16 @@
     const confidence2 = sample >= minimumSample ? "moderate" : sample > 0 ? "low" : "insufficient";
     const confidenceLabel3 = confidence2 === "moderate" ? "amostra comparável" : confidence2 === "low" ? "amostra pequena" : "sem amostra comparável";
     const delta = accuracy2?.delta ?? null;
+    const questionDelta = entries.find((item) => item.key === "questions")?.delta ?? null;
+    const minutesDelta = entries.find((item) => item.key === "minutes")?.delta ?? null;
     const accuracyMessage = delta == null ? "Acerto sem comparação: são necessárias questões resolvidas nos dois períodos." : `O acerto variou ${delta > 0 ? "+" : ""}${delta} p.p. (${previous} questões no período anterior e ${current} no atual; ${confidenceLabel3}).`;
+    let combinedMessage = null;
+    if (confidence2 === "moderate" && delta != null) {
+      if (questionDelta > 0 && delta > 0) combinedMessage = "Você aumentou o volume de questões e também a taxa de acerto.";
+      else if (minutesDelta > 0 && delta < 0) combinedMessage = "Você estudou mais tempo, mas a taxa de acerto caiu.";
+      else if (questionDelta < 0 && delta > 0) combinedMessage = "O volume de questões caiu e a taxa de acerto subiu.";
+      else if (questionDelta > 0 && delta < 0) combinedMessage = "Você resolveu mais questões, mas a taxa de acerto caiu.";
+    }
     return {
       algorithmVersion: PERIOD_COMPARISON_INSIGHTS_VERSION,
       state: entries.some((item) => item.delta != null) ? "available" : "insufficient",
@@ -17197,6 +17273,8 @@
       previousQuestionVolume: previous,
       accuracyDelta: delta,
       accuracyMessage,
+      combinedMessage,
+      combinedState: combinedMessage ? "available" : confidence2 === "insufficient" ? "insufficient" : "not_applicable",
       caveat: "A variação descreve os registros dos períodos e não demonstra que uma ação causou a mudança."
     };
   }
@@ -18584,14 +18662,23 @@
     const date2 = item.date || String(item.endedAt || item.createdAt || "").slice(0, 10);
     return Boolean(date2 && date2 >= start && date2 <= end);
   };
+  var reportToday = (generatedAt) => {
+    const dateOnly = String(generatedAt || "");
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return dateOnly;
+    const timestampDate = localDateFromTimestamp(generatedAt);
+    if (timestampDate) return timestampDate;
+    const now = /* @__PURE__ */ new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  };
   function resolveReportPeriod({ preset: preset2 = "30", start = null, end = null, generatedAt } = {}) {
-    const today = String(generatedAt || (/* @__PURE__ */ new Date()).toISOString()).slice(0, 10);
+    const today = reportToday(generatedAt);
     if (preset2 === "custom" && start && end && start <= end) return { preset: preset2, start, end, label: `${start} a ${end}` };
     const days = Math.max(1, Number(preset2) || 30);
     return { preset: String(days), start: shiftDate2(today, -(days - 1)), end: today, label: `Últimos ${days} dias` };
   }
   function buildStrategicReport({ state: state2, generatedAt, isDemo = false, readiness = null, diagnosis = null, forecast = null, period } = {}) {
     const range = resolveReportPeriod({ ...period, generatedAt }), activeExamTags = state2.examBlueprint?.activeExamTags || [], subjects = (state2.subjects || []).filter((item) => !item.archived && (item.topics || []).some((topic) => !topic.archived && isTopicInExamScope(topic, activeExamTags))), topics = subjects.flatMap((subject) => (subject.topics || []).filter((item) => !item.archived && isTopicInExamScope(item, activeExamTags)));
+    const examDate = state2.examDate || state2.examBlueprint?.examDate || null, localToday2 = reportToday(generatedAt), daysToExam = examDate ? Math.max(0, localDateRange(localToday2, examDate).length - 1) : null, examPhase = resolveExamPhase(daysToExam);
     const allSessions = (state2.studySessions || []).filter((item) => inPeriod(item, range.start, range.end)), allQuestions = (state2.questoes || []).filter((item) => inPeriod(item, range.start, range.end)), simulations = (state2.simulados || []).filter((item) => inPeriod(item, range.start, range.end)), allReviews = (state2.reviewAgenda || []).filter((item) => inPeriod(item, range.start, range.end)), evidenceScope = resolveExamEvidenceScope({ subjects: state2.subjects || [], activeExamTags, sessions: allSessions, questions: allQuestions, reviews: allReviews }), sessions = evidenceScope.sessions.included, questions = evidenceScope.questions.included, reviews = evidenceScope.reviews.included;
     const completedReviewEvidence = (state2.reviewAgenda || []).filter((item) => item.status === "Concluído" && item.completedAt).map((item) => ({ ...item, date: localDateFromTimestamp(item.completedAt) })), currentCompletedScope = resolveExamEvidenceScope({ subjects: state2.subjects || [], activeExamTags, sessions: [], questions: [], reviews: completedReviewEvidence.filter((item) => inPeriod(item, range.start, range.end)) });
     const periodLength = Math.max(1, localDateRange(range.start, range.end).length), previousStart = shiftDate2(range.start, -periodLength), previousEnd = shiftDate2(range.start, -1), previousScope = resolveExamEvidenceScope({ subjects: state2.subjects || [], activeExamTags, sessions: (state2.studySessions || []).filter((item) => inPeriod(item, previousStart, previousEnd)), questions: (state2.questoes || []).filter((item) => inPeriod(item, previousStart, previousEnd)), reviews: completedReviewEvidence.filter((item) => inPeriod(item, previousStart, previousEnd)) }), previousQuestionCount = sum4(previousScope.questions.included, (item) => item.resolved), currentQuestionCount = sum4(questions, (item) => item.resolved);
@@ -18613,7 +18700,7 @@
     const examLabels = { [EXAM_TAGS.BB]: "Banco do Brasil — Escriturário", [EXAM_TAGS.CAIXA]: "Caixa — TBN", [EXAM_TAGS.CAIXA_TI]: "Caixa — TBN TI" };
     const reportTopicIds = new Set(topics.map((item) => item.id)), topicCompletions = (state2.topicHistory || []).filter((item) => item.type === "topic_completed" && reportTopicIds.has(item.topicId) && item.date >= range.start && item.date <= range.end).length;
     const resultGoals = { targets: { topicsWeekly: state2.metas?.semanal ?? null, topicsMonthly: state2.metas?.mensal ?? null, questionsWeekly: state2.metas?.questoesSemanal ?? null, simulationsWeekly: state2.metas?.simuladosSemanal ?? null, accuracy: state2.metas?.metaAprovacao ?? null }, observed: { topicsCompleted: topicCompletions, questions: currentQuestionCount, simulations: simulations.length, accuracy: currentQuestionCount ? Math.round(sum4(questions, (item) => item.correct) / currentQuestionCount * 100) : null }, periodLabel: range.label };
-    return { title: isDemo ? "Relatório estratégico de demonstração" : "Relatório estratégico", isDemo, generatedAt, period: range, comparison: comparison2, comparisonInsights, goals: resultGoals, exam: { date: state2.examDate || state2.examBlueprint?.examDate || null, target: state2.examBlueprint?.targetScore ?? state2.metas?.metaAprovacao ?? null, activeTags: [...activeExamTags], activeLabels: activeExamTags.length ? activeExamTags.map((tag) => examLabels[tag] || tag) : ["Todo o conteúdo"], catalogVersion: CATALOG_VERSION }, planNumber: state2.planNumber || activePlan?.number || "Não informado", overview: { subjects: subjects.length, topics: topics.length, completedTopics: topics.filter((item) => item.status === "Concluído").length, contentPercent: topics.length ? Math.round(topics.filter((item) => item.status === "Concluído").length / topics.length * 100) : 0, studySeconds, unscopedStudySeconds, resolved, unscopedResolved, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length, simulationAverage: simulationTotal ? Math.round(simulationCorrect / simulationTotal * 100) : null, pendingReviews: reviews.filter((item) => item.status !== "Concluído").length, completedReviews: reviews.filter((item) => item.status === "Concluído").length }, readiness, forecast, activePlan, bySubject, simulations: simulations.map((item) => ({ date: item.date, name: item.nome || "Simulado", score: item.total ? Math.round(item.correct / item.total * 100) : null })), latestSimulation: latestSimulation ? { date: latestSimulation.date, name: latestSimulation.nome || "Simulado", breakdown: latestBreakdown } : null, execution: { plannedMinutes: planned, executedMinutes: executed, adherence: planned ? Math.round(executed / planned * 100) : null, dailyPlans: (state2.dailyPlans || []).filter((item) => inPeriod(item, range.start, range.end)).length, replans: adjustments.filter((item) => ["applied", "confirmed"].includes(item.status)).length, undoneReplans: adjustments.filter((item) => item.status === "undone").length }, risks: (diagnosis?.bottlenecks || []).slice(0, 5), opportunities: (diagnosis?.opportunities || []).slice(0, 5), criticalReviews: (diagnosis?.criticalReviews || []).slice(0, 5), priorities: [...diagnosis?.bottlenecks || [], ...diagnosis?.opportunities || []].slice(0, 5), focus, recommendations: { decisions: feedback.length, accepted: feedback.filter((item) => item.accepted).length, completed: feedback.filter((item) => item.completed).length, useful: feedback.filter((item) => item.useful === true).length, measured: feedback.filter((item) => item.outcome).length }, decisions, errors, errorDiagnosis: dominantError ? { message: `${Math.round(dominantError.count / errorTotal * 100)}% dos erros categorizados vêm de ${dominantError.label.toLowerCase()}.`, action: dominantError.label === "Chute" ? "Reforçar conceitos antes de voltar às questões." : "Priorizar revisão dirigida e questões comentadas." } : null, methodology: { readiness: readiness?.algorithmVersion || "versão atual", projection: forecast?.algorithmVersion || "versão atual", period: range.label, evidence: readiness?.confidenceLabel || "Baixa", examEvidence: activeExamTags.length ? "Métricas do edital incluem somente registros vinculados a tópicos elegíveis. Registros apenas da disciplina são apresentados separadamente." : "Sem filtro de concurso; todo o histórico é considerado." } };
+    return { title: isDemo ? "Relatório estratégico de demonstração" : "Relatório estratégico", isDemo, generatedAt, period: range, comparison: comparison2, comparisonInsights, goals: resultGoals, exam: { date: examDate, daysToExam, phase: examPhase, target: state2.examBlueprint?.targetScore ?? state2.metas?.metaAprovacao ?? null, activeTags: [...activeExamTags], activeLabels: activeExamTags.length ? activeExamTags.map((tag) => examLabels[tag] || tag) : ["Todo o conteúdo"], catalogVersion: CATALOG_VERSION }, planNumber: state2.planNumber || activePlan?.number || "Não informado", overview: { subjects: subjects.length, topics: topics.length, completedTopics: topics.filter((item) => item.status === "Concluído").length, contentPercent: topics.length ? Math.round(topics.filter((item) => item.status === "Concluído").length / topics.length * 100) : 0, studySeconds, unscopedStudySeconds, resolved, unscopedResolved, accuracy: resolved ? Math.round(correct / resolved * 100) : null, simulations: simulations.length, simulationAverage: simulationTotal ? Math.round(simulationCorrect / simulationTotal * 100) : null, pendingReviews: reviews.filter((item) => item.status !== "Concluído").length, completedReviews: reviews.filter((item) => item.status === "Concluído").length }, readiness, forecast, activePlan, bySubject, simulations: simulations.map((item) => ({ date: item.date, name: item.nome || "Simulado", score: item.total ? Math.round(item.correct / item.total * 100) : null })), latestSimulation: latestSimulation ? { date: latestSimulation.date, name: latestSimulation.nome || "Simulado", breakdown: latestBreakdown } : null, execution: { plannedMinutes: planned, executedMinutes: executed, adherence: planned ? Math.round(executed / planned * 100) : null, dailyPlans: (state2.dailyPlans || []).filter((item) => inPeriod(item, range.start, range.end)).length, replans: adjustments.filter((item) => ["applied", "confirmed"].includes(item.status)).length, undoneReplans: adjustments.filter((item) => item.status === "undone").length }, risks: (diagnosis?.bottlenecks || []).slice(0, 5), opportunities: (diagnosis?.opportunities || []).slice(0, 5), criticalReviews: (diagnosis?.criticalReviews || []).slice(0, 5), priorities: [...diagnosis?.bottlenecks || [], ...diagnosis?.opportunities || []].slice(0, 5), focus, recommendations: { decisions: feedback.length, accepted: feedback.filter((item) => item.accepted).length, completed: feedback.filter((item) => item.completed).length, useful: feedback.filter((item) => item.useful === true).length, measured: feedback.filter((item) => item.outcome).length }, decisions, errors, errorDiagnosis: dominantError ? { message: `${Math.round(dominantError.count / errorTotal * 100)}% dos erros categorizados vêm de ${dominantError.label.toLowerCase()}.`, action: dominantError.label === "Chute" ? "Reforçar conceitos antes de voltar às questões." : "Priorizar revisão dirigida e questões comentadas." } : null, methodology: { readiness: readiness?.algorithmVersion || "versão atual", projection: forecast?.algorithmVersion || "versão atual", period: range.label, evidence: readiness?.confidenceLabel || "Baixa", examEvidence: activeExamTags.length ? "Métricas do edital incluem somente registros vinculados a tópicos elegíveis. Registros apenas da disciplina são apresentados separadamente." : "Sem filtro de concurso; todo o histórico é considerado." } };
   }
 
   // src/reports/report-template.js
@@ -18630,17 +18717,18 @@
   function renderStrategicReport(report) {
     const readiness = report.readiness?.value ?? report.readiness?.score ?? null, forecast = report.forecast?.forecast30, list = (items, formatter, empty) => items.length ? items.map(formatter).join("") : `<li>${empty}</li>`;
     return `<header><p class="report-kicker">STUDYTRACK</p><h1>${escape(report.title)}</h1><p>${escape(report.period.label)} · ${date(report.period.start)} a ${date(report.period.end)} · Gerado em ${escape(new Date(report.generatedAt).toLocaleString("pt-BR"))}${report.isDemo ? " · DADOS FICTÍCIOS" : ""}</p><p><strong>Concursos ativos:</strong> ${escape((report.exam?.activeLabels || ["Todo o conteúdo"]).join(" · "))} · catálogo ${escape(report.exam?.catalogVersion || "não informado")}</p></header><div class="report-page-meta">${report.isDemo ? "DEMONSTRAÇÃO · " : ""}${escape(report.period.label)}</div>
-<section><h2>Resumo executivo</h2><p>Prova: <strong>${date(report.exam.date)}</strong> · Meta: <strong>${value(report.exam.target == null ? null : report.exam.target + "%")}</strong> · Plano: <strong>${escape(report.planNumber)}</strong></p><div class="report-kpis"><div><strong>${value(readiness == null ? null : Math.round(readiness) + "/100")}</strong><span>Índice de prontidão</span></div><div><strong>${escape(report.readiness?.confidenceLabel || "Baixa")}</strong><span>Confiança</span></div><div><strong>${report.overview.contentPercent}%</strong><span>Conteúdo concluído</span></div><div><strong>${duration(report.overview.studySeconds)}</strong><span>${report.exam.activeTags.length ? "Tempo atribuído ao edital" : "Tempo estudado"}</span></div></div>${report.exam.activeTags.length && report.overview.unscopedStudySeconds ? `<p><strong>${duration(report.overview.unscopedStudySeconds)}</strong> adicionais não foram atribuídos ao edital porque não possuem tópico elegível identificado.</p>` : ""}</section>
+<section><h2>Resumo executivo</h2><p>Prova: <strong>${date(report.exam.date)}</strong> · ${escape(report.exam.phase?.label || "Prova sem data")}${report.exam.daysToExam == null ? "" : ` · ${report.exam.daysToExam} dias restantes`} · Meta: <strong>${value(report.exam.target == null ? null : report.exam.target + "%")}</strong> · Plano: <strong>${escape(report.planNumber)}</strong></p><p>${escape(report.exam.phase?.strategy || "Defina a data da prova para ajustar o foco do estudo.")}</p><div class="report-kpis"><div><strong>${value(readiness == null ? null : Math.round(readiness) + "/100")}</strong><span>Índice de prontidão</span></div><div><strong>${escape(report.readiness?.confidenceLabel || "Baixa")}</strong><span>Confiança</span></div><div><strong>${report.overview.contentPercent}%</strong><span>Conteúdo concluído</span></div><div><strong>${duration(report.overview.studySeconds)}</strong><span>${report.exam.activeTags.length ? "Tempo atribuído ao edital" : "Tempo estudado"}</span></div></div>${report.exam.activeTags.length && report.overview.unscopedStudySeconds ? `<p><strong>${duration(report.overview.unscopedStudySeconds)}</strong> adicionais não foram atribuídos ao edital porque não possuem tópico elegível identificado.</p>` : ""}</section>
 <section><h2>Planejamento versus execução</h2><div class="report-kpis report-kpis--three"><div><strong>${report.execution.plannedMinutes} min</strong><span>Planejado</span></div><div><strong>${report.execution.executedMinutes} min</strong><span>Executado</span></div><div><strong>${value(report.execution.adherence == null ? null : report.execution.adherence + "%")}</strong><span>Aderência</span></div></div></section>
-<section><h2>Comparação entre períodos</h2><p>${escape(report.period.label)} · período anterior: ${date(report.comparison.period.previous.start)} a ${date(report.comparison.period.previous.end)}</p><table><thead><tr><th>Métrica</th><th>Anterior</th><th>Atual</th><th>Variação</th></tr></thead><tbody>${Object.entries(report.comparison.metrics).map(([key2, item]) => `<tr><td>${escape(metricLabels[key2] || key2)}</td><td>${comparisonValue(key2, item.previous)}</td><td>${comparisonValue(key2, item.current)}</td><td>${item.delta == null ? "Dados insuficientes" : key2 === "accuracy" ? `${item.delta > 0 ? "+" : ""}${item.delta} p.p.` : key2 === "minutes" ? `${item.delta > 0 ? "+" : "−"}${Math.floor(Math.abs(item.delta) / 60)}h ${String(Math.abs(item.delta) % 60).padStart(2, "0")}min` : `${item.delta > 0 ? "+" : ""}${item.delta}`}</td></tr>`).join("")}</tbody></table><aside class="comparison-insight"><p>${escape(report.comparisonInsights?.accuracyMessage || "Sem comparação de acerto disponível.")}</p><small>${escape(report.comparisonInsights?.caveat || "A comparação é descritiva.")}</small></aside><p><strong>Alvos cadastrados:</strong> ${report.goals.targets.topicsWeekly ?? "—"} tópicos/semana · ${report.goals.targets.questionsWeekly ?? "—"} questões/semana · ${report.goals.targets.simulationsWeekly ?? "—"} simulados/semana · ${report.goals.targets.accuracy ?? "—"}% de acerto.</p><p>Registros no período: ${report.goals.observed.topicsCompleted} tópicos concluídos · ${report.goals.observed.questions} questões · ${report.goals.observed.simulations} simulados · ${value(report.goals.observed.accuracy == null ? null : report.goals.observed.accuracy + "%")} de acerto.</p></section>
+<section><h2>Comparação entre períodos</h2><p>${escape(report.period.label)} · período anterior: ${date(report.comparison.period.previous.start)} a ${date(report.comparison.period.previous.end)}</p><table><thead><tr><th>Métrica</th><th>Anterior</th><th>Atual</th><th>Variação</th></tr></thead><tbody>${Object.entries(report.comparison.metrics).map(([key2, item]) => `<tr><td>${escape(metricLabels[key2] || key2)}</td><td>${comparisonValue(key2, item.previous)}</td><td>${comparisonValue(key2, item.current)}</td><td>${item.delta == null ? "Dados insuficientes" : key2 === "accuracy" ? `${item.delta > 0 ? "+" : ""}${item.delta} p.p.` : key2 === "minutes" ? `${item.delta > 0 ? "+" : "−"}${Math.floor(Math.abs(item.delta) / 60)}h ${String(Math.abs(item.delta) % 60).padStart(2, "0")}min` : `${item.delta > 0 ? "+" : ""}${item.delta}`}</td></tr>`).join("")}</tbody></table><aside class="comparison-insight">${report.comparisonInsights?.combinedMessage ? `<p><strong>${escape(report.comparisonInsights.combinedMessage)}</strong></p>` : ""}<p>${escape(report.comparisonInsights?.accuracyMessage || "Sem comparação de acerto disponível.")}</p><small>${escape(report.comparisonInsights?.caveat || "A comparação é descritiva.")}</small></aside><p><strong>Alvos cadastrados:</strong> ${report.goals.targets.topicsWeekly ?? "—"} tópicos/semana · ${report.goals.targets.questionsWeekly ?? "—"} questões/semana · ${report.goals.targets.simulationsWeekly ?? "—"} simulados/semana · ${report.goals.targets.accuracy ?? "—"}% de acerto.</p><p>Registros no período: ${report.goals.observed.topicsCompleted} tópicos concluídos · ${report.goals.observed.questions} questões · ${report.goals.observed.simulations} simulados · ${value(report.goals.observed.accuracy == null ? null : report.goals.observed.accuracy + "%")} de acerto.</p></section>
 <section><h2>Evolução e distribuição por disciplina</h2>${bars(report.bySubject, (item) => Math.round(item.studySeconds / 60), (item) => item.name)}<table><thead><tr><th>Disciplina</th><th>Conteúdo</th><th>Questões</th><th>Acerto</th><th>Sem tópico</th></tr></thead><tbody>${report.bySubject.map((item) => `<tr><td>${escape(item.name)}</td><td>${item.completed}/${item.total}</td><td>${item.questions}</td><td>${value(item.accuracy == null ? null : item.accuracy + "%")}</td><td>${item.unscopedStudySeconds || item.unscopedQuestions ? `${duration(item.unscopedStudySeconds)} · ${item.unscopedQuestions} questões` : "—"}</td></tr>`).join("")}</tbody></table></section>
 <section class="report-columns"><div><h2>Simulados</h2><ul>${list(report.simulations, (item) => `<li><strong>${escape(item.name)} · ${value(item.score == null ? null : item.score + "%")}</strong><span>${date(item.date)}</span></li>`, "Nenhum simulado no período.")}</ul></div><div><h2>Retenção e revisões</h2><p>${report.overview.completedReviews} concluídas · ${report.overview.pendingReviews} pendentes.</p><p>${forecast ? `Projeção em 30 dias: ${forecast.low}–${forecast.high}% (centro ${forecast.central}%).` : "Projeção ainda sem amostra suficiente."}</p>${report.forecast?.scenarios?.available ? `<ul>${report.forecast.scenarios.scenarios.map((item) => `<li><strong>${escape(item.label)}: ${item.low}–${item.high}%</strong><span>Simulação de capacidade</span></li>`).join("")}</ul>` : ""}</div></section>
 <section class="report-columns"><div><h2>Diagnóstico</h2><ul>${list(report.risks, (item) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>${escape(item.reason || "Requer atenção")}</span></li>`, "Nenhum gargalo relevante.")}</ul></div><div><h2>Oportunidades</h2><ul>${list(report.opportunities, (item) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>Retorno ${value(item.opportunityScore)}/100</span></li>`, "Nenhuma oportunidade calculada.")}</ul></div></section>
+<section><h2>Prioridades do próximo período</h2><ol>${list(report.priorities, (item) => `<li>${escape(item.subjectName)} — ${escape(item.topicName)}</li>`, "Mantenha o plano atual e gere novas evidências.")}</ol></section>
 <section><h2>Foco recomendado</h2>${bars(report.focus, (item) => item.minutes, (item) => `${item.subjectName} · ${item.percentage}%`)}</section>
 <section><h2>Simulado mais recente</h2>${report.latestSimulation ? `<p><strong>${escape(report.latestSimulation.name)}</strong> · ${date(report.latestSimulation.date)}</p><ul>${list(report.latestSimulation.breakdown, (item) => `<li><strong>${escape(item.subjectName)}</strong><span>${item.correct} acertos / ${item.total} questões · ${value(item.accuracy == null ? null : item.accuracy + "%")}</span></li>`, "Sem detalhamento por disciplina.")}</ul>` : "<p>Nenhum simulado no período.</p>"}</section>
 <section><h2>Erros categorizados</h2><p>${report.errors.length ? report.errors.map((item) => `${escape(item.label)}: ${item.count}`).join(" · ") : "Nenhuma categoria de erro no período."}</p>${report.errorDiagnosis ? `<p><strong>Diagnóstico:</strong> ${escape(report.errorDiagnosis.message)}<br><strong>Ação:</strong> ${escape(report.errorDiagnosis.action)}</p>` : ""}</section>
 <section><h2>Histórico de decisões</h2><ul>${list(report.decisions, (item) => `<li><strong>${escape(item.subjectName)} — ${escape(item.topicName)}</strong><span>${escape(item.action)} · ${escape(item.result)}</span></li>`, "Nenhuma decisão registrada no período.")}</ul></section>
-<section><h2>Prioridades do próximo período</h2><ol>${list(report.priorities, (item) => `<li>${escape(item.subjectName)} — ${escape(item.topicName)}</li>`, "Mantenha o plano atual e gere novas evidências.")}</ol></section>
+
 <section><h2>Metodologia</h2><p>Prontidão: ${escape(report.methodology.readiness)} · Projeção: ${escape(report.methodology.projection)} · Evidência: ${escape(report.methodology.evidence)} · Período: ${escape(report.methodology.period)}.</p></section>`;
   }
 
@@ -19611,9 +19699,26 @@
     return active;
   }
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && document.body.classList.contains("timer-focus-active")) {
+    if (!document.body.classList.contains("timer-focus-active")) return;
+    if (event.key === "Escape") {
       event.preventDefault();
       toggleTimerFocus(false);
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusSurface = document.querySelector("body.timer-focus-active #panel-dashboard .chart-card:has(.timer-block)");
+    const focusable = [...focusSurface?.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])') || []].filter((element) => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden");
+    if (!focusable.length) {
+      event.preventDefault();
+      return;
+    }
+    const first = focusable[0], last = focusable.at(-1);
+    if (event.shiftKey && (document.activeElement === first || !focusSurface.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !focusSurface.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
     }
   });
   function recordProgressSnapshot(pct2) {
@@ -20493,6 +20598,7 @@
   var SEARCH_COMMANDS = [
     { label: "Visão Geral", keywords: "inicio dashboard resumo prontidao", tab: "dashboard" },
     { label: "Ir para Hoje", keywords: "hoje tarefa recomendacao estudo", tab: "hoje" },
+    { label: "Iniciar recomendação prioritária", keywords: "começar iniciar próxima ação estudar recomendação prioritária", action: "recommendation" },
     { label: "Abrir cronômetro", keywords: "iniciar sessao timer estudar foco", action: "timer" },
     { label: "Abrir Disciplinas", keywords: "materias edital topicos", tab: "disciplinas" },
     { label: "Carregar edital do catálogo", keywords: "importar edital concurso bb caixa", action: "exam-import" },
@@ -20561,6 +20667,13 @@
     } else if (action === "timer") {
       activateTab("dashboard");
       document.getElementById("timerSubjectSelect")?.focus();
+    } else if (action === "recommendation") {
+      const recommendation = currentStudyRecommendations?.[0];
+      if (recommendation) executeStudyRecommendation(recommendation.id);
+      else {
+        activateTab("hoje");
+        showToast("Ainda não há uma recomendação elegível. Revise o planejamento e as evidências disponíveis.");
+      }
     } else if (button.dataset.searchTab) activateTab(button.dataset.searchTab);
     panel.classList.remove("show");
     input.setAttribute("aria-expanded", "false");
@@ -20670,6 +20783,9 @@
     renderDashboard();
   }
   function renderDashboard() {
+    const phaseDays = state.examDate ? diasParaRevisao(state.examDate) : null;
+    const phaseContainer = document.getElementById("overviewExamPhase");
+    if (phaseContainer) phaseContainer.innerHTML = renderExamPhaseCompact(resolveExamPhase(phaseDays), { escapeHtml: escapeHtml2 });
     const topics = activeTopics();
     const total = topics.length;
     const done = topics.filter((t) => t.status === "Concluído").length;
@@ -22477,7 +22593,11 @@
     const blueprint = state.examBlueprint;
     const rows = activeSubjects().map((subject) => {
       const config = blueprint.subjects.find((item) => item.subjectId === subject.id);
-      return `<div class="exam-subject-row"><strong>${escapeHtml2(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="Usar meta geral" data-delegated-blur="updateExamSubject('${subject.id}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ""}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)">${config?.sourceRef ? `<small class="field-inheritance">${escapeHtml2(EXAM_SOURCES[config.sourceRef]?.label || config.sourceRef)}${config.official ? " · oficial" : ""}</small>` : ""}</label></div>`;
+      const priorityLabel = { high: "Alta", low: "Baixa", normal: "Normal" }[config?.priority || "normal"];
+      const masteryLabel = config?.masteryTarget == null ? `Herdar ${blueprint.masteryTarget}% (geral)` : `Meta ${config.masteryTarget}%`;
+      const questionsLabel = config?.expectedQuestions > 0 ? `${config.expectedQuestions} questões` : "Questões sem meta";
+      const weightLabel = config?.questionWeight != null ? `Peso ${config.questionWeight}` : "Peso padrão";
+      return `<details class="exam-subject-config"><summary><strong>${escapeHtml2(subject.name)}</strong><span>${priorityLabel}</span><span>${masteryLabel}</span><span>${questionsLabel} · ${weightLabel}</span><em>Editar</em></summary><div class="exam-subject-row"><strong>${escapeHtml2(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${escapeAttr2(subject.id)}','priority',this.value)"><option value="normal" ${!config || config.priority === "normal" ? "selected" : ""}>Normal</option><option value="high" ${config?.priority === "high" ? "selected" : ""}>Alta</option><option value="low" ${config?.priority === "low" ? "selected" : ""}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget ?? ""}" placeholder="Herdar ${blueprint.masteryTarget}% (geral)" data-delegated-blur="updateExamSubject('${escapeAttr2(subject.id)}','masteryTarget',this.value)">${config?.masteryTarget == null ? `<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>` : ""}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions ?? ""}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${escapeAttr2(subject.id)}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight ?? ""}" placeholder="1" data-delegated-blur="updateExamSubject('${escapeAttr2(subject.id)}','questionWeight',this.value)">${config?.sourceRef ? `<small class="field-inheritance">${escapeHtml2(EXAM_SOURCES[config.sourceRef]?.label || config.sourceRef)}${config.official ? " · oficial" : ""}</small>` : ""}</label></div></details>`;
     }).join("");
     container.innerHTML = `<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr2(blueprint.examDate || "")}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[["bb-escriturario", "Banco do Brasil — Escriturário"], ["caixa-tbn", "Caixa — TBN"], ["caixa-tbn-ti", "Caixa — TBN TI"]].map(([tag, label2]) => `<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags || []).includes(tag) ? "checked" : ""}> ${label2}</label>`).join("")}<small>Somente os concursos marcados influenciam prontidão, prioridade e planejamento. Se nenhum for selecionado, todo o conteúdo continuará elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows || '<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
     renderExamMasteryMatrix();
@@ -22605,6 +22725,7 @@
   }
   function updateExamBlueprint(field, value2, { refresh = true } = {}) {
     studyPlanPreview = null;
+    const previousPhase = field === "examDate" ? resolveExamPhase(state.examDate ? diasParaRevisao(state.examDate) : null) : null;
     if (field === "examDate") {
       state.examBlueprint.examDate = value2 || null;
       state.examDate = value2 || "";
@@ -22618,6 +22739,10 @@
     state.examBlueprint.configuredAt = nowISO2();
     if (refresh) persistAndRender();
     else scheduleSave();
+    if (field === "examDate" && previousPhase?.state && previousPhase.state !== "undated") {
+      const nextPhase = resolveExamPhase(state.examDate ? diasParaRevisao(state.examDate) : null);
+      if (nextPhase.state !== previousPhase.state && nextPhase.state !== "undated") showToast(`Você entrou na fase de ${nextPhase.label}. ${nextPhase.strategy}`);
+    }
   }
   function updateExamSubject(subjectId, field, value2) {
     studyPlanPreview = null;
@@ -22782,7 +22907,7 @@
     const model = buildPeriodComparisonViewModel({ sessions: state.studySessions, questions: state.questoes, reviews, today: todayISO(), preset: preset2.value, start, end });
     const format = (metric, value2) => value2 == null ? "Dados insuficientes" : metric.unit === "min" ? `${Math.floor(value2 / 60)}h ${String(value2 % 60).padStart(2, "0")}min` : metric.unit === "percentage_points" ? `${value2}%` : String(value2);
     const delta = (metric) => metric.delta == null ? "Sem comparação" : metric.unit === "percentage_points" ? `${metric.delta > 0 ? "+" : ""}${metric.delta} p.p.` : metric.unit === "min" ? `${metric.delta > 0 ? "+" : "−"}${Math.floor(Math.abs(metric.delta) / 60)}h ${String(Math.abs(metric.delta) % 60).padStart(2, "0")}min` : `${metric.delta > 0 ? "+" : ""}${metric.delta}`;
-    container.innerHTML = `<p class="period-comparison-caption"><strong>${escapeHtml2(model.currentPeriod.label)}</strong> · ${escapeHtml2(model.currentPeriod.start)} a ${escapeHtml2(model.currentPeriod.end)} <span>comparado com ${escapeHtml2(model.previousPeriod.start)} a ${escapeHtml2(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map((metric) => `<div><span>${escapeHtml2(metric.label)}</span><b>${format(metric, metric.previous)}</b><b>${format(metric, metric.current)}</b><b class="comparison-delta ${metric.state}">${delta(metric)}</b></div>`).join("")}</div><aside class="comparison-insight" aria-label="Leitura da comparação"><p>${escapeHtml2(model.insights.accuracyMessage)}</p><small>${escapeHtml2(model.insights.caveat)}</small></aside>`;
+    container.innerHTML = `<p class="period-comparison-caption"><strong>${escapeHtml2(model.currentPeriod.label)}</strong> · ${escapeHtml2(model.currentPeriod.start)} a ${escapeHtml2(model.currentPeriod.end)} <span>comparado com ${escapeHtml2(model.previousPeriod.start)} a ${escapeHtml2(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map((metric) => `<div><span>${escapeHtml2(metric.label)}</span><b>${format(metric, metric.previous)}</b><b>${format(metric, metric.current)}</b><b class="comparison-delta ${metric.state}">${delta(metric)}</b></div>`).join("")}</div><aside class="comparison-insight" aria-label="Leitura da comparação">${model.insights.combinedMessage ? `<p class="comparison-insight-combined">${escapeHtml2(model.insights.combinedMessage)}</p>` : ""}<p>${escapeHtml2(model.insights.accuracyMessage)}</p><small>${escapeHtml2(model.insights.caveat)}</small></aside>`;
   }
   function computeRitmo() {
     const allT = activeTopics();
@@ -23448,22 +23573,30 @@
   function renderDiagnosisCenter() {
     const container = document.getElementById("diagnosisCenter");
     if (!container) return;
-    const candidates = intelligenceCandidates(), result = generateDiagnosis(candidates), model = buildDiagnosisViewModel(result, { hasTopics: candidates.length > 0 });
+    const candidates = intelligenceCandidates(), result = generateDiagnosis(candidates), weeklyCapacityMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum5, hours) => sum5 + (Number(hours) || 0) * 60, 0), model = buildDiagnosisViewModel(result, { hasTopics: candidates.length > 0, weeklyCapacityMinutes });
     const emptyState = (empty) => `<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml2(empty.title)}</strong><p>${escapeHtml2(empty.message)}</p>${empty.action ? `<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('${escapeAttr2(empty.action.tab)}')">${escapeHtml2(empty.action.label)}</button>` : ""}</div>`;
     if (model.state === "insufficient") {
       container.innerHTML = `<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml2(model.title)}</strong><p>${escapeHtml2(model.message)}</p><button type="button" class="btn small" data-delegated-click="navigateKpi('${escapeAttr2(model.action.tab)}')">${escapeHtml2(model.action.label)}</button></div>`;
       return;
     }
+    const diagnosticRow = (item, metricLabel, metricValue) => {
+      const presentation2 = item.presentation, badgeVariant = { high: "danger", medium: "warning", low: "success", info: "info", insufficient: "insufficient" }[presentation2.severity] || "info";
+      const evidence = presentation2.evidence.map((row) => `<div><dt>${escapeHtml2(row.label)}</dt><dd>${escapeHtml2(row.value)}</dd></div>`).join("");
+      const secondary = presentation2.secondaryReasons.length ? `<ul class="diagnostic-secondary-reasons">${presentation2.secondaryReasons.map((reason) => `<li>${escapeHtml2(reason)}</li>`).join("")}</ul>` : "";
+      const action = presentation2.recommendedAction;
+      const progress = presentation2.type === "focus" ? `<div class="diagnostic-progress" role="progressbar" aria-label="Distribuição do foco semanal para ${escapeAttr2(presentation2.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(item.percentage)}"><i style="--progress:${Math.min(100, Math.max(0, item.percentage))}%"></i></div>` : "";
+      return `<article class="diagnostic-row diagnostic-row--${escapeAttr2(presentation2.type)}"><div class="diagnostic-row-heading"><div class="diagnostic-row-identity"><span class="diagnostic-kicker">${escapeHtml2(presentation2.type === "bottleneck" ? "PONTO DE ATENÇÃO" : presentation2.type === "opportunity" ? "OPORTUNIDADE" : presentation2.type === "review" ? "REVISÃO" : "FOCO DA SEMANA")}</span><strong>${escapeHtml2(presentation2.title)}</strong></div><div class="diagnostic-row-signals"><span class="diagnostic-signal status-badge status-badge--${badgeVariant} is-${item.signalTone}">${escapeHtml2(item.signalLabel)}</span>${metricValue ? `<b class="diagnostic-score">${escapeHtml2(metricLabel)} ${escapeHtml2(metricValue)}</b>` : ""}</div></div><p class="diagnostic-primary-reason">${escapeHtml2(presentation2.primaryReason)}</p>${evidence ? `<dl class="diagnostic-evidence">${evidence}</dl>` : ""}${progress}${secondary}<div class="diagnostic-row-action"><span>AÇÃO RECOMENDADA</span><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('${escapeAttr2(action.targetId)}')">${escapeHtml2(action.label)}</button></div></article>`;
+    };
     const list = (section2, renderItem) => section2.items.length ? section2.items.map(renderItem).join("") : emptyState(section2.empty);
     const section = (key2) => model.sections.find((item) => item.key === key2);
     container.innerHTML = `<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(section("bottlenecks"), (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml2(item.signalLabel)}</span><b class="diagnostic-score">${item.risk?.value ?? item.severity}/100</b></div><div class="diagnostic-evidence"><span>Cobertura dos dados <strong>${Math.round((item.risk?.evidence?.completeness || 0) * 100)}%</strong></span><span>Evidência <strong>${escapeHtml2((item.risk?.evidence?.evidenceLabel || "Não avaliada").toLowerCase())}</strong></span></div><small>${escapeHtml2(item.reason)}${item.risk?.missingFactors?.length ? " · " + item.risk.missingFactors.length + " fatores ausentes" : ""}</small></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(section("opportunities"), (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml2(item.signalLabel)}</span><b class="diagnostic-score">${item.opportunityScore}/100</b><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><div class="diagnostic-evidence"><span>Confiança dos dados <strong>${Math.round(item.confidence * 100)}%</strong></span></div><small>${item.missingFactors.includes("examImpact") ? "Informe o peso da prova para aumentar a confiança." : "Boa relação entre impacto, lacuna e esforço."}</small></article>`)}</section>
-    <section><h4>Revisões críticas e risco</h4>${list(section("risk"), (item) => `<article class="diagnostic-row"><strong>${escapeHtml2(item.subjectName)} — ${escapeHtml2(item.topicName)}</strong><div class="diagnostic-metrics"><b>${item.reviewUrgency > 0 ? "Urgência " + Math.round(item.reviewUrgency) + "/100" : item.daysSinceContact + " dias sem contato"}</b></div><small>${escapeHtml2(item.reason || item.reasons?.[0] || "Revisão requer atenção pelos indicadores atuais.")}</small></article>`)}</section>
-    <section><h4>Foco da semana</h4>${list(section("focus"), (item) => {
-      const weeklyMinutes = Object.values(state.metas.horasPorDia || {}).reduce((sum5, hours) => sum5 + (Number(hours) || 0) * 60, 0);
-      return `<article class="diagnostic-row diagnostic-focus"><strong>${escapeHtml2(item.subjectName)}</strong><span>${item.percentage}% · ${formatPlanMinutes(Math.round(weeklyMinutes * item.percentage / 100))}</span><div class="diagnostic-progress" style="--progress:${Math.min(100, item.percentage)}%"><i></i></div></article>`;
+    <section><h4>Gargalos</h4>${list(section("bottlenecks"), (item) => diagnosticRow(item, "Risco", `${Math.round(item.risk?.value ?? item.severity)}/100`))}</section>
+    <section><h4>Oportunidades</h4>${list(section("opportunities"), (item) => diagnosticRow(item, "Potencial", `${Math.round(item.opportunityScore)}/100`))}</section>
+    <section><h4>Revisões críticas e risco</h4>${list(section("risk"), (item) => {
+      const urgency = Number(item.reviewUrgency);
+      return diagnosticRow(item, urgency > 0 ? "Urgência" : "Intervalo", urgency > 0 ? `${Math.round(urgency)}/100` : item.daysSinceContact == null ? "" : `${Math.round(item.daysSinceContact)} dias`);
     })}</section>
+    <section><h4>Foco da semana</h4>${list(section("focus"), (item) => diagnosticRow(item, "", ""))}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
   }
   function renderRecommendationImpact(model) {
@@ -23482,16 +23615,21 @@
     });
     return { availableMinutes, candidates };
   }
+  function renderPendingRecommendationOutcome() {
+    const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null);
+    return pending ? `<div class="recommendation-outcome" role="group" aria-label="Avaliação do resultado da recomendação"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr2(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr2(pending.recommendationId)}',false)">Não</button></div>` : "";
+  }
   function renderOverviewNextAction(availableMinutes) {
     const container = document.getElementById("overviewNextAction");
     if (!container) return;
+    const outcome = renderPendingRecommendationOutcome();
     const item = currentStudyRecommendations[0];
     if (!item) {
-      container.innerHTML = `<p class="overview-alert-empty">${availableMinutes < 15 ? "Defina pelo menos 15 minutos para hoje para receber uma sugestão." : "Ainda não há uma atividade elegível com os dados atuais."}</p><a class="btn ghost small" href="#overview-study">Ver cronômetro e registrar estudo</a>`;
+      container.innerHTML = `${outcome}<p class="overview-alert-empty">${availableMinutes < 15 ? "Defina pelo menos 15 minutos para hoje para receber uma sugestão." : "Ainda não há uma atividade elegível com os dados atuais."}</p><a class="btn ghost small" href="#overview-study">Ver cronômetro e registrar estudo</a>`;
       return;
     }
     const model = buildPriorityViewModel(item, 1), mastery = item.mastery == null ? "Domínio ainda sem evidência" : `Domínio ${Math.round(item.mastery)}/100`, reasons = model.reasons.slice(0, 3).join(" · ");
-    container.innerHTML = `<article class="overview-action-card"><div><h3>${escapeHtml2(item.subjectName)} · ${escapeHtml2(item.topicName)}</h3><p><strong>${formatPlanMinutes(item.estimatedMinutes)}</strong> · ${escapeHtml2(recommendationActionLabel(item))} · prioridade ${model.score}/100</p><p class="overview-action-reason">${escapeHtml2(mastery)} · ${escapeHtml2(model.evidenceLabel.toLowerCase())}</p></div><div class="overview-action-buttons"><button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr2(item.id)}')">▶ ${escapeHtml2(recommendationActionLabel(item))}</button></div><details class="overview-action-explanation"><summary>Por que esta é a próxima ação?</summary><p>${escapeHtml2(reasons || "Selecionada pela prioridade atual, pelos pré-requisitos e pela disponibilidade de hoje.")}</p></details></article>`;
+    container.innerHTML = `${outcome}<article class="card card--action overview-action-card"><div><h3>${escapeHtml2(item.subjectName)} · ${escapeHtml2(item.topicName)}</h3><p><strong>${formatPlanMinutes(item.estimatedMinutes)}</strong> · ${escapeHtml2(recommendationActionLabel(item))} · prioridade ${model.score}/100</p><p class="overview-action-reason">${escapeHtml2(mastery)} · ${escapeHtml2(model.evidenceLabel.toLowerCase())}</p></div><div class="overview-action-buttons"><button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr2(item.id)}')">▶ ${escapeHtml2(recommendationActionLabel(item))}</button></div><details class="overview-action-explanation"><summary>Por que esta é a próxima ação?</summary><p>${escapeHtml2(reasons || "Selecionada pela prioridade atual, pelos pré-requisitos e pela disponibilidade de hoje.")}</p></details></article>`;
   }
   function renderOverviewDecisionArea() {
     const { availableMinutes } = refreshStudyRecommendationItems();
@@ -23504,8 +23642,8 @@
     const { availableMinutes, candidates } = refreshStudyRecommendationItems();
     renderOverviewNextAction(availableMinutes);
     const visible = currentStudyRecommendations.slice(0, 3);
-    const pending = state.recommendationFeedback.find((feedback) => feedback.completed && feedback.useful === null), summary = summarizeRecommendationFeedback(state.recommendationFeedback), impact = renderRecommendationImpact(buildRecommendationOutcomeViewModel(state.recommendationFeedback));
-    const outcome = impact + (pending ? `<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr2(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr2(pending.recommendationId)}',false)">Não</button></div>` : "");
+    const summary = summarizeRecommendationFeedback(state.recommendationFeedback), impact = renderRecommendationImpact(buildRecommendationOutcomeViewModel(state.recommendationFeedback));
+    const outcome = impact + renderPendingRecommendationOutcome();
     const history = summary.shown ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ""}</small>` : "";
     const visibleIds = new Set(visible.map((item) => item.id));
     const excluded = candidates.filter((item) => !visibleIds.has(item.id)).map((item) => {

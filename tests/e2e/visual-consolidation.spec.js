@@ -17,7 +17,9 @@ test('configuração estratégica comunica herança e conquista de cem horas',as
   await expect(page.locator('#badgesGrid .achievement-upcoming summary')).toContainText('Próximas conquistas');
 });
 
-test('modo foco do cronômetro pode ser encerrado com Escape no celular',async({page})=>{await page.setViewportSize({width:375,height:812});await openDemo(page);const toggle=page.locator('#timerFocusToggle');await toggle.click();await expect(page.locator('body')).toHaveClass(/timer-focus-active/);await expect(toggle).toHaveAttribute('aria-pressed','true');await expect(page.locator('#timerStartBtn')).toBeFocused();expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);await page.keyboard.press('Escape');await expect(page.locator('body')).not.toHaveClass(/timer-focus-active/);await expect(toggle).toHaveAttribute('aria-pressed','false');await expect(toggle).toBeFocused()});
+test('modo foco do cronômetro prende a navegação por teclado e Escape devolve o foco',async({page})=>{await page.setViewportSize({width:375,height:812});await openDemo(page);const toggle=page.locator('#timerFocusToggle');await toggle.click();await expect(page.locator('body')).toHaveClass(/timer-focus-active/);await expect(toggle).toHaveAttribute('aria-pressed','true');await expect(page.locator('.timer-block')).toHaveAttribute('role','region');await expect(page.locator('#timerStartBtn')).toBeFocused();const surface=page.locator('#panel-dashboard .chart-card:has(.timer-block)'),focusable=surface.locator('button:visible:not([disabled]),a[href]:visible,input:visible:not([disabled]),select:visible:not([disabled]),textarea:visible:not([disabled]),[tabindex]:visible:not([tabindex="-1"])'),first=focusable.first(),last=focusable.last();await first.focus();await page.keyboard.press('Shift+Tab');await expect(last).toBeFocused();await page.keyboard.press('Tab');await expect(first).toBeFocused();expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);await page.keyboard.press('Escape');await expect(page.locator('body')).not.toHaveClass(/timer-focus-active/);await expect(toggle).toHaveAttribute('aria-pressed','false');await expect(toggle).toBeFocused()});
+
+test('ações guiadas permanecem fáceis de tocar em celular e o aviso de sessão é anunciado',async({page})=>{await page.setViewportSize({width:375,height:812});await openDemo(page);await activateTab(page,'hoje');const buttons=page.locator('#studyRecommendation .recommendation-actions .btn');await expect(buttons.first()).toBeVisible();expect(await buttons.evaluateAll(items=>items.every(item=>item.getBoundingClientRect().height>=44))).toBe(true);expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);await expect(page.locator('#toast')).toHaveAttribute('aria-live','polite')});
 test('componentes visuais não transbordam e controles usam o padrão comum',async({page})=>{
   await page.setViewportSize({width:375,height:900});
   await openDemo(page);
@@ -75,6 +77,13 @@ test('diagnóstico separa interpretação do sinal, score e cobertura',async({pa
   await expect(diagnosis.locator('.diagnostic-signal').first()).toBeVisible();
   await expect(diagnosis.locator('.diagnostic-evidence').first()).toBeVisible();
   await expect(diagnosis.locator('.diagnostic-score').first()).toContainText(/\d+\/100/);
+  const firstRow=diagnosis.locator('.diagnostic-row').first();
+  await expect(firstRow.locator('.diagnostic-primary-reason')).toBeVisible();
+  await expect(firstRow.locator('.diagnostic-evidence dt').first()).toBeVisible();
+  const action=firstRow.getByRole('button',{name:'Abrir Questões'});
+  await expect(action).toBeVisible();
+  await action.click();
+  await expect(page.locator('#panel-questoes')).toHaveClass(/active/);
 });
 
 test('diagnóstico vazio orienta o cadastro sem inventar risco',async({page})=>{

@@ -11,7 +11,9 @@ test('consolida relatório estratégico sem depender do DOM',()=>{
   assert.match(html,/Resumo executivo/);assert.match(html,/Foco recomendado/);assert.match(html,/Metodologia/);
   assert.match(html,/Comparação entre períodos/);assert.equal(report.comparison.metrics.minutes.current,60);assert.equal(report.goals.targets.accuracy,80);assert.equal(report.goals.observed.questions,20);
   assert.equal(report.comparisonInsights.accuracyMessage,'Acerto sem comparação: são necessárias questões resolvidas nos dois períodos.');
+  assert.equal(report.exam.phase.label,'Consolidação');assert.equal(report.exam.daysToExam,90);
   assert.ok(html.includes(report.comparisonInsights.accuracyMessage));
+  assert.match(html,/Fase atual|Consolidação/);assert.match(html,/90 dias restantes/);
   assert.ok(html.includes(report.comparisonInsights.caveat));
 });
 
@@ -22,4 +24,11 @@ test('relatório separa evidência atribuível ao edital de registros somente da
 test('template escapa nomes vindos do estado',()=>{
   const report=buildStrategicReport({state:{subjects:[],studySessions:[],questoes:[],simulados:[],reviewAgenda:[],studyPlans:[],dailyPlans:[],planAdjustments:[],recommendationFeedback:[]},generatedAt:'2026-09-02T12:00:00.000Z',diagnosis:{bottlenecks:[{subjectName:'<script>',topicName:'X',reason:'Y'}],opportunities:[]}});
   assert.match(renderStrategicReport(report),/&lt;script&gt;/);
+});
+
+test('relatório distingue prova sem data e informa a orientação da fase',()=>{
+  const report=buildStrategicReport({state:{subjects:[],studySessions:[],questoes:[],simulados:[],reviewAgenda:[],studyPlans:[],dailyPlans:[],planAdjustments:[],recommendationFeedback:[]},generatedAt:'2026-09-02T12:00:00.000Z'});
+  assert.equal(report.exam.phase.state,'undated');
+  assert.match(renderStrategicReport(report),/Prova sem data/);
+  assert.match(renderStrategicReport(report),/Defina a data da prova/);
 });

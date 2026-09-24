@@ -13,18 +13,21 @@ O StudyTrack usa a linguagem visual de um extrato: navy para estrutura, dourado 
 
 A escala oficial é 4, 8, 12, 16, 20, 24 e 32 px, exposta nos tokens `--space-1` a `--space-8`.
 
-As superfícies, textos, divisores e estados semânticos também têm aliases (`--surface-*`, `--text-*`, `--border-subtle` e `--status-*`). Use esses papéis em componentes novos ou revisados; os aliases continuam ligados às cores do tema ativo.
+As superfícies, textos, divisores e estados semânticos também têm aliases (`--surface-*`, `--text-*`, `--border-subtle` e `--status-*`). Use esses papéis em componentes novos ou revisados; os aliases continuam ligados às cores do tema ativo. `--surface-card`, `--surface-card-muted`, `--surface-interactive`, `--text-inverse` e `--status-insufficient` completam os papéis de superfície, texto e evidência insuficiente nos dois temas.
 
 ## Componentes
 
 - `btn`: ação principal; use `ghost`, `danger`, `small` e botões de ícone conforme o contexto.
+- Estados dos botões: hover, foco visível, active e disabled são comuns; `btn` é primário, `btn ghost` secundário, `btn danger` destrutivo e `icon-btn` para ações somente por ícone.
+- `card`, `card__header`, `card__body` e `card__footer`: estrutura compartilhada; use variantes `card--action`, `card--interactive` ou `card--muted` quando a função justificar.
+- `status-badge`: sinal textual semântico; use `--danger`, `--warning`, `--success`, `--info` ou `--insufficient`. A cor nunca deve ser o único indicador.
 - `chart-card`: agrupamento lógico de dados.
 - `kpi-cell` e `mini-stat`: métricas padrão e compactas.
 - `empty-state--compact`: ausência de dados com explicação curta.
 - `bar-track` e `bar-fill`: progresso e distribuição.
 - `section-head` e `overview-section-heading`: títulos estruturais.
 - `compact-header` e `compact-meta`: resumo persistente do plano.
-- `diagnostic-row`: tópico, score, evidência e explicação em níveis distintos.
+- `diagnostic-row`: tópico, sinal textual, score, evidência, explicação e ação contextual em níveis distintos; os dados semânticos vêm do view-model.
 - `backup-danger-zone`: ações destrutivas separadas das operações de recuperação.
 - `select-control`: aparência comum dos seletores, com variantes `--compact` e `--wide`.
 - `data-row`: histórico traduzido com título, ação e estado.

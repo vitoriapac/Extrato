@@ -53,7 +53,7 @@ import {createReplanService} from './application/planning/replan-service.js';
 import {createReplanController} from './application/planning/replan-controller.js';
 import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
 import {applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
-import {renderAdaptiveAllocationAdvice,renderExamPhase} from './ui/renderers/adaptive-planning-renderer.js';
+import {renderAdaptiveAllocationAdvice,renderExamPhase,renderExamPhaseCompact} from './ui/renderers/adaptive-planning-renderer.js';
 import {buildAchievementViewModel} from './application/achievements/build-achievement-view-model.js';
 import {renderAchievementGroups} from './ui/renderers/achievement-renderer.js';
 import {createSessionService} from './application/sessions/session-service.js';
@@ -934,7 +934,17 @@ function toggleTimerFocus(force=null){
   else requestAnimationFrame(()=>toggle?.focus());
   return active;
 }
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('timer-focus-active')){event.preventDefault();toggleTimerFocus(false)}});
+document.addEventListener('keydown',event=>{
+  if(!document.body.classList.contains('timer-focus-active'))return;
+  if(event.key==='Escape'){event.preventDefault();toggleTimerFocus(false);return}
+  if(event.key!=='Tab')return;
+  const focusSurface=document.querySelector('body.timer-focus-active #panel-dashboard .chart-card:has(.timer-block)');
+  const focusable=[...(focusSurface?.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')||[])].filter(element=>element.getClientRects().length>0&&getComputedStyle(element).visibility!=='hidden');
+  if(!focusable.length){event.preventDefault();return}
+  const first=focusable[0],last=focusable.at(-1);
+  if(event.shiftKey&&(document.activeElement===first||!focusSurface.contains(document.activeElement))){event.preventDefault();last.focus()}
+  else if(!event.shiftKey&&(document.activeElement===last||!focusSurface.contains(document.activeElement))){event.preventDefault();first.focus()}
+});
 
 /* ===== GRÁFICO DE EVOLUÇÃO DO PROGRESSO ===== */
 function recordProgressSnapshot(pct){
@@ -1690,6 +1700,7 @@ function performGlobalSearch(query){
 const SEARCH_COMMANDS=[
   {label:'Visão Geral',keywords:'inicio dashboard resumo prontidao',tab:'dashboard'},
   {label:'Ir para Hoje',keywords:'hoje tarefa recomendacao estudo',tab:'hoje'},
+  {label:'Iniciar recomendação prioritária',keywords:'começar iniciar próxima ação estudar recomendação prioritária',action:'recommendation'},
   {label:'Abrir cronômetro',keywords:'iniciar sessao timer estudar foco',action:'timer'},
   {label:'Abrir Disciplinas',keywords:'materias edital topicos',tab:'disciplinas'},
   {label:'Carregar edital do catálogo',keywords:'importar edital concurso bb caixa',action:'exam-import'},
@@ -1737,6 +1748,7 @@ document.getElementById('globalSearchResults').addEventListener('click',event=>{
   else if(action==='add-review'){activateTab('agenda');document.getElementById('addAgendaRowBtn')?.click()}
   else if(action==='add-questions'){activateTab('questoes');document.getElementById('addQuestaoRowBtn')?.click()}
   else if(action==='timer'){activateTab('dashboard');document.getElementById('timerSubjectSelect')?.focus()}
+  else if(action==='recommendation'){const recommendation=currentStudyRecommendations?.[0];if(recommendation)executeStudyRecommendation(recommendation.id);else{activateTab('hoje');showToast('Ainda não há uma recomendação elegível. Revise o planejamento e as evidências disponíveis.')}}
   else if(button.dataset.searchTab)activateTab(button.dataset.searchTab);
   panel.classList.remove('show');input.setAttribute('aria-expanded','false');input.blur();
 });
@@ -1814,6 +1826,9 @@ function changeUpcomingLimit(delta){upcomingVisible+=Number(delta||0);renderDash
 function showAllUpcoming(){upcomingVisible=Number.MAX_SAFE_INTEGER;renderDashboard()}
 function resetUpcomingLimit(){upcomingVisible=5;renderDashboard()}
 function renderDashboard(){
+  const phaseDays=state.examDate?diasParaRevisao(state.examDate):null;
+  const phaseContainer=document.getElementById('overviewExamPhase');
+  if(phaseContainer)phaseContainer.innerHTML=renderExamPhaseCompact(resolveExamPhase(phaseDays),{escapeHtml});
   const topics = activeTopics();
   const total = topics.length;
   const done = topics.filter(t=>t.status==='Concluído').length;
@@ -3353,7 +3368,11 @@ function renderExamBlueprintConfig(){
   const blueprint=state.examBlueprint;
   const rows=activeSubjects().map(subject=>{
     const config=blueprint.subjects.find(item=>item.subjectId===subject.id);
-    return `<div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${subject.id}','priority',this.value)"><option value="normal" ${!config||config.priority==='normal'?'selected':''}>Normal</option><option value="high" ${config?.priority==='high'?'selected':''}>Alta</option><option value="low" ${config?.priority==='low'?'selected':''}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget??''}" placeholder="Usar meta geral" data-delegated-blur="updateExamSubject('${subject.id}','masteryTarget',this.value)">${config?.masteryTarget==null?`<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>`:''}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions??''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${subject.id}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight??''}" placeholder="1" data-delegated-blur="updateExamSubject('${subject.id}','questionWeight',this.value)">${config?.sourceRef?`<small class="field-inheritance">${escapeHtml(EXAM_SOURCES[config.sourceRef]?.label||config.sourceRef)}${config.official?' · oficial':''}</small>`:''}</label></div>`;
+    const priorityLabel=({high:'Alta',low:'Baixa',normal:'Normal'})[config?.priority||'normal'];
+    const masteryLabel=config?.masteryTarget==null?`Herdar ${blueprint.masteryTarget}% (geral)`: `Meta ${config.masteryTarget}%`;
+    const questionsLabel=config?.expectedQuestions>0?`${config.expectedQuestions} questões`:'Questões sem meta';
+    const weightLabel=config?.questionWeight!=null?`Peso ${config.questionWeight}`:'Peso padrão';
+    return `<details class="exam-subject-config"><summary><strong>${escapeHtml(subject.name)}</strong><span>${priorityLabel}</span><span>${masteryLabel}</span><span>${questionsLabel} · ${weightLabel}</span><em>Editar</em></summary><div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${escapeAttr(subject.id)}','priority',this.value)"><option value="normal" ${!config||config.priority==='normal'?'selected':''}>Normal</option><option value="high" ${config?.priority==='high'?'selected':''}>Alta</option><option value="low" ${config?.priority==='low'?'selected':''}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget??''}" placeholder="Herdar ${blueprint.masteryTarget}% (geral)" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','masteryTarget',this.value)">${config?.masteryTarget==null?`<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>`:''}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions??''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight??''}" placeholder="1" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','questionWeight',this.value)">${config?.sourceRef?`<small class="field-inheritance">${escapeHtml(EXAM_SOURCES[config.sourceRef]?.label||config.sourceRef)}${config.official?' · oficial':''}</small>`:''}</label></div></details>`;
   }).join('');
   container.innerHTML=`<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[['bb-escriturario','Banco do Brasil — Escriturário'],['caixa-tbn','Caixa — TBN'],['caixa-tbn-ti','Caixa — TBN TI']].map(([tag,label])=>`<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags||[]).includes(tag)?'checked':''}> ${label}</label>`).join('')}<small>Somente os concursos marcados influenciam prontidão, prioridade e planejamento. Se nenhum for selecionado, todo o conteúdo continuará elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
   renderExamMasteryMatrix();
@@ -3426,10 +3445,15 @@ function renderStudyPlanBuilder(){
 }
 function updateExamBlueprint(field,value,{refresh=true}={}){
   studyPlanPreview=null;
+  const previousPhase=field==='examDate'?resolveExamPhase(state.examDate?diasParaRevisao(state.examDate):null):null;
   if(field==='examDate'){state.examBlueprint.examDate=value||null;state.examDate=value||''}
   if(field==='targetScore'){const target=Math.max(0,Math.min(100,Number(value)||0));state.examBlueprint.targetScore=target;goalsService.update('metaAprovacao',target)}
   if(field==='masteryTarget')state.examBlueprint.masteryTarget=Math.max(0,Math.min(100,Number(value)||80));
   state.examBlueprint.configuredAt=nowISO();if(refresh)persistAndRender();else scheduleSave();
+  if(field==='examDate'&&previousPhase?.state&&previousPhase.state!=='undated'){
+    const nextPhase=resolveExamPhase(state.examDate?diasParaRevisao(state.examDate):null);
+    if(nextPhase.state!==previousPhase.state&&nextPhase.state!=='undated')showToast(`Você entrou na fase de ${nextPhase.label}. ${nextPhase.strategy}`);
+  }
 }
 function updateExamSubject(subjectId,field,value){
   studyPlanPreview=null;
@@ -3577,7 +3601,7 @@ function renderSelectedPeriodComparison(){
   const model=buildPeriodComparisonViewModel({sessions:state.studySessions,questions:state.questoes,reviews,today:todayISO(),preset:preset.value,start,end});
   const format=(metric,value)=>value==null?'Dados insuficientes':metric.unit==='min'?`${Math.floor(value/60)}h ${String(value%60).padStart(2,'0')}min`:metric.unit==='percentage_points'?`${value}%`:String(value);
   const delta=metric=>metric.delta==null?'Sem comparação':metric.unit==='percentage_points'?`${metric.delta>0?'+':''}${metric.delta} p.p.`:metric.unit==='min'?`${metric.delta>0?'+':'−'}${Math.floor(Math.abs(metric.delta)/60)}h ${String(Math.abs(metric.delta)%60).padStart(2,'0')}min`:`${metric.delta>0?'+':''}${metric.delta}`;
-  container.innerHTML=`<p class="period-comparison-caption"><strong>${escapeHtml(model.currentPeriod.label)}</strong> · ${escapeHtml(model.currentPeriod.start)} a ${escapeHtml(model.currentPeriod.end)} <span>comparado com ${escapeHtml(model.previousPeriod.start)} a ${escapeHtml(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><b>${format(metric,metric.previous)}</b><b>${format(metric,metric.current)}</b><b class="comparison-delta ${metric.state}">${delta(metric)}</b></div>`).join('')}</div><aside class="comparison-insight" aria-label="Leitura da comparação"><p>${escapeHtml(model.insights.accuracyMessage)}</p><small>${escapeHtml(model.insights.caveat)}</small></aside>`;
+  container.innerHTML=`<p class="period-comparison-caption"><strong>${escapeHtml(model.currentPeriod.label)}</strong> · ${escapeHtml(model.currentPeriod.start)} a ${escapeHtml(model.currentPeriod.end)} <span>comparado com ${escapeHtml(model.previousPeriod.start)} a ${escapeHtml(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><b>${format(metric,metric.previous)}</b><b>${format(metric,metric.current)}</b><b class="comparison-delta ${metric.state}">${delta(metric)}</b></div>`).join('')}</div><aside class="comparison-insight" aria-label="Leitura da comparação">${model.insights.combinedMessage?`<p class="comparison-insight-combined">${escapeHtml(model.insights.combinedMessage)}</p>`:''}<p>${escapeHtml(model.insights.accuracyMessage)}</p><small>${escapeHtml(model.insights.caveat)}</small></aside>`;
 }
 
 /* ===== ESTIMATIVA DE RITMO ===== */
@@ -4272,16 +4296,24 @@ function intelligenceCandidates(){
 }
 function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
-  const candidates=intelligenceCandidates(),result=generateDiagnosis(candidates),model=buildDiagnosisViewModel(result,{hasTopics:candidates.length>0});
+  const candidates=intelligenceCandidates(),result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{hasTopics:candidates.length>0,weeklyCapacityMinutes});
   const emptyState=empty=>`<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(empty.title)}</strong><p>${escapeHtml(empty.message)}</p>${empty.action?`<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('${escapeAttr(empty.action.tab)}')">${escapeHtml(empty.action.label)}</button>`:''}</div>`;
   if(model.state==='insufficient'){container.innerHTML=`<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(model.title)}</strong><p>${escapeHtml(model.message)}</p><button type="button" class="btn small" data-delegated-click="navigateKpi('${escapeAttr(model.action.tab)}')">${escapeHtml(model.action.label)}</button></div>`;return}
+  const diagnosticRow=(item,metricLabel,metricValue)=>{
+    const presentation=item.presentation,badgeVariant={high:'danger',medium:'warning',low:'success',info:'info',insufficient:'insufficient'}[presentation.severity]||'info';
+    const evidence=presentation.evidence.map(row=>`<div><dt>${escapeHtml(row.label)}</dt><dd>${escapeHtml(row.value)}</dd></div>`).join('');
+    const secondary=presentation.secondaryReasons.length?`<ul class="diagnostic-secondary-reasons">${presentation.secondaryReasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul>`:'';
+    const action=presentation.recommendedAction;
+    const progress=presentation.type==='focus'?`<div class="diagnostic-progress" role="progressbar" aria-label="Distribuição do foco semanal para ${escapeAttr(presentation.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(item.percentage)}"><i style="--progress:${Math.min(100,Math.max(0,item.percentage))}%"></i></div>`:'';
+    return `<article class="diagnostic-row diagnostic-row--${escapeAttr(presentation.type)}"><div class="diagnostic-row-heading"><div class="diagnostic-row-identity"><span class="diagnostic-kicker">${escapeHtml(presentation.type==='bottleneck'?'PONTO DE ATENÇÃO':presentation.type==='opportunity'?'OPORTUNIDADE':presentation.type==='review'?'REVISÃO':'FOCO DA SEMANA')}</span><strong>${escapeHtml(presentation.title)}</strong></div><div class="diagnostic-row-signals"><span class="diagnostic-signal status-badge status-badge--${badgeVariant} is-${item.signalTone}">${escapeHtml(item.signalLabel)}</span>${metricValue?`<b class="diagnostic-score">${escapeHtml(metricLabel)} ${escapeHtml(metricValue)}</b>`:''}</div></div><p class="diagnostic-primary-reason">${escapeHtml(presentation.primaryReason)}</p>${evidence?`<dl class="diagnostic-evidence">${evidence}</dl>`:''}${progress}${secondary}<div class="diagnostic-row-action"><span>AÇÃO RECOMENDADA</span><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('${escapeAttr(action.targetId)}')">${escapeHtml(action.label)}</button></div></article>`;
+  };
   const list=(section,renderItem)=>section.items.length?section.items.map(renderItem).join(''):emptyState(section.empty);
   const section=key=>model.sections.find(item=>item.key===key);
   container.innerHTML=`<div class="diagnosis-summary">
-    <section><h4>Gargalos</h4>${list(section('bottlenecks'),item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml(item.signalLabel)}</span><b class="diagnostic-score">${item.risk?.value??item.severity}/100</b></div><div class="diagnostic-evidence"><span>Cobertura dos dados <strong>${Math.round((item.risk?.evidence?.completeness||0)*100)}%</strong></span><span>Evidência <strong>${escapeHtml((item.risk?.evidence?.evidenceLabel||'Não avaliada').toLowerCase())}</strong></span></div><small>${escapeHtml(item.reason)}${item.risk?.missingFactors?.length?' · '+item.risk.missingFactors.length+' fatores ausentes':''}</small></article>`)}</section>
-    <section><h4>Oportunidades</h4>${list(section('opportunities'),item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><span class="diagnostic-signal is-${item.signalTone}">${escapeHtml(item.signalLabel)}</span><b class="diagnostic-score">${item.opportunityScore}/100</b><span>${formatPlanMinutes(item.estimatedMinutes)}</span></div><div class="diagnostic-evidence"><span>Confiança dos dados <strong>${Math.round(item.confidence*100)}%</strong></span></div><small>${item.missingFactors.includes('examImpact')?'Informe o peso da prova para aumentar a confiança.':'Boa relação entre impacto, lacuna e esforço.'}</small></article>`)}</section>
-    <section><h4>Revisões críticas e risco</h4>${list(section('risk'),item=>`<article class="diagnostic-row"><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><div class="diagnostic-metrics"><b>${item.reviewUrgency>0?'Urgência '+Math.round(item.reviewUrgency)+'/100':item.daysSinceContact+' dias sem contato'}</b></div><small>${escapeHtml(item.reason||item.reasons?.[0]||'Revisão requer atenção pelos indicadores atuais.')}</small></article>`)}</section>
-    <section><h4>Foco da semana</h4>${list(section('focus'),item=>{const weeklyMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0);return `<article class="diagnostic-row diagnostic-focus"><strong>${escapeHtml(item.subjectName)}</strong><span>${item.percentage}% · ${formatPlanMinutes(Math.round(weeklyMinutes*item.percentage/100))}</span><div class="diagnostic-progress" style="--progress:${Math.min(100,item.percentage)}%"><i></i></div></article>`})}</section>
+    <section><h4>Gargalos</h4>${list(section('bottlenecks'),item=>diagnosticRow(item,'Risco',`${Math.round(item.risk?.value??item.severity)}/100`))}</section>
+    <section><h4>Oportunidades</h4>${list(section('opportunities'),item=>diagnosticRow(item,'Potencial',`${Math.round(item.opportunityScore)}/100`))}</section>
+    <section><h4>Revisões críticas e risco</h4>${list(section('risk'),item=>{const urgency=Number(item.reviewUrgency);return diagnosticRow(item,urgency>0?'Urgência':'Intervalo',urgency>0?`${Math.round(urgency)}/100`:item.daysSinceContact==null?'':`${Math.round(item.daysSinceContact)} dias`)})}</section>
+    <section><h4>Foco da semana</h4>${list(section('focus'),item=>diagnosticRow(item,'',''))}</section>
   </div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
 }
 function renderRecommendationImpact(model){
@@ -4302,12 +4334,17 @@ function refreshStudyRecommendationItems(){
   });
   return {availableMinutes,candidates};
 }
+function renderPendingRecommendationOutcome(){
+  const pending=state.recommendationFeedback.find(feedback=>feedback.completed&&feedback.useful===null);
+  return pending?`<div class="recommendation-outcome" role="group" aria-label="Avaliação do resultado da recomendação"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'';
+}
 function renderOverviewNextAction(availableMinutes){
   const container=document.getElementById('overviewNextAction');if(!container)return;
+  const outcome=renderPendingRecommendationOutcome();
   const item=currentStudyRecommendations[0];
-  if(!item){container.innerHTML=`<p class="overview-alert-empty">${availableMinutes<15?'Defina pelo menos 15 minutos para hoje para receber uma sugestão.':'Ainda não há uma atividade elegível com os dados atuais.'}</p><a class="btn ghost small" href="#overview-study">Ver cronômetro e registrar estudo</a>`;return}
+  if(!item){container.innerHTML=`${outcome}<p class="overview-alert-empty">${availableMinutes<15?'Defina pelo menos 15 minutos para hoje para receber uma sugestão.':'Ainda não há uma atividade elegível com os dados atuais.'}</p><a class="btn ghost small" href="#overview-study">Ver cronômetro e registrar estudo</a>`;return}
   const model=buildPriorityViewModel(item,1),mastery=item.mastery==null?'Domínio ainda sem evidência':`Domínio ${Math.round(item.mastery)}/100`,reasons=model.reasons.slice(0,3).join(' · ');
-  container.innerHTML=`<article class="overview-action-card"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${formatPlanMinutes(item.estimatedMinutes)}</strong> · ${escapeHtml(recommendationActionLabel(item))} · prioridade ${model.score}/100</p><p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(model.evidenceLabel.toLowerCase())}</p></div><div class="overview-action-buttons"><button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(item.id)}')">▶ ${escapeHtml(recommendationActionLabel(item))}</button></div><details class="overview-action-explanation"><summary>Por que esta é a próxima ação?</summary><p>${escapeHtml(reasons||'Selecionada pela prioridade atual, pelos pré-requisitos e pela disponibilidade de hoje.')}</p></details></article>`;
+  container.innerHTML=`${outcome}<article class="card card--action overview-action-card"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${formatPlanMinutes(item.estimatedMinutes)}</strong> · ${escapeHtml(recommendationActionLabel(item))} · prioridade ${model.score}/100</p><p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(model.evidenceLabel.toLowerCase())}</p></div><div class="overview-action-buttons"><button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(item.id)}')">▶ ${escapeHtml(recommendationActionLabel(item))}</button></div><details class="overview-action-explanation"><summary>Por que esta é a próxima ação?</summary><p>${escapeHtml(reasons||'Selecionada pela prioridade atual, pelos pré-requisitos e pela disponibilidade de hoje.')}</p></details></article>`;
 }
 function renderOverviewDecisionArea(){const {availableMinutes}=refreshStudyRecommendationItems();renderOverviewNextAction(availableMinutes);renderAlertasInteligentes()}
 function renderStudyRecommendation(){
@@ -4315,8 +4352,8 @@ function renderStudyRecommendation(){
   const {availableMinutes,candidates}=refreshStudyRecommendationItems();
   renderOverviewNextAction(availableMinutes);
   const visible=currentStudyRecommendations.slice(0,3);
-  const pending=state.recommendationFeedback.find(feedback=>feedback.completed&&feedback.useful===null),summary=summarizeRecommendationFeedback(state.recommendationFeedback),impact=renderRecommendationImpact(buildRecommendationOutcomeViewModel(state.recommendationFeedback));
-  const outcome=impact+(pending?`<div class="recommendation-outcome"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'');
+  const summary=summarizeRecommendationFeedback(state.recommendationFeedback),impact=renderRecommendationImpact(buildRecommendationOutcomeViewModel(state.recommendationFeedback));
+  const outcome=impact+renderPendingRecommendationOutcome();
   const history=summary.shown?`<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate??0}% concluídas${summary.rated?` · ${summary.usefulnessRate}% úteis`:''}</small>`:'';
   const visibleIds=new Set(visible.map(item=>item.id));
   const excluded=candidates.filter(item=>!visibleIds.has(item.id)).map(item=>{

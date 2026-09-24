@@ -6,6 +6,10 @@ test('gera relatório estratégico identificado como demonstração',async({page
   const report=page.locator('.strategic-print-report');await expect(report).toBeAttached();await expect(report).toContainText(/demonstração|fictício/i);
   await expect(report).toContainText('Últimos 90 dias');await expect(report).toContainText('Planejamento versus execução');await expect(report).toContainText('Prioridades do próximo período');
   await expect(report).toContainText('Comparação entre períodos');await expect(report).toContainText('Alvos cadastrados');
+  await expect(report).toContainText(/Construção|Consolidação|Reta final|Revisão final|Prova sem data/);
+  const headings=await report.locator('h2').allTextContents();
+  expect(headings.indexOf('Diagnóstico')).toBeLessThan(headings.indexOf('Prioridades do próximo período'));
+  expect(headings.indexOf('Prioridades do próximo período')).toBeLessThan(headings.indexOf('Foco recomendado'));
   await page.emulateMedia({media:'print'});await expect(report).toBeVisible();
 });
 
@@ -41,5 +45,13 @@ test('paleta executa ações de registro por teclado e fecha com Escape',async({
   await search.fill('abrir calendário');
   await expect(page.getByRole('option',{name:/Abrir Calendário/})).toBeVisible();
   await page.keyboard.press('Escape');
+  await expect(page.locator('#globalSearchResults')).not.toHaveClass(/show/);
+});
+
+test('paleta apresenta acesso direto à recomendação prioritária',async({page})=>{
+  await openDemo(page);const search=page.locator('#globalSearchInput');
+  await page.keyboard.press('Control+k');await search.fill('recomendação prioritária');
+  const action=page.getByRole('option',{name:'Iniciar recomendação prioritária Ação da aplicação'});await expect(action).toBeVisible();
+  await action.click();
   await expect(page.locator('#globalSearchResults')).not.toHaveClass(/show/);
 });
