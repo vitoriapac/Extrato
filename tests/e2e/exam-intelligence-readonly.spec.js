@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {activateTab,expectNoPageOverflow} from './helpers.js';
 
-test('histórico explica impacto no planejamento sem mudar a prioridade',async({page})=>{
+test('impacto manual prevalece sobre o histórico na prioridade',async({page})=>{
   await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(element=>element.remove());
   const before=await page.evaluate(()=>{
     const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),subject=state.subjects[0],topic=subject.topics[0];

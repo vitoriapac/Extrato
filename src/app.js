@@ -17,6 +17,8 @@ import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,REVIEW_RATINGS,calculateAdaptiveIn
 import {createDefaultState} from './state/defaults.js';
 import {validateExam} from './domain/exam-intelligence/exam.js';
 import {validateExamQuestion} from './domain/exam-intelligence/exam-question.js';
+import {parseExamImportJson,previewExamImport,mergeExamImport} from './application/exam-intelligence/import-exam-json.js';
+import {renderExamJsonPreview} from './ui/renderers/exam-import-json-renderer.js';
 import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
 import {renderCollectionFooter,renderGroupHeader} from './ui/list-components.js';
 import {countActiveFilters,filterPanelLabel} from './ui/filter-panel.js';
@@ -2173,6 +2175,43 @@ const structuredContentImportService=createStructuredContentImportService({subje
 let structuredImportOrigin=null;
 const structuredImportController=createStructuredImportController({document,window,parse:parseStructuredStudyContent,service:structuredContentImportService,render:renderStructuredImport,notify:showToast,onOpen:()=>{if(structuredImportOrigin==='onboarding')suspendGuidedOnboarding()},onCancel:({completed})=>{if(structuredImportOrigin==='onboarding'){resumeGuidedOnboarding(completed?'plan':'content');structuredImportOrigin=null}},onImported:result=>{studyPlanPreview=null;persistAndRender();showToast(`${pluralize(result.addedSubjects,'disciplina')} e ${pluralize(result.addedTopics,'tópico')} adicionados; ${pluralize(result.updatedTopics,'tópico')} atualizados.`)}});
 document.getElementById('structuredContentImportBtn')?.addEventListener('click',()=>{structuredImportOrigin=null});
+let pendingExamJson=null;
+const examJsonFile=document.getElementById('examJsonFile'),examJsonPreview=document.getElementById('examJsonPreview');
+examJsonFile?.addEventListener('change',async()=>{
+  const file=examJsonFile.files?.[0];if(!file)return;
+  pendingExamJson=null;
+  try{
+    if(file.size>2*1024*1024)throw new TypeError('O arquivo excede 2 MB.');
+    const parsed=parseExamImportJson(await file.text());
+    if(!parsed.exam.examTags.length)parsed.exam.examTags=[...(state.examBlueprint.activeExamTags||[])];
+    const preview=previewExamImport(parsed,state);
+    pendingExamJson={parsed,preview};
+    examJsonPreview.innerHTML=renderExamJsonPreview(parsed,preview,state.subjects);
+  }catch(error){examJsonPreview.textContent=error.message||'Não foi possível ler a prova.'}
+  examJsonFile.value='';
+});
+examJsonPreview?.addEventListener('click',event=>{
+  if(event.target.id==='examJsonCancel'){pendingExamJson=null;examJsonPreview.innerHTML='';examJsonFile.focus();return}
+  if(event.target.id!=='examJsonConfirm'||!pendingExamJson)return;
+  try{
+    const decisions={};
+    for(const row of pendingExamJson.preview.rows.filter(item=>item.status!=='mapped')){
+      const action=examJsonPreview.querySelector(`[data-exam-decision="${row.number}"]`)?.value;
+      if(!action)throw new TypeError(`Questão ${row.number}: escolha associar, criar ou ignorar.`);
+      if(action==='associate'){
+        const [subjectId,topicId]=(examJsonPreview.querySelector(`[data-exam-associate="${row.number}"]`)?.value||'').split('|');
+        decisions[row.number]={action,subjectId,topicId};
+      }else if(action==='create'){
+        const subjectId=examJsonPreview.querySelector(`[data-exam-create="${row.number}"]`)?.value;
+        decisions[row.number]={action,subjectId};
+      }else decisions[row.number]={action};
+    }
+    const result=mergeExamImport(pendingExamJson.parsed,pendingExamJson.preview,decisions,state);
+    state.subjects=result.subjects;state.exams=result.exams;state.examQuestions=result.examQuestions;
+    pendingExamJson=null;examJsonPreview.innerHTML='';studyPlanPreview=null;persistAndRender();
+    showToast(`Prova importada: ${result.summary.added} questões novas, ${result.summary.updated} atualizadas, ${result.summary.ignored} ignoradas.`);
+  }catch(error){showToast(error.message||'A importação falhou. Nenhum dado foi alterado.')}
+});
 document.getElementById('downloadStructuredCsvBtn')?.addEventListener('click',()=>{const csv='disciplina,topico,dificuldade,importancia,esforco,tags\nPortuguês,Interpretação de texto,Médio,80,120,leitura|prioridade\n',blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='modelo-studytrack.csv';link.click();URL.revokeObjectURL(url)});
 const editalImportFacade=createEditalImportFacade({catalog:EXAM_PRESETS,importService:examImportService});
 const examImportState=createExamImportState(EXAM_PRESETS[0]);

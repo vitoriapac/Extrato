@@ -13,7 +13,9 @@ export function buildPriorityViewModel(item={},position=1){
     key,label:PRIORITY_FACTOR_LABELS[key]||key,value:Math.max(0,Math.round(Number(value)||0)),factor:item.factors?.[key]??null
   })).sort((a,b)=>b.value-a.value||a.label.localeCompare(b.label));
   const exam=item.examIntelligence||{};
-  const examExplanation=exam.analyzedExamCount?`${exam.presentExamCount} de ${exam.analyzedExamCount} provas · incidência ${exam.presencePercent}% · confiança ${String(exam.confidenceLabel||'limitada').toLowerCase()}${exam.usedHistory?' · histórico considerado no impacto':' · histórico informativo'}`:exam.impactValue==null?'Impacto ainda sem dados':'Impacto configurado para a prova';
+  const impactOrigin=exam.impactSourceType==='official'?'Peso oficial':exam.impactSourceType==='manual'?'Impacto manual':exam.usedHistory?'Impacto estimado com histórico':'Impacto estimado';
+  const impactLabel=exam.value==null?'Impacto ainda sem dados':`${impactOrigin} ${Math.round(exam.value)}/100`;
+  const examExplanation=exam.analyzedExamCount?`${impactLabel} · ${exam.presentExamCount} de ${exam.analyzedExamCount} provas · incidência ${exam.presencePercent}% · confiança ${String(exam.confidenceLabel||'limitada').toLowerCase()}${exam.usedHistory?' · histórico considerado no impacto':' · histórico informativo'}`:impactLabel;
   const personalExplanation=[item.mastery==null?'Domínio sem evidência':`Domínio ${Math.round(item.mastery)}/100`,item.retention==null?null:`Retenção ${Math.round(item.retention)}/100`,item.reviewUrgency>=40?'Revisão pendente':null].filter(Boolean).join(' · ');
   return {position,score,state,stateLabel:stateLabels[state],contributionRows,examExplanation,personalExplanation,
     completeness:Math.round((Number(item.evidence?.completeness)||0)*100),

@@ -1593,3 +1593,11 @@ body.timer-focus-active .timer-context{display:none!important}
 .topic-exam-profile dt{color:var(--ink-soft);font:10px var(--font-data)}
 .topic-exam-profile dd{margin:0;overflow-wrap:anywhere;color:var(--heading);font:600 11px/1.4 var(--font-body)}
 .topic-exam-profile small{color:var(--ink-soft);font:10px/1.4 var(--font-data)}
+.exam-json-import{margin-top:1.25rem;border-top:1px solid var(--border-color, #d7dce4);padding-top:1rem}
+.exam-json-import>label{display:block;font-weight:700;margin-bottom:.5rem}
+.exam-json-import input[type=file]{max-width:100%;margin-bottom:.5rem}
+.exam-json-preview{margin-top:1rem;overflow-wrap:anywhere}
+.exam-json-conflict{border:1px solid var(--border-color, #d7dce4);border-radius:.65rem;padding:.8rem;margin:.7rem 0}
+.exam-json-conflict label{display:block;margin:.55rem 0}
+.exam-json-conflict select{display:block;max-width:100%;width:100%;margin-top:.2rem}
+.exam-json-preview button{margin:.4rem .4rem .4rem 0}

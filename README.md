@@ -27,6 +27,8 @@ Os dados ficam no navegador. Exporte um backup JSON regularmente pela área de d
 
 Na área **Disciplinas**, a opção **Importar JSON ou CSV** abre uma prévia antes de alterar a base. Ela discrimina itens novos, existentes, atualizações e campos preservados; IDs, progresso, sessões, revisões, histórico e ajustes manuais não são sobrescritos. A mesma importação pode ser repetida sem criar duplicatas. O botão **Baixar modelo CSV** fornece um arquivo inicial com as colunas `disciplina`, `topico`, `dificuldade`, `importancia`, `esforco` e `tags`; somente as duas primeiras são obrigatórias. No JSON, use `subjects: [{ name, topics: [{ name }] }]`. A importância é informada de 0 a 100, o esforço em minutos e múltiplas tags são separadas por `|`.
 
+Na área **Metas → Inteligência da prova**, importe provas históricas com JSON no formato `{"exam":{"institution":"Banco do Brasil","role":"Escriturário","board":"Cesgranrio","year":2023,"coverage":"complete"},"questions":[{"number":1,"subject":"Matemática","topic":"Juros Compostos","weight":1}]}`. A cobertura padrão é parcial; declare `complete` somente quando o arquivo representa toda a prova. A prévia exige decidir cada questão sem correspondência antes de confirmar. Reimportar a mesma prova atualiza questões sem duplicá-las. Com histórico suficiente, a evidência ajusta de forma limitada o impacto estimado; pesos oficiais e ajustes manuais são preservados.
+
 ## Instalação como PWA
 
 No Chrome ou Edge, abra a versão publicada e use a opção **Instalar StudyTrack** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.
