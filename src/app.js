@@ -1126,6 +1126,7 @@ function validateNormalizedBackup(data){
     const error=validateEntity(item,'Uma decisão de planejamento');if(error)return fail(error);
     if(typeof item.createdAt!=='string'||!isOptionalTimestamp(item.createdAt)||!isOptionalTimestamp(item.decidedAt)||!['suggested','applied','rejected','reverted'].includes(item.status)||!isSafeId(item.sourceSubjectId)||!isSafeId(item.targetSubjectId)||!isFiniteNonNegative(item.minutes)||Number(item.minutes)<15||Number(item.minutes)>40||!Array.isArray(item.reasons)||item.reasons.some(reason=>!textOk(reason,500))||[item.sourceBefore,item.sourceAfter,item.targetBefore,item.targetAfter].some(value=>!isFiniteNonNegative(value))||!Number.isInteger(Number(item.algorithmVersion))||Number(item.algorithmVersion)<1)return fail('Uma decisão de planejamento possui dados inválidos.');
     if([item.planId,item.sourceTopicId,item.targetTopicId].some(id=>id!=null&&!isSafeId(id)))return fail('Uma decisão de planejamento possui referência inválida.');
+    if(['applied','reverted'].includes(item.status)&&(!isSafeId(item.planId)||!isSafeId(item.sourceTopicId)||!isSafeId(item.targetTopicId)||!isFiniteNonNegative(item.sourceItemBefore)||!isFiniteNonNegative(item.targetItemBefore)||!isPlainObject(item.sourceMixBefore)||!isPlainObject(item.targetMixBefore)))return fail('Uma decisão de planejamento aplicada não pode ser revertida com estes dados.');
   }
   for(const item of data.recommendationFeedback){const error=validateEntity(item,'Um feedback de recomendação');if(error)return fail(error);if(!isISODate(item.date)||typeof item.accepted!=='boolean'||typeof item.completed!=='boolean'||!isOptionalTimestamp(item.createdAt)||!isOptionalTimestamp(item.completedAt))return fail('Um feedback de recomendação possui dados inválidos.');}
   for(const item of data.alertStates){if(!isPlainObject(item)||!isSafeId(item.alertId)||!(item.dismissedUntil===null||isISODate(item.dismissedUntil))||!(item.resolvedAt===null||isISODate(item.resolvedAt)))return fail('Um estado de alerta possui dados inválidos.');}
@@ -3255,7 +3256,7 @@ function buildCurrentStudyPlanProposal({guidedDefaults=false}={}){
   const weeklyAvailableMinutes=Object.values(state.metas.horasPorDia).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0);
   const candidates=studyPlanCandidates({guidedDefaults});
   const plan=studyPlanService.calculate({topics:candidates,weeklyAvailableMinutes,weeksUntilExam:days===null?0:Math.max(0,days/7)});
-  return {...plan,examPhase:resolveExamPhase(days),adaptiveAdvice:buildAdaptivePlanningAdvice({plan,candidates})};
+  return {...plan,examPhase:resolveExamPhase(days),adaptiveAdvice:buildAdaptivePlanningAdvice({plan,candidates,history:state.adaptivePlanningHistory,today:todayISO()})};
 }
 function calculateStudyPlanPreview(){
   studyPlanPreview=buildCurrentStudyPlanProposal();

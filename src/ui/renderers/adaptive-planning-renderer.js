@@ -20,7 +20,7 @@ export function renderExamPhaseCompact(phase,{escapeHtml=value=>String(value??''
 
 export function renderAdaptiveAllocationAdvice(advice, { weeklyPlannedMinutes = 0, formatMinutes = value => `${value} min`, escapeHtml = value => String(value ?? '') } = {}) {
   if (advice?.state !== 'proposal') {
-    return `<aside class="adaptive-advice is-informative" aria-label="Adaptação de carga"><strong>Adaptação de carga</strong><p>${escapeHtml(advice?.reason || 'Aguardando evidências comparáveis.')}</p></aside>`;
+    return `<aside class="adaptive-advice is-informative" aria-label="Adaptação de carga"><strong>${advice?.state==='stable'?'Plano continua adequado':'Adaptação de carga'}</strong><p>${escapeHtml(advice?.reason || 'Aguardando evidências comparáveis.')}</p></aside>`;
   }
   const from = advice.from || {}, to = advice.to || {};
   const applied = Boolean(advice.applied);

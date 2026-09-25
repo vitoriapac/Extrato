@@ -130,6 +130,8 @@ IndexedDB é usado em conjunto com armazenamento local. Cada estado recebe `upda
 
 O schema 21 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo, vínculos auditáveis do planejamento, evidências e resultados das recomendações, estado individual da revisão adaptativa, normalização das sessões, snapshots do escopo de evidências históricas e histórico das decisões de redistribuição semanal. Dados ausentes são mantidos em estado neutro (`null`) e backups anteriores continuam sendo migrados automaticamente pelas migrações sequenciais até a versão atual.
 
+O planejamento adaptativo registra somente decisões explícitas. A prévia calculada não entra no histórico. Transferências propostas ficam entre 15 e 40 minutos por semana, respeitando o orçamento semanal e a manutenção dos tópicos de origem. Uma inversão entre as mesmas disciplinas aguarda 14 dias após um ajuste aplicado, exceto quando a disciplina de destino apresenta queda relevante com evidência forte. Sem mudança justificada, a interface informa que o plano continua adequado.
+
 ## Contrato de ação de estudo
 
 `buildStudyAction` em `src/application/recommendations/recommendation-action.js` é a entrada única para transformar uma recomendação em `StudyAction`. Visão Geral, Hoje e Diagnóstico usam essa função e entregam `id` e `source` ao mesmo `recommendationController.execute`; Estudo Guiado recebe o contexto daí. Uma área nova não deve montar outra estrutura de ação.

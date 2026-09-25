@@ -1,4 +1,7 @@
-export const ADAPTIVE_PLANNING_VERSION=2;
+export const ADAPTIVE_PLANNING_VERSION=3;
+export const ADAPTIVE_TRANSFER_MINUTES=15;
+export const ADAPTIVE_TRANSFER_MAX_MINUTES=40;
+export const ADAPTIVE_COOLDOWN_DAYS=14;
 export const EXAM_PHASE_THRESHOLDS=Object.freeze({construction:90,consolidation:30,finalStretch:7});
 
 export function resolveExamPhase(daysToExam,thresholds=EXAM_PHASE_THRESHOLDS){
@@ -33,7 +36,7 @@ function validPlanBudget(plan){
   return subjects.every(subject=>sameMinutes(grouped.get(subject.subjectId)??-1,subject.minutes));
 }
 
-export function buildAdaptivePlanningAdvice({plan=null,candidates=[],minimumEvidence=.5}={}){
+export function buildAdaptivePlanningAdvice({plan=null,candidates=[],history=[],today=new Date().toISOString().slice(0,10),minimumEvidence=.5}={}){
   const budget=Math.max(0,Number(plan?.weeklyPlannedMinutes)||0);
   if(!validPlanBudget(plan))return {state:'insufficient',reason:'É necessário um plano consistente, com disponibilidade e ao menos duas disciplinas.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
   const measured=(Array.isArray(candidates)?candidates:[]).filter(item=>item.subjectId&&item.mastery!=null&&Number(item.evidenceStrength)>=minimumEvidence);
@@ -41,20 +44,27 @@ export function buildAdaptivePlanningAdvice({plan=null,candidates=[],minimumEvid
     const rows=measured.filter(item=>item.subjectId===subject.subjectId),weight=rows.reduce((sum,item)=>sum+Math.max(.1,Number(item.evidenceStrength)||0),0);
     const mastery=weight?Math.round(rows.reduce((sum,item)=>sum+item.mastery*Math.max(.1,Number(item.evidenceStrength)||0),0)/weight):null;
     const impact=rows.length?Math.max(...rows.map(item=>Number(item.examImpact)||0)):null;
-    return {...subject,mastery,impact,falling:rows.some(item=>item.trend?.direction==='down'||item.trend?.key==='down'),measuredTopics:rows.length};
+    return {...subject,mastery,impact,falling:rows.some(item=>item.trend?.direction==='down'||item.trend?.key==='down'),severeDeterioration:rows.some(item=>(item.trend?.direction==='down'||item.trend?.key==='down')&&(item.trend?.state==='strong_down'||Number(item.trend?.delta)<=-12)&&Number(item.evidenceStrength)>=.7),measuredTopics:rows.length};
   });
   const source=groups.filter(item=>item.mastery>=80&&!item.falling&&item.minutes>=45).sort((a,b)=>b.mastery-a.mastery)[0];
   const target=groups.filter(item=>item.subjectId!==source?.subjectId&&item.impact>=50&&(item.mastery<=60||item.falling)).sort((a,b)=>(a.mastery??100)-(b.mastery??100))[0];
-  if(!source||!target)return {state:'insufficient',reason:'Ainda não há evidência comparável de disciplina consolidada e lacuna prioritária.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
+  if(!source||!target)return groups.filter(item=>item.measuredTopics).length<2
+    ?{state:'insufficient',reason:'Ainda não há evidência comparável em pelo menos duas disciplinas.',algorithmVersion:ADAPTIVE_PLANNING_VERSION}
+    :{state:'stable',reason:'Seu plano continua adequado. Os indicadores atuais não justificam retirar tempo de uma disciplina consolidada para uma lacuna prioritária.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
   const sourceItem=plan.items.filter(item=>item.subjectId===source.subjectId&&item.minutes>15).sort((a,b)=>b.minutes-a.minutes)[0];
   const targetItem=plan.items.filter(item=>item.subjectId===target.subjectId&&item.capacityMinutes>item.minutes).sort((a,b)=>(b.capacityMinutes-b.minutes)-(a.capacityMinutes-a.minutes))[0];
-  const transferMinutes=Math.min(40,Math.floor(source.minutes*.25),source.minutes-30,(sourceItem?.minutes??0)-15,(targetItem?.capacityMinutes??0)-(targetItem?.minutes??0));
-  if(transferMinutes<15)return {state:'insufficient',reason:'A carga atual não permite redistribuir um bloco útil sem reduzir a manutenção.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
+  const transferMinutes=Math.min(ADAPTIVE_TRANSFER_MAX_MINUTES,Math.floor(source.minutes*.25),source.minutes-30,(sourceItem?.minutes??0)-15,(targetItem?.capacityMinutes??0)-(targetItem?.minutes??0));
+  if(transferMinutes<ADAPTIVE_TRANSFER_MINUTES)return {state:'stable',reason:'Seu plano continua adequado. A capacidade disponível não permite transferir ao menos 15 minutos sem comprometer a manutenção.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
+  const recentReverse=(Array.isArray(history)?history:[]).filter(item=>item.status==='applied'&&item.sourceSubjectId===target.subjectId&&item.targetSubjectId===source.subjectId).sort((a,b)=>String(b.decidedAt||b.createdAt).localeCompare(String(a.decidedAt||a.createdAt)))[0];
+  const elapsed=recentReverse?Math.floor((Date.parse(`${today}T00:00:00Z`)-Date.parse(`${String(recentReverse.decidedAt||recentReverse.createdAt).slice(0,10)}T00:00:00Z`))/(24*60*60*1000)):Infinity;
+  const relevantDeterioration=target.severeDeterioration&&target.mastery<=45;
+  if(elapsed>=0&&elapsed<ADAPTIVE_COOLDOWN_DAYS&&!relevantDeterioration)return {state:'stable',reason:`Seu plano continua adequado. Um ajuste entre essas disciplinas foi aplicado há menos de duas semanas; aguarde novas evidências antes de inverter a transferência.`,algorithmVersion:ADAPTIVE_PLANNING_VERSION};
   const rationale=[
     `Disciplina de origem consolidada: domínio ${source.mastery}/100${source.falling?' com tendência recente em queda':''}.`,
     target.falling?'Disciplina de destino com tendência recente em queda.':`Disciplina de destino com domínio ${target.mastery}/100.`,
     `Impacto da disciplina de destino na prova: ${target.impact}/100.`,
-    `A transferência mantém a carga semanal em ${budget} minutos.`
+    `A transferência mantém a carga semanal em ${budget} minutos. O bloco fica entre 15 e 40 minutos.`,
+    ...(elapsed>=0&&elapsed<ADAPTIVE_COOLDOWN_DAYS&&relevantDeterioration?['Exceção ao intervalo de duas semanas: queda relevante de domínio, confirmada por evidência forte.']:[])
   ];
   return {state:'proposal',algorithmVersion:ADAPTIVE_PLANNING_VERSION,transferMinutes,weeklyBudgetMinutes:budget,
     from:{subjectId:source.subjectId,name:source.subjectName,beforeMinutes:source.minutes,afterMinutes:source.minutes-transferMinutes,mastery:source.mastery},
@@ -73,7 +83,7 @@ const scaleMix=(mix,minutes)=>{
 export function applyAdaptivePlanningAdvice(plan,advice){
   if(advice?.state!=='proposal'||advice.applied||!validPlanBudget(plan)||!advice.from?.subjectId||!advice.to?.subjectId||advice.from.subjectId===advice.to.subjectId)return null;
   const budget=minutesValue(plan.weeklyPlannedMinutes),requested=minutesValue(advice.transferMinutes);
-  if(requested==null||requested<15||!sameMinutes(minutesValue(advice.weeklyBudgetMinutes)??-1,budget))return null;
+  if(requested==null||requested<ADAPTIVE_TRANSFER_MINUTES||requested>ADAPTIVE_TRANSFER_MAX_MINUTES||!sameMinutes(minutesValue(advice.weeklyBudgetMinutes)??-1,budget))return null;
   const fromSubject=plan.subjects.find(item=>item.subjectId===advice.from.subjectId),toSubject=plan.subjects.find(item=>item.subjectId===advice.to.subjectId);
   if(!fromSubject||!toSubject||!sameMinutes(fromSubject.minutes,advice.from.beforeMinutes)||!sameMinutes(toSubject.minutes,advice.to.beforeMinutes))return null;
   const from=plan.items.filter(item=>item.subjectId===advice.from.subjectId&&item.minutes>15).sort((a,b)=>b.minutes-a.minutes)[0];
