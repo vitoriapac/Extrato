@@ -29,9 +29,12 @@ test('peso oficial exige origem oficial; estimativa de catálogo continua identi
   assert.equal(configured.officialWeight,null);
   const catalog=buildTopicExamProfile({topic:{...withoutManual,examImportanceEstimates:{'bb-escriturario:2023':.7}},activeExamTags:['bb-escriturario']});
   assert.equal(catalog.impactSourceType,'estimated');
-  const catalogWithOfficialWeight=buildTopicExamProfile({topic:{...withoutManual,examImportanceEstimates:{'bb-escriturario:2023':.7}},subjectConfig:{expectedQuestions:10,questionWeight:1.5,official:true,sourceRef:'bb-edital'},activeExamTags:['bb-escriturario']});
+  const catalogWithOfficialWeight=buildTopicExamProfile({topic:{...withoutManual,examImportanceEstimates:{'bb-escriturario:2023':.7}},subjectConfig:{expectedQuestions:10,questionWeight:1.5,official:true,sourceRef:'bb-escriturario-2023'},activeExamTags:['bb-escriturario']});
   assert.equal(catalogWithOfficialWeight.impactSourceType,'estimated');
   assert.equal(catalogWithOfficialWeight.officialWeight,1.5);
+  const otherExam=buildTopicExamProfile({topic:withoutManual,subjectConfig:{expectedQuestions:10,questionWeight:1.5,official:true,sourceRef:'bb-escriturario-2023'},activeExamTags:['caixa-tbn']});
+  assert.equal(otherExam.impactSourceType,'manual');
+  assert.equal(otherExam.officialWeight,null);
 });
 
 test('visão estratégica respeita concurso ativo e escapa títulos externos',()=>{

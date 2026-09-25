@@ -7,12 +7,13 @@ const round=value=>Math.round(value*100)/100;
 
 export function buildTopicImpact({topic={},subjectConfig=null,activeExamTags=[],incidence=null,exams=[],examQuestions=[]}={}){
   const current=resolveTopicExamImpact({topic,subjectConfig,activeExamTags});
-  const sourceType=current.source==='manual'?'manual':current.source==='catalog'?'estimated':current.source==='subject'?(subjectConfig?.official&&subjectConfig?.sourceRef?'official':'manual'):null;
+  const officialForScope=Boolean(subjectConfig?.official&&subjectConfig?.sourceRef&&(!activeExamTags.length||activeExamTags.some(tag=>subjectConfig.sourceRef.startsWith(tag))));
+  const sourceType=current.source==='manual'?'manual':current.source==='catalog'?'estimated':current.source==='subject'?(officialForScope?'official':'manual'):null;
   const evidence=comparableExamEvidence({exams,questions:examQuestions,activeExamTags});
   const examIds=new Set(evidence.completeExams.map(exam=>exam.id));
   const weights=examQuestions.filter(question=>examIds.has(question.examId)&&question.topicId===topic.id&&question.weight!=null).map(question=>question.weight);
   const historicalWeight=weights.length?round(weights.reduce((sum,value)=>sum+value,0)/weights.length):null;
-  const officialWeight=subjectConfig?.official&&subjectConfig?.sourceRef?subjectConfig.questionWeight:null;
+  const officialWeight=officialForScope?subjectConfig.questionWeight:null;
   return Object.freeze({
     topicId:topic.id,
     impactValue:current.value,
