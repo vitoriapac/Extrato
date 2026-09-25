@@ -1742,6 +1742,7 @@ const SEARCH_COMMANDS=[
   {label:'Abrir Questões e Simulados',keywords:'questoes erros simulados desempenho',tab:'questoes'},
   {label:'Registrar questões',keywords:'lancar registrar acertos erros',action:'add-questions'},
   {label:'Abrir Metas e Planejamento',keywords:'metas capacidade plano estrategia',tab:'metas'},
+  {label:'Ver Diagnóstico',keywords:'diagnostico lacunas prioridades',action:'diagnosis'},
   {label:'Planejar semana',keywords:'plano semanal distribuir carga',tab:'metas'},
   {label:'Abrir Instruções',keywords:'ajuda guia como usar instrucoes',tab:'instrucoes'},
   {label:'Exportar backup',keywords:'backup salvar dados json',action:'backup'},
@@ -1751,8 +1752,7 @@ function renderGlobalSearchResults(){
   const input = document.getElementById('globalSearchInput');
   const panel = document.getElementById('globalSearchResults');
   const q = input.value;
-  if(!q.trim()){ panel.classList.remove('show'); panel.innerHTML='';input.setAttribute('aria-expanded','false');return; }
-  const normalized=normalizeSearchText(q.trim()),commands=SEARCH_COMMANDS.filter(item=>normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalized)).slice(0,8),results = performGlobalSearch(q);
+  const normalized=normalizeSearchText(q.trim()),commands=(normalized?SEARCH_COMMANDS.filter(item=>normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalized)):SEARCH_COMMANDS).slice(0,18),results = normalized?performGlobalSearch(q):[];
   panel.innerHTML=renderGlobalSearchPanel({query:q,commands,results,escapeHtml,escapeAttr});
   panel.classList.add('show');
   input.setAttribute('aria-expanded','true');
@@ -1770,12 +1770,13 @@ document.getElementById('globalSearchResults').addEventListener('click',event=>{
   else if(action==='add-review'){activateTab('agenda');document.getElementById('addAgendaRowBtn')?.click()}
   else if(action==='add-questions'){activateTab('questoes');document.getElementById('addQuestaoRowBtn')?.click()}
   else if(action==='timer'){activateTab('dashboard');document.getElementById('timerSubjectSelect')?.focus()}
+  else if(action==='diagnosis'){activateTab('dashboard');document.getElementById('diagnosisCenter')?.scrollIntoView({block:'center',behavior:'smooth'})}
   else if(action==='recommendation'){const recommendation=currentStudyRecommendations?.[0];if(recommendation)executeStudyRecommendation(recommendation.id);else{activateTab('hoje');showToast('Ainda não há uma recomendação elegível. Revise o planejamento e as evidências disponíveis.')}}
   else if(button.dataset.searchTab)activateTab(button.dataset.searchTab);
   panel.classList.remove('show');input.setAttribute('aria-expanded','false');input.blur();
 });
 const globalSearchInput=document.getElementById('globalSearchInput'),globalSearchResults=document.getElementById('globalSearchResults');
-globalSearchInput.addEventListener('keydown',event=>{if(!['ArrowDown','Enter'].includes(event.key))return;const first=globalSearchResults.querySelector('.search-result-item');if(first){event.preventDefault();if(event.key==='Enter')first.click();else first.focus()}});
+globalSearchInput.addEventListener('keydown',event=>{if(!['ArrowDown','ArrowUp','Enter'].includes(event.key))return;const items=[...globalSearchResults.querySelectorAll('.search-result-item')],selected=event.key==='ArrowUp'?items.at(-1):items[0];if(selected){event.preventDefault();if(event.key==='Enter')selected.click();else selected.focus()}});
 globalSearchResults.addEventListener('keydown',event=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;const items=[...globalSearchResults.querySelectorAll('.search-result-item')],index=items.indexOf(document.activeElement);if(!items.length)return;event.preventDefault();if(event.key==='ArrowUp'&&index===0){globalSearchInput.focus();return}const next=event.key==='Home'?0:event.key==='End'?items.length-1:event.key==='ArrowDown'?Math.min(items.length-1,index+1):Math.max(0,index-1);items[next]?.focus()});
 function jumpToTopic(subjectId, topicId){
   const s = state.subjects.find(x=>x.id===subjectId);

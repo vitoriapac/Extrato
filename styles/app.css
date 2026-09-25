@@ -1580,3 +1580,5 @@ body.timer-focus-active .timer-context{display:none!important}
 .recommendation-audit-summary span,.recommendation-audit-groups span{color:var(--ink-soft);font:10px/1.5 var(--font-data)}
 .recommendation-audit-groups{display:grid;gap:7px}.recommendation-audit-groups>div{display:grid;gap:4px;padding:9px;border-bottom:1px solid var(--paper-line)}
 @media(max-width:600px){.recommendation-audit-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.search-group-title{position:sticky;top:0;padding:8px 16px;background:var(--paper);color:var(--ink-soft);font:600 10px var(--font-data);letter-spacing:.06em;text-transform:uppercase}
+.search-results.show{max-height:min(65vh,480px)}
