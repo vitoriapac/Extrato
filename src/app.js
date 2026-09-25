@@ -134,6 +134,8 @@ import {buildOnboardingViewModel} from './application/onboarding/build-onboardin
 import {renderOnboardingEntry,renderOnboardingProgress,renderOnboardingContent,renderOnboardingHelp,renderOnboardingActions} from './features/onboarding/onboarding-renderer.js';
 import {renderTopicStrategyEditor as renderTopicStrategyEditorView} from './features/topic-strategy/topic-strategy-renderer.js';
 import {buildTopicStrategyViewModel} from './features/topic-strategy/topic-strategy-view-model.js';
+import {buildExamIntelligenceViewModel} from './application/exam-intelligence/build-exam-intelligence-view-model.js';
+import {renderExamIntelligence} from './ui/renderers/exam-intelligence-renderer.js';
 import {createTopicStrategyController} from './features/topic-strategy/topic-strategy-controller.js';
 import {renderReplanProposal} from './features/replan/replan-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
@@ -2082,7 +2084,7 @@ function toggleTopicPrerequisite(subjectId,topicId,prerequisiteId,checked){
 }
 function renderTopicStrategyEditor(subject,topic){
   const subjectConfig=state.examBlueprint.subjects.find(item=>item.subjectId===subject.id)||null;
-  return renderTopicStrategyEditorView(buildTopicStrategyViewModel({subject,topic,subjectConfig,activeExamTags:state.examBlueprint.activeExamTags||[],topics:allTopics()}));
+  return renderTopicStrategyEditorView(buildTopicStrategyViewModel({subject,topic,subjectConfig,activeExamTags:state.examBlueprint.activeExamTags||[],topics:allTopics(),exams:state.exams,examQuestions:state.examQuestions}));
 }
 function renderTopicAnalyticsState(subject,topic){
   const coverage=topic.status==='Concluído'?100:topic.status==='Em andamento'||topic.status==='Revisão'?50:0;
@@ -3260,6 +3262,8 @@ function updateMeta(key, value){
 function renderExamBlueprintConfig(){
   const container=document.getElementById('examBlueprintConfig');if(!container)return;
   renderExamBlueprintConfigView({container,blueprint:state.examBlueprint,subjects:activeSubjects(),escapeHtml,escapeAttr,formatDatePt,EXAM_TAGS,EXAM_SOURCES,document});
+  const evidence=document.getElementById('examIntelligenceSummary');
+  if(evidence)evidence.innerHTML=renderExamIntelligence(buildExamIntelligenceViewModel({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}));
   renderExamMasteryMatrix();
 }
 function topicExamMetricForActiveScope(topic){const active=state.examBlueprint.activeExamTags||[],entries=Object.entries(topic.examMetrics||{}).filter(([profile])=>!active.length||active.some(tag=>profile.startsWith(tag)));return entries[0]?.[1]||null}

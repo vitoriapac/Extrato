@@ -1582,3 +1582,14 @@ body.timer-focus-active .timer-context{display:none!important}
 @media(max-width:600px){.recommendation-audit-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .search-group-title{position:sticky;top:0;padding:8px 16px;background:var(--paper);color:var(--ink-soft);font:600 10px var(--font-data);letter-spacing:.06em;text-transform:uppercase}
 .search-results.show{max-height:min(65vh,480px)}
+.exam-intelligence-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px;margin:12px 0 0;padding:0;list-style:none}
+.exam-intelligence-item{display:grid;gap:6px;min-width:0;padding:12px;border:1px solid var(--paper-line);background:var(--paper-alt)}
+.exam-intelligence-item strong{overflow-wrap:anywhere;color:var(--heading);font:600 12px/1.4 var(--font-body)}
+.exam-intelligence-item span{color:var(--ink-soft);font:11px/1.5 var(--font-data)}
+.topic-exam-profile{margin:10px 0;padding:12px;border:1px solid var(--paper-line);background:var(--paper-alt)}
+.topic-exam-profile>strong{color:var(--heading);font:600 11px var(--font-data)}
+.topic-exam-profile dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:10px;margin:10px 0}
+.topic-exam-profile dl>div{display:grid;gap:4px;min-width:0}
+.topic-exam-profile dt{color:var(--ink-soft);font:10px var(--font-data)}
+.topic-exam-profile dd{margin:0;overflow-wrap:anywhere;color:var(--heading);font:600 11px/1.4 var(--font-body)}
+.topic-exam-profile small{color:var(--ink-soft);font:10px/1.4 var(--font-data)}
