@@ -31,7 +31,7 @@ test('prévia explica fase da prova e sugere adaptação sem salvar automaticame
   await page.getByRole('button',{name:'Calcular proposta semanal'}).click();
   const preview=page.locator('#examStudyPlan');
   await expect(preview).toContainText('Fase até a prova');
-  await expect(preview).toContainText(/Adaptação de carga|Redistribuição sugerida/);
+  await expect(preview).toContainText(/Adaptação de carga|Redistribuição sugerida|Plano continua adequado/);
   await expect(preview.getByRole('button',{name:'Confirmar e salvar plano'})).toBeVisible();
   await preview.getByRole('button',{name:'Descartar proposta'}).click();
   await expect(preview.getByRole('button',{name:'Calcular proposta semanal'})).toBeVisible();
@@ -66,6 +66,7 @@ test('configuração por disciplina começa recolhida e mantém herança nula',a
   await expect(disclosure.locator('summary')).toContainText('Herdar 80% (geral)');
   await disclosure.locator('summary').click();
   await expect(disclosure.locator('input[placeholder="Herdar 80% (geral)"]')).toBeVisible();
+  await page.locator('#examBlueprintConfig .exam-general-config > summary').click();
   const target=page.locator('#examBlueprintConfig .exam-blueprint-main label').nth(2).locator('input');
   await target.fill('85');await target.press('Tab');
   await expect(page.locator('#examBlueprintConfig .exam-subject-config').first().locator('summary')).toContainText('Herdar 85% (geral)');

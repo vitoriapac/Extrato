@@ -1798,7 +1798,7 @@ function jumpToTopic(subjectId, topicId){
 document.getElementById('globalSearchInput').addEventListener('input', renderGlobalSearchResults);
 document.getElementById('globalSearchInput').addEventListener('focus', renderGlobalSearchResults);
 document.getElementById('globalSearchInput').addEventListener('blur', () => {
-  setTimeout(()=>{document.getElementById('globalSearchResults').classList.remove('show');document.getElementById('globalSearchInput').setAttribute('aria-expanded','false')},150);
+  setTimeout(()=>{const panel=document.getElementById('globalSearchResults');if(panel.contains(document.activeElement))return;panel.classList.remove('show');document.getElementById('globalSearchInput').setAttribute('aria-expanded','false')},150);
 });
 const headerObserver=new IntersectionObserver(entries=>{const hero=entries[0],shell=document.querySelector('.sticky-shell');shell?.classList.toggle('is-compact',!hero.isIntersecting&&hero.boundingClientRect.bottom<0);syncStickyMetrics()},{threshold:0});headerObserver.observe(document.querySelector('.statement'));
 const stickyShell=document.querySelector('.sticky-shell');
@@ -4201,7 +4201,8 @@ function refreshStudyRecommendationItems(){
   const previous=new Map(currentStudyRecommendations.map(item=>[item.id,item]));
   currentStudyRecommendations=recommendStudy(candidates,{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>{
     const old=previous.get(item.id);
-    return old&&state.recommendationHistory.some(record=>record.id===old.recommendationId&&record.status!=='expired'&&record.createdAt?.slice(0,10)===todayISO())&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
+    const record=state.recommendationHistory.find(entry=>entry.id===old?.recommendationId);
+    return old&&(!record||record.status!=='expired'&&record.createdAt?.slice(0,10)===todayISO())&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
       ?{...item,recommendationId:old.recommendationId,shownAt:old.shownAt,algorithmVersion:PRIORITY_ALGORITHM_VERSION}
       :(()=>{const reusable=reusableRecommendationRecord(state.recommendationHistory,item,todayISO());return createRecommendationPresentation(item,{id:reusable?.id||uid('recommendation'),shownAt:reusable?.createdAt||nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION})})();
   });

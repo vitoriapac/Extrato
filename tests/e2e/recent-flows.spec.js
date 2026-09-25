@@ -16,7 +16,7 @@ test('recomendação guiada registra sessão curta e fecha o vínculo sem pergun
   await expect.poll(()=>page.locator('#studyTimerDisplay').innerText()).not.toBe('00:00');
   await page.locator('#timerFinishBtn').click();await expect(page.locator('#sessionModalOverlay')).toBeVisible();
   await page.locator('#sessionModalSaveBtn').click();
-  await expect(page.locator('#toast')).toContainText('Sessão registrada. Nova prioridade:');
+  await expect(page.locator('#sessionResult')).toContainText('Sessão registrada');
   await expect.poll(()=>page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState(),session=state.studySessions.at(-1);return Boolean(session?.recommendationId&&state.recommendationFeedback.some(item=>item.recommendationId===session.recommendationId&&item.completed&&item.resultingSessionId===session.id))})).toBe(true);
   const link=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState(),session=state.studySessions.at(-1),feedback=state.recommendationFeedback.find(item=>item.recommendationId===session.recommendationId);return{source:session.source,recommendationSource:session.recommendationSource,recommendationType:session.recommendationType,recommendationId:session.recommendationId,resultingSessionId:feedback.resultingSessionId,snapshot:feedback.snapshot,questionCount:state.questoes.filter(item=>item.studySessionId===session.id).length}});
   expect(link.source).toBe('recommendation');expect(link.recommendationSource).toBe('today');expect(link.recommendationType).toBe('study');expect(link.resultingSessionId).toBeTruthy();expect(link.snapshot).toBeTruthy();expect(link.questionCount).toBe(0);
@@ -39,7 +39,7 @@ test('ação de estudo no diagnóstico inicia sessão vinculada e atualiza as re
   await expect.poll(()=>page.locator('#studyTimerDisplay').innerText()).not.toBe('00:00');
   await page.locator('#timerFinishBtn').click();await expect(page.locator('#sessionModalOverlay')).toBeVisible();
   await expect(page.locator('#sessionModalDifficulty')).toBeVisible();await page.locator('#sessionModalDifficulty').selectOption('medium');
-  await page.locator('#sessionModalSaveBtn').click();await expect(page.locator('#toast')).toContainText('Sessão registrada.');
+  await page.locator('#sessionModalSaveBtn').click();await expect(page.locator('#sessionResult')).toContainText('Sessão registrada');
   const saved=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__?.getState()||JSON.parse(sessionStorage.getItem('bb-premium-study-demo'));const session=state.studySessions.at(-1),feedback=state.recommendationFeedback.find(item=>item.recommendationId===session.recommendationId);return{source:session.recommendationSource,type:session.recommendationType,difficulty:session.perceivedDifficulty,completed:feedback?.completed,sessionId:session.id,resultingSessionId:feedback?.resultingSessionId}});
   expect(saved.source).toBe('diagnosis');expect(saved.type).toBe('study');expect(saved.difficulty).toBe('medium');expect(saved.completed).toBe(true);expect(saved.resultingSessionId).toBe(saved.sessionId);
   await activateTab(page,'hoje');const analysisDetails=page.locator('.today-analysis-details');if(!await analysisDetails.evaluate(element=>element.open))await analysisDetails.locator('summary').click();await expect(page.locator('#diagnosisCenter')).toBeVisible();

@@ -4,7 +4,7 @@ Abra `tests/test-runner.html` no navegador. Ele inicia a aplicação com `?test=
 
 Os testes que usam armazenamento criam chaves prefixadas com `extrato-test-` e as removem ao terminar. O modo de teste não carrega nem salva o estado normal do usuário.
 
-Depois de alterar arquivos em `src/`, gere novamente `src/app.bundle.js` com `build.ps1` antes de executar a suíte.
+Depois de alterar arquivos em `src/`, execute `npm run build` para atualizar o bundle, `index.html` e o service worker antes de executar a suíte.
 
 ## Testes E2E
 
@@ -15,3 +15,5 @@ npm run test:e2e
 ```
 
 `npm run check:all` executa testes unitários, valida o bundle e executa a suíte E2E. Capturas, vídeos e traces são mantidos somente quando necessários para diagnosticar falhas.
+
+O gate de publicação roda `check:all` em UTC e `America/Sao_Paulo` no CI. Ele cobre o ciclo da recomendação até a sessão, planejamento adaptativo, histórico e resultados posteriores, Command Palette, relatório PDF e regressão visual. A matriz responsiva verifica 320–430 px nos temas claro e escuro. Falhas de screenshot exigem inspeção visual antes de atualizar a imagem de referência.
