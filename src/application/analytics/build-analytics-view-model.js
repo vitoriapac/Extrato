@@ -45,7 +45,7 @@ export function buildDiagnosisViewModel(diagnosis,{limit=4,hasTopics=true,weekly
   }
   const bottlenecks=(diagnosis.bottlenecks||[]).map(item=>{
     const completeness=numericValue(item.risk?.evidence?.completeness);
-    const confidence=completeness;
+    const confidence=numericValue(item.evidenceStrength??item.risk?.evidence?.evidenceStrength)??completeness;
     const evidenceLabel=item.risk?.evidence?.evidenceLabel;
     const reason=item.reason||`${item.factor||'Os indicadores atuais'} requerem atenção neste tópico.`;
     const insufficient=completeness==null&&/baixa|insuficiente/i.test(evidenceLabel||'');
@@ -62,15 +62,15 @@ export function buildDiagnosisViewModel(diagnosis,{limit=4,hasTopics=true,weekly
   });
   const opportunities=(diagnosis.opportunities||[]).map(item=>{
     const reason=item.missingFactors?.includes('examImpact')?'O impacto desta matéria na prova ainda não foi configurado.':'Este tópico combina potencial de melhora, relevância e esforço estimado.';
-    return presentDiagnosisItem(item,{type:'opportunity',reason,confidence:item.confidence,action:{label:'Ver tópico em Disciplinas',tab:'disciplinas'},evidence:[
-      evidenceRow('Confiança dos dados',numericValue(item.confidence)==null?null:`${Math.round(Number(item.confidence)*100)}%`),
+    return presentDiagnosisItem(item,{type:'opportunity',reason,confidence:item.evidenceStrength??item.confidence,action:{label:'Ver tópico em Disciplinas',tab:'disciplinas'},evidence:[
+      evidenceRow('Força da evidência',numericValue(item.evidenceStrength)==null?null:`${Math.round(Number(item.evidenceStrength)*100)}%`),
       evidenceRow('Esforço estimado',numericValue(item.estimatedMinutes)==null?null:`${Math.round(Number(item.estimatedMinutes))} min`),
       evidenceRow('Impacto na prova',item.examImpact==null?null:`${Math.round(item.examImpact)}/100`)
     ],explanation:[
       evidenceRow('Domínio',item.mastery==null?null:`${Math.round(item.mastery)}/100`),
       evidenceRow('Retenção',item.retention==null?null:`${Math.round(item.retention)}/100`),
       evidenceRow('Questões consideradas',item.questionVolume??item.resolved),
-      evidenceRow('Força da evidência',item.evidenceStrength==null?null:`${Math.round(Number(item.evidenceStrength)*100)}%`)
+      evidenceRow('Cobertura dos dados',numericValue(item.confidence)==null?null:`${Math.round(Number(item.confidence)*100)}%`)
     ],secondaryReasons:item.missingFactors?.includes('examImpact')?['Configure o impacto da prova para aumentar a confiança da estimativa.']:[]});
   });
   const reviewItems=((diagnosis.criticalReviews||[]).length?diagnosis.criticalReviews:diagnosis.topicsAtRisk||[]).map(item=>{
