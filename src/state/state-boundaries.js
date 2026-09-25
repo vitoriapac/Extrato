@@ -1,6 +1,6 @@
 export const PERSISTENT_COLLECTIONS=Object.freeze([
   'subjects','calendar','reviewAgenda','questoes','simulados','progressHistory',
-  'studySessions','dailyPlans','studyPlans','planAdjustments','recommendationFeedback',
+  'studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback',
   'weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'
 ]);
 

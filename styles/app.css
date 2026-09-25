@@ -1555,3 +1555,11 @@ body.timer-focus-active .timer-context{display:none!important}
 .session-result small{color:var(--ink-soft);font:10px var(--font-data)}
 .session-result .btn{margin-top:8px}
 .session-result[hidden]{display:none}
+.adaptive-history{margin-top:14px;border-top:1px solid var(--paper-line);padding-top:12px}
+.adaptive-history>summary{cursor:pointer;color:var(--heading);font:600 12px var(--font-body)}
+.adaptive-history ol{display:grid;gap:9px;margin:12px 0 0;padding:0;list-style:none}
+.adaptive-history li{padding:10px 12px;background:var(--paper-alt);border:1px solid var(--paper-line)}
+.adaptive-history li>div{display:flex;justify-content:space-between;gap:10px}
+.adaptive-history p{margin:6px 0;color:var(--ink);font:11px/1.5 var(--font-body)}
+.adaptive-history small{color:var(--ink-soft);font:10px/1.5 var(--font-data)}
+.adaptive-history li .btn{display:block;margin-top:8px}

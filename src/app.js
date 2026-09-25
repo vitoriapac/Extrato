@@ -459,9 +459,10 @@ function migrateV17toV18(data){data.examBlueprint=normalizeExamBlueprint(data.ex
 
 function migrateV18toV19(data){snapshotEvidenceScopes(data);data.schemaVersion=19;return data}
 function migrateV19toV20(data){data.studySessions=(data.studySessions||[]).map(session=>normalizeStudySession(session));data.schemaVersion=20;return data}
+function migrateV20toV21(data){if(!Array.isArray(data.adaptivePlanningHistory))data.adaptivePlanningHistory=[];data.schemaVersion=21;return data}
 
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21}});
 }
 
 function ensureStateDefaults(){
@@ -499,6 +500,7 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.dailyPlans)) state.dailyPlans = [];
   if(!Array.isArray(state.studyPlans)) state.studyPlans = [];
   if(!Array.isArray(state.planAdjustments)) state.planAdjustments = [];
+  if(!Array.isArray(state.adaptivePlanningHistory)) state.adaptivePlanningHistory = [];
   if(!Array.isArray(state.recommendationFeedback)) state.recommendationFeedback = [];
   state.recommendationFeedback.forEach(item=>{item.shownAt=item.shownAt||item.createdAt||null;item.ratedAt=item.ratedAt||null;item.algorithmVersion=Math.max(1,Number(item.algorithmVersion)||1);item.score=Number.isFinite(Number(item.score))?Number(item.score):null;item.confidence=item.confidence||null;item.snapshot=item.snapshot||null;item.baseline=item.baseline||null;item.outcome=item.outcome||null});
   if(!Array.isArray(state.alertStates)) state.alertStates = [];
@@ -1028,7 +1030,7 @@ async function exportLatestAutomaticBackup(){
   }catch(error){console.error('Falha ao exportar snapshot automático',error);showToast('Não foi possível exportar o snapshot automático.')}
 }
 function validateBackupData(data){
-  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','recommendationFeedback','alertStates','topicHistory','metasPorDisciplina'];
+  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','alertStates','topicHistory','metasPorDisciplina'];
   const envelope=validateBackupEnvelope(data,{currentVersion:CURRENT_SCHEMA_VERSION,arrayFields});if(!envelope.valid)return envelope;const {version}=envelope;
   try{
     const normalized=migrateState(structuredCloneSafe(data));
@@ -1048,7 +1050,7 @@ function ensureBackupStateDefaults(candidate){
 }
 function validateNormalizedBackup(data){
   const fail=message=>({valid:false,message});
-  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','recommendationFeedback','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
+  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
   for(const field of collections){
     if(!Array.isArray(data[field])) return fail(`O campo "${field}" deve ser uma lista.`);
     if(data[field].length>50000) return fail(`O campo "${field}" excede o limite seguro de 50.000 registros.`);
@@ -1120,6 +1122,11 @@ function validateNormalizedBackup(data){
     if(!isOptionalTimestamp(plan.confirmedAt)||!isFiniteNonNegative(plan.weeklyAvailableMinutes)||!isFiniteNonNegative(plan.weeklyPlannedMinutes)||!Array.isArray(plan.subjects)||!Array.isArray(plan.items))return fail('Um plano até a prova possui dados inválidos.');
   }
   for(const item of data.planAdjustments){const error=validateEntity(item,'Um ajuste de plano');if(error)return fail(error);if(!isISODate(item.periodStart)||!isISODate(item.periodEnd)||!isOptionalTimestamp(item.confirmedAt)||!isFiniteNonNegative(item.deficitMinutes)||!isFiniteNonNegative(item.redistributedMinutes)||!Array.isArray(item.allocations))return fail('Um ajuste de plano possui dados inválidos.');}
+  for(const item of data.adaptivePlanningHistory){
+    const error=validateEntity(item,'Uma decisão de planejamento');if(error)return fail(error);
+    if(typeof item.createdAt!=='string'||!isOptionalTimestamp(item.createdAt)||!isOptionalTimestamp(item.decidedAt)||!['suggested','applied','rejected','reverted'].includes(item.status)||!isSafeId(item.sourceSubjectId)||!isSafeId(item.targetSubjectId)||!isFiniteNonNegative(item.minutes)||Number(item.minutes)<15||Number(item.minutes)>40||!Array.isArray(item.reasons)||item.reasons.some(reason=>!textOk(reason,500))||[item.sourceBefore,item.sourceAfter,item.targetBefore,item.targetAfter].some(value=>!isFiniteNonNegative(value))||!Number.isInteger(Number(item.algorithmVersion))||Number(item.algorithmVersion)<1)return fail('Uma decisão de planejamento possui dados inválidos.');
+    if([item.planId,item.sourceTopicId,item.targetTopicId].some(id=>id!=null&&!isSafeId(id)))return fail('Uma decisão de planejamento possui referência inválida.');
+  }
   for(const item of data.recommendationFeedback){const error=validateEntity(item,'Um feedback de recomendação');if(error)return fail(error);if(!isISODate(item.date)||typeof item.accepted!=='boolean'||typeof item.completed!=='boolean'||!isOptionalTimestamp(item.createdAt)||!isOptionalTimestamp(item.completedAt))return fail('Um feedback de recomendação possui dados inválidos.');}
   for(const item of data.alertStates){if(!isPlainObject(item)||!isSafeId(item.alertId)||!(item.dismissedUntil===null||isISODate(item.dismissedUntil))||!(item.resolvedAt===null||isISODate(item.resolvedAt)))return fail('Um estado de alerta possui dados inválidos.');}
   for(const item of data.topicHistory){ const error=validateEntity(item,'Um evento histórico'); if(error) return fail(error); }
@@ -3254,15 +3261,57 @@ function calculateStudyPlanPreview(){
   studyPlanPreview=buildCurrentStudyPlanProposal();
   renderStudyPlanBuilder();
 }
+function recordAdaptiveDecision(advice,status,planBefore=null,planAfter=null){
+  const from=advice?.from||{},to=advice?.to||{};
+  if(advice?.state!=='proposal')return null;
+  const changed=planAfter?.items?.filter(item=>item.minutes!==planBefore?.items?.find(previous=>previous.topicId===item.topicId)?.minutes)||[];
+  const sourceItem=changed.find(item=>item.subjectId===from.subjectId),targetItem=changed.find(item=>item.subjectId===to.subjectId);
+  const entry={id:uid('adaptive-plan'),createdAt:nowISO(),sourceSubjectId:from.subjectId,targetSubjectId:to.subjectId,sourceName:from.name,targetName:to.name,minutes:advice.transferMinutes,sourceBefore:from.beforeMinutes,sourceAfter:from.afterMinutes,targetBefore:to.beforeMinutes,targetAfter:to.afterMinutes,reasons:[...(advice.rationale||[])],algorithmVersion:advice.algorithmVersion,status,planId:null,sourceTopicId:sourceItem?.topicId||null,targetTopicId:targetItem?.topicId||null,sourceItemBefore:sourceItem?planBefore.items.find(item=>item.topicId===sourceItem.topicId)?.minutes:null,targetItemBefore:targetItem?planBefore.items.find(item=>item.topicId===targetItem.topicId)?.minutes:null,sourceMixBefore:sourceItem?structuredClone(planBefore.items.find(item=>item.topicId===sourceItem.topicId)?.activityMix):null,targetMixBefore:targetItem?structuredClone(planBefore.items.find(item=>item.topicId===targetItem.topicId)?.activityMix):null};
+  state.adaptivePlanningHistory.push(entry);scheduleSave();return entry;
+}
 function useAdaptivePlanAdvice(){
   const adjusted=applyAdaptivePlanningAdvice(studyPlanPreview,studyPlanPreview?.adaptiveAdvice);
   if(!adjusted){showToast('Não há capacidade livre suficiente nos tópicos indicados para aplicar esta sugestão.');return}
+  const entry=recordAdaptiveDecision(studyPlanPreview.adaptiveAdvice,'suggested',studyPlanPreview,adjusted);
+  adjusted.adaptiveHistoryId=entry?.id||null;
   studyPlanPreview=adjusted;renderStudyPlanBuilder();
 }
-function clearStudyPlanPreview(){studyPlanPreview=null;renderStudyPlanBuilder()}
+function rejectAdaptivePlanAdvice(){
+  if(studyPlanPreview?.adaptiveAdvice?.state!=='proposal'||studyPlanPreview.adaptiveAdvice.applied)return;
+  recordAdaptiveDecision(studyPlanPreview.adaptiveAdvice,'rejected');
+  studyPlanPreview.adaptiveAdvice={state:'rejected',reason:'Sugestão recusada. O plano calculado continua disponível para confirmação.'};renderStudyPlanBuilder();
+}
+function clearStudyPlanPreview(){
+  const entry=state.adaptivePlanningHistory.find(item=>item.id===studyPlanPreview?.adaptiveHistoryId&&item.status==='suggested');
+  if(entry){entry.status='rejected';entry.decidedAt=nowISO();scheduleSave()}
+  studyPlanPreview=null;renderStudyPlanBuilder();
+}
 function confirmStudyPlan(){
   if(!studyPlanPreview||studyPlanPreview.state==='insufficient'||!studyPlanPreview.items.length)return;
-  studyPlanService.confirm({...studyPlanPreview,examDate:state.examDate||null});studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('Plano semanal confirmado e salvo.')
+  const confirmed=studyPlanService.confirm({...studyPlanPreview,examDate:state.examDate||null});
+  const entry=state.adaptivePlanningHistory.find(item=>item.id===studyPlanPreview.adaptiveHistoryId&&item.status==='suggested');
+  if(entry&&confirmed){entry.status='applied';entry.planId=confirmed.id;entry.decidedAt=nowISO()}
+  studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('Plano semanal confirmado e salvo.')
+}
+function revertAdaptivePlanningDecision(id){
+  const entry=state.adaptivePlanningHistory.find(item=>item.id===id&&item.status==='applied');
+  const active=latestStudyPlan();
+  if(!entry||!active||active.id!==entry.planId||!entry.sourceMixBefore||!entry.targetMixBefore)return;
+  const source=active.subjects.find(item=>item.subjectId===entry.sourceSubjectId),target=active.subjects.find(item=>item.subjectId===entry.targetSubjectId);
+  const sourceItem=active.items.find(item=>item.topicId===entry.sourceTopicId),targetItem=active.items.find(item=>item.topicId===entry.targetTopicId);
+  if(!source||!target||!sourceItem||!targetItem||source.minutes!==entry.sourceAfter||target.minutes!==entry.targetAfter||sourceItem.minutes!==entry.sourceItemBefore-entry.minutes||targetItem.minutes!==entry.targetItemBefore+entry.minutes){showToast('O plano mudou desde esse ajuste. Calcule uma nova proposta para redistribuir a carga.');return}
+  const restored=structuredClone(active);
+  restored.subjects.find(item=>item.subjectId===entry.sourceSubjectId).minutes=entry.sourceBefore;
+  restored.subjects.find(item=>item.subjectId===entry.targetSubjectId).minutes=entry.targetBefore;
+  const restoredSource=restored.items.find(item=>item.topicId===entry.sourceTopicId),restoredTarget=restored.items.find(item=>item.topicId===entry.targetTopicId);
+  restoredSource.minutes=entry.sourceItemBefore;restoredTarget.minutes=entry.targetItemBefore;
+  restoredSource.activityMix=structuredClone(entry.sourceMixBefore);restoredTarget.activityMix=structuredClone(entry.targetMixBefore);
+  restored.maintenanceMinutes=restored.items.filter(item=>item.covered).reduce((sum,item)=>sum+item.minutes,0);
+  restored.adaptiveAdvice=null;restored.adaptiveHistoryId=null;
+  const confirmed=studyPlanService.confirm(restored);
+  if(!confirmed)return;
+  entry.status='reverted';entry.revertedAt=nowISO();entry.reversionPlanId=confirmed.id;
+  dailyPlanPreview=null;studyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('A redistribuição foi revertida em uma nova versão do plano semanal.');
 }
 function latestStudyPlan(){return studyPlanService.getActive()}
 function calculateDailyPlanPreview(){
@@ -3282,6 +3331,7 @@ function undoLatestDailyPlanGeneration(){
 }
 function renderStudyPlanBuilder(){
   const container=document.getElementById('examStudyPlan');if(!container)return;
+  renderAdaptivePlanningHistory();
   const latest=latestStudyPlan();
   if(!studyPlanPreview){
     if(dailyPlanPreview){const proposal=dailyPlanPreview,rows=proposal.days.map(day=>`<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`).join('');container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${proposal.days.length}</strong><span>Dias utilizados</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Não alocados</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state==='proposal'?`<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>`:`<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;return}
@@ -3298,6 +3348,12 @@ function renderStudyPlanBuilder(){
   const advice=plan.adaptiveAdvice;
   const adaptiveHtml=renderAdaptiveAllocationAdvice(advice,{weeklyPlannedMinutes:plan.weeklyPlannedMinutes,formatMinutes:formatPlanMinutes,escapeHtml});
   container.insertAdjacentHTML('afterbegin',`${renderExamPhase(phase,{escapeHtml})}${adaptiveHtml}`);
+}
+function renderAdaptivePlanningHistory(){
+  const container=document.getElementById('adaptivePlanningHistory');if(!container)return;
+  const entries=[...state.adaptivePlanningHistory].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  const labels={suggested:'Sugestão na prévia',applied:'Aplicado',rejected:'Recusado',reverted:'Revertido'};
+  container.innerHTML=`<details class="adaptive-history"><summary>Histórico de adaptações (${entries.length})</summary>${entries.length?`<ol>${entries.map(item=>`<li><div><strong>${escapeHtml(labels[item.status]||item.status)}</strong><small>${escapeHtml(new Date(item.createdAt).toLocaleString('pt-BR'))}</small></div><p>${escapeHtml(item.sourceName||getSubjectName(item.sourceSubjectId))} ${formatPlanMinutes(item.sourceBefore)} → ${formatPlanMinutes(item.sourceAfter)} · ${escapeHtml(item.targetName||getSubjectName(item.targetSubjectId))} ${formatPlanMinutes(item.targetBefore)} → ${formatPlanMinutes(item.targetAfter)}</p><small>${escapeHtml(item.reasons?.join(' ')||'Redistribuição proposta pelos indicadores disponíveis.')}</small>${item.status==='applied'&&latestStudyPlan()?.id===item.planId?`<button class="btn ghost small" data-delegated-click="revertAdaptivePlanningDecision('${escapeAttr(item.id)}')">Reverter ajuste</button>`:''}</li>`).join('')}</ol>`:'<p>Nenhuma decisão de adaptação registrada.</p>'}</details>`;
 }
 function updateExamBlueprint(field,value,{refresh=true}={}){
   studyPlanPreview=null;
@@ -4783,7 +4839,7 @@ function escapeAttr(str){ return escapeHtml(str); }
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTION_HANDLERS={
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
-  calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,useAdaptivePlanAdvice,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,openNextSessionAction,
+  calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,useAdaptivePlanAdvice,rejectAdaptivePlanAdvice,revertAdaptivePlanningDecision,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,openNextSessionAction,
   calculateReplanPreview,clearReplanPreview,confirmReplan,undoPlanAdjustment,saveWeeklyCloseSnapshot,previewWeeklyCloseActions,confirmWeeklyCloseActions,toggleWeeklyPriority,executeStudyRecommendation,
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
