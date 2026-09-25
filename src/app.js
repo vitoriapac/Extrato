@@ -55,9 +55,12 @@ import {createReplanController} from './application/planning/replan-controller.j
 import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
 import {applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
 import {renderAdaptiveAllocationAdvice,renderExamPhase,renderExamPhaseCompact} from './ui/renderers/adaptive-planning-renderer.js';
+import {renderExamBlueprintConfigView} from './ui/renderers/exam-blueprint-config-renderer.js';
 import {buildAchievementViewModel} from './application/achievements/build-achievement-view-model.js';
 import {renderAchievementGroups} from './ui/renderers/achievement-renderer.js';
 import {createSessionService} from './application/sessions/session-service.js';
+import {buildSessionResultViewModel} from './application/sessions/build-session-result-view-model.js';
+import {renderSessionResult} from './ui/renderers/session-result-renderer.js';
 import {normalizeStudySession} from './domain/sessions/study-session.js';
 import {createRecordService} from './application/records/record-service.js';
 import {createSubjectService} from './application/subjects/subject-service.js';
@@ -67,6 +70,7 @@ import {EXAM_PRESET_OPTIONS} from './domain/exams/exam-preset-options.js';
 import {isTopicInExamScope,isCommonTopic,topicExamScopeLabel,normalizeExamTags} from './domain/exams/exam-scope.js';
 import {classifyEvidenceScope,resolveExamEvidenceScope} from './domain/exams/exam-evidence-scope.js';
 import {setActiveExamTags} from './application/exams/exam-scope-transition.js';
+import {buildSavedSubjectConfig} from './application/exams/save-subject-config.js';
 import {snapshotEvidenceScopes} from './application/exams/evidence-scope-migration.js';
 import {createUiState,pickPersistentState} from './state/state-boundaries.js';
 import {createExamImportState,resetExamImportState} from './features/exam-import/exam-import-state.js';
@@ -88,6 +92,7 @@ import {createApplicationRenderer} from './ui/renderers/application-renderer.js'
 import {createGoalService} from './application/goals/goal-service.js';
 import {buildResultGoalsViewModel} from './application/goals/build-result-goals-view-model.js';
 import {buildPeriodComparisonViewModel} from './application/analytics/build-period-comparison-view-model.js';
+import {renderPeriodComparisonDetail} from './ui/renderers/period-comparison-detail-renderer.js';
 import {buildWeeklyAvailability} from './application/goals/weekly-availability.js';
 import {buildPriorityViewModel} from './ui/view-models/priority-view-model.js';
 import {buildStudyTimeViewModel} from './application/analytics/build-overview-view-model.js';
@@ -1461,13 +1466,7 @@ document.getElementById('sessionModalSubject').addEventListener('change',functio
 document.getElementById('sessionModalType').addEventListener('change',function(){syncSessionModalActivityFields(this.value)});
 function showSessionResult(session,nextPriority,priorityChanged){
   const result=document.getElementById('sessionResult');if(!result)return;
-  const typeLabels={study:'Estudo teórico',review:'Revisão',questions:'Questões',simulation:'Simulado'};
-  const subject=session.subjectId?getSubjectName(session.subjectId):'Sem disciplina';
-  const topic=session.topicId?` · ${getTopicName(session.topicId)}`:'';
-  const duration=formatPlanMinutes(Math.round(session.durationSeconds/60));
-  const questionSummary=session.questionsResolved>0?` · ${session.questionsResolved} questões · ${session.correctAnswers} acertos (${Math.round(session.correctAnswers/session.questionsResolved*100)}%)`:'';
-  const next=nextPriority?`${nextPriority.subjectName} — ${nextPriority.topicName} · ${formatPlanMinutes(nextPriority.estimatedMinutes)}`:null;
-  result.innerHTML=`<strong>Sessão registrada</strong><p>${escapeHtml(typeLabels[session.type]||'Sessão')} · ${escapeHtml(subject+topic)} · ${escapeHtml(duration+questionSummary)}</p><small>Seus indicadores foram atualizados.</small>${next?`<p>${priorityChanged?'Nova prioridade':'Sua prioridade principal continua sendo'}: <strong>${escapeHtml(next)}</strong></p><button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>`:session.type==='simulation'?'<p>Complete os resultados do simulado para atualizar sua próxima prioridade.</p>':'<p>Consulte a próxima ação sugerida para continuar.</p><button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>'}`;
+  result.innerHTML=renderSessionResult(buildSessionResultViewModel(session,nextPriority,priorityChanged,{subjectName:getSubjectName,topicName:getTopicName,formatMinutes:formatPlanMinutes}),{escapeHtml});
   result.hidden=false;activateTab('dashboard');result.scrollIntoView({block:'center',behavior:'smooth'});result.focus({preventScroll:true});
 }
 function openNextSessionAction(){activateTab('dashboard');document.getElementById('overviewNextAction')?.scrollIntoView({block:'center',behavior:'smooth'})}
@@ -3229,30 +3228,7 @@ function updateMeta(key, value){
 
 function renderExamBlueprintConfig(){
   const container=document.getElementById('examBlueprintConfig');if(!container)return;
-  const generalWasOpen=container.querySelector('.exam-general-config')?.open||false;
-  const blueprint=state.examBlueprint;
-  const rows=activeSubjects().map(subject=>{
-    const config=blueprint.subjects.find(item=>item.subjectId===subject.id);
-    const priorityLabel=({high:'Alta',low:'Baixa',normal:'Normal'})[config?.priority||'normal'];
-    const masteryLabel=config?.masteryTarget==null?`Herdar ${blueprint.masteryTarget}% (geral)`: `Meta ${config.masteryTarget}%`;
-    const questionsLabel=config?.expectedQuestions>0?`${config.expectedQuestions} questões`:'Questões sem meta';
-    const weightLabel=config?.questionWeight!=null?`Peso ${config.questionWeight}`:'Peso padrão';
-    return `<details class="exam-subject-config"><summary><strong>${escapeHtml(subject.name)}</strong><span>${priorityLabel}</span><span>${masteryLabel}</span><span>${questionsLabel} · ${weightLabel}</span><em>Editar configuração</em></summary><div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${escapeAttr(subject.id)}','priority',this.value)"><option value="normal" ${!config||config.priority==='normal'?'selected':''}>Normal</option><option value="high" ${config?.priority==='high'?'selected':''}>Alta</option><option value="low" ${config?.priority==='low'?'selected':''}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget??''}" placeholder="Herdar ${blueprint.masteryTarget}% (geral)" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','masteryTarget',this.value)">${config?.masteryTarget==null?`<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>`:''}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions??''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight??''}" placeholder="1" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','questionWeight',this.value)">${config?.sourceRef?`<small class="field-inheritance">${escapeHtml(EXAM_SOURCES[config.sourceRef]?.label||config.sourceRef)}${config.official?' · oficial':''}</small>`:''}</label></div></details>`;
-  }).join('');
-  container.innerHTML=`<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[['bb-escriturario','Banco do Brasil — Escriturário'],['caixa-tbn','Caixa — TBN'],['caixa-tbn-ti','Caixa — TBN TI']].map(([tag,label])=>`<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags||[]).includes(tag)?'checked':''}> ${label}</label>`).join('')}<small>Somente os concursos marcados influenciam prontidão, prioridade e planejamento. Se nenhum for selecionado, todo o conteúdo continuará elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
-  const general=document.createElement('details');general.className='exam-general-config';general.innerHTML=`<summary>Opções gerais da prova · ${escapeHtml(blueprint.examDate?formatDatePt(blueprint.examDate):'sem data')} · meta ${blueprint.masteryTarget}%</summary>`;
-  const main=container.querySelector('.exam-blueprint-main');main.before(general);general.append(main,container.querySelector('.active-exams'));general.open=generalWasOpen;
-  container.querySelectorAll('.exam-subject-config').forEach((details,index)=>{
-    const subject=activeSubjects()[index];if(!subject)return;
-    details.dataset.subjectId=subject.id;
-    const fields=details.querySelectorAll('.exam-subject-row select,.exam-subject-row input');
-    ['priority','masteryTarget','expectedQuestions','questionWeight'].forEach((name,fieldIndex)=>{fields[fieldIndex].name=name;fields[fieldIndex].removeAttribute('data-delegated-change');fields[fieldIndex].removeAttribute('data-delegated-blur')});
-    const levels=[...new Set((subject.topics||[]).map(topic=>topic.incidence?.level).filter(Boolean))];
-    const tags=[...new Set((subject.topics||[]).flatMap(topic=>topic.examTags||[]))];
-    const summary=document.createElement('span');summary.className='exam-subject-scope';summary.textContent=`Incidência: ${levels.length===1?levels[0]:levels.length?'Variável':'Não informada'} · Concursos: ${tags.length?tags.map(tag=>tag===EXAM_TAGS.BB?'BB':tag===EXAM_TAGS.CAIXA?'Caixa':tag===EXAM_TAGS.CAIXA_TI?'Caixa TI':tag).join(', '):'não informados'}`;
-    details.querySelector('summary').append(summary);
-    const actions=document.createElement('div');actions.className='exam-subject-actions';actions.innerHTML=`<small>Incidência e concursos são configurados por tópico.</small><button class="btn small" type="button" data-delegated-click="saveExamSubjectConfig('${escapeAttr(subject.id)}')">Salvar</button><button class="btn ghost small" type="button" data-delegated-click="cancelExamSubjectConfig()">Cancelar</button>`;details.append(actions);
-  });
+  renderExamBlueprintConfigView({container,blueprint:state.examBlueprint,subjects:activeSubjects(),escapeHtml,escapeAttr,formatDatePt,EXAM_TAGS,EXAM_SOURCES,document});
   renderExamMasteryMatrix();
 }
 function topicExamMetricForActiveScope(topic){const active=state.examBlueprint.activeExamTags||[],entries=Object.entries(topic.examMetrics||{}).filter(([profile])=>!active.length||active.some(tag=>profile.startsWith(tag)));return entries[0]?.[1]||null}
@@ -3397,13 +3373,10 @@ function saveExamSubjectConfig(subjectId){
   const details=[...document.querySelectorAll('#examBlueprintConfig .exam-subject-config')].find(item=>item.dataset.subjectId===subjectId);
   if(!details)return;
   const read=name=>details.querySelector(`[name="${name}"]`)?.value??'';
-  const priority=read('priority'),masteryRaw=read('masteryTarget'),questionsRaw=read('expectedQuestions'),weightRaw=read('questionWeight');
-  const mastery=masteryRaw===''?null:Number(masteryRaw),questions=questionsRaw===''?0:Number(questionsRaw),weight=weightRaw===''?1:Number(weightRaw);
-  if(!EXAM_PRIORITIES.includes(priority)||mastery!==null&&(!Number.isFinite(mastery)||mastery<0||mastery>100)||!Number.isInteger(questions)||questions<0||!Number.isFinite(weight)||weight<.1){showToast('Revise a meta, a quantidade de questões e o peso antes de salvar.');return}
-  let config=state.examBlueprint.subjects.find(item=>item.subjectId===subjectId);
-  if(!config){config={subjectId,expectedQuestions:0,questionWeight:1,priority:'normal',masteryTarget:null};state.examBlueprint.subjects.push(config)}
-  if(config.expectedQuestions!==questions||config.questionWeight!==weight){config.sourceRef=null;config.official=false;config.mappingType=null}
-  Object.assign(config,{priority,masteryTarget:mastery,expectedQuestions:questions,questionWeight:weight});
+  const existing=state.examBlueprint.subjects.find(item=>item.subjectId===subjectId);
+  const config=buildSavedSubjectConfig(subjectId,existing,{priority:read('priority'),masteryTarget:read('masteryTarget'),expectedQuestions:read('expectedQuestions'),questionWeight:read('questionWeight')});
+  if(!config){showToast('Revise a meta, a quantidade de questões e o peso antes de salvar.');return}
+  if(existing)Object.assign(existing,config);else state.examBlueprint.subjects.push(config);
   state.examBlueprint.configuredAt=nowISO();studyPlanPreview=null;persistAndRender();showToast('Configuração da disciplina salva.');
 }
 function cancelExamSubjectConfig(){renderExamBlueprintConfig()}
@@ -3540,9 +3513,7 @@ function renderSelectedPeriodComparison(){
   if(custom&&(!start||!end||start>end)){container.innerHTML='<p class="diagnosis-empty">Escolha um intervalo válido para comparar os períodos.</p>';return}
   const reviews=state.reviewAgenda.map(item=>({...item,date:item.completedAt?localDateFromTimestamp(item.completedAt):item.date}));
   const model=buildPeriodComparisonViewModel({sessions:state.studySessions,questions:state.questoes,reviews,today:todayISO(),preset:preset.value,start,end});
-  const format=(metric,value)=>value==null?'Dados insuficientes':metric.unit==='min'?`${Math.floor(value/60)}h ${String(value%60).padStart(2,'0')}min`:metric.unit==='percentage_points'?`${value}%`:String(value);
-  const delta=metric=>metric.key==='accuracy'&&model.insights.confidence!=='moderate'?'Amostra insuficiente':metric.delta==null?'Sem comparação':metric.unit==='percentage_points'?`${metric.delta>0?'+':''}${metric.delta} p.p.`:metric.unit==='min'?`${metric.delta>0?'+':'−'}${Math.floor(Math.abs(metric.delta)/60)}h ${String(Math.abs(metric.delta)%60).padStart(2,'0')}min`:`${metric.delta>0?'+':''}${metric.delta}`;
-  container.innerHTML=`<p class="period-comparison-caption"><strong>${escapeHtml(model.currentPeriod.label)}</strong> · ${escapeHtml(model.currentPeriod.start)} a ${escapeHtml(model.currentPeriod.end)} <span>comparado com ${escapeHtml(model.previousPeriod.start)} a ${escapeHtml(model.previousPeriod.end)}</span></p><div class="period-comparison result-period-comparison"><div class="comparison-head"><span>Métrica</span><span>Anterior</span><span>Atual</span><span>Variação</span></div>${model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><b>${format(metric,metric.previous)}</b><b>${format(metric,metric.current)}</b><b class="comparison-delta ${metric.key==='accuracy'&&model.insights.confidence!=='moderate'?'insufficient':metric.state}">${delta(metric)}</b></div>`).join('')}</div><aside class="comparison-insight" aria-label="Leitura da comparação">${model.insights.combinedMessage?`<p class="comparison-insight-combined">${escapeHtml(model.insights.combinedMessage)}</p>`:''}<p>${escapeHtml(model.insights.accuracyMessage)}</p><small>${escapeHtml(model.insights.caveat)}</small></aside>`;
+  container.innerHTML=renderPeriodComparisonDetail(model,{escapeHtml});
 }
 
 /* ===== ESTIMATIVA DE RITMO ===== */
