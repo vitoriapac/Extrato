@@ -43,6 +43,8 @@ import {migrateRecommendationHistory,reusableRecommendationRecord,ensureRecommen
 import {renderRecommendationHistory} from './ui/renderers/recommendation-history-renderer.js';
 import {captureRecommendationBaseline,captureRecommendationSnapshot,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
 import {buildRecommendationOutcomeViewModel} from './application/recommendations/build-recommendation-outcome-view-model.js';
+import {buildRecommendationOutcomeAudit} from './application/recommendations/build-recommendation-outcome-audit.js';
+import {renderRecommendationOutcomeAudit} from './ui/renderers/recommendation-outcome-audit-renderer.js';
 import {buildStudyAction,recommendationActionKind,recommendationActionLabel,sameStudyActionTarget,STUDY_ACTION_SOURCES} from './application/recommendations/recommendation-action.js';
 import {createRecommendationController} from './application/recommendations/recommendation-controller.js';
 import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
@@ -4743,7 +4745,7 @@ function renderApprovalDashboard(){
   renderRecommendationCalibration();
   renderStudyTrack32Insights();
 }
-function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml});renderRecommendationHistorySummary()}
+function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml});const audit=document.getElementById('recommendationOutcomeAudit');if(audit)audit.innerHTML=renderRecommendationOutcomeAudit(buildRecommendationOutcomeAudit(state.recommendationFeedback),{escapeHtml});renderRecommendationHistorySummary()}
 function renderRecommendationHistorySummary(){const history=document.getElementById('recommendationHistorySummary');if(history)history.innerHTML=renderRecommendationHistory(summarizeRecommendationHistory(state.recommendationHistory,{today:todayISO()}))}
 let currentStudyTrackModel=null;
 let weeklyCloseController=null;
