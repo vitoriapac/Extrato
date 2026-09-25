@@ -138,6 +138,8 @@ import {renderTopicStrategyEditor as renderTopicStrategyEditorView} from './feat
 import {buildTopicStrategyViewModel} from './features/topic-strategy/topic-strategy-view-model.js';
 import {buildExamIntelligenceViewModel} from './application/exam-intelligence/build-exam-intelligence-view-model.js';
 import {renderExamIntelligence} from './ui/renderers/exam-intelligence-renderer.js';
+import {buildExamMatrix} from './application/exam-intelligence/build-exam-matrix.js';
+import {renderExamMatrix} from './ui/renderers/exam-matrix-renderer.js';
 import {createTopicStrategyController} from './features/topic-strategy/topic-strategy-controller.js';
 import {renderReplanProposal} from './features/replan/replan-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
@@ -3298,11 +3300,33 @@ function updateMeta(key, value){
   persistAndRender();
 }
 
+const examMatrixFilters={scope:'active',board:'all',year:'all',role:'all'};
+let selectedExamMatrixTopicId=null;
+function renderHistoricalExamMatrix(){
+  const container=document.getElementById('examHistoricalMatrix');if(!container)return;
+  const metricsByTopic=Object.fromEntries(intelligenceCandidates().map(item=>[item.topicId,{mastery:item.mastery,retention:item.retention,trend:item.trend,priority:item.score}]));
+  const model=buildExamMatrix({topics:activeTopics(),exams:state.exams,examQuestions:state.examQuestions,activeExamTags:state.examBlueprint.activeExamTags||[],filters:examMatrixFilters,metricsByTopic});
+  if(!model.rows.some(row=>row.topicId===selectedExamMatrixTopicId))selectedExamMatrixTopicId=null;
+  container.innerHTML=renderExamMatrix(model,{selectedTopicId:selectedExamMatrixTopicId});
+  for(const [key,value] of Object.entries(examMatrixFilters)){const select=container.querySelector(`[data-exam-matrix-filter="${key}"]`);if(select&&[...select.options].some(option=>option.value===String(value)))select.value=String(value)}
+}
+document.getElementById('examHistoricalMatrix')?.addEventListener('change',event=>{
+  const key=event.target?.dataset?.examMatrixFilter;if(!['scope','board','year','role'].includes(key))return;
+  examMatrixFilters[key]=event.target.value;
+  if(key==='scope'){examMatrixFilters.board='all';examMatrixFilters.year='all';examMatrixFilters.role='all'}
+  selectedExamMatrixTopicId=null;renderHistoricalExamMatrix();
+});
+document.getElementById('examHistoricalMatrix')?.addEventListener('click',event=>{
+  const button=event.target?.closest?.('[data-exam-matrix-topic]');if(!button)return;
+  selectedExamMatrixTopicId=button.dataset.examMatrixTopic;renderHistoricalExamMatrix();
+  document.querySelector('#examHistoricalMatrix .exam-matrix-detail')?.scrollIntoView?.({block:'nearest'});
+});
 function renderExamBlueprintConfig(){
   const container=document.getElementById('examBlueprintConfig');if(!container)return;
   renderExamBlueprintConfigView({container,blueprint:state.examBlueprint,subjects:activeSubjects(),escapeHtml,escapeAttr,formatDatePt,EXAM_TAGS,EXAM_SOURCES,document});
   const evidence=document.getElementById('examIntelligenceSummary');
   if(evidence)evidence.innerHTML=renderExamIntelligence(buildExamIntelligenceViewModel({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}));
+  renderHistoricalExamMatrix();
   renderExamMasteryMatrix();
 }
 function topicExamMetricForActiveScope(topic){const active=state.examBlueprint.activeExamTags||[],entries=Object.entries(topic.examMetrics||{}).filter(([profile])=>!active.length||active.some(tag=>profile.startsWith(tag)));return entries[0]?.[1]||null}

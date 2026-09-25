@@ -1601,3 +1601,25 @@ body.timer-focus-active .timer-context{display:none!important}
 .exam-json-conflict label{display:block;margin:.55rem 0}
 .exam-json-conflict select{display:block;max-width:100%;width:100%;margin-top:.2rem}
 .exam-json-preview button{margin:.4rem .4rem .4rem 0}
+.exam-historical-matrix{margin-top:18px;padding-top:14px;border-top:1px solid var(--paper-line)}
+.exam-historical-matrix h4{margin:0 0 10px;color:var(--heading);font:600 14px var(--font-body)}
+.exam-matrix-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
+.exam-matrix-filters label{display:grid;gap:4px;min-width:0;color:var(--ink-soft);font:10px var(--font-data)}
+.exam-matrix-filters select{width:100%;min-width:0}
+.exam-matrix-table-wrap{max-width:100%;overflow-x:auto}
+.exam-matrix-table{width:100%;border-collapse:collapse;font:11px/1.4 var(--font-data)}
+.exam-matrix-table caption{text-align:left;color:var(--ink-soft);padding:6px 0}
+.exam-matrix-table th,.exam-matrix-table td{min-width:75px;border:1px solid var(--paper-line);padding:7px;text-align:center}
+.exam-matrix-table th:first-child{min-width:175px;text-align:left}
+.exam-matrix-table th small{display:block;font-weight:400;overflow-wrap:anywhere}
+.exam-matrix-topic,.exam-matrix-card>button{border:0;background:none;color:var(--heading);text-align:left;text-decoration:underline;cursor:pointer;font:600 11px/1.4 var(--font-body)}
+.exam-matrix-cell{background:var(--paper-alt)}
+.exam-matrix-cell.is-one{background:color-mix(in srgb,var(--gold) 14%,var(--paper-alt))}
+.exam-matrix-cell.is-two{background:color-mix(in srgb,var(--gold) 30%,var(--paper-alt))}
+.exam-matrix-cell.is-many{background:color-mix(in srgb,var(--gold) 48%,var(--paper-alt))}
+.exam-matrix-cell small{display:block;color:var(--ink-soft);font:9px var(--font-data)}
+.exam-matrix-cards{display:none}
+.exam-matrix-detail{margin-top:12px;padding:12px;border:1px solid var(--paper-line);background:var(--paper-alt)}
+.exam-matrix-detail h4{margin:0 0 8px}.exam-matrix-detail p,.exam-matrix-detail li{font:11px/1.5 var(--font-body)}
+.exam-matrix-detail ul{margin:7px 0;padding-left:20px}
+@media(max-width:600px){.exam-matrix-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.exam-matrix-table-wrap{display:none}.exam-matrix-cards{display:grid;gap:8px}.exam-matrix-card{padding:10px;border:1px solid var(--paper-line);background:var(--paper-alt)}.exam-matrix-card p{font:10px/1.5 var(--font-data)}.exam-matrix-card>div{display:flex;flex-wrap:wrap;gap:4px}.exam-matrix-card .exam-matrix-cell{padding:4px 6px;border:1px solid var(--paper-line);font:10px var(--font-data)}}

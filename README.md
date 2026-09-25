@@ -29,6 +29,8 @@ Na área **Disciplinas**, a opção **Importar JSON ou CSV** abre uma prévia an
 
 Na área **Metas → Inteligência da prova**, importe provas históricas com JSON no formato `{"exam":{"institution":"Banco do Brasil","role":"Escriturário","board":"Cesgranrio","year":2023,"coverage":"complete"},"questions":[{"number":1,"subject":"Matemática","topic":"Juros Compostos","weight":1}]}`. A cobertura padrão é parcial; declare `complete` somente quando o arquivo representa toda a prova. A prévia exige decidir cada questão sem correspondência antes de confirmar. Reimportar a mesma prova atualiza questões sem duplicá-las. Com histórico suficiente, a evidência ajusta de forma limitada o impacto estimado; pesos oficiais e ajustes manuais são preservados.
 
+A **Matriz histórica**, na mesma área, mostra quantas questões de cada tópico apareceram em cada prova completa. Filtre por concurso, banca, ano e cargo; selecione um tópico para ver incidência, confiança, peso registrado e sua situação de domínio e retenção. No celular, a matriz aparece em cards. Provas parciais ficam fora do denominador de incidência.
+
 ## Instalação como PWA
 
 No Chrome ou Edge, abra a versão publicada e use a opção **Instalar StudyTrack** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.

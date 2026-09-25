@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=fadab0cc21ba">
+<link rel="stylesheet" href="styles/app.css?v=c72ecf119a64">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -565,7 +565,7 @@
       <p class="analytics-note">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p>
       <div id="examBlueprintConfig"></div>
     </div>
-    <div class="chart-card"><h3>Inteligência da prova</h3><div id="examIntelligenceSummary"></div><div class="exam-json-import"><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">A prévia exige uma decisão para cada questão sem correspondência. Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></div></div>
+    <div class="chart-card"><h3>Inteligência da prova</h3><div id="examIntelligenceSummary"></div><section class="exam-historical-matrix" aria-label="Matriz histórica da prova"><h4>Matriz histórica</h4><div id="examHistoricalMatrix"></div></section><div class="exam-json-import"><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">A prévia exige uma decisão para cada questão sem correspondência. Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></div></div>
     <div class="chart-card"><h3>Matriz Edital × Domínio</h3><p class="analytics-note">Cobertura, domínio, retenção e lacuna em relação à meta configurada.</p><div id="examMasteryMatrix"></div></div>
 
     <div class="chart-card">
@@ -814,7 +814,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=fadab0cc21ba"></script>
+  <script src="src/app.bundle.js?v=c72ecf119a64"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
