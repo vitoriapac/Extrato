@@ -15,6 +15,8 @@ import {registerApplicationLifecycle} from './bootstrap/register-lifecycle.js';
 import {registerMobileInputVisibility} from './ui/mobile-input-visibility.js';
 import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,REVIEW_RATINGS,calculateAdaptiveInterval,createAdaptiveReviewState,applyAdaptiveReviewRating} from './domain/reviews.js';
 import {createDefaultState} from './state/defaults.js';
+import {validateExam} from './domain/exam-intelligence/exam.js';
+import {validateExamQuestion} from './domain/exam-intelligence/exam-question.js';
 import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
 import {renderCollectionFooter,renderGroupHeader} from './ui/list-components.js';
 import {countActiveFilters,filterPanelLabel} from './ui/filter-panel.js';
@@ -470,9 +472,10 @@ function migrateV18toV19(data){snapshotEvidenceScopes(data);data.schemaVersion=1
 function migrateV19toV20(data){data.studySessions=(data.studySessions||[]).map(session=>normalizeStudySession(session));data.schemaVersion=20;return data}
 function migrateV20toV21(data){if(!Array.isArray(data.adaptivePlanningHistory))data.adaptivePlanningHistory=[];data.schemaVersion=21;return data}
 function migrateV21toV22(data){data.recommendationHistory=Array.isArray(data.recommendationHistory)?data.recommendationHistory:migrateRecommendationHistory(data.recommendationFeedback||[]);data.schemaVersion=22;return data}
+function migrateV22toV23(data){data.exams=Array.isArray(data.exams)?data.exams:[];data.examQuestions=Array.isArray(data.examQuestions)?data.examQuestions:[];data.schemaVersion=23;return data}
 
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23}});
 }
 
 function ensureStateDefaults(){
@@ -482,6 +485,8 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.reviewAgenda)) state.reviewAgenda = [];
   if(!Array.isArray(state.questoes)) state.questoes = [];
   if(!Array.isArray(state.simulados)) state.simulados = [];
+  if(!Array.isArray(state.exams)) state.exams = [];
+  if(!Array.isArray(state.examQuestions)) state.examQuestions = [];
   if(!Array.isArray(state.weeklyCloseSnapshots))state.weeklyCloseSnapshots=[];
   if(!['agenda','sequence'].includes(state.executionMode)) state.executionMode='agenda';
   const metaDefaults={semanal:5,mensal:20,questoesSemanal:150,simuladosSemanal:1,metaAprovacao:70,horasDiarias:2.5};
@@ -1041,7 +1046,7 @@ async function exportLatestAutomaticBackup(){
   }catch(error){console.error('Falha ao exportar snapshot automático',error);showToast('Não foi possível exportar o snapshot automático.')}
 }
 function validateBackupData(data){
-  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','alertStates','topicHistory','metasPorDisciplina'];
+  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','alertStates','topicHistory','metasPorDisciplina'];
   const envelope=validateBackupEnvelope(data,{currentVersion:CURRENT_SCHEMA_VERSION,arrayFields});if(!envelope.valid)return envelope;const {version}=envelope;
   try{
     const normalized=migrateState(structuredCloneSafe(data));
@@ -1061,12 +1066,12 @@ function ensureBackupStateDefaults(candidate){
 }
 function validateNormalizedBackup(data){
   const fail=message=>({valid:false,message});
-  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
+  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
   for(const field of collections){
     if(!Array.isArray(data[field])) return fail(`O campo "${field}" deve ser uma lista.`);
     if(data[field].length>50000) return fail(`O campo "${field}" excede o limite seguro de 50.000 registros.`);
   }
-  const ids=new Set(),subjectIds=new Set(),topicIds=new Set(),sessionIds=new Set(),planItemIds=new Set();
+  const ids=new Set(),subjectIds=new Set(),topicIds=new Set(),sessionIds=new Set(),planItemIds=new Set(),examIds=new Set(),topicSubjectIds=new Map();
   const registerId=(id,label)=>{
     if(!isSafeId(id)) return `${label} possui um identificador inválido.`;
     if(ids.has(id)) return `O identificador "${id}" aparece mais de uma vez no backup.`;
@@ -1082,6 +1087,7 @@ function validateNormalizedBackup(data){
       if(!isPlainObject(topic)) return fail('Um tópico não é um objeto válido.');
       const topicIdError=registerId(topic.id,'Um tópico'); if(topicIdError) return fail(topicIdError);
       topicIds.add(topic.id);
+      topicSubjectIds.set(topic.id,subject.id);
       if(!textOk(topic.name,500)||!textOk(topic.link||'',2000)||!textOk(topic.notes||'',20000)) return fail('Um tópico excede os limites de texto permitidos.');
       if(!STATUS_OPTIONS.includes(topic.status)||!DIFFICULTY_OPTIONS.includes(topic.difficulty)) return fail('Um tópico possui status ou dificuldade inválida.');
       if(!Array.isArray(topic.tags)||topic.tags.length>100||topic.tags.some(tag=>!textOk(tag,100))) return fail('Um tópico possui tags inválidas.');
@@ -1089,6 +1095,20 @@ function validateNormalizedBackup(data){
       if(topic.estimatedStudyMinutes!==null&&(!isFiniteNonNegative(topic.estimatedStudyMinutes)||Number(topic.estimatedStudyMinutes)<=0)) return fail('Um tópico possui esforço estimado inválido.');
       if(!Array.isArray(topic.prerequisites)||topic.prerequisites.length>100||topic.prerequisites.some(id=>!isSafeId(id))) return fail('Um tópico possui pré-requisitos inválidos.');
     }
+  }
+  for(const exam of data.exams){
+    const issue=validateExam(exam);if(issue)return fail(issue);
+    const idError=registerId(exam.id,'Uma prova histórica');if(idError)return fail(idError);
+    examIds.add(exam.id);
+  }
+  const questionKeys=new Set();
+  for(const question of data.examQuestions){
+    const issue=validateExamQuestion(question);if(issue)return fail(issue);
+    const idError=registerId(question.id,'Uma questão histórica');if(idError)return fail(idError);
+    if(!examIds.has(question.examId)||!subjectIds.has(question.subjectId)||topicSubjectIds.get(question.topicId)!==question.subjectId)return fail('Uma questão histórica aponta para prova, disciplina ou tópico inexistente.');
+    const key=`${question.examId}:${question.questionNumber}`;
+    if(questionKeys.has(key))return fail('Uma prova contém números de questão duplicados.');
+    questionKeys.add(key);
   }
   const validateEntity=(item,label)=>{
     if(!isPlainObject(item)) return `${label} não é um objeto válido.`;
