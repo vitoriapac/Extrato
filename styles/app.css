@@ -1549,3 +1549,9 @@ body.timer-focus-active .timer-context{display:none!important}
 .diagnostic-understanding dd{margin:0;color:var(--text-primary);font:500 10px/1.4 var(--font-data);overflow-wrap:anywhere}
 @media(max-width:760px){.diagnostic-understanding>summary{min-height:44px}.exam-subject-config>summary{min-height:44px}}
 @media(max-width:760px){.panel input,.panel select,.panel textarea,.panel [contenteditable="true"]{scroll-margin-block:calc(var(--sticky-stack-height,52px) + 12px)}}
+.session-result{width:100%;margin:12px 0;padding:14px 16px;border-left:3px solid var(--green);background:var(--success-bg);color:var(--ink)}
+.session-result>strong{display:block;color:var(--heading);font:600 15px var(--font-body)}
+.session-result p{margin:8px 0;color:var(--ink);font:12px/1.5 var(--font-body)}
+.session-result small{color:var(--ink-soft);font:10px var(--font-data)}
+.session-result .btn{margin-top:8px}
+.session-result[hidden]{display:none}

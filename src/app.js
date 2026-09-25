@@ -1327,6 +1327,7 @@ function timerTick(){
 }
 function startTimer(){
   if(timerRunning) return;
+  if(timerSeconds===0){const result=document.getElementById('sessionResult');if(result)result.hidden=true;}
   const active=state.activeTimer;
   if(timerSeconds===0){ active.startedAt=nowISO(); active.accumulatedSeconds=0; }
   active.subjectId=document.getElementById('timerSubjectSelect').value||null;
@@ -1450,6 +1451,18 @@ document.getElementById('timerFinishBtn').addEventListener('click', () => {
 document.getElementById('sessionModalSkipBtn').addEventListener('click', closeSessionModal);
 document.getElementById('sessionModalSubject').addEventListener('change',function(){ populateSessionTopicSelect(this.value); });
 document.getElementById('sessionModalType').addEventListener('change',function(){syncSessionModalActivityFields(this.value)});
+function showSessionResult(session,nextPriority,priorityChanged){
+  const result=document.getElementById('sessionResult');if(!result)return;
+  const typeLabels={study:'Estudo teórico',review:'Revisão',questions:'Questões',simulation:'Simulado'};
+  const subject=session.subjectId?getSubjectName(session.subjectId):'Sem disciplina';
+  const topic=session.topicId?` · ${getTopicName(session.topicId)}`:'';
+  const duration=formatPlanMinutes(Math.round(session.durationSeconds/60));
+  const questionSummary=session.questionsResolved>0?` · ${session.questionsResolved} questões · ${session.correctAnswers} acertos (${Math.round(session.correctAnswers/session.questionsResolved*100)}%)`:'';
+  const next=nextPriority?`${nextPriority.subjectName} — ${nextPriority.topicName} · ${formatPlanMinutes(nextPriority.estimatedMinutes)}`:null;
+  result.innerHTML=`<strong>Sessão registrada</strong><p>${escapeHtml(typeLabels[session.type]||'Sessão')} · ${escapeHtml(subject+topic)} · ${escapeHtml(duration+questionSummary)}</p><small>Seus indicadores foram atualizados.</small>${next?`<p>${priorityChanged?'Nova prioridade':'Sua prioridade principal continua sendo'}: <strong>${escapeHtml(next)}</strong></p><button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>`:session.type==='simulation'?'<p>Complete os resultados do simulado para atualizar sua próxima prioridade.</p>':'<p>Consulte a próxima ação sugerida para continuar.</p><button class="btn ghost small" type="button" data-delegated-click="openNextSessionAction()">Ver próxima ação</button>'}`;
+  result.hidden=false;activateTab('dashboard');result.scrollIntoView({block:'center',behavior:'smooth'});result.focus({preventScroll:true});
+}
+function openNextSessionAction(){activateTab('dashboard');document.getElementById('overviewNextAction')?.scrollIntoView({block:'center',behavior:'smooth'})}
 document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
   const subjectId = document.getElementById('sessionModalSubject').value || null;
   const topicId = document.getElementById('sessionModalTopic').value || null;
@@ -1474,9 +1487,8 @@ document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
   const priorityChanged=previousPriority&&nextPriority&&!sameStudyActionTarget(previousPriority,nextPriority);
   const openSimulationFlow=type==='simulation';
   closeSessionModal();
-  if(openSimulationFlow){activateTab('questoes');addSimuladoRow();showToast('Sessão registrada. Complete agora os resultados do simulado.');return}
-  if(priorityChanged){showToast(`Sessão registrada. Nova prioridade: ${nextPriority.subjectName} — ${nextPriority.topicName} · ${formatPlanMinutes(nextPriority.estimatedMinutes)}.`);return}
-  showToast(type==='questions'&&resolved>0?'Sessão e questões registradas.':'Sessão registrada. Seus indicadores foram atualizados.');
+  showSessionResult(session,nextPriority,priorityChanged);
+  if(openSimulationFlow){activateTab('questoes');addSimuladoRow();showToast('Complete agora os resultados do simulado.');}
 });
 
 document.addEventListener('visibilitychange',()=>{
@@ -4771,7 +4783,7 @@ function escapeAttr(str){ return escapeHtml(str); }
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTION_HANDLERS={
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
-  calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,useAdaptivePlanAdvice,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,
+  calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,useAdaptivePlanAdvice,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,openNextSessionAction,
   calculateReplanPreview,clearReplanPreview,confirmReplan,undoPlanAdjustment,saveWeeklyCloseSnapshot,previewWeeklyCloseActions,confirmWeeklyCloseActions,toggleWeeklyPriority,executeStudyRecommendation,
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,
