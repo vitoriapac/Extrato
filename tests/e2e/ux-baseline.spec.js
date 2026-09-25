@@ -13,6 +13,12 @@ async function prepareDemo(page,{width,height,theme='light'}={}){
   if(theme==='dark')await page.locator('#themeToggleBtn').click();
 }
 
+async function prepareDiagnosisScreenshot(page){
+  await activateTab(page,'hoje');
+  await page.locator('.today-analysis-details > summary').click();
+  await page.locator('.sticky-shell, #demoBanner, #backToTopBtn').evaluateAll(elements=>elements.forEach(element=>element.remove()));
+}
+
 test('baseline visual da ação principal no desktop',async({page})=>{
   await prepareDemo(page,{width:1440,height:900});
   await expect(page.locator('.overview-now')).toHaveScreenshot(screenshotName('agora-desktop-light.png'),screenshotOptions);
@@ -25,17 +31,13 @@ test('baseline visual da ação principal no mobile escuro',async({page})=>{
 
 test('baseline visual da Central de Diagnóstico no desktop',async({page})=>{
   await prepareDemo(page,{width:1440,height:900});
-  await activateTab(page,'hoje');
-  await page.locator('.today-analysis-details > summary').click();
-  await page.locator('#demoBanner, #backToTopBtn').evaluateAll(elements=>elements.forEach(element=>element.remove()));
+  await prepareDiagnosisScreenshot(page);
   await expect(page.locator('#diagnosisCenter')).toHaveScreenshot(screenshotName('diagnostico-desktop-light.png'),screenshotOptions);
 });
 
 test('baseline visual da Central de Diagnóstico no mobile escuro',async({page})=>{
   await prepareDemo(page,{width:375,height:812,theme:'dark'});
-  await activateTab(page,'hoje');
-  await page.locator('.today-analysis-details > summary').click();
-  await page.locator('#demoBanner, #backToTopBtn').evaluateAll(elements=>elements.forEach(element=>element.remove()));
+  await prepareDiagnosisScreenshot(page);
   await expect(page.locator('#diagnosisCenter')).toHaveScreenshot(screenshotName('diagnostico-mobile-dark.png'),screenshotOptions);
 });
 

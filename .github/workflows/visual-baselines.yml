@@ -1,0 +1,24 @@
+name: Generate visual baselines
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  snapshots:
+    runs-on: ubuntu-24.04
+    env:
+      TZ: America/Sao_Paulo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/e2e/ux-baseline.spec.js -g 'Central de Diagnóstico' --update-snapshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: diagnosis-linux-baselines
+          path: tests/e2e/ux-baseline.spec.js-snapshots/diagnostico-*-linux.png
+          if-no-files-found: error
