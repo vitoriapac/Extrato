@@ -1569,3 +1569,8 @@ body.timer-focus-active .timer-context{display:none!important}
 .exam-subject-actions small{margin-right:auto;color:var(--ink-soft);font:10px var(--font-data)}
 .exam-general-config{margin:10px 0 18px;border:1px solid var(--paper-line);padding:10px 12px}.exam-general-config>summary{cursor:pointer;color:var(--heading);font:600 12px var(--font-body)}
 @media(max-width:430px){.exam-subject-config>summary{grid-template-columns:auto minmax(0,1fr) auto;gap:5px 9px;padding:13px 8px}.exam-subject-config>summary strong{grid-column:2}.exam-subject-config>summary span{grid-column:2/-1}.exam-subject-config>summary .exam-subject-scope{grid-column:2/-1}.exam-subject-config>summary em{grid-column:3;grid-row:1}.exam-subject-actions{display:grid;grid-template-columns:1fr 1fr}.exam-subject-actions small{grid-column:1/-1}.exam-subject-actions .btn{min-height:44px;width:100%}.exam-subject-row{grid-template-columns:minmax(0,1fr)}}
+.recommendation-history-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:12px 0;background:var(--paper-line)}
+.recommendation-history-grid>div{display:grid;gap:4px;padding:12px;background:var(--paper-alt)}
+.recommendation-history-grid strong{color:var(--heading);font:600 18px var(--font-display)}
+.recommendation-history-grid span{color:var(--ink-soft);font:10px var(--font-data)}
+@media(max-width:430px){.recommendation-history-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

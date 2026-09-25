@@ -39,6 +39,8 @@ import {PRIORITY_ALGORITHM_VERSION} from './domain/analytics/priority-score.js';
 import {calculateReviewHealth} from './domain/analytics/review-health.js';
 import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eligibility.js';
 import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
+import {migrateRecommendationHistory,reusableRecommendationRecord,ensureRecommendationRecord,syncRecommendationHistory,decideRecommendationRecord,attachRecommendationSession,summarizeRecommendationHistory} from './application/recommendations/recommendation-history.js';
+import {renderRecommendationHistory} from './ui/renderers/recommendation-history-renderer.js';
 import {captureRecommendationBaseline,captureRecommendationSnapshot,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
 import {buildRecommendationOutcomeViewModel} from './application/recommendations/build-recommendation-outcome-view-model.js';
 import {buildStudyAction,recommendationActionKind,recommendationActionLabel,sameStudyActionTarget,STUDY_ACTION_SOURCES} from './application/recommendations/recommendation-action.js';
@@ -465,9 +467,10 @@ function migrateV17toV18(data){data.examBlueprint=normalizeExamBlueprint(data.ex
 function migrateV18toV19(data){snapshotEvidenceScopes(data);data.schemaVersion=19;return data}
 function migrateV19toV20(data){data.studySessions=(data.studySessions||[]).map(session=>normalizeStudySession(session));data.schemaVersion=20;return data}
 function migrateV20toV21(data){if(!Array.isArray(data.adaptivePlanningHistory))data.adaptivePlanningHistory=[];data.schemaVersion=21;return data}
+function migrateV21toV22(data){data.recommendationHistory=Array.isArray(data.recommendationHistory)?data.recommendationHistory:migrateRecommendationHistory(data.recommendationFeedback||[]);data.schemaVersion=22;return data}
 
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22}});
 }
 
 function ensureStateDefaults(){
@@ -507,6 +510,7 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.planAdjustments)) state.planAdjustments = [];
   if(!Array.isArray(state.adaptivePlanningHistory)) state.adaptivePlanningHistory = [];
   if(!Array.isArray(state.recommendationFeedback)) state.recommendationFeedback = [];
+  if(!Array.isArray(state.recommendationHistory)) state.recommendationHistory = [];
   state.recommendationFeedback.forEach(item=>{item.shownAt=item.shownAt||item.createdAt||null;item.ratedAt=item.ratedAt||null;item.algorithmVersion=Math.max(1,Number(item.algorithmVersion)||1);item.score=Number.isFinite(Number(item.score))?Number(item.score):null;item.confidence=item.confidence||null;item.snapshot=item.snapshot||null;item.baseline=item.baseline||null;item.outcome=item.outcome||null});
   if(!Array.isArray(state.alertStates)) state.alertStates = [];
   if(!state.activeTimer || typeof state.activeTimer!=='object') state.activeTimer = {};
@@ -1035,7 +1039,7 @@ async function exportLatestAutomaticBackup(){
   }catch(error){console.error('Falha ao exportar snapshot automático',error);showToast('Não foi possível exportar o snapshot automático.')}
 }
 function validateBackupData(data){
-  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','alertStates','topicHistory','metasPorDisciplina'];
+  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','alertStates','topicHistory','metasPorDisciplina'];
   const envelope=validateBackupEnvelope(data,{currentVersion:CURRENT_SCHEMA_VERSION,arrayFields});if(!envelope.valid)return envelope;const {version}=envelope;
   try{
     const normalized=migrateState(structuredCloneSafe(data));
@@ -1055,7 +1059,7 @@ function ensureBackupStateDefaults(candidate){
 }
 function validateNormalizedBackup(data){
   const fail=message=>({valid:false,message});
-  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
+  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
   for(const field of collections){
     if(!Array.isArray(data[field])) return fail(`O campo "${field}" deve ser uma lista.`);
     if(data[field].length>50000) return fail(`O campo "${field}" excede o limite seguro de 50.000 registros.`);
@@ -1134,6 +1138,10 @@ function validateNormalizedBackup(data){
     if(['applied','reverted'].includes(item.status)&&(!isSafeId(item.planId)||!isSafeId(item.sourceTopicId)||!isSafeId(item.targetTopicId)||!isFiniteNonNegative(item.sourceItemBefore)||!isFiniteNonNegative(item.targetItemBefore)||!isPlainObject(item.sourceMixBefore)||!isPlainObject(item.targetMixBefore)))return fail('Uma decisão de planejamento aplicada não pode ser revertida com estes dados.');
   }
   for(const item of data.recommendationFeedback){const error=validateEntity(item,'Um feedback de recomendação');if(error)return fail(error);if(!isISODate(item.date)||typeof item.accepted!=='boolean'||typeof item.completed!=='boolean'||!isOptionalTimestamp(item.createdAt)||!isOptionalTimestamp(item.completedAt))return fail('Um feedback de recomendação possui dados inválidos.');}
+  for(const item of data.recommendationHistory){
+    const error=validateEntity(item,'Uma recomendação histórica');if(error)return fail(error);
+    if(typeof item.createdAt!=='string'||!isOptionalTimestamp(item.createdAt)||!['pending','executed','dismissed','expired'].includes(item.status)||!isOptionalTimestamp(item.executedAt)||!isOptionalTimestamp(item.dismissedAt)||!isOptionalTimestamp(item.expiredAt)||!['study','review','questions','prerequisite'].includes(item.activityType)||!Array.isArray(item.reasons)||item.reasons.some(reason=>typeof reason!=='string'||reason.length>500)||item.suggestedMinutes!=null&&!isFiniteNonNegative(item.suggestedMinutes)||item.priority!=null&&!isFiniteNonNegative(item.priority)||[item.subjectId,item.topicId,item.sessionId,item.feedbackId,item.candidateId].some(id=>id!=null&&!isSafeId(id)))return fail('Uma recomendação histórica possui dados inválidos.');
+  }
   for(const item of data.alertStates){if(!isPlainObject(item)||!isSafeId(item.alertId)||!(item.dismissedUntil===null||isISODate(item.dismissedUntil))||!(item.resolvedAt===null||isISODate(item.resolvedAt)))return fail('Um estado de alerta possui dados inválidos.');}
   for(const item of data.topicHistory){ const error=validateEntity(item,'Um evento histórico'); if(error) return fail(error); }
   for(const item of data.metasPorDisciplina){
@@ -4190,10 +4198,11 @@ function refreshStudyRecommendationItems(){
   const previous=new Map(currentStudyRecommendations.map(item=>[item.id,item]));
   currentStudyRecommendations=recommendStudy(candidates,{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>{
     const old=previous.get(item.id);
-    return old&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
+    return old&&state.recommendationHistory.some(record=>record.id===old.recommendationId&&record.status!=='expired'&&record.createdAt?.slice(0,10)===todayISO())&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
       ?{...item,recommendationId:old.recommendationId,shownAt:old.shownAt,algorithmVersion:PRIORITY_ALGORITHM_VERSION}
-      :createRecommendationPresentation(item,{id:uid('recommendation'),shownAt:nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION});
+      :(()=>{const reusable=reusableRecommendationRecord(state.recommendationHistory,item,todayISO());return createRecommendationPresentation(item,{id:reusable?.id||uid('recommendation'),shownAt:reusable?.createdAt||nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION})})();
   });
+  if(syncRecommendationHistory(state.recommendationHistory,currentStudyRecommendations,{now:nowISO(),idGenerator:uid})){scheduleSave();renderRecommendationHistorySummary()}
   return {availableMinutes,candidates};
 }
 function renderPendingRecommendationOutcome(){
@@ -4250,8 +4259,9 @@ function recommendationBaseline(recommendation){
   return captureRecommendationBaseline({mastery:recommendation.mastery,accuracy:performance.accuracy,questionVolume:performance.resolved,retention:recommendation.retention,
     reviewHealth:recommendation.reviewHealth?.value,risk:recommendation.risk?.value,trend:recommendation.diagnosis?.trend||null,evidence:recommendation.evidence||null,daysSinceContact:last?Math.max(0,-(diasParaRevisao(localDateFromTimestamp(last))??0)):null,measuredAt:nowISO()});
 }
-function recordRecommendationFeedback(recommendation,{accepted,reasonSkipped=null,source=null}={}){const baseline=recommendationBaseline(recommendation),createdAt=nowISO(),feedback=recordRecommendationDecision(state.recommendationFeedback,recommendation,{accepted,reasonSkipped,baseline,snapshot:captureRecommendationSnapshot(recommendation,{baseline,createdAt}),now:createdAt,idGenerator:uid});if(source)feedback.presentationSource=source;return feedback}
+function recordRecommendationFeedback(recommendation,{accepted,reasonSkipped=null,source=null}={}){const baseline=recommendationBaseline(recommendation),createdAt=nowISO(),feedback=recordRecommendationDecision(state.recommendationFeedback,recommendation,{accepted,reasonSkipped,baseline,snapshot:captureRecommendationSnapshot(recommendation,{baseline,createdAt}),now:createdAt,idGenerator:uid});if(source)feedback.presentationSource=source;ensureRecommendationRecord(state.recommendationHistory,recommendation,{now:createdAt,idGenerator:uid});decideRecommendationRecord(state.recommendationHistory,recommendation.recommendationId,{accepted,source,feedbackId:feedback.id,now:createdAt});scheduleSave();renderRecommendationHistorySummary();return feedback}
 function measureRecommendationResults(session){
+  if(session?.recommendationId)attachRecommendationSession(state.recommendationHistory,session.recommendationId,session.id);
   if(!session?.topicId)return;const measuredAt=nowISO();
   state.recommendationFeedback.filter(item=>item.accepted&&item.completed&&item.topicId===session.topicId&&item.baseline&&(!item.outcome||['pending','insufficient'].includes(item.outcome.state))).forEach(feedback=>{
     const since=Date.parse(feedback.baseline.measuredAt)||0,records=validQuestionRecords().filter(item=>item.topicId===session.topicId&&Date.parse(item.createdAt||`${item.date}T23:59:59Z`)>=since),volume=records.reduce((sum,item)=>sum+(Number(item.resolved)||0),0),correct=records.reduce((sum,item)=>sum+(Number(item.correct)||0),0),activities=state.studySessions.filter(item=>item.topicId===session.topicId&&item.id!==session.id&&Date.parse(item.createdAt||item.startedAt||0)>=since).length,candidate=intelligenceCandidates().find(item=>item.topicId===session.topicId);
@@ -4733,7 +4743,8 @@ function renderApprovalDashboard(){
   renderRecommendationCalibration();
   renderStudyTrack32Insights();
 }
-function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml})}
+function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml});renderRecommendationHistorySummary()}
+function renderRecommendationHistorySummary(){const history=document.getElementById('recommendationHistorySummary');if(history)history.innerHTML=renderRecommendationHistory(summarizeRecommendationHistory(state.recommendationHistory,{today:todayISO()}))}
 let currentStudyTrackModel=null;
 let weeklyCloseController=null;
 function renderStudyTrack32Insights(){

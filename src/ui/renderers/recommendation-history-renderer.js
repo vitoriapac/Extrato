@@ -1,0 +1,4 @@
+export function renderRecommendationHistory(summary){
+  if(!summary.generated)return '<p class="diagnosis-empty">As recomendações exibidas aparecerão aqui quando houver dados para priorizar o estudo.</p>';
+  return `<div class="recommendation-history-grid"><div><strong>${summary.generated}</strong><span>Geradas</span></div><div><strong>${summary.executed}</strong><span>Executadas</span></div><div><strong>${summary.adherence}%</strong><span>Adesão</span></div><div><strong>${summary.dismissed}</strong><span>Ignoradas</span></div><div><strong>${summary.expired}</strong><span>Expiradas</span></div><div><strong>${summary.pending}</strong><span>Pendentes</span></div></div><p class="analytics-note">Adesão = ações iniciadas ÷ recomendações geradas. Resultados posteriores são avaliados separadamente.</p>`;
+}
