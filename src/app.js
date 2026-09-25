@@ -3229,6 +3229,7 @@ function updateMeta(key, value){
 
 function renderExamBlueprintConfig(){
   const container=document.getElementById('examBlueprintConfig');if(!container)return;
+  const generalWasOpen=container.querySelector('.exam-general-config')?.open||false;
   const blueprint=state.examBlueprint;
   const rows=activeSubjects().map(subject=>{
     const config=blueprint.subjects.find(item=>item.subjectId===subject.id);
@@ -3239,6 +3240,19 @@ function renderExamBlueprintConfig(){
     return `<details class="exam-subject-config"><summary><strong>${escapeHtml(subject.name)}</strong><span>${priorityLabel}</span><span>${masteryLabel}</span><span>${questionsLabel} · ${weightLabel}</span><em>Editar configuração</em></summary><div class="exam-subject-row"><strong>${escapeHtml(subject.name)}</strong><label>Prioridade<select class="select-control" data-delegated-change="updateExamSubject('${escapeAttr(subject.id)}','priority',this.value)"><option value="normal" ${!config||config.priority==='normal'?'selected':''}>Normal</option><option value="high" ${config?.priority==='high'?'selected':''}>Alta</option><option value="low" ${config?.priority==='low'?'selected':''}>Baixa</option></select></label><label>Meta de domínio (%)<input type="number" min="0" max="100" value="${config?.masteryTarget??''}" placeholder="Herdar ${blueprint.masteryTarget}% (geral)" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','masteryTarget',this.value)">${config?.masteryTarget==null?`<small class="field-inheritance">${blueprint.masteryTarget}% (geral)</small>`:''}</label><label>Questões esperadas<input type="number" min="0" step="1" value="${config?.expectedQuestions??''}" placeholder="Não definido" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','expectedQuestions',this.value)"></label><label>Peso por questão<input type="number" min="0.1" step="0.1" value="${config?.questionWeight??''}" placeholder="1" data-delegated-blur="updateExamSubject('${escapeAttr(subject.id)}','questionWeight',this.value)">${config?.sourceRef?`<small class="field-inheritance">${escapeHtml(EXAM_SOURCES[config.sourceRef]?.label||config.sourceRef)}${config.official?' · oficial':''}</small>`:''}</label></div></details>`;
   }).join('');
   container.innerHTML=`<h4 class="config-section-title">Configuração da prova</h4><div class="exam-blueprint-main"><label>Data da prova<input type="date" value="${escapeAttr(blueprint.examDate||'')}" data-delegated-change="updateExamBlueprint('examDate',this.value)"></label><label>Nota-alvo (%)<input type="number" min="0" max="100" value="${blueprint.targetScore}" data-delegated-blur="updateExamBlueprint('targetScore',this.value)"></label><label>Meta geral de domínio (%)<input type="number" min="0" max="100" value="${blueprint.masteryTarget}" data-delegated-blur="updateExamBlueprint('masteryTarget',this.value)"></label></div><fieldset class="active-exams"><legend>Concursos ativos no planejamento</legend>${[['bb-escriturario','Banco do Brasil — Escriturário'],['caixa-tbn','Caixa — TBN'],['caixa-tbn-ti','Caixa — TBN TI']].map(([tag,label])=>`<label><input type="checkbox" data-delegated-change="toggleActiveExamTag('${tag}',this.checked)" ${(blueprint.activeExamTags||[]).includes(tag)?'checked':''}> ${label}</label>`).join('')}<small>Somente os concursos marcados influenciam prontidão, prioridade e planejamento. Se nenhum for selecionado, todo o conteúdo continuará elegível.</small></fieldset><h4 class="config-section-title">Configuração por disciplina</h4><div class="exam-subject-list">${rows||'<p class="diagnosis-empty">Cadastre disciplinas para configurar o peso no edital.</p>'}</div>`;
+  const general=document.createElement('details');general.className='exam-general-config';general.innerHTML=`<summary>Opções gerais da prova · ${escapeHtml(blueprint.examDate?formatDatePt(blueprint.examDate):'sem data')} · meta ${blueprint.masteryTarget}%</summary>`;
+  const main=container.querySelector('.exam-blueprint-main');main.before(general);general.append(main,container.querySelector('.active-exams'));general.open=generalWasOpen;
+  container.querySelectorAll('.exam-subject-config').forEach((details,index)=>{
+    const subject=activeSubjects()[index];if(!subject)return;
+    details.dataset.subjectId=subject.id;
+    const fields=details.querySelectorAll('.exam-subject-row select,.exam-subject-row input');
+    ['priority','masteryTarget','expectedQuestions','questionWeight'].forEach((name,fieldIndex)=>{fields[fieldIndex].name=name;fields[fieldIndex].removeAttribute('data-delegated-change');fields[fieldIndex].removeAttribute('data-delegated-blur')});
+    const levels=[...new Set((subject.topics||[]).map(topic=>topic.incidence?.level).filter(Boolean))];
+    const tags=[...new Set((subject.topics||[]).flatMap(topic=>topic.examTags||[]))];
+    const summary=document.createElement('span');summary.className='exam-subject-scope';summary.textContent=`Incidência: ${levels.length===1?levels[0]:levels.length?'Variável':'Não informada'} · Concursos: ${tags.length?tags.map(tag=>tag===EXAM_TAGS.BB?'BB':tag===EXAM_TAGS.CAIXA?'Caixa':tag===EXAM_TAGS.CAIXA_TI?'Caixa TI':tag).join(', '):'não informados'}`;
+    details.querySelector('summary').append(summary);
+    const actions=document.createElement('div');actions.className='exam-subject-actions';actions.innerHTML=`<small>Incidência e concursos são configurados por tópico.</small><button class="btn small" type="button" data-delegated-click="saveExamSubjectConfig('${escapeAttr(subject.id)}')">Salvar</button><button class="btn ghost small" type="button" data-delegated-click="cancelExamSubjectConfig()">Cancelar</button>`;details.append(actions);
+  });
   renderExamMasteryMatrix();
 }
 function topicExamMetricForActiveScope(topic){const active=state.examBlueprint.activeExamTags||[],entries=Object.entries(topic.examMetrics||{}).filter(([profile])=>!active.length||active.some(tag=>profile.startsWith(tag)));return entries[0]?.[1]||null}
@@ -3379,6 +3393,20 @@ function updateExamSubject(subjectId,field,value){
   if(field==='masteryTarget')config.masteryTarget=value===''?null:Math.max(0,Math.min(100,Number(value)||0));
   state.examBlueprint.configuredAt=nowISO();persistAndRender();
 }
+function saveExamSubjectConfig(subjectId){
+  const details=[...document.querySelectorAll('#examBlueprintConfig .exam-subject-config')].find(item=>item.dataset.subjectId===subjectId);
+  if(!details)return;
+  const read=name=>details.querySelector(`[name="${name}"]`)?.value??'';
+  const priority=read('priority'),masteryRaw=read('masteryTarget'),questionsRaw=read('expectedQuestions'),weightRaw=read('questionWeight');
+  const mastery=masteryRaw===''?null:Number(masteryRaw),questions=questionsRaw===''?0:Number(questionsRaw),weight=weightRaw===''?1:Number(weightRaw);
+  if(!EXAM_PRIORITIES.includes(priority)||mastery!==null&&(!Number.isFinite(mastery)||mastery<0||mastery>100)||!Number.isInteger(questions)||questions<0||!Number.isFinite(weight)||weight<.1){showToast('Revise a meta, a quantidade de questões e o peso antes de salvar.');return}
+  let config=state.examBlueprint.subjects.find(item=>item.subjectId===subjectId);
+  if(!config){config={subjectId,expectedQuestions:0,questionWeight:1,priority:'normal',masteryTarget:null};state.examBlueprint.subjects.push(config)}
+  if(config.expectedQuestions!==questions||config.questionWeight!==weight){config.sourceRef=null;config.official=false;config.mappingType=null}
+  Object.assign(config,{priority,masteryTarget:mastery,expectedQuestions:questions,questionWeight:weight});
+  state.examBlueprint.configuredAt=nowISO();studyPlanPreview=null;persistAndRender();showToast('Configuração da disciplina salva.');
+}
+function cancelExamSubjectConfig(){renderExamBlueprintConfig()}
 function toggleActiveExamTag(tag,checked){const valid=['bb-escriturario','caixa-tbn','caixa-tbn-ti'];if(!valid.includes(tag))return;const values=new Set(state.examBlueprint.activeExamTags||[]);checked?values.add(tag):values.delete(tag);if(setActiveExamTags(state,[...values],{configuredAt:nowISO()})){studyPlanPreview=null;persistAndRender()}}
 
 /* ===== METAS POR DISCIPLINA ===== */
@@ -4850,7 +4878,7 @@ const DELEGATED_ACTION_HANDLERS={
   saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
   toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleSessionDetails,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
   updateMetaDisciplina,updateMetaHoursDay,updateQuestionDraft,updateQuestionError,updateSessionHistoryFilter,
-  setErrorAnalysisFilter,updateSimulationDraft,updateStudySessionDraft,updateTopic,updateTopicStatus,updateTopicTags,updateTopicStrategy,toggleTopicPrerequisite,updateExamBlueprint,updateExamSubject
+  setErrorAnalysisFilter,updateSimulationDraft,updateStudySessionDraft,updateTopic,updateTopicStatus,updateTopicTags,updateTopicStrategy,toggleTopicPrerequisite,updateExamBlueprint,updateExamSubject,saveExamSubjectConfig,cancelExamSubjectConfig
 };
 function delegatedArgument(expression,element){
   const value=expression.trim();
