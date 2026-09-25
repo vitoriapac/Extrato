@@ -108,7 +108,7 @@ test('saúde da revisão alimenta a prioridade com o mesmo contrato dos demais s
   const reviewHealth=calculateReviewHealth({daysSinceReview:20,retention:40,mastery:45,recentPerformance:50,examImpact:90,evidenceStrength:.8});
   const scored=calculatePriorityScore({examImpact:90,retentionRisk:60,masteryGap:55,reviewUrgency:20,reviewHealthRisk:100-reviewHealth.value,planAlignment:50,recencyRisk:70,evidenceStrength:.8});
   for(const key of ['value','state','evidence','confidence','factors','reasons','algorithmVersion'])assert.ok(key in scored);
-  assert.equal(scored.algorithmVersion,4);assert.ok(scored.factors.reviewHealthRisk>40);
+  assert.equal(scored.algorithmVersion,5);assert.ok(scored.factors.reviewHealthRisk>40);
   assert.ok(scored.reasons.includes('saúde da revisão requer atenção'));
 });
 

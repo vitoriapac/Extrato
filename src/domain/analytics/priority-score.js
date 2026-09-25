@@ -1,6 +1,6 @@
 import {calculateFactorScore,createScoreResult,describeScoreEvidence} from './score-evidence.js';
 
-export const PRIORITY_ALGORITHM_VERSION=4;
+export const PRIORITY_ALGORITHM_VERSION=5;
 export const PRIORITY_WEIGHTS=Object.freeze({examImpact:.225,retentionRisk:.175,masteryGap:.175,trendRisk:.10,reviewUrgency:.10,reviewHealthRisk:.10,planAlignment:.0625,recencyRisk:.0625});
 
 export function calculatePriorityScore(candidate={}){
