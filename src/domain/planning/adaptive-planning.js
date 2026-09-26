@@ -1,4 +1,4 @@
-export const ADAPTIVE_PLANNING_VERSION=3;
+export const ADAPTIVE_PLANNING_VERSION=4;
 export const ADAPTIVE_TRANSFER_MINUTES=15;
 export const ADAPTIVE_TRANSFER_MAX_MINUTES=40;
 export const ADAPTIVE_COOLDOWN_DAYS=14;
@@ -44,10 +44,12 @@ export function buildAdaptivePlanningAdvice({plan=null,candidates=[],history=[],
     const rows=measured.filter(item=>item.subjectId===subject.subjectId),weight=rows.reduce((sum,item)=>sum+Math.max(.1,Number(item.evidenceStrength)||0),0);
     const mastery=weight?Math.round(rows.reduce((sum,item)=>sum+item.mastery*Math.max(.1,Number(item.evidenceStrength)||0),0)/weight):null;
     const impact=rows.length?Math.max(...rows.map(item=>Number(item.examImpact)||0)):null;
-    return {...subject,mastery,impact,falling:rows.some(item=>item.trend?.direction==='down'||item.trend?.key==='down'),severeDeterioration:rows.some(item=>(item.trend?.direction==='down'||item.trend?.key==='down')&&(item.trend?.state==='strong_down'||Number(item.trend?.delta)<=-12)&&Number(item.evidenceStrength)>=.7),measuredTopics:rows.length};
+    const need=rows.length?Math.max(...rows.map(item=>(Number(item.examImpact)||0)*Math.max(0,100-Number(item.mastery||0))/100)):0;
+    const historical=rows.filter(item=>item.examIntelligence?.usedHistory).sort((a,b)=>(Number(b.examImpact)||0)*(100-(Number(b.mastery)||0))-(Number(a.examImpact)||0)*(100-(Number(a.mastery)||0)))[0]||null;
+    return {...subject,mastery,impact,need,historical,falling:rows.some(item=>item.trend?.direction==='down'||item.trend?.key==='down'),severeDeterioration:rows.some(item=>(item.trend?.direction==='down'||item.trend?.key==='down')&&(item.trend?.state==='strong_down'||Number(item.trend?.delta)<=-12)&&Number(item.evidenceStrength)>=.7),measuredTopics:rows.length};
   });
-  const source=groups.filter(item=>item.mastery>=80&&!item.falling&&item.minutes>=45).sort((a,b)=>b.mastery-a.mastery)[0];
-  const target=groups.filter(item=>item.subjectId!==source?.subjectId&&item.impact>=50&&(item.mastery<=60||item.falling)).sort((a,b)=>(a.mastery??100)-(b.mastery??100))[0];
+  const target=groups.filter(item=>item.impact>=50&&item.need>=25&&(item.mastery<=60||item.falling)).sort((a,b)=>b.need-a.need||(a.mastery??100)-(b.mastery??100))[0];
+  const source=groups.filter(item=>target&&item.subjectId!==target.subjectId&&item.mastery>=80&&!item.falling&&item.minutes>=45&&(item.impact==null||item.impact<=target.impact)).sort((a,b)=>(a.impact??0)-(b.impact??0)||b.mastery-a.mastery)[0];
   if(!source||!target)return groups.filter(item=>item.measuredTopics).length<2
     ?{state:'insufficient',reason:'Ainda não há evidência comparável em pelo menos duas disciplinas.',algorithmVersion:ADAPTIVE_PLANNING_VERSION}
     :{state:'stable',reason:'Seu plano continua adequado. Os indicadores atuais não justificam retirar tempo de uma disciplina consolidada para uma lacuna prioritária.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
@@ -55,14 +57,15 @@ export function buildAdaptivePlanningAdvice({plan=null,candidates=[],history=[],
   const targetItem=plan.items.filter(item=>item.subjectId===target.subjectId&&item.capacityMinutes>item.minutes).sort((a,b)=>(b.capacityMinutes-b.minutes)-(a.capacityMinutes-a.minutes))[0];
   const transferMinutes=Math.min(ADAPTIVE_TRANSFER_MAX_MINUTES,Math.floor(source.minutes*.25),source.minutes-30,(sourceItem?.minutes??0)-15,(targetItem?.capacityMinutes??0)-(targetItem?.minutes??0));
   if(transferMinutes<ADAPTIVE_TRANSFER_MINUTES)return {state:'stable',reason:'Seu plano continua adequado. A capacidade disponível não permite transferir ao menos 15 minutos sem comprometer a manutenção.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
-  const recentReverse=(Array.isArray(history)?history:[]).filter(item=>item.status==='applied'&&item.sourceSubjectId===target.subjectId&&item.targetSubjectId===source.subjectId).sort((a,b)=>String(b.decidedAt||b.createdAt).localeCompare(String(a.decidedAt||a.createdAt)))[0];
-  const elapsed=recentReverse?Math.floor((Date.parse(`${today}T00:00:00Z`)-Date.parse(`${String(recentReverse.decidedAt||recentReverse.createdAt).slice(0,10)}T00:00:00Z`))/(24*60*60*1000)):Infinity;
+  const recentPair=(Array.isArray(history)?history:[]).filter(item=>item.status==='applied'&&[source.subjectId,target.subjectId].includes(item.sourceSubjectId)&&[source.subjectId,target.subjectId].includes(item.targetSubjectId)).sort((a,b)=>String(b.decidedAt||b.createdAt).localeCompare(String(a.decidedAt||a.createdAt)))[0];
+  const elapsed=recentPair?Math.floor((Date.parse(`${today}T00:00:00Z`)-Date.parse(`${String(recentPair.decidedAt||recentPair.createdAt).slice(0,10)}T00:00:00Z`))/(24*60*60*1000)):Infinity;
   const relevantDeterioration=target.severeDeterioration&&target.mastery<=45;
-  if(elapsed>=0&&elapsed<ADAPTIVE_COOLDOWN_DAYS&&!relevantDeterioration)return {state:'stable',reason:`Seu plano continua adequado. Um ajuste entre essas disciplinas foi aplicado há menos de duas semanas; aguarde novas evidências antes de inverter a transferência.`,algorithmVersion:ADAPTIVE_PLANNING_VERSION};
+  if(elapsed>=0&&elapsed<ADAPTIVE_COOLDOWN_DAYS&&!relevantDeterioration)return {state:'stable',reason:'Seu plano continua adequado. Um ajuste entre essas disciplinas foi aplicado há menos de duas semanas; aguarde novas evidências antes de outra transferência.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
   const rationale=[
-    `Disciplina de origem consolidada: domínio ${source.mastery}/100${source.falling?' com tendência recente em queda':''}.`,
+    `Disciplina de origem consolidada: domínio ${source.mastery}/100; impacto ${source.impact==null?'sem dados':`${source.impact}/100`}.`,
     target.falling?'Disciplina de destino com tendência recente em queda.':`Disciplina de destino com domínio ${target.mastery}/100.`,
     `Impacto da disciplina de destino na prova: ${target.impact}/100.`,
+    ...(target.historical?[`Histórico validado em ${target.historical.topicName||'tópico da disciplina'}: ${target.historical.examIntelligence.presentExamCount} de ${target.historical.examIntelligence.analyzedExamCount} provas; confiança ${target.historical.examIntelligence.confidenceLabel.toLowerCase()}.`]:[]),
     `A transferência mantém a carga semanal em ${budget} minutos. O bloco fica entre 15 e 40 minutos.`,
     ...(elapsed>=0&&elapsed<ADAPTIVE_COOLDOWN_DAYS&&relevantDeterioration?['Exceção ao intervalo de duas semanas: queda relevante de domínio, confirmada por evidência forte.']:[])
   ];

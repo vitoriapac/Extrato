@@ -31,6 +31,8 @@ Na área **Metas → Inteligência da prova**, importe provas históricas com JS
 
 A **Matriz histórica**, na mesma área, mostra quantas questões de cada tópico apareceram em cada prova completa. Filtre por concurso, banca, ano e cargo; selecione um tópico para ver incidência, confiança, peso registrado e sua situação de domínio e retenção. No celular, a matriz aparece em cards. Provas parciais ficam fora do denominador de incidência.
 
+O **planejamento adaptativo** usa o impacto validado em conjunto com a lacuna de domínio para justificar redistribuições. Quando o histórico participa da proposta, a explicação mostra quantas provas sustentam o impacto e sua confiança. A capacidade semanal não aumenta, ajustes de 15 a 40 minutos exigem confirmação, e um par de disciplinas entra em cooldown por 14 dias após um ajuste aplicado.
+
 ## Instalação como PWA
 
 No Chrome ou Edge, abra a versão publicada e use a opção **Instalar StudyTrack** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.

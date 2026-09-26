@@ -29,7 +29,7 @@ export function buildExamMatrix({topics=[],exams=[],examQuestions=[],activeExamT
       return {examId:exam.id,year:exam.year,examName:exam.examName,count:questions.length,weight:weighted.length?Math.round(weighted.reduce((sum,question)=>sum+question.weight,0)*100)/100:null};
     });
     const count=cells.reduce((sum,cell)=>sum+cell.count,0),present=cells.filter(cell=>cell.count>0).length;
-    const classified=examQuestions.filter(question=>ids.has(question.examId)&&question.topicId===topic.id);
+    const classified=complete.flatMap(exam=>indexed.get(`${topic.id}|${exam.id}`)||[]);
     const confidence=classifyExamConfidence({examCount:complete.length,questionCount:analyzedQuestionCount,classificationConfidence:classified.length?classified.reduce((sum,question)=>sum+(question.classification?.confidence??0),0)/classified.length:null});
     const metric=metricsByTopic[topic.id]||{};
     return {topicId:topic.id,subjectId:topic.subjectId,name:topic.name,subjectName:topic.subjectName,examCount:complete.length,presentExamCount:present,questionCount:count,presencePercent:percentage(present,complete.length),participationPercent:percentage(count,analyzedQuestionCount),confidence,confidenceLabel:EXAM_CONFIDENCE_LABELS[confidence],cells,mastery:metric.mastery??null,retention:metric.retention??null,trend:metric.trend??null,priority:metric.priority??null};
