@@ -29,7 +29,10 @@ export function parseExamImportJson(text){
 export function previewExamImport(parsed,{subjects=[],exams=[],examQuestions=[]}={}){
   const examId=`exam-import-${hash(identity(parsed.exam))}`;
   const existing=exams.find(item=>item.id===examId||identity(item)===identity(parsed.exam));
+  const existingQuestions=examQuestions.filter(question=>question.examId===(existing?.id||examId));
   const rows=parsed.questions.map(question=>{
+    const reviewed=existingQuestions.find(item=>item.questionNumber===question.number&&item.classification?.method==='manual');
+    if(reviewed)return {...question,status:'mapped',subjectId:reviewed.subjectId,topicId:reviewed.topicId};
     const matches=subjects.filter(subject=>!subject.archived&&key(subject.name)===key(question.subject));
     const subject=matches.length===1?matches[0]:null;
     const topics=subject?.topics?.filter(topic=>!topic.archived&&key(topic.name)===key(question.topic))||[];
@@ -37,7 +40,6 @@ export function previewExamImport(parsed,{subjects=[],exams=[],examQuestions=[]}
     const status=!subject?'subject-unresolved':!topic?'topic-unresolved':'mapped';
     return {...question,status,subjectId:subject?.id||null,topicId:topic?.id||null};
   });
-  const existingQuestions=examQuestions.filter(question=>question.examId===(existing?.id||examId));
   return {examId:existing?.id||examId,existingExam:existing||null,rows,existingQuestionCount:existingQuestions.length,mappedCount:rows.filter(row=>row.status==='mapped').length,unresolvedCount:rows.filter(row=>row.status!=='mapped').length};
 }
 
