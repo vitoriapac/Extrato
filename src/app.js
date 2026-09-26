@@ -3360,7 +3360,7 @@ examClassificationOverlay?.addEventListener('click',event=>{
   const row=button.closest('[data-review-exam]'),topicId=row?.querySelector('[data-review-topic]')?.value,confidence=Number(row?.querySelector('[data-review-confidence]')?.value);
   try{
     const result=reviewExamClassification(state,{examId:row?.dataset.reviewExam,questionNumber:Number(row?.dataset.reviewNumber),topicId,confidence,now:nowISO(),idGenerator:uid});
-    state.exams=result.exams;state.examQuestions=result.examQuestions;studyPlanPreview=null;persistAndRender();updateExamClassificationReview();showToast('Classificação atualizada. Próximas recomendações usarão a evidência corrigida.');
+    state.exams=result.exams;state.examQuestions=result.examQuestions;studyPlanPreview=null;persistAndRender();updateExamClassificationReview();document.getElementById('examClassificationFilter')?.focus();showToast('Classificação atualizada. Próximas recomendações usarão a evidência corrigida.');
   }catch(error){showToast(error.message||'Não foi possível revisar a classificação.')}
 });
 examClassificationOverlay?.addEventListener('change',event=>{if(event.target.id==='examClassificationFilter'){examClassificationFilter=event.target.value;examClassificationPage=0;updateExamClassificationReview();document.getElementById('examClassificationFilter')?.focus()}});
