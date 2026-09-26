@@ -1,5 +1,6 @@
 import {examsInScope} from '../../domain/exam-intelligence/exam-evidence.js';
 import {resolveTopicExamImpact} from '../../domain/analytics/topic-strategy.js';
+import {isHighImpact,STRATEGY_THRESHOLDS} from '../../domain/strategy/config.js';
 
 export function buildExamDataQuality({exams=[],examQuestions=[],topics=[],blueprint={}}={}){
   const activeExamTags=blueprint.activeExamTags||[];
@@ -18,9 +19,9 @@ export function buildExamDataQuality({exams=[],examQuestions=[],topics=[],bluepr
   const importantTopicsWithoutHistory=topics.filter(topic=>{
     if(topic.archived||topic.topicArchived||topic.subjectArchived||mappedTopicIds.has(topic.id))return false;
     const subjectConfig=(blueprint.subjects||[]).find(item=>item.subjectId===topic.subjectId)||null;
-    return (resolveTopicExamImpact({topic,subjectConfig,activeExamTags}).value??0)>=70;
+    return isHighImpact(resolveTopicExamImpact({topic,subjectConfig,activeExamTags}).value);
   }).length;
-  const confidence=completeExamCount<2?'insufficient':completeExamCount<4||coveragePercent==null||coveragePercent<80?'low':completeExamCount>=8&&coveragePercent>=95&&!lowConfidenceQuestions&&!unreviewedQuestions?'high':'moderate';
+  const confidence=completeExamCount<2?'insufficient':completeExamCount<STRATEGY_THRESHOLDS.historicalMinimumExamCount||coveragePercent==null||coveragePercent<80?'low':completeExamCount>=8&&coveragePercent>=95&&!lowConfidenceQuestions&&!unreviewedQuestions?'high':'moderate';
   const warnings=[];
   if(!scoped.length)warnings.push('Nenhuma prova histórica cadastrada neste concurso.');
   else if(!completeExamCount)warnings.push('Nenhuma prova completa pode sustentar a incidência.');

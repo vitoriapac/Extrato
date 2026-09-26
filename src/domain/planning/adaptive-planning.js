@@ -1,4 +1,5 @@
 import {EXAM_INTELLIGENCE_CONFIG} from '../exam-intelligence/config.js';
+import {STRATEGY_THRESHOLDS} from '../strategy/config.js';
 
 export const ADAPTIVE_PLANNING_VERSION=4;
 export const ADAPTIVE_TRANSFER_MINUTES=EXAM_INTELLIGENCE_CONFIG.transferMinimumMinutes;
@@ -38,7 +39,7 @@ function validPlanBudget(plan){
   return subjects.every(subject=>sameMinutes(grouped.get(subject.subjectId)??-1,subject.minutes));
 }
 
-export function buildAdaptivePlanningAdvice({plan=null,candidates=[],history=[],today=new Date().toISOString().slice(0,10),minimumEvidence=.5}={}){
+export function buildAdaptivePlanningAdvice({plan=null,candidates=[],history=[],today=new Date().toISOString().slice(0,10),minimumEvidence=STRATEGY_THRESHOLDS.sufficientEvidence}={}){
   const budget=Math.max(0,Number(plan?.weeklyPlannedMinutes)||0);
   if(!validPlanBudget(plan))return {state:'insufficient',reason:'É necessário um plano consistente, com disponibilidade e ao menos duas disciplinas.',algorithmVersion:ADAPTIVE_PLANNING_VERSION};
   const measured=(Array.isArray(candidates)?candidates:[]).filter(item=>item.subjectId&&item.mastery!=null&&Number(item.evidenceStrength)>=minimumEvidence);

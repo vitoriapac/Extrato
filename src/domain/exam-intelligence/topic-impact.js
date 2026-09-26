@@ -1,8 +1,9 @@
 import {resolveTopicExamImpact} from '../analytics/topic-strategy.js';
 import {EXAM_CONFIDENCE_LABELS} from './exam-confidence.js';
 import {comparableExamEvidence} from './exam-evidence.js';
+import {isHighImpact} from '../strategy/config.js';
 
-const level=value=>value==null?'Sem dados':value>=70?'Alta':value>=40?'Moderada':'Baixa';
+const level=value=>value==null?'Sem dados':isHighImpact(value)?'Alta':value>=40?'Moderada':'Baixa';
 const round=value=>Math.round(value*100)/100;
 
 export function buildTopicImpact({topic={},subjectConfig=null,activeExamTags=[],incidence=null,exams=[],examQuestions=[]}={}){

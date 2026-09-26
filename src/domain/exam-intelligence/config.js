@@ -1,7 +1,8 @@
+import {STRATEGY_THRESHOLDS} from '../strategy/config.js';
 export const EXAM_INTELLIGENCE_VERSION=1;
 
 export const EXAM_INTELLIGENCE_CONFIG=Object.freeze({
-  minimumHistoricalExams:4,
+  minimumHistoricalExams:STRATEGY_THRESHOLDS.historicalMinimumExamCount,
   maximumHistoricalAdjustment:15,
   historicalAdjustmentFactor:.35,
   minimumAdaptiveImpact:50,

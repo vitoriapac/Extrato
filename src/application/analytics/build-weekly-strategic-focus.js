@@ -1,14 +1,15 @@
+import {isHighImpact,isStrategicGap} from '../../domain/strategy/config.js';
 const seconds=items=>items.reduce((sum,item)=>sum+Math.max(0,Number(item.durationSeconds)||0),0);
 
 export function buildWeeklyStrategicFocus({sessions=[],candidates=[],recommendations=[],start,end}={}){
   const relevantSessions=sessions.filter(item=>item.date>=start&&item.date<=end);
   const candidatesByTopic=new Map(candidates.filter(item=>item.topicId).map(item=>[item.topicId,item]));
   const totalSeconds=seconds(relevantSessions);
-  const highImpactSeconds=seconds(relevantSessions.filter(item=>(candidatesByTopic.get(item.topicId)?.examImpact??-1)>=70));
+  const highImpactSeconds=seconds(relevantSessions.filter(item=>isHighImpact(candidatesByTopic.get(item.topicId)?.examImpact)));
   const unknownSeconds=seconds(relevantSessions.filter(item=>!item.topicId||candidatesByTopic.get(item.topicId)?.examImpact==null));
   const workedIds=new Set(relevantSessions.filter(item=>{
     const candidate=candidatesByTopic.get(item.topicId);
-    return candidate?.examImpact>=70&&candidate.mastery!=null&&candidate.mastery<70;
+    return isStrategicGap(candidate);
   }).map(item=>item.topicId));
   const outcomes=new Map();
   for(const item of recommendations){
