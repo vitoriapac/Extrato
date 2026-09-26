@@ -6,13 +6,14 @@
   "description": "Painel local para planejamento, revisao e acompanhamento de estudos.",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "check:syntax": "node scripts/check-syntax.mjs",
     "serve": "node scripts/serve.mjs",
     "check:bundle": "node scripts/build.mjs --check",
     "test": "node --test tests/unit/*.test.js",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "check": "npm run test && npm run check:bundle",
-    "check:all": "npm run check && npm run test:e2e"
+    "check:all": "npm run check:syntax && npm run check && npm run test:e2e"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

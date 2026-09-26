@@ -14,6 +14,21 @@ Os fluxos completos usam Playwright e contextos de navegador descartáveis. Nenh
 npm run test:e2e
 ```
 
-`npm run check:all` executa testes unitários, valida o bundle e executa a suíte E2E. Capturas, vídeos e traces são mantidos somente quando necessários para diagnosticar falhas.
+`npm run check:all` verifica a sintaxe JavaScript, executa testes unitários, confere os artefatos gerados contra o build e executa a suíte E2E. Para publicar, execute `npm run build` antes do gate e inclua os artefatos gerados no commit. A verificação de sintaxe não substitui uma futura configuração de lint semântico. Capturas, vídeos e traces são mantidos somente quando necessários para diagnosticar falhas.
 
 O gate de publicação roda `check:all` em UTC e `America/Sao_Paulo` no CI. Ele cobre o ciclo da recomendação até a sessão, planejamento adaptativo, histórico e resultados posteriores, Command Palette, relatório PDF e regressão visual. A matriz responsiva verifica 320–430 px nos temas claro e escuro. Falhas de screenshot exigem inspeção visual antes de atualizar a imagem de referência.
+
+## Matriz de estabilidade da inteligência da prova
+
+| Cenário | Verificação |
+| --- | --- |
+| Estado vazio e dados demo | Fluxos E2E de recomendação vazia e demo |
+| Backup antigo e schema atual | Migração e restauração em `legacy-backup.spec.js` |
+| BB, Caixa TBN, Caixa TI e escopo conjunto | Fixture determinística de 16 provas e testes de escopo |
+| Prova parcial/completa e classificação manual | Qualidade, matriz, auditoria e importação histórica |
+| Histórico insuficiente/suficiente | Impacto efetivo e prioridade nos testes de integração |
+| Reimportação | Identidade estável e preservação das classificações revisadas |
+| Planejamento com e sem redistribuição | Capacidade semanal, proposta e cooldown |
+| Foco semanal e PDF | Mesmos candidatos e evidências do escopo ativo |
+
+Os testes de integração e de backup exercitam esta matriz sem gravar no perfil real do navegador. Alterações em regras estratégicas devem atualizar o cenário correspondente antes de publicar.
