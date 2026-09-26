@@ -17,6 +17,7 @@ import {AGENDA_INTERVALS,DIFFICULTY_INTERVALS,REVIEW_RATINGS,calculateAdaptiveIn
 import {createDefaultState} from './state/defaults.js';
 import {validateExam} from './domain/exam-intelligence/exam.js';
 import {validateExamQuestion} from './domain/exam-intelligence/exam-question.js';
+import {EXAM_INTELLIGENCE_CONFIG,EXAM_INTELLIGENCE_VERSION} from './domain/exam-intelligence/config.js';
 import {createHistoricalExamImportController} from './features/exam-intelligence-import/exam-import-controller.js';
 import {labelDynamicControls,trapModalTab} from './ui/accessibility.js';
 import {renderCollectionFooter,renderGroupHeader} from './ui/list-components.js';
@@ -60,7 +61,7 @@ import {createDailyPlanService} from './application/planning/daily-plan-service.
 import {createReplanService} from './application/planning/replan-service.js';
 import {createReplanController} from './application/planning/replan-controller.js';
 import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
-import {applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
+import {ADAPTIVE_PLANNING_VERSION,applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
 import {renderAdaptiveAllocationAdvice,renderExamPhase,renderExamPhaseCompact} from './ui/renderers/adaptive-planning-renderer.js';
 import {renderExamBlueprintConfigView} from './ui/renderers/exam-blueprint-config-renderer.js';
 import {buildAchievementViewModel} from './application/achievements/build-achievement-view-model.js';
@@ -517,6 +518,8 @@ function ensureStateDefaults(){
   state.examBlueprint=normalizeExamBlueprint(state.examBlueprint,state.examDate);
   state.algorithmVersions=normalizeAlgorithmVersions(state.algorithmVersions);
   state.algorithmVersions.recommendations=PRIORITY_ALGORITHM_VERSION;
+  state.algorithmVersions.examIntelligence=EXAM_INTELLIGENCE_VERSION;
+  state.algorithmVersions.adaptivePlanning=ADAPTIVE_PLANNING_VERSION;
   state.algorithmVersions.adaptiveReview=Math.max(2,Number(state.algorithmVersions.adaptiveReview)||2);
   if(!state.examDate&&state.examBlueprint.examDate)state.examDate=state.examBlueprint.examDate;
   if(state.examDate!==state.examBlueprint.examDate)state.examBlueprint.examDate=state.examDate||null;
@@ -1168,7 +1171,7 @@ function validateNormalizedBackup(data){
   for(const item of data.planAdjustments){const error=validateEntity(item,'Um ajuste de plano');if(error)return fail(error);if(!isISODate(item.periodStart)||!isISODate(item.periodEnd)||!isOptionalTimestamp(item.confirmedAt)||!isFiniteNonNegative(item.deficitMinutes)||!isFiniteNonNegative(item.redistributedMinutes)||!Array.isArray(item.allocations))return fail('Um ajuste de plano possui dados inválidos.');}
   for(const item of data.adaptivePlanningHistory){
     const error=validateEntity(item,'Uma decisão de planejamento');if(error)return fail(error);
-    if(typeof item.createdAt!=='string'||!isOptionalTimestamp(item.createdAt)||!isOptionalTimestamp(item.decidedAt)||!['suggested','applied','rejected','reverted'].includes(item.status)||!isSafeId(item.sourceSubjectId)||!isSafeId(item.targetSubjectId)||!isFiniteNonNegative(item.minutes)||Number(item.minutes)<15||Number(item.minutes)>40||!Array.isArray(item.reasons)||item.reasons.some(reason=>!textOk(reason,500))||[item.sourceBefore,item.sourceAfter,item.targetBefore,item.targetAfter].some(value=>!isFiniteNonNegative(value))||!Number.isInteger(Number(item.algorithmVersion))||Number(item.algorithmVersion)<1)return fail('Uma decisão de planejamento possui dados inválidos.');
+    if(typeof item.createdAt!=='string'||!isOptionalTimestamp(item.createdAt)||!isOptionalTimestamp(item.decidedAt)||!['suggested','applied','rejected','reverted'].includes(item.status)||!isSafeId(item.sourceSubjectId)||!isSafeId(item.targetSubjectId)||!isFiniteNonNegative(item.minutes)||Number(item.minutes)<EXAM_INTELLIGENCE_CONFIG.transferMinimumMinutes||Number(item.minutes)>EXAM_INTELLIGENCE_CONFIG.transferMaximumMinutes||!Array.isArray(item.reasons)||item.reasons.some(reason=>!textOk(reason,500))||[item.sourceBefore,item.sourceAfter,item.targetBefore,item.targetAfter].some(value=>!isFiniteNonNegative(value))||!Number.isInteger(Number(item.algorithmVersion))||Number(item.algorithmVersion)<1)return fail('Uma decisão de planejamento possui dados inválidos.');
     if([item.planId,item.sourceTopicId,item.targetTopicId].some(id=>id!=null&&!isSafeId(id)))return fail('Uma decisão de planejamento possui referência inválida.');
     if(['applied','reverted'].includes(item.status)&&(!isSafeId(item.planId)||!isSafeId(item.sourceTopicId)||!isSafeId(item.targetTopicId)||!isFiniteNonNegative(item.sourceItemBefore)||!isFiniteNonNegative(item.targetItemBefore)||!isPlainObject(item.sourceMixBefore)||!isPlainObject(item.targetMixBefore)))return fail('Uma decisão de planejamento aplicada não pode ser revertida com estes dados.');
   }

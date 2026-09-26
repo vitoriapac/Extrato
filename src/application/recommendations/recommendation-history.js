@@ -10,7 +10,7 @@ export function migrateRecommendationHistory(feedback=[]){
     id:item.recommendationId,createdAt:item.shownAt||item.createdAt||new Date(`${item.date}T12:00:00Z`).toISOString(),localDate:item.date||localDate(item.shownAt||item.createdAt),
     candidateId:null,signature:null,source:item.presentationSource||'legacy',subjectId:item.subjectId||null,topicId:item.topicId||null,
     activityType:['study','review','questions','prerequisite'].includes(item.actionKind||item.snapshot?.recommendationType)?item.actionKind||item.snapshot?.recommendationType:'study',suggestedMinutes:item.snapshot?.recommendedMinutes??null,
-    priority:item.score??null,reasons:[],evidenceSnapshot:item.snapshot?.evidenceBefore||null,
+    priority:item.score??null,reasons:[],evidenceSnapshot:item.snapshot?.evidenceBefore||null,algorithmVersions:{priority:Number(item.algorithmVersion)||1,examIntelligence:item.snapshot?.examIntelligenceVersion??null},
     status:item.accepted?'executed':'dismissed',executedAt:item.accepted?item.completedAt||item.createdAt||null:null,
     dismissedAt:item.accepted?null:item.createdAt||null,expiredAt:null,sessionId:item.resultingSessionId||null,feedbackId:item.id
   }));
@@ -23,7 +23,7 @@ export function reusableRecommendationRecord(history,item,date){
 
 export function ensureRecommendationRecord(history,item,{now,idGenerator}={}){
   const existing=history.find(record=>record.id===item.recommendationId);if(existing)return existing;
-  const record={id:item.recommendationId||idGenerator('recommendation'),createdAt:item.shownAt||now,localDate:localDate(item.shownAt||now),candidateId:item.id,signature:signature(item),source:'generated',subjectId:item.subjectId||null,topicId:item.topicId||null,activityType:recommendationActionKind(item),suggestedMinutes:item.estimatedMinutes??null,priority:item.score??null,reasons:[...(item.reasons||[])],evidenceSnapshot:item.evidence?structuredClone(item.evidence):null,status:'pending',executedAt:null,dismissedAt:null,expiredAt:null,sessionId:null,feedbackId:null};history.push(record);return record;
+  const record={id:item.recommendationId||idGenerator('recommendation'),createdAt:item.shownAt||now,localDate:localDate(item.shownAt||now),candidateId:item.id,signature:signature(item),source:'generated',subjectId:item.subjectId||null,topicId:item.topicId||null,activityType:recommendationActionKind(item),suggestedMinutes:item.estimatedMinutes??null,priority:item.score??null,reasons:[...(item.reasons||[])],evidenceSnapshot:item.evidence?structuredClone(item.evidence):null,algorithmVersions:{priority:Number(item.algorithmVersion)||1,examIntelligence:item.examIntelligence?.algorithmVersion??null},status:'pending',executedAt:null,dismissedAt:null,expiredAt:null,sessionId:null,feedbackId:null};history.push(record);return record;
 }
 
 export function syncRecommendationHistory(history,recommendations,{now,today=localDate(now),idGenerator,visibleCount=3}={}){

@@ -6,6 +6,11 @@ import {buildExamDataQuality} from '../../src/application/exam-intelligence/buil
 import {buildExamConfigurationAudit} from '../../src/application/exam-intelligence/build-exam-configuration-audit.js';
 import {buildStudyCandidates} from '../../src/application/build-study-candidates.js';
 import {buildAdaptivePlanningAdvice,applyAdaptivePlanningAdvice} from '../../src/domain/planning/adaptive-planning.js';
+import {EXAM_INTELLIGENCE_CONFIG,EXAM_INTELLIGENCE_VERSION} from '../../src/domain/exam-intelligence/config.js';
+import {PRIORITY_ALGORITHM_VERSION} from '../../src/domain/analytics/priority-score.js';
+import {ADAPTIVE_PLANNING_VERSION} from '../../src/domain/planning/adaptive-planning.js';
+import {captureRecommendationSnapshot} from '../../src/application/recommendations/outcome-service.js';
+import {ensureRecommendationRecord} from '../../src/application/recommendations/recommendation-history.js';
 
 const fixture=buildExamIntelligenceStressFixture();
 const {state,topics}=fixture;
@@ -86,4 +91,29 @@ test('planejamento BB transfere somente com necessidade, preserva capacidade e r
   assert.equal(plan.subjects[0].minutes,90);
   const blocked=buildAdaptivePlanningAdvice({plan,candidates,history:[{status:'applied',sourceSubjectId:advice.from.subjectId,targetSubjectId:advice.to.subjectId,decidedAt:'2026-09-23T12:00:00Z'}],today:'2026-09-25'});
   assert.equal(blocked.state,'stable');
+});
+
+test('tabela de calibração V4 confirma decisões sem exigir mudança dos limites',()=>{
+  const candidates=candidatesFor(STRESS_TAGS.bb),get=id=>candidates.find(row=>row.topicId===id);
+  const decisions=[
+    {scenario:'alto impacto e baixo domínio',expected:'prioridade acima de manutenção',actual:get(STRESS_TOPICS.weak).score>get(STRESS_TOPICS.strong).score},
+    {scenario:'alto impacto e alto domínio',expected:'sem prioridade máxima',actual:get(STRESS_TOPICS.strong).score<get(STRESS_TOPICS.weak).score},
+    {scenario:'baixo impacto e baixo domínio',expected:'abaixo da lacuna relevante',actual:get(STRESS_TOPICS.rare).score<get(STRESS_TOPICS.weak).score},
+    {scenario:'amostra curta',expected:'configuração conservada',actual:(()=>{const one=state.exams.filter(exam=>exam.examTags.includes(STRESS_TAGS.bb)).slice(0,1);const row=buildStudyCandidates({...scope(STRESS_TAGS.bb),exams:one,priorities:[{topicId:STRESS_TOPICS.weak,subjectId:byId(STRESS_TOPICS.weak).subjectId,diagnosis:{mastery:{score:42,confidence:.9}}}],today:'2026-09-25'})[0];return !row.examIntelligence.usedHistory&&Math.abs(row.examImpact-55)<.001})()}
+  ];
+  assert.ok(decisions.every(row=>row.actual),JSON.stringify(decisions));
+  assert.deepEqual([get(STRESS_TOPICS.strong).score,get(STRESS_TOPICS.weak).score,get(STRESS_TOPICS.rare).score],[35,48,37]);
+  assert.deepEqual(EXAM_INTELLIGENCE_CONFIG,{minimumHistoricalExams:4,maximumHistoricalAdjustment:15,historicalAdjustmentFactor:.35,minimumAdaptiveImpact:50,minimumAdaptiveNeed:25,transferMinimumMinutes:15,transferMaximumMinutes:40,cooldownDays:14});
+});
+
+test('histórico de recomendação registra versões independentes da prova e da prioridade',()=>{
+  const candidate=candidatesFor(STRESS_TAGS.bb).find(row=>row.topicId===STRESS_TOPICS.weak);
+  const recommendation={...candidate,recommendationId:'stress-rec',shownAt:'2026-09-25T12:00:00Z'};
+  const history=[];
+  const record=ensureRecommendationRecord(history,recommendation,{now:recommendation.shownAt,idGenerator:()=>recommendation.recommendationId});
+  const snapshot=captureRecommendationSnapshot(recommendation,{createdAt:recommendation.shownAt});
+  assert.deepEqual(record.algorithmVersions,{priority:PRIORITY_ALGORITHM_VERSION,examIntelligence:EXAM_INTELLIGENCE_VERSION});
+  assert.equal(snapshot.algorithmVersion,PRIORITY_ALGORITHM_VERSION);
+  assert.equal(snapshot.examIntelligenceVersion,EXAM_INTELLIGENCE_VERSION);
+  assert.equal(ADAPTIVE_PLANNING_VERSION,4);
 });

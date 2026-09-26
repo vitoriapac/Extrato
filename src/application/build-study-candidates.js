@@ -4,6 +4,7 @@ import {withPrerequisiteEligibility} from '../domain/study-eligibility.js';
 import {buildTopicSignals} from '../domain/analytics/topic-signals.js';
 import {buildTopicExamProfile} from './exam-intelligence/build-topic-exam-profile.js';
 import {resolveValidatedExamImpact} from '../domain/exam-intelligence/validated-impact.js';
+import {EXAM_INTELLIGENCE_VERSION} from '../domain/exam-intelligence/config.js';
 
 export function buildStudyCandidates({priorities=[],topics=[],retentions={},reviewHealths={},blueprint=[],sessions=[],today,examProximity=null,activeExamTags=[],exams=[],examQuestions=[]}={}){
   const catalog=new Map(topics.map(topic=>[topic.id,topic]));
@@ -28,7 +29,7 @@ export function buildStudyCandidates({priorities=[],topics=[],retentions={},revi
     const candidate={...priority,id:priority.topicId||priority.id,archived:Boolean(topic?.topicArchived||topic?.subjectArchived||topic?.archived),
       covered,completed:sessions.some(session=>session.date===today&&session.topicId===priority.topicId&&(!priority.topicId?session.subjectId===priority.subjectId:true)&&Number(session.durationSeconds)>0),
       prerequisites:topic?.prerequisites||[],remainingMinutes,totalEstimatedMinutes:topic?.estimatedStudyMinutes??null,
-      estimatedMinutes:sessionMinutes,sessionMinutes,action:priority.recommendedAction,risk,...signals,examIntelligence:{...examProfile,...validatedImpact},retentionNeed:signals.retentionRisk,reviewHealth,
+      estimatedMinutes:sessionMinutes,sessionMinutes,action:priority.recommendedAction,risk,...signals,examIntelligence:{...examProfile,...validatedImpact,algorithmVersion:EXAM_INTELLIGENCE_VERSION},retentionNeed:signals.retentionRisk,reviewHealth,
       frequency:daysSinceContact===null?null:Math.max(0,100-daysSinceContact*5),
       planAlignment:priority.tipo==='continuar'?90:priority.tipo==='revisão'?80:55,
       improvementPotential:signals.masteryGap,effortEfficiency:Math.max(10,100-sessionMinutes)};

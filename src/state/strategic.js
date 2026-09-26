@@ -1,4 +1,8 @@
-export const DEFAULT_ALGORITHM_VERSIONS=Object.freeze({readiness:1,retention:1,reviewHealth:1,recommendations:3,recommendationOutcomes:1,adaptiveReview:1,forecasts:1});
+import {EXAM_INTELLIGENCE_VERSION} from '../domain/exam-intelligence/config.js';
+import {PRIORITY_ALGORITHM_VERSION} from '../domain/analytics/priority-score.js';
+import {ADAPTIVE_PLANNING_VERSION} from '../domain/planning/adaptive-planning.js';
+
+export const DEFAULT_ALGORITHM_VERSIONS=Object.freeze({readiness:1,retention:1,reviewHealth:1,recommendations:PRIORITY_ALGORITHM_VERSION,examIntelligence:EXAM_INTELLIGENCE_VERSION,adaptivePlanning:ADAPTIVE_PLANNING_VERSION,recommendationOutcomes:1,adaptiveReview:1,forecasts:1});
 export const EXAM_PRIORITIES=Object.freeze(['low','normal','high']);
 
 export function normalizeTopicStrategy(topic){
