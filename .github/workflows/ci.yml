@@ -6,7 +6,39 @@ on:
 permissions:
   contents: read
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.detect.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect documentation-only changes
+        id: detect
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mapfile -d '' files < <(git diff --name-only -z "$BASE_SHA" "$HEAD_SHA")
+          if (( ${#files[@]} == 0 )); then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          for file in "${files[@]}"; do
+            if [[ "$file" != *.md ]]; then
+              echo "docs_only=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "docs_only=true" >> "$GITHUB_OUTPUT"
   test:
+    needs: changes
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -20,13 +52,20 @@ jobs:
       TZ: ${{ matrix.timezone }}
     steps:
       - uses: actions/checkout@v4
+      - name: Documentation-only change
+        if: needs.changes.outputs.docs_only == 'true'
+        run: echo "Only Markdown changed; application checks are unnecessary."
       - uses: actions/setup-node@v4
+        if: needs.changes.outputs.docs_only != 'true'
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+        if: needs.changes.outputs.docs_only != 'true'
       - run: npx playwright install --with-deps chromium
+        if: needs.changes.outputs.docs_only != 'true'
       - run: npm run check:all
+        if: needs.changes.outputs.docs_only != 'true'
       - name: Upload Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
