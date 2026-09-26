@@ -1,4 +1,5 @@
 import {isHighImpact,isStrategicGap} from '../../domain/strategy/config.js';
+import {localDateFromTimestamp} from '../../domain/sessions/study-session.js';
 const seconds=items=>items.reduce((sum,item)=>sum+Math.max(0,Number(item.durationSeconds)||0),0);
 
 export function buildWeeklyStrategicFocus({sessions=[],candidates=[],recommendations=[],start,end}={}){
@@ -14,8 +15,8 @@ export function buildWeeklyStrategicFocus({sessions=[],candidates=[],recommendat
   const outcomes=new Map();
   for(const item of recommendations){
     if(!workedIds.has(item.topicId)||item.date<start||item.date>end)continue;
-    const measuredDate=String(item.outcome?.measuredAt||'').slice(0,10);
-    if(measuredDate&&(measuredDate<start||measuredDate>end))continue;
+    const measuredDate=localDateFromTimestamp(item.outcome?.measuredAt);
+    if(!measuredDate||measuredDate<start||measuredDate>end)continue;
     const state=item.outcome?.state;
     if(!['positive','neutral','negative'].includes(state))continue;
     const previous=outcomes.get(item.topicId);

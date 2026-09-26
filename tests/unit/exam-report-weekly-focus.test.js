@@ -24,7 +24,7 @@ test('PDF resume base histórica e somente três lacunas estratégicas do concur
 test('fechamento usa tempo atribuível e resultados posteriores sem inventar melhora',()=>{
   const sessions=[{date:'2026-09-25',topicId:'gap-a',durationSeconds:1800},{date:'2026-09-25',topicId:'gap-b',durationSeconds:1200},{date:'2026-09-25',topicId:'low',durationSeconds:600},{date:'2026-09-25',durationSeconds:600}];
   const candidates=[{topicId:'gap-a',examImpact:85,mastery:42},{topicId:'gap-b',examImpact:78,mastery:61},{topicId:'low',examImpact:30,mastery:40}];
-  const recommendations=[{date:'2026-09-25',topicId:'gap-a',outcome:{state:'positive'}},{date:'2026-09-25',topicId:'gap-b',outcome:{state:'neutral'}}];
+  const recommendations=[{date:'2026-09-25',topicId:'gap-a',outcome:{state:'positive',measuredAt:'2026-09-25T12:00:00Z'}},{date:'2026-09-25',topicId:'gap-b',outcome:{state:'neutral',measuredAt:'2026-09-25T12:00:00Z'}}];
   const model=buildWeeklyStrategicFocus({sessions,candidates,recommendations,start:'2026-09-19',end:'2026-09-25'});
   assert.equal(model.highImpactPercent,71);
   assert.equal(model.workedGaps,2);
@@ -35,6 +35,9 @@ test('fechamento usa tempo atribuível e resultados posteriores sem inventar mel
   const withoutOutcome=buildWeeklyStrategicFocus({sessions,candidates,recommendations:[],start:'2026-09-19',end:'2026-09-25'});
   assert.equal(withoutOutcome.unmeasured,2);
   assert.equal(withoutOutcome.improved,0);
+  const undated=buildWeeklyStrategicFocus({sessions,candidates,recommendations:[{date:'2026-09-25',topicId:'gap-a',outcome:{state:'positive'}}],start:'2026-09-19',end:'2026-09-25'});
+  assert.equal(undated.improved,0);
+  assert.equal(undated.unmeasured,2);
   assert.equal(buildWeeklyStrategicFocus({sessions:[],candidates,start:'2026-09-19',end:'2026-09-25'}).state,'insufficient');
   assert.match(renderWeeklyStrategicFocus({state:'insufficient'}),/Registre sessões/);
 });

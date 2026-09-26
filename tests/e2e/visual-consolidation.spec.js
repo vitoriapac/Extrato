@@ -13,7 +13,7 @@ test('configuração estratégica comunica herança e conquista de cem horas',as
   await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0))).toBe(360000);
   await page.evaluate(()=>window.__EXTRATO_TEST__.renderAll());
   await expect(page.locator('#badgesGrid .badge-card.unlocked').filter({hasText:'Cem horas'}).first()).toContainText('Cem horas');
-  await expect(page.locator('#badgesGrid .achievement-section h4')).toContainText('Desbloqueadas');
+  await expect(page.locator('#badgesGrid .achievement-section h4').first()).toContainText('Desbloqueadas');
   await expect(page.locator('#badgesGrid .achievement-upcoming summary')).toContainText('Próximas conquistas');
 });
 
