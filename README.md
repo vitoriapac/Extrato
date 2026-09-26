@@ -90,6 +90,32 @@ flowchart TD
     M --> N["Registrar decisão e cooldown de 14 dias"]
 ```
 
+## Do estudo à recomendação
+
+Sessões, questões e simulados alimentam métricas e diagnóstico. As recomendações mostram tanto a importância para a prova quanto a situação pessoal; ao aceitar uma ação, o StudyTrack vincula a sessão e depois compara os resultados. Essa comparação registra evidências para análise, sem alterar pesos ou decisões automaticamente.
+
+```mermaid
+flowchart TD
+    P["Planejamento"] --> E["Estudo"]
+    E --> S["Sessões"]
+    E --> Q["Questões"]
+    E --> M["Simulados"]
+    S --> H["Histórico pessoal"]
+    Q --> H
+    M --> H
+    H --> A["Métricas: domínio, retenção, tendência, erros e consistência"]
+    X["Evidências da prova"] --> I["Impacto na prova"]
+    A --> D["Diagnóstico e riscos"]
+    I --> D
+    D --> R["Recomendação explicada: Prova, Você e Ação"]
+    R --> C{"Ação aceita?"}
+    C -- Sim --> V["Sessão ou atividade vinculada"]
+    C -- Não --> F["Decisão registrada"]
+    V --> O["Medir resultado posterior"]
+    O --> B["Comparar antes e depois"]
+    B --> H
+```
+
 ## Uso
 
 Acesse a [demo online](https://vitoriapac.github.io/Extrato/) e selecione **Explorar demonstração** para conhecer o fluxo sem alterar seus dados. Para uso pessoal, saia da demonstração e cadastre a data da prova, a disponibilidade semanal, as disciplinas e os tópicos.
