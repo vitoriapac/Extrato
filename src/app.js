@@ -65,6 +65,7 @@ import {ADAPTIVE_PLANNING_VERSION,applyAdaptivePlanningAdvice,buildAdaptivePlann
 import {renderAdaptiveAllocationAdvice,renderExamPhase,renderExamPhaseCompact} from './ui/renderers/adaptive-planning-renderer.js';
 import {renderExamBlueprintConfigView} from './ui/renderers/exam-blueprint-config-renderer.js';
 import {buildAchievementViewModel} from './application/achievements/build-achievement-view-model.js';
+import {buildStrategicAchievements} from './application/achievements/build-strategic-achievements.js';
 import {renderAchievementGroups} from './ui/renderers/achievement-renderer.js';
 import {createSessionService} from './application/sessions/session-service.js';
 import {buildSessionResultViewModel} from './application/sessions/build-session-result-view-model.js';
@@ -1589,6 +1590,11 @@ const BADGES = [
   { id:'recommendation1', icon:'◎', name:'Inteligência aplicada', desc:'Primeira recomendação concluída', check: () => state.recommendationFeedback.some(item=>item.completed) },
   { id:'recommendationPositive', icon:'★', name:'Estratégia funcionando', desc:'Recomendação com resultado positivo', check: () => state.recommendationFeedback.some(item=>item.outcome?.state==='positive') },
 ];
+const STRATEGIC_BADGES=[
+  {id:'strategist',icon:'◎',name:'Estrategista',desc:'Estudou 10 tópicos de alto impacto no concurso ativo.'},
+  {id:'criticalCoverage',icon:'▰',name:'Cobertura crítica',desc:'Alcançou domínio 70+ com evidência em todos os tópicos de alto impacto de uma disciplina (mínimo de dois).'},
+  {id:'mappedExam',icon:'▦',name:'Prova mapeada',desc:'Reuniu pelo menos quatro provas históricas completas no concurso ativo.'}
+];
 function renderBadges(){
   const grid = document.getElementById('badgesGrid');
   if(!grid)return;
@@ -1607,7 +1613,8 @@ function renderBadges(){
     streak14:{current:computeStreak(getActivityDates()),target:14,unit:'dias'},
     streak30:{current:computeStreak(getActivityDates()),target:30,unit:'dias'}
   };
-  const achievements=BADGES.map(item=>{const progress=progressByBadge[item.id];return{...item,unlocked:item.check(),progress:progress?{...progress,current:Math.min(progress.current,progress.target)}:null}});
+  const strategic=buildStrategicAchievements({candidates:intelligenceCandidates(),sessions:state.studySessions,exams:state.exams,activeExamTags:state.examBlueprint?.activeExamTags||[]});
+  const achievements=[...BADGES.map(item=>{const progress=progressByBadge[item.id];return{...item,unlocked:item.check(),progress:progress?{...progress,current:Math.min(progress.current,progress.target)}:null}}),...STRATEGIC_BADGES.map(item=>({...item,...strategic[item.id]}))];
   grid.innerHTML = renderAchievementGroups(buildAchievementViewModel(achievements),{escapeHtml});
 }
 

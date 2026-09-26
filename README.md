@@ -142,6 +142,8 @@ A área **Inteligência da prova** apresenta um resumo da base, sua qualidade, o
 
 O **planejamento adaptativo** usa o impacto validado em conjunto com a lacuna de domínio para justificar redistribuições. Quando o histórico participa da proposta, a explicação mostra quantas provas sustentam o impacto e sua confiança. A capacidade semanal não aumenta, ajustes de 15 a 40 minutos exigem confirmação, e um par de disciplinas entra em cooldown por 14 dias após um ajuste aplicado.
 
+As três conquistas estratégicas celebram aprendizagem e qualidade da base: **Estrategista** exige estudo registrado em dez tópicos distintos de alto impacto; **Cobertura crítica** exige domínio 70+ com evidência suficiente em todos os tópicos de alto impacto de uma disciplina com ao menos dois; **Prova mapeada** exige quatro provas históricas completas no concurso ativo. Os critérios usam o concurso selecionado e são recalculados quando o escopo ou os dados mudam.
+
 ## Instalação como PWA
 
 No Chrome ou Edge, abra a versão publicada e use a opção **Instalar StudyTrack** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.
@@ -192,7 +194,9 @@ Métricas de conteúdo, como cobertura, domínio, retenção, lacuna e prioridad
 
 ## Relatório e PDF
 
-O relatório estratégico permite escolher o período e reúne planejamento versus execução, desempenho, simulados, revisões, riscos, oportunidades, recomendações e perfil de erros. Use a impressão do navegador para salvar o relatório em PDF no formato A4.
+O relatório estratégico permite escolher o período e reúne planejamento versus execução, desempenho, simulados, revisões, riscos, oportunidades, recomendações e perfil de erros. A seção **Inteligência da prova** resume provas completas, questões analisadas, cobertura, confiança e até três lacunas de alto impacto com domínio medido. Use a impressão do navegador para salvar o relatório em PDF no formato A4.
+
+O **fechamento semanal** informa a parcela do tempo registrado em tópicos de alto impacto e quantas lacunas foram trabalhadas. Melhora ou estabilidade só são exibidas quando há resultado posterior comparável; sem essa medição, a lacuna aparece como pendente de avaliação.
 
 ## Modo demonstração
 
@@ -206,9 +210,11 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 
 ## Estado do roadmap
 
-Os pacotes 3.2 a 3.7 estão entregues: primeiro uso guiado, importador modular, recuperação explicável, gate de qualidade para publicação, ações especializadas das recomendações e fechamento semanal aplicável. O edital também alimenta as métricas de domínio e a matriz de lacunas; recomendações podem iniciar sessões guiadas no cronômetro. A modularização da interface segue em andamento, com view-models e renderers para Questões, Agenda/Revisões, Calendário e painéis analíticos.
+Os pacotes 3.2 a 3.7 e a fase de inteligência histórica estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal e conquistas ligadas ao aprendizado. Recomendações podem iniciar sessões guiadas no cronômetro. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md).
 
-As evoluções posteriores e seus critérios estão organizados em [pacotes de implementação](docs/implementation-packages.md). Entre elas estão gamificação opcional e interpretação automática de PDF; explicações com IA dependem de decisões sobre backend, privacidade e gestão de chaves.
+As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.1.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente.
+
+Outras evoluções e seus critérios estão organizados em [pacotes de implementação](docs/implementation-packages.md). Interpretação automática de PDF e classificação por IA permanecem fora desta rodada; qualquer integração futura depende de decisões sobre privacidade, confiabilidade e gestão de chaves.
 
 ## Licença
 
