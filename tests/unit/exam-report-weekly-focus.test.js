@@ -36,5 +36,15 @@ test('fechamento usa tempo atribuível e resultados posteriores sem inventar mel
   assert.equal(withoutOutcome.unmeasured,2);
   assert.equal(withoutOutcome.improved,0);
   assert.equal(buildWeeklyStrategicFocus({sessions:[],candidates,start:'2026-09-19',end:'2026-09-25'}).state,'insufficient');
-  assert.equal(renderWeeklyStrategicFocus({state:'insufficient'}),'');
+  assert.match(renderWeeklyStrategicFocus({state:'insufficient'}),/Registre sessões/);
+});
+
+test('foco semanal descreve zero, uma e várias lacunas sem impor meta de percentual',()=>{
+  const base={state:'available',highImpactPercent:0,highImpactMinutes:0,totalMinutes:120,unknownMinutes:0,improved:0,stable:0,declined:0,unmeasured:0};
+  const empty=renderWeeklyStrategicFocus({...base,workedGaps:0});
+  assert.match(empty,/0%/);assert.match(empty,/Nenhuma lacuna/);assert.match(empty,/sem meta mínima/);
+  const one=renderWeeklyStrategicFocus({...base,highImpactPercent:50,highImpactMinutes:60,workedGaps:1,unmeasured:1});
+  assert.match(one,/1 lacuna prioritária trabalhada/);assert.match(one,/1h 00min/);assert.match(one,/1 ainda sem medida posterior/);
+  const many=renderWeeklyStrategicFocus({...base,highImpactPercent:75,highImpactMinutes:90,workedGaps:4,improved:2,stable:1,declined:1});
+  assert.match(many,/4 lacunas prioritárias trabalhadas/);assert.match(many,/2 melhoraram/);assert.match(many,/1 pioraram/);
 });
