@@ -1,4 +1,4 @@
-export const WEEKLY_CLOSE_VERSION='2.0.0';
+export const WEEKLY_CLOSE_VERSION='2.1.0';
 const n=value=>Number.isFinite(Number(value))?Number(value):0;
 const pct=(a,b)=>b>0?Math.round(a/b*100):null;
 const comparison=(current,previous,unit)=>{if(previous==null)return{current,previous:null,delta:null,direction:'insufficient',unit};const delta=Math.round((current-previous)*10)/10;return{current,previous,delta,direction:delta>0?'up':delta<0?'down':'stable',unit}};

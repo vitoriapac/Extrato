@@ -1,4 +1,5 @@
 const sum=(items,selector)=>items.reduce((total,item)=>total+(Number(selector(item))||0),0);
+import {buildWeeklyStrategicFocus} from './build-weekly-strategic-focus.js';
 const inRange=(item,start,end)=>Boolean(item?.date&&item.date>=start&&item.date<=end);
 
 export function selectWeeklyPlans(dailyPlans=[],start,end){
@@ -14,6 +15,7 @@ export function buildStudyTrack32ViewModel({today,sessions=[],questions=[],daily
   const questionTotals=list=>({resolved:sum(list,item=>item.resolved),correct:sum(list,item=>item.correct)}),previousTotals=questionTotals(previousQuestions),hasPrevious=previousSessions.length+previousQuestions.length+previousPlan.plans.length>0,executedMinutes=Math.round(sum(currentSessions,item=>item.durationSeconds)/60),previousExecutedMinutes=Math.round(sum(previousSessions,item=>item.durationSeconds)/60);
   const weeklyClose=buildWeeklyClose({period:{start,end:today},current:{plannedMinutes:currentPlan.plannedMinutes,executedMinutes},previous:hasPrevious?{plannedMinutes:previousPlan.plannedMinutes,executedMinutes:previousExecutedMinutes,resolved:previousTotals.resolved,accuracy:previousTotals.resolved?Math.round(previousTotals.correct/previousTotals.resolved*100):null}:{},plans:currentPlan.plans,sessions:currentSessions,questions:currentQuestions,recommendations,targetAccuracy});
   const candidates=buildCandidates(),gapRows=candidates.map(item=>({topicId:item.topicId,name:item.topicName||nameResolvers.topic(item.topicId)||'Tópico removido',subjectName:item.subjectName||nameResolvers.subject(item.subjectId)||'Disciplina removida',mastery:item.mastery,examImpact:item.examImpact,retention:item.retention,coverage:item.coverage,trendRisk:item.trendRisk??item.risk?.value??null})),gapMap=buildGapMap(gapRows),decisionHistory=buildDecisionHistory(recommendations,{limit:5,resolveSubjectName:nameResolvers.subject,resolveTopicName:nameResolvers.topic});
+  weeklyClose.strategicFocus=buildWeeklyStrategicFocus({sessions:currentSessions,candidates,recommendations,start,end:today});
   const latestSimulation=[...simulations].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0],plannedOpen=sum(dailyPlans.flatMap(plan=>plan.items||[]).filter(item=>!['completed','skipped','replaced','discarded'].includes(item.status)),item=>item.plannedMinutes),availableMinutes=Math.max(0,weeklyCapacityMinutes-plannedOpen),postSimulation=buildPostSimulationReplan({simulation:latestSimulation,subjects,availableMinutes,existingSimulationIds:planAdjustments.map(item=>item.simulationId).filter(Boolean)});
   return {period:{start,end:today,previousStart,previousEnd},weeklyClose,gapMap,decisionHistory,postSimulation:{...postSimulation,availableMinutes}};
 }
