@@ -134,6 +134,8 @@ Na área **Metas → Inteligência da prova**, importe provas históricas com JS
 
 O card **Qualidade do histórico** mostra provas completas, questões classificadas, pendências, tópicos mapeados e cobertura da base conhecida. O campo opcional `exam.expectedQuestionCount` informa o total da prova; sem ele, a cobertura se refere às questões presentes no arquivo. Questões ignoradas permanecem pendentes e impedem que a prova seja tratada como completa. Para backups antigos sem total registrado, a cobertura aparece como indisponível.
 
+Em **Revisar classificações**, filtre questões pendentes, de baixa confiança, manuais ou importadas e associe cada uma a um tópico existente com confiança explícita. A correção altera somente a evidência histórica e os próximos cálculos; desempenho pessoal e recomendações já registradas não são reescritos. Uma reimportação preserva classificações revisadas manualmente.
+
 A **Matriz histórica**, na mesma área, mostra quantas questões de cada tópico apareceram em cada prova completa. Filtre por concurso, banca, ano e cargo; selecione um tópico para ver incidência, confiança, peso registrado e sua situação de domínio e retenção. No celular, a matriz aparece em cards. Provas parciais ficam fora do denominador de incidência.
 
 O **planejamento adaptativo** usa o impacto validado em conjunto com a lacuna de domínio para justificar redistribuições. Quando o histórico participa da proposta, a explicação mostra quantas provas sustentam o impacto e sua confiança. A capacidade semanal não aumenta, ajustes de 15 a 40 minutos exigem confirmação, e um par de disciplinas entra em cooldown por 14 dias após um ajuste aplicado.

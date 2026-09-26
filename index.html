@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=e3de52dce4a6">
+<link rel="stylesheet" href="styles/app.css?v=ca3f146780a8">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -691,6 +691,14 @@
   <button class="btn ghost small" id="appErrorRetryBtn" type="button">Tentar novamente</button>
 </aside>
 <article id="strategicPrintReport" class="strategic-print-report" aria-label="Relatório estratégico"></article>
+<div class="modal-overlay" id="examClassificationOverlay" role="dialog" aria-modal="true" aria-labelledby="examClassificationTitle">
+  <div class="modal-box exam-classification-box">
+    <h3 id="examClassificationTitle">Revisar classificações históricas</h3>
+    <p class="analytics-note">Correções atualizam a incidência e as próximas recomendações. Sessões e recomendações anteriores permanecem preservadas.</p>
+    <div id="examClassificationContent"></div>
+    <div class="modal-actions"><button class="btn ghost" id="examClassificationClose" type="button">Fechar</button></div>
+  </div>
+</div>
 <div class="modal-overlay" id="structuredImportOverlay" role="dialog" aria-modal="true" aria-labelledby="structuredImportTitle">
   <div class="modal-box structured-import-box">
     <h3 id="structuredImportTitle">Prévia da importação</h3>
@@ -814,7 +822,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=e3de52dce4a6"></script>
+  <script src="src/app.bundle.js?v=ca3f146780a8"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

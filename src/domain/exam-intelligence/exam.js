@@ -13,6 +13,7 @@ export function validateExam(exam){
   if(exam.date!=null&&(!isISODate(exam.date)||Number(exam.date.slice(0,4))!==exam.year))return 'A data da prova é inválida.';
   if(!SOURCES.has(exam.source)||!optionalText(exam.sourceReference,2000))return 'A origem da prova é inválida.';
   if(!COVERAGE.has(exam.coverage))return 'A cobertura da prova é inválida.';
+  if(exam.declaredCoverage!=null&&!COVERAGE.has(exam.declaredCoverage))return 'A cobertura declarada da prova é inválida.';
   if(exam.importedQuestionCount!=null&&(!Number.isInteger(exam.importedQuestionCount)||exam.importedQuestionCount<0||exam.importedQuestionCount>10000))return 'O total importado da prova é inválido.';
   if(exam.expectedQuestionCount!=null&&(!Number.isInteger(exam.expectedQuestionCount)||exam.expectedQuestionCount<1||exam.expectedQuestionCount>10000))return 'O total declarado da prova é inválido.';
   if(exam.expectedQuestionCount!=null&&exam.importedQuestionCount!=null&&exam.expectedQuestionCount<exam.importedQuestionCount)return 'O total declarado não pode ser menor que o importado.';
@@ -24,7 +25,7 @@ export function validateExam(exam){
 }
 
 export function createExam(input){
-  const exam={id:input?.id,institution:input?.institution,examName:input?.examName,role:input?.role,board:input?.board,year:input?.year,date:input?.date??null,source:input?.source??'manual',sourceReference:input?.sourceReference??null,coverage:input?.coverage??'unknown',examTags:Array.isArray(input?.examTags)?[...new Set(input.examTags)]:input?.examTags??[],importedQuestionCount:input?.importedQuestionCount??null,expectedQuestionCount:input?.expectedQuestionCount??null,unresolvedQuestions:structuredClone(input?.unresolvedQuestions||[])};
+  const exam={id:input?.id,institution:input?.institution,examName:input?.examName,role:input?.role,board:input?.board,year:input?.year,date:input?.date??null,source:input?.source??'manual',sourceReference:input?.sourceReference??null,coverage:input?.coverage??'unknown',declaredCoverage:input?.declaredCoverage??input?.coverage??'unknown',examTags:Array.isArray(input?.examTags)?[...new Set(input.examTags)]:input?.examTags??[],importedQuestionCount:input?.importedQuestionCount??null,expectedQuestionCount:input?.expectedQuestionCount??null,unresolvedQuestions:structuredClone(input?.unresolvedQuestions||[])};
   const error=validateExam(exam);if(error)throw new TypeError(error);
   return exam;
 }

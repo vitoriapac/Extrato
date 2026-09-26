@@ -49,7 +49,7 @@ export function mergeExamImport(parsed,preview,decisions,{subjects=[],exams=[],e
   const existingIndex=nextExams.findIndex(exam=>exam.id===examId);
   const previousExam=existingIndex>=0?nextExams[existingIndex]:null;
   const pending=new Map((previousExam?.unresolvedQuestions||[]).map(row=>[row.number,row]));
-  let added=0,updated=0,ignored=0,createdTopics=0;
+  let added=0,updated=0,preserved=0,ignored=0,createdTopics=0;
   for(const row of preview.rows){
     const decision=decisions?.[row.number];
     if(decision?.action==='ignore'){
@@ -74,8 +74,9 @@ export function mergeExamImport(parsed,preview,decisions,{subjects=[],exams=[],e
       subjectId=subject.id;
     }else if(row.status!=='mapped')throw new TypeError(`Questão ${row.number}: resolva o conflito antes de importar.`);
     const index=nextQuestions.findIndex(item=>item.examId===examId&&item.questionNumber===row.number);
-    const question=createExamQuestion({id:index>=0?nextQuestions[index].id:`exam-question-import-${hash(`${examId}|${row.number}`)}`,examId,subjectId,topicId,questionNumber:row.number,weight:row.weight,source:parsed.exam.sourceReference||'',classification:{method:'imported',confidence:1}});
-    if(index>=0){nextQuestions[index]=question;updated++}else{nextQuestions.push(question);added++}
+    const existingQuestion=index>=0?nextQuestions[index]:null;
+    const question=existingQuestion?.classification?.method==='manual'?existingQuestion:createExamQuestion({id:existingQuestion?.id||`exam-question-import-${hash(`${examId}|${row.number}`)}`,examId,subjectId,topicId,questionNumber:row.number,weight:row.weight,source:parsed.exam.sourceReference||'',classification:{method:'imported',confidence:1}});
+    if(index>=0){nextQuestions[index]=question;if(question===existingQuestion)preserved++;else updated++}else{nextQuestions.push(question);added++}
     pending.delete(row.number);
   }
   const classifiedNumbers=new Set(nextQuestions.filter(item=>item.examId===examId).map(item=>item.questionNumber));
@@ -83,7 +84,7 @@ export function mergeExamImport(parsed,preview,decisions,{subjects=[],exams=[],e
   const importedQuestionCount=new Set([...classifiedNumbers,...pending.keys()]).size;
   const expectedQuestionCount=parsed.exam.expectedQuestionCount??previousExam?.expectedQuestionCount??null;
   const complete=parsed.exam.coverage==='complete'&&pending.size===0&&(expectedQuestionCount==null||expectedQuestionCount===importedQuestionCount);
-  const exam=createExam({...previousExam,...parsed.exam,id:examId,coverage:complete?'complete':parsed.exam.coverage==='complete'?'partial':parsed.exam.coverage,examTags:parsed.exam.examTags,importedQuestionCount,expectedQuestionCount,unresolvedQuestions:[...pending.values()].sort((a,b)=>a.number-b.number)});
+  const exam=createExam({...previousExam,...parsed.exam,id:examId,coverage:complete?'complete':parsed.exam.coverage==='complete'?'partial':parsed.exam.coverage,declaredCoverage:parsed.exam.coverage,examTags:parsed.exam.examTags,importedQuestionCount,expectedQuestionCount,unresolvedQuestions:[...pending.values()].sort((a,b)=>a.number-b.number)});
   if(existingIndex>=0)nextExams[existingIndex]=exam;else nextExams.push(exam);
-  return {subjects:nextSubjects,exams:nextExams,examQuestions:nextQuestions,summary:{added,updated,ignored,createdTopics,examId}};
+  return {subjects:nextSubjects,exams:nextExams,examQuestions:nextQuestions,summary:{added,updated,preserved,ignored,createdTopics,examId}};
 }

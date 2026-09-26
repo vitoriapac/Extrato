@@ -140,6 +140,8 @@ import {buildExamIntelligenceViewModel} from './application/exam-intelligence/bu
 import {renderExamIntelligence} from './ui/renderers/exam-intelligence-renderer.js';
 import {buildExamDataQuality} from './application/exam-intelligence/build-exam-data-quality.js';
 import {renderExamDataQuality} from './ui/renderers/exam-data-quality-renderer.js';
+import {reviewExamClassification} from './application/exam-intelligence/review-exam-classification.js';
+import {renderExamClassificationReview} from './ui/renderers/exam-classification-review-renderer.js';
 import {buildExamMatrix} from './application/exam-intelligence/build-exam-matrix.js';
 import {renderExamMatrix} from './ui/renderers/exam-matrix-renderer.js';
 import {createTopicStrategyController} from './features/topic-strategy/topic-strategy-controller.js';
@@ -481,7 +483,7 @@ function migrateV19toV20(data){data.studySessions=(data.studySessions||[]).map(s
 function migrateV20toV21(data){if(!Array.isArray(data.adaptivePlanningHistory))data.adaptivePlanningHistory=[];data.schemaVersion=21;return data}
 function migrateV21toV22(data){data.recommendationHistory=Array.isArray(data.recommendationHistory)?data.recommendationHistory:migrateRecommendationHistory(data.recommendationFeedback||[]);data.schemaVersion=22;return data}
 function migrateV22toV23(data){data.exams=Array.isArray(data.exams)?data.exams:[];data.examQuestions=Array.isArray(data.examQuestions)?data.examQuestions:[];data.schemaVersion=23;return data}
-function migrateV23toV24(data){for(const exam of data.exams||[]){exam.importedQuestionCount=null;exam.expectedQuestionCount=null;exam.unresolvedQuestions=[]}data.schemaVersion=24;return data}
+function migrateV23toV24(data){for(const exam of data.exams||[]){exam.importedQuestionCount=null;exam.expectedQuestionCount=null;exam.unresolvedQuestions=[];exam.declaredCoverage=exam.coverage}data.schemaVersion=24;return data}
 
 function migrateState(data){
   return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24}});
@@ -822,7 +824,7 @@ function showConfirm(message,onConfirm,onCancel,options={}){return modalControll
 function showPrompt(message,options,onConfirm,onCancel){return modalController.prompt(message,options,onConfirm,onCancel)}
 
 /* ===== TABS ===== */
-const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('guidedOnboardingOverlay'),document.getElementById('structuredImportOverlay'),document.getElementById('examImportOverlay'),document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
+const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('guidedOnboardingOverlay'),document.getElementById('structuredImportOverlay'),document.getElementById('examImportOverlay'),document.getElementById('examClassificationOverlay'),document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
 function activateTab(tabName,updateHash=true){return navigationController.activate(tabName,updateHash)}
 
 /* ===== HELPERS ===== */
@@ -2215,7 +2217,7 @@ examJsonPreview?.addEventListener('click',event=>{
     const result=mergeExamImport(pendingExamJson.parsed,pendingExamJson.preview,decisions,state);
     state.subjects=result.subjects;state.exams=result.exams;state.examQuestions=result.examQuestions;
     pendingExamJson=null;examJsonPreview.innerHTML='';studyPlanPreview=null;persistAndRender();
-    showToast(`Prova importada: ${result.summary.added} questões novas, ${result.summary.updated} atualizadas, ${result.summary.ignored} ignoradas.`);
+    showToast(`Prova importada: ${result.summary.added} questões novas, ${result.summary.updated} atualizadas, ${result.summary.preserved} revisões preservadas, ${result.summary.ignored} ignoradas.`);
   }catch(error){showToast(error.message||'A importação falhou. Nenhum dado foi alterado.')}
 });
 document.getElementById('downloadStructuredCsvBtn')?.addEventListener('click',()=>{const csv='disciplina,topico,dificuldade,importancia,esforco,tags\nPortuguês,Interpretação de texto,Médio,80,120,leitura|prioridade\n',blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='modelo-studytrack.csv';link.click();URL.revokeObjectURL(url)});
@@ -3335,6 +3337,26 @@ function renderExamBlueprintConfig(){
   renderHistoricalExamMatrix();
   renderExamMasteryMatrix();
 }
+let examClassificationFilter='all',examClassificationPreviousFocus=null;
+const examClassificationOverlay=document.getElementById('examClassificationOverlay');
+function updateExamClassificationReview(){
+  const content=document.getElementById('examClassificationContent');if(!content)return;
+  content.innerHTML=renderExamClassificationReview({exams:state.exams,examQuestions:state.examQuestions,subjects:state.subjects,activeExamTags:state.examBlueprint.activeExamTags||[],filter:examClassificationFilter});
+}
+function closeExamClassificationReview(){examClassificationOverlay?.classList.remove('show');(examClassificationPreviousFocus?.isConnected?examClassificationPreviousFocus:document.getElementById('openExamClassificationReview'))?.focus();examClassificationPreviousFocus=null}
+document.getElementById('examDataQuality')?.addEventListener('click',event=>{if(!event.target.closest('#openExamClassificationReview'))return;examClassificationPreviousFocus=document.activeElement;examClassificationFilter='all';updateExamClassificationReview();examClassificationOverlay.classList.add('show');document.getElementById('examClassificationFilter')?.focus()});
+document.getElementById('examClassificationClose')?.addEventListener('click',closeExamClassificationReview);
+examClassificationOverlay?.addEventListener('click',event=>{
+  if(event.target===examClassificationOverlay){closeExamClassificationReview();return}
+  const button=event.target.closest('[data-review-save]');if(!button)return;
+  const row=button.closest('[data-review-exam]'),topicId=row?.querySelector('[data-review-topic]')?.value,confidence=Number(row?.querySelector('[data-review-confidence]')?.value);
+  try{
+    const result=reviewExamClassification(state,{examId:row?.dataset.reviewExam,questionNumber:Number(row?.dataset.reviewNumber),topicId,confidence,now:nowISO(),idGenerator:uid});
+    state.exams=result.exams;state.examQuestions=result.examQuestions;studyPlanPreview=null;persistAndRender();updateExamClassificationReview();showToast('Classificação atualizada. Próximas recomendações usarão a evidência corrigida.');
+  }catch(error){showToast(error.message||'Não foi possível revisar a classificação.')}
+});
+examClassificationOverlay?.addEventListener('change',event=>{if(event.target.id==='examClassificationFilter'){examClassificationFilter=event.target.value;updateExamClassificationReview();document.getElementById('examClassificationFilter')?.focus()}});
+examClassificationOverlay?.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeExamClassificationReview()}});
 function topicExamMetricForActiveScope(topic){const active=state.examBlueprint.activeExamTags||[],entries=Object.entries(topic.examMetrics||{}).filter(([profile])=>!active.length||active.some(tag=>profile.startsWith(tag)));return entries[0]?.[1]||null}
 function renderExamMasteryMatrix(){const el=document.getElementById('examMasteryMatrix');if(!el)return;const candidates=intelligenceCandidates(),metrics=Object.fromEntries(candidates.map(c=>[c.topicId,{coverage:c.coverage,mastery:{value:c.mastery,confidence:c.evidenceStrength},retention:{value:c.retention},trend:c.trend,priority:{value:c.score}}])),rows=buildExamMasteryMatrix({subjects:state.subjects,blueprint:state.examBlueprint,metricsByTopic:metrics,activeExamTags:state.examBlueprint.activeExamTags||[]});el.innerHTML=rows.length?`<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows.sort((a,b)=>(b.gap??-999)-(a.gap??-999)).map(row=>`<details><summary><strong>${escapeHtml(row.name)}</strong><span data-label="Cobertura">${row.coverage??'—'}%</span><span data-label="Domínio">${row.mastery??'—'}%</span><span data-label="Retenção">${row.retention??'—'}%</span><span data-label="Gap">${row.gap==null?'—':(row.gap>0?'-':'')+Math.abs(row.gap)+' pts'}</span></summary>${row.topics.map(t=>{const metric=topicExamMetricForActiveScope(t),meta=[metric?.questionWeight!=null?metric.questionWeight+' pt/questão':null,t.incidence?.level?'incidência '+t.incidence.level.toLowerCase():null].filter(Boolean).join(' · ');return `<div class="mastery-topic"><span>${escapeHtml(t.name)}${meta?`<small>${escapeHtml(meta)} · estimativa por tópico</small>`:''}</span><span data-label="Cobertura">${t.coverage}%</span><span data-label="Domínio">${t.mastery??'—'}%</span><span data-label="Retenção">${t.retention??'—'}%</span><span data-label="Estado">${escapeHtml(t.state)}</span></div>`}).join('')}</details>`).join('')}</div>`:'<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>'}
 let studyPlanPreview=null,dailyPlanPreview=null;
