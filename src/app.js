@@ -138,6 +138,8 @@ import {renderTopicStrategyEditor as renderTopicStrategyEditorView} from './feat
 import {buildTopicStrategyViewModel} from './features/topic-strategy/topic-strategy-view-model.js';
 import {buildExamIntelligenceViewModel} from './application/exam-intelligence/build-exam-intelligence-view-model.js';
 import {renderExamIntelligence} from './ui/renderers/exam-intelligence-renderer.js';
+import {buildExamDataQuality} from './application/exam-intelligence/build-exam-data-quality.js';
+import {renderExamDataQuality} from './ui/renderers/exam-data-quality-renderer.js';
 import {buildExamMatrix} from './application/exam-intelligence/build-exam-matrix.js';
 import {renderExamMatrix} from './ui/renderers/exam-matrix-renderer.js';
 import {createTopicStrategyController} from './features/topic-strategy/topic-strategy-controller.js';
@@ -479,9 +481,10 @@ function migrateV19toV20(data){data.studySessions=(data.studySessions||[]).map(s
 function migrateV20toV21(data){if(!Array.isArray(data.adaptivePlanningHistory))data.adaptivePlanningHistory=[];data.schemaVersion=21;return data}
 function migrateV21toV22(data){data.recommendationHistory=Array.isArray(data.recommendationHistory)?data.recommendationHistory:migrateRecommendationHistory(data.recommendationFeedback||[]);data.schemaVersion=22;return data}
 function migrateV22toV23(data){data.exams=Array.isArray(data.exams)?data.exams:[];data.examQuestions=Array.isArray(data.examQuestions)?data.examQuestions:[];data.schemaVersion=23;return data}
+function migrateV23toV24(data){for(const exam of data.exams||[]){exam.importedQuestionCount=null;exam.expectedQuestionCount=null;exam.unresolvedQuestions=[]}data.schemaVersion=24;return data}
 
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24}});
 }
 
 function ensureStateDefaults(){
@@ -1116,6 +1119,7 @@ function validateNormalizedBackup(data){
     if(questionKeys.has(key))return fail('Uma prova contém números de questão duplicados.');
     questionKeys.add(key);
   }
+  if(data.exams.some(exam=>(exam.unresolvedQuestions||[]).some(row=>questionKeys.has(`${exam.id}:${row.number}`))))return fail('Uma questão histórica não pode estar classificada e pendente ao mesmo tempo.');
   const validateEntity=(item,label)=>{
     if(!isPlainObject(item)) return `${label} não é um objeto válido.`;
     return registerId(item.id,label);
@@ -3324,6 +3328,8 @@ document.getElementById('examHistoricalMatrix')?.addEventListener('click',event=
 function renderExamBlueprintConfig(){
   const container=document.getElementById('examBlueprintConfig');if(!container)return;
   renderExamBlueprintConfigView({container,blueprint:state.examBlueprint,subjects:activeSubjects(),escapeHtml,escapeAttr,formatDatePt,EXAM_TAGS,EXAM_SOURCES,document});
+  const quality=document.getElementById('examDataQuality');
+  if(quality)quality.innerHTML=renderExamDataQuality(buildExamDataQuality({exams:state.exams,examQuestions:state.examQuestions,topics:examScopedTopics(),blueprint:state.examBlueprint}));
   const evidence=document.getElementById('examIntelligenceSummary');
   if(evidence)evidence.innerHTML=renderExamIntelligence(buildExamIntelligenceViewModel({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}));
   renderHistoricalExamMatrix();
