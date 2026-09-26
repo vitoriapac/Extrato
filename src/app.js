@@ -3289,12 +3289,15 @@ const examMatrixFilters={scope:'active',board:'all',year:'all',role:'all',subjec
 let selectedExamMatrixTopicId=null;
 function renderHistoricalExamMatrix(){
   const container=document.getElementById('examHistoricalMatrix');if(!container)return;
+  const advancedWasOpen=container.querySelector('.exam-matrix-more-filters')?.open;
   const metricsByTopic=Object.fromEntries(intelligenceCandidates().map(item=>[item.topicId,{mastery:item.mastery,retention:item.retention,trend:item.trend,priority:item.score}]));
   const auditMatchesScope=examMatrixFilters.scope==='active'&&['board','year','role'].every(key=>examMatrixFilters[key]==='all');
   const auditByTopic=auditMatchesScope?Object.fromEntries(buildExamConfigurationAudit({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}).rows.map(row=>[row.topicId,row])):{};
   const model=buildExamMatrix({topics:activeTopics(),exams:state.exams,examQuestions:state.examQuestions,activeExamTags:state.examBlueprint.activeExamTags||[],filters:examMatrixFilters,metricsByTopic,auditByTopic});
   if(!model.rows.some(row=>row.topicId===selectedExamMatrixTopicId))selectedExamMatrixTopicId=null;
   container.innerHTML=renderExamMatrix(model,{selectedTopicId:selectedExamMatrixTopicId});
+  const advanced=container.querySelector('.exam-matrix-more-filters');
+  if(advanced)advanced.open=advancedWasOpen??!window.matchMedia('(max-width:600px)').matches;
   for(const [key,value] of Object.entries(examMatrixFilters)){const select=container.querySelector(`[data-exam-matrix-filter="${key}"]`);if(select&&[...select.options].some(option=>option.value===String(value)))select.value=String(value)}
 }
 document.getElementById('examHistoricalMatrix')?.addEventListener('change',event=>{
