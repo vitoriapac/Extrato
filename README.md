@@ -17,6 +17,79 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Modo demonstração isolado com 130 dias de dados fictícios.
 - Tema claro/escuro, layout responsivo e navegação por teclado.
 
+## Como o StudyTrack funciona
+
+Quem já tem dados salvos retoma o estudo sem repetir o primeiro uso. Para começar, os três caminhos de conteúdo levam a uma prévia; importar ou gerar um plano só altera os dados depois da confirmação.
+
+```mermaid
+flowchart TD
+    A["Abrir o StudyTrack"] --> B{"Já tem histórico?"}
+    B -- Sim --> H["Retomar em Hoje"]
+    B -- Não --> C["Primeiro uso: prova e disponibilidade"]
+    C --> D{"Escolher conteúdo"}
+    D --> E["Edital do catálogo"]
+    D --> F["Arquivo JSON ou CSV"]
+    D --> G["Cadastro manual"]
+    E --> P["Revisar prévia"]
+    F --> P
+    G --> P
+    P --> Q{"Confirmar?"}
+    Q -- Não --> D
+    Q -- Sim --> R["Gerar e confirmar planejamento"]
+    R --> H
+    H --> S["Estudar e registrar a atividade"]
+    S --> T["Ver diagnóstico e recomendações"]
+    T --> U["Revisar o plano quando necessário"]
+    U --> H
+```
+
+## Como o planejamento decide o que estudar
+
+O conteúdo elegível no concurso ativo, a disponibilidade e as evidências pessoais alimentam candidatos de estudo. A importância para a prova é combinada com a necessidade do estudante; o histórico da prova só ajusta o impacto estimado quando tem confiança suficiente. O mesmo cálculo de prioridade orienta recomendações e propostas de plano, respeitando a capacidade disponível.
+
+```mermaid
+flowchart TD
+    C["Conteúdo e pré-requisitos"] --> E["Tópicos elegíveis"]
+    P["Concurso ativo e prova"] --> E
+    E --> K["Candidatos de estudo"]
+    H["Sessões, questões e revisões"] --> K
+    I["Impacto na prova"] --> K
+    K --> S["Prioridade: importância e necessidade pessoal"]
+    S --> R["Recomendações explicadas"]
+    S --> W["Proposta de plano semanal"]
+    D["Disponibilidade"] --> W
+    D --> R
+    W --> L{"Cabe na capacidade?"}
+    L -- Sim --> F["Confirmar e distribuir no plano diário"]
+    L -- Não --> V["Revisar disponibilidade ou proposta"]
+    F --> J["Hoje"]
+    R --> J
+```
+
+## Como funciona o planejamento adaptativo
+
+Há dois ajustes distintos. **Recuperação de atrasos** redistribui atividades pendentes nos dias com espaço; no cenário de três faltas, a parte que não cabe aparece como excedente, sem criar uma agenda impossível. **Adaptação semanal** propõe mover de 15 a 40 minutos de uma disciplina consolidada para outra com lacuna e impacto relevantes, sem aumentar a carga semanal. Ambos mostram uma prévia e exigem confirmação. O cooldown de 14 dias vale para o par de disciplinas após uma adaptação aplicada.
+
+```mermaid
+flowchart TD
+    A["Plano e execução registrada"] --> B{"Que ajuste é necessário?"}
+    B -- "Atividades atrasadas" --> C["Calcular tempo pendente"]
+    C --> D["Verificar espaço nos próximos dias"]
+    D --> E["Prévia: redistribuição e excedente declarado"]
+    E --> F{"Confirmar recuperação?"}
+    F -- Sim --> G["Aplicar e registrar ajuste"]
+    F -- Não --> Z["Manter plano"]
+    G --> H["Desfazer preserva itens já executados"]
+    B -- "Lacuna prioritária com evidência" --> I["Comparar impacto, domínio e capacidade"]
+    I --> J{"Transferência justificada?"}
+    J -- Não --> Z
+    J -- Sim --> K["Prévia: 15 a 40 min entre disciplinas"]
+    K --> L{"Confirmar adaptação?"}
+    L -- Não --> Z
+    L -- Sim --> M["Aplicar sem aumentar a carga semanal"]
+    M --> N["Registrar decisão e cooldown de 14 dias"]
+```
+
 ## Uso
 
 Acesse a [demo online](https://vitoriapac.github.io/Extrato/) e selecione **Explorar demonstração** para conhecer o fluxo sem alterar seus dados. Para uso pessoal, saia da demonstração e cadastre a data da prova, a disponibilidade semanal, as disciplinas e os tópicos.
