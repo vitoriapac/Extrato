@@ -26,3 +26,14 @@ test('renderer mostra progresso somente em conquistas bloqueadas com meta mensur
   assert.doesNotMatch(html,/Progresso de Dez horas/);
   assert.doesNotMatch(html,/Progresso de Primeira sessão/);
 });
+
+test('conquistas estratégicas mostram categoria e motivo do bloqueio com texto escapado',()=>{
+  const html=renderAchievementGroups(buildAchievementViewModel([
+    {id:'streak',category:'consistency',icon:'•',name:'Ritmo',desc:'Estudar',unlocked:true},
+    {id:'learn',category:'learning',icon:'•',name:'Aprender',desc:'Estudar',unlocked:false},
+    {id:'critical',category:'strategy',icon:'•',name:'Cobertura crítica',desc:'Domínio',unlocked:false,progress:{current:1,target:2,unit:'tópicos críticos'},guidance:'Complete o domínio',missing:['Juros <script> — domínio 64/100','SAC — evidência insuficiente']}
+  ]),{escapeHtml});
+  assert.match(html,/Consistência/);assert.match(html,/Aprendizado/);assert.match(html,/Estratégia/);
+  assert.match(html,/Complete o domínio/);assert.match(html,/Juros &lt;script&gt; — domínio 64\/100/);
+  assert.doesNotMatch(html,/<script>/);
+});

@@ -1595,6 +1595,7 @@ const STRATEGIC_BADGES=[
   {id:'criticalCoverage',icon:'▰',name:'Cobertura crítica',desc:'Alcançou domínio 70+ com evidência em todos os tópicos de alto impacto de uma disciplina (mínimo de dois).'},
   {id:'mappedExam',icon:'▦',name:'Prova mapeada',desc:'Reuniu pelo menos quatro provas históricas completas no concurso ativo.'}
 ];
+const CONSISTENCY_BADGE_IDS=new Set(['firstSession','streak3','streak7','streak14','streak30','hours10','hours50','hours100']);
 function renderBadges(){
   const grid = document.getElementById('badgesGrid');
   if(!grid)return;
@@ -1614,7 +1615,7 @@ function renderBadges(){
     streak30:{current:computeStreak(getActivityDates()),target:30,unit:'dias'}
   };
   const strategic=buildStrategicAchievements({candidates:intelligenceCandidates(),sessions:state.studySessions,exams:state.exams,activeExamTags:state.examBlueprint?.activeExamTags||[]});
-  const achievements=[...BADGES.map(item=>{const progress=progressByBadge[item.id];return{...item,unlocked:item.check(),progress:progress?{...progress,current:Math.min(progress.current,progress.target)}:null}}),...STRATEGIC_BADGES.map(item=>({...item,...strategic[item.id]}))];
+  const achievements=[...BADGES.map(item=>{const progress=progressByBadge[item.id];return{...item,category:CONSISTENCY_BADGE_IDS.has(item.id)?'consistency':'learning',unlocked:item.check(),progress:progress?{...progress,current:Math.min(progress.current,progress.target)}:null}}),...STRATEGIC_BADGES.map(item=>({...item,category:'strategy',...strategic[item.id]}))];
   grid.innerHTML = renderAchievementGroups(buildAchievementViewModel(achievements),{escapeHtml});
 }
 

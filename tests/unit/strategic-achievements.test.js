@@ -13,13 +13,15 @@ test('Estrategista exige dez tópicos distintos de alto impacto com sessão real
 });
 
 test('Cobertura crítica exige todos os tópicos relevantes da disciplina com domínio e evidência',()=>{
-  const candidates=[{topicId:'one',subjectId:'s',examImpact:82,mastery:75,evidenceStrength:.8},{topicId:'two',subjectId:'s',examImpact:79,mastery:69,evidenceStrength:.9},{topicId:'low',subjectId:'s',examImpact:20,mastery:10,evidenceStrength:.9}];
+  const candidates=[{topicId:'one',subjectId:'s',topicName:'Juros simples',examImpact:82,mastery:75,evidenceStrength:.8},{topicId:'two',subjectId:'s',topicName:'Juros compostos',examImpact:79,mastery:69,evidenceStrength:.9},{topicId:'low',subjectId:'s',examImpact:20,mastery:10,evidenceStrength:.9}];
   const partial=buildStrategicAchievements({candidates});
   assert.equal(partial.criticalCoverage.unlocked,false);
   assert.deepEqual(partial.criticalCoverage.progress,{current:1,target:2,unit:'tópicos críticos'});
   assert.equal(buildStrategicAchievements({candidates:candidates.map(item=>item.topicId==='two'?{...item,mastery:72,evidenceStrength:.4}:item)}).criticalCoverage.unlocked,false);
   assert.equal(buildStrategicAchievements({candidates:candidates.map(item=>item.topicId==='two'?{...item,mastery:72}:item)}).criticalCoverage.unlocked,true);
   assert.equal(buildStrategicAchievements({candidates:candidates.slice(0,1)}).criticalCoverage.unlocked,false);
+  assert.match(partial.criticalCoverage.missing[0],/Juros compostos — domínio 69\/100/);
+  assert.match(buildStrategicAchievements({candidates:candidates.map(item=>item.topicId==='two'?{...item,mastery:72,evidenceStrength:.4}:item)}).criticalCoverage.missing[0],/evidência insuficiente/);
 });
 
 test('Prova mapeada considera apenas provas completas do concurso ativo',()=>{
