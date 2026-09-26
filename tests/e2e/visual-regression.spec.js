@@ -21,7 +21,8 @@ for(const viewport of viewports){
     await openStableDemo(page,viewport);
     await expect(page.locator('.statement')).toHaveScreenshot(`hero-${viewport.name}.png`,screenshotOptions);
     await expect(page.locator('#weeklyCloseDashboard .weekly-strategic-focus')).toContainText('Foco estratégico da semana');
-    await expect(page.locator('#weeklyCloseDashboard').locator('..')).toHaveScreenshot(`fechamento-${viewport.name}.png`,{...screenshotOptions,style:'.weekly-strategic-focus{display:none!important}'});
+    await page.locator('#weeklyCloseDashboard .weekly-strategic-focus').evaluate(element=>{element.style.display='none'});
+    await expect(page.locator('#weeklyCloseDashboard').locator('..')).toHaveScreenshot(`fechamento-${viewport.name}.png`,screenshotOptions);
   });
 }
 
