@@ -2,10 +2,12 @@ import {recommendationActionKind} from './recommendation-action.js';
 
 export const RECOMMENDATION_HISTORY_STATUSES=Object.freeze(['pending','executed','dismissed','expired']);
 const signature=item=>JSON.stringify([item.id,item.score,item.estimatedMinutes,item.factors||null,recommendationActionKind(item)]);
+const localDate=timestamp=>{const date=new Date(timestamp);return Number.isNaN(date.getTime())?null:`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`};
+const recordDate=record=>record.localDate||localDate(record.createdAt);
 
 export function migrateRecommendationHistory(feedback=[]){
   const seen=new Set();return feedback.filter(item=>{if(!item.recommendationId||seen.has(item.recommendationId))return false;seen.add(item.recommendationId);return true}).map(item=>({
-    id:item.recommendationId,createdAt:item.shownAt||item.createdAt||new Date(`${item.date}T12:00:00Z`).toISOString(),
+    id:item.recommendationId,createdAt:item.shownAt||item.createdAt||new Date(`${item.date}T12:00:00Z`).toISOString(),localDate:item.date||localDate(item.shownAt||item.createdAt),
     candidateId:null,signature:null,source:item.presentationSource||'legacy',subjectId:item.subjectId||null,topicId:item.topicId||null,
     activityType:['study','review','questions','prerequisite'].includes(item.actionKind||item.snapshot?.recommendationType)?item.actionKind||item.snapshot?.recommendationType:'study',suggestedMinutes:item.snapshot?.recommendedMinutes??null,
     priority:item.score??null,reasons:[],evidenceSnapshot:item.snapshot?.evidenceBefore||null,
@@ -16,17 +18,17 @@ export function migrateRecommendationHistory(feedback=[]){
 
 export function reusableRecommendationRecord(history,item,date){
   const expected=signature(item);
-  return [...history].reverse().find(record=>record.status==='pending'&&record.candidateId===item.id&&record.signature===expected&&record.createdAt?.slice(0,10)===date)||null;
+  return [...history].reverse().find(record=>record.status==='pending'&&record.candidateId===item.id&&record.signature===expected&&recordDate(record)===date)||null;
 }
 
 export function ensureRecommendationRecord(history,item,{now,idGenerator}={}){
   const existing=history.find(record=>record.id===item.recommendationId);if(existing)return existing;
-  const record={id:item.recommendationId||idGenerator('recommendation'),createdAt:item.shownAt||now,candidateId:item.id,signature:signature(item),source:'generated',subjectId:item.subjectId||null,topicId:item.topicId||null,activityType:recommendationActionKind(item),suggestedMinutes:item.estimatedMinutes??null,priority:item.score??null,reasons:[...(item.reasons||[])],evidenceSnapshot:item.evidence?structuredClone(item.evidence):null,status:'pending',executedAt:null,dismissedAt:null,expiredAt:null,sessionId:null,feedbackId:null};history.push(record);return record;
+  const record={id:item.recommendationId||idGenerator('recommendation'),createdAt:item.shownAt||now,localDate:localDate(item.shownAt||now),candidateId:item.id,signature:signature(item),source:'generated',subjectId:item.subjectId||null,topicId:item.topicId||null,activityType:recommendationActionKind(item),suggestedMinutes:item.estimatedMinutes??null,priority:item.score??null,reasons:[...(item.reasons||[])],evidenceSnapshot:item.evidence?structuredClone(item.evidence):null,status:'pending',executedAt:null,dismissedAt:null,expiredAt:null,sessionId:null,feedbackId:null};history.push(record);return record;
 }
 
-export function syncRecommendationHistory(history,recommendations,{now,idGenerator,visibleCount=3}={}){
+export function syncRecommendationHistory(history,recommendations,{now,today=localDate(now),idGenerator,visibleCount=3}={}){
   const visible=recommendations.slice(0,visibleCount),ids=new Set(visible.map(item=>item.recommendationId));let changed=false;
-  for(const record of history){if(record.status==='pending'&&(!ids.has(record.id)||record.createdAt?.slice(0,10)!==now.slice(0,10))){record.status='expired';record.expiredAt=now;changed=true}}
+  for(const record of history){if(record.status==='pending'&&(!ids.has(record.id)||recordDate(record)!==today)){record.status='expired';record.expiredAt=now;changed=true}}
   for(const item of visible){if(history.some(record=>record.id===item.recommendationId))continue;ensureRecommendationRecord(history,item,{now,idGenerator});changed=true}
   return changed;
 }

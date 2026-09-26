@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildAdaptivePlanningAdvice,applyAdaptivePlanningAdvice} from '../../src/domain/planning/adaptive-planning.js';
-import {migrateRecommendationHistory,syncRecommendationHistory,decideRecommendationRecord,attachRecommendationSession,summarizeRecommendationHistory} from '../../src/application/recommendations/recommendation-history.js';
+import {migrateRecommendationHistory,reusableRecommendationRecord,syncRecommendationHistory,decideRecommendationRecord,attachRecommendationSession,summarizeRecommendationHistory} from '../../src/application/recommendations/recommendation-history.js';
 import {buildRecommendationOutcomeAudit} from '../../src/application/recommendations/build-recommendation-outcome-audit.js';
 
 const plan={weeklyPlannedMinutes:180,subjects:[{subjectId:'a',subjectName:'A',minutes:90},{subjectId:'b',subjectName:'B',minutes:90}],items:[{id:'a1',subjectId:'a',minutes:90,capacityMinutes:150,activityMix:{theory:30,questions:30,reviews:30}},{id:'b1',subjectId:'b',minutes:90,capacityMinutes:150,activityMix:{theory:30,questions:30,reviews:30}}]};
@@ -35,6 +35,20 @@ test('histórico de recomendações migra decisões e conta identidades uma vez'
   assert.equal(migrated[1].status,'executed');assert.equal(migrated[1].sessionId,'session-2');
   const summary=summarizeRecommendationHistory(migrated,{today:'2026-09-25'});
   assert.equal(summary.generated,2);assert.equal(summary.executed,2);assert.equal(summary.adherence,100);
+});
+
+test('histórico preserva recomendação na virada UTC durante o mesmo dia local',()=>{
+  const originalTimezone=process.env.TZ;
+  process.env.TZ='America/Sao_Paulo';
+  try{
+  const item={id:'candidate-local',recommendationId:'rec-local',shownAt:'2026-09-26T01:30:00Z',score:80,estimatedMinutes:25,reasons:['Lacuna']};
+  const records=[];
+  assert.equal(syncRecommendationHistory(records,[item],{now:item.shownAt,today:'2026-09-25',idGenerator:()=> 'unused'}),true);
+  assert.equal(records[0].localDate,'2026-09-25');
+  assert.equal(reusableRecommendationRecord(records,item,'2026-09-25')?.id,'rec-local');
+  assert.equal(syncRecommendationHistory(records,[item],{now:'2026-09-26T02:00:00Z',today:'2026-09-25',idGenerator:()=> 'unused'}),false);
+  assert.equal(records[0].status,'pending');
+  }finally{if(originalTimezone===undefined)delete process.env.TZ;else process.env.TZ=originalTimezone}
 });
 
 test('auditoria separa resultado posterior de execução sem evidência',()=>{

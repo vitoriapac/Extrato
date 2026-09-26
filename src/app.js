@@ -4289,11 +4289,11 @@ function refreshStudyRecommendationItems(){
   currentStudyRecommendations=recommendStudy(candidates,{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>{
     const old=previous.get(item.id);
     const record=state.recommendationHistory.find(entry=>entry.id===old?.recommendationId);
-    return old&&(!record||record.status!=='expired'&&record.createdAt?.slice(0,10)===todayISO())&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
+    return old&&(!record||record.status!=='expired'&&(record.localDate||localDateISO(record.createdAt))===todayISO())&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
       ?{...item,recommendationId:old.recommendationId,shownAt:old.shownAt,algorithmVersion:PRIORITY_ALGORITHM_VERSION}
       :(()=>{const reusable=reusableRecommendationRecord(state.recommendationHistory,item,todayISO());return createRecommendationPresentation(item,{id:reusable?.id||uid('recommendation'),shownAt:reusable?.createdAt||nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION})})();
   });
-  if(syncRecommendationHistory(state.recommendationHistory,currentStudyRecommendations,{now:nowISO(),idGenerator:uid})){scheduleSave();renderRecommendationHistorySummary()}
+  if(syncRecommendationHistory(state.recommendationHistory,currentStudyRecommendations,{now:nowISO(),today:todayISO(),idGenerator:uid})){scheduleSave();renderRecommendationHistorySummary()}
   return {availableMinutes,candidates};
 }
 function renderPendingRecommendationOutcome(){
