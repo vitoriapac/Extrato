@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import {CURRENT_SCHEMA_VERSION} from '../../src/state/schema.js';
 
 test('backup do schema 19 preserva conteúdo e registros ao restaurar no schema atual',async({page})=>{
   await page.goto('/?test=1');
@@ -20,7 +21,7 @@ test('backup do schema 19 preserva conteúdo e registros ao restaurar no schema 
   await expect(page.locator('#modalOverlay')).toContainText('Backup v19');
   await page.locator('#modalConfirmBtn').click();
   const restored=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState()));
-  expect(restored.schemaVersion).toBe(23);
+  expect(restored.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
   expect(restored.subjects[0].name).toBe('Disciplina do backup');
   expect(restored.subjects[0].topics[0].name).toBe('Tópico do backup');
   expect(restored.studySessions.map(item=>item.id)).toContain('legacy-session');
