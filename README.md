@@ -136,6 +136,8 @@ O card **Qualidade do histórico** mostra provas completas, questões classifica
 
 Em **Revisar classificações**, filtre questões pendentes, de baixa confiança, manuais ou importadas e associe cada uma a um tópico existente com confiança explícita. A correção altera somente a evidência histórica e os próximos cálculos; desempenho pessoal e recomendações já registradas não são reescritos. Uma reimportação preserva classificações revisadas manualmente.
 
+A seção **Configurado × histórico** compara o impacto cadastrado com uma estimativa histórica na mesma escala de 0 a 100 e mostra separadamente o impacto usado pelo planejamento. Diferenças de até 10 pontos aparecem como alinhadas; de 11 a 20, para revisão; acima de 20, como divergentes. Esses avisos só são exibidos com pelo menos quatro provas completas e confiança moderada ou alta. A comparação não altera valores manuais ou oficiais.
+
 A **Matriz histórica**, na mesma área, mostra quantas questões de cada tópico apareceram em cada prova completa. Filtre por concurso, banca, ano e cargo; selecione um tópico para ver incidência, confiança, peso registrado e sua situação de domínio e retenção. No celular, a matriz aparece em cards. Provas parciais ficam fora do denominador de incidência.
 
 O **planejamento adaptativo** usa o impacto validado em conjunto com a lacuna de domínio para justificar redistribuições. Quando o histórico participa da proposta, a explicação mostra quantas provas sustentam o impacto e sua confiança. A capacidade semanal não aumenta, ajustes de 15 a 40 minutos exigem confirmação, e um par de disciplinas entra em cooldown por 14 dias após um ajuste aplicado.

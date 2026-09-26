@@ -6,7 +6,7 @@ const byName=(a,b)=>String(a).localeCompare(String(b),'pt-BR');
 const options=values=>[...new Set(values.filter(Boolean))].sort(byName);
 const percentage=(part,total)=>total?Math.round(part/total*100):null;
 
-export function buildExamMatrix({topics=[],exams=[],examQuestions=[],activeExamTags=[],filters={},metricsByTopic={}}={}){
+export function buildExamMatrix({topics=[],exams=[],examQuestions=[],activeExamTags=[],filters={},metricsByTopic={},auditByTopic={}}={}){
   const tags=options(exams.flatMap(exam=>exam.examTags||[]));
   const scope=filters.scope||'active';
   const scoped=scope==='all'?exams:scope==='active'?examsInScope(exams,activeExamTags):examsInScope(exams,[scope]);
@@ -32,7 +32,7 @@ export function buildExamMatrix({topics=[],exams=[],examQuestions=[],activeExamT
     const classified=complete.flatMap(exam=>indexed.get(`${topic.id}|${exam.id}`)||[]);
     const confidence=classifyExamConfidence({examCount:complete.length,questionCount:analyzedQuestionCount,classificationConfidence:classified.length?classified.reduce((sum,question)=>sum+(question.classification?.confidence??0),0)/classified.length:null});
     const metric=metricsByTopic[topic.id]||{};
-    return {topicId:topic.id,subjectId:topic.subjectId,name:topic.name,subjectName:topic.subjectName,examCount:complete.length,presentExamCount:present,questionCount:count,presencePercent:percentage(present,complete.length),participationPercent:percentage(count,analyzedQuestionCount),confidence,confidenceLabel:EXAM_CONFIDENCE_LABELS[confidence],cells,mastery:metric.mastery??null,retention:metric.retention??null,trend:metric.trend??null,priority:metric.priority??null};
+    return {topicId:topic.id,subjectId:topic.subjectId,name:topic.name,subjectName:topic.subjectName,examCount:complete.length,presentExamCount:present,questionCount:count,presencePercent:percentage(present,complete.length),participationPercent:percentage(count,analyzedQuestionCount),confidence,confidenceLabel:EXAM_CONFIDENCE_LABELS[confidence],cells,mastery:metric.mastery??null,retention:metric.retention??null,trend:metric.trend??null,priority:metric.priority??null,audit:auditByTopic[topic.id]||null};
   }).sort((a,b)=>(b.presencePercent??-1)-(a.presencePercent??-1)||b.questionCount-a.questionCount||byName(a.name,b.name));
   return {state:complete.length?'available':'empty',filters:{scope,board:filters.board||'all',year:filters.year||'all',role:filters.role||'all'},options:{tags,boards,years,roles},scopedExamCount:scoped.length,selectedExamCount:selected.length,partialExamCount:selected.length-complete.length,analyzedQuestionCount,exams:complete,rows};
 }

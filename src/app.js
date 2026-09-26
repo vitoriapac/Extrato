@@ -142,6 +142,8 @@ import {buildExamDataQuality} from './application/exam-intelligence/build-exam-d
 import {renderExamDataQuality} from './ui/renderers/exam-data-quality-renderer.js';
 import {reviewExamClassification} from './application/exam-intelligence/review-exam-classification.js';
 import {renderExamClassificationReview} from './ui/renderers/exam-classification-review-renderer.js';
+import {buildExamConfigurationAudit} from './application/exam-intelligence/build-exam-configuration-audit.js';
+import {renderExamConfigurationAudit} from './ui/renderers/exam-configuration-audit-renderer.js';
 import {buildExamMatrix} from './application/exam-intelligence/build-exam-matrix.js';
 import {renderExamMatrix} from './ui/renderers/exam-matrix-renderer.js';
 import {createTopicStrategyController} from './features/topic-strategy/topic-strategy-controller.js';
@@ -3311,7 +3313,9 @@ let selectedExamMatrixTopicId=null;
 function renderHistoricalExamMatrix(){
   const container=document.getElementById('examHistoricalMatrix');if(!container)return;
   const metricsByTopic=Object.fromEntries(intelligenceCandidates().map(item=>[item.topicId,{mastery:item.mastery,retention:item.retention,trend:item.trend,priority:item.score}]));
-  const model=buildExamMatrix({topics:activeTopics(),exams:state.exams,examQuestions:state.examQuestions,activeExamTags:state.examBlueprint.activeExamTags||[],filters:examMatrixFilters,metricsByTopic});
+  const auditMatchesScope=examMatrixFilters.scope==='active'&&['board','year','role'].every(key=>examMatrixFilters[key]==='all');
+  const auditByTopic=auditMatchesScope?Object.fromEntries(buildExamConfigurationAudit({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}).rows.map(row=>[row.topicId,row])):{};
+  const model=buildExamMatrix({topics:activeTopics(),exams:state.exams,examQuestions:state.examQuestions,activeExamTags:state.examBlueprint.activeExamTags||[],filters:examMatrixFilters,metricsByTopic,auditByTopic});
   if(!model.rows.some(row=>row.topicId===selectedExamMatrixTopicId))selectedExamMatrixTopicId=null;
   container.innerHTML=renderExamMatrix(model,{selectedTopicId:selectedExamMatrixTopicId});
   for(const [key,value] of Object.entries(examMatrixFilters)){const select=container.querySelector(`[data-exam-matrix-filter="${key}"]`);if(select&&[...select.options].some(option=>option.value===String(value)))select.value=String(value)}
@@ -3332,11 +3336,14 @@ function renderExamBlueprintConfig(){
   renderExamBlueprintConfigView({container,blueprint:state.examBlueprint,subjects:activeSubjects(),escapeHtml,escapeAttr,formatDatePt,EXAM_TAGS,EXAM_SOURCES,document});
   const quality=document.getElementById('examDataQuality');
   if(quality)quality.innerHTML=renderExamDataQuality(buildExamDataQuality({exams:state.exams,examQuestions:state.examQuestions,topics:examScopedTopics(),blueprint:state.examBlueprint}));
+  const audit=document.getElementById('examConfigurationAudit');
+  if(audit)audit.innerHTML=renderExamConfigurationAudit(buildExamConfigurationAudit({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}));
   const evidence=document.getElementById('examIntelligenceSummary');
   if(evidence)evidence.innerHTML=renderExamIntelligence(buildExamIntelligenceViewModel({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}));
   renderHistoricalExamMatrix();
   renderExamMasteryMatrix();
 }
+document.getElementById('examConfigurationAudit')?.addEventListener('click',event=>{const topic=event.target.closest('[data-audit-topic]');if(!topic)return;selectedExamMatrixTopicId=topic.dataset.auditTopic;examMatrixFilters.scope='active';examMatrixFilters.board='all';examMatrixFilters.year='all';examMatrixFilters.role='all';renderHistoricalExamMatrix();document.querySelector('#examHistoricalMatrix .exam-matrix-detail')?.scrollIntoView?.({block:'nearest'})});
 let examClassificationFilter='all',examClassificationPreviousFocus=null;
 const examClassificationOverlay=document.getElementById('examClassificationOverlay');
 function updateExamClassificationReview(){

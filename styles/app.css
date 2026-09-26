@@ -1597,6 +1597,11 @@ body.timer-focus-active .timer-context{display:none!important}
 .exam-classification-row{display:grid;gap:8px;padding:12px;border:1px solid var(--paper-line);background:var(--paper-alt)}
 .exam-classification-row strong,.exam-classification-row span{overflow-wrap:anywhere}
 .exam-classification-row select,.exam-classification-toolbar select{max-width:100%;min-height:38px}
+.exam-configuration-audit{margin:12px 0;padding:14px;border:1px solid var(--paper-line);background:var(--paper-alt)}
+.exam-configuration-audit h4{margin:0}.exam-configuration-audit ul{display:grid;gap:8px;margin:10px 0 0;padding:0;list-style:none}
+.exam-configuration-audit li{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.exam-configuration-audit li span{font-size:12px;color:var(--ink-soft)}
+.exam-matrix-comparison{margin:12px 0;padding:10px;border-left:3px solid var(--gold);background:var(--paper-alt)}
+.exam-matrix-comparison h5{margin:0 0 6px}.exam-matrix-comparison p{margin:4px 0}
 .exam-intelligence-item{display:grid;gap:6px;min-width:0;padding:12px;border:1px solid var(--paper-line);background:var(--paper-alt)}
 .exam-intelligence-item strong{overflow-wrap:anywhere;color:var(--heading);font:600 12px/1.4 var(--font-body)}
 .exam-intelligence-item span{color:var(--ink-soft);font:11px/1.5 var(--font-data)}
