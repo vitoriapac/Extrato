@@ -1623,6 +1623,8 @@ body.timer-focus-active .timer-context{display:none!important}
 .exam-historical-matrix{margin-top:18px;padding-top:14px;border-top:1px solid var(--paper-line)}
 .exam-historical-matrix h4{margin:0 0 10px;color:var(--heading);font:600 14px var(--font-body)}
 .exam-matrix-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
+.exam-intelligence-hub>section{margin-top:18px}.exam-intelligence-hub>section>h4{margin:0 0 8px}.exam-intelligence-overview{display:grid;gap:4px;padding:14px;border-left:4px solid var(--gold);background:var(--surface-card-muted)}.exam-intelligence-overview strong{color:var(--heading)}.exam-intelligence-overview span{color:var(--ink-soft);font-size:12px}
+.exam-matrix-modes{display:flex;gap:6px;margin:10px 0}.exam-matrix-modes .active{border-color:var(--gold);font-weight:700}.exam-matrix-search input{width:100%;min-width:0}
 .exam-matrix-filters label{display:grid;gap:4px;min-width:0;color:var(--ink-soft);font:10px var(--font-data)}
 .exam-matrix-filters select{width:100%;min-width:0}
 .exam-matrix-table-wrap{max-width:100%;overflow-x:auto}
@@ -1640,5 +1642,6 @@ body.timer-focus-active .timer-context{display:none!important}
 .exam-matrix-cards{display:none}
 .exam-matrix-detail{margin-top:12px;padding:12px;border:1px solid var(--paper-line);background:var(--paper-alt)}
 .exam-matrix-detail h4{margin:0 0 8px}.exam-matrix-detail p,.exam-matrix-detail li{font:11px/1.5 var(--font-body)}
+.exam-matrix-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.exam-matrix-detail-grid>div{padding:10px;border:1px solid var(--paper-line)}.exam-matrix-detail-grid h5{margin:0 0 5px}
 .exam-matrix-detail ul{margin:7px 0;padding-left:20px}
-@media(max-width:600px){.exam-matrix-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.exam-matrix-table-wrap{display:none}.exam-matrix-cards{display:grid;gap:8px}.exam-matrix-card{padding:10px;border:1px solid var(--paper-line);background:var(--paper-alt)}.exam-matrix-card p{font:10px/1.5 var(--font-data)}.exam-matrix-card>div{display:flex;flex-wrap:wrap;gap:4px}.exam-matrix-card .exam-matrix-cell{padding:4px 6px;border:1px solid var(--paper-line);font:10px var(--font-data)}}
+@media(max-width:600px){.exam-matrix-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.exam-matrix-detail-grid{grid-template-columns:1fr}.exam-matrix-table-wrap{display:none}.exam-matrix-cards{display:grid;gap:8px}.exam-matrix-card{padding:10px;border:1px solid var(--paper-line);background:var(--paper-alt)}.exam-matrix-card p{font:10px/1.5 var(--font-data)}.exam-matrix-card>div{display:flex;flex-wrap:wrap;gap:4px}.exam-matrix-card .exam-matrix-cell{padding:4px 6px;border:1px solid var(--paper-line);font:10px var(--font-data)}}
