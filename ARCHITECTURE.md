@@ -2,6 +2,50 @@
 
 O aplicativo continua executando inteiramente no navegador e sem dependências externas de JavaScript.
 
+## Visão geral da arquitetura
+
+`src/app.js` compõe estado, relógio, serviços e interface. As setas indicam dependências permitidas: a interface aciona a aplicação; regras de domínio não importam a interface nem acessam o estado global. Repositórios e providers isolam a persistência.
+
+```mermaid
+flowchart TD
+    ROOT["Composition root: app.js"] --> UI["UI: controllers, view-models e renderers"]
+    ROOT --> APP["Application: casos de uso e orquestração"]
+    ROOT --> STATE["State: schema e estado inicial"]
+    UI --> APP
+    APP --> DOMAIN["Domain: regras e cálculos puros"]
+    APP --> REPO["Repositories: acesso às coleções"]
+    REPO --> STORAGE["Storage providers"]
+    STORAGE --> BROWSER["IndexedDB e armazenamento local"]
+    ROOT --> CORE["Core: relógio, datas e utilidades"]
+    APP --> CORE
+    DOMAIN --> CORE
+```
+
+## Persistência e proteção dos dados
+
+No modo real, o gerenciador lê as fontes disponíveis e seleciona o estado com `updatedAt` mais recente. Antes de adotá-lo, a aplicação migra e valida o schema; se o estado principal for inválido, tenta um snapshot automático íntegro. Ao salvar, mantém cópias nas fontes disponíveis. O backup automático rotativo guarda uma versão anterior, quando elegível, com checksum SHA-256 quando a API criptográfica está disponível. A exportação JSON é uma ação separada do usuário.
+
+```mermaid
+flowchart TD
+    IDB["IndexedDB"] --> READ["Ler estado mais recente"]
+    LOCAL["localStorage"] --> READ
+    OPTIONAL["window.storage, se disponível"] --> READ
+    READ --> VALID["Migrar e validar schema"]
+    VALID -- Válido --> REAL["Estado real em memória"]
+    VALID -- Inválido --> SNAP["Verificar snapshot automático"]
+    SNAP -- Íntegro --> REAL
+    SNAP -- Indisponível --> DEFAULT["Estado inicial e aviso"]
+    REAL --> SAVE["Salvar pelas fontes disponíveis"]
+    SAVE --> IDB
+    SAVE --> LOCAL
+    SAVE --> OPTIONAL
+    REAL --> EXPORT["Exportação JSON solicitada pelo usuário"]
+    SAVE --> PREVIOUS["Versão anterior, quando elegível"]
+    PREVIOUS --> HASH["Backup rotativo e checksum SHA-256"]
+    DEMO["Modo demonstração"] --> SESSION["sessionStorage isolado"]
+    SESSION --> DEMOSTATE["Estado fictício separado"]
+```
+
 ## Estrutura
 
 - `index.html`: marcação e pontos de montagem da interface.

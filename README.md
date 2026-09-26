@@ -43,6 +43,8 @@ flowchart TD
     U --> H
 ```
 
+Veja os cenários de referência na [jornada do produto](docs/product-journey.md).
+
 ## Como o planejamento decide o que estudar
 
 O conteúdo elegível no concurso ativo, a disponibilidade e as evidências pessoais alimentam candidatos de estudo. A importância para a prova é combinada com a necessidade do estudante; o histórico da prova só ajusta o impacto estimado quando tem confiança suficiente. O mesmo cálculo de prioridade orienta recomendações e propostas de plano, respeitando a capacidade disponível.
@@ -115,6 +117,8 @@ flowchart TD
     O --> B["Comparar antes e depois"]
     B --> H
 ```
+
+Os componentes e limites entre camadas estão detalhados na [arquitetura](ARCHITECTURE.md).
 
 ## Uso
 

@@ -6,5 +6,6 @@
 4. Execute `npm run build` e `npm run check`.
 5. Não edite `src/app.bundle.js` manualmente.
 6. Não inclua backups, históricos pessoais ou credenciais no repositório.
+7. Ao mudar primeiro uso, planejamento, execução, recuperação, recomendações ou persistência, confira os diagramas Mermaid do [README](README.md) e da [arquitetura](ARCHITECTURE.md). Eles devem descrever o comportamento implementado, não o roadmap.
 
 Pull requests devem explicar o comportamento alterado, os riscos de migração de dados e como a mudança foi verificada.
