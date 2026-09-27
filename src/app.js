@@ -109,6 +109,8 @@ import {buildHeaderViewModel} from './application/analytics/build-header-view-mo
 import {renderHeroHeader,renderCompactHeader} from './ui/renderers/header-renderer.js';
 import {buildStudyTrack32ViewModel} from './application/analytics/build-studytrack32-view-model.js';
 import {buildStrategicFocusHistory} from './application/analytics/build-strategic-focus-history.js';
+import {createReadinessSnapshot,upsertReadinessSnapshot,readinessHistoryForScope} from './application/analytics/readiness-history.js';
+import {renderReadinessHistory} from './ui/renderers/readiness-history-renderer.js';
 import {renderWeeklyClose,renderWeeklyCloseNext,renderWeeklyStrategicFocus,renderStrategicFocusHistory,renderPeriodComparison,renderGapMap,renderDecisionHistory,renderPostSimulationReplan} from './ui/renderers/studytrack32-renderer.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildIntelligentAlerts} from './domain/diagnostics/alerts.js';
@@ -494,9 +496,10 @@ function migrateV20toV21(data){if(!Array.isArray(data.adaptivePlanningHistory))d
 function migrateV21toV22(data){data.recommendationHistory=Array.isArray(data.recommendationHistory)?data.recommendationHistory:migrateRecommendationHistory(data.recommendationFeedback||[]);data.schemaVersion=22;return data}
 function migrateV22toV23(data){data.exams=Array.isArray(data.exams)?data.exams:[];data.examQuestions=Array.isArray(data.examQuestions)?data.examQuestions:[];data.schemaVersion=23;return data}
 function migrateV23toV24(data){for(const exam of data.exams||[]){exam.importedQuestionCount=null;exam.expectedQuestionCount=null;exam.unresolvedQuestions=[];exam.declaredCoverage=exam.coverage}data.schemaVersion=24;return data}
+function migrateV24toV25(data){data.readinessSnapshots=Array.isArray(data.readinessSnapshots)?data.readinessSnapshots:[];data.schemaVersion=25;return data}
 
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24,24:migrateV24toV25}});
 }
 
 function ensureStateDefaults(){
@@ -532,6 +535,7 @@ function ensureStateDefaults(){
   if(!state.examDate&&state.examBlueprint.examDate)state.examDate=state.examBlueprint.examDate;
   if(state.examDate!==state.examBlueprint.examDate)state.examBlueprint.examDate=state.examDate||null;
   if(!Array.isArray(state.progressHistory)) state.progressHistory = [];
+  if(!Array.isArray(state.readinessSnapshots)) state.readinessSnapshots = [];
   if(!state.achievementsUnlocked||typeof state.achievementsUnlocked!=='object') state.achievementsUnlocked={};
   if(!Array.isArray(state.metasPorDisciplina)) state.metasPorDisciplina = [];
   if(!Array.isArray(state.studySessions)) state.studySessions = [];
@@ -1070,7 +1074,7 @@ async function exportLatestAutomaticBackup(){
   }catch(error){console.error('Falha ao exportar snapshot automático',error);showToast('Não foi possível exportar o snapshot automático.')}
 }
 function validateBackupData(data){
-  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','alertStates','topicHistory','metasPorDisciplina'];
+  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','alertStates','topicHistory','metasPorDisciplina'];
   const envelope=validateBackupEnvelope(data,{currentVersion:CURRENT_SCHEMA_VERSION,arrayFields});if(!envelope.valid)return envelope;const {version}=envelope;
   try{
     const normalized=migrateState(structuredCloneSafe(data));
@@ -1090,7 +1094,7 @@ function ensureBackupStateDefaults(candidate){
 }
 function validateNormalizedBackup(data){
   const fail=message=>({valid:false,message});
-  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
+  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
   for(const field of collections){
     if(!Array.isArray(data[field])) return fail(`O campo "${field}" deve ser uma lista.`);
     if(data[field].length>50000) return fail(`O campo "${field}" excede o limite seguro de 50.000 registros.`);
@@ -1210,6 +1214,7 @@ function validateNormalizedBackup(data){
   if(data.examBlueprint.subjects.some(item=>!isPlainObject(item)||!validRef(item.subjectId,subjectIds)||!isFiniteNonNegative(item.expectedQuestions)||!isFiniteNonNegative(item.questionWeight)||!EXAM_PRIORITIES.includes(item.priority))) return fail('O backup contém peso de disciplina inválido.');
   if(!isPlainObject(data.algorithmVersions)||Object.values(data.algorithmVersions).some(value=>!Number.isInteger(Number(value))||Number(value)<1)) return fail('O backup contém versões de algoritmos inválidas.');
   if(data.progressHistory.some(item=>!isPlainObject(item)||!isISODate(item.date)||!isFiniteNonNegative(item.pct)||Number(item.pct)>100)) return fail('O backup contém histórico de progresso inválido.');
+  if(data.readinessSnapshots.some(item=>!isPlainObject(item)||!isSafeId(item.id)||!isISODate(item.date)||!isFiniteNonNegative(item.score)||Number(item.score)>100||!Array.isArray(item.activeExamTags)||!isPlainObject(item.factors)||!Number.isInteger(Number(item.algorithmVersion)))) return fail('O backup contém histórico de prontidão inválido.');
   return {valid:true};
 }
 function backupSummary(data,version){
@@ -4896,6 +4901,7 @@ function renderApprovalDashboard(){
   <div class="approval-scale"><span class="approval-scale-danger">🔴 0–49</span><span class="approval-scale-warn">🟠 50–69</span><span class="approval-scale-good">🟢 70–84</span><span class="approval-scale-great">🏆 85+</span></div>
   <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
   renderTopicRetentionDashboard();
+  const readinessHistory=document.getElementById('readinessHistoryDashboard');if(readinessHistory)readinessHistory.innerHTML=renderReadinessHistory(readinessHistoryForScope(state.readinessSnapshots,state.examBlueprint?.activeExamTags||[]),{formatDate:formatDatePt,escapeHtml});
   renderRecommendationCalibration();
   renderStudyTrack32Insights();
 }
@@ -4917,8 +4923,9 @@ function renderWeeklyCloseActions(close){const priorities=close.priorities||[];i
 function previewWeeklyCloseActions(){weeklyCloseController.preview()}
 function toggleWeeklyPriority(id,checked){weeklyCloseController.toggle(id,checked)}
 function confirmWeeklyCloseActions(){weeklyCloseController.apply()}
-weeklyCloseController=createWeeklyCloseController({getModel:()=>currentStudyTrackModel,getState:()=>state,buildProposal:buildWeeklyCloseActionProposal,createSnapshot:createWeeklyCloseSnapshot,upsertSnapshot:upsertWeeklyCloseSnapshot,clock:{today:todayISO,nowISO,addDays},idGenerator:uid,getDailyCapacity:date=>metaHoursForDate(date)*60,onChanged:renderStudyTrack32Insights,onApplied:()=>{scheduleSave();renderStudyTrack32Insights();renderPlanoHoje();showToast('Prioridades aceitas aplicadas ao plano diário.')}})
-function saveWeeklyCloseSnapshot(){const snapshot=createWeeklyCloseSnapshot(currentStudyTrackModel,{savedAt:nowISO(),id:uid('weekly-close')});if(!snapshot)return showToast('Ainda não há dados suficientes para salvar o fechamento.');upsertWeeklyCloseSnapshot(state.weeklyCloseSnapshots,snapshot);scheduleSave();renderStudyTrack32Insights();document.querySelector('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]')?.focus();showToast('Fechamento semanal salvo como retrato deste período.')}
+function saveCurrentReadinessSnapshot(){const date=todayISO(),savedAt=nowISO(),snapshot=createReadinessSnapshot({id:uid('readiness'),date,savedAt,activeExamTags:state.examBlueprint?.activeExamTags||[],metrics:readinessFactors(computeApprovalMetrics())});return upsertReadinessSnapshot(state.readinessSnapshots,snapshot)}
+weeklyCloseController=createWeeklyCloseController({getModel:()=>currentStudyTrackModel,getState:()=>state,buildProposal:buildWeeklyCloseActionProposal,createSnapshot:createWeeklyCloseSnapshot,upsertSnapshot:upsertWeeklyCloseSnapshot,clock:{today:todayISO,nowISO,addDays},idGenerator:uid,getDailyCapacity:date=>metaHoursForDate(date)*60,onChanged:renderStudyTrack32Insights,onApplied:()=>{saveCurrentReadinessSnapshot();scheduleSave();renderApprovalDashboard();renderPlanoHoje();showToast('Prioridades aceitas aplicadas ao plano diário.')}})
+function saveWeeklyCloseSnapshot(){const snapshot=createWeeklyCloseSnapshot(currentStudyTrackModel,{savedAt:nowISO(),id:uid('weekly-close')});if(!snapshot)return showToast('Ainda não há dados suficientes para salvar o fechamento.');upsertWeeklyCloseSnapshot(state.weeklyCloseSnapshots,snapshot);saveCurrentReadinessSnapshot();scheduleSave();renderApprovalDashboard();document.querySelector('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]')?.focus();showToast('Fechamento semanal salvo como retrato deste período.')}
 function renderTopicRetentionDashboard(){
   const el=document.getElementById('topicRetentionDashboard');if(!el)return;
   const baseRows=activeTopics().map(t=>{const r=topicRetentionScore(t.subjectId,t.id);return {...t,r,h:topicReviewHealthScore(t,topicMasteryIndex(t.subjectId,t.id),r)}}).filter(x=>x.r.available||x.h.value!==null);

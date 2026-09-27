@@ -11,6 +11,7 @@ import {buildDemoPlanning} from './demo-builders/planning.js';
 import {reconcileDemoPlanExecution} from './demo-builders/plan-execution.js';
 import {buildDemoStrategyCandidates} from './demo-builders/strategy-evidence.js';
 import {buildDemoRecommendations,buildDemoWeeklyCloses} from './demo-builders/learning-cycle.js';
+import {buildHistoricalReadinessMetrics,createReadinessSnapshot} from '../application/analytics/readiness-history.js';
 
 export const DEMO_SCENARIO=Object.freeze({days:scenario.meta.historyDays,subjects:scenario.targets.subjects,topics:scenario.targets.topics,sessions:scenario.targets.studySessions,questions:scenario.targets.studyQuestions,simulations:scenario.targets.simulations,seed:scenario.meta.seed});
 
@@ -43,6 +44,7 @@ export function generateDemoData({seed=DEMO_SCENARIO.seed,today,demoScenario=sce
   state.planAdjustments=[{id:'demo-adjustment-1',periodStart:shiftDate(today,-7),periodEnd:shiftDate(today,7),plannedMinutes:480,executedMinutes:350,deficitMinutes:130,redistributedMinutes:100,discardedMinutes:30,allocations:[{date:shiftDate(today,1),minutes:50},{date:shiftDate(today,2),minutes:50}],confirmedAt:timestamp(shiftDate(today,-1)),status:'confirmed'}];
   const learning=buildDemoRecommendations(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes});state.recommendationFeedback=learning.recommendationFeedback;state.recommendationHistory=learning.recommendationHistory;
   state.weeklyCloseSnapshots=buildDemoWeeklyCloses(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,recommendations:state.recommendationFeedback});
+  state.readinessSnapshots=state.weeklyCloseSnapshots.map((close,index)=>createReadinessSnapshot({id:`demo-readiness-${index+1}`,date:close.period.end,savedAt:close.savedAt,activeExamTags:close.activeExamTags,metrics:buildHistoricalReadinessMetrics({subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,reviews:state.reviewAgenda,simulations:state.simulados,dailyHours:state.metas.horasPorDia,date:close.period.end,activeExamTags:close.activeExamTags})})).filter(Boolean);
   state.topicHistory=activeTopics.flatMap((entry,index)=>[{id:`demo-history-start-${index+1}`,type:'topic_created',date:entry.topic.createdAt.slice(0,10),subjectId:entry.subject.id,topicId:entry.topic.id,createdAt:entry.topic.createdAt},...(entry.topic.firstCompletedAt?[{id:`demo-history-done-${index+1}`,type:'topic_completed',date:entry.topic.firstCompletedAt.slice(0,10),subjectId:entry.subject.id,topicId:entry.topic.id,createdAt:entry.topic.firstCompletedAt}]:[])]);
   state.alertStates=[];state.achievementsUnlocked={primeira_sessao:timestamp(shiftDate(today,-oldestAge+1)),cem_questoes:timestamp(shiftDate(today,-oldestAge+20))};state.lastBackupAt=timestamp(today);state.updatedAt=timestamp(today);
   return state;
