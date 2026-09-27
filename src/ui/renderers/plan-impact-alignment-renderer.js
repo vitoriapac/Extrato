@@ -1,0 +1,4 @@
+export function renderPlanImpactAlignment(model,{escapeHtml}){
+  if(model.state!=='ready')return `<div class="ui-state--empty">${escapeHtml(model.reason)}</div>`;
+  return `<p class="analytics-note">Comparação relativa entre as disciplinas planejadas nesta semana. Impacto é uma estimativa por tópico, não o peso oficial do edital. Ela não altera o plano automaticamente.</p><ul class="plan-impact-alignment-list">${model.rows.map(row=>`<li><strong>${escapeHtml(row.name)}</strong><span>Plano ${Math.round(row.plannedShare)}% · Impacto relativo ${Math.round(row.impactShare)}%</span><small>${row.impactCount} de ${row.topicCount} tópicos com impacto estimado</small><div class="plan-impact-alignment-track" aria-hidden="true"><span style="width:${Math.round(row.plannedShare)}%"></span></div><div class="plan-impact-alignment-track is-impact" aria-hidden="true"><span style="width:${Math.round(row.impactShare)}%"></span></div></li>`).join('')}</ul>`;
+}

@@ -29,3 +29,17 @@ Os gráficos complementam os números e a explicação textual. Todos preservam 
 - A ação diagnóstica continua condicionada à amostra e à cobertura exigidas pelo analisador de erros. Barras descritivas, por si só, não mudam a recomendação.
 - A distribuição por disciplina usa os dias desta semana até hoje. O plano soma itens válidos dos planos diários; o estudo soma sessões reais, inclusive fora do plano. Cada coluna usa seu próprio total como denominador.
 - Disciplinas sem plano ou sem sessão permanecem visíveis com valor zero. Mais de oito disciplinas ficam em uma lista expansível para preservar a leitura inicial.
+
+## Plano × impacto na prova
+
+- A comparação usa somente disciplinas com tempo planejado na semana atual e tópicos do concurso ativo. São necessárias pelo menos duas disciplinas planejadas.
+- Em cada disciplina, o impacto é a média dos impactos estimados dos seus tópicos. Pelo menos metade dos tópicos deve ter impacto disponível; caso contrário, o painel explica a insuficiência dos dados.
+- A parcela planejada usa o tempo de cada disciplina dividido pelo tempo planejado das disciplinas comparadas. A parcela de impacto usa a média de impacto da disciplina dividida pela soma dessas médias. É uma comparação **relativa**, não uma distribuição oficial de questões ou pontos do edital.
+- A comparação não muda o plano. Disciplinas sem tempo planejado não entram no denominador; revise também o restante do edital antes de usar o painel para decidir uma redistribuição.
+
+## Séries futuras de prontidão e retenção
+
+- `progressHistory` registra conclusão de conteúdo e não serve como histórico do Índice de Prontidão. Os valores atuais de prontidão e retenção também não permitem reconstruir datas passadas.
+- Uma série de prontidão exigirá retratos capturados no momento do fechamento, com data, tags do concurso ativo, valor, fatores disponíveis, confiança e versão do algoritmo. São necessários ao menos dois retratos com o mesmo escopo e versão; períodos anteriores à captura permanecem sem ponto.
+- Uma série de retenção exigirá retratos por tópico com data, escopo, valor, volume de revisões/questões e versão do cálculo. São necessários ao menos dois retratos comparáveis e evidência suficiente em ambos; uma alteração de fórmula inicia nova série.
+- As duas séries indicariam mudança nos indicadores observados. Elas não demonstrariam que uma recomendação causou a mudança. Até haver esses registros, a interface não desenha linhas históricas para esses indicadores.
