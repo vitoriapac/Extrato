@@ -37,9 +37,8 @@ Os gráficos complementam os números e a explicação textual. Todos preservam 
 - A parcela planejada usa o tempo de cada disciplina dividido pelo tempo planejado das disciplinas comparadas. A parcela de impacto usa a média de impacto da disciplina dividida pela soma dessas médias. É uma comparação **relativa**, não uma distribuição oficial de questões ou pontos do edital.
 - A comparação não muda o plano. Disciplinas sem tempo planejado não entram no denominador; revise também o restante do edital antes de usar o painel para decidir uma redistribuição.
 
-## Séries futuras de prontidão e retenção
+## Histórico de prontidão e série futura de retenção
 
-- `progressHistory` registra conclusão de conteúdo e não serve como histórico do Índice de Prontidão. Os valores atuais de prontidão e retenção também não permitem reconstruir datas passadas.
-- Uma série de prontidão exigirá retratos capturados no momento do fechamento, com data, tags do concurso ativo, valor, fatores disponíveis, confiança e versão do algoritmo. São necessários ao menos dois retratos com o mesmo escopo e versão; períodos anteriores à captura permanecem sem ponto.
+- `progressHistory` registra conclusão de conteúdo e não serve como histórico do Índice de Prontidão. `readinessSnapshots` guarda o índice calculado quando o fechamento semanal é salvo, com data, tags do concurso ativo, fatores, confiança e versão do algoritmo. O gráfico filtra pelo concurso ativo e deixa períodos anteriores à captura sem ponto.
 - Uma série de retenção exigirá retratos por tópico com data, escopo, valor, volume de revisões/questões e versão do cálculo. São necessários ao menos dois retratos comparáveis e evidência suficiente em ambos; uma alteração de fórmula inicia nova série.
-- As duas séries indicariam mudança nos indicadores observados. Elas não demonstrariam que uma recomendação causou a mudança. Até haver esses registros, a interface não desenha linhas históricas para esses indicadores.
+- A série de prontidão indica mudança no indicador observado e não demonstra que uma recomendação causou a mudança. A interface ainda não desenha uma série histórica de retenção sem retratos próprios.
