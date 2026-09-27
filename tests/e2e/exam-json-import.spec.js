@@ -27,5 +27,8 @@ test('importa JSON com prévia, decisão explícita e reimportação idempotente
   await page.locator('#examJsonConfirm').click();
   const counts=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState();return {exams:state.exams.length,questions:state.examQuestions.length,topics:state.subjects[0].topics.length,tags:state.exams[0].examTags}});
   expect(counts).toEqual({exams:1,questions:2,topics:2,tags:['bb-escriturario']});
+  await expect(page.locator('#examJsonPreview .context-note--success')).toContainText('Prova importada');
+  await page.locator('#examJsonFile').setInputFiles({name:'invalida.json',mimeType:'application/json',buffer:Buffer.from('{')});
+  await expect(page.locator('#examJsonPreview .context-note--attention')).toContainText('Não foi possível importar');
   await expectNoPageOverflow(page);
 });

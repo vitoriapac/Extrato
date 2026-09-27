@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=66e7959a4e4e">
+<link rel="stylesheet" href="styles/app.css?v=eb0e104c6ea3">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -134,10 +134,10 @@
       <h3>Índice de Prontidão</h3>
       <div id="approvalDashboard"></div>
       <section class="analytics-card"><header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Fechamento semanal</h3><p class="module-heading__description">Resultado, foco estratégico e decisões para a próxima semana.</p></header><div id="weeklyCloseDashboard"></div></section>
-      <section class="analytics-card"><h3>Comparação entre períodos</h3><div id="periodComparisonDashboard"></div></section>
-      <section class="analytics-card"><h3>Mapa de lacunas</h3><div id="gapMapDashboard"></div></section>
-      <section class="analytics-card"><h3>Histórico de decisões</h3><div id="decisionHistoryDashboard"></div></section>
-      <section class="analytics-card"><h3>Replanejamento pós-simulado</h3><div id="postSimulationReplanDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Comparação entre períodos</h3></header><div id="periodComparisonDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3></header><div id="gapMapDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Histórico de decisões</h3></header><div id="decisionHistoryDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
     </div>
     <div class="chart-card">
       <h3>Retenção por tópico</h3>
@@ -417,8 +417,8 @@
 
   <!-- AGENDA DE REVISÕES -->
   <div class="panel" id="panel-agenda" role="tabpanel" aria-labelledby="tab-agenda">
-    <div class="section-head">
-      <div class="section-title">Agenda de revisões</div>
+    <div class="section-head module-heading module-heading--section">
+      <h2 class="module-heading__title">Agenda de revisões</h2>
       <div style="display:flex;gap:8px;">
         <button class="btn ghost" id="autoGenBtn">⟳ Gerar a partir dos concluídos</button>
         <button class="btn" id="addAgendaRowBtn">+ Novo item</button>
@@ -462,8 +462,8 @@
 
   <!-- QUESTÕES & SIMULADOS -->
   <div class="panel" id="panel-questoes" role="tabpanel" aria-labelledby="tab-questoes">
-    <div class="section-head">
-      <div class="section-title">Questões resolvidas</div>
+    <div class="section-head module-heading module-heading--section">
+      <h2 class="module-heading__title">Questões resolvidas</h2>
       <button class="btn" id="addQuestaoRowBtn">+ Registrar sessão</button>
     </div>
     <div class="log-table-wrap">
@@ -486,8 +486,8 @@
 
 
     <div class="chart-card" id="topicPerformanceCard">
-      <div class="section-head">
-        <h3 style="margin:0;">Desempenho por tópico e tendência</h3>
+      <div class="section-head module-heading module-heading--section">
+        <h3 class="module-heading__title">Desempenho por tópico e tendência</h3>
         <span class="subject-progress-pill" id="questionDataCoverage">0% identificadas</span>
       </div>
       <div class="analytics-toolbar">
@@ -503,12 +503,12 @@
       <div id="subjectErrorProfile"></div>
     </div>
 
-    <div class="section-head">
-      <div class="section-title">Simulados</div>
+    <div class="section-head module-heading module-heading--section">
+      <h2 class="module-heading__title">Simulados</h2>
       <button class="btn" id="addSimuladoRowBtn">+ Registrar simulado</button>
     </div>
     <div class="chart-card" id="simuladosChartCard" style="display:none;">
-      <h3>Evolução das notas nos simulados</h3>
+      <header class="module-heading module-heading--compact"><h3 class="module-heading__title">Evolução das notas nos simulados</h3></header>
       <div id="simuladosChart"></div>
     </div>
     <div class="log-table-wrap">
@@ -528,10 +528,9 @@
       </table>
     </div>
     <div class="chart-card" id="desempenhoDisciplinaCard" style="display:none;">
-      <h3>📊 Desempenho por disciplina</h3>
-      <p class="helper-text helper-text--compact">
+      <header class="module-heading"><h3 class="module-heading__title">Desempenho por disciplina</h3><p class="module-heading__description">
         Combina questões avulsas e simulados detalhados por disciplina · tendência compara a primeira e a segunda metade dos seus registros
-      </p>
+      </p></header>
       <div id="desempenhoDisciplinaBars"></div>
     </div>
     <div class="chart-card">
@@ -554,15 +553,13 @@
     <div id="metasContainer"></div>
 
     <div class="chart-card result-goals-card">
-      <h3>Comparação entre períodos</h3>
-      <p class="analytics-note">Compare registros do mesmo escopo com o intervalo imediatamente anterior. Métricas sem evidência suficiente permanecem sem valor.</p>
+      <header class="module-heading"><h3 class="module-heading__title">Comparação entre períodos</h3><p class="module-heading__description">Compare registros do mesmo escopo com o intervalo imediatamente anterior. Métricas sem evidência suficiente permanecem sem valor.</p></header>
       <div class="period-comparison-controls"><label>Período<select id="periodComparisonPreset" class="select-control"><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="month">Este mês</option><option value="custom">Escolher datas</option></select></label><label id="periodComparisonStartWrap" hidden>De<input id="periodComparisonStart" type="date"></label><label id="periodComparisonEndWrap" hidden>Até<input id="periodComparisonEnd" type="date"></label></div>
       <div id="periodComparisonResults" aria-live="polite"></div>
     </div>
 
     <div class="chart-card">
-      <h3>Configuração estratégica da prova</h3>
-      <p class="analytics-note">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p>
+      <header class="module-heading"><h3 class="module-heading__title">Configuração estratégica da prova</h3><p class="module-heading__description">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p></header>
       <div id="examBlueprintConfig"></div>
     </div>
     <div class="exam-intelligence-hub">
@@ -580,7 +577,7 @@
       <section class="exam-historical-matrix exam-intelligence-level" aria-label="Matriz histórica da prova"><h4>Prova × Você</h4><p class="analytics-note">Filtre a evidência e selecione um tópico para comparar importância na prova e seu domínio.</p><div id="examHistoricalMatrix"></div></section>
       <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><h4 id="examImportHeading">Adicionar evidências</h4><p class="analytics-note">Quer melhorar a precisão da análise? Adicione mais uma prova histórica.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">A prévia exige uma decisão para cada questão sem correspondência. Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></section>
     </div>
-    <div class="chart-card"><h3>Matriz Edital × Domínio</h3><p class="analytics-note">Cobertura, domínio, retenção e lacuna em relação à meta configurada.</p><div id="examMasteryMatrix"></div></div>
+    <div class="chart-card"><header class="module-heading"><h3 class="module-heading__title">Matriz Edital × Domínio</h3><p class="module-heading__description">Cobertura, domínio, retenção e lacuna em relação à meta configurada.</p></header><div id="examMasteryMatrix"></div></div>
 
     <div class="chart-card">
       <header class="module-heading"><span class="module-heading__eyebrow">Planejamento</span><h3 class="module-heading__title">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância e sua necessidade de estudo.</p></header>
@@ -788,7 +785,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=66e7959a4e4e"></script>
+  <script src="src/app.bundle.js?v=eb0e104c6ea3"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

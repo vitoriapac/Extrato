@@ -39,5 +39,18 @@ Confiança e ausência de dados não devem ser escondidas apenas para simplifica
 - Pacote 2: corrigir a pilha de navegação e o ritmo editorial das Instruções.
 - Pacotes 3 a 5: categoria ativa e busca destacada nas Instruções; seções editoriais na Inteligência da Prova; resultado, diagnóstico, foco, comparação e próxima semana em ordem no Fechamento Semanal.
 - Pacotes 6 e 7: cabeçalhos compartilhados, notas Info/Dica/Atenção e gráfico de uma série para o histórico do foco, com valores textuais preservados.
+- Consolidação Visual 2, pacotes 1 a 3: cabeçalhos compartilhados em comparação, lacunas, decisões, Questões, Simulados, Revisões, configuração estratégica e Matriz Edital × Domínio; auditoria com 15 disciplinas; revisão da ajuda em 320, 375, 390 e 430 px.
 - Próxima revisão: reduzir bordas e densidade visual nos módulos ainda não revisados, caso a comparação entre telas confirme o ganho.
 - A revisão global de bordas deve ser gradual e orientada por essa classificação. Uma troca indiscriminada de estilos pode apagar a distinção entre ações, análise e evidência.
+
+## Contratos e estados
+
+- `module-heading` reúne título, descrição opcional e ação contextual. Use `module-heading--compact` nas subseções analíticas e `module-heading--section` quando o título divide espaço com uma ação.
+- `context-note--info`, `--tip`, `--attention`, `--loading` e `--success` identificam respectivamente contexto, orientação prática, problema, operação em curso e resultado confirmado. O rótulo textual continua obrigatório.
+- `ui-state--empty` identifica ausência de dados ou resultado de busca, com texto que indica o próximo passo. Não atribua valores numéricos a dados ausentes.
+- Na importação de prova histórica, a leitura exibe estado de carregamento; erro de arquivo exibe atenção; importação concluída exibe sucesso. O estado de carregamento usa `aria-busy`.
+- Com a busca da ajuda em foco no mobile, o índice de categorias deixa de ser sticky para não ocupar a área visível acima do teclado. Ao sair da busca, o índice volta a acompanhar a rolagem.
+
+## Auditoria de dados densos
+
+O cenário isolado em `tests/fixtures/visual-density.js` amplia a demonstração para 15 disciplinas, nomes longos, 350 sessões, questões adicionais e histórico BB/Caixa com provas completas e parciais. Ele não altera a demonstração apresentada ao usuário. A auditoria cobre Visão Geral, Disciplinas, Questões, Metas e Instruções nos quatro tamanhos mobile, em light e dark, além dos cabeçalhos em desktop. Os critérios incluem ausência de rolagem horizontal da página, funcionamento do menu Mais, busca, estado sem resultados e posição da categoria após navegar pelo índice.
