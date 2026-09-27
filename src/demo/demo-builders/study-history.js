@@ -4,7 +4,7 @@ const genericErrors={naoSabia:24,esqueci:17,interpretacao:19,calculo:15,desatenc
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 const dateAt=(today,day,historyDays)=>addLocalDays(today,day-historyDays);
 
-function allocateErrors(errors,categories,profile){
+export function allocateErrors(errors,categories,profile){
   const weights=categories.map(key=>Math.max(0,Number(profile?.[key]??genericErrors[key]??0)));
   const total=weights.reduce((sum,value)=>sum+value,0)||1;
   const exact=weights.map(value=>errors*value/total),counts=exact.map(Math.floor);

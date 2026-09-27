@@ -44,6 +44,7 @@ export function validateDemoScenario(scenario){
   if(!goals||!Array.isArray(goals.history)||goals.history.some(row=>!integer(row.plannedMinutes)||!integer(row.actualMinutes))||!Number.isFinite(goals.weeklyHours))errors.push('Histórico de metas inválido.');
   const adaptive=scenario?.adaptivePlanning;
   if(!adaptive||!integer(adaptive.capacityMinutes)||!integer(adaptive.example?.minutes)||adaptive.example.minutes<1)errors.push('Exemplo de planejamento adaptativo inválido.');
+  if(!integer(target.recommendations)||target.recommendations<1||!integer(target.weeklyCloses)||target.weeklyCloses<1||!Array.isArray(scenario?.recommendations?.examples))errors.push('Ciclo de aprendizagem inválido.');
   return {valid:errors.length===0,errors};
 }
 

@@ -8,6 +8,7 @@ import {EXAM_TAGS} from '../domain/exams/exam-constants.js';
 import {buildDemoSimulations,addDemoEssays,buildDemoReviews} from './demo-builders/assessments.js';
 import {buildDemoExams} from './demo-builders/exams.js';
 import {buildDemoPlanning} from './demo-builders/planning.js';
+import {buildDemoRecommendations,buildDemoWeeklyCloses} from './demo-builders/learning-cycle.js';
 
 export const DEMO_SCENARIO=Object.freeze({days:scenario.meta.historyDays,subjects:scenario.targets.subjects,topics:scenario.targets.topics,sessions:scenario.targets.studySessions,questions:scenario.targets.studyQuestions,simulations:scenario.targets.simulations,seed:scenario.meta.seed});
 
@@ -29,7 +30,7 @@ export function generateDemoData({seed=DEMO_SCENARIO.seed,today,demoScenario=sce
   state.reviewAgenda=buildDemoReviews(demoScenario,{today,subjects:state.subjects});
   state.calendar=Array.from({length:24},(_,index)=>{const entry=activeTopics[(index*3)%activeTopics.length],date=shiftDate(today,index-6);return{id:`demo-calendar-${index+1}`,date,week:'',subjectId:entry.subject.id,topicId:entry.topic.id,subject:entry.subject.name,topic:entry.topic.name,status:index<4?'Concluído':'Não iniciado',reviewType:index%2?'Questões':'Revisão rápida',createdAt:timestamp(shiftDate(date,-5))}});
   const completedDates=state.subjects.flatMap(subject=>subject.topics.map(topic=>topic.firstCompletedAt?.slice(0,10)).filter(Boolean));
-  state.progressHistory=Array.from({length:DEMO_SCENARIO.days},(_,index)=>{const date=shiftDate(today,index-oldestAge);return {date,pct:Math.round(completedDates.filter(value=>value<=date).length/activeTopics.length*100)}});
+  state.progressHistory=Array.from({length:demoScenario.meta.historyDays},(_,index)=>{const date=shiftDate(today,index-oldestAge);return {date,pct:Math.round(completedDates.filter(value=>value<=date).length/activeTopics.length*100)}});
   // O cenário demonstrativo precisa oferecer uma recomendação em qualquer dia
   // em que os testes ou a pessoa abram a aplicação, inclusive aos domingos.
   const examHistory=buildDemoExams(demoScenario,{subjects:state.subjects});state.exams=examHistory.exams;state.examQuestions=examHistory.examQuestions;
@@ -37,7 +38,8 @@ export function generateDemoData({seed=DEMO_SCENARIO.seed,today,demoScenario=sce
   state.metasPorDisciplina=state.subjects.map((subject,index)=>({id:`demo-subject-goal-${index+1}`,subjectId:subject.id,meta:30+index*5,createdAt}));
   const planning=buildDemoPlanning(demoScenario,{today,subjects:state.subjects,examDate:state.examDate});state.metas=planning.metas;state.dailyPlans=planning.dailyPlans;state.studyPlans=planning.studyPlans;state.adaptivePlanningHistory=planning.adaptivePlanningHistory;
   state.planAdjustments=[{id:'demo-adjustment-1',periodStart:shiftDate(today,-7),periodEnd:shiftDate(today,7),plannedMinutes:480,executedMinutes:350,deficitMinutes:130,redistributedMinutes:100,discardedMinutes:30,allocations:[{date:shiftDate(today,1),minutes:50},{date:shiftDate(today,2),minutes:50}],confirmedAt:timestamp(shiftDate(today,-1)),status:'confirmed'}];
-  state.recommendationFeedback=Array.from({length:6},(_,index)=>({id:`demo-feedback-${index+1}`,recommendationId:`demo-recommendation-${index+1}`,date:shiftDate(today,-index*5),subjectId:state.subjects[index%state.subjects.length].id,topicId:activeTopics[index].topic.id,accepted:index!==4,completed:index<3,useful:index<3?index!==2:null,reasonSkipped:index===4?'Preferiu outra disciplina':null,resultingSessionId:index<3?state.studySessions[index].id:null,baseline:{accuracy:52+index*3,questionVolume:24+index*4,retentionScore:45+index*2,daysSinceContact:8-index,measuredAt:timestamp(shiftDate(today,-index*5))},outcome:index<3?{accuracyAfter:64+index*3,questionVolumeAfter:22+index*12,nextReviewRating:index===0?'Bom':null,retentionAfter:54+index*3,measuredAt:timestamp(shiftDate(today,-index*5+2)),confidence:index===0?'Estimativa':'Mais confiável',attributionEligible:true,reasons:[]}:null,createdAt:timestamp(shiftDate(today,-index*5)),completedAt:index<3?timestamp(shiftDate(today,-index*5)):null}));
+  const learning=buildDemoRecommendations(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes});state.recommendationFeedback=learning.recommendationFeedback;state.recommendationHistory=learning.recommendationHistory;
+  state.weeklyCloseSnapshots=buildDemoWeeklyCloses(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,recommendations:state.recommendationFeedback});
   state.topicHistory=activeTopics.flatMap((entry,index)=>[{id:`demo-history-start-${index+1}`,type:'topic_created',date:entry.topic.createdAt.slice(0,10),subjectId:entry.subject.id,topicId:entry.topic.id,createdAt:entry.topic.createdAt},...(entry.topic.firstCompletedAt?[{id:`demo-history-done-${index+1}`,type:'topic_completed',date:entry.topic.firstCompletedAt.slice(0,10),subjectId:entry.subject.id,topicId:entry.topic.id,createdAt:entry.topic.firstCompletedAt}]:[])]);
   state.alertStates=[];state.achievementsUnlocked={primeira_sessao:timestamp(shiftDate(today,-oldestAge+1)),cem_questoes:timestamp(shiftDate(today,-oldestAge+20))};state.lastBackupAt=timestamp(today);state.updatedAt=timestamp(today);
   return state;
