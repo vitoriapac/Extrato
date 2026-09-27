@@ -1405,9 +1405,19 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 @media(max-width:600px){.back-to-top{right:12px;bottom:12px}.back-to-top span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}}
 @media(max-width:760px){.breakdown-line{grid-template-columns:1fr 1fr}.breakdown-subject,.breakdown-result{grid-column:1/-1}.breakdown-line>.icon-btn{justify-self:end}.instructions-hero{align-items:flex-start;flex-direction:column;padding:22px 16px}.instructions-hero nav{justify-content:flex-start}.instruction-grid,.guide-glossary{grid-template-columns:1fr}.guide-flow{grid-template-columns:1fr}.guide-flow>span{display:none}}
 /* Guia editorial da Central de Ajuda */
+.module-heading{display:grid;gap:5px;margin:0 0 20px;padding:0 0 16px;border-bottom:1px solid var(--paper-line)}
+.module-heading__eyebrow{color:var(--gold);font:700 10px/1.4 var(--font-data);letter-spacing:.09em;text-transform:uppercase}
+.module-heading .module-heading__title{margin:0;color:var(--heading);font:600 clamp(19px,2vw,24px)/1.25 var(--font-display)}
+.module-heading__description{max-width:72ch;margin:0;color:var(--ink-soft);font:13px/1.6 var(--font-body)}
+.context-note{display:grid;gap:5px;margin:16px 0;padding:13px 16px;border-left:3px solid var(--blue);background:var(--info-bg);color:var(--heading)}
+.context-note>strong{font:700 10px/1.4 var(--font-data);letter-spacing:.08em;text-transform:uppercase}.context-note p,.context-note ul{margin:0;color:var(--ink-soft);font:12px/1.55 var(--font-body)}
+.context-note--tip{border-left-color:var(--green);background:var(--green-bg)}.context-note--attention{border-left-color:var(--amber);background:var(--amber-bg)}
+.context-note--attention .exam-data-quality-warnings{margin:0;padding-left:18px}
 #helpCenter{width:min(100%,960px);margin-inline:auto}
 .help-hero{padding:clamp(24px,4vw,48px) 0 28px;border-bottom:1px solid var(--paper-line)}
 .help-hero h2{margin:10px 0 14px;font-size:clamp(29px,3.5vw,42px);line-height:1.12}
+.help-hero .module-heading .module-heading__title{font-size:clamp(29px,3.5vw,42px);line-height:1.12}
+.help-hero .module-heading__description{font-size:clamp(15px,1.4vw,17px);line-height:1.7}
 .help-hero>p:not(.help-search-status){max-width:68ch;margin:0;color:var(--ink-soft);font-size:clamp(15px,1.4vw,17px);line-height:1.7}
 .help-search-label{display:block;margin:30px 0 9px;color:var(--heading);font-weight:700}
 .help-search{width:min(100%,620px);min-height:46px}
@@ -1514,6 +1524,7 @@ body.modal-open{overflow:hidden}
 #weeklyCloseDashboard>.weekly-strategic-focus h4,#weeklyCloseDashboard>.weekly-focus-history h4,#weeklyCloseDashboard>.weekly-next h4{color:var(--heading);font:600 15px var(--font-display)}
 #weeklyCloseDashboard .weekly-focus-main strong{font-size:30px}
 #weeklyCloseDashboard>.weekly-focus-history{margin-top:0;padding:22px 0;border:0;border-top:1px solid var(--paper-line);background:transparent}
+.weekly-focus-trend{max-width:560px;margin:8px 0 3px}.weekly-focus-trend svg{display:block;width:100%;height:auto}.weekly-focus-trend-grid{stroke:var(--paper-line);stroke-width:1}.weekly-focus-trend-line{fill:none;stroke:var(--gold);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.weekly-focus-trend-point{fill:var(--paper);stroke:var(--gold);stroke-width:2}.weekly-focus-trend text{fill:var(--ink-soft);font:10px var(--font-data)}
 .weekly-next{display:grid;gap:10px;margin-top:0;padding:22px 0 4px;border-top:1px solid var(--paper-line)}
 .weekly-next h4,.weekly-next p{margin:0}.weekly-next .weekly-action{display:grid;gap:3px;color:var(--ink-soft);font-size:12px;line-height:1.5}.weekly-next .weekly-action b{color:var(--heading)}
 #weeklyCloseDashboard>.weekly-close-actions{margin-top:12px;padding:14px 0;border:0;border-top:1px solid var(--paper-line);border-radius:0}
@@ -1693,7 +1704,7 @@ body.timer-focus-active .timer-context{display:none!important}
 .exam-intelligence-hub{margin:24px 0;padding:28px clamp(0px,2vw,24px);border-top:2px solid var(--heading);background:transparent}
 .exam-intelligence-hub>h3{margin:0 0 8px;color:var(--heading);font:600 clamp(20px,2.3vw,26px) var(--font-display)}
 .exam-intelligence-hub>.exam-intelligence-level{margin:0;padding:26px 0;border:0;border-top:1px solid var(--paper-line);background:transparent}
-.exam-intelligence-hub>.exam-intelligence-level:first-of-type{margin-top:20px}
+.exam-intelligence-hub>.exam-intelligence-level:first-of-type{margin-top:0;border-top:0}
 .exam-intelligence-hub>.exam-intelligence-level>h4{margin:0 0 13px;color:var(--heading);font:600 16px var(--font-display)}
 .exam-intelligence-hub .exam-data-quality,.exam-intelligence-hub .exam-configuration-audit{margin:14px 0 0;padding:0;border:0;background:transparent}
 .exam-intelligence-hub .exam-data-quality{padding-top:15px;border-top:1px solid var(--paper-line)}

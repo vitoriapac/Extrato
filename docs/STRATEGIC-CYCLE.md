@@ -8,6 +8,7 @@ Os dez pacotes de consolidação pós-3.0 estão entregues. O ciclo liga evidên
 - Lacunas trabalhadas dependem de sessão no tópico. Melhorou, ficou estável ou piorou somente quando há resultado posterior medido no mesmo período; sem essa medição, o estado continua desconhecido.
 - O histórico compara apenas fechamentos salvos com métricas completas, períodos sem sobreposição e o mesmo concurso ativo. Snapshots antigos sem escopo conhecido não são usados como base de comparação.
 - O PDF mostra os últimos sete dias do período escolhido e reutiliza a regra de foco semanal. Seu resumo não interpreta associação como causa e não inclui a matriz histórica inteira.
+- A linha de tendência do foco usa apenas os percentuais dos períodos já selecionados pelo histórico. A lista textual informa datas, percentuais e minutos, inclusive quando o gráfico não aparece por falta de comparação.
 - Conquistas estratégicas indicam o progresso e o impedimento do desbloqueio, sem alterar as regras da prioridade.
 
 ## Fronteiras do código

@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=e562929d84c5">
+<link rel="stylesheet" href="styles/app.css?v=66e7959a4e4e">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -133,7 +133,7 @@
     <div class="chart-card intelligence-column">
       <h3>Índice de Prontidão</h3>
       <div id="approvalDashboard"></div>
-      <section class="analytics-card"><h3>Fechamento semanal</h3><div id="weeklyCloseDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Fechamento semanal</h3><p class="module-heading__description">Resultado, foco estratégico e decisões para a próxima semana.</p></header><div id="weeklyCloseDashboard"></div></section>
       <section class="analytics-card"><h3>Comparação entre períodos</h3><div id="periodComparisonDashboard"></div></section>
       <section class="analytics-card"><h3>Mapa de lacunas</h3><div id="gapMapDashboard"></div></section>
       <section class="analytics-card"><h3>Histórico de decisões</h3><div id="decisionHistoryDashboard"></div></section>
@@ -566,7 +566,7 @@
       <div id="examBlueprintConfig"></div>
     </div>
     <div class="exam-intelligence-hub">
-      <h3>Inteligência da prova</h3>
+      <header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Inteligência da prova</h3><p class="module-heading__description">Veja a qualidade do histórico, o impacto observado e o encontro entre a prova e sua preparação.</p></header>
       <section class="exam-intelligence-level" aria-label="Saúde da base histórica">
         <h4>Saúde da base</h4>
         <div id="examIntelligenceOverview" class="exam-intelligence-overview" aria-label="Resumo da base histórica"></div>
@@ -583,8 +583,8 @@
     <div class="chart-card"><h3>Matriz Edital × Domínio</h3><p class="analytics-note">Cobertura, domínio, retenção e lacuna em relação à meta configurada.</p><div id="examMasteryMatrix"></div></div>
 
     <div class="chart-card">
-      <h3>Plano semanal até a prova</h3>
-      <p class="analytics-note">A proposta considera disponibilidade, carga pendente, impacto na prova, domínio e retenção. Nada é salvo ou colocado no calendário sem confirmação.</p>
+      <header class="module-heading"><span class="module-heading__eyebrow">Planejamento</span><h3 class="module-heading__title">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância e sua necessidade de estudo.</p></header>
+      <aside class="context-note context-note--info"><strong>Informação</strong><p>A proposta considera disponibilidade, carga pendente, impacto na prova, domínio e retenção. Nada é salvo ou colocado no calendário sem confirmação.</p></aside>
       <div id="examStudyPlan"></div>
       <div id="adaptivePlanningHistory"></div>
     </div>
@@ -788,7 +788,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=e562929d84c5"></script>
+  <script src="src/app.bundle.js?v=66e7959a4e4e"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

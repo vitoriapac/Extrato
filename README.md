@@ -210,6 +210,8 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 
 A aba **Instruções** funciona como Central de Ajuda em coluna única: seções de leitura contínua, índice horizontal fixo com categoria ativa, busca local com destaque do termo, glossário aberto e links discretos para os recursos correspondentes. O guia explica o ciclo da prova ao fechamento semanal e pode ser consultado depois do primeiro uso.
 
+O histórico do **Foco Estratégico** mostra uma linha simples para comparar períodos completos do mesmo concurso. A lista logo abaixo mantém datas, percentuais e minutos explícitos; o gráfico é apenas um apoio visual.
+
 ## Estado do roadmap
 
 Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. Recomendações podem iniciar sessões guiadas no cronômetro. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.

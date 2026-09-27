@@ -24,6 +24,8 @@ test('histórico usa apenas períodos salvos, comparáveis, sem sobreposição e
   assert.match(renderStrategicFocusHistory(result),/74%/);
   assert.match(renderStrategicFocusHistory(result),/tempo executado/);
   assert.match(renderStrategicFocusHistory(result),/não atribui causalidade/);
+  assert.match(renderStrategicFocusHistory(result),/class="weekly-focus-trend"/);
+  assert.equal((renderStrategicFocusHistory(result).match(/class="weekly-focus-trend-point"/g)||[]).length,3);
 });
 
 test('snapshot congela foco e escopo sem recalcular semanas antigas',()=>{
@@ -45,4 +47,5 @@ test('sem valor histórico confiável não inventa zero nem tendência',()=>{
   assert.equal(result.historyCount,0);
   assert.equal(result.comparison,null);
   assert.match(renderStrategicFocusHistory(result),/Salve fechamentos/);
+  assert.doesNotMatch(renderStrategicFocusHistory(result),/class="weekly-focus-trend"/);
 });

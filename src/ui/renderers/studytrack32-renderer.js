@@ -1,5 +1,12 @@
 const safe=(escapeHtml,value)=>escapeHtml(String(value??''));
 const focusMinutes=value=>{const minutes=Math.max(0,Math.round(Number(value)||0));return minutes>=60?`${Math.floor(minutes/60)}h ${String(minutes%60).padStart(2,'0')}min`:`${minutes} min`};
+const focusPercent=value=>Math.max(0,Math.min(100,Math.round(Number(value)||0)));
+function renderFocusTrend(rows){
+  if(rows.length<2)return '';
+  const points=rows.map((item,index)=>({x:20+index*280/(rows.length-1),y:90-focusPercent(item.focusPercent)*.75}));
+  const line=points.map(point=>`${point.x},${point.y}`).join(' ');
+  return `<div class="weekly-focus-trend" aria-hidden="true"><svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid meet" focusable="false"><line class="weekly-focus-trend-grid" x1="20" y1="15" x2="300" y2="15"/><line class="weekly-focus-trend-grid" x1="20" y1="52.5" x2="300" y2="52.5"/><line class="weekly-focus-trend-grid" x1="20" y1="90" x2="300" y2="90"/><polyline class="weekly-focus-trend-line" points="${line}"/>${points.map((point,index)=>`<circle class="weekly-focus-trend-point" cx="${point.x}" cy="${point.y}" r="4"/><text x="${point.x}" y="111" text-anchor="middle">S${index+1}</text>`).join('')}</svg></div>`;
+}
 export function renderWeeklyStrategicFocus(model){
   if(!model||model.state==='insufficient')return '<section class="weekly-strategic-focus is-insufficient" aria-label="Foco estratégico da semana"><h4>Foco estratégico da semana</h4><p>Registre sessões para ver como o tempo foi distribuído entre os tópicos da prova.</p></section>';
   const percent=Math.max(0,Math.min(100,Math.round(Number(model.highImpactPercent)||0)));
@@ -11,7 +18,7 @@ export function renderStrategicFocusHistory(model){
   const rows=model.rows.map(item=>`<li class="weekly-focus-history-row"><span>${item.start} a ${item.end}${item.current?' · período atual':''}</span><div class="weekly-focus-history-bar" aria-hidden="true"><span style="width:${item.focusPercent}%"></span></div><strong>${item.focusPercent}%</strong><small>${focusMinutes(item.highImpactMinutes)} de ${focusMinutes(item.studiedMinutes)}</small></li>`).join('');
   const comparison=model.comparison?`<p class="weekly-focus-history-comparison">Em relação ao último período salvo sem sobreposição: foco ${model.comparison.focusDelta>=0?'+':''}${model.comparison.focusDelta} p.p.; tempo executado ${model.comparison.executionDelta>=0?'+':'-'}${focusMinutes(Math.abs(model.comparison.executionDelta))}.</p>`:'<p class="analytics-note">Salve fechamentos de períodos anteriores para comparar foco e execução no mesmo concurso.</p>';
   const totals=model.totals;
-  return `<section class="weekly-focus-history" aria-label="Histórico do foco estratégico"><h4>Foco estratégico ao longo do tempo</h4><p class="analytics-note">Períodos salvos mantêm os cálculos e o concurso ativo da data do registro. O período atual ainda pode mudar.</p><ol>${rows}</ol>${comparison}<p class="weekly-focus-history-results">Nos períodos exibidos: ${totals.workedGaps} lacunas trabalhadas; ${totals.measured} com resultado posterior medido (${totals.improved} melhoraram, ${totals.stable} estáveis, ${totals.declined} pioraram).</p><small>O histórico descreve associação entre foco e resultados; não atribui causalidade nem exige aumento contínuo do percentual.</small></section>`;
+  return `<section class="weekly-focus-history" aria-label="Histórico do foco estratégico"><h4>Foco estratégico ao longo do tempo</h4><p class="analytics-note">Períodos salvos mantêm os cálculos e o concurso ativo da data do registro. O período atual ainda pode mudar.</p>${renderFocusTrend(model.rows)}<ol>${rows}</ol>${comparison}<p class="weekly-focus-history-results">Nos períodos exibidos: ${totals.workedGaps} lacunas trabalhadas; ${totals.measured} com resultado posterior medido (${totals.improved} melhoraram, ${totals.stable} estáveis, ${totals.declined} pioraram).</p><small>O histórico descreve associação entre foco e resultados; não atribui causalidade nem exige aumento contínuo do percentual.</small></section>`;
 }
 export function renderWeeklyCloseNext(model,{escapeHtml,formatMinutes}){
   if(model.state==='insufficient')return '';
