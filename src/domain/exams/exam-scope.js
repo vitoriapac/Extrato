@@ -4,6 +4,7 @@ const tagsOf=topic=>Array.isArray(topic?.examTags)?topic.examTags:[];
 export const normalizeExamTags=tags=>[...new Set((Array.isArray(tags)?tags:[]).filter(Boolean).map(String))].sort();
 export function isTopicInExamScope(topic,activeExamTags=[]){const active=new Set(activeExamTags||[]),tags=tagsOf(topic);return active.size===0||tags.length===0||tags.some(tag=>active.has(tag))}
 export function filterTopicsByExamScope(topics=[],activeExamTags=[]){return topics.filter(topic=>isTopicInExamScope(topic,activeExamTags))}
+export function isSimulationInExamScope(simulation,activeExamTags=[]){const active=normalizeExamTags(activeExamTags);if(!active.length)return true;const tags=Array.isArray(simulation?.examTags)?simulation.examTags:simulation?.examTag?[simulation.examTag]:[];return tags.some(tag=>active.includes(tag))}
 export function resolveExamScope(topics=[],activeExamTags=[]){
   const activeTags=normalizeExamTags(activeExamTags),eligibleTopics=[],excludedTopics=[],catalogTopics=[],personalTopics=[];
   for(const topic of topics||[]){

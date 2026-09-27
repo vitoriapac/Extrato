@@ -76,7 +76,7 @@ import {createSubjectService} from './application/subjects/subject-service.js';
 import {createExamImportService} from './application/subjects/exam-import-service.js';
 import {EXAM_TAGS,CATALOG_VERSION,EXAM_SOURCES} from './domain/exams/exam-constants.js';
 import {EXAM_PRESET_OPTIONS} from './domain/exams/exam-preset-options.js';
-import {isTopicInExamScope,isCommonTopic,topicExamScopeLabel,normalizeExamTags} from './domain/exams/exam-scope.js';
+import {isTopicInExamScope,isSimulationInExamScope,isCommonTopic,topicExamScopeLabel,normalizeExamTags} from './domain/exams/exam-scope.js';
 import {classifyEvidenceScope,resolveExamEvidenceScope} from './domain/exams/exam-evidence-scope.js';
 import {setActiveExamTags} from './application/exams/exam-scope-transition.js';
 import {buildSavedSubjectConfig} from './application/exams/save-subject-config.js';
@@ -871,7 +871,7 @@ function topicInActiveExamScope(topic){return isTopicInExamScope(topic,state.exa
 function examScopedTopics(){return activeTopics().filter(topicInActiveExamScope)}
 function examEvidenceContext(){return resolveExamEvidenceScope({subjects:state.subjects,activeExamTags:state.examBlueprint?.activeExamTags||[],sessions:state.studySessions,questions:state.questoes,reviews:state.reviewAgenda})}
 function examScopedRecords(records=[]){return records.filter(record=>classifyEvidenceScope(record,state.subjects,state.examBlueprint?.activeExamTags||[]).includedInExamMetrics)}
-function examScopedSimulations(){const active=state.examBlueprint?.activeExamTags||[];if(!active.length)return state.simulados;return state.simulados.filter(item=>{const tags=Array.isArray(item.examTags)?item.examTags:item.examTag?[item.examTag]:[];return tags.some(tag=>active.includes(tag))})}
+function examScopedSimulations(){const active=state.examBlueprint?.activeExamTags||[];return state.simulados.filter(item=>isSimulationInExamScope(item,active))}
 function subjectProgress(subject){
   return calculateTopicCoverage(subject.topics).value;
 }
@@ -4905,7 +4905,7 @@ let currentStudyTrackModel=null;
 let weeklyCloseController=null;
 function renderStudyTrack32Insights(){
  const close=document.getElementById('weeklyCloseDashboard'),comparison=document.getElementById('periodComparisonDashboard'),gaps=document.getElementById('gapMapDashboard'),history=document.getElementById('decisionHistoryDashboard'),simReplan=document.getElementById('postSimulationReplanDashboard');
- const scope=examEvidenceContext(),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),model=buildStudyTrack32ViewModel({today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:planningRepository.getDailyPlans?.()||[],planAdjustments:state.planAdjustments,recommendations:state.recommendationFeedback,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:Number(state.metas.metaAprovacao)||80,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
+ const scope=examEvidenceContext(),scopedTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id)),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),scopedPlans=(planningRepository.getDailyPlans?.()||[]).map(plan=>({...plan,items:(plan.items||[]).filter(item=>!item.topicId||scopedTopicIds.has(item.topicId))})),scopedRecommendations=state.recommendationFeedback.filter(item=>!item.topicId||scopedTopicIds.has(item.topicId)),model=buildStudyTrack32ViewModel({today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:scopedPlans,planAdjustments:state.planAdjustments,recommendations:scopedRecommendations,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:Number(state.metas.metaAprovacao)||80,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
  if(close)close.innerHTML=renderWeeklyClose(model.weeklyClose,{...options,includeNext:false})+renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus)+renderWeeklySnapshotHistory()+renderWeeklyCloseNext(model.weeklyClose,options)+(model.weeklyClose.state==='insufficient'?'':renderWeeklyCloseActions(model.weeklyClose));
  if(comparison)comparison.innerHTML=renderPeriodComparison(model.weeklyClose,options);
  if(gaps)gaps.innerHTML=renderGapMap(model.gapMap,options);

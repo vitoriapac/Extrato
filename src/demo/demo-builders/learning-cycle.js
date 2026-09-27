@@ -1,52 +1,38 @@
 import {addLocalDays} from '../../core/date-utils.js';
-import {measureRecommendationOutcome,captureRecommendationBaseline} from '../../application/recommendations/outcome-service.js';
+import {measureRecommendationOutcome,captureRecommendationBaseline,captureRecommendationSnapshot} from '../../application/recommendations/outcome-service.js';
 import {buildWeeklyClose} from '../../domain/analytics/weekly-close.js';
 import {buildWeeklyStrategicFocus} from '../../application/analytics/build-weekly-strategic-focus.js';
 import {buildGapMap} from '../../domain/analytics/gap-map.js';
 import {buildDecisionHistory} from '../../domain/recommendations/decision-history.js';
 import {createWeeklyCloseSnapshot} from '../../application/analytics/weekly-close-snapshot.js';
 import {EXAM_TAGS} from '../../domain/exams/exam-constants.js';
-import {allocateErrors} from './study-history.js';
 
 const stamp=date=>`${date}T12:00:00.000Z`;
 const inRange=(item,start,end)=>item.date>=start&&item.date<=end;
 const sum=(rows,key)=>rows.reduce((total,row)=>total+(Number(row[key])||0),0);
 
-function alignExampleEvidence(scenario,{subjects,sessions,questions}){
-  const questionRows=[...questions].sort((a,b)=>a.date.localeCompare(b.date));
-  const bySession=new Map(sessions.map(session=>[session.id,session]));
-  return scenario.recommendations.examples.map((example,index)=>{
-    const subject=subjects.find(item=>item.topics.some(topic=>topic.name.toLocaleLowerCase('pt-BR')===example.topic.toLocaleLowerCase('pt-BR')));
-    const topic=subject?.topics.find(item=>item.name.toLocaleLowerCase('pt-BR')===example.topic.toLocaleLowerCase('pt-BR'));
-    const after=questionRows[Math.floor((index+2)*questionRows.length/5)],before=questionRows[Math.floor((index+2)*questionRows.length/5)-6];
-    if(!subject||!topic||!after||!before)return null;
-    for(const [row,score] of [[before,example.before],[after,example.after]]){
-      if(score==null)continue;
-      row.subjectId=subject.id;row.topicId=topic.id;row.correct=Math.round(row.resolved*score/100);
-      row.errorBreakdown=allocateErrors(row.resolved-row.correct,scenario.questions.errorCategories,scenario.questions.profiles?.[subject.name]);
-      const session=bySession.get(row.studySessionId);
-      if(session){session.subjectId=subject.id;session.topicId=topic.id;session.correctAnswers=row.correct;session.questionsResolved=row.resolved}
-    }
-    return {subject,topic,before,after:example.after==null?null:after};
-  });
-}
-
 export function buildDemoRecommendations(scenario,{today,subjects,sessions,questions}){
-  const topics=subjects.flatMap(subject=>subject.topics.map(topic=>({subject,topic})));
-  const examples=scenario.recommendations.examples,aligned=alignExampleEvidence(scenario,{subjects,sessions,questions});
+  const topics=subjects.flatMap(subject=>subject.topics.map(topic=>({subject,topic}))).filter(item=>questions.some(row=>row.topicId===item.topic.id));
+  const examples=scenario.recommendations.examples;
   const feedback=[],history=[];
   for(let index=0;index<scenario.targets.recommendations;index++){
     const example=examples[index]||null,item=example?topics.find(row=>row.topic.name.toLocaleLowerCase('pt-BR')===example.topic.toLocaleLowerCase('pt-BR')):topics[(index*23+12)%topics.length];
     if(!item)continue;
-    const date=aligned[index]?.after?addLocalDays(aligned[index].after.date,-2):aligned[index]?.before?addLocalDays(aligned[index].before.date,2):addLocalDays(today,-Math.max(6,110-index*5)),createdAt=stamp(date),id=`demo-recommendation-${index+1}`;
-    const accepted=index%7!==6,completed=accepted&&index%6!==5,measurementDate=aligned[index]?.after?addLocalDays(aligned[index].after.date,1):addLocalDays(date,3),session=aligned[index]?.after?sessions.find(row=>row.id===aligned[index].after.studySessionId):sessions.find(row=>row.topicId===item.topic.id&&row.date>=date&&row.date<=measurementDate);
-    const before=example?.before??Math.max(35,55+index%12),after=example?.after??before+(index%5===0?0:index%4===0?-5:7);
-    const baseline=captureRecommendationBaseline({mastery:before,accuracy:before,questionVolume:aligned[index]?.before?.resolved||25,retentionScore:before-4,measuredAt:aligned[index]?.before?stamp(aligned[index].before.date):createdAt});
-    const measured=completed&&example&&after!=null&&Boolean(aligned[index]?.after);
-    const row={id:`demo-feedback-${index+1}`,recommendationId:id,date,subjectId:item.subject.id,topicId:item.topic.id,accepted,completed,useful:measured?after>before:null,reasonSkipped:accepted?null:'Preferiu outra disciplina',resultingSessionId:completed?session?.id||null:null,score:75,algorithmVersion:1,baseline,snapshot:{subjectId:item.subject.id,topicId:item.topic.id,priorityScore:75,recommendationType:'questions',recommendedMinutes:35,before:baseline,createdAt},outcome:null,shownAt:createdAt,createdAt,completedAt:completed?stamp(session?.date||addLocalDays(date,1)):null,ratedAt:null};
-    if(measured)measureRecommendationOutcome(row,{masteryAfter:after,accuracyAfter:after,retentionAfter:after-4,questionVolumeAfter:aligned[index].after.resolved,measuredAt:stamp(measurementDate),daysElapsed:3,otherActivities:0});
+    const records=questions.filter(row=>row.topicId===item.topic.id).sort((a,b)=>a.date.localeCompare(b.date));
+    const before=records[0],after=records.length>1?records.at(-1):null;
+    const date=addLocalDays(before.date,1),createdAt=stamp(date),id=`demo-recommendation-${index+1}`;
+    const accepted=index%7!==6,session=after?sessions.find(row=>row.id===after.studySessionId):null,completed=accepted&&Boolean(session&&session.date>date);
+    const beforeScore=Math.round(before.correct/before.resolved*100),afterScore=after?Math.round(after.correct/after.resolved*100):null;
+    const score=Math.round(100*(item.topic.examImportance||0)*(1-beforeScore/100));
+    const reasons=[`Prova: impacto configurado de ${Math.round((item.topic.examImportance||0)*100)}/100.`,`Você: ${before.correct} acertos em ${before.resolved} questões (${beforeScore}%) antes da recomendação.`];
+    const baseline=captureRecommendationBaseline({mastery:beforeScore,accuracy:beforeScore,questionVolume:before.resolved,measuredAt:stamp(before.date)});
+    const recommendation={recommendationId:id,subjectId:item.subject.id,topicId:item.topic.id,type:'questions',estimatedMinutes:35,score,reasons,algorithmVersion:1,examImpact:Math.round((item.topic.examImportance||0)*100),evidence:{questionIds:[before.id],resolved:before.resolved,correct:before.correct,activeExamTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA]}};
+    const snapshot=captureRecommendationSnapshot(recommendation,{baseline,createdAt});
+    const measured=completed&&example?.after!==null&&after&&after.date>date;
+    const row={id:`demo-feedback-${index+1}`,recommendationId:id,date,subjectId:item.subject.id,topicId:item.topic.id,accepted,completed,useful:measured?afterScore>beforeScore:null,reasonSkipped:accepted?null:'Preferiu outra disciplina',resultingSessionId:completed?session.id:null,score,algorithmVersion:1,baseline,snapshot,outcome:null,shownAt:createdAt,createdAt,completedAt:completed?stamp(session.date):null,ratedAt:null};
+    if(measured)measureRecommendationOutcome(row,{masteryAfter:afterScore,accuracyAfter:afterScore,questionVolumeAfter:after.resolved,measuredAt:stamp(after.date),daysElapsed:Math.max(1,Math.round((Date.parse(stamp(after.date))-Date.parse(createdAt))/86400000)),otherActivities:0});
     feedback.push(row);
-    history.push({id,createdAt,localDate:date,candidateId:item.topic.id,signature:null,source:'generated',subjectId:item.subject.id,topicId:item.topic.id,activityType:'questions',suggestedMinutes:35,priority:75,reasons:['Lacuna observada no histórico demonstrativo.'],evidenceSnapshot:null,algorithmVersions:{priority:1,examIntelligence:1},status:accepted?'executed':'dismissed',executedAt:accepted?createdAt:null,dismissedAt:accepted?null:createdAt,expiredAt:null,sessionId:row.resultingSessionId,feedbackId:row.id});
+    history.push({id,createdAt,localDate:date,candidateId:item.topic.id,signature:null,source:'generated',subjectId:item.subject.id,topicId:item.topic.id,activityType:'questions',suggestedMinutes:35,priority:score,reasons,evidenceSnapshot:recommendation.evidence,algorithmVersions:{priority:1,examIntelligence:null},status:accepted?'executed':'dismissed',executedAt:accepted?createdAt:null,dismissedAt:accepted?null:createdAt,expiredAt:null,sessionId:row.resultingSessionId,feedbackId:row.id});
   }
   return {recommendationFeedback:feedback,recommendationHistory:history};
 }

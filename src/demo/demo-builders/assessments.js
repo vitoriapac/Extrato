@@ -1,4 +1,6 @@
 import {addLocalDays} from '../../core/date-utils.js';
+import {EXAM_TAGS} from '../../domain/exams/exam-constants.js';
+import {isTopicInExamScope} from '../../domain/exams/exam-scope.js';
 
 const stamp=date=>`${date}T12:00:00.000Z`;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
@@ -6,14 +8,15 @@ const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 export function buildDemoSimulations(scenario,{today,subjects}){
   const comparison=scenario.simulationLatestComparison||{};
   return scenario.simulations.map((source,index)=>{
-    const date=addLocalDays(today,source.dayOffset),lastPair=index>=scenario.simulations.length-2;
+    const date=addLocalDays(today,source.dayOffset),lastPair=index>=scenario.simulations.length-2,examTag=index%2?EXAM_TAGS.CAIXA:EXAM_TAGS.BB;
     const breakdown=subjects.map((subject,subjectIndex)=>{
+      if(!subject.topics.some(topic=>isTopicInExamScope(topic,[examTag])))return null;
       const target=comparison[subject.name];
       const rate=lastPair&&Array.isArray(target)?target[index===scenario.simulations.length-2?0:1]:source.accuracyPct+(Number(scenario.subjects[subjectIndex]?.targetAccuracyPct)||70)-70;
       const total=10,correct=clamp(Math.round(total*clamp(rate,20,98)/100),0,total);
       return {id:`demo-simulation-row-${index+1}-${subjectIndex+1}`,subjectId:subject.id,total,correct};
-    });
-    return {id:`demo-simulation-${index+1}`,date,nome:`Simulado ${index+1}`,total:breakdown.reduce((sum,row)=>sum+row.total,0),correct:breakdown.reduce((sum,row)=>sum+row.correct,0),breakdown,createdAt:stamp(date)};
+    }).filter(Boolean);
+    return {id:`demo-simulation-${index+1}`,date,nome:`Simulado ${index+1}`,examTags:[examTag],total:breakdown.reduce((sum,row)=>sum+row.total,0),correct:breakdown.reduce((sum,row)=>sum+row.correct,0),breakdown,createdAt:stamp(date)};
   });
 }
 

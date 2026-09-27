@@ -58,7 +58,7 @@ function narrativeAccuracy(source,day,historyDays){
   const target=source.targetMastery,progress=day/historyDays;
   if(source.narrativeRole==='improving')return clamp(target-16+16*progress,0,100);
   if(source.narrativeRole==='declining')return clamp(target+13-13*progress,0,100);
-  if(source.narrativeRole==='priority_gap')return clamp(target+5-5*progress,0,100);
+  if(source.narrativeRole==='priority_gap')return clamp(target-8+8*progress,0,100);
   return target;
 }
 
