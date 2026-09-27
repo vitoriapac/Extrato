@@ -37,5 +37,6 @@ Confiança e ausência de dados não devem ser escondidas apenas para simplifica
 ## Aplicação por pacote
 
 - Pacote 2: corrigir a pilha de navegação e o ritmo editorial das Instruções.
-- Pacotes seguintes: indicar categoria ativa e refinar a busca; reduzir cards aninhados da Inteligência da Prova; equilibrar o Fechamento Semanal; consolidar cabeçalhos e notas entre módulos.
+- Pacotes 3 a 5: categoria ativa e busca destacada nas Instruções; seções editoriais na Inteligência da Prova; resultado, diagnóstico, foco, comparação e próxima semana em ordem no Fechamento Semanal.
+- Próximos pacotes: consolidar cabeçalhos e notas entre módulos e revisar a densidade visual global.
 - A revisão global de bordas deve ser gradual e orientada por essa classificação. Uma troca indiscriminada de estilos pode apagar a distinção entre ações, análise e evidência.

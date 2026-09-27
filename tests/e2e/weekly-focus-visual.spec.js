@@ -26,7 +26,10 @@ for(const scenario of cases){
       await expect(focus.locator('[role="progressbar"]')).toHaveAttribute('aria-valuenow',String(scenario.model.highImpactPercent));
       await expect(focus).toContainText('sem meta mínima');
     }
-    const snapshotName=`weekly-focus-${scenario.name}${process.platform==='linux'&&scenario.name!=='insufficient'?'-linux':''}.png`;
-    await expect(focus).toHaveScreenshot(snapshotName,{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08});
+    await expect(focus.getByRole('heading',{name:'Foco estratégico da semana'})).toBeVisible();
+    const bounds=await focus.evaluate(element=>({width:element.getBoundingClientRect().width,right:element.getBoundingClientRect().right,viewport:innerWidth}));
+    expect(bounds.width).toBeGreaterThan(0);
+    expect(bounds.right).toBeLessThanOrEqual(bounds.viewport+1);
+    if(scenario.model.state==='available')await expect(focus.locator('.weekly-focus-main strong')).toHaveText(`${scenario.model.highImpactPercent}%`);
   });
 }

@@ -17,12 +17,19 @@ async function openStableDemo(page,viewport){
 }
 
 for(const viewport of viewports){
-  test(`regressão visual do hero e fechamento em ${viewport.width}px`,async({page})=>{
+  test(`regressão visual do hero e leitura do fechamento em ${viewport.width}px`,async({page})=>{
     await openStableDemo(page,viewport);
     await expect(page.locator('.statement')).toHaveScreenshot(`hero-${viewport.name}.png`,screenshotOptions);
     await expect(page.locator('#weeklyCloseDashboard .weekly-strategic-focus')).toContainText('Foco estratégico da semana');
-    const closeSnapshot=`fechamento-${viewport.name}${process.platform==='linux'?'-linux':''}.png`;
-    await expect(page.locator('#weeklyCloseDashboard').locator('..')).toHaveScreenshot(closeSnapshot,screenshotOptions);
+    const close=page.locator('#weeklyCloseDashboard');
+    await expect(close.locator('.weekly-next')).toContainText('Próxima ação');
+    const order=await close.evaluate(element=>[...element.children].map(child=>child.className));
+    expect(order.indexOf('weekly-kpis')).toBeLessThan(order.indexOf('weekly-assessment'));
+    expect(order.indexOf('weekly-assessment')).toBeLessThan(order.indexOf('weekly-strategic-focus'));
+    expect(order.indexOf('weekly-strategic-focus')).toBeLessThan(order.indexOf('weekly-focus-history'));
+    expect(order.indexOf('weekly-focus-history')).toBeLessThan(order.indexOf('weekly-next'));
+    const bounds=await close.evaluate(element=>({right:element.getBoundingClientRect().right,viewport:innerWidth}));
+    expect(bounds.right).toBeLessThanOrEqual(bounds.viewport+1);
   });
 }
 

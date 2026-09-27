@@ -10,10 +10,52 @@ const DESTINATIONS=Object.freeze({
 });
 const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
 
+function highlightMatches(scope,query,document,window){
+  const walker=document.createTreeWalker(scope,window.NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  for(let node=walker.nextNode();node;node=walker.nextNode()){
+    if(node.parentElement?.closest('[hidden]'))continue;
+    if(normalize(node.nodeValue).includes(query))nodes.push(node);
+  }
+  for(const node of nodes){
+    const value=node.nodeValue;
+    let folded='',offset=0;
+    const positions=[];
+    for(const char of value){
+      const part=normalize(char);
+      for(let index=0;index<part.length;index++)positions.push([offset,offset+char.length]);
+      folded+=part;
+      offset+=char.length;
+    }
+    const fragment=document.createDocumentFragment();
+    let cursor=0,match=folded.indexOf(query);
+    while(match!==-1){
+      const start=positions[match][0],end=positions[match+query.length-1][1];
+      fragment.append(document.createTextNode(value.slice(cursor,start)));
+      const mark=document.createElement('mark');
+      mark.className='help-match';
+      mark.dataset.helpMatch='';
+      mark.textContent=value.slice(start,end);
+      fragment.append(mark);
+      cursor=end;
+      match=folded.indexOf(query,match+query.length);
+    }
+    fragment.append(document.createTextNode(value.slice(cursor)));
+    node.replaceWith(fragment);
+  }
+}
+
 export function createHelpController({document,window,activateTab}){
   const root=document.getElementById('helpCenter');
   if(!root)return {mount:()=>false};
+  let scheduleActive=()=>{};
   const applySearch=()=>{
+    const parents=new Set();
+    for(const mark of root.querySelectorAll('[data-help-match]')){
+      parents.add(mark.parentNode);
+      mark.replaceWith(document.createTextNode(mark.textContent));
+    }
+    for(const parent of parents)parent.normalize();
     const query=normalize(root.querySelector('#helpSearch')?.value.trim());
     let matches=0;
     for(const group of root.querySelectorAll('[data-help-group]')){
@@ -43,12 +85,21 @@ export function createHelpController({document,window,activateTab}){
     if(query&&!principle.hidden)matches++;
     root.querySelector('#helpNoResults').hidden=!query||matches>0;
     root.querySelector('#helpSearchStatus').textContent=query?`${matches} ${matches===1?'assunto encontrado':'assuntos encontrados'}.`:'';
+    root.querySelector('#helpSearchClear').hidden=!query;
+    if(query){
+      for(const section of root.querySelectorAll('[data-help-group]:not([hidden]),[data-help-principle]:not([hidden]),.help-reference:not([hidden])'))highlightMatches(section,query,document,window);
+    }
+    scheduleActive();
   };
   const openCategory=id=>{
     const search=root.querySelector('#helpSearch');
     if(search.value){search.value='';applySearch()}
     const group=[...root.querySelectorAll('[data-help-group]')].find(item=>item.id===id);
     if(!group)return;
+    for(const button of root.querySelectorAll('[data-help-category]')){
+      if(button.dataset.helpCategory===id)button.setAttribute('aria-current','location');
+      else button.removeAttribute('aria-current');
+    }
     const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     group.scrollIntoView({block:'start',behavior:reduceMotion?'auto':'smooth'});
     group.focus({preventScroll:true});
@@ -69,6 +120,34 @@ export function createHelpController({document,window,activateTab}){
   const mount=()=>{
     root.innerHTML=renderHelpCenter();
     const categoryNav=root.querySelector('.help-category-nav');
+    const categoryButtons=[...categoryNav.querySelectorAll('[data-help-category]')];
+    const updateActive=()=>{
+      if(!root.closest('.panel')?.classList.contains('active'))return;
+      const groups=[...root.querySelectorAll('[data-help-group]:not([hidden])')];
+      if(!groups.length)return;
+      const threshold=(document.querySelector('.sticky-shell')?.getBoundingClientRect().bottom||0)+categoryNav.getBoundingClientRect().height+24;
+      let active=groups[0].id;
+      for(const group of groups){if(group.getBoundingClientRect().top<=threshold)active=group.id}
+      for(const button of categoryButtons){
+        if(button.dataset.helpCategory===active)button.setAttribute('aria-current','location');
+        else button.removeAttribute('aria-current');
+      }
+      const activeButton=categoryButtons.find(button=>button.dataset.helpCategory===active);
+      if(activeButton){
+        const navBox=categoryNav.getBoundingClientRect(),buttonBox=activeButton.getBoundingClientRect();
+        if(buttonBox.left<navBox.left||buttonBox.right>navBox.right){
+          const left=buttonBox.left-navBox.left-(navBox.width-buttonBox.width)/2;
+          const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+          categoryNav.scrollBy({left,behavior:reduceMotion?'auto':'smooth'});
+        }
+      }
+    };
+    let activeQueued=false;
+    scheduleActive=()=>{
+      if(activeQueued)return;
+      activeQueued=true;
+      window.requestAnimationFrame(()=>{activeQueued=false;updateActive()});
+    };
     const syncHelpNavHeight=()=>{
       const height=Math.ceil(categoryNav.getBoundingClientRect().height);
       if(height)root.style.setProperty('--help-nav-height',`${height}px`);
@@ -76,14 +155,21 @@ export function createHelpController({document,window,activateTab}){
     syncHelpNavHeight();
     if('ResizeObserver' in window)new window.ResizeObserver(syncHelpNavHeight).observe(categoryNav);
     window.addEventListener('resize',syncHelpNavHeight,{passive:true});
+    window.addEventListener('resize',scheduleActive,{passive:true});
+    window.addEventListener('scroll',scheduleActive,{passive:true});
     root.addEventListener('input',event=>{if(event.target.id==='helpSearch')applySearch()});
     root.addEventListener('keydown',event=>{if(event.target.id==='helpSearch'&&event.key==='Escape'){event.target.value='';applySearch();event.preventDefault()}});
     root.addEventListener('click',event=>{
       const category=event.target.closest('[data-help-category]');
       if(category){openCategory(category.dataset.helpCategory);return}
+      if(event.target.closest('#helpSearchClear')){
+        const search=root.querySelector('#helpSearch');
+        search.value='';applySearch();search.focus();return;
+      }
       const action=event.target.closest('[data-help-action]');
       if(action)navigate(action.dataset.helpAction);
     });
+    scheduleActive();
     return true;
   };
   return {mount,applySearch,openCategory,navigate};

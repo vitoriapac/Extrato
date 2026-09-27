@@ -109,7 +109,7 @@ import {buildHeaderViewModel} from './application/analytics/build-header-view-mo
 import {renderHeroHeader,renderCompactHeader} from './ui/renderers/header-renderer.js';
 import {buildStudyTrack32ViewModel} from './application/analytics/build-studytrack32-view-model.js';
 import {buildStrategicFocusHistory} from './application/analytics/build-strategic-focus-history.js';
-import {renderWeeklyClose,renderWeeklyStrategicFocus,renderStrategicFocusHistory,renderPeriodComparison,renderGapMap,renderDecisionHistory,renderPostSimulationReplan} from './ui/renderers/studytrack32-renderer.js';
+import {renderWeeklyClose,renderWeeklyCloseNext,renderWeeklyStrategicFocus,renderStrategicFocusHistory,renderPeriodComparison,renderGapMap,renderDecisionHistory,renderPostSimulationReplan} from './ui/renderers/studytrack32-renderer.js';
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildIntelligentAlerts} from './domain/diagnostics/alerts.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
@@ -4859,7 +4859,7 @@ let weeklyCloseController=null;
 function renderStudyTrack32Insights(){
  const close=document.getElementById('weeklyCloseDashboard'),comparison=document.getElementById('periodComparisonDashboard'),gaps=document.getElementById('gapMapDashboard'),history=document.getElementById('decisionHistoryDashboard'),simReplan=document.getElementById('postSimulationReplanDashboard');
  const scope=examEvidenceContext(),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),model=buildStudyTrack32ViewModel({today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:planningRepository.getDailyPlans?.()||[],planAdjustments:state.planAdjustments,recommendations:state.recommendationFeedback,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:Number(state.metas.metaAprovacao)||80,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
- if(close)close.innerHTML=renderWeeklyClose(model.weeklyClose,{...options,selectedPriorityIds:weeklyCloseController?.view().selectedIds||[]})+renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus)+(model.weeklyClose.state==='insufficient'?'':renderWeeklyCloseActions(model.weeklyClose)) + renderWeeklySnapshotHistory();
+ if(close)close.innerHTML=renderWeeklyClose(model.weeklyClose,{...options,includeNext:false})+renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus)+renderWeeklySnapshotHistory()+renderWeeklyCloseNext(model.weeklyClose,options)+(model.weeklyClose.state==='insufficient'?'':renderWeeklyCloseActions(model.weeklyClose));
  if(comparison)comparison.innerHTML=renderPeriodComparison(model.weeklyClose,options);
  if(gaps)gaps.innerHTML=renderGapMap(model.gapMap,options);
  if(history)history.innerHTML=renderDecisionHistory(model.decisionHistory,options);

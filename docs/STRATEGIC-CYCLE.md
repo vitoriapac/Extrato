@@ -16,4 +16,4 @@ O domínio define limites e cálculo de impacto. A aplicação monta o fechament
 
 ## Gate de publicação
 
-Execute `npm run build` e `npm run check:all`. O gate valida sintaxe, testes unitários, artefatos gerados e Playwright, incluindo backup, acessibilidade, responsividade e regressão visual. O CI executa a suíte em UTC e `America/Sao_Paulo` e condiciona a publicação ao resultado. As capturas do foco e do fechamento têm referências próprias para Windows e Linux quando a renderização difere.
+Execute `npm run build` e `npm run check:all`. O gate valida sintaxe, testes unitários, artefatos gerados e Playwright, incluindo backup, acessibilidade, responsividade e regressão visual. O CI executa a suíte em UTC e `America/Sao_Paulo` e condiciona a publicação ao resultado. O hero e outros componentes estáveis usam capturas; o fechamento e o foco usam verificações de ordem, conteúdo e largura para acompanhar a composição editorial em Windows e Linux.
