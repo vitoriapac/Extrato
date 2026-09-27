@@ -23,13 +23,13 @@ export function buildVisualDensityFixture({today='2026-09-25'}={}){
   const originalQuestions=state.questoes.slice();
   for(let index=0;index<180;index++){
     const source=originalSessions[index%originalSessions.length];
-    const subject=state.subjects[6+index%9];
+    const subject=state.subjects[6+index%(state.subjects.length-6)];
     const topic=subject.topics[index%subject.topics.length];
     state.studySessions.push({...structuredClone(source),id:`visual-session-${index+1}`,subjectId:subject.id,topicId:topic.id,planItemId:null,questionsResolved:0,correctAnswers:0});
   }
   for(let index=0;index<120;index++){
     const source=originalQuestions[index%originalQuestions.length];
-    const subject=state.subjects[6+index%9];
+    const subject=state.subjects[6+index%(state.subjects.length-6)];
     const topic=subject.topics[index%subject.topics.length];
     state.questoes.push({...structuredClone(source),id:`visual-question-${index+1}`,subjectId:subject.id,topicId:topic.id,studySessionId:null});
   }

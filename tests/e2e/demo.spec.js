@@ -1,5 +1,24 @@
 import {test,expect} from '@playwright/test';
-import {openDemo} from './helpers.js';
+import {openDemo,expectNoPageOverflow} from './helpers.js';
+
+test('prévia e selo da demonstração funcionam no mobile sem alterar a base antes de carregar',async({page})=>{
+  await page.setViewportSize({width:320,height:720});await page.goto('/');
+  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('bb-premium-study-data'))?.subjects);
+  await page.getByRole('button',{name:/Explorar demonstração/i}).click();
+  const dialog=page.locator('#demoIntroDialog');await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('1.750 questões de estudo');
+  await page.getByRole('button',{name:'Cancelar'}).click();await expect(dialog).toBeHidden();
+  expect(await page.evaluate(()=>sessionStorage.getItem('bb-premium-mode'))).toBeNull();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('bb-premium-study-data'))?.subjects)).toEqual(before);
+  for(const width of [320,375,390,430]){
+    await page.setViewportSize({width,height:720});await page.getByRole('button',{name:/Explorar demonstração/i}).click();await expect(dialog).toBeVisible();
+    const bounds=await dialog.boundingBox();expect(bounds.x).toBeGreaterThanOrEqual(0);expect(bounds.x+bounds.width).toBeLessThanOrEqual(width+1);
+    await page.keyboard.press('Escape');await expect(dialog).toBeHidden();
+  }
+  await page.getByRole('button',{name:/Explorar demonstração/i}).click();await page.getByRole('button',{name:'Carregar demonstração'}).click();
+  await expect(page.locator('#demoHeaderBadge')).toBeVisible();await expect(page.locator('#demoHeaderBadge')).toContainText('Dados fictícios');
+  await expectNoPageOverflow(page);
+});
 
 test('isola, reinicia e encerra a demonstração sem alterar o estado real',async({page})=>{
   await page.goto('/?test=1');

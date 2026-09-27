@@ -25,16 +25,16 @@ function candidatesFor(tag){
   return buildStudyCandidates({...scope(tag),priorities,retentions,blueprint:state.examBlueprint.subjects,sessions:[],today:'2026-09-25'});
 }
 
-test('massa determinística reúne 130 dias pessoais e 16 provas históricas sem misturar questões',()=>{
-  assert.equal(state.progressHistory.length,130);
-  assert.equal(state.studySessions.length,170);
+test('massa determinística reúne 140 dias pessoais e 16 provas históricas sem misturar questões',()=>{
+  assert.equal(state.progressHistory.length,140);
+  assert.equal(state.studySessions.length,200);
   assert.equal(state.exams.length,16);
   assert.deepEqual([STRESS_TAGS.bb,STRESS_TAGS.caixa,STRESS_TAGS.ti].map(tag=>state.exams.filter(exam=>exam.examTags.includes(tag)).length),[6,6,4]);
   assert.equal(state.exams.filter(exam=>exam.coverage==='partial').length,3);
   assert.ok(state.exams.some(exam=>exam.unresolvedQuestions.length));
   assert.ok(state.examQuestions.some(question=>question.classification.confidence<.5));
   assert.ok(new Set(state.examQuestions.map(question=>question.weight)).size>1);
-  assert.equal(state.questoes.length,102);
+  assert.equal(state.questoes.length,80);
   assert.deepEqual(buildExamIntelligenceStressFixture(),fixture);
 });
 

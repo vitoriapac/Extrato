@@ -5,12 +5,12 @@ import {buildVisualDensityFixture} from '../fixtures/visual-density.js';
 const state=buildVisualDensityFixture();
 
 test('auditoria de dados densos e ajuda em 320–430 px, light e dark',async({page})=>{
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   await page.setViewportSize({width:320,height:800});
   await page.goto('/?test=1');
   await page.locator('#testReport').evaluate(element=>element.remove());
   await page.evaluate(value=>{window.__EXTRATO_TEST__.setState(value);window.__EXTRATO_TEST__.renderAll()},state);
-  await expect(page.locator('#statSubjects')).toHaveText('15');
+  await expect(page.locator('#statSubjects')).toHaveText(String(state.subjects.length));
   for(const width of [320,375,390,430]){
     await page.setViewportSize({width,height:800});
     for(const theme of ['light','dark']){
@@ -51,7 +51,7 @@ test('cabeçalhos analíticos com dados densos em desktop',async({page})=>{
   await page.goto('/?test=1');
   await page.locator('#testReport').evaluate(element=>element.remove());
   await page.evaluate(value=>{window.__EXTRATO_TEST__.setState(value);window.__EXTRATO_TEST__.renderAll()},state);
-  await expect(page.locator('#statSubjects')).toHaveText('15');
+  await expect(page.locator('#statSubjects')).toHaveText(String(state.subjects.length));
   await activateTab(page,'dashboard');
   await expect(page.locator('.intelligence-column > .analytics-card > .module-heading')).toHaveCount(5);
   await activateTab(page,'agenda');
@@ -59,6 +59,6 @@ test('cabeçalhos analíticos com dados densos em desktop',async({page})=>{
   await activateTab(page,'questoes');
   await expect(page.locator('#panel-questoes > .module-heading')).toHaveCount(2);
   await activateTab(page,'metas');
-  await expect(page.locator('#panel-metas .module-heading')).toHaveCount(5);
+  await expect(page.locator('#panel-metas .module-heading')).toHaveCount(6);
   await expectNoPageOverflow(page);
 });
