@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=2886430ae3ab">
+<link rel="stylesheet" href="styles/app.css?v=97e56c671e16">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -522,6 +522,10 @@
       <header class="module-heading module-heading--compact"><h3 class="module-heading__title">Evolução das notas nos simulados</h3></header>
       <div id="simuladosChart"></div>
     </div>
+    <section class="chart-card" id="simulationComparisonCard" aria-labelledby="simulationComparisonTitle">
+      <header class="module-heading module-heading--compact"><h3 class="module-heading__title" id="simulationComparisonTitle">Último simulado × anterior</h3></header>
+      <div id="simulationComparisonResults"></div>
+    </section>
     <div class="log-table-wrap">
       <table class="log responsive-history-table">
         <thead>
@@ -796,7 +800,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=2886430ae3ab"></script>
+  <script src="src/app.bundle.js?v=97e56c671e16"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

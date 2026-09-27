@@ -1,0 +1,5 @@
+export function renderSimulationComparison(model,{escapeHtml,formatDate}){
+  if(model.state!=='ready')return `<div class="ui-state--empty">${escapeHtml(model.message)}</div>`;
+  const rows=model.rows.map(item=>`<li class="simulation-comparison-row"><strong>${escapeHtml(item.name)}</strong><div class="simulation-comparison-bars"><span>Anterior</span><span class="simulation-comparison-track" aria-hidden="true"><span style="width:${item.previousAccuracy}%"></span></span><b>${item.previousAccuracy}%</b><span>Atual</span><span class="simulation-comparison-track is-current" aria-hidden="true"><span style="width:${item.currentAccuracy}%"></span></span><b>${item.currentAccuracy}%</b></div><small>${item.delta>0?'+':''}${item.delta} p.p. · ${item.previousTotal} questões antes, ${item.currentTotal} agora</small></li>`).join('');
+  return `<p class="analytics-note">${escapeHtml(model.previous.name)} (${formatDate(model.previous.date)}) × ${escapeHtml(model.current.name)} (${formatDate(model.current.date)}). Apenas disciplinas detalhadas em ambos entram na comparação.</p><ul class="simulation-comparison-list">${rows}</ul>`;
+}

@@ -18,7 +18,7 @@ export function renderSimulationEdit({item,draft,escapeAttr}){
   return `<tr class="row-editing" data-id="${item.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date||''}" data-delegated-change="updateSimulationDraft('date',this.value)"></label><label>Nome<input type="text" value="${escapeAttr(draft.nome||'')}" data-delegated-input="updateSimulationDraft('nome',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(draft.correct)||0}" ${hasBreakdown?'disabled':''} data-delegated-input="updateSimulationDraft('correct',this.value)"></label><label>Total<input type="number" min="0" value="${Number(draft.total)||0}" ${hasBreakdown?'disabled':''} data-delegated-input="updateSimulationDraft('total',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelSimulationEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveSimulationEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteSimuladoRow('${item.id}')">Excluir</button></div></div></td></tr>`;
 }
 
-export function renderSimulationTrendChart({items=[],scoreFor,formatDate,escapeHtml}){
+export function renderSimulationTrendChart({items=[],scoreFor,formatDate,escapeHtml,targetScore=null}){
   const width=640,height=160,padLeft=30,padRight=12,padTop=12,padBottom=26;
   const plotWidth=width-padLeft-padRight,plotHeight=height-padTop-padBottom,count=items.length;
   const xFor=index=>padLeft+(count===1?0:index/(count-1)*plotWidth);
@@ -27,7 +27,10 @@ export function renderSimulationTrendChart({items=[],scoreFor,formatDate,escapeH
   const grid=[0,25,50,75,100].map(value=>`<line class="chart-grid" x1="${padLeft}" y1="${yFor(value)}" x2="${width-padRight}" y2="${yFor(value)}"></line><text x="2" y="${yFor(value)+3}">${value}%</text>`).join('');
   const dots=items.map((item,index)=>`<circle class="chart-dot" cx="${xFor(index)}" cy="${yFor(scores[index])}" r="3"><title>${escapeHtml(item.nome||'Simulado')} (${formatDate(item.date)}): ${scores[index]}%</title></circle>`).join('');
   const labels=items.map((item,index)=>`<text x="${xFor(index)}" y="${height-6}" text-anchor="middle">${index+1}</text>`).join('');
-  return `<svg class="progress-chart-svg" viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;">${grid}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg>`;
+  const goal=Number.isFinite(Number(targetScore))&&targetScore!==null&&targetScore!==''?Math.max(0,Math.min(100,Number(targetScore))):null;
+  const goalLine=goal===null?'':`<line class="simulation-goal-line" x1="${padLeft}" x2="${width-padRight}" y1="${yFor(goal)}" y2="${yFor(goal)}"/>`;
+  const history=items.map((item,index)=>`<li><span>${escapeHtml(item.nome||'Simulado')} · ${formatDate(item.date)}</span><strong>${scores[index]}%</strong></li>`).join('');
+  return `<p class="analytics-note">Últimos ${items.length} simulados${goal===null?'':` · meta configurada ${goal}%`}. A linha representa a nota registrada em cada prova.</p><svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;">${grid}${goalLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg><ol class="simulation-trend-list">${history}</ol>`;
 }
 
 export function renderSubjectPerformanceRows({items=[],escapeHtml}){

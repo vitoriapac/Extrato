@@ -163,6 +163,8 @@ import {renderIntelligentAlerts,renderExecutiveSummary as renderExecutiveSummary
 import {renderDiagnosisCenter as renderDiagnosisCenterView} from './ui/renderers/diagnosis-renderer.js';
 import {renderTopicRetentionDashboard as renderTopicRetentionDashboardView} from './ui/renderers/retention-renderer.js';
 import {renderSimulationRead,renderSimulationBreakdown as renderSimulationBreakdownView,renderSimulationEdit,renderSimulationTrendChart,renderSubjectPerformanceRows,renderSimulationRows} from './ui/renderers/simulations-renderer.js';
+import {buildSimulationComparison} from './application/simulations/build-simulation-comparison.js';
+import {renderSimulationComparison} from './ui/renderers/simulation-comparison-renderer.js';
 import {buildExamMasteryMatrix} from './domain/analytics/exam-mastery-matrix.js';
 import {buildStudyStrategy} from './domain/recommendations/study-strategy.js';
 import {buildWeeklyClose} from './domain/analytics/weekly-close.js';
@@ -1685,12 +1687,14 @@ function renderSimuladosChart(){
   const card = document.getElementById('simuladosChartCard');
   const container = document.getElementById('simuladosChart');
   const data = [...state.simulados].sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+  const comparison=buildSimulationComparison({simulations:data.map(item=>({...item,breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),subjects:state.subjects});
+  document.getElementById('simulationComparisonResults').innerHTML=renderSimulationComparison(comparison,{escapeHtml,formatDate:formatDatePt});
   if(data.length < 2){
     card.style.display = 'none';
     return;
   }
   card.style.display = 'block';
-  container.innerHTML=renderSimulationTrendChart({items:data,scoreFor:simuladoNota,formatDate:formatDatePt,escapeHtml});
+  container.innerHTML=renderSimulationTrendChart({items:data.slice(-12),scoreFor:simuladoNota,formatDate:formatDatePt,escapeHtml,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:null});
 }
 
 function getSubjectQuestionRecords(subjectId){
