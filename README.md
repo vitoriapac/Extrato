@@ -216,6 +216,8 @@ O histórico do **Foco Estratégico** mostra uma linha simples para comparar per
 
 Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. Recomendações podem iniciar sessões guiadas no cronômetro. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.
 
+As visualizações de questões, simulados e metas seguem as definições de período, amostra e capacidade em [Gráficos de desempenho e planejamento](docs/ANALYTICS-CHARTS.md).
+
 As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.2.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente. A comparação do foco estratégico usa fechamentos salvos sem sobreposição, com dados completos e do mesmo concurso ativo; fechamentos antigos sem esse escopo não entram na comparação.
 
 Outras evoluções e seus critérios estão organizados em [pacotes de implementação](docs/implementation-packages.md). Interpretação automática de PDF e classificação por IA permanecem fora desta rodada; qualquer integração futura depende de decisões sobre privacidade, confiabilidade e gestão de chaves.

@@ -155,6 +155,8 @@ import {renderQuestionRead,renderQuestionEdit,renderQuestionErrorFields as rende
 import {renderQuestionAnalyticsSummary,renderTopicQuestionPerformance,renderWeeklyQuestionTrend,renderQuestionErrorToolbar} from './ui/renderers/question-analytics-renderer.js';
 import {buildQuestionEvolution} from './application/questions/build-question-evolution.js';
 import {renderQuestionEvolution as renderQuestionEvolutionView} from './ui/renderers/question-evolution-renderer.js';
+import {buildPlanExecution} from './application/goals/build-plan-execution.js';
+import {renderPlanExecution as renderPlanExecutionView} from './ui/renderers/plan-execution-renderer.js';
 import {renderGlobalSearchPanel} from './ui/renderers/global-search-renderer.js';
 import {renderHeatmap as renderHeatmapView} from './ui/renderers/heatmap-renderer.js';
 import {renderStudySessionRead,renderStudySessionEdit,renderStudySessionDayHeader} from './ui/renderers/study-sessions-renderer.js';
@@ -3308,6 +3310,12 @@ function renderMetas(){
   renderSelectedPeriodComparison();
 }
 
+function renderPlanExecution(){
+  const container=document.getElementById('planExecutionResults');if(!container)return;
+  const model=buildPlanExecution({today:todayISO(),dailyPlans:state.dailyPlans,sessions:state.studySessions,hoursByDay:state.metas.horasPorDia});
+  container.innerHTML=renderPlanExecutionView(model,{formatDate:formatDatePt});
+}
+
 function updateMeta(key, value){
   goalsService.update(key,value);
   persistAndRender();
@@ -5035,7 +5043,7 @@ const RENDER_SCOPE_SECTIONS={
   calendario:new Set(['indicadores do calendário','tarefas de hoje','tarefas atrasadas','filtros do calendário','calendário','calendário mensal']),
   agenda:new Set(['filtros da agenda','agenda']),
   questoes:new Set(['questões','evolução de questões','análise de questões','simulados','gráfico de simulados','desempenho por disciplina']),
-  metas:new Set(['metas','configuração estratégica','plano até a prova','metas de horas por dia','metas por disciplina','histórico de metas','ritmo']),
+  metas:new Set(['metas','execução do plano','configuração estratégica','plano até a prova','metas de horas por dia','metas por disciplina','histórico de metas','ritmo']),
   hoje:new Set(['resumo executivo','central de diagnóstico','recomendação de estudo','replanejamento','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
 };
 function activeTabName(){return document.querySelector('.tab-btn.active')?.dataset.tab||'dashboard'}
@@ -5072,6 +5080,7 @@ applicationRenderer=createApplicationRenderer({
     ['gráfico de simulados',renderSimuladosChart],
     ['desempenho por disciplina',renderDesempenhoDisciplina],
     ['metas',renderMetas],
+    ['execução do plano',renderPlanExecution],
     ['configuração estratégica',renderExamBlueprintConfig],
     ['plano até a prova',renderStudyPlanBuilder],
     ['metas de horas por dia',renderWeeklyHoursGoals],

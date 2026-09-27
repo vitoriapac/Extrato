@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=97e56c671e16">
+<link rel="stylesheet" href="styles/app.css?v=24567df69e05">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -567,6 +567,11 @@
     </p>
     <div id="metasContainer"></div>
 
+    <section class="chart-card" id="planExecutionCard" aria-labelledby="planExecutionTitle">
+      <header class="module-heading"><h3 class="module-heading__title" id="planExecutionTitle">Plano e execução</h3><p class="module-heading__description">Veja o tempo distribuído nos planos diários, o estudo registrado e a capacidade semanal informada.</p></header>
+      <div id="planExecutionResults"></div>
+    </section>
+
     <div class="chart-card result-goals-card">
       <header class="module-heading"><h3 class="module-heading__title">Comparação entre períodos</h3><p class="module-heading__description">Compare registros do mesmo escopo com o intervalo imediatamente anterior. Métricas sem evidência suficiente permanecem sem valor.</p></header>
       <div class="period-comparison-controls"><label>Período<select id="periodComparisonPreset" class="select-control"><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="month">Este mês</option><option value="custom">Escolher datas</option></select></label><label id="periodComparisonStartWrap" hidden>De<input id="periodComparisonStart" type="date"></label><label id="periodComparisonEndWrap" hidden>Até<input id="periodComparisonEnd" type="date"></label></div>
@@ -800,7 +805,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=97e56c671e16"></script>
+  <script src="src/app.bundle.js?v=24567df69e05"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
