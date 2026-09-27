@@ -38,6 +38,12 @@ export function validateDemoScenario(scenario){
   if(!Array.isArray(categories)||new Set(categories).size!==6||categories.some(value=>typeof value!=='string'))errors.push('Categorias de erro inválidas.');
   const accuracy=scenario?.questions?.monthlyAccuracyPct;
   if(!Array.isArray(accuracy)||!accuracy.length||accuracy.some(value=>!Number.isFinite(value)||value<0||value>100))errors.push('Trajetória de acertos inválida.');
+  const exams=scenario?.examIntelligence;
+  if(!exams||!integer(exams.historicalExams)||exams.historicalExams<1||!integer(exams.complete)||!integer(exams.partial)||exams.complete+exams.partial!==exams.historicalExams||!integer(exams.questions)||!integer(exams.unresolved)||exams.unresolved%Math.max(1,exams.partial)!==0)errors.push('Metas de provas históricas inválidas.');
+  const goals=scenario?.goals;
+  if(!goals||!Array.isArray(goals.history)||goals.history.some(row=>!integer(row.plannedMinutes)||!integer(row.actualMinutes))||!Number.isFinite(goals.weeklyHours))errors.push('Histórico de metas inválido.');
+  const adaptive=scenario?.adaptivePlanning;
+  if(!adaptive||!integer(adaptive.capacityMinutes)||!integer(adaptive.example?.minutes)||adaptive.example.minutes<1)errors.push('Exemplo de planejamento adaptativo inválido.');
   return {valid:errors.length===0,errors};
 }
 
