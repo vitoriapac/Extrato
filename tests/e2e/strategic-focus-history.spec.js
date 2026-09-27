@@ -25,6 +25,7 @@ test('histórico compara apenas retratos salvos no escopo ativo e registra o con
   const accessibility=await new AxeBuilder({page}).include('#weeklyCloseDashboard').analyze();
   expect(accessibility.violations).toEqual([]);
   await page.locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"] ').click();
+  await expect(page.locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]')).toBeFocused();
   const saved=await page.evaluate(()=>window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1));
   expect(saved.activeExamTags).toEqual([]);
   expect(saved.weeklyClose.strategicFocus.state).toBe('available');

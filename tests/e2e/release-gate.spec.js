@@ -19,6 +19,9 @@ test('relatório inclui planejamento adaptativo e resultados posteriores',async(
   await expect(report).toContainText('Recomendações');
   await expect(report).toContainText('Resultados posteriores');
   await expect(report).toContainText('As medições posteriores não demonstram');
+  await expect(report).toContainText('Foco estratégico da semana');
+  await expect(report).toContainText('Tempo em tópicos de alto impacto');
+  await expect(report).toContainText('sem meta mínima');
 });
 
 for(const width of [320,430])for(const theme of ['light','dark'])test(`configuração estratégica edita sem overflow em ${width}px no tema ${theme}`,async({page})=>{

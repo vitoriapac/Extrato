@@ -51,3 +51,31 @@ test('foco semanal descreve zero, uma e várias lacunas sem impor meta de percen
   const many=renderWeeklyStrategicFocus({...base,highImpactPercent:75,highImpactMinutes:90,workedGaps:4,improved:2,stable:1,declined:1});
   assert.match(many,/4 lacunas prioritárias trabalhadas/);assert.match(many,/2 melhoraram/);assert.match(many,/1 pioraram/);
 });
+
+test('PDF usa o mesmo cálculo de foco semanal e limita a semana ao período escolhido',()=>{
+  const state={subjects:[{id:'s',name:'Matemática',topics:[{id:'t',name:'Juros',status:'Em andamento'}]}],studySessions:[
+    {date:'2026-09-10',subjectId:'s',topicId:'t',durationSeconds:3600},
+    {date:'2026-09-25',subjectId:'s',topicId:'t',durationSeconds:5400}
+  ],questoes:[],simulados:[],reviewAgenda:[],dailyPlans:[{date:'2026-09-25',items:[{plannedMinutes:120}]}],recommendationFeedback:[{date:'2026-09-25',topicId:'t',outcome:{state:'positive',measuredAt:'2026-09-25T12:00:00Z'}}]};
+  const candidates=[{topicId:'t',examImpact:85,mastery:40}];
+  const report=buildStrategicReport({state,generatedAt:'2026-09-25T12:00:00Z',period:{preset:'30'},candidates});
+  const focus=report.weeklyFocus;
+  assert.deepEqual(focus.period,{start:'2026-09-19',end:'2026-09-25'});
+  assert.equal(focus.plannedMinutes,120);
+  assert.equal(focus.executedMinutes,90);
+  assert.equal(focus.executionRate,75);
+  assert.equal(focus.focus.highImpactPercent,100);
+  assert.equal(focus.focus.workedGaps,1);
+  assert.equal(focus.focus.improved,1);
+  const html=renderStrategicReport(report);
+  assert.match(html,/Foco estratégico da semana/);
+  assert.match(html,/100%<\/strong><span>Tempo em tópicos de alto impacto/);
+  assert.match(html,/sem meta mínima/);
+  assert.doesNotMatch(html,/matriz histórica completa/i);
+});
+
+test('PDF não inventa foco ou melhora quando a semana não tem sessões',()=>{
+  const report=buildStrategicReport({state:{subjects:[],studySessions:[],questoes:[],simulados:[],reviewAgenda:[],dailyPlans:[],recommendationFeedback:[]},generatedAt:'2026-09-25T12:00:00Z'});
+  assert.equal(report.weeklyFocus.focus.state,'insufficient');
+  assert.match(renderStrategicReport(report),/Sem sessões atribuíveis ao concurso/);
+});
