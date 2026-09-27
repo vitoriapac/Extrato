@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=eb0e104c6ea3">
+<link rel="stylesheet" href="styles/app.css?v=2886430ae3ab">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -485,6 +485,17 @@
     </div>
 
 
+    <section class="chart-card" id="questionEvolutionCard" aria-labelledby="questionEvolutionTitle">
+      <header class="module-heading"><h3 class="module-heading__title" id="questionEvolutionTitle">Evolução do desempenho em questões</h3><p class="module-heading__description">Compare acertos e volume no período escolhido. Sem amostra suficiente, a tendência permanece ausente.</p></header>
+      <div class="analytics-toolbar question-evolution-filters">
+        <label>Escopo<select class="select-control" id="questionEvolutionScope" data-delegated-change="setQuestionEvolutionFilter('scope',this.value)"><option value="all">Geral</option><option value="subject">Disciplina</option><option value="topic">Tópico</option></select></label>
+        <label id="questionEvolutionSubjectWrap" hidden>Disciplina<select class="select-control" id="questionEvolutionSubject" data-delegated-change="setQuestionEvolutionFilter('subjectId',this.value)"></select></label>
+        <label id="questionEvolutionTopicWrap" hidden>Tópico<select class="select-control" id="questionEvolutionTopic" data-delegated-change="setQuestionEvolutionFilter('topicId',this.value)"></select></label>
+        <label>Período<select class="select-control" id="questionEvolutionPeriod" data-delegated-change="setQuestionEvolutionFilter('period',this.value)"><option value="30">30 dias</option><option value="90" selected>90 dias</option><option value="180">6 meses</option><option value="all">Tudo</option></select></label>
+      </div>
+      <div id="questionEvolutionResults" aria-live="polite"></div>
+    </section>
+
     <div class="chart-card" id="topicPerformanceCard">
       <div class="section-head module-heading module-heading--section">
         <h3 class="module-heading__title">Desempenho por tópico e tendência</h3>
@@ -785,7 +796,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=eb0e104c6ea3"></script>
+  <script src="src/app.bundle.js?v=2886430ae3ab"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

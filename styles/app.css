@@ -1422,6 +1422,16 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 .ui-state--empty{margin:12px 0;padding:14px 16px;border-left:3px solid var(--paper-line);background:var(--surface-subtle);color:var(--ink-soft);font:13px/1.55 var(--font-body)}
 .ui-state--empty strong{color:var(--heading)}
 .context-note--attention .exam-data-quality-warnings{margin:0;padding-left:18px}
+.question-evolution-filters label{display:grid;gap:5px;min-width:min(100%,145px);color:var(--ink-soft);font:11px var(--font-data)}
+.question-evolution-filters label[hidden]{display:none}
+.question-evolution-filters select{max-width:260px;min-height:42px}
+.question-evolution-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;margin:16px 0}
+.question-evolution-scroll svg{display:block}.question-evolution-scroll text{fill:var(--ink-soft);font:9px var(--font-data)}
+.question-evolution-grid{stroke:var(--paper-line)}.question-evolution-line{stroke:var(--gold);stroke-width:3;stroke-linecap:round}.question-evolution-point{fill:var(--paper);stroke:var(--gold);stroke-width:2}
+.question-mix-list{display:grid;gap:0;margin:12px 0 0;padding:0;list-style:none}.question-mix-list li{display:grid;grid-template-columns:72px minmax(80px,1fr) auto;align-items:center;gap:7px 12px;padding:8px 0;border-bottom:1px solid var(--paper-line);font:11px var(--font-data)}
+.question-mix-list small{grid-column:2/-1;color:var(--ink-soft)}.question-mix-track,.subject-accuracy-track{display:block;height:10px;min-width:0;background:var(--slate-bg)}.question-mix-track>span,.subject-accuracy-track>span{display:block;height:100%;background:var(--green)}
+.subject-accuracy-bar{display:flex;align-items:center;gap:8px;min-width:120px}.subject-accuracy-track{flex:1 1 auto}.subject-accuracy-bar strong{flex:0 0 40px;text-align:right;font:600 11px var(--font-data)}
+@media(max-width:430px){.question-evolution-filters label{width:100%}.question-evolution-filters select{max-width:none;width:100%}.question-mix-list li{grid-template-columns:56px minmax(0,1fr)}.question-mix-list strong,.question-mix-list small{grid-column:2}}
 #helpCenter{width:min(100%,960px);margin-inline:auto}
 .help-hero{padding:clamp(24px,4vw,48px) 0 28px;border-bottom:1px solid var(--paper-line)}
 .help-hero h2{margin:10px 0 14px;font-size:clamp(29px,3.5vw,42px);line-height:1.12}

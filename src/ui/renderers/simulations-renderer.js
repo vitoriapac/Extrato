@@ -34,7 +34,7 @@ export function renderSubjectPerformanceRows({items=[],escapeHtml}){
   const rows=items.map(({performance,trend})=>{
     const color=trend.key==='up'?'var(--green)':trend.key==='down'?'var(--red)':'var(--ink-soft)';
     const comparison=trend.key==='insufficient'?'Amostra insuficiente':`${trend.previousAccuracy}% → ${trend.recentAccuracy}% (${trend.delta>=0?'+':''}${trend.delta} p.p.)`;
-    return `<tr><td>${escapeHtml(performance.subject)}</td><td style="text-align:right;">${performance.acerto}%</td><td style="text-align:right;">${performance.total}</td><td style="text-align:right;color:${color};font-weight:600;">${trend.icon} ${escapeHtml(trend.label)}<small class="trend-comparison">${escapeHtml(comparison)}</small></td></tr>`;
+    return `<tr><td>${escapeHtml(performance.subject)}</td><td><div class="subject-accuracy-bar"><span class="subject-accuracy-track" aria-hidden="true"><span style="width:${performance.acerto}%"></span></span><strong>${performance.acerto}%</strong></div></td><td style="text-align:right;">${performance.total}</td><td style="text-align:right;color:${color};font-weight:600;">${trend.icon} ${escapeHtml(trend.label)}<small class="trend-comparison">${escapeHtml(comparison)}</small></td></tr>`;
   }).join('');
   const weak=items.map(item=>item.performance).filter(item=>item.acerto<70&&item.total>=5);
   const alerts=weak.map(item=>`<div class="desempenho-alerta">🔴 ${escapeHtml(item.subject)} precisa de atenção.</div>`).join('');

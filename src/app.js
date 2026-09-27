@@ -153,6 +153,8 @@ import {renderReplanProposal} from './features/replan/replan-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
 import {renderQuestionRead,renderQuestionEdit,renderQuestionErrorFields as renderQuestionErrorFieldsView} from './ui/renderers/questions-renderer.js';
 import {renderQuestionAnalyticsSummary,renderTopicQuestionPerformance,renderWeeklyQuestionTrend,renderQuestionErrorToolbar} from './ui/renderers/question-analytics-renderer.js';
+import {buildQuestionEvolution} from './application/questions/build-question-evolution.js';
+import {renderQuestionEvolution as renderQuestionEvolutionView} from './ui/renderers/question-evolution-renderer.js';
 import {renderGlobalSearchPanel} from './ui/renderers/global-search-renderer.js';
 import {renderHeatmap as renderHeatmapView} from './ui/renderers/heatmap-renderer.js';
 import {renderStudySessionRead,renderStudySessionEdit,renderStudySessionDayHeader} from './ui/renderers/study-sessions-renderer.js';
@@ -2694,6 +2696,31 @@ function calcAcertoPct(correct, resolved){
 
 let openQuestionErrorIds = new Set();
 let performanceSubjectId = null;
+const questionEvolutionView={scope:'all',subjectId:'',topicId:'',period:'90'};
+function setQuestionEvolutionFilter(field,value){
+  if(field==='scope'&&['all','subject','topic'].includes(value))questionEvolutionView.scope=value;
+  if(field==='subjectId'){questionEvolutionView.subjectId=value;questionEvolutionView.topicId=''}
+  if(field==='topicId')questionEvolutionView.topicId=value;
+  if(field==='period'&&['30','90','180','all'].includes(value))questionEvolutionView.period=value;
+  renderQuestionEvolution();
+}
+function renderQuestionEvolution(){
+  const result=document.getElementById('questionEvolutionResults');if(!result)return;
+  const subjects=activeSubjects();
+  if(!subjects.some(item=>item.id===questionEvolutionView.subjectId))questionEvolutionView.subjectId=subjects[0]?.id||'';
+  const topics=activeTopics().filter(item=>item.subjectId===questionEvolutionView.subjectId);
+  if(!topics.some(item=>item.id===questionEvolutionView.topicId))questionEvolutionView.topicId=topics[0]?.id||'';
+  const controls={scope:document.getElementById('questionEvolutionScope'),subject:document.getElementById('questionEvolutionSubject'),topic:document.getElementById('questionEvolutionTopic'),period:document.getElementById('questionEvolutionPeriod')};
+  controls.scope.value=questionEvolutionView.scope;controls.period.value=questionEvolutionView.period;
+  controls.subject.innerHTML=subjects.map(item=>`<option value="${escapeAttr(item.id)}">${escapeHtml(item.name)}</option>`).join('');
+  controls.subject.value=questionEvolutionView.subjectId;
+  controls.topic.innerHTML=topics.map(item=>`<option value="${escapeAttr(item.id)}">${escapeHtml(item.name)}</option>`).join('');
+  controls.topic.value=questionEvolutionView.topicId;
+  document.getElementById('questionEvolutionSubjectWrap').hidden=questionEvolutionView.scope==='all';
+  document.getElementById('questionEvolutionTopicWrap').hidden=questionEvolutionView.scope!=='topic';
+  const model=buildQuestionEvolution({questions:state.questoes.map(item=>({...item,subjectId:entitySubjectId(item)})),today:todayISO(),...questionEvolutionView});
+  result.innerHTML=renderQuestionEvolutionView(model,{formatDate:formatDatePt});
+}
 let performanceViewMode='with-data';
 const errorAnalysisView={days:30,topicId:''};
 let performanceVisible=8;
@@ -4966,7 +4993,7 @@ const DELEGATED_ACTION_HANDLERS={
   editAgenda,editCalendarItem,editQuestion,editSimulation,editStudySession,focusStudyTimer,openStudyTimerFocus,toggleTimerFocus,gerarAgendaAutomatica,moveSubject,navigateKpi,renameSubject,selectHeatmapDay,setHeatmapFilter,viewSelectedHeatmapSessions,
   advanceGuidedStrategy,dismissIntelligentAlert,dismissStudyRecommendation,markRecommendationNotUseful,rateRecommendationOutcome,startStudyRecommendation,
   requestPermanentSubjectDelete,requestPermanentTopicDelete,resetAdaptiveReviewDate,resetAgendaLimit,resetCalendarLimit,resetOverdueGroupLimit,resetPerformanceLimit,resetRetentionLimit,resetSubjectTopicLimit,resetUpcomingLimit,restoreSubject,restoreTopic,saveAgendaEdit,saveCalendarEdit,saveQuestionEdit,setPerformanceViewMode,setRadarSubject,setRetentionFilter,setSubjectExamFilter,setSubjectTopicFilter,toggleActiveExamTag,
-  saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,
+  saveSimulationEdit,saveStudySessionEdit,selectSessionHistoryDate,showAllOverdueGroups,showAllPerformance,showAllRetention,showAllSubjectTopics,showAllUpcoming,startPlannedActivity,toggleBreakdown,toggleNotes,setQuestionEvolutionFilter,
   toggleCompletedReviews,toggleFilterPanel,toggleOverdueDate,toggleQuestionErrors,toggleSessionDay,toggleSessionDetails,toggleStreakActiveDays,toggleStreakExpanded,toggleSubject,updateAgenda,updateAgendaDraft,updateBreakdownRow,updateCal,updateCalendarDraft,updateMeta,
   updateMetaDisciplina,updateMetaHoursDay,updateQuestionDraft,updateQuestionError,updateSessionHistoryFilter,
   setErrorAnalysisFilter,updateSimulationDraft,updateStudySessionDraft,updateTopic,updateTopicStatus,updateTopicTags,updateTopicStrategy,toggleTopicPrerequisite,updateExamBlueprint,updateExamSubject,saveExamSubjectConfig,cancelExamSubjectConfig
@@ -5003,7 +5030,7 @@ const RENDER_SCOPE_SECTIONS={
   disciplinas:new Set(['disciplinas','primeiro uso']),
   calendario:new Set(['indicadores do calendário','tarefas de hoje','tarefas atrasadas','filtros do calendário','calendário','calendário mensal']),
   agenda:new Set(['filtros da agenda','agenda']),
-  questoes:new Set(['questões','análise de questões','simulados','gráfico de simulados','desempenho por disciplina']),
+  questoes:new Set(['questões','evolução de questões','análise de questões','simulados','gráfico de simulados','desempenho por disciplina']),
   metas:new Set(['metas','configuração estratégica','plano até a prova','metas de horas por dia','metas por disciplina','histórico de metas','ritmo']),
   hoje:new Set(['resumo executivo','central de diagnóstico','recomendação de estudo','replanejamento','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
 };
@@ -5035,6 +5062,7 @@ applicationRenderer=createApplicationRenderer({
     ['filtros da agenda',renderAgendaFilters],
     ['agenda',renderAgenda],
     ['questões',renderQuestoes],
+    ['evolução de questões',renderQuestionEvolution],
     ['análise de questões',renderQuestionAnalytics],
     ['simulados',renderSimulados],
     ['gráfico de simulados',renderSimuladosChart],
