@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=5b2131651544">
+<link rel="stylesheet" href="styles/app.css?v=acdd50b5b9fc">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -30,12 +30,25 @@
     <div class="demo-banner-actions"><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn small" id="exitDemoBtn">Sair da demonstração</button></div>
   </aside>
 
+  <dialog class="demo-intro-dialog" id="demoIntroDialog" aria-labelledby="demoIntroTitle" aria-describedby="demoIntroDescription">
+    <div class="demo-intro-content">
+      <span class="demo-intro-kicker">Explorar o StudyTrack</span>
+      <h2 id="demoIntroTitle">Conheça uma preparação para BB e Caixa</h2>
+      <p id="demoIntroDescription">Explore cerca de cinco meses de dados fictícios. Seus registros pessoais ficam preservados.</p>
+      <ul class="demo-intro-features">
+        <li>17 disciplinas e 305 tópicos</li><li>1.750 questões de estudo</li><li>9 simulados e 50 revisões</li><li>16 provas históricas</li><li>Metas, recomendações e fechamentos semanais</li>
+      </ul>
+      <div class="demo-intro-actions"><button class="btn ghost" type="button" id="cancelDemoIntroBtn">Cancelar</button><button class="btn" type="button" id="confirmDemoIntroBtn">Carregar demonstração</button></div>
+    </div>
+  </dialog>
+
   <aside class="demo-empty-cta" id="demoEmptyCta" hidden><div><strong>Veja o StudyTrack funcionando</strong><span>Explore 140 dias de dados fictícios sem alterar seus registros.</span></div><button class="btn small" id="enterDemoEmptyBtn">▶ Explorar demonstração</button></aside>
 
   <div class="statement">
     <div class="statement-top">
       <div>
         <div class="statement-eyebrow">Extrato de estudos</div>
+        <span class="demo-header-badge" id="demoHeaderBadge" hidden>DEMONSTRAÇÃO <small>Dados fictícios</small></span>
         <button class="statement-title brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">StudyTrack</button>
       </div>
       <div class="statement-account">
@@ -805,7 +818,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=5b2131651544"></script>
+  <script src="src/app.bundle.js?v=acdd50b5b9fc"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

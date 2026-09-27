@@ -3,7 +3,7 @@ import {expect} from '@playwright/test';
 export async function openDemo(page){
   await page.goto('/');
   await page.getByRole('button',{name:/Explorar demonstração/i}).click();
-  await page.getByRole('button',{name:'Confirmar'}).click();
+  await page.getByRole('button',{name:'Carregar demonstração'}).click();
   await expect(page.locator('#demoBanner').getByText('MODO DEMONSTRAÇÃO',{exact:true})).toBeVisible();
 }
 export async function activateTab(page,name){
