@@ -10,13 +10,13 @@ test('gera cento e quarenta dias determinísticos com referências e volumes dem
   const first=generateDemoData({today:'2026-08-31'}),second=generateDemoData({today:'2026-08-31'});
   assert.deepEqual(first,second);assert.equal(first.progressHistory.length,140);assert.equal(first.studySessions.length,200);
   assert.equal(first.progressHistory[0].date,'2026-04-14');assert.equal(first.progressHistory.at(-1).date,'2026-08-31');
-  assert.equal(first.questoes.reduce((sum,item)=>sum+item.resolved,0),1750);assert.equal(first.simulados.length,13);assert.equal(first.subjects.length,17);
+  assert.equal(first.questoes.reduce((sum,item)=>sum+item.resolved,0),1750);assert.equal(first.simulados.length,9);assert.equal(first.subjects.length,17);
   const sessionIds=new Set(first.studySessions.map(item=>item.id)),topicIds=new Set(first.subjects.flatMap(subject=>subject.topics.map(topic=>topic.id)));
   assert.ok(first.questoes.every(item=>sessionIds.has(item.studySessionId)&&topicIds.has(item.topicId)));
   assert.ok(first.questoes.every(item=>Object.values(item.errorBreakdown).reduce((sum,value)=>sum+value,0)<=item.resolved-item.correct));
   assert.ok(new Set(first.studySessions.map(item=>item.date)).size<140);
   assert.ok(first.studySessions.some(item=>item.date<'2026-05-31'));
-  assert.deepEqual(DEMO_SCENARIO,{days:140,subjects:17,topics:305,sessions:200,questions:1750,simulations:13,seed:'studytrack-demo-v4'});
+  assert.deepEqual(DEMO_SCENARIO,{days:140,subjects:17,topics:305,sessions:200,questions:1750,simulations:9,seed:'studytrack-demo-v4'});
   assert.ok(first.recommendationFeedback.some(item=>item.baseline&&item.outcome));
 });
 

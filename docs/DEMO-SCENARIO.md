@@ -13,4 +13,4 @@ Para reproduzir uma demonstração, forneça a mesma seed, data local e versão 
 
 ## Próximos pacotes
 
-Simulados, revisões, redações, metas, provas históricas, recomendações, fechamentos e experiência de entrada continuam no formato anterior até seus respectivos pacotes. O alvo de nove simulados no JSON ainda não é a contagem exibida. Os totais resumidos dessas áreas são objetivos para geração futura, não registros a inserir diretamente no estado.
+Nove simulados, oito redações registradas como sessões anotadas e 50 revisões já usam o blueprint. Redações não têm entidade própria nem entram nas questões objetivas; a nota aparece nas observações da sessão. Metas, provas históricas, recomendações e fechamentos são migrados nos pacotes seguintes. Os totais resumidos dessas áreas são objetivos para geração, não registros a inserir diretamente no estado.

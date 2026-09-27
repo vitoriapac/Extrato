@@ -5,8 +5,9 @@ import {assertDemoScenario} from './demo-scenario-validator.js';
 import {buildDemoSubjects} from './demo-builders/subjects.js';
 import {buildDemoStudyHistory} from './demo-builders/study-history.js';
 import {EXAM_TAGS} from '../domain/exams/exam-constants.js';
+import {buildDemoSimulations,addDemoEssays,buildDemoReviews} from './demo-builders/assessments.js';
 
-export const DEMO_SCENARIO=Object.freeze({days:scenario.meta.historyDays,subjects:scenario.targets.subjects,topics:scenario.targets.topics,sessions:scenario.targets.studySessions,questions:scenario.targets.studyQuestions,simulations:13,seed:scenario.meta.seed});
+export const DEMO_SCENARIO=Object.freeze({days:scenario.meta.historyDays,subjects:scenario.targets.subjects,topics:scenario.targets.topics,sessions:scenario.targets.studySessions,questions:scenario.targets.studyQuestions,simulations:scenario.targets.simulations,seed:scenario.meta.seed});
 
 function hashSeed(value){let hash=2166136261;for(const char of String(value)){hash^=char.charCodeAt(0);hash=Math.imul(hash,16777619)}return hash>>>0}
 function randomFactory(seed){let value=hashSeed(seed)||1;return()=>{value+=0x6D2B79F5;let next=value;next=Math.imul(next^next>>>15,next|1);next^=next+Math.imul(next^next>>>7,next|61);return((next^next>>>14)>>>0)/4294967296}}
@@ -21,9 +22,9 @@ export function generateDemoData({seed=DEMO_SCENARIO.seed,today,demoScenario=sce
   const activeTopics=state.subjects.flatMap(subject=>subject.topics.filter(topic=>!topic.archived).map(topic=>({subject,topic})));
   const history=buildDemoStudyHistory(demoScenario,{today,subjects:state.subjects,random});
   state.studySessions=history.studySessions;state.questoes=history.questoes;
-  const simulationRates=[55,58,60,61,64,63,67,69,72,74,76,78,73];
-  state.simulados=simulationRates.slice(0,DEMO_SCENARIO.simulations).map((rate,index)=>{const date=shiftDate(today,-(oldestAge-9-index*10));const breakdown=state.subjects.map((subject,subjectIndex)=>{const rowTotal=5+(subjectIndex<15?1:0),rowCorrect=Math.max(0,Math.min(rowTotal,Math.round(rowTotal*(rate+(subjectIndex-8)*1.5)/100)));return{id:`demo-simulation-row-${index+1}-${subjectIndex+1}`,subjectId:subject.id,total:rowTotal,correct:rowCorrect}});return{id:`demo-simulation-${index+1}`,date,nome:`Simulado ${index+1}`,total:breakdown.reduce((sum,row)=>sum+row.total,0),correct:breakdown.reduce((sum,row)=>sum+row.correct,0),breakdown,createdAt:timestamp(date)}});
-  state.reviewAgenda=Array.from({length:42},(_,index)=>{const entry=activeTopics[index%activeTopics.length],offset=index<8?-(8-index):index-8,date=shiftDate(today,offset),completed=index%4===0;return{id:`demo-review-${index+1}`,date,subjectId:entry.subject.id,topicId:entry.topic.id,topicRef:entry.topic.id,topic:entry.topic.name,tipo:['Revisão 24h','Revisão 7 dias','Revisão 30 dias'][index%3],difficulty:['Fácil','Médio','Difícil'][index%3],status:completed?'Concluído':'Não iniciado',completedAt:completed?timestamp(shiftDate(date,index%3===0?2:0)):null,manualDate:false,adaptive:true,adaptiveReason:'Intervalo ajustado pelo histórico demonstrativo.',suggestedDate:date,baseIntervalDays:[1,7,30][index%3],createdAt:timestamp(shiftDate(date,-7))}});
+  addDemoEssays(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions});
+  state.simulados=buildDemoSimulations(demoScenario,{today,subjects:state.subjects});
+  state.reviewAgenda=buildDemoReviews(demoScenario,{today,subjects:state.subjects});
   state.calendar=Array.from({length:24},(_,index)=>{const entry=activeTopics[(index*3)%activeTopics.length],date=shiftDate(today,index-6);return{id:`demo-calendar-${index+1}`,date,week:'',subjectId:entry.subject.id,topicId:entry.topic.id,subject:entry.subject.name,topic:entry.topic.name,status:index<4?'Concluído':'Não iniciado',reviewType:index%2?'Questões':'Revisão rápida',createdAt:timestamp(shiftDate(date,-5))}});
   const completedDates=state.subjects.flatMap(subject=>subject.topics.map(topic=>topic.firstCompletedAt?.slice(0,10)).filter(Boolean));
   state.progressHistory=Array.from({length:DEMO_SCENARIO.days},(_,index)=>{const date=shiftDate(today,index-oldestAge);return {date,pct:Math.round(completedDates.filter(value=>value<=date).length/activeTopics.length*100)}});

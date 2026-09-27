@@ -16,7 +16,7 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real',asyn
   });
   await openDemo(page);await expect(page.locator('#demoBanner')).toBeVisible();await expect(page.locator('[data-demo-protected]').first()).toBeDisabled();
   const firstDemo=await page.evaluate(()=>sessionStorage.getItem('bb-premium-study-demo'));expect(firstDemo).toBeTruthy();const parsed=JSON.parse(firstDemo);
-  expect(parsed.progressHistory).toHaveLength(140);expect(parsed.studySessions).toHaveLength(200);expect(parsed.simulados).toHaveLength(13);
+  expect(parsed.progressHistory).toHaveLength(140);expect(parsed.studySessions).toHaveLength(200);expect(parsed.simulados).toHaveLength(9);
   parsed.subjects[0].name='Alteração fictícia';await page.evaluate(value=>sessionStorage.setItem('bb-premium-study-demo',JSON.stringify(value)),parsed);
   await page.getByRole('button',{name:/Reiniciar demo/i}).click();await page.getByRole('button',{name:'Confirmar'}).click();await expect(page.locator('#demoBanner').getByText('MODO DEMONSTRAÇÃO',{exact:true})).toBeVisible();
   const restarted=JSON.parse(await page.evaluate(()=>sessionStorage.getItem('bb-premium-study-demo')));expect(restarted.subjects[0].name).not.toBe('Alteração fictícia');
@@ -43,7 +43,7 @@ test('cenário de 140 dias renderiza todas as áreas sem perder dados',async({pa
   const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
   await openDemo(page);
   const baseline=await page.evaluate(()=>{const state=JSON.parse(sessionStorage.getItem('bb-premium-study-demo'));return{history:state.progressHistory.length,sessions:state.studySessions.length,simulations:state.simulados.length}});
-  expect(baseline).toEqual({history:140,sessions:200,simulations:13});
+  expect(baseline).toEqual({history:140,sessions:200,simulations:9});
   for(const name of ['dashboard','hoje','disciplinas','calendario','agenda','questoes','metas','instrucoes']){
     await page.locator(`[data-tab="${name}"]`).evaluate(button=>button.click());
     const panel=page.locator(`#panel-${name}`);await expect(panel).toBeVisible();await expect(panel).not.toBeEmpty();
