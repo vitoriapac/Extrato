@@ -208,7 +208,7 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 - `Ctrl+Shift+1` a `Ctrl+Shift+8` ou `Cmd+Shift+1` a `Cmd+Shift+8`: alternar entre as oito áreas.
 - `Esc`: fechar busca, menu ou modal ativo.
 
-A aba **Instruções** funciona como Central de Ajuda: categorias expansíveis, busca local por assunto, glossário e atalhos que levam ao recurso correspondente. O guia explica o ciclo da prova ao fechamento semanal e pode ser consultado depois do primeiro uso.
+A aba **Instruções** funciona como Central de Ajuda em coluna única: seções de leitura contínua, índice horizontal fixo, busca local por assunto, glossário aberto e links discretos para os recursos correspondentes. O guia explica o ciclo da prova ao fechamento semanal e pode ser consultado depois do primeiro uso.
 
 ## Estado do roadmap
 

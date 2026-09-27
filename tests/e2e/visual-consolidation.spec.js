@@ -48,7 +48,7 @@ test('meta do cronômetro mostra progresso acessível somente quando configurada
   await expect(progress).toHaveAttribute('aria-valuetext',/ de \d+min/);
 });
 
-test('instruções detalham áreas, fluxos, atalhos e dúvidas',async({page})=>{await page.goto('/');await activateTab(page,'instrucoes');await expect(page.locator('#guide-areas')).toContainText('Questões e Simulados');await expect(page.locator('#guide-workflows')).toContainText('Planejar a semana');await expect(page.locator('#guide-shortcuts')).toContainText('Ctrl');await expect(page.locator('#guide-faq details')).toHaveCount(5)});
+test('instruções detalham áreas, fluxos, atalhos e dúvidas',async({page})=>{await page.goto('/');await activateTab(page,'instrucoes');await expect(page.locator('#guide-areas')).toContainText('Questões e Simulados');await expect(page.locator('#guide-workflows')).toContainText('Planejar a semana');await expect(page.locator('#guide-shortcuts')).toContainText('Ctrl');await expect(page.locator('#guide-faq .help-reference-item')).toHaveCount(5)});
 
 test('atalho modificado navega sem capturar números isolados',async({page})=>{await page.goto('/');await page.keyboard.press('2');await expect(page.locator('#panel-dashboard')).toHaveClass(/active/);await page.keyboard.press('Control+Shift+Digit2');await expect(page.locator('#panel-hoje')).toHaveClass(/active/)});
 

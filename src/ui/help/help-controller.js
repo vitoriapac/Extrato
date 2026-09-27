@@ -18,26 +18,29 @@ export function createHelpController({document,window,activateTab}){
     let matches=0;
     for(const group of root.querySelectorAll('[data-help-group]')){
       let groupMatches=0;
-      const categoryMatches=Boolean(query&&normalize(group.querySelector(':scope > summary')?.textContent).includes(query));
+      const categoryMatches=Boolean(query&&normalize(group.querySelector('.help-group-heading')?.textContent).includes(query));
       for(const topic of group.querySelectorAll('[data-help-topic]')){
         const visible=!query||categoryMatches||normalize(topic.textContent).includes(query);
         topic.hidden=!visible;
         if(visible)groupMatches++;
       }
       group.hidden=Boolean(query&&!groupMatches);
-      if(query&&groupMatches)group.open=true;
       matches+=query?groupMatches:0;
     }
     for(const section of root.querySelectorAll('.help-reference')){
       let sectionMatches=0;
-      for(const item of section.querySelectorAll('details')){
-        const visible=!query||normalize(item.textContent).includes(query);
+      const headingMatches=Boolean(query&&normalize(section.querySelector('h3')?.textContent).includes(query));
+      for(const item of section.querySelectorAll('.help-reference-item')){
+        const visible=!query||headingMatches||normalize(item.textContent).includes(query);
         item.hidden=!visible;
         if(visible)sectionMatches++;
       }
       section.hidden=Boolean(query&&!sectionMatches);
       matches+=query?sectionMatches:0;
     }
+    const principle=root.querySelector('[data-help-principle]');
+    principle.hidden=Boolean(query&&!normalize(principle.textContent).includes(query));
+    if(query&&!principle.hidden)matches++;
     root.querySelector('#helpNoResults').hidden=!query||matches>0;
     root.querySelector('#helpSearchStatus').textContent=query?`${matches} ${matches===1?'assunto encontrado':'assuntos encontrados'}.`:'';
   };
@@ -46,9 +49,8 @@ export function createHelpController({document,window,activateTab}){
     if(search.value){search.value='';applySearch()}
     const group=[...root.querySelectorAll('[data-help-group]')].find(item=>item.id===id);
     if(!group)return;
-    group.open=true;
     group.scrollIntoView({block:'start',behavior:'smooth'});
-    group.querySelector('summary')?.focus({preventScroll:true});
+    group.focus({preventScroll:true});
   };
   const navigate=key=>{
     const destination=DESTINATIONS[key];
