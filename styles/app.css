@@ -1765,3 +1765,25 @@ body.timer-focus-active .timer-context{display:none!important}
 .exam-matrix-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.exam-matrix-detail-grid>div{padding:10px;border:1px solid var(--paper-line)}.exam-matrix-detail-grid h5{margin:0 0 5px}
 .exam-matrix-detail ul{margin:7px 0;padding-left:20px}
 @media(max-width:600px){.exam-matrix-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.exam-matrix-extra-filters{grid-template-columns:1fr}.exam-matrix-search{grid-column:1/-1}.exam-matrix-detail-grid{grid-template-columns:1fr}.exam-matrix-table-wrap{display:none}.exam-matrix-cards{display:grid;gap:8px}.exam-matrix-card{padding:10px;border:1px solid var(--paper-line);background:var(--paper-alt)}.exam-matrix-card p{font:10px/1.5 var(--font-data)}.exam-matrix-card>div{display:flex;flex-wrap:wrap;gap:4px}.exam-matrix-card .exam-matrix-cell{padding:4px 6px;border:1px solid var(--paper-line);font:10px var(--font-data)}}
+
+/* Consolidação editorial restrita aos módulos analíticos. */
+#topicPerformanceCard .trend-week{border:0;border-top:1px solid var(--paper-line);background:transparent}
+#topicPerformanceCard .error-diagnosis{gap:var(--space-4);margin-block:var(--space-4);border-top:1px solid var(--paper-line);border-bottom:1px solid var(--paper-line);background:transparent}
+#topicPerformanceCard .error-diagnosis>div{padding:var(--space-3) 0;background:transparent}
+#topicPerformanceCard .error-profile-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:0;margin:var(--space-3) 0;padding:0;list-style:none}
+#topicPerformanceCard .error-profile-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--space-2);align-items:center;padding:var(--space-3) 0;border:0;border-bottom:1px solid var(--paper-line);background:transparent}
+#topicPerformanceCard .error-profile-value{margin:0;font-size:16px;white-space:nowrap}
+#topicPerformanceCard .error-profile-track{grid-column:1/-1;height:9px;background:var(--slate-bg)}
+#topicPerformanceCard .error-profile-track>span{display:block;height:100%;background:var(--blue)}
+#topicPerformanceCard .error-profile-delta{grid-column:1/-1;margin:0;padding:0;border:0}
+#planExecutionCard h4,#questionEvolutionCard h4{margin:var(--space-6) 0 var(--space-2);color:var(--heading);font:600 16px var(--font-display)}
+.study-distribution{margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--paper-line)}
+.study-distribution>summary,.study-distribution-more>summary{min-height:44px;color:var(--heading);font-weight:600;cursor:pointer}
+.study-distribution-list,.study-distribution-more ul{display:grid;gap:0;margin:var(--space-3) 0 0;padding:0;list-style:none}
+.study-distribution-list li,.study-distribution-more li{display:grid;gap:var(--space-2);padding:var(--space-3) 0;border-bottom:1px solid var(--paper-line)}
+.study-distribution-list li>strong,.study-distribution-more li>strong{min-width:0;overflow-wrap:anywhere;color:var(--heading);font:600 13px var(--font-body)}
+.study-distribution-list li>small,.study-distribution-more li>small{color:var(--ink-soft);font:11px var(--font-data)}
+.study-distribution-pair{display:grid;grid-template-columns:52px minmax(0,1fr) 42px;gap:var(--space-2);align-items:center;font:10px var(--font-data)}
+.study-distribution-pair b{text-align:right}.study-distribution-track{height:9px;background:var(--slate-bg)}
+.study-distribution-track>span{display:block;height:100%;background:var(--gold)}.study-distribution-track.is-studied>span{background:var(--green)}
+@media(max-width:430px){#topicPerformanceCard .error-diagnosis{grid-template-columns:minmax(0,1fr);gap:0}.study-distribution-pair{grid-template-columns:45px minmax(0,1fr) 40px}}

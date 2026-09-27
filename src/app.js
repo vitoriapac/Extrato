@@ -157,6 +157,8 @@ import {buildQuestionEvolution} from './application/questions/build-question-evo
 import {renderQuestionEvolution as renderQuestionEvolutionView} from './ui/renderers/question-evolution-renderer.js';
 import {buildPlanExecution} from './application/goals/build-plan-execution.js';
 import {renderPlanExecution as renderPlanExecutionView} from './ui/renderers/plan-execution-renderer.js';
+import {buildStudyDistribution} from './application/goals/build-study-distribution.js';
+import {renderStudyDistribution} from './ui/renderers/study-distribution-renderer.js';
 import {renderGlobalSearchPanel} from './ui/renderers/global-search-renderer.js';
 import {renderHeatmap as renderHeatmapView} from './ui/renderers/heatmap-renderer.js';
 import {renderStudySessionRead,renderStudySessionEdit,renderStudySessionDayHeader} from './ui/renderers/study-sessions-renderer.js';
@@ -3313,7 +3315,8 @@ function renderMetas(){
 function renderPlanExecution(){
   const container=document.getElementById('planExecutionResults');if(!container)return;
   const model=buildPlanExecution({today:todayISO(),dailyPlans:state.dailyPlans,sessions:state.studySessions,hoursByDay:state.metas.horasPorDia});
-  container.innerHTML=renderPlanExecutionView(model,{formatDate:formatDatePt});
+  const distribution=buildStudyDistribution({today:todayISO(),dailyPlans:state.dailyPlans,sessions:state.studySessions.map(item=>({...item,subjectId:entitySubjectId(item)})),subjects:state.subjects});
+  container.innerHTML=renderPlanExecutionView(model,{formatDate:formatDatePt})+`<details class="study-distribution" id="studyDistribution"><summary>Distribuição entre disciplinas</summary>${renderStudyDistribution(distribution,{escapeHtml})}</details>`;
 }
 
 function updateMeta(key, value){

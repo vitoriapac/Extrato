@@ -42,6 +42,7 @@ Confiança e ausência de dados não devem ser escondidas apenas para simplifica
 - Consolidação Visual 2, pacotes 1 a 3: cabeçalhos compartilhados em comparação, lacunas, decisões, Questões, Simulados, Revisões, configuração estratégica e Matriz Edital × Domínio; auditoria com 15 disciplinas; revisão da ajuda em 320, 375, 390 e 430 px.
 - Próxima revisão: reduzir bordas e densidade visual nos módulos ainda não revisados, caso a comparação entre telas confirme o ganho.
 - A revisão global de bordas deve ser gradual e orientada por essa classificação. Uma troca indiscriminada de estilos pode apagar a distinção entre ações, análise e evidência.
+- Consolidação Visual 2, pacote 7: linhas e divisores internos substituem bordas completas apenas nos módulos analíticos de Questões e Metas. O perfil de erros e a distribuição semanal usam texto e barras, preservando as unidades externas da página.
 
 ## Contratos e estados
 
