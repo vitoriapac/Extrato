@@ -8,6 +8,7 @@ const viewports=[
   {name:'desktop-1920',width:1920,height:1080}
 ];
 const screenshotOptions={animations:'disabled',caret:'hide',maxDiffPixelRatio:.08};
+const screenshotName=name=>name.replace(/\.png$/,`-${process.platform}.png`);
 
 async function openStableDemo(page,viewport){
   await page.clock.install({time:new Date('2026-09-10T12:00:00-03:00')});
@@ -19,7 +20,7 @@ async function openStableDemo(page,viewport){
 for(const viewport of viewports){
   test(`regressão visual do hero e leitura do fechamento em ${viewport.width}px`,async({page})=>{
     await openStableDemo(page,viewport);
-    await expect(page.locator('.statement')).toHaveScreenshot(`hero-${viewport.name}.png`,screenshotOptions);
+    await expect(page.locator('.statement')).toHaveScreenshot(screenshotName(`hero-${viewport.name}.png`),screenshotOptions);
     await expect(page.locator('#weeklyCloseDashboard .weekly-strategic-focus')).toContainText('Foco estratégico da semana');
     const close=page.locator('#weeklyCloseDashboard');
     await expect(close.locator('.weekly-next')).toContainText('Próxima ação');
