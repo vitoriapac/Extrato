@@ -172,6 +172,7 @@ import {buildGapMap} from './domain/analytics/gap-map.js';
 import {buildDecisionHistory} from './domain/recommendations/decision-history.js';
 import {buildPostSimulationReplan} from './domain/planning/post-simulation-replan.js';
 import {createReportController} from './ui/controllers/report-controller.js';
+import {createHelpController} from './ui/help/help-controller.js';
 
 const THEME_STORAGE_KEY='bb-premium-theme';
 const MODE_FLASH_KEY='bb-premium-mode-message';
@@ -825,6 +826,7 @@ function showPrompt(message,options,onConfirm,onCancel){return modalController.p
 /* ===== TABS ===== */
 const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('guidedOnboardingOverlay'),document.getElementById('structuredImportOverlay'),document.getElementById('examImportOverlay'),document.getElementById('examClassificationOverlay'),document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
 function activateTab(tabName,updateHash=true){return navigationController.activate(tabName,updateHash)}
+createHelpController({document,window,activateTab}).mount();
 
 /* ===== HELPERS ===== */
 function allTopics(){

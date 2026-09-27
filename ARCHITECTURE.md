@@ -149,6 +149,7 @@ flowchart TD
 - `src/reports/report-template.js`: template seguro do relatório A4.
 - `src/reports/print-report.js`: coordenação isolada da impressão/“Salvar como PDF”.
 - `src/ui/controllers/report-controller.js`: eventos e composição do relatório, com estado e cálculos recebidos da raiz.
+- `src/ui/help/`: conteúdo da Central de Ajuda, renderer e controlador de busca e navegação; `app.js` apenas monta o recurso e fornece a navegação entre abas.
 - `src/app.js`: raiz de composição, compatibilidade dos fluxos legados e registro explícito das dependências.
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
 - `service-worker.template.js`: fonte do service worker; `service-worker.js` é gerado com a versão do cache.

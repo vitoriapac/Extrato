@@ -208,6 +208,8 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 - `Ctrl+Shift+1` a `Ctrl+Shift+8` ou `Cmd+Shift+1` a `Cmd+Shift+8`: alternar entre as oito áreas.
 - `Esc`: fechar busca, menu ou modal ativo.
 
+A aba **Instruções** funciona como Central de Ajuda: categorias expansíveis, busca local por assunto, glossário e atalhos que levam ao recurso correspondente. O guia explica o ciclo da prova ao fechamento semanal e pode ser consultado depois do primeiro uso.
+
 ## Estado do roadmap
 
 Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. Recomendações podem iniciar sessões guiadas no cronômetro. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.
