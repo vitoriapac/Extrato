@@ -18,7 +18,7 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real',asyn
   const firstDemo=await page.evaluate(()=>sessionStorage.getItem('bb-premium-study-demo'));expect(firstDemo).toBeTruthy();const parsed=JSON.parse(firstDemo);
   expect(parsed.progressHistory).toHaveLength(130);expect(parsed.studySessions).toHaveLength(170);expect(parsed.simulados).toHaveLength(13);
   parsed.subjects[0].name='Alteração fictícia';await page.evaluate(value=>sessionStorage.setItem('bb-premium-study-demo',JSON.stringify(value)),parsed);
-  await page.getByRole('button',{name:/Reiniciar demo/i}).click();await page.getByRole('button',{name:'Confirmar'}).click();await expect(page.getByText('MODO DEMONSTRAÇÃO')).toBeVisible();
+  await page.getByRole('button',{name:/Reiniciar demo/i}).click();await page.getByRole('button',{name:'Confirmar'}).click();await expect(page.locator('#demoBanner').getByText('MODO DEMONSTRAÇÃO',{exact:true})).toBeVisible();
   const restarted=JSON.parse(await page.evaluate(()=>sessionStorage.getItem('bb-premium-study-demo')));expect(restarted.subjects[0].name).not.toBe('Alteração fictícia');
   await page.getByRole('button',{name:/Sair da demonstração/i}).click();await expect(page.getByRole('button',{name:/Explorar demonstração/i})).toBeVisible();
   const restored=JSON.parse(await page.evaluate(()=>localStorage.getItem('bb-premium-study-data')));
