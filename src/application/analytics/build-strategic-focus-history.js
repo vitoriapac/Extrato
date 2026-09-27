@@ -5,7 +5,7 @@ const minutes=value=>value!=null&&Number.isFinite(Number(value))?Math.max(0,Math
 const rowOf=(period,close,{current=false}={})=>{
   const focus=close?.strategicFocus;
   if(!validPeriod(period)||focus?.state!=='available'||[focus.highImpactPercent,focus.highImpactMinutes,focus.totalMinutes,focus.workedGaps,focus.improved,focus.stable,focus.declined,focus.unmeasured,close?.investment?.executedMinutes].some(value=>minutes(value)==null))return null;
-  return {start:period.start,end:period.end,current,focusPercent:percent(focus.highImpactPercent),highImpactMinutes:minutes(focus.highImpactMinutes),studiedMinutes:minutes(focus.totalMinutes),executedMinutes:minutes(close?.investment?.executedMinutes),workedGaps:minutes(focus.workedGaps),improved:minutes(focus.improved),stable:minutes(focus.stable),declined:minutes(focus.declined),unmeasured:minutes(focus.unmeasured)};
+  return {start:period.start,end:period.end,current,focusPercent:percent(focus.highImpactPercent),highImpactMinutes:minutes(focus.highImpactMinutes),studiedMinutes:minutes(focus.totalMinutes),plannedMinutes:minutes(close?.investment?.plannedMinutes),executedMinutes:minutes(close?.investment?.executedMinutes),accuracy:percent(close?.questions?.accuracy),workedGaps:minutes(focus.workedGaps),improved:minutes(focus.improved),stable:minutes(focus.stable),declined:minutes(focus.declined),unmeasured:minutes(focus.unmeasured)};
 };
 
 export function buildStrategicFocusHistory({snapshots=[],current=null,activeExamTags=[],limit=4}={}){

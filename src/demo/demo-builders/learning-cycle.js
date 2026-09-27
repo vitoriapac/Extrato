@@ -42,7 +42,7 @@ function candidatesAt(end,{subjects,questions}){
   for(const question of questions){if(question.date>end)continue;const row=byTopic.get(question.topicId)||{resolved:0,correct:0};row.resolved+=question.resolved;row.correct+=question.correct;byTopic.set(question.topicId,row)}
   return subjects.flatMap(subject=>subject.topics.map(topic=>{
     const performance=byTopic.get(topic.id);
-    return {topicId:topic.id,subjectId:subject.id,topicName:topic.name,subjectName:subject.name,examImpact:Math.round((topic.examImportance||0)*100),mastery:performance?.resolved>=20?Math.round(performance.correct/performance.resolved*100):null,retention:null,coverage:topic.firstCompletedAt?.slice(0,10)<=end?100:0,trendRisk:null};
+    return {topicId:topic.id,subjectId:subject.id,topicName:topic.name,subjectName:subject.name,examImpact:Math.round((topic.examImportance||0)*100),mastery:performance?.resolved>=20?Math.round(performance.correct/performance.resolved*100):null,evidenceStrength:Math.min(1,(performance?.resolved||0)/40),retention:null,coverage:topic.firstCompletedAt?.slice(0,10)<=end?100:0,trendRisk:null};
   }));
 }
 
