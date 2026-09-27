@@ -145,8 +145,10 @@ flowchart TD
 - `src/ui/filter-panel.js`: contagem e rótulos puros dos filtros responsivos.
 - `src/ui/session-history.js`: filtragem e agrupamento puro do histórico de sessões.
 - `src/reports/report-data.js`: snapshot estratégico filtrado por período e independente da interface.
+- `src/reports/weekly-focus-summary.js`: recorte dos últimos sete dias do período, com o mesmo cálculo de foco do fechamento semanal.
 - `src/reports/report-template.js`: template seguro do relatório A4.
 - `src/reports/print-report.js`: coordenação isolada da impressão/“Salvar como PDF”.
+- `src/ui/controllers/report-controller.js`: eventos e composição do relatório, com estado e cálculos recebidos da raiz.
 - `src/app.js`: raiz de composição, compatibilidade dos fluxos legados e registro explícito das dependências.
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
 - `service-worker.template.js`: fonte do service worker; `service-worker.js` é gerado com a versão do cache.
@@ -194,7 +196,7 @@ Os limites compartilhados da inteligência histórica e da adaptação V4 ficam 
 
 Os significados transversais de alto impacto (70/100), domínio adequado (70/100), evidência suficiente (0,5) e mínimo histórico (4 provas) ficam em `src/domain/strategy/config.js`. PDF, foco semanal, conquistas, alertas e planejamento usam o limite correspondente sem recalibrar o Priority Engine. Outros números iguais, como confiança da classificação de uma questão, mantêm regras próprias quando medem conceitos diferentes.
 
-`src/reports/exam-report-summary.js` seleciona os indicadores da prova e limita a três as lacunas no PDF. `src/application/analytics/build-weekly-strategic-focus.js` calcula a fração do tempo em tópicos de alto impacto e só classifica melhora/estabilidade quando existe resultado posterior medido no período. O fechamento semanal usa a versão 2.2.0 e o snapshot preserva o bloco calculado e o escopo do concurso ativo. `src/application/analytics/build-strategic-focus-history.js` compara apenas períodos salvos, completos e sem sobreposição do mesmo escopo. `src/application/achievements/build-strategic-achievements.js` avalia três conquistas por evidência de estudo, domínio ou provas completas, sem alterar o algoritmo de prioridade.
+`src/reports/exam-report-summary.js` seleciona os indicadores da prova e limita a três as lacunas no PDF. O PDF também resume os últimos sete dias do período selecionado, com minutos planejados e executados e o mesmo cálculo de foco usado na interface; ele não exporta a matriz histórica completa. `src/application/analytics/build-weekly-strategic-focus.js` calcula a fração do tempo em tópicos de alto impacto e só classifica melhora/estabilidade quando existe resultado posterior medido no período. O fechamento semanal usa a versão 2.2.0 e o snapshot preserva o bloco calculado e o escopo do concurso ativo. `src/application/analytics/build-strategic-focus-history.js` compara apenas períodos salvos, completos e sem sobreposição do mesmo escopo. `src/application/achievements/build-strategic-achievements.js` avalia três conquistas por evidência de estudo, domínio ou provas completas, sem alterar o algoritmo de prioridade.
 
 `recommendationHistory` guarda cada recomendação visível uma vez por identidade de apresentação, com estados pendente, executada, recusada ou expirada. O registro aponta para `recommendationFeedback` quando há decisão e para a sessão quando ela é salva. A migração cria registros apenas para decisões antigas conhecidas; ela não inventa recomendações pendentes anteriores. O resumo dos últimos 30 dias usa esse histórico e conta cada identidade uma vez.
 

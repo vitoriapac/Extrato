@@ -194,7 +194,7 @@ Métricas de conteúdo, como cobertura, domínio, retenção, lacuna e prioridad
 
 ## Relatório e PDF
 
-O relatório estratégico permite escolher o período e reúne planejamento versus execução, desempenho, simulados, revisões, riscos, oportunidades, recomendações e perfil de erros. A seção **Inteligência da prova** resume provas completas, questões analisadas, cobertura, confiança e até três lacunas de alto impacto com domínio medido. Use a impressão do navegador para salvar o relatório em PDF no formato A4.
+O relatório estratégico permite escolher o período e reúne planejamento versus execução, desempenho, simulados, revisões, riscos, oportunidades, recomendações e perfil de erros. A seção **Inteligência da prova** resume provas completas, questões analisadas, cobertura, confiança e até três lacunas de alto impacto com domínio medido. O **Foco estratégico da semana** resume os últimos sete dias do período escolhido com execução, tempo de alto impacto e lacunas trabalhadas, sem criar meta obrigatória nem atribuir causalidade ao estudo. Use a impressão do navegador para salvar o relatório em PDF no formato A4.
 
 O **fechamento semanal** informa a parcela do tempo registrado em tópicos de alto impacto e quantas lacunas foram trabalhadas. Melhora ou estabilidade só são exibidas quando há resultado posterior comparável; sem essa medição, a lacuna aparece como pendente de avaliação.
 
@@ -210,7 +210,7 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 
 ## Estado do roadmap
 
-Os pacotes 3.2 a 3.7 e a fase de inteligência histórica estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal e conquistas ligadas ao aprendizado. Recomendações podem iniciar sessões guiadas no cronômetro. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md).
+Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. Recomendações podem iniciar sessões guiadas no cronômetro. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.
 
 As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.2.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente. A comparação do foco estratégico usa fechamentos salvos sem sobreposição, com dados completos e do mesmo concurso ativo; fechamentos antigos sem esse escopo não entram na comparação.
 

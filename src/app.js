@@ -171,9 +171,7 @@ import {createTopicHistoryService} from './application/history/topic-history-ser
 import {buildGapMap} from './domain/analytics/gap-map.js';
 import {buildDecisionHistory} from './domain/recommendations/decision-history.js';
 import {buildPostSimulationReplan} from './domain/planning/post-simulation-replan.js';
-import {buildStrategicReport} from './reports/report-data.js';
-import {renderStrategicReport} from './reports/report-template.js';
-import {printStrategicReport} from './reports/print-report.js';
+import {createReportController} from './ui/controllers/report-controller.js';
 
 const THEME_STORAGE_KEY='bb-premium-theme';
 const MODE_FLASH_KEY='bb-premium-mode-message';
@@ -189,12 +187,7 @@ function setTheme(theme){return preferencesController.set(theme)}
 function toggleTheme(){return preferencesController.toggle()}
 document.getElementById('themeToggleBtn').addEventListener('click',toggleTheme);
 preferencesController.sync();
-document.getElementById('exportReportBtn')?.addEventListener('click',()=>{
-  const preset=document.getElementById('reportPeriodSelect')?.value||'30',period={preset,start:document.getElementById('reportPeriodStart')?.value||null,end:document.getElementById('reportPeriodEnd')?.value||null};
-  const candidates=intelligenceCandidates(),diagnosis=generateDiagnosis(candidates),report=buildStrategicReport({state,generatedAt:nowISO(),isDemo:IS_DEMO_MODE,readiness:readinessResult(computeApprovalMetrics()),diagnosis,forecast:projectPerformance(),period,candidates});
-  printStrategicReport({document,window,report,render:renderStrategicReport});
-});
-document.getElementById('reportPeriodSelect')?.addEventListener('change',event=>{const custom=event.target.value==='custom';document.getElementById('reportPeriodStart').hidden=!custom;document.getElementById('reportPeriodEnd').hidden=!custom});
+createReportController({document,window,getState:()=>state,nowISO,isDemo:IS_DEMO_MODE,getCandidates:intelligenceCandidates,getDiagnosis:generateDiagnosis,getReadiness:()=>readinessResult(computeApprovalMetrics()),getForecast:projectPerformance});
 document.getElementById('periodComparisonPreset')?.addEventListener('change',renderSelectedPeriodComparison);
 document.getElementById('periodComparisonStart')?.addEventListener('change',renderSelectedPeriodComparison);
 document.getElementById('periodComparisonEnd')?.addEventListener('change',renderSelectedPeriodComparison);
