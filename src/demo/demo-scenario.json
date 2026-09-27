@@ -3252,6 +3252,8 @@
     "example": {
       "from": "Conhecimentos Bancários",
       "to": "Matemática Financeira",
+      "sourceBeforeMinutes": 120,
+      "targetBeforeMinutes": 80,
       "minutes": 30,
       "capacityPreserved": true
     }

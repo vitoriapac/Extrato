@@ -1,9 +1,10 @@
 import {addLocalDays} from '../../core/date-utils.js';
+import {buildAdaptivePlanningAdvice} from '../../domain/planning/adaptive-planning.js';
 
 const stamp=date=>`${date}T12:00:00.000Z`;
 const subjectByName=(subjects,name)=>subjects.find(item=>item.name===name);
 
-export function buildDemoPlanning(scenario,{today,subjects,examDate,sessions=[]}){
+export function buildDemoPlanning(scenario,{today,subjects,examDate,sessions=[],candidates=[]}){
   const goals=scenario.goals;
   const sessionsByDate=new Map();
   for(const session of sessions){if(!sessionsByDate.has(session.date))sessionsByDate.set(session.date,session)}
@@ -21,10 +22,14 @@ export function buildDemoPlanning(scenario,{today,subjects,examDate,sessions=[]}
     dailyPlans.push({id:`demo-daily-plan-${index+1}`,date,availableMinutes:120,plannedMinutes:80,flexMinutes:40,createdAt:stamp(date),updatedAt:stamp(date),items});
   }
   const source=subjectByName(subjects,scenario.adaptivePlanning.example.from),target=subjectByName(subjects,scenario.adaptivePlanning.example.to);
-  const planItems=subjects.map((subject,index)=>{const minutes=subject.id===source?.id||subject.id===target?.id?60:40,topic=subject.topics[0];return{id:`demo-study-plan-topic-${index+1}`,subjectId:subject.id,subjectName:subject.name,topicId:topic.id,topicName:topic.name,minutes,estimatedMinutes:topic.estimatedStudyMinutes,activityMix:{theory:Math.round(minutes*.5),questions:Math.round(minutes*.4),reviews:minutes-Math.round(minutes*.5)-Math.round(minutes*.4)}}});
+  const example=scenario.adaptivePlanning.example,otherCount=subjects.length-2,otherBudget=scenario.adaptivePlanning.capacityMinutes-example.sourceBeforeMinutes-example.targetBeforeMinutes,otherBase=Math.floor(otherBudget/otherCount),otherExtra=otherBudget%otherCount;
+  const strategicTopicId=role=>scenario.subjects.flatMap(subject=>subject.topics).find(topic=>topic.narrativeRole===role)?.id;
+  let otherIndex=0;
+  const planItems=subjects.map((subject,index)=>{const minutes=subject.id===source?.id?example.sourceBeforeMinutes:subject.id===target?.id?example.targetBeforeMinutes:otherBase+(otherIndex++<otherExtra?1:0),topic=subject.topics.find(item=>item.id===(subject.id===target?.id?strategicTopicId('priority_gap'):subject.id===source?.id?strategicTopicId('consolidated'):null))||subject.topics[0];return{id:`demo-study-plan-topic-${index+1}`,subjectId:subject.id,subjectName:subject.name,topicId:topic.id,topicName:topic.name,minutes,capacityMinutes:minutes+40,covered:topic.status==='Concluído',estimatedMinutes:topic.estimatedStudyMinutes,activityMix:{theory:Math.round(minutes*.5),questions:Math.round(minutes*.4),reviews:minutes-Math.round(minutes*.5)-Math.round(minutes*.4)}}});
   const planned=planItems.reduce((sum,item)=>sum+item.minutes,0);
   const studyPlans=[{id:'demo-study-plan-1',state:'ready',confirmedAt:stamp(addLocalDays(today,-9)),examDate,weeklyAvailableMinutes:scenario.adaptivePlanning.capacityMinutes,weeklyPlannedMinutes:planned,weeksUntilExam:13,remainingMinutes:6200,missingEffort:[],items:planItems,subjects:planItems.map(item=>({subjectId:item.subjectId,subjectName:item.subjectName,minutes:item.minutes})),activityMix:{theory:360,questions:288,reviews:72},confidence:.84,confidenceLabel:'Alta',algorithmVersion:1}];
-  const transfer=scenario.adaptivePlanning.example.minutes;
-  const adaptivePlanningHistory=source&&target?[{id:'demo-adaptive-1',createdAt:stamp(today),decidedAt:null,status:'suggested',sourceSubjectId:source.id,targetSubjectId:target.id,sourceTopicId:source.topics[0].id,targetTopicId:target.topics[0].id,sourceBefore:60,sourceAfter:60-transfer,targetBefore:60,targetAfter:60+transfer,minutes:transfer,reasons:['Domínio consolidado na origem e necessidade estratégica maior no destino.','A proposta preserva a capacidade semanal.'],algorithmVersion:3,planId:studyPlans[0].id}]:[];
+  const advice=buildAdaptivePlanningAdvice({plan:studyPlans[0],candidates,history:[],today});
+  const sourceItem=planItems.find(item=>item.subjectId===advice.from?.subjectId),targetItem=planItems.find(item=>item.subjectId===advice.to?.subjectId);
+  const adaptivePlanningHistory=advice.state==='proposal'?[{id:'demo-adaptive-1',createdAt:stamp(today),decidedAt:null,status:'suggested',sourceSubjectId:advice.from.subjectId,targetSubjectId:advice.to.subjectId,sourceTopicId:sourceItem?.topicId||null,targetTopicId:targetItem?.topicId||null,sourceBefore:advice.from.beforeMinutes,sourceAfter:advice.from.afterMinutes,targetBefore:advice.to.beforeMinutes,targetAfter:advice.to.afterMinutes,minutes:advice.transferMinutes,reasons:[...advice.rationale],evidenceSnapshot:{source:candidates.filter(item=>item.subjectId===advice.from.subjectId).map(item=>({topicId:item.topicId,mastery:item.mastery,examImpact:item.examImpact,evidenceStrength:item.evidenceStrength})),target:candidates.filter(item=>item.subjectId===advice.to.subjectId).map(item=>({topicId:item.topicId,mastery:item.mastery,examImpact:item.examImpact,evidenceStrength:item.evidenceStrength})),weeklyBudgetMinutes:advice.weeklyBudgetMinutes},algorithmVersion:advice.algorithmVersion,planId:studyPlans[0].id}]:[];
   return {metas,dailyPlans,studyPlans,adaptivePlanningHistory};
 }
