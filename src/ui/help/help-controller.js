@@ -49,7 +49,8 @@ export function createHelpController({document,window,activateTab}){
     if(search.value){search.value='';applySearch()}
     const group=[...root.querySelectorAll('[data-help-group]')].find(item=>item.id===id);
     if(!group)return;
-    group.scrollIntoView({block:'start',behavior:'smooth'});
+    const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    group.scrollIntoView({block:'start',behavior:reduceMotion?'auto':'smooth'});
     group.focus({preventScroll:true});
   };
   const navigate=key=>{
@@ -67,6 +68,14 @@ export function createHelpController({document,window,activateTab}){
   };
   const mount=()=>{
     root.innerHTML=renderHelpCenter();
+    const categoryNav=root.querySelector('.help-category-nav');
+    const syncHelpNavHeight=()=>{
+      const height=Math.ceil(categoryNav.getBoundingClientRect().height);
+      if(height)root.style.setProperty('--help-nav-height',`${height}px`);
+    };
+    syncHelpNavHeight();
+    if('ResizeObserver' in window)new window.ResizeObserver(syncHelpNavHeight).observe(categoryNav);
+    window.addEventListener('resize',syncHelpNavHeight,{passive:true});
     root.addEventListener('input',event=>{if(event.target.id==='helpSearch')applySearch()});
     root.addEventListener('keydown',event=>{if(event.target.id==='helpSearch'&&event.key==='Escape'){event.target.value='';applySearch();event.preventDefault()}});
     root.addEventListener('click',event=>{
