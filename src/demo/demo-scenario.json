@@ -1,0 +1,3326 @@
+{
+  "meta": {
+    "format": "studytrack-demo-blueprint",
+    "version": 2,
+    "seed": "studytrack-demo-v4",
+    "historyDays": 140,
+    "description": "Blueprint para adaptar o gerador atual da demo; não é backup direto do schema 24."
+  },
+  "profile": {
+    "activeExams": [
+      "BB",
+      "CAIXA"
+    ],
+    "weeklyAvailabilityHours": 12,
+    "examInDays": 90,
+    "targetScorePct": 80,
+    "readinessTarget": 71,
+    "phases": [
+      {
+        "name": "Adaptação",
+        "days": [
+          1,
+          30
+        ],
+        "weeklyHours": 6
+      },
+      {
+        "name": "Ganho de volume",
+        "days": [
+          31,
+          60
+        ],
+        "weeklyHours": 8
+      },
+      {
+        "name": "Diagnóstico",
+        "days": [
+          61,
+          90
+        ],
+        "weeklyHours": 10
+      },
+      {
+        "name": "Queda temporária",
+        "days": [
+          91,
+          120
+        ],
+        "weeklyHours": 8
+      },
+      {
+        "name": "Recuperação estratégica",
+        "days": [
+          121,
+          140
+        ],
+        "weeklyHours": 11
+      }
+    ]
+  },
+  "targets": {
+    "subjects": 17,
+    "topics": 305,
+    "studySessions": 200,
+    "studyQuestions": 1750,
+    "simulations": 9,
+    "essays": 8,
+    "historicalExams": 16,
+    "weeklyCloses": 14,
+    "recommendations": 20,
+    "reviews": 50
+  },
+  "subjects": [
+    {
+      "id": "demo-subject-1",
+      "name": "Língua Portuguesa",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 82,
+      "topics": [
+        {
+          "id": "demo-topic-1-1",
+          "name": "Interpretação e compreensão de textos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 81,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-1-2",
+          "name": "Tipologia textual",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 88,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-1-3",
+          "name": "Coesão e coerência",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-1-4",
+          "name": "Significação de palavras",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 85,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-1-5",
+          "name": "Ortografia",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-1-6",
+          "name": "Acentuação",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-1-7",
+          "name": "Classes de palavras",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 89,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-1-8",
+          "name": "Crase",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-1-9",
+          "name": "Sintaxe da oração e do período",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 86,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-1-10",
+          "name": "Concordância verbal",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-1-11",
+          "name": "Concordância nominal",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 83,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-1-12",
+          "name": "Regência verbal",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 90,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-1-13",
+          "name": "Regência nominal",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-1-14",
+          "name": "Pontuação",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 87,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-1-15",
+          "name": "Colocação pronominal",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-1-16",
+          "name": "Argumentação e persuasão",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-1-17",
+          "name": "Comunicação assertiva",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-1-18",
+          "name": "Redação oficial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 81,
+          "difficulty": "Médio"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-2",
+      "name": "Língua Inglesa",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 73,
+      "topics": [
+        {
+          "id": "demo-topic-2-1",
+          "name": "Interpretação de textos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-2-2",
+          "name": "Compreensão de textos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-2-3",
+          "name": "Vocabulário",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 69,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-2-4",
+          "name": "Cognatos e falsos cognatos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-2-5",
+          "name": "Gramática aplicada à leitura",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 66,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-2-6",
+          "name": "Pronomes",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-2-7",
+          "name": "Verbos e tempos verbais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-2-8",
+          "name": "Conectivos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-2-9",
+          "name": "Preposições",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Difícil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-3",
+      "name": "Matemática",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 64,
+      "topics": [
+        {
+          "id": "demo-topic-3-1",
+          "name": "Números inteiros, racionais e reais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 63,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-3-2",
+          "name": "Operações fundamentais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-3-3",
+          "name": "Razão e proporção",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 60,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-3-4",
+          "name": "Regra de três simples",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 67,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-3-5",
+          "name": "Regra de três composta",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 57,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-3-6",
+          "name": "Porcentagem",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 64,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-3-7",
+          "name": "Problemas de contagem",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-3-8",
+          "name": "Sistema de medidas",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 61,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-3-9",
+          "name": "Conjuntos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 68,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-3-10",
+          "name": "Lógica proposicional",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 58,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-3-11",
+          "name": "Relações e funções",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 65,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-3-12",
+          "name": "Função polinomial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-3-13",
+          "name": "Função exponencial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 62,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-3-14",
+          "name": "Função logarítmica",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 69,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-3-15",
+          "name": "Matrizes",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 59,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-3-16",
+          "name": "Determinantes",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 66,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-3-17",
+          "name": "Sistemas lineares",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 56,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-3-18",
+          "name": "Sequências",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 63,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-3-19",
+          "name": "Progressão Aritmética",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-3-20",
+          "name": "Progressão Geométrica",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 60,
+          "difficulty": "Difícil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-4",
+      "name": "Matemática Financeira",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 56,
+      "topics": [
+        {
+          "id": "demo-topic-4-1",
+          "name": "Conceitos fundamentais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 55,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-4-2",
+          "name": "Capital, juros e taxa",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 62,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-4-3",
+          "name": "Valor presente e valor futuro",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 52,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-4-4",
+          "name": "Juros simples",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 59,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-4-5",
+          "name": "Juros compostos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 49,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-4-6",
+          "name": "Taxas equivalentes",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 56,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-4-7",
+          "name": "Equivalência de capitais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 63,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-4-8",
+          "name": "Fluxo de caixa",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 53,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-4-9",
+          "name": "Séries uniformes",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 60,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-4-10",
+          "name": "Sistema de Amortização Constante — SAC",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 50,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-4-11",
+          "name": "Sistema PRICE",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 57,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-4-12",
+          "name": "Desconto racional",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 64,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-4-13",
+          "name": "Desconto comercial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 54,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-4-14",
+          "name": "Taxas de retorno",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 61,
+          "difficulty": "Fácil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-5",
+      "name": "Probabilidade e Estatística",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 51,
+      "topics": [
+        {
+          "id": "demo-topic-5-1",
+          "name": "População e amostra",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 50,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-5-2",
+          "name": "Variáveis estatísticas",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 57,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-5-3",
+          "name": "Frequência absoluta e relativa",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 47,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-5-4",
+          "name": "Tabelas",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 54,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-5-5",
+          "name": "Gráficos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 44,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-5-6",
+          "name": "Média aritmética",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 51,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-5-7",
+          "name": "Média ponderada",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 58,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-5-8",
+          "name": "Média geométrica",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 48,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-5-9",
+          "name": "Moda",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 55,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-5-10",
+          "name": "Mediana",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 45,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-5-11",
+          "name": "Quartis",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 52,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-5-12",
+          "name": "Percentis",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 59,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-5-13",
+          "name": "Amplitude",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 49,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-5-14",
+          "name": "Variância",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 56,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-5-15",
+          "name": "Desvio padrão",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 46,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-5-16",
+          "name": "Coeficiente de variação",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 53,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-5-17",
+          "name": "Conceitos de probabilidade",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 43,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-5-18",
+          "name": "Espaço amostral",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 50,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-5-19",
+          "name": "Eventos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 57,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-5-20",
+          "name": "Probabilidade condicional",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 47,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-5-21",
+          "name": "Independência de eventos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 54,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-5-22",
+          "name": "Distribuição binomial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 44,
+          "difficulty": "Fácil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-6",
+      "name": "Conhecimentos Bancários",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 84,
+      "topics": [
+        {
+          "id": "demo-topic-6-1",
+          "name": "Estrutura do Sistema Financeiro Nacional",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 83,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-6-2",
+          "name": "Órgãos normativos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 90,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-6-3",
+          "name": "Entidades supervisoras",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-6-4",
+          "name": "Instituições financeiras",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 87,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-6-5",
+          "name": "Banco Central",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-6-6",
+          "name": "Conselho Monetário Nacional",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-6-7",
+          "name": "Comissão de Valores Mobiliários",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 91,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-6-8",
+          "name": "Mercado monetário",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 81,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-6-9",
+          "name": "Mercado de crédito",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 88,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-6-10",
+          "name": "Mercado de capitais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-6-11",
+          "name": "Mercado cambial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 85,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-6-12",
+          "name": "Moeda e suas funções",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 92,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-6-13",
+          "name": "Política monetária",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-6-14",
+          "name": "SELIC",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 89,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-6-15",
+          "name": "Operações compromissadas",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-6-16",
+          "name": "Depósitos remunerados",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 86,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-6-17",
+          "name": "Títulos públicos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-6-18",
+          "name": "Dívida pública",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 83,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-6-19",
+          "name": "Mercado interbancário",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 90,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-6-20",
+          "name": "Tesouraria bancária",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-6-21",
+          "name": "Varejo bancário",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 87,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-6-22",
+          "name": "Recuperação de crédito",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-6-23",
+          "name": "Curva de juros",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-6-24",
+          "name": "Juros nominais e reais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 91,
+          "difficulty": "Fácil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-7",
+      "name": "Produtos e Serviços Bancários",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 78,
+      "topics": [
+        {
+          "id": "demo-topic-7-1",
+          "name": "Conta corrente",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-7-2",
+          "name": "Conta poupança",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-7-3",
+          "name": "Cartão de crédito",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-7-4",
+          "name": "Cartão de débito",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 81,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-7-5",
+          "name": "Crédito Direto ao Consumidor",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-7-6",
+          "name": "Crédito rural",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-7-7",
+          "name": "Empréstimos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 85,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-7-8",
+          "name": "Financiamentos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-7-9",
+          "name": "Investimentos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-7-10",
+          "name": "Fundos de investimento",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-7-11",
+          "name": "Previdência privada",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-7-12",
+          "name": "Seguros",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 86,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-7-13",
+          "name": "Capitalização",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-7-14",
+          "name": "Consórcios",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 83,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-7-15",
+          "name": "Garantias bancárias",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-7-16",
+          "name": "Aval",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-7-17",
+          "name": "Fiança",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-7-18",
+          "name": "Penhor",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-7-19",
+          "name": "Hipoteca",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-7-20",
+          "name": "Alienação fiduciária",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Fácil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-8",
+      "name": "Mercado Financeiro e Transformação Digital",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 71,
+      "topics": [
+        {
+          "id": "demo-topic-8-1",
+          "name": "Bancos na era digital",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-8-2",
+          "name": "Internet Banking",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-8-3",
+          "name": "Mobile Banking",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 67,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-8-4",
+          "name": "Bancos digitais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-8-5",
+          "name": "Fintechs",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 64,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-8-6",
+          "name": "Startups",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-8-7",
+          "name": "Big Techs",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-8-8",
+          "name": "Shadow Banking",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 68,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-8-9",
+          "name": "Marketplace",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-8-10",
+          "name": "Open Banking",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 65,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-8-11",
+          "name": "Open Finance",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-8-12",
+          "name": "PIX",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-8-13",
+          "name": "Arranjos de pagamento",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 69,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-8-14",
+          "name": "Correspondentes bancários",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-8-15",
+          "name": "Blockchain",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 66,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-8-16",
+          "name": "Bitcoin",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-8-17",
+          "name": "Criptomoedas e criptoativos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 63,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-8-18",
+          "name": "DREX",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-8-19",
+          "name": "Transformação digital no sistema financeiro",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Fácil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-9",
+      "name": "Vendas e Negociação",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 76,
+      "topics": [
+        {
+          "id": "demo-topic-9-1",
+          "name": "Estratégia empresarial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-9-2",
+          "name": "Segmentação de mercado",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-9-3",
+          "name": "Características dos serviços",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-9-4",
+          "name": "Gestão da qualidade",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-9-5",
+          "name": "Valor percebido pelo cliente",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 69,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-9-6",
+          "name": "Experiência do cliente",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-9-7",
+          "name": "Comportamento do consumidor",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 83,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-9-8",
+          "name": "Técnicas de vendas",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-9-9",
+          "name": "Pré-abordagem",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-9-10",
+          "name": "Abordagem",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-9-11",
+          "name": "Identificação de necessidades",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-9-12",
+          "name": "Negociação",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-9-13",
+          "name": "Tratamento de objeções",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-9-14",
+          "name": "Fechamento",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 81,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-9-15",
+          "name": "Pós-venda",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-9-16",
+          "name": "Marketing digital",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-9-17",
+          "name": "Leads",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 68,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-9-18",
+          "name": "Copywriting",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-9-19",
+          "name": "Gatilhos mentais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-9-20",
+          "name": "Inbound Marketing",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-9-21",
+          "name": "Ética em vendas",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Fácil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-10",
+      "name": "Atendimento Bancário",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 86,
+      "topics": [
+        {
+          "id": "demo-topic-10-1",
+          "name": "Qualidade no atendimento",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 85,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-10-2",
+          "name": "Experiência do cliente",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 92,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-10-3",
+          "name": "Clientecentrismo",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-10-4",
+          "name": "Comunicação assertiva",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 89,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-10-5",
+          "name": "Escuta ativa",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-10-6",
+          "name": "Empatia",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 86,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-10-7",
+          "name": "Atendimento presencial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 92,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-10-8",
+          "name": "Atendimento remoto",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 83,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-10-9",
+          "name": "Atendimento em canais digitais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 90,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-10-10",
+          "name": "Política de relacionamento com clientes",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-10-11",
+          "name": "Ouvidoria",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 87,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-10-12",
+          "name": "Código de Defesa do Consumidor",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 92,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-10-13",
+          "name": "Direitos do consumidor",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-10-14",
+          "name": "Atendimento prioritário",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 91,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-10-15",
+          "name": "Pessoas com deficiência",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 81,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-10-16",
+          "name": "Acessibilidade",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 88,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-10-17",
+          "name": "Atendimento à pessoa idosa",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-10-18",
+          "name": "Consumidor vulnerável",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 85,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-10-19",
+          "name": "Atendimento à pessoa com TEA",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 92,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-10-20",
+          "name": "Nome social",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-10-21",
+          "name": "Diversidade e inclusão",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 89,
+          "difficulty": "Médio"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-11",
+      "name": "Informática e TIC",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 69,
+      "topics": [
+        {
+          "id": "demo-topic-11-1",
+          "name": "Windows",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 68,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-11-2",
+          "name": "Linux",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-11-3",
+          "name": "Arquivos e pastas",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 65,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-11-4",
+          "name": "Microsoft Word",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-11-5",
+          "name": "Microsoft Excel",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 62,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-11-6",
+          "name": "Microsoft PowerPoint",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 69,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-11-7",
+          "name": "Correio eletrônico",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-11-8",
+          "name": "Internet",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 66,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-11-9",
+          "name": "Intranet",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-11-10",
+          "name": "Navegadores",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 63,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-11-11",
+          "name": "Redes de computadores",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-11-12",
+          "name": "Redes sociais",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-11-13",
+          "name": "Segurança da informação",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 67,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-11-14",
+          "name": "Malware",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-11-15",
+          "name": "Antivírus",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 64,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-11-16",
+          "name": "Firewall",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-11-17",
+          "name": "Hardening",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 61,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-11-18",
+          "name": "Backup",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 68,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-11-19",
+          "name": "Google Drive",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-11-20",
+          "name": "Microsoft Teams",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 65,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-11-21",
+          "name": "Ferramentas de trabalho remoto",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-11-22",
+          "name": "Sistemas de apoio à decisão",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 62,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-11-23",
+          "name": "Análise de dados",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 69,
+          "difficulty": "Médio"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-12",
+      "name": "Tecnologia e Inteligência Artificial",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 74,
+      "topics": [
+        {
+          "id": "demo-topic-12-1",
+          "name": "Inteligência Artificial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-12-2",
+          "name": "IA generativa",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-12-3",
+          "name": "ChatGPT e ferramentas generativas",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-12-4",
+          "name": "Engenharia e edição de prompts",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-12-5",
+          "name": "Machine Learning",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 67,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-12-6",
+          "name": "Ciência de Dados",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-12-7",
+          "name": "Analytics",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 81,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-12-8",
+          "name": "Cloud Computing",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-12-9",
+          "name": "Robótica",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-12-10",
+          "name": "Metaverso",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 68,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-12-11",
+          "name": "Transformação digital",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-12-12",
+          "name": "Inovação",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-12-13",
+          "name": "Cultura digital",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Médio"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-13",
+      "name": "Compliance, Ética e Legislação Bancária",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 79,
+      "topics": [
+        {
+          "id": "demo-topic-13-1",
+          "name": "Ética profissional",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-13-2",
+          "name": "Ética empresarial",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 85,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-13-3",
+          "name": "Prevenção à lavagem de dinheiro",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-13-4",
+          "name": "Lei nº 9.613/1998",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-13-5",
+          "name": "Circular BCB nº 3.978",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-13-6",
+          "name": "Carta Circular BCB nº 4.001",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-13-7",
+          "name": "Sigilo bancário",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 86,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-13-8",
+          "name": "LC nº 105/2001",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-13-9",
+          "name": "LGPD",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 83,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-13-10",
+          "name": "Lei Anticorrupção",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-13-11",
+          "name": "Decreto nº 11.129/2022",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-13-12",
+          "name": "Segurança cibernética",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 87,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-13-13",
+          "name": "Governança corporativa",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-13-14",
+          "name": "Resolução CVM nº 50",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-13-15",
+          "name": "Princípios do art. 37 da Constituição",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-13-16",
+          "name": "Assédio moral",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 81,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-13-17",
+          "name": "Assédio sexual",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Fácil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-14",
+      "name": "Conhecimentos e Comportamentos Digitais",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 70,
+      "topics": [
+        {
+          "id": "demo-topic-14-1",
+          "name": "Growth Mindset",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 69,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-14-2",
+          "name": "Paradigma da abundância",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-14-3",
+          "name": "Intraempreendedorismo",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 66,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-14-4",
+          "name": "Design Thinking",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-14-5",
+          "name": "Design de Serviço",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 63,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-14-6",
+          "name": "Metodologias ágeis",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-14-7",
+          "name": "Manifesto Ágil",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-14-8",
+          "name": "Scrum",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 67,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-14-9",
+          "name": "Lean",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-14-10",
+          "name": "Resolução de problemas complexos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 64,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-14-11",
+          "name": "Visão sistêmica",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-14-12",
+          "name": "Pensamento computacional",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-14-13",
+          "name": "Análise de negócios",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 68,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-14-14",
+          "name": "Liderança",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-14-15",
+          "name": "Autoliderança",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 65,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-14-16",
+          "name": "Inteligência emocional",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-14-17",
+          "name": "Experiência do consumidor",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 62,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-14-18",
+          "name": "Objetivos de Desenvolvimento Sustentável",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 69,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-14-19",
+          "name": "Pacto Global",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-14-20",
+          "name": "OKR",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 66,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-14-21",
+          "name": "Gestão do tempo",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-14-22",
+          "name": "Produtividade",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 63,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-14-23",
+          "name": "Trabalho remoto",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-14-24",
+          "name": "Lifelong Learning",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Difícil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-15",
+      "name": "Caixa Econômica Federal — Específicos",
+      "examTags": [
+        "CAIXA"
+      ],
+      "targetAccuracyPct": 68,
+      "topics": [
+        {
+          "id": "demo-topic-15-1",
+          "name": "Estatuto Social da Caixa",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 67,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-15-2",
+          "name": "Código de Ética, Conduta e Integridade da Caixa",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-15-3",
+          "name": "PIS",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 64,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-15-4",
+          "name": "FGTS",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-15-5",
+          "name": "Lei nº 8.036/1990",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 61,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-15-6",
+          "name": "Hipóteses de saque do FGTS",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 68,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-15-7",
+          "name": "Certificado de Regularidade do FGTS",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-15-8",
+          "name": "Guia de Recolhimento do FGTS",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 65,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-15-9",
+          "name": "Seguro-desemprego",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-15-10",
+          "name": "Abono salarial",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 62,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-15-11",
+          "name": "Programas sociais",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 69,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-15-12",
+          "name": "Benefícios do trabalhador",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-15-13",
+          "name": "Abertura de contas",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 66,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-15-14",
+          "name": "Documentação para abertura de contas",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-15-15",
+          "name": "Pessoa física e pessoa jurídica",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 63,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-15-16",
+          "name": "Capacidade civil",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-15-17",
+          "name": "Incapacidade civil",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 60,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-15-18",
+          "name": "Representação",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 67,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-15-19",
+          "name": "Domicílio",
+          "examTags": [
+            "CAIXA"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Médio"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-16",
+      "name": "Banco do Brasil — Específicos",
+      "examTags": [
+        "BB"
+      ],
+      "targetAccuracyPct": 81,
+      "topics": [
+        {
+          "id": "demo-topic-16-1",
+          "name": "Código de Ética do Banco do Brasil",
+          "examTags": [
+            "BB"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-16-2",
+          "name": "Código de Conduta",
+          "examTags": [
+            "BB"
+          ],
+          "targetMastery": 87,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-16-3",
+          "name": "Responsabilidade socioambiental",
+          "examTags": [
+            "BB"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-16-4",
+          "name": "Sustentabilidade no Banco do Brasil",
+          "examTags": [
+            "BB"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-16-5",
+          "name": "Estrutura e características do Banco do Brasil",
+          "examTags": [
+            "BB"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Fácil"
+        }
+      ]
+    },
+    {
+      "id": "demo-subject-17",
+      "name": "Redação",
+      "examTags": [
+        "COMUM"
+      ],
+      "targetAccuracyPct": 77,
+      "topics": [
+        {
+          "id": "demo-topic-17-1",
+          "name": "Estrutura dissertativo-argumentativa",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 76,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-17-2",
+          "name": "Introdução",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 83,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-17-3",
+          "name": "Desenvolvimento",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 73,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-17-4",
+          "name": "Conclusão",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 80,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-17-5",
+          "name": "Construção da tese",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 70,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-17-6",
+          "name": "Argumentação",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 77,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-17-7",
+          "name": "Repertório",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 84,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-17-8",
+          "name": "Coesão",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 74,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-17-9",
+          "name": "Coerência",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 81,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-17-10",
+          "name": "Conectivos",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 71,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-17-11",
+          "name": "Norma-padrão",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 78,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-17-12",
+          "name": "Pontuação aplicada à redação",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 85,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-17-13",
+          "name": "Paragrafação",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 75,
+          "difficulty": "Fácil"
+        },
+        {
+          "id": "demo-topic-17-14",
+          "name": "Planejamento do texto",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 82,
+          "difficulty": "Médio"
+        },
+        {
+          "id": "demo-topic-17-15",
+          "name": "Revisão textual",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 72,
+          "difficulty": "Difícil"
+        },
+        {
+          "id": "demo-topic-17-16",
+          "name": "Redações anteriores da Cesgranrio",
+          "examTags": [
+            "COMUM"
+          ],
+          "targetMastery": 79,
+          "difficulty": "Fácil"
+        }
+      ]
+    }
+  ],
+  "sessions": {
+    "durationsMinutes": [
+      25,
+      35,
+      48,
+      60,
+      72,
+      90,
+      106,
+      20
+    ],
+    "types": [
+      "study",
+      "questions",
+      "review",
+      "questions",
+      "study"
+    ],
+    "irregularDays": true
+  },
+  "questions": {
+    "monthlyAccuracyPct": [
+      58,
+      64,
+      61,
+      70,
+      76
+    ],
+    "errorCategories": [
+      "naoSabia",
+      "esqueci",
+      "interpretacao",
+      "calculo",
+      "desatencao",
+      "chute"
+    ],
+    "profiles": {
+      "Língua Portuguesa": {
+        "interpretacao": 38,
+        "desatencao": 26,
+        "naoSabia": 18,
+        "esqueci": 10,
+        "chute": 8
+      },
+      "Matemática Financeira": {
+        "calculo": 34,
+        "naoSabia": 31,
+        "esqueci": 20,
+        "interpretacao": 8,
+        "desatencao": 5,
+        "chute": 2
+      }
+    }
+  },
+  "simulations": [
+    {
+      "index": 1,
+      "dayOffset": -126,
+      "accuracyPct": 58
+    },
+    {
+      "index": 2,
+      "dayOffset": -112,
+      "accuracyPct": 62
+    },
+    {
+      "index": 3,
+      "dayOffset": -98,
+      "accuracyPct": 66
+    },
+    {
+      "index": 4,
+      "dayOffset": -84,
+      "accuracyPct": 64
+    },
+    {
+      "index": 5,
+      "dayOffset": -70,
+      "accuracyPct": 71
+    },
+    {
+      "index": 6,
+      "dayOffset": -56,
+      "accuracyPct": 73
+    },
+    {
+      "index": 7,
+      "dayOffset": -42,
+      "accuracyPct": 78
+    },
+    {
+      "index": 8,
+      "dayOffset": -28,
+      "accuracyPct": 76
+    },
+    {
+      "index": 9,
+      "dayOffset": -14,
+      "accuracyPct": 81
+    }
+  ],
+  "simulationLatestComparison": {
+    "Língua Portuguesa": [
+      82,
+      86
+    ],
+    "Matemática": [
+      61,
+      68
+    ],
+    "Conhecimentos Bancários": [
+      85,
+      87
+    ],
+    "Probabilidade e Estatística": [
+      62,
+      57
+    ]
+  },
+  "essays": {
+    "scores": [
+      68,
+      72,
+      70,
+      76,
+      74,
+      81,
+      79,
+      84
+    ],
+    "dayOffsets": [
+      -125,
+      -108,
+      -91,
+      -74,
+      -57,
+      -40,
+      -23,
+      -7
+    ]
+  },
+  "reviews": {
+    "states": {
+      "emDia": 18,
+      "proximas": 7,
+      "atrasadas": 5,
+      "criticas": 2
+    },
+    "cases": [
+      {
+        "topic": "Juros compostos",
+        "story": "retenção cai após falta de revisão"
+      },
+      {
+        "topic": "Sistema PRICE",
+        "story": "baixa evidência e nova medição pendente"
+      }
+    ]
+  },
+  "examIntelligence": {
+    "historicalExams": 16,
+    "complete": 13,
+    "partial": 3,
+    "questions": 842,
+    "coveragePct": 92,
+    "confidence": "Alta",
+    "audit": {
+      "aligned": 42,
+      "review": 6,
+      "divergent": 2
+    },
+    "unresolved": 18
+  },
+  "goals": {
+    "weeklyHours": 12,
+    "monthlyHours": 48,
+    "weeklyQuestions": 220,
+    "weeklySimulations": 1,
+    "targetScorePct": 80,
+    "history": [
+      {
+        "week": 1,
+        "plannedMinutes": 480,
+        "actualMinutes": 380
+      },
+      {
+        "week": 2,
+        "plannedMinutes": 480,
+        "actualMinutes": 465
+      },
+      {
+        "week": 3,
+        "plannedMinutes": 600,
+        "actualMinutes": 490
+      },
+      {
+        "week": 4,
+        "plannedMinutes": 600,
+        "actualMinutes": 625
+      },
+      {
+        "week": 5,
+        "plannedMinutes": 720,
+        "actualMinutes": 580
+      },
+      {
+        "week": 6,
+        "plannedMinutes": 720,
+        "actualMinutes": 650
+      },
+      {
+        "week": 7,
+        "plannedMinutes": 720,
+        "actualMinutes": 505
+      },
+      {
+        "week": 8,
+        "plannedMinutes": 720,
+        "actualMinutes": 675
+      },
+      {
+        "week": 9,
+        "plannedMinutes": 720,
+        "actualMinutes": 690
+      },
+      {
+        "week": 10,
+        "plannedMinutes": 720,
+        "actualMinutes": 705
+      },
+      {
+        "week": 11,
+        "plannedMinutes": 720,
+        "actualMinutes": 660
+      },
+      {
+        "week": 12,
+        "plannedMinutes": 720,
+        "actualMinutes": 700
+      }
+    ]
+  },
+  "adaptivePlanning": {
+    "capacityMinutes": 720,
+    "example": {
+      "from": "Conhecimentos Bancários",
+      "to": "Matemática Financeira",
+      "minutes": 30,
+      "capacityPreserved": true
+    }
+  },
+  "recommendations": {
+    "examples": [
+      {
+        "topic": "Juros compostos",
+        "before": 62,
+        "after": 71,
+        "outcome": "improved"
+      },
+      {
+        "topic": "Probabilidade condicional",
+        "before": 58,
+        "after": 58,
+        "outcome": "stable"
+      },
+      {
+        "topic": "Sistema PRICE",
+        "before": 43,
+        "after": null,
+        "outcome": "awaiting_evidence"
+      }
+    ]
+  },
+  "weeklyClose": {
+    "strategicFocusPct": [
+      52,
+      57,
+      61,
+      58,
+      64,
+      67,
+      63,
+      69,
+      72,
+      70,
+      74,
+      76,
+      73,
+      78
+    ]
+  },
+  "readinessHistory": [
+    54,
+    57,
+    61,
+    60,
+    66,
+    69,
+    67,
+    71
+  ],
+  "achievements": {
+    "unlocked": [
+      "primeira_sessao",
+      "cem_questoes",
+      "estrategista",
+      "prova_mapeada"
+    ],
+    "near": [
+      {
+        "id": "cobertura_critica",
+        "current": 4,
+        "target": 5
+      }
+    ]
+  },
+  "demoUX": {
+    "introModal": true,
+    "badge": "DEMONSTRAÇÃO",
+    "exitAction": true,
+    "tour": [
+      "overview",
+      "questions",
+      "simulations",
+      "exam-intelligence",
+      "planning",
+      "weekly-close"
+    ]
+  },
+  "rules": {
+    "deterministic": true,
+    "seed": "studytrack-demo-v4",
+    "relativeDates": true,
+    "preserveExamScope": true,
+    "historicalExamQuestionsSeparateFromStudyQuestions": true
+  }
+}

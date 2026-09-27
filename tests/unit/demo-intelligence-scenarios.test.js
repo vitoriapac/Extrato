@@ -35,8 +35,8 @@ function scenarioCandidates(){
 }
 
 test('demo extensa contém quatro cenários de inteligência distinguíveis',()=>{
-  assert.equal(demo.progressHistory.length,130);
-  assert.equal(demo.studySessions.length,170);
+  assert.equal(demo.progressHistory.length,140);
+  assert.equal(demo.studySessions.length,200);
   assert.equal(demo.simulados.length,13);
   const {masteries,trends,candidates,recommendations}=scenarioCandidates();
   assert.ok(candidates.lacuna.score>=70);
