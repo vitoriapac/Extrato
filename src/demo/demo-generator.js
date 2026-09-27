@@ -8,6 +8,7 @@ import {EXAM_TAGS} from '../domain/exams/exam-constants.js';
 import {buildDemoSimulations,addDemoEssays,buildDemoReviews} from './demo-builders/assessments.js';
 import {buildDemoExams} from './demo-builders/exams.js';
 import {buildDemoPlanning} from './demo-builders/planning.js';
+import {reconcileDemoPlanExecution} from './demo-builders/plan-execution.js';
 import {buildDemoRecommendations,buildDemoWeeklyCloses} from './demo-builders/learning-cycle.js';
 
 export const DEMO_SCENARIO=Object.freeze({days:scenario.meta.historyDays,subjects:scenario.targets.subjects,topics:scenario.targets.topics,sessions:scenario.targets.studySessions,questions:scenario.targets.studyQuestions,simulations:scenario.targets.simulations,seed:scenario.meta.seed});
@@ -36,7 +37,7 @@ export function generateDemoData({seed=DEMO_SCENARIO.seed,today,demoScenario=sce
   const examHistory=buildDemoExams(demoScenario,{subjects:state.subjects});state.exams=examHistory.exams;state.examQuestions=examHistory.examQuestions;
   state.examDate=shiftDate(today,demoScenario.profile.examInDays);state.examBlueprint={examDate:state.examDate,targetScore:demoScenario.goals.targetScorePct,activeExamTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA],configuredAt:timestamp(today),subjects:state.subjects.map((subject,index)=>({subjectId:subject.id,expectedQuestions:index<4?18:14,questionWeight:index===2?1.5:1,priority:index<2?'high':index===5?'low':'normal'}))};
   state.metasPorDisciplina=state.subjects.map((subject,index)=>({id:`demo-subject-goal-${index+1}`,subjectId:subject.id,meta:30+index*5,createdAt}));
-  const planning=buildDemoPlanning(demoScenario,{today,subjects:state.subjects,examDate:state.examDate});state.metas=planning.metas;state.dailyPlans=planning.dailyPlans;state.studyPlans=planning.studyPlans;state.adaptivePlanningHistory=planning.adaptivePlanningHistory;
+  const planning=buildDemoPlanning(demoScenario,{today,subjects:state.subjects,examDate:state.examDate,sessions:state.studySessions});state.metas=planning.metas;state.dailyPlans=reconcileDemoPlanExecution(planning.dailyPlans,state.studySessions,{today});state.studyPlans=planning.studyPlans;state.adaptivePlanningHistory=planning.adaptivePlanningHistory;
   state.planAdjustments=[{id:'demo-adjustment-1',periodStart:shiftDate(today,-7),periodEnd:shiftDate(today,7),plannedMinutes:480,executedMinutes:350,deficitMinutes:130,redistributedMinutes:100,discardedMinutes:30,allocations:[{date:shiftDate(today,1),minutes:50},{date:shiftDate(today,2),minutes:50}],confirmedAt:timestamp(shiftDate(today,-1)),status:'confirmed'}];
   const learning=buildDemoRecommendations(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes});state.recommendationFeedback=learning.recommendationFeedback;state.recommendationHistory=learning.recommendationHistory;
   state.weeklyCloseSnapshots=buildDemoWeeklyCloses(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,recommendations:state.recommendationFeedback});

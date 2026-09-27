@@ -3,14 +3,16 @@ import {addLocalDays} from '../../core/date-utils.js';
 const stamp=date=>`${date}T12:00:00.000Z`;
 const subjectByName=(subjects,name)=>subjects.find(item=>item.name===name);
 
-export function buildDemoPlanning(scenario,{today,subjects,examDate}){
+export function buildDemoPlanning(scenario,{today,subjects,examDate,sessions=[]}){
   const goals=scenario.goals;
+  const sessionsByDate=new Map();
+  for(const session of sessions){if(!sessionsByDate.has(session.date))sessionsByDate.set(session.date,session)}
   const metas={semanal:goals.weeklyHours,mensal:goals.monthlyHours,questoesSemanal:goals.weeklyQuestions,simuladosSemanal:goals.weeklySimulations,metaAprovacao:goals.targetScorePct,horasDiarias:goals.weeklyHours/7,horasPorDia:{'0':1,'1':2,'2':2,'3':2,'4':2,'5':2,'6':1}};
   const dailyPlans=goals.history.flatMap((week,index)=>{
     const weekStart=addLocalDays(today,-(goals.history.length-index+1)*7),dailyBase=Math.floor(week.plannedMinutes/6),remainder=week.plannedMinutes-dailyBase*6;
     return Array.from({length:6},(_,day)=>{
-      const date=addLocalDays(weekStart,day),subject=subjects[(index*3+day)%subjects.length],topic=subject.topics[(index+day)%subject.topics.length],plannedMinutes=dailyBase+(day===5?remainder:0);
-      return {id:`demo-historic-plan-${index+1}-${day+1}`,date,availableMinutes:120,plannedMinutes,flexMinutes:Math.max(0,120-plannedMinutes),createdAt:stamp(date),updatedAt:stamp(date),items:[{id:`demo-historic-plan-item-${index+1}-${day+1}`,subjectId:subject.id,topicId:topic.id,type:'study',plannedMinutes,executedSeconds:0,status:'planned',originalDate:date,currentDate:date,rescheduleCount:0,skippedReason:null,recommendationId:null,lastExecutedAt:null}]};
+      const date=addLocalDays(weekStart,day),session=sessionsByDate.get(date),subject=subjects.find(item=>item.id===session?.subjectId)||subjects[(index*3+day)%subjects.length],topic=subject.topics.find(item=>item.id===session?.topicId)||subject.topics[(index+day)%subject.topics.length],plannedMinutes=dailyBase+(day===5?remainder:0);
+      return {id:`demo-historic-plan-${index+1}-${day+1}`,date,availableMinutes:120,plannedMinutes,flexMinutes:Math.max(0,120-plannedMinutes),createdAt:stamp(date),updatedAt:stamp(date),items:[{id:`demo-historic-plan-item-${index+1}-${day+1}`,subjectId:subject.id,topicId:topic.id,type:session?.type||'study',plannedMinutes,executedSeconds:0,status:'planned',sessionIds:[],originalDate:date,currentDate:date,rescheduleCount:0,skippedReason:null,recommendationId:null,lastExecutedAt:null}]};
     });
   });
   for(let index=0;index<8;index++){
