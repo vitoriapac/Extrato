@@ -21,7 +21,7 @@ export function buildDemoRecommendations(scenario,{today,subjects,sessions,quest
     const records=questions.filter(row=>row.topicId===item.topic.id).sort((a,b)=>a.date.localeCompare(b.date));
     const before=records[0],after=records.length>1?records.at(-1):null;
     const date=addLocalDays(before.date,1),createdAt=stamp(date),id=`demo-recommendation-${index+1}`;
-    const accepted=index%7!==6,session=after?sessions.find(row=>row.id===after.studySessionId):null,completed=accepted&&Boolean(session&&session.date>date);
+    const accepted=index%7!==6,session=after?sessions.find(row=>row.id===after.studySessionId):sessions.filter(row=>row.topicId===item.topic.id&&row.date>date).sort((a,b)=>a.date.localeCompare(b.date))[0],completed=accepted&&Boolean(session&&session.date>date);
     const beforeScore=Math.round(before.correct/before.resolved*100),afterScore=after?Math.round(after.correct/after.resolved*100):null;
     const score=Math.round(100*(item.topic.examImportance||0)*(1-beforeScore/100));
     const reasons=[`Prova: impacto configurado de ${Math.round((item.topic.examImportance||0)*100)}/100.`,`Você: ${before.correct} acertos em ${before.resolved} questões (${beforeScore}%) antes da recomendação.`];

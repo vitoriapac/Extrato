@@ -60,7 +60,15 @@ test('inteligência da prova e planejamento preservam escopo, dados e capacidade
 
 test('recomendações e fechamentos mantêm resultado medido separado de meta narrativa',()=>{
   assert.equal(demo.recommendationFeedback.length,20);assert.equal(demo.recommendationHistory.length,20);
-  assert.deepEqual(new Set(demo.recommendationFeedback.map(item=>item.outcome?.state).filter(Boolean)),new Set(['positive','neutral']));
+  const measured=demo.recommendationFeedback.filter(item=>item.outcome?.measuredAt);
+  const states=new Set(measured.map(item=>item.outcome.state));
+  assert.ok(states.has('positive'));assert.ok(states.has('neutral'));
+  assert.ok([...states].every(state=>['positive','neutral','negative','insufficient'].includes(state)));
+  for(const item of measured){
+    const question=demo.questoes.find(row=>row.topicId===item.topicId&&row.date===item.outcome.measuredAt.slice(0,10));
+    assert.ok(question);assert.equal(item.outcome.questionVolume,question.resolved);
+    assert.equal(item.outcome.after.accuracy,Math.round(question.correct/question.resolved*100));
+  }
   assert.ok(demo.recommendationFeedback.some(item=>item.completed&&!item.outcome));
   assert.ok(demo.recommendationFeedback.some(item=>!item.accepted));
   assert.equal(demo.weeklyCloseSnapshots.length,14);
