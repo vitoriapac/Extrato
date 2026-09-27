@@ -28,21 +28,54 @@ function phaseSlots(scenario){
   });
 }
 
+function narrativeQuestionSlots(questionSlots,entries,totalQuestions){
+  const strategic=entries.filter(entry=>entry.source?.narrativeRole),assigned=new Map(),used=new Set();
+  for(const [roleIndex,entry] of strategic.entries()){
+    const count=entry.source.narrativeRole==='insufficient_evidence'?1:3;
+    for(let part=0;part<count;part++){
+      const target=Math.floor((part+1)*questionSlots.length/(count+1))+roleIndex;
+      let position=target%questionSlots.length;
+      while(used.has(position))position=(position+1)%questionSlots.length;
+      used.add(position);
+      assigned.set(questionSlots[position],{entry,part,count});
+    }
+  }
+  const reserved=strategic.reduce((sum,entry)=>sum+entry.source.targetQuestionVolume,0);
+  if(reserved>totalQuestions)throw new RangeError('Volumes narrativos excedem as questões da demonstração.');
+  const genericCount=questionSlots.length-assigned.size,genericTotal=totalQuestions-reserved;
+  if(!genericCount||genericTotal<genericCount)throw new RangeError('Questões insuficientes para as sessões genéricas.');
+  const genericBase=Math.floor(genericTotal/genericCount),genericExtra=genericTotal%genericCount;
+  let genericIndex=0;
+  return new Map(questionSlots.map(index=>{
+    const selected=assigned.get(index);
+    if(selected){const volume=selected.entry.source.targetQuestionVolume;return[index,{entry:selected.entry,resolved:Math.floor(volume/selected.count)+(selected.part<volume%selected.count?1:0)}]}
+    const resolved=genericBase+(genericIndex++<genericExtra?1:0);
+    return[index,{entry:null,resolved}];
+  }));
+}
+
+function narrativeAccuracy(source,day,historyDays){
+  const target=source.targetMastery,progress=day/historyDays;
+  if(source.narrativeRole==='improving')return clamp(target-16+16*progress,0,100);
+  if(source.narrativeRole==='declining')return clamp(target+13-13*progress,0,100);
+  if(source.narrativeRole==='priority_gap')return clamp(target+5-5*progress,0,100);
+  return target;
+}
+
 export function buildDemoStudyHistory(scenario,{today,subjects,random}){
-  const {historyDays}=scenario.meta,slots=phaseSlots(scenario),entries=subjects.flatMap(subject=>subject.topics.map(topic=>({subject,topic})));
+  const {historyDays}=scenario.meta,slots=phaseSlots(scenario),sourceTopics=new Map(scenario.subjects.flatMap(subject=>subject.topics.map(topic=>[topic.id,topic]))),entries=subjects.flatMap(subject=>subject.topics.map(topic=>({subject,topic,source:sourceTopics.get(topic.id)})));
   const types=scenario.sessions.types,durations=scenario.sessions.durationsMinutes,questionSlots=slots.map((_,index)=>index).filter(index=>types[index%types.length]==='questions');
-  const baseQuestions=Math.floor(scenario.targets.studyQuestions/questionSlots.length),extraQuestions=scenario.targets.studyQuestions%questionSlots.length;
-  const questionPosition=new Map(questionSlots.map((index,position)=>[index,position]));
+  const questionAssignments=narrativeQuestionSlots(questionSlots,entries,scenario.targets.studyQuestions),genericEntries=entries.filter(entry=>!entry.source?.narrativeRole),narrativeEntries=entries.filter(entry=>entry.source?.narrativeRole);
   const studySessions=[],questoes=[];
   slots.forEach((day,index)=>{
-    const entry=entries[(index*37)%entries.length],date=dateAt(today,day,historyDays),type=types[index%types.length];
+    const type=types[index%types.length],assignment=questionAssignments.get(index),entry=assignment?.entry||(!assignment&&index%5===0&&narrativeEntries.length?narrativeEntries[(Math.floor(index/5))%narrativeEntries.length]:genericEntries[(index*37)%genericEntries.length]),date=dateAt(today,day,historyDays);
     const durationMinutes=durations[(index+Math.floor(random()*durations.length))%durations.length],startedAt=`${date}T${String(7+index%12).padStart(2,'0')}:00:00.000Z`;
     const session={id:`demo-session-${index+1}`,date,startedAt,endedAt:new Date(Date.parse(startedAt)+durationMinutes*60000).toISOString(),durationSeconds:durationMinutes*60,subjectId:entry.subject.id,topicId:entry.topic.id,planItemId:null,type,questionsResolved:0,correctAnswers:0,notes:index%13===0?'Sessão demonstrativa com observação de progresso.':'',createdAt:startedAt};
     if(type==='questions'){
-      const position=questionPosition.get(index),resolved=baseQuestions+(position<extraQuestions?1:0);
+      const resolved=assignment.resolved;
       const month=Math.min(scenario.questions.monthlyAccuracyPct.length-1,Math.floor((day-1)/30));
       const phaseRate=scenario.questions.monthlyAccuracyPct[month],subjectRate=Number(scenario.subjects.find(item=>item.id===entry.subject.id)?.targetAccuracyPct)||70;
-      const rate=clamp(phaseRate+(subjectRate-70)*.55+(random()-.5)*10,30,95),correct=Math.round(resolved*rate/100),errors=resolved-correct;
+      const rate=entry.source?.narrativeRole?narrativeAccuracy(entry.source,day,historyDays):clamp(phaseRate+(subjectRate-70)*.55+(random()-.5)*10,30,95),correct=Math.round(resolved*rate/100),errors=resolved-correct;
       session.questionsResolved=resolved;session.correctAnswers=correct;
       questoes.push({id:`demo-question-${questoes.length+1}`,date,subjectId:entry.subject.id,topicId:entry.topic.id,resolved,correct,errorBreakdown:allocateErrors(errors,scenario.questions.errorCategories,scenario.questions.profiles?.[entry.subject.name]),studySessionId:session.id,createdAt:startedAt});
     }

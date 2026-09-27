@@ -1,4 +1,5 @@
 const tags=new Set(['COMUM','BB','CAIXA']);
+const narrativeRoles=new Set(['priority_gap','consolidated','improving','declining','stable','insufficient_evidence']);
 const integer=value=>Number.isInteger(value)&&value>=0;
 
 export function validateDemoScenario(scenario){
@@ -17,6 +18,11 @@ export function validateDemoScenario(scenario){
       if(!topic?.id||ids.has(topic.id))errors.push(`ID de tópico inválido ou duplicado: ${topic?.id||'vazio'}.`);
       ids.add(topic?.id);
       if(!topic?.name||!Array.isArray(topic.examTags)||!topic.examTags.length||topic.examTags.some(tag=>!tags.has(tag)))errors.push(`Tópico com nome ou escopo inválido: ${topic?.id||'vazio'}.`);
+      if(topic?.targetMastery!=null&&(!Number.isFinite(topic.targetMastery)||topic.targetMastery<0||topic.targetMastery>100))errors.push(`Domínio-alvo inválido: ${topic?.id||'vazio'}.`);
+      if(topic?.narrativeRole!=null&&!narrativeRoles.has(topic.narrativeRole))errors.push(`Papel narrativo inválido: ${topic?.id||'vazio'}.`);
+      if(topic?.examImportance!=null&&(!Number.isFinite(topic.examImportance)||topic.examImportance<0||topic.examImportance>1))errors.push(`Importância de prova inválida: ${topic?.id||'vazio'}.`);
+      if(topic?.targetQuestionVolume!=null&&(!integer(topic.targetQuestionVolume)||topic.targetQuestionVolume<1))errors.push(`Volume de questões inválido: ${topic?.id||'vazio'}.`);
+      if(topic?.narrativeRole&&(!Number.isFinite(topic.targetMastery)||!Number.isFinite(topic.examImportance)||!integer(topic.targetQuestionVolume)))errors.push(`Evidências narrativas incompletas: ${topic?.id||'vazio'}.`);
     }
   }
   const target=scenario?.targets||{};

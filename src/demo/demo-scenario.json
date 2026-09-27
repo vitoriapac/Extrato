@@ -86,6 +86,9 @@
             "COMUM"
           ],
           "targetMastery": 81,
+          "narrativeRole": "improving",
+          "examImportance": 0.74,
+          "targetQuestionVolume": 72,
           "difficulty": "Difícil"
         },
         {
@@ -394,6 +397,9 @@
             "COMUM"
           ],
           "targetMastery": 64,
+          "narrativeRole": "declining",
+          "examImportance": 0.81,
+          "targetQuestionVolume": 72,
           "difficulty": "Fácil"
         },
         {
@@ -575,7 +581,10 @@
             "COMUM"
           ],
           "targetMastery": 49,
-          "difficulty": "Fácil"
+          "narrativeRole": "priority_gap",
+          "examImportance": 0.92,
+          "targetQuestionVolume": 95,
+          "difficulty": "Difícil"
         },
         {
           "id": "demo-topic-4-6",
@@ -629,7 +638,10 @@
             "COMUM"
           ],
           "targetMastery": 57,
-          "difficulty": "Fácil"
+          "narrativeRole": "insufficient_evidence",
+          "examImportance": 0.78,
+          "targetQuestionVolume": 18,
+          "difficulty": "Difícil"
         },
         {
           "id": "demo-topic-4-12",
@@ -846,6 +858,9 @@
             "COMUM"
           ],
           "targetMastery": 47,
+          "narrativeRole": "stable",
+          "examImportance": 0.76,
+          "targetQuestionVolume": 70,
           "difficulty": "Médio"
         },
         {
@@ -883,6 +898,9 @@
             "COMUM"
           ],
           "targetMastery": 83,
+          "narrativeRole": "consolidated",
+          "examImportance": 0.68,
+          "targetQuestionVolume": 96,
           "difficulty": "Médio"
         },
         {

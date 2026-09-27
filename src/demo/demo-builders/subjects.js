@@ -10,9 +10,10 @@ export function buildDemoSubjects(scenario,{createdAt,random}){
   return scenario.subjects.map((source,subjectIndex)=>({
     id:source.id,name:source.name,collapsed:false,archived:false,archivedAt:null,createdAt,
     topics:source.topics.map((topic,topicIndex)=>{
-      const stage=topicIndex%5,status=stage===0?'Não iniciado':stage===1?'Em andamento':stage===2?'Revisão':'Concluído';
+      const stage=topicIndex%5,genericStatus=stage===0?'Não iniciado':stage===1?'Em andamento':stage===2?'Revisão':'Concluído';
+      const status=topic.narrativeRole==='consolidated'?'Concluído':topic.narrativeRole==='priority_gap'||topic.narrativeRole==='declining'||topic.narrativeRole==='insufficient_evidence'?'Em andamento':topic.narrativeRole==='improving'||topic.narrativeRole==='stable'?'Revisão':genericStatus;
       const completedAt=status==='Concluído'?`${addLocalDays(createdAt.slice(0,10),20+(topicIndex*7+subjectIndex*11)%110)}T12:00:00.000Z`:null;
-      return {id:topic.id,name:topic.name,examTags:demoExamTags(topic.examTags),link:'',status,archived:false,archivedAt:null,notes:'',tags:[],difficulty:topic.difficulty||'Médio',createdAt,firstCompletedAt:completedAt,lastCompletedAt:completedAt,completionCount:completedAt?1:0,lastReviewedAt:null,reviewCount:0,examImportance:Math.round((.4+random()*.55)*100)/100,estimatedStudyMinutes:120+Math.floor(random()*300),prerequisites:[]};
+      return {id:topic.id,name:topic.name,examTags:demoExamTags(topic.examTags),link:'',status,archived:false,archivedAt:null,notes:'',tags:[],difficulty:topic.difficulty||'Médio',createdAt,firstCompletedAt:completedAt,lastCompletedAt:completedAt,completionCount:completedAt?1:0,lastReviewedAt:null,reviewCount:0,examImportance:topic.examImportance??Math.round((.4+random()*.55)*100)/100,estimatedStudyMinutes:120+Math.floor(random()*300),prerequisites:[]};
     })
   }));
 }
