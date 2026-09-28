@@ -27,6 +27,7 @@ const LISTS=[
   ['.exam-configuration-audit > ul',':scope > li'],
   ['.diagnosis-summary > section',':scope > article'],
   ['.simulation-trend-list',':scope > li'],
+  ['#planExecutionResults .execution-distribution tbody',':scope > tr'],
   ['#historicoMetasContainer tbody',':scope > tr'],
   ['.adaptive-history > ol',':scope > li'],
   ['.weekly-focus-history > ol',':scope > li'],

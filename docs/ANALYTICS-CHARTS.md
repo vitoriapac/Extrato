@@ -50,3 +50,9 @@ Questões, evolução de Simulados e Plano e execução usam chart-components.js
 O painel de prontidão mostra o cálculo atual, último registro salvo, melhor registro comparável e variação entre fechamentos. Eventos anteriores a mudanças estratégicas são identificados pelo motivo e não entram na variação entre fechamentos. Só há delta e contribuição ponderada quando algoritmo, pesos e fatores disponíveis coincidem. Mudanças de versão ou disponibilidade interrompem a linha e explicam a ausência da comparação. Os 12 registros mais recentes aparecem no desenho; o resumo considera todo o histórico do mesmo concurso.
 
 Snapshots v2 preservam pesos, tipo, motivo e identidade do evento. Snapshots v1 permanecem intactos; para o algoritmo 1, seus pesos conhecidos permitem comparação compatível. Não há captura diária automática nem recálculo retroativo. A disponibilidade semanal e as metas também são capturadas antes de mudanças confirmadas.
+
+## Aderência estratégica
+
+A aderência de carga mantém o total estudado, inclusive fora do plano. A aderência estratégica divide os minutos creditados a itens prioritários pelos minutos prioritários previstos. O crédito exige sessão real, vínculo válido e tópico/disciplina compatíveis, e é limitado ao orçamento de cada item. A classificação usa o snapshot histórico, nunca o diagnóstico atual.
+
+Estudo sem vínculo, vínculos incompatíveis, atividades de outro período e excedentes são informados separadamente. Planos antigos sem snapshot permanecem sem classificação. A cobertura da classificação indica quanto do plano pode sustentar a leitura estratégica. A distribuição apresenta planejado, realizado e diferença por disciplina; o histórico semanal mantém as duas leituras.

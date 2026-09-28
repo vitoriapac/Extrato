@@ -3320,7 +3320,7 @@ function renderMetas(){
 
 function renderPlanExecution(){
   const container=document.getElementById('planExecutionResults');if(!container)return;
-  const model=buildPlanExecution({today:todayISO(),dailyPlans:state.dailyPlans,sessions:state.studySessions,hoursByDay:state.metas.horasPorDia});
+  const model=buildPlanExecution({today:todayISO(),dailyPlans:state.dailyPlans,sessions:state.studySessions.map(item=>({...item,subjectId:entitySubjectId(item)})),hoursByDay:state.metas.horasPorDia,subjects:state.subjects});
   const distribution=buildStudyDistribution({today:todayISO(),dailyPlans:state.dailyPlans,sessions:state.studySessions.map(item=>({...item,subjectId:entitySubjectId(item)})),subjects:state.subjects});
   const alignment=buildPlanImpactAlignment({distribution,topics:examScopedTopics(),impactForTopic:topic=>resolveValidatedExamImpact(buildTopicExamProfile({topic,subjectConfig:state.examBlueprint.subjects.find(item=>item.subjectId===topic.subjectId),activeExamTags:state.examBlueprint.activeExamTags||[],exams:state.exams,examQuestions:state.examQuestions})).value});
   container.innerHTML=renderPlanExecutionView(model,{formatDate:formatDatePt})+`<details class="study-distribution" id="studyDistribution"><summary>Distribuição entre disciplinas</summary>${renderStudyDistribution(distribution,{escapeHtml})}</details><details class="study-distribution" id="planImpactAlignment"><summary>Plano × impacto na prova</summary>${renderPlanImpactAlignment(alignment,{escapeHtml})}</details>`;
