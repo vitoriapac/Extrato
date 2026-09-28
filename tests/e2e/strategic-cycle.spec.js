@@ -1,0 +1,143 @@
+import {test,expect} from '@playwright/test';
+import {activateTab,expectNoPageOverflow} from './helpers.js';
+import {buildStrategicCycleFixture,STRATEGIC_CYCLE_TODAY} from '../fixtures/strategic-cycle.js';
+
+async function prepare(page){
+  page.setDefaultTimeout(10_000);
+  await page.clock.install({time:new Date(STRATEGIC_CYCLE_TODAY+'T12:00:00-03:00')});
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(element=>element.remove());
+  const base=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState()));
+  const validation=await page.evaluate(value=>window.__EXTRATO_TEST__.validateBackupData(value),buildStrategicCycleFixture(base));
+  expect(validation.valid,validation.message).toBe(true);
+  await page.evaluate(value=>{const api=window.__EXTRATO_TEST__;api.setState(value);api.renderAll()},validation.normalized);
+  return page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState()));
+}
+const getState=page=>page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState()));
+const capacity=state=>Object.values(state.metas.horasPorDia).reduce((sum,hours)=>sum+hours*60,0);
+function assertHistoryPreserved(before,after){
+  for(const key of ['studySessions','readinessSnapshots','dailyPlans'])for(const item of before[key].filter(row=>row.date<STRATEGIC_CYCLE_TODAY))expect(after[key].find(row=>row.id===item.id),`histórico ${key}/${item.id}`).toEqual(item);
+  expect(after.subjects.flatMap(subject=>subject.topics).map(topic=>topic.id)).toEqual(before.subjects.flatMap(subject=>subject.topics).map(topic=>topic.id));
+  expect(capacity(after)).toBe(capacity(before));
+}
+
+test('prova → decisão → plano → execução → resultado → fechamento → próxima semana',async({page})=>{
+  test.setTimeout(120_000);
+  const before=await prepare(page);
+  const candidates=await page.evaluate(()=>window.__EXTRATO_TEST__.intelligenceCandidates());
+  const critical=candidates.find(item=>item.topicId==='cycle-t0-0'),mastered=candidates.find(item=>item.topicId==='cycle-t0-1');
+  expect(critical.examIntelligence.presencePercent).toBe(100);
+  expect(critical.mastery).toBeLessThan(mastered.mastery);
+  expect(critical.score).toBeGreaterThan(mastered.score);
+  await activateTab(page,'metas');
+  await page.locator('[data-exam-matrix-mode="quadrants"]').click();
+  await expect(page.locator('#examHistoricalMatrix')).toContainText('Alta incidência · desenvolver domínio');
+  await page.getByRole('button',{name:'Calcular proposta semanal',exact:true}).click();
+  expect((await getState(page)).studyPlans).toHaveLength(0);
+  await page.getByRole('button',{name:'Confirmar e salvar plano',exact:true}).click();
+  const confirmed=(await getState(page)).studyPlans.at(-1);
+  expect(confirmed.items.some(item=>item.topicId===critical.topicId&&item.prioritySnapshot)).toBe(true);
+  await page.getByRole('button',{name:'Revisar proposta de estratégia',exact:true}).click();
+  expect((await getState(page)).studyPlans).toHaveLength(1);
+  await page.getByRole('button',{name:'Confirmar nova versão do plano',exact:true}).click();
+  const adapted=(await getState(page)).studyPlans.at(-1);
+  expect(adapted.phaseStrategy.status).toBe('applied');
+  expect(adapted.weeklyPlannedMinutes).toBe(confirmed.weeklyPlannedMinutes);
+  expect(adapted.items.map(item=>item.topicId)).toEqual(confirmed.items.map(item=>item.topicId));
+  expect(adapted.items.every(item=>Object.values(item.activityMix).reduce((sum,value)=>sum+value,0)===item.minutes)).toBe(true);
+  await page.getByRole('button',{name:'Distribuir nos próximos 7 dias',exact:true}).click();
+  await page.getByRole('button',{name:'Confirmar planos diários',exact:true}).click();
+  await activateTab(page,'hoje');
+  const recommendation=page.locator('#studyRecommendation .study-recommendation').first();
+  await expect(recommendation).toBeVisible();
+  await recommendation.locator('.recommendation-explanation > summary').first().click();
+  await expect(recommendation).toContainText('O que muda se eu aceitar?');
+  await expect(recommendation).toContainText('Com base em quê?');
+  await recommendation.locator('.recommendation-actions button').first().click();
+  const timer=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().activeTimer));
+  expect(timer.recommendationId).toBeTruthy();expect(timer.planItemId).toBeTruthy();
+  await page.clock.fastForward('30:00');
+  await page.locator('#timerFinishBtn').click();
+  await expect(page.locator('#sessionModalOverlay')).toBeVisible();
+  await page.locator('#sessionModalDifficulty').selectOption('medium');
+  if(await page.locator('#sessionModalResolved').isVisible()){await page.locator('#sessionModalResolved').fill('30');await page.locator('#sessionModalCorrect').fill('24')}
+  await page.locator('#sessionModalSaveBtn').click();
+  const executed=await getState(page),session=executed.studySessions.at(-1),decision=executed.recommendationFeedback.find(item=>item.recommendationId===timer.recommendationId);
+  expect(session.planItemId).toBe(timer.planItemId);expect(session.durationSeconds).toBeGreaterThanOrEqual(1800);
+  expect(decision.completed).toBe(true);expect(decision.snapshot.explanationSnapshot).toBeTruthy();
+  // Seed only the subsequent measured observations; recommendation, plan, session,
+  // evaluation and closing still run through the real application flows.
+  await page.clock.setSystemTime(new Date('2026-09-30T12:00:00-03:00'));
+  await page.evaluate(({topicId,subjectId})=>{
+    const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());
+    state.questoes.push({id:'cycle-followup-questions',date:'2026-09-30',subjectId,topicId,resolved:40,correct:34,errorBreakdown:{naoSabia:3,esqueci:2,interpretacao:1,calculo:0,desatencao:0,chute:0},createdAt:'2026-09-30T12:00:00-03:00'});
+    const previous=state.simulados.at(-1);state.simulados.push({...structuredClone(previous),id:'cycle-followup-sim',nome:'Simulado posterior',date:'2026-09-30',correct:72,breakdown:previous.breakdown.map(row=>({...row,id:row.id+'-followup',correct:18}))});
+    api.setState(state);api.renderAll();
+  },timer);
+  // A subsequent real session triggers the existing outcome measurement service.
+  await activateTab(page,'dashboard');
+  await page.locator('#timerSubjectSelect').selectOption(timer.subjectId);
+  await page.locator('#timerTopicSelect').selectOption(timer.topicId);
+  await page.locator('#timerStartBtn').click();await page.clock.fastForward('05:00');
+  await page.locator('#timerFinishBtn').click();await page.locator('#sessionModalDifficulty').selectOption('medium');await page.locator('#sessionModalSaveBtn').click();
+  await page.clock.setSystemTime(new Date('2026-10-04T12:00:00-03:00'));
+  await activateTab(page,'dashboard');
+  await expect(page.locator('#weeklyCloseDashboard')).toContainText('Da semana encerrada ao próximo plano');
+  await page.locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"] ').click();
+  const closed=await getState(page),close=closed.weeklyCloseSnapshots.at(-1);
+  const execution=close.weeklyClose.decisionCycle.execution;
+  expect(execution.linkedMinutes).toBeGreaterThan(0);
+  expect(execution.invalidLinkMinutes).toBe(0);
+  expect(execution.strategicAdherence).toBe(execution.priorityPlannedMinutes?Math.round(execution.priorityExecutedMinutes/execution.priorityPlannedMinutes*100):null);
+  expect(closed.readinessSnapshots.some(item=>item.date==='2026-10-04'&&item.captureKind==='weekly-close')).toBe(true);
+  const measured=closed.recommendationFeedback.find(item=>item.recommendationId===timer.recommendationId);
+  expect(measured.outcome.measuredAt).toBeTruthy();expect(measured.outcome.questionVolumeAfter).toBeGreaterThanOrEqual(40);
+  expect(measured.snapshot).toEqual(decision.snapshot);
+  await expect(page.locator('.performance-forecast')).toContainText('5 simulados comparáveis');
+  const choices=page.locator('#weeklyCloseDashboard .weekly-priority-choice input');
+  await expect(choices.first()).toBeVisible();await choices.first().check();
+  await page.locator('#weeklyCloseDashboard [data-delegated-click="previewWeeklyCloseActions()"] ').click();
+  const beforeApply=await getState(page);
+  await page.locator('#weeklyCloseDashboard [data-delegated-click="confirmWeeklyCloseActions()"] ').click();
+  const after=await getState(page);
+  expect(after.dailyPlans.flatMap(plan=>plan.items).filter(item=>item.weeklyCloseSnapshotId).length).toBeGreaterThan(beforeApply.dailyPlans.flatMap(plan=>plan.items).filter(item=>item.weeklyCloseSnapshotId).length);
+  expect(after.dailyPlans.filter(plan=>plan.date>'2026-10-04').every(plan=>plan.plannedMinutes<=plan.availableMinutes)).toBe(true);
+  expect(after.studyPlans.find(item=>item.id===confirmed.id)).toEqual(confirmed);
+  assertHistoryPreserved(before,after);
+});
+
+test('reversão, cooldown, escopo e falta de dados preservam o histórico em mobile',async({page})=>{
+  await page.setViewportSize({width:375,height:812});
+  const before=await prepare(page);
+  await activateTab(page,'metas');
+  await page.getByRole('button',{name:'Calcular proposta semanal',exact:true}).click();
+  await page.getByRole('button',{name:'Confirmar e salvar plano',exact:true}).click();
+  const confirmed=(await getState(page)).studyPlans.at(-1);
+  await page.getByRole('button',{name:'Revisar proposta de estratégia',exact:true}).click();
+  await page.getByRole('button',{name:'Confirmar nova versão do plano',exact:true}).click();
+  await expect(page.locator('#examStudyPlan')).toContainText('Aguarde 14 dias');
+  await page.getByRole('button',{name:'Reverter última estratégia por fase',exact:true}).click();
+  const reverted=await getState(page);
+  expect(reverted.studyPlans).toHaveLength(3);expect(reverted.studyPlans.at(-1).phaseStrategy.status).toBe('reverted');
+  expect(reverted.studyPlans.at(-1).items.map(item=>item.activityMix)).toEqual(confirmed.items.map(item=>item.activityMix));
+  await expect(page.locator('#examStudyPlan')).toContainText('Aguarde 14 dias');
+  await page.locator('#examBlueprintConfig summary').filter({hasText:'Opções gerais da prova'}).click();
+  const caixa=page.locator('#examBlueprintConfig').getByLabel('Caixa — TBN',{exact:true});
+  const bb=page.locator('#examBlueprintConfig input[data-delegated-change*="bb-escriturario"]');
+  await caixa.locator('..').click();await bb.locator('..').click();
+  await expect(page.locator('#examHistoricalMatrix')).toContainText('1 prova completa');
+  await page.locator('[data-exam-matrix-mode="quadrants"]').click();
+  await expect(page.locator('#examHistoricalMatrix')).toContainText('Evidência insuficiente para posicionar');
+  const candidates=await page.evaluate(()=>window.__EXTRATO_TEST__.intelligenceCandidates());
+  expect(candidates.some(item=>item.topicId==='cycle-t0-0')).toBe(false);
+  expect(candidates.filter(item=>item.topicId==='cycle-t0-4')).toHaveLength(1);
+  const after=await getState(page);assertHistoryPreserved(before,after);
+  expect(after.studyPlans.find(item=>item.id===confirmed.id)).toEqual(confirmed);
+  const backup=await page.evaluate(()=>window.__EXTRATO_TEST__.validateBackupData(JSON.parse(JSON.stringify(window.__EXTRATO_TEST__.getState()))));
+  expect(backup.valid,backup.message).toBe(true);
+  const migratedBefore=await page.evaluate(value=>window.__EXTRATO_TEST__.validateBackupData(value).normalized,before);
+  assertHistoryPreserved(migratedBefore,backup.normalized);
+  expect(backup.normalized.studyPlans.map(plan=>plan.id)).toEqual(after.studyPlans.map(plan=>plan.id));
+  await expectNoPageOverflow(page);
+});
