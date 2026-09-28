@@ -38,5 +38,5 @@ test('central de diagnóstico continua acessível quando expandida',async({page}
 test('configuração estratégica continua acessível quando expandida',async({page})=>{
   await openDemo(page);await activateTab(page,'metas');
   const disclosure=page.locator('#examBlueprintConfig .exam-subject-config').first();
-  if(await disclosure.count()){await disclosure.locator('summary').click();await expect(disclosure.locator('.exam-subject-row')).toBeVisible();await expectAccessible(page,'Configuração estratégica expandida')}
+  if(await disclosure.count()){await disclosure.locator('summary').click();await expect(disclosure.locator('.exam-subject-row')).toBeVisible();await expectAccessible(page,'Configuração estratégica expandida','#examBlueprintConfig')}
 });
