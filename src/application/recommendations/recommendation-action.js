@@ -34,7 +34,7 @@ export function buildStudyAction(recommendation,{source='overview'}={}){
     id:String(id),recommendationId:recommendationId?String(recommendationId):null,source:sourceOrDefault(source),
     subjectId:recommendation.subjectId||null,topicId:recommendation.topicId||null,
     activityType:recommendationActionKind(recommendation),suggestedMinutes:finiteOrNull(recommendation.estimatedMinutes),
-    priority:finiteOrNull(recommendation.score),reasons:[...(Array.isArray(recommendation.reasons)?recommendation.reasons:[])].filter(Boolean),
+    explanation:recommendation.explanation?structuredClone(recommendation.explanation):null,priority:finiteOrNull(recommendation.score),reasons:[...(Array.isArray(recommendation.reasons)?recommendation.reasons:[])].filter(Boolean),
     evidence:{mastery:finiteOrNull(recommendation.mastery),retention:finiteOrNull(recommendation.retention),
       strength:finiteOrNull(evidence.evidenceStrength),completeness:finiteOrNull(evidence.completeness),label:evidence.evidenceLabel||null,
       factors:recommendation.factors?structuredClone(recommendation.factors):null},

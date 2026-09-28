@@ -1,8 +1,9 @@
+import {buildRecommendationExplanation} from './build-recommendation-explanation.js';
 const asBoolean=value=>value===true;
 
 export function createRecommendationPresentation(recommendation,{id,shownAt,algorithmVersion=1}={}){
   if(!recommendation||!id||!shownAt)throw new Error('Recomendação, identidade e instante são obrigatórios.');
-  return {...recommendation,recommendationId:id,shownAt,algorithmVersion};
+  return {...structuredClone(recommendation),recommendationId:id,shownAt,algorithmVersion,explanation:buildRecommendationExplanation({...recommendation,algorithmVersion},{createdAt:shownAt})};
 }
 
 export function recordRecommendationDecision(feedbackList,recommendation,{accepted,reasonSkipped=null,baseline=null,snapshot=null,now,idGenerator}={}){

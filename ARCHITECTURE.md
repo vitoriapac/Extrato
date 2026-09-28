@@ -279,3 +279,7 @@ Toda mudança de concursos ativos passa por `setActiveExamTags()`. As tags são 
 ## Prioridade registrada no plano
 
 Cada novo item confirmado registra prioritySnapshot, com score, fatores, razões, evidência, algoritmo e política de classificação. A política 1 classifica score ≥ 70 como prioritário; prioridades aceitas explicitamente no fechamento também são identificadas. Ausência de score não significa baixa prioridade. A distribuição diária copia o contexto do plano semanal e as sessões vinculadas recebem planPrioritySnapshot. Planos antigos permanecem sem classificação histórica, sem inferência a partir do diagnóstico atual.
+
+## Explicações e consequências das decisões
+
+build-recommendation-explanation.js fornece ação, razões, evidências e consequências operacionais. As apresentações guardam sua explicação original; a decisão guarda explanationSnapshot, evidenceSnapshot, suggestedAction e expectedImpact junto ao algoritmo e instante. Histórico de decisões e adaptações renderizam os valores capturados, sem consultar métricas atuais. Consequências descrevem cronômetro, revisão, vínculo ao plano e redistribuição confirmável; não são previsão de ganho de domínio, prontidão ou nota. Registros legados sem explicação detalhada não recebem uma reconstrução retroativa.

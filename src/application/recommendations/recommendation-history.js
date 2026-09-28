@@ -1,7 +1,8 @@
+import {buildRecommendationExplanation} from './build-recommendation-explanation.js';
 import {recommendationActionKind} from './recommendation-action.js';
 
 export const RECOMMENDATION_HISTORY_STATUSES=Object.freeze(['pending','executed','dismissed','expired']);
-const signature=item=>JSON.stringify([item.id,item.score,item.estimatedMinutes,item.factors||null,recommendationActionKind(item)]);
+const signature=item=>JSON.stringify([item.id,item.score,item.estimatedMinutes,item.factors||null,recommendationActionKind(item),item.evidence||null,item.examIntelligence||null,item.algorithmVersion||null]);
 const localDate=timestamp=>{const date=new Date(timestamp);return Number.isNaN(date.getTime())?null:`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`};
 const recordDate=record=>record.localDate||localDate(record.createdAt);
 
@@ -10,7 +11,7 @@ export function migrateRecommendationHistory(feedback=[]){
     id:item.recommendationId,createdAt:item.shownAt||item.createdAt||new Date(`${item.date}T12:00:00Z`).toISOString(),localDate:item.date||localDate(item.shownAt||item.createdAt),
     candidateId:null,signature:null,source:item.presentationSource||'legacy',subjectId:item.subjectId||null,topicId:item.topicId||null,
     activityType:['study','review','questions','prerequisite'].includes(item.actionKind||item.snapshot?.recommendationType)?item.actionKind||item.snapshot?.recommendationType:'study',suggestedMinutes:item.snapshot?.recommendedMinutes??null,
-    priority:item.score??null,reasons:[],evidenceSnapshot:item.snapshot?.evidenceBefore||null,algorithmVersions:{priority:Number(item.algorithmVersion)||1,examIntelligence:item.snapshot?.examIntelligenceVersion??null},
+    explanationSnapshot:structuredClone(item.explanation||buildRecommendationExplanation(item,{createdAt:item.shownAt||now})),priority:item.score??null,reasons:[],evidenceSnapshot:item.snapshot?.evidenceBefore||null,algorithmVersions:{priority:Number(item.algorithmVersion)||1,examIntelligence:item.snapshot?.examIntelligenceVersion??null},
     status:item.accepted?'executed':'dismissed',executedAt:item.accepted?item.completedAt||item.createdAt||null:null,
     dismissedAt:item.accepted?null:item.createdAt||null,expiredAt:null,sessionId:item.resultingSessionId||null,feedbackId:item.id
   }));

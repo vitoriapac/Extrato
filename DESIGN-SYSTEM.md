@@ -77,3 +77,7 @@ Componentes novos devem reutilizar esses contratos antes de criar variantes. Mat
 O resumo distingue cálculo atual, último registro salvo, variação entre fechamentos e melhor registro comparável. Registros de alterações estratégicas não entram na comparação entre fechamentos. A comparação só ocorre quando algoritmo, pesos e disponibilidade dos fatores coincidem. A linha do gráfico se interrompe quando a base muda; nenhum registro antigo é recalculado. O detalhamento mostra pontuação anterior e atual e contribuição ponderada de cada fator.
 
 Capturas ocorrem no fechamento e antes de mudanças na data/meta da prova, concurso ativo, configuração de disciplina, impacto/esforço/pré-requisitos de tópico e confirmação ou reversão do plano semanal. Aceitar prioridades do fechamento captura a prontidão antes de alterar o plano. Mudanças sem valor disponível não geram snapshots; re-renderizações não geram capturas. Uma migração futura do algoritmo deve preservar os snapshots e usar um evento explícito, sem reconstrução retroativa.
+
+## Explicações de recomendações
+
+renderRecommendationExplanation usa quatro perguntas: o que fazer, por que, evidências e o que muda ao aceitar. As consequências são operacionais e não garantem desempenho. A Visão Geral, Hoje, diagnóstico com ação vinculada e adaptações reutilizam o contrato. Histórico mostra explanationSnapshot; registros antigos mantêm apenas as razões que de fato foram salvas. Detalhamento da composição matemática continua disponível na recomendação de Hoje.
