@@ -2,27 +2,28 @@ import {calculateReadinessScore,READINESS_WEIGHTS} from '../../domain/analytics/
 import {isTopicInExamScope,isSimulationInExamScope,normalizeExamTags} from '../../domain/exams/exam-scope.js';
 import {addLocalDays} from '../../core/date-utils.js';
 
-export const READINESS_SNAPSHOT_VERSION=1;
+export const READINESS_SNAPSHOT_VERSION=2;
 const clamp=value=>Math.max(0,Math.min(100,Math.round(value)));
 const factor=(raw,confidence,available=true)=>({available,score:available?clamp(50+(raw-50)*confidence):50,confidence:available?Math.min(1,confidence):0});
 const scopeKey=tags=>JSON.stringify(normalizeExamTags(tags));
 
-export function createReadinessSnapshot({id,date,activeExamTags=[],metrics,savedAt}={}){
+export function createReadinessSnapshot({id,date,activeExamTags=[],metrics,savedAt,captureKind='weekly-close',eventKey=null,reason=null}={}){
   const result=calculateReadinessScore(metrics,READINESS_WEIGHTS);
   if(!date||result.value==null)return null;
-  return {id,date,savedAt:savedAt||`${date}T23:59:59.000Z`,activeExamTags:normalizeExamTags(activeExamTags),score:result.value,confidence:result.confidence,confidenceLabel:result.confidenceLabel,factors:{...result.factors},algorithmVersion:result.algorithmVersion,version:READINESS_SNAPSHOT_VERSION};
+  return {id,date,savedAt:savedAt||`${date}T23:59:59.000Z`,activeExamTags:normalizeExamTags(activeExamTags),score:result.value,confidence:result.confidence,confidenceLabel:result.confidenceLabel,factors:{...result.factors},weights:{...READINESS_WEIGHTS},algorithmVersion:result.algorithmVersion,version:READINESS_SNAPSHOT_VERSION,captureKind,eventKey,reason:reason||(captureKind==='weekly-close'?'Fechamento semanal':'Antes de alteração estratégica')};
 }
 
 export function upsertReadinessSnapshot(list,snapshot){
   if(!snapshot)return false;
-  const index=list.findIndex(item=>item.date===snapshot.date&&scopeKey(item.activeExamTags)===scopeKey(snapshot.activeExamTags));
+  const weekly=!snapshot.captureKind||snapshot.captureKind==='weekly-close';
+  const index=list.findIndex(item=>scopeKey(item.activeExamTags)===scopeKey(snapshot.activeExamTags)&&(weekly?item.date===snapshot.date&&(!item.captureKind||item.captureKind==='weekly-close'):snapshot.eventKey?item.eventKey===snapshot.eventKey:item.id===snapshot.id));
   if(index>=0)return false;
-  list.push(snapshot);list.sort((a,b)=>a.date.localeCompare(b.date));return true;
+  list.push(structuredClone(snapshot));list.sort((a,b)=>a.date.localeCompare(b.date)||String(a.savedAt||'').localeCompare(String(b.savedAt||'')));return true;
 }
 
 export function readinessHistoryForScope(snapshots=[],activeExamTags=[],start=null,end=null){
   const key=scopeKey(activeExamTags);
-  return snapshots.filter(item=>scopeKey(item.activeExamTags)===key&&(!start||item.date>=start)&&(!end||item.date<=end)).sort((a,b)=>a.date.localeCompare(b.date));
+  return snapshots.filter(item=>scopeKey(item.activeExamTags)===key&&(!start||item.date>=start)&&(!end||item.date<=end)).sort((a,b)=>a.date.localeCompare(b.date)||String(a.savedAt||'').localeCompare(String(b.savedAt||'')));
 }
 
 // Historical inputs are cut off at `date`; later activity cannot change an existing snapshot.

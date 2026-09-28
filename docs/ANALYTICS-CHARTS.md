@@ -42,3 +42,11 @@ Os gráficos complementam os números e a explicação textual. Todos preservam 
 - `progressHistory` registra conclusão de conteúdo e não serve como histórico do Índice de Prontidão. `readinessSnapshots` guarda o índice calculado quando o fechamento semanal é salvo, com data, tags do concurso ativo, fatores, confiança e versão do algoritmo. O gráfico filtra pelo concurso ativo e deixa períodos anteriores à captura sem ponto.
 - Uma série de retenção exigirá retratos por tópico com data, escopo, valor, volume de revisões/questões e versão do cálculo. São necessários ao menos dois retratos comparáveis e evidência suficiente em ambos; uma alteração de fórmula inicia nova série.
 - A série de prontidão indica mudança no indicador observado e não demonstra que uma recomendação causou a mudança. A interface ainda não desenha uma série histórica de retenção sem retratos próprios.
+
+## Apresentação compartilhada e prontidão explicável
+
+Questões, evolução de Simulados e Plano e execução usam chart-components.js para cabeçalho, período, legenda, evidência, estado vazio e dados textuais. As séries usam tokens semânticos de gráfico e os pontos oferecem detalhes via title, complementados pelos registros textuais. Os filtros existentes continuam responsáveis pelo recorte.
+
+O painel de prontidão mostra o cálculo atual, último registro salvo, melhor registro comparável e variação entre fechamentos. Eventos anteriores a mudanças estratégicas são identificados pelo motivo e não entram na variação entre fechamentos. Só há delta e contribuição ponderada quando algoritmo, pesos e fatores disponíveis coincidem. Mudanças de versão ou disponibilidade interrompem a linha e explicam a ausência da comparação. Os 12 registros mais recentes aparecem no desenho; o resumo considera todo o histórico do mesmo concurso.
+
+Snapshots v2 preservam pesos, tipo, motivo e identidade do evento. Snapshots v1 permanecem intactos; para o algoritmo 1, seus pesos conhecidos permitem comparação compatível. Não há captura diária automática nem recálculo retroativo. A disponibilidade semanal e as metas também são capturadas antes de mudanças confirmadas.
