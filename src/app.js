@@ -1,3 +1,5 @@
+import {buildCalibratedScoreProjection} from './domain/forecasts/calibrated-score-projection.js';
+import {renderScoreProjectionEvidence} from './ui/renderers/score-projection-renderer.js';
 import {renderWeeklyDecisionCycle} from './ui/renderers/weekly-decision-cycle-renderer.js';
 import {buildPerformanceAnalysis,performancePeriodRecords} from './application/questions/build-performance-analysis.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
@@ -122,10 +124,8 @@ import {renderWeeklyClose,renderWeeklyCloseNext,renderWeeklyStrategicFocus,rende
 import {dismissAlert,reconcileAlerts} from './application/alert-lifecycle.js';
 import {buildIntelligentAlerts} from './domain/diagnostics/alerts.js';
 import {buildPerformanceForecast} from './domain/forecasts/performance-forecast.js';
-import {buildPerformanceScenarios} from './domain/forecasts/performance-scenarios.js';
 import {buildRecommendationCalibration} from './domain/analytics/recommendation-calibration.js';
 import {renderRecommendationCalibrationModel} from './ui/renderers/recommendation-calibration-renderer.js';
-import {renderPerformanceScenarios} from './ui/renderers/performance-scenarios-renderer.js';
 import {APP_MODES,readAppMode,enterDemoMode,exitDemoMode,resetDemoMode} from './application/demo/demo-mode.js';
 import {generateDemoData} from './demo/demo-generator.js';
 import {runStateMigrations,validateBackupEnvelope} from './storage/migration-service.js';
@@ -4795,44 +4795,15 @@ function confiancaAprovacao(metrics){
   return {value:result.confidence,nivel:result.confidenceLabel};
 }
 function projectPerformance(metrics){
-  const m=metrics||computeApprovalMetrics();
-  const sources=[
-    {metric:m.simulados,weight:0.45,label:'simulados'},
-    {metric:m.acertos,weight:0.25,label:'questões'},
-    {metric:m.dominio,weight:0.30,label:'domínio'}
-  ].filter(source=>source.metric.available&&source.metric.raw!==null);
-  if(sources.length===0) return {available:false,low:null,high:null,central:null,confidence:0,confidenceLabel:'Baixa',detail:'Registre questões, simulados e sessões para gerar uma faixa.',forecast30:{available:false,reason:'A faixa atual ainda não possui dados suficientes.'}};
-  let weighted=0,totalWeight=0;
-  sources.forEach(source=>{
-    const evidenceWeight=source.weight*Math.max(0.2,source.metric.confidence);
-    weighted+=source.metric.raw*evidenceWeight;
-    totalWeight+=evidenceWeight;
-  });
-  let central=weighted/totalWeight;
-  if(m.tendencia.available) central+=(m.tendencia.score-50)*0.08;
-  central=Math.max(0,Math.min(100,central));
-  const sourceCoverage=sources.reduce((sum,source)=>sum+source.weight,0);
-  const evidence=sources.reduce((sum,source)=>sum+source.metric.confidence*source.weight,0)/sourceCoverage;
-  const confidence=Math.min(1,evidence*0.75+sourceCoverage*0.25);
-  const result=buildPerformanceForecast({currentValue:central,currentConfidence:confidence,targetScore:state.metas.metaAprovacao,observations:performanceForecastObservations()});
-  const {low,high}=result.currentBand;
-  const weeklyMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),scenarios=buildPerformanceScenarios(result,{weeklyMinutes});
-  return {
-    available:true,low,high,central:result.currentBand.central,confidence,
-    confidenceLabel:result.currentBand.confidenceLabel,gap:result.gap,movingAverage:result.movingAverage,forecast30:result.forecast30,evidence:result.evidence,scenarios,
-    detail:'Base: '+sources.map(source=>source.label).join(', ')+' · margem ajustada pela confiança'
-  };
+  const calibration=buildCalibratedScoreProjection({simulations:examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),today:todayISO(),target:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:state.metas.metaAprovacao});
+  if(!calibration.available)return {available:false,low:null,high:null,central:null,confidence:0,confidenceLabel:'Baixa',detail:calibration.reason,calibration,forecast30:{available:false,reason:calibration.reason}};
+  const confidence=calibration.confidence==='moderate'?.5:.2;
+  const forecast=buildPerformanceForecast({currentValue:calibration.central,currentConfidence:confidence,targetScore:calibration.target,observations:calibration.observations});
+  const future=forecast.forecast30;if(future.available){const margin=Math.max(future.central-future.low,calibration.central-calibration.low,calibration.high-calibration.central);future.low=Math.max(0,future.central-margin);future.high=Math.min(100,future.central+margin);future.confidence=Math.min(confidence,future.confidence);future.confidenceLabel=calibration.confidenceLabel}
+  const forecast30=calibration.calibration.state==='retrospective'?future:{available:false,reason:'A projeção futura aguarda checagem retrospectiva suficiente.'};
+  return {available:true,low:calibration.low,high:calibration.high,central:calibration.central,confidence,confidenceLabel:calibration.confidenceLabel,calibration,gap:{minimum:Math.max(0,calibration.target-calibration.high),maximum:Math.max(0,calibration.target-calibration.low),target:calibration.target},movingAverage:forecast.movingAverage,forecast30,evidence:calibration.evidence,scenarios:{available:false,scenarios:[]},detail:calibration.reason};
 }
 
-function performanceForecastObservations(){
-  return Array.from({length:12},(_,index)=>getWeekRange(11-index)).map(({start,end})=>{
-    const questions=validQuestionRecords().filter(item=>item.date>=start&&item.date<=end);
-    let total=questions.reduce((sum,item)=>sum+(Number(item.resolved)||0),0);
-    let correct=questions.reduce((sum,item)=>sum+(Number(item.correct)||0),0);
-    examScopedSimulations().filter(item=>item.date>=start&&item.date<=end).forEach(item=>{const counts=simuladoEffectiveCounts(item);total+=counts.total;correct+=counts.correct});
-    return {date:end,value:accuracyFromCounts(correct,total),sampleSize:total};
-  });
-}
 
 function gerarDiagnosticoAprovacao(metrics){
   const m=metrics||computeApprovalMetrics();
@@ -4909,7 +4880,7 @@ function renderApprovalDashboard(){
     <div class="kpi-cell"><div class="n">${projection.available?projection.low+'–'+projection.high+'%':'—'}</div><div class="l">Faixa estimada atual</div></div>
   </div>
   ${factors.map(([label,item])=>{const dataState=getMetricDataState(item);return `<div class="bar-row metric-row metric-row--${dataState}" title="${escapeAttr(item.detail)}"><div class="bar-label">${label}<small>${metricStateLabel(item)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${dataState==='empty'?0:item.score}%"></div></div><div class="bar-pct">${dataState==='empty'?'—':item.score+'%'}</div></div>`}).join('')}
-  ${projection.available?`<section class="performance-forecast" aria-label="Projeção de desempenho"><div><span class="section-eyebrow">PROJEÇÃO DE DESEMPENHO</span><strong>Faixa atual: ${projection.low}–${projection.high}%</strong><small>${projection.gap.minimum===0?'A meta de '+projection.gap.target+'% está dentro da faixa atual.':'Gap estimado até a meta: '+projection.gap.minimum+'–'+projection.gap.maximum+' p.p.'}</small></div><div><strong>${projection.forecast30.available?'Em 30 dias: '+projection.forecast30.low+'–'+projection.forecast30.high+'%':'Projeção de 30 dias aguardando dados'}</strong><small>${projection.forecast30.available?'Média móvel: '+projection.movingAverage+'% · tendência '+(projection.forecast30.slopePerWeek>=0?'+':'')+projection.forecast30.slopePerWeek+' p.p./semana · confiança '+projection.forecast30.confidenceLabel:escapeHtml(projection.forecast30.reason)}</small></div>${renderPerformanceScenarios(projection.scenarios,{escapeHtml})}<p>${projection.evidence.observationCount} semanas · ${projection.evidence.sampleSize} questões/simulações na amostra. Cenários são simulações de capacidade; não representam garantia nem efeito causal.</p></section>`:''}
+  ${projection.available?`<section class="performance-forecast" aria-label="Projeção de desempenho"><div><span class="section-eyebrow">PROJEÇÃO DE DESEMPENHO</span><strong>Faixa atual: ${projection.low}–${projection.high}%</strong><small>${projection.calibration.status==='above'?'A faixa atual está acima da meta de '+projection.gap.target+'%.':projection.gap.minimum===0?'A meta de '+projection.gap.target+'% está dentro da faixa atual.':'Gap estimado até a meta: '+projection.gap.minimum+'–'+projection.gap.maximum+' p.p.'}</small></div><div><strong>${projection.forecast30.available?'Em 30 dias: '+projection.forecast30.low+'–'+projection.forecast30.high+'%':'Projeção de 30 dias aguardando dados'}</strong><small>${projection.forecast30.available?'Média móvel: '+projection.movingAverage+'% · tendência '+(projection.forecast30.slopePerWeek>=0?'+':'')+projection.forecast30.slopePerWeek+' p.p./semana · confiança '+projection.forecast30.confidenceLabel:escapeHtml(projection.forecast30.reason)}</small></div>${renderScoreProjectionEvidence(projection.calibration,intelligenceCandidates())}<p>${projection.evidence.observationCount} simulados comparáveis · ${projection.evidence.sampleSize} questões na amostra. Extrapolação de tendência não representa garantia nem efeito causal.</p></section>`:renderScoreProjectionEvidence(projection.calibration)}
   <details class="readiness-explanation"><summary>Como este índice foi calculado?</summary><p>Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e nunca recebem nota zero.</p><ul>${factors.map(([label,item,key])=>`<li><strong>${label}</strong>: ${item.available?item.score+'/100 · confiança '+Math.round(item.confidence*100)+'%':'aguardando dados'}${item.detail?' · '+escapeHtml(item.detail):''}</li>`).join('')}</ul></details>
   <div class="approval-scale"><span class="approval-scale-danger">🔴 0–49</span><span class="approval-scale-warn">🟠 50–69</span><span class="approval-scale-good">🟢 70–84</span><span class="approval-scale-great">🏆 85+</span></div>
   <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
