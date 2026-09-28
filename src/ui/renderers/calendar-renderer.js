@@ -46,5 +46,5 @@ export function renderCalendarFilterOptions({subjects=[],monthKeys=[],reviewType
 
 export function renderCalendarRows({rows=[],visible=10,editingId=null,renderReadRow,renderEditRow,renderFooter,escapeHtml}){
   if(!rows.length)return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum item encontrado com esses filtros.</p><button class="btn" data-delegated-click="addCalRow()">+ Adicionar item</button></div></td></tr>`;
-  return rows.slice(0,visible).map(item=>editingId===item.id?renderEditRow(item):renderReadRow(item)).join('')+renderFooter({total:rows.length,visible,showMoreAction:'changeCalendarLimit(10)',showLessAction:visible>10?'resetCalendarLimit()':'',colspan:7,label:'itens'});
+  return rows.slice(0,visible).map(item=>editingId===item.id?renderEditRow(item):renderReadRow(item)).join('')+renderFooter({total:rows.length,visible,showMoreAction:'changeCalendarLimit(10)',showLessAction:visible>5?'resetCalendarLimit()':'',colspan:7,label:'itens'});
 }

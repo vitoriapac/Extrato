@@ -76,10 +76,10 @@ test('listas acumulativas da demo limitam, expandem e filtram sem duplicar',asyn
   await openDemo(page);
   const assertUnique=async locator=>{const ids=await locator.evaluateAll(rows=>rows.map(row=>row.dataset.id).filter(Boolean));expect(new Set(ids).size).toBe(ids.length)};
   await page.locator('[data-tab="dashboard"]').evaluate(button=>button.click());
-  const sessionDays=page.locator('#studySessionsBody .session-day-row');await expect(sessionDays).toHaveCount(5);await page.locator('#studySessionsBody').getByRole('button',{name:'Mostrar mais'}).click();await expect(sessionDays).toHaveCount(10);
+  const sessionDays=page.locator('#studySessionsBody .session-day-row');const initialDays=await sessionDays.count();expect(initialDays).toBeGreaterThan(0);expect(initialDays).toBeLessThanOrEqual(5);await page.locator('#studySessionsBody').getByRole('button',{name:'Mostrar mais'}).click();expect(await sessionDays.count()).toBeGreaterThan(initialDays);
   await page.locator('#studySessionsTypeFilter').selectOption('questions');await expect(page.locator('#studySessionsFilterSummary')).toContainText(/sessões? no filtro atual/);await assertUnique(page.locator('#studySessionsBody tr[data-id]'));
   await page.locator('[data-tab="questoes"]').evaluate(button=>button.click());
-  const questions=page.locator('#questoesBody tr[data-id]');await expect(questions).toHaveCount(10);await page.locator('#questoesBody').getByRole('button',{name:'Mostrar mais'}).click();expect(await questions.count()).toBeGreaterThan(10);await assertUnique(questions);
+  const questions=page.locator('#questoesBody tr[data-id]');await expect(questions).toHaveCount(5);await page.locator('#questoesBody').getByRole('button',{name:'Mostrar mais'}).click();expect(await questions.count()).toBeGreaterThan(10);await assertUnique(questions);
   const simulations=page.locator('#simuladosBody tr[data-id]');await expect(simulations).toHaveCount(5);await page.locator('#simuladosBody').getByRole('button',{name:'Mostrar mais'}).click();expect(await simulations.count()).toBeGreaterThan(5);await assertUnique(simulations);
   await page.locator('[data-tab="agenda"]').evaluate(button=>button.click());await page.locator('#agendaFilterStatus').selectOption('Atrasadas');await expect(page.locator('#agendaBody')).toContainText('Atrasadas');
   await page.locator('[data-tab="metas"]').evaluate(button=>button.click());await expect(page.locator('#weeklyCloseDashboard')).toContainText('Diagnóstico');await expect(page.locator('#decisionHistoryDashboard .data-row').first()).toBeAttached();

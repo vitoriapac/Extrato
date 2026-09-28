@@ -40,3 +40,13 @@ Cards representam agrupamentos. Dentro deles, use linhas, espaço e tipografia p
 ## Temas e responsividade
 
 Todo componente deve usar tokens de cor, preservar contraste em ambos os temas e funcionar a partir de 320 px sem rolagem horizontal global. Para listas, formulários e diagnósticos, permita quebra de nomes longos e empilhe conteúdo antes de reduzir a área de toque.
+
+## Listas progressivas
+
+Listas de registros usam DEFAULT_LIST_VISIBLE_ITEMS (5), definido em src/ui/progressive-list.js. Até cinco registros ficam visíveis; a partir de seis, o controle secundário mostra “Mostrar mais · +N” e expande a coleção completa. “Mostrar menos” recolhe e mantém o foco.
+
+Aplicar escopo, filtros, busca e ordenação antes da apresentação. Sessões, questões, simulados e decisões priorizam os mais recentes; revisões mantêm urgência; lacunas mantêm prioridade. Filtros e navegação recolhem as listas. O estado é transitório e não integra armazenamento ou backups. Atualizações de dados recalculam a contagem.
+
+Categorias: progressive-list para registros; always-visible para indicadores, gráficos, matrizes, comparações, navegação e conquistas; paginated-list para grandes coleções. A revisão de classificações históricas mantém paginação de 100 questões. As três recomendações escolhidas para hoje são uma seleção do motor, não uma lista de registros.
+
+O adaptador mountProgressiveLists usa uma relação explícita de seletores e registros, sem aplicar limites a cards arbitrários. Novos módulos devem aderir à mesma constante e controles. Botões reais expõem aria-expanded e aria-controls, foco visível e área mínima de 44 px. Recolhimento só rola quando o controle fica fora da viewport, respeitando prefers-reduced-motion.

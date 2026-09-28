@@ -1,3 +1,4 @@
+import {DEFAULT_LIST_VISIBLE_ITEMS} from '../progressive-list.js';
 export function renderQuestionAnalyticsSummary({resolved,accuracy,coverage,trend}){
   return [
     ['Questões analisadas',resolved],
@@ -14,7 +15,7 @@ export function renderTopicQuestionPerformance({mode,topics,visible,masteryForTo
     const mastery=masteryForTopic(topic.id),width=topic.accuracy===null?0:topic.accuracy;
     return `<div class="performance-row"><div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${mastery.value==null?'aguardando dados':mastery.value+'/100'}</div></div><div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div><div class="performance-value">${topic.classification.icon} ${topic.accuracy===null?'—':topic.accuracy+'%'}</div></div>`;
   }).join('');
-  return tabs+rows+renderFooter({variant:'block',total:topics.length,visible:Math.min(visible,topics.length),step:8,label:'tópicos',showMoreAction:'changePerformanceLimit(8)',showAllAction:'showAllPerformance()',showLessAction:visibleLimit>8?'resetPerformanceLimit()':''});
+  return tabs+`<div id="questionPerformanceRecords">${rows}</div>`+renderFooter({variant:'block',total:topics.length,visible:Math.min(visible,topics.length),step:DEFAULT_LIST_VISIBLE_ITEMS,label:'tópicos',showMoreAction:'changePerformanceLimit(8)',showAllAction:'showAllPerformance()',showLessAction:visibleLimit>DEFAULT_LIST_VISIBLE_ITEMS?'resetPerformanceLimit()':''});
 }
 
 export function renderWeeklyQuestionTrend({weeks,trend,formatDate}){

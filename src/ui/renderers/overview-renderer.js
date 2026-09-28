@@ -4,7 +4,7 @@ export function renderIntelligentAlerts({alerts,additional,escapeHtml,escapeAttr
     overview:'<p class="overview-alert-empty">Sem alertas prioritários neste momento.</p>'
   };
   const renderAlert=alert=>`<div class="alerta-item alerta-${escapeAttr(alert.nivel)}"><span class="alerta-icon">${escapeHtml(alert.icon||'')}</span><span><strong>${escapeHtml(alert.reason||alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction||'')}</small></span>${alert.severity!=='ok'?`<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(alert.id)}')">Dispensar 7 dias</button>`:''}</div>`;
-  const list=alerts.map(renderAlert).join('')+(additional.length?`<details class="alerta-more"><summary>Mostrar mais ${additional.length} alerta${additional.length===1?'':'s'}</summary>${additional.map(renderAlert).join('')}</details>`:'');
+  const list=[...alerts,...additional].map(renderAlert).join('');
   const overview=`<div class="overview-alert-list">${alerts.slice(0,2).map(alert=>`<article class="overview-alert alerta-${escapeAttr(alert.severity)}"><strong>${escapeHtml(alert.reason||alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction||'')}</small></article>`).join('')}</div>${alerts.length>2?`<p class="overview-alert-empty">+ ${alerts.length-2} alertas ativos</p>`:''}`;
   return {list,overview};
 }

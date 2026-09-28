@@ -10,5 +10,5 @@ export function buildExamIntelligenceViewModel({topics=[],blueprint={},exams=[],
     const profile=buildTopicExamProfile({topic,subjectConfig,activeExamTags,exams,examQuestions});
     return {...profile,impact:resolveValidatedExamImpact(profile).value,name:topic.name,subjectName:topic.subjectName};
   }).filter(item=>item.questionCount>0).sort((a,b)=>(b.impact??-1)-(a.impact??-1)||(b.presencePercent??-1)-(a.presencePercent??-1)||String(a.name).localeCompare(String(b.name),'pt-BR'));
-  return {state:complete.length?'available':'empty',scopedExamCount:scoped.length,completeExamCount:complete.length,rows:rows.slice(0,6),totalTopicsWithEvidence:rows.length};
+  return {state:complete.length?'available':'empty',scopedExamCount:scoped.length,completeExamCount:complete.length,rows,totalTopicsWithEvidence:rows.length};
 }

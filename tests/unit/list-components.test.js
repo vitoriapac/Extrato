@@ -10,16 +10,16 @@ test('rodapé informa quantidade e oferece expansão quando há mais itens',()=>
 });
 
 test('rodapé oferece recolhimento após expandir',()=>{
-  const html=renderCollectionFooter({total:18,visible:10,showMoreAction:"more()",showLessAction:"less()",colspan:8,label:'revisões'});
-  assert.match(html,/Mostrar mais/);
+  const html=renderCollectionFooter({total:18,visible:18,showMoreAction:"more()",showLessAction:"less()",colspan:8,label:'revisões'});
+  assert.doesNotMatch(html,/Mostrar mais/);
   assert.match(html,/Mostrar menos/);
 });
 
 test('rodapé de bloco oferece expansão total e passo restante',()=>{
   const html=renderCollectionFooter({total:23,visible:8,step:8,showMoreAction:'more()',showAllAction:'all()',showLessAction:'less()',label:'tópicos',variant:'block'});
   assert.match(html,/list-summary-footer/);
-  assert.match(html,/Mostrar mais 8/);
-  assert.match(html,/Ver todos/);
+  assert.match(html,/Mostrar mais · \+15/);
+  assert.doesNotMatch(html,/Ver todos/);
   assert.match(html,/Exibindo 8 de 23 tópicos/);
 });
 

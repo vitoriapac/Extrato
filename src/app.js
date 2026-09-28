@@ -1,3 +1,4 @@
+import {DEFAULT_LIST_VISIBLE_ITEMS,mountProgressiveLists} from './ui/progressive-list.js';
 import {
   STORAGE_KEY,BACKUP_KEY,BACKUP_INDEX_KEY,AUTOMATIC_BACKUP_SLOTS,CURRENT_SCHEMA_VERSION,MAX_BACKUP_FILE_SIZE,
   DB_NAME,DB_VERSION,STORE_NAME,STATUS_OPTIONS,REVIEW_OPTIONS,STATUS_CLASS,TIPO_AGENDA_OPTIONS,
@@ -841,7 +842,7 @@ function showPrompt(message,options,onConfirm,onCancel){return modalController.p
 
 /* ===== TABS ===== */
 const navigationController=createNavigationController({document,window,render:tab=>render(tab),trapModalTab:event=>trapModalTab(event,[document.getElementById('guidedOnboardingOverlay'),document.getElementById('structuredImportOverlay'),document.getElementById('examImportOverlay'),document.getElementById('examClassificationOverlay'),document.getElementById('reviewRatingOverlay'),document.getElementById('sessionModalOverlay'),document.getElementById('modalOverlay')]),closeReview:closeReviewRating});
-function activateTab(tabName,updateHash=true){return navigationController.activate(tabName,updateHash)}
+function activateTab(tabName,updateHash=true){globalThis.studytrackProgressiveLists?.reset(); resetRecordListLimits(); return navigationController.activate(tabName,updateHash)}
 createHelpController({document,window,activateTab}).mount();
 
 /* ===== HELPERS ===== */
@@ -1903,8 +1904,8 @@ function renderHeader(){
 }
 
 /* ===== RENDER: DASHBOARD ===== */
-let upcomingVisible=5;
-function changeUpcomingLimit(delta){upcomingVisible+=Number(delta||0);renderDashboard()}
+let upcomingVisible=DEFAULT_LIST_VISIBLE_ITEMS;
+function changeUpcomingLimit(delta){upcomingVisible=Number.MAX_SAFE_INTEGER;renderDashboard()}
 function showAllUpcoming(){upcomingVisible=Number.MAX_SAFE_INTEGER;renderDashboard()}
 function resetUpcomingLimit(){upcomingVisible=5;renderDashboard()}
 function renderDashboard(){
@@ -2382,12 +2383,12 @@ function updateTopicStatus(subjectId, topicId, selectEl){
 function getRevisoesUnificadas(){
   return buildUnifiedReviews({calendar:state.calendar,reviewAgenda:state.reviewAgenda,subjectIdOf:entitySubjectId,subjectName:entitySubjectName,topicName:getTopicName});
 }
-const overdueGroupLimits={calAtrasadas:3,hojeAtrasadas:3};
+const overdueGroupLimits={calAtrasadas:DEFAULT_LIST_VISIBLE_ITEMS,hojeAtrasadas:DEFAULT_LIST_VISIBLE_ITEMS};
 const overdueExpandedDates={calAtrasadas:new Set(),hojeAtrasadas:new Set()};
 const overdueExpansionInitialized=new Set();
-function changeOverdueGroupLimit(elId,delta){overdueGroupLimits[elId]=(overdueGroupLimits[elId]||3)+Number(delta||0);renderCalAtrasadas(elId)}
+function changeOverdueGroupLimit(elId,delta){overdueGroupLimits[elId]=(overdueGroupLimits[elId]||DEFAULT_LIST_VISIBLE_ITEMS)+Number(delta||0);renderCalAtrasadas(elId)}
 function showAllOverdueGroups(elId){overdueGroupLimits[elId]=Number.MAX_SAFE_INTEGER;renderCalAtrasadas(elId)}
-function resetOverdueGroupLimit(elId){overdueGroupLimits[elId]=3;renderCalAtrasadas(elId)}
+function resetOverdueGroupLimit(elId){overdueGroupLimits[elId]=DEFAULT_LIST_VISIBLE_ITEMS;renderCalAtrasadas(elId)}
 function toggleOverdueDate(elId,date){const dates=overdueExpandedDates[elId]||(overdueExpandedDates[elId]=new Set());if(dates.has(date))dates.delete(date);else dates.add(date);renderCalAtrasadas(elId)}
 
 function renderCalIndicadores(){
@@ -2593,14 +2594,14 @@ function renderAgendaFilters(){
   selTipo.value = currentTipo;
 }
 
-const agendaUiState={upcomingVisible:5,completedVisible:10,completedExpanded:false,editingId:null,editingIsNew:false,draft:null};
+const agendaUiState={upcomingVisible:DEFAULT_LIST_VISIBLE_ITEMS,completedVisible:DEFAULT_LIST_VISIBLE_ITEMS,completedExpanded:false,editingId:null,editingIsNew:false,draft:null};
 function agendaViewModel(item){
   const topicId=item.topicId||item.topicRef;
   return createReviewViewModel(item,{subjectName:getSubjectName(entitySubjectId(item)),topicName:topicId?getTopicName(topicId):'',difficulty:getTopicDifficulty(topicId),formatDate:formatDatePt});
 }
 function toggleCompletedReviews(){agendaUiState.completedExpanded=!agendaUiState.completedExpanded;renderAgenda()}
-function changeAgendaLimit(group,delta){const key=`${group}Visible`,minimum=group==='completed'?10:5;agendaUiState[key]=Math.max(minimum,agendaUiState[key]+Number(delta||0));renderAgenda()}
-function resetAgendaLimit(group){agendaUiState[`${group}Visible`]=group==='completed'?10:5;renderAgenda()}
+function changeAgendaLimit(group,delta){const key=`${group}Visible`,minimum=DEFAULT_LIST_VISIBLE_ITEMS;agendaUiState[key]=Number(delta)>0?Number.MAX_SAFE_INTEGER:minimum;renderAgenda()}
+function resetAgendaLimit(group){agendaUiState[`${group}Visible`]=DEFAULT_LIST_VISIBLE_ITEMS;renderAgenda()}
 function editAgenda(id){
   if(agendaUiState.editingIsNew&&agendaUiState.editingId!==id)state.reviewAgenda=state.reviewAgenda.filter(item=>item.id!==agendaUiState.editingId);
   const item=state.reviewAgenda.find(entry=>entry.id===id);if(!item)return;
@@ -2679,7 +2680,7 @@ function renderAgenda(){
   if(groups.overdue.length){html.push(renderGroupHeader({title:'🔴 Atrasadas',count:groups.overdue.length,tone:'overdue'}),renderItems(groups.overdue));}
   if(groups.today.length){html.push(renderGroupHeader({title:'🟡 Hoje',count:groups.today.length,tone:'today'}),renderItems(groups.today));}
   if(groups.upcoming.length){const visible=groups.upcoming.slice(0,agendaUiState.upcomingVisible);html.push(renderGroupHeader({title:'🔵 Próximas',count:groups.upcoming.length,tone:'upcoming'}),renderItems(visible),renderCollectionFooter({total:groups.upcoming.length,visible:agendaUiState.upcomingVisible,showMoreAction:"changeAgendaLimit('upcoming',5)",showLessAction:agendaUiState.upcomingVisible>5?"resetAgendaLimit('upcoming')":'',colspan:8,label:'revisões'}));}
-  if(groups.completed.length){html.push(renderGroupHeader({title:'✓ Concluídas',count:groups.completed.length,tone:'completed',expanded:agendaUiState.completedExpanded,toggleAction:'toggleCompletedReviews()'}));if(agendaUiState.completedExpanded){const visible=groups.completed.slice(0,agendaUiState.completedVisible);html.push(renderItems(visible),renderCollectionFooter({total:groups.completed.length,visible:agendaUiState.completedVisible,showMoreAction:"changeAgendaLimit('completed',10)",showLessAction:agendaUiState.completedVisible>10?"resetAgendaLimit('completed')":'',colspan:8,label:'revisões'}));}}
+  if(groups.completed.length){html.push(renderGroupHeader({title:'✓ Concluídas',count:groups.completed.length,tone:'completed',expanded:agendaUiState.completedExpanded,toggleAction:'toggleCompletedReviews()'}));if(agendaUiState.completedExpanded){const visible=groups.completed.slice(0,agendaUiState.completedVisible);html.push(renderItems(visible),renderCollectionFooter({total:groups.completed.length,visible:agendaUiState.completedVisible,showMoreAction:"changeAgendaLimit('completed',10)",showLessAction:agendaUiState.completedVisible>DEFAULT_LIST_VISIBLE_ITEMS?"resetAgendaLimit('completed')":'',colspan:8,label:'revisões'}));}}
   body.innerHTML=html.join('');
 }
 
@@ -2698,7 +2699,7 @@ function updateAgenda(id, field, value){
 
 createReviewsController({actions:{
   rate:rateCompletedReview,cancelRating:closeReviewRating,
-  filtersChanged:()=>{agendaUiState.upcomingVisible=5;agendaUiState.completedVisible=10;renderAgenda()},
+  filtersChanged:()=>{agendaUiState.upcomingVisible=DEFAULT_LIST_VISIBLE_ITEMS;agendaUiState.completedVisible=DEFAULT_LIST_VISIBLE_ITEMS;renderAgenda()},
   createManual:addAgendaRow,generateAutomatic:gerarAgendaAutomatica
 }}).register();
 
@@ -2740,19 +2741,19 @@ function renderQuestionEvolution(){
 }
 let performanceViewMode='with-data';
 const errorAnalysisView={days:30,topicId:''};
-let performanceVisible=8;
+let performanceVisible=DEFAULT_LIST_VISIBLE_ITEMS;
 let retentionShowAll=false;
 const retentionView={subjectId:'',order:'asc',confidence:'all'};
-function setPerformanceViewMode(mode){performanceViewMode=['with-data','insufficient','without-data','all'].includes(mode)?mode:'with-data';performanceVisible=8;renderQuestionAnalytics()}
+function setPerformanceViewMode(mode){performanceViewMode=['with-data','insufficient','without-data','all'].includes(mode)?mode:'with-data';performanceVisible=DEFAULT_LIST_VISIBLE_ITEMS;renderQuestionAnalytics()}
 function setErrorAnalysisFilter(field,value){if(field==='days'&&[7,30,60,90].includes(Number(value)))errorAnalysisView.days=Number(value);if(field==='topicId')errorAnalysisView.topicId=value||'';renderQuestionAnalytics()}
-function changePerformanceLimit(delta){performanceVisible+=Number(delta||0);renderQuestionAnalytics()}
+function changePerformanceLimit(delta){performanceVisible=Number.MAX_SAFE_INTEGER;renderQuestionAnalytics()}
 function showAllPerformance(){performanceVisible=Number.MAX_SAFE_INTEGER;renderQuestionAnalytics()}
-function resetPerformanceLimit(){performanceVisible=8;renderQuestionAnalytics()}
+function resetPerformanceLimit(){performanceVisible=DEFAULT_LIST_VISIBLE_ITEMS;renderQuestionAnalytics()}
 function showAllRetention(){retentionShowAll=true;renderTopicRetentionDashboard()}
 function resetRetentionLimit(){retentionShowAll=false;renderTopicRetentionDashboard()}
 function setRetentionFilter(field,value){if(field in retentionView)retentionView[field]=value;retentionShowAll=false;renderTopicRetentionDashboard()}
-const listViewState={questionsVisible:10,simulationsVisible:5,sessionDaysVisible:5};
-const LIST_VIEW_STEPS={questions:10,simulations:5,sessionDays:5};
+const listViewState={questionsVisible:DEFAULT_LIST_VISIBLE_ITEMS,simulationsVisible:DEFAULT_LIST_VISIBLE_ITEMS,sessionDaysVisible:DEFAULT_LIST_VISIBLE_ITEMS};
+const LIST_VIEW_STEPS={questions:DEFAULT_LIST_VISIBLE_ITEMS,simulations:DEFAULT_LIST_VISIBLE_ITEMS,sessionDays:DEFAULT_LIST_VISIBLE_ITEMS};
 const historyEditState={sessionId:null};
 const historyEditDraft={session:null};
 const questionCrudController=createQuestionController({service:questionService,onChange:()=>{}});
@@ -2761,17 +2762,17 @@ function cloneRecord(record){ return record?JSON.parse(JSON.stringify(record)):n
 function isMobileHistoryLayout(){ return window.matchMedia('(max-width:850px)').matches; }
 
 function renderListViewFooter(total,visible,step,showMoreAction,showLessAction,colspan,label){
-  if(total<=step) return '';
-  return `<tr class="list-view-footer"><td colspan="${colspan}"><div class="list-view-controls">
-    <span class="list-view-count">Exibindo ${Math.min(visible,total)} de ${total} ${label}</span>
-    ${visible<total?`<button class="btn ghost small" type="button" data-delegated-click="${showMoreAction}">Mostrar mais</button>`:''}
-    ${visible>step?`<button class="btn ghost small" type="button" data-delegated-click="${showLessAction}">Mostrar menos</button>`:''}
-  </div></td></tr>`;
+  return renderCollectionFooter({total,visible,step,showMoreAction,showLessAction:visible>step?showLessAction:'',colspan,label});
 }
 function changeListLimit(key,delta,renderFn){
-  const minimum=LIST_VIEW_STEPS[key];
-  listViewState[`${key}Visible`]=Math.max(minimum,listViewState[`${key}Visible`]+delta);
+  listViewState[`${key}Visible`]=delta>0?Number.MAX_SAFE_INTEGER:DEFAULT_LIST_VISIBLE_ITEMS;
   renderFn();
+}
+function resetRecordListLimits(){
+  Object.keys(LIST_VIEW_STEPS).forEach(key=>{listViewState[`${key}Visible`]=DEFAULT_LIST_VISIBLE_ITEMS});
+  agendaUiState.upcomingVisible=agendaUiState.completedVisible=DEFAULT_LIST_VISIBLE_ITEMS;
+  upcomingVisible=DEFAULT_LIST_VISIBLE_ITEMS;
+  calendarUiState.visible=DEFAULT_LIST_VISIBLE_ITEMS;performanceVisible=DEFAULT_LIST_VISIBLE_ITEMS;retentionShowAll=false;
 }
 
 function emptyErrorBreakdown(){
@@ -3501,7 +3502,7 @@ function renderStudyPlanBuilder(){
   const blockedNote=plan.blockedTopics?.length?`<details class="blocked-topics-note"><summary>${plan.blockedTopics.length} tópico${plan.blockedTopics.length===1?' aguarda':'s aguardam'} pré-requisitos</summary><p>${plan.blockedTopics.slice(0,5).map(item=>escapeHtml(item.topicName||item.id)+" — requer "+item.prerequisites.map(id=>escapeHtml(getTopicName(id)||id)).join(", ")).join("; ")}${plan.blockedTopics.length>5?` · e mais ${plan.blockedTopics.length-5}`:''}.</p><small>Conclua a base ou reforce o domínio e recalcule a proposta.</small></details>`:"";
   if(plan.state==='insufficient'){container.innerHTML=`<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;return}
   const subjectRows=plan.subjects.map(item=>`<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join('');
-  const topicRows=plan.items.slice(0,8).map(item=>`<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}<small>${escapeHtml(item.reasonSummary||'Prioridade calculada pelos fatores disponíveis')}</small>${item.examIntelligence?.usedHistory?`<small>Histórico validado: ${item.examIntelligence.presentExamCount} de ${item.examIntelligence.analyzedExamCount} provas · confiança ${escapeHtml(item.examIntelligence.confidenceLabel.toLowerCase())}. Impacto estimado ${Math.round(item.examImpact)}/100.</small>`:''}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered?" · manutenção":""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join('');
+  const topicRows=plan.items.map(item=>`<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}<small>${escapeHtml(item.reasonSummary||'Prioridade calculada pelos fatores disponíveis')}</small>${item.examIntelligence?.usedHistory?`<small>Histórico validado: ${item.examIntelligence.presentExamCount} de ${item.examIntelligence.analyzedExamCount} provas · confiança ${escapeHtml(item.examIntelligence.confidenceLabel.toLowerCase())}. Impacto estimado ${Math.round(item.examImpact)}/100.</small>`:''}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered?" · manutenção":""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join('');
   container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes<0?'-':'+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState==='deficit'?'ritmo insuficiente':plan.paceState==='surplus'?'capacidade disponível':'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence*100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase()||"não avaliada"}${plan.missingEffort.length?` · ${plan.missingEffort.length} tópico${plan.missingEffort.length===1?'':'s'} sem esforço estimado`:''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes||0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
   const phase=plan.examPhase;
   const advice=plan.adaptiveAdvice;
@@ -3548,7 +3549,7 @@ function saveExamSubjectConfig(subjectId){
   state.examBlueprint.configuredAt=nowISO();studyPlanPreview=null;persistAndRender();showToast('Configuração da disciplina salva.');
 }
 function cancelExamSubjectConfig(){renderExamBlueprintConfig()}
-function toggleActiveExamTag(tag,checked){const valid=['bb-escriturario','caixa-tbn','caixa-tbn-ti'];if(!valid.includes(tag))return;const values=new Set(state.examBlueprint.activeExamTags||[]);checked?values.add(tag):values.delete(tag);if(setActiveExamTags(state,[...values],{configuredAt:nowISO()})){studyPlanPreview=null;persistAndRender()}}
+function toggleActiveExamTag(tag,checked){globalThis.studytrackProgressiveLists?.reset();resetRecordListLimits();const valid=['bb-escriturario','caixa-tbn','caixa-tbn-ti'];if(!valid.includes(tag))return;const values=new Set(state.examBlueprint.activeExamTags||[]);checked?values.add(tag):values.delete(tag);if(setActiveExamTags(state,[...values],{configuredAt:nowISO()})){studyPlanPreview=null;persistAndRender()}}
 
 /* ===== METAS POR DISCIPLINA ===== */
 function somarQuestoesDisciplinaNaSemana(subjectId){
@@ -4262,8 +4263,7 @@ function renderStudySessionsHistory(){
   }
   if(tableWrap) tableWrap.hidden=false;
   if(emptyState) emptyState.hidden=true;
-  const groupedDays=groupStudySessionsByDate(rows);
-  const visibleGroups=groupedDays.slice(0,listViewState.sessionDaysVisible);
+  const visibleGroups=groupStudySessionsByDate(rows.slice(0,listViewState.sessionDaysVisible));
   if(!sessionHistoryExpansionInitialized&&visibleGroups.length){
     expandedSessionDays.add(visibleGroups[0][0]);
     sessionHistoryExpansionInitialized=true;
@@ -4275,9 +4275,9 @@ function renderStudySessionsHistory(){
     if(!expanded) return;
     sessions.forEach(session=>html.push(historyEditState.sessionId===session.id?renderStudySessionEditRow(session):renderStudySessionReadRow(session)));
   });
-  html.push(renderListViewFooter(groupedDays.length,listViewState.sessionDaysVisible,LIST_VIEW_STEPS.sessionDays,
+  html.push(renderListViewFooter(rows.length,listViewState.sessionDaysVisible,LIST_VIEW_STEPS.sessionDays,
     "changeListLimit('sessionDays',LIST_VIEW_STEPS.sessionDays,renderStudySessionsHistory)",
-    "changeListLimit('sessionDays',-listViewState.sessionDaysVisible,renderStudySessionsHistory)",10,'dias'));
+    "changeListLimit('sessionDays',-listViewState.sessionDaysVisible,renderStudySessionsHistory)",10,'sessões'));
   body.innerHTML=html.join('');
 }
 
@@ -4340,7 +4340,7 @@ function intelligenceCandidates(){
 }
 function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
-  const {candidates}=refreshStudyRecommendationItems(),result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{hasTopics:candidates.length>0,weeklyCapacityMinutes});
+  const {candidates}=refreshStudyRecommendationItems(),result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{limit:Number.MAX_SAFE_INTEGER,hasTopics:candidates.length>0,weeklyCapacityMinutes});
   container.innerHTML=renderDiagnosisCenterView({model,studyActionForItem:item=>{
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
     return action?{...action,label:recommendationActionLabel(action)}:null;
@@ -4991,7 +4991,7 @@ function renderCalAtrasadas(elId){
   const groups=new Map();items.forEach(item=>{if(!groups.has(item.date))groups.set(item.date,[]);groups.get(item.date).push(item)});
   const entries=[...groups.entries()],limit=overdueGroupLimits[elId]||3,visible=entries.slice(0,limit);
   if(!overdueExpansionInitialized.has(elId)){overdueExpandedDates[elId].add(entries[0][0]);overdueExpansionInitialized.add(elId)}
-  ul.innerHTML=`<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>`+visible.map(([date,dateItems])=>{const expanded=overdueExpandedDates[elId].has(date);return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${dateItems.length} revisão(ões) · ${Math.abs(diasParaRevisao(date)||0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded?'':'hidden'}>${dateItems.map(x=>`<li><span style="flex:1">${escapeHtml(x.subject||'—')} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x,elId)}</li>`).join('')}</ul></li>`}).join('')+`<li class="overdue-list-footer">${renderCollectionFooter({variant:'block',total:entries.length,visible:visible.length,step:3,label:'datas',showMoreAction:`changeOverdueGroupLimit('${elId}',3)`,showAllAction:`showAllOverdueGroups('${elId}')`,showLessAction:limit>3?`resetOverdueGroupLimit('${elId}')`:''})}</li>`;
+  ul.innerHTML=`<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>`+visible.map(([date,dateItems])=>{const expanded=overdueExpandedDates[elId].has(date);return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${dateItems.length} revisão(ões) · ${Math.abs(diasParaRevisao(date)||0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded?'':'hidden'}>${dateItems.map(x=>`<li><span style="flex:1">${escapeHtml(x.subject||'—')} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x,elId)}</li>`).join('')}</ul></li>`}).join('')+`<li class="overdue-list-footer">${renderCollectionFooter({variant:'block',total:entries.length,visible:visible.length,step:DEFAULT_LIST_VISIBLE_ITEMS,label:'datas',showMoreAction:`changeOverdueGroupLimit('${elId}',3)`,showAllAction:`showAllOverdueGroups('${elId}')`,showLessAction:limit>DEFAULT_LIST_VISIBLE_ITEMS?`resetOverdueGroupLimit('${elId}')`:''})}</li>`;
 }
 function renderKPIs(){
   const resolved=state.questoes.reduce((n,q)=>n+(Number(q.resolved)||0),0),accuracy=taxaAcertoGeral(),average=mediaSimulados(),late=revisoesAtrasadas(),target=state.metas.metaAprovacao;
@@ -5197,3 +5197,7 @@ if(TEST_MODE){
 }else{
   bootstrapApplication({context:appContext,start:loadState,onError:error=>console.error('Falha na inicialização do aplicativo',error)});
 }
+
+globalThis.studytrackProgressiveLists=mountProgressiveLists({document,window});
+
+document.addEventListener('studytrack:navigate',()=>{globalThis.studytrackProgressiveLists?.reset();resetRecordListLimits()});

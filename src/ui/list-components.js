@@ -5,9 +5,8 @@ export function renderCollectionFooter({total,visible,step=0,showMoreAction='',s
   if(step>0&&total<=shown&&shown<=step)return '';
   const controls=`<div class="list-view-controls">
     <span class="list-view-count">Exibindo ${shown} de ${total} ${label}</span>
-    ${shown<total&&showMoreAction?`<button class="btn ghost small" type="button" data-delegated-click="${showMoreAction}">Mostrar mais${step?` ${Math.min(step,total-shown)}`:''}</button>`:''}
-    ${shown<total&&showAllAction?`<button class="btn ghost small" type="button" data-delegated-click="${showAllAction}">Ver todos</button>`:''}
-    ${shown>0&&showLessAction?`<button class="btn ghost small" type="button" data-delegated-click="${showLessAction}">Mostrar menos</button>`:''}
+    ${shown<total&&(showAllAction||showMoreAction)?`<button class="progressive-list-toggle" type="button" aria-expanded="false" data-progressive-legacy data-delegated-click="${showAllAction||showMoreAction}">Mostrar mais · +${total-shown} ↓</button>`:''}
+    ${shown>=total&&showLessAction?`<button class="progressive-list-toggle" type="button" aria-expanded="true" data-progressive-legacy data-delegated-click="${showLessAction}">Mostrar menos ↑</button>`:''}
   </div>`;
   return variant==='block'?`<div class="list-summary-footer">${controls}</div>`:`<tr class="list-view-footer"><td colspan="${colspan}">${controls}</td></tr>`;
 }
