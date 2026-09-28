@@ -56,3 +56,6 @@ Snapshots v2 preservam pesos, tipo, motivo e identidade do evento. Snapshots v1 
 A aderência de carga mantém o total estudado, inclusive fora do plano. A aderência estratégica divide os minutos creditados a itens prioritários pelos minutos prioritários previstos. O crédito exige sessão real, vínculo válido e tópico/disciplina compatíveis, e é limitado ao orçamento de cada item. A classificação usa o snapshot histórico, nunca o diagnóstico atual.
 
 Estudo sem vínculo, vínculos incompatíveis, atividades de outro período e excedentes são informados separadamente. Planos antigos sem snapshot permanecem sem classificação. A cobertura da classificação indica quanto do plano pode sustentar a leitura estratégica. A distribuição apresenta planejado, realizado e diferença por disciplina; o histórico semanal mantém as duas leituras.
+
+## Incidência × Domínio
+A matriz histórica oferece quatro quadrantes textuais responsivos: presença alta (50% ou mais) × domínio adequado (70/100 ou mais). Esses cortes são referências de leitura, não pesos novos do motor de prioridade. Apenas confiança histórica moderada/alta e domínio disponível permitem posicionar; demais tópicos ficam no grupo de evidência insuficiente. Os filtros históricos são preservados. O detalhamento distingue questões históricas e pessoais; os dados pessoais continuam no concurso ativo.

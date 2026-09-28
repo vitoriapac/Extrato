@@ -1,0 +1,9 @@
+import {renderChartFrame} from '../chart-components.js';
+const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+
+export function renderIncidenceQuadrants(rows=[]){
+  const groups=[{key:'reinforce',label:'Alta incidência · desenvolver domínio'},{key:'maintain',label:'Alta incidência · manter domínio'},{key:'evaluate',label:'Menor incidência · avaliar necessidade'},{key:'monitor',label:'Menor incidência · acompanhar'},{key:'insufficient',label:'Evidência insuficiente para posicionar'}];
+  const classified=rows.map(row=>({...row,quadrant:row.mastery==null||row.presencePercent==null||!['moderate','high'].includes(row.confidence)?'insufficient':row.presencePercent>=50?(row.mastery>=70?'maintain':'reinforce'):(row.mastery>=70?'monitor':'evaluate')}));
+  const records=groups.map(group=>{const items=classified.filter(row=>row.quadrant===group.key);return `<section class="incidence-quadrant"><h5>${group.label} (${items.length})</h5>${items.length?`<ul>${items.map(row=>`<li><button type="button" class="exam-matrix-topic" data-exam-matrix-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><p>Presença ${row.presencePercent??'—'}% · domínio ${row.mastery==null?'sem dados':Math.round(row.mastery)} · confiança ${escape(row.confidenceLabel)} · prioridade existente ${row.priority==null?'sem dados':Math.round(row.priority)}</p></li>`).join('')}</ul>`:'<p>Nenhum tópico neste grupo.</p>'}</section>`}).join('');
+  return renderChartFrame({title:'Incidência × Domínio',description:'Presença em pelo menos 50% das provas e domínio de pelo menos 70/100 delimitam os quadrantes. São referências de leitura; a recomendação continua usando a prioridade existente.',evidence:'Só confiança moderada ou alta permite posicionar. Baixa confiança e ausência de domínio ficam separados.',records:`<div class="incidence-quadrants">${records}</div>`});
+}

@@ -3339,7 +3339,9 @@ let selectedExamMatrixTopicId=null;
 function renderHistoricalExamMatrix(){
   const container=document.getElementById('examHistoricalMatrix');if(!container)return;
   const advancedWasOpen=container.querySelector('.exam-matrix-more-filters')?.open;
-  const metricsByTopic=Object.fromEntries(intelligenceCandidates().map(item=>[item.topicId,{mastery:item.mastery,retention:item.retention,trend:item.trend,priority:item.score}]));
+  const personal=new Map();
+  for(const record of examEvidenceContext().questions.included){const entry=personal.get(record.topicId)||{total:0,correct:0};entry.total+=Math.max(0,Number(record.resolved)||0);entry.correct+=Math.max(0,Math.min(Number(record.resolved)||0,Number(record.correct)||0));personal.set(record.topicId,entry)}
+  const metricsByTopic=Object.fromEntries(intelligenceCandidates().map(item=>{const data=personal.get(item.topicId);return [item.topicId,{mastery:item.mastery,retention:item.retention,trend:item.trend,priority:item.score,personalQuestionCount:data?.total||0,personalAccuracy:data?.total?Math.round(data.correct/data.total*100):null}]}));
   const auditMatchesScope=examMatrixFilters.scope==='active'&&['board','year','role'].every(key=>examMatrixFilters[key]==='all');
   const auditByTopic=auditMatchesScope?Object.fromEntries(buildExamConfigurationAudit({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}).rows.map(row=>[row.topicId,row])):{};
   const model=buildExamMatrix({topics:activeTopics(),exams:state.exams,examQuestions:state.examQuestions,activeExamTags:state.examBlueprint.activeExamTags||[],filters:examMatrixFilters,metricsByTopic,auditByTopic});
