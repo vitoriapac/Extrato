@@ -1,3 +1,5 @@
+import {buildPhaseStrategyProposal} from './domain/planning/phase-strategy.js';
+import {renderPhaseStrategy} from './ui/renderers/phase-strategy-renderer.js';
 import {buildCalibratedScoreProjection} from './domain/forecasts/calibrated-score-projection.js';
 import {renderScoreProjectionEvidence} from './ui/renderers/score-projection-renderer.js';
 import {renderWeeklyDecisionCycle} from './ui/renderers/weekly-decision-cycle-renderer.js';
@@ -3424,6 +3426,7 @@ function buildCurrentStudyPlanProposal({guidedDefaults=false}={}){
   return {...plan,examPhase:resolveExamPhase(days),adaptiveAdvice:buildAdaptivePlanningAdvice({plan,candidates,history:state.adaptivePlanningHistory,today:todayISO()})};
 }
 function calculateStudyPlanPreview(){
+  phaseStrategyPreview=null;
   studyPlanPreview=buildCurrentStudyPlanProposal();
   renderStudyPlanBuilder();
 }
@@ -3497,6 +3500,28 @@ function undoLatestDailyPlanGeneration(){
   const studyPlan=latestStudyPlan(),operation=[...(studyPlan?.dailyPlanOperations||[])].reverse().find(item=>!item.undoneAt);if(!operation)return;const result=dailyPlanService.undo(operation,studyPlan);
   scheduleSave();renderStudyPlanBuilder();renderPlanoHoje();showToast(result.protectedItems.length?`${pluralize(result.removedItems,'atividade')} removida${result.removedItems===1?'':'s'}; itens executados foram preservados.`:'Criação dos planos diários desfeita.')
 }
+let phaseStrategyPreview=null;
+function currentPhaseStrategy(){return buildPhaseStrategyProposal({plan:latestStudyPlan(),weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0),candidates:intelligenceCandidates(),daysToExam:state.examDate?diasParaRevisao(state.examDate):null,today:todayISO(),history:state.adaptivePlanningHistory,readiness:readinessResult(computeApprovalMetrics())})}
+function previewPhaseStrategy(){phaseStrategyPreview=currentPhaseStrategy();renderStudyPlanBuilder()}
+function cancelPhaseStrategy(){phaseStrategyPreview=null;renderStudyPlanBuilder()}
+function confirmPhaseStrategy(){
+  const proposal=phaseStrategyPreview,fresh=currentPhaseStrategy();
+  if(proposal?.state!=='proposal'||fresh.state!=='proposal'||proposal.basePlanId!==fresh.basePlanId||JSON.stringify(proposal.changes)!==JSON.stringify(fresh.changes)||proposal.budget!==fresh.budget||proposal.capacity!==fresh.capacity||proposal.phase.state!==fresh.phase.state){phaseStrategyPreview=fresh;renderStudyPlanBuilder();showToast('A proposta mudou. Confira os dados e confirme novamente.');return}
+  captureReadinessBeforeStrategy('Antes de confirmar a estratégia por fase');
+  const appliedAt=nowISO();
+  studyPlanService.confirm({...fresh.plan,examDate:state.examDate,phaseStrategy:{version:fresh.version,status:'applied',sourcePlanId:fresh.basePlanId,phase:fresh.phase,appliedAt,changes:structuredClone(fresh.changes),readiness:structuredClone(fresh.readiness),candidateEvidence:structuredClone(fresh.candidateEvidence)}});
+  phaseStrategyPreview=null;studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('Estratégia confirmada em uma nova versão. Distribua o plano nos próximos dias.');
+}
+function revertPhaseStrategy(){
+  const current=latestStudyPlan(),metadata=current?.phaseStrategy;
+  if(metadata?.status!=='applied')return;
+  const source=state.studyPlans.find(item=>item.id===metadata.sourcePlanId);if(!source)return showToast('A versão anterior não está disponível.');
+  const capacity=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0);
+  if(source.weeklyPlannedMinutes>capacity)return showToast('A versão anterior excede a disponibilidade atual. Calcule uma nova proposta.');
+  captureReadinessBeforeStrategy('Antes de reverter a estratégia por fase');
+  studyPlanService.confirm({...structuredClone(source),weeklyAvailableMinutes:capacity,examDate:state.examDate,phaseStrategy:{version:1,status:'reverted',sourcePlanId:current.id,appliedAt:nowISO(),phase:source.examPhase||resolveExamPhase(state.examDate?diasParaRevisao(state.examDate):null)}});
+  phaseStrategyPreview=null;studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('Divisão anterior restaurada em uma nova versão. Planos diários existentes foram preservados.');
+}
 function renderStudyPlanBuilder(){
   const container=document.getElementById('examStudyPlan');if(!container)return;
   renderAdaptivePlanningHistory();
@@ -3504,7 +3529,7 @@ function renderStudyPlanBuilder(){
   if(!studyPlanPreview){
     if(dailyPlanPreview){const proposal=dailyPlanPreview,rows=proposal.days.map(day=>`<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`).join('');container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${proposal.days.length}</strong><span>Dias utilizados</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Não alocados</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state==='proposal'?`<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>`:`<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;return}
     const activeOperation=[...(latest?.dailyPlanOperations||[])].reverse().find(item=>!item.undoneAt);
-    container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR')} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate?formatDatePt(latest.examDate):'data não definida'}</span></div>`:''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest?'<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>':''}${activeOperation?'<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>':''}</div>`;return
+    container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR')} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate?formatDatePt(latest.examDate):'data não definida'}</span></div>`:''}${renderPhaseStrategy(phaseStrategyPreview||currentPhaseStrategy(),{preview:phaseStrategyPreview?.state==='proposal',canRevert:latest?.phaseStrategy?.status==='applied'})}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest?'<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>':''}${activeOperation?'<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>':''}</div>`;return
   }
   const plan=studyPlanPreview;
   const blockedNote=plan.blockedTopics?.length?`<details class="blocked-topics-note"><summary>${plan.blockedTopics.length} tópico${plan.blockedTopics.length===1?' aguarda':'s aguardam'} pré-requisitos</summary><p>${plan.blockedTopics.slice(0,5).map(item=>escapeHtml(item.topicName||item.id)+" — requer "+item.prerequisites.map(id=>escapeHtml(getTopicName(id)||id)).join(", ")).join("; ")}${plan.blockedTopics.length>5?` · e mais ${plan.blockedTopics.length-5}`:''}.</p><small>Conclua a base ou reforce o domínio e recalcule a proposta.</small></details>`:"";
@@ -4998,7 +5023,7 @@ function escapeAttr(str){ return escapeHtml(str); }
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTION_HANDLERS={
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
-  calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,useAdaptivePlanAdvice,rejectAdaptivePlanAdvice,revertAdaptivePlanningDecision,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,openNextSessionAction,
+  previewPhaseStrategy,cancelPhaseStrategy,confirmPhaseStrategy,revertPhaseStrategy,calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,useAdaptivePlanAdvice,rejectAdaptivePlanAdvice,revertAdaptivePlanningDecision,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,openNextSessionAction,
   calculateReplanPreview,clearReplanPreview,confirmReplan,undoPlanAdjustment,saveWeeklyCloseSnapshot,previewWeeklyCloseActions,confirmWeeklyCloseActions,toggleWeeklyPriority,executeStudyRecommendation,
   cancelAgendaEdit,cancelCalendarEdit,cancelQuestionEdit,cancelSimulationEdit,cancelStudySessionEdit,changeAgendaLimit,changeCalendarLimit,changeOverdueGroupLimit,changePerformanceLimit,changeSubjectTopicLimit,changeUpcomingLimit,clearSessionHistoryFilters,completeAgendaReview,completeCalendarItem,completeUnifiedReview,deleteAgendaRow,
   deleteBreakdownRow,deleteCalRow,deleteMetaDisciplina,deleteQuestaoRow,deleteSimuladoRow,deleteStudySession,duplicateSubject,

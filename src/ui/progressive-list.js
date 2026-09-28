@@ -29,6 +29,7 @@ const LISTS=[
   ['.simulation-trend-list',':scope > li'],
   ['.performance-topic-analysis',':scope > li'],
   ['.weekly-decision-results',':scope > li'],
+  ['.phase-strategy-changes',':scope > li'],
   ['#planExecutionResults .execution-distribution tbody',':scope > tr'],
   ['#historicoMetasContainer tbody',':scope > tr'],
   ['.adaptive-history > ol',':scope > li'],
