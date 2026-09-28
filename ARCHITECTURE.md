@@ -275,3 +275,7 @@ DOM event → controller → action → state → view-model → renderer
 ## Transição de escopo
 
 Toda mudança de concursos ativos passa por `setActiveExamTags()`. As tags são deduplicadas e ordenadas antes da comparação, e somente campos derivados do edital são invalidados. Sessões, questões, revisões e histórico nunca são apagados pela troca de escopo.
+
+## Prioridade registrada no plano
+
+Cada novo item confirmado registra prioritySnapshot, com score, fatores, razões, evidência, algoritmo e política de classificação. A política 1 classifica score ≥ 70 como prioritário; prioridades aceitas explicitamente no fechamento também são identificadas. Ausência de score não significa baixa prioridade. A distribuição diária copia o contexto do plano semanal e as sessões vinculadas recebem planPrioritySnapshot. Planos antigos permanecem sem classificação histórica, sem inferência a partir do diagnóstico atual.

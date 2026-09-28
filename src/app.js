@@ -1,3 +1,4 @@
+import {capturePlanPriority} from './domain/planning/plan-priority-snapshot.js';
 import {DEFAULT_LIST_VISIBLE_ITEMS,mountProgressiveLists} from './ui/progressive-list.js';
 import {
   STORAGE_KEY,BACKUP_KEY,BACKUP_INDEX_KEY,AUTOMATIC_BACKUP_SLOTS,CURRENT_SCHEMA_VERSION,MAX_BACKUP_FILE_SIZE,
@@ -4447,7 +4448,7 @@ function startStudyRecommendation(id,source='today'){
   let plan=todayDailyStudyPlan();if(!plan){plan={id:uid('plan'),date:todayISO(),availableMinutes:Math.round(metaHoursToday()*60),plannedMinutes:0,flexMinutes:0,createdAt:nowISO(),updatedAt:nowISO(),items:[]};state.dailyPlans.push(plan)}
   let item=plan.items.find(candidate=>candidate.topicId===recommendation.topicId&&!['completed','skipped'].includes(candidate.status));
   if(item){item.recommendationId=recommendation.recommendationId;item.type=recommendation.studyType||item.type||'study'}
-  if(!item){item={id:uid('plan-item'),subjectId:recommendation.subjectId,topicId:recommendation.topicId,subjectName:recommendation.subjectName,topicName:recommendation.topicName,type:recommendation.studyType||'study',plannedMinutes:recommendation.estimatedMinutes,executedSeconds:0,status:'planned',sessionIds:[],score:recommendation.score,tier:recommendation.score>=70?'Alta':recommendation.score>=40?'Média':'Baixa',position:plan.items.length+1,statusIcon:'🎯',statusLabel:'Recomendação inteligente',reason:recommendation.reasons.join(' · '),action:recommendation.action,recommendedQuestions:0,originalDate:todayISO(),currentDate:todayISO(),rescheduleCount:0,skippedReason:null,recommendationId:recommendation.recommendationId,createdAt:nowISO()};plan.items.push(item);plan.plannedMinutes+=item.plannedMinutes;plan.updatedAt=nowISO();scheduleSave()}
+  if(!item){item={id:uid('plan-item'),subjectId:recommendation.subjectId,topicId:recommendation.topicId,subjectName:recommendation.subjectName,topicName:recommendation.topicName,type:recommendation.studyType||'study',plannedMinutes:recommendation.estimatedMinutes,executedSeconds:0,status:'planned',sessionIds:[],score:recommendation.score,tier:recommendation.score>=70?'Alta':recommendation.score>=40?'Média':'Baixa',position:plan.items.length+1,statusIcon:'🎯',statusLabel:'Recomendação inteligente',prioritySnapshot:capturePlanPriority(recommendation,{capturedAt:nowISO(),algorithmVersion:state.algorithmVersions.recommendations}),reason:recommendation.reasons.join(' · '),action:recommendation.action,recommendedQuestions:0,originalDate:todayISO(),currentDate:todayISO(),rescheduleCount:0,skippedReason:null,recommendationId:recommendation.recommendationId,createdAt:nowISO()};plan.items.push(item);plan.plannedMinutes+=item.plannedMinutes;plan.updatedAt=nowISO();scheduleSave()}
   Object.assign(state.activeTimer,{recommendationId:recommendation.recommendationId||recommendation.id,recommendationSource:source,recommendationType:recommendedType,prioritySnapshot:Number.isFinite(Number(recommendation.score))?Number(recommendation.score):null,strategy:structuredClone(recommendation.strategy),strategyStep:0});startPlannedActivity(item.id);
 }
 const recommendationController=createRecommendationController({getRecommendations:()=>currentStudyRecommendations,actionKind:recommendationActionKind,
@@ -4504,7 +4505,7 @@ function materializeDailyStudyPlan(priorities,availableMinutes){
     flexMinutes:calculated.flexMinutes,createdAt,updatedAt:createdAt,items:calculated.items.map((item,index)=>({
       id:uid('plan-item'),subjectId:item.subjectId||null,topicId:item.topicId||null,
       subjectName:item.subjectName||getSubjectName(item.subjectId),topicName:item.topicName||getTopicName(item.topicId),
-      type:item.studyType||'study',plannedMinutes:item.minutes,executedSeconds:0,status:'planned',sessionIds:[],
+      type:item.studyType||'study',prioritySnapshot:capturePlanPriority(item,{capturedAt:createdAt,algorithmVersion:state.algorithmVersions.recommendations}),plannedMinutes:item.minutes,executedSeconds:0,status:'planned',sessionIds:[],
       score:Number(item.score)||0,tier:item.tier||'Baixa',position:index+1,
       statusIcon:item.diagnosis?.statusIcon||PRIORITY_TIER_EMOJI[item.tier]||'📌',
       statusLabel:item.diagnosis?.status||('Prioridade '+(index+1)),reason:motivoPrioridade(item),
