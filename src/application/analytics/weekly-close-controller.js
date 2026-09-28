@@ -4,8 +4,9 @@ export function createWeeklyCloseController({getModel,getState,buildProposal,cre
   let draft={selectedIds:[],proposal:null};
   const view=()=>({selectedIds:[...draft.selectedIds],proposal:draft.proposal});
   const toggle=(id,checked)=>{draft.selectedIds=checked?[...new Set([...draft.selectedIds,id])]:draft.selectedIds.filter(item=>item!==id);draft.proposal=null;onChanged(view());return view()};
-  const periodKey=model=>JSON.stringify([model.period.start,model.period.end,[...(model.activeExamTags||[])].sort()]);
+  const periodKey=model=>{const period=model?.period||model?.weeklyClose?.period;if(!period?.start||!period?.end)return null;return JSON.stringify([period.start,period.end,[...(model.activeExamTags||[])].sort()])};
   const calculate=()=>{const model=getModel(),close=model?.weeklyClose;if(!close)return null;const state=getState(),key=periodKey(model),active=item=>!['skipped','replaced','discarded','deferred'].includes(item.status);
+    if(!key)return null;
     const previousIds=new Set((state.weeklyCloseSnapshots||[]).filter(item=>periodKey(item)===key).map(item=>item.id));
     const applied=new Set(state.dailyPlans.flatMap(plan=>plan.items||[]).filter(item=>active(item)&&(item.weeklyClosePeriodKey===key||previousIds.has(item.weeklyCloseSnapshotId))).map(item=>item.priorityId));
     const days=Array.from({length:7},(_,index)=>{const date=clock.addDays(clock.today(),index+1),used=state.dailyPlans.filter(plan=>plan.date===date).reduce((sum,plan)=>sum+(plan.items?.length?plan.items.filter(active).reduce((n,item)=>n+Math.max(0,Number(item.plannedMinutes)||0),0):Math.max(0,Number(plan.plannedMinutes)||0)),0);return {date,availableMinutes:Math.max(0,Math.round(getDailyCapacity(date))-used)}});

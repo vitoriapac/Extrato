@@ -16,10 +16,17 @@ test('fase sem data não inventa posição na sequência',()=>{
 
 test('sugestão mostra origem, destino, capacidade preservada e ação explícita',()=>{
   const html=renderAdaptiveAllocationAdvice({state:'proposal',transferMinutes:30,from:{name:'Informática',beforeMinutes:90,afterMinutes:60},to:{name:'Matemática',beforeMinutes:60,afterMinutes:90},reason:'Baseado na evidência.',rationale:['Impacto na prova: 85/100.']},{weeklyPlannedMinutes:150,formatMinutes:n=>`${n} min`,escapeHtml});
-  assert.match(html,/Informática/);assert.match(html,/Matemática/);assert.match(html,/90 min → 60 min/);assert.match(html,/Capacidade mantida · 150 min/);assert.match(html,/Aplicar à prévia/);assert.match(html,/Impacto na prova: 85\/100/);
+  assert.match(html,/Informática/);assert.match(html,/Matemática/);assert.match(html,/90 min → 60 min/);assert.match(html,/Carga distribuída mantida · 150 min/);assert.match(html,/Aplicar à prévia/);assert.match(html,/Impacto na prova: 85\/100/);
 });
 
 test('sugestão aplicada informa que ainda precisa ser confirmada',()=>{
   const html=renderAdaptiveAllocationAdvice({state:'proposal',applied:true,from:{},to:{}},{escapeHtml});
   assert.match(html,/Aplicado somente à prévia/);assert.doesNotMatch(html,/data-delegated-click/);
+});
+
+test('distingue carga distribuída da disponibilidade semanal na explicação',()=>{
+  const html=renderAdaptiveAllocationAdvice({state:'proposal',transferMinutes:30,from:{name:'Origem',beforeMinutes:90,afterMinutes:60},to:{name:'Destino',beforeMinutes:60,afterMinutes:90}},{weeklyPlannedMinutes:150,weeklyAvailableMinutes:300,formatMinutes:n=>`${n} min`,escapeHtml});
+  assert.match(html,/Carga distribuída mantida · 150 min/);
+  assert.match(html,/Disponibilidade: 300 → 300 min/);
+  assert.doesNotMatch(html,/Capacidade mantida · 150 min/);
 });
