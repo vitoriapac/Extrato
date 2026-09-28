@@ -1,3 +1,4 @@
+import {renderChartFrame,renderChartTooltip} from '../chart-components.js';
 const fmt=value=>`${Math.floor(value/60)}h${String(value%60).padStart(2,'0')}`;
 
 export function renderPlanExecution(model,{formatDate}){
@@ -12,9 +13,9 @@ export function renderPlanExecution(model,{formatDate}){
     const width=480,height=136,max=Math.max(100,Math.ceil(Math.max(...measured.map(item=>item.adherence))/50)*50);
     const x=index=>25+index/(measured.length-1)*440,y=value=>104-value/max*86;
     const segments=measured.slice(1).map((item,index)=>`<line x1="${x(index)}" y1="${y(measured[index].adherence)}" x2="${x(index+1)}" y2="${y(item.adherence)}"/>`).join('');
-    const points=measured.map((item,index)=>`<circle cx="${x(index)}" cy="${y(item.adherence)}" r="4"/>`).join('');
+    const points=measured.map((item,index)=>`<circle cx="${x(index)}" cy="${y(item.adherence)}" r="4">${renderChartTooltip(formatDate(item.start)+" a "+formatDate(item.end)+": "+item.adherence+"% de cumprimento")}</circle>`).join('');
     trend=`<svg class="plan-adherence-chart" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}"><line class="plan-adherence-grid" x1="25" x2="465" y1="${y(100)}" y2="${y(100)}"/><g class="plan-adherence-line">${segments}</g><g class="plan-adherence-point">${points}</g></svg>`;
   }
   const weeks=model.history.map(item=>`<li><span>${formatDate(item.start).slice(0,5)} a ${formatDate(item.end).slice(0,5)}</span><strong>${item.adherence===null?'Sem plano':item.adherence+'%'}</strong><small>${fmt(item.studiedMinutes)} estudados · ${item.plannedMinutes?fmt(item.plannedMinutes)+' planejados':'nenhum plano registrado'}</small></li>`).join('');
-  return `${summary}${warning}${unplanned}<h4>Planejado × realizado nesta semana</h4><p class="analytics-note">Primeira barra: itens planejados. Segunda: sessões registradas, inclusive fora do plano. Dias sem plano permanecem sem percentual.</p><ol class="plan-execution-days">${days}</ol><h4>Cumprimento nas semanas concluídas</h4><p class="analytics-note">Cumprimento = minutos estudados ÷ minutos planejados nos dias. Semanas sem plano não entram na tendência. O período atual ainda está em andamento.</p>${trend||'<div class="ui-state--empty">São necessárias duas semanas concluídas com plano para mostrar a tendência.</div>'}<ol class="plan-adherence-list">${weeks}</ol>`;
+  return summary+warning+unplanned+renderChartFrame({title:'Planejado × realizado nesta semana',description:'Sessões registradas incluem estudo fora do plano. Dias sem plano permanecem sem percentual.',period:model.days.length?formatDate(model.days[0].date)+' a '+formatDate(model.days.at(-1).date):'',legend:[{label:'Planejado',tone:'secondary'},{label:'Estudado',tone:'primary'}],chart:'<ol class="plan-execution-days">'+days+'</ol>'})+renderChartFrame({title:'Cumprimento nas semanas concluídas',description:'Minutos estudados ÷ minutos planejados nos dias. Semanas sem plano não entram na tendência.',evidence:measured.length+' semanas concluídas com plano · período atual em andamento',legend:[{label:'Cumprimento',tone:'primary'},{label:'Referência de 100%',tone:'target'}],chart:trend,emptyMessage:'São necessárias duas semanas concluídas com plano para mostrar a tendência.',records:'<ol class="plan-adherence-list">'+weeks+'</ol>'});
 }

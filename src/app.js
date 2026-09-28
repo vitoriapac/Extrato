@@ -1703,10 +1703,6 @@ function renderSimuladosChart(){
   const data = [...state.simulados].sort((a,b)=> (a.date||'').localeCompare(b.date||''));
   const comparison=buildSimulationComparison({simulations:data.map(item=>({...item,breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),subjects:state.subjects});
   document.getElementById('simulationComparisonResults').innerHTML=renderSimulationComparison(comparison,{escapeHtml,formatDate:formatDatePt});
-  if(data.length < 2){
-    card.style.display = 'none';
-    return;
-  }
   card.style.display = 'block';
   container.innerHTML=renderSimulationTrendChart({items:data.slice(-12),scoreFor:simuladoNota,formatDate:formatDatePt,escapeHtml,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:null});
 }

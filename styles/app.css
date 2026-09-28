@@ -1805,3 +1805,26 @@ body.timer-focus-active .timer-context{display:none!important}
 .progressive-list-toggle:hover{background:var(--surface-interactive)}
 .progressive-list-toggle:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.progressive-list-toggle{scroll-behavior:auto;transition:none}}
+
+/* Shared chart presentation: renderer-owned geometry, semantic metadata. */
+.chart-frame{min-width:0;margin-block:var(--space-5);color:var(--text-primary)}
+.chart-frame__header{margin-bottom:var(--space-3)}
+.chart-frame__period,.chart-frame__evidence{font-size:.82rem;color:var(--text-secondary);line-height:1.5}
+.chart-frame__legend{display:flex;flex-wrap:wrap;gap:var(--space-3);padding:0;margin:var(--space-3) 0;list-style:none;font-size:.8rem;color:var(--text-secondary)}
+.chart-frame__legend li{display:flex;align-items:center;gap:var(--space-2)}
+.chart-frame__swatch{width:18px;height:4px;background:var(--chart-series-primary);flex-shrink:0}
+.chart-frame__swatch--secondary{background:var(--chart-series-secondary)}
+.chart-frame__swatch--target{height:0;border-top:2px dashed var(--chart-series-target);background:none}
+.chart-frame__plot,.chart-frame__records{min-width:0;max-width:100%}
+.chart-frame__plot>svg{width:100%;height:auto;display:block}
+.chart-frame__records{margin-top:var(--space-3)}
+.chart-frame__empty{margin-block:var(--space-3)}
+.chart-frame .chart-line,.chart-frame .question-evolution-line,.chart-frame .plan-adherence-line{stroke:var(--chart-series-primary)}
+.chart-frame .chart-dot{fill:var(--chart-series-primary)}
+.chart-frame .question-evolution-point,.chart-frame .plan-adherence-point{stroke:var(--chart-series-primary)}
+.chart-frame .simulation-goal-line,.chart-frame .plan-adherence-grid{stroke:var(--chart-series-target);stroke-dasharray:5 4}
+.chart-frame .question-mix-track{background:var(--chart-series-secondary)}
+.chart-frame .question-mix-track>span,.chart-frame .plan-execution-track.is-studied i{background:var(--chart-series-primary)}
+.chart-frame .plan-execution-track.is-planned i{background:var(--chart-series-secondary)}
+
+.chart-period-controls{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:end}.chart-period-controls label{min-width:0;max-width:100%}.chart-period-controls select{max-width:100%}

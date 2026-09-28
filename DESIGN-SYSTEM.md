@@ -50,3 +50,24 @@ Aplicar escopo, filtros, busca e ordenação antes da apresentação. Sessões, 
 Categorias: progressive-list para registros; always-visible para indicadores, gráficos, matrizes, comparações, navegação e conquistas; paginated-list para grandes coleções. A revisão de classificações históricas mantém paginação de 100 questões. As três recomendações escolhidas para hoje são uma seleção do motor, não uma lista de registros.
 
 O adaptador mountProgressiveLists usa uma relação explícita de seletores e registros, sem aplicar limites a cards arbitrários. Novos módulos devem aderir à mesma constante e controles. Botões reais expõem aria-expanded e aria-controls, foco visível e área mínima de 44 px. Recolhimento só rola quando o controle fica fora da viewport, respeitando prefers-reduced-motion.
+
+## Contrato compartilhado dos gráficos
+
+Use renderChartFrame de src/ui/chart-components.js para título (module-heading), descrição, período, legenda, evidência, visualização e registros textuais. renderChartEmptyState apresenta a evidência necessária; renderChartTooltip escapa os detalhes dos pontos SVG. Os seletores existentes mantêm os próprios eventos e usam chart-period-controls.
+
+Os tokens --chart-series-primary, --chart-series-secondary e --chart-series-target definem os papéis visuais nos dois temas. Questões, Simulados e Plano e execução usam esse contrato. A legenda deve corresponder às séries e a consulta textual precisa informar valores e unidades. A cor não pode ser a única forma de interpretar o gráfico.
+
+### Inventário de componentes
+
+| Papel | Contrato existente |
+|---|---|
+| Cards e análise | card, chart-card, module-heading |
+| Indicadores | kpi-cell, mini-stat |
+| Estados e evidência | status-badge, context-note, empty-state |
+| Ações e campos | btn, select-control, controles existentes |
+| Progresso | bar-track, bar-fill |
+| Listas de registros | progressive-list.js e list-components.js |
+| Gráficos | chart-components.js, chart-frame, chart-period-controls |
+| Diálogos | modal-overlay e controladores existentes de foco |
+
+Componentes novos devem reutilizar esses contratos antes de criar variantes. Matrizes e comparações mantêm a visualização simultânea dos dados.

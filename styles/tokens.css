@@ -43,3 +43,5 @@
   --wizard-disabled-bg:#303A4B;--wizard-disabled-text:#929CAD;
   color-scheme:dark;
 }
+
+:root{--chart-series-primary:var(--blue);--chart-series-secondary:var(--amber);--chart-series-target:var(--ink-soft)}

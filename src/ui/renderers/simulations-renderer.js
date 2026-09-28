@@ -1,3 +1,4 @@
+import {renderChartFrame} from '../chart-components.js';
 export function renderSimulationRead({item,view,mobile,expanded,escapeHtml,breakdownHtml=''}){
   const hasBreakdown=Boolean(item.breakdown?.length);
   const details=`<button class="btn ghost small ${hasBreakdown?'has-notes':''}" data-delegated-click="toggleBreakdown('${item.id}')">${expanded?'Ocultar detalhes':'Ver desempenho'}</button>`;
@@ -30,7 +31,7 @@ export function renderSimulationTrendChart({items=[],scoreFor,formatDate,escapeH
   const goal=Number.isFinite(Number(targetScore))&&targetScore!==null&&targetScore!==''?Math.max(0,Math.min(100,Number(targetScore))):null;
   const goalLine=goal===null?'':`<line class="simulation-goal-line" x1="${padLeft}" x2="${width-padRight}" y1="${yFor(goal)}" y2="${yFor(goal)}"/>`;
   const history=items.map((item,index)=>`<li><span>${escapeHtml(item.nome||'Simulado')} · ${formatDate(item.date)}</span><strong>${scores[index]}%</strong></li>`).join('');
-  return `<p class="analytics-note">Últimos ${items.length} simulados${goal===null?'':` · meta configurada ${goal}%`}. A linha representa a nota registrada em cada prova.</p><svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;">${grid}${goalLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg><ol class="simulation-trend-list">${history}</ol>`;
+  return renderChartFrame({title:'Evolução dos simulados',description:'Nota registrada em cada prova. O histórico textual apresenta os mesmos resultados.',period:items.length?formatDate(items[0].date)+' a '+formatDate(items.at(-1).date):'',evidence:'Últimos '+items.length+' simulados'+(goal===null?'':' · meta configurada '+goal+'%'),legend:[{label:'Nota do simulado',tone:'primary'},...(goal===null?[]:[{label:'Meta configurada',tone:'target'}])],chart:items.length?`<svg class="progress-chart-svg" aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;">${grid}${goalLine}<polyline class="chart-line" points="${points}"></polyline>${dots}${labels}</svg>`:'',emptyMessage:'Registre um simulado para acompanhar a evolução.',records:items.length?'<ol class="simulation-trend-list">'+history+'</ol>':''});
 }
 
 export function renderSubjectPerformanceRows({items=[],escapeHtml}){
