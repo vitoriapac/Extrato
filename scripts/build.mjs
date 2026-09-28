@@ -46,14 +46,15 @@ const generatedServiceWorker=serviceWorkerTemplate.replaceAll(versionPlaceholder
 let stale = false;
 async function writeOrCheck(output,generated){
   const outputFile=resolve(projectRoot,output);
+  const stableGenerated=generated.replace(/\r\n/g,'\n');
   if(checkOnly){
     const current=await readFile(outputFile,'utf8').catch(()=>null);
-    if(current!==generated){
+    if(current?.replace(/\r\n/g,'\n')!==stableGenerated){
       console.error(`${output} esta desatualizado. Execute npm run build.`);
       stale=true;
     }else console.log(`${output} atualizado e reproduzivel.`);
   }else{
-    await writeFile(outputFile,generated,'utf8');
+    await writeFile(outputFile,stableGenerated,'utf8');
     console.log(`Arquivo atualizado: ${outputFile}`);
   }
 }
