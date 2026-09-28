@@ -1,3 +1,5 @@
+import {buildPerformanceAnalysis,performancePeriodRecords} from './application/questions/build-performance-analysis.js';
+import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
 import {capturePlanPriority} from './domain/planning/plan-priority-snapshot.js';
@@ -1699,7 +1701,7 @@ function metricStateLabel(metric,minimumConfidence=.35){
 function renderSimuladosChart(){
   const card = document.getElementById('simuladosChartCard');
   const container = document.getElementById('simuladosChart');
-  const data = [...state.simulados].sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+  const data = performancePeriodRecords(examScopedSimulations(),{today:todayISO(),period:questionEvolutionView.period}).sort((a,b)=> (a.date||'').localeCompare(b.date||''));
   const comparison=buildSimulationComparison({simulations:data.map(item=>({...item,breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),subjects:state.subjects});
   document.getElementById('simulationComparisonResults').innerHTML=renderSimulationComparison(comparison,{escapeHtml,formatDate:formatDatePt});
   card.style.display = 'block';
@@ -2716,6 +2718,7 @@ function setQuestionEvolutionFilter(field,value){
   if(field==='topicId')questionEvolutionView.topicId=value;
   if(field==='period'&&['30','90','180','all'].includes(value))questionEvolutionView.period=value;
   renderQuestionEvolution();
+  renderSimuladosChart();
 }
 function renderQuestionEvolution(){
   const result=document.getElementById('questionEvolutionResults');if(!result)return;
@@ -2731,8 +2734,9 @@ function renderQuestionEvolution(){
   controls.topic.value=questionEvolutionView.topicId;
   document.getElementById('questionEvolutionSubjectWrap').hidden=questionEvolutionView.scope==='all';
   document.getElementById('questionEvolutionTopicWrap').hidden=questionEvolutionView.scope!=='topic';
-  const model=buildQuestionEvolution({questions:state.questoes.map(item=>({...item,subjectId:entitySubjectId(item)})),today:todayISO(),...questionEvolutionView});
-  result.innerHTML=renderQuestionEvolutionView(model,{formatDate:formatDatePt});
+  const model=buildQuestionEvolution({questions:examEvidenceContext().questions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),today:todayISO(),...questionEvolutionView});
+  const analysis=buildPerformanceAnalysis({questions:examEvidenceContext().questions.included,simulations:examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item)})),candidates:intelligenceCandidates(),today:todayISO(),period:questionEvolutionView.period});
+  result.innerHTML=renderPerformanceAnalysis(analysis)+renderQuestionEvolutionView(model,{formatDate:formatDatePt});
 }
 let performanceViewMode='with-data';
 const errorAnalysisView={days:30,topicId:''};

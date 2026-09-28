@@ -59,3 +59,7 @@ Estudo sem vínculo, vínculos incompatíveis, atividades de outro período e ex
 
 ## Incidência × Domínio
 A matriz histórica oferece quatro quadrantes textuais responsivos: presença alta (50% ou mais) × domínio adequado (70/100 ou mais). Esses cortes são referências de leitura, não pesos novos do motor de prioridade. Apenas confiança histórica moderada/alta e domínio disponível permitem posicionar; demais tópicos ficam no grupo de evidência insuficiente. Os filtros históricos são preservados. O detalhamento distingue questões históricas e pessoais; os dados pessoais continuam no concurso ativo.
+
+## Leitura integrada de questões e simulados
+A área de evolução apresenta volume, precisão, erros categorizados/não categorizados e notas atual/anterior/média/melhor dos simulados. A média é por simulado, não ponderada pelo volume. O período 30/90/180/todo o histórico é compartilhado com os gráficos e a comparação de simulados; ambos usam o concurso ativo. Os filtros de disciplina/tópico refinam somente o gráfico de questões; o resumo informa o conjunto do concurso.
+As tendências por tópico comparam duas metades do período, exigindo 30 questões em cada metade. No histórico inteiro, a janela recente é de 45 dias e a anterior contém o restante. Impacto acompanha a variação sem produzir uma nova prioridade. Composição/dificuldade distintas limitam comparações; amostras insuficientes não recebem classificação de tendência. Categorias e tópicos têm detalhes expansíveis, e listas extensas reutilizam Mostrar mais.
