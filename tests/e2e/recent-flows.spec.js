@@ -35,6 +35,7 @@ test('recomendação vazia explica o dado ausente e oferece uma próxima ação'
 test('ação de estudo no diagnóstico inicia sessão vinculada e atualiza as recomendações',async({page})=>{
   await openDemo(page);await activateTab(page,'hoje');await page.locator('.today-analysis-details > summary').click();
   const action=page.locator('#diagnosisCenter .diagnostic-row[data-activity-type="study"] button[data-study-action-source="diagnosis"]').first();
+  await expect(action.locator('xpath=ancestor::article').locator('.recommendation-explanation > summary')).toContainText('evidências e consequências');
   await expect(action).toBeVisible();await action.click();await expect(page.locator('#guidedStrategy')).toBeVisible();
   await expect.poll(()=>page.locator('#studyTimerDisplay').innerText()).not.toBe('00:00');
   await page.locator('#timerFinishBtn').click();await expect(page.locator('#sessionModalOverlay')).toBeVisible();

@@ -2,11 +2,38 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildAdaptivePlanningAdvice,applyAdaptivePlanningAdvice} from '../../src/domain/planning/adaptive-planning.js';
 import {migrateRecommendationHistory,reusableRecommendationRecord,syncRecommendationHistory,decideRecommendationRecord,attachRecommendationSession,summarizeRecommendationHistory} from '../../src/application/recommendations/recommendation-history.js';
+import {canReuseRecommendationPresentation,createRecommendationPresentation} from '../../src/application/recommendations/recommendation-feedback.js';
 import {buildRecommendationOutcomeAudit} from '../../src/application/recommendations/build-recommendation-outcome-audit.js';
 
 const plan={weeklyPlannedMinutes:180,subjects:[{subjectId:'a',subjectName:'A',minutes:90},{subjectId:'b',subjectName:'B',minutes:90}],items:[{id:'a1',subjectId:'a',minutes:90,capacityMinutes:150,activityMix:{theory:30,questions:30,reviews:30}},{id:'b1',subjectId:'b',minutes:90,capacityMinutes:150,activityMix:{theory:30,questions:30,reviews:30}}]};
 const candidates=[{subjectId:'a',mastery:40,evidenceStrength:.8,examImpact:85,trend:{direction:'stable'}},{subjectId:'b',mastery:90,evidenceStrength:.8,examImpact:40,trend:{direction:'stable'}}];
 const history=[{status:'applied',sourceSubjectId:'a',targetSubjectId:'b',decidedAt:'2026-09-10T12:00:00Z'}];
+
+test('histórico legado sem shownAt usa a data original sem consultar o relógio',()=>{
+  const source=[{id:'legacy',recommendationId:'legacy-r',date:'2026-09-20',accepted:true}];
+  const before=structuredClone(source),record=migrateRecommendationHistory(source)[0];
+  assert.equal(record.createdAt,'2026-09-20T12:00:00.000Z');
+  assert.equal(record.localDate,'2026-09-20');
+  assert.ok(record.explanationSnapshot);
+  assert.deepEqual(source,before);
+});
+
+test('ações além das três primeiras mantêm identidade sem inflar o histórico',()=>{
+  const records=[],items=Array.from({length:6},(_,index)=>createRecommendationPresentation({id:`candidate-${index}`,score:90-index,estimatedMinutes:30},{id:`shown-${index}`,shownAt:'2026-09-29T12:00:00Z'})).map(item=>({...item,activeExamTags:['bb']}));
+  const options={now:'2026-09-29T12:00:00Z',today:'2026-09-29',idGenerator:()=>assert.fail('identidade inesperada'),activeExamTags:['bb']};
+  syncRecommendationHistory(records,items,options);assert.equal(records.length,3);
+  const previous=items[5],current={id:previous.id,score:previous.score,estimatedMinutes:30};
+  const context={today:'2026-09-29',activeExamTags:['bb'],toLocalDate:()=> '2026-09-29'};
+  assert.equal(canReuseRecommendationPresentation(previous,current,context),true);
+  assert.equal(canReuseRecommendationPresentation(previous,current,{...context,activeExamTags:['caixa']}),false);
+  assert.equal(canReuseRecommendationPresentation(previous,current,{...context,today:'2026-09-30'}),false);
+  assert.equal(canReuseRecommendationPresentation(previous,{...current,score:42},context),false);
+  assert.equal(canReuseRecommendationPresentation(previous,{...current,evidence:{evidenceStrength:.8}},context),false);
+  assert.equal(canReuseRecommendationPresentation(previous,current,{...context,record:{status:'expired',activeExamTags:['bb'],localDate:context.today}}),false);
+  const fresh=createRecommendationPresentation(current,{id:previous.recommendationId,shownAt:previous.shownAt});
+  assert.equal(fresh.recommendationId,previous.recommendationId);assert.ok(fresh.explanation);
+  assert.equal(syncRecommendationHistory(records,items,options),false);
+});
 
 test('planejamento segura inversão por 14 dias e admite deterioração forte',()=>{
   const blocked=buildAdaptivePlanningAdvice({plan,candidates,history,today:'2026-09-20'});

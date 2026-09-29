@@ -12,29 +12,27 @@ for(const width of [320,360,390,430])test(`mantém Visão Geral, Hoje e Planejam
   for(const name of ['dashboard','hoje','metas']){await activateTab(page,name);await expectNoPageOverflow(page)}
 });
 
-for(const width of [320,375,430,768,1440])test(`matriz visual crítica não transborda em claro e escuro em ${width}px`,async({page})=>{
+for(const width of [320,375,430,768,1440])for(const theme of ['light','dark'])test(`matriz visual crítica não transborda em ${width}px no tema ${theme}`,async({page})=>{
   await page.setViewportSize({width,height:900});await openDemo(page);
-  for(const theme of ['light','dark']){
-    if(theme==='dark')await page.locator('#themeToggleBtn').click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
-    await activateTab(page,'dashboard');await expectNoPageOverflow(page);
-    await expect(page.locator('#weeklyCloseDashboard')).toBeVisible();
-    await activateTab(page,'hoje');
-    const analyses=page.locator('.today-analysis-details');
-    if(await analyses.count()&&!await analyses.first().evaluate(element=>element.open))await analyses.first().locator(':scope > summary').click();
-    await expectNoPageOverflow(page);
-    await expect(page.locator('#diagnosisCenter')).toBeVisible();
-    await activateTab(page,'metas');await expectNoPageOverflow(page);
-    await expect(page.locator('#examBlueprintConfig')).toBeVisible();
-    await activateTab(page,'disciplinas');await expectNoPageOverflow(page);
-    await activateTab(page,'agenda');await expectNoPageOverflow(page);
-    await activateTab(page,'calendario');await expectNoPageOverflow(page);
-    await activateTab(page,'questoes');await expectNoPageOverflow(page);
-    await page.keyboard.press('Control+k');
-    await page.locator('#globalSearchInput').fill('recomendação prioritária');
-    await expect(page.locator('#globalSearchInput')).toBeFocused();await expectNoPageOverflow(page);
-    await page.keyboard.press('Escape');
-  }
+  if(theme==='dark')await page.locator('#themeToggleBtn').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
+  await activateTab(page,'dashboard');await expectNoPageOverflow(page);
+  await expect(page.locator('#weeklyCloseDashboard')).toBeVisible();
+  await activateTab(page,'hoje');
+  const analyses=page.locator('.today-analysis-details');
+  if(await analyses.count()&&!await analyses.first().evaluate(element=>element.open))await analyses.first().locator(':scope > summary').click();
+  await expectNoPageOverflow(page);
+  await expect(page.locator('#diagnosisCenter')).toBeVisible();
+  await activateTab(page,'metas');await expectNoPageOverflow(page);
+  await expect(page.locator('#examBlueprintConfig')).toBeVisible();
+  await activateTab(page,'disciplinas');await expectNoPageOverflow(page);
+  await activateTab(page,'agenda');await expectNoPageOverflow(page);
+  await activateTab(page,'calendario');await expectNoPageOverflow(page);
+  await activateTab(page,'questoes');await expectNoPageOverflow(page);
+  await page.keyboard.press('Control+k');
+  await page.locator('#globalSearchInput').fill('recomendação prioritária');
+  await expect(page.locator('#globalSearchInput')).toBeFocused();await expectNoPageOverflow(page);
+  await page.keyboard.press('Escape');
 });
 
 for(const width of [320,375,430,768,1440])test(`onboarding e modal de sessão cabem na matriz mobile ${width}px`,async({page})=>{
@@ -66,10 +64,10 @@ for(const width of [320,375,430,768,1440])test(`onboarding e modal de sessão ca
   }
 });
 
-test('modo foco e cronômetro cabem nos viewports críticos em claro e escuro',async({page})=>{
+for(const width of [320,375,430,768,1440])test(`modo foco e cronômetro cabem em ${width}px em claro e escuro`,async({page})=>{
   await openDemo(page);await activateTab(page,'dashboard');
   const focusToggle=page.locator('#timerFocusToggle');
-  for(const width of [320,375,430,768,1440])for(const theme of ['light','dark']){
+  for(const theme of ['light','dark']){
     await page.setViewportSize({width,height:900});
     await page.evaluate(value=>{document.documentElement.dataset.theme=value},theme);
     await expect(page.locator('html')).toHaveAttribute('data-theme',theme);

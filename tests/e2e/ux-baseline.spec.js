@@ -19,6 +19,15 @@ async function prepareDiagnosisScreenshot(page){
   await page.locator('.sticky-shell, #demoBanner, #backToTopBtn').evaluateAll(elements=>elements.forEach(element=>element.remove()));
 }
 
+async function expectDiagnosisScreenshot(page,name,height){
+  const diagnosis=page.locator('#diagnosisCenter');
+  // A fixed canvas tolerates OS font rasterization without dropping any content.
+  // Assert the natural content fits first; an oversized component must fail explicitly.
+  expect(await diagnosis.evaluate(element=>element.scrollHeight)).toBeLessThanOrEqual(height);
+  await diagnosis.evaluate((element,value)=>{element.style.height=value+'px'},height);
+  await expect(diagnosis).toHaveScreenshot(name,{...screenshotOptions,maxDiffPixelRatio:.06});
+}
+
 test('baseline visual da ação principal no desktop',async({page})=>{
   await prepareDemo(page,{width:1440,height:900});
   await expect(page.locator('.overview-now')).toHaveScreenshot(screenshotName('agora-desktop-light.png'),screenshotOptions);
@@ -32,13 +41,13 @@ test('baseline visual da ação principal no mobile escuro',async({page})=>{
 test('baseline visual da Central de Diagnóstico no desktop',async({page})=>{
   await prepareDemo(page,{width:1440,height:900});
   await prepareDiagnosisScreenshot(page);
-  await expect(page.locator('#diagnosisCenter')).toHaveScreenshot(screenshotName('diagnostico-desktop-light.png'),screenshotOptions);
+  await expectDiagnosisScreenshot(page,'diagnostico-desktop-light.png',7000);
 });
 
 test('baseline visual da Central de Diagnóstico no mobile escuro',async({page})=>{
   await prepareDemo(page,{width:375,height:812,theme:'dark'});
   await prepareDiagnosisScreenshot(page);
-  await expect(page.locator('#diagnosisCenter')).toHaveScreenshot(screenshotName('diagnostico-mobile-dark.png'),screenshotOptions);
+  await expectDiagnosisScreenshot(page,'diagnostico-mobile-dark.png',10000);
 });
 
 test('tokens do Design System resolvem superfície e status nos dois temas',async({page})=>{

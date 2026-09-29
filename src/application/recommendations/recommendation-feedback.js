@@ -1,3 +1,4 @@
+import {recommendationSignature} from './recommendation-history.js';
 import {buildRecommendationExplanation} from './build-recommendation-explanation.js';
 const asBoolean=value=>value===true;
 
@@ -36,4 +37,14 @@ export function summarizeRecommendationFeedback(feedbackList=[]){
   const accepted=decisions.filter(item=>item.accepted);const completed=accepted.filter(item=>item.completed);const rated=completed.filter(item=>typeof item.useful==='boolean');
   const pct=(part,total)=>total?Math.round(part/total*100):null;
   return {shown:decisions.length,accepted:accepted.length,completed:completed.length,rated:rated.length,acceptanceRate:pct(accepted.length,decisions.length),completionRate:pct(completed.length,accepted.length),usefulnessRate:pct(rated.filter(item=>item.useful).length,rated.length)};
+}
+
+// Keep ephemeral identities stable without registering hidden items as presented.
+export function canReuseRecommendationPresentation(previous,current,{record=null,today,activeExamTags=[],toLocalDate}={}){
+  if(!previous||!today||typeof toLocalDate!=='function')return false;
+  const scope=record?.activeExamTags||previous.activeExamTags;
+  const key=tags=>JSON.stringify([...new Set(tags)].sort());
+  return Array.isArray(scope)&&key(scope)===key(activeExamTags)&&(!record||!['expired','dismissed'].includes(record.status))
+    &&(record?.localDate||toLocalDate(record?.createdAt||previous.shownAt))===today
+    &&recommendationSignature(previous)===recommendationSignature({...current,algorithmVersion:previous.algorithmVersion});
 }

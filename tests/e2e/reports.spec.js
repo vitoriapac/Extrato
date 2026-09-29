@@ -13,7 +13,7 @@ test('gera relatório estratégico identificado como demonstração',async({page
   await page.emulateMedia({media:'print'});await expect(report).toBeVisible();
 });
 
-test('metas comparam intervalos e a busca global abre comandos',async({page})=>{
+test('metas comparam intervalos predefinidos e personalizados',async({page})=>{
   await openDemo(page);await page.locator('[data-tab="metas"]').click();
   await expect(page.locator('#periodComparisonResults')).toContainText('Últimos 7 dias');
   await expect(page.locator('#periodComparisonResults .comparison-insight')).toContainText('A variação descreve os registros dos períodos');
@@ -23,6 +23,10 @@ test('metas comparam intervalos e a busca global abre comandos',async({page})=>{
   await expect(page.locator('#periodComparisonStartWrap')).toBeVisible();
   await page.locator('#periodComparisonStart').fill('2026-08-01');await page.locator('#periodComparisonEnd').fill('2026-08-10');
   await expect(page.locator('#periodComparisonResults')).toContainText('2026-08-01 a 2026-08-10');
+});
+
+test('busca global abre instruções por teclado',async({page})=>{
+  await openDemo(page);
   const search=page.locator('#globalSearchInput');await search.fill('abrir instruções');
   const command=page.getByRole('option',{name:/Abrir Instruções/});await expect(command).toBeVisible();await expect(search).toHaveAttribute('aria-expanded','true');await search.press('ArrowDown');await expect(command).toBeFocused();await page.keyboard.press('Enter');
   await expect(page.locator('#panel-instrucoes')).toBeVisible();

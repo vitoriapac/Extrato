@@ -67,7 +67,7 @@ import {calculateTopicMastery,calculateTopicRetention} from './domain/analytics/
 import {PRIORITY_ALGORITHM_VERSION} from './domain/analytics/priority-score.js';
 import {calculateReviewHealth} from './domain/analytics/review-health.js';
 import {canStudy,needsMaintenance,prerequisiteBlockers} from './domain/study-eligibility.js';
-import {createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
+import {canReuseRecommendationPresentation,createRecommendationPresentation,recordRecommendationDecision,completeRecommendationFeedback,rateRecommendationFeedback,summarizeRecommendationFeedback} from './application/recommendations/recommendation-feedback.js';
 import {migrateRecommendationHistory,reusableRecommendationRecord,ensureRecommendationRecord,syncRecommendationHistory,decideRecommendationRecord,attachRecommendationSession,summarizeRecommendationHistory} from './application/recommendations/recommendation-history.js';
 import {renderRecommendationHistory} from './ui/renderers/recommendation-history-renderer.js';
 import {captureRecommendationBaseline,captureRecommendationSnapshot,measureRecommendationOutcome} from './application/recommendations/outcome-service.js';
@@ -4408,9 +4408,11 @@ function refreshStudyRecommendationItems(){
   currentStudyRecommendations=recommendStudy(candidates,{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>{
     const old=previous.get(item.id);
     const record=state.recommendationHistory.find(entry=>entry.id===old?.recommendationId);
-    return old&&Array.isArray(record?.activeExamTags)&&JSON.stringify(normalizeExamTags(record.activeExamTags))===JSON.stringify(normalizeExamTags(state.examBlueprint.activeExamTags))&&record.status!=='expired'&&(record.localDate||localDateISO(record.createdAt))===todayISO()&&old.accuracyTarget===item.accuracyTarget&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
-      ?{...item,recommendationId:old.recommendationId,shownAt:old.shownAt,algorithmVersion:PRIORITY_ALGORITHM_VERSION}
+    const reusablePresentation=canReuseRecommendationPresentation(old,item,{record,today:todayISO(),activeExamTags:state.examBlueprint.activeExamTags||[],toLocalDate:localDateISO});
+    const presentation=reusablePresentation
+      ?createRecommendationPresentation(item,{id:old.recommendationId,shownAt:old.shownAt,algorithmVersion:PRIORITY_ALGORITHM_VERSION})
       :(()=>{const reusable=reusableRecommendationRecord(state.recommendationHistory,item,todayISO(),state.examBlueprint.activeExamTags||[]);return createRecommendationPresentation(item,{id:reusable?.id||uid('recommendation'),shownAt:reusable?.createdAt||nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION})})();
+    return {...presentation,activeExamTags:[...(state.examBlueprint.activeExamTags||[])]};
   });
   if(syncRecommendationHistory(state.recommendationHistory,currentStudyRecommendations,{now:nowISO(),today:todayISO(),idGenerator:uid,activeExamTags:state.examBlueprint.activeExamTags||[]})){scheduleSave();renderRecommendationHistorySummary()}
   return {availableMinutes,candidates};
@@ -5146,7 +5148,7 @@ applicationRenderer=createApplicationRenderer({
     ['plano de hoje',renderPlanoHoje]
   ],scopes:RENDER_SCOPE_SECTIONS,globalSections:['indicadores','cabeçalho'],getActiveScope:activeTabName,afterRender:labelDynamicControls,onError:(error,name)=>errorBoundary.report(error,name)
 });
-function render(scope='all'){const result=applicationRenderer.render(scope);try{renderStudyTrack32Insights()}catch(error){errorBoundary.report(error,'análises estratégicas')}return result}
+function render(scope='all'){const result=applicationRenderer.render(scope);if(scope==='all'||scope==='dashboard'||scope==='active'&&activeTabName()==='dashboard')try{renderStudyTrack32Insights()}catch(error){errorBoundary.report(error,'análises estratégicas')}return result}
 function persistAndRender(){
   render('active');
   scheduleSave();

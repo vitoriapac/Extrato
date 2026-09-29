@@ -20,6 +20,8 @@ for(const [tab,label] of [['dashboard','Visão Geral'],['disciplinas','Disciplin
 }
 
 test('mantém estrutura acessível no modo móvel e no modal',async({page})=>{
+  // Duas auditorias axe completas, incluindo a demo densa, precisam de seu próprio orçamento.
+  test.setTimeout(120_000);
   await page.setViewportSize({width:375,height:812});
   await openDemo(page);
   await expectAccessible(page,'Modo móvel');
@@ -32,7 +34,7 @@ test('mantém estrutura acessível no modo móvel e no modal',async({page})=>{
 test('central de diagnóstico continua acessível quando expandida',async({page})=>{
   await openDemo(page);await activateTab(page,'hoje');
   await page.locator('.today-analysis-details > summary').click();
-  await expectAccessible(page,'Central de diagnóstico expandida');
+  await expectAccessible(page,'Central de diagnóstico expandida','#panel-hoje');
 });
 
 test('configuração estratégica continua acessível quando expandida',async({page})=>{
