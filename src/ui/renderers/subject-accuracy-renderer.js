@@ -1,0 +1,5 @@
+const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+export function renderSubjectAccuracy(rows=[]){
+ const sample=(label,value)=>`${label}: ${value.accuracy==null?'sem dados':value.accuracy+'%'} · ${value.total} questões · ${value.state==='insufficient'?'amostra insuficiente':value.state==='on_target'?'na meta':Math.abs(value.gap)+' p.p. abaixo da meta'}`;
+ return `<details class="subject-accuracy-summary"><summary>Metas de acerto por disciplina</summary><p>Metas de desempenho pessoal, separadas de domínio, incidência e peso de prova. Questões e simulados são apresentados separadamente; menos de dez questões não permitem classificar a meta.</p><ul class="subject-accuracy-list">${rows.map(row=>`<li><strong>${escape(row.name)}</strong><p>Meta de acerto: ${row.target}%${row.inherited?' · herdada da meta geral':''}</p><p>${sample('Questões pessoais',row.personal)}</p><p>${sample('Simulados detalhados',row.simulation)}</p></li>`).join('')}</ul></details>`;
+}

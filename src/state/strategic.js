@@ -27,6 +27,7 @@ export function normalizeExamBlueprint(value={},legacyExamDate=''){
       expectedQuestions:Math.max(0,Math.round(Number(item?.expectedQuestions)||0)),
       questionWeight:Math.max(0,Number(item?.questionWeight)||1),
       priority:EXAM_PRIORITIES.includes(item?.priority)?item.priority:'normal',masteryTarget:item?.masteryTarget==null||item.masteryTarget===''?null:(Number.isFinite(Number(item.masteryTarget))?Math.max(0,Math.min(100,Number(item.masteryTarget))):null),
+      ...(item?.accuracyTarget!=null&&item.accuracyTarget!==''?{accuracyTarget:Number(item.accuracyTarget)}:{}),
       ...(typeof item?.sourceRef==='string'?{sourceRef:item.sourceRef}:{}),...('official' in (item||{})?{official:Boolean(item.official)}:{}),...(typeof item?.mappingType==='string'?{mappingType:item.mappingType}:{})
     })):[]
   };

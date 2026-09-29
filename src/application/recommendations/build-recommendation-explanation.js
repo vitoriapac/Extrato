@@ -8,7 +8,7 @@ export function buildRecommendationExplanation(item={}, {createdAt=null,weeklyPl
   const evidence=redistribution?[
     row('Domínio na origem',item.from.mastery,'/100'),row('Domínio no destino',item.to.mastery,'/100'),row('Impacto no destino',item.to.impact,'/100')
   ]:[
-    row('Domínio',item.mastery,'/100'),row('Meta de domínio',item.masteryTarget??item.targetMastery,'/100'),row('Retenção',item.retention,'/100'),
+    row('Meta de acerto',item.accuracyTarget,'%'),row('Domínio',item.mastery,'/100'),row('Meta de domínio',item.masteryTarget??item.targetMastery,'/100'),row('Retenção',item.retention,'/100'),
     row('Impacto na prova',item.examImpact,'/100'),row('Incidência histórica',historical.presencePercent,'%'),
     row('Provas com presença',historical.presentExamCount),row('Provas analisadas',historical.analyzedExamCount),
     row('Precisão recente',item.accuracy??item.diagnosis?.performance?.accuracy,'%'),row('Força da evidência',number(item.evidence?.evidenceStrength)===null?null:item.evidence.evidenceStrength*100,'%')

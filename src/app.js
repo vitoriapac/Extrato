@@ -1,3 +1,6 @@
+import {resolveSubjectAccuracyTarget} from './domain/analytics/subject-accuracy-target.js';
+import {buildSubjectAccuracy} from './application/analytics/build-subject-accuracy.js';
+import {renderSubjectAccuracy} from './ui/renderers/subject-accuracy-renderer.js';
 import {captureProjection,buildProjectionCalibration} from './application/analytics/projection-calibration-history.js';
 import {renderProjectionCalibration} from './ui/renderers/projection-calibration-renderer.js';
 import {buildRecommendationFollowup} from './application/recommendations/build-recommendation-followup.js';
@@ -1226,6 +1229,7 @@ function validateNormalizedBackup(data){
   if(!isPlainObject(data.metas)||Object.entries(data.metas).some(([key,value])=>key!=='horasPorDia'&&!isFiniteNonNegative(value))||!isPlainObject(data.metas.horasPorDia)||Object.values(data.metas.horasPorDia).some(value=>!isFiniteNonNegative(value))) return fail('O backup contém metas globais inválidas.');
   if(!isPlainObject(data.activeTimer)||!isFiniteNonNegative(data.activeTimer.accumulatedSeconds)||!validRef(data.activeTimer.subjectId,subjectIds)||!validRef(data.activeTimer.topicId,topicIds)||!validRef(data.activeTimer.planItemId,planItemIds)) return fail('O backup contém um cronômetro ativo inválido.');
   if(!isPlainObject(data.examBlueprint)||!(data.examBlueprint.examDate===null||isISODate(data.examBlueprint.examDate))||!Number.isFinite(Number(data.examBlueprint.targetScore))||Number(data.examBlueprint.targetScore)<0||Number(data.examBlueprint.targetScore)>100||!isOptionalTimestamp(data.examBlueprint.configuredAt)||!Array.isArray(data.examBlueprint.subjects)||data.examBlueprint.subjects.length>1000) return fail('O backup contém configuração de prova inválida.');
+  if(data.examBlueprint.subjects.some(item=>item?.accuracyTarget!=null&&(typeof item.accuracyTarget!=='number'||!Number.isFinite(item.accuracyTarget)||item.accuracyTarget<0||item.accuracyTarget>100)))return fail('O backup contém meta de acerto por disciplina inválida.');
   if(data.examBlueprint.subjects.some(item=>!isPlainObject(item)||!validRef(item.subjectId,subjectIds)||!isFiniteNonNegative(item.expectedQuestions)||!isFiniteNonNegative(item.questionWeight)||!EXAM_PRIORITIES.includes(item.priority))) return fail('O backup contém peso de disciplina inválido.');
   if(!isPlainObject(data.algorithmVersions)||Object.values(data.algorithmVersions).some(value=>!Number.isInteger(Number(value))||Number(value)<1)) return fail('O backup contém versões de algoritmos inválidas.');
   if(data.progressHistory.some(item=>!isPlainObject(item)||!isISODate(item.date)||!isFiniteNonNegative(item.pct)||Number(item.pct)>100)) return fail('O backup contém histórico de progresso inválido.');
@@ -2530,7 +2534,7 @@ function adaptiveReviewSuggestion(topicId,baseDays,baseDate){
   const diagnosis=found?diagnoseTopic(found.subject.id,topicId):null;
   const result=calculateAdaptiveInterval({
     baseDays,accuracy:diagnosis?.performance?.accuracy,volume:diagnosis?.performance?.resolved||0,
-    target:Number(state.metas.metaAprovacao)||70,trendKey:diagnosis?.trend?.key,
+    target:subjectAccuracyTarget(found?.subject.id),trendKey:diagnosis?.trend?.key,
     dominantErrorKey:diagnosis?.dominantError?.key,reviews:Number(found?.topic?.reviewCount)||0
   });
   return {...result,date:addDays(baseDate,result.days)};
@@ -2751,7 +2755,7 @@ function renderQuestionEvolution(){
   document.getElementById('questionEvolutionTopicWrap').hidden=questionEvolutionView.scope!=='topic';
   const model=buildQuestionEvolution({questions:examEvidenceContext().questions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),today:todayISO(),...questionEvolutionView});
   const analysis=buildPerformanceAnalysis({questions:examEvidenceContext().questions.included,simulations:examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item)})),candidates:intelligenceCandidates(),today:todayISO(),period:questionEvolutionView.period});
-  result.innerHTML=renderPerformanceAnalysis(analysis)+renderQuestionEvolutionView(model,{formatDate:formatDatePt});
+  result.innerHTML=renderPerformanceAnalysis(analysis)+renderSubjectAccuracy(buildSubjectAccuracy({subjects:activeSubjects(),questions:performancePeriodRecords(examEvidenceContext().questions.included,{today:todayISO(),period:questionEvolutionView.period}),simulations:performancePeriodRecords(examScopedSimulations(),{today:todayISO(),period:questionEvolutionView.period}),blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao}))+renderQuestionEvolutionView(model,{formatDate:formatDatePt});
 }
 let performanceViewMode='with-data';
 const errorAnalysisView={days:30,topicId:''};
@@ -2914,9 +2918,10 @@ function performanceConfidence(total){
   if(total<50) return {key:'medium',label:'Confiança média'};
   return {key:'high',label:'Confiança alta'};
 }
-function classifyAccuracy(accuracy){
+function subjectAccuracyTarget(subjectId){return resolveSubjectAccuracyTarget(subjectId,state.examBlueprint,state.metas.metaAprovacao)}
+function classifyAccuracy(accuracy,subjectId){
   if(accuracy===null) return {key:'none',icon:'⚪',label:'Sem dados'};
-  const target=Math.max(0,Math.min(100,Number(state.metas?.metaAprovacao)||70));
+  const target=subjectAccuracyTarget(subjectId);
   if(accuracy>=target) return {key:'strong',icon:'🟢',label:'Na meta'};
   if(accuracy>=target-10) return {key:'attention',icon:'🟡',label:'Atenção'};
   return {key:'weak',icon:'🔴',label:'Prioritário'};
@@ -2932,7 +2937,7 @@ function getSubjectTopicPerformance(subjectId){
   if(!subject) return [];
   return subject.topics.filter(topic=>!topic.archived).map(topic=>{
     const performance=getTopicPerformance(topic.id);
-    return {...topic,...performance,confidence:performanceConfidence(performance.resolved),classification:classifyAccuracy(performance.accuracy)};
+    return {...topic,...performance,confidence:performanceConfidence(performance.resolved),classification:classifyAccuracy(performance.accuracy,subjectId)};
   }).sort((a,b)=>{
     if(a.accuracy===null) return 1;
     if(b.accuracy===null) return -1;
@@ -3059,7 +3064,7 @@ function diagnoseTopic(subjectId,topicId){
   const pendingReview=pendingReviewForTopic(topicId);
   const reviewDistance=pendingReview?.date?diasParaRevisao(pendingReview.date):null;
   const overdueDays=reviewDistance===null?0:Math.max(0,-reviewDistance);
-  const target=Math.max(0,Math.min(100,Number(state.metas?.metaAprovacao)||70));
+  const target=subjectAccuracyTarget(subjectId);
   const reliablePerformance=performance.resolved>=10&&performance.accuracy!==null;
   let status='Em dia';
   if(overdueDays>=7||trend.state==='strong_down'||(reliablePerformance&&performance.accuracy<target-15)||(trend.key==='down'&&reliablePerformance&&performance.accuracy<target)) status='Crítico';
@@ -3385,7 +3390,7 @@ document.getElementById('examHistoricalMatrix')?.addEventListener('click',event=
 });
 function renderExamBlueprintConfig(){
   const container=document.getElementById('examBlueprintConfig');if(!container)return;
-  renderExamBlueprintConfigView({container,blueprint:state.examBlueprint,subjects:activeSubjects(),escapeHtml,escapeAttr,formatDatePt,EXAM_TAGS,EXAM_SOURCES,document});
+  renderExamBlueprintConfigView({container,blueprint:state.examBlueprint,subjects:activeSubjects(),escapeHtml,escapeAttr,formatDatePt,EXAM_TAGS,EXAM_SOURCES,globalAccuracyTarget:state.metas.metaAprovacao,document});
   const quality=document.getElementById('examDataQuality');
   const qualityModel=buildExamDataQuality({exams:state.exams,examQuestions:state.examQuestions,topics:examScopedTopics(),blueprint:state.examBlueprint});
   if(quality)quality.innerHTML=renderExamDataQuality(qualityModel);
@@ -3581,9 +3586,9 @@ function saveExamSubjectConfig(subjectId){
   if(!details)return;
   const read=name=>details.querySelector(`[name="${name}"]`)?.value??'';
   const existing=state.examBlueprint.subjects.find(item=>item.subjectId===subjectId);
-  const config=buildSavedSubjectConfig(subjectId,existing,{priority:read('priority'),masteryTarget:read('masteryTarget'),expectedQuestions:read('expectedQuestions'),questionWeight:read('questionWeight')});
+  const config=buildSavedSubjectConfig(subjectId,existing,{priority:read('priority'),masteryTarget:read('masteryTarget'),expectedQuestions:read('expectedQuestions'),questionWeight:read('questionWeight'),accuracyTarget:read('accuracyTarget')});
   if(!config){showToast('Revise a meta, a quantidade de questões e o peso antes de salvar.');return}
-  if(!existing||['priority','masteryTarget','expectedQuestions','questionWeight','official','sourceRef'].some(key=>JSON.stringify(existing[key])!==JSON.stringify(config[key])))captureReadinessBeforeStrategy('Antes de alterar a configuração estratégica da disciplina');
+  if(!existing||['priority','masteryTarget','accuracyTarget','expectedQuestions','questionWeight','official','sourceRef'].some(key=>JSON.stringify(existing[key])!==JSON.stringify(config[key])))captureReadinessBeforeStrategy('Antes de alterar a configuração estratégica da disciplina');
   if(existing)Object.assign(existing,config);else state.examBlueprint.subjects.push(config);
   state.examBlueprint.configuredAt=nowISO();studyPlanPreview=null;persistAndRender();showToast('Configuração da disciplina salva.');
 }
@@ -3933,7 +3938,7 @@ function motivoPrioridade(priority){
   if(priority.diasAtrasado>0) return 'Revisão atrasada ('+priority.diasAtrasado+'d)';
   const diagnosis=priority.diagnosis;
   if(diagnosis?.trend?.key==='down') return 'Tendência em queda ('+diagnosis.trend.delta.toFixed(1)+' p.p.)';
-  if(diagnosis?.performance?.resolved>=10&&diagnosis.performance.accuracy!==null&&diagnosis.performance.accuracy<state.metas.metaAprovacao){
+  if(diagnosis?.performance?.resolved>=10&&diagnosis.performance.accuracy!==null&&diagnosis.performance.accuracy<subjectAccuracyTarget(priority.subjectId)){
     return 'Baixo desempenho no tópico ('+diagnosis.performance.accuracy+'% de acerto)';
   }
   if(diagnosis?.dominantError) return 'Erro predominante: '+diagnosis.dominantError.meta.label;
@@ -4375,7 +4380,7 @@ function intelligenceCandidates(){
   const retentions=Object.fromEntries(topics.map(topic=>[topic.id,topicRetentionScore(topic.subjectId,topic.id)]));
   const reviewHealths=Object.fromEntries(topics.map(topic=>[topic.id,topicReviewHealthScore(topic,topicMasteryIndex(topic.subjectId,topic.id),retentions[topic.id])]));
   return buildStudyCandidates({priorities,topics,retentions,reviewHealths,blueprint:state.examBlueprint.subjects,
-    sessions:state.studySessions,today:todayISO(),examProximity:state.examDate?proximidadeProvaScore():null,activeExamTags:state.examBlueprint.activeExamTags||[],exams:state.exams,examQuestions:state.examQuestions});
+    sessions:state.studySessions,today:todayISO(),examProximity:state.examDate?proximidadeProvaScore():null,activeExamTags:state.examBlueprint.activeExamTags||[],exams:state.exams,examQuestions:state.examQuestions}).map(item=>({...item,accuracyTarget:subjectAccuracyTarget(item.subjectId)}));
 }
 function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
@@ -4928,7 +4933,7 @@ let currentStudyTrackModel=null;
 let weeklyCloseController=null;
 function renderStudyTrack32Insights(){
  const close=document.getElementById('weeklyCloseDashboard'),comparison=document.getElementById('periodComparisonDashboard'),gaps=document.getElementById('gapMapDashboard'),history=document.getElementById('decisionHistoryDashboard'),simReplan=document.getElementById('postSimulationReplanDashboard');
- const scope=examEvidenceContext(),scopedTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id)),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),scopedPlans=(planningRepository.getDailyPlans?.()||[]).map(plan=>({...plan,items:(plan.items||[]).filter(item=>!item.topicId||scopedTopicIds.has(item.topicId))})),scopedRecommendations=state.recommendationFeedback.filter(item=>!item.topicId||scopedTopicIds.has(item.topicId)),model=buildStudyTrack32ViewModel({readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:scopedPlans,planAdjustments:state.planAdjustments,recommendations:scopedRecommendations,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:Number(state.metas.metaAprovacao)||80,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
+ const scope=examEvidenceContext(),scopedTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id)),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),scopedPlans=(planningRepository.getDailyPlans?.()||[]).map(plan=>({...plan,items:(plan.items||[]).filter(item=>!item.topicId||scopedTopicIds.has(item.topicId))})),scopedRecommendations=state.recommendationFeedback.filter(item=>!item.topicId||scopedTopicIds.has(item.topicId)),model=buildStudyTrack32ViewModel({readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:scopedPlans,planAdjustments:state.planAdjustments,recommendations:scopedRecommendations,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:state.metas.metaAprovacao,blueprint:state.examBlueprint,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
  model.comparisonMetrics=captureCloseComparisonMetrics(model,projectPerformance());
  if(close)close.innerHTML=renderCloseComparison(buildCloseComparison({current:model,snapshots:state.weeklyCloseSnapshots,activeExamTags:model.activeExamTags}))+renderWeeklyClose(model.weeklyClose,{...options,includeNext:false})+renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle)+renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus)+renderWeeklySnapshotHistory()+renderWeeklyCloseNext(model.weeklyClose,options)+(model.weeklyClose.state==='insufficient'?'':renderWeeklyCloseActions(model.weeklyClose));
  const timeline=document.getElementById('strategicTimelineDashboard');if(timeline)timeline.innerHTML=renderStrategicTimeline(buildStrategicTimeline({readinessSnapshots:state.readinessSnapshots,weeklyCloseSnapshots:state.weeklyCloseSnapshots,recommendations:state.recommendationFeedback,recommendationHistory:state.recommendationHistory,studyPlans:state.studyPlans,adaptiveHistory:state.adaptivePlanningHistory,planAdjustments:state.planAdjustments,simulations:state.simulados,topics:allTopics(),activeExamTags:state.examBlueprint.activeExamTags||[],filter:strategicTimelineFilter,today:todayISO()}));

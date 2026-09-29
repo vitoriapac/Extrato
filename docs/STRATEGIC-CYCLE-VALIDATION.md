@@ -47,3 +47,7 @@ O componente compartilhado apresenta Baixa, Moderada ou Alta, sem alterar os cá
 ### Validação dos pacotes 6–8
 
 431 testes unitários em UTC e America/Sao_Paulo. Verificações de sintaxe e artefatos gerados. E2E selecionados: migrações de backups 23/24, ciclo estratégico, histórico, calibração preservada e abertura dos detalhes por teclado. A calibração foi verificada de 320 a 430 px nos temas claro/escuro. Esta rodada não executa a suíte E2E completa.
+
+## Pacote 9 — Metas de acerto por disciplina
+
+`examBlueprint.subjects[].accuracyTarget` é opcional e herda `metas.metaAprovacao`. Não substitui a meta de domínio nem altera incidência ou peso oficial. Questões, simulados detalhados, diagnóstico, lacunas, evolução das prioridades e fechamento mostram a referência adequada. Fechamentos preservam as metas da captura. O schema 26 permanece compatível: backups anteriores omitem o campo e herdam a meta geral.
