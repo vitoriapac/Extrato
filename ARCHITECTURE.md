@@ -283,3 +283,9 @@ Cada novo item confirmado registra prioritySnapshot, com score, fatores, razões
 ## Explicações e consequências das decisões
 
 build-recommendation-explanation.js fornece ação, razões, evidências e consequências operacionais. As apresentações guardam sua explicação original; a decisão guarda explanationSnapshot, evidenceSnapshot, suggestedAction e expectedImpact junto ao algoritmo e instante. Histórico de decisões e adaptações renderizam os valores capturados, sem consultar métricas atuais. Consequências descrevem cronômetro, revisão, vínculo ao plano e redistribuição confirmável; não são previsão de ganho de domínio, prontidão ou nota. Registros legados sem explicação detalhada não recebem uma reconstrução retroativa.
+
+### Metas pessoais e sinais de preparação
+
+A meta opcional `examBlueprint.subjects[].accuracyTarget` herda a meta global de acerto. É independente de `masteryTarget`, pesos e incidência. Os fechamentos e perfis de prioridade preservam a meta registrada. Não há migração retroativa desses indicadores.
+
+`buildPreparationSignals` agrega questões e sessões do escopo ativo para apresentar possível platô e consolidação em risco. São sinais descritivos, sem redistribuição automática. O custo de oportunidade deriva da mesma proposta de planejamento adaptativo, preservando seus limites, cooldown e confirmação.

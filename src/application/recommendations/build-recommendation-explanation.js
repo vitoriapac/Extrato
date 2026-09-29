@@ -1,3 +1,4 @@
+import {buildOpportunityCost} from '../../domain/planning/opportunity-cost.js';
 import {recommendationActionKind,recommendationActionLabel} from './recommendation-action.js';
 const number=value=>value==null||value===''||!Number.isFinite(Number(value))?null:Number(value);
 const row=(label,value,unit='')=>number(value)===null?null:{label,value:number(value)+unit};
@@ -22,7 +23,7 @@ export function buildRecommendationExplanation(item={}, {createdAt=null,weeklyPl
     kind:'operational',weeklyPlannedMinutes:number(weeklyPlannedMinutes),weeklyAvailableMinutes:number(weeklyAvailableMinutes),capacityChangeMinutes:0,
     description:'Aplicar altera somente a prévia. O plano será salvo após confirmação, com a mesma carga semanal distribuída e a mesma disponibilidade.'
   }:{kind:'operational',capacityChangeMinutes:0,description:kind==='review'?'Abre a revisão do tópico para registrar sua execução.':kind==='prerequisite'?'Abre o pré-requisito indicado para estudar a base necessária.':'Prepara o cronômetro e vincula a atividade ao plano de hoje, criando um item quando necessário. A disponibilidade semanal permanece igual.'};
-  return {version:1,createdAt:createdAt||item.shownAt||null,algorithmVersion:item.algorithmVersion??null,
+  return {opportunityCost:redistribution?buildOpportunityCost(item):null,version:1,createdAt:createdAt||item.shownAt||null,algorithmVersion:item.algorithmVersion??null,
     evidenceQuality:{confidence:number(item.evidence?.evidenceStrength),label:item.evidence?.confidenceLabel,counts:{'Questões pessoais':number(item.diagnosis?.performance?.resolved),'Questões históricas':number(historical.questionCount),'Provas analisadas':number(historical.analyzedExamCount)},reasons:['Amostras pessoais e históricas são apresentadas separadamente.']},
     reasons:reasons.filter(value=>typeof value==='string'&&value.trim()),evidence:evidence.filter(Boolean),
     evidenceSnapshot:{mastery:number(item.mastery),retention:number(item.retention),factors:item.factors?structuredClone(item.factors):null,confidence:item.evidence?structuredClone(item.evidence):null,examIntelligence:item.examIntelligence?structuredClone(item.examIntelligence):null,from:redistribution?structuredClone(item.from):null,to:redistribution?structuredClone(item.to):null},

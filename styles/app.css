@@ -1882,3 +1882,9 @@ body.timer-focus-active .timer-context{display:none!important}
 .evidence-quality dd { margin: 0; }
 
 .projection-interval-chart { width: 100%; max-width: 480px; height: auto; display: block; }
+
+.preparation-signals { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle); }
+.preparation-signal-list > details { margin-block: 12px; }
+.preparation-signal-list summary, .opportunity-cost summary { cursor: pointer; }
+.opportunity-cost { margin-block: 16px; }
+.opportunity-cost > div { padding-block: 8px; border-bottom: 1px solid var(--border-subtle); }

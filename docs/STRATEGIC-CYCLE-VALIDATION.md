@@ -51,3 +51,15 @@ O componente compartilhado apresenta Baixa, Moderada ou Alta, sem alterar os cá
 ## Pacote 9 — Metas de acerto por disciplina
 
 `examBlueprint.subjects[].accuracyTarget` é opcional e herda `metas.metaAprovacao`. Não substitui a meta de domínio nem altera incidência ou peso oficial. Questões, simulados detalhados, diagnóstico, lacunas, evolução das prioridades e fechamento mostram a referência adequada. Fechamentos preservam as metas da captura. O schema 26 permanece compatível: backups anteriores omitem o campo e herdam a meta geral.
+
+## Pacote 10 — Sinais de preparação e custo de oportunidade
+
+Platô: quatro janelas completas de sete dias, ao menos 30 questões por janela, 120 minutos de execução em três dias distintos, precisão variando no máximo 3 p.p. e abaixo da meta em mais de 3 p.p. Crescimento de volume só é mencionado quando observado. Não prevê causa; a mistura e dificuldade das questões podem variar.
+
+Consolidação em risco: domínio >=80, retenção <60, força da evidência >=0,35, ao menos 30 questões nos últimos 14 dias e precisão mais de 10 p.p. abaixo da meta da disciplina. Ausência de dados não aciona o sinal.
+
+Custo de oportunidade: origem, destino, domínio, impacto e maior presença histórica entre os tópicos medidos. A transferência precisa manter os minutos e a carga total. A explicação é preservada nos novos registros; sinais não alteram planos automaticamente. Listas usam Mostrar mais; detalhes são acessíveis por teclado.
+
+### Validação final dos pacotes 9–10
+
+438 testes unitários em UTC e America/Sao_Paulo. Treze E2E selecionados passaram: metas por disciplina, platô/consolidação, cinco cenários de planejamento, ciclo estratégico, históricos, calibração e migração/restauração de backups. Verificações de sintaxe e bundles também passaram. A suíte E2E completa não foi executada nesta rodada.

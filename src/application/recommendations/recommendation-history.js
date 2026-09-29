@@ -3,7 +3,7 @@ import {buildRecommendationExplanation} from './build-recommendation-explanation
 import {recommendationActionKind} from './recommendation-action.js';
 
 export const RECOMMENDATION_HISTORY_STATUSES=Object.freeze(['pending','executed','dismissed','expired']);
-const signature=item=>JSON.stringify([item.id,item.score,item.estimatedMinutes,item.factors||null,recommendationActionKind(item),item.evidence||null,item.examIntelligence||null,item.algorithmVersion||null]);
+const signature=item=>JSON.stringify([item.id,item.score,item.estimatedMinutes,item.factors||null,recommendationActionKind(item),item.evidence||null,item.examIntelligence||null,item.algorithmVersion||null,item.accuracyTarget??null]);
 const localDate=timestamp=>{const date=new Date(timestamp);return Number.isNaN(date.getTime())?null:`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`};
 const recordDate=record=>record.localDate||localDate(record.createdAt);
 

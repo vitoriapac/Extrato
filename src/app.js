@@ -1,3 +1,5 @@
+import {buildPreparationSignals} from './application/analytics/build-preparation-signals.js';
+import {renderPreparationSignals} from './ui/renderers/preparation-signals-renderer.js';
 import {resolveSubjectAccuracyTarget} from './domain/analytics/subject-accuracy-target.js';
 import {buildSubjectAccuracy} from './application/analytics/build-subject-accuracy.js';
 import {renderSubjectAccuracy} from './ui/renderers/subject-accuracy-renderer.js';
@@ -896,6 +898,7 @@ function subjectsForSelection(selectedId=null){
 function activeTopics(){ return allTopics().filter(topic=>!topic.subjectArchived&&!topic.topicArchived); }
 function topicInActiveExamScope(topic){return isTopicInExamScope(topic,state.examBlueprint?.activeExamTags||[])}
 function examScopedTopics(){return activeTopics().filter(topicInActiveExamScope)}
+function examScopedSubjects(){const ids=new Set(examScopedTopics().map(topic=>topic.subjectId));return activeSubjects().filter(subject=>ids.has(subject.id))}
 function examEvidenceContext(){return resolveExamEvidenceScope({subjects:state.subjects,activeExamTags:state.examBlueprint?.activeExamTags||[],sessions:state.studySessions,questions:state.questoes,reviews:state.reviewAgenda})}
 function examScopedRecords(records=[]){return records.filter(record=>classifyEvidenceScope(record,state.subjects,state.examBlueprint?.activeExamTags||[]).includedInExamMetrics)}
 function examScopedSimulations(){const active=state.examBlueprint?.activeExamTags||[];return state.simulados.filter(item=>isSimulationInExamScope(item,active))}
@@ -2755,7 +2758,7 @@ function renderQuestionEvolution(){
   document.getElementById('questionEvolutionTopicWrap').hidden=questionEvolutionView.scope!=='topic';
   const model=buildQuestionEvolution({questions:examEvidenceContext().questions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),today:todayISO(),...questionEvolutionView});
   const analysis=buildPerformanceAnalysis({questions:examEvidenceContext().questions.included,simulations:examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item)})),candidates:intelligenceCandidates(),today:todayISO(),period:questionEvolutionView.period});
-  result.innerHTML=renderPerformanceAnalysis(analysis)+renderSubjectAccuracy(buildSubjectAccuracy({subjects:activeSubjects(),questions:performancePeriodRecords(examEvidenceContext().questions.included,{today:todayISO(),period:questionEvolutionView.period}),simulations:performancePeriodRecords(examScopedSimulations(),{today:todayISO(),period:questionEvolutionView.period}),blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao}))+renderQuestionEvolutionView(model,{formatDate:formatDatePt});
+  result.innerHTML=renderPerformanceAnalysis(analysis)+renderSubjectAccuracy(buildSubjectAccuracy({subjects:examScopedSubjects(),questions:performancePeriodRecords(examEvidenceContext().questions.included,{today:todayISO(),period:questionEvolutionView.period}),simulations:performancePeriodRecords(examScopedSimulations(),{today:todayISO(),period:questionEvolutionView.period}),blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao}))+renderQuestionEvolutionView(model,{formatDate:formatDatePt});
 }
 let performanceViewMode='with-data';
 const errorAnalysisView={days:30,topicId:''};
@@ -4389,6 +4392,8 @@ function renderDiagnosisCenter(){
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
     return action?{...action,label:recommendationActionLabel(action)}:null;
   },escapeHtml,escapeAttr});
+  const scoped=examEvidenceContext();
+  container.innerHTML+=renderPreparationSignals(buildPreparationSignals({subjects:examScopedSubjects(),candidates,questions:scoped.questions.included,sessions:scoped.sessions.included,blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,today:todayISO()}));
 }
 function renderRecommendationImpact(model){
   if(!model.available)return '';
@@ -4403,7 +4408,7 @@ function refreshStudyRecommendationItems(){
   currentStudyRecommendations=recommendStudy(candidates,{availableMinutes,excludedIds:[...dismissedRecommendationIds]}).map(item=>{
     const old=previous.get(item.id);
     const record=state.recommendationHistory.find(entry=>entry.id===old?.recommendationId);
-    return old&&Array.isArray(record?.activeExamTags)&&JSON.stringify(normalizeExamTags(record.activeExamTags))===JSON.stringify(normalizeExamTags(state.examBlueprint.activeExamTags))&&record.status!=='expired'&&(record.localDate||localDateISO(record.createdAt))===todayISO()&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
+    return old&&Array.isArray(record?.activeExamTags)&&JSON.stringify(normalizeExamTags(record.activeExamTags))===JSON.stringify(normalizeExamTags(state.examBlueprint.activeExamTags))&&record.status!=='expired'&&(record.localDate||localDateISO(record.createdAt))===todayISO()&&old.accuracyTarget===item.accuracyTarget&&old.score===item.score&&old.estimatedMinutes===item.estimatedMinutes&&JSON.stringify(old.factors)===JSON.stringify(item.factors)
       ?{...item,recommendationId:old.recommendationId,shownAt:old.shownAt,algorithmVersion:PRIORITY_ALGORITHM_VERSION}
       :(()=>{const reusable=reusableRecommendationRecord(state.recommendationHistory,item,todayISO(),state.examBlueprint.activeExamTags||[]);return createRecommendationPresentation(item,{id:reusable?.id||uid('recommendation'),shownAt:reusable?.createdAt||nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION})})();
   });

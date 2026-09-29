@@ -49,7 +49,8 @@ export function buildAdaptivePlanningAdvice({plan=null,candidates=[],history=[],
     const impact=rows.length?Math.max(...rows.map(item=>Number(item.examImpact)||0)):null;
     const need=rows.length?Math.max(...rows.map(item=>(Number(item.examImpact)||0)*Math.max(0,100-Number(item.mastery||0))/100)):0;
     const historical=rows.filter(item=>item.examIntelligence?.usedHistory).sort((a,b)=>(Number(b.examImpact)||0)*(100-(Number(b.mastery)||0))-(Number(a.examImpact)||0)*(100-(Number(a.mastery)||0)))[0]||null;
-    return {...subject,mastery,impact,need,historical,falling:rows.some(item=>item.trend?.direction==='down'||item.trend?.key==='down'),severeDeterioration:rows.some(item=>(item.trend?.direction==='down'||item.trend?.key==='down')&&(item.trend?.state==='strong_down'||Number(item.trend?.delta)<=-12)&&Number(item.evidenceStrength)>=.7),measuredTopics:rows.length};
+    const incidences=rows.map(item=>item.examIntelligence?.presencePercent).filter(value=>typeof value==='number'&&Number.isFinite(value));
+    return {...subject,incidence:incidences.length?Math.max(...incidences):null,mastery,impact,need,historical,falling:rows.some(item=>item.trend?.direction==='down'||item.trend?.key==='down'),severeDeterioration:rows.some(item=>(item.trend?.direction==='down'||item.trend?.key==='down')&&(item.trend?.state==='strong_down'||Number(item.trend?.delta)<=-12)&&Number(item.evidenceStrength)>=.7),measuredTopics:rows.length};
   });
   const target=groups.filter(item=>item.impact>=EXAM_INTELLIGENCE_CONFIG.minimumAdaptiveImpact&&item.need>=EXAM_INTELLIGENCE_CONFIG.minimumAdaptiveNeed&&(item.mastery<=60||item.falling)).sort((a,b)=>b.need-a.need||(a.mastery??100)-(b.mastery??100))[0];
   const source=groups.filter(item=>target&&item.subjectId!==target.subjectId&&item.mastery>=80&&!item.falling&&item.minutes>=45&&(item.impact==null||item.impact<=target.impact)).sort((a,b)=>(a.impact??0)-(b.impact??0)||b.mastery-a.mastery)[0];
@@ -73,8 +74,8 @@ export function buildAdaptivePlanningAdvice({plan=null,candidates=[],history=[],
     ...(elapsed>=0&&elapsed<ADAPTIVE_COOLDOWN_DAYS&&relevantDeterioration?['Exceção ao intervalo de duas semanas: queda relevante de domínio, confirmada por evidência forte.']:[])
   ];
   return {state:'proposal',algorithmVersion:ADAPTIVE_PLANNING_VERSION,transferMinutes,weeklyBudgetMinutes:budget,
-    from:{subjectId:source.subjectId,name:source.subjectName,beforeMinutes:source.minutes,afterMinutes:source.minutes-transferMinutes,mastery:source.mastery},
-    to:{subjectId:target.subjectId,name:target.subjectName,beforeMinutes:target.minutes,afterMinutes:target.minutes+transferMinutes,mastery:target.mastery,impact:target.impact,falling:target.falling},
+    from:{subjectId:source.subjectId,name:source.subjectName,beforeMinutes:source.minutes,afterMinutes:source.minutes-transferMinutes,mastery:source.mastery,impact:source.impact,incidence:source.incidence},
+    to:{subjectId:target.subjectId,name:target.subjectName,beforeMinutes:target.minutes,afterMinutes:target.minutes+transferMinutes,mastery:target.mastery,impact:target.impact,incidence:target.incidence,falling:target.falling},
     reason:'A proposta move tempo de um conteúdo consolidado para uma lacuna relevante sem aumentar a carga semanal.',rationale,applied:false};
 }
 
