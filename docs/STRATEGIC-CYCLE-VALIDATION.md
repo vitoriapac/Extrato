@@ -35,3 +35,7 @@ Novos planos e feedbacks congelam o concurso ativo. Snapshots exigem o mesmo con
 - Cenário mobile cobre reversão, cooldown, troca de concurso, evidência insuficiente e validação do backup serializado. Compara os registros históricos para impedir alterações retroativas ou duplicação de tópicos compartilhados.
 - Cobertura: tests/fixtures/strategic-cycle.js, tests/unit/strategic-cycle-fixture.test.js e tests/e2e/strategic-cycle.spec.js.
 - Correção encontrada pelo ciclo: o fechamento lê a duração congelada em `snapshot.recommendedMinutes` quando o feedback não possui `estimatedMinutes`. Isso permite aplicar a recomendação ao próximo plano sem perder sua carga. Valores explícitos legados, inclusive zero, continuam preservados.
+
+## Pacotes 6 e 7
+
+O acompanhamento vincula sessões à recomendação, preserva a linha de base e limita o crédito à duração recomendada. Melhora posterior não implica causalidade. A calibração preserva faixas realmente emitidas antes do resultado; nenhum histórico é reconstruído retroativamente. Backups anteriores migram para schema 26 com a coleção de faixas vazia.

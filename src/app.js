@@ -1,3 +1,5 @@
+import {captureProjection,buildProjectionCalibration} from './application/analytics/projection-calibration-history.js';
+import {renderProjectionCalibration} from './ui/renderers/projection-calibration-renderer.js';
 import {buildRecommendationFollowup} from './application/recommendations/build-recommendation-followup.js';
 import {renderRecommendationFollowup} from './ui/renderers/recommendation-followup-renderer.js';
 import {buildPriorityHistory} from './application/analytics/build-priority-history.js';
@@ -514,8 +516,9 @@ function migrateV22toV23(data){data.exams=Array.isArray(data.exams)?data.exams:[
 function migrateV23toV24(data){for(const exam of data.exams||[]){exam.importedQuestionCount=null;exam.expectedQuestionCount=null;exam.unresolvedQuestions=[];exam.declaredCoverage=exam.coverage}data.schemaVersion=24;return data}
 function migrateV24toV25(data){data.readinessSnapshots=Array.isArray(data.readinessSnapshots)?data.readinessSnapshots:[];data.schemaVersion=25;return data}
 
+function migrateV25toV26(data){data.projectionSnapshots=Array.isArray(data.projectionSnapshots)?data.projectionSnapshots:[];data.schemaVersion=26;return data}
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24,24:migrateV24toV25}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24,24:migrateV24toV25,25:migrateV25toV26}});
 }
 
 function ensureStateDefaults(){
@@ -551,6 +554,7 @@ function ensureStateDefaults(){
   if(!state.examDate&&state.examBlueprint.examDate)state.examDate=state.examBlueprint.examDate;
   if(state.examDate!==state.examBlueprint.examDate)state.examBlueprint.examDate=state.examDate||null;
   if(!Array.isArray(state.progressHistory)) state.progressHistory = [];
+  if(!Array.isArray(state.projectionSnapshots)) state.projectionSnapshots=[];
   if(!Array.isArray(state.readinessSnapshots)) state.readinessSnapshots = [];
   if(!state.achievementsUnlocked||typeof state.achievementsUnlocked!=='object') state.achievementsUnlocked={};
   if(!Array.isArray(state.metasPorDisciplina)) state.metasPorDisciplina = [];
@@ -1085,7 +1089,7 @@ async function exportLatestAutomaticBackup(){
   }catch(error){console.error('Falha ao exportar snapshot automático',error);showToast('Não foi possível exportar o snapshot automático.')}
 }
 function validateBackupData(data){
-  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','alertStates','topicHistory','metasPorDisciplina'];
+  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','projectionSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','alertStates','topicHistory','metasPorDisciplina'];
   const envelope=validateBackupEnvelope(data,{currentVersion:CURRENT_SCHEMA_VERSION,arrayFields});if(!envelope.valid)return envelope;const {version}=envelope;
   try{
     const normalized=migrateState(structuredCloneSafe(data));
@@ -1105,7 +1109,7 @@ function ensureBackupStateDefaults(candidate){
 }
 function validateNormalizedBackup(data){
   const fail=message=>({valid:false,message});
-  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
+  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','projectionSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
   for(const field of collections){
     if(!Array.isArray(data[field])) return fail(`O campo "${field}" deve ser uma lista.`);
     if(data[field].length>50000) return fail(`O campo "${field}" excede o limite seguro de 50.000 registros.`);
@@ -1225,6 +1229,7 @@ function validateNormalizedBackup(data){
   if(data.examBlueprint.subjects.some(item=>!isPlainObject(item)||!validRef(item.subjectId,subjectIds)||!isFiniteNonNegative(item.expectedQuestions)||!isFiniteNonNegative(item.questionWeight)||!EXAM_PRIORITIES.includes(item.priority))) return fail('O backup contém peso de disciplina inválido.');
   if(!isPlainObject(data.algorithmVersions)||Object.values(data.algorithmVersions).some(value=>!Number.isInteger(Number(value))||Number(value)<1)) return fail('O backup contém versões de algoritmos inválidas.');
   if(data.progressHistory.some(item=>!isPlainObject(item)||!isISODate(item.date)||!isFiniteNonNegative(item.pct)||Number(item.pct)>100)) return fail('O backup contém histórico de progresso inválido.');
+  if(data.projectionSnapshots.some(item=>!isPlainObject(item)||!isSafeId(item.id)||!isISODate(item.date)||!Number.isFinite(Date.parse(item.issuedAt))||!Array.isArray(item.activeExamTags)||!Array.isArray(item.inputs)||!textOk(item.signature,100000)||!textOk(item.composition,10000)||![item.low,item.central,item.high].every(value=>typeof value==='number'&&Number.isFinite(value)&&value>=0&&value<=100)||item.low>item.central||item.central>item.high||item.algorithmVersion!==1||item.inputs.some(input=>!isPlainObject(input)||!isSafeId(input.id)||!isISODate(input.date)||!isFiniteNonNegative(input.correct)||!isFiniteNonNegative(input.total)||Number(input.total)<=0||Number(input.correct)>Number(input.total))))return fail('O backup contém faixas de projeção inválidas.');
   if(data.readinessSnapshots.some(item=>!isPlainObject(item)||!isSafeId(item.id)||!isISODate(item.date)||!isFiniteNonNegative(item.score)||Number(item.score)>100||!Array.isArray(item.activeExamTags)||!isPlainObject(item.factors)||!Number.isInteger(Number(item.algorithmVersion)))) return fail('O backup contém histórico de prontidão inválido.');
   if(data.readinessSnapshots.some(item=>item.weights!==undefined&&(!isPlainObject(item.weights)||!Object.keys(item.weights).length||Object.values(item.weights).some(value=>!isFiniteNonNegative(value)||Number(value)<=0))||item.captureKind!==undefined&&!['weekly-close','before-strategy-change'].includes(item.captureKind)||item.eventKey!=null&&!isSafeId(item.eventKey)||item.reason!=null&&!textOk(item.reason,500)))return fail('O backup contém metadados de prontidão inválidos.');
   return {valid:true};
@@ -4890,6 +4895,9 @@ function classificacaoAprovacao(score){
 function renderApprovalDashboard(){
   const el=document.getElementById('approvalDashboard');if(!el)return;
   const m=computeApprovalMetrics(),readiness=readinessResult(m),score=readiness.value??0,level=classificacaoAprovacao(score),confidence={value:readiness.confidence,nivel:readiness.confidenceLabel},projection=projectPerformance(m);
+  const projectionInputs=examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))}));
+  if(captureProjection({snapshots:state.projectionSnapshots,model:projection.calibration,simulations:projectionInputs,date:todayISO(),issuedAt:nowISO(),id:uid('projection'),activeExamTags:state.examBlueprint.activeExamTags||[]}))scheduleSave();
+  const projectionHistory=buildProjectionCalibration({snapshots:state.projectionSnapshots,simulations:projectionInputs,activeExamTags:state.examBlueprint.activeExamTags||[],today:todayISO()});
   const factors=[['Cobertura · 30%',m.edital,'coverage'],['Domínio · 25%',m.dominio,'mastery'],['Retenção · 20%',m.retencao,'retention'],['Consistência · 15%',m.consistencia,'consistency'],['Simulados · 10%',m.simulados,'simulations']];
   const approvalState=readiness.state==='empty'?'empty':readiness.state==='insufficient'||confidence.value<.35?'insufficient':'ready';
   const approvalLabel=approvalState==='empty'?'Aguardando dados':approvalState==='insufficient'?'Estimativa inicial':'Estimativa calculada';
@@ -4901,7 +4909,7 @@ function renderApprovalDashboard(){
     <div class="kpi-cell"><div class="n">${projection.available?projection.low+'–'+projection.high+'%':'—'}</div><div class="l">Faixa estimada atual</div></div>
   </div>
   ${factors.map(([label,item])=>{const dataState=getMetricDataState(item);return `<div class="bar-row metric-row metric-row--${dataState}" title="${escapeAttr(item.detail)}"><div class="bar-label">${label}<small>${metricStateLabel(item)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${dataState==='empty'?0:item.score}%"></div></div><div class="bar-pct">${dataState==='empty'?'—':item.score+'%'}</div></div>`}).join('')}
-  ${projection.available?`<section class="performance-forecast" aria-label="Projeção de desempenho"><div><span class="section-eyebrow">PROJEÇÃO DE DESEMPENHO</span><strong>Faixa atual: ${projection.low}–${projection.high}%</strong><small>${projection.calibration.status==='above'?'A faixa atual está acima da meta de '+projection.gap.target+'%.':projection.gap.minimum===0?'A meta de '+projection.gap.target+'% está dentro da faixa atual.':'Gap estimado até a meta: '+projection.gap.minimum+'–'+projection.gap.maximum+' p.p.'}</small></div><div><strong>${projection.forecast30.available?'Em 30 dias: '+projection.forecast30.low+'–'+projection.forecast30.high+'%':'Projeção de 30 dias aguardando dados'}</strong><small>${projection.forecast30.available?'Média móvel: '+projection.movingAverage+'% · tendência '+(projection.forecast30.slopePerWeek>=0?'+':'')+projection.forecast30.slopePerWeek+' p.p./semana · confiança '+projection.forecast30.confidenceLabel:escapeHtml(projection.forecast30.reason)}</small></div>${renderScoreProjectionEvidence(projection.calibration,intelligenceCandidates())}<p>${projection.evidence.observationCount} simulados comparáveis · ${projection.evidence.sampleSize} questões na amostra. Extrapolação de tendência não representa garantia nem efeito causal.</p></section>`:renderScoreProjectionEvidence(projection.calibration)}
+  ${projection.available?`<section class="performance-forecast" aria-label="Projeção de desempenho"><div><span class="section-eyebrow">PROJEÇÃO DE DESEMPENHO</span><strong>Faixa atual: ${projection.low}–${projection.high}%</strong><small>${projection.calibration.status==='above'?'A faixa atual está acima da meta de '+projection.gap.target+'%.':projection.gap.minimum===0?'A meta de '+projection.gap.target+'% está dentro da faixa atual.':'Gap estimado até a meta: '+projection.gap.minimum+'–'+projection.gap.maximum+' p.p.'}</small></div><div><strong>${projection.forecast30.available?'Em 30 dias: '+projection.forecast30.low+'–'+projection.forecast30.high+'%':'Projeção de 30 dias aguardando dados'}</strong><small>${projection.forecast30.available?'Média móvel: '+projection.movingAverage+'% · tendência '+(projection.forecast30.slopePerWeek>=0?'+':'')+projection.forecast30.slopePerWeek+' p.p./semana · confiança '+projection.forecast30.confidenceLabel:escapeHtml(projection.forecast30.reason)}</small></div>${renderScoreProjectionEvidence(projection.calibration,intelligenceCandidates())}${renderProjectionCalibration(projectionHistory)}<p>${projection.evidence.observationCount} simulados comparáveis · ${projection.evidence.sampleSize} questões na amostra. Extrapolação de tendência não representa garantia nem efeito causal.</p></section>`:renderScoreProjectionEvidence(projection.calibration)}
   <details class="readiness-explanation"><summary>Como este índice foi calculado?</summary><p>Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e nunca recebem nota zero.</p><ul>${factors.map(([label,item,key])=>`<li><strong>${label}</strong>: ${item.available?item.score+'/100 · confiança '+Math.round(item.confidence*100)+'%':'aguardando dados'}${item.detail?' · '+escapeHtml(item.detail):''}</li>`).join('')}</ul></details>
   <div class="approval-scale"><span class="approval-scale-danger">🔴 0–49</span><span class="approval-scale-warn">🟠 50–69</span><span class="approval-scale-good">🟢 70–84</span><span class="approval-scale-great">🏆 85+</span></div>
   <ul class="upcoming-list" style="margin-top:14px">${gerarDiagnosticoAprovacao(m).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
