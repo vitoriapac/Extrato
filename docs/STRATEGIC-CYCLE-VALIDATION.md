@@ -1,5 +1,11 @@
 # Validação do ciclo estratégico
 
+## Pacote 4 — Fechamentos e comparação
+
+Fechamentos alterados acrescentam versões na coleção existente; salvamentos de conteúdo idêntico não duplicam registros. Cada versão guarda revisão e referência anterior, métricas da comparação e a faixa de projeção disponível naquele momento. Registros legados são mantidos, sem reconstruir projeções passadas.
+
+A comparação usa o último fechamento salvo do mesmo escopo, informa sobreposição de períodos e apresenta prontidão, precisão, cobertura ajustada no índice, aderência estratégica e faixa da projeção. Mudanças de método/pesos e campos ausentes não produzem deltas artificiais. Metadados de aplicação são congelados antes de persistir o snapshot, sem edição posterior do objeto salvo.
+
 ## Pacote 3 — Linha do Tempo Estratégica
 
 O agregador `build-strategic-timeline` reúne prontidão, fechamentos, decisões de recomendações, planos, alterações/reversões por fase, redistribuições e simulados sem persistir uma segunda coleção. Filtros por categoria e o componente global limitam a apresentação inicial a cinco eventos. Datas de calendário permanecem dias; timestamps são convertidos pelo utilitário compartilhado de sessões.
