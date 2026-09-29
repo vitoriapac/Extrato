@@ -11,6 +11,8 @@ const questions=[['2026-09-01',50,31],['2026-09-08',50,32],['2026-09-15',50,31],
 const sessions=questions.map((item,index)=>({id:'session'+index,date:item.date,subjectId:'s',durationSeconds:3600}));
 test('platô exige quatro semanas e execução suficiente sem alterar dados',()=>{
  const before=JSON.stringify({questions,sessions}),model=buildPreparationSignals({today,subjects,questions,sessions});assert.equal(model.rows[0].type,'plateau');assert.equal(model.rows[0].questionCount,200);assert.equal(JSON.stringify({questions,sessions}),before);
+ assert.equal(model.rows[0].subjectId,'s');assert.equal(model.rows[0].topicId,null);assert.equal(model.rows[0].granularity,'subject');
+ assert.deepEqual(model.rows[0].period,{start:'2026-09-01',end:'2026-09-28'});assert.deepEqual(model.rows[0].observationIds,['q0','q1','q2','q3']);
  assert.equal(buildPreparationSignals({today,subjects,questions:questions.slice(1),sessions}).rows.length,0);
  assert.equal(buildPreparationSignals({today,subjects,questions,sessions:[]}).rows.length,0);
  assert.equal(buildPreparationSignals({today,subjects,questions,sessions,globalTarget:60}).rows.length,0);
@@ -28,6 +30,9 @@ test('alterar meta exige nova recomendação, sem reescrever a anterior',()=>{
 test('risco de consolidação compara evidência recente e não interpreta ausência como falha',()=>{
  const candidates=[{topicId:'t',subjectId:'s',topicName:'Probabilidade',mastery:86,retention:58,evidenceStrength:.8}],recent=[{id:'recent',date:'2026-09-28',subjectId:'s',topicId:'t',resolved:50,correct:27}];
  assert.equal(buildPreparationSignals({today,subjects,candidates,questions:recent}).rows[0].type,'consolidation');
+ const row=buildPreparationSignals({today,subjects,candidates,questions:recent}).rows[0];
+ assert.equal(row.subjectId,'s');assert.equal(row.topicId,'t');assert.equal(row.granularity,'topic');
+ assert.deepEqual(row.period,{start:'2026-09-16',end:today});assert.deepEqual(row.observationIds,['recent']);
  assert.equal(buildPreparationSignals({today,subjects,candidates:[{...candidates[0],retention:null}],questions:recent}).rows.length,0);
  assert.equal(buildPreparationSignals({today,subjects,candidates,questions:recent,blueprint:{subjects:[{subjectId:'s',accuracyTarget:60}]}}).rows.length,0);
 });
