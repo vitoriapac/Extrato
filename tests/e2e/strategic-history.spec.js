@@ -1,0 +1,36 @@
+import {test,expect} from '@playwright/test';
+import {activateTab,expectNoPageOverflow} from './helpers.js';
+import {buildStrategicCycleFixture} from '../fixtures/strategic-cycle.js';
+import {ensureRecommendationRecord} from '../../src/application/recommendations/recommendation-history.js';
+
+test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile',async({page})=>{
+  await page.setViewportSize({width:375,height:812});
+  await page.clock.install({time:new Date('2026-09-28T12:00:00-03:00')});
+  await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(node=>node.remove());
+  const base=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState())),fixture=buildStrategicCycleFixture(base);
+  for(let index=0;index<7;index++)ensureRecommendationRecord(fixture.recommendationHistory,{id:'cycle-t0-0',recommendationId:`priority-observation-${index}`,topicId:'cycle-t0-0',subjectId:'cycle-s0',topicName:'Juros Compostos',subjectName:'Matemática Financeira',score:90-index*4,mastery:30+index*4,retention:40+index*3,estimatedMinutes:35,evidence:{evidenceStrength:.8},examIntelligence:{presencePercent:100},algorithmVersion:5,reasons:['Registro da lacuna']},{now:`2026-09-${String(10+index).padStart(2,'0')}T12:00:00-03:00`,activeExamTags:['bb-escriturario'],idGenerator:()=> 'unused'});
+  await page.evaluate(value=>{const api=window.__EXTRATO_TEST__,validation=api.validateBackupData(value);if(!validation.valid)throw Error(validation.message);api.setState(validation.normalized);api.renderAll()},fixture);
+  await activateTab(page,'dashboard');
+  const timeline=page.locator('#strategicTimelineDashboard');
+  await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(5);
+  await timeline.getByRole('button',{name:/Mostrar mais/}).click();await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(13);
+  await timeline.locator('select').selectOption('simulations');await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(4);
+  const history=page.locator('#priorityHistoryDashboard');
+  await history.locator('select').selectOption('cycle-s0');
+  const juros=history.locator('details').filter({has:page.getByText('Matemática Financeira — Juros Compostos',{exact:true})}).first();await juros.locator('summary').click();
+  await expect(juros.locator('ol > li:visible')).toHaveCount(5);await juros.getByRole('button',{name:/Mostrar mais/}).click();await expect(juros.locator('ol > li:visible')).toHaveCount(9);
+  await expect(juros).toContainText('Incidência: 100%');
+  const save=page.locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]');await save.click();
+  const first=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1)));
+  await save.click();expect(await page.evaluate(()=>window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.length)).toBe(1);
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.questoes.push({id:'new-history-observation',date:'2026-09-28',topicId:'cycle-t0-0',subjectId:'cycle-s0',resolved:30,correct:27});api.setState(state);api.renderAll()});
+  await expect(page.locator('#weeklyCloseDashboard .close-comparison')).toContainText('Precisão');await save.click();
+  const result=await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=api.getState();return {snapshots:structuredClone(state.weeklyCloseSnapshots),backup:api.validateBackupData(JSON.parse(JSON.stringify(state)))}});
+  expect(result.snapshots).toHaveLength(2);expect(result.snapshots[0]).toEqual(first);expect(result.snapshots[1].revision).toBe(2);expect(result.backup.valid,result.backup.message).toBe(true);expect(result.backup.normalized.weeklyCloseSnapshots).toEqual(result.snapshots);
+  await expectNoPageOverflow(page);
+  await page.locator('#themeToggleBtn').click();await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+  await expectNoPageOverflow(page);
+  await page.setViewportSize({width:1440,height:900});await expectNoPageOverflow(page);
+  await page.locator('#themeToggleBtn').click();await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+  await expectNoPageOverflow(page);
+});

@@ -1,4 +1,5 @@
 import {buildWeeklyDecisionCycle} from './build-weekly-decision-cycle.js';
+import {captureTopicPriorityProfile} from '../../domain/recommendations/topic-priority-profile.js';
 const sum=(items,selector)=>items.reduce((total,item)=>total+(Number(selector(item))||0),0);
 import {buildWeeklyStrategicFocus} from './build-weekly-strategic-focus.js';
 const inRange=(item,start,end)=>Boolean(item?.date&&item.date>=start&&item.date<=end);
@@ -19,5 +20,5 @@ export function buildStudyTrack32ViewModel({today,sessions=[],questions=[],daily
   weeklyClose.strategicFocus=buildWeeklyStrategicFocus({sessions:currentSessions,candidates,recommendations,start,end:today});
   weeklyClose.decisionCycle=buildWeeklyDecisionCycle({close:weeklyClose,start,end:today,previousStart,previousEnd,sessions,dailyPlans,recommendations,simulations,subjects,snapshots:readinessSnapshots,activeExamTags,readiness});
   const latestSimulation=[...simulations].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0],plannedOpen=sum(dailyPlans.flatMap(plan=>plan.items||[]).filter(item=>!['completed','skipped','replaced','discarded'].includes(item.status)),item=>item.plannedMinutes),availableMinutes=Math.max(0,weeklyCapacityMinutes-plannedOpen),postSimulation=buildPostSimulationReplan({simulation:latestSimulation,subjects,availableMinutes,existingSimulationIds:planAdjustments.map(item=>item.simulationId).filter(Boolean)});
-  return {period:{start,end:today,previousStart,previousEnd},activeExamTags:[...activeExamTags],weeklyClose,gapMap,decisionHistory,postSimulation:{...postSimulation,availableMinutes}};
+  return {period:{start,end:today,previousStart,previousEnd},activeExamTags:[...activeExamTags],topicPriorities:candidates.map(item=>captureTopicPriorityProfile(item,{capturedAt:today,activeExamTags})),weeklyClose,gapMap,decisionHistory,postSimulation:{...postSimulation,availableMinutes}};
 }

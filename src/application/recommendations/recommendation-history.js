@@ -1,3 +1,4 @@
+import {captureTopicPriorityProfile} from '../../domain/recommendations/topic-priority-profile.js';
 import {buildRecommendationExplanation} from './build-recommendation-explanation.js';
 import {recommendationActionKind} from './recommendation-action.js';
 
@@ -17,20 +18,21 @@ export function migrateRecommendationHistory(feedback=[]){
   }));
 }
 
-export function reusableRecommendationRecord(history,item,date){
+export function reusableRecommendationRecord(history,item,date,activeExamTags=null){
   const expected=signature(item);
-  return [...history].reverse().find(record=>record.status==='pending'&&record.candidateId===item.id&&record.signature===expected&&recordDate(record)===date)||null;
+  const scope=tags=>Array.isArray(tags)?JSON.stringify([...new Set(tags)].sort()):null;
+  return [...history].reverse().find(record=>(activeExamTags===null||scope(record.activeExamTags)===scope(activeExamTags))&&record.status==='pending'&&record.candidateId===item.id&&record.signature===expected&&recordDate(record)===date)||null;
 }
 
-export function ensureRecommendationRecord(history,item,{now,idGenerator}={}){
+export function ensureRecommendationRecord(history,item,{now,idGenerator,activeExamTags=null}={}){
   const existing=history.find(record=>record.id===item.recommendationId);if(existing)return existing;
-  const record={id:item.recommendationId||idGenerator('recommendation'),createdAt:item.shownAt||now,localDate:localDate(item.shownAt||now),candidateId:item.id,signature:signature(item),source:'generated',subjectId:item.subjectId||null,topicId:item.topicId||null,activityType:recommendationActionKind(item),suggestedMinutes:item.estimatedMinutes??null,priority:item.score??null,reasons:[...(item.reasons||[])],evidenceSnapshot:item.evidence?structuredClone(item.evidence):null,algorithmVersions:{priority:Number(item.algorithmVersion)||1,examIntelligence:item.examIntelligence?.algorithmVersion??null},status:'pending',executedAt:null,dismissedAt:null,expiredAt:null,sessionId:null,feedbackId:null};history.push(record);return record;
+  const record={activeExamTags:Array.isArray(activeExamTags)?[...activeExamTags]:null,prioritySnapshot:captureTopicPriorityProfile(item,{capturedAt:item.shownAt||now,activeExamTags}),id:item.recommendationId||idGenerator('recommendation'),createdAt:item.shownAt||now,localDate:localDate(item.shownAt||now),candidateId:item.id,signature:signature(item),source:'generated',subjectId:item.subjectId||null,topicId:item.topicId||null,activityType:recommendationActionKind(item),suggestedMinutes:item.estimatedMinutes??null,priority:item.score??null,reasons:[...(item.reasons||[])],evidenceSnapshot:item.evidence?structuredClone(item.evidence):null,algorithmVersions:{priority:Number(item.algorithmVersion)||1,examIntelligence:item.examIntelligence?.algorithmVersion??null},status:'pending',executedAt:null,dismissedAt:null,expiredAt:null,sessionId:null,feedbackId:null};history.push(record);return record;
 }
 
-export function syncRecommendationHistory(history,recommendations,{now,today=localDate(now),idGenerator,visibleCount=3}={}){
+export function syncRecommendationHistory(history,recommendations,{now,today=localDate(now),idGenerator,visibleCount=3,activeExamTags=null}={}){
   const visible=recommendations.slice(0,visibleCount),ids=new Set(visible.map(item=>item.recommendationId));let changed=false;
   for(const record of history){if(record.status==='pending'&&(!ids.has(record.id)||recordDate(record)!==today)){record.status='expired';record.expiredAt=now;changed=true}}
-  for(const item of visible){if(history.some(record=>record.id===item.recommendationId))continue;ensureRecommendationRecord(history,item,{now,idGenerator});changed=true}
+  for(const item of visible){if(history.some(record=>record.id===item.recommendationId))continue;ensureRecommendationRecord(history,item,{now,idGenerator,activeExamTags});changed=true}
   return changed;
 }
 

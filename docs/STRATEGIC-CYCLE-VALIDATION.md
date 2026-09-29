@@ -1,5 +1,11 @@
 # Validação do ciclo estratégico
 
+## Pacote 5 — Evolução das prioridades
+
+Perfis congelados nas recomendações apresentadas, nos itens do plano e nos fechamentos preservam prioridade, domínio, retenção, incidência, impacto, confiança, motivos e versão do motor. O fechamento guarda todos os candidatos do escopo, permitindo acompanhar tópicos que não apareceram entre as três recomendações. O agregador usa essas coleções existentes; registros antigos não recebem métricas calculadas hoje.
+
+Cada tópico mostra uma observação por dia, filtro de disciplina e listas inicialmente limitadas a cinco itens. O diagnóstico atual é identificado como atual. Métodos diferentes ou evidência insuficiente impedem concluir melhora/piora; redução do impacto com domínio/ retenção estáveis aparece como estabilidade pessoal. Manutenção exige baixa prioridade, domínio adequado, retenção adequada e evidência suficiente. Não são feitos ajustes automáticos no planejamento.
+
 ## Pacote 4 — Fechamentos e comparação
 
 Fechamentos alterados acrescentam versões na coleção existente; salvamentos de conteúdo idêntico não duplicam registros. Cada versão guarda revisão e referência anterior, métricas da comparação e a faixa de projeção disponível naquele momento. Registros legados são mantidos, sem reconstruir projeções passadas.

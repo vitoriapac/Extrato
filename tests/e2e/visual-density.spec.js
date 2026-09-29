@@ -53,7 +53,7 @@ test('cabeçalhos analíticos com dados densos em desktop',async({page})=>{
   await page.evaluate(value=>{window.__EXTRATO_TEST__.setState(value);window.__EXTRATO_TEST__.renderAll()},state);
   await expect(page.locator('#statSubjects')).toHaveText(String(state.subjects.length));
   await activateTab(page,'dashboard');
-  await expect(page.locator('.intelligence-column > .analytics-card > .module-heading')).toHaveCount(6);
+  await expect(page.locator('.intelligence-column > .analytics-card > .module-heading')).toHaveCount(8);
   await activateTab(page,'agenda');
   await expect(page.locator('#panel-agenda > .module-heading')).toBeVisible();
   await activateTab(page,'questoes');

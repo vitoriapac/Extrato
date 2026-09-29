@@ -1,3 +1,4 @@
+import {captureTopicPriorityProfile} from '../recommendations/topic-priority-profile.js';
 export const PLAN_PRIORITY_POLICY_VERSION=1;
 export const PLAN_PRIORITY_THRESHOLD=70;
 const numeric=value=>value==null||value===''||!Number.isFinite(Number(value))?null:Number(value);
@@ -13,6 +14,7 @@ export function capturePlanPriority(candidate={}, {capturedAt=null,algorithmVers
     algorithmVersion:candidate.algorithmVersion??algorithmVersion,
     reasons:[...reasons],evidence:candidate.evidence?structuredClone(candidate.evidence):null,
     factors:candidate.factors?structuredClone(candidate.factors):null,
-    examImpact:numeric(candidate.examImpact),mastery:numeric(candidate.mastery),retention:numeric(candidate.retention)
+    examImpact:numeric(candidate.examImpact),mastery:numeric(candidate.mastery),retention:numeric(candidate.retention),
+    topicProfile:captureTopicPriorityProfile({...candidate,algorithmVersion:candidate.algorithmVersion??algorithmVersion},{capturedAt})
   };
 }

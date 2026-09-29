@@ -21,6 +21,8 @@ export function createProgressiveList({items=[],initialLimit=DEFAULT_LIST_VISIBL
 // Explicit opt-in: charts, matrices, navigation and achievements are excluded.
 const LISTS=[
   ['.strategic-timeline',':scope > li'],
+  ['.priority-history-topics',':scope > details'],
+  ['.priority-history-observations',':scope > li'],
   ['#gapMapDashboard',':scope > .data-row'],
   ['#decisionHistoryDashboard',':scope > .data-row'],
   ['#alertasInteligentesList',':scope > .alerta-item'],
