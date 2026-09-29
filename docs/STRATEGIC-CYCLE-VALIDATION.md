@@ -1,5 +1,11 @@
 # Validação do ciclo estratégico
 
+## Pacote 3 — Linha do Tempo Estratégica
+
+O agregador `build-strategic-timeline` reúne prontidão, fechamentos, decisões de recomendações, planos, alterações/reversões por fase, redistribuições e simulados sem persistir uma segunda coleção. Filtros por categoria e o componente global limitam a apresentação inicial a cinco eventos. Datas de calendário permanecem dias; timestamps são convertidos pelo utilitário compartilhado de sessões.
+
+Novos planos e feedbacks congelam o concurso ativo. Snapshots exigem o mesmo conjunto de concursos; registros legados de tópicos usam o vínculo atual com aviso. Planos legados sem escopo ficam fora de filtros específicos. Eventos futuros e feedbacks duplicados nas duas fontes de recomendações são excluídos.
+
 ## Pacote 1 — Estratégia por fase
 
 - Limites: construção acima de 90 dias, consolidação de 31 a 90, reta final de 8 a 30 e revisão final de 0 a 7; data passada, ausente ou não finita impede proposta.
