@@ -105,6 +105,11 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   expect(after.dailyPlans.filter(plan=>plan.date>'2026-10-04').every(plan=>plan.plannedMinutes<=plan.availableMinutes)).toBe(true);
   expect(after.studyPlans.find(item=>item.id===confirmed.id)).toEqual(confirmed);
   assertHistoryPreserved(before,after);
+  await activateTab(page,'questoes');
+  const followup=page.locator('#recommendationOutcomeAudit .recommendation-followup-list');
+  await expect(followup).toContainText('Juros');
+  const detail=followup.locator(':scope > details').first();await detail.locator(':scope > summary').click();
+  await expect(detail).toContainText('Planejado na recomendação');await expect(detail).toContainText('Evidência posterior');
 });
 
 test('reversão, cooldown, escopo e falta de dados preservam o histórico em mobile',async({page})=>{

@@ -39,3 +39,11 @@ Novos planos e feedbacks congelam o concurso ativo. Snapshots exigem o mesmo con
 ## Pacotes 6 e 7
 
 O acompanhamento vincula sessões à recomendação, preserva a linha de base e limita o crédito à duração recomendada. Melhora posterior não implica causalidade. A calibração preserva faixas realmente emitidas antes do resultado; nenhum histórico é reconstruído retroativamente. Backups anteriores migram para schema 26 com a coleção de faixas vazia.
+
+## Pacote 8
+
+O componente compartilhado apresenta Baixa, Moderada ou Alta, sem alterar os cálculos dos indicadores. Volumes e motivos são exibidos em detalhes nativos acessíveis. Evidências não avaliadas ficam explicitamente identificadas; tendência comparável não é convertida em confiança estatística.
+
+### Validação dos pacotes 6–8
+
+431 testes unitários em UTC e America/Sao_Paulo. Verificações de sintaxe e artefatos gerados. E2E selecionados: migrações de backups 23/24, ciclo estratégico, histórico, calibração preservada e abertura dos detalhes por teclado. A calibração foi verificada de 320 a 430 px nos temas claro/escuro. Esta rodada não executa a suíte E2E completa.

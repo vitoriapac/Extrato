@@ -1874,3 +1874,11 @@ body.timer-focus-active .timer-context{display:none!important}
 .priority-history-observations time{display:block;color:var(--text-secondary);margin-bottom:4px}
 .priority-history-observations p{margin:8px 0}
 @media(max-width:430px){.strategic-timeline>li{grid-template-columns:1fr;gap:8px}}
+
+.evidence-quality { margin-block: 8px; font-size: .875rem; }
+.evidence-quality summary { cursor: pointer; }
+.evidence-quality dl { display: grid; gap: 8px; }
+.evidence-quality dl > div { display: flex; justify-content: space-between; gap: 16px; }
+.evidence-quality dd { margin: 0; }
+
+.projection-interval-chart { width: 100%; max-width: 480px; height: auto; display: block; }

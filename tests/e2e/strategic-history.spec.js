@@ -17,7 +17,7 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
   await timeline.locator('select').selectOption('simulations');await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(4);
   const history=page.locator('#priorityHistoryDashboard');
   await history.locator('select').selectOption('cycle-s0');
-  const juros=history.locator('details').filter({has:page.getByText('Matemática Financeira — Juros Compostos',{exact:true})}).first();await juros.locator('summary').click();
+  const juros=history.locator('details').filter({has:page.getByText('Matemática Financeira — Juros Compostos',{exact:true})}).first();await juros.locator(':scope > summary').click();
   await expect(juros.locator('ol > li:visible')).toHaveCount(5);await juros.getByRole('button',{name:/Mostrar mais/}).click();await expect(juros.locator('ol > li:visible')).toHaveCount(9);
   await expect(juros).toContainText('Incidência: 100%');
   const save=page.locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]');await save.click();
