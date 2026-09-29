@@ -23,6 +23,7 @@ const LISTS=[
   ['.strategic-timeline',':scope > li'],
   ['.priority-history-topics',':scope > details'],
   ['.priority-history-observations',':scope > li'],
+  ['.recommendation-followup-list',':scope > details'],
   ['#gapMapDashboard',':scope > .data-row'],
   ['#decisionHistoryDashboard',':scope > .data-row'],
   ['#alertasInteligentesList',':scope > .alerta-item'],

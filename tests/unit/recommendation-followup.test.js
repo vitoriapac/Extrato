@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {buildRecommendationFollowup} from '../../src/application/recommendations/build-recommendation-followup.js';
+test('acompanhamento preserva baseline e limita crédito ao tempo recomendado',()=>{
+ const feedback=[{id:'f',accepted:true,recommendationId:'r',date:'2026-09-20',activeExamTags:[],snapshot:{recommendedMinutes:30,before:{mastery:40,accuracy:50}},outcome:{state:'positive',measuredAt:'2026-09-25T12:00:00Z',after:{mastery:55,accuracy:65}}}];
+ const original=JSON.stringify(feedback),session={id:'s',recommendationId:'r',date:'2026-09-21',durationSeconds:2400};
+ const row=buildRecommendationFollowup({feedback,sessions:[session,session],today:'2026-09-29'}).rows[0];
+ assert.equal(row.execution.adherence,100);assert.equal(row.execution.excessMinutes,10);assert.equal(row.state,'positive');assert.equal(JSON.stringify(feedback),original);
+});
+test('dados ausentes não viram piora nem tempo zero',()=>{
+ const row=buildRecommendationFollowup({feedback:[{id:'f',accepted:true,activeExamTags:[],outcome:{state:'negative'}}]}).rows[0];
+ assert.equal(row.state,'insufficient');assert.equal(row.execution.executedMinutes,null);
+});

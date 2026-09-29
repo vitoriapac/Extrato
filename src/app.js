@@ -1,3 +1,5 @@
+import {buildRecommendationFollowup} from './application/recommendations/build-recommendation-followup.js';
+import {renderRecommendationFollowup} from './ui/renderers/recommendation-followup-renderer.js';
 import {buildPriorityHistory} from './application/analytics/build-priority-history.js';
 import {captureCloseComparisonMetrics,buildCloseComparison} from './application/analytics/build-close-comparison.js';
 import {buildStrategicTimeline} from './application/analytics/build-strategic-timeline.js';
@@ -4908,7 +4910,7 @@ function renderApprovalDashboard(){
   renderRecommendationCalibration();
   renderStudyTrack32Insights();
 }
-function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml});const audit=document.getElementById('recommendationOutcomeAudit');if(audit)audit.innerHTML=renderRecommendationOutcomeAudit(buildRecommendationOutcomeAudit(state.recommendationFeedback),{escapeHtml});renderRecommendationHistorySummary()}
+function renderRecommendationCalibration(){const el=document.getElementById('recommendationCalibration');if(!el)return;const subjectNames=Object.fromEntries(state.subjects.map(item=>[item.id,item.name])),topicNames=Object.fromEntries(state.subjects.flatMap(subject=>(subject.topics||[]).map(topic=>[topic.id,topic.name]))),model=buildRecommendationCalibration(state.recommendationFeedback,{minimumSample:5,subjectNames,topicNames});el.innerHTML=renderRecommendationCalibrationModel(model,{escapeHtml});const audit=document.getElementById('recommendationOutcomeAudit');if(audit)audit.innerHTML=renderRecommendationOutcomeAudit(buildRecommendationOutcomeAudit(state.recommendationFeedback),{escapeHtml})+renderRecommendationFollowup(buildRecommendationFollowup({feedback:state.recommendationFeedback,sessions:state.studySessions,topics:allTopics(),activeExamTags:state.examBlueprint.activeExamTags||[],today:todayISO()}));renderRecommendationHistorySummary()}
 function renderRecommendationHistorySummary(){const history=document.getElementById('recommendationHistorySummary');if(history)history.innerHTML=renderRecommendationHistory(summarizeRecommendationHistory(state.recommendationHistory,{today:todayISO()}))}
 let priorityHistorySubject='';
 function setPriorityHistorySubject(value){priorityHistorySubject=value;renderStudyTrack32Insights()}

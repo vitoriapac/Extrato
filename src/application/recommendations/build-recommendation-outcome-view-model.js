@@ -1,6 +1,6 @@
 const LABELS=Object.freeze({mastery:'Domínio',retention:'Retenção',reviewHealth:'Saúde da revisão',accuracy:'Acerto',risk:'Risco'});
 const STATE_MAP=Object.freeze({positive:'improved',negative:'worsened',improved:'improved',worsened:'worsened',neutral:'neutral',pending:'pending',insufficient:'insufficient'});
-const STATE_LABELS=Object.freeze({improved:'A recomendação ajudou',worsened:'O resultado piorou',neutral:'Resultado estável',pending:'Resultado em acompanhamento',insufficient:'Evidência insuficiente'});
+const STATE_LABELS=Object.freeze({improved:'Evidência de melhora posterior',worsened:'Piora posterior observada',neutral:'Resultado estável',pending:'Resultado em acompanhamento',insufficient:'Evidência insuficiente'});
 const numeric=value=>value==null||value===''||!Number.isFinite(Number(value))?null:Number(value);
 export function buildRecommendationOutcomeViewModel(feedbackList=[]){
   const measured=(Array.isArray(feedbackList)?feedbackList:[]).filter(item=>item?.completed&&item?.outcome).sort((a,b)=>String(b.outcome.measuredAt||b.completedAt||'').localeCompare(String(a.outcome.measuredAt||a.completedAt||'')));
