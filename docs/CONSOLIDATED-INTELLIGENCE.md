@@ -51,3 +51,17 @@ O vocabulário usa gravidade crítica, importante, monitorar, sob controle e dad
 O produtor de sinais de preparação preserva seus limiares atuais e fornece disciplina/tópico, granularidade, período e IDs das questões já consideradas. O platô permanece sinal da disciplina (28 dias completos); risco de consolidação permanece sinal do tópico (14 dias, incluindo hoje). A apresentação da qualidade da evidência usa o vocabulário compartilhado sem alterar seus limiares existentes.
 
 Verificação do pacote 2: 444 testes unitários em cada fuso, sintaxe e bundle reproduzível; os dois fluxos E2E de sinais de preparação e qualidade da evidência passaram nos dois fusos.
+
+## Pacote 3 — Consolidação e precedência
+
+O diagnóstico consolida os produtores já existentes por disciplina ou tópico, com o escopo de concurso verificado antes da adaptação. Sinais arquivados, de outro concurso e sem entidade elegível ficam de fora. Agregados legados sem escopo explícito só entram quando o chamador já validou o escopo. Duas fontes para o mesmo tópico permanecem distintas, com origem, período, motivos e IDs de observação.
+
+A precedência versão 1 escolhe, entre sinais ativos, risco de consolidação, lacuna crítica, platô, revisão prioritária, cobertura crítica, prioridade alta, coleta de evidência e manutenção. Empates usam o período mais recente e IDs estáveis. Incidência histórica e recomendação disponível ajudam a explicar o item, mas não transformam sozinhas uma evidência insuficiente em prioridade pessoal. A confiança apresentada vem do sinal principal: as confianças de fontes que podem compartilhar observações não são somadas.
+
+“Sob controle” exige classificação de manutenção do motor existente com evidência pessoal suficiente. A ausência de alerta fica “não avaliada”, nunca é interpretada como domínio confirmado. Resultados e contagens de disciplina e tópico são separados para evitar contagem dupla. O score e a ordem de prioridade continuam vindo do motor atual; o consolidador não recalcula peso nem altera plano.
+
+Uma ação aponta somente para a identidade de uma recomendação atual, elegível, pendente e do mesmo escopo. O custo de oportunidade usa uma proposta válida do planejamento existente e registra papéis de origem/destino, sem criar uma nova ação. O renderer atual recebe os metadados consolidados em atributos dos itens; a interface de Diagnóstico 2.0 permanece no pacote seguinte. Não há alteração de schema ou coleção persistida.
+
+Os testes verificam precedência, confiança não somada, granularidade, escopo, arquivos, estabilidade, qualidade da evidência, elegibilidade da ação, custo de oportunidade, imutabilidade e vínculo com os motores existentes.
+
+Verificação integrada: `npm run check:all` passou em America/Sao_Paulo e UTC, cada execução com 461 testes unitários, bundle reproduzível e 182 E2E. Os snapshots foram verificados localmente no Windows; a execução do CI em Linux depende da publicação dos commits.

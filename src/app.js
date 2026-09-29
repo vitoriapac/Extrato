@@ -1,3 +1,4 @@
+import {buildConsolidatedDiagnosis} from './application/diagnostics/build-consolidated-diagnosis.js';
 import {buildPreparationSignals} from './application/analytics/build-preparation-signals.js';
 import {renderPreparationSignals} from './ui/renderers/preparation-signals-renderer.js';
 import {resolveSubjectAccuracyTarget} from './domain/analytics/subject-accuracy-target.js';
@@ -4385,15 +4386,20 @@ function intelligenceCandidates(){
   return buildStudyCandidates({priorities,topics,retentions,reviewHealths,blueprint:state.examBlueprint.subjects,
     sessions:state.studySessions,today:todayISO(),examProximity:state.examDate?proximidadeProvaScore():null,activeExamTags:state.examBlueprint.activeExamTags||[],exams:state.exams,examQuestions:state.examQuestions}).map(item=>({...item,accuracyTarget:subjectAccuracyTarget(item.subjectId)}));
 }
+let currentConsolidatedDiagnosis=null;
 function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
-  const {candidates}=refreshStudyRecommendationItems(),result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{limit:Number.MAX_SAFE_INTEGER,hasTopics:candidates.length>0,weeklyCapacityMinutes});
+  const {candidates}=refreshStudyRecommendationItems(),scoped=examEvidenceContext();
+  const preparationSignals=buildPreparationSignals({subjects:examScopedSubjects(),candidates,questions:scoped.questions.included,sessions:scoped.sessions.included,blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,today:todayISO()});
+  const opportunityCosts=studyPlanPreview?.adaptiveAdvice?.state==='proposal'&&!studyPlanPreview.adaptiveAdvice.applied?[studyPlanPreview.adaptiveAdvice]:[];
+  currentConsolidatedDiagnosis=buildConsolidatedDiagnosis({candidates,subjects:examScopedSubjects(),eligibleTopics:scoped.content.eligibleTopics,preparationSignals,recommendations:currentStudyRecommendations,opportunityCosts,activeExamTags:state.examBlueprint.activeExamTags||[]});
+  const result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{limit:Number.MAX_SAFE_INTEGER,hasTopics:candidates.length>0,weeklyCapacityMinutes});
+  model.consolidated=currentConsolidatedDiagnosis;
   container.innerHTML=renderDiagnosisCenterView({model,studyActionForItem:item=>{
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
     return action?{...action,label:recommendationActionLabel(action)}:null;
   },escapeHtml,escapeAttr});
-  const scoped=examEvidenceContext();
-  container.innerHTML+=renderPreparationSignals(buildPreparationSignals({subjects:examScopedSubjects(),candidates,questions:scoped.questions.included,sessions:scoped.sessions.included,blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,today:todayISO()}));
+  container.innerHTML+=renderPreparationSignals(preparationSignals);
 }
 function renderRecommendationImpact(model){
   if(!model.available)return '';
@@ -5215,6 +5221,7 @@ if(TEST_MODE){
   window.__EXTRATO_TEST__={
     CURRENT_SCHEMA_VERSION,STATUS_OPTIONS,DIFFICULTY_OPTIONS,APP_MODE,IS_DEMO_MODE,
     getState:()=>state,
+    getConsolidatedDiagnosis:()=>structuredCloneSafe(currentConsolidatedDiagnosis),
     settleSaves:async()=>{if(saveTimeout){clearTimeout(saveTimeout);saveTimeout=null}await saveQueue},
     setState:value=>{state=migrateState(structuredCloneSafe(value));ensureStateDefaults();return state},
     refreshTimerDisplay:()=>{timerSeconds=currentTimerSeconds();updateTimerDisplay()},
