@@ -31,6 +31,7 @@ import {renderPerformanceSubjects} from './ui/performance/performance-subjects-r
 import {buildPerformanceTopicDetail} from './application/performance/build-performance-topic-detail.js';
 import {buildPerformanceConsistency} from './application/performance/build-performance-consistency.js';
 import {renderPerformanceConsistency} from './ui/performance/performance-consistency-renderer.js';
+import {buildPerformanceComparison} from './application/performance/build-performance-comparison.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
@@ -5123,7 +5124,8 @@ function renderPerformance(){
     const scope=examEvidenceContext(),activeExamTags=state.examBlueprint?.activeExamTags||[];
     const dailyPlans=performanceScopedPlans(scope);
     const overview=buildPerformanceOverview({range,today:todayISO(),activeExamTags,readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans,subjects:examScopedSubjects()});
-    sectionHtml=renderPerformanceOverview(overview,{range,today:todayISO(),activeExamTags,formatDate:formatDatePt,escapeHtml});
+    const comparisonModel=buildPerformanceComparison(overview,{comparePrevious:range.comparePrevious});
+    sectionHtml=renderPerformanceOverview(overview,{range,today:todayISO(),activeExamTags,formatDate:formatDatePt,escapeHtml,comparisonModel});
   }else if(performanceViewState.section==='questions'){
     const scope=examEvidenceContext();
     const questions=scope.questions.included.map(item=>({...item,subjectId:entitySubjectId(item)}));

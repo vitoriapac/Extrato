@@ -46,10 +46,16 @@ export function buildPerformanceOverview({range,today,activeExamTags=[],readines
   const changes=[];
   if(readinessDelta!=null&&readinessDelta!==0)changes.push({label:'Prontidão salva',delta:readinessDelta,unit:'pontos'});
   if(previous){
-    for(const [label,key,unit] of [['Precisão em questões','accuracy','p.p.'],['Aderência de carga','adherence','p.p.'],['Tempo estudado','studiedMinutes','min']]){
+    for(const [label,key,unit,available] of [
+      ['Precisão em questões','accuracy','p.p.',current.resolved>=30&&previous.resolved>=30],
+      ['Questões resolvidas','resolved','questões',current.resolved+previous.resolved>0],
+      ['Aderência de carga','adherence','p.p.',current.plannedMinutes>=60&&previous.plannedMinutes>=60],
+      ['Tempo estudado','studiedMinutes','min',current.sessionCount+previous.sessionCount>0]
+    ]){
+      if(!available)continue;
       const value=delta(current?.[key],previous[key]);
       if(value!=null&&value!==0)changes.push({label,delta:value,unit});
     }
   }
-  return {current,previous,readiness,readinessDelta,readinessComparison,history,weekly,strategic,changes:changes.sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,5)};
+  return {current,previous,readiness,readinessDelta,readinessComparison,history,weekly,strategic,changes:changes.slice(0,5)};
 }

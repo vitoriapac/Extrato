@@ -25,8 +25,9 @@ export function buildPerformanceSubjects({subjects=[],subjectId=null,range,today
   }).sort((a,b)=>b.questions-a.questions||a.name.localeCompare(b.name,'pt-BR'));
   const activity={minutes:Math.round(sessions.filter(item=>item.subjectId===id&&inRange(item.date,range)).reduce((sum,item)=>sum+(Number(item.durationSeconds)||0)/60,0)),
     questions:total(current),reviews:reviews.filter(item=>item.subjectId===id&&item.status==='Concluído'&&inRange(item.completedDate,range)).length};
-  const metrics=topicRows.filter(row=>row.evidence>0),average=key=>metrics.length?Math.round(metrics.reduce((sum,row)=>sum+(Number(row[key])||0),0)/metrics.length):null;
+  const measured=key=>topicRows.filter(row=>row[key]!=null&&(key!=='mastery'||row.evidence>0));
+  const average=key=>{const rows=measured(key);return rows.length?Math.round(rows.reduce((sum,row)=>sum+Number(row[key]),0)/rows.length):null};
   return {state:'ready',subjects,subject,goal,accuracy:goal.personal.accuracy,previousAccuracy:total(previous)>=10?precision(previous):null,
     trend:range?.comparePrevious&&total(current)>=10&&total(previous)>=10?difference(precision(previous),precision(current)):null,
-    mastery:average('mastery'),retention:average('retention'),evidence:metrics.length,activity,evolution:periodEvolution,topics:topicRows};
+    mastery:average('mastery'),retention:average('retention'),masteryEvidence:measured('mastery').length,retentionEvidence:measured('retention').length,activity,evolution:periodEvolution,topics:topicRows};
 }

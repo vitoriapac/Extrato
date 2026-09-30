@@ -1930,6 +1930,10 @@ body.timer-focus-active .timer-context{display:none!important}
 .performance-heatmap{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;max-width:480px}
 .performance-heatmap-day{display:grid;place-items:center;min-height:24px;background:var(--paper);border:1px solid var(--paper-line);font-size:11px}
 .performance-heatmap-day.level-1{background:var(--slate-bg)}.performance-heatmap-day.level-2{background:var(--paper-line)}.performance-heatmap-day.level-3{background:var(--navy);color:#fff}
+.performance-comparison-table{min-width:560px}.performance-comparison-state{display:inline-block;white-space:nowrap;padding:3px 7px;border:1px solid var(--paper-line);font-weight:600;font-size:11px}
+.performance-comparison-state.is-improved{border-color:var(--green);color:var(--green)}.performance-comparison-state.is-worsened{border-color:var(--red);color:var(--red)}
+.performance-insights{margin:0;padding-left:var(--space-4)}.performance-insights li{margin-block:var(--space-2);line-height:1.5}
+@media(max-width:600px){.performance-page{gap:var(--space-3)}.performance-block{padding-block:var(--space-3)}.performance-consistency-bars{grid-template-columns:1fr}.performance-topic-dialog-inner{padding:var(--space-3)}}
 @media(max-width:520px){.performance-topic-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.performance-topic-list li span{text-align:left}}
 @media(max-width:700px){.performance-topic-groups{grid-template-columns:1fr}.performance-changes li{flex-wrap:wrap}}

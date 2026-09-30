@@ -37,3 +37,5 @@ Mover o proprietário de cada análise junto com seu renderer, sem duplicar IDs 
 ## Situação após os pacotes 4–9
 
 Desempenho passou a apresentar questões, simulados, disciplinas, detalhe de tópico e consistência no período e concurso ativos. A Visão Geral aponta para o histórico completo e conserva o índice atual, o fechamento e decisões estratégicas. Questões e Simulados conservam os registros; a análise especializada de erros fica recolhida. Metas conserva a execução do plano atual e uma comparação com datas personalizadas em painéis recolhidos. Os gráficos históricos de prontidão, tempo de estudo, heatmap e simulados deixaram as telas de origem.
+
+A visão geral também compara precisão, tempo, volume e aderência com o período anterior equivalente. Precisão só recebe classificação com pelo menos 30 questões em cada intervalo; aderência requer 60 minutos planejados em cada um. Os insights são regras descritivas sobre mudanças observadas, sem atribuir causa. Com escopo ou evidência insuficientes, a interface explica a ausência do indicador. O heatmap limita a visualização diária a 90 dias e mantém o histórico semanal em uma lista expansível.
