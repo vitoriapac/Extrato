@@ -31,9 +31,9 @@ Gráficos e Desempenho já usam os renderers compartilhados. A barra de filtros,
 | --- | --- | --- |
 | Visão Geral/Hoje | Hero, cartões de ação e sinais têm hierarquia própria. | Distinguir ação principal de alerta auxiliar no pacote 7. |
 | Metas | Capacidade, plano, execução, metas ativas e fechamento seguem a nova ordem. | Refinar detalhes e verificar cenários densos no gate final. |
-| Desempenho | Faixa de KPIs, filtros, tabelas e estados vazios já modulados. | Consolidar resumos e amostras no pacote 4. |
+| Desempenho | Filtros com concurso explícito, resumo compacto por disciplina, tabela detalhada e estado de amostra com limiar real. | Verificar dados densos e acessibilidade no gate final. |
 | Inteligência da Prova | Saúde, incidência × domínio, divergência e importação estão em Desempenho; a configuração permanece em Metas. | Refinar leitura e verificar cenários densos no gate final. |
-| Instruções | Conteúdo e controle são modulares, com índice e busca. | Cards estáticos e seleção de capítulo no pacote 5. |
+| Instruções | Seis cards estáticos selecionam um capítulo; a busca alcança todo o conteúdo e o glossário. | Verificar mobile e teclado no gate final. |
 | Disciplinas/Questões | Cadastro e análises têm ações e tabelas próprias. | Reduzir ações concorrentes nos pacotes 6–7. |
 
 Cada tela migrada precisa ser revista no claro e no escuro, sem dados e com Demo densa, em desktop, tablet e 320–430 px. O inventário registra responsabilidades; não afirma que uma captura visual tenha sido feita neste pacote.

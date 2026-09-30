@@ -22,7 +22,7 @@ Confiança e ausência de dados não devem ser escondidas apenas para simplifica
 | Metas e planejamento | Proposta confirmável e capacidade disponível | Distribuição, plano até a prova e comparação entre períodos | Premissas, déficits, histórico e origem dos impactos |
 | Inteligência da Prova | Prova × Você e lacuna estratégica | Saúde da base, configuração × histórico e tópicos de maior impacto | Cobertura, confiança, questões classificadas e importação de evidências |
 | Fechamento Semanal | Resultado, diagnóstico e próxima ação | Foco estratégico e comparação com períodos anteriores | Tempos, lacunas medidas, amostra e limites da inferência |
-| Instruções | Comece por aqui e fluxo Prova × Você → ação | Seções do guia e exemplos | Glossário e dúvidas frequentes |
+| Instruções | Seis cards fixos e capítulo selecionado | Assuntos e exemplos do capítulo | Glossário e dúvidas frequentes no capítulo Dados e segurança |
 
 ## Regras para a implementação visual
 

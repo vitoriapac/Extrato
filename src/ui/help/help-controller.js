@@ -48,7 +48,7 @@ function highlightMatches(scope,query,document,window){
 export function createHelpController({document,window,activateTab}){
   const root=document.getElementById('helpCenter');
   if(!root)return {mount:()=>false};
-  let scheduleActive=()=>{};
+  let activeCategory='guide-start';
   const applySearch=()=>{
     const parents=new Set();
     for(const mark of root.querySelectorAll('[data-help-match]')){
@@ -66,7 +66,7 @@ export function createHelpController({document,window,activateTab}){
         topic.hidden=!visible;
         if(visible)groupMatches++;
       }
-      group.hidden=Boolean(query&&!groupMatches);
+      group.hidden=query?Boolean(!groupMatches):group.id!==activeCategory;
       matches+=query?groupMatches:0;
     }
     for(const section of root.querySelectorAll('.help-reference')){
@@ -77,11 +77,11 @@ export function createHelpController({document,window,activateTab}){
         item.hidden=!visible;
         if(visible)sectionMatches++;
       }
-      section.hidden=Boolean(query&&!sectionMatches);
+      section.hidden=query?Boolean(!sectionMatches):activeCategory!=='guide-safety';
       matches+=query?sectionMatches:0;
     }
     const principle=root.querySelector('[data-help-principle]');
-    principle.hidden=Boolean(query&&!normalize(principle.textContent).includes(query));
+    principle.hidden=query?Boolean(!normalize(principle.textContent).includes(query)):activeCategory!=='guide-workflows';
     if(query&&!principle.hidden)matches++;
     root.querySelector('#helpNoResults').hidden=!query||matches>0;
     root.querySelector('#helpSearchStatus').textContent=query?`${matches} ${matches===1?'assunto encontrado':'assuntos encontrados'}.`:'';
@@ -89,13 +89,14 @@ export function createHelpController({document,window,activateTab}){
     if(query){
       for(const section of root.querySelectorAll('[data-help-group]:not([hidden]),[data-help-principle]:not([hidden]),.help-reference:not([hidden])'))highlightMatches(section,query,document,window);
     }
-    scheduleActive();
   };
   const openCategory=id=>{
     const search=root.querySelector('#helpSearch');
     if(search.value){search.value='';applySearch()}
     const group=[...root.querySelectorAll('[data-help-group]')].find(item=>item.id===id);
     if(!group)return;
+    activeCategory=id;
+    applySearch();
     for(const button of root.querySelectorAll('[data-help-category]')){
       if(button.dataset.helpCategory===id)button.setAttribute('aria-current','location');
       else button.removeAttribute('aria-current');
@@ -120,44 +121,8 @@ export function createHelpController({document,window,activateTab}){
   };
   const mount=()=>{
     root.innerHTML=renderHelpCenter();
-    const categoryNav=root.querySelector('.help-category-nav');
-    const categoryButtons=[...categoryNav.querySelectorAll('[data-help-category]')];
-    const updateActive=()=>{
-      if(!root.closest('.panel')?.classList.contains('active'))return;
-      const groups=[...root.querySelectorAll('[data-help-group]:not([hidden])')];
-      if(!groups.length)return;
-      const threshold=(document.querySelector('.sticky-shell')?.getBoundingClientRect().bottom||0)+categoryNav.getBoundingClientRect().height+24;
-      let active=groups[0].id;
-      for(const group of groups){if(group.getBoundingClientRect().top<=threshold)active=group.id}
-      for(const button of categoryButtons){
-        if(button.dataset.helpCategory===active)button.setAttribute('aria-current','location');
-        else button.removeAttribute('aria-current');
-      }
-      const activeButton=categoryButtons.find(button=>button.dataset.helpCategory===active);
-      if(activeButton){
-        const navBox=categoryNav.getBoundingClientRect(),buttonBox=activeButton.getBoundingClientRect();
-        if(buttonBox.left<navBox.left||buttonBox.right>navBox.right){
-          const left=buttonBox.left-navBox.left-(navBox.width-buttonBox.width)/2;
-          const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-          categoryNav.scrollBy({left,behavior:reduceMotion?'auto':'smooth'});
-        }
-      }
-    };
-    let activeQueued=false;
-    scheduleActive=()=>{
-      if(activeQueued)return;
-      activeQueued=true;
-      window.requestAnimationFrame(()=>{activeQueued=false;updateActive()});
-    };
-    const syncHelpNavHeight=()=>{
-      const height=Math.ceil(categoryNav.getBoundingClientRect().height);
-      if(height)root.style.setProperty('--help-nav-height',`${height}px`);
-    };
-    syncHelpNavHeight();
-    if('ResizeObserver' in window)new window.ResizeObserver(syncHelpNavHeight).observe(categoryNav);
-    window.addEventListener('resize',syncHelpNavHeight,{passive:true});
-    window.addEventListener('resize',scheduleActive,{passive:true});
-    window.addEventListener('scroll',scheduleActive,{passive:true});
+    activeCategory=root.querySelector('[data-help-category]')?.dataset.helpCategory||'guide-start';
+    applySearch();
     root.addEventListener('input',event=>{if(event.target.id==='helpSearch')applySearch()});
     root.addEventListener('keydown',event=>{if(event.target.id==='helpSearch'&&event.key==='Escape'){event.target.value='';applySearch();event.preventDefault()}});
     root.addEventListener('click',event=>{
@@ -170,7 +135,6 @@ export function createHelpController({document,window,activateTab}){
       const action=event.target.closest('[data-help-action]');
       if(action)navigate(action.dataset.helpAction);
     });
-    scheduleActive();
     return true;
   };
   return {mount,applySearch,openCategory,navigate};

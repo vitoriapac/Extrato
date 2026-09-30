@@ -29,7 +29,7 @@ test('auditoria de dados densos e ajuda em 320–430 px, light e dark',async({pa
     await search.fill('impacto');
     await expect(page.locator('#helpSearchStatus')).toContainText('assuntos encontrados');
     await expect(search).toBeInViewport();
-    expect(await page.locator('.help-category-nav').evaluate(element=>getComputedStyle(element).position)).toBe('static');
+    await expect(page.locator('.help-card-grid .help-guide-card')).toHaveCount(6);
     await search.fill('palavra-sem-correspondencia-visual');
     await expect(page.locator('#helpNoResults')).toBeVisible();
     await page.locator('#helpSearchClear').click();
@@ -38,10 +38,10 @@ test('auditoria de dados densos e ajuda em 320–430 px, light e dark',async({pa
     const positions=await page.evaluate(()=>({
       group:document.getElementById('guide-data').getBoundingClientRect().top,
       shell:document.querySelector('.sticky-shell').getBoundingClientRect().bottom,
-      nav:document.querySelector('.help-category-nav').getBoundingClientRect().bottom
+      cards:document.querySelector('.help-card-grid').getBoundingClientRect().bottom
     }));
-    expect(positions.group).toBeGreaterThanOrEqual(positions.nav-2);
-    expect(positions.nav).toBeGreaterThanOrEqual(positions.shell-2);
+    expect(positions.group).toBeGreaterThanOrEqual(positions.shell-2);
+    expect(positions.group).toBeGreaterThanOrEqual(positions.cards-2);
     await expectNoPageOverflow(page);
   }
 });
