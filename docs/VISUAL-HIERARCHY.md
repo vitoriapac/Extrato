@@ -55,3 +55,5 @@ Confiança e ausência de dados não devem ser escondidas apenas para simplifica
 ## Auditoria de dados densos
 
 O cenário isolado em `tests/fixtures/visual-density.js` amplia a demonstração para 15 disciplinas, nomes longos, 350 sessões, questões adicionais e histórico BB/Caixa com provas completas e parciais. Ele não altera a demonstração apresentada ao usuário. A auditoria cobre Visão Geral, Disciplinas, Questões, Metas e Instruções nos quatro tamanhos mobile, em light e dark, além dos cabeçalhos em desktop. Os critérios incluem ausência de rolagem horizontal da página, funcionamento do menu Mais, busca, estado sem resultados e posição da categoria após navegar pelo índice.
+
+O [inventário da consolidação de produto](PRODUCT-CONSOLIDATION-VISUAL-AUDIT.md) estende o mapa a Desempenho, Hoje e Diagnóstico. Nesta rodada, a leitura do Diagnóstico distingue conclusão, evidência e metodologia; os KPIs de Desempenho formam uma faixa editorial em vez de uma pilha de cards.

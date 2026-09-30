@@ -4451,10 +4451,12 @@ function renderDiagnosisCenter(){
   const nextAction=buildNextBestAction({recommendations:currentStudyRecommendations,diagnosis:currentConsolidatedDiagnosis,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity()});
   const riskTopicIds=preparationSignals.rows.filter(item=>item.type==='consolidation').map(item=>item.topicId);
   const debt=buildReviewDebt({reviews:scoped.reviews.included,candidates,today:todayISO(),riskTopicIds});
-  container.innerHTML=analysisContextBanner('hoje')+renderNextBestAction(nextAction,{escapeHtml,escapeAttr})+renderRecoveryReviewDebt({recoveries:preparationSignals.rows.filter(item=>item.type==='recovery'),debt},{escapeHtml})+renderDiagnosisCenterView({model,studyActionForItem:item=>{
+  const diagnosisHtml=renderDiagnosisCenterView({model,studyActionForItem:item=>{
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
     return action?{...action,label:recommendationActionLabel(action)}:null;
   },escapeHtml,escapeAttr});
+  const secondaryHtml=renderRecoveryReviewDebt({recoveries:preparationSignals.rows.filter(item=>item.type==='recovery'),debt},{escapeHtml});
+  container.innerHTML=analysisContextBanner('hoje')+renderNextBestAction(nextAction,{escapeHtml,escapeAttr})+diagnosisHtml+`<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${debt.count} vencida(s)</summary>${secondaryHtml}</details>`;
   container.innerHTML+=`<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
 }
 document.getElementById('diagnosisCenter')?.addEventListener('click',event=>{

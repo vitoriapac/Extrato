@@ -136,6 +136,8 @@ Em **Desempenho**, escolha o período e consulte as visões de questões, simula
 
 Em **Hoje → Diagnóstico**, sinais do mesmo tópico ou disciplina aparecem em um diagnóstico principal, com as demais evidências como contexto. A **Próxima melhor ação** usa uma recomendação elegível do motor atual. Quando houver proposta de planejamento, **Pré-visualizar no plano** abre a distribuição para revisão. A prévia não salva o plano: confirme para gravá-lo. A capacidade semanal é respeitada e a recomendação pode iniciar uma sessão vinculada. O fechamento semanal registra execução e resultados posteriores disponíveis, sem atribuir causalidade à recomendação.
 
+Cada diagnóstico mostra a conclusão, o motivo principal e a qualidade da evidência. **Ver evidências** abre medidas e sinais auxiliares; **Ver metodologia** apresenta os limites e o período da leitura. O [inventário de densidade](docs/PRODUCT-CONSOLIDATION-VISUAL-AUDIT.md) registra a hierarquia das demais áreas.
+
 A linha do tempo estratégica agrupa eventos por semana, mês ou fase registrada e filtra decisões, desempenho, planejamento e avaliações. A trajetória de cada tópico usa retratos congelados; dados antigos não são recalculados com o estado atual. Consulte [Consolidação do ciclo estratégico](docs/STRATEGIC-CYCLE.md) para os critérios de leitura.
 
 As **metas de acerto por disciplina** podem herdar a meta global, ser personalizadas individualmente ou aplicadas às disciplinas selecionadas. São referências para questões pessoais, separadas de domínio e peso oficial. O Diagnóstico também mostra recuperação consistente quando há quatro semanas completas de melhora com volume suficiente e resume a dívida de revisão por relevância; esses indicadores não mudam o plano automaticamente.
