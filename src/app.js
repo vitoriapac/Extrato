@@ -28,6 +28,8 @@ import {buildPerformanceSimulations} from './application/performance/build-perfo
 import {renderPerformanceSimulations} from './ui/performance/performance-simulations-renderer.js';
 import {buildPerformanceSubjects} from './application/performance/build-performance-subjects.js';
 import {buildPerformanceSubjectComparison} from './application/performance/build-performance-subject-comparison.js';
+import {buildNextBestAction} from './application/diagnostics/build-next-best-action.js';
+import {renderNextBestAction} from './ui/renderers/next-best-action-renderer.js';
 import {renderPerformanceSubjects} from './ui/performance/performance-subjects-renderer.js';
 import {buildPerformanceTopicDetail} from './application/performance/build-performance-topic-detail.js';
 import {buildPerformanceConsistency} from './application/performance/build-performance-consistency.js';
@@ -4413,12 +4415,21 @@ function renderDiagnosisCenter(){
   currentConsolidatedDiagnosis=buildConsolidatedDiagnosis({candidates,subjects:examScopedSubjects(),eligibleTopics:scoped.content.eligibleTopics,preparationSignals,recommendations:currentStudyRecommendations,opportunityCosts,activeExamTags:state.examBlueprint.activeExamTags||[]});
   const result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{limit:Number.MAX_SAFE_INTEGER,hasTopics:candidates.length>0,weeklyCapacityMinutes});
   model.consolidated=currentConsolidatedDiagnosis;
-  container.innerHTML=renderDiagnosisCenterView({model,studyActionForItem:item=>{
+  const nextAction=buildNextBestAction({recommendations:currentStudyRecommendations,diagnosis:currentConsolidatedDiagnosis,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity()});
+  container.innerHTML=renderNextBestAction(nextAction,{escapeHtml,escapeAttr})+renderDiagnosisCenterView({model,studyActionForItem:item=>{
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
     return action?{...action,label:recommendationActionLabel(action)}:null;
   },escapeHtml,escapeAttr});
   container.innerHTML+=`<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
 }
+document.getElementById('diagnosisCenter')?.addEventListener('click',event=>{
+  const button=event.target.closest('[data-next-best-preview]');if(!button)return;
+  refreshStudyRecommendationItems();
+  const recommendation=currentStudyRecommendations.find(item=>(item.recommendationId||item.id)===button.dataset.nextBestPreview);
+  if(!recommendation){showToast('A recomendação mudou. Atualize o diagnóstico antes de pré-visualizar.');renderDiagnosisCenter();return}
+  calculateStudyPlanPreview();activateTab('metas');
+  requestAnimationFrame(()=>document.getElementById('examStudyPlan')?.scrollIntoView({block:'start'}));
+});
 function renderRecommendationImpact(model){
   if(!model.available)return '';
   const metrics=model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><strong>${metric.before} → ${metric.after}</strong><small class="${metric.delta>=0?'positive':'negative'}">${metric.delta>=0?'+':''}${metric.delta} ${metric.key==='risk'?'de melhora':'p.p.'}</small></div>`).join('');
