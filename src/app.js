@@ -1906,6 +1906,20 @@ document.getElementById('overviewNavSelect')?.addEventListener('change',event=>{
   window.history.replaceState(null,'',`#${target.id}`);
 });
 document.getElementById('overviewAttentionViewAll')?.addEventListener('click',()=>activateTab('hoje'));
+document.addEventListener('click',event=>{
+  const current=event.target.closest('.action-menu');
+  document.querySelectorAll('.action-menu[open]').forEach(menu=>{
+    if(menu!==current||event.target.closest('.action-menu__items button'))menu.open=false;
+  });
+});
+document.addEventListener('keydown',event=>{
+  if(event.key!=='Escape')return;
+  const menus=[...document.querySelectorAll('.action-menu[open]')];
+  if(!menus.length)return;
+  event.preventDefault();
+  menus.forEach(menu=>menu.open=false);
+  menus.at(-1)?.querySelector('summary')?.focus();
+});
 const syncStickyMetrics=()=>{
   document.documentElement.style.setProperty('--sticky-stack-height',`${Math.ceil(stickyShell?.getBoundingClientRect().height||0)}px`);
   document.documentElement.style.setProperty('--overview-nav-height',`${Math.ceil(overviewNav?.getBoundingClientRect().height||0)}px`);

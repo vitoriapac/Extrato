@@ -11,9 +11,9 @@ test.beforeEach(async({page})=>{
   await activateTab(page,'dashboard');
 });
 
-test('Visão Geral mostra KPIs, tópicos, configuração e ações nessa ordem',async({page})=>{
+test('Visão Geral coloca configuração antes da ação somente quando ela bloqueia o estudo',async({page})=>{
   const inOrder=await page.evaluate(()=>{
-    const ids=['kpiGrid','quickStats','guidedOnboarding','overviewNextAction'];
+    const ids=['kpiGrid','quickStats','overviewNextAction','guidedOnboarding'];
     const nodes=ids.map(id=>document.getElementById(id));
     return nodes.every(Boolean)&&nodes.every((node,index)=>index===0||nodes[index-1].compareDocumentPosition(node)&Node.DOCUMENT_POSITION_FOLLOWING);
   });
@@ -21,6 +21,10 @@ test('Visão Geral mostra KPIs, tópicos, configuração e ações nessa ordem',
   await expect(page.locator('#guidedOnboarding')).toBeVisible();
   await expect(page.locator('#guidedOnboarding')).toContainText('CONFIGURAÇÃO INICIAL');
   await expect(page.locator('#guidedOnboarding [role="progressbar"]')).toHaveAttribute('aria-valuemax','4');
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.subjects=[];api.setState(state);api.renderAll()});
+  const blockingOrder=await page.evaluate(()=>document.getElementById('guidedOnboarding').compareDocumentPosition(document.getElementById('overviewNextAction'))&Node.DOCUMENT_POSITION_FOLLOWING);
+  expect(blockingOrder).toBeTruthy();
+  await expect(page.locator('#guidedOnboarding')).toHaveClass(/onboarding-entry--blocking/);
 });
 
 test('primeiro uso preserva escolhas e chega à prévia do plano',async({page})=>{

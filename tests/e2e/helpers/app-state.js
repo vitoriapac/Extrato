@@ -7,8 +7,8 @@ export async function waitForAppReady(page){
 }
 
 export async function waitForImportReady(page){
-  await expect(page.getByTestId('open-exam-import')).toBeVisible();
-  await expect(page.getByTestId('open-exam-import')).toBeEnabled();
+  await expect(page.locator('.subjects-import-menu summary')).toBeVisible();
+  await expect(page.locator('.subjects-import-menu summary')).toBeEnabled();
 }
 
 export async function waitForStatePersisted(page,predicate=state=>Boolean(state?.updatedAt)){

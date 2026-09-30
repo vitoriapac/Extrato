@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {activateTab,openDemo} from './helpers.js';
+import {activateTab,openDemo,openExamImport} from './helpers.js';
 
 const viewports=[
   {name:'mobile-375',width:375,height:812},
@@ -55,7 +55,7 @@ test('regressão visual do assistente de edital inteligente',async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await page.goto('/');
   await activateTab(page,'disciplinas');
-  await page.getByRole('button',{name:/Carregar disciplinas do edital/i}).click();
+  await openExamImport(page);
   await page.getByRole('button',{name:'Continuar'}).click();
   await page.evaluate(()=>document.fonts.ready);
   await expect(page.locator('.exam-import-box')).toHaveScreenshot('edital-inteligente-desktop.png',screenshotOptions);

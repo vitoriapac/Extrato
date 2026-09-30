@@ -119,8 +119,8 @@ test('Desempenho → Diagnóstico → prévia → confirmação → execução �
   await activateTab(page,'desempenho');
   await page.locator('[data-performance-section="subjects"]').click();
   await expect(page.locator('.performance-subject-comparison')).toContainText('Matemática Financeira');
-  await page.locator('[data-performance-compare-subject="cycle-s0"]').click();
-  await page.locator('[data-analysis-nav="hoje"][data-subject-id="cycle-s0"]').click();
+  await page.locator('.performance-subject-comparison [data-performance-compare-subject="cycle-s0"]').first().click();
+  await page.locator('[data-analysis-nav="hoje"][data-subject-id="cycle-s0"]:not([data-topic-id])').click();
   await expect(page.locator('#panel-hoje')).toBeVisible();
   await expect(page.locator('#diagnosisCenter .next-best-action')).toBeVisible();
   await expect(page.locator('#diagnosisCenter .consolidated-diagnosis-row').first()).toBeVisible();

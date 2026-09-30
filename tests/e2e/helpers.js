@@ -10,6 +10,10 @@ export async function activateTab(page,name){
   await page.locator(`[data-tab="${name}"]`).evaluate(button=>button.click());
   await expect(page.locator(`#panel-${name}`)).toBeVisible();
 }
+export async function openExamImport(page){
+  await page.locator('.subjects-import-menu summary').click();
+  await page.getByTestId('open-exam-import').click();
+}
 export async function expectNoPageOverflow(page){
   const dimensions=await page.evaluate(()=>({viewport:innerWidth,page:document.documentElement.scrollWidth,tab:document.querySelector('.tab-btn.active')?.dataset.tab}));
   if(dimensions.page>dimensions.viewport){
