@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=806b81e6197e">
+<link rel="stylesheet" href="styles/app.css?v=994aaa1dde1c">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -546,19 +546,21 @@
 
   <!-- METAS -->
   <div class="panel" id="panel-metas" role="tabpanel" aria-labelledby="tab-metas">
-    <div class="section-head">
-      <div class="section-title">Metas</div>
-    </div>
-    <p class="helper-text">
-      Progresso = Atingido / Meta. As metas semanal e mensal contam tópicos concluídos; questões e simulados contam o que foi registrado na aba anterior, sempre na semana atual.
-    </p>
-    <div id="metasContainer"></div>
+    <header class="metas-page-header ui-section-header"><span class="module-heading__eyebrow">Planejamento</span><h2>Metas</h2><p>Planeje sua capacidade e acompanhe a execução da sua preparação.</p><nav aria-label="Atalhos de Metas"><a class="btn ghost small" href="#metasWeekSummary">Esta semana</a><a class="btn ghost small" href="#metasActiveGoals">Configurar metas</a></nav></header>
 
-    <section class="chart-card" id="planExecutionCard" aria-labelledby="planExecutionTitle">
-      <header class="module-heading"><h3 class="module-heading__title" id="planExecutionTitle">Plano e execução</h3><p class="module-heading__description">Veja o tempo distribuído nos planos diários, o estudo registrado e a capacidade semanal informada.</p></header>
+    <section class="chart-card card--default metas-capacity" id="metasCapacity" aria-labelledby="metasCapacityTitle"><header class="module-heading"><span class="module-heading__eyebrow">01 · Capacidade</span><h3 class="module-heading__title" id="metasCapacityTitle">Disponibilidade semanal</h3><p class="module-heading__description">Informe quanto tempo pode estudar em cada dia.</p></header><div id="weeklyHoursGoals"></div></section>
+
+    <section class="chart-card card--default metas-planning" id="metasPlanning" aria-labelledby="metasPlanningTitle"><header class="module-heading"><span class="module-heading__eyebrow">02 · Planejamento</span><h3 class="module-heading__title" id="metasPlanningTitle">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância e sua necessidade de estudo.</p></header><aside class="context-note context-note--info"><strong>Informação</strong><p>A proposta considera disponibilidade, carga pendente, impacto na prova, domínio e retenção. Nada é salvo ou colocado no calendário sem confirmação.</p></aside><div id="analysisPlanningContext"></div><div id="examStudyPlan"></div><div id="adaptivePlanningHistory"></div></section>
+
+    <section class="chart-card card--default metas-execution" id="planExecutionCard" aria-labelledby="planExecutionTitle">
+      <header class="module-heading"><span class="module-heading__eyebrow">03 · Execução</span><h3 class="module-heading__title" id="planExecutionTitle">Resumo da semana</h3><p class="module-heading__description">Capacidade, tempo planejado e estudo realizado no período atual.</p></header>
+      <div id="planExecutionResults"></div>
       <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver histórico de consistência →</button>
-      <details><summary>Ver execução do plano atual</summary><div id="planExecutionResults"></div></details>
     </section>
+
+    <section class="chart-card card--default metas-goals" id="metasActiveGoals" aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><span class="module-heading__eyebrow">04 · Resultados</span><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Acompanhe os resultados desejados e ajuste os valores quando necessário.</p></header><div id="metasContainer"></div></section>
+
+    <section class="chart-card card--insight metas-weekly-close" aria-labelledby="metasWeeklyCloseTitle"><header class="module-heading"><span class="module-heading__eyebrow">05 · Fechamento</span><h3 class="module-heading__title" id="metasWeeklyCloseTitle">Fechamento da semana</h3><p class="module-heading__description">Interprete a execução, registre as decisões e acompanhe o resultado nas próximas semanas.</p></header><div id="metasWeeklyCloseSummary"></div><button class="btn ghost small" type="button" data-delegated-click="navigateKpi('dashboard')">Ver fechamento semanal</button></section>
 
     <details class="chart-card result-goals-card"><summary>Comparação personalizada entre períodos</summary><p class="analytics-note">Para os períodos comuns, use Desempenho. Aqui você pode escolher datas específicas.</p>
       <div class="period-comparison-controls"><label>Período<select id="periodComparisonPreset" class="select-control"><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="month">Este mês</option><option value="custom">Escolher datas</option></select></label><label id="periodComparisonStartWrap" hidden>De<input id="periodComparisonStart" type="date"></label><label id="periodComparisonEndWrap" hidden>Até<input id="periodComparisonEnd" type="date"></label></div>
@@ -585,19 +587,6 @@
       <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><h4 id="examImportHeading">Adicionar evidências</h4><p class="analytics-note">Quer melhorar a precisão da análise? Adicione mais uma prova histórica.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">A prévia exige uma decisão para cada questão sem correspondência. Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></section>
     </div>
     <div class="chart-card"><header class="module-heading"><h3 class="module-heading__title">Matriz Edital × Domínio</h3><p class="module-heading__description">Cobertura, domínio, retenção e lacuna em relação à meta configurada.</p></header><div id="examMasteryMatrix"></div></div>
-
-    <div class="chart-card">
-      <header class="module-heading"><span class="module-heading__eyebrow">Planejamento</span><h3 class="module-heading__title">Plano semanal até a prova</h3><p class="module-heading__description">Distribua a capacidade disponível conforme a relevância e sua necessidade de estudo.</p></header>
-      <aside class="context-note context-note--info"><strong>Informação</strong><p>A proposta considera disponibilidade, carga pendente, impacto na prova, domínio e retenção. Nada é salvo ou colocado no calendário sem confirmação.</p></aside>
-      <div id="analysisPlanningContext"></div><div id="examStudyPlan"></div>
-      <div id="adaptivePlanningHistory"></div>
-    </div>
-
-    <div class="chart-card">
-      <h3>Disponibilidade semanal</h3>
-      <p class="analytics-note" style="margin:-4px 0 14px;">Informe apenas quanto tempo você pode estudar em cada dia. Essa capacidade alimenta recomendações, cronômetro, consistência e planejamento.</p>
-      <div id="weeklyHoursGoals"></div>
-    </div>
 
     <div class="chart-card">
       <h3>Estimativa de ritmo</h3>
@@ -793,7 +782,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=806b81e6197e"></script>
+  <script src="src/app.bundle.js?v=994aaa1dde1c"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
