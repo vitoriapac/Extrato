@@ -33,6 +33,8 @@ import {renderNextBestAction} from './ui/renderers/next-best-action-renderer.js'
 import {createAnalysisContext,analysisContextInScope} from './application/navigation/analysis-context.js';
 import {updateSubjectAccuracyTargets} from './application/goals/update-subject-accuracy-targets.js';
 import {renderSubjectTargetEditor as renderSubjectTargetEditorView} from './ui/renderers/subject-target-editor-renderer.js';
+import {buildReviewDebt} from './application/diagnostics/build-review-debt.js';
+import {renderRecoveryReviewDebt} from './ui/renderers/recovery-review-debt-renderer.js';
 import {renderPerformanceSubjects} from './ui/performance/performance-subjects-renderer.js';
 import {buildPerformanceTopicDetail} from './application/performance/build-performance-topic-detail.js';
 import {buildPerformanceConsistency} from './application/performance/build-performance-consistency.js';
@@ -4447,7 +4449,9 @@ function renderDiagnosisCenter(){
   const result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{limit:Number.MAX_SAFE_INTEGER,hasTopics:candidates.length>0,weeklyCapacityMinutes});
   model.consolidated=currentConsolidatedDiagnosis;
   const nextAction=buildNextBestAction({recommendations:currentStudyRecommendations,diagnosis:currentConsolidatedDiagnosis,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity()});
-  container.innerHTML=analysisContextBanner('hoje')+renderNextBestAction(nextAction,{escapeHtml,escapeAttr})+renderDiagnosisCenterView({model,studyActionForItem:item=>{
+  const riskTopicIds=preparationSignals.rows.filter(item=>item.type==='consolidation').map(item=>item.topicId);
+  const debt=buildReviewDebt({reviews:scoped.reviews.included,candidates,today:todayISO(),riskTopicIds});
+  container.innerHTML=analysisContextBanner('hoje')+renderNextBestAction(nextAction,{escapeHtml,escapeAttr})+renderRecoveryReviewDebt({recoveries:preparationSignals.rows.filter(item=>item.type==='recovery'),debt},{escapeHtml})+renderDiagnosisCenterView({model,studyActionForItem:item=>{
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
     return action?{...action,label:recommendationActionLabel(action)}:null;
   },escapeHtml,escapeAttr});

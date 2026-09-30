@@ -8,7 +8,7 @@ export const DIAGNOSTIC_VOCABULARY=Object.freeze({
 export const DIAGNOSTIC_SIGNAL_LABELS=Object.freeze({
   'consolidation-risk':'Consolidação em risco','critical-gap':'Lacuna prioritária',plateau:'Possível platô',
   'priority-review':'Revisão prioritária','critical-coverage':'Cobertura insuficiente','high-priority':'Prioridade alta',
-  'collect-evidence':'Coletar mais evidências',maintenance:'Manutenção','high-incidence':'Alta incidência',
+  'collect-evidence':'Coletar mais evidências',recovery:'Recuperação consistente',maintenance:'Manutenção','high-incidence':'Alta incidência',
   'recommendation-available':'Recomendação disponível','redistribution-source':'Redistribuição proposta','redistribution-target':'Redistribuição proposta'
 });
 export const diagnosticSignalLabel=kind=>DIAGNOSTIC_SIGNAL_LABELS[kind]||'Sinal complementar';

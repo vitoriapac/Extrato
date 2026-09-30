@@ -48,7 +48,7 @@ export function buildConsolidatedSignals(input={}){
     const primary=selectPrimarySignal(signals),supporting=signals.filter(signal=>signal!==primary&&signal.active);
     const priority=(input.priorities||[]).find(item=>identity(item)===key);
     const evidence=primary?.evidence||{strength:null,completeness:null,level:'unassessed',label:'Não avaliada',assessed:false,observationIds:[],sources:[]};
-    const state=primary?.kind==='maintenance'?'controlled':primary?.kind==='collect-evidence'?'insufficient':primary?'attention':'unassessed';
+    const state=primary?.kind==='maintenance'?'controlled':primary?.kind==='recovery'?'progress':primary?.kind==='collect-evidence'?'insufficient':primary?'attention':'unassessed';
     rows.push({entityKey:key,subjectId:entity.subjectId,topicId:entity.topicId||null,granularity:entity.granularity||(entity.topicId?'topic':'subject'),
       name:entity.topicName||entity.name||entity.subjectName||null,subjectName:entity.subjectName||null,activeExamTags:[...active],state,
       severity:primary?.severity||'insufficient',severityLabel:diagnosticLabel('severity',primary?.severity||'insufficient'),

@@ -31,6 +31,7 @@ export function adaptDiagnosticSignals(input={}){
   for(const item of rows(input.preparationSignals)){
     if(item.type==='consolidation')add(item,'preparation-signals','consolidation-risk',{severity:'important',evidence:{strength:signalNumber(item.confidence),completeness:null,observationIds:item.observationIds,sources:['questions','retention','mastery']},metrics:{mastery:item.mastery,retention:item.retention,accuracy:item.accuracy,target:item.target,questionCount:item.questionCount}});
     if(item.type==='plateau')add(item,'preparation-signals','plateau',{severity:'important',evidence:{strength:null,completeness:null,observationIds:item.observationIds,sources:['questions','sessions']},metrics:{questionCount:item.questionCount,minutes:item.minutes,target:item.target}});
+    if(item.type==='recovery')add(item,'preparation-signals','recovery',{severity:'monitor',evidence:{strength:signalNumber(item.confidence),completeness:null,observationIds:item.observationIds,sources:['questions']},metrics:{questionCount:item.questionCount,accuracy:item.weeks?.at(-1)?.accuracy,target:item.target}});
   }
   for(const item of priorities){
     const confidence=strength(item),classification=classifyTopicPriority(captureTopicPriorityProfile(item));

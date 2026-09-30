@@ -2,7 +2,7 @@ import {diagnosticLabel,normalizeEvidenceLevel,normalizeSeverity} from './diagno
 import {parseLocalDate} from '../../core/date-utils.js';
 
 export const SIGNAL_CONTRACT_VERSION=1;
-export const SIGNAL_KINDS=Object.freeze(['consolidation-risk','critical-gap','plateau','priority-review','critical-coverage','collect-evidence','high-priority','high-incidence','recommendation-available','redistribution-source','redistribution-target','maintenance']);
+export const SIGNAL_KINDS=Object.freeze(['consolidation-risk','critical-gap','plateau','priority-review','critical-coverage','collect-evidence','high-priority','high-incidence','recommendation-available','redistribution-source','redistribution-target','recovery','maintenance']);
 const text=value=>typeof value==='string'&&value.trim()?value.trim():null;
 const list=value=>Array.isArray(value)?value:[];
 const ordered=value=>[...new Set(list(value).map(text).filter(Boolean))];
