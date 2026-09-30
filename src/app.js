@@ -19,6 +19,8 @@ import {buildCalibratedScoreProjection} from './domain/forecasts/calibrated-scor
 import {renderScoreProjectionEvidence} from './ui/renderers/score-projection-renderer.js';
 import {renderWeeklyDecisionCycle} from './ui/renderers/weekly-decision-cycle-renderer.js';
 import {buildPerformanceAnalysis,performancePeriodRecords} from './application/questions/build-performance-analysis.js';
+import {createPerformanceViewState,resolvePerformanceRange,updatePerformanceViewState} from './application/performance/performance-view-state.js';
+import {renderPerformancePage} from './ui/performance/performance-page.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
@@ -1810,6 +1812,7 @@ function performGlobalSearch(query){
 }
 const SEARCH_COMMANDS=[
   {label:'Visão Geral',keywords:'inicio dashboard resumo prontidao',tab:'dashboard'},
+  {label:'Abrir Desempenho',keywords:'evolucao historico tendencias comparacao progresso',tab:'desempenho'},
   {label:'Ir para Hoje',keywords:'hoje tarefa recomendacao estudo',tab:'hoje'},
   {label:'Iniciar recomendação prioritária',keywords:'começar iniciar próxima ação estudar recomendação prioritária',action:'recommendation'},
   {label:'Abrir cronômetro',keywords:'iniciar sessao timer estudar foco',action:'timer'},
@@ -5092,7 +5095,27 @@ function resolveDelegatedSpecial(normalized,event,element){
 }
 createDelegatedEventsController({document,handlers:DELEGATED_ACTION_HANDLERS,parseArgument:delegatedArgument,resolveSpecial:resolveDelegatedSpecial,onError:error=>{console.error('Evento delegado bloqueado',error);showToast('Uma ação inválida foi bloqueada por segurança.')}}).register();
 /* ===== MASTER RENDER ===== */
+let performanceViewState=createPerformanceViewState();
+function renderPerformance(){
+  const target=document.getElementById('performancePage');
+  if(!target)return;
+  const range=resolvePerformanceRange({today:todayISO(),...performanceViewState});
+  target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
+}
+document.getElementById('performancePage')?.addEventListener('click',event=>{
+  const section=event.target.closest('[data-performance-section]');
+  if(section){performanceViewState=updatePerformanceViewState(performanceViewState,{section:section.dataset.performanceSection});render('desempenho');return}
+  const open=event.target.closest('[data-performance-open]');
+  if(open)activateTab(open.dataset.performanceOpen);
+});
+document.getElementById('performancePage')?.addEventListener('change',event=>{
+  if(event.target.matches('[data-performance-period]'))performanceViewState=updatePerformanceViewState(performanceViewState,{period:event.target.value});
+  else if(event.target.matches('[data-performance-compare]'))performanceViewState=updatePerformanceViewState(performanceViewState,{comparePrevious:event.target.checked});
+  else return;
+  render('desempenho');
+});
 const RENDER_SCOPE_SECTIONS={
+  desempenho:new Set(['desempenho']),
   dashboard:new Set(['primeiro uso','ação e atenção','dashboard de aprovação','controles do cronômetro','evolução do progresso','heatmap','conquistas','radar','visão geral','horas estudadas','histórico de sessões']),
   disciplinas:new Set(['disciplinas','primeiro uso']),
   calendario:new Set(['indicadores do calendário','tarefas de hoje','tarefas atrasadas','filtros do calendário','calendário','calendário mensal']),
@@ -5106,6 +5129,7 @@ let applicationRenderer;
 const errorBoundary=createErrorBoundaryController({document,onRetry:()=>render('active')});
 applicationRenderer=createApplicationRenderer({
   sections:[
+    ['desempenho',renderPerformance],
     ['indicadores',renderKPIs],
     ['primeiro uso',renderGuidedOnboarding],
     ['ação e atenção',renderOverviewDecisionArea],

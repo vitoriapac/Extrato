@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=96e3fe45b7af">
+<link rel="stylesheet" href="styles/app.css?v=264ba57e009b">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -95,6 +95,7 @@
     <div class="primary-nav-shell">
       <div class="tabs" role="tablist" aria-label="Seções do extrato">
         <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard">Visão geral</button>
+        <button class="tab-btn tab-secondary" id="tab-desempenho" role="tab" aria-selected="false" aria-controls="panel-desempenho" data-tab="desempenho">Desempenho</button>
         <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje">🎯 Hoje</button>
         <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas">Disciplinas</button>
         <button class="tab-btn" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario">Calendário</button>
@@ -105,6 +106,7 @@
       </div>
       <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu">Mais</button>
       <div class="mobile-more-menu" id="mobileMoreMenu" role="menu" hidden>
+        <button type="button" role="menuitem" data-more-tab="desempenho">Desempenho</button>
         <button type="button" role="menuitem" data-more-tab="agenda">Agenda de Revisões</button>
         <button type="button" role="menuitem" data-more-tab="questoes">Questões e Simulados</button>
         <button type="button" role="menuitem" data-more-tab="metas">Metas</button>
@@ -289,6 +291,8 @@
       <div id="upcomingFooter"></div>
     </div>
   </div>
+
+  <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho"><div id="performancePage"></div></div>
 
   <!-- HOJE -->
   <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
@@ -819,7 +823,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=96e3fe45b7af"></script>
+  <script src="src/app.bundle.js?v=264ba57e009b"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
