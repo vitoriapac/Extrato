@@ -1911,6 +1911,10 @@ body.timer-focus-active .timer-context{display:none!important}
 .performance-week-bar{display:block;height:5px;min-width:0;max-width:100%;margin-bottom:4px}.performance-week-bar.planned{background:var(--paper-line)}.performance-week-bar.actual{background:var(--navy)}
 .performance-changes{list-style:none;margin:0;padding:0}.performance-changes li{display:flex;justify-content:space-between;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--paper-line)}
 .performance-topic-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4)}
+.performance-subject-name{margin:0;font-size:clamp(19px,2vw,27px)}
+.performance-topic-list li{align-items:baseline}.performance-topic-list li span{text-align:right;font-size:12px}
+.performance-more{margin-top:var(--space-3)}.performance-more summary{cursor:pointer;color:var(--navy);font-weight:600}
+@media(max-width:600px){.performance-topic-list li span{text-align:left}}
 @media(max-width:700px){.performance-topic-groups{grid-template-columns:1fr}.performance-changes li{flex-wrap:wrap}}
 @media(max-width:900px){.performance-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.performance-kpis{grid-template-columns:1fr}.performance-table-scroll{overflow-x:auto}.performance-table-scroll table{min-width:480px}}

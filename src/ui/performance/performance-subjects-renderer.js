@@ -1,0 +1,16 @@
+import {renderQuestionEvolution} from '../renderers/question-evolution-renderer.js';
+
+const value=(number,suffix='')=>number==null?'—':`${number}${suffix}`;
+const signed=number=>number==null?'Sem comparação':`${number>0?'+':''}${number} p.p.`;
+const topicRows=(items,escapeHtml)=>items.map(row=>`<li><strong>${escapeHtml(row.name)}</strong><span>${value(row.accuracy,'%')} · ${row.questions} questões · ${row.delta==null?'tendência indisponível':signed(row.delta)} · ${escapeHtml(row.state)}</span></li>`).join('');
+
+export function renderPerformanceSubjects(model,{selectedId,range,formatDate,escapeHtml,escapeAttr}={}){
+  if(model.state==='empty')return '<div class="empty-state empty-state--compact" role="status"><strong>Nenhuma disciplina no concurso ativo</strong><p>Cadastre ou selecione disciplinas e tópicos para acompanhar a evolução.</p></div>';
+  const options=model.subjects.map(subject=>`<option value="${escapeAttr(subject.id)}" ${subject.id===model.subject.id?'selected':''}>${escapeHtml(subject.name)}</option>`).join('');
+  const selection=`<div class="performance-toolbar"><label>Disciplina <select class="select-control" data-performance-subject aria-label="Disciplina analisada">${options}</select></label></div>`;
+  const kpis=`<section class="performance-kpis" aria-label="Indicadores da disciplina"><article class="performance-kpi"><span>Precisão pessoal</span><strong>${value(model.accuracy,'%')}</strong><small>${model.activity.questions} questões · meta ${model.goal.target}%</small></article><article class="performance-kpi"><span>Domínio médio</span><strong>${value(model.mastery,'/100')}</strong><small>Média dos ${model.evidence} tópicos com evidência</small></article><article class="performance-kpi"><span>Retenção média</span><strong>${value(model.retention,'/100')}</strong><small>Estado atual; não é série histórica</small></article><article class="performance-kpi"><span>Tendência de precisão</span><strong>${signed(model.trend)}</strong><small>${range.comparePrevious?'Exige 10 questões em cada período':'Comparação desativada'}</small></article></section>`;
+  const activity=`<section class="performance-block"><h3>Atividade no período</h3><p>${model.activity.minutes} min estudados · ${model.activity.questions} questões resolvidas · ${model.activity.reviews} revisões concluídas.</p><p class="analytics-note">A precisão vem de questões pessoais; simulados detalhados são avaliados separadamente. Meta de precisão: ${model.goal.target}%.</p></section>`;
+  const first=model.topics.slice(0,5),remaining=model.topics.slice(5);
+  const topics=`<section class="performance-block"><h3>Tópicos</h3>${first.length?`<ul class="performance-changes performance-topic-list">${topicRows(first,escapeHtml)}</ul>${remaining.length?`<details class="performance-more"><summary>Mostrar mais · +${remaining.length}</summary><ul class="performance-changes performance-topic-list">${topicRows(remaining,escapeHtml)}</ul></details>`:''}`:'<p class="empty-state empty-state--compact">Nenhum tópico elegível nesta disciplina.</p>'}</section>`;
+  return `${selection}<h3 class="performance-subject-name">${escapeHtml(model.subject.name)}</h3>${kpis}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution,{formatDate})}</section>${activity}${topics}`;
+}

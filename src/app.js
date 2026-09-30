@@ -26,6 +26,8 @@ import {renderPerformanceOverview} from './ui/performance/performance-overview-r
 import {renderPerformanceQuestions} from './ui/performance/performance-questions-renderer.js';
 import {buildPerformanceSimulations} from './application/performance/build-performance-simulations.js';
 import {renderPerformanceSimulations} from './ui/performance/performance-simulations-renderer.js';
+import {buildPerformanceSubjects} from './application/performance/build-performance-subjects.js';
+import {renderPerformanceSubjects} from './ui/performance/performance-subjects-renderer.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
@@ -5127,6 +5129,21 @@ function renderPerformance(){
     const simulations=examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))}));
     const model=buildPerformanceSimulations({simulations,subjects:examScopedSubjects(),projectionSnapshots:state.projectionSnapshots,activeExamTags,range,today:todayISO()});
     sectionHtml=renderPerformanceSimulations(model,{range,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:null,formatDate:formatDatePt,escapeHtml});
+  }else if(performanceViewState.section==='subjects'){
+    const scope=examEvidenceContext(),eligibleTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id));
+    const subjects=examScopedSubjects().map(subject=>({...subject,topics:(subject.topics||[]).filter(topic=>eligibleTopicIds.has(topic.id))}));
+    const selected=subjects.find(item=>item.id===performanceViewState.subjectId)||subjects[0];
+    const metricsByTopic=Object.fromEntries((selected?.topics||[]).map(item=>{
+      const mastery=topicMasteryIndex(selected.id,item.id),retention=topicRetentionScore(selected.id,item.id);
+      return [item.id,{mastery:mastery?.confidence>0?mastery.score:null,retention:retention?.available?retention.score:null,evidence:mastery?.confidence||0}];
+    }));
+    const model=buildPerformanceSubjects({subjects,subjectId:selected?.id,range,today:todayISO(),period:performanceViewState.period,
+      questions:scope.questions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),
+      sessions:scope.sessions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),
+      reviews:scope.reviews.included.map(item=>({...item,subjectId:entitySubjectId(item),completedDate:localDateFromTimestamp(item.completedAt)})),
+      simulations:examScopedSimulations().map(item=>({...item,breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),
+      blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,metricsByTopic});
+    sectionHtml=renderPerformanceSubjects(model,{range,formatDate:formatDatePt,escapeHtml,escapeAttr});
   }
   target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
 }
@@ -5145,6 +5162,7 @@ document.getElementById('performancePage')?.addEventListener('click',event=>{
 document.getElementById('performancePage')?.addEventListener('change',event=>{
   if(event.target.matches('[data-performance-period]'))performanceViewState=updatePerformanceViewState(performanceViewState,{period:event.target.value});
   else if(event.target.matches('[data-performance-compare]'))performanceViewState=updatePerformanceViewState(performanceViewState,{comparePrevious:event.target.checked});
+  else if(event.target.matches('[data-performance-subject]'))performanceViewState=updatePerformanceViewState(performanceViewState,{subjectId:event.target.value});
   else return;
   render('desempenho');
 });
