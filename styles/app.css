@@ -1858,6 +1858,7 @@ body.timer-focus-active .timer-context{display:none!important}
 .close-comparison dd{margin:0;overflow-wrap:anywhere}
 .close-comparison dd small{display:block;color:var(--text-secondary);margin-top:4px}
 .strategic-timeline{list-style:none;padding:0;margin:0}
+.strategic-timeline-controls{display:flex;gap:var(--space-3);flex-wrap:wrap}.strategic-timeline-group{margin-top:var(--space-4)}.strategic-timeline-group h4{margin:0;padding-bottom:var(--space-2);border-bottom:2px solid var(--paper-line)}.strategic-timeline-category{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text-secondary)}.priority-history-path{display:block;overflow-wrap:anywhere;font-size:11px}
 .strategic-timeline>li{display:grid;grid-template-columns:100px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid var(--border-subtle)}
 .strategic-timeline p{margin:8px 0;overflow-wrap:anywhere}
 .strategic-timeline time,.strategic-timeline small{color:var(--text-secondary)}
