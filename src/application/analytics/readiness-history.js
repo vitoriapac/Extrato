@@ -7,10 +7,10 @@ const clamp=value=>Math.max(0,Math.min(100,Math.round(value)));
 const factor=(raw,confidence,available=true)=>({available,score:available?clamp(50+(raw-50)*confidence):50,confidence:available?Math.min(1,confidence):0});
 const scopeKey=tags=>JSON.stringify(normalizeExamTags(tags));
 
-export function createReadinessSnapshot({id,date,activeExamTags=[],metrics,savedAt,captureKind='weekly-close',eventKey=null,reason=null}={}){
+export function createReadinessSnapshot({id,date,activeExamTags=[],metrics,savedAt,captureKind='weekly-close',eventKey=null,reason=null,examPhase=null}={}){
   const result=calculateReadinessScore(metrics,READINESS_WEIGHTS);
   if(!date||result.value==null)return null;
-  return {id,date,savedAt:savedAt||`${date}T23:59:59.000Z`,activeExamTags:normalizeExamTags(activeExamTags),score:result.value,confidence:result.confidence,confidenceLabel:result.confidenceLabel,factors:{...result.factors},weights:{...READINESS_WEIGHTS},algorithmVersion:result.algorithmVersion,version:READINESS_SNAPSHOT_VERSION,captureKind,eventKey,reason:reason||(captureKind==='weekly-close'?'Fechamento semanal':'Antes de alteração estratégica')};
+  return {id,date,savedAt:savedAt||`${date}T23:59:59.000Z`,activeExamTags:normalizeExamTags(activeExamTags),examPhase:examPhase?.state&&examPhase.state!=='undated'?{state:examPhase.state,label:examPhase.label}:null,score:result.value,confidence:result.confidence,confidenceLabel:result.confidenceLabel,factors:{...result.factors},weights:{...READINESS_WEIGHTS},algorithmVersion:result.algorithmVersion,version:READINESS_SNAPSHOT_VERSION,captureKind,eventKey,reason:reason||(captureKind==='weekly-close'?'Fechamento semanal':'Antes de alteração estratégica')};
 }
 
 export function upsertReadinessSnapshot(list,snapshot){

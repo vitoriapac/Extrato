@@ -9,7 +9,7 @@ export function renderPerformanceSection(pageModel,{range,today,activeExamTags,f
     case 'overview':return renderPerformanceOverview(pageModel.model,{range,today,activeExamTags,formatDate,escapeHtml,comparisonModel:pageModel.comparisonModel,readinessChange:pageModel.readinessChange});
     case 'questions':return renderPerformanceQuestions({...pageModel,range,formatDate,escapeHtml});
     case 'simulations':return renderPerformanceSimulations(pageModel.model,{range,targetScore,formatDate,escapeHtml});
-    case 'subjects':return renderPerformanceSubjects(pageModel.model,{range,formatDate,escapeHtml,escapeAttr,topicDetail:pageModel.detail,comparison:pageModel.comparison});
+    case 'subjects':return renderPerformanceSubjects(pageModel.model,{range,formatDate,escapeHtml,escapeAttr,topicDetail:pageModel.detail,comparison:pageModel.comparison,stabilityMap:pageModel.stabilityMap});
     case 'consistency':return renderPerformanceConsistency(pageModel.model,{range,formatDate,escapeHtml});
     default:return '';
   }

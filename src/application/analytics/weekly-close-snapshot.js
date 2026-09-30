@@ -1,8 +1,8 @@
 import {strategicScopeKey} from './build-strategic-timeline.js';
 export const WEEKLY_CLOSE_SNAPSHOT_VERSION=2;
-export function createWeeklyCloseSnapshot(model,{savedAt,id}={}){
+export function createWeeklyCloseSnapshot(model,{savedAt,id,examPhase=null}={}){
   if(!model?.period||model.weeklyClose?.state==='insufficient')return null;
-  return {id,period:{...model.period},activeExamTags:Array.isArray(model.activeExamTags)?[...model.activeExamTags]:null,savedAt,version:WEEKLY_CLOSE_SNAPSHOT_VERSION,algorithmVersion:model.weeklyClose.algorithmVersion,weeklyClose:structuredClone(model.weeklyClose),gapMap:structuredClone(model.gapMap),decisionHistory:structuredClone(model.decisionHistory),comparisonMetrics:structuredClone(model.comparisonMetrics||null),topicPriorities:structuredClone(model.topicPriorities||[])};
+  return {id,period:{...model.period},activeExamTags:Array.isArray(model.activeExamTags)?[...model.activeExamTags]:null,savedAt,examPhase:examPhase?.state&&examPhase.state!=='undated'?{state:examPhase.state,label:examPhase.label}:null,version:WEEKLY_CLOSE_SNAPSHOT_VERSION,algorithmVersion:model.weeklyClose.algorithmVersion,weeklyClose:structuredClone(model.weeklyClose),gapMap:structuredClone(model.gapMap),decisionHistory:structuredClone(model.decisionHistory),comparisonMetrics:structuredClone(model.comparisonMetrics||null),topicPriorities:structuredClone(model.topicPriorities||[])};
 }
 const content=snapshot=>JSON.stringify([snapshot.period,strategicScopeKey(snapshot.activeExamTags),snapshot.weeklyClose,snapshot.gapMap,snapshot.decisionHistory,snapshot.comparisonMetrics??null,snapshot.topicPriorities??[],snapshot.priorityDecisions??null,Boolean(snapshot.appliedAt)]);
 // Existing callers keep this name; changed content now appends a version.

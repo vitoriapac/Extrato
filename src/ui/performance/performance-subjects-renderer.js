@@ -2,12 +2,13 @@ import {renderQuestionEvolution} from '../renderers/question-evolution-renderer.
 import {renderPerformanceTopicDialog} from './performance-topic-renderer.js';
 import {renderPerformanceStory,renderPerformanceDetails} from './performance-story.js';
 import {renderPerformanceSubjectComparison} from './performance-subject-comparison-renderer.js';
+import {renderStabilityMap} from './stability-map-renderer.js';
 
 const value=(number,suffix='')=>number==null?'—':`${number}${suffix}`;
 const signed=number=>number==null?'Sem comparação':`${number>0?'+':''}${number} p.p.`;
 const topicRows=(items,escapeHtml,escapeAttr)=>items.map(row=>`<li><button type="button" class="performance-topic-link" data-performance-topic="${escapeAttr(row.id)}">${escapeHtml(row.name)}</button><span>${value(row.accuracy,'%')} · ${row.questions} questões · ${row.delta==null?'tendência indisponível':signed(row.delta)} · ${escapeHtml(row.state)}</span></li>`).join('');
 
-export function renderPerformanceSubjects(model,{range,formatDate,escapeHtml,escapeAttr,topicDetail=null,comparison=null}={}){
+export function renderPerformanceSubjects(model,{range,formatDate,escapeHtml,escapeAttr,topicDetail=null,comparison=null,stabilityMap=null}={}){
   if(model.state==='empty')return '<div class="empty-state empty-state--compact" role="status"><strong>Nenhuma disciplina no concurso ativo</strong><p>Cadastre ou selecione disciplinas e tópicos para acompanhar a evolução.</p></div>';
   const options=model.subjects.map(subject=>`<option value="${escapeAttr(subject.id)}" ${subject.id===model.subject.id?'selected':''}>${escapeHtml(subject.name)}</option>`).join('');
   const selection=`<div class="performance-toolbar"><label>Disciplina <select class="select-control" data-performance-subject aria-label="Disciplina analisada">${options}</select></label><button type="button" class="btn ghost small" data-analysis-nav="hoje" data-subject-id="${escapeAttr(model.subject.id)}">Ver diagnóstico</button></div>`;
@@ -16,5 +17,5 @@ export function renderPerformanceSubjects(model,{range,formatDate,escapeHtml,esc
   const first=model.topics.slice(0,5),remaining=model.topics.slice(5);
   const topics=`<section class="performance-block"><h3>Tópicos</h3>${first.length?`<ul class="performance-changes performance-topic-list">${topicRows(first,escapeHtml,escapeAttr)}</ul>${remaining.length?`<details class="performance-more"><summary>Mostrar mais · +${remaining.length}</summary><ul class="performance-changes performance-topic-list">${topicRows(remaining,escapeHtml,escapeAttr)}</ul></details>`:''}`:'<p class="empty-state empty-state--compact">Nenhum tópico elegível nesta disciplina.</p>'}</section>`;
   const summary=model.activity.questions<10?`Amostra insuficiente: ${model.activity.questions} questões no período.`:`Precisão de ${value(model.accuracy,'%')} frente à meta de ${model.goal.target}%.`;
-  return `${comparison?renderPerformanceSubjectComparison(comparison,{escapeHtml,escapeAttr}):''}${selection}${renderPerformanceStory({title:model.subject.name,summary,details:[model.trend==null?'Tendência sem base comparável.':`Tendência: ${signed(model.trend)}.`]},escapeHtml)}${kpis}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution,{formatDate})}</section>${renderPerformanceDetails('Atividade e tópicos',activity+topics)}${renderPerformanceTopicDialog(topicDetail,{formatDate,escapeHtml})}`;
+  return `${stabilityMap?renderStabilityMap(stabilityMap,{escapeHtml,escapeAttr}):''}${comparison?renderPerformanceSubjectComparison(comparison,{escapeHtml,escapeAttr}):''}${selection}${renderPerformanceStory({title:model.subject.name,summary,details:[model.trend==null?'Tendência sem base comparável.':`Tendência: ${signed(model.trend)}.`]},escapeHtml)}${kpis}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution,{formatDate})}</section>${renderPerformanceDetails('Atividade e tópicos',activity+topics)}${renderPerformanceTopicDialog(topicDetail,{formatDate,escapeHtml})}`;
 }

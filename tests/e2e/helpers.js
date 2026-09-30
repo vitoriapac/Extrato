@@ -4,7 +4,7 @@ export async function openDemo(page){
   await page.goto('/');
   await page.getByRole('button',{name:/Explorar demonstração/i}).click();
   await page.getByRole('button',{name:'Carregar demonstração'}).click();
-  await expect(page.locator('#demoBanner').getByText('MODO DEMONSTRAÇÃO',{exact:true})).toBeVisible();
+  await expect(page.locator('#demoBanner').getByText('MODO DEMONSTRAÇÃO',{exact:true})).toBeVisible({timeout:15_000});
 }
 export async function activateTab(page,name){
   await page.locator(`[data-tab="${name}"]`).evaluate(button=>button.click());

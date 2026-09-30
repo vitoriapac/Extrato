@@ -6,6 +6,7 @@ import {buildGapMap} from '../../domain/analytics/gap-map.js';
 import {buildDecisionHistory} from '../../domain/recommendations/decision-history.js';
 import {createWeeklyCloseSnapshot} from '../../application/analytics/weekly-close-snapshot.js';
 import {EXAM_TAGS} from '../../domain/exams/exam-constants.js';
+import {resolveExamPhase} from '../../domain/planning/adaptive-planning.js';
 
 const stamp=date=>`${date}T12:00:00.000Z`;
 const inRange=(item,start,end)=>item.date>=start&&item.date<=end;
@@ -46,7 +47,7 @@ function candidatesAt(end,{subjects,questions}){
   }));
 }
 
-export function buildDemoWeeklyCloses(scenario,{today,subjects,sessions,questions,dailyPlans,recommendations}){
+export function buildDemoWeeklyCloses(scenario,{today,examDate,subjects,sessions,questions,dailyPlans,recommendations}){
   const weeks=scenario.targets.weeklyCloses,bySubject=new Map(subjects.map(item=>[item.id,item.name])),byTopic=new Map(subjects.flatMap(subject=>subject.topics.map(topic=>[topic.id,topic.name])));
   const snapshots=[];
   for(let index=0;index<weeks;index++){
@@ -59,7 +60,8 @@ export function buildDemoWeeklyCloses(scenario,{today,subjects,sessions,question
     const weeklyClose=buildWeeklyClose({period:{start,end},current:{plannedMinutes:sum(plans,'plannedMinutes'),executedMinutes:Math.round(sum(currentSessions,'durationSeconds')/60)},previous:{executedMinutes:Math.round(sum(previousSessions,'durationSeconds')/60),resolved:previousResolved,...previousResolved?{accuracy:Math.round(sum(previousQuestions,'correct')/previousResolved*100)}:{}},plans,sessions:currentSessions,questions:currentQuestions,recommendations:feedback,targetAccuracy:scenario.goals.targetScorePct});
     weeklyClose.strategicFocus=buildWeeklyStrategicFocus({sessions:currentSessions,candidates,recommendations:feedback,start,end});
     const model={period:{start,end},activeExamTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA],weeklyClose,gapMap:buildGapMap(candidates),decisionHistory:buildDecisionHistory(feedback,{limit:5,resolveSubjectName:id=>bySubject.get(id),resolveTopicName:id=>byTopic.get(id)})};
-    const snapshot=createWeeklyCloseSnapshot(model,{id:`demo-weekly-close-${index+1}`,savedAt:stamp(end)});
+    const daysToExam=examDate?Math.round((Date.parse(`${examDate}T12:00:00Z`)-Date.parse(`${end}T12:00:00Z`))/86400000):null;
+    const snapshot=createWeeklyCloseSnapshot(model,{id:`demo-weekly-close-${index+1}`,savedAt:stamp(end),examPhase:resolveExamPhase(daysToExam)});
     if(snapshot)snapshots.push(snapshot);
   }
   return snapshots;

@@ -86,3 +86,11 @@ A Próxima Melhor Ação distingue `ACTION_REQUIRED`, `ACTION_OPTIONAL`, `MAINTA
 A explicação “Por que a Prontidão mudou?” compara o último snapshot salvo do período selecionado com o último do período anterior. Ela reutiliza `compareReadinessSnapshots`; versões do algoritmo, pesos ou fatores disponíveis incompatíveis impedem uma conclusão. A interface mostra direção e valores reais dos fatores e evita atribuir pontos individuais quando o arredondamento do índice não permite decomposição exata.
 
 Verificação local dos pacotes 3–5 em America/Sao_Paulo: `npm run check:all` passou com 465 testes unitários e 184 testes E2E, incluindo sintaxe e conferência dos artefatos gerados.
+
+## Consolidação de produto — pacotes 6–7
+
+O Mapa de Estabilidade aparece em Desempenho → Disciplinas. Ele cruza a precisão pessoal com a meta da disciplina e a evolução entre períodos equivalentes já calculada pelo comparador. Uma variação de pelo menos 3 pontos percentuais distingue melhora e queda; as quatro situações são Atenção, Manter, Intervir e Evoluindo. A disciplina só recebe quadrante quando há ao menos 10 questões em cada período. O mapa não calcula outra prioridade e cada disciplina abre o detalhamento existente.
+
+A comparação por fase fica junto da linha do tempo estratégica. Novos fechamentos e retratos de Prontidão registram a fase vigente no momento da captura. O comparador usa somente esse campo salvo, separa o concurso ativo e considera apenas a revisão mais recente de cada fechamento semanal. Mostra precisão quando a fase tem pelo menos 30 questões, aderência quando há pelo menos 60 minutos planejados, total de questões e o último índice de Prontidão salvo na fase. Registros antigos sem fase permanecem no histórico, mas não ganham uma fase inferida posteriormente. A Demo gera esses metadados como parte de seu histórico fictício.
+
+Verificação local dos pacotes 6–7 em America/Sao_Paulo: `npm run check:all` passou com 469 testes unitários e 185 testes E2E, além de sintaxe e conferência dos artefatos gerados. A comparação foi conferida em mobile, com a Demo e na jornada estratégica existente.

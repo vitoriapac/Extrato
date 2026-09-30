@@ -8,6 +8,7 @@ import {buildPerformanceSubjects} from './build-performance-subjects.js';
 import {buildPerformanceTopicDetail} from './build-performance-topic-detail.js';
 import {buildPerformanceConsistency} from './build-performance-consistency.js';
 import {buildReadinessChangeExplanation} from '../readiness/build-readiness-change-explanation.js';
+import {buildStabilityMap} from './build-stability-map.js';
 
 // The composition root supplies scoped records and stateful metric lookups; this builder owns section assembly.
 export function buildPerformancePageModel({viewState,range,today,activeExamTags=[],scope,subjects=[],simulations=[],projectionSnapshots=[],readinessSnapshots=[],readiness=null,blueprint={},globalTarget=80,candidates=[],dailyPlans=[],subjectIdFor,simulationCountsFor,reviewCompletedDateFor,topicMetricsFor,topicProfileFor,topicHistoryFor}={}){
@@ -43,7 +44,7 @@ export function buildPerformancePageModel({viewState,range,today,activeExamTags=
     const topic=selected?.topics.find(item=>item.id===topicRow?.id);
     const detail=topic?{...buildPerformanceTopicDetail({topicRow,questions:scope.questions.included,today,period:viewState.period,
       examProfile:topicProfileFor(topic,selected),history:topicHistoryFor(topic.id)}),subjectId:selected.id}:null;
-    return {section,model,comparison,detail};
+    return {section,model,comparison,stabilityMap:buildStabilityMap(comparison),detail};
   }
   const sessions=scope.sessions.included.map(item=>({...item,subjectId:subjectIdFor(item)}));
   return {section:'consistency',model:buildPerformanceConsistency({range,today,sessions,questions:scope.questions.included,dailyPlans,subjects})};

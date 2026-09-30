@@ -15,6 +15,8 @@ export function createPerformanceController({document,getViewState,setViewState,
       if(section){update({section:section.dataset.performanceSection});render();return}
       const compared=event.target.closest('[data-performance-compare-subject]');
       if(compared){update({subjectId:compared.dataset.performanceCompareSubject});render();return}
+      const stable=event.target.closest('[data-stability-subject]');
+      if(stable){update({subjectId:stable.dataset.stabilitySubject});render();return}
       const topic=event.target.closest('[data-performance-topic]');
       if(topic){update({topicId:topic.dataset.performanceTopic});render();return}
       if(event.target.closest('[data-performance-close-topic]')){document.getElementById('performanceTopicDialog')?.close();return}
