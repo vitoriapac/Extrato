@@ -60,7 +60,7 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
   await openDemo(page);
   await expect(page.locator('#weeklyCloseDashboard .weekly-kpis')).toBeVisible();
   await expect(page.locator('#weeklyCloseDashboard .weekly-assessment')).toContainText('Diagnóstico');
-  await expect(page.locator('#periodComparisonDashboard .comparison-head')).toContainText('Anterior');
+  await expect(page.locator('#periodComparisonResults .comparison-head')).toContainText('Anterior');
   const rows=page.locator('#gapMapDashboard .data-row');
   if(await rows.count())await expect(rows.first().locator('.data-score')).toContainText(/Prioridade \d+\/100/);
   await activateTab(page,'metas');
@@ -74,16 +74,14 @@ test('diagnóstico separa interpretação do sinal, score e cobertura',async({pa
   await page.locator('.today-analysis-details > summary').click();
   const diagnosis=page.locator('#diagnosisCenter');
   await expect(diagnosis.locator('.diagnostic-row').first()).toBeVisible();
-  await expect(diagnosis.locator('.diagnostic-signal').first()).toBeVisible();
-  await expect(diagnosis.locator('.diagnostic-evidence').first()).toBeVisible();
-  await expect(diagnosis.locator('.diagnostic-score').first()).toContainText(/\d+\/100/);
+  await expect(diagnosis.locator('[data-consolidated-signal]').first()).toBeVisible();
+  await expect(diagnosis.locator('.diagnostic-quality').first()).toContainText('Evidência');
   const firstRow=diagnosis.locator('.diagnostic-row').first();
   await expect(firstRow.locator('.diagnostic-primary-reason')).toBeVisible();
-  await expect(firstRow.locator('.diagnostic-evidence dt').first()).toBeVisible();
-  const action=firstRow.getByRole('button',{name:'Abrir Questões'});
+  const action=firstRow.getByRole('button',{name:'Ver evolução'});
   await expect(action).toBeVisible();
   await action.click();
-  await expect(page.locator('#panel-questoes')).toHaveClass(/active/);
+  await expect(page.locator('#panel-desempenho')).toHaveClass(/active/);
 });
 
 test('diagnóstico vazio orienta o cadastro sem inventar risco',async({page})=>{

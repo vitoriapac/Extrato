@@ -14,7 +14,7 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
   const timeline=page.locator('#strategicTimelineDashboard');
   await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(5);
   await timeline.getByRole('button',{name:/Mostrar mais/}).click();await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(13);
-  await timeline.locator('select').selectOption('simulations');await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(4);
+  await timeline.locator('select').first().selectOption('assessments');await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(4);
   const history=page.locator('#priorityHistoryDashboard');
   await history.locator('select').selectOption('cycle-s0');
   const juros=history.locator('details').filter({has:page.getByText('Matemática Financeira — Juros Compostos',{exact:true})}).first();await juros.locator(':scope > summary').click();

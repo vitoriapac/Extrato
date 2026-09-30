@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {openDemo} from './helpers.js';
+import {openDemo,activateTab} from './helpers.js';
 
 test('gera relatório estratégico identificado como demonstração',async({page})=>{
   await openDemo(page);await page.locator('#reportPeriodSelect').selectOption('90');await page.getByRole('button',{name:/Exportar relatório PDF/i}).click();
@@ -14,7 +14,7 @@ test('gera relatório estratégico identificado como demonstração',async({page
 });
 
 test('metas comparam intervalos predefinidos e personalizados',async({page})=>{
-  await openDemo(page);await page.locator('[data-tab="metas"]').click();
+  await openDemo(page);await activateTab(page,'metas');await page.locator('.result-goals-card > summary').click();
   await expect(page.locator('#periodComparisonResults')).toContainText('Últimos 7 dias');
   await expect(page.locator('#periodComparisonResults .comparison-insight')).toContainText('A variação descreve os registros dos períodos');
   await page.locator('#periodComparisonPreset').selectOption('30');

@@ -45,6 +45,7 @@ test('regressão visual dos componentes críticos em desktop',async({page})=>{
   await expect(page.locator('#studySessionsCard')).toHaveScreenshot('historico-sessoes-desktop.png',screenshotOptions);
   await expect(page.locator('#badgesGrid')).toHaveScreenshot('conquistas-desktop.png',screenshotOptions);
   await activateTab(page,'questoes');
+  await page.locator('#topicPerformanceCard > summary').click();
   await expect(page.locator('#subjectErrorProfile')).toHaveScreenshot('erros-categorizados-desktop.png',screenshotOptions);
   await activateTab(page,'metas');
   await expect(page.locator('#examBlueprintConfig')).toHaveScreenshot('configuracao-estrategica-desktop.png',screenshotOptions);

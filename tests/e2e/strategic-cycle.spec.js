@@ -112,6 +112,42 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   await expect(detail).toContainText('Planejado na recomendação');await expect(detail).toContainText('Evidência posterior');
 });
 
+test('Desempenho → Diagnóstico → prévia → confirmação → execução → fechamento',async({page})=>{
+  test.setTimeout(120_000);
+  const before=await prepare(page);
+  await activateTab(page,'desempenho');
+  await page.locator('[data-performance-section="subjects"]').click();
+  await expect(page.locator('.performance-subject-comparison')).toContainText('Matemática Financeira');
+  await page.locator('[data-performance-compare-subject="cycle-s0"]').click();
+  await page.locator('[data-analysis-nav="hoje"][data-subject-id="cycle-s0"]').click();
+  await expect(page.locator('#panel-hoje')).toBeVisible();
+  await expect(page.locator('#diagnosisCenter .next-best-action')).toBeVisible();
+  await expect(page.locator('#diagnosisCenter .consolidated-diagnosis-row').first()).toBeVisible();
+  await page.locator('#diagnosisCenter [data-next-best-preview]').click();
+  await expect(page.locator('#panel-metas')).toBeVisible();
+  await expect(page.locator('#examStudyPlan')).toContainText('Proposta semanal');
+  expect((await getState(page)).studyPlans).toHaveLength(0);
+  await page.getByRole('button',{name:'Confirmar e salvar plano',exact:true}).click();
+  const confirmed=(await getState(page)).studyPlans.at(-1);
+  expect(confirmed.weeklyPlannedMinutes).toBeLessThanOrEqual(capacity(before));
+  await activateTab(page,'hoje');
+  const action=page.locator('#studyRecommendation .study-recommendation .recommendation-actions button').first();
+  await expect(action).toBeVisible();await action.click();
+  const timer=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().activeTimer));
+  expect(timer.recommendationId).toBeTruthy();
+  await page.clock.fastForward('30:00');
+  await page.locator('#timerFinishBtn').click();await page.locator('#sessionModalDifficulty').selectOption('medium');await page.locator('#sessionModalSaveBtn').click();
+  const executed=await getState(page);
+  expect(executed.studySessions.at(-1).recommendationId).toBe(timer.recommendationId);
+  await page.clock.setSystemTime(new Date('2026-10-04T12:00:00-03:00'));
+  await activateTab(page,'dashboard');
+  await page.locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"] ').click();
+  const closed=await getState(page);
+  expect(closed.weeklyCloseSnapshots.at(-1).weeklyClose.decisionCycle.execution.linkedMinutes).toBeGreaterThan(0);
+  expect(closed.studyPlans.find(item=>item.id===confirmed.id)).toEqual(confirmed);
+  assertHistoryPreserved(before,closed);
+});
+
 test('reversão, cooldown, escopo e falta de dados preservam o histórico em mobile',async({page})=>{
   await page.setViewportSize({width:375,height:812});
   const before=await prepare(page);

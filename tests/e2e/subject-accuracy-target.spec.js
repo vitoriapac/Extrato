@@ -12,7 +12,7 @@ test('meta de acerto pode ser salva, restaurada e voltar a herdar sem alterar do
  expect(saved.backup.valid,saved.backup.message).toBe(true);const subject=saved.state.examBlueprint.subjects.find(item=>item.subjectId==='cycle-s0'),old=before.examBlueprint.subjects.find(item=>item.subjectId==='cycle-s0');
  expect(subject.accuracyTarget).toBe(75);expect(subject.masteryTarget).toEqual(old.masteryTarget);expect(subject.questionWeight).toEqual(old.questionWeight);expect(saved.state.studySessions).toEqual(before.studySessions);
  await page.evaluate(value=>{window.__EXTRATO_TEST__.setState(value);window.__EXTRATO_TEST__.renderAll()},saved.backup.normalized);
- await activateTab(page,'questoes');const summary=page.locator('#panel-questoes .subject-accuracy-summary').first();await summary.locator(':scope > summary').click();await expect(summary).toContainText('Meta de acerto: 75%');await expectNoPageOverflow(page);
- await activateTab(page,'metas');await config.locator(':scope > summary').click();await config.locator('[name="accuracyTarget"]').fill('');await config.getByRole('button',{name:'Salvar',exact:true}).click();
+ await activateTab(page,'metas');await expect(page.locator('#subjectTargetEditor [data-accuracy-value="cycle-s0"]')).toHaveValue('75');await expectNoPageOverflow(page);
+ await page.locator('#subjectTargetEditor [data-accuracy-restore="cycle-s0"]').click();
  expect(await page.evaluate(()=>window.__EXTRATO_TEST__.getState().examBlueprint.subjects.find(item=>item.subjectId==='cycle-s0').accuracyTarget)).toBeNull();
 });
