@@ -24,6 +24,8 @@ import {buildPerformanceOverview} from './application/performance/build-performa
 import {renderPerformancePage} from './ui/performance/performance-page.js';
 import {renderPerformanceOverview} from './ui/performance/performance-overview-renderer.js';
 import {renderPerformanceQuestions} from './ui/performance/performance-questions-renderer.js';
+import {buildPerformanceSimulations} from './application/performance/build-performance-simulations.js';
+import {renderPerformanceSimulations} from './ui/performance/performance-simulations-renderer.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
@@ -5120,6 +5122,11 @@ function renderPerformance(){
     const analysis=buildPerformanceAnalysis({questions,simulations:[],candidates:scope.content.eligibleTopics.map(item=>({topicId:item.id,topicName:item.name})),today:todayISO(),period});
     const previous=range.previous?buildQuestionEvolution({questions,today:range.previous.end,period}).accuracy:null;
     sectionHtml=renderPerformanceQuestions({evolution,analysis,previousAccuracy:previous,range,formatDate:formatDatePt,escapeHtml});
+  }else if(performanceViewState.section==='simulations'){
+    const activeExamTags=state.examBlueprint?.activeExamTags||[];
+    const simulations=examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))}));
+    const model=buildPerformanceSimulations({simulations,subjects:examScopedSubjects(),projectionSnapshots:state.projectionSnapshots,activeExamTags,range,today:todayISO()});
+    sectionHtml=renderPerformanceSimulations(model,{range,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:null,formatDate:formatDatePt,escapeHtml});
   }
   target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
 }
