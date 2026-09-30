@@ -29,6 +29,8 @@ import {renderPerformanceSimulations} from './ui/performance/performance-simulat
 import {buildPerformanceSubjects} from './application/performance/build-performance-subjects.js';
 import {renderPerformanceSubjects} from './ui/performance/performance-subjects-renderer.js';
 import {buildPerformanceTopicDetail} from './application/performance/build-performance-topic-detail.js';
+import {buildPerformanceConsistency} from './application/performance/build-performance-consistency.js';
+import {renderPerformanceConsistency} from './ui/performance/performance-consistency-renderer.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
@@ -5104,6 +5106,11 @@ function resolveDelegatedSpecial(normalized,event,element){
 createDelegatedEventsController({document,handlers:DELEGATED_ACTION_HANDLERS,parseArgument:delegatedArgument,resolveSpecial:resolveDelegatedSpecial,onError:error=>{console.error('Evento delegado bloqueado',error);showToast('Uma ação inválida foi bloqueada por segurança.')}}).register();
 /* ===== MASTER RENDER ===== */
 let performanceViewState=createPerformanceViewState();
+function performanceScopedPlans(scope){
+  if(!(state.examBlueprint?.activeExamTags||[]).length)return state.dailyPlans;
+  const eligible=new Set(scope.content.eligibleTopics.map(item=>item.id));
+  return state.dailyPlans.map(plan=>({...plan,items:(plan.items||[]).filter(item=>item.topicId&&eligible.has(item.topicId))})).filter(plan=>plan.items.length);
+}
 function renderPerformance(){
   const target=document.getElementById('performancePage');
   if(!target)return;
@@ -5111,10 +5118,7 @@ function renderPerformance(){
   let sectionHtml='';
   if(performanceViewState.section==='overview'){
     const scope=examEvidenceContext(),activeExamTags=state.examBlueprint?.activeExamTags||[];
-    const eligible=new Set(scope.content.eligibleTopics.map(item=>item.id));
-    const dailyPlans=activeExamTags.length
-      ?state.dailyPlans.map(plan=>({...plan,items:(plan.items||[]).filter(item=>item.topicId&&eligible.has(item.topicId))})).filter(plan=>plan.items.length)
-      :state.dailyPlans;
+    const dailyPlans=performanceScopedPlans(scope);
     const overview=buildPerformanceOverview({range,today:todayISO(),activeExamTags,readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans,subjects:examScopedSubjects()});
     sectionHtml=renderPerformanceOverview(overview,{range,today:todayISO(),activeExamTags,formatDate:formatDatePt,escapeHtml});
   }else if(performanceViewState.section==='questions'){
@@ -5150,6 +5154,10 @@ function renderPerformance(){
       examProfile:buildTopicExamProfile({topic,subjectConfig:state.examBlueprint.subjects.find(item=>item.subjectId===selected.id),activeExamTags:state.examBlueprint?.activeExamTags||[],exams:state.exams,examQuestions:state.examQuestions}),
       history:topicHistoryService.list({topicId:topic.id,includeLifecycle:false})}):null;
     sectionHtml=renderPerformanceSubjects(model,{range,formatDate:formatDatePt,escapeHtml,escapeAttr,topicDetail:detail});
+  }else if(performanceViewState.section==='consistency'){
+    const scope=examEvidenceContext();
+    const model=buildPerformanceConsistency({range,today:todayISO(),sessions:scope.sessions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),questions:scope.questions.included,dailyPlans:performanceScopedPlans(scope),subjects:examScopedSubjects()});
+    sectionHtml=renderPerformanceConsistency(model,{range,formatDate:formatDatePt,escapeHtml});
   }
   target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
   const dialog=target.querySelector('#performanceTopicDialog');

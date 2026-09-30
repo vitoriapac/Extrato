@@ -1922,6 +1922,14 @@ body.timer-focus-active .timer-context{display:none!important}
 .performance-topic-dialog-head h3{margin:var(--space-2) 0}.performance-topic-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3);margin:var(--space-4) 0}
 .performance-topic-facts div{padding:var(--space-3);border:1px solid var(--paper-line)}.performance-topic-facts dt{font-size:12px}.performance-topic-facts dd{margin:var(--space-2) 0 0;font-size:20px;font-weight:700}
 .performance-topic-events{padding-left:var(--space-4)}.performance-topic-events li{display:flex;gap:var(--space-3);padding:var(--space-2) 0}.performance-topic-actions{justify-content:flex-start;flex-wrap:wrap;padding-top:var(--space-4)}
+.performance-consistency-weeks{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2)}
+.performance-consistency-weeks li{border-bottom:1px solid var(--paper-line);padding:var(--space-3) 0}.performance-consistency-weeks small{display:block;margin-top:var(--space-2)}
+.performance-consistency-bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);margin-top:var(--space-2)}
+.performance-consistency-bars>div{display:grid;grid-template-columns:48px minmax(30px,1fr) 72px;gap:var(--space-2);align-items:center;font-size:12px}
+.performance-consistency-bars .performance-week-bar{margin:0}.performance-consistency-bars b{text-align:right}
+.performance-heatmap{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;max-width:480px}
+.performance-heatmap-day{display:grid;place-items:center;min-height:24px;background:var(--paper);border:1px solid var(--paper-line);font-size:11px}
+.performance-heatmap-day.level-1{background:var(--slate-bg)}.performance-heatmap-day.level-2{background:var(--paper-line)}.performance-heatmap-day.level-3{background:var(--navy);color:#fff}
 @media(max-width:520px){.performance-topic-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.performance-topic-list li span{text-align:left}}
 @media(max-width:700px){.performance-topic-groups{grid-template-columns:1fr}.performance-changes li{flex-wrap:wrap}}
