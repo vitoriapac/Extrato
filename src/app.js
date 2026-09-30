@@ -1680,6 +1680,7 @@ function heatmapTooltip(summary){
   return parts.join(' · ');
 }
 function renderHeatmap(){
+  if(!document.getElementById('heatmapContainer'))return;
   const activityDates=getActivityDates();
   const earliest=[...activityDates].sort()[0];
   const historyDays=earliest?Math.max(1,Math.round((parseLocalDate(todayISO())-parseLocalDate(earliest))/86400000)+1):DEFAULT_STREAK_WEEKS*7;
@@ -1736,6 +1737,7 @@ function metricStateLabel(metric,minimumConfidence=.35){
 function renderSimuladosChart(){
   const card = document.getElementById('simuladosChartCard');
   const container = document.getElementById('simuladosChart');
+  if(!card||!container)return;
   const data = performancePeriodRecords(examScopedSimulations(),{today:todayISO(),period:questionEvolutionView.period}).sort((a,b)=> (a.date||'').localeCompare(b.date||''));
   const comparison=buildSimulationComparison({simulations:data.map(item=>({...item,breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),subjects:state.subjects});
   document.getElementById('simulationComparisonResults').innerHTML=renderSimulationComparison(comparison,{escapeHtml,formatDate:formatDatePt});
@@ -1792,6 +1794,7 @@ function computeSubjectPerformance(){
 function renderDesempenhoDisciplina(){
   const card = document.getElementById('desempenhoDisciplinaCard');
   const container = document.getElementById('desempenhoDisciplinaBars');
+  if(!card||!container)return;
   const perf = computeSubjectPerformance();
 
   if(perf.length === 0){
@@ -5167,6 +5170,8 @@ document.addEventListener('click',event=>{
   const jump=event.target.closest('[data-performance-jump]');
   if(!jump)return;
   performanceViewState=updatePerformanceViewState(performanceViewState,{section:jump.dataset.performanceJump});
+  if(jump.dataset.performanceSubjectId)performanceViewState=updatePerformanceViewState(performanceViewState,{subjectId:jump.dataset.performanceSubjectId});
+  if(jump.dataset.performanceTopicId)performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:jump.dataset.performanceTopicId});
   activateTab('desempenho');
 });
 document.getElementById('performancePage')?.addEventListener('click',event=>{
@@ -5187,11 +5192,11 @@ document.getElementById('performancePage')?.addEventListener('change',event=>{
 });
 const RENDER_SCOPE_SECTIONS={
   desempenho:new Set(['desempenho']),
-  dashboard:new Set(['primeiro uso','ação e atenção','dashboard de aprovação','controles do cronômetro','evolução do progresso','heatmap','conquistas','radar','visão geral','horas estudadas','histórico de sessões']),
+  dashboard:new Set(['primeiro uso','ação e atenção','dashboard de aprovação','controles do cronômetro','evolução do progresso','conquistas','radar','visão geral','histórico de sessões']),
   disciplinas:new Set(['disciplinas','primeiro uso']),
   calendario:new Set(['indicadores do calendário','tarefas de hoje','tarefas atrasadas','filtros do calendário','calendário','calendário mensal']),
   agenda:new Set(['filtros da agenda','agenda']),
-  questoes:new Set(['questões','evolução de questões','análise de questões','simulados','gráfico de simulados','desempenho por disciplina']),
+  questoes:new Set(['questões','análise de questões','simulados']),
   metas:new Set(['metas','execução do plano','configuração estratégica','plano até a prova','metas de horas por dia','metas por disciplina','histórico de metas','ritmo']),
   hoje:new Set(['resumo executivo','central de diagnóstico','recomendação de estudo','replanejamento','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
 };
@@ -5208,11 +5213,9 @@ applicationRenderer=createApplicationRenderer({
     ['controles do cronômetro',populateTimerContextControls],
     ['cabeçalho',renderHeader],
     ['evolução do progresso',renderProgressChart],
-    ['heatmap',renderHeatmap],
     ['conquistas',renderBadges],
     ['radar',renderRadarDisciplinas],
     ['visão geral',renderDashboard],
-    ['horas estudadas',renderStudyHoursDashboard],
     ['histórico de sessões',renderStudySessionsHistory],
     ['disciplinas',renderSubjects],
     ['indicadores do calendário',renderCalIndicadores],
@@ -5224,11 +5227,8 @@ applicationRenderer=createApplicationRenderer({
     ['filtros da agenda',renderAgendaFilters],
     ['agenda',renderAgenda],
     ['questões',renderQuestoes],
-    ['evolução de questões',renderQuestionEvolution],
     ['análise de questões',renderQuestionAnalytics],
     ['simulados',renderSimulados],
-    ['gráfico de simulados',renderSimuladosChart],
-    ['desempenho por disciplina',renderDesempenhoDisciplina],
     ['metas',renderMetas],
     ['execução do plano',renderPlanExecution],
     ['configuração estratégica',renderExamBlueprintConfig],

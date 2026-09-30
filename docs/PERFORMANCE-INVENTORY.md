@@ -33,3 +33,7 @@ Este documento define o proprietário das análises antes de introduzir a aba De
 ## Contratos de migração
 
 Mover o proprietário de cada análise junto com seu renderer, sem duplicar IDs ou recalcular a métrica. A tela de origem conserva somente um resumo que tenha função própria e um link contextual. Gráficos apresentam valores também em texto. O filtro global de Desempenho é estado de UI, não dado de backup. A navegação preserva o concurso ativo e, quando aplicável, período, disciplina e tópico.
+
+## Situação após os pacotes 4–9
+
+Desempenho passou a apresentar questões, simulados, disciplinas, detalhe de tópico e consistência no período e concurso ativos. A Visão Geral aponta para o histórico completo e conserva o índice atual, o fechamento e decisões estratégicas. Questões e Simulados conservam os registros; a análise especializada de erros fica recolhida. Metas conserva a execução do plano atual e uma comparação com datas personalizadas em painéis recolhidos. Os gráficos históricos de prontidão, tempo de estudo, heatmap e simulados deixaram as telas de origem.

@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=014ef639fba5">
+<link rel="stylesheet" href="styles/app.css?v=4c0d2555a19b">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -139,8 +139,8 @@
     <div id="overviewExamPhase"></div>
 
     <nav class="overview-nav" aria-label="Atalhos da Visão Geral">
-      <div class="overview-nav-links"><a href="#overview-summary">Resumo</a><a href="#overview-performance">Desempenho</a><a href="#overview-study">Estudo</a><a href="#overview-evolution">Evolução</a><a href="#overview-progress">Progresso</a><a href="#overview-next-actions">Próximas ações</a></div>
-      <label class="overview-nav-mobile"><span class="sr-only">Ir para seção da Visão Geral</span><select id="overviewNavSelect" class="select-control" aria-label="Seção da Visão Geral"><option value="overview-summary">Resumo</option><option value="overview-performance">Desempenho</option><option value="overview-study">Estudo</option><option value="overview-evolution">Evolução</option><option value="overview-progress">Progresso</option><option value="overview-next-actions">Próximas ações</option></select></label>
+      <div class="overview-nav-links"><a href="#overview-summary">Resumo</a><a href="#overview-performance">Prontidão</a><a href="#overview-study">Estudo</a><a href="#overview-evolution">Conquistas</a><a href="#overview-progress">Progresso</a><a href="#overview-next-actions">Próximas ações</a></div>
+      <label class="overview-nav-mobile"><span class="sr-only">Ir para seção da Visão Geral</span><select id="overviewNavSelect" class="select-control" aria-label="Seção da Visão Geral"><option value="overview-summary">Resumo</option><option value="overview-performance">Prontidão</option><option value="overview-study">Estudo</option><option value="overview-evolution">Conquistas</option><option value="overview-progress">Progresso</option><option value="overview-next-actions">Próximas ações</option></select></label>
     </nav>
 
     <div class="overview-section-heading" id="overview-summary"><span>Aprovação e retenção</span></div>
@@ -148,9 +148,8 @@
     <div class="chart-card intelligence-column">
       <h3>Índice de Prontidão</h3>
       <div id="approvalDashboard"></div>
-      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Evolução da prontidão</h3></header><div id="readinessHistoryDashboard"></div></section>
+      <button class="btn ghost small" type="button" data-performance-jump="overview">Explorar desempenho completo →</button>
       <section class="analytics-card"><header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Fechamento semanal</h3><p class="module-heading__description">Resultado, foco estratégico e decisões para a próxima semana.</p></header><div id="weeklyCloseDashboard"></div></section>
-      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Comparação entre períodos</h3></header><div id="periodComparisonDashboard"></div></section>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3></header><div id="gapMapDashboard"></div></section>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Histórico de decisões</h3></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Linha do Tempo Estratégica</h3><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Evolução das prioridades</h3><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
@@ -196,8 +195,7 @@
       </div>
       <section id="sessionResult" class="session-result" role="status" aria-live="polite" tabindex="-1" hidden></section>
       <div class="stat-grid" id="studyTimeStats" style="margin-top:18px;margin-bottom:0;"></div>
-      <h3 style="margin-top:22px;">Evolução das horas — últimos 14 dias</h3>
-      <div id="studyHoursChart"></div>
+      <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver evolução e consistência →</button>
       <h3 style="margin-top:22px;">Distribuição por disciplina</h3>
       <div id="subjectHoursBars"></div>
     </div>
@@ -251,18 +249,11 @@
       </div>
     </div>
 
-    <div class="overview-section-heading" id="overview-evolution"><span>Evolução</span></div>
-    <div class="overview-pair">
-    <div class="chart-card">
-      <h3>Sequência de estudos</h3>
-      <div id="heatmapContainer"></div>
-    </div>
+    <div class="overview-section-heading" id="overview-evolution"><span>Conquistas</span></div>
     <div class="chart-card">
       <h3>Conquistas</h3>
       <div class="badges-grid" id="badgesGrid"></div>
     </div>
-    </div>
-
     <div class="overview-section-heading" id="overview-progress"><span>Progresso e conquistas</span></div>
     <div class="chart-card">
       <h3>Evolução do progresso</h3>
@@ -505,18 +496,7 @@
     </div>
 
 
-    <section class="chart-card" id="questionEvolutionCard" aria-labelledby="questionEvolutionTitle">
-      <header class="module-heading"><h3 class="module-heading__title" id="questionEvolutionTitle">Evolução do desempenho em questões</h3><p class="module-heading__description">Compare acertos e volume no período escolhido. Sem amostra suficiente, a tendência permanece ausente.</p></header>
-      <div class="analytics-toolbar question-evolution-filters">
-        <label>Escopo<select class="select-control" id="questionEvolutionScope" data-delegated-change="setQuestionEvolutionFilter('scope',this.value)"><option value="all">Geral</option><option value="subject">Disciplina</option><option value="topic">Tópico</option></select></label>
-        <label id="questionEvolutionSubjectWrap" hidden>Disciplina<select class="select-control" id="questionEvolutionSubject" data-delegated-change="setQuestionEvolutionFilter('subjectId',this.value)"></select></label>
-        <label id="questionEvolutionTopicWrap" hidden>Tópico<select class="select-control" id="questionEvolutionTopic" data-delegated-change="setQuestionEvolutionFilter('topicId',this.value)"></select></label>
-        <label>Período<select class="select-control" id="questionEvolutionPeriod" data-delegated-change="setQuestionEvolutionFilter('period',this.value)"><option value="30">30 dias</option><option value="90" selected>90 dias</option><option value="180">6 meses</option><option value="all">Tudo</option></select></label>
-      </div>
-      <div id="questionEvolutionResults" aria-live="polite"></div>
-    </section>
-
-    <div class="chart-card" id="topicPerformanceCard">
+    <details class="chart-card" id="topicPerformanceCard"><summary>Análise detalhada de erros e tópicos</summary>
       <div class="section-head module-heading module-heading--section">
         <h3 class="module-heading__title">Desempenho por tópico e tendência</h3>
         <span class="subject-progress-pill" id="questionDataCoverage">0% identificadas</span>
@@ -532,21 +512,13 @@
       <div id="subjectWeeklyTrend"></div>
       <h3 style="margin-top:22px;">Perfil de erros categorizados</h3>
       <div id="subjectErrorProfile"></div>
-    </div>
+    </details>
 
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Simulados</h2>
       <button class="btn" id="addSimuladoRowBtn">+ Registrar simulado</button>
       <button class="btn ghost small" type="button" data-performance-jump="simulations">Ver análise completa →</button>
     </div>
-    <div class="chart-card" id="simuladosChartCard" style="display:none;">
-      <header class="module-heading module-heading--compact"><h3 class="module-heading__title">Evolução das notas nos simulados</h3></header>
-      <div id="simuladosChart"></div>
-    </div>
-    <section class="chart-card" id="simulationComparisonCard" aria-labelledby="simulationComparisonTitle">
-      <header class="module-heading module-heading--compact"><h3 class="module-heading__title" id="simulationComparisonTitle">Último simulado × anterior</h3></header>
-      <div id="simulationComparisonResults"></div>
-    </section>
     <div class="log-table-wrap">
       <table class="log responsive-history-table">
         <thead>
@@ -562,12 +534,6 @@
         </thead>
         <tbody id="simuladosBody"></tbody>
       </table>
-    </div>
-    <div class="chart-card" id="desempenhoDisciplinaCard" style="display:none;">
-      <header class="module-heading"><h3 class="module-heading__title">Desempenho por disciplina</h3><p class="module-heading__description">
-        Combina questões avulsas e simulados detalhados por disciplina · tendência compara a primeira e a segunda metade dos seus registros
-      </p></header>
-      <div id="desempenhoDisciplinaBars"></div>
     </div>
     <div class="chart-card">
       <h3>Calibração das recomendações</h3>
@@ -590,14 +556,14 @@
 
     <section class="chart-card" id="planExecutionCard" aria-labelledby="planExecutionTitle">
       <header class="module-heading"><h3 class="module-heading__title" id="planExecutionTitle">Plano e execução</h3><p class="module-heading__description">Veja o tempo distribuído nos planos diários, o estudo registrado e a capacidade semanal informada.</p></header>
-      <div id="planExecutionResults"></div>
+      <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver histórico de consistência →</button>
+      <details><summary>Ver execução do plano atual</summary><div id="planExecutionResults"></div></details>
     </section>
 
-    <div class="chart-card result-goals-card">
-      <header class="module-heading"><h3 class="module-heading__title">Comparação entre períodos</h3><p class="module-heading__description">Compare registros do mesmo escopo com o intervalo imediatamente anterior. Métricas sem evidência suficiente permanecem sem valor.</p></header>
+    <details class="chart-card result-goals-card"><summary>Comparação personalizada entre períodos</summary><p class="analytics-note">Para os períodos comuns, use Desempenho. Aqui você pode escolher datas específicas.</p>
       <div class="period-comparison-controls"><label>Período<select id="periodComparisonPreset" class="select-control"><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="month">Este mês</option><option value="custom">Escolher datas</option></select></label><label id="periodComparisonStartWrap" hidden>De<input id="periodComparisonStart" type="date"></label><label id="periodComparisonEndWrap" hidden>Até<input id="periodComparisonEnd" type="date"></label></div>
       <div id="periodComparisonResults" aria-live="polite"></div>
-    </div>
+    </details>
 
     <div class="chart-card">
       <header class="module-heading"><h3 class="module-heading__title">Configuração estratégica da prova</h3><p class="module-heading__description">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p></header>
@@ -826,7 +792,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=014ef639fba5"></script>
+  <script src="src/app.bundle.js?v=4c0d2555a19b"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
