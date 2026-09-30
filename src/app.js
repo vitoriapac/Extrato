@@ -4417,7 +4417,7 @@ function renderDiagnosisCenter(){
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
     return action?{...action,label:recommendationActionLabel(action)}:null;
   },escapeHtml,escapeAttr});
-  container.innerHTML+=renderPreparationSignals(preparationSignals);
+  container.innerHTML+=`<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
 }
 function renderRecommendationImpact(model){
   if(!model.available)return '';

@@ -50,7 +50,7 @@ export function buildConsolidatedSignals(input={}){
     const evidence=primary?.evidence||{strength:null,completeness:null,level:'unassessed',label:'Não avaliada',assessed:false,observationIds:[],sources:[]};
     const state=primary?.kind==='maintenance'?'controlled':primary?.kind==='collect-evidence'?'insufficient':primary?'attention':'unassessed';
     rows.push({entityKey:key,subjectId:entity.subjectId,topicId:entity.topicId||null,granularity:entity.granularity||(entity.topicId?'topic':'subject'),
-      name:entity.topicName||entity.name||entity.subjectName||null,activeExamTags:[...active],state,
+      name:entity.topicName||entity.name||entity.subjectName||null,subjectName:entity.subjectName||null,activeExamTags:[...active],state,
       severity:primary?.severity||'insufficient',severityLabel:diagnosticLabel('severity',primary?.severity||'insufficient'),
       primarySignal:primary?.kind||null,primarySource:primary?{source:primary.source,id:primary.sourceId,period:primary.period}:null,
       supportingSignals:distinct(supporting.map(signal=>signal.kind)),signals:structuredClone(signals),

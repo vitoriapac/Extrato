@@ -5,6 +5,13 @@ export const DIAGNOSTIC_VOCABULARY=Object.freeze({
   trend:Object.freeze({improving:'Melhorando',stable:'Estável',worsening:'Piorando',insufficient:'Dados insuficientes'}),
   outcome:Object.freeze({improved:'Melhora observada',stable:'Estável',worsened:'Piora observada',insufficient:'Evidência insuficiente',pending:'Em acompanhamento'})
 });
+export const DIAGNOSTIC_SIGNAL_LABELS=Object.freeze({
+  'consolidation-risk':'Consolidação em risco','critical-gap':'Lacuna prioritária',plateau:'Possível platô',
+  'priority-review':'Revisão prioritária','critical-coverage':'Cobertura insuficiente','high-priority':'Prioridade alta',
+  'collect-evidence':'Coletar mais evidências',maintenance:'Manutenção','high-incidence':'Alta incidência',
+  'recommendation-available':'Recomendação disponível','redistribution-source':'Redistribuição proposta','redistribution-target':'Redistribuição proposta'
+});
+export const diagnosticSignalLabel=kind=>DIAGNOSTIC_SIGNAL_LABELS[kind]||'Sinal complementar';
 const key=value=>String(value??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const resolve=(value,aliases,fallback)=>aliases[key(value)]||fallback;
 export function normalizeSeverity(value){return resolve(value,{critical:'critical',critico:'critical',critica:'critical',high:'important',important:'important',importante:'important',medium:'monitor',moderate:'monitor',monitor:'monitor',monitorar:'monitor',low:'monitor',controlled:'controlled','sob controle':'controlled'},'insufficient')}

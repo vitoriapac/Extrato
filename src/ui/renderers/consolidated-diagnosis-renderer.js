@@ -1,0 +1,24 @@
+import {diagnosticSignalLabel} from '../../domain/diagnostics/diagnostic-vocabulary.js';
+
+const metrics={mastery:['Domínio','/100'],retention:['Retenção','/100'],accuracy:['Precisão','%'],target:['Meta','%'],impact:['Impacto','/100'],coverage:['Cobertura','%'],questionCount:['Questões',''],urgency:['Urgência da revisão','/100'],presencePercent:['Incidência','%']};
+const metricRows=(signal,escapeHtml)=>Object.entries(signal?.metrics||{}).filter(([key,value])=>metrics[key]&&Number.isFinite(Number(value))).map(([key,value])=>`<div><dt>${metrics[key][0]}</dt><dd>${escapeHtml(value)}${metrics[key][1]}</dd></div>`).join('');
+
+export function renderConsolidatedDiagnosis(model,{studyActionForItem,escapeHtml,escapeAttr}){
+  const rows=[...(model.topics||[]),...(model.subjects||[])].filter(item=>item.primarySignal);
+  if(!rows.length)return '<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>Nenhum diagnóstico principal disponível</strong><p>Registre sessões, questões e revisões para reunir evidências no concurso ativo. A ausência de alerta não confirma consolidação.</p></div>';
+  const renderRow=(item,index)=>{
+    const primary=item.signals.find(signal=>signal.kind===item.primarySignal&&signal.active);
+    const action=studyActionForItem(item),supporting=item.supportingSignals.filter(kind=>kind!=='recommendation-available');
+    const evidence=metricRows(primary,escapeHtml);
+    return `<article class="diagnostic-row consolidated-diagnosis-row" data-consolidated-state="${escapeAttr(item.state)}" data-consolidated-signal="${escapeAttr(item.primarySignal)}" data-consolidated-evidence-quality="${escapeAttr(item.evidenceQuality)}" ${action?`data-study-action-source="${escapeAttr(action.source)}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${escapeAttr(action.activityType)}"`:''}>
+      <div class="diagnostic-row-heading"><div class="diagnostic-row-identity"><span class="diagnostic-kicker">${index+1} · ${item.granularity==='subject'?'DISCIPLINA':'TÓPICO'}</span><strong>${escapeHtml(item.name||'Conteúdo sem nome')}</strong>${item.granularity==='topic'&&item.subjectName?`<small>${escapeHtml(item.subjectName)}</small>`:''}</div><span class="status-badge status-badge--${item.severity==='critical'?'danger':item.severity==='important'?'warning':'info'}">${escapeHtml(item.severityLabel)}</span></div>
+      <p class="diagnostic-primary-reason"><strong>${escapeHtml(diagnosticSignalLabel(item.primarySignal))}</strong>${primary?.reasons?.[0]?` · ${escapeHtml(primary.reasons[0])}`:''}</p>
+      ${evidence?`<dl class="diagnostic-evidence">${evidence}</dl>`:''}
+      ${supporting.length?`<p class="diagnostic-supporting"><strong>Também identificado:</strong> ${escapeHtml(supporting.map(diagnosticSignalLabel).join(' · '))}</p>`:''}
+      <p class="diagnostic-quality">Evidência: ${escapeHtml(item.evidence?.label||'Não avaliada')}</p>
+      <div class="diagnostic-row-action"><span>PRÓXIMO PASSO</span><div class="diagnostic-row-buttons">${action?`<button class="btn small" type="button" data-study-action-source="${escapeAttr(action.source)}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${escapeAttr(action.activityType)}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${escapeAttr(action.source)}')">${escapeHtml(action.label)}</button>`:''}<button class="btn ghost small" type="button" data-performance-jump="subjects" data-performance-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId?`data-performance-topic-id="${escapeAttr(item.topicId)}"`:''}>Ver evolução</button></div></div>
+    </article>`;
+  };
+  const first=rows.slice(0,5),remaining=rows.slice(5);
+  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por conteúdo. Outros sinais aparecem como contexto, sem somar confiança ou criar alertas repetidos.</p><div class="diagnosis-consolidated-list">${first.map(renderRow).join('')}</div>${remaining.length?`<details class="performance-more"><summary>Mostrar mais diagnósticos · +${remaining.length}</summary><div class="diagnosis-consolidated-list">${remaining.map((item,index)=>renderRow(item,index+5)).join('')}</div></details>`:''}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
+}

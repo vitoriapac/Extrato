@@ -1,5 +1,7 @@
 import {renderRecommendationExplanation} from './recommendation-explanation-renderer.js';
+import {renderConsolidatedDiagnosis} from './consolidated-diagnosis-renderer.js';
 export function renderDiagnosisCenter({model,studyActionForItem,escapeHtml,escapeAttr}){
+  if(model.consolidated?.rows?.length)return renderConsolidatedDiagnosis(model.consolidated,{studyActionForItem,escapeHtml,escapeAttr});
   const emptyState=empty=>`<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(empty.title)}</strong><p>${escapeHtml(empty.message)}</p>${empty.action?`<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('${escapeAttr(empty.action.tab)}')">${escapeHtml(empty.action.label)}</button>`:''}</div>`;
   if(model.state==='insufficient')return `<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(model.title)}</strong><p>${escapeHtml(model.message)}</p><button type="button" class="btn small" data-delegated-click="navigateKpi('${escapeAttr(model.action.tab)}')">${escapeHtml(model.action.label)}</button></div>`;
   const consolidatedByEntity=new Map((model.consolidated?.rows||[]).map(item=>[JSON.stringify([item.subjectId,item.topicId]),item]));
