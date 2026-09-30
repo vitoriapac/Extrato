@@ -2,6 +2,14 @@
 
 Os dez pacotes de consolidação pós-3.0 estão entregues. O ciclo liga evidências históricas da prova à prioridade, ao planejamento, à execução e à medição posterior, mantendo separados dados oficiais, ajustes manuais e inferências históricas.
 
+## Jornada atual
+
+Desempenho organiza a evolução em cinco visões: visão geral, questões, simulados, disciplinas e consistência. O comparador de disciplinas usa precisão observada, meta de acerto, distância da meta, evolução e prioridade calculada pelo motor existente. A navegação pode levar a disciplina e o concurso ativos ao Diagnóstico.
+
+O Diagnóstico reúne os sinais de uma entidade em uma conclusão principal e conserva os demais como evidências auxiliares. A próxima melhor ação apresenta uma recomendação elegível já produzida pelo sistema; não cria outra ordenação de prioridades. A prévia de planejamento não grava mudanças. O usuário confirma o plano, executa a ação e pode inspecionar no fechamento a execução vinculada e os resultados posteriores. A confirmação respeita a capacidade semanal, e o histórico salvo permanece congelado.
+
+A linha do tempo usa eventos existentes e permite filtrar categorias e agrupar por semana, mês ou fase registrada. Metas de acerto por disciplina herdam a meta global quando não personalizadas. Recuperação consistente e dívida de revisão acrescentam contexto ao diagnóstico, sem alterar automaticamente horas ou prioridades.
+
 ## Leitura dos indicadores
 
 - O foco estratégico semanal é a parcela do tempo registrado em tópicos de alto impacto. É descritivo e não possui meta mínima.

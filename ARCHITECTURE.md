@@ -122,6 +122,11 @@ flowchart TD
 - `src/ui/renderers/study-charts-renderer.js`: SVGs de evolução de progresso/horas e barras de tempo por disciplina são gerados fora de `src/app.js`.
 - `src/ui/renderers/overview-renderer.js`: alertas da Visão Geral e cartões do resumo executivo são apresentados fora de `src/app.js`.
 - `src/ui/renderers/diagnosis-renderer.js`: centro de diagnóstico, sinais, evidências e ações recomendadas são apresentados a partir do view-model sem montar HTML no `src/app.js`.
+- `src/domain/diagnostics/` e `src/application/diagnostics/`: contrato, vocabulário e precedência dos sinais; consolidação por entidade; seleção contextual da próxima ação; dívida de revisão. A ordem e a elegibilidade continuam no motor de recomendações.
+- `src/application/performance/` e `src/ui/performance/`: período, escopo e modelos das cinco visões de Desempenho, com renderização separada da raiz de composição.
+- `src/application/navigation/analysis-context.js`: contexto transitório de origem, concurso, disciplina, tópico e período para navegar entre análises sem mudar o schema.
+- `src/application/analytics/group-strategic-timeline.js`: agrupamento dos eventos existentes por semana, mês ou fase registrada; a lista usa uma paginação progressiva global.
+- `src/application/goals/update-subject-accuracy-targets.js`: atualização em lote das metas de acerto por disciplina, com `null` indicando herança da meta global.
 - `src/ui/renderers/retention-renderer.js`: filtros, padrões e linhas do painel de retenção são apresentados fora de `src/app.js`.
 - `src/ui/renderers/simulations-renderer.js`: linhas e edição de simulados, detalhamento por disciplina, gráfico de evolução e tabela comparativa são apresentados fora de `src/app.js`.
 - `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.
@@ -159,6 +164,8 @@ flowchart TD
 ## Fluxo de dependências
 
 `app.js` pode importar `state`, `core`, `storage` e `domain`. Os módulos inferiores não devem importar a interface nem acessar o estado global da aplicação.
+
+Na jornada estratégica, os modelos de Desempenho leem registros do concurso ativo; o Diagnóstico consolida sinais por entidade e apresenta uma recomendação já elegível. A prévia usa o planejamento existente e permanece transitória até a confirmação. A sessão vinculada e o fechamento são persistidos pelos fluxos atuais. Snapshots históricos ficam congelados; o renderer não recalcula o passado.
 
 ## Build e verificações
 

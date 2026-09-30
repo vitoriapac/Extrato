@@ -12,6 +12,8 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Revisões espaçadas, agenda, calendário e replanejamento.
 - Índice de prontidão, retenção, domínio, tendências e projeção por faixa.
 - Diagnóstico de erros e alertas com motivo e ação recomendada.
+- Aba Desempenho com comparação de períodos, disciplinas, questões, simulados e consistência; navegação contextual até o diagnóstico.
+- Diagnóstico consolidado por tópico ou disciplina, próxima melhor ação, prévia do plano e confirmação antes de salvar.
 - Resultado mensurável das recomendações, comparando métricas antes e depois.
 - Relatório estratégico em PDF e backup completo em JSON.
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
@@ -128,6 +130,16 @@ No assistente inicial, você pode carregar um edital do catálogo, importar um a
 
 Os dados ficam no navegador. Exporte um backup JSON regularmente pela área de dados. A importação valida o formato e a versão antes de substituir o estado local.
 
+### Da análise ao fechamento
+
+Em **Desempenho**, escolha o período e consulte as visões de questões, simulados, disciplinas e consistência. O comparador de disciplinas mostra precisão, meta, diferença, evolução e prioridade existente; uma precisão menor, isoladamente, não define a próxima ação. Ao abrir o diagnóstico de uma disciplina, o concurso e a disciplina selecionados acompanham a navegação.
+
+Em **Hoje → Diagnóstico**, sinais do mesmo tópico ou disciplina aparecem em um diagnóstico principal, com as demais evidências como contexto. A **Próxima melhor ação** usa uma recomendação elegível do motor atual. Quando houver proposta de planejamento, **Pré-visualizar no plano** abre a distribuição para revisão. A prévia não salva o plano: confirme para gravá-lo. A capacidade semanal é respeitada e a recomendação pode iniciar uma sessão vinculada. O fechamento semanal registra execução e resultados posteriores disponíveis, sem atribuir causalidade à recomendação.
+
+A linha do tempo estratégica agrupa eventos por semana, mês ou fase registrada e filtra decisões, desempenho, planejamento e avaliações. A trajetória de cada tópico usa retratos congelados; dados antigos não são recalculados com o estado atual. Consulte [Consolidação do ciclo estratégico](docs/STRATEGIC-CYCLE.md) para os critérios de leitura.
+
+As **metas de acerto por disciplina** podem herdar a meta global, ser personalizadas individualmente ou aplicadas às disciplinas selecionadas. São referências para questões pessoais, separadas de domínio e peso oficial. O Diagnóstico também mostra recuperação consistente quando há quatro semanas completas de melhora com volume suficiente e resume a dívida de revisão por relevância; esses indicadores não mudam o plano automaticamente.
+
 Na área **Disciplinas**, a opção **Importar JSON ou CSV** abre uma prévia antes de alterar a base. Ela discrimina itens novos, existentes, atualizações e campos preservados; IDs, progresso, sessões, revisões, histórico e ajustes manuais não são sobrescritos. A mesma importação pode ser repetida sem criar duplicatas. O botão **Baixar modelo CSV** fornece um arquivo inicial com as colunas `disciplina`, `topico`, `dificuldade`, `importancia`, `esforco` e `tags`; somente as duas primeiras são obrigatórias. No JSON, use `subjects: [{ name, topics: [{ name }] }]`. A importância é informada de 0 a 100, o esforço em minutos e múltiplas tags são separadas por `|`.
 
 Na área **Metas → Inteligência da prova**, importe provas históricas com JSON no formato `{"exam":{"institution":"Banco do Brasil","role":"Escriturário","board":"Cesgranrio","year":2023,"coverage":"complete"},"questions":[{"number":1,"subject":"Matemática","topic":"Juros Compostos","weight":1}]}`. A cobertura padrão é parcial; declare `complete` somente quando o arquivo representa toda a prova. A prévia exige decidir cada questão sem correspondência antes de confirmar. Reimportar a mesma prova atualiza questões sem duplicá-las. Com histórico suficiente, a evidência ajusta de forma limitada o impacto estimado; pesos oficiais e ajustes manuais são preservados.
@@ -214,7 +226,7 @@ O histórico do **Foco Estratégico** mostra uma linha simples para comparar per
 
 ## Estado do roadmap
 
-Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. Recomendações podem iniciar sessões guiadas no cronômetro. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.
+Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. A fase seguinte reuniu análises na aba Desempenho, consolidou sinais no Diagnóstico e ligou a próxima ação à prévia do planejamento, à execução e ao fechamento. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.
 
 As visualizações de questões, simulados e metas seguem as definições de período, amostra e capacidade em [Gráficos de desempenho e planejamento](docs/ANALYTICS-CHARTS.md).
 

@@ -64,4 +64,15 @@ Uma ação aponta somente para a identidade de uma recomendação atual, elegív
 
 Os testes verificam precedência, confiança não somada, granularidade, escopo, arquivos, estabilidade, qualidade da evidência, elegibilidade da ação, custo de oportunidade, imutabilidade e vínculo com os motores existentes.
 
-Verificação integrada: `npm run check:all` passou em America/Sao_Paulo e UTC, cada execução com 461 testes unitários, bundle reproduzível e 182 E2E. Os snapshots foram verificados localmente no Windows; a execução do CI em Linux depende da publicação dos commits.
+Verificação integrada dos três primeiros pacotes: `npm run check:all` passou em America/Sao_Paulo e UTC, cada execução com 461 testes unitários, bundle reproduzível e 182 E2E. Os snapshots foram verificados localmente no Windows.
+
+## Estado dos pacotes 4–8
+
+- **Diagnóstico 2.0:** uma entidade apresenta um sinal principal segundo a precedência versionada e mantém os outros motivos como contexto. Recuperação consistente usa quatro semanas completas com volume suficiente; dívida de revisão distingue total vencido, alta prioridade com impacto e tópicos em risco de consolidação.
+- **Próxima melhor ação:** adapta a primeira recomendação pendente e elegível do motor atual, com justificativa, evidência e contexto do plano. A prévia não persiste mudanças; o plano só é salvo depois da confirmação e da validação de capacidade.
+- **Linha do tempo e tópicos:** eventos de decisões, desempenho, planejamento e avaliações são filtráveis e agrupáveis por semana, mês ou fase registrada. A evolução dos tópicos usa snapshots congelados e não reescreve classificações passadas.
+- **Metas de acerto:** `examBlueprint.subjects[].accuracyTarget` aceita valor individual ou `null` para herdar `metas.metaAprovacao`. A edição em lote afeta somente disciplinas selecionadas e não substitui domínio nem peso da prova.
+
+## Regressão da jornada completa
+
+O cenário Playwright em `tests/e2e/strategic-cycle.spec.js` percorre Desempenho → Diagnóstico → prévia → confirmação → sessão vinculada → fechamento. Verifica que a prévia deixa `studyPlans` intacto, que o plano confirmado cabe na capacidade semanal e que o fechamento registra minutos vinculados sem modificar o histórico anterior. A suíte completa também cobre Demo, restauração de backups legados, acessibilidade, responsividade e regressão visual. Na execução local em America/Sao_Paulo após essa jornada, `npm run check:all` passou com 461 testes unitários e 183 E2E. O resultado do CI Linux deve ser consultado após a publicação.

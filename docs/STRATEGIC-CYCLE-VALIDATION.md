@@ -63,3 +63,11 @@ Custo de oportunidade: origem, destino, domínio, impacto e maior presença hist
 ### Validação final dos pacotes 9–10
 
 438 testes unitários em UTC e America/Sao_Paulo. Treze E2E selecionados passaram: metas por disciplina, platô/consolidação, cinco cenários de planejamento, ciclo estratégico, históricos, calibração e migração/restauração de backups. Verificações de sintaxe e bundles também passaram. A suíte E2E completa não foi executada nesta rodada.
+
+## Jornada integrada após Desempenho e Diagnóstico 2.0
+
+O teste `Desempenho → Diagnóstico → prévia → confirmação → execução → fechamento` em `tests/e2e/strategic-cycle.spec.js` navega pelo comparador de disciplinas, abre o diagnóstico contextual, pré-visualiza o plano e confirma a gravação. Antes da confirmação, não há plano novo; depois, os minutos planejados não excedem a capacidade semanal. A recomendação inicia uma sessão vinculada, e o fechamento registra seus minutos de execução. O teste confere que o plano e os registros históricos anteriores permanecem intactos.
+
+A regressão revelou que o agrupamento da linha do tempo criava uma lista independente por grupo e mostrava cinco itens em cada um. O renderer agora mantém uma lista única, com rótulos de grupo, para que “Mostrar mais” conte eventos globalmente. Testes E2E foram atualizados para os painéis expansíveis e seletores da interface atual.
+
+Verificação local em America/Sao_Paulo: `npm run check:all` passou com 461 testes unitários, artefatos reproduzíveis e 183 testes de navegador. Os cenários de Demo e backup legado fazem parte da suíte completa. Este registro descreve a execução local; o resultado do GitHub Actions deve ser consultado no commit publicado.
