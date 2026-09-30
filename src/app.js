@@ -28,6 +28,7 @@ import {buildPerformanceSimulations} from './application/performance/build-perfo
 import {renderPerformanceSimulations} from './ui/performance/performance-simulations-renderer.js';
 import {buildPerformanceSubjects} from './application/performance/build-performance-subjects.js';
 import {renderPerformanceSubjects} from './ui/performance/performance-subjects-renderer.js';
+import {buildPerformanceTopicDetail} from './application/performance/build-performance-topic-detail.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
@@ -5143,9 +5144,16 @@ function renderPerformance(){
       reviews:scope.reviews.included.map(item=>({...item,subjectId:entitySubjectId(item),completedDate:localDateFromTimestamp(item.completedAt)})),
       simulations:examScopedSimulations().map(item=>({...item,breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),
       blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,metricsByTopic});
-    sectionHtml=renderPerformanceSubjects(model,{range,formatDate:formatDatePt,escapeHtml,escapeAttr});
+    const topicRow=model.topics.find(item=>item.id===performanceViewState.topicId);
+    const topic=selected?.topics.find(item=>item.id===topicRow?.id);
+    const detail=topic?buildPerformanceTopicDetail({topicRow,questions:scope.questions.included,today:todayISO(),period:performanceViewState.period,
+      examProfile:buildTopicExamProfile({topic,subjectConfig:state.examBlueprint.subjects.find(item=>item.subjectId===selected.id),activeExamTags:state.examBlueprint?.activeExamTags||[],exams:state.exams,examQuestions:state.examQuestions}),
+      history:topicHistoryService.list({topicId:topic.id,includeLifecycle:false})}):null;
+    sectionHtml=renderPerformanceSubjects(model,{range,formatDate:formatDatePt,escapeHtml,escapeAttr,topicDetail:detail});
   }
   target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
+  const dialog=target.querySelector('#performanceTopicDialog');
+  if(dialog){dialog.addEventListener('close',()=>{performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:null})},{once:true});dialog.showModal()}
 }
 document.addEventListener('click',event=>{
   const jump=event.target.closest('[data-performance-jump]');
@@ -5156,8 +5164,11 @@ document.addEventListener('click',event=>{
 document.getElementById('performancePage')?.addEventListener('click',event=>{
   const section=event.target.closest('[data-performance-section]');
   if(section){performanceViewState=updatePerformanceViewState(performanceViewState,{section:section.dataset.performanceSection});render('desempenho');return}
+  const topic=event.target.closest('[data-performance-topic]');
+  if(topic){performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:topic.dataset.performanceTopic});render('desempenho');return}
+  if(event.target.closest('[data-performance-close-topic]')){document.getElementById('performanceTopicDialog')?.close();return}
   const open=event.target.closest('[data-performance-open]');
-  if(open)activateTab(open.dataset.performanceOpen);
+  if(open){document.getElementById('performanceTopicDialog')?.close();activateTab(open.dataset.performanceOpen)}
 });
 document.getElementById('performancePage')?.addEventListener('change',event=>{
   if(event.target.matches('[data-performance-period]'))performanceViewState=updatePerformanceViewState(performanceViewState,{period:event.target.value});

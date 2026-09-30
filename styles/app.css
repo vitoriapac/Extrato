@@ -1914,6 +1914,15 @@ body.timer-focus-active .timer-context{display:none!important}
 .performance-subject-name{margin:0;font-size:clamp(19px,2vw,27px)}
 .performance-topic-list li{align-items:baseline}.performance-topic-list li span{text-align:right;font-size:12px}
 .performance-more{margin-top:var(--space-3)}.performance-more summary{cursor:pointer;color:var(--navy);font-weight:600}
+.performance-topic-link{border:0;background:none;color:var(--navy);padding:0;text-align:left;text-decoration:underline;text-underline-offset:3px;font:inherit;font-weight:600;cursor:pointer}
+.performance-topic-dialog{width:min(760px,calc(100vw - 24px));max-height:calc(100vh - 32px);padding:0;border:1px solid var(--paper-line);background:var(--paper);color:var(--ink)}
+.performance-topic-dialog::backdrop{background:rgba(11,37,69,.62)}
+.performance-topic-dialog-inner{overflow:auto;max-height:calc(100vh - 34px);padding:var(--space-4)}
+.performance-topic-dialog-head,.performance-topic-actions{display:flex;align-items:start;justify-content:space-between;gap:var(--space-3)}
+.performance-topic-dialog-head h3{margin:var(--space-2) 0}.performance-topic-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3);margin:var(--space-4) 0}
+.performance-topic-facts div{padding:var(--space-3);border:1px solid var(--paper-line)}.performance-topic-facts dt{font-size:12px}.performance-topic-facts dd{margin:var(--space-2) 0 0;font-size:20px;font-weight:700}
+.performance-topic-events{padding-left:var(--space-4)}.performance-topic-events li{display:flex;gap:var(--space-3);padding:var(--space-2) 0}.performance-topic-actions{justify-content:flex-start;flex-wrap:wrap;padding-top:var(--space-4)}
+@media(max-width:520px){.performance-topic-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.performance-topic-list li span{text-align:left}}
 @media(max-width:700px){.performance-topic-groups{grid-template-columns:1fr}.performance-changes li{flex-wrap:wrap}}
 @media(max-width:900px){.performance-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
