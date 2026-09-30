@@ -1,0 +1,13 @@
+import {diagnosticLabel} from '../../domain/diagnostics/diagnostic-vocabulary.js';
+
+const signed=value=>value==null?'—':`${value>0?'+':''}${value} p.p.`;
+const trend=value=>value==null?diagnosticLabel('trend','insufficient'):value>1?diagnosticLabel('trend','improving'):value< -1?diagnosticLabel('trend','worsening'):diagnosticLabel('trend','stable');
+export function renderSubjectTargetEditor({rows=[],globalTarget=80,blueprint={}},{escapeHtml,escapeAttr}){
+  const configs=new Map((blueprint.subjects||[]).map(item=>[item.subjectId,item]));
+  if(!rows.length)return '<p class="empty-state empty-state--compact">Cadastre disciplinas no concurso ativo para configurar metas de acerto.</p>';
+  const body=rows.map(row=>{
+    const custom=configs.get(row.subjectId)?.accuracyTarget;
+    return `<tr><td><label><input type="checkbox" data-accuracy-select value="${escapeAttr(row.subjectId)}"> ${escapeHtml(row.name)}</label></td><td><input type="number" min="0" max="100" step="1" aria-label="Meta de acerto de ${escapeAttr(row.name)}" data-accuracy-value="${escapeAttr(row.subjectId)}" value="${custom??''}" placeholder="${globalTarget}"><small>${custom==null?'Herda a meta global':'Personalizada'}</small></td><td>${row.state==='insufficient'?'Dados insuficientes':`${row.accuracy}%`}</td><td>${signed(row.gap)}</td><td>${trend(row.evolution)}</td><td><button type="button" class="btn ghost small" data-accuracy-save="${escapeAttr(row.subjectId)}">Salvar</button><button type="button" class="btn ghost small" data-accuracy-restore="${escapeAttr(row.subjectId)}" ${custom==null?'disabled':''}>Restaurar global</button></td></tr>`;
+  }).join('');
+  return `<div class="subject-target-editor"><p class="analytics-note">Metas de acerto em questões pessoais, separadas de domínio e peso da prova. Atual e tendência usam os últimos 30 dias; a tendência exige pelo menos 10 questões em cada período.</p><div class="subject-target-bulk"><label><input type="checkbox" data-accuracy-select-all> Selecionar disciplinas</label><label>Valor para aplicar <input type="number" min="0" max="100" step="1" data-accuracy-bulk-value value="${globalTarget}">%</label><button type="button" class="btn small" data-accuracy-apply>Aplicar às selecionadas</button><button type="button" class="btn ghost small" data-accuracy-restore-selected>Restaurar global nas selecionadas</button></div><div class="performance-table-scroll"><table><caption>Meta global: ${globalTarget}% · configuração por disciplina</caption><thead><tr><th scope="col">Disciplina</th><th scope="col">Meta de acerto (%)</th><th scope="col">Atual</th><th scope="col">Diferença</th><th scope="col">Tendência</th><th scope="col">Ações</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+}

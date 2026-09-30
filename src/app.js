@@ -31,6 +31,8 @@ import {buildPerformanceSubjectComparison} from './application/performance/build
 import {buildNextBestAction} from './application/diagnostics/build-next-best-action.js';
 import {renderNextBestAction} from './ui/renderers/next-best-action-renderer.js';
 import {createAnalysisContext,analysisContextInScope} from './application/navigation/analysis-context.js';
+import {updateSubjectAccuracyTargets} from './application/goals/update-subject-accuracy-targets.js';
+import {renderSubjectTargetEditor as renderSubjectTargetEditorView} from './ui/renderers/subject-target-editor-renderer.js';
 import {renderPerformanceSubjects} from './ui/performance/performance-subjects-renderer.js';
 import {buildPerformanceTopicDetail} from './application/performance/build-performance-topic-detail.js';
 import {buildPerformanceConsistency} from './application/performance/build-performance-consistency.js';
@@ -3622,6 +3624,33 @@ function cancelExamSubjectConfig(){renderExamBlueprintConfig()}
 function toggleActiveExamTag(tag,checked){globalThis.studytrackProgressiveLists?.reset();resetRecordListLimits();const valid=['bb-escriturario','caixa-tbn','caixa-tbn-ti'];if(!valid.includes(tag))return;const values=new Set(state.examBlueprint.activeExamTags||[]);checked?values.add(tag):values.delete(tag);if(JSON.stringify([...values].sort())!==JSON.stringify([...(state.examBlueprint.activeExamTags||[])].sort()))captureReadinessBeforeStrategy('Antes de alterar o concurso ativo');if(setActiveExamTags(state,[...values],{configuredAt:nowISO()})){studyPlanPreview=null;persistAndRender()}}
 
 /* ===== METAS POR DISCIPLINA ===== */
+function renderSubjectTargetEditor(){
+  const container=document.getElementById('subjectTargetEditor');if(!container)return;
+  const scope=examEvidenceContext(),subjects=examScopedSubjects(),questions=scope.questions.included.map(item=>({...item,subjectId:entitySubjectId(item)}));
+  const comparison=buildPerformanceSubjectComparison({subjects,questions,range:resolvePerformanceRange({today:todayISO(),period:'30',comparePrevious:true}),blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao});
+  container.innerHTML=renderSubjectTargetEditorView({rows:comparison.rows,globalTarget:state.metas.metaAprovacao,blueprint:state.examBlueprint},{escapeHtml,escapeAttr});
+}
+function saveSubjectAccuracyTargets(subjectIds,rawValue){
+  const eligible=new Set(examScopedSubjects().map(item=>item.id)),ids=[...new Set(subjectIds)].filter(id=>eligible.has(id));
+  if(!ids.length){showToast('Selecione ao menos uma disciplina do concurso ativo.');return}
+  const value=rawValue===''?null:Number(rawValue);
+  const updated=updateSubjectAccuracyTargets(state.examBlueprint,ids,value);
+  if(!updated){showToast('Informe uma meta entre 0% e 100%.');return}
+  if(JSON.stringify(updated.subjects)===JSON.stringify(state.examBlueprint.subjects)){showToast('As metas selecionadas já estão atualizadas.');return}
+  captureReadinessBeforeStrategy('Antes de alterar metas de acerto por disciplina');
+  Object.assign(state.examBlueprint,updated,{configuredAt:nowISO()});studyPlanPreview=null;persistAndRender();showToast('Metas de acerto atualizadas.');
+}
+document.getElementById('subjectTargetEditor')?.addEventListener('click',event=>{
+  const container=event.currentTarget;
+  const selected=()=>[...container.querySelectorAll('[data-accuracy-select]:checked')].map(item=>item.value);
+  const save=event.target.closest('[data-accuracy-save]');if(save){saveSubjectAccuracyTargets([save.dataset.accuracySave],container.querySelector(`[data-accuracy-value="${CSS.escape(save.dataset.accuracySave)}"]`)?.value??'');return}
+  const restore=event.target.closest('[data-accuracy-restore]');if(restore){saveSubjectAccuracyTargets([restore.dataset.accuracyRestore],'');return}
+  if(event.target.closest('[data-accuracy-apply]')){const value=container.querySelector('[data-accuracy-bulk-value]')?.value??'';if(value===''){showToast('Informe o valor a aplicar.');return}saveSubjectAccuracyTargets(selected(),value);return}
+  if(event.target.closest('[data-accuracy-restore-selected]'))saveSubjectAccuracyTargets(selected(),'');
+});
+document.getElementById('subjectTargetEditor')?.addEventListener('change',event=>{
+  if(event.target.matches('[data-accuracy-select-all]'))event.currentTarget.querySelectorAll('[data-accuracy-select]').forEach(input=>{input.checked=event.target.checked});
+});
 function somarQuestoesDisciplinaNaSemana(subjectId){
   return state.questoes
     .filter(q => entitySubjectId(q) === subjectId && isSameWeek(q.date))
@@ -5252,7 +5281,7 @@ const RENDER_SCOPE_SECTIONS={
   calendario:new Set(['indicadores do calendário','tarefas de hoje','tarefas atrasadas','filtros do calendário','calendário','calendário mensal']),
   agenda:new Set(['filtros da agenda','agenda']),
   questoes:new Set(['questões','análise de questões','simulados']),
-  metas:new Set(['metas','execução do plano','configuração estratégica','plano até a prova','metas de horas por dia','metas por disciplina','histórico de metas','ritmo']),
+  metas:new Set(['metas','execução do plano','configuração estratégica','plano até a prova','metas de horas por dia','metas de acerto por disciplina','metas por disciplina','histórico de metas','ritmo']),
   hoje:new Set(['resumo executivo','central de diagnóstico','recomendação de estudo','replanejamento','tarefas da aba hoje','atrasos da aba hoje','simulados planejados','metas de hoje','alertas','plano de hoje'])
 };
 function activeTabName(){return document.querySelector('.tab-btn.active')?.dataset.tab||'dashboard'}
@@ -5289,6 +5318,7 @@ applicationRenderer=createApplicationRenderer({
     ['configuração estratégica',renderExamBlueprintConfig],
     ['plano até a prova',renderStudyPlanBuilder],
     ['metas de horas por dia',renderWeeklyHoursGoals],
+    ['metas de acerto por disciplina',renderSubjectTargetEditor],
     ['metas por disciplina',renderMetasPorDisciplina],
     ['histórico de metas',renderHistoricoMetas],
     ['ritmo',renderRitmo],
