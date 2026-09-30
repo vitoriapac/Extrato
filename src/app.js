@@ -1,5 +1,4 @@
-import {buildConsolidatedDiagnosis} from './application/diagnostics/build-consolidated-diagnosis.js';
-import {buildPreparationSignals} from './application/analytics/build-preparation-signals.js';
+import {buildDiagnosisPageModel} from './application/diagnostics/build-diagnosis-page-model.js';
 import {renderPreparationSignals} from './ui/renderers/preparation-signals-renderer.js';
 import {resolveSubjectAccuracyTarget} from './domain/analytics/subject-accuracy-target.js';
 import {buildSubjectAccuracy} from './application/analytics/build-subject-accuracy.js';
@@ -20,26 +19,17 @@ import {renderScoreProjectionEvidence} from './ui/renderers/score-projection-ren
 import {renderWeeklyDecisionCycle} from './ui/renderers/weekly-decision-cycle-renderer.js';
 import {buildPerformanceAnalysis,performancePeriodRecords} from './application/questions/build-performance-analysis.js';
 import {createPerformanceViewState,resolvePerformanceRange,updatePerformanceViewState} from './application/performance/performance-view-state.js';
-import {buildPerformanceOverview} from './application/performance/build-performance-overview.js';
+import {buildPerformancePageModel} from './application/performance/build-performance-page-model.js';
 import {renderPerformancePage} from './ui/performance/performance-page.js';
-import {renderPerformanceOverview} from './ui/performance/performance-overview-renderer.js';
-import {renderPerformanceQuestions} from './ui/performance/performance-questions-renderer.js';
-import {buildPerformanceSimulations} from './application/performance/build-performance-simulations.js';
-import {renderPerformanceSimulations} from './ui/performance/performance-simulations-renderer.js';
-import {buildPerformanceSubjects} from './application/performance/build-performance-subjects.js';
+import {renderPerformanceSection} from './ui/performance/render-performance-section.js';
+import {createPerformanceController} from './ui/controllers/performance-controller.js';
+import {createDiagnosisController} from './ui/controllers/diagnosis-controller.js';
 import {buildPerformanceSubjectComparison} from './application/performance/build-performance-subject-comparison.js';
-import {buildNextBestAction} from './application/diagnostics/build-next-best-action.js';
 import {renderNextBestAction} from './ui/renderers/next-best-action-renderer.js';
 import {createAnalysisContext,analysisContextInScope} from './application/navigation/analysis-context.js';
 import {updateSubjectAccuracyTargets} from './application/goals/update-subject-accuracy-targets.js';
 import {renderSubjectTargetEditor as renderSubjectTargetEditorView} from './ui/renderers/subject-target-editor-renderer.js';
-import {buildReviewDebt} from './application/diagnostics/build-review-debt.js';
 import {renderRecoveryReviewDebt} from './ui/renderers/recovery-review-debt-renderer.js';
-import {renderPerformanceSubjects} from './ui/performance/performance-subjects-renderer.js';
-import {buildPerformanceTopicDetail} from './application/performance/build-performance-topic-detail.js';
-import {buildPerformanceConsistency} from './application/performance/build-performance-consistency.js';
-import {renderPerformanceConsistency} from './ui/performance/performance-consistency-renderer.js';
-import {buildPerformanceComparison} from './application/performance/build-performance-comparison.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
@@ -98,7 +88,7 @@ import {buildRecommendationOutcomeAudit} from './application/recommendations/bui
 import {renderRecommendationOutcomeAudit} from './ui/renderers/recommendation-outcome-audit-renderer.js';
 import {buildStudyAction,recommendationActionKind,recommendationActionLabel,sameStudyActionTarget,STUDY_ACTION_SOURCES} from './application/recommendations/recommendation-action.js';
 import {createRecommendationController} from './application/recommendations/recommendation-controller.js';
-import {buildHeatmapViewModel,buildDiagnosisViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
+import {buildHeatmapViewModel,buildApprovalSignals} from './application/analytics/build-analytics-view-model.js';
 import {calculateRiskScore} from './domain/diagnostics/risk-score.js';
 import {buildStudyPlan} from './application/build-study-plan.js';
 import {buildReplanProposal,applyReplan,undoReplan} from './application/replan-study.js';
@@ -4443,15 +4433,10 @@ let currentConsolidatedDiagnosis=null;
 function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
   const {candidates}=refreshStudyRecommendationItems(),scoped=examEvidenceContext();
-  const preparationSignals=buildPreparationSignals({subjects:examScopedSubjects(),candidates,questions:scoped.questions.included,sessions:scoped.sessions.included,blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,today:todayISO()});
   const opportunityCosts=studyPlanPreview?.adaptiveAdvice?.state==='proposal'&&!studyPlanPreview.adaptiveAdvice.applied?[studyPlanPreview.adaptiveAdvice]:[];
-  currentConsolidatedDiagnosis=buildConsolidatedDiagnosis({candidates,subjects:examScopedSubjects(),eligibleTopics:scoped.content.eligibleTopics,preparationSignals,recommendations:currentStudyRecommendations,opportunityCosts,activeExamTags:state.examBlueprint.activeExamTags||[]});
-  const result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{limit:Number.MAX_SAFE_INTEGER,hasTopics:candidates.length>0,weeklyCapacityMinutes});
-  model.consolidated=currentConsolidatedDiagnosis;
-  const nextAction=buildNextBestAction({recommendations:currentStudyRecommendations,diagnosis:currentConsolidatedDiagnosis,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity()});
-  const riskTopicIds=preparationSignals.rows.filter(item=>item.type==='consolidation').map(item=>item.topicId);
-  const debt=buildReviewDebt({reviews:scoped.reviews.included,candidates,today:todayISO(),riskTopicIds});
-  const diagnosisHtml=renderDiagnosisCenterView({model,studyActionForItem:item=>{
+  const {diagnosis,consolidated,preparationSignals,nextAction,debt}=buildDiagnosisPageModel({candidates,subjects:examScopedSubjects(),scope:scoped,blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,today:todayISO(),activeExamTags:state.examBlueprint.activeExamTags||[],recommendations:currentStudyRecommendations,opportunityCosts,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity(),hoursByDay:state.metas.horasPorDia||{}});
+  currentConsolidatedDiagnosis=consolidated;
+  const diagnosisHtml=renderDiagnosisCenterView({model:diagnosis,studyActionForItem:item=>{
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
     return action?{...action,label:recommendationActionLabel(action)}:null;
   },escapeHtml,escapeAttr});
@@ -4459,14 +4444,9 @@ function renderDiagnosisCenter(){
   container.innerHTML=analysisContextBanner('hoje')+renderNextBestAction(nextAction,{escapeHtml,escapeAttr})+diagnosisHtml+`<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${debt.count} vencida(s)</summary>${secondaryHtml}</details>`;
   container.innerHTML+=`<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
 }
-document.getElementById('diagnosisCenter')?.addEventListener('click',event=>{
-  const button=event.target.closest('[data-next-best-preview]');if(!button)return;
-  refreshStudyRecommendationItems();
-  const recommendation=currentStudyRecommendations.find(item=>(item.recommendationId||item.id)===button.dataset.nextBestPreview);
-  if(!recommendation){showToast('A recomendação mudou. Atualize o diagnóstico antes de pré-visualizar.');renderDiagnosisCenter();return}
-  calculateStudyPlanPreview();activateTab('metas');
-  requestAnimationFrame(()=>document.getElementById('examStudyPlan')?.scrollIntoView({block:'start'}));
-});
+createDiagnosisController({document,refreshRecommendations:refreshStudyRecommendationItems,getRecommendations:()=>currentStudyRecommendations,
+  onStale:()=>{showToast('A recomendação mudou. Atualize o diagnóstico antes de pré-visualizar.');renderDiagnosisCenter()},
+  openPreview:calculateStudyPlanPreview,activateTab,requestFrame:requestAnimationFrame}).register();
 function renderRecommendationImpact(model){
   if(!model.available)return '';
   const metrics=model.metrics.map(metric=>`<div><span>${escapeHtml(metric.label)}</span><strong>${metric.before} → ${metric.after}</strong><small class="${metric.delta>=0?'positive':'negative'}">${metric.delta>=0?'+':''}${metric.delta} ${metric.key==='risk'?'de melhora':'p.p.'}</small></div>`).join('');
@@ -5175,85 +5155,25 @@ function performanceScopedPlans(scope){
 function renderPerformance(){
   const target=document.getElementById('performancePage');
   if(!target)return;
-  const range=resolvePerformanceRange({today:todayISO(),...performanceViewState});
-  let sectionHtml='';
-  if(performanceViewState.section==='overview'){
-    const scope=examEvidenceContext(),activeExamTags=state.examBlueprint?.activeExamTags||[];
-    const dailyPlans=performanceScopedPlans(scope);
-    const overview=buildPerformanceOverview({range,today:todayISO(),activeExamTags,readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans,subjects:examScopedSubjects()});
-    const comparisonModel=buildPerformanceComparison(overview,{comparePrevious:range.comparePrevious});
-    sectionHtml=renderPerformanceOverview(overview,{range,today:todayISO(),activeExamTags,formatDate:formatDatePt,escapeHtml,comparisonModel});
-  }else if(performanceViewState.section==='questions'){
-    const scope=examEvidenceContext();
-    const questions=scope.questions.included.map(item=>({...item,subjectId:entitySubjectId(item)}));
-    const period=performanceViewState.period;
-    const evolution=buildQuestionEvolution({questions,today:todayISO(),period});
-    const analysis=buildPerformanceAnalysis({questions,simulations:[],candidates:scope.content.eligibleTopics.map(item=>({topicId:item.id,topicName:item.name})),today:todayISO(),period});
-    const previous=range.previous?buildQuestionEvolution({questions,today:range.previous.end,period}).accuracy:null;
-    sectionHtml=renderPerformanceQuestions({evolution,analysis,previousAccuracy:previous,range,formatDate:formatDatePt,escapeHtml});
-  }else if(performanceViewState.section==='simulations'){
-    const activeExamTags=state.examBlueprint?.activeExamTags||[];
-    const simulations=examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))}));
-    const model=buildPerformanceSimulations({simulations,subjects:examScopedSubjects(),projectionSnapshots:state.projectionSnapshots,activeExamTags,range,today:todayISO()});
-    sectionHtml=renderPerformanceSimulations(model,{range,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:null,formatDate:formatDatePt,escapeHtml});
-  }else if(performanceViewState.section==='subjects'){
-    const scope=examEvidenceContext(),eligibleTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id));
-    const subjects=examScopedSubjects().map(subject=>({...subject,topics:(subject.topics||[]).filter(topic=>eligibleTopicIds.has(topic.id))}));
-    const questions=scope.questions.included.map(item=>({...item,subjectId:entitySubjectId(item)}));
-    const comparison=buildPerformanceSubjectComparison({subjects,questions,range,blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,candidates:intelligenceCandidates(),sort:performanceViewState.subjectSort});
-    const selected=subjects.find(item=>item.id===performanceViewState.subjectId)||subjects[0];
-    const metricsByTopic=Object.fromEntries((selected?.topics||[]).map(item=>{
-      const mastery=topicMasteryIndex(selected.id,item.id),retention=topicRetentionScore(selected.id,item.id);
-      return [item.id,{mastery:mastery?.confidence>0?mastery.score:null,retention:retention?.available?retention.score:null,evidence:mastery?.confidence||0}];
-    }));
-    const model=buildPerformanceSubjects({subjects,subjectId:selected?.id,range,today:todayISO(),period:performanceViewState.period,
-      questions,
-      sessions:scope.sessions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),
-      reviews:scope.reviews.included.map(item=>({...item,subjectId:entitySubjectId(item),completedDate:localDateFromTimestamp(item.completedAt)})),
-      simulations:examScopedSimulations().map(item=>({...item,breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),
-      blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,metricsByTopic});
-    const topicRow=model.topics.find(item=>item.id===performanceViewState.topicId);
-    const topic=selected?.topics.find(item=>item.id===topicRow?.id);
-    const detail=topic?{...buildPerformanceTopicDetail({topicRow,questions:scope.questions.included,today:todayISO(),period:performanceViewState.period,
-      examProfile:buildTopicExamProfile({topic,subjectConfig:state.examBlueprint.subjects.find(item=>item.subjectId===selected.id),activeExamTags:state.examBlueprint?.activeExamTags||[],exams:state.exams,examQuestions:state.examQuestions}),
-      history:topicHistoryService.list({topicId:topic.id,includeLifecycle:false})}),subjectId:selected.id}:null;
-    sectionHtml=renderPerformanceSubjects(model,{range,formatDate:formatDatePt,escapeHtml,escapeAttr,topicDetail:detail,comparison});
-  }else if(performanceViewState.section==='consistency'){
-    const scope=examEvidenceContext();
-    const model=buildPerformanceConsistency({range,today:todayISO(),sessions:scope.sessions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),questions:scope.questions.included,dailyPlans:performanceScopedPlans(scope),subjects:examScopedSubjects()});
-    sectionHtml=renderPerformanceConsistency(model,{range,formatDate:formatDatePt,escapeHtml});
-  }
+  const today=todayISO(),range=resolvePerformanceRange({today,...performanceViewState}),scope=examEvidenceContext();
+  const activeExamTags=state.examBlueprint?.activeExamTags||[];
+  const pageModel=buildPerformancePageModel({viewState:performanceViewState,range,today,activeExamTags,scope,subjects:examScopedSubjects(),
+    simulations:performanceViewState.section==='subjects'||performanceViewState.section==='simulations'?examScopedSimulations():[],
+    projectionSnapshots:state.projectionSnapshots,readinessSnapshots:state.readinessSnapshots,
+    readiness:performanceViewState.section==='overview'?readinessResult(computeApprovalMetrics()):null,
+    blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,
+    candidates:performanceViewState.section==='subjects'?intelligenceCandidates():[],dailyPlans:performanceScopedPlans(scope),
+    subjectIdFor:entitySubjectId,simulationCountsFor:simuladoEffectiveCounts,
+    reviewCompletedDateFor:item=>localDateFromTimestamp(item.completedAt),
+    topicMetricsFor:(subjectId,topicId)=>{const mastery=topicMasteryIndex(subjectId,topicId),retention=topicRetentionScore(subjectId,topicId);return {mastery:mastery?.confidence>0?mastery.score:null,retention:retention?.available?retention.score:null,evidence:mastery?.confidence||0}},
+    topicProfileFor:(topic,subject)=>buildTopicExamProfile({topic,subjectConfig:state.examBlueprint.subjects.find(item=>item.subjectId===subject.id),activeExamTags,exams:state.exams,examQuestions:state.examQuestions}),
+    topicHistoryFor:topicId=>topicHistoryService.list({topicId,includeLifecycle:false})});
+  const sectionHtml=renderPerformanceSection(pageModel,{range,today,activeExamTags,formatDate:formatDatePt,escapeHtml,escapeAttr,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:null});
   target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml:analysisContextBanner('desempenho')+sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
   const dialog=target.querySelector('#performanceTopicDialog');
   if(dialog){dialog.addEventListener('close',()=>{performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:null})},{once:true});dialog.showModal()}
 }
-document.addEventListener('click',event=>{
-  const jump=event.target.closest('[data-performance-jump]');
-  if(!jump)return;
-  performanceViewState=updatePerformanceViewState(performanceViewState,{section:jump.dataset.performanceJump});
-  if(jump.dataset.performanceSubjectId)performanceViewState=updatePerformanceViewState(performanceViewState,{subjectId:jump.dataset.performanceSubjectId});
-  if(jump.dataset.performanceTopicId)performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:jump.dataset.performanceTopicId});
-  activateTab('desempenho');
-});
-document.getElementById('performancePage')?.addEventListener('click',event=>{
-  const section=event.target.closest('[data-performance-section]');
-  if(section){performanceViewState=updatePerformanceViewState(performanceViewState,{section:section.dataset.performanceSection});render('desempenho');return}
-  const compared=event.target.closest('[data-performance-compare-subject]');
-  if(compared){performanceViewState=updatePerformanceViewState(performanceViewState,{subjectId:compared.dataset.performanceCompareSubject});render('desempenho');return}
-  const topic=event.target.closest('[data-performance-topic]');
-  if(topic){performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:topic.dataset.performanceTopic});render('desempenho');return}
-  if(event.target.closest('[data-performance-close-topic]')){document.getElementById('performanceTopicDialog')?.close();return}
-  const open=event.target.closest('[data-performance-open]');
-  if(open){document.getElementById('performanceTopicDialog')?.close();activateTab(open.dataset.performanceOpen)}
-});
-document.getElementById('performancePage')?.addEventListener('change',event=>{
-  if(event.target.matches('[data-performance-period]'))performanceViewState=updatePerformanceViewState(performanceViewState,{period:event.target.value});
-  else if(event.target.matches('[data-performance-compare]'))performanceViewState=updatePerformanceViewState(performanceViewState,{comparePrevious:event.target.checked});
-  else if(event.target.matches('[data-performance-subject]'))performanceViewState=updatePerformanceViewState(performanceViewState,{subjectId:event.target.value});
-  else if(event.target.matches('[data-performance-subject-sort]'))performanceViewState=updatePerformanceViewState(performanceViewState,{subjectSort:event.target.value});
-  else return;
-  render('desempenho');
-});
+createPerformanceController({document,getViewState:()=>performanceViewState,setViewState:value=>{performanceViewState=value},render:()=>render('desempenho'),activateTab}).register();
 document.addEventListener('click',event=>{
   const back=event.target.closest('[data-analysis-return]');
   if(back){

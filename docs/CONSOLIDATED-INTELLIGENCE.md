@@ -76,3 +76,13 @@ Verificação integrada dos três primeiros pacotes: `npm run check:all` passou 
 ## Regressão da jornada completa
 
 O cenário Playwright em `tests/e2e/strategic-cycle.spec.js` percorre Desempenho → Diagnóstico → prévia → confirmação → sessão vinculada → fechamento. Verifica que a prévia deixa `studyPlans` intacto, que o plano confirmado cabe na capacidade semanal e que o fechamento registra minutos vinculados sem modificar o histórico anterior. A suíte completa também cobre Demo, restauração de backups legados, acessibilidade, responsividade e regressão visual. Na execução local em America/Sao_Paulo após essa jornada, `npm run check:all` passou com 461 testes unitários e 183 E2E. O resultado do CI Linux deve ser consultado após a publicação.
+
+## Consolidação de produto — pacotes 3–5
+
+A Próxima Melhor Ação distingue `ACTION_REQUIRED`, `ACTION_OPTIONAL`, `MAINTAIN_PLAN`, `INSUFFICIENT_EVIDENCE` e `NO_ELIGIBLE_ACTION`. A primeira recomendação pendente e elegível continua sendo escolhida na ordem do motor atual. Na ausência dela, o estado é derivado dos sinais já consolidados e da existência de plano; nenhuma ação é inventada para preencher o card.
+
+`build-diagnosis-page-model.js` reúne os builders existentes e `build-performance-page-model.js` monta a visão selecionada de Desempenho. `app.js` fornece registros filtrados, acesso às métricas de tópicos e contexto de navegação; renderers e controladores tratam HTML e eventos. Essa extração não altera schema nem fórmulas.
+
+A explicação “Por que a Prontidão mudou?” compara o último snapshot salvo do período selecionado com o último do período anterior. Ela reutiliza `compareReadinessSnapshots`; versões do algoritmo, pesos ou fatores disponíveis incompatíveis impedem uma conclusão. A interface mostra direção e valores reais dos fatores e evita atribuir pontos individuais quando o arredondamento do índice não permite decomposição exata.
+
+Verificação local dos pacotes 3–5 em America/Sao_Paulo: `npm run check:all` passou com 465 testes unitários e 184 testes E2E, incluindo sintaxe e conferência dos artefatos gerados.

@@ -138,6 +138,8 @@ Em **Hoje → Diagnóstico**, sinais do mesmo tópico ou disciplina aparecem em 
 
 Cada diagnóstico mostra a conclusão, o motivo principal e a qualidade da evidência. **Ver evidências** abre medidas e sinais auxiliares; **Ver metodologia** apresenta os limites e o período da leitura. O [inventário de densidade](docs/PRODUCT-CONSOLIDATION-VISUAL-AUDIT.md) registra a hierarquia das demais áreas.
 
+A Próxima Melhor Ação pode indicar uma intervenção prioritária, uma sugestão opcional, manutenção do plano, evidência insuficiente ou ausência de ação elegível. Ela não cria uma prioridade paralela. Em **Desempenho → Visão geral**, **Por que a Prontidão mudou?** compara somente retratos salvos do período atual e do anterior. Versões, pesos ou fatores diferentes bloqueiam a comparação; os fatores exibem valores observados, sem atribuição artificial de pontos.
+
 A linha do tempo estratégica agrupa eventos por semana, mês ou fase registrada e filtra decisões, desempenho, planejamento e avaliações. A trajetória de cada tópico usa retratos congelados; dados antigos não são recalculados com o estado atual. Consulte [Consolidação do ciclo estratégico](docs/STRATEGIC-CYCLE.md) para os critérios de leitura.
 
 As **metas de acerto por disciplina** podem herdar a meta global, ser personalizadas individualmente ou aplicadas às disciplinas selecionadas. São referências para questões pessoais, separadas de domínio e peso oficial. O Diagnóstico também mostra recuperação consistente quando há quatro semanas completas de melhora com volume suficiente e resume a dívida de revisão por relevância; esses indicadores não mudam o plano automaticamente.

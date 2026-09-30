@@ -127,6 +127,10 @@ flowchart TD
 - `src/application/navigation/analysis-context.js`: contexto transitório de origem, concurso, disciplina, tópico e período para navegar entre análises sem mudar o schema.
 - `src/application/analytics/group-strategic-timeline.js`: agrupamento dos eventos existentes por semana, mês ou fase registrada; a lista usa uma paginação progressiva global.
 - `src/application/goals/update-subject-accuracy-targets.js`: atualização em lote das metas de acerto por disciplina, com `null` indicando herança da meta global.
+- `src/application/diagnostics/build-diagnosis-page-model.js`: coordena sinais, diagnóstico consolidado, próxima ação e dívida de revisão sem gerar HTML.
+- `src/application/performance/build-performance-page-model.js`: monta o modelo da visão selecionada a partir de registros já filtrados; `src/ui/performance/render-performance-section.js` escolhe o renderer correspondente.
+- `src/ui/controllers/performance-controller.js` e `src/ui/controllers/diagnosis-controller.js`: eventos de navegação e prévia específicos dessas áreas.
+- `src/application/readiness/build-readiness-change-explanation.js`: apresenta a comparação dos snapshots salvos quando algoritmo, pesos e fatores coincidem; não reconstrói valores históricos.
 - `src/ui/renderers/retention-renderer.js`: filtros, padrões e linhas do painel de retenção são apresentados fora de `src/app.js`.
 - `src/ui/renderers/simulations-renderer.js`: linhas e edição de simulados, detalhamento por disciplina, gráfico de evolução e tabela comparativa são apresentados fora de `src/app.js`.
 - `src/application/alert-lifecycle.js`: ordenação, limitação, dispensa temporária e resolução de alertas.

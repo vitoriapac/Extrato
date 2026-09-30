@@ -57,5 +57,5 @@ export function buildPerformanceOverview({range,today,activeExamTags=[],readines
       if(value!=null&&value!==0)changes.push({label,delta:value,unit});
     }
   }
-  return {current,previous,readiness,readinessDelta,readinessComparison,history,weekly,strategic,changes:changes.slice(0,5)};
+  return {current,previous,readiness,readinessDelta,readinessComparison,readinessPair:{previous:prior,current:latest},history,weekly,strategic,changes:changes.slice(0,5)};
 }
