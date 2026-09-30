@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=b2208834e949">
+<link rel="stylesheet" href="styles/app.css?v=444e0a30600f">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -350,15 +350,17 @@
     <div class="guided-manual-return" id="guidedManualReturn" hidden><span>Você está montando seu primeiro plano. Cadastre ao menos uma disciplina com tópico para continuar.</span><button class="btn small" type="button" data-guided-manual-return disabled>Voltar à configuração</button></div>
     <div class="section-head">
       <div class="section-title">Disciplinas &amp; tópicos</div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn ghost" id="loadDefaultSubjectsBtn" data-testid="open-exam-import">📋 Carregar disciplinas do edital</button>
-        <button class="btn ghost" id="structuredContentImportBtn">⬆ Importar JSON ou CSV</button>
-        <button class="btn ghost" id="downloadStructuredCsvBtn">Baixar modelo CSV</button>
+      <div class="subjects-header-actions">
+        <button class="btn ghost small" type="button" data-performance-jump="subjects">Ver evolução</button>
+        <details class="action-menu subjects-import-menu"><summary class="btn ghost" aria-label="Opções de importação de disciplinas">Importar ▾</summary><div class="action-menu__items">
+          <button type="button" id="loadDefaultSubjectsBtn" data-testid="open-exam-import">Carregar disciplinas do edital</button>
+          <button type="button" id="structuredContentImportBtn">Importar JSON ou CSV</button>
+          <button type="button" id="downloadStructuredCsvBtn">Baixar modelo CSV</button>
+        </div></details>
         <input type="file" id="structuredContentFile" accept=".json,.csv,text/csv,application/json" hidden>
         <button class="btn" id="addSubjectBtn">+ Nova disciplina</button>
       </div>
     </div>
-    <button class="btn ghost small" type="button" data-performance-jump="subjects">Ver evolução das disciplinas →</button>
     <div id="subjectsContainer"></div>
   </div>
 
@@ -508,16 +510,15 @@
     </div>
 
 
-    <details class="chart-card" id="topicPerformanceCard"><summary>Análise detalhada de erros e tópicos</summary>
+    <details class="chart-card question-analysis-card" id="topicPerformanceCard"><summary>Análise de desempenho por tópico e erros</summary>
       <div class="section-head module-heading module-heading--section">
         <h3 class="module-heading__title">Desempenho por tópico e tendência</h3>
         <span class="subject-progress-pill" id="questionDataCoverage">0% identificadas</span>
       </div>
       <div class="analytics-toolbar">
         <select class="select-control" id="performanceSubjectSelect" aria-label="Disciplina analisada" data-delegated-change="performanceSubjectId=this.value;renderQuestionAnalytics()"></select>
-        <span class="analytics-note">A tendência exige pelo menos 30 questões em cada janela comparada.</span>
       </div>
-      <div class="stat-grid" id="questionAnalyticsSummary" style="margin-bottom:16px;"></div>
+      <div class="question-analysis-summary" id="questionAnalyticsSummary"></div>
       <h3>Desempenho dos tópicos</h3>
       <div id="topicPerformanceBars"></div>
       <h3 style="margin-top:22px;">Tendência semanal — últimas 8 semanas</h3>
@@ -780,7 +781,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=b2208834e949"></script>
+  <script src="src/app.bundle.js?v=444e0a30600f"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

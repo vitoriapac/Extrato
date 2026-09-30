@@ -1,11 +1,10 @@
 import {DEFAULT_LIST_VISIBLE_ITEMS} from '../progressive-list.js';
 export function renderQuestionAnalyticsSummary({resolved,accuracy,coverage,trend}){
   return [
-    ['Questões analisadas',resolved],
-    ['Taxa de acerto',accuracy===null?'—':`${accuracy}%`],
+    ['Precisão',accuracy===null?'—':`${accuracy}%`],
     ['Cobertura por tópico',`${coverage}%`],
-    ['Tendência',`${trend.icon} ${trend.label}`]
-  ].map(([label,value])=>`<div class="stat-cell"><div class="n">${value}</div><div class="l">${label}</div></div>`).join('');
+    ['Questões',resolved]
+  ].map(([label,value])=>`<div class="question-analysis-metric"><strong>${value}</strong><span>${label}</span></div>`).join('')+`<p class="question-analysis-trend">Tendência: ${trend.icon} ${trend.label}. A comparação exige pelo menos 30 questões em cada janela.</p>`;
 }
 
 export function renderTopicQuestionPerformance({mode,topics,visible,masteryForTopic,renderFooter,visibleLimit,escapeHtml}){

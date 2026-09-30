@@ -2043,8 +2043,11 @@ function renderSubjects(){
         </div>
         <div class="subject-header-actions">
           <span class="subject-progress-pill">${pct}% · ${subjectTopics.length} tópico${subjectTopics.length===1?'':'s'}</span>
-          <button class="btn ghost small" data-delegated-click="event.stopPropagation();duplicateSubject('${s.id}')">Duplicar</button>
-          <button class="btn ghost small" data-delegated-click="event.stopPropagation();archiveSubject('${s.id}')">Arquivar</button>
+          <details class="action-menu subject-action-menu" data-delegated-click="event.stopPropagation()"><summary class="btn ghost small" aria-label="Ações de ${escapeAttr(s.name)}" data-delegated-click="event.stopPropagation()">⋯</summary><div class="action-menu__items">
+            <button type="button" data-delegated-click="event.stopPropagation();duplicateSubject('${s.id}')">Duplicar disciplina</button>
+            <button type="button" data-delegated-click="event.stopPropagation();archiveSubject('${s.id}')">Arquivar disciplina</button>
+            <span class="action-menu__hint">Para excluir definitivamente, arquive primeiro e use a seção de disciplinas arquivadas.</span>
+          </div></details>
         </div>
       </div>
       <div class="subject-body ${s.collapsed ? 'collapsed':''}">
@@ -4696,6 +4699,13 @@ function renderGuidedOnboarding(){
   const model=onboardingModel();
   if(!uiState.onboarding.currentStep)uiState.onboarding.currentStep=model.current.id;
   const visible=model.visible&&!IS_DEMO_MODE;
+  const overview=document.querySelector('#panel-dashboard .overview-now');
+  if(overview){
+    const setupBlocksAction=!model.hasContent||!model.hasAvailability;
+    if(setupBlocksAction)overview.before(entry);
+    else overview.after(entry);
+    entry.classList.toggle('onboarding-entry--blocking',setupBlocksAction);
+  }
   entry.hidden=!visible;
   document.getElementById('guidedOnboardingEntry').innerHTML=visible?renderOnboardingEntry(model,{escapeHtml}):'';
   overlay.hidden=!visible||!uiState.onboarding.open;
