@@ -20,7 +20,9 @@ import {renderScoreProjectionEvidence} from './ui/renderers/score-projection-ren
 import {renderWeeklyDecisionCycle} from './ui/renderers/weekly-decision-cycle-renderer.js';
 import {buildPerformanceAnalysis,performancePeriodRecords} from './application/questions/build-performance-analysis.js';
 import {createPerformanceViewState,resolvePerformanceRange,updatePerformanceViewState} from './application/performance/performance-view-state.js';
+import {buildPerformanceOverview} from './application/performance/build-performance-overview.js';
 import {renderPerformancePage} from './ui/performance/performance-page.js';
+import {renderPerformanceOverview} from './ui/performance/performance-overview-renderer.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
@@ -5100,7 +5102,17 @@ function renderPerformance(){
   const target=document.getElementById('performancePage');
   if(!target)return;
   const range=resolvePerformanceRange({today:todayISO(),...performanceViewState});
-  target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
+  let overviewHtml='';
+  if(performanceViewState.section==='overview'){
+    const scope=examEvidenceContext(),activeExamTags=state.examBlueprint?.activeExamTags||[];
+    const eligible=new Set(scope.content.eligibleTopics.map(item=>item.id));
+    const dailyPlans=activeExamTags.length
+      ?state.dailyPlans.map(plan=>({...plan,items:(plan.items||[]).filter(item=>item.topicId&&eligible.has(item.topicId))})).filter(plan=>plan.items.length)
+      :state.dailyPlans;
+    const overview=buildPerformanceOverview({range,today:todayISO(),activeExamTags,readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans,subjects:examScopedSubjects()});
+    overviewHtml=renderPerformanceOverview(overview,{range,today:todayISO(),activeExamTags,formatDate:formatDatePt,escapeHtml});
+  }
+  target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,overviewHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
 }
 document.getElementById('performancePage')?.addEventListener('click',event=>{
   const section=event.target.closest('[data-performance-section]');

@@ -7,7 +7,7 @@ const weekStart=date=>{
   const day=parseLocalDate(date)?.getDay();
   return day==null?null:addLocalDays(date,-((day+6)%7));
 };
-const plannedFor=plan=>Array.isArray(plan.items)&&plan.items.length
+export const plannedMinutesForPlan=plan=>Array.isArray(plan.items)&&plan.items.length
   ?plan.items.filter(item=>!excluded.has(item.status)).reduce((sum,item)=>sum+minutes(item.plannedMinutes),0)
   :minutes(plan.plannedMinutes);
 
@@ -18,7 +18,7 @@ export function buildPlanExecution({today,dailyPlans=[],sessions=[],hoursByDay={
   for(const plan of dailyPlans){
     if(!plan.date)continue;
     const row=plansByDate.get(plan.date)||{count:0,minutes:0};
-    row.count++;row.minutes+=plannedFor(plan);plansByDate.set(plan.date,row);
+    row.count++;row.minutes+=plannedMinutesForPlan(plan);plansByDate.set(plan.date,row);
   }
   for(const session of sessions){
     if(!session.date)continue;
