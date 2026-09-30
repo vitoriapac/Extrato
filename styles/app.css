@@ -154,6 +154,27 @@
   .card--action{border-top:3px solid var(--gold)}
   .card--interactive{background:var(--surface-interactive)}
   .card--muted{background:var(--surface-card-muted)}
+  /* Shared presentation primitives. Page-specific layout stays with each page. */
+  .card--default{background:var(--surface-card)}
+  .card--insight{border-left:3px solid var(--border-emphasis)}
+  .card--attention{border-left:3px solid var(--accent-warning);background:var(--surface-highlight)}
+  .card--primary{border-color:var(--surface-primary);background:var(--surface-primary);color:var(--text-on-primary)}
+  .card--primary :is(h2,h3,h4,strong,small){color:inherit}
+  .ui-metric-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:var(--space-3)}
+  .ui-metric{display:grid;align-content:start;gap:var(--space-2);min-width:0}
+  .ui-metric>small{color:var(--text-muted)}
+  .ui-filter-bar{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-3);min-width:0;padding:var(--space-3);background:var(--surface-subtle);border:1px solid var(--border-default)}
+  .ui-filter-bar :is(label,select,input){min-width:0}
+  .ui-progress{display:block;width:100%;height:8px;appearance:none;border:0;background:var(--surface-subtle)}
+  .ui-progress::-webkit-progress-bar{background:var(--surface-subtle)}
+  .ui-progress::-webkit-progress-value{background:var(--accent-primary)}
+  .ui-progress::-moz-progress-bar{background:var(--accent-primary)}
+  .ui-data-table{max-width:100%;overflow-x:auto}
+  .ui-data-table table{width:100%;border-collapse:collapse}
+  .ui-data-table :is(th,td){border-bottom:1px solid var(--border-default)}
+  .ui-action-menu{position:relative}
+  .ui-action-menu>summary{cursor:pointer;min-height:var(--touch-target)}
+  .ui-action-menu>summary:focus-visible{outline:2px solid var(--border-emphasis);outline-offset:2px}
   .status-badge{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 8px;border:1px solid transparent;background:var(--info-bg);color:var(--status-info);font:var(--font-weight-medium) 10px/1.35 var(--font-data);overflow-wrap:anywhere}
   .status-badge--danger{background:var(--red-bg);color:var(--status-negative)}
   .status-badge--warning{background:var(--amber-bg);color:var(--status-warning)}
@@ -1409,13 +1430,14 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 @media(max-width:760px){.breakdown-line{grid-template-columns:1fr 1fr}.breakdown-subject,.breakdown-result{grid-column:1/-1}.breakdown-line>.icon-btn{justify-self:end}.instructions-hero{align-items:flex-start;flex-direction:column;padding:22px 16px}.instructions-hero nav{justify-content:flex-start}.instruction-grid,.guide-glossary{grid-template-columns:1fr}.guide-flow{grid-template-columns:1fr}.guide-flow>span{display:none}}
 /* Guia editorial da Central de Ajuda */
 .module-heading{display:grid;gap:5px;margin:0 0 20px;padding:0 0 16px;border-bottom:1px solid var(--paper-line)}
+.ui-section-header{display:grid;gap:var(--space-2);margin:0 0 var(--space-8);padding:0 0 var(--space-4);border-bottom:1px solid var(--border-default)}
 .module-heading--compact{margin-bottom:14px;padding-bottom:10px}
 .module-heading.module-heading--compact .module-heading__title{font-size:clamp(16px,1.6vw,19px)}
 .section-head.module-heading--section{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:12px}
 .section-head.module-heading--section .module-heading__title{flex:1 1 180px}
 .section-head.module-heading--section .btn{flex:0 0 auto}
 .module-heading__eyebrow{color:var(--gold);font:700 10px/1.4 var(--font-data);letter-spacing:.09em;text-transform:uppercase}
-.module-heading .module-heading__title{margin:0;color:var(--heading);font:600 clamp(19px,2vw,24px)/1.25 var(--font-display)}
+.module-heading .module-heading__title,.ui-section-header .module-heading__title{margin:0;color:var(--heading);font:600 clamp(19px,2vw,24px)/1.25 var(--font-display)}
 .module-heading__description{max-width:72ch;margin:0;color:var(--ink-soft);font:13px/1.6 var(--font-body)}
 .context-note{display:grid;gap:5px;margin:16px 0;padding:13px 16px;border-left:3px solid var(--blue);background:var(--info-bg);color:var(--heading)}
 .context-note>strong{font:700 10px/1.4 var(--font-data);letter-spacing:.08em;text-transform:uppercase}.context-note p,.context-note ul{margin:0;color:var(--ink-soft);font:12px/1.55 var(--font-body)}

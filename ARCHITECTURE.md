@@ -50,6 +50,7 @@ flowchart TD
 
 - `index.html`: marcação e pontos de montagem da interface.
 - `styles/tokens.css`: cores, temas e tokens visuais.
+- `src/ui/components/presentation.js` e `docs/UI-FOUNDATIONS.md`: renderização compartilhada de cabeçalhos, métricas e estados vazios, com o contrato de superfícies e espaçamento usado na migração gradual das telas.
 - `styles/app.css`: layout e componentes.
 - `src/theme-bootstrap.js`: aplica o tema antes da primeira pintura.
 - `src/bootstrap/bootstrap-application.js`: executa a inicialização com contexto explícito e contenção de falhas.
