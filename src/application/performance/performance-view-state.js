@@ -4,7 +4,7 @@ export const PERFORMANCE_SECTIONS=Object.freeze(['overview','questions','simulat
 export const PERFORMANCE_PERIODS=Object.freeze(['7','30','90','all']);
 
 export function createPerformanceViewState(){
-  return {section:'overview',period:'30',comparePrevious:true,subjectId:null,topicId:null};
+  return {section:'overview',period:'30',comparePrevious:true,subjectId:null,topicId:null,subjectSort:'gap'};
 }
 
 export function resolvePerformanceRange({today,period='30',comparePrevious=true}={}){
@@ -22,6 +22,7 @@ export function updatePerformanceViewState(state,patch={}){
   if(patch.comparePrevious!==undefined)next.comparePrevious=Boolean(patch.comparePrevious);
   if(patch.subjectId!==undefined){next.subjectId=patch.subjectId||null;next.topicId=null}
   if(patch.topicId!==undefined)next.topicId=patch.topicId||null;
+  if(patch.subjectSort!==undefined&&['gap','accuracy','evolution','questions','priority'].includes(patch.subjectSort))next.subjectSort=patch.subjectSort;
   if(next.period==='all')next.comparePrevious=false;
   return next;
 }

@@ -1,0 +1,12 @@
+const value=(number,suffix='')=>number==null?'—':`${number}${suffix}`;
+const signed=number=>number==null?'—':`${number>0?'+':''}${number} p.p.`;
+const options=[['gap','Distância da meta'],['accuracy','Precisão'],['evolution','Evolução'],['questions','Questões'],['priority','Prioridade existente']];
+
+export function renderPerformanceSubjectComparison(model,{escapeHtml,escapeAttr}={}){
+  if(!model.rows.length)return '';
+  const renderRows=rows=>rows.map(item=>`<tr><th scope="row"><button type="button" class="performance-topic-link" data-performance-compare-subject="${escapeAttr(item.subjectId)}">${escapeHtml(item.name)}</button></th><td>${item.state==='insufficient'?'<span class="performance-sample-note">Amostra insuficiente</span>':value(item.accuracy,'%')}</td><td>${item.target}%</td><td>${signed(item.gap)}</td><td>${signed(item.evolution)}</td><td>${item.questions}</td><td>${value(item.priority)}</td></tr>`).join('');
+  const head='<thead><tr><th scope="col">Disciplina</th><th scope="col">Precisão</th><th scope="col">Meta</th><th scope="col">Diferença</th><th scope="col">Evolução</th><th scope="col">Questões</th><th scope="col">Maior prioridade de tópico</th></tr></thead>';
+  const table=(rows,caption)=>`<div class="performance-table-scroll"><table><caption>${caption}</caption>${head}<tbody>${renderRows(rows)}</tbody></table></div>`;
+  const first=model.rows.slice(0,5),rest=model.rows.slice(5);
+  return `<section class="performance-block performance-subject-comparison"><div class="performance-comparison-heading"><div><h3>Desempenho por disciplina</h3><p class="analytics-note">Precisão usa questões pessoais do período e exige 10 respostas. Evolução exige 10 respostas em cada período. A prioridade é a maior pontuação já calculada para um tópico da disciplina, não uma nova nota da disciplina.</p></div><label>Ordenar por <select class="select-control" data-performance-subject-sort>${options.map(([key,label])=>`<option value="${key}" ${model.sort===key?'selected':''}>${label}</option>`).join('')}</select></label></div>${table(first,'Disciplinas no concurso ativo')}${rest.length?`<details class="performance-more"><summary>Mostrar mais · +${rest.length}</summary>${table(rest,'Outras disciplinas no concurso ativo')}</details>`:''}<p class="performance-method-note">${model.measured} de ${model.rows.length} disciplinas têm amostra suficiente para comparação de precisão. Selecione uma disciplina para ver seus tópicos.</p></section>`;
+}

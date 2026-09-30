@@ -27,6 +27,7 @@ import {renderPerformanceQuestions} from './ui/performance/performance-questions
 import {buildPerformanceSimulations} from './application/performance/build-performance-simulations.js';
 import {renderPerformanceSimulations} from './ui/performance/performance-simulations-renderer.js';
 import {buildPerformanceSubjects} from './application/performance/build-performance-subjects.js';
+import {buildPerformanceSubjectComparison} from './application/performance/build-performance-subject-comparison.js';
 import {renderPerformanceSubjects} from './ui/performance/performance-subjects-renderer.js';
 import {buildPerformanceTopicDetail} from './application/performance/build-performance-topic-detail.js';
 import {buildPerformanceConsistency} from './application/performance/build-performance-consistency.js';
@@ -5142,13 +5143,15 @@ function renderPerformance(){
   }else if(performanceViewState.section==='subjects'){
     const scope=examEvidenceContext(),eligibleTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id));
     const subjects=examScopedSubjects().map(subject=>({...subject,topics:(subject.topics||[]).filter(topic=>eligibleTopicIds.has(topic.id))}));
+    const questions=scope.questions.included.map(item=>({...item,subjectId:entitySubjectId(item)}));
+    const comparison=buildPerformanceSubjectComparison({subjects,questions,range,blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,candidates:intelligenceCandidates(),sort:performanceViewState.subjectSort});
     const selected=subjects.find(item=>item.id===performanceViewState.subjectId)||subjects[0];
     const metricsByTopic=Object.fromEntries((selected?.topics||[]).map(item=>{
       const mastery=topicMasteryIndex(selected.id,item.id),retention=topicRetentionScore(selected.id,item.id);
       return [item.id,{mastery:mastery?.confidence>0?mastery.score:null,retention:retention?.available?retention.score:null,evidence:mastery?.confidence||0}];
     }));
     const model=buildPerformanceSubjects({subjects,subjectId:selected?.id,range,today:todayISO(),period:performanceViewState.period,
-      questions:scope.questions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),
+      questions,
       sessions:scope.sessions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),
       reviews:scope.reviews.included.map(item=>({...item,subjectId:entitySubjectId(item),completedDate:localDateFromTimestamp(item.completedAt)})),
       simulations:examScopedSimulations().map(item=>({...item,breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),
@@ -5158,7 +5161,7 @@ function renderPerformance(){
     const detail=topic?buildPerformanceTopicDetail({topicRow,questions:scope.questions.included,today:todayISO(),period:performanceViewState.period,
       examProfile:buildTopicExamProfile({topic,subjectConfig:state.examBlueprint.subjects.find(item=>item.subjectId===selected.id),activeExamTags:state.examBlueprint?.activeExamTags||[],exams:state.exams,examQuestions:state.examQuestions}),
       history:topicHistoryService.list({topicId:topic.id,includeLifecycle:false})}):null;
-    sectionHtml=renderPerformanceSubjects(model,{range,formatDate:formatDatePt,escapeHtml,escapeAttr,topicDetail:detail});
+    sectionHtml=renderPerformanceSubjects(model,{range,formatDate:formatDatePt,escapeHtml,escapeAttr,topicDetail:detail,comparison});
   }else if(performanceViewState.section==='consistency'){
     const scope=examEvidenceContext();
     const model=buildPerformanceConsistency({range,today:todayISO(),sessions:scope.sessions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),questions:scope.questions.included,dailyPlans:performanceScopedPlans(scope),subjects:examScopedSubjects()});
@@ -5179,6 +5182,8 @@ document.addEventListener('click',event=>{
 document.getElementById('performancePage')?.addEventListener('click',event=>{
   const section=event.target.closest('[data-performance-section]');
   if(section){performanceViewState=updatePerformanceViewState(performanceViewState,{section:section.dataset.performanceSection});render('desempenho');return}
+  const compared=event.target.closest('[data-performance-compare-subject]');
+  if(compared){performanceViewState=updatePerformanceViewState(performanceViewState,{subjectId:compared.dataset.performanceCompareSubject});render('desempenho');return}
   const topic=event.target.closest('[data-performance-topic]');
   if(topic){performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:topic.dataset.performanceTopic});render('desempenho');return}
   if(event.target.closest('[data-performance-close-topic]')){document.getElementById('performanceTopicDialog')?.close();return}
@@ -5189,6 +5194,7 @@ document.getElementById('performancePage')?.addEventListener('change',event=>{
   if(event.target.matches('[data-performance-period]'))performanceViewState=updatePerformanceViewState(performanceViewState,{period:event.target.value});
   else if(event.target.matches('[data-performance-compare]'))performanceViewState=updatePerformanceViewState(performanceViewState,{comparePrevious:event.target.checked});
   else if(event.target.matches('[data-performance-subject]'))performanceViewState=updatePerformanceViewState(performanceViewState,{subjectId:event.target.value});
+  else if(event.target.matches('[data-performance-subject-sort]'))performanceViewState=updatePerformanceViewState(performanceViewState,{subjectSort:event.target.value});
   else return;
   render('desempenho');
 });
