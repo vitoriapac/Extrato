@@ -30,6 +30,7 @@ import {buildPerformanceSubjects} from './application/performance/build-performa
 import {buildPerformanceSubjectComparison} from './application/performance/build-performance-subject-comparison.js';
 import {buildNextBestAction} from './application/diagnostics/build-next-best-action.js';
 import {renderNextBestAction} from './ui/renderers/next-best-action-renderer.js';
+import {createAnalysisContext,analysisContextInScope} from './application/navigation/analysis-context.js';
 import {renderPerformanceSubjects} from './ui/performance/performance-subjects-renderer.js';
 import {buildPerformanceTopicDetail} from './application/performance/build-performance-topic-detail.js';
 import {buildPerformanceConsistency} from './application/performance/build-performance-consistency.js';
@@ -3554,6 +3555,7 @@ function confirmPhaseStrategy(){savePhaseStrategyResult(phaseStrategyController.
 function revertPhaseStrategy(){savePhaseStrategyResult(phaseStrategyController.revert())}
 function renderStudyPlanBuilder(){
   const container=document.getElementById('examStudyPlan');if(!container)return;
+  const contextContainer=document.getElementById('analysisPlanningContext');if(contextContainer)contextContainer.innerHTML=analysisContextBanner('metas');
   renderAdaptivePlanningHistory();
   const latest=latestStudyPlan();
   if(!studyPlanPreview){
@@ -3565,7 +3567,7 @@ function renderStudyPlanBuilder(){
   const blockedNote=plan.blockedTopics?.length?`<details class="blocked-topics-note"><summary>${plan.blockedTopics.length} tópico${plan.blockedTopics.length===1?' aguarda':'s aguardam'} pré-requisitos</summary><p>${plan.blockedTopics.slice(0,5).map(item=>escapeHtml(item.topicName||item.id)+" — requer "+item.prerequisites.map(id=>escapeHtml(getTopicName(id)||id)).join(", ")).join("; ")}${plan.blockedTopics.length>5?` · e mais ${plan.blockedTopics.length-5}`:''}.</p><small>Conclua a base ou reforce o domínio e recalcule a proposta.</small></details>`:"";
   if(plan.state==='insufficient'){container.innerHTML=`<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;return}
   const subjectRows=plan.subjects.map(item=>`<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`).join('');
-  const topicRows=plan.items.map(item=>`<div class="study-plan-topic"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}<small>${escapeHtml(item.reasonSummary||'Prioridade calculada pelos fatores disponíveis')}</small>${item.examIntelligence?.usedHistory?`<small>Histórico validado: ${item.examIntelligence.presentExamCount} de ${item.examIntelligence.analyzedExamCount} provas · confiança ${escapeHtml(item.examIntelligence.confidenceLabel.toLowerCase())}. Impacto estimado ${Math.round(item.examImpact)}/100.</small>`:''}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered?" · manutenção":""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span></div>`).join('');
+  const topicRows=plan.items.map(item=>`<div class="study-plan-topic" tabindex="-1" data-plan-topic-id="${escapeAttr(item.topicId)}"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}<small>${escapeHtml(item.reasonSummary||'Prioridade calculada pelos fatores disponíveis')}</small>${item.examIntelligence?.usedHistory?`<small>Histórico validado: ${item.examIntelligence.presentExamCount} de ${item.examIntelligence.analyzedExamCount} provas · confiança ${escapeHtml(item.examIntelligence.confidenceLabel.toLowerCase())}. Impacto estimado ${Math.round(item.examImpact)}/100.</small>`:''}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered?" · manutenção":""} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span><button type="button" class="btn ghost small" data-analysis-nav="hoje" data-subject-id="${escapeAttr(item.subjectId)}" data-topic-id="${escapeAttr(item.topicId)}">Por que é prioridade?</button></div>`).join('');
   container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes<0?'-':'+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState==='deficit'?'ritmo insuficiente':plan.paceState==='surplus'?'capacidade disponível':'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div><div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence*100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase()||"não avaliada"}${plan.missingEffort.length?` · ${plan.missingEffort.length} tópico${plan.missingEffort.length===1?'':'s'} sem esforço estimado`:''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes||0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
   const phase=plan.examPhase;
   const advice=plan.adaptiveAdvice;
@@ -4416,7 +4418,7 @@ function renderDiagnosisCenter(){
   const result=generateDiagnosis(candidates),weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),model=buildDiagnosisViewModel(result,{limit:Number.MAX_SAFE_INTEGER,hasTopics:candidates.length>0,weeklyCapacityMinutes});
   model.consolidated=currentConsolidatedDiagnosis;
   const nextAction=buildNextBestAction({recommendations:currentStudyRecommendations,diagnosis:currentConsolidatedDiagnosis,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity()});
-  container.innerHTML=renderNextBestAction(nextAction,{escapeHtml,escapeAttr})+renderDiagnosisCenterView({model,studyActionForItem:item=>{
+  container.innerHTML=analysisContextBanner('hoje')+renderNextBestAction(nextAction,{escapeHtml,escapeAttr})+renderDiagnosisCenterView({model,studyActionForItem:item=>{
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
     return action?{...action,label:recommendationActionLabel(action)}:null;
   },escapeHtml,escapeAttr});
@@ -5122,6 +5124,12 @@ function resolveDelegatedSpecial(normalized,event,element){
 createDelegatedEventsController({document,handlers:DELEGATED_ACTION_HANDLERS,parseArgument:delegatedArgument,resolveSpecial:resolveDelegatedSpecial,onError:error=>{console.error('Evento delegado bloqueado',error);showToast('Uma ação inválida foi bloqueada por segurança.')}}).register();
 /* ===== MASTER RENDER ===== */
 let performanceViewState=createPerformanceViewState();
+let analysisNavigationContext=null;
+function analysisContextBanner(destination){
+  if(!analysisContextInScope(analysisNavigationContext,state.examBlueprint?.activeExamTags||[])||analysisNavigationContext.origin===destination)return '';
+  const label=analysisNavigationContext.topicId?getTopicName(analysisNavigationContext.topicId):analysisNavigationContext.subjectId?getSubjectName(analysisNavigationContext.subjectId):'análise';
+  return `<div class="analysis-context-banner"><span>Contexto: ${escapeHtml(label||'análise')} · ${analysisNavigationContext.period==='all'?'todo o histórico':`período de ${escapeHtml(analysisNavigationContext.period)} dias`}</span><button type="button" class="btn ghost small" data-analysis-return>Voltar à origem</button></div>`;
+}
 function performanceScopedPlans(scope){
   if(!(state.examBlueprint?.activeExamTags||[]).length)return state.dailyPlans;
   const eligible=new Set(scope.content.eligibleTopics.map(item=>item.id));
@@ -5169,16 +5177,16 @@ function renderPerformance(){
       blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,metricsByTopic});
     const topicRow=model.topics.find(item=>item.id===performanceViewState.topicId);
     const topic=selected?.topics.find(item=>item.id===topicRow?.id);
-    const detail=topic?buildPerformanceTopicDetail({topicRow,questions:scope.questions.included,today:todayISO(),period:performanceViewState.period,
+    const detail=topic?{...buildPerformanceTopicDetail({topicRow,questions:scope.questions.included,today:todayISO(),period:performanceViewState.period,
       examProfile:buildTopicExamProfile({topic,subjectConfig:state.examBlueprint.subjects.find(item=>item.subjectId===selected.id),activeExamTags:state.examBlueprint?.activeExamTags||[],exams:state.exams,examQuestions:state.examQuestions}),
-      history:topicHistoryService.list({topicId:topic.id,includeLifecycle:false})}):null;
+      history:topicHistoryService.list({topicId:topic.id,includeLifecycle:false})}),subjectId:selected.id}:null;
     sectionHtml=renderPerformanceSubjects(model,{range,formatDate:formatDatePt,escapeHtml,escapeAttr,topicDetail:detail,comparison});
   }else if(performanceViewState.section==='consistency'){
     const scope=examEvidenceContext();
     const model=buildPerformanceConsistency({range,today:todayISO(),sessions:scope.sessions.included.map(item=>({...item,subjectId:entitySubjectId(item)})),questions:scope.questions.included,dailyPlans:performanceScopedPlans(scope),subjects:examScopedSubjects()});
     sectionHtml=renderPerformanceConsistency(model,{range,formatDate:formatDatePt,escapeHtml});
   }
-  target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
+  target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml:analysisContextBanner('desempenho')+sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
   const dialog=target.querySelector('#performanceTopicDialog');
   if(dialog){dialog.addEventListener('close',()=>{performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:null})},{once:true});dialog.showModal()}
 }
@@ -5208,6 +5216,32 @@ document.getElementById('performancePage')?.addEventListener('change',event=>{
   else if(event.target.matches('[data-performance-subject-sort]'))performanceViewState=updatePerformanceViewState(performanceViewState,{subjectSort:event.target.value});
   else return;
   render('desempenho');
+});
+document.addEventListener('click',event=>{
+  const back=event.target.closest('[data-analysis-return]');
+  if(back){
+    const previous=analysisNavigationContext;
+    if(!analysisContextInScope(previous,state.examBlueprint?.activeExamTags||[]))return;
+    analysisNavigationContext=null;
+    if(previous.origin==='desempenho')performanceViewState=updatePerformanceViewState(performanceViewState,{section:'subjects',period:previous.period,subjectId:previous.subjectId,topicId:previous.topicId});
+    activateTab(previous.origin);return;
+  }
+  const button=event.target.closest('[data-analysis-nav]');if(!button)return;
+  const destination=button.dataset.analysisNav,subjectId=button.dataset.subjectId||null,topicId=button.dataset.topicId||null;
+  if(!['hoje','desempenho','metas'].includes(destination))return;
+  analysisNavigationContext=createAnalysisContext({origin:activeTabName(),subjectId,topicId,period:performanceViewState.period,activeExamTags:state.examBlueprint?.activeExamTags||[]});
+  const topicDialog=document.getElementById('performanceTopicDialog');if(topicDialog?.open)topicDialog.close();
+  if(destination==='desempenho')performanceViewState=updatePerformanceViewState(performanceViewState,{section:'subjects',subjectId,topicId});
+  if(destination==='metas')calculateStudyPlanPreview();
+  activateTab(destination);
+  requestAnimationFrame(()=>{
+    if(destination==='hoje')document.querySelector('.today-analysis-details')?.setAttribute('open','');
+    if(destination==='metas')document.querySelector('#examStudyPlan .study-plan-details')?.setAttribute('open','');
+    const targets=destination==='hoje'?document.querySelectorAll('#diagnosisCenter [data-diagnosis-subject-id]'):destination==='metas'?document.querySelectorAll('#examStudyPlan [data-plan-topic-id]'):[];
+    const selected=[...targets].find(node=>destination==='hoje'&&node.dataset.diagnosisTopicId===topicId&&node.dataset.diagnosisSubjectId===subjectId||destination==='metas'&&node.dataset.planTopicId===topicId);
+    const fallback=destination==='desempenho'?document.getElementById('performancePage'):destination==='metas'?document.getElementById('examStudyPlan'):document.getElementById('diagnosisCenter');
+    (selected||fallback)?.scrollIntoView({block:'start'});selected?.focus({preventScroll:true});
+  });
 });
 const RENDER_SCOPE_SECTIONS={
   desempenho:new Set(['desempenho']),
