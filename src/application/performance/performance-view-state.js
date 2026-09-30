@@ -1,6 +1,6 @@
 import {addLocalDays,parseLocalDate} from '../../core/date-utils.js';
 
-export const PERFORMANCE_SECTIONS=Object.freeze(['overview','questions','simulations','subjects','consistency']);
+export const PERFORMANCE_SECTIONS=Object.freeze(['overview','subjects','questions','simulations','exam','consistency']);
 export const PERFORMANCE_PERIODS=Object.freeze(['7','30','90','all']);
 
 export function createPerformanceViewState(){

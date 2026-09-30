@@ -30,9 +30,10 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   expect(critical.examIntelligence.presencePercent).toBe(100);
   expect(critical.mastery).toBeLessThan(mastered.mastery);
   expect(critical.score).toBeGreaterThan(mastered.score);
-  await activateTab(page,'metas');
-  await page.locator('[data-exam-matrix-mode="quadrants"]').click();
+  await activateTab(page,'desempenho');
+  await page.locator('[data-performance-section="exam"]').click();
   await expect(page.locator('#examHistoricalMatrix')).toContainText('Alta incidência · desenvolver domínio');
+  await activateTab(page,'metas');
   await page.getByRole('button',{name:'Calcular proposta semanal',exact:true}).click();
   expect((await getState(page)).studyPlans).toHaveLength(0);
   await page.getByRole('button',{name:'Confirmar e salvar plano',exact:true}).click();
@@ -167,8 +168,9 @@ test('reversão, cooldown, escopo e falta de dados preservam o histórico em mob
   const caixa=page.locator('#examBlueprintConfig').getByLabel('Caixa — TBN',{exact:true});
   const bb=page.locator('#examBlueprintConfig input[data-delegated-change*="bb-escriturario"]');
   await caixa.locator('..').click();await bb.locator('..').click();
+  await activateTab(page,'desempenho');
+  await page.locator('[data-performance-section="exam"]').click();
   await expect(page.locator('#examHistoricalMatrix')).toContainText('1 prova completa');
-  await page.locator('[data-exam-matrix-mode="quadrants"]').click();
   await expect(page.locator('#examHistoricalMatrix')).toContainText('Evidência insuficiente para posicionar');
   const candidates=await page.evaluate(()=>window.__EXTRATO_TEST__.intelligenceCandidates());
   expect(candidates.some(item=>item.topicId==='cycle-t0-0')).toBe(false);

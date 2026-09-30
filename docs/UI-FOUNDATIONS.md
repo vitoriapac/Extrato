@@ -30,9 +30,9 @@ Gráficos e Desempenho já usam os renderers compartilhados. A barra de filtros,
 | Área | Base atual | Próxima aplicação |
 | --- | --- | --- |
 | Visão Geral/Hoje | Hero, cartões de ação e sinais têm hierarquia própria. | Distinguir ação principal de alerta auxiliar no pacote 7. |
-| Metas | Capacidade, plano, execução e inteligência dividem a mesma página; vários cards e medidas legadas. | Reorganizar a narrativa e migrar superfícies no pacote 2. |
+| Metas | Capacidade, plano, execução, metas ativas e fechamento seguem a nova ordem. | Refinar detalhes e verificar cenários densos no gate final. |
 | Desempenho | Faixa de KPIs, filtros, tabelas e estados vazios já modulados. | Consolidar resumos e amostras no pacote 4. |
-| Inteligência da Prova | Saúde, divergência, matriz e importação estão sob Metas. | Mover a análise para Desempenho no pacote 3, preservando IDs e foco. |
+| Inteligência da Prova | Saúde, incidência × domínio, divergência e importação estão em Desempenho; a configuração permanece em Metas. | Refinar leitura e verificar cenários densos no gate final. |
 | Instruções | Conteúdo e controle são modulares, com índice e busca. | Cards estáticos e seleção de capítulo no pacote 5. |
 | Disciplinas/Questões | Cadastro e análises têm ações e tabelas próprias. | Reduzir ações concorrentes nos pacotes 6–7. |
 

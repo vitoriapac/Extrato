@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=994aaa1dde1c">
+<link rel="stylesheet" href="styles/app.css?v=7198d3a103d1">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -283,7 +283,19 @@
     </div>
   </div>
 
-  <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho"><div id="performancePage"></div></div>
+  <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho">
+    <div id="performancePage"></div>
+    <div id="examIntelligenceParking" hidden>
+      <div class="exam-intelligence-hub" id="examIntelligenceHub">
+        <header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Inteligência da prova</h3><p class="module-heading__description">Histórico, incidência e impacto no concurso ativo. Questões históricas não alteram seu desempenho pessoal.</p></header>
+        <section class="exam-intelligence-level" aria-label="Saúde da evidência"><h4>Saúde da evidência</h4><div id="examIntelligenceOverview" class="exam-intelligence-overview" aria-label="Resumo da base histórica"></div><div id="examDataQuality"></div></section>
+        <section class="exam-historical-matrix exam-intelligence-level" aria-label="Incidência e domínio"><h4>Incidência × domínio</h4><p class="analytics-note">Compare o que aparece nas provas com seu domínio. Use os filtros para explorar concursos, bancas e anos.</p><div id="examHistoricalMatrix"></div></section>
+        <section class="exam-intelligence-level" aria-label="Configuração e evidência histórica"><h4>Configuração × histórico</h4><div id="examConfigurationAudit"></div><details class="exam-intelligence-topics"><summary>Explorar tópicos de maior impacto</summary><div id="examIntelligenceSummary"></div></details></section>
+        <section class="exam-intelligence-level" aria-label="Prova e situação pessoal"><h4>Prova × Você</h4><div id="examOpportunity"></div></section>
+        <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><h4 id="examImportHeading">Adicionar evidências</h4><p class="analytics-note">Importe uma prova histórica em JSON. Confira as associações na prévia antes de confirmar.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></section>
+      </div>
+    </div>
+  </div>
 
   <!-- HOJE -->
   <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
@@ -569,22 +581,8 @@
 
     <div class="chart-card">
       <header class="module-heading"><h3 class="module-heading__title">Configuração estratégica da prova</h3><p class="module-heading__description">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p></header>
+      <button class="btn ghost small" type="button" data-performance-jump="exam">Analisar histórico em Desempenho →</button>
       <div id="examBlueprintConfig"></div>
-    </div>
-    <div class="exam-intelligence-hub">
-      <header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Inteligência da prova</h3><p class="module-heading__description">Veja a qualidade do histórico, o impacto observado e o encontro entre a prova e sua preparação.</p></header>
-      <section class="exam-intelligence-level" aria-label="Saúde da base histórica">
-        <h4>Saúde da base</h4>
-        <div id="examIntelligenceOverview" class="exam-intelligence-overview" aria-label="Resumo da base histórica"></div>
-        <div id="examDataQuality"></div>
-      </section>
-      <section class="exam-intelligence-level" aria-label="Configuração e evidência histórica">
-        <h4>Configuração × histórico</h4>
-        <div id="examConfigurationAudit"></div>
-        <details class="exam-intelligence-topics"><summary>Explorar tópicos de maior impacto</summary><div id="examIntelligenceSummary"></div></details>
-      </section>
-      <section class="exam-historical-matrix exam-intelligence-level" aria-label="Matriz histórica da prova"><h4>Prova × Você</h4><p class="analytics-note">Filtre a evidência e selecione um tópico para comparar importância na prova e seu domínio.</p><div id="examHistoricalMatrix"></div></section>
-      <section class="exam-json-import exam-intelligence-level" aria-labelledby="examImportHeading"><h4 id="examImportHeading">Adicionar evidências</h4><p class="analytics-note">Quer melhorar a precisão da análise? Adicione mais uma prova histórica.</p><label for="examJsonFile">Importar prova histórica em JSON</label><input id="examJsonFile" type="file" accept=".json,application/json"><p class="analytics-note">A prévia exige uma decisão para cada questão sem correspondência. Tópicos novos só são criados após escolha explícita.</p><div id="examJsonPreview" aria-live="polite"></div></section>
     </div>
     <div class="chart-card"><header class="module-heading"><h3 class="module-heading__title">Matriz Edital × Domínio</h3><p class="module-heading__description">Cobertura, domínio, retenção e lacuna em relação à meta configurada.</p></header><div id="examMasteryMatrix"></div></div>
 
@@ -782,7 +780,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=994aaa1dde1c"></script>
+  <script src="src/app.bundle.js?v=7198d3a103d1"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

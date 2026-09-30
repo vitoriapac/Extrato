@@ -17,7 +17,7 @@ Este documento define o proprietário das análises antes de introduzir a aba De
 | Plano e execução | Metas `#planExecutionResults` | `buildPlanExecution`, `buildStrategicExecution` | Semanas concluídas e atual; planos/sessões | Planejamento mantém distribuição e ações; Desempenho → Consistência mostra a série. |
 | Comparação por período | Metas `#periodComparisonResults` | `buildPeriodComparisonViewModel` | 7/30 dias, mês ou intervalo escolhido; hoje usa registros sem filtro de concurso | Desempenho recebe comparação no escopo ativo; Metas mantém objetivos e progresso atuais. |
 | Diagnóstico e sinais | Hoje `#diagnosisCenter` | sinais consolidados, recomendações e explicações | Concurso ativo; tópico e disciplina | Hoje continua proprietário dos problemas e ações. |
-| Inteligência da prova | Metas `.exam-intelligence-hub` | provas históricas, incidência e configuração | Concurso ativo | Metas continua proprietário do edital e da prova. |
+| Inteligência da prova | Desempenho → Inteligência da prova `.exam-intelligence-hub` | provas históricas, incidência e configuração | Concurso ativo; filtros próprios de prova | Desempenho apresenta a evidência e a matriz; Metas mantém a configuração estratégica. |
 
 ## Definições para os primeiros três pacotes
 
@@ -36,6 +36,6 @@ Mover o proprietário de cada análise junto com seu renderer, sem duplicar IDs 
 
 ## Situação após os pacotes 4–9
 
-Desempenho passou a apresentar questões, simulados, disciplinas, detalhe de tópico e consistência no período e concurso ativos. A Visão Geral aponta para o histórico completo e conserva o índice atual, o fechamento e decisões estratégicas. Questões e Simulados conservam os registros; a análise especializada de erros fica recolhida. Metas conserva a execução do plano atual e uma comparação com datas personalizadas em painéis recolhidos. Os gráficos históricos de prontidão, tempo de estudo, heatmap e simulados deixaram as telas de origem.
+Desempenho apresenta questões, simulados, disciplinas, detalhe de tópico, consistência e Inteligência da Prova. A Visão Geral aponta para o histórico completo e conserva o índice atual, o fechamento e decisões estratégicas. Questões e Simulados conservam os registros; a análise especializada de erros fica recolhida. Metas conserva a configuração estratégica, o plano, a execução atual e a comparação com datas personalizadas. Os gráficos históricos de prontidão, tempo de estudo, heatmap e simulados deixaram as telas de origem.
 
 A visão geral também compara precisão, tempo, volume e aderência com o período anterior equivalente. Precisão só recebe classificação com pelo menos 30 questões em cada intervalo; aderência requer 60 minutos planejados em cada um. Os insights são regras descritivas sobre mudanças observadas, sem atribuir causa. Com escopo ou evidência insuficientes, a interface explica a ausência do indicador. O heatmap limita a visualização diária a 90 dias e mantém o histórico semanal em uma lista expansível.

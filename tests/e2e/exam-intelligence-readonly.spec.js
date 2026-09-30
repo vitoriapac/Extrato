@@ -17,7 +17,8 @@ test('impacto manual prevalece sobre o histórico na prioridade',async({page})=>
   });
   const after=await page.evaluate(()=>window.__EXTRATO_TEST__.intelligenceCandidates().find(item=>item.topicId===window.__EXTRATO_TEST__.getState().subjects[0].topics[0].id)?.score);
   expect(after).toBe(before);
-  await activateTab(page,'metas');
+  await activateTab(page,'desempenho');
+  await page.locator('[data-performance-section="exam"]').click();
   await expect(page.locator('#examIntelligenceSummary')).toContainText('4 de 5 provas');
   await expect(page.locator('#examIntelligenceSummary')).toContainText('Confiança moderada');
   await expectNoPageOverflow(page);

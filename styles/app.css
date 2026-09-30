@@ -1803,6 +1803,10 @@ body.timer-focus-active .timer-context{display:none!important}
 .exam-intelligence-hub .exam-intelligence-overview{padding:12px 0 12px 14px;border-left:3px solid var(--gold);background:transparent}
 .exam-intelligence-hub .exam-json-import{margin:0;padding:28px 0 18px;border-top:1px solid var(--paper-line);color:var(--ink-soft)}
 .exam-intelligence-hub .exam-json-import>h4{font-size:14px}.exam-intelligence-hub .exam-json-import>label{margin-top:18px;font-size:12px}.exam-intelligence-hub .exam-json-import input[type=file]{font-size:12px}
+.performance-page .exam-intelligence-hub{margin:var(--space-6) 0;padding:var(--space-6) clamp(var(--space-4),3vw,var(--space-8));border:1px solid var(--border-default);background:var(--surface-card)}
+.exam-opportunity{display:grid;justify-items:start;gap:var(--space-3);padding:var(--space-4);border-left:3px solid var(--accent-primary);background:var(--surface-subtle)}
+.exam-opportunity strong{color:var(--heading);font:600 1.1rem var(--font-display);overflow-wrap:anywhere}
+.exam-opportunity p{margin:0;color:var(--text-secondary)}
 .exam-intelligence-topics{padding:0 14px}.exam-intelligence-topics[open] summary{margin-bottom:8px}.exam-intelligence-level{min-width:0}
 .exam-matrix-modes{display:flex;gap:6px;margin:10px 0}.exam-matrix-modes .active{border-color:var(--gold);font-weight:700}.exam-matrix-search input{width:100%;min-width:0}
 .exam-matrix-filters label{display:grid;gap:4px;min-width:0;color:var(--ink-soft);font:10px var(--font-data)}

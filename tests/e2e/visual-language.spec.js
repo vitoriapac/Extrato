@@ -20,11 +20,14 @@ for(const {width,theme} of [{width:375,theme:'light'},{width:375,theme:'dark'},{
     await expect(page.locator('#helpCenter .module-heading')).toBeVisible();
     await expect(page.locator('#helpCenter .context-note--tip')).toBeVisible();
     await expectNoPageOverflow(page);
-    await activateTab(page,'metas');
+    await activateTab(page,'desempenho');
+    await page.locator('[data-performance-section="exam"]').click();
     await expect(page.locator('.exam-intelligence-hub .module-heading')).toBeVisible();
-    await expect(page.locator('#panel-metas .context-note--info')).toBeVisible();
     await page.locator('#examDataQuality').evaluate((element,html)=>{element.innerHTML=html},renderExamDataQuality({coveragePercent:50,confidence:'low',examCount:2,completeExamCount:1,questionCount:20,unresolvedQuestions:2,mappedTopics:5,lowConfidenceQuestions:1,unreviewedQuestions:1,warnings:['Revise a cobertura antes de usar a incidência.']}));
     await expect(page.locator('#examDataQuality .context-note--attention')).toContainText('Atenção');
+    await expectNoPageOverflow(page);
+    await activateTab(page,'metas');
+    await expect(page.locator('#panel-metas .context-note--info')).toBeVisible();
     await expectNoPageOverflow(page);
     await activateTab(page,'dashboard');
     await page.locator('#weeklyCloseDashboard').evaluate((element,html)=>{element.innerHTML=html},renderStrategicFocusHistory(history));

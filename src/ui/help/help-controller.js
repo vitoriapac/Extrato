@@ -5,7 +5,7 @@ const DESTINATIONS=Object.freeze({
   questions:{tab:'questoes',selector:'#addQuestaoRowBtn'},reviews:{tab:'agenda',selector:'#addAgendaRowBtn'},today:{tab:'hoje',selector:'#panel-hoje'},calendar:{tab:'calendario',selector:'#panel-calendario'},
   planning:{tab:'metas',selector:'#examStudyPlan'},weekly:{tab:'dashboard',selector:'#weeklyCloseDashboard'},diagnosis:{tab:'hoje',selector:'#diagnosisCenter'},
   achievements:{tab:'dashboard',selector:'#badgesGrid'},history:{tab:'dashboard',selector:'#decisionHistoryDashboard'},report:{tab:'instrucoes',selector:'#exportReportBtn'},
-  exam:{tab:'metas',selector:'#examIntelligenceOverview'},audit:{tab:'metas',selector:'#examConfigurationAudit'},matrix:{tab:'metas',selector:'#examHistoricalMatrix'},
+  exam:{tab:'desempenho',section:'exam',selector:'#examIntelligenceOverview'},audit:{tab:'desempenho',section:'exam',selector:'#examConfigurationAudit'},matrix:{tab:'desempenho',section:'exam',selector:'#examHistoricalMatrix'},
   backup:{tab:'instrucoes',selector:'#exportBackupBtn'},demo:{tab:'instrucoes',selector:'#enterDemoBtn'}
 });
 const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
@@ -108,6 +108,7 @@ export function createHelpController({document,window,activateTab}){
     const destination=DESTINATIONS[key];
     if(!destination)return;
     activateTab(destination.tab);
+    if(destination.section)document.querySelector(`[data-performance-section="${destination.section}"]`)?.click();
     window.requestAnimationFrame(()=>{
       const target=document.querySelector(destination.selector)||document.getElementById(`tab-${destination.tab}`);
       if(!target)return;

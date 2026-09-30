@@ -186,7 +186,7 @@ import {renderExamClassificationReview} from './ui/renderers/exam-classification
 import {buildExamConfigurationAudit} from './application/exam-intelligence/build-exam-configuration-audit.js';
 import {renderExamConfigurationAudit} from './ui/renderers/exam-configuration-audit-renderer.js';
 import {buildExamMatrix} from './application/exam-intelligence/build-exam-matrix.js';
-import {renderExamMatrix} from './ui/renderers/exam-matrix-renderer.js';
+import {renderExamMatrix,renderExamOpportunity} from './ui/renderers/exam-matrix-renderer.js';
 import {createTopicStrategyController} from './features/topic-strategy/topic-strategy-controller.js';
 import {renderReplanProposal} from './features/replan/replan-renderer.js';
 import {buildQuestionViewModel} from './ui/view-models/question-view-model.js';
@@ -3379,7 +3379,7 @@ function updateMeta(key, value){
   persistAndRender();
 }
 
-const examMatrixFilters={scope:'active',board:'all',year:'all',role:'all',subject:'all',search:'',sort:'incidence',mode:'history'};
+const examMatrixFilters={scope:'active',board:'all',year:'all',role:'all',subject:'all',search:'',sort:'incidence',mode:'quadrants'};
 let selectedExamMatrixTopicId=null;
 function renderHistoricalExamMatrix(){
   const container=document.getElementById('examHistoricalMatrix');if(!container)return;
@@ -3392,6 +3392,7 @@ function renderHistoricalExamMatrix(){
   const model=buildExamMatrix({topics:activeTopics(),exams:state.exams,examQuestions:state.examQuestions,activeExamTags:state.examBlueprint.activeExamTags||[],filters:examMatrixFilters,metricsByTopic,auditByTopic});
   if(!model.rows.some(row=>row.topicId===selectedExamMatrixTopicId))selectedExamMatrixTopicId=null;
   container.innerHTML=renderExamMatrix(model,{selectedTopicId:selectedExamMatrixTopicId});
+  const opportunity=document.getElementById('examOpportunity');if(opportunity)opportunity.innerHTML=renderExamOpportunity(model);
   const advanced=container.querySelector('.exam-matrix-more-filters');
   if(advanced)advanced.open=advancedWasOpen??!window.matchMedia('(max-width:600px)').matches;
   for(const [key,value] of Object.entries(examMatrixFilters)){const select=container.querySelector(`[data-exam-matrix-filter="${key}"]`);if(select&&[...select.options].some(option=>option.value===String(value)))select.value=String(value)}
@@ -3412,17 +3413,20 @@ document.getElementById('examHistoricalMatrix')?.addEventListener('click',event=
 function renderExamBlueprintConfig(){
   const container=document.getElementById('examBlueprintConfig');if(!container)return;
   renderExamBlueprintConfigView({container,blueprint:state.examBlueprint,subjects:activeSubjects(),escapeHtml,escapeAttr,formatDatePt,EXAM_TAGS,EXAM_SOURCES,globalAccuracyTarget:state.metas.metaAprovacao,document});
+  renderExamIntelligenceSection();
+  renderExamMasteryMatrix();
+}
+function renderExamIntelligenceSection(){
   const quality=document.getElementById('examDataQuality');
   const qualityModel=buildExamDataQuality({exams:state.exams,examQuestions:state.examQuestions,topics:examScopedTopics(),blueprint:state.examBlueprint});
   if(quality)quality.innerHTML=renderExamDataQuality(qualityModel);
   const overview=document.getElementById('examIntelligenceOverview');
-  if(overview)overview.innerHTML=`<strong>${qualityModel.examCount} ${qualityModel.examCount===1?'prova':'provas'} · ${qualityModel.questionCount} questões</strong><span>${qualityModel.completeExamCount} completas · ${qualityModel.mappedTopics} tópicos mapeados · confiança ${qualityModel.confidence==='high'?'alta':qualityModel.confidence==='moderate'?'moderada':qualityModel.confidence==='low'?'baixa':'limitada'}</span>`;
+  if(overview){overview.hidden=!qualityModel.examCount;overview.innerHTML=qualityModel.examCount?`<strong>${qualityModel.examCount} ${qualityModel.examCount===1?'prova':'provas'} · ${qualityModel.questionCount} questões</strong><span>${qualityModel.completeExamCount} completas · ${qualityModel.mappedTopics} tópicos mapeados · confiança ${qualityModel.confidence==='high'?'alta':qualityModel.confidence==='moderate'?'moderada':qualityModel.confidence==='low'?'baixa':'limitada'}</span>`:''}
   const audit=document.getElementById('examConfigurationAudit');
   if(audit)audit.innerHTML=renderExamConfigurationAudit(buildExamConfigurationAudit({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}));
   const evidence=document.getElementById('examIntelligenceSummary');
   if(evidence)evidence.innerHTML=renderExamIntelligence(buildExamIntelligenceViewModel({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}));
   renderHistoricalExamMatrix();
-  renderExamMasteryMatrix();
 }
 document.getElementById('examConfigurationAudit')?.addEventListener('click',event=>{const topic=event.target.closest('[data-audit-topic]');if(!topic)return;selectedExamMatrixTopicId=topic.dataset.auditTopic;examMatrixFilters.scope='active';examMatrixFilters.board='all';examMatrixFilters.year='all';examMatrixFilters.role='all';renderHistoricalExamMatrix();document.querySelector('#examHistoricalMatrix .exam-matrix-detail')?.scrollIntoView?.({block:'nearest'})});
 let examClassificationFilter='all',examClassificationPage=0,examClassificationPreviousFocus=null;
@@ -5160,9 +5164,12 @@ function performanceScopedPlans(scope){
 function renderPerformance(){
   const target=document.getElementById('performancePage');
   if(!target)return;
+  const examHub=document.getElementById('examIntelligenceHub'),parking=document.getElementById('examIntelligenceParking');
+  if(examHub&&parking&&examHub.parentElement!==parking)parking.append(examHub);
   const today=todayISO(),range=resolvePerformanceRange({today,...performanceViewState}),scope=examEvidenceContext();
   const activeExamTags=state.examBlueprint?.activeExamTags||[];
-  const pageModel=buildPerformancePageModel({viewState:performanceViewState,range,today,activeExamTags,scope,subjects:examScopedSubjects(),
+  const examSection=performanceViewState.section==='exam';
+  const pageModel=examSection?null:buildPerformancePageModel({viewState:performanceViewState,range,today,activeExamTags,scope,subjects:examScopedSubjects(),
     simulations:performanceViewState.section==='subjects'||performanceViewState.section==='simulations'?examScopedSimulations():[],
     projectionSnapshots:state.projectionSnapshots,readinessSnapshots:state.readinessSnapshots,
     readiness:performanceViewState.section==='overview'?readinessResult(computeApprovalMetrics()):null,
@@ -5173,8 +5180,9 @@ function renderPerformance(){
     topicMetricsFor:(subjectId,topicId)=>{const mastery=topicMasteryIndex(subjectId,topicId),retention=topicRetentionScore(subjectId,topicId);return {mastery:mastery?.confidence>0?mastery.score:null,retention:retention?.available?retention.score:null,evidence:mastery?.confidence||0}},
     topicProfileFor:(topic,subject)=>buildTopicExamProfile({topic,subjectConfig:state.examBlueprint.subjects.find(item=>item.subjectId===subject.id),activeExamTags,exams:state.exams,examQuestions:state.examQuestions}),
     topicHistoryFor:topicId=>topicHistoryService.list({topicId,includeLifecycle:false})});
-  const sectionHtml=renderPerformanceSection(pageModel,{range,today,activeExamTags,formatDate:formatDatePt,escapeHtml,escapeAttr,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:null});
+  const sectionHtml=examSection?'<div id="examIntelligenceMount"></div>':renderPerformanceSection(pageModel,{range,today,activeExamTags,formatDate:formatDatePt,escapeHtml,escapeAttr,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:null});
   target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml:analysisContextBanner('desempenho')+sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
+  if(examSection){target.querySelector('#examIntelligenceMount')?.append(examHub);renderExamIntelligenceSection()}
   const dialog=target.querySelector('#performanceTopicDialog');
   if(dialog){dialog.addEventListener('close',()=>{performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:null})},{once:true});dialog.showModal()}
 }

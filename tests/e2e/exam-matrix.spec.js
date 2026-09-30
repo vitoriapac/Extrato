@@ -10,8 +10,10 @@ test('matriz histórica filtra concurso e detalha o tópico em mobile',async({pa
     state.examQuestions=[{id:'q1',examId:'bb18',subjectId:subject.id,topicId:topic.id,questionNumber:1,weight:1,source:'',classification:{method:'manual',confidence:1}},{id:'q2',examId:'caixa24',subjectId:subject.id,topicId:topic.id,questionNumber:1,weight:1,source:'',classification:{method:'manual',confidence:1}}];
     api.setState(state);api.renderAll();
   });
-  await activateTab(page,'metas');
+  await activateTab(page,'desempenho');
+  await page.locator('[data-performance-section="exam"]').click();
   await expect(page.locator('#examHistoricalMatrix')).toContainText('2 provas completas');
+  await page.locator('[data-exam-matrix-mode="history"]').click();
   await expect(page.locator('.exam-matrix-table')).toContainText('0 questões');
   await page.locator('[data-exam-matrix-filter="scope"]').selectOption('caixa-tbn');
   await expect(page.locator('#examHistoricalMatrix')).toContainText('Caixa 2024');

@@ -35,3 +35,11 @@ export function renderExamMatrix(model,{selectedTopicId=null}={}){
   const html=`${controls}${summary}${model.rows.length?model.filters.mode==='quadrants'?renderIncidenceQuadrants(model.rows):model.filters.mode==='priorities'?priorities:history:'<p class="analytics-note">Nenhum tópico corresponde à busca e aos filtros.</p>'}${detail}`;
   return html;
 }
+
+export function renderExamOpportunity(model){
+  const candidates=model.rows.filter(row=>row.presencePercent>=50&&row.mastery!=null&&row.mastery<70&&['moderate','high'].includes(row.confidence));
+  candidates.sort((a,b)=>(b.gap??-1)-(a.gap??-1)||(b.priority??-1)-(a.priority??-1)||a.name.localeCompare(b.name,'pt-BR'));
+  const row=candidates[0];
+  if(!row)return '<p class="analytics-note">Nenhuma oportunidade com incidência e domínio medidos neste recorte. Confira a qualidade da base ou ajuste os filtros da matriz.</p>';
+  return `<div class="exam-opportunity"><span class="module-heading__eyebrow">Maior oportunidade no recorte</span><strong>${escape(row.subjectName)} — ${escape(row.name)}</strong><p>Incidência ${row.presencePercent}% · domínio ${Math.round(row.mastery)}/100 · confiança ${escape(row.confidenceLabel.toLowerCase())}</p><button class="btn ghost small" type="button" data-analysis-nav="hoje" data-subject-id="${escape(row.subjectId)}" data-topic-id="${escape(row.topicId)}">Ver diagnóstico</button></div>`;
+}

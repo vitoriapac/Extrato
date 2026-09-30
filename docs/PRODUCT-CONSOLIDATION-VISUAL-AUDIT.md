@@ -16,14 +16,14 @@ Cards completos separam decisões ou fluxos independentes. Indicadores do mesmo 
 | --- | --- | --- | --- |
 | Visão Geral | Prontidão, foco e próxima ação | Evolução e fechamento têm leitura própria; histórico é aprofundamento | Manter resumos com link para Desempenho, evitando repetir gráficos históricos completos. |
 | Hoje | Recomendação executável | Diagnóstico, revisões e replanejamento | Diagnóstico passa a mostrar conclusão antes das evidências; recuperação e dívida de revisão ficam em seção expansível com a contagem vencida visível. |
-| Desempenho | Frase interpretativa e indicadores do período | Um gráfico ou comparação principal por visão; tabelas e séries longas nos detalhes | KPIs do mesmo bloco deixam de parecer quatro cards independentes. Permanecem cinco visões com período e concurso explícitos. |
+| Desempenho | Frase interpretativa e indicadores do período | Um gráfico ou comparação principal por visão; tabelas e séries longas nos detalhes | A sexta visão reúne Inteligência da Prova com filtros próprios de histórico e concurso explícito. |
 | Diagnóstico | Um sinal principal por conteúdo e ação existente | Motivo e qualidade da evidência visíveis; medidas, sinais auxiliares e metodologia sob demanda | `DiagnosticSummary` separa conclusão, evidências e metodologia. Listas com mais de cinco diagnósticos continuam expansíveis. |
 | Planejamento/Metas | Prévia e confirmação do plano, com capacidade | Distribuição, execução e comparação personalizada | Preservar prévia transitória; execução e comparação de datas específicas já ficam recolhidas. |
 | Questões | Registro e resultado imediato | Erros e tópicos detalhados | Análises históricas pertencem a Desempenho; análise detalhada permanece recolhida em Questões. |
 | Simulados | Registro e último resultado | Evolução, comparação e calibração | Desempenho concentra os gráficos; Questões conserva cadastro e leitura operacional. |
 | Disciplinas | Conteúdo elegível e ação no tópico | Progresso, questões, revisões e estratégia | Manter configurações junto ao tópico; histórico comparativo pertence a Desempenho. |
 | Revisões | Pendências e ação de revisão | Saúde da revisão e histórico | Contagem sozinha não determina prioridade; Diagnóstico distingue pendências de alto impacto e risco de consolidação. |
-| Inteligência da Prova | Saúde da base e divergências relevantes | Matriz, confiança, classificações e importação | Tópicos de maior impacto e filtros avançados já são progressivos; não duplicar a matriz em Desempenho. |
+| Inteligência da Prova | Saúde da evidência e incidência × domínio | Divergências, matriz histórica, classificações e importação | A análise reside em Desempenho; a configuração estratégica continua em Metas. |
 
 ## Decisões e limites
 

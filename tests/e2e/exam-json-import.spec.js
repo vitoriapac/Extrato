@@ -9,7 +9,8 @@ test('importa JSON com prévia, decisão explícita e reimportação idempotente
   const state=await page.evaluate(()=>window.__EXTRATO_TEST__.getState());
   const subject=state.subjects[0],topic=subject.topics[0];
   const data=JSON.stringify({exam:{institution:'Banco do Brasil',examName:'Escriturário 2023',role:'Escriturário',board:'Cesgranrio',year:2023,coverage:'complete'},questions:[{number:1,subject:subject.name,topic:topic.name},{number:2,subject:subject.name,topic:'Tópico novo'}]});
-  await activateTab(page,'metas');
+  await activateTab(page,'desempenho');
+  await page.locator('[data-performance-section="exam"]').click();
   const upload=()=>page.locator('#examJsonFile').setInputFiles({name:'prova.json',mimeType:'application/json',buffer:Buffer.from(data)});
   await upload();
   await expect(page.locator('#examJsonPreview')).toContainText('2 questões · 1 vinculadas · 1 precisam de decisão');

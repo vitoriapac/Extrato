@@ -2,14 +2,15 @@ import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {activateTab,expectNoPageOverflow} from './helpers.js';
 
-test('saúde e divergências precedem matriz e importação',async({page})=>{
+test('saúde, incidência e divergências precedem importação',async({page})=>{
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
   await page.locator('#testReport').evaluate(element=>element.remove());
-  await activateTab(page,'metas');
+  await activateTab(page,'desempenho');
+  await page.locator('[data-performance-section="exam"]').click();
   const order=await page.locator('.exam-intelligence-hub').evaluate(element=>[...element.querySelectorAll(':scope > section')].map(section=>section.classList.contains('exam-historical-matrix')?'matrix':section.classList.contains('exam-json-import')?'import':section.getAttribute('aria-label')));
-  expect(order).toEqual(['Saúde da base histórica','Configuração e evidência histórica','matrix','import']);
-  await expect(page.locator('#examDataQuality')).toContainText('Qualidade do histórico');
+  expect(order).toEqual(['Saúde da evidência','matrix','Configuração e evidência histórica','Prova e situação pessoal','import']);
+  await expect(page.locator('#examDataQuality')).toContainText('Evidência limitada');
   await expect(page.locator('#examConfigurationAudit')).toContainText('Configurado × histórico');
   await expect(page.locator('.exam-intelligence-topics')).not.toHaveAttribute('open');
   await page.locator('.exam-intelligence-topics summary').focus();
@@ -29,7 +30,8 @@ test('filtros avançados da matriz cabem no celular e preservam seleção durant
     state.examQuestions=[{id:'hierarchy-question',examId:'hierarchy-exam',subjectId:subject.id,topicId:topic.id,questionNumber:1,weight:1,source:'Teste',classification:{method:'manual',confidence:1}}];
     api.setState(state);api.renderAll();
   });
-  await activateTab(page,'metas');
+  await activateTab(page,'desempenho');
+  await page.locator('[data-performance-section="exam"]').click();
   const advanced=page.locator('.exam-matrix-more-filters');
   await expect(advanced).not.toHaveAttribute('open');
   await expect(page.locator('[data-exam-matrix-filter="scope"]')).toBeVisible();
