@@ -1,6 +1,7 @@
 import {renderSimulationTrendChart} from '../renderers/simulations-renderer.js';
 import {renderSimulationComparison} from '../renderers/simulation-comparison-renderer.js';
 import {renderProjectionCalibration} from '../renderers/projection-calibration-renderer.js';
+import {renderPerformanceStory,renderPerformanceDetails} from './performance-story.js';
 
 const percent=value=>value==null?'—':`${value}%`;
 const signed=value=>value==null?'Sem comparação':`${value>0?'+':''}${value} p.p.`;
@@ -16,5 +17,5 @@ export function renderPerformanceSimulations(model,{range,targetScore,formatDate
   const chart=renderSimulationTrendChart({items:model.items.slice(-12),scoreFor:item=>Math.round(item.correct/item.total*1000)/10,formatDate,escapeHtml,targetScore});
   const comparison=renderSimulationComparison(model.comparison,{formatDate,escapeHtml});
   const calibration=renderProjectionCalibration(model.calibration);
-  return `${kpis}<p class="performance-method-note">Resultados de provas com composição ou dificuldade diferentes não são diretamente equivalentes. A comparação por disciplina mostra somente áreas detalhadas em ambas as provas.</p><section class="performance-block"><h3>Evolução dos simulados</h3>${chart}</section><section class="performance-block"><h3>Comparação por disciplina</h3>${comparison}</section><section class="performance-block"><h3>Projeção × resultado</h3>${calibration}</section>`;
+  return `${renderPerformanceStory({title:'Resultado dos simulados',summary:`Último resultado: ${percent(model.latest)} em ${model.count} simulado(s) no período.`,details:[model.trend==null?'Tendência recente sem base comparável.':`Variação recente: ${signed(model.trend)}.`]},escapeHtml)}${kpis}<p class="performance-method-note">Resultados de provas com composição ou dificuldade diferentes não são diretamente equivalentes. A comparação por disciplina mostra somente áreas detalhadas em ambas as provas.</p><section class="performance-block"><h3>Evolução dos simulados</h3>${chart}</section>${renderPerformanceDetails('Comparação por disciplina e projeção',`<section class="performance-block"><h3>Comparação por disciplina</h3>${comparison}</section><section class="performance-block"><h3>Projeção × resultado</h3>${calibration}</section>`)}`;
 }

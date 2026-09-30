@@ -1,5 +1,6 @@
 import {renderQuestionEvolution} from '../renderers/question-evolution-renderer.js';
 import {renderPerformanceTopicDialog} from './performance-topic-renderer.js';
+import {renderPerformanceStory,renderPerformanceDetails} from './performance-story.js';
 
 const value=(number,suffix='')=>number==null?'—':`${number}${suffix}`;
 const signed=number=>number==null?'Sem comparação':`${number>0?'+':''}${number} p.p.`;
@@ -13,5 +14,6 @@ export function renderPerformanceSubjects(model,{range,formatDate,escapeHtml,esc
   const activity=`<section class="performance-block"><h3>Atividade no período</h3><p>${model.activity.minutes} min estudados · ${model.activity.questions} questões resolvidas · ${model.activity.reviews} revisões concluídas.</p><p class="analytics-note">A precisão vem de questões pessoais; simulados detalhados são avaliados separadamente. Meta de precisão: ${model.goal.target}%.</p></section>`;
   const first=model.topics.slice(0,5),remaining=model.topics.slice(5);
   const topics=`<section class="performance-block"><h3>Tópicos</h3>${first.length?`<ul class="performance-changes performance-topic-list">${topicRows(first,escapeHtml,escapeAttr)}</ul>${remaining.length?`<details class="performance-more"><summary>Mostrar mais · +${remaining.length}</summary><ul class="performance-changes performance-topic-list">${topicRows(remaining,escapeHtml,escapeAttr)}</ul></details>`:''}`:'<p class="empty-state empty-state--compact">Nenhum tópico elegível nesta disciplina.</p>'}</section>`;
-  return `${selection}<h3 class="performance-subject-name">${escapeHtml(model.subject.name)}</h3>${kpis}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution,{formatDate})}</section>${activity}${topics}${renderPerformanceTopicDialog(topicDetail,{formatDate,escapeHtml})}`;
+  const summary=model.activity.questions<10?`Amostra insuficiente: ${model.activity.questions} questões no período.`:`Precisão de ${value(model.accuracy,'%')} frente à meta de ${model.goal.target}%.`;
+  return `${selection}${renderPerformanceStory({title:model.subject.name,summary,details:[model.trend==null?'Tendência sem base comparável.':`Tendência: ${signed(model.trend)}.`]},escapeHtml)}${kpis}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution,{formatDate})}</section>${renderPerformanceDetails('Atividade e tópicos',activity+topics)}${renderPerformanceTopicDialog(topicDetail,{formatDate,escapeHtml})}`;
 }

@@ -1,5 +1,6 @@
 import {renderReadinessHistory} from '../renderers/readiness-history-renderer.js';
 import {renderPerformanceComparison} from './performance-comparison-renderer.js';
+import {renderPerformanceStory,renderPerformanceDetails} from './performance-story.js';
 
 const shown=value=>value==null?'—':String(Math.round(value*10)/10);
 const change=value=>value==null?'Sem base comparável':`${value>0?'+':''}${shown(value)}`;
@@ -21,5 +22,7 @@ export function renderPerformanceOverview(model,{range,today,activeExamTags,form
   }).join('');
   const plan=`<section class="performance-block"><h3>Planejado × realizado</h3><p class="analytics-note">Aderência de carga compara minutos estudados com minutos planejados. Pode superar 100%.</p>${weekRows?`<div class="performance-table-scroll"><table><caption>Semanas com plano ou estudo no período</caption><thead><tr><th scope="col">Semana de</th><th scope="col">Planejado</th><th scope="col">Realizado</th><th scope="col">Aderência</th></tr></thead><tbody>${weekRows}</tbody></table></div>`:'<p class="empty-state empty-state--compact">Nenhum plano ou estudo registrado neste período.</p>'}${model.strategic?.strategicAdherence!=null?`<p class="context-note context-note--info">Aderência estratégica: ${model.strategic.strategicAdherence}% do tempo prioritário planejado foi executado em sessões vinculadas.</p>`:''}</section>`;
   const changes=model.changes.length?`<ul class="performance-changes">${model.changes.map(item=>`<li><strong>${escapeHtml(item.label)}</strong><span>${item.delta>0?'+':''}${shown(item.delta)} ${escapeHtml(item.unit)}</span></li>`).join('')}</ul>`:'<p class="empty-state empty-state--compact">Ainda não há mudanças mensuráveis com base comparável neste período.</p>';
-  return `${kpis}<p class="performance-method-note">${comparisonLabel}. Precisão usa apenas questões respondidas por você. O índice atual não é uma probabilidade de aprovação.</p>${renderPerformanceComparison(comparisonModel||{state:'disabled'}, {escapeHtml})}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section>${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`;
+  const insights=(comparisonModel?.insights||[]).slice(0,3);
+  const summary=model.changes[0]?`${model.changes[0].label}: ${change(model.changes[0].delta)} ${model.changes[0].unit} frente ao período anterior.`:'Ainda não há mudança mensurável com base comparável. Continue registrando estudo e questões.';
+  return `${renderPerformanceStory({title:'Sua evolução no período',summary,details:insights},escapeHtml)}${kpis}<p class="performance-method-note">${comparisonLabel}. Precisão usa apenas questões respondidas por você. O índice atual não é uma probabilidade de aprovação.</p><section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section>${renderPerformanceDetails('Comparação, plano e outras mudanças',`${renderPerformanceComparison(comparisonModel||{state:'disabled'}, {escapeHtml})}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
 }

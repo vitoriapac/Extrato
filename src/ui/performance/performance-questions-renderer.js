@@ -1,4 +1,5 @@
 import {renderQuestionEvolution} from '../renderers/question-evolution-renderer.js';
+import {renderPerformanceStory,renderPerformanceDetails} from './performance-story.js';
 
 const number=value=>value==null?'—':String(value);
 const percent=value=>value==null?'—':`${value}%`;
@@ -20,5 +21,6 @@ export function renderPerformanceQuestions({evolution,analysis,previousAccuracy=
   const comparable=analysis.topics.filter(item=>item.delta!=null);
   const grouped=(title,rows)=>`<div><h4>${title}</h4>${rows.length?`<ul class="performance-changes">${rows.map(row=>`<li><strong>${escapeHtml(row.name)}</strong><span>${delta(row.delta)} · ${row.beforeTotal} → ${row.afterTotal} questões</span></li>`).join('')}</ul>`:'<p class="analytics-note">Nenhum tópico com 30 questões em cada metade do período.</p>'}</div>`;
   const topics=`<section class="performance-block"><h3>Tópicos em evolução</h3><p class="analytics-note">Comparação entre metades do período. Cada metade precisa de pelo menos 30 questões; a mudança na dificuldade das questões também pode afetar a precisão.</p><div class="performance-topic-groups">${grouped('Maiores evoluções',comparable.filter(item=>item.delta>0).sort((a,b)=>b.delta-a.delta).slice(0,5))}${grouped('Maiores quedas',comparable.filter(item=>item.delta<0).sort((a,b)=>a.delta-b.delta).slice(0,5))}</div></section>`;
-  return `${kpis}<section class="performance-block"><h3>Precisão ao longo do tempo</h3>${renderQuestionEvolution(evolution,{formatDate})}</section>${volume}${errors}${topics}`;
+  const summary=analysis.accuracy==null?'Ainda não há precisão calculável.':`Precisão de ${analysis.accuracy}% em ${analysis.questionCount} questões respondidas.`;
+  return `${renderPerformanceStory({title:'Resultado das questões',summary,details:[trend==null?'Evolução sem base comparável.':`Variação de ${delta(trend)} frente ao período anterior.`,`${analysis.errors} erros no período.`]},escapeHtml)}${kpis}<section class="performance-block"><h3>Precisão ao longo do tempo</h3>${renderQuestionEvolution(evolution,{formatDate})}</section>${renderPerformanceDetails('Volume, erros e tópicos',volume+errors+topics)}`;
 }
