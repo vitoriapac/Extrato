@@ -23,6 +23,7 @@ import {createPerformanceViewState,resolvePerformanceRange,updatePerformanceView
 import {buildPerformanceOverview} from './application/performance/build-performance-overview.js';
 import {renderPerformancePage} from './ui/performance/performance-page.js';
 import {renderPerformanceOverview} from './ui/performance/performance-overview-renderer.js';
+import {renderPerformanceQuestions} from './ui/performance/performance-questions-renderer.js';
 import {renderPerformanceAnalysis} from './ui/renderers/performance-analysis-renderer.js';
 import {buildRecommendationExplanation} from './application/recommendations/build-recommendation-explanation.js';
 import {renderRecommendationExplanation} from './ui/renderers/recommendation-explanation-renderer.js';
@@ -5102,7 +5103,7 @@ function renderPerformance(){
   const target=document.getElementById('performancePage');
   if(!target)return;
   const range=resolvePerformanceRange({today:todayISO(),...performanceViewState});
-  let overviewHtml='';
+  let sectionHtml='';
   if(performanceViewState.section==='overview'){
     const scope=examEvidenceContext(),activeExamTags=state.examBlueprint?.activeExamTags||[];
     const eligible=new Set(scope.content.eligibleTopics.map(item=>item.id));
@@ -5110,10 +5111,24 @@ function renderPerformance(){
       ?state.dailyPlans.map(plan=>({...plan,items:(plan.items||[]).filter(item=>item.topicId&&eligible.has(item.topicId))})).filter(plan=>plan.items.length)
       :state.dailyPlans;
     const overview=buildPerformanceOverview({range,today:todayISO(),activeExamTags,readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans,subjects:examScopedSubjects()});
-    overviewHtml=renderPerformanceOverview(overview,{range,today:todayISO(),activeExamTags,formatDate:formatDatePt,escapeHtml});
+    sectionHtml=renderPerformanceOverview(overview,{range,today:todayISO(),activeExamTags,formatDate:formatDatePt,escapeHtml});
+  }else if(performanceViewState.section==='questions'){
+    const scope=examEvidenceContext();
+    const questions=scope.questions.included.map(item=>({...item,subjectId:entitySubjectId(item)}));
+    const period=performanceViewState.period;
+    const evolution=buildQuestionEvolution({questions,today:todayISO(),period});
+    const analysis=buildPerformanceAnalysis({questions,simulations:[],candidates:scope.content.eligibleTopics.map(item=>({topicId:item.id,topicName:item.name})),today:todayISO(),period});
+    const previous=range.previous?buildQuestionEvolution({questions,today:range.previous.end,period}).accuracy:null;
+    sectionHtml=renderPerformanceQuestions({evolution,analysis,previousAccuracy:previous,range,formatDate:formatDatePt,escapeHtml});
   }
-  target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,overviewHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
+  target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
 }
+document.addEventListener('click',event=>{
+  const jump=event.target.closest('[data-performance-jump]');
+  if(!jump)return;
+  performanceViewState=updatePerformanceViewState(performanceViewState,{section:jump.dataset.performanceJump});
+  activateTab('desempenho');
+});
 document.getElementById('performancePage')?.addEventListener('click',event=>{
   const section=event.target.closest('[data-performance-section]');
   if(section){performanceViewState=updatePerformanceViewState(performanceViewState,{section:section.dataset.performanceSection});render('desempenho');return}
