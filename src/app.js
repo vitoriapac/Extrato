@@ -22,6 +22,7 @@ import {renderWeeklyDecisionCycle} from './ui/renderers/weekly-decision-cycle-re
 import {buildPerformanceAnalysis,performancePeriodRecords} from './application/questions/build-performance-analysis.js';
 import {createPerformanceViewState,resolvePerformanceRange,updatePerformanceViewState} from './application/performance/performance-view-state.js';
 import {buildPerformancePageModel} from './application/performance/build-performance-page-model.js';
+import {countStudyDaysThisWeek} from './application/performance/study-day-count.js';
 import {renderPerformancePage} from './ui/performance/performance-page.js';
 import {renderPerformanceSection} from './ui/performance/render-performance-section.js';
 import {createPerformanceController} from './ui/controllers/performance-controller.js';
@@ -536,8 +537,14 @@ function migrateV23toV24(data){for(const exam of data.exams||[]){exam.importedQu
 function migrateV24toV25(data){data.readinessSnapshots=Array.isArray(data.readinessSnapshots)?data.readinessSnapshots:[];data.schemaVersion=25;return data}
 
 function migrateV25toV26(data){data.projectionSnapshots=Array.isArray(data.projectionSnapshots)?data.projectionSnapshots:[];data.schemaVersion=26;return data}
+function migrateV26toV27(data){
+  if(!data.metas||typeof data.metas!=='object')data.metas={};
+  const days=Number(data.metas.consistenciaSemanal);
+  data.metas.consistenciaSemanal=Number.isFinite(days)?Math.max(1,Math.min(7,Math.round(days))):5;
+  data.schemaVersion=27;return data;
+}
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24,24:migrateV24toV25,25:migrateV25toV26}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24,24:migrateV24toV25,25:migrateV25toV26,26:migrateV26toV27}});
 }
 
 function ensureStateDefaults(){
@@ -551,12 +558,14 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.examQuestions)) state.examQuestions = [];
   if(!Array.isArray(state.weeklyCloseSnapshots))state.weeklyCloseSnapshots=[];
   if(!['agenda','sequence'].includes(state.executionMode)) state.executionMode='agenda';
-  const metaDefaults={semanal:5,mensal:20,questoesSemanal:150,simuladosSemanal:1,metaAprovacao:70,horasDiarias:2.5};
+  const metaDefaults={semanal:5,mensal:20,questoesSemanal:150,simuladosSemanal:1,metaAprovacao:70,consistenciaSemanal:5,horasDiarias:2.5};
   if(!state.metas||typeof state.metas!=='object') state.metas={};
+  const consistencyTarget=state.metas.consistenciaSemanal;
   Object.entries(metaDefaults).forEach(([key,value])=>{
     if(!Number.isFinite(Number(state.metas[key]))) state.metas[key]=value;
     else state.metas[key]=Number(state.metas[key]);
   });
+  state.metas.consistenciaSemanal=consistencyTarget==null?5:Math.max(1,Math.min(7,Math.round(state.metas.consistenciaSemanal)));
   const hoursSource=state.metas.horasPorDia&&typeof state.metas.horasPorDia==='object'?state.metas.horasPorDia:{};
   state.metas.horasPorDia={};
   for(let day=0;day<7;day++){
@@ -3323,8 +3332,10 @@ function renderMetas(){
   const atingidoMensal = contarTopicosConcluidosNoPeriodo(isSameMonth);
   const atingidoQuestoes = somarQuestoesNaSemana();
   const atingidoSimulados = contarSimuladosNaSemana();
+  const atingidoConsistencia=countStudyDaysThisWeek(state.studySessions,todayISO());
   const hasAccuracyEvidence=state.questoes.some(item=>Number(item.resolved)>0)||state.simulados.some(item=>Number(item.total)>0);
-  const resultGoals=buildResultGoalsViewModel({goals:m,achieved:{weeklyTopics:atingidoSemanal,monthlyTopics:atingidoMensal,questions:atingidoQuestoes,simulations:atingidoSimulados,accuracy:hasAccuracyEvidence?taxaAcertoGeral():null}});
+  const resultGoals=buildResultGoalsViewModel({goals:m,achieved:{weeklyTopics:atingidoSemanal,monthlyTopics:atingidoMensal,questions:atingidoQuestoes,simulations:atingidoSimulados,accuracy:hasAccuracyEvidence?taxaAcertoGeral():null,studyDays:atingidoConsistencia}});
+  const consistencyGoal=resultGoals.items.find(item=>item.id==='studyDays');
 
   const cards = [
     { key:'semanal', label:'Meta Semanal', desc:'Tópicos concluídos esta semana', atingido: atingidoSemanal, meta: m.semanal },
@@ -3378,6 +3389,18 @@ function renderMetas(){
         <input type="number" min="0" max="100" value="${state.metas.metaAprovacao}" data-delegated-blur="updateMeta('metaAprovacao', this.value)">%
       </div>
       <small class="result-goal-status">${resultGoals.items.find(item=>item.id==='accuracy')?.state==='achieved'?'Meta de acerto atingida':hasAccuracyEvidence?'Meta ainda não atingida':'Aguardando questões ou simulados para calcular o acerto'}</small>
+    </div>
+    <div class="meta-card">
+      <div class="meta-info">
+        <div class="meta-name">Meta de Consistência</div>
+        <div class="meta-formula">Dias distintos com estudo válido nesta semana</div>
+      </div>
+      <div class="meta-progress-block">
+        <div class="meta-progress-track"><div class="meta-progress-fill ${consistencyGoal?.state==='achieved'?'over':''}" style="width:${consistencyGoal?.progressClamped||0}%"></div></div>
+        <div class="meta-progress-label"><span>${atingidoConsistencia} / ${m.consistenciaSemanal} dias</span><span>${consistencyGoal?.progress??0}%</span></div>
+      </div>
+      <div class="meta-inputs">Meta: <input type="number" min="1" max="7" step="1" value="${m.consistenciaSemanal}" aria-label="Meta de dias com estudo por semana" data-delegated-blur="updateMeta('consistenciaSemanal', this.value)"> dias</div>
+      <small class="result-goal-status">${consistencyGoal?.state==='achieved'?'Meta atingida':`Faltam ${consistencyGoal?.remaining??m.consistenciaSemanal} dias para atingir a meta`}</small>
     </div>`;
   renderSelectedPeriodComparison();
 }
@@ -4425,7 +4448,7 @@ function renderAlertasInteligentes(){
   const reconciliation=reconcileAlerts(computeAlertasInteligentes(),state.alertStates,todayISO(),addDays);
   if(JSON.stringify(reconciliation.states)!==JSON.stringify(state.alertStates)){state.alertStates=reconciliation.states;scheduleSave()}
   const alertas = reconciliation.visible;
-  const presentation=renderIntelligentAlerts({alerts:alertas,additional:reconciliation.additional,escapeHtml,escapeAttr});
+  const presentation=renderIntelligentAlerts({alerts:alertas,additional:reconciliation.additional,currentAction:currentStudyRecommendations[0],escapeHtml,escapeAttr});
   if(container)container.innerHTML=presentation.list;
   if(overview)overview.innerHTML=presentation.overview;
 }
@@ -4714,12 +4737,7 @@ function renderGuidedOnboarding(){
   if(!uiState.onboarding.currentStep)uiState.onboarding.currentStep=model.current.id;
   const visible=model.visible&&!IS_DEMO_MODE;
   const overview=document.querySelector('#panel-dashboard .overview-now');
-  if(overview){
-    const setupBlocksAction=!model.hasContent||!model.hasAvailability;
-    if(setupBlocksAction)overview.before(entry);
-    else overview.after(entry);
-    entry.classList.toggle('onboarding-entry--blocking',setupBlocksAction);
-  }
+  if(overview)overview.after(entry);
   entry.hidden=!visible;
   document.getElementById('guidedOnboardingEntry').innerHTML=visible?renderOnboardingEntry(model,{escapeHtml}):'';
   overlay.hidden=!visible||!uiState.onboarding.open;

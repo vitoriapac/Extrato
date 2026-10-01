@@ -8,6 +8,6 @@ export function createGoalService({repository,getDayOfWeek}={}){
     updateDailyHours:(day,value,{isToday=false}={})=>{const hours=clamp(value,0,24);repository.updateDailyHours(day,hours);if(isToday)repository.updateGoal('horasDiarias',hours);return hours},
     applyHoursToEveryDay:value=>{const hours=clamp(value,0,24);for(let day=0;day<7;day++)repository.updateDailyHours(day,hours);repository.updateGoal('horasDiarias',hours);return hours},
     clearWeekend:()=>{repository.updateDailyHours(0,0);repository.updateDailyHours(6,0)},
-    update:(key,value)=>repository.updateGoal(key,key==='metaAprovacao'?clamp(value,0,100):clamp(value))
+    update:(key,value)=>repository.updateGoal(key,key==='metaAprovacao'?clamp(value,0,100):key==='consistenciaSemanal'?Math.round(clamp(value,1,7)):clamp(value))
   });
 }

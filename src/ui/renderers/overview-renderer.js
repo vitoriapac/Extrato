@@ -1,11 +1,11 @@
-export function renderIntelligentAlerts({alerts,additional,escapeHtml,escapeAttr}){
+export function renderIntelligentAlerts({alerts,additional,currentAction=null,escapeHtml,escapeAttr}){
   if(!alerts.length)return {
     list:'<div class="upcoming-empty">Nenhum alerta no momento — tudo sob controle. 🎉</div>',
     overview:'<p class="overview-alert-empty">Sem alertas prioritários neste momento.</p>'
   };
   const renderAlert=alert=>`<div class="alerta-item alerta-${escapeAttr(alert.nivel)}"><span class="alerta-icon">${escapeHtml(alert.icon||'')}</span><span><strong>${escapeHtml(alert.reason||alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction||'')}</small></span>${alert.severity!=='ok'?`<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(alert.id)}')">Dispensar 7 dias</button>`:''}</div>`;
   const list=[...alerts,...additional].map(renderAlert).join('');
-  const overview=`<div class="overview-alert-list">${alerts.slice(0,2).map(alert=>`<article class="overview-alert alerta-${escapeAttr(alert.severity)}"><strong>${escapeHtml(alert.reason||alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction||'')}</small></article>`).join('')}</div>${alerts.length>2?`<p class="overview-alert-empty">+ ${alerts.length-2} alertas ativos</p>`:''}`;
+  const overview=`<div class="overview-alert-list">${alerts.slice(0,2).map(alert=>`<article class="overview-alert alerta-${escapeAttr(alert.severity)}">${alert.topicId&&alert.topicId===currentAction?.topicId&&alert.subjectId===currentAction?.subjectId?'<span class="overview-alert-related">Relacionado à recomendação atual</span>':''}<strong>${escapeHtml(alert.reason||alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction||'')}</small></article>`).join('')}</div>${alerts.length>2?`<p class="overview-alert-empty">+ ${alerts.length-2} alertas ativos</p>`:''}`;
   return {list,overview};
 }
 

@@ -6,7 +6,8 @@ const pick=state=>({
   subjects:state.subjects,exams:state.exams,examQuestions:state.examQuestions,
   studySessions:state.studySessions,recommendationHistory:state.recommendationHistory,
   adaptivePlanningHistory:state.adaptivePlanningHistory,achievementsUnlocked:state.achievementsUnlocked,
-  weeklyCloseSnapshots:state.weeklyCloseSnapshots,algorithmVersions:state.algorithmVersions
+  weeklyCloseSnapshots:state.weeklyCloseSnapshots,algorithmVersions:state.algorithmVersions,
+  consistencyTarget:state.metas.consistenciaSemanal
 });
 async function importBackup(page,backup,name='backup.json'){
   await page.locator('#importBackupFile').setInputFiles({name,mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
@@ -43,6 +44,7 @@ test('schema 24 sobrevive a exportação, limpeza, recarga e restauração',asyn
       {id:'cycle-question-2',examId:'cycle-partial',subjectId:subject.id,topicId:topic.id,questionNumber:1,weight:1,source:'Caderno',classification:{method:'imported',confidence:.4}}
     ];
     state.studySessions=[{id:'cycle-session',date:'2026-09-20',subjectId:subject.id,topicId:topic.id,type:'study',durationSeconds:1800,questionsResolved:0,correctAnswers:0,notes:'Sessão preservada'}];
+    state.metas.consistenciaSemanal=3;
     state.recommendationHistory=[{id:'cycle-recommendation',createdAt:'2026-09-20T12:00:00Z',status:'pending',activityType:'study',reasons:['Lacuna estratégica'],suggestedMinutes:30,priority:70,subjectId:subject.id,topicId:topic.id,algorithmVersions:{priority:5,examIntelligence:1}}];
     state.adaptivePlanningHistory=[{id:'cycle-adaptive',createdAt:'2026-09-20T12:00:00Z',status:'suggested',sourceSubjectId:subject.id,targetSubjectId:subject.id,minutes:15,reasons:['Evidência nova'],sourceBefore:90,sourceAfter:75,targetBefore:90,targetAfter:105,algorithmVersion:4}];
     state.achievementsUnlocked={'Prova mapeada':'2026-09-20'};
@@ -57,6 +59,7 @@ test('schema 24 sobrevive a exportação, limpeza, recarga e restauração',asyn
   await importBackup(page,exported);
   const restored=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState()));
   expect(restored.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+  expect(restored.metas.consistenciaSemanal).toBe(3);
   expect(pick(restored)).toEqual(pick(exported));
 });
 
@@ -67,6 +70,7 @@ test('backup do schema 23 migra lacunas como desconhecidas e pode ser exportado 
   const legacy=await page.evaluate(()=>{
     const state=structuredClone(window.__EXTRATO_TEST__.getState()),subject=state.subjects[0],topic=subject.topics[0];
     state.schemaVersion=23;
+    delete state.metas.consistenciaSemanal;
     state.exams=[{id:'legacy-exam-2023',institution:'Banco do Brasil',examName:'BB 2023',role:'Escriturário',board:'Cesgranrio',year:2023,date:null,source:'imported',sourceReference:'Legado',coverage:'complete',examTags:['bb-escriturario']}];
     state.examQuestions=[{id:'legacy-exam-question',examId:'legacy-exam-2023',subjectId:subject.id,topicId:topic.id,questionNumber:1,weight:1,source:'Legado',classification:{method:'manual',confidence:1}}];
     return state;
@@ -74,6 +78,7 @@ test('backup do schema 23 migra lacunas como desconhecidas e pode ser exportado 
   await importBackup(page,legacy,'backup-v23.json');
   const migrated=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState()));
   expect(migrated.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+  expect(migrated.metas.consistenciaSemanal).toBe(5);
   expect(migrated.exams[0].importedQuestionCount).toBeNull();
   expect(migrated.exams[0].expectedQuestionCount).toBeNull();
   expect(migrated.examQuestions).toHaveLength(1);

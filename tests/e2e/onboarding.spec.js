@@ -11,7 +11,7 @@ test.beforeEach(async({page})=>{
   await activateTab(page,'dashboard');
 });
 
-test('Visão Geral coloca configuração antes da ação somente quando ela bloqueia o estudo',async({page})=>{
+test('Visão Geral mantém ação antes da configuração em todos os estados de primeiro uso',async({page})=>{
   const inOrder=await page.evaluate(()=>{
     const ids=['kpiGrid','quickStats','overviewNextAction','guidedOnboarding'];
     const nodes=ids.map(id=>document.getElementById(id));
@@ -22,9 +22,9 @@ test('Visão Geral coloca configuração antes da ação somente quando ela bloq
   await expect(page.locator('#guidedOnboarding')).toContainText('CONFIGURAÇÃO INICIAL');
   await expect(page.locator('#guidedOnboarding [role="progressbar"]')).toHaveAttribute('aria-valuemax','4');
   await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.subjects=[];api.setState(state);api.renderAll()});
-  const blockingOrder=await page.evaluate(()=>document.getElementById('guidedOnboarding').compareDocumentPosition(document.getElementById('overviewNextAction'))&Node.DOCUMENT_POSITION_FOLLOWING);
-  expect(blockingOrder).toBeTruthy();
-  await expect(page.locator('#guidedOnboarding')).toHaveClass(/onboarding-entry--blocking/);
+  const actionFirst=await page.evaluate(()=>document.getElementById('overviewNextAction').compareDocumentPosition(document.getElementById('guidedOnboarding'))&Node.DOCUMENT_POSITION_FOLLOWING);
+  expect(actionFirst).toBeTruthy();
+  await expect(page.locator('#guidedOnboarding')).toBeVisible();
 });
 
 test('primeiro uso preserva escolhas e chega à prévia do plano',async({page})=>{
@@ -32,7 +32,7 @@ test('primeiro uso preserva escolhas e chega à prévia do plano',async({page})=
   const overlay=page.locator('#guidedOnboardingOverlay');
   const clickButton=name=>overlay.getByRole('button',{name:new RegExp(name)}).first().click();
   await expect(onboarding).toBeVisible();
-  await expect(onboarding).toContainText(/Comece seu plano|Configuração incompleta/);
+  await expect(onboarding).toContainText(/Monte seu plano de estudos|Continue sua configuração/);
   await page.locator('#guidedOnboarding [data-guided-action="open"]').click();
   await expect(overlay).toBeVisible();
   await expect(overlay).toContainText(/Por que isso importa\?/i);

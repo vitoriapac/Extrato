@@ -11,6 +11,13 @@ test('metas de resultado diferenciam meta atingida, andamento e ausência de evi
   assert.equal(model.items.find(item=>item.id==='accuracy').progress,null);
 });
 
+test('meta de consistência usa dias estudados e mantém zero como progresso medido',()=>{
+  const empty=buildResultGoalsViewModel({goals:{consistenciaSemanal:5},achieved:{studyDays:0}}).items.find(item=>item.id==='studyDays');
+  assert.equal(empty.current,0);assert.equal(empty.progress,0);assert.equal(empty.remaining,5);
+  const complete=buildResultGoalsViewModel({goals:{consistenciaSemanal:3},achieved:{studyDays:3}}).items.find(item=>item.id==='studyDays');
+  assert.equal(complete.state,'achieved');assert.equal(complete.progress,100);
+});
+
 test('comparação pareia períodos de igual duração e deixa acerto ausente sem amostra',()=>{
   const model=buildPeriodComparisonViewModel({today:'2026-09-21',preset:'7',sessions:[{date:'2026-09-21',durationSeconds:3600},{date:'2026-09-14',durationSeconds:1800}],questions:[{date:'2026-09-20',resolved:10,correct:7}],reviews:[{date:'2026-09-20',status:'Concluído',completedAt:'2026-09-20T12:00:00.000Z'}]});
   assert.deepEqual(model.currentPeriod,{preset:'7',start:'2026-09-15',end:'2026-09-21',days:7,label:'Últimos 7 dias'});

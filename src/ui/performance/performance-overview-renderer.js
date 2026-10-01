@@ -1,6 +1,6 @@
 import {renderReadinessHistory} from '../renderers/readiness-history-renderer.js';
 import {renderPerformanceComparison} from './performance-comparison-renderer.js';
-import {renderPerformanceStory,renderPerformanceDetails} from './performance-story.js';
+import {renderPerformanceStory,renderPerformanceSummary,renderPerformanceDetails} from './performance-story.js';
 import {renderReadinessChangeExplanation} from './readiness-change-explanation-renderer.js';
 import {renderMetricCard,renderEmptyState} from '../components/presentation.js';
 
@@ -26,5 +26,6 @@ export function renderPerformanceOverview(model,{range,today,activeExamTags,form
   const changes=model.changes.length?`<ul class="performance-changes">${model.changes.map(item=>`<li><strong>${escapeHtml(item.label)}</strong><span>${item.delta>0?'+':''}${shown(item.delta)} ${escapeHtml(item.unit)}</span></li>`).join('')}</ul>`:'<p class="empty-state empty-state--compact">Ainda não há mudanças mensuráveis com base comparável neste período.</p>';
   const insights=(comparisonModel?.insights||[]).slice(0,3);
   const summary=model.changes[0]?`${model.changes[0].label}: ${change(model.changes[0].delta)} ${model.changes[0].unit} frente ao período anterior.`:'Ainda não há mudança mensurável com base comparável. Continue registrando estudo e questões.';
-  return `${renderPerformanceStory({title:'Sua evolução no período',summary,details:insights},escapeHtml)}${kpis}${readinessChange?renderReadinessChangeExplanation(readinessChange,{formatDate,escapeHtml}):''}<p class="performance-method-note">${comparisonLabel}. Precisão usa apenas questões respondidas por você. O índice atual não é uma probabilidade de aprovação.</p><section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section>${renderPerformanceDetails('Comparação, plano e outras mudanças',`${renderPerformanceComparison(comparisonModel||{state:'disabled'}, {escapeHtml})}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
+  const method=`<p class="performance-method-note">${comparisonLabel}. Precisão usa apenas questões respondidas por você. O índice atual não é uma probabilidade de aprovação.</p>`;
+  return `${renderPerformanceSummary(renderPerformanceStory({title:'Sua evolução no período',summary,details:insights},escapeHtml),kpis,method)}${readinessChange?renderReadinessChangeExplanation(readinessChange,{formatDate,escapeHtml}):''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section>${renderPerformanceDetails('Comparação, plano e outras mudanças',`${renderPerformanceComparison(comparisonModel||{state:'disabled'}, {escapeHtml})}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
 }

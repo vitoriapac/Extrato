@@ -8,7 +8,7 @@ export function buildDemoPlanning(scenario,{today,subjects,examDate,sessions=[],
   const goals=scenario.goals;
   const sessionsByDate=new Map();
   for(const session of sessions){if(!sessionsByDate.has(session.date))sessionsByDate.set(session.date,session)}
-  const metas={semanal:goals.weeklyHours,mensal:goals.monthlyHours,questoesSemanal:goals.weeklyQuestions,simuladosSemanal:goals.weeklySimulations,metaAprovacao:goals.targetScorePct,horasDiarias:goals.weeklyHours/7,horasPorDia:{'0':1,'1':2,'2':2,'3':2,'4':2,'5':2,'6':1}};
+  const metas={semanal:goals.weeklyHours,mensal:goals.monthlyHours,questoesSemanal:goals.weeklyQuestions,simuladosSemanal:goals.weeklySimulations,metaAprovacao:goals.targetScorePct,consistenciaSemanal:5,horasDiarias:goals.weeklyHours/7,horasPorDia:{'0':1,'1':2,'2':2,'3':2,'4':2,'5':2,'6':1}};
   const dailyPlans=goals.history.flatMap((week,index)=>{
     const weekStart=addLocalDays(today,-(goals.history.length-index+1)*7),dailyBase=Math.floor(week.plannedMinutes/6),remainder=week.plannedMinutes-dailyBase*6;
     return Array.from({length:6},(_,day)=>{

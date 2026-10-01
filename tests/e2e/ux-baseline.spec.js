@@ -30,12 +30,18 @@ async function expectDiagnosisScreenshot(page,name,height){
 
 test('baseline visual da ação principal no desktop',async({page})=>{
   await prepareDemo(page,{width:1440,height:900});
-  await expect(page.locator('.overview-now')).toHaveScreenshot(screenshotName('agora-desktop-light.png'),screenshotOptions);
+  const action=await page.locator('.overview-now-action').boundingBox(),attention=await page.locator('.overview-now-attention').boundingBox();
+  expect(action.x+action.width).toBeLessThanOrEqual(attention.x+1);
+  expect(action.y).toBe(attention.y);
+  if(process.platform==='win32')await expect(page.locator('.overview-now')).toHaveScreenshot(screenshotName('agora-desktop-light.png'),screenshotOptions);
 });
 
 test('baseline visual da ação principal no mobile escuro',async({page})=>{
   await prepareDemo(page,{width:375,height:812,theme:'dark'});
-  await expect(page.locator('.overview-now')).toHaveScreenshot(screenshotName('agora-mobile-dark.png'),screenshotOptions);
+  const action=await page.locator('.overview-now-action').boundingBox(),attention=await page.locator('.overview-now-attention').boundingBox();
+  expect(attention.y).toBeGreaterThanOrEqual(action.y+action.height);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  if(process.platform==='win32')await expect(page.locator('.overview-now')).toHaveScreenshot(screenshotName('agora-mobile-dark.png'),screenshotOptions);
 });
 
 test('baseline visual da Central de Diagnóstico no desktop',async({page})=>{

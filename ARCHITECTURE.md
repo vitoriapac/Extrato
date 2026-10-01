@@ -188,7 +188,7 @@ npm run check
 
 IndexedDB é usado em conjunto com armazenamento local. Cada estado recebe `updatedAt`; o mais recente é carregado. Backups automáticos rotativos possuem checksum SHA-256. Antes de adotar dados locais ou importados, a aplicação migra e valida toda a estrutura. Abas abertas trocam versões por `BroadcastChannel`.
 
-O schema 26 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo, vínculos auditáveis do planejamento, evidências e resultados das recomendações, estado individual da revisão adaptativa, normalização das sessões, snapshots do escopo de evidências históricas, histórico das decisões de redistribuição semanal, ciclo de vida das recomendações exibidas, coleções independentes de provas e questões históricas e `readinessSnapshots`. Dados ausentes são mantidos em estado neutro (`null`) e backups anteriores continuam sendo migrados automaticamente pelas migrações sequenciais até a versão atual.
+O schema 27 inclui `examBlueprint`, versões dos algoritmos, campos estratégicos dos tópicos, modo demonstrativo, vínculos auditáveis do planejamento, evidências e resultados das recomendações, estado individual da revisão adaptativa, normalização das sessões, snapshots do escopo de evidências históricas, histórico das decisões de redistribuição semanal, ciclo de vida das recomendações exibidas, coleções independentes de provas e questões históricas, `readinessSnapshots` e a meta configurável `metas.consistenciaSemanal`. Dados ausentes são mantidos em estado neutro (`null`) quando aplicável e backups anteriores continuam sendo migrados automaticamente pelas migrações sequenciais até a versão atual.
 
 O schema 24 preserva por prova o total conhecido de questões, o total oficial opcional e as linhas ignoradas ainda sem classificação. A migração de provas antigas não inventa esses números: a cobertura permanece indisponível até nova importação. Provas declaradas completas mas com pendências ou total conhecido inferior ao declarado passam a parciais, evitando que lacunas de mapeamento pareçam ausência do tópico na prova.
 
@@ -297,6 +297,8 @@ Cada novo item confirmado registra prioritySnapshot, com score, fatores, razões
 build-recommendation-explanation.js fornece ação, razões, evidências e consequências operacionais. As apresentações guardam sua explicação original; a decisão guarda explanationSnapshot, evidenceSnapshot, suggestedAction e expectedImpact junto ao algoritmo e instante. Histórico de decisões e adaptações renderizam os valores capturados, sem consultar métricas atuais. Consequências descrevem cronômetro, revisão, vínculo ao plano e redistribuição confirmável; não são previsão de ganho de domínio, prontidão ou nota. Registros legados sem explicação detalhada não recebem uma reconstrução retroativa.
 
 ### Metas pessoais e sinais de preparação
+
+`metas.consistenciaSemanal` guarda apenas o alvo de 1 a 7 dias, com padrão de 5. O resultado semanal é derivado das datas locais distintas das sessões de estudo com duração positiva, de segunda-feira até hoje. A mesma contagem de dias válidos alimenta Desempenho → Consistência no período selecionado; sessões múltiplas no mesmo dia contam uma vez. A migração 26 → 27 acrescenta o alvo sem reconstruir histórico.
 
 A meta opcional `examBlueprint.subjects[].accuracyTarget` herda a meta global de acerto. É independente de `masteryTarget`, pesos e incidência. Os fechamentos e perfis de prioridade preservam a meta registrada. Não há migração retroativa desses indicadores.
 

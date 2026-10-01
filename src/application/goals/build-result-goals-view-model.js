@@ -6,7 +6,8 @@ export function buildResultGoalsViewModel({ goals = {}, achieved = {}, period = 
     { id: 'monthlyTopics', key: 'mensal', label: 'Tópicos no mês', description: 'Tópicos concluídos neste mês' },
     { id: 'questions', key: 'questoesSemanal', label: 'Questões na semana', description: 'Questões resolvidas nesta semana' },
     { id: 'simulations', key: 'simuladosSemanal', label: 'Simulados na semana', description: 'Simulados registrados nesta semana' },
-    { id: 'accuracy', key: 'metaAprovacao', label: 'Meta de acerto', description: 'Taxa de acerto observada' }
+    { id: 'accuracy', key: 'metaAprovacao', label: 'Meta de acerto', description: 'Taxa de acerto observada' },
+    { id: 'studyDays', key: 'consistenciaSemanal', label: 'Dias com estudo', description: 'Dias distintos com estudo válido nesta semana' }
   ];
   const items = definitions.map(item => {
     const target = goals[item.key] == null ? null : Math.max(0, number(goals[item.key]));

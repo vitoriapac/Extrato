@@ -1,6 +1,7 @@
 import {addLocalDays,parseLocalDate} from '../../core/date-utils.js';
 import {plannedMinutesForPlan} from '../goals/build-plan-execution.js';
 import {buildStrategicExecution} from '../goals/build-strategic-execution.js';
+import {countStudyDaysInRange} from './study-day-count.js';
 
 const inRange=(date,range)=>Boolean(date&&range?.end&&date<=range.end&&(!range.start||date>=range.start));
 const weekStart=date=>{
@@ -33,6 +34,6 @@ export function buildPerformanceConsistency({range,today,sessions=[],questions=[
   const previous=range?.previous?sessions.filter(item=>inRange(item.date,range.previous)).reduce((sum,item)=>sum+Math.max(0,Number(item.durationSeconds)||0)/60,0):null;
   return {weekly,heatmap,studiedMinutes,plannedMinutes,adherence:plannedMinutes?round(studiedMinutes/plannedMinutes*100):null,
     strategicAdherence:strategic.strategicAdherence,strategicCoverage:strategic.classifiedCoverage,
-    activeDays:byDate.size,questions:answered.reduce((sum,item)=>sum+Math.max(0,Number(item.resolved)||0),0),
+    activeDays:countStudyDaysInRange(studied,range),questions:answered.reduce((sum,item)=>sum+Math.max(0,Number(item.resolved)||0),0),
     previousMinutes:previous==null?null:round(previous),heatmapLimited:range?.start==null||range.start<heatmapStart};
 }
