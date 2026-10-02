@@ -1,5 +1,6 @@
 import {buildStudyAction,recommendationActionLabel} from '../recommendations/recommendation-action.js';
 import {diagnosticSignalLabel} from '../../domain/diagnostics/diagnostic-vocabulary.js';
+import {decisionReasonCode} from './decision-reason-codes.js';
 
 export const NEXT_BEST_ACTION_STATES=Object.freeze({
   ACTION_REQUIRED:'ACTION_REQUIRED',ACTION_OPTIONAL:'ACTION_OPTIONAL',MAINTAIN_PLAN:'MAINTAIN_PLAN',
@@ -16,7 +17,9 @@ export function buildNextBestAction({recommendations=[],diagnosis=null,activePla
     const projectionRisk=projection?.status!=='insufficient_data'?(projection?.topicRisks||[]).find(item=>item.subjectId===action.subjectId&&item.topicId===action.topicId):null;
     const projectionReason=projectionRisk?`Esta lacuna de alto impacto também aparece na trajetória ${projection.status==='at_risk'?'em risco':'que exige atenção'} até a prova. Trata-se de evidência adicional, sem alterar a prioridade calculada.`:null;
     const state=row?.state==='attention'&&['critical','important'].includes(row.severity)?NEXT_BEST_ACTION_STATES.ACTION_REQUIRED:NEXT_BEST_ACTION_STATES.ACTION_OPTIONAL;
-    return {state,action,label:recommendationActionLabel(action),subjectName:recommendation.subjectName||row?.subjectName||'Disciplina',topicName:recommendation.topicName||row?.name||'Tópico',
+    const structuredReason=decisionReasonCode(recommendation.decisionReasonCode);
+    return {state,action,decisionReasonCode:structuredReason!=='unknown'?structuredReason:action.activityType==='review'?'scheduled_review':'unknown',
+      label:recommendationActionLabel(action),subjectName:recommendation.subjectName||row?.subjectName||'Disciplina',topicName:recommendation.topicName||row?.name||'Tópico',
       diagnosis:row?diagnosticSignalLabel(row.primarySignal):null,evidence:row?.evidence?.label||action.evidence.label||'Não avaliada',
       reasons:[...(action.reasons||[])].slice(0,3),projectionReason,weeklyCapacityMinutes,weeklyPlannedMinutes:activePlan?.weeklyPlannedMinutes??null,
       currentAllocationMinutes:allocation?.minutes??null,activePlanId:activePlan?.id||null};

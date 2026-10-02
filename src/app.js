@@ -1,4 +1,6 @@
 import {buildDiagnosisPageModel} from './application/diagnostics/build-diagnosis-page-model.js';
+import {buildDecisionCoherenceReport} from './application/diagnostics/build-decision-coherence-report.js';
+import {renderDecisionCoherenceDebug} from './ui/renderers/decision-coherence-debug-renderer.js';
 import {renderPreparationSignals} from './ui/renderers/preparation-signals-renderer.js';
 import {resolveSubjectAccuracyTarget} from './domain/analytics/subject-accuracy-target.js';
 import {buildSubjectAccuracy} from './application/analytics/build-subject-accuracy.js';
@@ -4501,6 +4503,7 @@ function renderDiagnosisCenter(){
   const secondaryHtml=renderRecoveryReviewDebt({recoveries:preparationSignals.rows.filter(item=>item.type==='recovery'),debt},{escapeHtml});
   container.innerHTML=analysisContextBanner('hoje')+renderNextBestAction(nextAction,{escapeHtml,escapeAttr})+diagnosisHtml+`<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${debt.count} vencida(s)</summary>${secondaryHtml}</details>`;
   container.innerHTML+=`<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
+  if(new URLSearchParams(location.search).get('debug')==='decisions')container.innerHTML+=renderDecisionCoherenceDebug(buildDecisionCoherenceReport({trajectory:projection,nextBestAction:nextAction,examIntelligence:candidates,adaptivePlan:latestStudyPlan()}),{escapeHtml});
 }
 createDiagnosisController({document,refreshRecommendations:refreshStudyRecommendationItems,getRecommendations:()=>currentStudyRecommendations,
   onStale:()=>{showToast('A recomendação mudou. Atualize o diagnóstico antes de pré-visualizar.');renderDiagnosisCenter()},

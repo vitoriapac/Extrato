@@ -1,3 +1,5 @@
+import {DECISION_REASON_LABELS,decisionReasonCode} from './decision-reason-codes.js';
+
 // Read-only audit of outputs already produced by the decision engines.
 // A divergence is evidence for inspection, never an instruction to rerank actions.
 export function buildDecisionCoherenceReport({trajectory=null,nextBestAction=null,examIntelligence=null,
@@ -15,9 +17,14 @@ export function buildDecisionCoherenceReport({trajectory=null,nextBestAction=nul
   });
   const divergences=[];
   if(action&&risks.length&&!signals.some(item=>item.nextAction)) {
-    const reason=nextBestAction.projectionReason||nextBestAction.reasons?.find(Boolean)||null;
+    const reasonCode=decisionReasonCode(nextBestAction.decisionReasonCode);
     divergences.push({type:'trajectory_action_mismatch',riskTopicId:risks[0].topicId,
-      actionTopicId:action.topicId,explainable:Boolean(reason),reason});
+      actionTopicId:action.topicId,explainable:reasonCode!=='unknown',reasonCode,
+      reason:reasonCode==='unknown'?null:DECISION_REASON_LABELS[reasonCode]});
   }
-  return {coherent:divergences.every(item=>item.explainable),signals,divergences};
+  const explained=divergences.filter(item=>item.explainable).length;
+  const unexplained=divergences.length-explained;
+  const status=unexplained?'needs_review':explained?'explained_divergence':'coherent';
+  return {status,coherent:unexplained===0,signals,divergences,summary:{risks:signals.length,
+    aligned:signals.filter(item=>item.nextAction||item.planned).length,explained,unexplained}};
 }

@@ -20,6 +20,14 @@ A confiança fica limitada pela calibração dos simulados: `insufficient`, `low
 
 Os testes cobrem iniciante, evolução, esforço sem melhora, platô, deterioração, alta precisão com pouca cobertura, prazos distintos e datas inválidas. Os snapshots preservam os insumos e a versão do algoritmo sem recalcular decisões passadas. O relatório interno de coerência compara a trajetória com a Próxima Melhor Ação e outros sinais já calculados; ele registra divergências justificadas ou pendentes, sem mudar a prioridade.
 
+O relatório retorna `coherent`, `explained_divergence` ou `needs_review` e contabiliza riscos, alinhamentos e divergências. Uma divergência só é explicável com um `decisionReasonCode` estruturado; texto livre não basta. A Central de Diagnóstico mostra o relatório interno apenas com `?debug=decisions`. A observação não recalcula a prioridade.
+
+## Prévia de recuperação
+
+`buildRecoveryPlan` é um motor puro de prévia. Para uma trajetória em atenção ou risco, ele usa os candidatos já medidos e solicita uma única transferência ao planejador adaptativo existente. A proposta só é aceita se o destino corresponder a uma lacuna da trajetória, se a origem for consolidada, e se cooldown, evidência, limites de bloco, capacidade e escopo continuarem válidos. O retorno distingue `not_needed`, `recoverable`, `limited` e `unavailable`.
+
+A carga planejada e a disponibilidade semanal são preservadas separadamente. A saída compara as disciplinas antes e depois e registra a base usada para invalidar uma prévia quando plano, concurso, meta, data ou disponibilidade mudarem. Este pacote não apresenta botão para aplicar a proposta e não grava estado, sessões ou histórico.
+
 ## Histórico e apresentação
 
 Os snapshots da trajetória usam a coleção existente `projectionSnapshots`, com `kind: "achievement"`. Guardam data, escopo, versão, entradas comparáveis, meta, cobertura, execução, consistência, status, confiança e explicações congeladas. A assinatura evita duplicar o mesmo estado no mesmo dia. Registros antigos de calibração continuam aceitos e são ignorados pelo histórico de trajetória; snapshots de trajetória não entram na calibração retrospectiva.

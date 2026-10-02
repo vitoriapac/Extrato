@@ -29,10 +29,19 @@ test('divergência sem explicação é relatada, sem modificar os produtores',()
 });
 
 test('divergência justificada fica observável e não invalida a decisão',()=>{
-  const report=buildDecisionCoherenceReport({trajectory,nextBestAction:{...action('informatics'),reasons:['Revisão vencida']}});
+  const report=buildDecisionCoherenceReport({trajectory,nextBestAction:{...action('informatics'),decisionReasonCode:'overdue_review',reasons:['Revisão vencida']}});
   assert.equal(report.coherent,true);
-  assert.equal(report.divergences[0].reason,'Revisão vencida');
+  assert.equal(report.status,'explained_divergence');
+  assert.equal(report.divergences[0].reasonCode,'overdue_review');
+  assert.equal(report.summary.explained,1);
   assert.equal(buildDecisionCoherenceReport({trajectory:{status:'insufficient_data',topicRisks:trajectory.topicRisks},nextBestAction:action('informatics')}).divergences.length,0);
+});
+
+test('texto livre não justifica uma divergência sem código estruturado',()=>{
+  const report=buildDecisionCoherenceReport({trajectory,nextBestAction:{...action('informatics'),reasons:['Revisão vencida']}});
+  assert.equal(report.status,'needs_review');
+  assert.equal(report.divergences[0].reasonCode,'unknown');
+  assert.deepEqual(report.summary,{risks:1,aligned:0,explained:0,unexplained:1});
 });
 
 test('matriz usa saídas reais da trajetória e da próxima ação sem reordená-las',()=>{
