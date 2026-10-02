@@ -28,6 +28,10 @@ O relatório retorna `coherent`, `explained_divergence` ou `needs_review` e cont
 
 A carga planejada e a disponibilidade semanal são preservadas separadamente. A saída compara as disciplinas antes e depois e registra a base usada para invalidar uma prévia quando plano, concurso, meta, data ou disponibilidade mudarem. Este pacote não apresenta botão para aplicar a proposta e não grava estado, sessões ou histórico.
 
+Em **Desempenho → Visão geral**, a Trajetória apresenta a recuperação somente nos estados **Atenção** e **Em risco**. A prévia abre em diálogo somente de leitura e identifica disciplina de origem, destino, variações e capacidade preservada. Quando não existe uma redistribuição segura, a interface explica o motivo.
+
+O simulador compara o plano atual com uma proposta e recalcula a disponibilidade para o cenário hipotético. Meta e prazo podem mudar a classificação e a elegibilidade da proposta. A redistribuição, por si só, não altera a nota simulada: o modelo não atribui ganho causal à troca de carga. Fechar ou recarregar o simulador descarta a comparação.
+
 ## Histórico e apresentação
 
 Os snapshots da trajetória usam a coleção existente `projectionSnapshots`, com `kind: "achievement"`. Guardam data, escopo, versão, entradas comparáveis, meta, cobertura, execução, consistência, status, confiança e explicações congeladas. A assinatura evita duplicar o mesmo estado no mesmo dia. Registros antigos de calibração continuam aceitos e são ignorados pelo histórico de trajetória; snapshots de trajetória não entram na calibração retrospectiva.

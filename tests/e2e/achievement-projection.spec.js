@@ -43,6 +43,23 @@ test('novo snapshot passa na validação e migração do backup anterior preserv
   expect(result.migrated.projectionSnapshots).toContainEqual(result.snapshot);
 });
 
+test('prévia de recuperação no Demo explica origem e destino sem ação de aplicação',async({page})=>{
+  await page.clock.install({time:new Date('2026-10-01T12:00:00-03:00')});
+  await openDemo(page);
+  await activateTab(page,'desempenho');
+  const open=page.locator('[data-recovery-preview-open]');
+  await expect(open).toBeVisible();
+  await open.click();
+  const dialog=page.getByRole('dialog',{name:'Plano de recuperação'});
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText(/capacidade semanal será preservada/i);
+  await expect(dialog).toContainText('Total planejado');
+  await expect(dialog).toContainText('Por que esta mudança?');
+  await expect(dialog.getByRole('button',{name:/Aplicar/i})).toHaveCount(0);
+  await dialog.getByRole('button',{name:'Fechar prévia de recuperação'}).click();
+  await expect(dialog).not.toBeVisible();
+});
+
 test('histórico comparável mostra tendência futura distinta dos resultados observados',async({page})=>{
   await page.clock.install({time:new Date('2026-10-01T12:00:00-03:00')});
   await page.goto('/?test=1');
@@ -91,6 +108,8 @@ test('simulador compara cenário sem persistir estado real ou snapshots',async({
   await dialog.getByRole('button',{name:'Executar simulação'}).click();
   await expect(dialog.locator('#projectionScenarioResult')).toContainText('Resultado simulado');
   await expect(dialog.locator('#projectionScenarioResult')).toContainText('Nenhum dado real foi alterado');
+  await expect(dialog.locator('#projectionScenarioResult')).toContainText('Plano atual vs. plano de recuperação');
+  await expect(dialog.locator('#projectionScenarioResult')).toContainText('não prevê melhora de nota');
   expect(await decisionState()).toEqual(before);
   await dialog.getByRole('button',{name:'Fechar simulação'}).click();
   await expect(dialog).not.toBeVisible();

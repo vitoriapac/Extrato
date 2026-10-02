@@ -3,8 +3,31 @@ import {buildProjectionRequirements} from '../../application/projection/build-pr
 const labels={insufficient_data:'Dados insuficientes',on_track:'No caminho',attention:'Atenção',at_risk:'Em risco'};
 const confidenceLabels={insufficient:'Insuficiente',low:'Baixa',moderate:'Moderada'};
 const phaseLabels={undated:'Sem data',construction:'Construção',consolidation:'Consolidação',final_stretch:'Reta final',final_review:'Revisão final'};
+const recoveryLabels={not_needed:'Não necessária',recoverable:'Prévia disponível',limited:'Opções limitadas',unavailable:'Sem proposta segura'};
 const pct=value=>value==null?'—':`${Math.round(value)}%`;
 const hours=minutes=>`${Math.round((minutes||0)/60*10)/10} h`;
+
+function renderRecoveryPlan(recoveryPlan,escapeHtml){
+  if(!recoveryPlan||recoveryPlan.status==='not_needed')return '';
+  const explanation=(recoveryPlan.explanation||[]).map(item=>`<li>${escapeHtml(item)}</li>`).join('');
+  if(recoveryPlan.status!=='recoverable')return `<section class="projection-recovery" aria-label="Plano de recuperação"><h4>O que você pode fazer?</h4><p>${recoveryLabels[recoveryPlan.status]||recoveryLabels.unavailable}. ${escapeHtml(recoveryPlan.reason||'Ainda não há base suficiente para uma redistribuição segura.')}</p></section>`;
+  const rows=recoveryPlan.changes.map(item=>`<tr><th scope="row">${escapeHtml(item.subjectName)}</th><td>${hours(item.beforeMinutes)}</td><td>${hours(item.afterMinutes)}</td><td>${item.deltaMinutes>0?'+':''}${hours(item.deltaMinutes)} <span class="sr-only">${item.deltaMinutes>0?'aumento':item.deltaMinutes<0?'redução':'sem alteração'}</span></td></tr>`).join('');
+  const from=recoveryPlan.from?.name||'Disciplina';
+  const to=recoveryPlan.to?.name||'Disciplina';
+  return `<section class="projection-recovery" aria-label="Plano de recuperação"><h4>O que você pode fazer?</h4><p>Há uma proposta de redistribuição sem aumentar sua carga semanal.</p><button type="button" class="btn ghost small" data-recovery-preview-open>Ver plano de recuperação</button><dialog id="recoveryPreviewDialog" class="projection-scenario" aria-labelledby="recoveryPreviewTitle"><form method="dialog"><div class="projection-scenario__heading"><h3 id="recoveryPreviewTitle">Plano de recuperação</h3><button type="submit" class="btn ghost small" aria-label="Fechar prévia de recuperação">Fechar</button></div></form><p>A trajetória está em ${labels[recoveryPlan.basis?.trajectoryStatus]||'atenção'}. A capacidade semanal será preservada em ${hours(recoveryPlan.capacity.current)}.</p><div class="performance-table-scroll" tabindex="0" role="region" aria-label="Comparação do plano atual e da proposta"><table><thead><tr><th scope="col">Disciplina</th><th scope="col">Atual</th><th scope="col">Proposta</th><th scope="col">Variação</th></tr></thead><tbody>${rows}<tr><th scope="row">Total planejado</th><td>${hours(recoveryPlan.totalMinutes.current)}</td><td>${hours(recoveryPlan.totalMinutes.proposed)}</td><td>Sem alteração</td></tr></tbody></table></div><p><strong>${escapeHtml(to)} recebe ${hours(recoveryPlan.transferMinutes)}.</strong> A origem é ${escapeHtml(from)}.</p>${explanation?`<h4>Por que esta mudança?</h4><ul>${explanation}</ul>`:''}<p class="analytics-note">Prévia somente para leitura. Nenhuma carga, sessão ou histórico foi alterado.</p></dialog></section>`;
+}
+
+function renderRecoveryScenarioComparison(recovery,currentScenario,simulatedScenario,escapeHtml){
+  if(!recovery)return '';
+  const currentPlanPanel=scenario=>`<div><h4>Plano atual</h4><p>Trajetória: ${labels[scenario?.status]||labels.insufficient_data}</p><p>Capacidade semanal: ${hours(scenario?.weeklyCapacityMinutes??0)}</p><p>Carga planejada: ${hours(scenario?.planFit?.plannedMinutes??0)}</p><p>${scenario?.planFit?.shortfallMinutes>0?`Faltam ${hours(scenario.planFit.shortfallMinutes)} para acomodar a carga.`:`A carga cabe; sobram ${hours(scenario?.planFit?.remainingMinutes??0)}.`}</p></div>`;
+  const recoveryPlanPanel=(scenario,item)=>{
+    if(!item)return `<div><h4>Plano de recuperação</h4><p>Prévia indisponível.</p></div>`;
+    const transfer=item.status==='recoverable'?`${escapeHtml(item.from?.name||'Origem')} → ${escapeHtml(item.to?.name||'Destino')} · ${hours(item.transferMinutes)}`:escapeHtml(item.reason||recoveryLabels[item.status]||'Sem transferência segura.');
+    return `<div><h4>Plano de recuperação</h4><p>${recoveryLabels[item.status]||recoveryLabels.unavailable}</p><p>${transfer}</p><p>Capacidade ${hours(item.capacity?.current??scenario?.weeklyCapacityMinutes??0)} → ${hours(item.capacity?.proposed??item.capacity?.current??scenario?.weeklyCapacityMinutes??0)} · carga ${hours(item.totalMinutes?.current??0)} → ${hours(item.totalMinutes?.proposed??item.totalMinutes?.current??0)}</p></div>`;
+  };
+  const alternative=(title,item)=>`<div><h4>${title}</h4><p>${recoveryLabels[item?.status]||recoveryLabels.unavailable}</p><p>${item?.status==='recoverable'?`${escapeHtml(item.from?.name||'Origem')} → ${escapeHtml(item.to?.name||'Destino')} · ${hours(item.transferMinutes)}`:escapeHtml(item?.reason||'Sem transferência segura.')}</p></div>`;
+  return `<section class="projection-recovery-comparison"><h4>Plano atual vs. plano de recuperação</h4><p>A simulação não prevê melhora de nota pela mudança de carga. Ela compara o encaixe e a redistribuição permitida pelas regras atuais.</p><div class="projection-scenario__comparison">${currentPlanPanel(currentScenario)}${recoveryPlanPanel(currentScenario,recovery.current)}</div><h4>Como meta e prazo alteram a proposta</h4><div class="projection-scenario__comparison">${alternative('Condições atuais',recovery.current)}${alternative('Condições simuladas',recovery.simulated)}</div></section>`;
+}
 
 function renderTrajectory(model,escapeHtml){
   const points=(model.trajectory.observations||[]).slice(-12);
@@ -44,10 +67,10 @@ export function renderProjectionScenarioResult(result,{escapeHtml}={}){
   if(result?.state!=='ready')return `<p role="alert">${escapeHtml(result?.reason||'Não foi possível calcular este cenário.')}</p>`;
   const fit=value=>value==null?'Sem plano semanal para comparar':value.shortfallMinutes>0?`Faltam ${hours(value.shortfallMinutes)} para a carga atual`:`A carga atual cabe; sobram ${hours(value.remainingMinutes)}`;
   const column=(title,value)=>`<div><h4>${title}</h4><dl><dt>Trajetória</dt><dd>${labels[value.status]||labels.insufficient_data}</dd><dt>Meta</dt><dd>${pct(value.targetScore)}</dd><dt>Prazo</dt><dd>${value.daysRemaining} dia(s)</dd><dt>Capacidade semanal</dt><dd>${hours(value.weeklyCapacityMinutes)}</dd><dt>Plano</dt><dd>${fit(value.planFit)}</dd></dl></div>`;
-  return `<section aria-label="Resultado da simulação"><strong>Resultado simulado</strong><div class="projection-scenario__comparison">${column('Atual',result.current)}${column('Simulação',result.simulated)}</div><p class="analytics-note">${escapeHtml(result.note)} Nenhum dado real foi alterado.</p></section>`;
+  return `<section aria-label="Resultado da simulação"><strong>Resultado simulado</strong><div class="projection-scenario__comparison">${column('Atual',result.current)}${column('Simulação',result.simulated)}</div><p class="analytics-note">${escapeHtml(result.note)} Nenhum dado real foi alterado.</p>${renderRecoveryScenarioComparison(result.recovery,result.current,result.simulated,escapeHtml)}</section>`;
 }
 
-export function renderAchievementProjection(model,{history=[],escapeHtml,weeklyCapacityMinutes=0}={}){
+export function renderAchievementProjection(model,{history=[],escapeHtml,weeklyCapacityMinutes=0,recoveryPlan=null}={}){
   if(!model)return '';
   const status=labels[model.status]||labels.insufficient_data;
   const confidence=confidenceLabels[model.confidence.level]||confidenceLabels.insufficient;
@@ -63,6 +86,7 @@ export function renderAchievementProjection(model,{history=[],escapeHtml,weeklyC
     <div class="achievement-projection__story"><div><strong>Resultado</strong><p>${status}</p></div><div><strong>Evidência</strong><p>${escapeHtml(model.risks[0]||model.drivers[0]||model.confidence.reasons[0]||model.summary)}</p></div><div><strong>Contexto</strong><p>${context}</p></div><div><strong>Ação</strong><p>${escapeHtml(model.recovery?.steps?.[0]||'Continue registrando simulados comparáveis.')}</p></div></div>
     <details class="achievement-projection__details"><summary>Entender esta projeção</summary><p>${escapeHtml(model.summary)}</p><ul>${entries.map(item=>`<li class="achievement-projection__${item.type}">${escapeHtml(item.text)}</li>`).join('')||'<li>Registre mais simulados comparáveis para obter uma explicação.</li>'}</ul><p>${model.evidence.observationCount||0} simulados comparáveis · ${model.evidence.sampleSize||0} questões na amostra.</p>${model.confidence.reasons.length?`<p>${escapeHtml(model.confidence.reasons.join(' '))}</p>`:''}<p>Prontidão é um índice de preparação; não representa probabilidade de aprovação.</p></details>
     ${model.recovery?`<details class="achievement-projection__details"><summary>O que seria necessário?</summary><p>${model.recovery.state==='collect_evidence'?'Primeiro, reúna uma base comparável.':`Déficit central medido: ${model.recovery.gap} p.p. · ${model.recovery.weeksRemaining??'—'} semana(s) até a prova.`}</p><ol>${model.recovery.steps.map(step=>`<li>${escapeHtml(step)}</li>`).join('')}</ol><p class="analytics-note">Orientações para revisão do plano, sem previsão de ganho de nota ou alteração automática de horas.</p></details>`:''}
+    ${['attention','at_risk'].includes(model.status)?renderRecoveryPlan(recoveryPlan,escapeHtml):''}
     ${renderHistory(history,escapeHtml)}
     <button type="button" class="btn ghost small" data-projection-scenario-open>Simular cenário</button>
     <dialog id="projectionScenarioDialog" class="projection-scenario" aria-labelledby="projectionScenarioTitle"><form method="dialog"><div class="projection-scenario__heading"><h3 id="projectionScenarioTitle">Simular cenário</h3><button type="submit" class="btn ghost small" aria-label="Fechar simulação">Fechar</button></div></form><p>Explore como meta, prazo e capacidade mudam a leitura e o encaixe do plano atual. Esta simulação não salva dados.</p>

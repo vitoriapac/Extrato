@@ -34,7 +34,10 @@ export function buildRecoveryPlan({trajectory=null,topicRisks=trajectory?.topicR
   if(!comparison)return base(RECOVERY_STATUS.unavailable,'invalid_allocation','A redistribuição não preservou as invariantes do plano.');
   const basis={planId:currentPlan.id||null,weeklyCapacityMinutes:capacity,weeklyPlannedMinutes:budget,
     activeExamTags:[...activeExamTags].sort(),examDate:trajectory.exam?.date||null,
-    targetScore:trajectory.current?.targetScore??null,algorithmVersion:ADAPTIVE_PLANNING_VERSION};
+    targetScore:trajectory.current?.targetScore??null,trajectoryStatus:trajectory.status,
+    subjectMinutes:currentPlan.subjects.map(item=>[item.subjectId,item.minutes]).sort(([left],[right])=>left.localeCompare(right)),
+    itemMinutes:currentPlan.items.map(item=>[item.id,item.minutes]).sort(([left],[right])=>String(left).localeCompare(String(right))),
+    algorithmVersion:ADAPTIVE_PLANNING_VERSION};
   return {available:true,status:RECOVERY_STATUS.recoverable,reasonCode:'transfer_proposed',
     capacity:{current:capacity,proposed:capacity},totalMinutes:{current:budget,proposed:budget},
     ...comparison,transferMinutes:advice.transferMinutes,from:structuredClone(advice.from),to:structuredClone(advice.to),

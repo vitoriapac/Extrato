@@ -33,6 +33,22 @@ test('histórico mostra cinco registros e expande os restantes sem recalcular pa
   assert.match(html,/meta 80%/);
 });
 
+test('trajetória em atenção mostra prévia somente leitura e explica a origem do tempo',()=>{
+  const model=buildAchievementProjection(input),recoveryPlan={status:'recoverable',basis:{trajectoryStatus:'attention'},
+    capacity:{current:600,proposed:600},totalMinutes:{current:540,proposed:540},transferMinutes:60,
+    from:{name:'Português'},to:{name:'Matemática Financeira'},
+    changes:[{subjectName:'Português',beforeMinutes:180,afterMinutes:120,deltaMinutes:-60},
+      {subjectName:'Matemática Financeira',beforeMinutes:180,afterMinutes:240,deltaMinutes:60}],
+    explanation:['Português está consolidado.','A lacuna em Matemática tem alto impacto.']};
+  const html=renderAchievementProjection(model,{escapeHtml,recoveryPlan});
+  assert.match(html,/Ver plano de recuperação/);
+  assert.match(html,/recoveryPreviewDialog/);
+  assert.match(html,/capacidade semanal será preservada em 10 h/i);
+  assert.match(html,/A origem é Português/);
+  assert.match(html,/Prévia somente para leitura/);
+  assert.doesNotMatch(renderAchievementProjection({...model,status:'on_track'},{escapeHtml,recoveryPlan}),/data-recovery-preview-open/);
+});
+
 test('simulação altera interpretação e encaixe sem mutar base, persistir ou prever nota',()=>{
   const source=structuredClone(baseline);
   const result=simulateProjectionScenario({baseline,scenario:{targetScore:85,examDate:'2026-10-11',weeklyCapacityMinutes:720}});
@@ -47,6 +63,18 @@ test('simulação altera interpretação e encaixe sem mutar base, persistir ou 
   const html=renderProjectionScenarioResult(result,{escapeHtml});
   assert.match(html,/Resultado simulado/);
   assert.match(html,/Nenhum dado real foi alterado/);
+});
+
+test('comparação do simulador descreve redistribuição sem projetar melhora de nota',()=>{
+  const result={state:'ready',current:{status:'at_risk',targetScore:80,daysRemaining:50,weeklyCapacityMinutes:600,planFit:{remainingMinutes:60,shortfallMinutes:0}},
+    simulated:{status:'attention',targetScore:80,daysRemaining:35,weeklyCapacityMinutes:600,planFit:{remainingMinutes:60,shortfallMinutes:0}},
+    note:'Capacidade compara a carga atual.',recovery:{current:{status:'recoverable',capacity:{current:600,proposed:600},totalMinutes:{current:540,proposed:540},transferMinutes:60,from:{name:'Português'},to:{name:'Matemática'}},
+      simulated:{status:'limited',reason:'A capacidade não permite outra transferência.',capacity:{current:600,proposed:600},totalMinutes:{current:540,proposed:540}}}};
+  const html=renderProjectionScenarioResult(result,{escapeHtml});
+  assert.match(html,/Plano atual vs\. plano de recuperação/);
+  assert.match(html,/Português → Matemática/);
+  assert.match(html,/A simulação não prevê melhora de nota/);
+  assert.match(html,/A capacidade não permite outra transferência/);
 });
 
 test('cenários inválidos são bloqueados',()=>{

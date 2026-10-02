@@ -4967,7 +4967,7 @@ const projectionController=createProjectionController({
   getSimulations:()=>examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),
     breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),
   countStudyDays:countStudyDaysThisWeek,getCandidates:intelligenceCandidates,
-  getPlan:latestStudyPlan,getCapacity:weeklyStrategyCapacity
+  getPlan:latestStudyPlan,getCapacity:weeklyStrategyCapacity,getAdaptiveHistory:()=>state.adaptivePlanningHistory
 });
 function currentAchievementProjection(metrics=computeApprovalMetrics(),readiness=readinessResult(metrics),candidates=null){
   return projectionController.current(metrics,readiness,candidates);
@@ -5254,6 +5254,7 @@ function renderPerformance(){
     achievementProjection:achievement?.model||null,
     achievementHistory:achievementProjectionHistory(state.projectionSnapshots,activeExamTags,today),
     achievementCapacityMinutes:achievement?.weeklyCapacityMinutes||0,
+    recoveryPlan:achievement?projectionController.recovery(achievement.model):null,
     projectionSnapshots:state.projectionSnapshots,readinessSnapshots:state.readinessSnapshots,
     readiness:performanceViewState.section==='overview'?readinessResult(computeApprovalMetrics()):null,
     blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,

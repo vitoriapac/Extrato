@@ -12,6 +12,7 @@ export function createPerformanceController({document,getViewState,setViewState,
     });
     document.getElementById('performancePage')?.addEventListener('click',event=>{
       if(event.target.closest('[data-projection-scenario-open]')){document.getElementById('projectionScenarioDialog')?.showModal();return}
+      if(event.target.closest('[data-recovery-preview-open]')){document.getElementById('recoveryPreviewDialog')?.showModal();return}
       const section=event.target.closest('[data-performance-section]');
       if(section){update({section:section.dataset.performanceSection});render();return}
       const compared=event.target.closest('[data-performance-compare-subject]');

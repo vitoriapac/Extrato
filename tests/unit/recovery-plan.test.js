@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildRecoveryPlan} from '../../src/application/recovery/build-recovery-plan.js';
 import {generateDemoData} from '../../src/demo/demo-generator.js';
+import {createProjectionController} from '../../src/ui/controllers/projection-controller.js';
 
 const plan={id:'plan-1',weeklyPlannedMinutes:180,weeklyAvailableMinutes:180,activeExamTags:['bb'],
   subjects:[{subjectId:'strong',subjectName:'Informática',minutes:90},{subjectId:'weak',subjectName:'Matemática',minutes:90}],
@@ -70,4 +71,15 @@ test('Demo densa pode ser inspecionada sem alterar planos ou histórico',()=>{
   assert.ok(['recoverable','limited','unavailable'].includes(result.status));
   assert.deepEqual(demo.studyPlans,plansBefore);
   assert.deepEqual(demo.adaptivePlanningHistory,historyBefore);
+});
+
+test('capacidade hipotética do simulador só altera a cópia usada na prévia',()=>{
+  const source=structuredClone(plan);
+  const controller=createProjectionController({getContext:()=>({today:'2026-10-02',activeExamTags:['bb']}),
+    getPlan:()=>plan,getCapacity:()=>180,getCandidates:()=>priorities,getAdaptiveHistory:()=>[]});
+  const result=controller.recovery(trajectory,{weeklyCapacityMinutes:210});
+  assert.equal(result.capacity.current,210);
+  assert.equal(result.totalMinutes.current,180);
+  assert.equal(plan.weeklyAvailableMinutes,180);
+  assert.deepEqual(plan,source);
 });
