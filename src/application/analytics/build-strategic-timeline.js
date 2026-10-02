@@ -1,6 +1,7 @@
 import {normalizeExamTags,isTopicInExamScope,isSimulationInExamScope} from '../../domain/exams/exam-scope.js';
 import {localDateFromTimestamp} from '../../domain/sessions/study-session.js';
 import {groupStrategicTimeline} from './group-strategic-timeline.js';
+import {buildRecoveryTimelineDetail} from './build-recovery-timeline-detail.js';
 
 export const strategicScopeKey=tags=>Array.isArray(tags)?JSON.stringify(normalizeExamTags(tags)):null;
 export function strategicRecordInScope(record,activeExamTags,topics=[]){
@@ -13,7 +14,7 @@ export function buildStrategicTimeline({readinessSnapshots=[],weeklyCloseSnapsho
   const add=(source,id,time,category,title,description,record)=>{
     const date=/^\d{4}-\d{2}-\d{2}$/.test(record.date||'')?record.date:/^\d{4}-\d{2}-\d{2}$/.test(time||'')?time:localDateFromTimestamp(time);
     const key=`${source}:${id}`;if(!id||!date||(today&&date>today)||seen.has(key))return;
-    seen.add(key);events.push({id:key,sourceId:id,date,time:time||date,category,title,description,phase:record.examPhase?.label||record.phaseStrategy?.phase?.label||record.phase?.label||null,legacyScope:!Array.isArray(record.activeExamTags),sequence:events.length});
+    seen.add(key);events.push({id:key,sourceId:id,date,time:time||date,category,title,description,details:source==='adaptive'||source==='adaptive-revert'?buildRecoveryTimelineDetail(record,{reverted:source==='adaptive-revert'}):null,phase:record.examPhase?.label||record.phaseStrategy?.phase?.label||record.phase?.label||null,legacyScope:!Array.isArray(record.activeExamTags),sequence:events.length});
   };
   const exact=record=>strategicScopeKey(record.activeExamTags)===strategicScopeKey(activeExamTags);
   const scoped=record=>strategicRecordInScope(record,activeExamTags,topics);
@@ -28,8 +29,8 @@ export function buildStrategicTimeline({readinessSnapshots=[],weeklyCloseSnapsho
     const recovery=item.decisionType==='recovery',transfer=`${item.minutes??'—'} min de ${item.sourceName||'origem'} para ${item.targetName||'destino'}`;
     const capacity=item.totalMinutesBefore!=null&&item.totalMinutesAfter!=null?` · carga semanal ${item.totalMinutesBefore} → ${item.totalMinutesAfter} min`:'';
     const status=item.trajectoryStatus?` · trajetória ${{on_track:'no caminho',attention:'em atenção',at_risk:'em risco',insufficient_data:'com dados insuficientes'}[item.trajectoryStatus]||'reavaliada'}`:'';
-    add('adaptive',item.id,item.decidedAt||item.createdAt,'planning',recovery?'Plano de recuperação aplicado':'Redistribuição adaptativa',`${transfer}${capacity}${status}${item.reasons?.length?' · '+item.reasons.slice(0,2).join(' · '):''}`,item);
-    if(item.revertedAt)add('adaptive-revert',item.id,item.revertedAt,'planning',recovery?'Plano de recuperação revertido':'Redistribuição revertida','Uma nova versão preservou o plano anterior.',item);
+    add('adaptive',item.id,item.decidedAt||item.createdAt,'planning',recovery?'Plano de recuperação aplicado':'Redistribuição adaptativa',recovery?`${transfer}${capacity}`:`${transfer}${capacity}${status}${item.reasons?.length?' · '+item.reasons.slice(0,2).join(' · '):''}`,item);
+    if(item.revertedAt)add('adaptive-revert',item.id,item.revertedAt,'planning',recovery?'Plano de recuperação revertido':'Redistribuição revertida',recovery?'Atividades já realizadas foram preservadas.':'Uma nova versão preservou o plano anterior.',{...item,date:null});
   });
   planAdjustments.filter(item=>scoped(item)||!Array.isArray(item.activeExamTags)&&(item.allocations||[]).some(allocation=>scoped({topicId:allocation.topicId}))).forEach(item=>{add('adjustment',item.id,item.appliedAt||item.confirmedAt||item.createdAt||item.date,'planning','Replanejamento registrado',item.reason||'Decisão de planejamento registrada.',item);if(item.undoneAt)add('adjustment-undo',item.id,item.undoneAt,'planning','Replanejamento desfeito','Atividades já executadas permanecem preservadas.',item)});
   simulations.filter(item=>isSimulationInExamScope(item,activeExamTags)).forEach(item=>add('simulation',item.id,item.date,'simulations','Simulado registrado',`${item.nome||'Simulado'} · ${Number(item.total)>0?Math.round(Number(item.correct)/Number(item.total)*100)+'% de acerto':'sem amostra'}`,{...item,activeExamTags:item.examTags}));

@@ -1959,6 +1959,12 @@ body.timer-focus-active .timer-context{display:none!important}
 .strategic-timeline>li{display:grid;grid-template-columns:100px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid var(--border-subtle)}
 .strategic-timeline p{margin:8px 0;overflow-wrap:anywhere}
 .strategic-timeline time,.strategic-timeline small{color:var(--text-secondary)}
+.strategic-timeline-detail{margin-top:var(--space-3);border-top:1px solid var(--border-subtle);padding-top:var(--space-2)}
+.strategic-timeline-detail summary{cursor:pointer;font-weight:600}
+.strategic-timeline-detail dl{display:grid;gap:var(--space-2);margin-block:var(--space-3)}
+.strategic-timeline-detail dl>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--space-3)}
+.strategic-timeline-detail dd{margin:0;overflow-wrap:anywhere}.strategic-timeline-detail dt{color:var(--text-secondary)}
+@media(max-width:430px){.strategic-timeline-detail dl>div{grid-template-columns:1fr;gap:var(--space-1)}}
 .priority-history-topic{padding:12px 0;border-bottom:1px solid var(--border-subtle);min-width:0}
 .recommendation-followup-list>details{padding:16px 0;border-bottom:1px solid var(--border-subtle);overflow-wrap:anywhere}
 .recommendation-followup-list summary{cursor:pointer}
