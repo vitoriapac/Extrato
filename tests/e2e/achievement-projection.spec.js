@@ -11,8 +11,9 @@ for(const {width,theme} of [{width:320,theme:'light'},{width:375,theme:'dark'},{
   await activateTab(page,'desempenho');
   await expect(page.locator('#achievementProjectionTitle')).toHaveText('Projeção até a prova');
   await expect(page.locator('.achievement-projection__status')).toBeVisible();
-  await page.locator('.achievement-projection__details').first().locator('summary').click();
-  await expect(page.locator('.achievement-projection__details').first()).toContainText('Prontidão é um índice de preparação');
+  const explanation=page.locator('.achievement-projection__details').filter({has:page.locator('summary', {hasText:'Entender esta projeção'})});
+  await explanation.locator('summary').click();
+  await expect(explanation).toContainText('Prontidão é um índice de preparação');
   await expect(page.locator('.achievement-projection__details').filter({hasText:'O que seria necessário?'})).toHaveCount(1);
   await expectNoPageOverflow(page);
   if(process.platform==='win32'){
@@ -58,4 +59,57 @@ test('histórico comparável mostra tendência futura distinta dos resultados ob
   await activateTab(page,'desempenho');
   await expect(page.locator('.achievement-trajectory__future')).toHaveCount(1);
   await expect(page.locator('.achievement-projection__metrics > div').last().locator('strong')).not.toHaveText('—');
+});
+
+test('simulador compara cenário sem persistir estado real ou snapshots',async({page})=>{
+  await page.clock.install({time:new Date('2026-10-01T12:00:00-03:00')});
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(element=>element.remove());
+  await page.evaluate(()=>{
+    const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),subjectId=state.subjects[0].id;
+    state.examDate='2026-12-15';state.examBlueprint.examDate=state.examDate;state.metas.metaAprovacao=80;
+    const dates=['2026-08-06','2026-08-13','2026-08-20','2026-08-27','2026-09-03','2026-09-10','2026-09-17','2026-09-24'];
+    state.simulados=dates.map((date,index)=>({id:`scenario-${index}`,date,total:100,correct:70+index,
+      breakdown:[{subjectId,total:100,correct:70+index}],examTags:[]}));
+    api.setState(state);api.renderAll();
+  });
+  await activateTab(page,'desempenho');
+  const decisionState=()=>page.evaluate(()=>{
+    const state=window.__EXTRATO_TEST__.getState();
+    return structuredClone({examDate:state.examDate,metas:state.metas,examBlueprint:state.examBlueprint,
+      projectionSnapshots:state.projectionSnapshots,studyPlans:state.studyPlans});
+  });
+  await page.evaluate(()=>window.__EXTRATO_TEST__.settleSaves());
+  const before=await decisionState();
+  await page.locator('[data-projection-scenario-open]').click();
+  const dialog=page.locator('#projectionScenarioDialog');
+  await expect(dialog).toBeVisible();
+  await dialog.locator('[name="capacityHours"]').fill('12');
+  await dialog.locator('[name="examDate"]').fill('2026-10-11');
+  await dialog.locator('[name="targetScore"]').fill('85');
+  await dialog.getByRole('button',{name:'Executar simulação'}).click();
+  await expect(dialog.locator('#projectionScenarioResult')).toContainText('Resultado simulado');
+  await expect(dialog.locator('#projectionScenarioResult')).toContainText('Nenhum dado real foi alterado');
+  expect(await decisionState()).toEqual(before);
+  await dialog.getByRole('button',{name:'Fechar simulação'}).click();
+  await expect(dialog).not.toBeVisible();
+  await page.reload();
+  await expect(page.locator('#projectionScenarioResult')).toBeEmpty();
+});
+
+test('simulador é acessível por teclado e cabe em 320px no tema escuro',async({page})=>{
+  await page.clock.install({time:new Date('2026-10-01T12:00:00-03:00')});
+  await page.setViewportSize({width:320,height:700});
+  await openDemo(page);
+  await page.locator('#themeToggleBtn').click();
+  await activateTab(page,'desempenho');
+  await page.locator('[data-projection-scenario-open]').focus();
+  await page.keyboard.press('Enter');
+  const dialog=page.getByRole('dialog',{name:'Simular cenário'});
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('spinbutton',{name:'Capacidade semanal (horas)'})).toBeVisible();
+  await expectNoPageOverflow(page);
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
 });

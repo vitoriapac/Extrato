@@ -28,6 +28,7 @@ import {buildPerformanceOverview} from './application/performance/build-performa
 import {countStudyDaysThisWeek} from './application/performance/study-day-count.js';
 import {renderPerformancePage} from './ui/performance/performance-page.js';
 import {renderPerformanceSection} from './ui/performance/render-performance-section.js';
+import {renderProjectionScenarioResult} from './ui/performance/achievement-projection-renderer.js';
 import {createPerformanceController} from './ui/controllers/performance-controller.js';
 import {createDiagnosisController} from './ui/controllers/diagnosis-controller.js';
 import {createProjectionController} from './ui/controllers/projection-controller.js';
@@ -4954,7 +4955,7 @@ function projectPerformance(metrics){
 }
 
 const projectionController=createProjectionController({
-  getContext:(metrics,readiness)=>({today:todayISO(),scope:examEvidenceContext(),metrics,readiness,
+  getContext:(metrics=computeApprovalMetrics(),readiness=readinessResult(metrics))=>({today:todayISO(),scope:examEvidenceContext(),metrics,readiness,
     examDate:state.examDate||null,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:state.metas.metaAprovacao,
     consistencyTarget:state.metas.consistenciaSemanal,snapshots:state.projectionSnapshots,
     activeExamTags:state.examBlueprint.activeExamTags||[]}),
@@ -4962,7 +4963,8 @@ const projectionController=createProjectionController({
     questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans:performanceScopedPlans(scope)}),
   getSimulations:()=>examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),
     breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),
-  countStudyDays:countStudyDaysThisWeek,getCandidates:intelligenceCandidates
+  countStudyDays:countStudyDaysThisWeek,getCandidates:intelligenceCandidates,
+  getPlan:latestStudyPlan,getCapacity:weeklyStrategyCapacity
 });
 function currentAchievementProjection(metrics=computeApprovalMetrics(),readiness=readinessResult(metrics),candidates=null){
   return projectionController.current(metrics,readiness,candidates);
@@ -5248,6 +5250,7 @@ function renderPerformance(){
     simulations:performanceViewState.section==='subjects'||performanceViewState.section==='simulations'?examScopedSimulations():[],
     achievementProjection:achievement?.model||null,
     achievementHistory:achievementProjectionHistory(state.projectionSnapshots,activeExamTags,today),
+    achievementCapacityMinutes:achievement?.weeklyCapacityMinutes||0,
     projectionSnapshots:state.projectionSnapshots,readinessSnapshots:state.readinessSnapshots,
     readiness:performanceViewState.section==='overview'?readinessResult(computeApprovalMetrics()):null,
     blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,
@@ -5263,7 +5266,8 @@ function renderPerformance(){
   const dialog=target.querySelector('#performanceTopicDialog');
   if(dialog){dialog.addEventListener('close',()=>{performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:null})},{once:true});dialog.showModal()}
 }
-createPerformanceController({document,getViewState:()=>performanceViewState,setViewState:value=>{performanceViewState=value},render:()=>render('desempenho'),activateTab}).register();
+createPerformanceController({document,getViewState:()=>performanceViewState,setViewState:value=>{performanceViewState=value},render:()=>render('desempenho'),activateTab,
+  simulateScenario:scenario=>projectionController.simulate(scenario),renderScenarioResult:result=>renderProjectionScenarioResult(result,{escapeHtml})}).register();
 document.addEventListener('click',event=>{
   const back=event.target.closest('[data-analysis-return]');
   if(back){

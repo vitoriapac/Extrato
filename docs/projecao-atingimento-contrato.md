@@ -18,13 +18,19 @@ A confiança fica limitada pela calibração dos simulados: `insufficient`, `low
 
 ## Cenários de regressão
 
-Os testes cobrem iniciante, evolução, platô, deterioração, alta precisão com pouca cobertura, prazo curto e datas inválidas. Os snapshots preservam os insumos e a versão do algoritmo sem recalcular decisões passadas.
+Os testes cobrem iniciante, evolução, esforço sem melhora, platô, deterioração, alta precisão com pouca cobertura, prazos distintos e datas inválidas. Os snapshots preservam os insumos e a versão do algoritmo sem recalcular decisões passadas. O relatório interno de coerência compara a trajetória com a Próxima Melhor Ação e outros sinais já calculados; ele registra divergências justificadas ou pendentes, sem mudar a prioridade.
 
 ## Histórico e apresentação
 
 Os snapshots da trajetória usam a coleção existente `projectionSnapshots`, com `kind: "achievement"`. Guardam data, escopo, versão, entradas comparáveis, meta, cobertura, execução, consistência, status, confiança e explicações congeladas. A assinatura evita duplicar o mesmo estado no mesmo dia. Registros antigos de calibração continuam aceitos e são ignorados pelo histórico de trajetória; snapshots de trajetória não entram na calibração retrospectiva.
 
-Em **Desempenho → Visão geral**, o card mostra status, meta, precisão central dos simulados, faixa atual e tendência de 30 dias. O gráfico usa linha contínua para observações, tracejada para os próximos 30 dias e linha horizontal para a meta. A data da prova aparece como prazo textual: não há ponto numérico projetado para ela. O detalhamento explica a evidência e mostra até três registros históricos do concurso ativo.
+Em **Desempenho → Visão geral**, o card mostra status, meta, precisão central dos simulados, faixa atual e tendência de 30 dias. O gráfico usa linha contínua para observações, tracejada para os próximos 30 dias e linha horizontal para a meta. A data da prova aparece como prazo textual: não há ponto numérico projetado para ela. Uma tabela oferece os valores do gráfico por texto e teclado. Resultado, evidência, contexto e ação aparecem separadamente.
+
+Quando faltam dados, os requisitos exibidos derivam dos mínimos reais da calibração: três simulados comparáveis em datas distintas, 120 questões e 14 dias observados, além de data futura. O histórico mostra os cinco registros mais recentes e permite expandir os anteriores; suas transições não afirmam causalidade.
+
+## Simulador de cenário
+
+O botão **Simular cenário** cria uma cópia em memória dos insumos atuais. Meta e data reavaliam a interpretação da trajetória com os mesmos resultados observados; capacidade semanal compara somente a carga do plano existente com as horas informadas. O cenário não salva dados, não altera snapshots nem projeta ganho de nota causado por mais horas. Fechar ou recarregar descarta o resultado. Não existe aplicação automática do cenário ao planejamento.
 
 ## Contexto estratégico e prazo
 
@@ -34,6 +40,6 @@ A interpretação de prazo reutiliza as fases existentes (`construction`, `conso
 
 ## Regressão e CI
 
-O gate local `npm run check:all` valida sintaxe, 491 testes unitários, artefatos gerados e 207 testes E2E (resultado em 2026-10-01). Os novos baselines cobrem o card em 320, 375, 430 e 1440 px, nos temas claro e escuro. A suíte específica de fuso executa 27 jornadas em `America/Sao_Paulo`, incluindo projeção, migrações, sessões e ciclo estratégico.
+O gate local `npm run check:all` valida sintaxe, testes unitários, artefatos gerados e E2E. Os baselines cobrem o card em 320, 375, 430 e 1440 px, nos temas claro e escuro. A suíte específica de fuso inclui projeção, migrações, sessões e ciclo estratégico. Os E2E do simulador verificam isolamento do estado, descarte após recarga, teclado e tela estreita; os testes PWA verificam atualização de CSS e bundle sem perda de dados locais.
 
 No GitHub Actions, unitários e bundle rodam em UTC e São Paulo; o E2E completo roda em UTC e a seleção sensível a datas roda em São Paulo. Os jobs executam em paralelo. O comando local `check:all` permanece completo.

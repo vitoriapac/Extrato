@@ -1,6 +1,6 @@
 import {updatePerformanceViewState} from '../../application/performance/performance-view-state.js';
 
-export function createPerformanceController({document,getViewState,setViewState,render,activateTab}){
+export function createPerformanceController({document,getViewState,setViewState,render,activateTab,simulateScenario,renderScenarioResult}){
   const update=patch=>setViewState(updatePerformanceViewState(getViewState(),patch));
   return {register(){
     document.addEventListener('click',event=>{
@@ -11,6 +11,7 @@ export function createPerformanceController({document,getViewState,setViewState,
       activateTab('desempenho');
     });
     document.getElementById('performancePage')?.addEventListener('click',event=>{
+      if(event.target.closest('[data-projection-scenario-open]')){document.getElementById('projectionScenarioDialog')?.showModal();return}
       const section=event.target.closest('[data-performance-section]');
       if(section){update({section:section.dataset.performanceSection});render();return}
       const compared=event.target.closest('[data-performance-compare-subject]');
@@ -22,6 +23,15 @@ export function createPerformanceController({document,getViewState,setViewState,
       if(event.target.closest('[data-performance-close-topic]')){document.getElementById('performanceTopicDialog')?.close();return}
       const open=event.target.closest('[data-performance-open]');
       if(open){document.getElementById('performanceTopicDialog')?.close();activateTab(open.dataset.performanceOpen)}
+    });
+    document.getElementById('performancePage')?.addEventListener('submit',event=>{
+      if(!event.target.matches('[data-projection-scenario-form]'))return;
+      event.preventDefault();
+      const form=event.target,data=new FormData(form),result=simulateScenario({
+        weeklyCapacityMinutes:Number(data.get('capacityHours'))*60,
+        examDate:String(data.get('examDate')||''),targetScore:Number(data.get('targetScore'))});
+      const destination=document.getElementById('projectionScenarioResult');
+      if(destination)destination.innerHTML=renderScenarioResult(result);
     });
     document.getElementById('performancePage')?.addEventListener('change',event=>{
       const field=event.target;

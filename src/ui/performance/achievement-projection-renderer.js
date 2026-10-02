@@ -1,7 +1,10 @@
+import {buildProjectionRequirements} from '../../application/projection/build-projection-requirements.js';
+
 const labels={insufficient_data:'Dados insuficientes',on_track:'No caminho',attention:'Atenção',at_risk:'Em risco'};
 const confidenceLabels={insufficient:'Insuficiente',low:'Baixa',moderate:'Moderada'};
 const phaseLabels={undated:'Sem data',construction:'Construção',consolidation:'Consolidação',final_stretch:'Reta final',final_review:'Revisão final'};
 const pct=value=>value==null?'—':`${Math.round(value)}%`;
+const hours=minutes=>`${Math.round((minutes||0)/60*10)/10} h`;
 
 function renderTrajectory(model,escapeHtml){
   const points=(model.trajectory.observations||[]).slice(-12);
@@ -11,33 +14,58 @@ function renderTrajectory(model,escapeHtml){
   const y=value=>top+(100-value)/100*(height-top-bottom);
   const historical=points.map((point,index)=>`${x(index).toFixed(1)},${y(point.value).toFixed(1)}`).join(' ');
   const last=points.at(-1),lastX=x(points.length-1),forecast=model.trajectory.forecast30;
-  const future=forecast.available?`<line x1="${lastX}" y1="${y(last.value)}" x2="${width-right}" y2="${y(forecast.central)}" class="achievement-trajectory__future"/>` : '';
-  return `<div class="achievement-trajectory__scroll"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Histórico de simulados e tendência de 30 dias">
-    <title>Trajetória de desempenho</title><desc>Resultados registrados em linha sólida, tendência calculada de 30 dias em linha tracejada e meta em linha horizontal.</desc>
+  const future=forecast.available?`<line x1="${lastX}" y1="${y(last.value)}" x2="${width-right}" y2="${y(forecast.central)}" class="achievement-trajectory__future" tabindex="0" aria-label="Tendência de 30 dias: ${pct(forecast.central)}. Não representa nota prevista na prova."><title>Tendência de 30 dias: ${pct(forecast.central)}. Não representa nota prevista na prova.</title></line>` : '';
+  const values=points.map(point=>`<tr><th scope="row"><time datetime="${escapeHtml(point.date)}">${escapeHtml(point.date)}</time></th><td>${pct(point.value)}</td><td>${pct(model.current.targetScore)}</td></tr>`).join('');
+  return `<div class="achievement-trajectory__scroll" tabindex="0" role="region" aria-label="Gráfico da trajetória de simulados"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Histórico de simulados e tendência de 30 dias">
+    <title>Trajetória de desempenho</title><desc>Resultados registrados em linha sólida, tendência calculada de 30 dias em linha tracejada e meta em linha horizontal. Valores disponíveis abaixo.</desc>
     <line x1="${left}" x2="${width-right}" y1="${y(model.current.targetScore)}" y2="${y(model.current.targetScore)}" class="achievement-trajectory__target"/>
     <polyline points="${historical}" class="achievement-trajectory__observed"/>${future}
-    ${points.map((point,index)=>`<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot"><title>${escapeHtml(point.date)}: ${pct(point.value)}</title></circle>`).join('')}
+    ${points.map((point,index)=>`<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot" tabindex="0" aria-label="${escapeHtml(point.date)}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}"><title>${escapeHtml(point.date)}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}</title></circle>`).join('')}
     <text x="${left}" y="${height-7}">${escapeHtml(points[0].date)}</text><text x="${lastX}" y="${height-7}" text-anchor="middle">${escapeHtml(last.date)}</text>
     ${forecast.available?`<text x="${width-right}" y="${height-7}" text-anchor="end">30 dias</text>`:''}
   </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span><span>┄ Tendência de 30 dias</span><span>─ Meta</span></div>
-  <p class="analytics-note">O trecho tracejado é uma previsão de 30 dias, não uma nota estimada para a data da prova.</p>`;
+  <p class="analytics-note">O trecho tracejado é uma previsão de 30 dias, não uma nota estimada para a data da prova.</p>
+  <details class="achievement-projection__details"><summary>Ver valores do gráfico</summary><div class="performance-table-scroll" tabindex="0"><table><thead><tr><th scope="col">Data</th><th scope="col">Simulado</th><th scope="col">Meta</th></tr></thead><tbody>${values}</tbody></table></div></details>`;
 }
 
-export function renderAchievementProjection(model,{history=[],escapeHtml}={}){
+function renderRequirements(model,escapeHtml){
+  const {requirements,pending}=buildProjectionRequirements(model);
+  return `<div class="achievement-projection__requirements" role="status"><strong>Projeção ainda indisponível</strong><p>Precisamos de mais evidências comparáveis.</p><ul>${requirements.map(item=>`<li>${item.met?'✓':'○'} ${escapeHtml(item.label)}</li>`).join('')}</ul>${pending.length?`<p>${escapeHtml(pending[0].guidance)}</p>`:''}<button type="button" class="btn ghost small" ${pending[0]?.label==='Data da prova'?'data-performance-open="metas"':'data-performance-section="simulations"'}>${pending[0]?.label==='Data da prova'?'Configurar prova':'Registrar simulado'}</button></div>`;
+}
+
+function renderHistory(history,escapeHtml){
+  if(!history.length)return '';
+  const ordered=[...history].reverse(),rows=items=>items.map(item=>`<li><time datetime="${escapeHtml(item.date)}">${escapeHtml(item.date)}</time> · ${labels[item.status]||labels.insufficient_data} · confiança ${confidenceLabels[item.confidence?.level]||confidenceLabels.insufficient}</li>`).join('');
+  const transitions=[...history].map(item=>labels[item.status]||labels.insufficient_data).filter((label,index,list)=>index===0||label!==list[index-1]);
+  return `<details class="achievement-projection__details"><summary>Histórico da trajetória</summary>${transitions.length>1?`<p>Estados registrados: ${escapeHtml(transitions.join(' → '))}. A sequência não indica causalidade.</p>`:''}<ul>${rows(ordered.slice(0,5))}</ul>${ordered.length>5?`<details class="achievement-projection__details"><summary>Mostrar mais</summary><ul>${rows(ordered.slice(5))}</ul></details>`:''}</details>`;
+}
+
+export function renderProjectionScenarioResult(result,{escapeHtml}={}){
+  if(result?.state!=='ready')return `<p role="alert">${escapeHtml(result?.reason||'Não foi possível calcular este cenário.')}</p>`;
+  const fit=value=>value==null?'Sem plano semanal para comparar':value.shortfallMinutes>0?`Faltam ${hours(value.shortfallMinutes)} para a carga atual`:`A carga atual cabe; sobram ${hours(value.remainingMinutes)}`;
+  const column=(title,value)=>`<div><h4>${title}</h4><dl><dt>Trajetória</dt><dd>${labels[value.status]||labels.insufficient_data}</dd><dt>Meta</dt><dd>${pct(value.targetScore)}</dd><dt>Prazo</dt><dd>${value.daysRemaining} dia(s)</dd><dt>Capacidade semanal</dt><dd>${hours(value.weeklyCapacityMinutes)}</dd><dt>Plano</dt><dd>${fit(value.planFit)}</dd></dl></div>`;
+  return `<section aria-label="Resultado da simulação"><strong>Resultado simulado</strong><div class="projection-scenario__comparison">${column('Atual',result.current)}${column('Simulação',result.simulated)}</div><p class="analytics-note">${escapeHtml(result.note)} Nenhum dado real foi alterado.</p></section>`;
+}
+
+export function renderAchievementProjection(model,{history=[],escapeHtml,weeklyCapacityMinutes=0}={}){
   if(!model)return '';
   const status=labels[model.status]||labels.insufficient_data;
   const confidence=confidenceLabels[model.confidence.level]||confidenceLabels.insufficient;
   const band=model.projection.calibratedSimulationBand;
   const forecast=model.trajectory.forecast30;
   const entries=[...model.drivers.map(text=>({text,type:'driver'})),...model.risks.map(text=>({text,type:'risk'}))].slice(0,4);
-  const latest=history.slice(-3).reverse();
+  const context=model.exam.daysRemaining==null?'Data da prova não definida':`${model.exam.daysRemaining} dia(s) até a prova`;
   return `<section class="performance-block achievement-projection" aria-labelledby="achievementProjectionTitle">
     <div class="achievement-projection__heading"><div><span class="section-eyebrow">TRAJETÓRIA</span><h3 id="achievementProjectionTitle">Projeção até a prova</h3></div><span class="achievement-projection__status achievement-projection__status--${model.status}">${status}</span></div>
-    <p>${escapeHtml(model.summary)}</p><p class="performance-method-note">Confiança ${confidence.toLowerCase()} · ${model.exam.daysRemaining==null?'Data da prova não definida':`${model.exam.daysRemaining} dia(s) até a prova`} · fase ${phaseLabels[model.exam.phase]||phaseLabels.undated}</p>
+    <p>${escapeHtml(model.summary)}</p><p class="performance-method-note">Confiança ${confidence.toLowerCase()} · ${context} · fase ${phaseLabels[model.exam.phase]||phaseLabels.undated}</p>
     <div class="achievement-projection__metrics"><div><span>Meta de nota</span><strong>${pct(model.current.targetScore)}</strong></div><div><span>Simulados comparáveis</span><strong>${pct(model.current.simulationAccuracy)}</strong></div><div><span>Faixa atual</span><strong>${band?`${pct(band.low)}–${pct(band.high)}`:'—'}</strong></div><div><span>Tendência em 30 dias</span><strong>${forecast.available?pct(forecast.central):'—'}</strong></div></div>
-    ${renderTrajectory(model,escapeHtml)}
+    ${model.status==='insufficient_data'?renderRequirements(model,escapeHtml):renderTrajectory(model,escapeHtml)}
+    <div class="achievement-projection__story"><div><strong>Resultado</strong><p>${status}</p></div><div><strong>Evidência</strong><p>${escapeHtml(model.risks[0]||model.drivers[0]||model.confidence.reasons[0]||model.summary)}</p></div><div><strong>Contexto</strong><p>${context}</p></div><div><strong>Ação</strong><p>${escapeHtml(model.recovery?.steps?.[0]||'Continue registrando simulados comparáveis.')}</p></div></div>
     <details class="achievement-projection__details"><summary>Entender esta projeção</summary><p>${escapeHtml(model.summary)}</p><ul>${entries.map(item=>`<li class="achievement-projection__${item.type}">${escapeHtml(item.text)}</li>`).join('')||'<li>Registre mais simulados comparáveis para obter uma explicação.</li>'}</ul><p>${model.evidence.observationCount||0} simulados comparáveis · ${model.evidence.sampleSize||0} questões na amostra.</p>${model.confidence.reasons.length?`<p>${escapeHtml(model.confidence.reasons.join(' '))}</p>`:''}<p>Prontidão é um índice de preparação; não representa probabilidade de aprovação.</p></details>
     ${model.recovery?`<details class="achievement-projection__details"><summary>O que seria necessário?</summary><p>${model.recovery.state==='collect_evidence'?'Primeiro, reúna uma base comparável.':`Déficit central medido: ${model.recovery.gap} p.p. · ${model.recovery.weeksRemaining??'—'} semana(s) até a prova.`}</p><ol>${model.recovery.steps.map(step=>`<li>${escapeHtml(step)}</li>`).join('')}</ol><p class="analytics-note">Orientações para revisão do plano, sem previsão de ganho de nota ou alteração automática de horas.</p></details>`:''}
-    ${latest.length?`<details class="achievement-projection__details"><summary>Projeções registradas</summary><ul>${latest.map(item=>`<li>${escapeHtml(item.date)} · ${labels[item.status]||labels.insufficient_data} · confiança ${confidenceLabels[item.confidence.level]||confidenceLabels.insufficient}</li>`).join('')}</ul></details>`:''}
+    ${renderHistory(history,escapeHtml)}
+    <button type="button" class="btn ghost small" data-projection-scenario-open>Simular cenário</button>
+    <dialog id="projectionScenarioDialog" class="projection-scenario" aria-labelledby="projectionScenarioTitle"><form method="dialog"><div class="projection-scenario__heading"><h3 id="projectionScenarioTitle">Simular cenário</h3><button type="submit" class="btn ghost small" aria-label="Fechar simulação">Fechar</button></div></form><p>Explore como meta, prazo e capacidade mudam a leitura e o encaixe do plano atual. Esta simulação não salva dados.</p>
+      <form data-projection-scenario-form><label>Capacidade semanal (horas)<input type="number" name="capacityHours" min="0" max="168" step="0.5" required value="${Math.round(weeklyCapacityMinutes/60*10)/10}"></label><label>Data da prova<input type="date" name="examDate" required value="${model.exam.date||''}"></label><label>Meta de nota (%)<input type="number" name="targetScore" min="1" max="100" step="1" required value="${model.current.targetScore}"></label><button type="submit" class="btn primary">Executar simulação</button></form><div id="projectionScenarioResult" aria-live="polite"></div></dialog>
   </section>`;
 }
