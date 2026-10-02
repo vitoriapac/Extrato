@@ -3,12 +3,13 @@ import {renderPerformanceComparison} from './performance-comparison-renderer.js'
 import {renderPerformanceStory,renderPerformanceSummary,renderPerformanceDetails} from './performance-story.js';
 import {renderReadinessChangeExplanation} from './readiness-change-explanation-renderer.js';
 import {renderMetricCard,renderEmptyState} from '../components/presentation.js';
+import {renderAchievementProjection} from './achievement-projection-renderer.js';
 
 const shown=value=>value==null?'—':String(Math.round(value*10)/10);
 const change=value=>value==null?'Sem base comparável':`${value>0?'+':''}${shown(value)}`;
 const card=(label,value,unit,detail)=>renderMetricCard({label,value:`${shown(value)}${value==null?'':unit}`,detail});
 
-export function renderPerformanceOverview(model,{range,today,activeExamTags,formatDate,escapeHtml,comparisonModel=null,readinessChange=null}={}){
+export function renderPerformanceOverview(model,{range,today,activeExamTags,formatDate,escapeHtml,comparisonModel=null,readinessChange=null,achievementProjection=null,achievementHistory=[]}={}){
   const current=model.current||{},previous=model.previous;
   const comparisonLabel=range.comparePrevious?'Comparação com período anterior':'Sem comparação';
   const kpis=`<section class="performance-kpis ui-metric-group" aria-label="Indicadores de desempenho">
@@ -27,5 +28,5 @@ export function renderPerformanceOverview(model,{range,today,activeExamTags,form
   const insights=(comparisonModel?.insights||[]).slice(0,3);
   const summary=model.changes[0]?`${model.changes[0].label}: ${change(model.changes[0].delta)} ${model.changes[0].unit} frente ao período anterior.`:'Ainda não há mudança mensurável com base comparável. Continue registrando estudo e questões.';
   const method=`<p class="performance-method-note">${comparisonLabel}. Precisão usa apenas questões respondidas por você. O índice atual não é uma probabilidade de aprovação.</p>`;
-  return `${renderPerformanceSummary(renderPerformanceStory({title:'Sua evolução no período',summary,details:insights},escapeHtml),kpis,method)}${readinessChange?renderReadinessChangeExplanation(readinessChange,{formatDate,escapeHtml}):''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section>${renderPerformanceDetails('Comparação, plano e outras mudanças',`${renderPerformanceComparison(comparisonModel||{state:'disabled'}, {escapeHtml})}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
+  return `${renderPerformanceSummary(renderPerformanceStory({title:'Sua evolução no período',summary,details:insights},escapeHtml),kpis,method)}${renderAchievementProjection(achievementProjection,{history:achievementHistory,escapeHtml})}${readinessChange?renderReadinessChangeExplanation(readinessChange,{formatDate,escapeHtml}):''}<section class="performance-block"><h3>Prontidão ao longo do tempo</h3>${history}</section>${renderPerformanceDetails('Comparação, plano e outras mudanças',`${renderPerformanceComparison(comparisonModel||{state:'disabled'}, {escapeHtml})}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
 }

@@ -11,6 +11,7 @@
     "check:bundle": "node scripts/build.mjs --check",
     "test": "node --test tests/unit/*.test.js",
     "test:e2e": "playwright test",
+    "test:e2e:timezone": "playwright test tests/e2e/achievement-projection.spec.js tests/e2e/backup-schema24-cycle.spec.js tests/e2e/legacy-backup.spec.js tests/e2e/planning.spec.js tests/e2e/sessions.spec.js tests/e2e/stability-phase-comparison.spec.js tests/e2e/strategic-cycle.spec.js tests/e2e/strategic-history.spec.js tests/e2e/study-action-cycle.spec.js",
     "test:e2e:headed": "playwright test --headed",
     "check": "npm run test && npm run check:bundle",
     "check:all": "npm run check:syntax && npm run check && npm run test:e2e"

@@ -14,7 +14,7 @@ export function captureProjection({snapshots,model,simulations,date,issuedAt,id,
 export function buildProjectionCalibration({snapshots=[],simulations=[],activeExamTags=[],today}){
  const seen=new Set();
  const rows=simulations.filter(item=>item.date<=today&&Number(item.total)>0&&Number(item.correct)>=0&&Number(item.correct)<=Number(item.total)&&!seen.has(item.id)&&seen.add(item.id)).map(item=>{
-  const prior=snapshots.filter(snapshot=>scope(snapshot.activeExamTags)===scope(activeExamTags)&&snapshot.algorithmVersion===1&&snapshot.date<item.date&&snapshot.composition===projectionComposition(item)&&!(snapshot.knownSimulationIds||[]).includes(item.id)&&!snapshot.inputs.some(input=>input.id===item.id)).sort((a,b)=>Date.parse(b.issuedAt)-Date.parse(a.issuedAt))[0];
+  const prior=snapshots.filter(snapshot=>snapshot.kind!=='achievement'&&scope(snapshot.activeExamTags)===scope(activeExamTags)&&snapshot.algorithmVersion===1&&snapshot.date<item.date&&snapshot.composition===projectionComposition(item)&&!(snapshot.knownSimulationIds||[]).includes(item.id)&&!snapshot.inputs.some(input=>input.id===item.id)).sort((a,b)=>Date.parse(b.issuedAt)-Date.parse(a.issuedAt))[0];
   if(!prior)return null;
   const observed=Math.round(Number(item.correct)/Number(item.total)*1000)/10;
   return {id:item.id,date:item.date,issuedAt:prior.issuedAt,issuedDate:prior.date,low:prior.low,high:prior.high,central:prior.central,observed,inside:observed>=prior.low&&observed<=prior.high,error:Math.round(Math.abs(observed-prior.central)*10)/10};

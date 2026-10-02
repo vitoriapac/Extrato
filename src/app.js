@@ -4,6 +4,11 @@ import {resolveSubjectAccuracyTarget} from './domain/analytics/subject-accuracy-
 import {buildSubjectAccuracy} from './application/analytics/build-subject-accuracy.js';
 import {renderSubjectAccuracy} from './ui/renderers/subject-accuracy-renderer.js';
 import {captureProjection,buildProjectionCalibration} from './application/analytics/projection-calibration-history.js';
+import {buildAchievementProjection} from './application/projection/build-achievement-projection.js';
+import {buildProjectionTopicRisks} from './application/projection/build-projection-topic-risks.js';
+import {buildProjectionCloseContext} from './application/projection/build-projection-close-context.js';
+import {renderProjectionCloseContext} from './ui/renderers/projection-close-context-renderer.js';
+import {captureAchievementProjection,achievementProjectionHistory,validAchievementProjectionSnapshot} from './application/projection/achievement-projection-history.js';
 import {renderProjectionCalibration} from './ui/renderers/projection-calibration-renderer.js';
 import {buildRecommendationFollowup} from './application/recommendations/build-recommendation-followup.js';
 import {renderRecommendationFollowup} from './ui/renderers/recommendation-followup-renderer.js';
@@ -22,6 +27,7 @@ import {renderWeeklyDecisionCycle} from './ui/renderers/weekly-decision-cycle-re
 import {buildPerformanceAnalysis,performancePeriodRecords} from './application/questions/build-performance-analysis.js';
 import {createPerformanceViewState,resolvePerformanceRange,updatePerformanceViewState} from './application/performance/performance-view-state.js';
 import {buildPerformancePageModel} from './application/performance/build-performance-page-model.js';
+import {buildPerformanceOverview} from './application/performance/build-performance-overview.js';
 import {countStudyDaysThisWeek} from './application/performance/study-day-count.js';
 import {renderPerformancePage} from './ui/performance/performance-page.js';
 import {renderPerformanceSection} from './ui/performance/render-performance-section.js';
@@ -543,8 +549,12 @@ function migrateV26toV27(data){
   data.metas.consistenciaSemanal=Number.isFinite(days)?Math.max(1,Math.min(7,Math.round(days))):5;
   data.schemaVersion=27;return data;
 }
+function migrateV27toV28(data){
+  data.projectionSnapshots=Array.isArray(data.projectionSnapshots)?data.projectionSnapshots:[];
+  data.schemaVersion=28;return data;
+}
 function migrateState(data){
-  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24,24:migrateV24toV25,25:migrateV25toV26,26:migrateV26toV27}});
+  return runStateMigrations(data,{currentVersion:CURRENT_SCHEMA_VERSION,migrations:{1:migrateV1toV2,2:migrateV2toV3,3:migrateV3toV4,4:migrateV4toV5,5:migrateV5toV6,6:migrateV6toV7,7:migrateV7toV8,8:migrateV8toV9,9:migrateV9toV10,10:migrateV10toV11,11:migrateV11toV12,12:migrateV12toV13,13:migrateV13toV14,14:migrateV14toV15,15:migrateV15toV16,16:migrateV16toV17,17:migrateV17toV18,18:migrateV18toV19,19:migrateV19toV20,20:migrateV20toV21,21:migrateV21toV22,22:migrateV22toV23,23:migrateV23toV24,24:migrateV24toV25,25:migrateV25toV26,26:migrateV26toV27,27:migrateV27toV28}});
 }
 
 function ensureStateDefaults(){
@@ -1259,7 +1269,9 @@ function validateNormalizedBackup(data){
   if(data.examBlueprint.subjects.some(item=>!isPlainObject(item)||!validRef(item.subjectId,subjectIds)||!isFiniteNonNegative(item.expectedQuestions)||!isFiniteNonNegative(item.questionWeight)||!EXAM_PRIORITIES.includes(item.priority))) return fail('O backup contém peso de disciplina inválido.');
   if(!isPlainObject(data.algorithmVersions)||Object.values(data.algorithmVersions).some(value=>!Number.isInteger(Number(value))||Number(value)<1)) return fail('O backup contém versões de algoritmos inválidas.');
   if(data.progressHistory.some(item=>!isPlainObject(item)||!isISODate(item.date)||!isFiniteNonNegative(item.pct)||Number(item.pct)>100)) return fail('O backup contém histórico de progresso inválido.');
-  if(data.projectionSnapshots.some(item=>!isPlainObject(item)||!isSafeId(item.id)||!isISODate(item.date)||!Number.isFinite(Date.parse(item.issuedAt))||!Array.isArray(item.activeExamTags)||item.activeExamTags.some(tag=>typeof tag!=='string')||!Array.isArray(item.inputs)||item.knownSimulationIds!==undefined&&(!Array.isArray(item.knownSimulationIds)||item.knownSimulationIds.some(id=>!isSafeId(id)))||!textOk(item.signature,100000)||!textOk(item.composition,10000)||![item.low,item.central,item.high].every(value=>typeof value==='number'&&Number.isFinite(value)&&value>=0&&value<=100)||item.low>item.central||item.central>item.high||item.algorithmVersion!==1||item.inputs.some(input=>!isPlainObject(input)||!isSafeId(input.id)||!isISODate(input.date)||!isFiniteNonNegative(input.correct)||!isFiniteNonNegative(input.total)||Number(input.total)<=0||Number(input.correct)>Number(input.total))))return fail('O backup contém faixas de projeção inválidas.');
+  if(data.projectionSnapshots.some(item=>!isPlainObject(item)||!isSafeId(item.id)||!isISODate(item.date)||!Number.isFinite(Date.parse(item.issuedAt))||!Array.isArray(item.activeExamTags)||item.activeExamTags.some(tag=>typeof tag!=='string')||!textOk(item.signature,100000)||(
+    item.kind==='achievement'?!validAchievementProjectionSnapshot(item)||item.source.simulations.some(input=>!isPlainObject(input)||!isSafeId(input.id)||!isISODate(input.date)||!isFiniteNonNegative(input.correct)||!isFiniteNonNegative(input.total)||Number(input.total)<=0||Number(input.correct)>Number(input.total)):
+    item.kind!==undefined||!Array.isArray(item.inputs)||item.knownSimulationIds!==undefined&&(!Array.isArray(item.knownSimulationIds)||item.knownSimulationIds.some(id=>!isSafeId(id)))||!textOk(item.composition,10000)||![item.low,item.central,item.high].every(value=>typeof value==='number'&&Number.isFinite(value)&&value>=0&&value<=100)||item.low>item.central||item.central>item.high||item.algorithmVersion!==1||item.inputs.some(input=>!isPlainObject(input)||!isSafeId(input.id)||!isISODate(input.date)||!isFiniteNonNegative(input.correct)||!isFiniteNonNegative(input.total)||Number(input.total)<=0||Number(input.correct)>Number(input.total)))))return fail('O backup contém faixas de projeção inválidas.');
   if(data.readinessSnapshots.some(item=>!isPlainObject(item)||!isSafeId(item.id)||!isISODate(item.date)||!isFiniteNonNegative(item.score)||Number(item.score)>100||!Array.isArray(item.activeExamTags)||!isPlainObject(item.factors)||!Number.isInteger(Number(item.algorithmVersion)))) return fail('O backup contém histórico de prontidão inválido.');
   if(data.readinessSnapshots.some(item=>item.weights!==undefined&&(!isPlainObject(item.weights)||!Object.keys(item.weights).length||Object.values(item.weights).some(value=>!isFiniteNonNegative(value)||Number(value)<=0))||item.captureKind!==undefined&&!['weekly-close','before-strategy-change'].includes(item.captureKind)||item.eventKey!=null&&!isSafeId(item.eventKey)||item.reason!=null&&!textOk(item.reason,500)))return fail('O backup contém metadados de prontidão inválidos.');
   return {valid:true};
@@ -3465,7 +3477,7 @@ function renderExamIntelligenceSection(){
   const audit=document.getElementById('examConfigurationAudit');
   if(audit)audit.innerHTML=renderExamConfigurationAudit(buildExamConfigurationAudit({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}));
   const evidence=document.getElementById('examIntelligenceSummary');
-  if(evidence)evidence.innerHTML=renderExamIntelligence(buildExamIntelligenceViewModel({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}));
+  if(evidence)evidence.innerHTML=renderExamIntelligence(buildExamIntelligenceViewModel({topics:examScopedTopics(),blueprint:state.examBlueprint,exams:state.exams,examQuestions:state.examQuestions}),{projection:currentAchievementProjection().model});
   renderHistoricalExamMatrix();
 }
 document.getElementById('examConfigurationAudit')?.addEventListener('click',event=>{const topic=event.target.closest('[data-audit-topic]');if(!topic)return;selectedExamMatrixTopicId=topic.dataset.auditTopic;examMatrixFilters.scope='active';examMatrixFilters.board='all';examMatrixFilters.year='all';examMatrixFilters.role='all';renderHistoricalExamMatrix();document.querySelector('#examHistoricalMatrix .exam-matrix-detail')?.scrollIntoView?.({block:'nearest'})});
@@ -4480,7 +4492,8 @@ function renderDiagnosisCenter(){
   const container=document.getElementById('diagnosisCenter');if(!container)return;
   const {candidates}=refreshStudyRecommendationItems(),scoped=examEvidenceContext();
   const opportunityCosts=studyPlanPreview?.adaptiveAdvice?.state==='proposal'&&!studyPlanPreview.adaptiveAdvice.applied?[studyPlanPreview.adaptiveAdvice]:[];
-  const {diagnosis,consolidated,preparationSignals,nextAction,debt}=buildDiagnosisPageModel({candidates,subjects:examScopedSubjects(),scope:scoped,blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,today:todayISO(),activeExamTags:state.examBlueprint.activeExamTags||[],recommendations:currentStudyRecommendations,opportunityCosts,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity(),hoursByDay:state.metas.horasPorDia||{}});
+  const projection=currentAchievementProjection(undefined,undefined,candidates).model;
+  const {diagnosis,consolidated,preparationSignals,nextAction,debt}=buildDiagnosisPageModel({candidates,subjects:examScopedSubjects(),scope:scoped,blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,today:todayISO(),activeExamTags:state.examBlueprint.activeExamTags||[],recommendations:currentStudyRecommendations,opportunityCosts,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity(),hoursByDay:state.metas.horasPorDia||{},projection});
   currentConsolidatedDiagnosis=consolidated;
   const diagnosisHtml=renderDiagnosisCenterView({model:diagnosis,studyActionForItem:item=>{
     const recommendation=currentStudyRecommendations.find(candidate=>candidate.subjectId===item.subjectId&&candidate.topicId===item.topicId),action=buildStudyAction(recommendation,{source:'diagnosis'});
@@ -4942,6 +4955,22 @@ function projectPerformance(metrics){
   return {available:true,low:calibration.low,high:calibration.high,central:calibration.central,confidence,confidenceLabel:calibration.confidenceLabel,calibration,gap:{minimum:Math.max(0,calibration.target-calibration.high),maximum:Math.max(0,calibration.target-calibration.low),target:calibration.target},movingAverage:forecast.movingAverage,forecast30,evidence:calibration.evidence,scenarios:{available:false,scenarios:[]},detail:calibration.reason};
 }
 
+function currentAchievementProjection(metrics=computeApprovalMetrics(),readiness=readinessResult(metrics),candidates=null){
+  const today=todayISO(),scope=examEvidenceContext();
+  const recent=buildPerformanceOverview({range:resolvePerformanceRange({today,period:'30',comparePrevious:false}),today,
+    questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans:performanceScopedPlans(scope)});
+  const simulations=examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),
+    breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))}));
+  const topicRisks=buildProjectionTopicRisks(candidates||intelligenceCandidates());
+  const inputs={coverage:metrics.edital.available?metrics.edital.raw:null,adherence:recent.current.adherence,
+    consistency:{days:countStudyDaysThisWeek(scope.sessions.included,today),target:state.metas.consistenciaSemanal},
+    openHighImpactPriorities:topicRisks.length,topicRisks};
+  const model=buildAchievementProjection({today,examDate:state.examDate||null,
+    targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:state.metas.metaAprovacao,
+    simulations,readiness,...inputs});
+  return {model,inputs,simulations};
+}
+
 
 function gerarDiagnosticoAprovacao(metrics){
   const m=metrics||computeApprovalMetrics();
@@ -5009,6 +5038,8 @@ function renderApprovalDashboard(){
   const m=computeApprovalMetrics(),readiness=readinessResult(m),score=readiness.value??0,level=classificacaoAprovacao(score),confidence={value:readiness.confidence,nivel:readiness.confidenceLabel},projection=projectPerformance(m);
   const projectionInputs=examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))}));
   if(captureProjection({snapshots:state.projectionSnapshots,model:projection.calibration,simulations:projectionInputs,date:todayISO(),issuedAt:nowISO(),id:uid('projection'),activeExamTags:state.examBlueprint.activeExamTags||[]}))scheduleSave();
+  const achievement=currentAchievementProjection(m,readiness);
+  if(captureAchievementProjection({snapshots:state.projectionSnapshots,...achievement,date:todayISO(),issuedAt:nowISO(),id:uid('achievement-projection'),activeExamTags:state.examBlueprint.activeExamTags||[]}))scheduleSave();
   const projectionHistory=buildProjectionCalibration({snapshots:state.projectionSnapshots,simulations:projectionInputs,activeExamTags:state.examBlueprint.activeExamTags||[],today:todayISO()});
   const factors=[['Cobertura · 30%',m.edital,'coverage'],['Domínio · 25%',m.dominio,'mastery'],['Retenção · 20%',m.retencao,'retention'],['Consistência · 15%',m.consistencia,'consistency'],['Simulados · 10%',m.simulados,'simulations']];
   const approvalState=readiness.state==='empty'?'empty':readiness.state==='insufficient'||confidence.value<.35?'insufficient':'ready';
@@ -5046,7 +5077,11 @@ function renderStudyTrack32Insights(){
  model.comparisonMetrics=captureCloseComparisonMetrics(model,projectPerformance());
  const metasClose=document.getElementById('metasWeeklyCloseSummary'),weekly=model.weeklyClose;
  if(metasClose)metasClose.innerHTML=weekly.state==='insufficient'?'<p class="analytics-note">Ainda não há evidência suficiente para interpretar o fechamento. Registre sessões e resultados ao longo da semana.</p>':`<div class="metas-close-metrics"><div><span>Aderência ao plano</span><strong>${weekly.investment?.adherence==null?'—':weekly.investment.adherence+'%'}</strong></div><div><span>Questões resolvidas</span><strong>${weekly.questions?.resolved??0}</strong></div><div><span>Precisão</span><strong>${weekly.questions?.accuracy==null?'—':weekly.questions.accuracy+'%'}</strong></div></div>${weekly.bestSignal?`<p><strong>Principal avanço:</strong> ${escapeHtml(weekly.bestSignal.message)}</p>`:''}${weekly.mainRisk?`<p><strong>Ponto de atenção:</strong> ${escapeHtml(weekly.mainRisk.message)}</p>`:''}`;
- if(close)close.innerHTML=renderCloseComparison(buildCloseComparison({current:model,snapshots:state.weeklyCloseSnapshots,activeExamTags:model.activeExamTags}))+renderWeeklyClose(model.weeklyClose,{...options,includeNext:false})+renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle)+renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus)+renderWeeklySnapshotHistory()+renderWeeklyCloseNext(model.weeklyClose,options)+(model.weeklyClose.state==='insufficient'?'':renderWeeklyCloseActions(model.weeklyClose));
+ if(close){
+   const trajectory=currentAchievementProjection().model;
+   const trajectoryClose=buildProjectionCloseContext({current:trajectory,snapshots:state.projectionSnapshots,activeExamTags:model.activeExamTags,periodStart:model.period.start,today:todayISO()});
+   close.innerHTML=renderCloseComparison(buildCloseComparison({current:model,snapshots:state.weeklyCloseSnapshots,activeExamTags:model.activeExamTags}))+renderWeeklyClose(model.weeklyClose,{...options,includeNext:false})+renderProjectionCloseContext(trajectoryClose,{escapeHtml})+renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle)+renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus)+renderWeeklySnapshotHistory()+renderWeeklyCloseNext(model.weeklyClose,options)+(model.weeklyClose.state==='insufficient'?'':renderWeeklyCloseActions(model.weeklyClose));
+ }
  const timeline=document.getElementById('strategicTimelineDashboard');if(timeline)timeline.innerHTML=renderPhaseComparison(buildPhaseComparison({weeklyCloseSnapshots:state.weeklyCloseSnapshots,readinessSnapshots:state.readinessSnapshots,activeExamTags:state.examBlueprint.activeExamTags||[]}))+renderStrategicTimeline(buildStrategicTimeline({readinessSnapshots:state.readinessSnapshots,weeklyCloseSnapshots:state.weeklyCloseSnapshots,recommendations:state.recommendationFeedback,recommendationHistory:state.recommendationHistory,studyPlans:state.studyPlans,adaptiveHistory:state.adaptivePlanningHistory,planAdjustments:state.planAdjustments,simulations:state.simulados,topics:allTopics(),activeExamTags:state.examBlueprint.activeExamTags||[],filter:strategicTimelineFilter,groupBy:strategicTimelineGroup,today:todayISO()}));
  const priorities=document.getElementById('priorityHistoryDashboard');if(priorities)priorities.innerHTML=renderPriorityHistory(buildPriorityHistory({weeklyCloseSnapshots:state.weeklyCloseSnapshots,topics:allTopics(),candidates:intelligenceCandidates(),recommendationHistory:state.recommendationHistory,recommendations:state.recommendationFeedback,studyPlans:state.studyPlans,activeExamTags:state.examBlueprint.activeExamTags||[],today:todayISO(),subjectId:priorityHistorySubject}));
  if(comparison)comparison.innerHTML=renderPeriodComparison(model.weeklyClose,options);
@@ -5211,8 +5246,11 @@ function renderPerformance(){
   const today=todayISO(),range=resolvePerformanceRange({today,...performanceViewState}),scope=examEvidenceContext();
   const activeExamTags=state.examBlueprint?.activeExamTags||[];
   const examSection=performanceViewState.section==='exam';
+  const achievement=performanceViewState.section==='overview'?currentAchievementProjection():null;
   const pageModel=examSection?null:buildPerformancePageModel({viewState:performanceViewState,range,today,activeExamTags,scope,subjects:examScopedSubjects(),
     simulations:performanceViewState.section==='subjects'||performanceViewState.section==='simulations'?examScopedSimulations():[],
+    achievementProjection:achievement?.model||null,
+    achievementHistory:achievementProjectionHistory(state.projectionSnapshots,activeExamTags,today),
     projectionSnapshots:state.projectionSnapshots,readinessSnapshots:state.readinessSnapshots,
     readiness:performanceViewState.section==='overview'?readinessResult(computeApprovalMetrics()):null,
     blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,

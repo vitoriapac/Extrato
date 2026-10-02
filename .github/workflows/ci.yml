@@ -37,7 +37,7 @@ jobs:
             fi
           done
           echo "docs_only=true" >> "$GITHUB_OUTPUT"
-  test:
+  checks:
     needs: changes
     runs-on: ubuntu-latest
     strategy:
@@ -62,10 +62,43 @@ jobs:
           cache: npm
       - run: npm ci
         if: needs.changes.outputs.docs_only != 'true'
+      - run: npm run check:syntax
+        if: needs.changes.outputs.docs_only != 'true' && matrix.label == 'utc'
+      - run: npm run check
+        if: needs.changes.outputs.docs_only != 'true'
+  e2e:
+    needs: changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: full-utc
+            timezone: UTC
+            suite: full
+          - label: timezone-sao-paulo
+            timezone: America/Sao_Paulo
+            suite: timezone
+    env:
+      TZ: ${{ matrix.timezone }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Documentation-only change
+        if: needs.changes.outputs.docs_only == 'true'
+        run: echo "Only Markdown changed; application checks are unnecessary."
+      - uses: actions/setup-node@v4
+        if: needs.changes.outputs.docs_only != 'true'
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+        if: needs.changes.outputs.docs_only != 'true'
       - run: npx playwright install --with-deps chromium
         if: needs.changes.outputs.docs_only != 'true'
-      - run: npm run check:all
-        if: needs.changes.outputs.docs_only != 'true'
+      - run: npm run test:e2e
+        if: needs.changes.outputs.docs_only != 'true' && matrix.suite == 'full'
+      - run: npm run test:e2e:timezone
+        if: needs.changes.outputs.docs_only != 'true' && matrix.suite == 'timezone'
       - name: Upload Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
