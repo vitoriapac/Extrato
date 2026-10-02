@@ -1,4 +1,5 @@
 import {normalizeStudySession} from '../../domain/sessions/study-session.js';
+import {sessionMatchesDailyItem,EXCLUDED_DAILY_STATUSES} from '../daily-execution/reconcile-daily-execution.js';
 export function createSessionService({repository,questionsRepository,historyRepository,planningRepository,recommendationsRepository,clock,idGenerator,normalizeSession=normalizeStudySession,normalizeQuestion=()=>{},resolveEvidenceScope=()=>null,completeRecommendation=()=>{},onCompleted=()=>{}}={}){
   if(!repository||typeof repository.add!=='function')throw new TypeError('Serviço de sessões requer repositório.');
   if(!questionsRepository||!planningRepository||!clock||typeof idGenerator!=='function')throw new TypeError('Serviço de sessões requer dependências de aplicação.');
@@ -12,9 +13,9 @@ export function createSessionService({repository,questionsRepository,historyRepo
   };
   const syncPlan=planItemId=>{
     const found=findPlanItem(planItemId);if(!found)return null;
-    const linked=repository.listByPlanItem(planItemId),latest=[...linked].sort((a,b)=>String(a.endedAt||'').localeCompare(String(b.endedAt||''))).pop();
-    found.item.sessionIds=linked.map(item=>item.id);found.item.executedSeconds=linked.reduce((sum,item)=>sum+Math.max(0,Number(item.durationSeconds)||0),0);
-    found.item.status=!linked.length?'planned':found.item.plannedMinutes>0&&found.item.executedSeconds>=found.item.plannedMinutes*60?'completed':'partial';
+    const linked=repository.listByPlanItem(planItemId),matching=linked.filter(session=>sessionMatchesDailyItem(session,found.item)),latest=[...matching].sort((a,b)=>String(a.endedAt||'').localeCompare(String(b.endedAt||''))).pop();
+    found.item.sessionIds=linked.map(item=>item.id);found.item.executedSeconds=matching.reduce((sum,item)=>sum+Math.max(0,Number(item.durationSeconds)||0),0);
+    if(!EXCLUDED_DAILY_STATUSES.has(found.item.status))found.item.status=!matching.length?'planned':found.item.plannedMinutes>0&&found.item.executedSeconds>=found.item.plannedMinutes*60?'completed':'partial';
     found.item.lastExecutedAt=latest?.endedAt||null;found.plan.updatedAt=clock.nowISO();
     if(latest&&found.item.recommendationId&&found.item.status==='completed')markRecommendationCompleted(found.item.recommendationId,latest);
     return found.item;

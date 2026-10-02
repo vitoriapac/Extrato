@@ -111,6 +111,8 @@ import {createReplanService} from './application/planning/replan-service.js';
 import {createReplanController} from './application/planning/replan-controller.js';
 import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
 import {buildNextBestAction} from './application/diagnostics/build-next-best-action.js';
+import {createDailyExecutionController} from './ui/controllers/daily-execution-controller.js';
+import {renderDailyExecution} from './ui/renderers/daily-execution-renderer.js';
 import {ADAPTIVE_PLANNING_VERSION,applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
 import {renderAdaptiveAllocationAdvice,renderExamPhase,renderExamPhaseCompact} from './ui/renderers/adaptive-planning-renderer.js';
 import {renderExamBlueprintConfigView} from './ui/renderers/exam-blueprint-config-renderer.js';
@@ -1353,7 +1355,8 @@ function syncPlannedExecution(planItemId){
 function startPlannedActivity(itemId){
   const found=findDailyPlanItem(itemId);
   if(!found){ showToast('Esta atividade não está mais disponível no plano.'); return; }
-  if(['completed','deferred','replaced','skipped'].includes(found.item.status)){
+  const execution=dailyExecutionController.build().items.find(item=>item.id===itemId);
+  if(!execution||execution.remainingSeconds<=0){
     showToast('Esta atividade não está disponível para iniciar.');
     return;
   }
@@ -1367,6 +1370,7 @@ function startPlannedActivity(itemId){
     subjectId:item.subjectId||null,topicId:item.topicId||null,type:item.type||'study',
     planItemId:item.id,targetMinutes:item.plannedMinutes
   });
+  item.executedSeconds=execution.executedSeconds;
   item.status='in_progress';
   item.startedAt=item.startedAt||nowISO();
   plan.updatedAt=nowISO();
@@ -4690,6 +4694,21 @@ function renderTodayExecutionSummary(model){
   const progress=model.progress,progressLabel=progress===null?'Plano diário ainda não montado':`${progress}% do plano executado`;
   container.innerHTML=`<section class="study-plan-summary today-execution-summary" aria-label="Resumo de execução de hoje"><div><strong>${formatPlanMinutes(model.availableMinutes)}</strong><span>Disponível hoje</span></div><div><strong>${formatPlanMinutes(model.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(model.executedMinutes)}</strong><span>Executado</span></div><div class="today-execution-progress"><div><span>${escapeHtml(formatDatePt(model.date))} · ${progressLabel}</span>${progress===null?'':'<strong>'+progress+'%</strong>'}</div><progress max="100" value="${progress??0}" aria-label="${escapeAttr(progressLabel)}" ${progress===null?'hidden':''}></progress></div></section>`;
 }
+const dailyExecutionController=createDailyExecutionController({
+  getContext:()=>({today:todayISO(),dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,activeExamTags:state.examBlueprint.activeExamTags||[],activePlan:latestStudyPlan(),availableMinutes:Math.round(metaHoursToday()*60)}),
+  getNextBestAction:()=>buildNextBestAction({recommendations:currentStudyRecommendations,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity()}),
+  onStart:startPlannedActivity,onResume:openStudyTimerFocus,getTimer:()=>({active:hasStartedStudyTimer(),planItemId:state.activeTimer?.planItemId})
+});
+function renderDailyExecutionCard(){
+  const container=document.getElementById('dailyExecutionDashboard');if(!container)return;
+  refreshStudyRecommendationItems();
+  container.innerHTML=renderDailyExecution(dailyExecutionController.build(),{escapeHtml,escapeAttr,formatMinutes:formatPlanMinutes,timer:{active:hasStartedStudyTimer(),planItemId:state.activeTimer?.planItemId}});
+}
+document.addEventListener('click',event=>{
+  const start=event.target.closest?.('[data-daily-start]');
+  if(start){const result=dailyExecutionController.start(start.dataset.dailyStart);if(result.state==='unavailable')showToast('A atividade mudou. Confira o plano atual.');if(result.state==='blocked')showToast('Finalize a sessão atual antes de iniciar outra.');renderDailyExecutionCard();}
+  if(event.target.closest?.('[data-daily-resume]'))openStudyTimerFocus();
+});
 function renderPlanoHoje(){
   const container=document.getElementById('planoHojeContent');
   if(!container) return;
@@ -4710,7 +4729,9 @@ function renderPlanoHoje(){
     return;
   }
 
-  const items=state.executionMode==='sequence'?[...plan.items].sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0)):plan.items;
+  const reconciled=new Map((todayModel.execution?.items||[]).map(item=>[item.id,item]));
+  const eligibleItems=plan.items.filter(item=>!['discarded'].includes(item.status)).map(item=>reconciled.has(item.id)?{...item,...reconciled.get(item.id),status:state.activeTimer?.planItemId===item.id&&hasStartedStudyTimer()?'in_progress':reconciled.get(item.id).status}:item);
+  const items=state.executionMode==='sequence'?[...eligibleItems].sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0)):eligibleItems;
   const listaHtml=items.map(item=>{
     const progress=item.plannedMinutes>0?Math.min(100,Math.round(item.executedSeconds/(item.plannedMinutes*60)*100)):0;
     const hasTimer=hasStartedStudyTimer(),active=hasTimer&&state.activeTimer.planItemId===item.id,running=active&&state.activeTimer.isRunning;
@@ -5369,8 +5390,9 @@ applicationRenderer=createApplicationRenderer({
     ['simulados planejados',renderSimuladosPlanejados],
     ['metas de hoje',renderMetasHoje],
     ['alertas',renderAlertasInteligentes],
-    ['plano de hoje',renderPlanoHoje]
-  ],scopes:RENDER_SCOPE_SECTIONS,globalSections:['indicadores','cabeçalho'],getActiveScope:activeTabName,afterRender:labelDynamicControls,onError:(error,name)=>errorBoundary.report(error,name)
+    ['plano de hoje',renderPlanoHoje],
+    ['execução diária',renderDailyExecutionCard]
+  ],scopes:RENDER_SCOPE_SECTIONS,globalSections:['indicadores','cabeçalho','execução diária'],getActiveScope:activeTabName,afterRender:labelDynamicControls,onError:(error,name)=>errorBoundary.report(error,name)
 });
 function render(scope='all'){const result=applicationRenderer.render(scope);if(scope==='all'||scope==='dashboard'||scope==='metas'||scope==='active'&&['dashboard','metas'].includes(activeTabName()))try{renderStudyTrack32Insights()}catch(error){errorBoundary.report(error,'análises estratégicas')}return result}
 function persistAndRender(){

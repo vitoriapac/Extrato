@@ -5,6 +5,7 @@ import {parseLocalDate} from '../../core/date-utils.js';
 
 export const EXCLUDED_DAILY_STATUSES=new Set(['skipped','replaced','discarded','deferred']);
 export const dailyActivityType=type=>type==='theory'||type==='prerequisite'?'study':type||'study';
+export const sessionMatchesDailyItem=(session,item)=>Boolean(item&&session.subjectId===item.subjectId&&(!item.topicId||session.topicId===item.topicId)&&dailyActivityType(session.type)===dailyActivityType(item.type));
 const seconds=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
 const dateOf=session=>typeof session.date==='string'&&parseLocalDate(session.date)?session.date:localDateFromTimestamp(session.endedAt||session.startedAt||session.createdAt);
 const scopeKey=tags=>JSON.stringify(normalizeExamTags(tags));
@@ -34,7 +35,7 @@ export function reconcileDailyExecution({today,dailyPlans=[],sessions=[],subject
     const current=date===today;
     if(current){studiedSeconds+=duration;todaySessions.push({...structuredClone(session),date});}
     const references=links.get(session.id),id=session.planItemId||(references?.size===1?[...references][0]:null),item=byId.get(id);
-    const matches=item&&session.subjectId===item.subjectId&&(!item.topicId||session.topicId===item.topicId)&&dailyActivityType(session.type)===dailyActivityType(item.type);
+    const matches=sessionMatchesDailyItem(session,item);
     if(!matches){
       if(current){if(id){mismatchedSeconds+=duration;if(item)execution.get(id).mismatchedSeconds+=duration;}else additionalSeconds+=duration;}
       continue;

@@ -22,3 +22,11 @@ A Timeline apenas apresenta os registros existentes; abrir detalhes não altera 
 `buildTodayViewModel` adapta o modelo compartilhado ao resumo de execução existente. Consumidores legados sem sessões e catálogo mantêm o contrato anterior. O futuro card Hoje usará o mesmo modelo, sem duplicar o cálculo da prioridade.
 
 Todos esses builders operam sem persistência. A atualização da execução acompanha as renderizações existentes após registrar, editar ou excluir sessões. Não há migração de schema nesta entrega.
+
+## Card Hoje e sessões
+
+O card na Visão Geral mostra o planejado, o estudo real e o cumprimento das atividades. A próxima tarefa vem do mesmo modelo da aba Hoje. Iniciar revalida a tarefa no dia e concurso atuais; uma sessão já aberta deve ser retomada ou finalizada. Recomendações fora do plano são apresentadas para revisão, sem criar carga silenciosamente.
+
+`daily-execution-controller.js` coordena a leitura e o início com os serviços existentes. `daily-execution-renderer.js` apresenta a próxima atividade, justificativa, pendências e estudo adicional. A fila fica recolhida, com cinco itens antes de Mostrar mais. O card participa das renderizações globais para acompanhar alterações de sessões, metas, concursos e Recovery.
+
+O serviço de sessões usa o mesmo contrato de compatibilidade de disciplina, tópico e tipo. Uma sessão incompatível permanece no histórico, mas não marca a atividade como cumprida. Edição e exclusão recalculam o crédito; atividades descartadas, adiadas ou substituídas não são reabertas pelo sincronizador.

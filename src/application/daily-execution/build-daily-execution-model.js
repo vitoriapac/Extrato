@@ -6,6 +6,7 @@ import {buildDailyPriority} from './build-daily-priority.js';
 export function buildDailyExecutionModel({today,dailyPlans=[],sessions=[],subjects=[],activeExamTags=[],nextBestAction=null,activePlan=null,availableMinutes=0}={}){
   if(typeof today!=='string'||!parseLocalDate(today))return {state:'invalid_date',reason:'Informe uma data local válida para acompanhar a execução.'};
   const reconciled=reconcileDailyExecution({today,dailyPlans,sessions,subjects,activeExamTags});
+  reconciled.items=reconciled.items.map(item=>{const subject=subjects.find(row=>row.id===item.subjectId),topic=subject?.topics?.find(row=>row.id===item.topicId);return {...item,subjectName:subject?.name||item.subjectName,topicName:topic?.name||item.topicName};});
   const progress=buildDailyProgress(reconciled),priority=buildDailyPriority({...reconciled,nextBestAction,subjects,activeExamTags});
   const stalePlanItemCount=activePlan?.id?reconciled.items.filter(item=>item.studyPlanId&&item.studyPlanId!==activePlan.id).length:0;
   return {state:reconciled.hasPlan?'ready':'unplanned',date:today,activeExamTags:[...activeExamTags],activePlanId:activePlan?.id||null,
