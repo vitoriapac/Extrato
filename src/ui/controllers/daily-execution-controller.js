@@ -10,3 +10,11 @@ export function createDailyExecutionController({getContext,getNextBestAction,onS
   };
   return Object.freeze({build,start});
 }
+
+export function watchDailyExecutionDate({document,window,getToday,onChange}={}){
+  let date=getToday();
+  const check=()=>{const current=getToday();if(current!==date){date=current;onChange();}};
+  document.addEventListener('visibilitychange',check);window.addEventListener('focus',check);
+  const interval=window.setInterval(check,60_000);
+  return ()=>{window.clearInterval(interval);document.removeEventListener('visibilitychange',check);window.removeEventListener('focus',check);};
+}

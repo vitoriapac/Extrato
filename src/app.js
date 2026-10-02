@@ -111,7 +111,7 @@ import {createReplanService} from './application/planning/replan-service.js';
 import {createReplanController} from './application/planning/replan-controller.js';
 import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
 import {buildNextBestAction} from './application/diagnostics/build-next-best-action.js';
-import {createDailyExecutionController} from './ui/controllers/daily-execution-controller.js';
+import {createDailyExecutionController,watchDailyExecutionDate} from './ui/controllers/daily-execution-controller.js';
 import {renderDailyExecution} from './ui/renderers/daily-execution-renderer.js';
 import {ADAPTIVE_PLANNING_VERSION,applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
 import {renderAdaptiveAllocationAdvice,renderExamPhase,renderExamPhaseCompact} from './ui/renderers/adaptive-planning-renderer.js';
@@ -1368,7 +1368,7 @@ function startPlannedActivity(itemId){
   if(item.topicId){const candidate=intelligenceCandidates().find(candidate=>candidate.topicId===item.topicId);if(!candidate||candidate.archived||candidate.blockedPrerequisites.length){showToast("Esta atividade aguarda pré-requisitos ou possui um tópico arquivado. Recalcule o plano.");return;}}
   Object.assign(state.activeTimer,{
     subjectId:item.subjectId||null,topicId:item.topicId||null,type:item.type||'study',
-    planItemId:item.id,targetMinutes:item.plannedMinutes
+    planItemId:item.id,targetMinutes:Math.ceil(execution.remainingSeconds/60)
   });
   item.executedSeconds=execution.executedSeconds;
   item.status='in_progress';
@@ -1379,7 +1379,7 @@ function startPlannedActivity(itemId){
   renderPlanoHoje();
   activateTab('dashboard');
   document.getElementById('studyTimerDisplay')?.scrollIntoView({behavior:'smooth',block:'center'});
-  showToast(`Atividade iniciada · meta de ${formatPlanMinutes(item.plannedMinutes)}.`);
+  showToast(`Atividade iniciada · meta de ${formatPlanMinutes(state.activeTimer.targetMinutes)}.`);
 }
 function currentTimerSeconds(){
   const active=state.activeTimer||{};
@@ -4516,7 +4516,7 @@ function renderRecommendationImpact(model){
   const reasons=model.reasons.length?`<small class="recommendation-impact-reasons">${escapeHtml(model.reasons.join(' · '))}</small>`:'';
   return `<section class="recommendation-impact ${escapeAttr(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml(model.title)}</strong><small>Confiança ${escapeHtml((model.confidenceLabel||'não calculada').toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics||'<p>Indicadores comparáveis ainda indisponíveis.</p>'}</div>${reasons}</section>`;
 }
-function refreshStudyRecommendationItems(){
+function refreshStudyRecommendationItems({recordHistory=true}={}){
   const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
   const candidates=intelligenceCandidates();
   const previous=new Map(currentStudyRecommendations.map(item=>[item.id,item]));
@@ -4529,7 +4529,7 @@ function refreshStudyRecommendationItems(){
       :(()=>{const reusable=reusableRecommendationRecord(state.recommendationHistory,item,todayISO(),state.examBlueprint.activeExamTags||[]);return createRecommendationPresentation(item,{id:reusable?.id||uid('recommendation'),shownAt:reusable?.createdAt||nowISO(),algorithmVersion:PRIORITY_ALGORITHM_VERSION})})();
     return {...presentation,activeExamTags:[...(state.examBlueprint.activeExamTags||[])]};
   });
-  if(syncRecommendationHistory(state.recommendationHistory,currentStudyRecommendations,{now:nowISO(),today:todayISO(),idGenerator:uid,activeExamTags:state.examBlueprint.activeExamTags||[]})){scheduleSave();renderRecommendationHistorySummary()}
+  if(recordHistory&&syncRecommendationHistory(state.recommendationHistory,currentStudyRecommendations,{now:nowISO(),today:todayISO(),idGenerator:uid,activeExamTags:state.examBlueprint.activeExamTags||[]})){scheduleSave();renderRecommendationHistorySummary()}
   return {availableMinutes,candidates};
 }
 function renderPendingRecommendationOutcome(){
@@ -4701,7 +4701,7 @@ const dailyExecutionController=createDailyExecutionController({
 });
 function renderDailyExecutionCard(){
   const container=document.getElementById('dailyExecutionDashboard');if(!container)return;
-  refreshStudyRecommendationItems();
+  refreshStudyRecommendationItems({recordHistory:false});
   container.innerHTML=renderDailyExecution(dailyExecutionController.build(),{escapeHtml,escapeAttr,formatMinutes:formatPlanMinutes,timer:{active:hasStartedStudyTimer(),planItemId:state.activeTimer?.planItemId}});
 }
 document.addEventListener('click',event=>{
@@ -5400,6 +5400,7 @@ function persistAndRender(){
   scheduleSave();
 }
 function renderAll(){ render(); }
+watchDailyExecutionDate({document,window,getToday:todayISO,onChange:()=>render('active')});
 
 /* ===== ATALHOS DE TECLADO ===== */
 navigationController.registerShortcuts();

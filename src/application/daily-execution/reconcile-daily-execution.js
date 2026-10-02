@@ -5,7 +5,7 @@ import {parseLocalDate} from '../../core/date-utils.js';
 
 export const EXCLUDED_DAILY_STATUSES=new Set(['skipped','replaced','discarded','deferred']);
 export const dailyActivityType=type=>type==='theory'||type==='prerequisite'?'study':type||'study';
-export const sessionMatchesDailyItem=(session,item)=>Boolean(item&&session.subjectId===item.subjectId&&(!item.topicId||session.topicId===item.topicId)&&dailyActivityType(session.type)===dailyActivityType(item.type));
+export const sessionMatchesDailyItem=(session,item)=>Boolean(item&&(!item.subjectId||session.subjectId===item.subjectId)&&(!item.topicId||session.topicId===item.topicId)&&(!item.type||dailyActivityType(session.type)===dailyActivityType(item.type)));
 const seconds=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
 const dateOf=session=>typeof session.date==='string'&&parseLocalDate(session.date)?session.date:localDateFromTimestamp(session.endedAt||session.startedAt||session.createdAt);
 const scopeKey=tags=>JSON.stringify(normalizeExamTags(tags));

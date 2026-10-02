@@ -308,6 +308,12 @@ Cada novo item confirmado registra prioritySnapshot, com score, fatores, razões
 
 ## Explicações e consequências das decisões
 
+### Execução diária compartilhada
+
+O modelo em `application/daily-execution` consome planos e sessões existentes, o catálogo e a Próxima Melhor Ação. Crédito de atividade exige vínculo e compatibilidade de disciplina, tópico e tipo; tempo adicional permanece distinto. O card Hoje na Visão Geral e o resumo na aba Hoje usam esse modelo. `daily-execution-controller` revalida o contexto antes de iniciar pelo fluxo de cronômetro existente. Editar ou excluir sessões recalcula o crédito, sem reescrever registros históricos.
+
+A leitura global do card não registra recomendações como apresentadas. O histórico continua pertencendo aos fluxos de apresentação e decisão existentes; restaurar um backup não fabrica decisões ao atualizar um card oculto. A data local é verificada ao retomar a janela e a cada minuto. O dia não é regenerado silenciosamente após Recovery; atividades da versão semanal anterior são sinalizadas para revisão. Consulte [Recovery e execução diária](docs/RECOVERY-EXECUTION.md).
+
 build-recommendation-explanation.js fornece ação, razões, evidências e consequências operacionais. As apresentações guardam sua explicação original; a decisão guarda explanationSnapshot, evidenceSnapshot, suggestedAction e expectedImpact junto ao algoritmo e instante. Histórico de decisões e adaptações renderizam os valores capturados, sem consultar métricas atuais. Consequências descrevem cronômetro, revisão, vínculo ao plano e redistribuição confirmável; não são previsão de ganho de domínio, prontidão ou nota. Registros legados sem explicação detalhada não recebem uma reconstrução retroativa.
 
 ### Metas pessoais e sinais de preparação
