@@ -39,7 +39,8 @@ test('planejamento segura inversão por 14 dias e admite deterioração forte',(
   const blocked=buildAdaptivePlanningAdvice({plan,candidates,history,today:'2026-09-20'});
   assert.equal(blocked.state,'stable');assert.match(blocked.reason,/duas semanas/);
   const severe=[{...candidates[0],trend:{direction:'down',state:'strong_down',delta:-15}},candidates[1]];
-  const exception=buildAdaptivePlanningAdvice({plan,candidates:severe,history,today:'2026-09-20'});
+  const measuredHistory=history.map(item=>({...item,explanationSnapshot:{action:{from:{subjectId:'a',mastery:55}}}}));
+  const exception=buildAdaptivePlanningAdvice({plan,candidates:severe,history:measuredHistory,today:'2026-09-20'});
   assert.equal(exception.state,'proposal');assert.match(exception.rationale.join(' '),/Exceção/);
   const after=buildAdaptivePlanningAdvice({plan,candidates,history,today:'2026-09-24'});
   assert.equal(after.state,'proposal');assert.ok(after.transferMinutes>=15&&after.transferMinutes<=40);

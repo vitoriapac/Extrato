@@ -115,5 +115,5 @@ test('histórico de recomendação registra versões independentes da prova e da
   assert.deepEqual(record.algorithmVersions,{priority:PRIORITY_ALGORITHM_VERSION,examIntelligence:EXAM_INTELLIGENCE_VERSION});
   assert.equal(snapshot.algorithmVersion,PRIORITY_ALGORITHM_VERSION);
   assert.equal(snapshot.examIntelligenceVersion,EXAM_INTELLIGENCE_VERSION);
-  assert.equal(ADAPTIVE_PLANNING_VERSION,4);
+  assert.equal(ADAPTIVE_PLANNING_VERSION,5);
 });
