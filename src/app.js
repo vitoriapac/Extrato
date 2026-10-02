@@ -110,6 +110,7 @@ import {createDailyPlanService} from './application/planning/daily-plan-service.
 import {createReplanService} from './application/planning/replan-service.js';
 import {createReplanController} from './application/planning/replan-controller.js';
 import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
+import {buildNextBestAction} from './application/diagnostics/build-next-best-action.js';
 import {ADAPTIVE_PLANNING_VERSION,applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
 import {renderAdaptiveAllocationAdvice,renderExamPhase,renderExamPhaseCompact} from './ui/renderers/adaptive-planning-renderer.js';
 import {renderExamBlueprintConfigView} from './ui/renderers/exam-blueprint-config-renderer.js';
@@ -4697,7 +4698,7 @@ function renderPlanoHoje(){
   const priorities=computeStudyPriorities();
   const availableMinutes=Math.max(0,Math.round(metaHoursToday()*60));
   const plan=ensureTodayDailyStudyPlan(priorities,availableMinutes);
-  const todayModel=buildTodayViewModel({date:todayISO(),availableMinutes,plan,priorities,pastPlans:state.dailyPlans.filter(row=>row.date>=startOfWeek(todayISO()))});
+  const todayModel=buildTodayViewModel({date:todayISO(),availableMinutes,plan,priorities,pastPlans:state.dailyPlans.filter(row=>row.date>=startOfWeek(todayISO())),sessions:state.studySessions,subjects:state.subjects,activeExamTags:state.examBlueprint.activeExamTags||[],activePlan:latestStudyPlan(),nextBestAction:buildNextBestAction({recommendations:currentStudyRecommendations,activePlan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity()})});
   renderTodayExecutionSummary(todayModel);
 
   if(!plan&&priorities.length===0){
