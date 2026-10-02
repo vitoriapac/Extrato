@@ -34,8 +34,8 @@ import {renderProjectionScenarioResult} from './ui/performance/achievement-proje
 import {createPerformanceController} from './ui/controllers/performance-controller.js';
 import {createDiagnosisController} from './ui/controllers/diagnosis-controller.js';
 import {createProjectionController} from './ui/controllers/projection-controller.js';
-import {prepareRecoveryApplication} from './application/recovery/prepare-recovery-application.js';
-import {buildRecoveryDecisionRecord} from './application/recovery/build-recovery-decision-record.js';
+import {createRecoveryController} from './ui/controllers/recovery-controller.js';
+import {createRecoveryStateCommitter} from './application/recovery/recovery-state-committer.js';
 import {buildPerformanceSubjectComparison} from './application/performance/build-performance-subject-comparison.js';
 import {renderNextBestAction} from './ui/renderers/next-best-action-renderer.js';
 import {createAnalysisContext,analysisContextInScope} from './application/navigation/analysis-context.js';
@@ -778,6 +778,8 @@ async function loadState(){
 let saveTimeout;
 let saveQueue=Promise.resolve();
 let pendingSave=null;
+let stateTransactionActive=false;
+let transactionDeferredSave=false;
 async function sha256(value){
   if(!window.crypto?.subtle) return null;
   const bytes=new TextEncoder().encode(value);
@@ -829,12 +831,25 @@ function enqueueSave(serialized,previousRaw){
   return saveQueue;
 }
 function scheduleSave(){
+  if(stateTransactionActive){state.updatedAt=nowISO();transactionDeferredSave=true;return}
   const previousRaw=readLocalState(STORAGE_KEY);
   state.updatedAt = nowISO();
   const serialized=JSON.stringify(pickPersistentState(state));
   writeLocalState(serialized);
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(()=>enqueueSave(serialized,previousRaw),350);
+}
+function enqueueStateTransaction(task){
+  clearTimeout(saveTimeout);saveTimeout=null;
+  const flush=enqueueSave(JSON.stringify(pickPersistentState(state)),readLocalState());
+  const result=flush.then(async()=>{
+    stateTransactionActive=true;
+    try{return await task()}finally{
+      stateTransactionActive=false;
+      if(transactionDeferredSave){transactionDeferredSave=false;scheduleSave()}
+    }
+  });
+  saveQueue=result.catch(()=>{});return result;
 }
 async function saveState(serialized=JSON.stringify(pickPersistentState(state)),previousRaw=null){
   try{
@@ -3560,27 +3575,7 @@ function confirmStudyPlan(){
   if(entry&&confirmed){entry.status='applied';entry.planId=confirmed.id;entry.decidedAt=nowISO()}
   studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('Plano semanal confirmado e salvo.')
 }
-function revertAdaptivePlanningDecision(id){
-  const entry=state.adaptivePlanningHistory.find(item=>item.id===id&&item.status==='applied');
-  const active=latestStudyPlan();
-  if(!entry||!active||active.id!==entry.planId||!entry.sourceMixBefore||!entry.targetMixBefore)return;
-  const source=active.subjects.find(item=>item.subjectId===entry.sourceSubjectId),target=active.subjects.find(item=>item.subjectId===entry.targetSubjectId);
-  const sourceItem=active.items.find(item=>item.topicId===entry.sourceTopicId),targetItem=active.items.find(item=>item.topicId===entry.targetTopicId);
-  if(!source||!target||!sourceItem||!targetItem||source.minutes!==entry.sourceAfter||target.minutes!==entry.targetAfter||sourceItem.minutes!==entry.sourceItemBefore-entry.minutes||targetItem.minutes!==entry.targetItemBefore+entry.minutes){showToast('O plano mudou desde esse ajuste. Calcule uma nova proposta para redistribuir a carga.');return}
-  const restored=structuredClone(active);
-  restored.subjects.find(item=>item.subjectId===entry.sourceSubjectId).minutes=entry.sourceBefore;
-  restored.subjects.find(item=>item.subjectId===entry.targetSubjectId).minutes=entry.targetBefore;
-  const restoredSource=restored.items.find(item=>item.topicId===entry.sourceTopicId),restoredTarget=restored.items.find(item=>item.topicId===entry.targetTopicId);
-  restoredSource.minutes=entry.sourceItemBefore;restoredTarget.minutes=entry.targetItemBefore;
-  restoredSource.activityMix=structuredClone(entry.sourceMixBefore);restoredTarget.activityMix=structuredClone(entry.targetMixBefore);
-  restored.maintenanceMinutes=restored.items.filter(item=>item.covered).reduce((sum,item)=>sum+item.minutes,0);
-  restored.adaptiveAdvice=null;restored.adaptiveHistoryId=null;
-  captureReadinessBeforeStrategy('Antes de reverter uma redistribuição do plano');
-  const confirmed=studyPlanService.confirm(restored);
-  if(!confirmed)return;
-  entry.status='reverted';entry.revertedAt=nowISO();entry.reversionPlanId=confirmed.id;
-  dailyPlanPreview=null;studyPlanPreview=null;scheduleSave();renderStudyPlanBuilder();showToast('A redistribuição foi revertida em uma nova versão do plano semanal.');
-}
+async function revertAdaptivePlanningDecision(id){return feedbackRecoveryResult(await recoveryController.revert(id))}
 function latestStudyPlan(){return studyPlanService.getActive()}
 function calculateDailyPlanPreview(){
   const studyPlan=latestStudyPlan();if(!studyPlan)return;
@@ -4975,24 +4970,18 @@ function currentAchievementProjection(metrics=computeApprovalMetrics(),readiness
   return projectionController.current(metrics,readiness,candidates);
 }
 
-function applyConfirmedRecoveryPlan(displayedSignature){
-  if(IS_DEMO_MODE){showToast('A recuperação real fica indisponível durante a demonstração.');return false}
-  const before=latestStudyPlan(),trajectory=projectionController.current().model,
-    currentPreview=projectionController.recovery(trajectory),activeExamTags=state.examBlueprint.activeExamTags||[];
-  const application=prepareRecoveryApplication({displayedSignature,currentPreview,currentPlan:before,activeExamTags});
-  if(application.state!=='ready'){showToast(application.reason||'Atualize a prévia antes de aplicar a recuperação.');return false}
-  const timestamp=nowISO(),draft=buildRecoveryDecisionRecord({application,beforePlan:before,confirmedPlanId:'pending-plan',
-    activeExamTags,createdAt:timestamp,idGenerator:uid,
-    explanationSnapshot:buildRecommendationExplanation({from:currentPreview.from,to:currentPreview.to,transferMinutes:currentPreview.transferMinutes,rationale:currentPreview.explanation},{createdAt:timestamp,weeklyPlannedMinutes:before.weeklyPlannedMinutes,weeklyAvailableMinutes:before.weeklyAvailableMinutes})});
-  if(!draft){showToast('Não foi possível validar a redistribuição completa. O planejamento não foi alterado.');return false}
-  const readinessBefore=createReadinessSnapshot({id:uid('readiness'),date:todayISO(),savedAt:timestamp,captureKind:'before-strategy-change',
-    reason:'Antes de aplicar um plano de recuperação',eventKey:uid('readiness-event'),examPhase:recordedExamPhase(),activeExamTags,metrics:readinessFactors(computeApprovalMetrics())});
-  const confirmed=studyPlanService.confirm({...application.plan,adaptiveAdvice:null,adaptiveHistoryId:null});
-  if(!confirmed){showToast('Não foi possível salvar o novo plano. O planejamento anterior foi preservado.');return false}
-  draft.planId=confirmed.id;state.adaptivePlanningHistory.push(draft);upsertReadinessSnapshot(state.readinessSnapshots,readinessBefore);
-  studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();
+const recoveryController=createRecoveryController({getState:()=>state,getPlan:latestStudyPlan,
+  getActiveExamTags:()=>state.examBlueprint.activeExamTags||[],getPreview:trajectory=>projectionController.recovery(trajectory),isDisabled:()=>IS_DEMO_MODE,
+  services:{clock:appClock,idGenerator:uid,buildReadinessSnapshot:(_before,timestamp,reason)=>buildReadinessBeforeStrategySnapshot(reason,timestamp),
+    commitState:createRecoveryStateCommitter({getState:()=>state,publish:value=>{Object.assign(state,value)},
+      persist:serialized=>StorageManager.set(STORAGE_KEY,serialized),runExclusive:enqueueStateTransaction,clock:appClock,
+      onCommitted:value=>{flashSaved();STATE_CHANNEL?.postMessage({source:INSTANCE_ID,serialized:JSON.stringify(pickPersistentState(value)),updatedAt:value.updatedAt})}})}});
+async function applyConfirmedRecoveryPlan(signature){return feedbackRecoveryResult(await recoveryController.apply(signature))}
+function feedbackRecoveryResult(result){
+  if(result.status==='rejected'){showToast(result.reason);return false}
+  studyPlanPreview=null;dailyPlanPreview=null;
   render('desempenho');renderStudyTrack32Insights();renderStudyPlanBuilder();renderApprovalDashboard();
-  showToast('Plano de recuperação confirmado. A carga semanal foi preservada.');return true;
+  showToast(result.status==='applied'?'Plano de recuperação confirmado. A carga semanal foi preservada.':'A redistribuição foi revertida em uma nova versão do plano semanal. Atividades realizadas foram preservadas.');return true;
 }
 
 
@@ -5120,7 +5109,8 @@ function toggleWeeklyPriority(id,checked){weeklyCloseController.toggle(id,checke
 function confirmWeeklyCloseActions(){if(!weeklyCloseController.apply())showToast('A capacidade ou as prioridades mudaram. Confira a prévia atualizada antes de confirmar.');}
 function recordedExamPhase(){return resolveExamPhase(state.examDate?diasParaRevisao(state.examDate):null)}
 function saveCurrentReadinessSnapshot({captureKind='weekly-close',reason=null,eventKey=null}={}){const date=todayISO(),savedAt=nowISO(),snapshot=createReadinessSnapshot({id:uid('readiness'),date,savedAt,captureKind,reason,eventKey,examPhase:recordedExamPhase(),activeExamTags:state.examBlueprint?.activeExamTags||[],metrics:readinessFactors(computeApprovalMetrics())});return upsertReadinessSnapshot(state.readinessSnapshots,snapshot)}
-function captureReadinessBeforeStrategy(reason){return saveCurrentReadinessSnapshot({captureKind:'before-strategy-change',reason,eventKey:uid('readiness-event')})}
+function buildReadinessBeforeStrategySnapshot(reason,timestamp=nowISO()){return createReadinessSnapshot({id:uid('readiness'),date:todayISO(),savedAt:timestamp,captureKind:'before-strategy-change',reason,eventKey:uid('readiness-event'),examPhase:recordedExamPhase(),activeExamTags:state.examBlueprint?.activeExamTags||[],metrics:readinessFactors(computeApprovalMetrics())})}
+function captureReadinessBeforeStrategy(reason){return upsertReadinessSnapshot(state.readinessSnapshots,buildReadinessBeforeStrategySnapshot(reason))}
 weeklyCloseController=createWeeklyCloseController({getModel:()=>currentStudyTrackModel,getState:()=>state,buildProposal:buildWeeklyCloseActionProposal,createSnapshot:(model,options)=>createWeeklyCloseSnapshot(model,{...options,examPhase:recordedExamPhase()}),upsertSnapshot:upsertWeeklyCloseSnapshot,clock:{today:todayISO,nowISO,addDays},idGenerator:uid,getDailyCapacity:date=>metaHoursForDate(date)*60,onChanged:renderStudyTrack32Insights,onBeforeApply:()=>{saveCurrentReadinessSnapshot();captureReadinessBeforeStrategy('Antes de aplicar as prioridades do fechamento')},onApplied:()=>{scheduleSave();renderApprovalDashboard();renderPlanoHoje();showToast('Prioridades aceitas aplicadas ao plano diário.')}})
 function saveWeeklyCloseSnapshot(){const snapshot=createWeeklyCloseSnapshot(currentStudyTrackModel,{savedAt:nowISO(),id:uid('weekly-close'),examPhase:recordedExamPhase()});if(!snapshot)return showToast('Ainda não há dados suficientes para salvar o fechamento.');if(!upsertWeeklyCloseSnapshot(state.weeklyCloseSnapshots,snapshot))return showToast('Fechamento já salvo com os mesmos dados.');saveCurrentReadinessSnapshot();scheduleSave();renderApprovalDashboard();document.querySelector('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]')?.focus();showToast('Fechamento semanal salvo como retrato deste período.')}
 function renderTopicRetentionDashboard(){
@@ -5276,7 +5266,7 @@ function renderPerformance(){
     achievementProjection:achievement?.model||null,
     achievementHistory:achievementProjectionHistory(state.projectionSnapshots,activeExamTags,today),
     achievementCapacityMinutes:achievement?.weeklyCapacityMinutes||0,
-    recoveryPlan:achievement?(()=>{const plan=projectionController.recovery(achievement.model);return IS_DEMO_MODE?{...plan,canApply:false}:plan})():null,
+    recoveryPlan:achievement?recoveryController.preview(achievement.model):null,
     projectionSnapshots:state.projectionSnapshots,readinessSnapshots:state.readinessSnapshots,
     readiness:performanceViewState.section==='overview'?readinessResult(computeApprovalMetrics()):null,
     blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,
@@ -5436,7 +5426,7 @@ if(backToTopBtn){
   });
   syncBackToTop();
 }
-registerApplicationLifecycle({window,onBeforeUnload:()=>{if(!TEST_MODE&&!suppressBeforeUnloadSave)writeLocalState(JSON.stringify(pickPersistentState(state)))},onResponsiveChange:()=>{renderQuestoes();renderSimulados();renderStudySessionsHistory();renderAgenda();renderCalendar()}});
+registerApplicationLifecycle({window,onBeforeUnload:()=>{if(!TEST_MODE&&!suppressBeforeUnloadSave&&!stateTransactionActive)writeLocalState(JSON.stringify(pickPersistentState(state)))},onResponsiveChange:()=>{renderQuestoes();renderSimulados();renderStudySessionsHistory();renderAgenda();renderCalendar()}});
 registerMobileInputVisibility({window,document});
 
 setCalendarMobileView('month');

@@ -4,6 +4,8 @@ import {buildRecoveryPlan} from '../../src/application/recovery/build-recovery-p
 import {applyRecoveryPlan} from '../../src/application/recovery/apply-recovery-plan.js';
 import {validateRecoveryAllocation} from '../../src/application/recovery/recovery-invariants.js';
 import {createRecoveryStateCommitter} from '../../src/application/recovery/recovery-state-committer.js';
+import {revertRecoveryPlan} from '../../src/application/recovery/revert-recovery-plan.js';
+import {createRecoveryController} from '../../src/ui/controllers/recovery-controller.js';
 
 function setup(overrides={}){
   const plan={id:'original',state:'proposal',weeklyPlannedMinutes:180,weeklyAvailableMinutes:180,examDate:'2026-12-01',activeExamTags:['bb'],
@@ -54,8 +56,14 @@ for(const [name,services,reason] of [
 test('falha de persistência não publica plano, decisão ou snapshot',async()=>{
   for(const persist of [async()=>false,async()=>{throw Error('quota')}]){
     const f=setup({committer:{persist}}),before=structuredClone(f.getState());
-    assert.equal((await f.apply()).reasonCode,'storage_failure');assert.deepEqual(f.getState(),before);
+    assert.ok(['storage_failure','storage_restore_failure'].includes((await f.apply()).reasonCode));assert.deepEqual(f.getState(),before);
   }
+});
+
+test('backend que grava antes de lançar erro é restaurado sem publicar Recovery',async()=>{
+  const writes=[];const f=setup({committer:{persist:async value=>{writes.push(JSON.parse(value));if(writes.length===1)throw Error('after write');return true}}});
+  const before=structuredClone(f.getState());assert.equal((await f.apply()).reasonCode,'storage_failure');
+  assert.deepEqual(f.getState(),before);assert.equal(writes.at(-1).studyPlans.length,1);assert.equal(writes.at(-1).adaptivePlanningHistory.length,1);
 });
 
 test('gravação pendente não altera memória; edição concorrente cancela e restaura dados atuais',async()=>{
@@ -74,4 +82,74 @@ test('invariantes rejeitam alterações reais que a lista de apresentação não
   assert.equal(validateRecoveryAllocation({before,after,fromSubjectId:'source',toSubjectId:'target',minutes:f.preview.transferMinutes,activeExamTags:['bb']}).valid,false);
   after.items[0].capacityMinutes=before.items[0].capacityMinutes;after.examDate='2026-11-01';
   assert.equal(validateRecoveryAllocation({before,after,fromSubjectId:'source',toSubjectId:'target',minutes:f.preview.transferMinutes,activeExamTags:['bb']}).reasonCode,'scope_changed');
+});
+
+test('reversão restaura alocações em nova versão e preserva execução posterior e auditoria original',async()=>{
+  const f=setup(),applied=await f.apply();
+  f.getState().studySessions.push({id:'executed-after-recovery',durationSeconds:3600,subjectId:'target',topicId:'target-topic'});
+  f.getState().dailyPlans[0].items.push({id:'executed-item',status:'completed',executedSeconds:3600});
+  const before=structuredClone(f.getState());
+  const result=await revertRecoveryPlan({state:f.getState(),currentPlan:applied.plan,decisionId:applied.decisionRecord.id,
+    activeExamTags:['bb'],services:f.services});
+  assert.equal(result.status,'reverted');assert.deepEqual(result.plan.subjects,f.plan.subjects);
+  assert.deepEqual(result.plan.items.map(({topicId,minutes,activityMix})=>({topicId,minutes,activityMix})),f.plan.items.map(({topicId,minutes,activityMix})=>({topicId,minutes,activityMix})));
+  assert.equal(result.plan.weeklyAvailableMinutes,f.plan.weeklyAvailableMinutes);
+  assert.deepEqual(f.getState().studySessions,before.studySessions);assert.deepEqual(f.getState().dailyPlans,before.dailyPlans);
+  assert.deepEqual(f.getState().studyPlans.slice(0,-1),before.studyPlans);
+  assert.equal(result.decisionRecord.originalDecisionId,applied.decisionRecord.id);assert.ok(result.decisionRecord.revertReason);
+  assert.deepEqual(result.decisionRecord.explanationSnapshot,applied.decisionRecord.explanationSnapshot);
+});
+
+test('reversão recusa plano posterior, escopo diferente e não reaplica decisão revertida',async()=>{
+  const f=setup(),applied=await f.apply(),before=structuredClone(f.getState());
+  const args={state:f.getState(),currentPlan:applied.plan,decisionId:applied.decisionRecord.id,activeExamTags:['bb'],services:f.services};
+  assert.equal((await revertRecoveryPlan({...args,currentPlan:{...applied.plan,id:'newer'}})).reasonCode,'stale_plan');
+  assert.equal((await revertRecoveryPlan({...args,activeExamTags:['caixa']})).reasonCode,'scope_changed');
+  assert.deepEqual(f.getState(),before);
+  assert.equal((await revertRecoveryPlan(args)).status,'reverted');
+  assert.equal((await revertRecoveryPlan({...args,state:f.getState(),currentPlan:f.getState().studyPlans.at(-1)})).reasonCode,'stale_plan');
+});
+
+test('falha de gravação durante reversão preserva plano aplicado e decisão',async()=>{
+  const f=setup(),applied=await f.apply(),before=structuredClone(f.getState());
+  const commitState=createRecoveryStateCommitter({getState:f.getState,publish:f.setState,clock:f.services.clock,persist:async()=>false});
+  const result=await revertRecoveryPlan({state:f.getState(),currentPlan:applied.plan,decisionId:applied.decisionRecord.id,
+    activeExamTags:['bb'],services:{...f.services,commitState}});
+  assert.equal(result.reasonCode,'storage_failure');assert.deepEqual(f.getState(),before);
+});
+
+test('controller bloqueia Demo e duplo envio durante gravação, liberando nova tentativa',async()=>{
+  let release;const f=setup({committer:{persist:()=>new Promise(resolve=>{release=resolve})}});
+  let disabled=true;
+  const controller=createRecoveryController({getState:f.getState,getPlan:()=>f.plan,getActiveExamTags:()=>['bb'],
+    getPreview:()=>f.preview,services:f.services,isDisabled:()=>disabled});
+  assert.equal(controller.preview().canApply,false);assert.equal((await controller.apply(f.preview.signature)).reasonCode,'demo_mode');
+  disabled=false;const signature=controller.preview().signature,first=controller.apply(signature);
+  await Promise.resolve();assert.equal((await controller.apply(signature)).reasonCode,'operation_pending');
+  release(false);assert.equal((await first).reasonCode,'storage_failure');
+  assert.equal((await controller.apply('stale')).reasonCode,'stale_preview');
+});
+
+test('controller invalida prévia quando meta muda mesmo que a alocação permaneça equivalente',async()=>{
+  const f=setup(),controller=createRecoveryController({getState:f.getState,getPlan:()=>f.plan,getActiveExamTags:()=>['bb'],getPreview:()=>f.preview,services:f.services});
+  const signature=controller.preview().signature;f.getState().metas.metaAprovacao=85;
+  assert.equal((await controller.apply(signature)).reasonCode,'stale_preview');assert.equal(f.saved.length,0);
+});
+
+test('confirmação que modifica alocação preparada é rejeitada antes da gravação',async()=>{
+  const f=setup({services:{confirmPlan:(proposal,draft)=>{const plan=structuredClone(proposal);plan.id='changed';plan.items[0].minutes-=1;plan.items[1].minutes+=1;draft.studyPlans.push(plan);return plan}}}),before=structuredClone(f.getState());
+  assert.equal((await f.apply()).reasonCode,'confirmation_changed_allocation');assert.deepEqual(f.getState(),before);assert.equal(f.saved.length,0);
+});
+
+test('mudança enquanto aguarda a fila cancela Recovery antes de persistir a proposta',async()=>{
+  let start;const f=setup({committer:{runExclusive:task=>new Promise(resolve=>{start=()=>resolve(task())})}});
+  const operation=f.apply();f.getState().examDate='2026-11-01';start();
+  assert.equal((await operation).reasonCode,'state_changed');assert.equal(f.saved.length,0);assert.equal(f.getState().studyPlans.length,1);
+});
+
+test('reversão da adaptação convencional continua disponível no armazenamento isolado da Demo',async()=>{
+  const f=setup(),applied=await f.apply();delete f.getState().adaptivePlanningHistory.at(-1).decisionType;
+  const controller=createRecoveryController({getState:f.getState,getPlan:()=>f.getState().studyPlans.at(-1),getActiveExamTags:()=>['bb'],getPreview:()=>f.preview,services:f.services,isDisabled:()=>true});
+  assert.equal((await controller.revert(applied.decisionRecord.id)).status,'reverted');
+  assert.deepEqual(f.getState().studyPlans.at(-1).subjects,f.plan.subjects);
 });

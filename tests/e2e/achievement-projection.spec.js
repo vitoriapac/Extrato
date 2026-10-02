@@ -80,6 +80,38 @@ test('Recovery exige confirmação, revalida e registra plano e decisão sem ree
   expect(after.history).toHaveLength(before.history+1);expect(after.history.at(-1)).toMatchObject({decisionType:'recovery',status:'applied',planId:after.planId,totalMinutesBefore:before.budget,totalMinutesAfter:before.budget});
   expect(after.backup.valid,after.backup.message).toBe(true);
   await activateTab(page,'dashboard');await expect(page.locator('#strategicTimelineDashboard')).toContainText('Plano de recuperação aplicado');
+  const decision=after.history.at(-1);
+  await page.locator('#timerSubjectSelect').selectOption(decision.targetSubjectId);
+  await page.locator('#timerTopicSelect').selectOption(decision.targetTopicId);
+  await page.locator('#timerTypeSelect').selectOption('study');await page.locator('#timerStartBtn').click();
+  await page.clock.fastForward('01:00:00');await page.locator('#timerFinishBtn').click();
+  await expect(page.locator('#sessionModalOverlay')).toBeVisible();await page.locator('#sessionModalSaveBtn').click();
+  await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().studySessions.length)).toBe(before.sessions.length+1);
+  const executed=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState();return {sessions:structuredClone(state.studySessions),dailyPlans:structuredClone(state.dailyPlans),plans:structuredClone(state.studyPlans)}});
+  expect(executed.sessions.at(-1).durationSeconds).toBeGreaterThanOrEqual(3600);
+  await activateTab(page,'metas');await page.locator('#adaptivePlanningHistory > details > summary').click();
+  await page.locator('#adaptivePlanningHistory').getByRole('button',{name:'Reverter ajuste'}).click();
+  await expect(page.locator('#toast')).toContainText('A redistribuição foi revertida');
+  const reverted=await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=api.getState();return {plan:structuredClone(state.studyPlans.at(-1)),plans:structuredClone(state.studyPlans),sessions:structuredClone(state.studySessions),dailyPlans:structuredClone(state.dailyPlans),decision:structuredClone(state.adaptivePlanningHistory.at(-1)),valid:api.validateBackupData(JSON.parse(JSON.stringify(state))).valid,saved:JSON.parse(localStorage.getItem('bb-premium-study-data'))}});
+  expect(reverted.plan.id).not.toBe(after.planId);expect(reverted.plan.subjects).toEqual(executed.plans.find(plan=>plan.id===before.planId).subjects);
+  expect(reverted.plans.slice(0,-1)).toEqual(executed.plans);expect(reverted.sessions).toEqual(executed.sessions);expect(reverted.dailyPlans).toEqual(executed.dailyPlans);
+  expect(reverted.decision).toMatchObject({status:'reverted',originalDecisionId:decision.id,reversionPlanId:reverted.plan.id});
+  expect(reverted.valid).toBe(true);expect(reverted.saved.studyPlans.at(-1).id).toBe(reverted.plan.id);
+  await activateTab(page,'dashboard');await expect(page.locator('#strategicTimelineDashboard')).toContainText('Plano de recuperação revertido');
+});
+
+test('falha de persistência do Recovery preserva estado e permite repetir a confirmação',async({page})=>{
+  await page.clock.install({time:new Date('2026-10-01T12:00:00-03:00')});
+  await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(node=>node.remove());
+  await page.evaluate(state=>{const api=window.__EXTRATO_TEST__;api.setState(state);api.renderAll()},generateDemoData({today:'2026-10-01'}));
+  await activateTab(page,'desempenho');
+  const before=await page.evaluate(async()=>{const api=window.__EXTRATO_TEST__;await api.settleSaves();window.__recoveryOriginalSet=api.StorageManager.set;api.StorageManager.set=async()=>false;const state=api.getState();return {plans:structuredClone(state.studyPlans),history:structuredClone(state.adaptivePlanningHistory),snapshots:structuredClone(state.readinessSnapshots)}});
+  const confirm=async()=>{await page.locator('[data-recovery-preview-open]').click();await page.getByRole('dialog',{name:'Plano de recuperação'}).getByRole('button',{name:'Aplicar ao planejamento'}).click();await page.getByRole('dialog',{name:'Aplicar plano de recuperação?'}).getByRole('button',{name:'Confirmar alterações'}).click()};
+  await confirm();await expect(page.locator('#toast')).toContainText('Não foi possível salvar a operação');
+  const failed=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState();return {plans:structuredClone(state.studyPlans),history:structuredClone(state.adaptivePlanningHistory),snapshots:structuredClone(state.readinessSnapshots)}});
+  expect(failed).toEqual(before);
+  await page.evaluate(()=>{window.__EXTRATO_TEST__.StorageManager.set=window.__recoveryOriginalSet;delete window.__recoveryOriginalSet});
+  await confirm();await expect(page.locator('#toast')).toContainText('Plano de recuperação confirmado');
 });
 
 test('histórico comparável mostra tendência futura distinta dos resultados observados',async({page})=>{

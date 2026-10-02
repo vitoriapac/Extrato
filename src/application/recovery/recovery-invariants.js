@@ -50,7 +50,8 @@ export function validateRecoveryState({before,after,revertedDecisionId=null}={})
   const allowed=['studyPlans','adaptivePlanningHistory','readinessSnapshots','updatedAt'];
   const strip=value=>Object.fromEntries(Object.entries(value).filter(([key])=>!allowed.includes(key)));
   if(!same(strip(before),strip(after)))return reject('protected_state_changed');
-  if(after.studyPlans.length!==before.studyPlans.length+1||!same(after.studyPlans.slice(0,-1),before.studyPlans))return reject('plan_history_changed');
+  if(after.studyPlans.length!==before.studyPlans.length+1||!same(after.studyPlans.slice(0,-1),before.studyPlans)
+    ||before.studyPlans.some(plan=>plan.id===after.studyPlans.at(-1).id))return reject('plan_history_changed');
   if(after.readinessSnapshots.length!==before.readinessSnapshots.length+1||!same(after.readinessSnapshots.slice(0,-1),before.readinessSnapshots))return reject('snapshot_history_changed');
   if(!revertedDecisionId){
     if(after.adaptivePlanningHistory.length!==before.adaptivePlanningHistory.length+1||!same(after.adaptivePlanningHistory.slice(0,-1),before.adaptivePlanningHistory))return reject('decision_history_changed');
@@ -64,5 +65,17 @@ export function validateRecoveryState({before,after,revertedDecisionId=null}={})
       if(next.status!=='reverted'||!same(clean(original),clean(next)))return reject('decision_history_changed');
     }
   }
+  return {valid:true};
+}
+
+export function validateRecoveryConfirmation({expected,confirmed,activeExamTags=[]}={}){
+  const normalizeItem=({id,studyPlanId,prioritySnapshot,topicId,...item})=>({...item,topicId:topicId||id});
+  if(!confirmed?.id||confirmed.weeklyAvailableMinutes!==expected.weeklyAvailableMinutes
+    ||confirmed.weeklyPlannedMinutes!==expected.weeklyPlannedMinutes||confirmed.examDate!==expected.examDate
+    ||tags(confirmed.activeExamTags)!==tags(activeExamTags)||!same(confirmed.subjects,expected.subjects)
+    ||!Array.isArray(confirmed.items)||!same(confirmed.items.map(normalizeItem),expected.items.map(normalizeItem)))
+    return {valid:false,reasonCode:'confirmation_changed_allocation'};
+  if(expected.items.some((item,index)=>item.prioritySnapshot&&!same(item.prioritySnapshot,confirmed.items[index].prioritySnapshot)))
+    return {valid:false,reasonCode:'priority_snapshot_changed'};
   return {valid:true};
 }
