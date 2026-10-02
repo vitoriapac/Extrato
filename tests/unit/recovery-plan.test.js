@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {buildRecoveryPlan} from '../../src/application/recovery/build-recovery-plan.js';
 import {generateDemoData} from '../../src/demo/demo-generator.js';
 import {createProjectionController} from '../../src/ui/controllers/projection-controller.js';
+import {prepareRecoveryApplication} from '../../src/application/recovery/prepare-recovery-application.js';
+import {buildRecoveryDecisionRecord} from '../../src/application/recovery/build-recovery-decision-record.js';
 
 const plan={id:'plan-1',weeklyPlannedMinutes:180,weeklyAvailableMinutes:180,activeExamTags:['bb'],
   subjects:[{subjectId:'strong',subjectName:'Informática',minutes:90},{subjectId:'weak',subjectName:'Matemática',minutes:90}],
@@ -82,4 +84,20 @@ test('capacidade hipotética do simulador só altera a cópia usada na prévia',
   assert.equal(result.totalMinutes.current,180);
   assert.equal(plan.weeklyAvailableMinutes,180);
   assert.deepEqual(plan,source);
+});
+
+test('aplicação preparada exige prévia atual, escopo conhecido e registra reversão auditável',()=>{
+  const preview=run(),before=structuredClone(plan);
+  assert.equal(preview.canApply,true);
+  const prepared=prepareRecoveryApplication({displayedSignature:preview.signature,currentPreview:preview,currentPlan:plan,activeExamTags:['bb']});
+  assert.equal(prepared.state,'ready');
+  assert.equal(prepared.plan.weeklyPlannedMinutes,plan.weeklyPlannedMinutes);
+  assert.deepEqual(plan,before);
+  const record=buildRecoveryDecisionRecord({application:prepared,beforePlan:plan,confirmedPlanId:'new-plan',
+    activeExamTags:['bb'],createdAt:'2026-10-02T12:00:00Z',idGenerator:()=> 'recovery-id'});
+  assert.equal(record.decisionType,'recovery');assert.equal(record.status,'applied');
+  assert.equal(record.totalMinutesBefore,record.totalMinutesAfter);
+  assert.equal(record.sourceItemBefore-record.minutes,prepared.plan.items.find(item=>item.id==='a').minutes);
+  assert.equal(prepareRecoveryApplication({displayedSignature:'stale',currentPreview:preview,currentPlan:plan,activeExamTags:['bb']}).state,'stale');
+  assert.equal(prepareRecoveryApplication({displayedSignature:preview.signature,currentPreview:preview,currentPlan:plan,activeExamTags:['caixa']}).state,'stale');
 });

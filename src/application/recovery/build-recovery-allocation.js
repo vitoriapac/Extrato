@@ -12,5 +12,5 @@ export function buildRecoveryAllocation(plan,advice){
   if(comparison.increased.length!==1||comparison.reduced.length!==1
     ||comparison.increased[0].deltaMinutes!==advice.transferMinutes
     ||comparison.reduced[0].deltaMinutes!==-advice.transferMinutes)return null;
-  return comparison;
+  return {...comparison,proposedPlan:proposed};
 }

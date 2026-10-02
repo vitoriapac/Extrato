@@ -34,6 +34,8 @@ import {renderProjectionScenarioResult} from './ui/performance/achievement-proje
 import {createPerformanceController} from './ui/controllers/performance-controller.js';
 import {createDiagnosisController} from './ui/controllers/diagnosis-controller.js';
 import {createProjectionController} from './ui/controllers/projection-controller.js';
+import {prepareRecoveryApplication} from './application/recovery/prepare-recovery-application.js';
+import {buildRecoveryDecisionRecord} from './application/recovery/build-recovery-decision-record.js';
 import {buildPerformanceSubjectComparison} from './application/performance/build-performance-subject-comparison.js';
 import {renderNextBestAction} from './ui/renderers/next-best-action-renderer.js';
 import {createAnalysisContext,analysisContextInScope} from './application/navigation/analysis-context.js';
@@ -4973,6 +4975,26 @@ function currentAchievementProjection(metrics=computeApprovalMetrics(),readiness
   return projectionController.current(metrics,readiness,candidates);
 }
 
+function applyConfirmedRecoveryPlan(displayedSignature){
+  if(IS_DEMO_MODE){showToast('A recuperação real fica indisponível durante a demonstração.');return false}
+  const before=latestStudyPlan(),trajectory=projectionController.current().model,
+    currentPreview=projectionController.recovery(trajectory),activeExamTags=state.examBlueprint.activeExamTags||[];
+  const application=prepareRecoveryApplication({displayedSignature,currentPreview,currentPlan:before,activeExamTags});
+  if(application.state!=='ready'){showToast(application.reason||'Atualize a prévia antes de aplicar a recuperação.');return false}
+  const timestamp=nowISO(),draft=buildRecoveryDecisionRecord({application,beforePlan:before,confirmedPlanId:'pending-plan',
+    activeExamTags,createdAt:timestamp,idGenerator:uid,
+    explanationSnapshot:buildRecommendationExplanation({from:currentPreview.from,to:currentPreview.to,transferMinutes:currentPreview.transferMinutes,rationale:currentPreview.explanation},{createdAt:timestamp,weeklyPlannedMinutes:before.weeklyPlannedMinutes,weeklyAvailableMinutes:before.weeklyAvailableMinutes})});
+  if(!draft){showToast('Não foi possível validar a redistribuição completa. O planejamento não foi alterado.');return false}
+  const readinessBefore=createReadinessSnapshot({id:uid('readiness'),date:todayISO(),savedAt:timestamp,captureKind:'before-strategy-change',
+    reason:'Antes de aplicar um plano de recuperação',eventKey:uid('readiness-event'),examPhase:recordedExamPhase(),activeExamTags,metrics:readinessFactors(computeApprovalMetrics())});
+  const confirmed=studyPlanService.confirm({...application.plan,adaptiveAdvice:null,adaptiveHistoryId:null});
+  if(!confirmed){showToast('Não foi possível salvar o novo plano. O planejamento anterior foi preservado.');return false}
+  draft.planId=confirmed.id;state.adaptivePlanningHistory.push(draft);upsertReadinessSnapshot(state.readinessSnapshots,readinessBefore);
+  studyPlanPreview=null;dailyPlanPreview=null;scheduleSave();
+  render('desempenho');renderStudyTrack32Insights();renderStudyPlanBuilder();renderApprovalDashboard();
+  showToast('Plano de recuperação confirmado. A carga semanal foi preservada.');return true;
+}
+
 
 function gerarDiagnosticoAprovacao(metrics){
   const m=metrics||computeApprovalMetrics();
@@ -5254,7 +5276,7 @@ function renderPerformance(){
     achievementProjection:achievement?.model||null,
     achievementHistory:achievementProjectionHistory(state.projectionSnapshots,activeExamTags,today),
     achievementCapacityMinutes:achievement?.weeklyCapacityMinutes||0,
-    recoveryPlan:achievement?projectionController.recovery(achievement.model):null,
+    recoveryPlan:achievement?(()=>{const plan=projectionController.recovery(achievement.model);return IS_DEMO_MODE?{...plan,canApply:false}:plan})():null,
     projectionSnapshots:state.projectionSnapshots,readinessSnapshots:state.readinessSnapshots,
     readiness:performanceViewState.section==='overview'?readinessResult(computeApprovalMetrics()):null,
     blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,
@@ -5271,7 +5293,8 @@ function renderPerformance(){
   if(dialog){dialog.addEventListener('close',()=>{performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:null})},{once:true});dialog.showModal()}
 }
 createPerformanceController({document,getViewState:()=>performanceViewState,setViewState:value=>{performanceViewState=value},render:()=>render('desempenho'),activateTab,
-  simulateScenario:scenario=>projectionController.simulate(scenario),renderScenarioResult:result=>renderProjectionScenarioResult(result,{escapeHtml})}).register();
+  simulateScenario:scenario=>projectionController.simulate(scenario),renderScenarioResult:result=>renderProjectionScenarioResult(result,{escapeHtml}),
+  applyRecovery:signature=>applyConfirmedRecoveryPlan(signature)}).register();
 document.addEventListener('click',event=>{
   const back=event.target.closest('[data-analysis-return]');
   if(back){

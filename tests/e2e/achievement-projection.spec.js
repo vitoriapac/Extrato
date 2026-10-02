@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {activateTab,expectNoPageOverflow,openDemo} from './helpers.js';
+import {generateDemoData} from '../../src/demo/demo-generator.js';
 
 const screenshotName=(name)=>`${name}-${process.platform}.png`;
 for(const {width,theme} of [{width:320,theme:'light'},{width:375,theme:'dark'},{width:430,theme:'light'},{width:1440,theme:'dark'}])test(`trajetória em Desempenho com Demo: ${width}px ${theme}`,async({page})=>{
@@ -58,6 +59,27 @@ test('prévia de recuperação no Demo explica origem e destino sem ação de ap
   await expect(dialog.getByRole('button',{name:/Aplicar/i})).toHaveCount(0);
   await dialog.getByRole('button',{name:'Fechar prévia de recuperação'}).click();
   await expect(dialog).not.toBeVisible();
+});
+
+test('Recovery exige confirmação, revalida e registra plano e decisão sem reescrever sessões',async({page})=>{
+  await page.clock.install({time:new Date('2026-10-01T12:00:00-03:00')});
+  await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(node=>node.remove());
+  const demo=generateDemoData({today:'2026-10-01'});
+  await page.evaluate(state=>{const api=window.__EXTRATO_TEST__,validation=api.validateBackupData(state);if(!validation.valid)throw Error(validation.message);api.setState(validation.normalized);api.renderAll()},demo);
+  await activateTab(page,'desempenho');
+  await page.locator('[data-recovery-preview-open]').click();
+  await page.getByRole('dialog',{name:'Plano de recuperação'}).getByRole('button',{name:'Aplicar ao planejamento'}).click();
+  const confirmation=page.getByRole('dialog',{name:'Aplicar plano de recuperação?'});
+  await expect(confirmation).toBeVisible();await expect(confirmation).toContainText('Nenhuma sessão concluída será alterada.');
+  const before=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState();return {planId:state.studyPlans.at(-1).id,sessions:structuredClone(state.studySessions),dailyPlans:structuredClone(state.dailyPlans),budget:state.studyPlans.at(-1).weeklyPlannedMinutes,history:state.adaptivePlanningHistory.length}});
+  await confirmation.getByRole('button',{name:'Confirmar alterações'}).click();
+  await expect(page.locator('#toast')).toContainText('Plano de recuperação confirmado');
+  const after=await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=api.getState(),plan=state.studyPlans.at(-1);return {planId:plan.id,plan,sessionCount:state.studySessions.length,sessions:structuredClone(state.studySessions),dailyPlans:structuredClone(state.dailyPlans),history:structuredClone(state.adaptivePlanningHistory),backup:api.validateBackupData(JSON.parse(JSON.stringify(state)))}});
+  expect(after.planId).not.toBe(before.planId);expect(after.plan.weeklyPlannedMinutes).toBe(before.budget);expect(after.plan.weeklyAvailableMinutes).toBe(720);
+  expect(after.sessionCount).toBe(before.sessions.length);expect(after.sessions).toEqual(before.sessions);expect(after.dailyPlans).toEqual(before.dailyPlans);
+  expect(after.history).toHaveLength(before.history+1);expect(after.history.at(-1)).toMatchObject({decisionType:'recovery',status:'applied',planId:after.planId,totalMinutesBefore:before.budget,totalMinutesAfter:before.budget});
+  expect(after.backup.valid,after.backup.message).toBe(true);
+  await activateTab(page,'dashboard');await expect(page.locator('#strategicTimelineDashboard')).toContainText('Plano de recuperação aplicado');
 });
 
 test('histórico comparável mostra tendência futura distinta dos resultados observados',async({page})=>{

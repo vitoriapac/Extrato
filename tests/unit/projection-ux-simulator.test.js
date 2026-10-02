@@ -45,7 +45,7 @@ test('trajetória em atenção mostra prévia somente leitura e explica a origem
   assert.match(html,/recoveryPreviewDialog/);
   assert.match(html,/capacidade semanal será preservada em 10 h/i);
   assert.match(html,/A origem é Português/);
-  assert.match(html,/Prévia somente para leitura/);
+  assert.match(html,/A prévia não alterou o plano nem o histórico/);
   assert.doesNotMatch(renderAchievementProjection({...model,status:'on_track'},{escapeHtml,recoveryPlan}),/data-recovery-preview-open/);
 });
 

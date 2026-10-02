@@ -1,6 +1,6 @@
 import {updatePerformanceViewState} from '../../application/performance/performance-view-state.js';
 
-export function createPerformanceController({document,getViewState,setViewState,render,activateTab,simulateScenario,renderScenarioResult}){
+export function createPerformanceController({document,getViewState,setViewState,render,activateTab,simulateScenario,renderScenarioResult,applyRecovery=()=>{}}){
   const update=patch=>setViewState(updatePerformanceViewState(getViewState(),patch));
   return {register(){
     document.addEventListener('click',event=>{
@@ -13,6 +13,10 @@ export function createPerformanceController({document,getViewState,setViewState,
     document.getElementById('performancePage')?.addEventListener('click',event=>{
       if(event.target.closest('[data-projection-scenario-open]')){document.getElementById('projectionScenarioDialog')?.showModal();return}
       if(event.target.closest('[data-recovery-preview-open]')){document.getElementById('recoveryPreviewDialog')?.showModal();return}
+      if(event.target.closest('[data-recovery-confirm-open]')){document.getElementById('recoveryConfirmDialog')?.showModal();return}
+      if(event.target.closest('[data-recovery-cancel]')){document.getElementById('recoveryConfirmDialog')?.close();return}
+      const recoveryApply=event.target.closest('[data-recovery-apply]');
+      if(recoveryApply){document.getElementById('recoveryConfirmDialog')?.close();document.getElementById('recoveryPreviewDialog')?.close();applyRecovery(recoveryApply.dataset.recoverySignature);return}
       const section=event.target.closest('[data-performance-section]');
       if(section){update({section:section.dataset.performanceSection});render();return}
       const compared=event.target.closest('[data-performance-compare-subject]');
