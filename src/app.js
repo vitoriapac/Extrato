@@ -4,11 +4,8 @@ import {resolveSubjectAccuracyTarget} from './domain/analytics/subject-accuracy-
 import {buildSubjectAccuracy} from './application/analytics/build-subject-accuracy.js';
 import {renderSubjectAccuracy} from './ui/renderers/subject-accuracy-renderer.js';
 import {captureProjection,buildProjectionCalibration} from './application/analytics/projection-calibration-history.js';
-import {buildAchievementProjection} from './application/projection/build-achievement-projection.js';
-import {buildProjectionTopicRisks} from './application/projection/build-projection-topic-risks.js';
-import {buildProjectionCloseContext} from './application/projection/build-projection-close-context.js';
+import {buildProjectionPageModel,captureAchievementProjection,achievementProjectionHistory,validAchievementProjectionSnapshot,buildProjectionCloseContext} from './application/projection/index.js';
 import {renderProjectionCloseContext} from './ui/renderers/projection-close-context-renderer.js';
-import {captureAchievementProjection,achievementProjectionHistory,validAchievementProjectionSnapshot} from './application/projection/achievement-projection-history.js';
 import {renderProjectionCalibration} from './ui/renderers/projection-calibration-renderer.js';
 import {buildRecommendationFollowup} from './application/recommendations/build-recommendation-followup.js';
 import {renderRecommendationFollowup} from './ui/renderers/recommendation-followup-renderer.js';
@@ -33,6 +30,7 @@ import {renderPerformancePage} from './ui/performance/performance-page.js';
 import {renderPerformanceSection} from './ui/performance/render-performance-section.js';
 import {createPerformanceController} from './ui/controllers/performance-controller.js';
 import {createDiagnosisController} from './ui/controllers/diagnosis-controller.js';
+import {createProjectionController} from './ui/controllers/projection-controller.js';
 import {buildPerformanceSubjectComparison} from './application/performance/build-performance-subject-comparison.js';
 import {renderNextBestAction} from './ui/renderers/next-best-action-renderer.js';
 import {createAnalysisContext,analysisContextInScope} from './application/navigation/analysis-context.js';
@@ -4955,20 +4953,19 @@ function projectPerformance(metrics){
   return {available:true,low:calibration.low,high:calibration.high,central:calibration.central,confidence,confidenceLabel:calibration.confidenceLabel,calibration,gap:{minimum:Math.max(0,calibration.target-calibration.high),maximum:Math.max(0,calibration.target-calibration.low),target:calibration.target},movingAverage:forecast.movingAverage,forecast30,evidence:calibration.evidence,scenarios:{available:false,scenarios:[]},detail:calibration.reason};
 }
 
+const projectionController=createProjectionController({
+  getContext:(metrics,readiness)=>({today:todayISO(),scope:examEvidenceContext(),metrics,readiness,
+    examDate:state.examDate||null,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:state.metas.metaAprovacao,
+    consistencyTarget:state.metas.consistenciaSemanal,snapshots:state.projectionSnapshots,
+    activeExamTags:state.examBlueprint.activeExamTags||[]}),
+  buildRecent:(scope,today)=>buildPerformanceOverview({range:resolvePerformanceRange({today,period:'30',comparePrevious:false}),today,
+    questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans:performanceScopedPlans(scope)}),
+  getSimulations:()=>examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),
+    breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),
+  countStudyDays:countStudyDaysThisWeek,getCandidates:intelligenceCandidates
+});
 function currentAchievementProjection(metrics=computeApprovalMetrics(),readiness=readinessResult(metrics),candidates=null){
-  const today=todayISO(),scope=examEvidenceContext();
-  const recent=buildPerformanceOverview({range:resolvePerformanceRange({today,period:'30',comparePrevious:false}),today,
-    questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans:performanceScopedPlans(scope)});
-  const simulations=examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),
-    breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))}));
-  const topicRisks=buildProjectionTopicRisks(candidates||intelligenceCandidates());
-  const inputs={coverage:metrics.edital.available?metrics.edital.raw:null,adherence:recent.current.adherence,
-    consistency:{days:countStudyDaysThisWeek(scope.sessions.included,today),target:state.metas.consistenciaSemanal},
-    openHighImpactPriorities:topicRisks.length,topicRisks};
-  const model=buildAchievementProjection({today,examDate:state.examDate||null,
-    targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:state.metas.metaAprovacao,
-    simulations,readiness,...inputs});
-  return {model,inputs,simulations};
+  return projectionController.current(metrics,readiness,candidates);
 }
 
 
