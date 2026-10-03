@@ -1,0 +1,36 @@
+import {test,expect} from '@playwright/test';
+import {generateDemoData} from '../../src/demo/demo-generator.js';
+import {buildWeeklyCloseAdherence} from '../../src/application/adherence/build-weekly-close-adherence.js';
+import {createWeeklyCloseSnapshot} from '../../src/application/analytics/weekly-close-snapshot.js';
+import {activateTab,expectNoPageOverflow} from './helpers.js';
+
+test('fechamento preserva aderência e pendências, e a revisão só navega para o planejamento',async({page})=>{
+  test.setTimeout(120_000);await page.setViewportSize({width:375,height:900});
+  await page.clock.install({time:new Date('2026-10-03T12:00:00-03:00')});await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(node=>node.remove());
+  const state=generateDemoData({today:'2026-10-03'}),subject=state.subjects[0],topic=subject.topics[0];
+  // This isolated scenario keeps the catalog, but removes the interconnected demo activity graph.
+  for(const key of ['studySessions','questoes','simulados','recommendationFeedback','recommendationHistory','planAdjustments','adaptivePlanningHistory','studyPlans','projectionSnapshots','readinessSnapshots','progressHistory','reviewAgenda','calendar','topicHistory'])state[key]=[];
+  state.examBlueprint.activeExamTags=[];
+  const priorPlans=[{id:'prior-plan',date:'2026-09-22',items:[{id:'prior-item',subjectId:subject.id,topicId:topic.id,type:'study',plannedMinutes:30,status:'planned',sessionIds:[],prioritySnapshot:{priority:true}}]}];
+  const prior=buildWeeklyCloseAdherence({start:'2026-09-20',end:'2026-09-26',today:'2026-09-26',dailyPlans:priorPlans,sessions:[],subjects:state.subjects});
+  state.weeklyCloseSnapshots=[createWeeklyCloseSnapshot({period:{start:'2026-09-20',end:'2026-09-26'},activeExamTags:[],weeklyClose:{state:'available',algorithmVersion:'2.2.0',adherence:prior},gapMap:{items:[]},decisionHistory:{items:[]}},{id:'prior-close',savedAt:'2026-09-26T12:00:00Z'})];
+  state.dailyPlans=[{id:'current-plan',date:'2026-09-29',availableMinutes:60,plannedMinutes:30,items:[{id:'current-item',subjectId:subject.id,topicId:topic.id,type:'study',plannedMinutes:30,status:'planned',sessionIds:[],prioritySnapshot:{priority:true}}]}];state.studySessions=[];
+  await page.evaluate(state=>{const api=window.__EXTRATO_TEST__,result=api.validateBackupData(state);if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()},state);
+  await activateTab(page,'dashboard');const close=page.locator('#weeklyCloseDashboard');
+  await expect(close.locator('.recurring-priority-list').first()).toContainText(topic.name);
+  const before=await page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return {dailyPlans:s.dailyPlans,studySessions:s.studySessions,weeklyCloseSnapshots:s.weeklyCloseSnapshots}});
+  await close.getByRole('button',{name:'Revisar planejamento',exact:true}).click();await expect(page.locator('#panel-metas')).toBeVisible();
+  const after=await page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return {dailyPlans:s.dailyPlans,studySessions:s.studySessions,weeklyCloseSnapshots:s.weeklyCloseSnapshots}});
+  expect(after).toEqual(before);
+  await activateTab(page,'dashboard');await close.getByRole('button',{name:'Salvar fechamento desta semana',exact:true}).click();
+  const frozen=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1)));
+  expect(frozen.version).toBe(3);expect(frozen.weeklyClose.adherence.recurring.items[0].periodCount).toBe(2);
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.dailyPlans[0].items[0].plannedMinutes=90;state.dailyPlans[0].items[0].prioritySnapshot.priority=false;const result=api.validateBackupData(JSON.parse(JSON.stringify(state)));if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()});
+  const preserved=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1)));
+  expect(preserved).toEqual(frozen);
+  const history=close.locator('.weekly-adherence-history');await expect(history).toContainText('Aderência nos fechamentos salvos');
+  await history.locator('details > summary').first().click();await expect(history).toContainText('30 min');
+  expect(await history.getByRole('button',{name:'Revisar planejamento',exact:true}).count()).toBe(0);
+  await expectNoPageOverflow(page);
+});

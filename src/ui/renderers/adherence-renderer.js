@@ -1,17 +1,17 @@
-import {adherenceStatus} from '../../application/adherence/adherence-status.js';
+import {adherenceStatus,ADHERENCE_STATUS_POLICY} from '../../application/adherence/adherence-status.js';
 
 const shown=value=>value==null?'—':String(Math.round(value*10)/10);
 const percent=value=>value==null?'—':`${shown(value)}%`;
 export function renderAdherenceMetrics(model,{escapeHtml}={}){
   if(!model?.summary)return '';
   const {summary,priority}=model,assessment=adherenceStatus(model);
-  const supported=priority.classifiedCoverage>=80&&priority.plannedMinutes>0&&!model.ambiguousItemCount;
-  return `<div class="adherence-summary" data-adherence-assessment="${assessment.status}"><p class="context-note">${escapeHtml(assessment.label)}</p><section class="performance-kpis" aria-label="Indicadores de aderência">
+  const supported=priority.classifiedCoverage>=ADHERENCE_STATUS_POLICY.minimumClassifiedCoverage&&priority.plannedMinutes>0&&!model.ambiguousItemCount;
+  return `<section class="adherence-summary performance-summary" aria-label="Resumo de aderência" data-adherence-assessment="${assessment.status}"><p class="context-note">${escapeHtml(assessment.label)}</p><section class="performance-kpis" aria-label="Indicadores de aderência">
     <article class="performance-kpi"><span>Tempo realizado</span><strong>${shown(summary.executedMinutes)} min</strong><small>Volume: ${percent(summary.volumeRatio)} do previsto; pode superar 100%.</small></article>
     <article class="performance-kpi"><span>Aderência ao plano</span><strong>${percent(summary.temporalAdherence)}</strong><small>${shown(summary.matchedMinutes)} de ${shown(summary.plannedMinutes)} min com crédito compatível.</small></article>
     <article class="performance-kpi"><span>Execução prioritária</span><strong>${supported?percent(priority.adherence):'—'}</strong><small>${supported?`${shown(priority.executedMinutes)} de ${shown(priority.plannedMinutes)} min prioritários.`:'Evidência histórica insuficiente para interpretar prioridades.'}</small></article>
     <article class="performance-kpi"><span>Classificação histórica</span><strong>${percent(priority.classifiedCoverage)}</strong><small>${shown(priority.unknownPlannedMinutes)} min sem classificação registrada.</small></article>
-  </section><details><summary>Como interpretar a aderência</summary><p>Crédito exige vínculo seguro, disciplina, tópico e tipo compatíveis. Cada atividade recebe no máximo o tempo previsto. A execução prioritária usa a prioridade registrada quando o plano foi criado; atividades parciais recebem crédito proporcional.</p><p>${shown(summary.additionalMinutes)} min adicionais · ${shown(summary.excessLinkedMinutes)} min excedentes vinculados · ${shown(summary.incompatibleMinutes)} min com vínculo incompatível · ${shown(summary.otherPeriodMinutes)} min vinculados a outro período. Estudo adicional continua sendo estudo real.</p><p>${priority.completedActivities} de ${priority.plannedActivities} blocos prioritários completos; ${priority.partiallyExecutedActivities} parcialmente executados. Não são contagens de tópicos distintos.</p></details></div>`;
+  </section><details><summary>Como interpretar a aderência</summary><p>Crédito exige vínculo seguro, disciplina, tópico e tipo compatíveis. Cada atividade recebe no máximo o tempo previsto. A execução prioritária usa a prioridade registrada quando o plano foi criado; atividades parciais recebem crédito proporcional.</p><p>${shown(summary.additionalMinutes)} min adicionais · ${shown(summary.excessLinkedMinutes)} min excedentes vinculados · ${shown(summary.incompatibleMinutes)} min com vínculo incompatível · ${shown(summary.otherPeriodMinutes)} min vinculados a outro período. Estudo adicional continua sendo estudo real.</p><p>${priority.completedActivities} de ${priority.plannedActivities} blocos prioritários completos; ${priority.partiallyExecutedActivities} parcialmente executados. Não são contagens de tópicos distintos.</p></details></section>`;
 }
 
 export function renderAdherenceAnalysis({model,weekly},{formatDate,escapeHtml}={}){

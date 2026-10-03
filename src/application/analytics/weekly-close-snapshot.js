@@ -1,5 +1,5 @@
 import {strategicScopeKey} from './build-strategic-timeline.js';
-export const WEEKLY_CLOSE_SNAPSHOT_VERSION=2;
+export const WEEKLY_CLOSE_SNAPSHOT_VERSION=3;
 export function createWeeklyCloseSnapshot(model,{savedAt,id,examPhase=null}={}){
   if(!model?.period||model.weeklyClose?.state==='insufficient')return null;
   return {id,period:{...model.period},activeExamTags:Array.isArray(model.activeExamTags)?[...model.activeExamTags]:null,savedAt,examPhase:examPhase?.state&&examPhase.state!=='undated'?{state:examPhase.state,label:examPhase.label}:null,version:WEEKLY_CLOSE_SNAPSHOT_VERSION,algorithmVersion:model.weeklyClose.algorithmVersion,weeklyClose:structuredClone(model.weeklyClose),gapMap:structuredClone(model.gapMap),decisionHistory:structuredClone(model.decisionHistory),comparisonMetrics:structuredClone(model.comparisonMetrics||null),topicPriorities:structuredClone(model.topicPriorities||[])};

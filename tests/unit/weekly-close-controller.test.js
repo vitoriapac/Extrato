@@ -38,3 +38,12 @@ test('modelo sem período não gera prévia nem altera planos',()=>{
   assert.equal(controller.apply(),null);
   assert.equal(state.dailyPlans[0].items.length,1);
 });
+
+test('mudança do concurso invalida a confirmação mesmo com alocações iguais',()=>{
+  const state={weeklyCloseSnapshots:[],dailyPlans:[]},model={activeExamTags:['bb-escriturario'],period:{start:'2026-09-08',end:'2026-09-14'},weeklyClose:{priorities:[{priorityId:'p1',topicId:'t1',subjectId:'s1'}]}};
+  let sequence=0;
+  const controller=createWeeklyCloseController({getModel:()=>model,getState:()=>state,buildProposal:()=>({allocations:[{priorityId:'p1',topicId:'t1',subjectId:'s1',date:'2026-09-15',minutes:30}]}),createSnapshot:(_model,options)=>({id:options.id}),upsertSnapshot:(list,item)=>list.push(item),clock:{today:()=> '2026-09-14',nowISO:()=> '2026-09-14T12:00:00Z',addDays:addLocalDays},idGenerator:prefix=>`${prefix}-${++sequence}`,getDailyCapacity:()=>60});
+  controller.toggle('p1',true);controller.preview();model.activeExamTags=['caixa-tbn'];
+  assert.equal(controller.apply(),null);assert.equal(state.dailyPlans.length,0);assert.equal(state.weeklyCloseSnapshots.length,0);
+  assert.ok(controller.apply());assert.deepEqual(state.dailyPlans[0].items[0].executionSnapshot.activeExamTags,['caixa-tbn']);
+});

@@ -69,6 +69,16 @@ A comparação semanal usa barras de planejado e realizado na mesma escala, valo
 
 O campo legado de horas realizadas / previstas continua disponível, mas a Visão Geral agora o identifica como **Volume de carga**, pois pode ultrapassar 100% e não mede crédito seguro às atividades. A Consolidação em Consistência usa os registros originais com escopo histórico para preservar atividades arquivadas.
 
+### Fechamento e pendências recorrentes — pacote 6
+
+O fechamento usa o mesmo modelo de aderência no período de sete dias mostrado na tela. Esse período móvel pode diferir das semanas de segunda a domingo em Consistência. O resumo apresenta crédito ao plano e o ciclo de decisões explicita execução prioritária, classificação e tipos de tempo não creditado. Resultados estratégicos não são destacados quando a classificação é insuficiente.
+
+Novos retratos de fechamento têm versão 3 e preservam o modelo, a política analítica, a interpretação e as pendências daquele momento em `weeklyClose.adherence`. Alterar sessões, metas, prioridade ou catálogo não reescreve esses retratos. A nova lista de aderência salva mostra a revisão mais recente de cada período, mantendo as anteriores no histórico. Fechamentos antigos sem esse campo não recebem dados reconstruídos. Comparativos estratégicos não misturam a política nova com percentuais legados de método não registrado.
+
+Uma pendência recorrente exige o mesmo tópico abaixo de 80% de execução prioritária no período atual e em pelo menos um período anterior salvo. A análise usa até três períodos anteriores, sem sobreposição, nas últimas quatro semanas e no mesmo escopo exato. Revisões do mesmo fechamento contam uma vez; dados insuficientes, períodos futuros, histórico antigo e outros concursos não criam alertas. Não se infere reincidência a partir dos planos atuais de semanas passadas.
+
+O botão Revisar planejamento abre Metas. Nenhuma recomendação é aceita ou aplicada automaticamente; seleção, prévia, revalidação e confirmação continuam no fluxo existente. Mudança do período ou concurso invalida a confirmação da prévia, mesmo que as alocações permaneçam iguais. Novas atividades confirmadas pelo fechamento também recebem o snapshot de execução. As listas de pendências e de fechamentos salvos usam cinco itens antes de Mostrar mais. Detalhes históricos não oferecem ação para aplicar uma orientação antiga. A Timeline consulta a aderência congelada quando disponível, sem substituir dados insuficientes por um percentual legado.
+
 O fluxo permanece: Desempenho → Diagnóstico → prévia de Recovery → confirmação → plano versionado → execução diária → sessão real → fechamento semanal. A Timeline permite consultar a decisão congelada e sua reversão; executar ou reverter não reescreve sessões anteriores. Alterações de plano não regeneram automaticamente o dia: o card sinaliza a necessidade de revisar a distribuição.
 
 A aplicação verifica a virada da data local ao retornar à janela e a cada minuto, atualizando o contexto sem mudar registros. Não há fechamento diário obrigatório. Para levar pendências adiante, abra a aba Hoje e use o fluxo existente de replanejamento com confirmação.

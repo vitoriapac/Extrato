@@ -20,6 +20,8 @@ export function createProgressiveList({items=[],initialLimit=DEFAULT_LIST_VISIBL
 
 // Explicit opt-in: charts, matrices, navigation and achievements are excluded.
 const LISTS=[
+  ['.recurring-priority-list',':scope > li'],
+  ['.weekly-adherence-history > ol',':scope > li'],
   ['.adherence-week-list',':scope > li'],
   ['.adherence-subjects tbody',':scope > tr'],
   ['.preparation-signal-list',':scope > details'],

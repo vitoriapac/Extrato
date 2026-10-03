@@ -10,11 +10,13 @@ export function buildWeeklyDecisionCycle({close,start,end,previousStart,previous
   const readinessComparison=compareReadinessSnapshots(previous,current);
   const outcomes=recommendations.filter(item=>item.outcome?.measuredAt&&item.outcome.measuredAt.slice(0,10)>=start&&item.outcome.measuredAt.slice(0,10)<=end).map(item=>({topicId:item.topicId,subjectId:item.subjectId,action:item.snapshot?.explanationSnapshot?.suggestedAction?.label||item.explanationSnapshot?.suggestedAction?.label||item.action||'Decisão registrada',state:item.outcome.state,before:item.snapshot?.masteryBefore??item.baseline?.mastery??item.masteryBefore??item.outcome.before?.mastery??null,after:item.outcome.after?.mastery??item.outcome.masteryAfter??null}));
   const worked=[],attention=[];
+  const adherence=close.adherence,priority=adherence?(adherence.assessment.status==='insufficient_data'?null:adherence.model.priority.adherence):execution.strategicAdherence;
+  const priorityPercent=priority==null?null:Math.round(priority*10)/10;
   if(close.comparison.accuracy.delta>0)worked.push(`Precisão aumentou ${close.comparison.accuracy.delta} p.p.; compare também o volume e a dificuldade das questões.`);
-  if(execution.strategicAdherence>=80)worked.push(`Você executou ${execution.strategicAdherence}% do tempo prioritário registrado no plano.`);
+  if(priority>=80&&priority!=null)worked.push(`Você executou ${priorityPercent}% do tempo prioritário registrado no plano.`);
   if(outcomes.some(item=>item.state==='positive'))worked.push('Há decisões com melhora posterior medida, sem atribuição de causalidade.');
-  if(execution.strategicAdherence!=null&&execution.strategicAdherence<80)attention.push(`Execução prioritária em ${execution.strategicAdherence}%; reveja os blocos não executados.`);
+  if(priority!=null&&priority<80)attention.push(`Execução prioritária em ${priorityPercent}%; reveja os blocos não executados.`);
   if(close.mainRisk)attention.push(close.mainRisk.message);
   if(execution.unknownPlannedMinutes)attention.push(`${execution.unknownPlannedMinutes} minutos planejados sem classificação estratégica histórica.`);
-  return {version:1,execution,readiness:{current,previous:previous||null,comparison:readinessComparison},simulations:simulations.filter(item=>item.date>=start&&item.date<=end).length,worked:worked.slice(0,3),attention:attention.slice(0,3),outcomes};
+  return {version:2,execution,readiness:{current,previous:previous||null,comparison:readinessComparison},simulations:simulations.filter(item=>item.date>=start&&item.date<=end).length,worked:worked.slice(0,3),attention:attention.slice(0,3),outcomes};
 }

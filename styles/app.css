@@ -2106,6 +2106,11 @@ body.timer-focus-active .timer-context{display:none!important}
 .adherence-window select{width:auto;max-width:100%}
 .adherence-subjects{max-width:100%;min-width:0}.adherence-subjects table{min-width:520px}
 .adherence-week-list li p{margin-block:var(--space-2)}
+.weekly-adherence,.weekly-adherence-history{min-width:0;padding-block:var(--space-3)}
+.recurring-priority-list,.weekly-adherence-history>ol{list-style:none;margin:0;padding:0}
+.recurring-priority-list>li,.weekly-adherence-history>ol>li{padding-block:var(--space-3);border-bottom:1px solid var(--paper-line);overflow-wrap:anywhere}
+.recurring-priority-list>li>strong,.recurring-priority-list>li>span,.recurring-priority-list>li>small{display:block;margin-block:var(--space-2)}
+.weekly-adherence summary,.weekly-adherence-history summary{cursor:pointer;min-height:var(--touch-target);color:var(--ink)}
 .adherence-week-list .performance-consistency-bars>div{grid-template-columns:48px minmax(30px,1fr) 90px}
 .performance-consistency-weeks li{border-bottom:1px solid var(--paper-line);padding:var(--space-3) 0}.performance-consistency-weeks small{display:block;margin-top:var(--space-2)}
 .performance-consistency-bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);margin-top:var(--space-2)}

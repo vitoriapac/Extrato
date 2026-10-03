@@ -1,6 +1,7 @@
 import {renderHelpCenter} from './help-renderer.js';
 
 const DESTINATIONS=Object.freeze({
+  adherence:{tab:'desempenho',section:'consistency',selector:'.adherence-summary'},
   subjects:{tab:'disciplinas',selector:'#addSubjectBtn'},overview:{tab:'dashboard',selector:'#balanceFigure'},timer:{tab:'dashboard',selector:'#timerSubjectSelect'},
   questions:{tab:'questoes',selector:'#addQuestaoRowBtn'},reviews:{tab:'agenda',selector:'#addAgendaRowBtn'},today:{tab:'hoje',selector:'#panel-hoje'},calendar:{tab:'calendario',selector:'#panel-calendario'},
   planning:{tab:'metas',selector:'#examStudyPlan'},weekly:{tab:'dashboard',selector:'#weeklyCloseDashboard'},diagnosis:{tab:'hoje',selector:'#diagnosisCenter'},

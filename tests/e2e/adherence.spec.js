@@ -10,10 +10,11 @@ async function prepare(page){
   await page.evaluate(state=>{const api=window.__EXTRATO_TEST__,result=api.validateBackupData(state);if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()},state);
   await activateTab(page,'desempenho');await page.locator('[data-performance-section="consistency"]').click();
 }
-for(const [width,theme] of [[320,'light'],[375,'dark'],[1440,'light']])test(`aderência em Desempenho: ${width}px ${theme}`,async({page})=>{
+for(const [width,theme] of [[320,'light'],[375,'dark'],[1440,'light']])test(`aderência em Desempenho: ${width}px ${theme}`,async({page},testInfo)=>{
   test.setTimeout(120_000);await page.setViewportSize({width,height:900});await prepare(page);
   if(theme==='dark')await page.locator('#themeToggleBtn').click();
   const content=page.locator('#performanceSectionContent');await expect(content).toContainText('Execução prioritária');
+  await content.locator('.adherence-summary').screenshot({path:testInfo.outputPath('adherence-review.png')});
   await expectNoPageOverflow(page);
   const before=await page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return {dailyPlans:s.dailyPlans,studySessions:s.studySessions,weeklyCloseSnapshots:s.weeklyCloseSnapshots}});
   await content.locator('[data-adherence-weeks]').selectOption('12');await expect(content.locator('[data-adherence-weeks]')).toBeFocused();
