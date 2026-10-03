@@ -2,6 +2,8 @@ import {addLocalDays,parseLocalDate} from '../../core/date-utils.js';
 import {plannedMinutesForPlan} from '../goals/build-plan-execution.js';
 import {buildStrategicExecution} from '../goals/build-strategic-execution.js';
 import {countStudyDaysInRange} from './study-day-count.js';
+import {buildAdherenceModel} from '../adherence/build-adherence-model.js';
+import {buildWeeklyAdherence} from '../adherence/build-weekly-adherence.js';
 
 const inRange=(date,range)=>Boolean(date&&range?.end&&date<=range.end&&(!range.start||date>=range.start));
 const weekStart=date=>{
@@ -10,7 +12,7 @@ const weekStart=date=>{
 };
 const round=value=>Math.round(value*10)/10;
 
-export function buildPerformanceConsistency({range,today,sessions=[],questions=[],dailyPlans=[],subjects=[]}={}){
+export function buildPerformanceConsistency({range,today,sessions=[],questions=[],dailyPlans=[],subjects=[],activeExamTags=[],historyWeeks=8,executionSource=null}={}){
   const studied=sessions.filter(item=>inRange(item.date,range)),answered=questions.filter(item=>inRange(item.date,range)),plans=dailyPlans.filter(item=>inRange(item.date,range));
   const starts=[...studied,...answered,...plans].map(item=>item.date).filter(Boolean).sort();
   const first=range?.start||starts[0]||today;
@@ -32,7 +34,10 @@ export function buildPerformanceConsistency({range,today,sessions=[],questions=[
   const heatmap=[];
   for(let date=heatmapStart;date&&date<=today;date=addLocalDays(date,1))heatmap.push({date,minutes:round(byDate.get(date)||0)});
   const previous=range?.previous?sessions.filter(item=>inRange(item.date,range.previous)).reduce((sum,item)=>sum+Math.max(0,Number(item.durationSeconds)||0)/60,0):null;
-  return {weekly,heatmap,studiedMinutes,plannedMinutes,adherence:plannedMinutes?round(studiedMinutes/plannedMinutes*100):null,
+  const source={dailyPlans,sessions,subjects,...executionSource};
+  const sourceDates=[...source.dailyPlans,...source.sessions].map(item=>item.date).filter(date=>typeof date==='string'&&parseLocalDate(date)&&date<=today).sort();
+  const adherence={model:buildAdherenceModel({...source,start:range?.start||sourceDates[0]||today,end:range?.end||today,today,activeExamTags}),weekly:buildWeeklyAdherence({...source,today,activeExamTags,historyWeeks})};
+  return {weekly,heatmap,adherenceAnalysis:adherence,studiedMinutes,plannedMinutes,adherence:plannedMinutes?round(studiedMinutes/plannedMinutes*100):null,
     strategicAdherence:strategic.strategicAdherence,strategicCoverage:strategic.classifiedCoverage,
     activeDays:countStudyDaysInRange(studied,range),questions:answered.reduce((sum,item)=>sum+Math.max(0,Number(item.resolved)||0),0),
     previousMinutes:previous==null?null:round(previous),heatmapLimited:range?.start==null||range.start<heatmapStart};

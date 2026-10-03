@@ -5294,7 +5294,7 @@ function renderPerformance(){
     projectionSnapshots:state.projectionSnapshots,readinessSnapshots:state.readinessSnapshots,
     readiness:performanceViewState.section==='overview'?readinessResult(computeApprovalMetrics()):null,
     blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,
-    candidates:performanceViewState.section==='subjects'?intelligenceCandidates():[],dailyPlans:performanceScopedPlans(scope),
+    candidates:performanceViewState.section==='subjects'?intelligenceCandidates():[],dailyPlans:performanceScopedPlans(scope),executionSource:{dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects},
     subjectIdFor:entitySubjectId,simulationCountsFor:simuladoEffectiveCounts,
     reviewCompletedDateFor:item=>localDateFromTimestamp(item.completedAt),
     topicMetricsFor:(subjectId,topicId)=>{const mastery=topicMasteryIndex(subjectId,topicId),retention=topicRetentionScore(subjectId,topicId);return {mastery:mastery?.confidence>0?mastery.score:null,retention:retention?.available?retention.score:null,evidence:mastery?.confidence||0}},

@@ -61,6 +61,14 @@ Os deltas só existem quando os dois períodos têm evidência suficiente. Não 
 
 ## Validação da jornada
 
+### Desempenho — pacote 5
+
+Em Desempenho → Consistência, o resumo separa tempo realizado, crédito compatível com o plano, execução prioritária e cobertura da classificação histórica. A explicação distingue estudo adicional, excedente vinculado e vínculo incompatível. Evidência limitada mantém os minutos observados visíveis e deixa a interpretação prioritária indisponível.
+
+A comparação semanal usa barras de planejado e realizado na mesma escala, valores textuais e execução prioritária. O seletor de 4/8/12 semanas controla uma janela independente do período do resumo. A semana atual inclui somente os dias decorridos e seu comparativo usa os mesmos dias da anterior. A tabela por disciplina mostra minutos, crédito e prioridade. Listas e tabelas exibem cinco itens antes de Mostrar mais, pelo componente compartilhado; alterações de janela não persistem nem modificam planos.
+
+O campo legado de horas realizadas / previstas continua disponível, mas a Visão Geral agora o identifica como **Volume de carga**, pois pode ultrapassar 100% e não mede crédito seguro às atividades. A Consolidação em Consistência usa os registros originais com escopo histórico para preservar atividades arquivadas.
+
 O fluxo permanece: Desempenho → Diagnóstico → prévia de Recovery → confirmação → plano versionado → execução diária → sessão real → fechamento semanal. A Timeline permite consultar a decisão congelada e sua reversão; executar ou reverter não reescreve sessões anteriores. Alterações de plano não regeneram automaticamente o dia: o card sinaliza a necessidade de revisar a distribuição.
 
 A aplicação verifica a virada da data local ao retornar à janela e a cada minuto, atualizando o contexto sem mudar registros. Não há fechamento diário obrigatório. Para levar pendências adiante, abra a aba Hoje e use o fluxo existente de replanejamento com confirmação.

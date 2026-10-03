@@ -44,8 +44,10 @@ export function createPerformanceController({document,getViewState,setViewState,
       else if(field.matches('[data-performance-compare]'))update({comparePrevious:field.checked});
       else if(field.matches('[data-performance-subject]'))update({subjectId:field.value});
       else if(field.matches('[data-performance-subject-sort]'))update({subjectSort:field.value});
+      else if(field.matches('[data-adherence-weeks]'))update({adherenceWeeks:field.value});
       else return;
       render();
+      if(field.matches('[data-adherence-weeks]'))document.querySelector('[data-adherence-weeks]')?.focus();
     });
   }};
 }

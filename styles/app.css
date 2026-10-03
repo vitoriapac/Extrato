@@ -2018,7 +2018,7 @@ body.timer-focus-active .timer-context{display:none!important}
 .performance-story__eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted,var(--ink))}
 .performance-story h3{margin:var(--space-2) 0;font-size:clamp(19px,2vw,27px)}
 .performance-story p{margin:0;line-height:1.5}.performance-story ul{margin:var(--space-3) 0 0;padding-left:var(--space-4)}.performance-story li{margin-top:var(--space-2)}
-.performance-details{border-top:1px solid var(--paper-line);min-width:0}.performance-details>summary{cursor:pointer;padding:var(--space-3) 0;color:var(--navy);font-weight:700}.performance-details__body{min-width:0}
+.performance-details{border-top:1px solid var(--paper-line);min-width:0}.performance-details>summary{cursor:pointer;padding:var(--space-3) 0;color:var(--ink);font-weight:700}.performance-details__body{min-width:0}
 .performance-comparison-heading{display:flex;justify-content:space-between;align-items:start;gap:var(--space-3);flex-wrap:wrap}.performance-comparison-heading>div{flex:1 1 320px}.performance-comparison-heading label{display:grid;gap:var(--space-2)}.performance-subject-comparison .performance-table-scroll{max-height:none}.performance-subject-comparison table{min-width:780px}.performance-sample-note{color:var(--ink-muted,var(--ink));font-size:12px}
 .subject-target-bulk{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-3);margin:var(--space-3) 0}.subject-target-bulk label{display:flex;align-items:center;gap:var(--space-2)}.subject-target-bulk input[type=number]{width:72px}.subject-target-editor table{min-width:760px}.subject-target-editor td input[type=number]{width:75px}.subject-target-editor td small{display:block;color:var(--text-secondary)}.subject-target-editor td:last-child{white-space:nowrap}.subject-target-editor td:last-child .btn{margin-right:var(--space-2)}
 .diagnosis-consolidated-list{display:grid;gap:var(--space-3)}.diagnosis-consolidated-list .consolidated-diagnosis-row{display:grid;gap:var(--space-3);padding:var(--space-4) 0;border-bottom:1px solid var(--paper-line)}.consolidated-diagnosis-row .diagnostic-row-identity small,.diagnostic-quality,.diagnostic-supporting{color:var(--text-secondary);font-size:12px}.consolidated-diagnosis-row .diagnostic-evidence{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:var(--space-2);margin:0}.consolidated-diagnosis-row .diagnostic-evidence div{min-width:0}.consolidated-diagnosis-row .diagnostic-evidence dt{color:var(--text-secondary);font-size:11px}.consolidated-diagnosis-row .diagnostic-evidence dd{margin:0;font-weight:600}.consolidated-diagnosis-row .diagnostic-row-action{flex-wrap:wrap}
@@ -2099,6 +2099,14 @@ body.timer-focus-active .timer-context{display:none!important}
 .performance-topic-facts div{padding:var(--space-3);border:1px solid var(--paper-line)}.performance-topic-facts dt{font-size:12px}.performance-topic-facts dd{margin:var(--space-2) 0 0;font-size:20px;font-weight:700}
 .performance-topic-events{padding-left:var(--space-4)}.performance-topic-events li{display:flex;gap:var(--space-3);padding:var(--space-2) 0}.performance-topic-actions{justify-content:flex-start;flex-wrap:wrap;padding-top:var(--space-4)}
 .performance-consistency-weeks{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2)}
+.adherence-summary{display:grid;gap:var(--space-3);min-width:0}
+.adherence-summary details{padding-block:var(--space-3);border-bottom:1px solid var(--paper-line)}
+.adherence-summary summary{cursor:pointer}.adherence-summary p{overflow-wrap:anywhere}
+.adherence-window{display:flex;align-items:center;gap:var(--space-3);margin-block:var(--space-3)}
+.adherence-window select{width:auto;max-width:100%}
+.adherence-subjects{max-width:100%;min-width:0}.adherence-subjects table{min-width:520px}
+.adherence-week-list li p{margin-block:var(--space-2)}
+.adherence-week-list .performance-consistency-bars>div{grid-template-columns:48px minmax(30px,1fr) 90px}
 .performance-consistency-weeks li{border-bottom:1px solid var(--paper-line);padding:var(--space-3) 0}.performance-consistency-weeks small{display:block;margin-top:var(--space-2)}
 .performance-consistency-bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);margin-top:var(--space-2)}
 .performance-consistency-bars>div{display:grid;grid-template-columns:48px minmax(30px,1fr) 72px;gap:var(--space-2);align-items:center;font-size:12px}

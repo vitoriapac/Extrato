@@ -4,7 +4,7 @@ export const PERFORMANCE_SECTIONS=Object.freeze(['overview','subjects','question
 export const PERFORMANCE_PERIODS=Object.freeze(['7','30','90','all']);
 
 export function createPerformanceViewState(){
-  return {section:'overview',period:'30',comparePrevious:true,subjectId:null,topicId:null,subjectSort:'gap'};
+  return {section:'overview',period:'30',comparePrevious:true,subjectId:null,topicId:null,subjectSort:'gap',adherenceWeeks:8};
 }
 
 export function resolvePerformanceRange({today,period='30',comparePrevious=true}={}){
@@ -23,6 +23,7 @@ export function updatePerformanceViewState(state,patch={}){
   if(patch.subjectId!==undefined){next.subjectId=patch.subjectId||null;next.topicId=null}
   if(patch.topicId!==undefined)next.topicId=patch.topicId||null;
   if(patch.subjectSort!==undefined&&['gap','accuracy','evolution','questions','priority'].includes(patch.subjectSort))next.subjectSort=patch.subjectSort;
+  if(patch.adherenceWeeks!==undefined&&[4,8,12].includes(Number(patch.adherenceWeeks)))next.adherenceWeeks=Number(patch.adherenceWeeks);
   if(next.period==='all')next.comparePrevious=false;
   return next;
 }

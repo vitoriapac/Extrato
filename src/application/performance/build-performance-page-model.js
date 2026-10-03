@@ -11,7 +11,7 @@ import {buildReadinessChangeExplanation} from '../readiness/build-readiness-chan
 import {buildStabilityMap} from './build-stability-map.js';
 
 // The composition root supplies scoped records and stateful metric lookups; this builder owns section assembly.
-export function buildPerformancePageModel({viewState,range,today,activeExamTags=[],scope,subjects=[],simulations=[],projectionSnapshots=[],achievementProjection=null,achievementHistory=[],achievementCapacityMinutes=0,recoveryPlan=null,readinessSnapshots=[],readiness=null,blueprint={},globalTarget=80,candidates=[],dailyPlans=[],subjectIdFor,simulationCountsFor,reviewCompletedDateFor,topicMetricsFor,topicProfileFor,topicHistoryFor}={}){
+export function buildPerformancePageModel({viewState,range,today,activeExamTags=[],scope,subjects=[],simulations=[],projectionSnapshots=[],achievementProjection=null,achievementHistory=[],achievementCapacityMinutes=0,recoveryPlan=null,readinessSnapshots=[],readiness=null,blueprint={},globalTarget=80,candidates=[],dailyPlans=[],executionSource=null,subjectIdFor,simulationCountsFor,reviewCompletedDateFor,topicMetricsFor,topicProfileFor,topicHistoryFor}={}){
   const section=viewState.section;
   if(section==='overview'){
     const model=buildPerformanceOverview({range,today,activeExamTags,readinessSnapshots,readiness,questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans,subjects});
@@ -47,5 +47,5 @@ export function buildPerformancePageModel({viewState,range,today,activeExamTags=
     return {section,model,comparison,stabilityMap:buildStabilityMap(comparison),detail};
   }
   const sessions=scope.sessions.included.map(item=>({...item,subjectId:subjectIdFor(item)}));
-  return {section:'consistency',model:buildPerformanceConsistency({range,today,sessions,questions:scope.questions.included,dailyPlans,subjects})};
+  return {section:'consistency',model:buildPerformanceConsistency({range,today,sessions,questions:scope.questions.included,dailyPlans,subjects,activeExamTags,historyWeeks:viewState.adherenceWeeks||8,executionSource})};
 }
