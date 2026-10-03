@@ -3,7 +3,7 @@ import {simulateProjectionScenario} from '../../application/projection/simulate-
 import {buildRecoveryPlan} from '../../application/recovery/build-recovery-plan.js';
 
 // The app supplies scoped data; the projection module owns assembly and modelling.
-export function createProjectionController({getContext,buildRecent,getSimulations,countStudyDays,getCandidates,getPlan,getCapacity,getAdaptiveHistory=()=>[]}) {
+export function createProjectionController({getContext,buildRecent,getSimulations,countStudyDays,getCandidates,getPlan,getCapacity,getAdaptiveHistory=()=>[],getExecutionContext=()=>null}) {
   return {
     current(metrics,readiness,candidates) {
       const context=getContext(metrics,readiness);
@@ -13,7 +13,7 @@ export function createProjectionController({getContext,buildRecent,getSimulation
         coverage:context.metrics.edital.available?context.metrics.edital.raw:null,
         adherence:recent.current.adherence,
         consistency:{days:countStudyDays(context.scope.sessions.included,context.today),target:context.consistencyTarget},
-        candidates:candidates||getCandidates(),snapshots:context.snapshots,activeExamTags:context.activeExamTags}),
+        candidates:candidates||getCandidates(),snapshots:context.snapshots,activeExamTags:context.activeExamTags,executionContext:getExecutionContext()}),
         weeklyCapacityMinutes:getCapacity()};
     },
     recovery(trajectory=null,{weeklyCapacityMinutes=null}={}) {

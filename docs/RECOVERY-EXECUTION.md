@@ -61,6 +61,16 @@ Os deltas só existem quando os dois períodos têm evidência suficiente. Não 
 
 ## Validação da jornada
 
+### Demo e regressão — pacote 7
+
+A Demo captura prioridades roteirizadas no momento de criação dos blocos e gera fechamentos com aderência congelada. Essa classificação demonstrativa não usa os scores atuais para reconstruir o passado. Fixtures determinísticas distinguem volume excedente sem crédito prioritário, execução prioritária com menor volume, execução equilibrada e parcial. Edição e exclusão de sessões atualizam a reconciliação atual sem modificar fechamentos salvos. A regressão inclui os fluxos de Recovery, backup legado, teclado, acessibilidade e telas estreitas.
+
+### Meta pessoal opcional — pacote 8
+
+Em Metas, a meta de aderência aceita 50–100%, começa em 80% e pode ser desativada. O campo `metas.aderenciaSemanal` armazena o percentual ou `null`. Dados legados sem o campo recebem 80%; backups com valores fora do contrato são rejeitados. A mudança não altera a disponibilidade, os planos ou os históricos.
+
+Consistência e Trajetória apresentam o crédito compatível da semana atual, até hoje, em relação à meta pessoal. Sem plano comparável, explicam como obter evidência. Esse contexto não entra no cálculo da projeção, Prontidão ou prioridade e não estima ganho de nota. A política analítica versionada continua usando seu limiar de 80%, independente da meta pessoal. Novos fechamentos guardam `personalTarget` junto ao modelo; alterar a meta não reinterpreta retratos antigos. Reativar a meta usa o padrão de 80%.
+
 ### Desempenho — pacote 5
 
 Em Desempenho → Consistência, o resumo separa tempo realizado, crédito compatível com o plano, execução prioritária e cobertura da classificação histórica. A explicação distingue estudo adicional, excedente vinculado e vínculo incompatível. Evidência limitada mantém os minutos observados visíveis e deixa a interpretação prioritária indisponível.

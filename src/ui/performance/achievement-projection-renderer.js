@@ -1,3 +1,4 @@
+import {renderAdherenceTarget} from '../renderers/adherence-target-renderer.js';
 import {renderRecoveryPlan,formatRecoveryMinutes} from './recovery-plan-renderer.js';
 import {buildProjectionRequirements} from '../../application/projection/build-projection-requirements.js';
 
@@ -61,7 +62,7 @@ export function renderProjectionScenarioResult(result,{escapeHtml}={}){
   return `<section aria-label="Resultado da simulação"><strong>Resultado simulado</strong><div class="projection-scenario__comparison">${column('Atual',result.current)}${column('Simulação',result.simulated)}</div><p class="analytics-note">${escapeHtml(result.note)} Nenhum dado real foi alterado.</p>${renderRecoveryScenarioComparison(result.recovery,result.current,result.simulated,escapeHtml)}</section>`;
 }
 
-export function renderAchievementProjection(model,{history=[],escapeHtml,escapeAttr=escapeHtml,weeklyCapacityMinutes=0,recoveryPlan=null}={}){
+export function renderAchievementProjection(model,{history=[],escapeHtml,escapeAttr=escapeHtml,weeklyCapacityMinutes=0,adherenceContext=null,recoveryPlan=null}={}){
   if(!model)return '';
   const status=labels[model.status]||labels.insufficient_data;
   const confidence=confidenceLabels[model.confidence.level]||confidenceLabels.insufficient;
@@ -74,6 +75,7 @@ export function renderAchievementProjection(model,{history=[],escapeHtml,escapeA
     <p>${escapeHtml(model.summary)}</p><p class="performance-method-note">Confiança ${confidence.toLowerCase()} · ${context} · fase ${phaseLabels[model.exam.phase]||phaseLabels.undated}</p>
     <div class="achievement-projection__metrics"><div><span>Meta de nota</span><strong>${pct(model.current.targetScore)}</strong></div><div><span>Simulados comparáveis</span><strong>${pct(model.current.simulationAccuracy)}</strong></div><div><span>Faixa atual</span><strong>${band?`${pct(band.low)}–${pct(band.high)}`:'—'}</strong></div><div><span>Tendência em 30 dias</span><strong>${forecast.available?pct(forecast.central):'—'}</strong></div></div>
     ${model.status==='insufficient_data'?renderRequirements(model,escapeHtml):renderTrajectory(model,escapeHtml)}
+    ${renderAdherenceTarget(adherenceContext,{escapeHtml})}
     <div class="achievement-projection__story"><div><strong>Evidência</strong><p>${escapeHtml(model.risks[0]||model.drivers[0]||model.confidence.reasons[0]||model.summary)}</p></div><div><strong>Ação</strong><p>${escapeHtml(model.recovery?.steps?.[0]||'Continue registrando simulados comparáveis.')}</p></div></div>
     <details class="achievement-projection__details"><summary>Entender esta projeção</summary><p>${escapeHtml(model.summary)}</p><ul>${entries.map(item=>`<li class="achievement-projection__${item.type}">${escapeHtml(item.text)}</li>`).join('')||'<li>Registre mais simulados comparáveis para obter uma explicação.</li>'}</ul><p>${model.evidence.observationCount||0} simulados comparáveis · ${model.evidence.sampleSize||0} questões na amostra.</p>${model.confidence.reasons.length?`<p>${escapeHtml(model.confidence.reasons.join(' '))}</p>`:''}<p>Prontidão é um índice de preparação; não representa probabilidade de aprovação.</p></details>
     ${model.recovery?`<details class="achievement-projection__details"><summary>O que seria necessário?</summary><p>${model.recovery.state==='collect_evidence'?'Primeiro, reúna uma base comparável.':`Déficit central medido: ${model.recovery.gap} p.p. · ${model.recovery.weeksRemaining??'—'} semana(s) até a prova.`}</p><ol>${model.recovery.steps.map(step=>`<li>${escapeHtml(step)}</li>`).join('')}</ol><p class="analytics-note">Orientações para revisão do plano, sem previsão de ganho de nota ou alteração automática de horas.</p></details>`:''}

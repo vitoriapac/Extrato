@@ -11,11 +11,11 @@ import {buildReadinessChangeExplanation} from '../readiness/build-readiness-chan
 import {buildStabilityMap} from './build-stability-map.js';
 
 // The composition root supplies scoped records and stateful metric lookups; this builder owns section assembly.
-export function buildPerformancePageModel({viewState,range,today,activeExamTags=[],scope,subjects=[],simulations=[],projectionSnapshots=[],achievementProjection=null,achievementHistory=[],achievementCapacityMinutes=0,recoveryPlan=null,readinessSnapshots=[],readiness=null,blueprint={},globalTarget=80,candidates=[],dailyPlans=[],executionSource=null,subjectIdFor,simulationCountsFor,reviewCompletedDateFor,topicMetricsFor,topicProfileFor,topicHistoryFor}={}){
+export function buildPerformancePageModel({viewState,range,today,activeExamTags=[],scope,subjects=[],simulations=[],projectionSnapshots=[],achievementProjection=null,achievementHistory=[],achievementCapacityMinutes=0,adherenceContext=null,recoveryPlan=null,readinessSnapshots=[],readiness=null,blueprint={},globalTarget=80,candidates=[],dailyPlans=[],executionSource=null,subjectIdFor,simulationCountsFor,reviewCompletedDateFor,topicMetricsFor,topicProfileFor,topicHistoryFor}={}){
   const section=viewState.section;
   if(section==='overview'){
     const model=buildPerformanceOverview({range,today,activeExamTags,readinessSnapshots,readiness,questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans,subjects});
-    return {section,model,achievementProjection,achievementHistory,achievementCapacityMinutes,recoveryPlan,comparisonModel:buildPerformanceComparison(model,{comparePrevious:range.comparePrevious}),readinessChange:buildReadinessChangeExplanation(model.readinessPair)};
+    return {section,model,achievementProjection,achievementHistory,achievementCapacityMinutes,adherenceContext,recoveryPlan,comparisonModel:buildPerformanceComparison(model,{comparePrevious:range.comparePrevious}),readinessChange:buildReadinessChangeExplanation(model.readinessPair)};
   }
   if(section==='questions'){
     const questions=scope.questions.included.map(item=>({...item,subjectId:subjectIdFor(item)}));

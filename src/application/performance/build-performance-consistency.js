@@ -1,3 +1,4 @@
+import {buildAdherenceTarget} from '../adherence/adherence-target.js';
 import {addLocalDays,parseLocalDate} from '../../core/date-utils.js';
 import {plannedMinutesForPlan} from '../goals/build-plan-execution.js';
 import {buildStrategicExecution} from '../goals/build-strategic-execution.js';
@@ -37,6 +38,7 @@ export function buildPerformanceConsistency({range,today,sessions=[],questions=[
   const source={dailyPlans,sessions,subjects,...executionSource};
   const sourceDates=[...source.dailyPlans,...source.sessions].map(item=>item.date).filter(date=>typeof date==='string'&&parseLocalDate(date)&&date<=today).sort();
   const adherence={model:buildAdherenceModel({...source,start:range?.start||sourceDates[0]||today,end:range?.end||today,today,activeExamTags}),weekly:buildWeeklyAdherence({...source,today,activeExamTags,historyWeeks})};
+  adherence.goal=buildAdherenceTarget(adherence.weekly.current,source.adherenceTarget);
   return {weekly,heatmap,adherenceAnalysis:adherence,studiedMinutes,plannedMinutes,adherence:plannedMinutes?round(studiedMinutes/plannedMinutes*100):null,
     strategicAdherence:strategic.strategicAdherence,strategicCoverage:strategic.classifiedCoverage,
     activeDays:countStudyDaysInRange(studied,range),questions:answered.reduce((sum,item)=>sum+Math.max(0,Number(item.resolved)||0),0),

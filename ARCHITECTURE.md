@@ -6,6 +6,8 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 
 `src/app.js` compõe estado, relógio, serviços e interface. As setas indicam dependências permitidas: a interface aciona a aplicação; regras de domínio não importam a interface nem acessam o estado global. Repositórios e providers isolam a persistência.
 
+`application/adherence` reconcilia execução por período e escopo, calcula crédito e interpreta prioridades congeladas. A meta pessoal (`metas.aderenciaSemanal`, percentual de 50–100 ou `null`) é um contexto separado: não alimenta scores ou o cálculo da projeção. Backups antigos recebem o padrão 80; novos fechamentos capturam esse contexto sem reescrever os anteriores. A política analítica versionada mantém seu próprio limiar.
+
 ```mermaid
 flowchart TD
     ROOT["Composition root: app.js"] --> UI["UI: controllers, view-models e renderers"]

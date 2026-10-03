@@ -26,8 +26,8 @@ for(const {name,width,theme,columns} of [
     if(section==='overview'&&process.platform==='win32')await expect(page.locator('#performanceSectionContent .performance-summary')).toHaveScreenshot(screenshotName(`desempenho-resumo-${name}.png`),screenshotOptions);
   }
   await activateTab(page,'metas');
-  await expect(page.locator('#metasContainer .meta-card')).toHaveCount(6);
-  await expect(page.locator('#metasContainer .meta-card').last()).toContainText('Meta de Consistência');
+  await expect(page.locator('#metasContainer .meta-card')).toHaveCount(7);
+  await expect(page.locator('#metasContainer .meta-card').last()).toContainText('Meta de Aderência');
   const actualColumns=await page.locator('#metasContainer').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length);
   expect(actualColumns).toBe(columns);
   await expectNoPageOverflow(page);
