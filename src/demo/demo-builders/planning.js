@@ -1,5 +1,7 @@
 import {addLocalDays} from '../../core/date-utils.js';
 import {buildAdaptivePlanningAdvice} from '../../domain/planning/adaptive-planning.js';
+import {freezePlanExecution} from '../../domain/planning/plan-execution-snapshot.js';
+import {EXAM_TAGS} from '../../domain/exams/exam-constants.js';
 
 const stamp=date=>`${date}T12:00:00.000Z`;
 const subjectByName=(subjects,name)=>subjects.find(item=>item.name===name);
@@ -20,6 +22,11 @@ export function buildDemoPlanning(scenario,{today,subjects,examDate,sessions=[],
     const date=addLocalDays(today,index),first=subjects[(index*2)%subjects.length],second=subjects[(index*2+1)%subjects.length];
     const items=[first,second].map((subject,itemIndex)=>({id:`demo-plan-item-${index+1}-${itemIndex+1}`,subjectId:subject.id,topicId:subject.topics[0].id,type:itemIndex?'questions':'study',plannedMinutes:itemIndex?35:45,executedSeconds:0,status:'planned',originalDate:date,currentDate:date,rescheduleCount:0,skippedReason:null,recommendationId:null,lastExecutedAt:null}));
     dailyPlans.push({id:`demo-daily-plan-${index+1}`,date,availableMinutes:120,plannedMinutes:80,flexMinutes:40,createdAt:stamp(date),updatedAt:stamp(date),items});
+  }
+  // Scripted decisions captured at creation, not retrospective scores from today's evidence.
+  for(const plan of dailyPlans)for(const [index,item] of plan.items.entries()){
+    item.prioritySnapshot={priority:index===0,source:'demo-scripted',capturedAt:stamp(plan.date)};
+    freezePlanExecution(item,{date:plan.date,capturedAt:stamp(plan.date),activeExamTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA]});
   }
   const source=subjectByName(subjects,scenario.adaptivePlanning.example.from),target=subjectByName(subjects,scenario.adaptivePlanning.example.to);
   const example=scenario.adaptivePlanning.example,otherCount=subjects.length-2,otherBudget=scenario.adaptivePlanning.capacityMinutes-example.sourceBeforeMinutes-example.targetBeforeMinutes,otherBase=Math.floor(otherBudget/otherCount),otherExtra=otherBudget%otherCount;
