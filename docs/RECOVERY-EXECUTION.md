@@ -33,7 +33,17 @@ O serviço de sessões usa o mesmo contrato de compatibilidade de disciplina, t�
 
 Itens legados sem disciplina, tópico ou tipo mantêm a compatibilidade do serviço de sessões nos campos ausentes. O modelo diário exige disciplina elegível e explicita estudo adicional quando não há vínculo seguro. Não infere retroativamente tipos ausentes.
 
-## Jornada e regressões
+## Consolidação da aderência — pacotes 1 e 2
+
+O contrato `domain/planning/execution-contract.js` centraliza compatibilidade de atividade, data civil, identidade única, vínculo de sessão e crédito limitado. A execução estratégica usada no fechamento reutiliza essas regras. Tempo vinculado acima do previsto é excedente; tempo sem vínculo é adicional; vínculo com atividade incompatível não recebe crédito. Uma identidade de atividade duplicada não recebe crédito por escolha arbitrária.
+
+Novas atividades geradas pelo plano semanal ou pelas recomendações recebem `executionSnapshot` versão 1: duração, tipo, disciplina/tópico, prioridade já capturada, concurso, data, versão semanal e origem. O snapshot é capturado uma vez e não acompanha mudanças posteriores da configuração. Atividades legadas mantêm os campos existentes e não recebem uma classificação histórica inventada.
+
+O replanejamento mantém `rescheduledFromId` e uma origem comum no snapshot. `transferredMinutes` registra a parte transferida: o fechamento considera a parcela retida na origem e a parcela criada no destino, preservando o crédito de sessões anteriores sem duplicar tempo planejado. Desfazer uma transferência devolve apenas os minutos efetivamente desfeitos; destinos executados continuam protegidos. Conteúdos arquivados permanecem na execução estratégica histórica, embora não recebam novas ações diárias.
+
+Esses campos são adicionais no registro existente, sem mudança de schema. O modelo de aderência e sua apresentação em Desempenho pertencem aos pacotes seguintes.
+
+## Validação da jornada
 
 O fluxo permanece: Desempenho → Diagnóstico → prévia de Recovery → confirmação → plano versionado → execução diária → sessão real → fechamento semanal. A Timeline permite consultar a decisão congelada e sua reversão; executar ou reverter não reescreve sessões anteriores. Alterações de plano não regeneram automaticamente o dia: o card sinaliza a necessidade de revisar a distribuição.
 

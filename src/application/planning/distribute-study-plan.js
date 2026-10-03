@@ -1,3 +1,4 @@
+import {freezePlanExecution} from '../../domain/planning/plan-execution-snapshot.js';
 const ACTIVE_STATUSES=new Set(['planned','in_progress','partial','completed','deferred']);
 const clampMinutes=value=>Math.max(0,Math.round(Number(value)||0));
 
@@ -36,7 +37,7 @@ export function buildDailyPlanProposal({studyPlan,existingPlans=[],days=[],dueRe
   }
   const proposalDays=slots.filter(slot=>slot.items.length).map(slot=>({...slot,plannedMinutes:slot.items.reduce((sum,item)=>sum+item.minutes,0),flexMinutes:slot.reserveMinutes+slot.remaining}));
   const plannedMinutes=proposalDays.reduce((sum,day)=>sum+day.plannedMinutes,0);
-  return {state:plannedMinutes?'proposal':'insufficient',studyPlanId:studyPlan.id,days:proposalDays,plannedMinutes,unallocatedMinutes,existingLinkedItems:existingKeys.size,reserveRatio:ratio,reason:plannedMinutes?null:'Não há capacidade ou itens novos para distribuir.'};
+  return {state:plannedMinutes?'proposal':'insufficient',studyPlanId:studyPlan.id,activeExamTags:[...(studyPlan.activeExamTags||[])],days:proposalDays,plannedMinutes,unallocatedMinutes,existingLinkedItems:existingKeys.size,reserveRatio:ratio,reason:plannedMinutes?null:'Não há capacidade ou itens novos para distribuir.'};
 }
 
 export function applyDailyPlanProposal({dailyPlans=[],proposal,operationId,now,idGenerator}={}){
@@ -48,7 +49,7 @@ export function applyDailyPlanProposal({dailyPlans=[],proposal,operationId,now,i
     if(!plan){plan={id:idGenerator('plan'),date:day.date,availableMinutes:day.availableMinutes,plannedMinutes:0,flexMinutes:day.availableMinutes,createdAt:now,updatedAt:now,studyPlanId:proposal.studyPlanId,generationOperationId:operationId,items:[]};dailyPlans.push(plan);createdPlans++}
     day.items.forEach((source,index)=>{
       const key=`${source.studyPlanItemId}:${source.type}:${day.date}`;if(existing.has(key))return;existing.add(key);
-      plan.items.push({id:idGenerator('plan-item'),subjectId:source.subjectId,topicId:source.topicId,subjectName:source.subjectName,topicName:source.topicName,type:source.type,prioritySnapshot:source.prioritySnapshot?structuredClone(source.prioritySnapshot):null,plannedMinutes:source.minutes,executedSeconds:0,status:'planned',sessionIds:[],position:plan.items.length+1,statusIcon:'📅',statusLabel:'Plano semanal',reason:source.origin==='review'?'Revisão prevista para o período':'Distribuição confirmada do plano semanal',action:source.type==='questions'?'Resolver questões':source.type==='review'?'Revisar o tópico':'Estudar o tópico',recommendedQuestions:0,originalDate:day.date,currentDate:day.date,rescheduleCount:0,skippedReason:null,recommendationId:null,studyPlanId:proposal.studyPlanId,studyPlanItemId:source.studyPlanItemId,generationOperationId:operationId,createdAt:now});createdItems++;
+      plan.items.push({id:idGenerator('plan-item'),subjectId:source.subjectId,topicId:source.topicId,subjectName:source.subjectName,topicName:source.topicName,type:source.type,prioritySnapshot:source.prioritySnapshot?structuredClone(source.prioritySnapshot):null,plannedMinutes:source.minutes,executedSeconds:0,status:'planned',sessionIds:[],position:plan.items.length+1,statusIcon:'📅',statusLabel:'Plano semanal',reason:source.origin==='review'?'Revisão prevista para o período':'Distribuição confirmada do plano semanal',action:source.type==='questions'?'Resolver questões':source.type==='review'?'Revisar o tópico':'Estudar o tópico',recommendedQuestions:0,originalDate:day.date,currentDate:day.date,rescheduleCount:0,skippedReason:null,recommendationId:null,studyPlanId:proposal.studyPlanId,studyPlanItemId:source.studyPlanItemId,generationOperationId:operationId,createdAt:now});freezePlanExecution(plan.items.at(-1),{date:day.date,activeExamTags:proposal.activeExamTags||[],capturedAt:now,studyPlanId:proposal.studyPlanId});createdItems++;
     });
     plan.plannedMinutes=(plan.items||[]).filter(item=>!['skipped','replaced'].includes(item.status)).reduce((sum,item)=>sum+clampMinutes(item.plannedMinutes),0);plan.flexMinutes=Math.max(0,plan.availableMinutes-plan.plannedMinutes);plan.updatedAt=now;
   });

@@ -1,9 +1,10 @@
+import {historicalExecutionItem} from './plan-execution-snapshot.js';
 import {localDateFromTimestamp} from '../sessions/study-session.js';
 import {parseLocalDate} from '../../core/date-utils.js';
 
 export const EXCLUDED_DAILY_STATUSES=new Set(['skipped','replaced','discarded','deferred']);
 export const dailyActivityType=type=>type==='theory'||type==='prerequisite'?'study':type||'study';
-export const sessionMatchesDailyItem=(session,item)=>Boolean(item&&(!item.subjectId||session.subjectId===item.subjectId)&&(!item.topicId||session.topicId===item.topicId)&&(!item.type||dailyActivityType(session.type)===dailyActivityType(item.type)));
+export const sessionMatchesDailyItem=(session,item)=>{if(!item)return false;const frozen=historicalExecutionItem(item);return (!frozen.subjectId||session.subjectId===frozen.subjectId)&&(!frozen.topicId||session.topicId===frozen.topicId)&&(!frozen.type||dailyActivityType(session.type)===dailyActivityType(frozen.type));};
 export const executionDate=session=>typeof session.date==='string'&&parseLocalDate(session.date)?session.date:localDateFromTimestamp(session.endedAt||session.startedAt||session.createdAt);
 export const executionSeconds=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
 export function executionCredit(plannedSeconds,workedSeconds,previousSeconds=0){

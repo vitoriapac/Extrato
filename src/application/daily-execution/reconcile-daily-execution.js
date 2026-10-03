@@ -1,3 +1,4 @@
+import {historicalExecutionItem} from '../../domain/planning/plan-execution-snapshot.js';
 import {EXCLUDED_DAILY_STATUSES,dailyActivityType,sessionMatchesDailyItem,executionDate as dateOf,executionSeconds as seconds,executionCredit,indexExecutionItems} from '../../domain/planning/execution-contract.js';
 export {EXCLUDED_DAILY_STATUSES,dailyActivityType,sessionMatchesDailyItem} from '../../domain/planning/execution-contract.js';
 import {classifyEvidenceScope} from '../../domain/exams/exam-evidence-scope.js';
@@ -17,8 +18,10 @@ export function dailyItemEligible(item,subjects,activeExamTags){
 // A session needs an explicit, unambiguous link and matching activity to credit a task.
 export function reconcileDailyExecution({today,dailyPlans=[],sessions=[],subjects=[],activeExamTags=[]}={}){
   const plans=dailyPlans.filter(plan=>plan.date===today&&(!Array.isArray(plan.activeExamTags)||scopeKey(plan.activeExamTags)===scopeKey(activeExamTags)));
-  const items=plans.flatMap(plan=>(plan.items||[]).filter(item=>dailyItemEligible(item,subjects,activeExamTags)).map(item=>({...structuredClone(item),dailyPlanId:plan.id,date:today})));
-  const {eligible,byId,resolve,ambiguousItemCount}=indexExecutionItems(items);
+  const items=plans.flatMap(plan=>(plan.items||[]).filter(item=>dailyItemEligible(item,subjects,activeExamTags)).map(item=>({...structuredClone(historicalExecutionItem(item)),dailyPlanId:plan.id,date:today})));
+  const globalIndex=indexExecutionItems(dailyPlans.flatMap(plan=>plan.items||[]));
+  const {eligible,byId,resolve}=indexExecutionItems(items.filter(item=>globalIndex.byId.has(item.id)));
+  const ambiguousItemCount=items.length-eligible.length;
   const execution=new Map(eligible.map(item=>[item.id,{todaySeconds:0,previousSeconds:0,mismatchedSeconds:0,sessionIds:[]} ]));
   const seen=new Set(),todaySessions=[];
   let studiedSeconds=0,additionalSeconds=0,mismatchedSeconds=0;
