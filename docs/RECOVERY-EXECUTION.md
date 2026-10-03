@@ -43,15 +43,23 @@ O replanejamento mantém `rescheduledFromId` e uma origem comum no snapshot. `tr
 
 Esses campos são adicionais no registro existente, sem mudança de schema. O modelo de aderência e sua apresentação em Desempenho pertencem aos pacotes seguintes.
 
-## Validação da jornada
-
-### Modelo de aderência — pacote 3
+## Modelo de aderência — pacote 3
 
 `application/adherence/build-adherence-model.js` interpreta a reconciliação estratégica existente, sem reconstruir vínculos de sessões. Retorna resumo, execução prioritária e disciplina. `volumeRatio` compara todo o estudo realizado com o planejado e pode superar 100%; `temporalAdherence` usa apenas crédito compatível, limitado por atividade. Excedentes, estudo adicional, vínculos incompatíveis e execução de atividades de outro período são separados.
 
 A política `frozen-priority-minutes`, versão 1, calcula a execução prioritária usando a classificação booleana congelada e os minutos creditados. Também retorna contagens de atividades completas/parciais e equivalentes fracionários. As contagens são de blocos alocados; não representam quantidade de tópicos distintos. Não há novos pesos ou score. `classifiedCoverage` explicita a proporção com classificação histórica conhecida; atividades legadas não são classificadas retroativamente.
 
 O período é limitado à data local informada, para que dias futuros não aumentem o denominador. O concurso gravado e o catálogo histórico delimitam o escopo; arquivamento não apaga o estudo passado. `buildPlanExecution` expõe o novo modelo em `adherenceModel`, mantendo os campos legados para os consumidores existentes. A apresentação visual será consolidada no pacote 5.
+
+## Análise semanal — pacote 4
+
+`build-weekly-adherence.js` retorna a semana atual, histórico de 4/8/12 semanas (padrão 8) e comparação com a anterior. A semana começa na segunda-feira local; permanece em andamento até o dia seguinte ao domingo. Durante a semana, o comparativo usa os mesmos dias decorridos da semana anterior. Semanas concluídas são comparadas integralmente. Nenhuma sessão futura entra na análise.
+
+`adherence-status.js` publica a política versão 1: cumprimento de 80% como referência fixa inicial para crédito temporal e execução prioritária, com pelo menos 80% do tempo planejado historicamente classificado. Esse limiar é um contrato analítico; a meta opcional do usuário pertence ao pacote 8. Estados: `aligned` (ambos atendem), `time_gap` (somente carga abaixo), `priority_gap` (somente prioridade abaixo) e `mixed` (ambos abaixo). Ausência de plano avaliado, classificação insuficiente, identidade ambígua ou ausência de alocação prioritária produzem `insufficient_data` com códigos de motivo.
+
+Os deltas só existem quando os dois períodos têm evidência suficiente. Não se compara uma quarta-feira com sete dias completos, nem se afirma que ausência de classificação representa execução ruim. O modelo não persiste, altera metas ou redistribui capacidade. `buildPlanExecution.weeklyAdherence` disponibiliza o contrato para os próximos consumidores; os campos legados de volume permanecem até a consolidação visual.
+
+## Validação da jornada
 
 O fluxo permanece: Desempenho → Diagnóstico → prévia de Recovery → confirmação → plano versionado → execução diária → sessão real → fechamento semanal. A Timeline permite consultar a decisão congelada e sua reversão; executar ou reverter não reescreve sessões anteriores. Alterações de plano não regeneram automaticamente o dia: o card sinaliza a necessidade de revisar a distribuição.
 

@@ -23,5 +23,5 @@ export function buildAdherenceModel({start,end,today=end,dailyPlans=[],sessions=
   return {version:1,state:execution.reconciliation.plannedMinutes>0?'ready':'unplanned',activeExamTags:[...activeExamTags],
     period:{start,end,evaluatedEnd: evaluatedEnd<start?null:evaluatedEnd,complete:end<today},
     summary:buildAdherenceSummary(execution),priority:buildPriorityAdherence(execution.reconciliation),
-    subjects:buildSubjectAdherence(execution),items:execution.reconciliation.items};
+    subjects:buildSubjectAdherence(execution),items:execution.reconciliation.items,ambiguousItemCount:execution.reconciliation.ambiguousItemCount};
 }
