@@ -1,4 +1,5 @@
 import {buildStrategicExecution} from './build-strategic-execution.js';
+import {buildAdherenceModel} from '../adherence/build-adherence-model.js';
 import {addLocalDays,parseLocalDate} from '../../core/date-utils.js';
 
 const excluded=new Set(['skipped','replaced','discarded','deferred']);
@@ -11,7 +12,7 @@ export const plannedMinutesForPlan=plan=>Array.isArray(plan.items)&&plan.items.l
   ?plan.items.filter(item=>!excluded.has(item.status)).reduce((sum,item)=>sum+minutes(item.plannedMinutes),0)
   :minutes(plan.plannedMinutes);
 
-export function buildPlanExecution({today,dailyPlans=[],sessions=[],hoursByDay={},historyWeeks=8,subjects=[]}={}){
+export function buildPlanExecution({today,dailyPlans=[],sessions=[],hoursByDay={},historyWeeks=8,subjects=[],activeExamTags=[]}={}){
   const start=weekStart(today);
   if(!start)return {state:'empty',days:[],history:[]};
   const plansByDate=new Map(),studyByDate=new Map();
@@ -38,6 +39,6 @@ export function buildPlanExecution({today,dailyPlans=[],sessions=[],hoursByDay={
   const capacityMinutes=Object.values(hoursByDay).reduce((sum,hours)=>sum+Math.max(0,Math.min(24,Number(hours)||0))*60,0);
   const plannedMinutes=days.reduce((sum,day)=>sum+(day.plannedMinutes||0),0);
   const studiedMinutes=days.filter(day=>!day.future).reduce((sum,day)=>sum+day.studiedMinutes,0);
-  return {state:plannedMinutes?'ready':'unplanned',days,history,strategic:buildStrategicExecution({start,end:addLocalDays(start,6),today,dailyPlans,sessions,subjects}),capacityMinutes:minutes(capacityMinutes),plannedMinutes,studiedMinutes,
+  return {state:plannedMinutes?'ready':'unplanned',days,history,adherenceModel:buildAdherenceModel({start,end:addLocalDays(start,6),today,dailyPlans,sessions,subjects,activeExamTags}),strategic:buildStrategicExecution({start,end:addLocalDays(start,6),today,dailyPlans,sessions,subjects}),capacityMinutes:minutes(capacityMinutes),plannedMinutes,studiedMinutes,
     completedWeeks:history.filter(item=>item.adherence!==null).length};
 }

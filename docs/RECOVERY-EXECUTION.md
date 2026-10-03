@@ -45,6 +45,14 @@ Esses campos são adicionais no registro existente, sem mudança de schema. O mo
 
 ## Validação da jornada
 
+### Modelo de aderência — pacote 3
+
+`application/adherence/build-adherence-model.js` interpreta a reconciliação estratégica existente, sem reconstruir vínculos de sessões. Retorna resumo, execução prioritária e disciplina. `volumeRatio` compara todo o estudo realizado com o planejado e pode superar 100%; `temporalAdherence` usa apenas crédito compatível, limitado por atividade. Excedentes, estudo adicional, vínculos incompatíveis e execução de atividades de outro período são separados.
+
+A política `frozen-priority-minutes`, versão 1, calcula a execução prioritária usando a classificação booleana congelada e os minutos creditados. Também retorna contagens de atividades completas/parciais e equivalentes fracionários. As contagens são de blocos alocados; não representam quantidade de tópicos distintos. Não há novos pesos ou score. `classifiedCoverage` explicita a proporção com classificação histórica conhecida; atividades legadas não são classificadas retroativamente.
+
+O período é limitado à data local informada, para que dias futuros não aumentem o denominador. O concurso gravado e o catálogo histórico delimitam o escopo; arquivamento não apaga o estudo passado. `buildPlanExecution` expõe o novo modelo em `adherenceModel`, mantendo os campos legados para os consumidores existentes. A apresentação visual será consolidada no pacote 5.
+
 O fluxo permanece: Desempenho → Diagnóstico → prévia de Recovery → confirmação → plano versionado → execução diária → sessão real → fechamento semanal. A Timeline permite consultar a decisão congelada e sua reversão; executar ou reverter não reescreve sessões anteriores. Alterações de plano não regeneram automaticamente o dia: o card sinaliza a necessidade de revisar a distribuição.
 
 A aplicação verifica a virada da data local ao retornar à janela e a cada minuto, atualizando o contexto sem mudar registros. Não há fechamento diário obrigatório. Para levar pendências adiante, abra a aba Hoje e use o fluxo existente de replanejamento com confirmação.
