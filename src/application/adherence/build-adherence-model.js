@@ -1,11 +1,12 @@
 import {parseLocalDate} from '../../core/date-utils.js';
+import {buildHistoricalPlanningContext} from '../planning/build-historical-planning-context.js';
 import {classifyEvidenceScope} from '../../domain/exams/exam-evidence-scope.js';
 import {buildStrategicExecution} from '../goals/build-strategic-execution.js';
 import {buildAdherenceSummary} from './build-adherence-summary.js';
 import {buildPriorityAdherence} from './build-priority-adherence.js';
 import {buildSubjectAdherence} from './build-subject-adherence.js';
 
-export function buildAdherenceModel({start,end,today=end,dailyPlans=[],sessions=[],subjects=[],activeExamTags=[]}={}){
+export function buildAdherenceModel({start,end,today=end,dailyPlans=[],sessions=[],subjects=[],activeExamTags=[],capacityHistory=[]}={}){
   if(![start,end,today].every(date=>typeof date==='string'&&parseLocalDate(date))||start>end)return {state:'invalid_period',period:null,summary:null,priority:null,subjects:[],items:[]};
   const evaluatedEnd=end<today?end:today;
   // Archiving governs new actions, not the interpretation of past activity.
@@ -22,6 +23,7 @@ export function buildAdherenceModel({start,end,today=end,dailyPlans=[],sessions=
   const execution=buildStrategicExecution({start,end:evaluatedEnd,today,dailyPlans:scopedPlans,sessions:sessions.filter(included),subjects});
   return {version:1,state:execution.reconciliation.plannedMinutes>0?'ready':'unplanned',activeExamTags:[...activeExamTags],
     period:{start,end,evaluatedEnd: evaluatedEnd<start?null:evaluatedEnd,complete:end<today},
+    planningContext:buildHistoricalPlanningContext({dailyPlans:scopedPlans,capacityHistory,start,end:evaluatedEnd}),
     summary:buildAdherenceSummary(execution),priority:buildPriorityAdherence(execution.reconciliation),
     subjects:buildSubjectAdherence(execution),items:execution.reconciliation.items,ambiguousItemCount:execution.reconciliation.ambiguousItemCount};
 }

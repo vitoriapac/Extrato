@@ -1,6 +1,7 @@
 import {buildAdherenceCloseHistory} from './application/adherence/build-weekly-close-adherence.js';
 import {renderAdherenceCloseHistory} from './ui/renderers/weekly-adherence-renderer.js';
 import {freezePlanExecution} from './domain/planning/plan-execution-snapshot.js';
+import {recordPlanningCapacity,validCapacityRecord} from './domain/planning/capacity-history.js';
 import {buildDiagnosisPageModel} from './application/diagnostics/build-diagnosis-page-model.js';
 import {buildDecisionCoherenceReport} from './application/diagnostics/build-decision-coherence-report.js';
 import {renderDecisionCoherenceDebug} from './ui/renderers/decision-coherence-debug-renderer.js';
@@ -578,6 +579,7 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.exams)) state.exams = [];
   if(!Array.isArray(state.examQuestions)) state.examQuestions = [];
   if(!Array.isArray(state.weeklyCloseSnapshots))state.weeklyCloseSnapshots=[];
+  if(!Array.isArray(state.planningCapacityHistory))state.planningCapacityHistory=[];
   if(!['agenda','sequence'].includes(state.executionMode)) state.executionMode='agenda';
   const metaDefaults={semanal:5,mensal:20,questoesSemanal:150,simuladosSemanal:1,metaAprovacao:70,consistenciaSemanal:5,horasDiarias:2.5};
   if(!state.metas||typeof state.metas!=='object') state.metas={};
@@ -724,7 +726,10 @@ const replanService=createReplanService({repository:planningRepository,buildProp
 const sessionService=createSessionService({repository:appContext.repositories.studySessions,questionsRepository:appContext.repositories.questoes,historyRepository:appContext.repositories.topicHistory,planningRepository,recommendationsRepository:appContext.repositories.recommendationFeedback,clock:appClock,idGenerator:uid,normalizeQuestion:normalizeErrorBreakdown,resolveEvidenceScope:evidenceScopeForTopic,completeRecommendation:completeRecommendationFeedback,onCompleted:measureRecommendationResults});
 const guidedStudyService=createGuidedStudyService({recommend:({id}={})=>currentStudyRecommendations.filter(item=>!id||item.id===id),sessionService,clock:appClock});
 const calendarService=createRecordService({repository:appContext.repositories.calendar,clock:appClock,idGenerator:uid,prefix:'calendar'}),questionService=createRecordService({repository:appContext.repositories.questoes,clock:appClock,idGenerator:uid,prefix:'question',normalize:item=>{item.resolved=Math.max(0,Math.floor(Number(item.resolved)||0));item.correct=Math.min(item.resolved,Math.max(0,Math.floor(Number(item.correct)||0)));normalizeErrorBreakdown(item);return item}}),simulationService=createRecordService({repository:appContext.repositories.simulados,clock:appClock,idGenerator:uid,prefix:'simulado',normalize:item=>{item.total=Math.max(0,Math.floor(Number(item.total)||0));item.correct=Math.min(item.total,Math.max(0,Math.floor(Number(item.correct)||0)));return item}}),subjectGoalService=createRecordService({repository:appContext.repositories.metasPorDisciplina,clock:appClock,idGenerator:uid,prefix:'goal'});
-const goalsService=createGoalService({repository:appContext.repositories.settings,getDayOfWeek:date=>parseLocalDate(date)?.getDay()??new Date().getDay()});
+function observePlanningCapacity(source='observed'){
+  recordPlanningCapacity(state.planningCapacityHistory,{hoursByDay:state.metas.horasPorDia,today:todayISO(),capturedAt:nowISO(),id:uid('capacity'),source});
+}
+const goalsService=createGoalService({repository:appContext.repositories.settings,getDayOfWeek:date=>parseLocalDate(date)?.getDay()??new Date().getDay(),onCapacityObserved:observePlanningCapacity});
 const subjectService=createSubjectService({repository:appContext.repositories.subjects,clock:appClock,idGenerator:uid,onEvent:addHistoryEvent});
 const topicStrategyController=createTopicStrategyController({findTopic:getTopicById,listTopics:allTopics,subjectService,normalizeTopic:normalizeTopicStrategy,beforeChange:()=>captureReadinessBeforeStrategy('Antes de alterar impacto, esforço ou pré-requisitos de um tópico'),invalidatePlan:()=>{studyPlanPreview=null},onChanged:persistAndRender,onCycle:()=>{showToast('Esse vínculo criaria um ciclo entre pré-requisitos.');renderSubjects()}});
 const topicHistoryService=createTopicHistoryService({getState:()=>state,clock:appClock,idGenerator:uid,toLocalDate:timestampToLocalDateISO});
@@ -778,6 +783,7 @@ async function loadState(){
     loadWarning = 'Não foi possível carregar os dados salvos. O aplicativo iniciou com os dados padrão; importe um backup se necessário.';
   }
   ensureStateDefaults();
+  observePlanningCapacity();
   restoreTimerFromState();
   render();
   let modeMessage='';try{modeMessage=sessionStorage.getItem(MODE_FLASH_KEY)||'';sessionStorage.removeItem(MODE_FLASH_KEY)}catch(error){}
@@ -1156,7 +1162,7 @@ async function exportLatestAutomaticBackup(){
 }
 function validateBackupData(data){
   if(data?.metas?.aderenciaSemanal!==undefined&&!validAdherenceTarget(data.metas.aderenciaSemanal))return {valid:false,message:'A meta de aderência deve estar entre 50 e 100%, ou desativada (null).'};
-  const arrayFields = ['calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','projectionSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','alertStates','topicHistory','metasPorDisciplina'];
+  const arrayFields = ['planningCapacityHistory','calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','projectionSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','alertStates','topicHistory','metasPorDisciplina'];
   const envelope=validateBackupEnvelope(data,{currentVersion:CURRENT_SCHEMA_VERSION,arrayFields});if(!envelope.valid)return envelope;const {version}=envelope;
   try{
     const normalized=migrateState(structuredCloneSafe(data));
@@ -1176,7 +1182,7 @@ function ensureBackupStateDefaults(candidate){
 }
 function validateNormalizedBackup(data){
   const fail=message=>({valid:false,message});
-  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','projectionSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','weeklyCloseSnapshots','alertStates','topicHistory','metasPorDisciplina'];
+  const collections=['subjects','calendar','reviewAgenda','questoes','simulados','exams','examQuestions','progressHistory','readinessSnapshots','projectionSnapshots','studySessions','dailyPlans','studyPlans','planAdjustments','adaptivePlanningHistory','recommendationFeedback','recommendationHistory','weeklyCloseSnapshots','planningCapacityHistory','alertStates','topicHistory','metasPorDisciplina'];
   for(const field of collections){
     if(!Array.isArray(data[field])) return fail(`O campo "${field}" deve ser uma lista.`);
     if(data[field].length>50000) return fail(`O campo "${field}" excede o limite seguro de 50.000 registros.`);
@@ -1188,6 +1194,7 @@ function validateNormalizedBackup(data){
     ids.add(id); return '';
   };
   const textOk=(value,max=5000)=>typeof value==='string'&&value.length<=max;
+  for(const record of data.planningCapacityHistory){if(!validCapacityRecord(record))return fail('Registro de capacidade histórica inválido.');const error=registerId(record.id,'Um registro de capacidade');if(error)return fail(error);}
   for(const subject of data.subjects){
     if(!isPlainObject(subject)) return fail('Uma disciplina não é um objeto válido.');
     const idError=registerId(subject.id,'Uma disciplina'); if(idError) return fail(idError);
@@ -4985,7 +4992,7 @@ function projectPerformance(metrics){
 }
 
 const projectionController=createProjectionController({
-  getExecutionContext:()=>({dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,adherenceTarget:state.metas.aderenciaSemanal}),
+  getExecutionContext:()=>({dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,capacityHistory:state.planningCapacityHistory,adherenceTarget:state.metas.aderenciaSemanal}),
   getContext:(metrics=computeApprovalMetrics(),readiness=readinessResult(metrics))=>({today:todayISO(),scope:examEvidenceContext(),metrics,readiness,
     examDate:state.examDate||null,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:state.metas.metaAprovacao,
     consistencyTarget:state.metas.consistenciaSemanal,snapshots:state.projectionSnapshots,
@@ -5117,7 +5124,7 @@ let currentStudyTrackModel=null;
 let weeklyCloseController=null;
 function renderStudyTrack32Insights(){
  const close=document.getElementById('weeklyCloseDashboard'),comparison=document.getElementById('periodComparisonDashboard'),gaps=document.getElementById('gapMapDashboard'),history=document.getElementById('decisionHistoryDashboard'),simReplan=document.getElementById('postSimulationReplanDashboard');
- const scope=examEvidenceContext(),scopedTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id)),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),scopedPlans=(planningRepository.getDailyPlans?.()||[]).map(plan=>({...plan,items:(plan.items||[]).filter(item=>!item.topicId||scopedTopicIds.has(item.topicId))})),scopedRecommendations=state.recommendationFeedback.filter(item=>!item.topicId||scopedTopicIds.has(item.topicId)),model=buildStudyTrack32ViewModel({readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:scopedPlans,weeklyCloseSnapshots:state.weeklyCloseSnapshots,executionSource:{dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,adherenceTarget:state.metas.aderenciaSemanal},planAdjustments:state.planAdjustments,recommendations:scopedRecommendations,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:state.metas.metaAprovacao,blueprint:state.examBlueprint,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
+ const scope=examEvidenceContext(),scopedTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id)),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),scopedPlans=(planningRepository.getDailyPlans?.()||[]).map(plan=>({...plan,items:(plan.items||[]).filter(item=>!item.topicId||scopedTopicIds.has(item.topicId))})),scopedRecommendations=state.recommendationFeedback.filter(item=>!item.topicId||scopedTopicIds.has(item.topicId)),model=buildStudyTrack32ViewModel({readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:scopedPlans,weeklyCloseSnapshots:state.weeklyCloseSnapshots,executionSource:{dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,capacityHistory:state.planningCapacityHistory,adherenceTarget:state.metas.aderenciaSemanal},planAdjustments:state.planAdjustments,recommendations:scopedRecommendations,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:state.metas.metaAprovacao,blueprint:state.examBlueprint,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
  model.comparisonMetrics=captureCloseComparisonMetrics(model,projectPerformance());
  const metasClose=document.getElementById('metasWeeklyCloseSummary'),weekly=model.weeklyClose;
  if(metasClose)metasClose.innerHTML=weekly.state==='insufficient'?'<p class="analytics-note">Ainda não há evidência suficiente para interpretar o fechamento. Registre sessões e resultados ao longo da semana.</p>':`<div class="metas-close-metrics"><div><span>Aderência ao plano</span><strong>${weekly.adherence?.model?.summary?.temporalAdherence==null?'—':Math.round(weekly.adherence.model.summary.temporalAdherence)+'%'}</strong></div><div><span>Questões resolvidas</span><strong>${weekly.questions?.resolved??0}</strong></div><div><span>Precisão</span><strong>${weekly.questions?.accuracy==null?'—':weekly.questions.accuracy+'%'}</strong></div></div>${weekly.bestSignal?`<p><strong>Principal avanço:</strong> ${escapeHtml(weekly.bestSignal.message)}</p>`:''}${weekly.mainRisk?`<p><strong>Ponto de atenção:</strong> ${escapeHtml(weekly.mainRisk.message)}</p>`:''}`;
@@ -5303,7 +5310,7 @@ function renderPerformance(){
     projectionSnapshots:state.projectionSnapshots,readinessSnapshots:state.readinessSnapshots,
     readiness:performanceViewState.section==='overview'?readinessResult(computeApprovalMetrics()):null,
     blueprint:state.examBlueprint,globalTarget:state.metas.metaAprovacao,
-    candidates:performanceViewState.section==='subjects'?intelligenceCandidates():[],dailyPlans:performanceScopedPlans(scope),executionSource:{dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,adherenceTarget:state.metas.aderenciaSemanal},
+    candidates:performanceViewState.section==='subjects'?intelligenceCandidates():[],dailyPlans:performanceScopedPlans(scope),executionSource:{dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,capacityHistory:state.planningCapacityHistory,adherenceTarget:state.metas.aderenciaSemanal},
     subjectIdFor:entitySubjectId,simulationCountsFor:simuladoEffectiveCounts,
     reviewCompletedDateFor:item=>localDateFromTimestamp(item.completedAt),
     topicMetricsFor:(subjectId,topicId)=>{const mastery=topicMasteryIndex(subjectId,topicId),retention=topicRetentionScore(subjectId,topicId);return {mastery:mastery?.confidence>0?mastery.score:null,retention:retention?.available?retention.score:null,evidence:mastery?.confidence||0}},
