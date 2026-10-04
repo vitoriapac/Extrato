@@ -692,6 +692,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/help-center.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato barato de conteúdo e renderização da Central de Ajuda."
+    },
+    {
       "file": "tests/unit/historical-adherence-integrity.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

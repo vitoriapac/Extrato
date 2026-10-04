@@ -2197,3 +2197,23 @@ body.timer-focus-active .timer-context{display:none!important}
 /* A fase acompanha a configuração incompleta e retorna à Visão Geral depois. */
 #guidedOnboarding #overviewExamPhase{min-width:0;border-top:1px solid var(--border-subtle);padding-top:var(--space-3)}
 #guidedOnboarding .exam-phase-compact{margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+
+/* Central de Ajuda: componentes editoriais, com categorias em uma linha. */
+#helpCenter{width:min(100%,1120px)}
+.help-card-grid{display:flex;gap:var(--space-2);overflow-x:auto;margin:var(--space-6) 0;padding:var(--space-2) 0;scrollbar-width:thin}
+.help-card-grid .help-guide-card{display:block;flex:0 0 auto;padding:0;border:0;background:transparent}
+.help-category-link{padding:var(--space-3) var(--space-4);min-height:var(--touch-target);border:1px solid var(--border-subtle);background:var(--surface-card);color:var(--heading);font:600 var(--text-sm) var(--font-body);white-space:nowrap;cursor:pointer}
+.help-category-link[aria-current]{border-color:var(--border-emphasis);box-shadow:inset 0 -2px var(--gold)}
+.instruction-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:max(20px,var(--space-5));padding:var(--space-6) 0 0}
+.instruction-card{min-width:0;padding:max(24px,var(--space-6));border:1px solid var(--border-subtle);background:var(--surface-card);overflow-wrap:anywhere}
+.instruction-card h4{margin:0 0 var(--space-3);color:var(--heading)}
+.instruction-card p{line-height:1.6}.instruction-card .help-topic-summary{margin-top:0}
+.instruction-card--concept{padding:var(--space-5)}.instruction-card--reference{padding:var(--space-4)}
+.instruction-section{padding-block:var(--space-8)}
+.instruction-example{margin-block:var(--space-4);padding:var(--space-4);background:var(--surface-subtle);border-left:2px solid var(--gold);color:var(--heading)}
+.instruction-example figcaption{font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-3)}
+.instruction-flow,.instruction-steps{margin:0;padding:0;list-style:none}.instruction-flow li,.instruction-steps li{min-width:0}
+.instruction-callout{border-left:2px solid var(--gold);padding-left:var(--space-3)}
+.instruction-metric{display:grid;gap:var(--space-1)}.instruction-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4)}
+.instruction-legend{color:var(--text-secondary);font-size:var(--text-sm)}.instruction-action{color:var(--heading);font-weight:600}
+@media(max-width:700px){.instruction-card-grid{grid-template-columns:minmax(0,1fr)}}

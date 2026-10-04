@@ -29,7 +29,7 @@ test('auditoria de dados densos e ajuda em 320–430 px, light e dark',async({pa
     await search.fill('impacto');
     await expect(page.locator('#helpSearchStatus')).toContainText('assuntos encontrados');
     await expect(search).toBeInViewport();
-    await expect(page.locator('.help-card-grid .help-guide-card')).toHaveCount(6);
+    await expect(page.locator('.help-card-grid .help-guide-card')).toHaveCount(7);
     await search.fill('palavra-sem-correspondencia-visual');
     await expect(page.locator('#helpNoResults')).toBeVisible();
     await page.locator('#helpSearchClear').click();

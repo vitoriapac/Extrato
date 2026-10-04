@@ -1,4 +1,4 @@
-export const HELP_CATEGORIES=[
+const BASE_HELP_CATEGORIES=[
   {id:'guide-start',title:'Comece por aqui',summary:'Da prova ao primeiro fechamento semanal, um passo de cada vez.',entries:[
     {id:'first-steps',title:'Primeiros passos',summary:'O caminho básico para começar a receber orientações úteis.',steps:[{title:'Configure sua prova',detail:'Escolha o concurso, a data e as informações estratégicas.'},{title:'Monte o edital',detail:'Cadastre ou importe disciplinas e tópicos.'},{title:'Defina sua disponibilidade',detail:'Informe o tempo que você realmente pode estudar.'},{title:'Registre seus estudos',detail:'Vincule sessões aos tópicos sempre que possível.'},{title:'Resolva questões e faça revisões',detail:'O desempenho e a manutenção do conhecimento ganham contexto.'},{title:'Acompanhe o diagnóstico',detail:'Veja riscos, lacunas e a força das evidências.'},{title:'Siga as recomendações',detail:'Escolha a próxima ação com base na prova e no seu progresso.'},{title:'Faça o fechamento semanal',detail:'Compare o plano com o que foi executado.'}],paragraphs:['Você não precisa configurar tudo de uma vez. Comece pela prova, pelo conteúdo e pela disponibilidade. Conforme registra sessões, questões e revisões, o StudyTrack personaliza as análises.'],action:{label:'Abrir Disciplinas',target:'subjects'}},
     {id:'overview',title:'Visão Geral',summary:'Seu painel principal de acompanhamento.',paragraphs:['Reúne Índice de Prontidão, progresso, foco da semana, recomendações, evolução, riscos, oportunidades e conquistas. O índice resume sinais da preparação; não é probabilidade de aprovação.'],action:{label:'Abrir Visão Geral',target:'overview'}}
@@ -38,6 +38,14 @@ export const HELP_CATEGORIES=[
     {id:'demo',title:'Modo demonstração',summary:'Explore o produto com dados fictícios separados.',paragraphs:['A demonstração permite conhecer prioridades, planejamento, relatórios e histórico sem cadastrar uma base real. Reiniciar ou encerrar a demo não altera seus dados reais.'],action:{label:'Explorar demonstração',target:'demo'}}
   ]}
 ];
+
+// Stable IDs preserve navigation and search across the editorial update.
+const subjectEntry=BASE_HELP_CATEGORIES.find(category=>category.id==='guide-areas').entries.find(entry=>entry.id==='subjects');
+export const HELP_CATEGORIES=BASE_HELP_CATEGORIES.flatMap(category=>{
+  const entries=category.id==='guide-areas'?category.entries.filter(entry=>entry.id!=='subjects'):category.id==='guide-safety'?[subjectEntry,...category.entries]:category.entries;
+  const result={...category,title:category.id==='guide-exam'?'Prova':category.id==='guide-safety'?'Dados':category.title,entries};
+  return category.id==='guide-safety'?[{id:'guide-goals',title:'Metas',summary:'Volume, rotina e resultados para orientar sua preparação.',entries:[{id:'goals-guide',title:'Metas de estudo',summary:'Defina objetivos que caibam na sua rotina.',paragraphs:['Configure suas metas em Metas. Compare o realizado com o planejado e revise a disponibilidade antes de aceitar alterações na distribuição.'],action:{label:'Abrir Metas',target:'planning'}}]},result]:[result];
+}).map(category=>({...category,entries:category.entries.map(entry=>({kind:'feature',keywords:[],concepts:[],questions:[],...entry}))}));
 
 export const HELP_GLOSSARY=[
   ['Índice de Prontidão','Síntese de cobertura, domínio, retenção, consistência e simulados. Não é probabilidade de aprovação.'],

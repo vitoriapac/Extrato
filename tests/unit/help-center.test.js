@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {HELP_CATEGORIES} from '../../src/ui/help/help-content.js';
+import {renderHelpCenter} from '../../src/ui/help/help-renderer.js';
+test('ajuda preserva IDs únicos e oferece sete categorias com estrutura de busca',()=>{assert.deepEqual(HELP_CATEGORIES.map(category=>category.title),['Comece por aqui','Estudar','Planejar','Analisar','Prova','Metas','Dados']);const ids=HELP_CATEGORIES.flatMap(category=>[category.id,...category.entries.map(entry=>entry.id)]);assert.equal(new Set(ids).size,ids.length);for(const entry of HELP_CATEGORIES.flatMap(category=>category.entries)){assert.ok(Array.isArray(entry.keywords));assert.ok(Array.isArray(entry.concepts));assert.ok(Array.isArray(entry.questions))}});
+test('renderer mantém busca, ações e cards de leitura direta',()=>{const html=renderHelpCenter();assert.equal((html.match(/data-help-category=/g)||[]).length,7);assert.match(html,/instruction-card-grid/);assert.match(html,/id="helpSearch"/);assert.match(html,/data-help-action="today"/);assert.doesNotMatch(html,/<details/)});
+test('metadados e conteúdo são escapados na renderização',()=>{const html=renderHelpCenter({categories:[{id:'safe',title:'Teste',summary:'',entries:[{id:'one',title:'<script>',summary:'',keywords:['" onmouseover="bad'],paragraphs:['<img>']}]}]});assert.match(html,/&lt;script&gt;/);assert.match(html,/&quot; onmouseover=&quot;bad/);assert.doesNotMatch(html,/<img>/)});

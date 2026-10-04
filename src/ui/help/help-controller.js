@@ -63,7 +63,7 @@ export function createHelpController({document,window,activateTab}){
       let groupMatches=0;
       const categoryMatches=Boolean(query&&normalize(group.querySelector('.help-group-heading')?.textContent).includes(query));
       for(const topic of group.querySelectorAll('[data-help-topic]')){
-        const visible=!query||categoryMatches||normalize(topic.textContent).includes(query);
+        const visible=!query||categoryMatches||normalize(topic.textContent+' '+(topic.dataset.helpSearch||'')).includes(query);
         topic.hidden=!visible;
         if(visible)groupMatches++;
       }
