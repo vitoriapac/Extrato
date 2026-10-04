@@ -54,3 +54,14 @@ test('edit/delete and invalid periods do not retain stale execution totals',()=>
   assert.equal(buildAdherenceModel({start:'2026-02-30',end:'2026-10-03'}).state,'invalid_period');
   assert.equal(model([],[]).state,'unplanned');
 });
+
+import {renderExecutionBreakdown} from '../../src/ui/renderers/execution-breakdown-renderer.js';
+test('60 previstos, 40 vinculados e 30 adicionais explicam 70 estudados sem crédito indevido',()=>{
+ const result=model([item('a',true,60)],[session('linked','a',40),session('additional',null,30)]);
+ const s=result.summary;
+ assert.equal(s.executedMinutes,70);assert.equal(s.matchedMinutes,40);assert.equal(s.additionalMinutes,30);assert.equal(s.remainingMinutes,20);
+ assert.equal(s.executedMinutes,s.matchedMinutes+s.additionalMinutes+s.excessLinkedMinutes+s.incompatibleMinutes+s.otherPeriodMinutes);
+ const before=JSON.stringify(result),html=renderExecutionBreakdown(result);
+ assert.match(html,/Tempo registrado: 70 min/);assert.match(html,/crédito ao plano: 40 min/);assert.match(html,/pendente: 20 min/);assert.match(html,/Estudo sem vínculo ao plano: 30 min/);
+ assert.equal(JSON.stringify(result),before);
+});

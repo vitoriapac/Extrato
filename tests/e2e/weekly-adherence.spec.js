@@ -23,6 +23,9 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   await expect(page.locator('#adherence')).toBeFocused();
   await expect(page.locator('#guide-data')).toBeVisible();
   await activateTab(page,'dashboard');
+  await expect(close.locator('.execution-breakdown').first()).toContainText('Tempo registrado:');
+  await close.locator('.execution-breakdown').first().getByText('Conferir a composição do tempo',{exact:true}).click();
+  await expect(close.locator('.execution-breakdown').first()).toContainText('Estudo sem vínculo ao plano');
   await expect(close.locator('.recurring-priority-list').first()).toContainText(topic.name);
   const before=await page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return {dailyPlans:s.dailyPlans,studySessions:s.studySessions,weeklyCloseSnapshots:s.weeklyCloseSnapshots}});
   await close.getByRole('button',{name:'Revisar planejamento',exact:true}).click();await expect(page.locator('#panel-metas')).toBeVisible();

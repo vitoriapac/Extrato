@@ -1799,9 +1799,10 @@
         "node:test",
         "node:assert/strict",
         "../../src/application/adherence/build-adherence-model.js",
-        "../../src/domain/planning/plan-execution-snapshot.js"
+        "../../src/domain/planning/plan-execution-snapshot.js",
+        "../../src/ui/renderers/execution-breakdown-renderer.js"
       ],
-      "staticTestDeclarations": 8,
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -6438,9 +6439,12 @@
         "node:test",
         "node:assert/strict",
         "../../src/ui/renderers/header-renderer.js",
-        "../../src/ui/renderers/studytrack32-renderer.js"
+        "../../src/ui/renderers/studytrack32-renderer.js",
+        "../../src/ui/renderers/retention-renderer.js",
+        "../../src/domain/analytics/topic-metrics.js",
+        "../../src/domain/analytics/topic-signals.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
