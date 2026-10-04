@@ -14,16 +14,16 @@ async function prepare(page){
 }
 test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload',async({page})=>{
   await prepare(page);const card=page.locator('#dailyExecutionDashboard');
-  await expect(card).toContainText('0% das atividades cumpridas');await card.getByRole('button',{name:'Iniciar estudo',exact:true}).click();
+  await expect(card).toContainText('0% de progresso do plano');await card.getByRole('button',{name:'Iniciar estudo',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().activeTimer.planItemId)).toBe('daily-first');
   await expect(card.getByRole('button',{name:'Retomar sessão'})).toBeVisible();
   await page.clock.fastForward('00:10:00');await page.locator('#timerFinishBtn').click();
   await expect(page.locator('#sessionModalOverlay')).toBeVisible();await page.locator('#sessionModalSaveBtn').click();
-  await expect(card).toContainText('50% das atividades cumpridas');await expect(card).toContainText('Questões');
+  await expect(card).toContainText('50% de progresso do plano');await expect(card).toContainText('Questões');
   await expect(card.locator('[data-daily-start]')).toHaveAttribute('data-daily-start','daily-second');
   const state=await page.evaluate(()=>window.__EXTRATO_TEST__.getState());expect(state.studySessions.at(-1).planItemId).toBe('daily-first');
   await page.clock.fastForward('00:00:01');await page.evaluate(()=>window.__EXTRATO_TEST__.settleSaves());
-  await page.goto('/');await expect(card).toContainText('50% das atividades cumpridas');
+  await page.goto('/');await expect(card).toContainText('50% de progresso do plano');
 });
 for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light']])test(`card Hoje acessível: ${width}px ${theme}`,async({page})=>{
   await page.setViewportSize({width,height:900});await prepare(page);if(theme==='dark')await page.locator('#themeToggleBtn').click();

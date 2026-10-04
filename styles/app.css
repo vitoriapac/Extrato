@@ -2180,3 +2180,7 @@ body.timer-focus-active .timer-context{display:none!important}
 .daily-execution-layout .daily-execution-next{border-top:0;border-left:1px solid var(--border-subtle);padding:0 0 0 var(--space-6);margin:0}
 @media(max-width:800px){.daily-execution-layout{grid-template-columns:minmax(0,1fr)}.daily-execution-layout .daily-execution-next{border-left:0;border-top:1px solid var(--border-subtle);padding:var(--space-4) 0 0}}
 @media(max-width:430px){.daily-execution-card{padding:var(--space-3)}}
+
+.daily-execution-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.daily-execution-metrics strong{font:600 var(--text-xl)/1.3 var(--font-data)}
+.daily-execution-reasons{margin-top:var(--space-4)}.daily-execution-reasons summary{cursor:pointer}.daily-execution-reasons li{margin-block:var(--space-2)}
+.daily-execution-footer{margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid var(--border-subtle)}.daily-execution-footer>span{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-3)}
