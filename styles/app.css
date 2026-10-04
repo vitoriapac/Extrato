@@ -2217,3 +2217,15 @@ body.timer-focus-active .timer-context{display:none!important}
 .instruction-metric{display:grid;gap:var(--space-1)}.instruction-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4)}
 .instruction-legend{color:var(--text-secondary);font-size:var(--text-sm)}.instruction-action{color:var(--heading);font-weight:600}
 @media(max-width:700px){.instruction-card-grid{grid-template-columns:minmax(0,1fr)}}
+
+.instruction-card--wide{grid-column:1/-1}
+.instruction-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-5)}
+.instruction-flow li,.instruction-steps li{display:grid;gap:var(--space-2);position:relative}
+.instruction-step-number{color:var(--heading);font:600 var(--text-lg) var(--font-data)}
+.instruction-flow small,.instruction-steps small{color:var(--text-secondary);line-height:1.5}
+.instruction-flow li:not(:last-child):after{content:'→';color:var(--heading);position:absolute;right:0;top:0}
+.instruction-steps{display:grid;gap:var(--space-4)}.instruction-steps li{border-left:1px solid var(--border-subtle);padding-left:var(--space-3)}
+.instruction-example-bar{height:8px;background:var(--border-subtle)}.instruction-example-bar span{display:block;height:100%;background:var(--gold)}
+.instruction-example .instruction-action{display:inline-block;padding:var(--space-2) var(--space-3);border:1px solid var(--border-emphasis)}
+@media(max-width:700px){.instruction-flow{grid-template-columns:minmax(0,1fr)}.instruction-flow li{padding-bottom:var(--space-3)}.instruction-flow li:not(:last-child):after{content:'↓';right:0;bottom:0;top:auto}}
+.instruction-example{margin-inline:0}.instruction-card--wide .help-topic-body{max-width:none}.instruction-flow li:nth-child(3):after{content:none}@media(max-width:700px){.instruction-flow li:nth-child(3):after{content:"↓"}}

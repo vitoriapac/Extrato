@@ -1,3 +1,4 @@
+import {renderHelpVisual} from './help-visuals.js';
 import {HELP_CATEGORIES,HELP_GLOSSARY,HELP_FAQ} from './help-content.js';
 
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -5,6 +6,7 @@ const paragraph=value=>`<p>${escapeHtml(value)}</p>`;
 
 function renderEntry(entry){
   const content=[
+    renderHelpVisual(entry.visual),
     ...(entry.paragraphs||[]).map(paragraph),
     entry.steps?.length?`<ol class="help-timeline">${entry.steps.map(step=>`<li><span>${escapeHtml(typeof step==='string'?step:step.title)}</span>${typeof step==='object'&&step.detail?`<small>${escapeHtml(step.detail)}</small>`:''}</li>`).join('')}</ol>`:'',
     entry.flow?.length?`<div class="help-flow" aria-label="Fluxo resumido">${entry.flow.map((step,index)=>`<span class="help-flow-step">${escapeHtml(step)}</span>${index<entry.flow.length-1?'<span class="help-flow-arrow" aria-hidden="true">→</span>':''}`).join('')}</div>`:'',
@@ -12,7 +14,7 @@ function renderEntry(entry){
     entry.note?`<aside class="help-note context-note context-note--tip"><strong>Dica</strong>${paragraph(entry.note)}</aside>`:'',
     entry.action?`<button type="button" class="help-text-link" data-help-action="${escapeHtml(entry.action.target)}">${escapeHtml(entry.action.label)} <span aria-hidden="true">→</span></button>`:''
   ].join('');
-  return `<article class="help-topic instruction-card instruction-card--${['feature','concept','reference'].includes(entry.kind)?entry.kind:'feature'}${entry.steps?.length?' help-topic--steps':''}" id="${escapeHtml(entry.id)}" data-help-topic data-help-search="${escapeHtml([...(entry.keywords||[]),...(entry.concepts||[]),...(entry.questions||[])].join(' '))}"><h4>${escapeHtml(entry.title)}</h4><p class="help-topic-summary">${escapeHtml(entry.summary)}</p><div class="help-topic-body">${content}</div></article>`;
+  return `<article class="help-topic${entry.wide?' instruction-card--wide':''} instruction-card instruction-card--${['feature','concept','reference'].includes(entry.kind)?entry.kind:'feature'}${entry.steps?.length?' help-topic--steps':''}" id="${escapeHtml(entry.id)}" data-help-topic data-help-search="${escapeHtml([...(entry.keywords||[]),...(entry.concepts||[]),...(entry.questions||[])].join(' '))}"><h4>${escapeHtml(entry.title)}</h4><p class="help-topic-summary">${escapeHtml(entry.summary)}</p><div class="help-topic-body">${content}</div></article>`;
 }
 
 function renderCategory(category,index){

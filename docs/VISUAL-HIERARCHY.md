@@ -65,3 +65,11 @@ A configuração incompleta reúne etapas, continuação e a fase atual. Uma ún
 A execução usa superfície de card e duas colunas a partir de 801 px; em telas menores, resumo e próxima atividade ficam empilhados. Progresso temporal do plano e contagem de atividades concluídas são indicadores distintos. Motivos estratégicos só acompanham a atividade correspondente; recomendações fora do plano têm indicação própria. Pendências ficam no rodapé.
 
 A validação dirigida cobre primeiro uso e conclusão, nomes longos, 320/375/390/430 px, desktop, claro/escuro, teclado, acessibilidade, execução parcial e completa e cronômetro ativo. As referências Windows do card diário permanecem versionadas. A suíte Full e as demais superfícies visuais seguem disponíveis para validações amplas.
+
+## Central de Ajuda visual — pacotes 1 e 2
+
+A ajuda mantém conteúdo, controller e renderer em src/ui/help. Categorias preservam seus IDs e passam a sete destinos: Comece por aqui, Estudar, Planejar, Analisar, Prova, Metas e Dados. A navegação horizontal não adiciona outro elemento sticky. Cards de funcionalidade, conceito e referência usam os tokens existentes e mantêm leitura direta, sem accordions.
+
+O mapa conceitual usa uma lista ordenada de seis etapas; em mobile, vira uma coluna. Primeiros passos seguem objetivo, disponibilidade, conteúdo, prévia, Hoje e resultados. Os visuais de execução, sessões, próxima atividade e revisões são exemplos estáticos explicitamente identificados; não calculam indicadores nem iniciam sessões. Progresso temporal e quantidade de atividades concluídas têm textos distintos.
+
+Palavras-chave, conceitos e perguntas fazem parte do contrato do conteúdo e da busca existente. A indexação dedicada e as demais categorias visuais serão aprofundadas nos pacotes posteriores. A jornada dirigida cobre busca, troca de categoria e ação por teclado; referências Windows protegem o mapa em 375 px claro e 1440 px escuro.

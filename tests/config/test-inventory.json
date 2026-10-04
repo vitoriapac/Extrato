@@ -1401,19 +1401,21 @@
       "criticality": "visual",
       "roles": [
         "journey",
+        "visual-comparison",
         "demo",
         "viewport"
       ],
       "imports": [
         "@playwright/test",
-        "./helpers.js"
+        "./helpers.js",
+        "@axe-core/playwright"
       ],
-      "staticTestDeclarations": 17,
+      "staticTestDeclarations": 18,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 17,
       "observedCaseSeconds": 125.4,
       "durationBasis": "sum_of_reported_case_times_not_wall_clock",
-      "snapshotPlatform": "none",
+      "snapshotPlatform": "windows-only",
       "currentGates": [
         "test:e2e",
         "test:full UTC"
@@ -3642,9 +3644,10 @@
         "node:test",
         "node:assert/strict",
         "../../src/ui/help/help-content.js",
-        "../../src/ui/help/help-renderer.js"
+        "../../src/ui/help/help-renderer.js",
+        "../../src/ui/help/help-visuals.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 6,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

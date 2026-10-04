@@ -97,3 +97,23 @@ test('diagnóstico vazio orienta o cadastro sem inventar risco',async({page})=>{
   await empty.getByRole('button',{name:'Cadastrar disciplinas e tópicos'}).click();
   await expect(page.locator('#panel-disciplinas')).toHaveClass(/active/);
 });
+
+import AxeBuilder from '@axe-core/playwright';
+test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis',async({page})=>{
+  await page.goto('/?test=1');await page.locator('#testReport').evaluate(node=>node.remove());await activateTab(page,'instrucoes');
+  for(const [width,theme] of [[375,'light'],[1440,'dark']]){
+    await page.setViewportSize({width,height:1100});await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
+    await page.locator('[data-help-category="guide-start"]').click();
+    await expect(page.locator('.help-guide-card')).toHaveCount(7);await expect(page.locator('#how-it-works .instruction-flow li')).toHaveCount(6);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+    await page.locator('#how-it-works').evaluate(node=>window.scrollBy(0,node.getBoundingClientRect().top-120));
+    if(process.platform==='win32')await expect(page.locator('#how-it-works .instruction-example')).toHaveScreenshot('help-map-'+width+'-'+theme+'-win32.png',{animations:'disabled',maxDiffPixelRatio:.02});
+    await page.locator('[data-help-category="guide-areas"]').click();
+    await expect(page.locator('#today-guide')).toBeVisible();await expect(page.locator('#today-guide')).toContainText('57% de progresso do plano');
+    expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+    await page.locator('#helpSearch').fill('execução diária');await expect(page.locator('#today-guide')).toBeVisible();await expect(page.locator('#helpNoResults')).toBeHidden();
+    await page.locator('#helpSearch').press('Escape');await expect(page.locator('#helpSearch')).toHaveValue('');
+  }
+  await page.locator('#today-guide [data-help-action="today"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#panel-hoje')).toBeVisible();
+});

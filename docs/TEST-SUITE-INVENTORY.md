@@ -70,7 +70,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/subject-accuracy-target.spec.js | browser | Aplicação | functional | 6.4 | journey, viewport | none |
 | tests/e2e/topic-strategy.spec.js | browser | Aplicação | functional | 18.1 | journey, demo | none |
 | tests/e2e/ux-baseline.spec.js | browser | Aplicação | visual | 70.6 | journey, visual-comparison, demo, viewport | windows-only |
-| tests/e2e/visual-consolidation.spec.js | browser | Visual | visual | 125.4 | journey, demo, viewport | none |
+| tests/e2e/visual-consolidation.spec.js | browser | Visual | visual | 125.4 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/visual-density.spec.js | browser | Visual | visual | 183.6 | journey, viewport | none |
 | tests/e2e/visual-language.spec.js | browser | Visual | visual | 24.2 | journey, viewport | none |
 | tests/e2e/visual-regression.spec.js | browser | Visual | visual | 66.9 | journey, visual-comparison, demo, viewport | inspect-platform-baselines |
