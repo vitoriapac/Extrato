@@ -192,3 +192,29 @@ test('simulador é acessível por teclado e cabe em 320px no tema escuro',async(
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
 });
+
+test('Demo de reta final conecta trajetória, ajuda e fechamento sem alterar histórico',async({page})=>{
+ test.setTimeout(120_000);
+ await page.clock.install({time:new Date('2026-10-04T12:00:00-03:00')});
+ await page.setViewportSize({width:390,height:900});await page.goto('/?test=1');
+ await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(node=>node.remove());
+ const demo=generateDemoData({today:'2026-10-04',preparationProfile:'final_stretch'});
+ await page.evaluate(value=>{const api=window.__EXTRATO_TEST__,result=api.validateBackupData(value);if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()},demo);
+ const historical=()=>page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return JSON.stringify({sessions:s.studySessions,plans:s.studyPlans,closes:s.weeklyCloseSnapshots,projection:s.projectionSnapshots})});
+ const before=await historical();
+ await activateTab(page,'desempenho');
+ await expect(page.locator('.achievement-projection__status')).toHaveText('Em risco');
+ await expect(page.locator('.performance-method-note').filter({hasText:'10 dia(s)'})).toBeVisible();
+ await page.locator('.achievement-projection__details > summary').filter({hasText:'Entender esta projeção'}).click();
+ await page.locator('.projection-evidence-method > summary').click();
+ await page.getByRole('button',{name:'Entenda faixa e confiança na ajuda'}).click();
+ await expect(page.locator('#projections')).toBeFocused();
+ await expect(page.locator('#projections')).toContainText('não acrescenta horas');
+ await activateTab(page,'dashboard');
+ const close=page.locator('#weeklyCloseDashboard');
+ await expect(close.getByRole('region',{name:'Síntese para a próxima decisão'})).toContainText('Decisão sugerida');
+ await close.getByRole('button',{name:'Entenda o fechamento semanal'}).click();
+ await expect(page.locator('#weekly')).toBeFocused();
+ expect(await historical()).toBe(before);
+ await expectNoPageOverflow(page);
+});

@@ -329,3 +329,9 @@ A meta opcional `examBlueprint.subjects[].accuracyTarget` herda a meta global de
 ### Prévia integrada da estratégia por fase
 
 A composição de fase e trajetória fica em src/application/planning/build-phase-planning-preview.js. O motor existente continua definindo a divisão de atividades; projeção, meta, data e escopo servem à explicação e à revalidação da confirmação. As proporções existentes estão centralizadas em phase-strategy-policy.js. O contrato e a validação estão em [PHASE-PLANNING-INTEGRATION.md](docs/PHASE-PLANNING-INTEGRATION.md).
+
+## Demo da trajetória e fechamento orientado à decisão
+
+Os perfis opcionais de src/demo/demo-preparation-profiles.js produzem cenários fictícios determinísticos de recuperação, reta final e evidência limitada. O cenário público padrão e os contratos de persistência permanecem iguais. A validação e a jornada integrada estão em [DEMO-PROJECTION-VALIDATION.md](docs/DEMO-PROJECTION-VALIDATION.md).
+
+A síntese semanal reutiliza ciclo de decisões, sustentabilidade e comparação histórica compatível. A ajuda contextual abre artigos existentes com categoria e foco corretos; consulte [WEEKLY-DECISION-AND-CONTEXTUAL-HELP.md](docs/WEEKLY-DECISION-AND-CONTEXTUAL-HELP.md).

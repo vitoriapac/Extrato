@@ -49,7 +49,7 @@
         "./helpers.js",
         "../../src/demo/demo-generator.js"
       ],
-      "staticTestDeclarations": 8,
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 11,
       "observedCaseSeconds": 157.7,
@@ -2655,9 +2655,11 @@
         "../../src/application/build-study-candidates.js",
         "../../src/application/recommend-study.js",
         "../../src/application/generate-diagnosis.js",
-        "../../src/application/analytics/build-analytics-view-model.js"
+        "../../src/application/analytics/build-analytics-view-model.js",
+        "../../src/application/projection/build-achievement-projection.js",
+        "../../src/demo/demo-preparation-profiles.js"
       ],
-      "staticTestDeclarations": 1,
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
