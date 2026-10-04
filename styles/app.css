@@ -2242,3 +2242,9 @@ body.timer-focus-active .timer-context{display:none!important}
 
 /* Initial configuration uses textual states and a separate action. */
 .onboarding-entry-step-copy small{font-size:var(--text-caption)}.onboarding-entry-count{font-family:var(--font-data);font-size:var(--text-small);color:var(--text-secondary)}.onboarding-entry-heading{align-items:baseline;flex-wrap:wrap}.onboarding-entry-cta{margin-top:var(--space-2)}
+
+/* Local content navigation, using the existing spacing and control tokens. */
+.subject-search{display:grid;gap:var(--space-2);margin-bottom:var(--space-4)}
+.subject-search input{width:100%;min-width:0;box-sizing:border-box;min-height:var(--touch-target)}
+.subject-search p{margin:0;color:var(--ink-soft);font-size:var(--text-small)}
+.subject-header .subject-toggle{flex-shrink:0;min-width:var(--touch-target);min-height:var(--touch-target)}

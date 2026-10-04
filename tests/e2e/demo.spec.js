@@ -93,3 +93,18 @@ test('massa de 140 dias mantém navegação completa dentro do orçamento de ren
   // Shared CI runners showed ~16.6 s twice; retain a bounded smoke budget with headroom.
   expect(Date.now()-started).toBeLessThan(25_000);
 });
+
+test('busca local de tópicos preserva consulta e filtros ao voltar de Hoje',async({page})=>{
+ test.setTimeout(120_000);await page.setViewportSize({width:390,height:900});await openDemo(page);
+ await page.locator('[data-tab="disciplinas"]').click();
+ const search=page.getByRole('searchbox',{name:'Buscar disciplina ou tópico'});
+ await search.fill('matematica financeira juros');
+ const groups=page.locator('#subjectsContainer .subject-block');await expect(groups).toHaveCount(1);
+ await expect(groups).toContainText('Matemática Financeira');
+ const filter=groups.getByRole('combobox',{name:/por dificuldade/});await filter.selectOption('Médio');
+ await page.locator('[data-tab="hoje"]').click();await page.locator('[data-tab="disciplinas"]').click();
+ await expect(search).toHaveValue('matematica financeira juros');await expect(filter).toHaveValue('Médio');
+ await search.fill('conteudo inexistente');await expect(groups).toHaveCount(0);await expect(search).toBeFocused();
+ await search.fill('');await expect(groups).toHaveCount(17);
+ await expectNoPageOverflow(page);
+});

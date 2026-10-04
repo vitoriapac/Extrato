@@ -1,3 +1,4 @@
+import {matchesSubjectSearch,createSubjectSearchController} from './ui/subjects/subject-navigation.js';
 import {initialGoalSuggestions} from './domain/goals/initial-goal-guidance.js';
 import {buildAdherenceCloseHistory} from './application/adherence/build-weekly-close-adherence.js';
 import {createSustainabilityController} from './ui/controllers/sustainability-controller.js';
@@ -2084,10 +2085,11 @@ function renderDashboard(){
 function renderSubjects(){
   const container = document.getElementById('subjectsContainer');
   const allActiveSubjects=activeSubjects();
+  const searchQuery=subjectSearchController.query;
   const topicMatchesExam=topic=>subjectExamFilter==='all'||subjectExamFilter==='common'&&isCommonTopic(topic,[EXAM_TAGS.BB,EXAM_TAGS.CAIXA])||subjectExamFilter==='bb'&&(topic.examTags||[]).includes(EXAM_TAGS.BB)||subjectExamFilter==='caixa'&&(topic.examTags||[]).includes(EXAM_TAGS.CAIXA)||subjectExamFilter==='caixa-ti'&&(topic.examTags||[]).includes(EXAM_TAGS.CAIXA_TI);
-  const subjects=subjectExamFilter==='all'?allActiveSubjects:allActiveSubjects.filter(subject=>(subject.topics||[]).some(topic=>topicMatchesExam(topic)));
+  const subjects=allActiveSubjects.filter(subject=>(subject.topics||[]).some(topic=>!topic.archived&&topicMatchesExam(topic)&&matchesSubjectSearch(subject,topic,searchQuery))||(!searchQuery&&subjectExamFilter==='all'));
   const archived=archivedSubjects();
-  if(subjects.length === 0 && archived.length===0){
+  if(subjects.length === 0 && archived.length===0&&!searchQuery&&subjectExamFilter==='all'){
     container.innerHTML = `<div class="empty-state">
       <p>Nenhuma disciplina cadastrada ainda.</p>
       <button class="btn" data-delegated-click="addSubject()">+ Adicionar primeira disciplina</button>
@@ -2095,11 +2097,12 @@ function renderSubjects(){
     return;
   }
 
-  const activeHtml = subjects.length===0 ? `<div class="empty-state"><p>Nenhuma disciplina ativa.</p><button class="btn" data-delegated-click="addSubject()">+ Adicionar disciplina</button></div>` : subjects.map((s, idx) => {
+  const activeHtml = subjects.length===0 ? `<div class="empty-state"><p>Nenhuma disciplina corresponde à busca e aos filtros atuais.</p><button class="btn" data-delegated-click="addSubject()">+ Adicionar disciplina</button></div>` : subjects.map((s, idx) => {
     const pct = subjectProgress(s);
     const subjectTopics=s.topics.filter(t=>!t.archived&&topicMatchesExam(t));
     const topicFilter=subjectTopicFilters.get(s.id)||{status:'',difficulty:''};
-    const allVisibleTopics=subjectTopics.filter(topic=>(!topicFilter.status||topic.status===topicFilter.status)&&(!topicFilter.difficulty||topic.difficulty===topicFilter.difficulty));
+    const collapsed=s.collapsed&&!searchQuery;
+    const allVisibleTopics=subjectTopics.filter(topic=>matchesSubjectSearch(s,topic,searchQuery)&&(!topicFilter.status||topic.status===topicFilter.status)&&(!topicFilter.difficulty||topic.difficulty===topicFilter.difficulty));
     const topicLimit=subjectTopicLimits.get(s.id)||10;
     const visibleTopics=allVisibleTopics.slice(0,topicLimit);
     const archivedTopics=s.topics.filter(t=>t.archived);
@@ -2111,13 +2114,13 @@ function renderSubjects(){
             <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', -1)" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
             <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', 1)" ${idx===subjects.length-1?'disabled':''} title="Mover pra baixo">▼</button>
           </div>
-          <span class="subject-toggle">${s.collapsed ? '▸' : '▾'}</span>
+          <button type="button" class="subject-toggle btn ghost small" aria-expanded="${!collapsed}" ${searchQuery?'disabled title="A busca mantém os resultados abertos"':''} aria-controls="subject-body-${escapeAttr(s.id)}" aria-label="Expandir ou recolher ${escapeAttr(s.name)}" data-delegated-click="event.stopPropagation();toggleSubject('${s.id}')">${collapsed ? '▸' : '▾'}</button>
           <span class="subject-name" contenteditable="true"
                 data-delegated-click="event.stopPropagation()"
                 data-delegated-blur="renameSubject('${s.id}', this.textContent)">${escapeHtml(s.name)}</span>
         </div>
         <div class="subject-header-actions">
-          <span class="subject-progress-pill">${pct}% · ${subjectTopics.length} tópico${subjectTopics.length===1?'':'s'}</span>
+          <span class="subject-progress-pill">${pct}% · ${allVisibleTopics.length} de ${subjectTopics.length} tópico${subjectTopics.length===1?'':'s'}</span>
           <details class="action-menu subject-action-menu" data-delegated-click="event.stopPropagation()"><summary class="btn ghost small" aria-label="Ações de ${escapeAttr(s.name)}" data-delegated-click="event.stopPropagation()">⋯</summary><div class="action-menu__items">
             <button type="button" data-delegated-click="event.stopPropagation();duplicateSubject('${s.id}')">Duplicar disciplina</button>
             <button type="button" data-delegated-click="event.stopPropagation();archiveSubject('${s.id}')">Arquivar disciplina</button>
@@ -2125,7 +2128,7 @@ function renderSubjects(){
           </div></details>
         </div>
       </div>
-      <div class="subject-body ${s.collapsed ? 'collapsed':''}">
+      <div id="subject-body-${escapeAttr(s.id)}" class="subject-body ${collapsed ? 'collapsed':''}">
         <div class="subject-topic-filters"><select aria-label="Filtrar tópicos de ${escapeAttr(s.name)} por status" data-delegated-change="setSubjectTopicFilter('${s.id}','status',this.value)"><option value="">Todos os status</option>${STATUS_OPTIONS.map(option=>`<option value="${option}" ${topicFilter.status===option?'selected':''}>${option}</option>`).join('')}</select><select aria-label="Filtrar tópicos de ${escapeAttr(s.name)} por dificuldade" data-delegated-change="setSubjectTopicFilter('${s.id}','difficulty',this.value)"><option value="">Todas as dificuldades</option>${DIFFICULTY_OPTIONS.map(option=>`<option value="${option}" ${topicFilter.difficulty===option?'selected':''}>${option}</option>`).join('')}</select></div>
         <div class="ledger-scroll">
         <table class="ledger">
@@ -2206,10 +2209,11 @@ function renderSubjects(){
       <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
     </div>`).join('')}
   </div>`:'';
-  container.innerHTML=`<div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">${[['all','Todos'],['bb','BB'],['caixa','Caixa'],['caixa-ti','Caixa TI'],['common','Comuns']].map(([value,label])=>`<button class="btn ghost small ${subjectExamFilter===value?'active':''}" data-delegated-click="setSubjectExamFilter('${value}')">${label}</button>`).join('')}</div>`+activeHtml+archivedHtml;
+  container.innerHTML=`<div class="subject-search"><label for="subjectContentSearch">Buscar disciplina ou tópico</label><input type="search" id="subjectContentSearch" value="${escapeAttr(searchQuery)}" placeholder="Nome da disciplina ou tópico"><p role="status">${subjects.length} disciplinas encontradas.</p></div><div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">${[['all','Todos'],['bb','BB'],['caixa','Caixa'],['caixa-ti','Caixa TI'],['common','Comuns']].map(([value,label])=>`<button class="btn ghost small ${subjectExamFilter===value?'active':''}" data-delegated-click="setSubjectExamFilter('${value}')">${label}</button>`).join('')}</div>`+activeHtml+archivedHtml;
 }
 
 let openNotesIds = new Set();
+const subjectSearchController=createSubjectSearchController({document,onChange:()=>{subjectTopicLimits.clear();renderSubjects()}});
 let subjectExamFilter='all';
 const subjectTopicLimits=new Map();
 const subjectTopicFilters=new Map();
