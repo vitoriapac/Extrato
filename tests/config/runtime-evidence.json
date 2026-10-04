@@ -1,0 +1,1200 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "4b4fe2334fc1be960ae8b416975bc8f1f5bb9555",
+  "measuredOn": "2026-10-04",
+  "environment": "Windows local, Playwright Chromium, 2 workers; reported durations rounded",
+  "groups": [
+    {
+      "name": "Unit UTC",
+      "cases": 644,
+      "seconds": 11.4806372
+    },
+    {
+      "name": "Unit America/Sao_Paulo",
+      "cases": 644,
+      "seconds": 16.6828374
+    },
+    {
+      "name": "E2E full UTC",
+      "cases": 234,
+      "seconds": 1836
+    },
+    {
+      "name": "E2E timezone America/Sao_Paulo",
+      "cases": 47,
+      "seconds": 324
+    }
+  ],
+  "e2eCases": [
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "trajetória em Desempenho com Demo: 320px light",
+      "seconds": 14.5
+    },
+    {
+      "file": "tests/e2e/accessibility.spec.js",
+      "title": "não possui violações estruturais em Visão Geral",
+      "seconds": 22.6
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "trajetória em Desempenho com Demo: 375px dark",
+      "seconds": 14.1
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "trajetória em Desempenho com Demo: 430px light",
+      "seconds": 12.8
+    },
+    {
+      "file": "tests/e2e/accessibility.spec.js",
+      "title": "não possui violações estruturais em Disciplinas",
+      "seconds": 26.4
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "trajetória em Desempenho com Demo: 1440px dark",
+      "seconds": 14.3
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "novo snapshot passa na validação e migração do backup anterior preserva o histórico",
+      "seconds": 1.4
+    },
+    {
+      "file": "tests/e2e/accessibility.spec.js",
+      "title": "não possui violações estruturais em Planejamento",
+      "seconds": 20.2
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "prévia de recuperação no Demo explica origem e destino sem ação de aplicação",
+      "seconds": 13.5
+    },
+    {
+      "file": "tests/e2e/accessibility.spec.js",
+      "title": "não possui violações estruturais em Agenda",
+      "seconds": 15.1
+    },
+    {
+      "file": "tests/e2e/accessibility.spec.js",
+      "title": "não possui violações estruturais em Calendário",
+      "seconds": 15.3
+    },
+    {
+      "file": "tests/e2e/accessibility.spec.js",
+      "title": "não possui violações estruturais em Questões e simulados",
+      "seconds": 19
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "Recovery exige confirmação, revalida e registra plano e decisão sem reescrever sessões",
+      "seconds": 50
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "falha de persistência do Recovery preserva estado e permite repetir a confirmação",
+      "seconds": 19.1
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "histórico comparável mostra tendência futura distinta dos resultados observados",
+      "seconds": 1.6
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "simulador compara cenário sem persistir estado real ou snapshots",
+      "seconds": 3.7
+    },
+    {
+      "file": "tests/e2e/accessibility.spec.js",
+      "title": "mantém estrutura acessível no modo móvel e no modal",
+      "seconds": 34.7
+    },
+    {
+      "file": "tests/e2e/achievement-projection.spec.js",
+      "title": "simulador é acessível por teclado e cabe em 320px no tema escuro",
+      "seconds": 12.7
+    },
+    {
+      "file": "tests/e2e/achievement-strategy.spec.js",
+      "title": "conquistas mostram estratégia e próximos passos em tela pequena",
+      "seconds": 4
+    },
+    {
+      "file": "tests/e2e/accessibility.spec.js",
+      "title": "central de diagnóstico continua acessível quando expandida",
+      "seconds": 21.7
+    },
+    {
+      "file": "tests/e2e/action-first-mobile.spec.js",
+      "title": "Visão Geral e Hoje compartilham a mesma recomendação prioritária",
+      "seconds": 17.6
+    },
+    {
+      "file": "tests/e2e/accessibility.spec.js",
+      "title": "configuração estratégica continua acessível quando expandida",
+      "seconds": 18.4
+    },
+    {
+      "file": "tests/e2e/action-first-mobile.spec.js",
+      "title": "aba Hoje prioriza ação e plano e recolhe apenas análises secundárias",
+      "seconds": 15.7
+    },
+    {
+      "file": "tests/e2e/adherence-target.spec.js",
+      "title": "meta opcional persiste sem alterar históricos, aceita legado e contextualiza a trajetória",
+      "seconds": 2.5
+    },
+    {
+      "file": "tests/e2e/action-first-mobile.spec.js",
+      "title": "atalhos da Visão Geral viram seletor acessível no celular",
+      "seconds": 10.2
+    },
+    {
+      "file": "tests/e2e/action-first-mobile.spec.js",
+      "title": "atalhos da Visão Geral permanecem horizontais no desktop",
+      "seconds": 8.7
+    },
+    {
+      "file": "tests/e2e/backup-schema24-cycle.spec.js",
+      "title": "schema 24 sobrevive a exportação, limpeza, recarga e restauração",
+      "seconds": 2.7
+    },
+    {
+      "file": "tests/e2e/backup-schema24-cycle.spec.js",
+      "title": "backup do schema 23 migra lacunas como desconhecidas e pode ser exportado e importado novamente",
+      "seconds": 2.4
+    },
+    {
+      "file": "tests/e2e/adherence.spec.js",
+      "title": "aderência em Desempenho: 320px light",
+      "seconds": 25.2
+    },
+    {
+      "file": "tests/e2e/consolidated-signals.spec.js",
+      "title": "diagnóstico consolida o escopo atual sem modificar planos ou registros pessoais",
+      "seconds": 2.6
+    },
+    {
+      "file": "tests/e2e/csp.spec.js",
+      "title": "aplica CSP e mantém os fluxos básicos",
+      "seconds": 2.3
+    },
+    {
+      "file": "tests/e2e/adherence.spec.js",
+      "title": "aderência em Desempenho: 375px dark",
+      "seconds": 26.7
+    },
+    {
+      "file": "tests/e2e/daily-execution.spec.js",
+      "title": "Hoje inicia sessão vinculada, atualiza progresso e avança sem reload",
+      "seconds": 34.2
+    },
+    {
+      "file": "tests/e2e/adherence.spec.js",
+      "title": "aderência em Desempenho: 430px light",
+      "seconds": 25.7
+    },
+    {
+      "file": "tests/e2e/daily-execution.spec.js",
+      "title": "card Hoje acessível: 320px light",
+      "seconds": 24.3
+    },
+    {
+      "file": "tests/e2e/adherence.spec.js",
+      "title": "aderência em Desempenho: 1440px light",
+      "seconds": 25.3
+    },
+    {
+      "file": "tests/e2e/daily-execution.spec.js",
+      "title": "card Hoje acessível: 375px dark",
+      "seconds": 24.4
+    },
+    {
+      "file": "tests/e2e/adherence.spec.js",
+      "title": "aderência em Desempenho: 1440px dark",
+      "seconds": 25.5
+    },
+    {
+      "file": "tests/e2e/daily-execution.spec.js",
+      "title": "card Hoje acessível: 430px light",
+      "seconds": 23.7
+    },
+    {
+      "file": "tests/e2e/demo.spec.js",
+      "title": "prévia e selo da demonstração funcionam no mobile sem alterar a base antes de carregar",
+      "seconds": 11
+    },
+    {
+      "file": "tests/e2e/error-analysis.spec.js",
+      "title": "apresenta diagnóstico de erros e ação recomendada",
+      "seconds": 11.6
+    },
+    {
+      "file": "tests/e2e/evidence-calibration.spec.js",
+      "title": "faixas emitidas sobrevivem ao backup e qualidade abre por teclado",
+      "seconds": 7.8
+    },
+    {
+      "file": "tests/e2e/exam-import.spec.js",
+      "title": "abre, cancela e importa edital sem duplicar",
+      "seconds": 4.7
+    },
+    {
+      "file": "tests/e2e/demo.spec.js",
+      "title": "isola, reinicia e encerra a demonstração sem alterar o estado real",
+      "seconds": 23.3
+    },
+    {
+      "file": "tests/e2e/demo.spec.js",
+      "title": "encerra a demo em uma nova sessão do navegador",
+      "seconds": 9.5
+    },
+    {
+      "file": "tests/e2e/demo.spec.js",
+      "title": "roteiro da demonstração navega pelas áreas preservando o cenário",
+      "seconds": 20.6
+    },
+    {
+      "file": "tests/e2e/exam-import.spec.js",
+      "title": "seleção parcial controla os tópicos importados",
+      "seconds": 36.5
+    },
+    {
+      "file": "tests/e2e/exam-import.spec.js",
+      "title": "catálogo inteligente oferece Caixa TI, busca e seleção por origem",
+      "seconds": 4
+    },
+    {
+      "file": "tests/e2e/exam-intelligence-hierarchy.spec.js",
+      "title": "saúde, incidência e divergências precedem importação",
+      "seconds": 2
+    },
+    {
+      "file": "tests/e2e/exam-intelligence-hierarchy.spec.js",
+      "title": "filtros avançados da matriz cabem no celular e preservam seleção durante atualização",
+      "seconds": 5.9
+    },
+    {
+      "file": "tests/e2e/exam-intelligence-readonly.spec.js",
+      "title": "impacto manual prevalece sobre o histórico na prioridade",
+      "seconds": 3.3
+    },
+    {
+      "file": "tests/e2e/exam-json-import.spec.js",
+      "title": "importa JSON com prévia, decisão explícita e reimportação idempotente",
+      "seconds": 5.1
+    },
+    {
+      "file": "tests/e2e/exam-matrix.spec.js",
+      "title": "matriz histórica filtra concurso e detalha o tópico em mobile",
+      "seconds": 3.8
+    },
+    {
+      "file": "tests/e2e/exam-scope.spec.js",
+      "title": "troca e combina concursos sem reutilizar a matriz anterior",
+      "seconds": 2.1
+    },
+    {
+      "file": "tests/e2e/demo.spec.js",
+      "title": "cenário de 140 dias renderiza todas as áreas sem perder dados",
+      "seconds": 35.2
+    },
+    {
+      "file": "tests/e2e/demo.spec.js",
+      "title": "listas acumulativas da demo limitam, expandem e filtram sem duplicar",
+      "seconds": 24.3
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 320px no tema light",
+      "seconds": 34.2
+    },
+    {
+      "file": "tests/e2e/demo.spec.js",
+      "title": "massa de 140 dias mantém navegação completa dentro do orçamento de renderização",
+      "seconds": 26.1
+    },
+    {
+      "file": "tests/e2e/goals-groups.spec.js",
+      "title": "grouped goals preserve topic targets and separate hours, routine and accuracy",
+      "seconds": 4.6
+    },
+    {
+      "file": "tests/e2e/historical-capacity.spec.js",
+      "title": "availability changes capture prospective capacity and legacy backups keep historical gaps",
+      "seconds": 1.6
+    },
+    {
+      "file": "tests/e2e/legacy-backup.spec.js",
+      "title": "backup do schema 19 preserva conteúdo e registros ao restaurar no schema atual",
+      "seconds": 1.4
+    },
+    {
+      "file": "tests/e2e/legacy-backup.spec.js",
+      "title": "backup atual preserva provas históricas sem converter questões em desempenho pessoal",
+      "seconds": 1.5
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 320px no tema dark",
+      "seconds": 32.7
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "Visão Geral mantém ação antes da configuração em todos os estados de primeiro uso",
+      "seconds": 1.7
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "primeiro uso preserva escolhas e chega à prévia do plano",
+      "seconds": 11
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "modal fecha com Escape e devolve o foco ao card",
+      "seconds": 2.7
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "modal permanece navegável em celular",
+      "seconds": 2.7
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "modal permanece navegável em tablet",
+      "seconds": 2
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "modal permanece navegável em desktop",
+      "seconds": 2.7
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "hierarquia visual cobre quatro etapas em light mobile",
+      "seconds": 5.9
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 600px no tema light",
+      "seconds": 32.3
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "hierarquia visual cobre quatro etapas em light desktop",
+      "seconds": 6.5
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "hierarquia visual cobre quatro etapas em dark mobile",
+      "seconds": 6.1
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "hierarquia visual cobre quatro etapas em dark desktop",
+      "seconds": 6.4
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "cancelar edital devolve foco e escolhas ao onboarding sem diálogos concorrentes",
+      "seconds": 4.4
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "importação CSV retorna à prévia do onboarding sem sobrepor diálogos",
+      "seconds": 3.3
+    },
+    {
+      "file": "tests/e2e/onboarding.spec.js",
+      "title": "cadastro manual oferece retorno à configuração após criar conteúdo",
+      "seconds": 4.7
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 600px no tema dark",
+      "seconds": 33.7
+    },
+    {
+      "file": "tests/e2e/planning-sustainability.spec.js",
+      "title": "sustainability opens a readonly capacity preview, navigates and freezes its explanation",
+      "seconds": 19.9
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 900px no tema light",
+      "seconds": 32
+    },
+    {
+      "file": "tests/e2e/planning-sustainability.spec.js",
+      "title": "dense Demo sustainability journey: 320px light",
+      "seconds": 28.1
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 900px no tema dark",
+      "seconds": 33.4
+    },
+    {
+      "file": "tests/e2e/planning-sustainability.spec.js",
+      "title": "dense Demo sustainability journey: 375px dark",
+      "seconds": 30.2
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 1100px no tema light",
+      "seconds": 34.4
+    },
+    {
+      "file": "tests/e2e/planning-sustainability.spec.js",
+      "title": "dense Demo sustainability journey: 430px light",
+      "seconds": 31.4
+    },
+    {
+      "file": "tests/e2e/planning-sustainability.spec.js",
+      "title": "dense Demo sustainability journey: 1440px light",
+      "seconds": 28.5
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 1100px no tema dark",
+      "seconds": 32.5
+    },
+    {
+      "file": "tests/e2e/planning-sustainability.spec.js",
+      "title": "dense Demo sustainability journey: 1440px dark",
+      "seconds": 30.7
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 1280px no tema light",
+      "seconds": 33.1
+    },
+    {
+      "file": "tests/e2e/planning.spec.js",
+      "title": "confirma, distribui e desfaz um plano sem perder a navegação",
+      "seconds": 23.1
+    },
+    {
+      "file": "tests/e2e/final-visual-polish.spec.js",
+      "title": "demo densa mantém módulos legíveis em 1280px no tema dark",
+      "seconds": 31.9
+    },
+    {
+      "file": "tests/e2e/planning.spec.js",
+      "title": "prévia explica fase da prova e sugere adaptação sem salvar automaticamente",
+      "seconds": 13.8
+    },
+    {
+      "file": "tests/e2e/preparation-signals.spec.js",
+      "title": "platô e consolidação em risco explicam os dados sem modificar o plano",
+      "seconds": 3.7
+    },
+    {
+      "file": "tests/e2e/planning.spec.js",
+      "title": "fase e redistribuição do plano se organizam em tela móvel",
+      "seconds": 14.9
+    },
+    {
+      "file": "tests/e2e/planning.spec.js",
+      "title": "configuração por disciplina começa recolhida e mantém herança nula",
+      "seconds": 2.8
+    },
+    {
+      "file": "tests/e2e/product-consolidation.spec.js",
+      "title": "Demo apresenta próxima ação, evidências progressivas e explicação da Prontidão",
+      "seconds": 23.9
+    },
+    {
+      "file": "tests/e2e/planning.spec.js",
+      "title": "Visão Geral mostra a fase compacta atual da preparação",
+      "seconds": 8.9
+    },
+    {
+      "file": "tests/e2e/pwa.spec.js",
+      "title": "expõe manifest instalável com ícones completos",
+      "seconds": 1.2
+    },
+    {
+      "file": "tests/e2e/pwa.spec.js",
+      "title": "abre a aplicação offline depois de instalar o service worker",
+      "seconds": 1.9
+    },
+    {
+      "file": "tests/e2e/pwa.spec.js",
+      "title": "remove caches antigos ao ativar a versão atual",
+      "seconds": 1.8
+    },
+    {
+      "file": "tests/e2e/progressive-list.spec.js",
+      "title": "listas progressivas: teclado, filtros, atualização e mobile nos dois temas",
+      "seconds": 5.6
+    },
+    {
+      "file": "tests/e2e/pwa.spec.js",
+      "title": "troca CSS e bundle da versão A pela B sem perder dados locais",
+      "seconds": 4.6
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › matriz, cenários e fechamento aparecem no planejamento da demo",
+      "seconds": 17.1
+    },
+    {
+      "file": "tests/e2e/recommendation-outcome.spec.js",
+      "title": "mostra resultado mensurável da recomendação com comparação e confiança",
+      "seconds": 19.5
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › fechamento e decisões usam linguagem visível ao estudante",
+      "seconds": 14.7
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › calibração e histórico de decisões preservam estado insuficiente",
+      "seconds": 12.8
+    },
+    {
+      "file": "tests/e2e/recovery-preview-ux.spec.js",
+      "title": "prévia e cancelamento do Recovery: 320px light",
+      "seconds": 25.3
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › ação de recomendação abre o fluxo especializado",
+      "seconds": 20.1
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › recomendação guiada registra sessão curta e fecha o vínculo sem perguntas",
+      "seconds": 6.3
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › recomendação vazia explica o dado ausente e oferece uma próxima ação",
+      "seconds": 1.7
+    },
+    {
+      "file": "tests/e2e/recovery-preview-ux.spec.js",
+      "title": "prévia e cancelamento do Recovery: 375px dark",
+      "seconds": 26.2
+    },
+    {
+      "file": "tests/e2e/recovery-preview-ux.spec.js",
+      "title": "prévia e cancelamento do Recovery: 430px light",
+      "seconds": 22.9
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › ação de estudo no diagnóstico inicia sessão vinculada e atualiza as recomendações",
+      "seconds": 43.7
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › ação iniciada na Visão Geral preserva sua origem ao registrar a sessão",
+      "seconds": 4.2
+    },
+    {
+      "file": "tests/e2e/refinement-visual.spec.js",
+      "title": "refinamento visual em Demo densa: desktop-light",
+      "seconds": 26.6
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › importação repetida permanece idempotente após recarregar",
+      "seconds": 10.8
+    },
+    {
+      "file": "tests/e2e/recent-flows.spec.js",
+      "title": "validação dos fluxos recentes › modo móvel mantém os painéis recentes sem overflow",
+      "seconds": 13
+    },
+    {
+      "file": "tests/e2e/refinement-visual.spec.js",
+      "title": "refinamento visual em Demo densa: desktop-dark",
+      "seconds": 26.9
+    },
+    {
+      "file": "tests/e2e/release-gate.spec.js",
+      "title": "paleta abre sem consulta, agrupa comandos e navega por teclado",
+      "seconds": 11.8
+    },
+    {
+      "file": "tests/e2e/release-gate.spec.js",
+      "title": "relatório inclui planejamento adaptativo e resultados posteriores",
+      "seconds": 11.6
+    },
+    {
+      "file": "tests/e2e/refinement-visual.spec.js",
+      "title": "refinamento visual em Demo densa: mobile-light",
+      "seconds": 28.1
+    },
+    {
+      "file": "tests/e2e/release-gate.spec.js",
+      "title": "configuração estratégica edita sem overflow em 320px no tema light",
+      "seconds": 19
+    },
+    {
+      "file": "tests/e2e/release-gate.spec.js",
+      "title": "configuração estratégica edita sem overflow em 320px no tema dark",
+      "seconds": 18.1
+    },
+    {
+      "file": "tests/e2e/refinement-visual.spec.js",
+      "title": "refinamento visual em Demo densa: mobile-dark",
+      "seconds": 25.8
+    },
+    {
+      "file": "tests/e2e/refinement-visual.spec.js",
+      "title": "Metas usa duas colunas em tablet",
+      "seconds": 11.5
+    },
+    {
+      "file": "tests/e2e/refinement-visual.spec.js",
+      "title": "Desempenho mantém orientação dentro dos cards quando não há dados",
+      "seconds": 3.5
+    },
+    {
+      "file": "tests/e2e/release-gate.spec.js",
+      "title": "configuração estratégica edita sem overflow em 430px no tema light",
+      "seconds": 18.3
+    },
+    {
+      "file": "tests/e2e/reports.spec.js",
+      "title": "gera relatório estratégico identificado como demonstração",
+      "seconds": 13.2
+    },
+    {
+      "file": "tests/e2e/release-gate.spec.js",
+      "title": "configuração estratégica edita sem overflow em 430px no tema dark",
+      "seconds": 19
+    },
+    {
+      "file": "tests/e2e/reports.spec.js",
+      "title": "metas comparam intervalos predefinidos e personalizados",
+      "seconds": 16.3
+    },
+    {
+      "file": "tests/e2e/reports.spec.js",
+      "title": "busca global abre instruções por teclado",
+      "seconds": 17.5
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "preserva todas as áreas sem overflow global em 375px",
+      "seconds": 27.3
+    },
+    {
+      "file": "tests/e2e/reports.spec.js",
+      "title": "paleta executa ações de registro por teclado e fecha com Escape",
+      "seconds": 16.1
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "preserva todas as áreas sem overflow global em 768px",
+      "seconds": 29.2
+    },
+    {
+      "file": "tests/e2e/reports.spec.js",
+      "title": "paleta apresenta acesso direto à recomendação prioritária",
+      "seconds": 16.2
+    },
+    {
+      "file": "tests/e2e/sessions.spec.js",
+      "title": "registra dificuldade percebida na sessão e respeita os campos por atividade",
+      "seconds": 4.9
+    },
+    {
+      "file": "tests/e2e/sessions.spec.js",
+      "title": "conclui uma sessão pelo cronômetro e registra o histórico uma única vez",
+      "seconds": 3
+    },
+    {
+      "file": "tests/e2e/sessions.spec.js",
+      "title": "conclusão de revisão registra retenção percebida sem mostrar campos de questões",
+      "seconds": 3.4
+    },
+    {
+      "file": "tests/e2e/sessions.spec.js",
+      "title": "sessão de simulado encaminha ao cadastro próprio do simulado",
+      "seconds": 3.6
+    },
+    {
+      "file": "tests/e2e/smoke.spec.js",
+      "title": "inicializa e navega pelas áreas principais",
+      "seconds": 3.3
+    },
+    {
+      "file": "tests/e2e/smoke.spec.js",
+      "title": "expõe estado de teste isolado com schema atual",
+      "seconds": 1.3
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "preserva todas as áreas sem overflow global em 1366px",
+      "seconds": 34.4
+    },
+    {
+      "file": "tests/e2e/stability-phase-comparison.spec.js",
+      "title": "Demo mostra mapa de estabilidade e fases gravadas sem perder o concurso",
+      "seconds": 21.1
+    },
+    {
+      "file": "tests/e2e/strategic-cycle.spec.js",
+      "title": "prova → decisão → plano → execução → resultado → fechamento → próxima semana",
+      "seconds": 20.2
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "preserva todas as áreas sem overflow global em 1440px",
+      "seconds": 30.5
+    },
+    {
+      "file": "tests/e2e/strategic-cycle.spec.js",
+      "title": "Desempenho → Diagnóstico → prévia → confirmação → execução → fechamento",
+      "seconds": 12.1
+    },
+    {
+      "file": "tests/e2e/strategic-cycle.spec.js",
+      "title": "reversão, cooldown, escopo e falta de dados preservam o histórico em mobile",
+      "seconds": 10.4
+    },
+    {
+      "file": "tests/e2e/strategic-focus-history.spec.js",
+      "title": "histórico compara apenas retratos salvos no escopo ativo e registra o concurso no novo fechamento",
+      "seconds": 3.3
+    },
+    {
+      "file": "tests/e2e/strategic-history.spec.js",
+      "title": "históricos filtram, expandem, versionam e sobrevivem ao backup no mobile",
+      "seconds": 8
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "preserva todas as áreas sem overflow global em 1920px",
+      "seconds": 31.7
+    },
+    {
+      "file": "tests/e2e/structured-content-import.spec.js",
+      "title": "importa CSV com confirmação e não duplica tópicos",
+      "seconds": 3.4
+    },
+    {
+      "file": "tests/e2e/structured-content-import.spec.js",
+      "title": "arquivo inválido exibe erros amigáveis e não altera o estado",
+      "seconds": 3
+    },
+    {
+      "file": "tests/e2e/structured-content-import.spec.js",
+      "title": "prévia estruturada mantém foco no diálogo e não apresenta falhas de acessibilidade",
+      "seconds": 5.4
+    },
+    {
+      "file": "tests/e2e/study-action-cycle.spec.js",
+      "title": "ação overview percorre cronômetro, sessão, evidência e nova prioridade",
+      "seconds": 4
+    },
+    {
+      "file": "tests/e2e/study-action-cycle.spec.js",
+      "title": "ação today percorre cronômetro, sessão, evidência e nova prioridade",
+      "seconds": 4.9
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "mantém Visão Geral, Hoje e Planejamento sem overflow em 320px",
+      "seconds": 23.9
+    },
+    {
+      "file": "tests/e2e/study-action-cycle.spec.js",
+      "title": "ação diagnosis percorre cronômetro, sessão, evidência e nova prioridade",
+      "seconds": 4.3
+    },
+    {
+      "file": "tests/e2e/subject-accuracy-target.spec.js",
+      "title": "meta de acerto pode ser salva, restaurada e voltar a herdar sem alterar domínio ou pesos",
+      "seconds": 6.4
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "mantém Visão Geral, Hoje e Planejamento sem overflow em 360px",
+      "seconds": 25.3
+    },
+    {
+      "file": "tests/e2e/topic-strategy.spec.js",
+      "title": "explica impacto e permite editar pré-requisitos sem criar ciclos",
+      "seconds": 18.1
+    },
+    {
+      "file": "tests/e2e/ux-baseline.spec.js",
+      "title": "baseline visual da ação principal no desktop",
+      "seconds": 13.5
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "mantém Visão Geral, Hoje e Planejamento sem overflow em 390px",
+      "seconds": 25
+    },
+    {
+      "file": "tests/e2e/ux-baseline.spec.js",
+      "title": "baseline visual da ação principal no mobile escuro",
+      "seconds": 13.7
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "mantém Visão Geral, Hoje e Planejamento sem overflow em 430px",
+      "seconds": 22.6
+    },
+    {
+      "file": "tests/e2e/ux-baseline.spec.js",
+      "title": "baseline visual da Central de Diagnóstico no desktop",
+      "seconds": 20.3
+    },
+    {
+      "file": "tests/e2e/ux-baseline.spec.js",
+      "title": "baseline visual da Central de Diagnóstico no mobile escuro",
+      "seconds": 21.6
+    },
+    {
+      "file": "tests/e2e/ux-baseline.spec.js",
+      "title": "tokens do Design System resolvem superfície e status nos dois temas",
+      "seconds": 1.5
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "destaca prontidão e ativa o cabeçalho compacto ao rolar",
+      "seconds": 12.4
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 320px no tema light",
+      "seconds": 36
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "cabeçalho principal mantém a composição completa antes da rolagem",
+      "seconds": 1.5
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "limpeza exige confirmação textual e fica desabilitada na demo",
+      "seconds": 11.9
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "backup mantém ações destrutivas em zona separada",
+      "seconds": 1
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "configuração estratégica comunica herança e conquista de cem horas",
+      "seconds": 2.1
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "modo foco mostra o contexto da tarefa, prende o teclado e Escape devolve o foco",
+      "seconds": 2.3
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 320px no tema dark",
+      "seconds": 33.6
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "ações guiadas permanecem fáceis de tocar em celular e o aviso de sessão é anunciado",
+      "seconds": 15.2
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "componentes visuais não transbordam e controles usam o padrão comum",
+      "seconds": 14.6
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "cronômetro não reserva espaço vazio e instruções explicam dados e rotina",
+      "seconds": 1.4
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "meta do cronômetro mostra progresso acessível somente quando configurada",
+      "seconds": 1.4
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "instruções detalham áreas, fluxos, atalhos e dúvidas",
+      "seconds": 1.3
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "atalho modificado navega sem capturar números isolados",
+      "seconds": 1.2
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "botão de retorno permanece visível e volta ao topo",
+      "seconds": 11
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 375px no tema light",
+      "seconds": 31.8
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "marca do cabeçalho volta para a Visão Geral e ao topo",
+      "seconds": 16.1
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "fechamento semanal e configuração estratégica preservam a hierarquia visual",
+      "seconds": 13.4
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 375px no tema dark",
+      "seconds": 30.8
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "diagnóstico separa interpretação do sinal, score e cobertura",
+      "seconds": 16.8
+    },
+    {
+      "file": "tests/e2e/visual-consolidation.spec.js",
+      "title": "diagnóstico vazio orienta o cadastro sem inventar risco",
+      "seconds": 1.8
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 430px no tema light",
+      "seconds": 30.6
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 430px no tema dark",
+      "seconds": 29.5
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 768px no tema light",
+      "seconds": 30.3
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 768px no tema dark",
+      "seconds": 31.2
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 1440px no tema light",
+      "seconds": 30.6
+    },
+    {
+      "file": "tests/e2e/visual-density.spec.js",
+      "title": "auditoria de dados densos e ajuda em 320–430 px, light e dark",
+      "seconds": 162
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "matriz visual crítica não transborda em 1440px no tema dark",
+      "seconds": 30.9
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "onboarding e modal de sessão cabem na matriz mobile 320px",
+      "seconds": 6.4
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "onboarding e modal de sessão cabem na matriz mobile 375px",
+      "seconds": 7.3
+    },
+    {
+      "file": "tests/e2e/visual-density.spec.js",
+      "title": "cabeçalhos analíticos com dados densos em desktop",
+      "seconds": 21.6
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "onboarding e modal de sessão cabem na matriz mobile 430px",
+      "seconds": 7
+    },
+    {
+      "file": "tests/e2e/visual-language.spec.js",
+      "title": "linguagem visual em 375px e tema light",
+      "seconds": 7.4
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "onboarding e modal de sessão cabem na matriz mobile 768px",
+      "seconds": 7
+    },
+    {
+      "file": "tests/e2e/visual-language.spec.js",
+      "title": "linguagem visual em 375px e tema dark",
+      "seconds": 5.6
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "onboarding e modal de sessão cabem na matriz mobile 1440px",
+      "seconds": 7.7
+    },
+    {
+      "file": "tests/e2e/visual-language.spec.js",
+      "title": "linguagem visual em 1440px e tema light",
+      "seconds": 5.5
+    },
+    {
+      "file": "tests/e2e/visual-language.spec.js",
+      "title": "linguagem visual em 1440px e tema dark",
+      "seconds": 5.7
+    },
+    {
+      "file": "tests/e2e/visual-regression.spec.js",
+      "title": "regressão visual do hero e leitura do fechamento em 375px",
+      "seconds": 10.7
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "modo foco e cronômetro cabem em 320px em claro e escuro",
+      "seconds": 18.3
+    },
+    {
+      "file": "tests/e2e/visual-regression.spec.js",
+      "title": "regressão visual do hero e leitura do fechamento em 1366px",
+      "seconds": 11.4
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "modo foco e cronômetro cabem em 375px em claro e escuro",
+      "seconds": 18.7
+    },
+    {
+      "file": "tests/e2e/visual-regression.spec.js",
+      "title": "regressão visual do hero e leitura do fechamento em 1440px",
+      "seconds": 11.4
+    },
+    {
+      "file": "tests/e2e/visual-regression.spec.js",
+      "title": "regressão visual do hero e leitura do fechamento em 1920px",
+      "seconds": 11.2
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "modo foco e cronômetro cabem em 430px em claro e escuro",
+      "seconds": 18.9
+    },
+    {
+      "file": "tests/e2e/visual-regression.spec.js",
+      "title": "regressão visual dos componentes críticos em desktop",
+      "seconds": 19.6
+    },
+    {
+      "file": "tests/e2e/visual-regression.spec.js",
+      "title": "regressão visual do assistente de edital inteligente",
+      "seconds": 2.6
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "modo foco e cronômetro cabem em 768px em claro e escuro",
+      "seconds": 21.4
+    },
+    {
+      "file": "tests/e2e/weekly-adherence.spec.js",
+      "title": "fechamento preserva aderência e pendências, e a revisão só navega para o planejamento",
+      "seconds": 21.9
+    },
+    {
+      "file": "tests/e2e/weekly-focus-visual.spec.js",
+      "title": "foco semanal desktop",
+      "seconds": 1.9
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "modo foco e cronômetro cabem em 1440px em claro e escuro",
+      "seconds": 20.1
+    },
+    {
+      "file": "tests/e2e/weekly-focus-visual.spec.js",
+      "title": "foco semanal mobile",
+      "seconds": 1.8
+    },
+    {
+      "file": "tests/e2e/weekly-focus-visual.spec.js",
+      "title": "foco semanal dark",
+      "seconds": 1.7
+    },
+    {
+      "file": "tests/e2e/weekly-focus-visual.spec.js",
+      "title": "foco semanal light",
+      "seconds": 1.5
+    },
+    {
+      "file": "tests/e2e/weekly-focus-visual.spec.js",
+      "title": "foco semanal insufficient",
+      "seconds": 1.4
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "pilha sticky não se sobrepõe em 320px no tema light",
+      "seconds": 12.7
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "pilha sticky não se sobrepõe em 320px no tema dark",
+      "seconds": 11.9
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "pilha sticky não se sobrepõe em 375px no tema light",
+      "seconds": 11.4
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "pilha sticky não se sobrepõe em 375px no tema dark",
+      "seconds": 11.9
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "pilha sticky não se sobrepõe em 390px no tema light",
+      "seconds": 11.3
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "pilha sticky não se sobrepõe em 390px no tema dark",
+      "seconds": 12
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "pilha sticky não se sobrepõe em 430px no tema light",
+      "seconds": 11.9
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "pilha sticky não se sobrepõe em 430px no tema dark",
+      "seconds": 12.9
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "nomes extensos quebram sem overflow em 320px",
+      "seconds": 2.9
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "nomes extensos quebram sem overflow em 375px",
+      "seconds": 3
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "nomes extensos quebram sem overflow em 768px",
+      "seconds": 3.2
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "title": "nomes extensos quebram sem overflow em 1440px",
+      "seconds": 3.4
+    }
+  ]
+}
