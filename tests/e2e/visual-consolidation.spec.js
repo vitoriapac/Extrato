@@ -138,6 +138,12 @@ test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis',async(
     if(process.platform==='win32'&&width===1440)await expect(page.locator('#guide-glossary')).toHaveScreenshot('help-glossary-1440-dark-win32.png',{animations:'disabled',maxDiffPixelRatio:.02});
     await page.locator('#helpSearch').fill('SALVAR dados');await expect(page.locator('#backup')).toBeVisible();
     await page.locator('#helpSearchClear').click();await expect(page.locator('#helpSearch')).toBeFocused();
+    await page.locator('#helpSearch').fill('revisões');
+    await expect(page.locator('#guide-areas [data-help-topic]:visible').first()).toHaveAttribute('id','reviews');
+    await page.locator('#helpSearch').press('Escape');
+    await page.locator('[data-help-category="guide-workflows"]').click();await expect(page.locator('#calendar-guide')).toBeVisible();
+    await page.locator('[data-help-category="guide-areas"]').click();await expect(page.locator('#pending-guide')).toBeVisible();
+    await expect(page.locator('#guide-areas [data-help-topic]').first()).toHaveAttribute('id','today-guide');
     await page.locator('#helpSearch').fill('zzzinexistente');await expect(page.locator('#helpNoResults')).toBeVisible();
     await page.locator('#helpSearch').press('Escape');await expect(page.locator('#helpNoResults')).toBeHidden();
     await page.locator('[data-help-category="guide-exam"]').focus();await page.keyboard.press('Enter');

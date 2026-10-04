@@ -9,5 +9,15 @@ export function matchesHelpSearch(index,query){
   return terms.every(term=>text.includes(term));
 }
 export function searchHelpEntries(categories,query,{categoryId}={}){
-  return categories.filter(category=>!categoryId||category.id===categoryId).flatMap(category=>category.entries.filter(entry=>matchesHelpSearch(category.title+' '+buildHelpSearchIndex(entry),query)).map(entry=>({categoryId:category.id,id:entry.id})));
+  return categories.filter(category=>!categoryId||category.id===categoryId).flatMap(category=>category.entries.filter(entry=>matchesHelpSearch(category.title+' '+buildHelpSearchIndex(entry),query)).map(entry=>({categoryId:category.id,id:entry.id,score:rankHelpSearch(entry,query)}))).sort((a,b)=>b.score-a.score);
+}
+
+export function rankHelpSearch(entry,query){
+  if(!normalizeHelpText(query).trim())return 0;
+  if(!matchesHelpSearch(buildHelpSearchIndex(entry),query))return 0;
+  const title=normalizeHelpText(entry.title),phrase=normalizeHelpText(query).trim();
+  if(title===phrase)return 400;
+  if(matchesHelpSearch(title,phrase))return 300;
+  if(matchesHelpSearch([...(entry.keywords||[]),...(entry.concepts||[]),...(entry.questions||[])].join(' '),phrase))return 200;
+  return 100;
 }

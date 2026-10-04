@@ -1,5 +1,5 @@
 import {renderHelpCenter} from './help-renderer.js';
-import {normalizeHelpText as normalize,matchesHelpSearch} from './help-search.js';
+import {normalizeHelpText as normalize,matchesHelpSearch,rankHelpSearch} from './help-search.js';
 
 const DESTINATIONS=Object.freeze({
   adherence:{tab:'desempenho',section:'consistency',selector:'.adherence-summary'},
@@ -50,6 +50,7 @@ export function createHelpController({document,window,activateTab}){
   const root=document.getElementById('helpCenter');
   if(!root)return {mount:()=>false};
   let activeCategory='guide-start';
+  let originalGroups=[],originalTopics=new Map();
   const applySearch=()=>{
     const parents=new Set();
     for(const mark of root.querySelectorAll('[data-help-match]')){
@@ -59,16 +60,21 @@ export function createHelpController({document,window,activateTab}){
     for(const parent of parents)parent.normalize();
     const query=normalize(root.querySelector('#helpSearch')?.value.trim());
     let matches=0;
+    const scores=new Map();
     for(const group of root.querySelectorAll('[data-help-group]')){
       let groupMatches=0;
       const categoryMatches=Boolean(query&&normalize(group.querySelector('.help-group-heading')?.textContent).includes(query));
       for(const topic of group.querySelectorAll('[data-help-topic]')){
         const visible=!query||categoryMatches||matchesHelpSearch(topic.textContent+' '+(topic.dataset.helpSearch||''),query);
         topic.hidden=!visible;
+        scores.set(topic,query&&visible?rankHelpSearch({title:topic.dataset.helpTitle,keywords:[topic.dataset.helpKeywords||''],paragraphs:[topic.textContent,topic.dataset.helpSearch||'']},query):0);
         if(visible)groupMatches++;
       }
       group.hidden=query?Boolean(!groupMatches):group.id!==activeCategory;
       matches+=query?groupMatches:0;
+      const topics=originalTopics.get(group)||[];
+      for(const topic of [...topics].sort((a,b)=>query?(scores.get(b)||0)-(scores.get(a)||0):0))group.querySelector('.help-group-body').append(topic);
+      scores.set(group,Math.max(0,...topics.map(topic=>scores.get(topic)||0)));
     }
     for(const section of root.querySelectorAll('.help-reference')){
       let sectionMatches=0;
@@ -81,6 +87,7 @@ export function createHelpController({document,window,activateTab}){
       section.hidden=query?Boolean(!sectionMatches):activeCategory!=='guide-safety';
       matches+=query?sectionMatches:0;
     }
+    for(const node of [...originalGroups].sort((a,b)=>query?(scores.get(b)||0)-(scores.get(a)||0):0))root.querySelector('#helpGroups').append(node);
     const principle=root.querySelector('[data-help-principle]');
     principle.hidden=query?Boolean(!normalize(principle.textContent).includes(query)):activeCategory!=='guide-workflows';
     if(query&&!principle.hidden)matches++;
@@ -122,6 +129,8 @@ export function createHelpController({document,window,activateTab}){
   };
   const mount=()=>{
     root.innerHTML=renderHelpCenter();
+    originalGroups=[...root.querySelector('#helpGroups').children];
+    originalTopics=new Map([...root.querySelectorAll('[data-help-group]')].map(group=>[group,[...group.querySelectorAll('[data-help-topic]')]]));
     activeCategory=root.querySelector('[data-help-category]')?.dataset.helpCategory||'guide-start';
     applySearch();
     root.addEventListener('input',event=>{if(event.target.id==='helpSearch')applySearch()});

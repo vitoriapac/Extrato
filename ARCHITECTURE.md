@@ -161,7 +161,7 @@ flowchart TD
 - `src/reports/report-template.js`: template seguro do relatório A4.
 - `src/reports/print-report.js`: coordenação isolada da impressão/“Salvar como PDF”.
 - `src/ui/controllers/report-controller.js`: eventos e composição do relatório, com estado e cálculos recebidos da raiz.
-- `src/ui/help/`: Central de Ajuda em sete categorias, com conteúdo estático (`help-content.js`), exemplos semânticos (`help-visuals.js`), renderer e controlador de navegação. `help-search.js` indexa títulos, descrições, palavras-chave, conceitos e perguntas, sem acentos e sem exigir ordem dos termos. Os exemplos são ilustrativos e não calculam métricas nem persistem dados. `app.js` apenas monta o recurso e fornece a navegação entre abas.
+- `src/ui/help/`: Central de Ajuda em sete categorias, com conteúdo estático (`help-content.js`), exemplos semânticos (`help-visuals.js`), renderer e controlador de navegação. `help-search.js` indexa títulos, descrições, palavras-chave, conceitos e perguntas, sem acentos e sem exigir ordem dos termos. A busca ordena títulos exatos, títulos correspondentes, termos estruturados e conteúdo; limpar a consulta restaura a ordem editorial. Calendário pertence ao planejamento, e pendências têm orientação própria em Estudar. Os exemplos são ilustrativos e não calculam métricas nem persistem dados. `app.js` apenas monta o recurso e fornece a navegação entre abas.
 - `docs/VISUAL-HIERARCHY.md`: mapa de decisão, análise e evidência para orientar mudanças visuais sem alterar os cálculos.
 - `src/app.js`: raiz de composição, compatibilidade dos fluxos legados e registro explícito das dependências.
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
