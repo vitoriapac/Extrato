@@ -66,13 +66,13 @@ A execução usa superfície de card e duas colunas a partir de 801 px; em telas
 
 A validação dirigida cobre primeiro uso e conclusão, nomes longos, 320/375/390/430 px, desktop, claro/escuro, teclado, acessibilidade, execução parcial e completa e cronômetro ativo. As referências Windows do card diário permanecem versionadas. A suíte Full e as demais superfícies visuais seguem disponíveis para validações amplas.
 
-## Central de Ajuda visual — pacotes 1 e 2
+## Central de Ajuda visual — ciclo concluído
 
 A ajuda mantém conteúdo, controller e renderer em src/ui/help. Categorias preservam seus IDs e passam a sete destinos: Comece por aqui, Estudar, Planejar, Analisar, Prova, Metas e Dados. A navegação horizontal não adiciona outro elemento sticky. Cards de funcionalidade, conceito e referência usam os tokens existentes e mantêm leitura direta, sem accordions.
 
 O mapa conceitual usa uma lista ordenada de seis etapas; em mobile, vira uma coluna. Primeiros passos seguem objetivo, disponibilidade, conteúdo, prévia, Hoje e resultados. Os visuais de execução, sessões, próxima atividade e revisões são exemplos estáticos explicitamente identificados; não calculam indicadores nem iniciam sessões. Progresso temporal e quantidade de atividades concluídas têm textos distintos.
 
-Palavras-chave, conceitos e perguntas fazem parte do contrato do conteúdo e da busca existente. A indexação dedicada e as demais categorias visuais serão aprofundadas nos pacotes posteriores. A jornada dirigida cobre busca, troca de categoria e ação por teclado; referências Windows protegem o mapa em 375 px claro e 1440 px escuro.
+Palavras-chave, conceitos e perguntas fazem parte do contrato do conteúdo e da busca em help-search.js. O ranking prioriza título exato, título correspondente, termos estruturados e conteúdo, com desempate estável. Limpar a consulta restaura a ordem editorial. Prova, Metas e Dados incluem exemplos estáticos; o glossário usa três, duas ou uma coluna conforme a largura. Calendário fica em Planejar; cronômetro e pendências ficam em Estudar. A jornada dirigida cobre busca, troca de categoria e ação por teclado; referências Windows protegem o mapa em 375 px claro e 1440 px escuro.
 
 ## Execução diária: hierarquia e estados
 
@@ -82,3 +82,5 @@ A superfície mantém o grid existente: resumo temporal e próxima atividade, em
 - Contexto quando aplicável: recomendação fora do plano, orientação sem plano e alerta de distribuição antiga. O bloqueio por sessão ativa permanece visível.
 - Detalhes inicialmente fechados: justificativa pertinente à atividade, tempo adicional, vínculo divergente e próximas atividades.
 - Pendências permanecem no rodapé; nenhuma destas mudanças altera o cálculo ou a persistência.
+
+O fechamento e a cobertura dirigida dos cinco pacotes estão em [OVERVIEW-HELP-CONSOLIDATION.md](OVERVIEW-HELP-CONSOLIDATION.md).

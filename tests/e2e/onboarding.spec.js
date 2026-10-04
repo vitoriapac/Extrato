@@ -23,6 +23,8 @@ test('Visão Geral mantém ação antes da configuração em todos os estados de
   await expect(page.locator('#guidedOnboarding #overviewExamPhase')).toHaveCount(1);
   await expect(page.locator('#panel-dashboard .exam-phase-compact')).toHaveCount(1);
   await expect(page.locator('#guidedOnboarding [role="progressbar"]')).toHaveAttribute('aria-valuemax','4');
+  await expect(page.locator('.onboarding-entry-steps [aria-current="step"]')).toHaveCount(1);
+  await expect(page.locator('.onboarding-entry-steps [aria-current="step"]')).toContainText('Atual');
   for(const width of [320,390,1440]){
     await page.setViewportSize({width,height:1100});
     await expect.poll(()=>page.evaluate(()=>{const steps=document.querySelector('.onboarding-entry-steps').getBoundingClientRect(),cta=document.querySelector('.onboarding-entry-cta').getBoundingClientRect();return cta.top-steps.bottom})).toBeGreaterThanOrEqual(20);

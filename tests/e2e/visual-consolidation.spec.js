@@ -151,5 +151,16 @@ test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis',async(
     if(process.platform==='win32'&&width===375)await expect(page.locator('#exam-matrix .instruction-example')).toHaveScreenshot('help-matrix-375-light-win32.png',{animations:'disabled',maxDiffPixelRatio:.02});
     await page.locator('[data-help-category="guide-areas"]').click();
   }
+  // Narrow-width smoke stays in this journey; the full category audit uses representative widths above.
+  for(const width of [320,390]){
+    await page.setViewportSize({width,height:1100});
+    await page.locator('[data-help-category="guide-areas"]').click();
+    await page.locator('#helpSearch').fill('revisao');await expect(page.locator('#reviews')).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.locator('#helpSearchClear').click();await expect(page.locator('#helpSearch')).toBeFocused();
+    await page.locator('[data-help-category="guide-workflows"]').focus();await page.keyboard.press('Enter');
+    await expect(page.locator('#guide-workflows')).toBeFocused();await expect(page.locator('#calendar-guide')).toBeVisible();
+    await page.locator('[data-help-category="guide-areas"]').click();
+  }
   await page.locator('#today-guide [data-help-action="today"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#panel-hoje')).toBeVisible();
 });
