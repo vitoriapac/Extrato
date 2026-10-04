@@ -83,6 +83,19 @@ export const HELP_CATEGORIES=BASE_HELP_CATEGORIES.flatMap(category=>{
 
 const goalsGuide=HELP_CATEGORIES.find(c=>c.id==='guide-goals').entries[0];
 Object.assign(goalsGuide,{keywords:['meta','volume','rotina','resultado','questões','horas'],visual:{type:'reference',title:'Objetivos com papéis diferentes',items:[{title:'Volume',detail:'Horas, questões e simulados'},{title:'Rotina',detail:'Consistência e aderência'},{title:'Resultado',detail:'Objetivo da preparação'}]},paragraphs:['Defina objetivos compatíveis com sua disponibilidade. Metas de volume e rotina acompanham execução; não equivalem a probabilidade de aprovação.','No exemplo, 124 questões de uma meta de 150 representam aproximadamente 83% do volume desejado, sem informar domínio ou precisão. Metas de precisão por disciplina devem ser lidas junto ao resultado observado.']});
+const searchHints={
+ 'readiness':{concepts:['índice de prontidão','aprovação'],questions:['Por que minha Prontidão não mudou?']},
+ 'adherence':{concepts:['planejado versus realizado','execução do plano'],questions:['Por que planejado é diferente do realizado?']},
+ 'recovery-guide':{concepts:['reorganizar planejamento','recuperar plano'],questions:['Recovery apaga meu planejamento anterior?']},
+ 'backup':{keywords:['restaurar','restauração','exportar','trocar navegador'],questions:['Como salvar meus dados?']},
+ 'reviews':{keywords:['revisão','revisões','atrasada','reabrir']},
+ 'demo':{keywords:['demo','demonstração','experimentar','dados fictícios']},
+ 'insufficient-sample-guide':{questions:['Por que aparece amostra insuficiente?']}
+};
+for(const entry of HELP_CATEGORIES.flatMap(category=>category.entries)){
+ const hints=searchHints[entry.id];
+ if(hints)for(const [field,values] of Object.entries(hints))entry[field]=[...entry[field],...values];
+}
 export const HELP_GLOSSARY=[
   ['Índice de Prontidão','Síntese de cobertura, domínio, retenção, consistência e simulados. Não é probabilidade de aprovação.'],
   ['Domínio','Estimativa do desempenho consolidado em um tópico, acompanhada da força da evidência.'],

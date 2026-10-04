@@ -3645,9 +3645,10 @@
         "node:assert/strict",
         "../../src/ui/help/help-content.js",
         "../../src/ui/help/help-renderer.js",
-        "../../src/ui/help/help-visuals.js"
+        "../../src/ui/help/help-visuals.js",
+        "../../src/ui/help/help-search.js"
       ],
-      "staticTestDeclarations": 9,
+      "staticTestDeclarations": 10,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

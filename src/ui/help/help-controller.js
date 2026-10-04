@@ -1,4 +1,5 @@
 import {renderHelpCenter} from './help-renderer.js';
+import {normalizeHelpText as normalize,matchesHelpSearch} from './help-search.js';
 
 const DESTINATIONS=Object.freeze({
   adherence:{tab:'desempenho',section:'consistency',selector:'.adherence-summary'},
@@ -9,7 +10,6 @@ const DESTINATIONS=Object.freeze({
   exam:{tab:'desempenho',section:'exam',selector:'#examIntelligenceOverview'},audit:{tab:'desempenho',section:'exam',selector:'#examConfigurationAudit'},matrix:{tab:'desempenho',section:'exam',selector:'#examHistoricalMatrix'},
   backup:{tab:'instrucoes',selector:'#exportBackupBtn'},demo:{tab:'instrucoes',selector:'#enterDemoBtn'}
 });
-const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
 
 function highlightMatches(scope,query,document,window){
   const walker=document.createTreeWalker(scope,window.NodeFilter.SHOW_TEXT);
@@ -63,7 +63,7 @@ export function createHelpController({document,window,activateTab}){
       let groupMatches=0;
       const categoryMatches=Boolean(query&&normalize(group.querySelector('.help-group-heading')?.textContent).includes(query));
       for(const topic of group.querySelectorAll('[data-help-topic]')){
-        const visible=!query||categoryMatches||normalize(topic.textContent+' '+(topic.dataset.helpSearch||'')).includes(query);
+        const visible=!query||categoryMatches||matchesHelpSearch(topic.textContent+' '+(topic.dataset.helpSearch||''),query);
         topic.hidden=!visible;
         if(visible)groupMatches++;
       }
@@ -74,7 +74,7 @@ export function createHelpController({document,window,activateTab}){
       let sectionMatches=0;
       const headingMatches=Boolean(query&&normalize(section.querySelector('h3')?.textContent).includes(query));
       for(const item of section.querySelectorAll('.help-reference-item')){
-        const visible=!query||headingMatches||normalize(item.textContent).includes(query);
+        const visible=!query||headingMatches||matchesHelpSearch(item.textContent,query);
         item.hidden=!visible;
         if(visible)sectionMatches++;
       }
@@ -116,7 +116,7 @@ export function createHelpController({document,window,activateTab}){
       if(!target)return;
       for(let parent=target.closest('details');parent;parent=parent.parentElement?.closest('details'))parent.open=true;
       if(!target.matches('button,input,select,a,summary,[tabindex]'))target.tabIndex=-1;
-      target.scrollIntoView({block:'center',behavior:'smooth'});
+      target.scrollIntoView({block:'center',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
       target.focus({preventScroll:true});
     });
   };

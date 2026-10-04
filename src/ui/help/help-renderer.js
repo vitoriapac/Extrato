@@ -1,3 +1,4 @@
+import {buildHelpSearchIndex} from './help-search.js';
 import {renderHelpVisual} from './help-visuals.js';
 import {HELP_CATEGORIES,HELP_GLOSSARY,HELP_FAQ} from './help-content.js';
 
@@ -14,7 +15,7 @@ function renderEntry(entry){
     entry.note?`<aside class="help-note context-note context-note--tip"><strong>Dica</strong>${paragraph(entry.note)}</aside>`:'',
     entry.action?`<button type="button" class="help-text-link" data-help-action="${escapeHtml(entry.action.target)}">${escapeHtml(entry.action.label)} <span aria-hidden="true">→</span></button>`:''
   ].join('');
-  return `<article class="help-topic${entry.wide?' instruction-card--wide':''} instruction-card instruction-card--${['feature','concept','reference'].includes(entry.kind)?entry.kind:'feature'}${entry.steps?.length?' help-topic--steps':''}" id="${escapeHtml(entry.id)}" data-help-topic data-help-search="${escapeHtml([...(entry.keywords||[]),...(entry.concepts||[]),...(entry.questions||[])].join(' '))}"><h4>${escapeHtml(entry.title)}</h4><p class="help-topic-summary">${escapeHtml(entry.summary)}</p><div class="help-topic-body">${content}</div></article>`;
+  return `<article class="help-topic${entry.wide?' instruction-card--wide':''} instruction-card instruction-card--${['feature','concept','reference'].includes(entry.kind)?entry.kind:'feature'}${entry.steps?.length?' help-topic--steps':''}" id="${escapeHtml(entry.id)}" data-help-topic data-help-search="${escapeHtml(buildHelpSearchIndex(entry))}"><h4>${escapeHtml(entry.title)}</h4><p class="help-topic-summary">${escapeHtml(entry.summary)}</p><div class="help-topic-body">${content}</div></article>`;
 }
 
 function renderCategory(category,index){

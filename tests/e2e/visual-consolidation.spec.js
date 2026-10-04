@@ -127,6 +127,22 @@ test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis',async(
     await page.locator('#helpSearch').fill('amostra insuficiente');
     await expect(page.locator('#insufficient-sample-guide')).toBeVisible();
     await page.locator('#helpSearch').press('Escape');
+
+    for(const category of ['guide-exam','guide-goals','guide-safety']){
+      await page.locator('[data-help-category="'+category+'"]').click();
+      await expect(page.locator('#'+category)).toBeVisible();
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+    }
+    await expect(page.locator('#guide-glossary')).toBeVisible();
+    if(process.platform==='win32'&&width===1440)await expect(page.locator('#guide-glossary')).toHaveScreenshot('help-glossary-1440-dark-win32.png',{animations:'disabled',maxDiffPixelRatio:.02});
+    await page.locator('#helpSearch').fill('SALVAR dados');await expect(page.locator('#backup')).toBeVisible();
+    await page.locator('#helpSearchClear').click();await expect(page.locator('#helpSearch')).toBeFocused();
+    await page.locator('#helpSearch').fill('zzzinexistente');await expect(page.locator('#helpNoResults')).toBeVisible();
+    await page.locator('#helpSearch').press('Escape');await expect(page.locator('#helpNoResults')).toBeHidden();
+    await page.locator('[data-help-category="guide-exam"]').focus();await page.keyboard.press('Enter');
+    await expect(page.locator('#guide-exam')).toBeFocused();
+    if(process.platform==='win32'&&width===375)await expect(page.locator('#exam-matrix .instruction-example')).toHaveScreenshot('help-matrix-375-light-win32.png',{animations:'disabled',maxDiffPixelRatio:.02});
     await page.locator('[data-help-category="guide-areas"]').click();
   }
   await page.locator('#today-guide [data-help-action="today"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#panel-hoje')).toBeVisible();

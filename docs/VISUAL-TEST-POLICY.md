@@ -13,6 +13,7 @@ Ubuntu/Chromium continua validando jornadas, estrutura acessível, valores textu
 | Desempenho e Metas | refinement-visual.spec.js | Resumo interpretativo e grupos de metas |
 | Trajetória | achievement-projection.spec.js | Gráfico, evidência e distinção observado/tendência |
 | Recovery | recovery-preview-ux.spec.js | Prévia comparativa, texto e cancelamento |
+| Central de Ajuda | visual-consolidation.spec.js | Mapa em 375 claro / 1440 escuro, matriz em 375 claro e glossário em 1440 escuro |
 | Onboarding | onboarding.spec.js | Quatro etapas, navegação e confirmação |
 | Sustentabilidade | planning-sustainability.spec.js | Interpretação, métricas e ação de capacidade |
 
