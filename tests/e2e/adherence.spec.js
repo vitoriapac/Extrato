@@ -20,6 +20,7 @@ for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light'],[1440,'ligh
   const before=await page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return {dailyPlans:s.dailyPlans,studySessions:s.studySessions,weeklyCloseSnapshots:s.weeklyCloseSnapshots}});
   await content.locator('[data-adherence-weeks]').selectOption('12');await expect(content.locator('[data-adherence-weeks]')).toBeFocused();
   await expect(content.locator('[data-adherence-weeks]')).toHaveValue('12');
+  await content.getByText('Execução por semana',{exact:true}).click();
   const list=content.locator('.adherence-week-list');await expect(list.locator('> li:visible')).toHaveCount(5);
   const more=list.locator('xpath=following-sibling::button[1]');await more.focus();await page.keyboard.press('Enter');
   await expect(more).toHaveAttribute('aria-expanded','true');await expect(list.locator('> li:visible')).toHaveCount(await list.locator('> li').count());

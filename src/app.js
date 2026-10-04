@@ -40,7 +40,7 @@ import {createPerformanceController} from './ui/controllers/performance-controll
 import {createDiagnosisController} from './ui/controllers/diagnosis-controller.js';
 import {createProjectionController} from './ui/controllers/projection-controller.js';
 import {normalizeAdherenceTarget,validAdherenceTarget} from './application/adherence/adherence-target.js';
-import {renderAdherenceTargetSetting} from './ui/renderers/adherence-target-renderer.js';
+import {renderGoals} from './ui/renderers/goals-renderer.js';
 import {createRecoveryController} from './ui/controllers/recovery-controller.js';
 import {createRecoveryStateCommitter} from './application/recovery/recovery-state-committer.js';
 import {buildPerformanceSubjectComparison} from './application/performance/build-performance-subject-comparison.js';
@@ -3385,73 +3385,7 @@ function renderMetas(){
   const atingidoConsistencia=countStudyDaysThisWeek(state.studySessions,todayISO());
   const hasAccuracyEvidence=state.questoes.some(item=>Number(item.resolved)>0)||state.simulados.some(item=>Number(item.total)>0);
   const resultGoals=buildResultGoalsViewModel({goals:m,achieved:{weeklyTopics:atingidoSemanal,monthlyTopics:atingidoMensal,questions:atingidoQuestoes,simulations:atingidoSimulados,accuracy:hasAccuracyEvidence?taxaAcertoGeral():null,studyDays:atingidoConsistencia}});
-  const consistencyGoal=resultGoals.items.find(item=>item.id==='studyDays');
-
-  const cards = [
-    { key:'semanal', label:'Meta Semanal', desc:'Tópicos concluídos esta semana', atingido: atingidoSemanal, meta: m.semanal },
-    { key:'mensal', label:'Meta Mensal', desc:'Tópicos concluídos este mês', atingido: atingidoMensal, meta: m.mensal },
-    { key:'questoesSemanal', label:'Meta de Questões', desc:'Questões resolvidas esta semana', atingido: atingidoQuestoes, meta: m.questoesSemanal },
-    { key:'simuladosSemanal', label:'Meta de Simulados', desc:'Simulados feitos esta semana', atingido: atingidoSimulados, meta: m.simuladosSemanal }
-  ];
-
-  document.getElementById('metasContainer').innerHTML = cards.map(c => {
-    const goalId={semanal:'weeklyTopics',mensal:'monthlyTopics',questoesSemanal:'questions',simuladosSemanal:'simulations'}[c.key],goal=resultGoals.items.find(item=>item.id===goalId);
-    const pct = goal?.progress??0;
-    const pctDisplay = Math.min(pct, 100);
-    return `
-    <div class="meta-card">
-      <div class="meta-info">
-        <div class="meta-name">${c.label}</div>
-        <div class="meta-formula">=Atingido/Meta · ${escapeHtml(c.desc)}</div>
-      </div>
-      <div class="meta-progress-block">
-        <div class="meta-progress-track">
-          <div class="meta-progress-fill ${pct>=100?'over':''}" style="width:${pctDisplay}%"></div>
-        </div>
-        <div class="meta-progress-label">
-          <span>${goal?.measured?c.atingido:'Sem dados'} / ${c.meta}</span>
-          <span>${goal?.progress==null?'Aguardando registros':`${pct}%`}</span>
-        </div>
-      </div>
-      <div class="meta-inputs">
-        Meta:
-        <input type="number" min="0" value="${c.meta}" data-delegated-blur="updateMeta('${c.key}', this.value)">
-      </div>
-      <small class="result-goal-status">${goal?.state==='achieved'?'Meta atingida':goal?.remaining!=null?`Faltam ${goal.remaining} para atingir a meta`:'Aguardando registros'}</small>
-    </div>`;
-  }).join('') + `
-    <div class="meta-card">
-      <div class="meta-info">
-        <div class="meta-name">Meta de Aprovação</div>
-        <div class="meta-formula">Taxa de acerto alvo em questões e simulados</div>
-      </div>
-      <div class="meta-progress-block">
-        <div class="meta-progress-track">
-          <div class="meta-progress-fill ${resultGoals.items.find(item=>item.id==='accuracy')?.state==='achieved'?'over':''}" style="width:${resultGoals.items.find(item=>item.id==='accuracy')?.progressClamped||0}%"></div>
-        </div>
-        <div class="meta-progress-label">
-          <span>Atual: ${resultGoals.items.find(item=>item.id==='accuracy')?.current==null?'Sem dados':resultGoals.items.find(item=>item.id==='accuracy').current+'%'}</span>
-          <span>Meta: ${state.metas.metaAprovacao}%</span>
-        </div>
-      </div>
-      <div class="meta-inputs">
-        Meta:
-        <input type="number" min="0" max="100" value="${state.metas.metaAprovacao}" data-delegated-blur="updateMeta('metaAprovacao', this.value)">%
-      </div>
-      <small class="result-goal-status">${resultGoals.items.find(item=>item.id==='accuracy')?.state==='achieved'?'Meta de acerto atingida':hasAccuracyEvidence?'Meta ainda não atingida':'Aguardando questões ou simulados para calcular o acerto'}</small>
-    </div>
-    <div class="meta-card">
-      <div class="meta-info">
-        <div class="meta-name">Meta de Consistência</div>
-        <div class="meta-formula">Dias distintos com estudo válido nesta semana</div>
-      </div>
-      <div class="meta-progress-block">
-        <div class="meta-progress-track"><div class="meta-progress-fill ${consistencyGoal?.state==='achieved'?'over':''}" style="width:${consistencyGoal?.progressClamped||0}%"></div></div>
-        <div class="meta-progress-label"><span>${atingidoConsistencia} / ${m.consistenciaSemanal} dias</span><span>${consistencyGoal?.progress??0}%</span></div>
-      </div>
-      <div class="meta-inputs">Meta: <input type="number" min="1" max="7" step="1" value="${m.consistenciaSemanal}" aria-label="Meta de dias com estudo por semana" data-delegated-blur="updateMeta('consistenciaSemanal', this.value)"> dias</div>
-      <small class="result-goal-status">${consistencyGoal?.state==='achieved'?'Meta atingida':`Faltam ${consistencyGoal?.remaining??m.consistenciaSemanal} dias para atingir a meta`}</small>
-    </div>${renderAdherenceTargetSetting(m.aderenciaSemanal)}`;
+  document.getElementById('metasContainer').innerHTML=renderGoals(resultGoals,{adherenceTarget:m.aderenciaSemanal,escapeHtml});
   renderSelectedPeriodComparison();
 }
 

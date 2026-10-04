@@ -462,10 +462,15 @@
   .metas-close-metrics span{color:var(--text-secondary);font-size:var(--text-small)}
   .metas-close-metrics strong{color:var(--heading);font:600 var(--text-value) var(--font-display)}
   .metas-weekly-close>p{color:var(--text-secondary)}
-  #metasContainer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)}
+  #metasContainer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4)}
   #metasContainer .meta-card{display:grid;gap:var(--space-3);align-content:start;margin:0;padding:var(--space-4);background:var(--surface-subtle)}
   #metasContainer .meta-info,#metasContainer .meta-progress-block{min-width:0}
   #metasContainer .result-goal-status{margin:0}
+  .goal-group{min-width:0;display:flex;flex-direction:column;gap:var(--space-3)}
+  .goal-group>.module-heading{margin:0}
+  .goal-group>.meta-card{flex:0 0 auto}
+  .goal-group--outcome{grid-column:1/-1}
+  @media(min-width:1100px){.goal-group--volume{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}.goal-group--volume>.module-heading,.goal-group--volume>a{grid-column:1/-1}}
   @media(max-width:900px){#metasContainer{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media(max-width:600px){#metasContainer,.metas-close-metrics{grid-template-columns:1fr}.metas-distribution-list li{grid-template-columns:1fr}}
   .meta-card{

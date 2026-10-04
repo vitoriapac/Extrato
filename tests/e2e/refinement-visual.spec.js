@@ -6,8 +6,8 @@ const screenshotOptions={animations:'disabled',caret:'hide',maxDiffPixelRatio:.0
 const screenshotName=(name)=>name.replace(/\.png$/,`-${process.platform}.png`);
 
 for(const {name,width,theme,columns} of [
-  {name:'desktop-light',width:1440,theme:'light',columns:3},
-  {name:'desktop-dark',width:1440,theme:'dark',columns:3},
+  {name:'desktop-light',width:1440,theme:'light',columns:2},
+  {name:'desktop-dark',width:1440,theme:'dark',columns:2},
   {name:'mobile-light',width:375,theme:'light',columns:1},
   {name:'mobile-dark',width:375,theme:'dark',columns:1}
 ])test(`refinamento visual em Demo densa: ${name}`,async({page})=>{
@@ -27,11 +27,16 @@ for(const {name,width,theme,columns} of [
   }
   await activateTab(page,'metas');
   await expect(page.locator('#metasContainer .meta-card')).toHaveCount(7);
-  await expect(page.locator('#metasContainer .meta-card').last()).toContainText('Meta de Aderência');
+  await expect(page.locator('#metasContainer .goal-group--routine')).toContainText('Meta de Aderência');
+  await expect(page.locator('#metasContainer .goal-group')).toHaveCount(3);
   const actualColumns=await page.locator('#metasContainer').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length);
   expect(actualColumns).toBe(columns);
   await expectNoPageOverflow(page);
-  if(process.platform==='win32')await expect(page.locator('#metasContainer')).toHaveScreenshot(screenshotName(`metas-${name}.png`),screenshotOptions);
+  if(process.platform==='win32'){
+    const previous=await page.locator('.demo-banner,.sticky-shell,.skip-link').evaluateAll(nodes=>nodes.map(node=>{const opacity=node.style.opacity;node.style.opacity='0';return opacity}));
+    try{await expect(page.locator('#metasContainer')).toHaveScreenshot(screenshotName(`metas-${name}.png`),screenshotOptions)}
+    finally{await page.locator('.demo-banner,.sticky-shell,.skip-link').evaluateAll((nodes,values)=>nodes.forEach((node,index)=>node.style.opacity=values[index]),previous)}
+  }
 });
 
 test('Metas usa duas colunas em tablet',async({page})=>{

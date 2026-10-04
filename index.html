@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=0f8370fee8ec">
+<link rel="stylesheet" href="styles/app.css?v=2f8f4d9c62bd">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -593,7 +593,7 @@
       <div id="ritmoContainer"></div>
     </div>
 
-    <div class="chart-card"><header class="module-heading"><h3 class="module-heading__title">Metas de acerto por disciplina</h3><p class="module-heading__description">Ajuste metas individuais e compare o resultado atual com a meta.</p></header><div id="subjectTargetEditor"></div></div>
+    <div class="chart-card" id="subjectAccuracyGoals"><header class="module-heading"><h3 class="module-heading__title">Metas de acerto por disciplina</h3><p class="module-heading__description">Ajuste metas individuais e compare o resultado atual com a meta.</p></header><div id="subjectTargetEditor"></div></div>
     <div class="section-head">
       <div class="section-title" style="font-size:16px;">Metas de questões por disciplina</div>
     </div>
@@ -602,7 +602,7 @@
     </p>
     <div class="meta-disciplina-add">
                 <select class="select-control" id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
-                <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de tópicos da nova meta" min="1" value="20" style="width:80px;">
+                <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de questões da nova meta" min="1" value="20" style="width:80px;">
       <span class="metadata-text">questões/semana</span>
       <button class="btn small" id="addMetaDisciplinaBtn">+ Adicionar meta</button>
     </div>
@@ -782,7 +782,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=0f8370fee8ec"></script>
+  <script src="src/app.bundle.js?v=2f8f4d9c62bd"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

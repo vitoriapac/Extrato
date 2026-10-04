@@ -45,3 +45,10 @@ Pendências recorrentes oferecem navegação contextual para planejamento e dese
 
 A comparação semanal fornece uma explicação pura de crédito temporal, execução prioritária, volume adicional e classificação. Os percentuais não são somados em um score. Direções opostas são explicitadas como mudanças mistas; carga e capacidade diferentes são contexto, sem atribuição causal. Classificação insuficiente ou identidade ambígua bloqueiam interpretações estratégicas. Semanas em andamento usam o mesmo número de dias da anterior. A meta pessoal não modifica as diferenças observadas.
 
+
+## Pacote 6 — Desempenho e Metas
+
+Consistência em Desempenho segue resumo → gráfico principal → interpretação → investigação. O resumo distingue crédito temporal, execução prioritária, carga planejada e tempo realizado. O gráfico mostra até cinco disciplinas com maior carga planejada, com valores textuais; a tabela completa e as semanas ficam expansíveis. A janela semanal mantém seu seletor de 4/8/12 semanas e as listas longas usam Mostrar mais. Classificação, vínculos e estudo adicional ficam nos detalhes.
+
+Metas agrupa os indicadores em Volume (tópicos, questões e simulados), Rotina (consistência e aderência) e Resultado (acerto). semanal/mensal continuam contando tópicos concluídos; disponibilidade em horas permanece no editor existente. Resultado oferece acesso às metas individuais de acerto. O renderer modular substitui a montagem de cards em app.js, sem alterar persistência, fórmulas ou handlers de edição.
+
