@@ -232,9 +232,9 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
-      "file": "tests/e2e/responsive.spec.js",
+      "file": "tests/e2e/responsive-smoke.spec.js",
       "tier": "FULL",
-      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full.",
+      "rationale": "Casos representativos extraídos da matriz, sem duplicar execução Full.",
       "promotions": [
         {
           "title": "matriz visual crítica não transborda em 375px no tema light",
@@ -247,6 +247,11 @@
           "rationale": "Smoke responsivo desktop com tema alternativo."
         }
       ]
+    },
+    {
+      "file": "tests/e2e/responsive.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
       "file": "tests/e2e/sessions.spec.js",

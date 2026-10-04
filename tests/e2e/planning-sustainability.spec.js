@@ -37,7 +37,7 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
   await expectNoPageOverflow(page);
 });
 
-for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light'],[1440,'light'],[1440,'dark']])test(`dense Demo sustainability journey: ${width}px ${theme}`,async({page},testInfo)=>{
+for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light'],[1440,'light'],[1440,'dark']])test(`dense Demo sustainability journey: ${width}px ${theme}`,async({page})=>{
   test.setTimeout(120_000);await page.setViewportSize({width,height:900});
   await page.clock.install({time:new Date('2026-10-03T12:00:00-03:00')});await openDemo(page);
   if(theme==='dark')await page.locator('#themeToggleBtn').click();
@@ -46,7 +46,6 @@ for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light'],[1440,'ligh
   await expect(page.locator('.adherence-change')).toContainText('O que mudou?');await expectNoPageOverflow(page);
   await activateTab(page,'dashboard');const section=page.locator('#weeklyCloseDashboard .planning-sustainability').first();
   await expect(section).toContainText('Carga acima da execução recente');await expect(section).toContainText('4 comparáveis');
-  await section.screenshot({path:testInfo.outputPath('sustainability.png')});
   if(process.platform==='win32')await expect(section).toHaveScreenshot(`sustainability-${width}-${theme}-win32.png`,{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08});
   expect((await new AxeBuilder({page}).include('#weeklyCloseDashboard .planning-sustainability').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
   const review=section.getByRole('button',{name:'Revisar capacidade',exact:true});await review.focus();await page.keyboard.press('Enter');

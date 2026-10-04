@@ -1057,6 +1057,33 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/e2e/responsive-smoke.spec.js",
+      "layer": "browser",
+      "area": "Responsividade",
+      "areaBasis": "filename_hint",
+      "criticality": "visual",
+      "roles": [
+        "journey"
+      ],
+      "imports": [
+        "@playwright/test",
+        "./helpers/critical-responsive.js"
+      ],
+      "staticTestDeclarations": 1,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "test:e2e",
+        "check:all",
+        "CI E2E UTC"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/e2e/responsive.spec.js",
       "layer": "browser",
       "area": "Responsividade",
@@ -1068,6 +1095,7 @@
         "viewport"
       ],
       "imports": [
+        "./helpers/critical-responsive.js",
         "@playwright/test",
         "./helpers.js",
         "./helpers/app-state.js"

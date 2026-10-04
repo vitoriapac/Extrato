@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-159 arquivos Node e 54 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+159 arquivos Node e 55 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -57,6 +57,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/refinement-visual.spec.js | browser | Visual | visual | 122.4 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/release-gate.spec.js | browser | Aplicação | functional | 97.8 | journey, demo, viewport | none |
 | tests/e2e/reports.spec.js | browser | Aplicação | functional | 79.3 | journey, demo | none |
+| tests/e2e/responsive-smoke.spec.js | browser | Responsividade | visual | — | journey | none |
 | tests/e2e/responsive.spec.js | browser | Responsividade | visual | 806.5 | journey, demo, viewport | none |
 | tests/e2e/sessions.spec.js | browser | Sessões | functional | 14.9 | journey | none |
 | tests/e2e/smoke.spec.js | browser | Aplicação | functional | 4.6 | journey | none |

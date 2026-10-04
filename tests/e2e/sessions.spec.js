@@ -51,6 +51,7 @@ test('conclusão de revisão registra retenção percebida sem mostrar campos de
 
 test('sessão de simulado encaminha ao cadastro próprio do simulado',async({page})=>{
   await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(element=>element.remove());
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.simulados=[];api.setState(state);api.renderAll()});
   await activateTab(page,'dashboard');
   await page.locator('#timerTypeSelect').selectOption('simulation');
   await page.locator('#timerStartBtn').click();
@@ -61,5 +62,15 @@ test('sessão de simulado encaminha ao cadastro próprio do simulado',async({pag
   await expect(page.locator('#panel-questoes')).toHaveClass(/active/);
   await expect(page.locator('#simuladosBody tr.row-editing')).toBeVisible();
   await expect(page.locator('#toast')).toContainText('Complete agora os resultados do simulado.');
+  const row=page.locator('#simuladosBody tr.row-editing');
+  await row.getByLabel('Nome',{exact:true}).fill('Simulado da jornada');
+  await row.getByLabel('Acertos',{exact:true}).fill('7');
+  await row.getByLabel('Total',{exact:true}).fill('10');
+  await row.getByRole('button',{name:'Salvar alterações',exact:true}).click();
+  await expect(page.locator('#simuladosBody')).toContainText('Simulado da jornada');
+  await activateTab(page,'desempenho');
+  await page.locator('[data-performance-section="simulations"]').click();
+  await expect(page.locator('#performanceSectionContent')).toContainText('70%');
+  await expect(page.locator('#performanceSectionContent')).toContainText('Simulado da jornada');
 });
 

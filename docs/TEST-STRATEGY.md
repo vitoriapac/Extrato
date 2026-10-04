@@ -2,9 +2,9 @@
 
 ## Estado da implementação
 
-Pacotes 1 e 2 concluídos: inventário e contrato de classificação. Os scripts de execução e o GitHub Actions ainda usam a configuração anterior. `test:fast`, `test:regression` e `test:full` serão introduzidos no pacote 4; não são comandos disponíveis nesta etapa. Não houve remoção de testes, alteração de fórmulas, baselines ou redução do CI atual.
+Pacotes 1 a 3 concluídos: inventário, contrato de classificação e separação da responsividade representativa. Os scripts de execução e o GitHub Actions ainda usam a configuração anterior. `test:fast`, `test:regression` e `test:full` serão introduzidos no pacote 4; não são comandos disponíveis nesta etapa. Não houve remoção de testes, alteração de fórmulas, baselines ou redução do CI atual.
 
-O [inventário](TEST-SUITE-INVENTORY.md) registra 159 arquivos Node, 54 arquivos E2E e evidências da última execução local completa. Integrações existentes usam o runner Node e permanecem em tests/unit.
+O [inventário](TEST-SUITE-INVENTORY.md) registra 159 arquivos Node, 55 arquivos E2E e evidências da última execução local completa. Integrações existentes usam o runner Node e permanecem em tests/unit.
 
 ## Contrato dos gates
 
@@ -29,11 +29,11 @@ Esses valores são orçamentos, não tempos já comprovados para os novos comand
 | Aderência | weekly-adherence.spec.js | Preservar interpretação e pendências no fechamento |
 | Backup | backup-schema24-cycle.spec.js | Exportar, limpar, recarregar e restaurar |
 | Ciclo estratégico | strategic-cycle.spec.js | Desempenho → Diagnóstico → prévia → confirmação → execução → fechamento |
-| Simulado | sessions.spec.js | Encaminhar sessão ao cadastro próprio de resultado |
+| Simulado | sessions.spec.js | Encaminhar, salvar resultado e verificar sua leitura em Desempenho |
 
-Além delas, entram o smoke básico e dois casos existentes de responsive.spec.js. Os títulos exatos estão no manifesto; selecionar o arquivo inteiro executaria suas matrizes, contrariando o orçamento. O pacote 3 deve revisar se o registro de resultados e sua leitura em Desempenho precisam de uma jornada mais completa antes da ativação dos gates.
+Além delas, entram o smoke básico e dois casos extraídos para responsive-smoke.spec.js. Os títulos exatos estão no manifesto; selecionar o arquivo inteiro executaria suas matrizes, contrariando o orçamento. A jornada de simulado agora verifica o resultado salvo em Desempenho.
 
-A soma histórica dos 11 casos selecionados é 206,6 s; ela não equivale ao tempo de parede do novo gate, pois os casos podem rodar em paralelo e há preparação. O smoke Fast levou 3,3 s. As metas só poderão ser confirmadas após os runners do pacote 4.
+Antes da extração dos casos responsivos, a soma histórica dos 11 casos selecionados era 206,6 s; ela não equivale ao tempo de parede do novo gate, pois os casos podem rodar em paralelo e há preparação. O smoke Fast levou 3,3 s. As metas só poderão ser confirmadas após os runners do pacote 4.
 
 ## Manifesto e verificação
 
@@ -68,11 +68,14 @@ A matriz extensa de larguras/temas, Demo densa e cenários complementares perman
 
 Nenhum teste recebeu classificação REMOVE ou CONSOLIDATE sem revisão do contrato. Essas decisões são estados de auditoria, não tiers executáveis. Sobreposições do inventário são candidatas, não prova de redundância. Flakiness permanece não avaliada; uma execução verde não demonstra estabilidade estatística.
 
-Alguns screenshots são condicionados a Windows e ficam sem comparação de pixels no Ubuntu. Full significa todos os testes executáveis para aquela plataforma; não comprova baselines de outra plataforma. O pacote 3 deve definir as superfícies e plataformas visuais oficiais. Não gerar referências automaticamente para esconder falhas.
+Alguns screenshots são condicionados a Windows e ficam sem comparação de pixels no Ubuntu. Full significa todos os testes executáveis para aquela plataforma; não comprova baselines de outra plataforma. A [política visual](VISUAL-TEST-POLICY.md) define Windows/Chromium para os baselines atuais e Ubuntu para verificações estruturais. Não gerar referências automaticamente para esconder falhas.
 
 ## Próximos pacotes
 
-3. Separar jornadas/matrizes e revisar a cobertura visual e de resultados.
 4. Implementar runners, medir orçamentos e configurar PR/main/release/manual no CI.
 5. Publicar política de execução durante desenvolvimento em AGENTS.md.
 6. Selecionar por impacto e registrar duração por etapa, sem excluir arquivos desconhecidos.
+
+## Validação do pacote 3
+
+Três E2E direcionados passaram em UTC: simulado com resultado em Desempenho e responsividade em 375 claro/1440 escuro (58,3 s). A descoberta preserva 234 casos Full e 11 Regression. Sintaxe, inventário e seleção foram verificados; a suíte completa não foi executada nesta etapa.
