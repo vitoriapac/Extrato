@@ -45,3 +45,19 @@ test('retenção sem evidência não usa saúde da revisão como estimativa zero
  assert.equal(measured.available,true);assert.notEqual(measured.value,null);
  const html=render([{...rows[0],r:measured}]);assert.doesNotMatch(html,/retenção —/);
 });
+
+import {matchesSubjectSearch} from '../../src/ui/subjects/subject-navigation.js';
+test('busca de disciplinas ignora acentos e cruza disciplina com tópico',()=>{
+ const subject={name:'Matemática Financeira'},topic={name:'Juros compostos'};
+ assert.equal(matchesSubjectSearch(subject,topic,'matematica juros'),true);assert.equal(matchesSubjectSearch(subject,topic,'portugues'),false);assert.equal(matchesSubjectSearch(subject,topic,''),true);
+});
+
+import {formatStudyMinutes,formatStudyMinuteDelta} from '../../src/ui/format-study-time.js';
+import {renderCalendarIndicators} from '../../src/ui/renderers/calendar-renderer.js';
+test('tempos humanos preservam ausência e arredondam somente na apresentação',()=>{
+ assert.equal(formatStudyMinutes(2170.7),'36 h 11 min');assert.equal(formatStudyMinutes(null),'—');assert.equal(formatStudyMinutes(0),'0 min');assert.equal(formatStudyMinuteDelta(-90),'−1 h 30 min');
+});
+test('calendário explica origens do total de atrasos sem modificar registros',()=>{
+ const items=[{date:'2026-10-01',origem:'Calendário'},{date:'2026-10-02',origem:'Agenda de Revisões'},{date:'2026-10-03',origem:'Agenda de Revisões',status:'Concluído'}],before=JSON.stringify(items);
+ const html=renderCalendarIndicators({items,today:'2026-10-04',daysUntil:()=>null});assert.match(html,/Calendário: 1 · Agenda: 1/);assert.equal(JSON.stringify(items),before);
+});

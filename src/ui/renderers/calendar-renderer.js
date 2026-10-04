@@ -3,11 +3,12 @@ export function renderCalendarEdit({item,draft,subjectOptions,statusOptions,revi
 
 export function renderCalendarIndicators({items=[],today,daysUntil}){
   const total=items.length;
-  const overdue=items.filter(item=>item.date&&item.date<today&&item.status!=='Concluído').length;
+  const overdueItems=items.filter(item=>item.date&&item.date<today&&item.status!=='Concluído'),overdue=overdueItems.length;
+  const calendarOverdue=overdueItems.filter(item=>item.origem==='Calendário').length,agendaOverdue=overdueItems.filter(item=>item.origem==='Agenda de Revisões').length,otherOverdue=overdue-calendarOverdue-agendaOverdue;
   const todayCount=items.filter(item=>item.date===today).length;
   const upcoming=items.filter(item=>{const days=daysUntil(item.date);return days!==null&&days>0&&days<=7}).length;
   return `<div class="kpi-cell"><div class="n">${total}</div><div class="l">Itens no total</div></div>
-    <div class="kpi-cell ${overdue>0?'warn':''}"><div class="n">${overdue}</div><div class="l">Atrasadas</div></div>
+    <div class="kpi-cell ${overdue>0?'warn':''}"><div class="n">${overdue}</div><div class="l">Atrasadas</div><small>Calendário: ${calendarOverdue} · Agenda: ${agendaOverdue}${otherOverdue?' · Outras: '+otherOverdue:''}</small></div>
     <div class="kpi-cell ${todayCount>0?'ok':''}"><div class="n">${todayCount}</div><div class="l">Hoje</div></div>
     <div class="kpi-cell"><div class="n">${upcoming}</div><div class="l">Próximos 7 dias</div></div>`;
 }

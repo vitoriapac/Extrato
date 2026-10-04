@@ -62,6 +62,6 @@ test('60 previstos, 40 vinculados e 30 adicionais explicam 70 estudados sem cré
  assert.equal(s.executedMinutes,70);assert.equal(s.matchedMinutes,40);assert.equal(s.additionalMinutes,30);assert.equal(s.remainingMinutes,20);
  assert.equal(s.executedMinutes,s.matchedMinutes+s.additionalMinutes+s.excessLinkedMinutes+s.incompatibleMinutes+s.otherPeriodMinutes);
  const before=JSON.stringify(result),html=renderExecutionBreakdown(result);
- assert.match(html,/Tempo registrado: 70 min/);assert.match(html,/crédito ao plano: 40 min/);assert.match(html,/pendente: 20 min/);assert.match(html,/Estudo sem vínculo ao plano: 30 min/);
+ assert.match(html,/Tempo registrado: 1 h 10 min/);assert.match(html,/crédito ao plano: 40 min/);assert.match(html,/pendente: 20 min/);assert.match(html,/Estudo sem vínculo ao plano: 30 min/);
  assert.equal(JSON.stringify(result),before);
 });

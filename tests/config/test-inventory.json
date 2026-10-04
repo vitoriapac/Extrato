@@ -308,7 +308,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 7,
+      "staticTestDeclarations": 8,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 7,
       "observedCaseSeconds": 150,
@@ -6444,9 +6444,12 @@
         "../../src/ui/renderers/studytrack32-renderer.js",
         "../../src/ui/renderers/retention-renderer.js",
         "../../src/domain/analytics/topic-metrics.js",
-        "../../src/domain/analytics/topic-signals.js"
+        "../../src/domain/analytics/topic-signals.js",
+        "../../src/ui/subjects/subject-navigation.js",
+        "../../src/ui/format-study-time.js",
+        "../../src/ui/renderers/calendar-renderer.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 7,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

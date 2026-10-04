@@ -1,5 +1,5 @@
+import {formatStudyMinutes as minutes} from '../format-study-time.js';
 const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
-const minutes=value=>value==null?'—':String(Math.round(Number(value)*10)/10)+' min';
 // Apresenta o resultado conciliado existente; não distribui crédito novamente.
 export function renderExecutionBreakdown(model){
  if(!model?.summary)return '';
