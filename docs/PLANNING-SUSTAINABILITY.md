@@ -40,3 +40,8 @@ Revisar capacidade abre uma prévia somente para leitura. O limite superior da f
 
 Pendências recorrentes oferecem navegação contextual para planejamento e desempenho do tópico, preservando concurso, disciplina, tópico, período e origem. Crédito zero e execução parcial são descritos separadamente; falta de crédito não afirma ausência de estudo adicional. Tópicos removidos, arquivados ou fora do concurso ativo não oferecem navegação operacional.
 
+
+## Pacote 5 — Mudanças de aderência
+
+A comparação semanal fornece uma explicação pura de crédito temporal, execução prioritária, volume adicional e classificação. Os percentuais não são somados em um score. Direções opostas são explicitadas como mudanças mistas; carga e capacidade diferentes são contexto, sem atribuição causal. Classificação insuficiente ou identidade ambígua bloqueiam interpretações estratégicas. Semanas em andamento usam o mesmo número de dias da anterior. A meta pessoal não modifica as diferenças observadas.
+

@@ -1,6 +1,7 @@
 import {addLocalDays,parseLocalDate,localDateRange} from '../../core/date-utils.js';
 import {buildAdherenceModel} from './build-adherence-model.js';
 import {adherenceStatus,ADHERENCE_STATUS_POLICY} from './adherence-status.js';
+import {buildAdherenceChangeExplanation} from './build-adherence-change-explanation.js';
 
 export function buildWeeklyAdherence({today,start=null,historyWeeks=8,...input}={}){
   const date=typeof today==='string'?parseLocalDate(today):null;
@@ -20,5 +21,7 @@ export function buildWeeklyAdherence({today,start=null,historyWeeks=8,...input}=
     temporalDelta:comparable?current.summary.temporalAdherence-previous.summary.temporalAdherence:null,
     priorityDelta:comparable?current.priority.adherence-previous.priority.adherence:null,
     volumeDelta:comparable?current.summary.volumeRatio-previous.summary.volumeRatio:null};
-  return {version:1,state:current.state,current,history,comparison,policy:{...ADHERENCE_STATUS_POLICY},historyWeeks:count};
+  return {version:1,state:current.state,current,history,comparison,
+    changeExplanation:buildAdherenceChangeExplanation({current,previous,mode:comparison.mode,evaluatedDays:comparison.evaluatedDays}),
+    policy:{...ADHERENCE_STATUS_POLICY},historyWeeks:count};
 }
