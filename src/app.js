@@ -5095,10 +5095,11 @@ weeklyCloseController=createWeeklyCloseController({getModel:()=>currentStudyTrac
 function saveWeeklyCloseSnapshot(){const snapshot=createWeeklyCloseSnapshot(currentStudyTrackModel,{savedAt:nowISO(),id:uid('weekly-close'),examPhase:recordedExamPhase()});if(!snapshot)return showToast('Ainda não há dados suficientes para salvar o fechamento.');if(!upsertWeeklyCloseSnapshot(state.weeklyCloseSnapshots,snapshot))return showToast('Fechamento já salvo com os mesmos dados.');saveCurrentReadinessSnapshot();scheduleSave();renderApprovalDashboard();document.querySelector('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]')?.focus();showToast('Fechamento semanal salvo como retrato deste período.')}
 function renderTopicRetentionDashboard(){
   const el=document.getElementById('topicRetentionDashboard');if(!el)return;
-  const baseRows=activeTopics().map(t=>{const r=topicRetentionScore(t.subjectId,t.id);return {...t,r,h:topicReviewHealthScore(t,topicMasteryIndex(t.subjectId,t.id),r)}}).filter(x=>x.r.available||x.h.value!==null);
+  const baseRows=activeTopics().map(t=>{const r=topicRetentionScore(t.subjectId,t.id);return {...t,r,h:topicReviewHealthScore(t,topicMasteryIndex(t.subjectId,t.id),r)}});
   const confidenceMatch=row=>retentionView.confidence==='all'||row.r.confidenceLabel.toLowerCase()===retentionView.confidence;
   const rows=baseRows.filter(row=>(!retentionView.subjectId||row.subjectId===retentionView.subjectId)&&confidenceMatch(row)).sort((a,b)=>{
-    const av=a.r.available?a.r.score:a.h.value,bv=b.r.available?b.r.score:b.h.value;
+    const av=a.r.available?a.r.value:null,bv=b.r.available?b.r.value:null;
+    if(av==null||bv==null)return av==null&&bv==null?a.name.localeCompare(b.name):av==null?1:-1;
     const score=retentionView.order==='desc'?bv-av:av-bv;
     return score||a.r.confidence-b.r.confidence||a.subjectName.localeCompare(b.subjectName)||a.name.localeCompare(b.name);
   });

@@ -32,3 +32,16 @@ test('fechamento semanal usa hierarquia semântica e comparação em quatro colu
   const comparison=renderPeriodComparison({comparison:{accuracy:{previous:60,current:72,delta:12}}},{escapeHtml:String,formatMinutes:String});
   assert.match(comparison,/Métrica/);assert.match(comparison,/Anterior/);assert.match(comparison,/Atual/);assert.match(comparison,/Variação/);
 });
+
+import {renderTopicRetentionDashboard} from '../../src/ui/renderers/retention-renderer.js';
+import {calculateTopicRetention} from '../../src/domain/analytics/topic-metrics.js';
+import {buildTopicSignals} from '../../src/domain/analytics/topic-signals.js';
+test('retenção sem evidência não usa saúde da revisão como estimativa zero',()=>{
+ const empty=calculateTopicRetention(),rows=Array.from({length:6},(_,i)=>({id:String(i),name:'Tópico',subjectName:'Disciplina',r:empty,h:{value:0,reasons:['Sem revisão']}}));
+ const render=rows=>renderTopicRetentionDashboard({rows,subjects:[],filters:{confidence:'all',order:'asc'},showAll:true,renderFooter:()=>'',escapeHtml:String,escapeAttr:String});
+ assert.doesNotMatch(render(rows),/retenção estimada em 0/);assert.match(render(rows),/Sem dados/);
+ assert.equal(buildTopicSignals({retention:empty}).retentionRisk,null);
+ const measured=calculateTopicRetention({resolved:50,correct:0});
+ assert.equal(measured.available,true);assert.notEqual(measured.value,null);
+ const html=render([{...rows[0],r:measured}]);assert.doesNotMatch(html,/retenção —/);
+});
