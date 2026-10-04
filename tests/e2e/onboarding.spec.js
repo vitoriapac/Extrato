@@ -179,3 +179,20 @@ test('cadastro manual oferece retorno à configuração após criar conteúdo',a
   await expect(page.locator('#guidedOnboardingOverlay')).toBeVisible();
   await expect(page.locator('#guidedOnboardingOverlay')).toContainText('Quais conteúdos entram no plano?');
 });
+
+ test('campos da configuração possuem nomes acessíveis e retorno por teclado',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ const open=page.locator('#guidedOnboarding [data-guided-action="open"]');
+ await open.focus();await page.keyboard.press('Enter');
+ const overlay=page.locator('#guidedOnboardingOverlay');
+ await expect(page.getByRole('combobox',{name:'Concurso do primeiro acesso'})).toBeVisible();
+ await expect(overlay.getByLabel('Data da prova',{exact:true})).toBeVisible();
+ await overlay.getByLabel('Data da prova',{exact:true}).fill('2027-03-14');
+ await overlay.locator('[data-guided-action="next"]').click();
+ const fields=overlay.locator('[data-guided-day]');
+ await expect(fields).toHaveCount(7);
+ for(const field of await fields.all())await expect(field).toHaveAccessibleName(/Horas disponíveis em/);
+ const result=await new AxeBuilder({page}).include('#guidedOnboardingOverlay').withRules(['label','select-name','button-name','aria-valid-attr-value']).analyze();
+ expect(result.violations).toEqual([]);
+ await page.keyboard.press('Escape');await expect(overlay).toBeHidden();await expect(open).toBeFocused();
+ });
