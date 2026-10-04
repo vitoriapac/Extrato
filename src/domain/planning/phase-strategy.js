@@ -1,9 +1,8 @@
+import {PHASE_ACTIVITY_RATIOS as ratios,PHASE_ACTIVITY_KEYS as keys} from './phase-strategy-policy.js';
 import {resolveExamPhase,ADAPTIVE_COOLDOWN_DAYS} from './adaptive-planning.js';
 import {localDateFromTimestamp} from '../sessions/study-session.js';
 import {parseLocalDate,addLocalDays} from '../../core/date-utils.js';
 const excluded=new Set(['skipped','replaced','discarded','deferred']);
-const ratios={construction:[.6,.25,.15],consolidation:[.35,.4,.25],final_stretch:[.2,.5,.3],final_review:[.1,.4,.5]};
-const keys=['theory','questions','reviews'];
 const mix=(minutes,weights)=>{const values=weights.map(value=>Math.floor(minutes*value));values[weights.indexOf(Math.max(...weights))]+=minutes-values.reduce((a,b)=>a+b,0);return Object.fromEntries(keys.map((key,index)=>[key,values[index]]))};
 
 export function buildPhaseStrategyProposal({plan,candidates=[],daysToExam,today,history=[],readiness=null,weeklyCapacityMinutes=null}={}){

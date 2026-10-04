@@ -4117,9 +4117,10 @@
         "node:assert/strict",
         "../../src/domain/planning/phase-strategy.js",
         "../../src/application/planning/phase-strategy-controller.js",
-        "../../src/application/planning/study-plan-service.js"
+        "../../src/application/planning/study-plan-service.js",
+        "../../src/domain/planning/phase-strategy-policy.js"
       ],
-      "staticTestDeclarations": 12,
+      "staticTestDeclarations": 14,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
