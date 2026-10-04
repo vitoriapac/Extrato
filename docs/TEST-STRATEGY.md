@@ -72,7 +72,7 @@ Alguns screenshots são condicionados a Windows e ficam sem comparação de pixe
 
 ## Próximos pacotes
 
-5. Publicar política de execução durante desenvolvimento em AGENTS.md.
+5. Política de execução durante desenvolvimento publicada em [AGENTS.md](../AGENTS.md).
 6. Selecionar por impacto e registrar duração por etapa, sem excluir arquivos desconhecidos.
 
 ## Validação do pacote 3
