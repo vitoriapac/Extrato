@@ -1,7 +1,7 @@
-const CACHE_NAME='studytrack-095e3cfb024c';
+const CACHE_NAME='studytrack-8362daf721dd';
 const APP_SHELL=[
-  './','./index.html','./styles/tokens.css','./styles/app.css?v=095e3cfb024c','./styles/print.css',
-  './src/theme-bootstrap.js','./src/app.bundle.js?v=095e3cfb024c','./src/pwa.js','./manifest.webmanifest',
+  './','./index.html','./styles/tokens.css','./styles/app.css?v=8362daf721dd','./styles/print.css',
+  './src/theme-bootstrap.js','./src/app.bundle.js?v=8362daf721dd','./src/pwa.js','./manifest.webmanifest',
   './icons/app-icon.svg','./icons/icon-192.png','./icons/icon-512.png',
   './icons/icon-maskable-512.png','./icons/apple-touch-icon.png'
 ];

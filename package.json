@@ -20,7 +20,8 @@
     "test:regression": "node scripts/run-test-gate.mjs regression",
     "test:full": "node scripts/run-test-gate.mjs full",
     "test:visual": "node scripts/run-test-gate.mjs visual",
-    "test:tiers": "node scripts/check-test-tiers.mjs"
+    "test:tiers": "node scripts/check-test-tiers.mjs",
+    "test:affected": "node scripts/run-test-gate.mjs affected"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

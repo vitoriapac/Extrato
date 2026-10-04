@@ -27,6 +27,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: Select gate and inspect changed files
         id: detect
         shell: bash
@@ -48,22 +51,24 @@ jobs:
             echo "docs_only=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
-            echo "docs_only=false" >> "$GITHUB_OUTPUT"
-            exit 0
+          node scripts/select-affected-tests.mjs --base "$BASE_SHA" --head "$HEAD_SHA" --output test-impact.json > test-impact-selection.log
+          impact_gate=$(node -e 'process.stdout.write(require("./test-impact.json").requiredGate)')
+          if [[ "$impact_gate" == "full" ]]; then
+            echo "gate=full" >> "$GITHUB_OUTPUT"
           fi
-          mapfile -d '' files < <(git diff --name-only -z "$BASE_SHA" "$HEAD_SHA")
-          if (( ${#files[@]} == 0 )); then
+          if [[ "$impact_gate" == "docs" ]]; then
+            echo "docs_only=true" >> "$GITHUB_OUTPUT"
+          else
             echo "docs_only=false" >> "$GITHUB_OUTPUT"
-            exit 0
           fi
-          for file in "${files[@]}"; do
-            if [[ "$file" != *.md ]]; then
-              echo "docs_only=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          done
-          echo "docs_only=true" >> "$GITHUB_OUTPUT"
+      - name: Share impact plan with validation
+        if: steps.detect.outputs.docs_only != 'true' && github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-impact
+          path: test-impact.json
+          if-no-files-found: error
+          retention-days: 14
   validation:
     needs: changes
     runs-on: ubuntu-latest
@@ -81,17 +86,31 @@ jobs:
         if: needs.changes.outputs.docs_only != 'true'
       - run: npx playwright install --with-deps chromium
         if: needs.changes.outputs.docs_only != 'true'
+      - name: Download impact plan
+        if: needs.changes.outputs.docs_only != 'true' && github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: actions/download-artifact@v4
+        with:
+          name: test-impact
+          path: .test-gates
       - name: Run selected validation gate
         if: needs.changes.outputs.docs_only != 'true'
         env:
           TEST_GATE: ${{ needs.changes.outputs.gate }}
-        run: npm run "test:$TEST_GATE"
+        run: |
+          if [[ "${{ github.event_name }}" == "push" || "${{ github.event_name }}" == "pull_request" ]]; then
+            npm run "test:$TEST_GATE" -- --plan .test-gates/test-impact.json
+          else
+            npm run "test:$TEST_GATE"
+          fi
       - name: Upload gate timing
         if: always() && needs.changes.outputs.docs_only != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: gate-${{ needs.changes.outputs.gate }}
-          path: test-results/gate-summary.json
+          path: |
+            test-results/gate-summary.json
+            .test-gates/history.jsonl
+          include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 14
       - name: Upload Playwright diagnostics

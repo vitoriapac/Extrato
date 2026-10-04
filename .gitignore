@@ -3,6 +3,7 @@ node_modules/
 coverage/
 playwright-report/
 test-results/
+.test-gates/
 
 # Sistema operacional e editores
 .DS_Store

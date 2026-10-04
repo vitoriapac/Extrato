@@ -191,7 +191,7 @@ npm run check:all
 
 `npm run test:fast` é o gate rápido: sintaxe, bundle reproduzível, todos os unitários em UTC/São Paulo e um smoke E2E. `test:regression` acrescenta jornadas e responsividade representativa; `test:full` (também disponível por `check:all`) preserva a suíte completa e o recorte E2E de timezone. Os testes E2E incluem axe para estrutura ARIA, contraste, modal, telas críticas e modo móvel.
 
-A [estratégia de testes por risco](docs/TEST-STRATEGY.md) define os gates Fast, Regression e Full. O [inventário da suíte](docs/TEST-SUITE-INVENTORY.md) registra cobertura e tempos observados. O CI usa Fast em PRs, Regression em main e Full em releases ou execução manual. As referências visuais Windows têm job próprio no Full.
+A [estratégia de testes por risco](docs/TEST-STRATEGY.md) define os gates Fast, Regression e Full. O [inventário da suíte](docs/TEST-SUITE-INVENTORY.md) registra cobertura e tempos observados. O CI combina Fast em PRs e Regression em main com testes por impacto; contratos globais ou arquivos desconhecidos ampliam a validação para Full. Releases e execução manual também oferecem Full. As referências visuais Windows têm job próprio no Full.
 
 No GitHub Actions, alterações de código executam essa suíte em UTC e no fuso de São Paulo. Commits que alteram somente arquivos Markdown dispensam a suíte da aplicação; a publicação ainda executa o build do site.
 
@@ -257,3 +257,5 @@ Veja também a [jornada do produto](docs/product-journey.md), com cenários e me
 - Fechamento semanal com diagnóstico e até três prioridades estimadas.
 - Sustentabilidade do planejamento com semanas comparáveis, prioridades congeladas e prévia de revisão de capacidade. Veja o [contrato e a validação](docs/PLANNING-SUSTAINABILITY.md).
 - Registro de sessão enxuto, com detalhes adicionais recolhidos.
+
+Para validar a área alterada, use `npm run test:affected -- --dry-run` antes da execução. O [mapa de impacto e as métricas](docs/TEST-IMPACT-SELECTION.md) explicam o fallback Full e a política está em [AGENTS.md](AGENTS.md).

@@ -2,9 +2,9 @@
 
 ## Estado da implementação
 
-Pacotes 1 a 4 concluídos: inventário, contrato, separação das jornadas/matrizes, runners e CI. Nenhum teste foi removido. As matrizes completas permanecem disponíveis no Full. As fórmulas e referências visuais não foram alteradas.
+Pacotes 1 a 6 concluídos: inventário, contrato, separação das jornadas/matrizes, runners, CI, política de desenvolvimento e seleção por impacto. Nenhum teste foi removido. As matrizes completas permanecem disponíveis no Full. As fórmulas e referências visuais não foram alteradas.
 
-O [inventário](TEST-SUITE-INVENTORY.md) registra 159 arquivos Node, 55 arquivos E2E e evidências da última execução local completa. Integrações existentes usam o runner Node e permanecem em tests/unit.
+O [inventário](TEST-SUITE-INVENTORY.md) registra 160 arquivos Node, 55 arquivos E2E e evidências da última execução local completa. Integrações existentes usam o runner Node e permanecem em tests/unit.
 
 ## Contrato dos gates
 
@@ -64,16 +64,15 @@ A regra matemática deve ser protegida no Node; integração crítica comprova o
 
 ## Cobertura cara e limitações atuais
 
-A matriz extensa de larguras/temas, Demo densa e cenários complementares permanecem Full por padrão. A Demo browser pode aparecer em Regression quando necessária à jornada de Recovery; a auditoria visual densa completa não entra no Fast. A seleção baseada na área modificada será implementada no pacote 6, com ampliação conservadora para contratos compartilhados e arquivos desconhecidos.
+A matriz extensa de larguras/temas, Demo densa e cenários complementares permanecem Full por padrão. A Demo browser pode aparecer em Regression quando necessária à jornada de Recovery; a auditoria visual densa completa não entra no Fast. A [seleção por impacto](TEST-IMPACT-SELECTION.md) combina áreas e consumidores transitivos, com fallback Full para contratos compartilhados e arquivos desconhecidos.
 
 Nenhum teste recebeu classificação REMOVE ou CONSOLIDATE sem revisão do contrato. Essas decisões são estados de auditoria, não tiers executáveis. Sobreposições do inventário são candidatas, não prova de redundância. Flakiness permanece não avaliada; uma execução verde não demonstra estabilidade estatística.
 
 Alguns screenshots são condicionados a Windows e ficam sem comparação de pixels no Ubuntu. Full significa todos os testes executáveis para aquela plataforma; não comprova baselines de outra plataforma. A [política visual](VISUAL-TEST-POLICY.md) define Windows/Chromium para os baselines atuais e Ubuntu para verificações estruturais. Não gerar referências automaticamente para esconder falhas.
 
-## Próximos pacotes
+## Política e execução contextual
 
-5. Política de execução durante desenvolvimento publicada em [AGENTS.md](../AGENTS.md).
-6. Selecionar por impacto e registrar duração por etapa, sem excluir arquivos desconhecidos.
+A política de desenvolvimento está em [AGENTS.md](../AGENTS.md). A seleção e as métricas são documentadas em [TEST-IMPACT-SELECTION.md](TEST-IMPACT-SELECTION.md).
 
 ## Validação do pacote 3
 
@@ -90,12 +89,12 @@ npm run test:visual
 
 `test:visual` requer Windows e executa as sete superfícies oficiais (50 casos). No Full local em Windows, os screenshots dessas superfícies já fazem parte dos 234 E2E; não é preciso rodá-los novamente. No CI Ubuntu, o job visual Windows separado protege as comparações que antes não eram executadas naquela plataforma.
 
-`check:all` é alias de `test:full`: inclui sintaxe, inventário, contrato, bundle, todos os Node em UTC/SP, 234 E2E em UTC e o recorte de 47 em SP. `npm test`, `test:unit`, `check`, `test:e2e` e `test:e2e:timezone` continuam disponíveis para execução direcionada. Fast/Regression não substituem testes da área alterada; a seleção automática por impacto pertence ao pacote 6.
+`check:all` é alias de `test:full`: inclui sintaxe, inventário, contrato, bundle, todos os Node em UTC/SP, 234 E2E em UTC e o recorte de 47 em SP. `npm test`, `test:unit`, `check`, `test:e2e` e `test:e2e:timezone` continuam disponíveis para execução direcionada. Fast/Regression incluem a cobertura da área quando recebem um plano; `test:affected` permite execução direcionada local.
 
 | Evento | Gate |
 |---|---|
-| Pull request | Fast |
-| Push em main | Regression |
+| Pull request | Fast + impacto; Full para risco global/desconhecido |
+| Push em main | Regression + impacto; Full para risco global/desconhecido |
 | Release publicada | Full + visual Windows |
 | workflow_dispatch | Fast, Regression ou Full selecionado; Full inclui visual Windows |
 
@@ -120,3 +119,7 @@ A suíte Full e visual foi validada por descoberta e planejamento (`node scripts
 Ambiente local Windows/Chromium, dois workers browser. Instalação e fila não incluídas. As duas metas ficaram abaixo dos máximos de 180/600 s nesta medição; o tempo do GitHub Actions ainda não foi confirmado.
 
 Verificações negativas com arquivos temporários isolados confirmaram que sintaxe inválida interrompe o gate na primeira etapa e fonte alterada sem rebuild falha na etapa de artefatos antes dos unitários. As sondas foram removidas e o bundle voltou a ser validado. O YAML foi parseado e os eventos/gates conferidos localmente; a execução remota não foi realizada. Full e visual foram conferidos por descoberta (234 e 50 casos), sem repetir a suíte completa.
+
+## Validação final dos pacotes 5 e 6
+
+Política publicada no commit cb9d275. Fast final: 654 testes Node em cada fuso + um E2E, 38,13 s. Impacto de aderência: 25 arquivos Node em cada fuso + dois E2E, 70,98 s. Seletor direcionado: dez testes Node em cada fuso, 4,94 s. Foram verificados fallback Full, ref inválido, união browser, sintaxe, inventário, bundle e YAML. Full não foi reexecutado, e os resultados são locais.

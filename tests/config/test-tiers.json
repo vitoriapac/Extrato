@@ -1067,6 +1067,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/test-impact-selection.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Seleção por risco, fallback conservador, contratos compartilhados e união de cobertura."
+    },
+    {
       "file": "tests/unit/today-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
