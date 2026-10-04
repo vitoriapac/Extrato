@@ -1,3 +1,4 @@
+import {buildDemoPreparationScenario} from './demo-preparation-profiles.js';
 import {createDefaultState} from '../state/defaults.js';
 import {addLocalDays} from '../core/date-utils.js';
 import scenario from './demo-scenario.json' with {type:'json'};
@@ -20,7 +21,7 @@ function hashSeed(value){let hash=2166136261;for(const char of String(value)){ha
 function randomFactory(seed){let value=hashSeed(seed)||1;return()=>{value+=0x6D2B79F5;let next=value;next=Math.imul(next^next>>>15,next|1);next^=next+Math.imul(next^next>>>7,next|61);return((next^next>>>14)>>>0)/4294967296}}
 function shiftDate(iso,days){return addLocalDays(iso,days)}
 function timestamp(date,hour=12){return `${date}T${String(hour).padStart(2,'0')}:00:00.000Z`}
-export function generateDemoData({seed=DEMO_SCENARIO.seed,today,demoScenario=scenario}={}){
+export function generateDemoData({seed=DEMO_SCENARIO.seed,today,preparationProfile='standard',demoScenario=preparationProfile==='standard'?scenario:buildDemoPreparationScenario(preparationProfile)}={}){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(today||'')) throw new TypeError('A demonstração requer a data local atual.');
   assertDemoScenario(demoScenario);
   const oldestAge=demoScenario.meta.historyDays-1;

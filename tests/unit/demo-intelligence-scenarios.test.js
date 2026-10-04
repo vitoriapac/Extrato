@@ -58,3 +58,20 @@ test('demo extensa contém quatro cenários de inteligência distinguíveis',()=
   assert.ok(candidates.queda.trendRisk>candidates.consolidado.trendRisk);
   assert.ok(candidates.queda.mastery>candidates.lacuna.mastery);
 });
+
+import {buildAchievementProjection} from '../../src/application/projection/build-achievement-projection.js';
+import {buildDemoPreparationScenario} from '../../src/demo/demo-preparation-profiles.js';
+test('Demo oferece recuperação, reta final e evidência limitada sem alterar o cenário padrão',()=>{
+ const standard=generateDemoData({today});
+ for(const profile of ['recovery','final_stretch','limited_evidence']){
+  const state=generateDemoData({today,preparationProfile:profile});
+  assert.equal(state.studySessions.length,200);assert.equal(state.simulados.length,9);
+  assert.deepEqual(state,generateDemoData({today,preparationProfile:profile}));
+  const model=buildAchievementProjection({today,examDate:state.examDate,targetScore:80,simulations:state.simulados,coverage:75,adherence:85});
+  assert.equal(model.projection.examDayScore,null);assert.equal(model.projection.approvalProbability,null);
+  if(profile==='final_stretch'){assert.equal(model.exam.daysRemaining,10);assert.equal(model.status,'at_risk')}
+  if(profile==='limited_evidence')assert.equal(model.status,'insufficient_data');
+ }
+ assert.deepEqual(generateDemoData({today}),standard);
+ assert.throws(()=>buildDemoPreparationScenario('unknown'),/desconhecido/);
+});
