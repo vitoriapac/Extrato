@@ -2172,3 +2172,11 @@ body.timer-focus-active .timer-context{display:none!important}
 .performance-page>.performance-toolbar,#performanceSectionContent>.performance-toolbar{padding:var(--space-3);background:var(--surface-card-muted);border-color:var(--border-subtle)}
 #performanceSectionContent>.empty-state{padding:var(--space-6);background:var(--surface-card)}
 @media(max-width:600px){#performanceSectionContent{gap:var(--space-3)}.performance-summary{gap:var(--space-3);padding:var(--space-3)}.performance-block{padding:var(--space-3)}.performance-details{padding-inline:var(--space-3)}}
+
+/* Execução diária: resumo e próxima atividade compartilham a mesma superfície. */
+.daily-execution-card{background:var(--surface-card);padding:var(--space-6)}
+.daily-execution-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.35fr);gap:var(--space-6);margin-top:var(--space-4)}
+.daily-execution-summary,.daily-execution-next{min-width:0}
+.daily-execution-layout .daily-execution-next{border-top:0;border-left:1px solid var(--border-subtle);padding:0 0 0 var(--space-6);margin:0}
+@media(max-width:800px){.daily-execution-layout{grid-template-columns:minmax(0,1fr)}.daily-execution-layout .daily-execution-next{border-left:0;border-top:1px solid var(--border-subtle);padding:var(--space-4) 0 0}}
+@media(max-width:430px){.daily-execution-card{padding:var(--space-3)}}
