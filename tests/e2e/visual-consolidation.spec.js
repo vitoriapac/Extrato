@@ -114,6 +114,20 @@ test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis',async(
     expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
     await page.locator('#helpSearch').fill('execução diária');await expect(page.locator('#today-guide')).toBeVisible();await expect(page.locator('#helpNoResults')).toBeHidden();
     await page.locator('#helpSearch').press('Escape');await expect(page.locator('#helpSearch')).toHaveValue('');
+    await page.locator('[data-help-category="guide-workflows"]').click();
+    await expect(page.locator('#recovery-guide')).toContainText('Aumento de 30 minutos');
+    await expect(page.locator('#sustainability-guide')).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+    await page.locator('[data-help-category="guide-data"]').click();
+    await expect(page.locator('#adherence')).toContainText('Prioridades executadas');
+    await expect(page.locator('#readiness')).toContainText('72/100 não significa');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+    await page.locator('#helpSearch').fill('amostra insuficiente');
+    await expect(page.locator('#insufficient-sample-guide')).toBeVisible();
+    await page.locator('#helpSearch').press('Escape');
+    await page.locator('[data-help-category="guide-areas"]').click();
   }
   await page.locator('#today-guide [data-help-action="today"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#panel-hoje')).toBeVisible();
 });
