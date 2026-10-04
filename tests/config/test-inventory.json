@@ -4567,9 +4567,11 @@
         "../../src/application/projection/build-projection-requirements.js",
         "../../src/application/projection/simulate-projection-scenario.js",
         "../../src/ui/performance/achievement-projection-renderer.js",
-        "../fixtures/projection-scenarios/scenarios.js"
+        "../fixtures/projection-scenarios/scenarios.js",
+        "../../src/application/projection/build-projection-evidence-explanation.js",
+        "../../src/application/projection/build-projection-confidence.js"
       ],
-      "staticTestDeclarations": 7,
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

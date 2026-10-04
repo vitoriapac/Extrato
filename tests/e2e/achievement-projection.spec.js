@@ -13,7 +13,13 @@ for(const {width,theme} of [{width:320,theme:'light'},{width:375,theme:'dark'},{
   await expect(page.locator('#achievementProjectionTitle')).toHaveText('Projeção até a prova');
   await expect(page.locator('.achievement-projection__status')).toBeVisible();
   const explanation=page.locator('.achievement-projection__details').filter({has:page.locator('summary', {hasText:'Entender esta projeção'})});
-  await explanation.locator('summary').click();
+  await explanation.locator(':scope > summary').click();
+  const method=explanation.locator('.projection-evidence-method');
+  await expect(method).not.toHaveAttribute('open');
+  await method.locator('summary').focus();await page.keyboard.press('Enter');
+  await expect(method).toContainText('não é uma nota prevista no dia da prova');
+  await expect(method).toContainText('no máximo confiança moderada');
+  await method.locator('summary').click();
   await expect(explanation).toContainText('Prontidão é um índice de preparação');
   await expect(page.locator('.achievement-projection__details').filter({hasText:'O que seria necessário?'})).toHaveCount(1);
   await expectNoPageOverflow(page);
