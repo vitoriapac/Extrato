@@ -28,3 +28,11 @@ Estas verificações avaliam overflow e interação, sem comparação de pixels.
 ## Screenshots de diagnóstico
 
 Screenshots em falhas permanecem disponíveis pelo Playwright, junto com traces e vídeos. A captura adicional de sustentabilidade em toda execução bem-sucedida foi retirada; sua referência visual obrigatória foi preservada. Não ampliar a quantidade de snapshots para comprovar uma regra matemática já coberta no Node.
+
+## Revisão dirigida — sustentabilidade em 430 px
+
+No commit c586312, o job visual Windows identificou uma captura de 356 × 512 px para uma referência de 356 × 511 px. A diferença também foi reproduzida localmente. As imagens expected, actual e diff do CI foram inspecionadas: conteúdo, valores e ação permaneceram iguais; o deslocamento vertical alterou a rasterização do texto e produziu aproximadamente 9% de pixels diferentes.
+
+A captura local correspondente foi inspecionada antes da substituição exclusiva de sustainability-430-light-win32.png. A tolerância permanece em 0,08. As outras quatro combinações de sustentabilidade passaram com suas referências existentes. Não houve alteração de CSS ou de cálculos para acomodar o teste.
+
+Após a revisão, o caso de 430 px passou em 37,2 s e o Fast passou em 52,73 s. Full e a matriz visual global não foram executados nesta correção dirigida.
