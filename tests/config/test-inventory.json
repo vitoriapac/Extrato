@@ -3863,9 +3863,10 @@
       "imports": [
         "node:test",
         "node:assert/strict",
-        "../../src/features/onboarding/onboarding-renderer.js"
+        "../../src/features/onboarding/onboarding-renderer.js",
+        "../../src/ui/controllers/onboarding-phase-controller.js"
       ],
-      "staticTestDeclarations": 6,
+      "staticTestDeclarations": 7,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

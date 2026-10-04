@@ -20,6 +20,8 @@ test('Visão Geral mantém ação antes da configuração em todos os estados de
   expect(inOrder).toBe(true);
   await expect(page.locator('#guidedOnboarding')).toBeVisible();
   await expect(page.locator('#guidedOnboarding')).toContainText('CONFIGURAÇÃO INICIAL');
+  await expect(page.locator('#guidedOnboarding #overviewExamPhase')).toHaveCount(1);
+  await expect(page.locator('#panel-dashboard .exam-phase-compact')).toHaveCount(1);
   await expect(page.locator('#guidedOnboarding [role="progressbar"]')).toHaveAttribute('aria-valuemax','4');
   for(const width of [320,390,1440]){
     await page.setViewportSize({width,height:1100});
@@ -72,6 +74,11 @@ test('primeiro uso preserva escolhas e chega à prévia do plano',async({page})=
   await expect(page.locator('#panel-hoje')).toBeVisible();
   await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().studyPlans.length)).toBeGreaterThan(0);
   await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().dailyPlans.reduce((sum,plan)=>sum+(plan.items||[]).length,0))).toBeGreaterThan(0);
+  await activateTab(page,'dashboard');
+  await expect(onboarding).toBeHidden();
+  await expect(page.locator('#guidedOnboarding #overviewExamPhase')).toHaveCount(0);
+  await expect(page.locator('#overviewExamPhase + #dailyExecutionDashboard')).toHaveCount(1);
+  await expect(page.locator('#panel-dashboard .exam-phase-compact')).toHaveCount(1);
 });
 
 test('modal fecha com Escape e devolve o foco ao card',async({page})=>{

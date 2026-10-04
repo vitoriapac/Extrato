@@ -194,6 +194,7 @@ import {createQuestionController} from './application/questions/question-control
 import {createEditalImportFacade} from './application/subjects/edital-import-facade.js';
 import {createGuidedStudyService} from './application/guided-study/guided-study-service.js';
 import {buildOnboardingViewModel} from './application/onboarding/build-onboarding-view-model.js';
+import {syncOnboardingPhase} from './ui/controllers/onboarding-phase-controller.js';
 import {renderOnboardingEntry,renderOnboardingProgress,renderOnboardingContent,renderOnboardingHelp,renderOnboardingActions} from './features/onboarding/onboarding-renderer.js';
 import {renderTopicStrategyEditor as renderTopicStrategyEditorView} from './features/topic-strategy/topic-strategy-renderer.js';
 import {buildTopicStrategyViewModel} from './features/topic-strategy/topic-strategy-view-model.js';
@@ -4724,6 +4725,7 @@ function renderGuidedOnboarding(){
   if(overview)overview.after(entry);
   entry.hidden=!visible;
   document.getElementById('guidedOnboardingEntry').innerHTML=visible?renderOnboardingEntry(model,{escapeHtml}):'';
+  syncOnboardingPhase(document,{visible});
   overlay.hidden=!visible||!uiState.onboarding.open;
   overlay.classList.toggle('show',visible&&uiState.onboarding.open);
   if(!visible){uiState.onboarding.open=false;return}

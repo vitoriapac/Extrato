@@ -2193,3 +2193,7 @@ body.timer-focus-active .timer-context{display:none!important}
 @media(max-width:700px){.onboarding-entry{gap:var(--space-6)}}
 @media(max-width:430px){.onboarding-entry-steps{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:var(--space-3)}}
 #guidedOnboardingEntry{display:grid;grid-template-columns:minmax(0,1fr);gap:max(24px,var(--space-6))}
+
+/* A fase acompanha a configuração incompleta e retorna à Visão Geral depois. */
+#guidedOnboarding #overviewExamPhase{min-width:0;border-top:1px solid var(--border-subtle);padding-top:var(--space-3)}
+#guidedOnboarding .exam-phase-compact{margin:0;padding:0;border:0;background:transparent;box-shadow:none}
