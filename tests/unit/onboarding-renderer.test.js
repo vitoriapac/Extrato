@@ -41,3 +41,6 @@ test('entrada preserva etapas concluídas fora de ordem e informa estados textua
 
 import {syncOnboardingPhase} from '../../src/ui/controllers/onboarding-phase-controller.js';
 test('fase usa uma superfície única na configuração e retorna para a execução',()=>{const phase={},calls=[],elements={overviewExamPhase:phase,guidedOnboarding:{append:node=>calls.push(['entry',node])},dailyExecutionDashboard:{before:node=>calls.push(['overview',node])}},document={getElementById:id=>elements[id]};syncOnboardingPhase(document,{visible:true});syncOnboardingPhase(document,{visible:false});assert.deepEqual(calls,[['entry',phase],['overview',phase]]);syncOnboardingPhase({getElementById:()=>null},{visible:true})});
+
+import {renderExamPhaseCompact} from '../../src/ui/renderers/adaptive-planning-renderer.js';
+test('fase compacta sem data não converte ausência em zero dias',()=>{for(const days of [null,undefined]){const html=renderExamPhaseCompact({label:'Prova sem data',days});assert.match(html,/Data da prova não definida/);assert.doesNotMatch(html,/0 dias restantes/)}assert.match(renderExamPhaseCompact({label:'Revisão final',days:0}),/0 dias restantes/)});

@@ -57,3 +57,11 @@ Confiança e ausência de dados não devem ser escondidas apenas para simplifica
 O cenário isolado em `tests/fixtures/visual-density.js` amplia a demonstração para 15 disciplinas, nomes longos, 350 sessões, questões adicionais e histórico BB/Caixa com provas completas e parciais. Ele não altera a demonstração apresentada ao usuário. A auditoria cobre Visão Geral, Disciplinas, Questões, Metas e Instruções nos quatro tamanhos mobile, em light e dark, além dos cabeçalhos em desktop. Os critérios incluem ausência de rolagem horizontal da página, funcionamento do menu Mais, busca, estado sem resultados e posição da categoria após navegar pelo índice.
 
 O [inventário da consolidação de produto](PRODUCT-CONSOLIDATION-VISUAL-AUDIT.md) estende o mapa a Desempenho, Hoje e Diagnóstico. Nesta rodada, a leitura do Diagnóstico distingue conclusão, evidência e metodologia; os KPIs de Desempenho formam uma faixa editorial em vez de uma pilha de cards.
+
+## Visão Geral: configuração e execução diária
+
+A configuração incompleta reúne etapas, continuação e a fase atual. Uma única superfície de fase retorna para antes da execução diária quando a configuração deixa de aparecer, inclusive na Demo. O deslocamento é responsabilidade de onboarding-phase-controller; não altera datas, planos ou persistência.
+
+A execução usa superfície de card e duas colunas a partir de 801 px; em telas menores, resumo e próxima atividade ficam empilhados. Progresso temporal do plano e contagem de atividades concluídas são indicadores distintos. Motivos estratégicos só acompanham a atividade correspondente; recomendações fora do plano têm indicação própria. Pendências ficam no rodapé.
+
+A validação dirigida cobre primeiro uso e conclusão, nomes longos, 320/375/390/430 px, desktop, claro/escuro, teclado, acessibilidade, execução parcial e completa e cronômetro ativo. As referências Windows do card diário permanecem versionadas. A suíte Full e as demais superfícies visuais seguem disponíveis para validações amplas.

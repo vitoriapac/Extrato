@@ -11,13 +11,13 @@ const PHASES = [
 export function renderExamPhase(phase, { escapeHtml = value => String(value ?? '') } = {}) {
   const current = phase?.state;
   const undated = current === 'undated' || !current;
-  const days = Number.isFinite(Number(phase?.days)) ? `${Math.max(0, Math.floor(Number(phase.days)))} dias restantes` : 'Data da prova não definida';
+  const days = phase?.days!=null&&Number.isFinite(Number(phase.days)) ? `${Math.max(0, Math.floor(Number(phase.days)))} dias restantes` : 'Data da prova não definida';
   const stages = PHASES.map(item => `<li class="exam-phase-step${item.id === current ? ' is-current' : ''}"${item.id === current ? ' aria-current="step"' : ''}><span>${escapeHtml(item.label)}</span></li>`).join('');
   return `<section class="exam-phase" aria-label="Fase de preparação para a prova"><div class="exam-phase-heading"><div><span class="exam-phase-eyebrow">Fase até a prova</span><strong>${escapeHtml(phase?.label || 'Fase não definida')}</strong></div><span class="exam-phase-time">${escapeHtml(days)}</span></div><ol class="exam-phase-steps" aria-label="Etapas de preparação">${stages}</ol><p>${escapeHtml(phase?.strategy || 'Defina a data da prova para ajustar o foco do estudo.')}</p>${undated ? '<small>As etapas serão posicionadas quando você informar a data da prova.</small>' : ''}</section>`;
 }
 
 export function renderExamPhaseCompact(phase,{escapeHtml=value=>String(value??'')}={}){
-  const label=phase?.label||'Prova sem data',days=Number.isFinite(Number(phase?.days))?`${Math.max(0,Math.floor(Number(phase.days)))} dias restantes`:'Data da prova não definida';
+  const label=phase?.label||'Prova sem data',days=phase?.days!=null&&Number.isFinite(Number(phase.days))?`${Math.max(0,Math.floor(Number(phase.days)))} dias restantes`:'Data da prova não definida';
   return `<aside class="exam-phase-compact" aria-label="Fase atual da preparação"><span>Fase atual</span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(days)}</small><p>${escapeHtml(phase?.strategy||'Defina a data da prova para ajustar o foco do estudo.')}</p></aside>`;
 }
 

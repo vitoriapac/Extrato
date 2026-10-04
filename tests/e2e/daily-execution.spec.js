@@ -3,10 +3,10 @@ import AxeBuilder from '@axe-core/playwright';
 import {generateDemoData} from '../../src/demo/demo-generator.js';
 import {activateTab,expectNoPageOverflow} from './helpers.js';
 
-async function prepare(page){
+async function prepare(page,{dense=true}={}){
   await page.clock.install({time:new Date('2026-10-01T12:00:00-03:00')});await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(node=>node.remove());
-  const state=generateDemoData({today:'2026-10-01'}),subject=state.subjects[0],topic=subject.topics[0];
+  const state=dense?generateDemoData({today:'2026-10-01'}):await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState())),subject=state.subjects[0],topic=subject.topics[0];
   state.dailyPlans=state.dailyPlans.map(plan=>plan.date==='2026-10-01'?{...plan,date:'2026-10-02'}:plan);
   state.dailyPlans.push({id:'today',date:'2026-10-01',availableMinutes:120,plannedMinutes:20,items:[{id:'daily-first',subjectId:subject.id,topicId:topic.id,type:'study',plannedMinutes:10,executedSeconds:0,status:'planned',sessionIds:[]},{id:'daily-second',subjectId:subject.id,topicId:topic.id,type:'questions',plannedMinutes:10,executedSeconds:0,status:'planned',sessionIds:[]}]});
   await page.evaluate(state=>{const api=window.__EXTRATO_TEST__,validation=api.validateBackupData(state);if(!validation.valid)throw Error(validation.message);api.setState(validation.normalized);api.renderAll();},state);
@@ -34,4 +34,31 @@ for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light']])test(`card
   if(process.platform==='win32')await expect(card).toHaveScreenshot(`today-${width}-${theme}-win32.png`,{animations:'disabled',maxDiffPixelRatio:.03});
   await card.getByRole('button',{name:'Iniciar estudo',exact:true}).focus();await page.keyboard.press('Enter');
   await expect(card.getByRole('button',{name:'Retomar sessão'})).toBeVisible();
+});
+
+test('execução diária explica estados vazios, parciais, concluídos e cronômetro com nomes longos',async({page})=>{
+  await prepare(page,{dense:false});
+  const base=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState()));
+  base.studySessions=[];base.activeTimer=null;base.dailyPlans=base.dailyPlans.filter(plan=>plan.id==='today');
+  const subject=base.subjects[0],topic=subject.topics[0];
+  subject.name='Língua Portuguesa e interpretação de textos em contextos de concursos públicos';
+  topic.name='Interpretação e compreensão de textos extensos com análise de relações sintáticas e semânticas';
+  const apply=state=>page.evaluate(state=>{const api=window.__EXTRATO_TEST__;api.setState(state);api.renderAll()},state);
+  const card=page.locator('#dailyExecutionDashboard');
+  const empty=structuredClone(base);empty.dailyPlans[0].items=[];empty.dailyPlans[0].plannedMinutes=0;await apply(empty);
+  await expect(card).toContainText('Não há atividade elegível');await expect(card.getByRole('button',{name:'Abrir planejamento'})).toBeVisible();
+  await apply(base);
+  for(const width of [320,390,430,1440]){
+    await page.setViewportSize({width,height:1100});await expectNoPageOverflow(page);
+    const boxes=await card.evaluate(node=>{const summary=node.querySelector('.daily-execution-summary').getBoundingClientRect(),next=node.querySelector('.daily-execution-next').getBoundingClientRect();return {summary:{right:summary.right,bottom:summary.bottom},next:{left:next.left,top:next.top}}});
+    if(width<800)expect(boxes.next.top).toBeGreaterThan(boxes.summary.bottom);else expect(boxes.next.left).toBeGreaterThan(boxes.summary.right);
+  }
+  await card.screenshot({path:test.info().outputPath('execution-desktop-long-names.png')});
+  const partial=structuredClone(base);partial.studySessions=[{id:'partial',date:'2026-10-01',subjectId:subject.id,topicId:topic.id,type:'study',durationSeconds:300,planItemId:'daily-first'}];
+  await apply(partial);await expect(card).toContainText('25% de progresso do plano');await expect(card).toContainText('0 de 2 atividades concluídas');
+  await card.getByRole('button',{name:'Iniciar estudo',exact:true}).click();await expect(card.getByRole('button',{name:'Retomar sessão'})).toBeVisible();
+  const blocked=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState()));blocked.studySessions[0].durationSeconds=600;await apply(blocked);
+  await expect(card.getByRole('button',{name:'Finalize a sessão atual'})).toBeDisabled();
+  const complete=structuredClone(base);complete.studySessions=[{...partial.studySessions[0],durationSeconds:600},{...partial.studySessions[0],id:'questions',type:'questions',planItemId:'daily-second',durationSeconds:600}];
+  await apply(complete);await expect(card).toContainText('100% de progresso do plano');await expect(card).toContainText('2 de 2 atividades concluídas');await expect(card).toContainText('Todas as atividades de hoje foram cumpridas');await expect(card.locator('[data-daily-start]')).toHaveCount(0);
 });

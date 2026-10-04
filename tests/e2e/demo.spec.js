@@ -33,7 +33,9 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real',asyn
     localStorage.setItem('bb-premium-study-data',serialized);
     return serialized;
   });
-  await openDemo(page);await expect(page.locator('#demoBanner')).toBeVisible();await expect(page.locator('[data-demo-protected]').first()).toBeDisabled();
+  await openDemo(page);await expect(page.locator('#demoBanner')).toBeVisible();
+  await expect(page.locator('#guidedOnboarding')).toBeHidden();await expect(page.locator('#overviewExamPhase + #dailyExecutionDashboard')).toHaveCount(1);await expect(page.locator('#panel-dashboard .exam-phase-compact')).toHaveCount(1);
+await expect(page.locator('[data-demo-protected]').first()).toBeDisabled();
   const firstDemo=await page.evaluate(()=>sessionStorage.getItem('bb-premium-study-demo'));expect(firstDemo).toBeTruthy();const parsed=JSON.parse(firstDemo);
   expect(parsed.progressHistory).toHaveLength(140);expect(parsed.studySessions).toHaveLength(200);expect(parsed.simulados).toHaveLength(9);
   parsed.subjects[0].name='Alteração fictícia';await page.evaluate(value=>sessionStorage.setItem('bb-premium-study-demo',JSON.stringify(value)),parsed);
