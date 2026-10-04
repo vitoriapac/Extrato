@@ -14,6 +14,7 @@ async function prepare(page){
 }
 test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload',async({page})=>{
   await prepare(page);const card=page.locator('#dailyExecutionDashboard');
+  const summary=await card.locator('.daily-execution-summary').boundingBox(),next=await card.locator('.daily-execution-next').boundingBox();expect(next.x).toBeGreaterThan(summary.x+summary.width);
   await expect(card).toContainText('0% de progresso do plano');await card.getByRole('button',{name:'Iniciar estudo',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().activeTimer.planItemId)).toBe('daily-first');
   await expect(card.getByRole('button',{name:'Retomar sessão'})).toBeVisible();
@@ -26,9 +27,10 @@ test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload',as
   await page.goto('/');await expect(card).toContainText('50% de progresso do plano');
 });
 for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light']])test(`card Hoje acessível: ${width}px ${theme}`,async({page})=>{
-  await page.setViewportSize({width,height:900});await prepare(page);if(theme==='dark')await page.locator('#themeToggleBtn').click();
+  await page.setViewportSize({width,height:1100});await prepare(page);if(theme==='dark')await page.locator('#themeToggleBtn').click();
   const card=page.locator('#dailyExecutionDashboard');await expectNoPageOverflow(page);
   expect((await new AxeBuilder({page}).include('#dailyExecutionDashboard').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+  await card.evaluate(node=>window.scrollBy(0,node.getBoundingClientRect().top-120));
   if(process.platform==='win32')await expect(card).toHaveScreenshot(`today-${width}-${theme}-win32.png`,{animations:'disabled',maxDiffPixelRatio:.03});
   await card.getByRole('button',{name:'Iniciar estudo',exact:true}).focus();await page.keyboard.press('Enter');
   await expect(card.getByRole('button',{name:'Retomar sessão'})).toBeVisible();

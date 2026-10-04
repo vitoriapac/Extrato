@@ -2334,9 +2334,10 @@
         "node:assert/strict",
         "../../src/application/daily-execution/build-daily-execution-model.js",
         "../../src/ui/controllers/daily-execution-controller.js",
-        "../../src/domain/sessions/study-session.js"
+        "../../src/domain/sessions/study-session.js",
+        "../../src/ui/renderers/daily-execution-renderer.js"
       ],
-      "staticTestDeclarations": 8,
+      "staticTestDeclarations": 11,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -3864,7 +3865,7 @@
         "node:assert/strict",
         "../../src/features/onboarding/onboarding-renderer.js"
       ],
-      "staticTestDeclarations": 5,
+      "staticTestDeclarations": 6,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

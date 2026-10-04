@@ -21,6 +21,13 @@ test('Visão Geral mantém ação antes da configuração em todos os estados de
   await expect(page.locator('#guidedOnboarding')).toBeVisible();
   await expect(page.locator('#guidedOnboarding')).toContainText('CONFIGURAÇÃO INICIAL');
   await expect(page.locator('#guidedOnboarding [role="progressbar"]')).toHaveAttribute('aria-valuemax','4');
+  for(const width of [320,390,1440]){
+    await page.setViewportSize({width,height:1100});
+    await expect.poll(()=>page.evaluate(()=>{const steps=document.querySelector('.onboarding-entry-steps').getBoundingClientRect(),cta=document.querySelector('.onboarding-entry-cta').getBoundingClientRect();return cta.top-steps.bottom})).toBeGreaterThanOrEqual(20);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  }
+  expect((await new AxeBuilder({page}).include('#guidedOnboarding').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+  await page.locator('#guidedOnboarding').screenshot({path:test.info().outputPath('configuration-entry.png')});
   await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.subjects=[];api.setState(state);api.renderAll()});
   const actionFirst=await page.evaluate(()=>document.getElementById('overviewNextAction').compareDocumentPosition(document.getElementById('guidedOnboarding'))&Node.DOCUMENT_POSITION_FOLLOWING);
   expect(actionFirst).toBeTruthy();
