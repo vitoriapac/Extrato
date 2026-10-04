@@ -1,6 +1,7 @@
 import {addLocalDays,parseLocalDate} from '../../core/date-utils.js';
 import {strategicScopeKey} from '../analytics/build-strategic-timeline.js';
 import {ADHERENCE_STATUS_POLICY} from './adherence-status.js';
+import {isTopicInExamScope} from '../../domain/exams/exam-scope.js';
 
 const validPeriod=period=>Boolean(typeof period?.start==='string'&&typeof period?.end==='string'&&parseLocalDate(period.start)&&addLocalDays(period.start,6)===period.end);
 export function savedAdherencePeriods({snapshots=[],activeExamTags=[],today}={}){
@@ -39,7 +40,10 @@ export function buildRecurringPriorities({current,snapshots=[],subjects=[],activ
     for(const previous of prior){const gap=previous.gaps.get(key);if(gap)periods.push({start:previous.period.start,end:previous.period.end,...gap})}
     if(periods.length<2)continue;
     const subject=subjects.find(item=>item.id===row.subjectId),topic=subject?.topics?.find(item=>item.id===row.topicId);
-    items.push({...row,subjectName:subject?.name||'Disciplina registrada',topicName:topic?.name||'Tópico registrado',remainingMinutes:row.plannedMinutes-row.creditedMinutes,periodCount:periods.length,periods});
+    const executionPattern=periods.every(period=>period.creditedMinutes===0)?'not_started':periods.every(period=>period.creditedMinutes>0&&period.creditedMinutes<period.plannedMinutes)?'partial':'mixed';
+    const executionPatternLabel=executionPattern==='not_started'?'Não houve crédito de execução nos períodos registrados.':executionPattern==='partial'?'A execução foi parcial em todos os períodos registrados.':'Os períodos apresentam execuções pendentes de tipos diferentes.';
+    items.push({...row,subjectName:subject?.name||'Disciplina registrada',topicName:topic?.name||'Tópico registrado',remainingMinutes:row.plannedMinutes-row.creditedMinutes,periodCount:periods.length,periods,
+      executionPattern,executionPatternLabel,navigable:Boolean(subject&&topic&&!subject.archived&&!topic.archived&&isTopicInExamScope(topic,activeExamTags))});
   }
   items.sort((a,b)=>b.periodCount-a.periodCount||b.remainingMinutes-a.remainingMinutes||a.subjectId.localeCompare(b.subjectId)||a.topicId.localeCompare(b.topicId));
   return {version:1,state:selected.length?'ready':'insufficient_history',historyPeriods:selected.length,items};

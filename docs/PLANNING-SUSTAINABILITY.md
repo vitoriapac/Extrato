@@ -21,7 +21,7 @@ O modelo puro em `src/application/planning-sustainability/` consome a aderência
 - Aderência temporal e de prioridades usam médias ponderadas pelos respectivos minutos planejados. Tempo efetivamente estudado e estudo adicional continuam separados do crédito atribuído ao plano.
 - A faixa de execução observada usa o intervalo interquartil, arredondado para fora em passos de 30 minutos. Não representa capacidade ideal, promessa de execução ou toda a amplitude observada; mínimo e máximo são fornecidos separadamente. Menos de três semanas não produz faixa.
 
-Classificação, explicações e integração visual pertencem aos próximos pacotes.
+O pacote 3 acrescenta classificação e explicações; o pacote 4 integra a leitura ao fechamento. Refinamento de Desempenho e Metas e regressão completa pertencem aos pacotes posteriores.
 
 
 ## Pacote 3 — Classificação e explicações
@@ -29,4 +29,14 @@ Classificação, explicações e integração visual pertencem aos próximos pac
 Política V1, escala percentual 0–100: compatibilidade requer aderência temporal ≥85% e prioridades ≥80%. Possível incompatibilidade de capacidade requer quatro semanas comparáveis, média temporal <75%, prioridades ≥80% e pelo menos três semanas com essa combinação e volume realizado abaixo do previsto. Desalinhamento prioritário requer quatro semanas, pelo menos três com volume ≥85% e prioridades <65%, e média prioritária <65%. Estudo adicional não vira crédito ao plano.
 
 Uma única semana ≥30 pontos abaixo da mediana, com as demais ≥85%, é desvio pontual. Depois dessa proteção, coeficiente de variação populacional do volume ≥0,35 sinaliza execução irregular. A precedência é: insuficiência, anomalia, irregularidade, incompatibilidade de capacidade, desalinhamento prioritário, compatibilidade, acompanhamento. Evidência preliminar não recomenda mudanças estruturais. Textos determinísticos descrevem associação e não afirmam causalidade.
+
+## Pacote 4 — Fechamento e decisão
+
+O fechamento mantém seu período móvel de sete dias; a sustentabilidade exibida junto a ele usa exclusivamente semanas encerradas de segunda a domingo. Novos snapshots congelam essa análise e sua política junto à aderência. Registros antigos continuam sem análise longitudinal, sem reconstrução retroativa na interface histórica.
+
+O card separa capacidade histórica, planejamento, execução e prioridades. Os detalhes explicam critérios e exclusões; listas longas usam o controle compartilhado Mostrar mais. Registros históricos não oferecem ações.
+
+Revisar capacidade abre uma prévia somente para leitura. O limite superior da faixa observada é apresentado como cenário hipotético, com diferença de disponibilidade e aviso de que nenhum bloco foi redistribuído. Não há persistência nem aplicação. Abrir disponibilidade leva às configurações existentes; edições seguem seu fluxo usual. Se a disponibilidade atual difere da capacidade histórica comparada, a prévia fica indisponível e explica a mudança de base. Desalinhamento prioritário leva à distribuição do plano, sem sugerir redução de capacidade.
+
+Pendências recorrentes oferecem navegação contextual para planejamento e desempenho do tópico, preservando concurso, disciplina, tópico, período e origem. Crédito zero e execução parcial são descritos separadamente; falta de crédito não afirma ausência de estudo adicional. Tópicos removidos, arquivados ou fora do concurso ativo não oferecem navegação operacional.
 

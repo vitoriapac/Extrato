@@ -1,4 +1,6 @@
 import {buildWeeklyCloseAdherence} from '../adherence/build-weekly-close-adherence.js';
+import {buildWeeklyAdherence} from '../adherence/build-weekly-adherence.js';
+import {buildSustainabilityModel} from '../planning-sustainability/build-sustainability-model.js';
 import {buildTopicGapInputs} from './build-topic-gap-inputs.js';
 import {buildSubjectAccuracy} from './build-subject-accuracy.js';
 import {resolveSubjectAccuracyTarget} from '../../domain/analytics/subject-accuracy-target.js';
@@ -21,6 +23,8 @@ export function buildStudyTrack32ViewModel({today,sessions=[],questions=[],daily
   const questionTotals=list=>({resolved:sum(list,item=>item.resolved),correct:sum(list,item=>item.correct)}),previousTotals=questionTotals(previousQuestions),hasPrevious=previousSessions.length+previousQuestions.length+previousPlan.plans.length>0,executedMinutes=Math.round(sum(currentSessions,item=>item.durationSeconds)/60),previousExecutedMinutes=Math.round(sum(previousSessions,item=>item.durationSeconds)/60);
   const weeklyClose=buildWeeklyClose({period:{start,end:today},current:{plannedMinutes:currentPlan.plannedMinutes,executedMinutes},previous:hasPrevious?{plannedMinutes:previousPlan.plannedMinutes,executedMinutes:previousExecutedMinutes,resolved:previousTotals.resolved,accuracy:previousTotals.resolved?Math.round(previousTotals.correct/previousTotals.resolved*100):null}:{},plans:currentPlan.plans,sessions:currentSessions,questions:currentQuestions,recommendations,targetAccuracy});
   weeklyClose.adherence=buildWeeklyCloseAdherence({...(executionSource||{dailyPlans,sessions,subjects}),start,end:today,today,activeExamTags,snapshots:weeklyCloseSnapshots});
+  weeklyClose.adherence.sustainability=buildSustainabilityModel({today,activeExamTags,snapshots:weeklyCloseSnapshots,
+    weeklyAdherence:buildWeeklyAdherence({...(executionSource||{dailyPlans,sessions,subjects}),today,activeExamTags,historyWeeks:4})});
   const adherenceAssessment=weeklyClose.adherence.assessment;
   if(weeklyClose.state==='insufficient'&&(weeklyClose.adherence.model.summary?.plannedMinutes||weeklyClose.adherence.model.summary?.executedMinutes))weeklyClose.state='available';
   if(['time_gap','priority_gap','mixed'].includes(adherenceAssessment.status)){

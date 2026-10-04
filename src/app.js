@@ -1,4 +1,5 @@
 import {buildAdherenceCloseHistory} from './application/adherence/build-weekly-close-adherence.js';
+import {createSustainabilityController} from './ui/controllers/sustainability-controller.js';
 import {renderAdherenceCloseHistory} from './ui/renderers/weekly-adherence-renderer.js';
 import {freezePlanExecution} from './domain/planning/plan-execution-snapshot.js';
 import {recordPlanningCapacity,validCapacityRecord} from './domain/planning/capacity-history.js';
@@ -5122,6 +5123,11 @@ function setStrategicTimelineFilter(value){strategicTimelineFilter=['all','decis
 function setStrategicTimelineGroup(value){strategicTimelineGroup=['week','month','phase'].includes(value)?value:'week';renderStudyTrack32Insights()}
 let currentStudyTrackModel=null;
 let weeklyCloseController=null;
+const sustainabilityController=createSustainabilityController({getModel:()=>currentStudyTrackModel?.weeklyClose?.adherence?.sustainability,
+ getCapacity:()=>Object.values(state.metas.horasPorDia||{}).reduce((sum,value)=>sum+(Number(value)||0)*60,0),formatMinutes:formatPlanMinutes,
+ showPreview:(text,accept,options)=>showConfirm(text,accept,undefined,options),navigate:()=>{
+   activateTab('metas');const target=document.getElementById('metasCapacityTitle');target?.setAttribute('tabindex','-1');target?.focus();target?.scrollIntoView({block:'start'});
+ }});
 function renderStudyTrack32Insights(){
  const close=document.getElementById('weeklyCloseDashboard'),comparison=document.getElementById('periodComparisonDashboard'),gaps=document.getElementById('gapMapDashboard'),history=document.getElementById('decisionHistoryDashboard'),simReplan=document.getElementById('postSimulationReplanDashboard');
  const scope=examEvidenceContext(),scopedTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id)),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),scopedPlans=(planningRepository.getDailyPlans?.()||[]).map(plan=>({...plan,items:(plan.items||[]).filter(item=>!item.topicId||scopedTopicIds.has(item.topicId))})),scopedRecommendations=state.recommendationFeedback.filter(item=>!item.topicId||scopedTopicIds.has(item.topicId)),model=buildStudyTrack32ViewModel({readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:scopedPlans,weeklyCloseSnapshots:state.weeklyCloseSnapshots,executionSource:{dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,capacityHistory:state.planningCapacityHistory,adherenceTarget:state.metas.aderenciaSemanal},planAdjustments:state.planAdjustments,recommendations:scopedRecommendations,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:state.metas.metaAprovacao,blueprint:state.examBlueprint,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
@@ -5238,6 +5244,7 @@ function escapeAttr(str){ return escapeHtml(str); }
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTION_HANDLERS={
   openWeeklyAdherencePlanning:()=>activateTab('metas'),
+  reviewPlanningCapacity:()=>sustainabilityController.review(),
   setStrategicTimelineFilter,setStrategicTimelineGroup,setPriorityHistorySubject,
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,
   previewPhaseStrategy,cancelPhaseStrategy,confirmPhaseStrategy,revertPhaseStrategy,calculateStudyPlanPreview,clearStudyPlanPreview,confirmStudyPlan,useAdaptivePlanAdvice,rejectAdaptivePlanAdvice,revertAdaptivePlanningDecision,calculateDailyPlanPreview,clearDailyPlanPreview,confirmDailyPlanPreview,undoLatestDailyPlanGeneration,openNextSessionAction,
