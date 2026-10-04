@@ -3,24 +3,51 @@ on:
   push:
     branches: [main]
   pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      gate:
+        description: Validation tier
+        type: choice
+        options: [fast, regression, full]
+        default: full
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'release' }}
 jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
       docs_only: ${{ steps.detect.outputs.docs_only }}
+      gate: ${{ steps.detect.outputs.gate }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Detect documentation-only changes
+      - name: Select gate and inspect changed files
         id: detect
         shell: bash
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          REQUESTED_GATE: ${{ inputs.gate }}
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
         run: |
+          case "$EVENT_NAME" in
+            pull_request) gate=fast ;;
+            push) gate=regression ;;
+            release) gate=full ;;
+            workflow_dispatch) gate="$REQUESTED_GATE" ;;
+            *) gate=full ;;
+          esac
+          echo "gate=$gate" >> "$GITHUB_OUTPUT"
+          if [[ "$EVENT_NAME" == "release" || "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
             echo "docs_only=false" >> "$GITHUB_OUTPUT"
             exit 0
@@ -37,50 +64,9 @@ jobs:
             fi
           done
           echo "docs_only=true" >> "$GITHUB_OUTPUT"
-  checks:
+  validation:
     needs: changes
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - label: utc
-            timezone: UTC
-          - label: sao-paulo
-            timezone: America/Sao_Paulo
-    env:
-      TZ: ${{ matrix.timezone }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Documentation-only change
-        if: needs.changes.outputs.docs_only == 'true'
-        run: echo "Only Markdown changed; application checks are unnecessary."
-      - uses: actions/setup-node@v4
-        if: needs.changes.outputs.docs_only != 'true'
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-        if: needs.changes.outputs.docs_only != 'true'
-      - run: npm run check:syntax
-        if: needs.changes.outputs.docs_only != 'true' && matrix.label == 'utc'
-      - run: npm run check
-        if: needs.changes.outputs.docs_only != 'true'
-  e2e:
-    needs: changes
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - label: full-utc
-            timezone: UTC
-            suite: full
-          - label: timezone-sao-paulo
-            timezone: America/Sao_Paulo
-            suite: timezone
-    env:
-      TZ: ${{ matrix.timezone }}
     steps:
       - uses: actions/checkout@v4
       - name: Documentation-only change
@@ -95,15 +81,45 @@ jobs:
         if: needs.changes.outputs.docs_only != 'true'
       - run: npx playwright install --with-deps chromium
         if: needs.changes.outputs.docs_only != 'true'
-      - run: npm run test:e2e
-        if: needs.changes.outputs.docs_only != 'true' && matrix.suite == 'full'
-      - run: npm run test:e2e:timezone
-        if: needs.changes.outputs.docs_only != 'true' && matrix.suite == 'timezone'
+      - name: Run selected validation gate
+        if: needs.changes.outputs.docs_only != 'true'
+        env:
+          TEST_GATE: ${{ needs.changes.outputs.gate }}
+        run: npm run "test:$TEST_GATE"
+      - name: Upload gate timing
+        if: always() && needs.changes.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-${{ needs.changes.outputs.gate }}
+          path: test-results/gate-summary.json
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Upload Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-${{ matrix.label }}
+          name: playwright-${{ needs.changes.outputs.gate }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+  visual-windows:
+    needs: changes
+    if: needs.changes.outputs.gate == 'full' && needs.changes.outputs.docs_only != 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run test:visual
+      - name: Upload visual gate timing and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-windows
           path: test-results/
           if-no-files-found: ignore
           retention-days: 14

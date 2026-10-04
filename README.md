@@ -189,9 +189,9 @@ npm run test:e2e
 npm run check:all
 ```
 
-`npm run check:all` executa testes unitários, verifica se o bundle é reproduzível e roda os cenários Playwright. Os testes E2E incluem axe para estrutura ARIA, contraste, modal, telas críticas e modo móvel.
+`npm run test:fast` é o gate rápido: sintaxe, bundle reproduzível, todos os unitários em UTC/São Paulo e um smoke E2E. `test:regression` acrescenta jornadas e responsividade representativa; `test:full` (também disponível por `check:all`) preserva a suíte completa e o recorte E2E de timezone. Os testes E2E incluem axe para estrutura ARIA, contraste, modal, telas críticas e modo móvel.
 
-A [estratégia de testes por risco](docs/TEST-STRATEGY.md) define os futuros gates Fast, Regression e Full. O [inventário da suíte](docs/TEST-SUITE-INVENTORY.md) registra cobertura e tempos observados. Nesta etapa, a classificação está implementada e verificável; os comandos e o CI atuais continuam em vigor.
+A [estratégia de testes por risco](docs/TEST-STRATEGY.md) define os gates Fast, Regression e Full. O [inventário da suíte](docs/TEST-SUITE-INVENTORY.md) registra cobertura e tempos observados. O CI usa Fast em PRs, Regression em main e Full em releases ou execução manual. As referências visuais Windows têm job próprio no Full.
 
 No GitHub Actions, alterações de código executam essa suíte em UTC e no fuso de São Paulo. Commits que alteram somente arquivos Markdown dispensam a suíte da aplicação; a publicação ainda executa o build do site.
 

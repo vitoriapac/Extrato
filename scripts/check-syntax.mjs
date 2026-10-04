@@ -14,6 +14,7 @@ function collect(directory){
   }
 }
 roots.forEach(collect);
+files.push('playwright.config.js','playwright.gates.config.js');
 for(const file of files){
   try{transformSync(readFileSync(file,'utf8'),{loader:'js',sourcefile:file,logLevel:'silent'});}
   catch(error){console.error(error.message);process.exit(1);}

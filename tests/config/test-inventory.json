@@ -27,8 +27,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -58,9 +57,9 @@
       "snapshotPlatform": "windows-only",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "REGRESSION: Recovery exige confirmação, revalida e registra plano e decisão sem reescrever sessões",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -88,8 +87,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -117,8 +115,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -145,9 +142,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -178,9 +174,8 @@
       "snapshotPlatform": "windows-only",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -207,9 +202,9 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "REGRESSION: schema 24 sobrevive a exportação, limpeza, recarga e restauração",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -235,8 +230,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -262,8 +256,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -294,8 +287,8 @@
       "snapshotPlatform": "windows-only",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC",
+        "REGRESSION: Hoje inicia sessão vinculada, atualiza progresso e avança sem reload"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -323,8 +316,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -351,8 +343,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -380,8 +371,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -408,8 +398,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -440,8 +429,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -467,8 +455,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -495,8 +482,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC",
+        "REGRESSION: importa JSON com prévia, decisão explícita e reimportação idempotente"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -523,8 +510,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -551,8 +537,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -580,8 +565,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -609,9 +593,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -637,9 +620,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -665,9 +647,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -697,8 +678,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC",
+        "REGRESSION: primeiro uso preserva escolhas e chega à prévia do plano"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -732,9 +713,8 @@
       "snapshotPlatform": "windows-only",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -762,9 +742,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -792,8 +771,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -821,8 +799,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -848,8 +825,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -874,8 +850,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -903,8 +878,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -931,8 +905,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -963,8 +936,7 @@
       "snapshotPlatform": "windows-only",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -993,8 +965,7 @@
       "snapshotPlatform": "windows-only",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1022,8 +993,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1050,8 +1020,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1077,8 +1046,9 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC",
+        "REGRESSION: matriz visual crítica não transborda em 375px no tema light",
+        "REGRESSION: matriz visual crítica não transborda em 1440px no tema dark"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1108,8 +1078,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1135,9 +1104,9 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "REGRESSION: sessão de simulado encaminha ao cadastro próprio do simulado",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1163,8 +1132,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC",
+        "FAST_GATE: inicializa e navega pelas áreas principais"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1192,9 +1161,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1222,9 +1190,9 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "REGRESSION: Desempenho → Diagnóstico → prévia → confirmação → execução → fechamento",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1252,8 +1220,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1282,9 +1249,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1311,8 +1277,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1338,9 +1303,8 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1368,8 +1332,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1396,8 +1359,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1426,8 +1388,7 @@
       "snapshotPlatform": "windows-only",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1455,8 +1416,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1484,8 +1444,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1515,8 +1474,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1545,8 +1503,7 @@
       "snapshotPlatform": "inspect-platform-baselines",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1577,9 +1534,9 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC",
-        "CI E2E SP subset"
+        "test:full UTC",
+        "REGRESSION: fechamento preserva aderência e pendências, e a revisão só navega para o planejamento",
+        "Full E2E SP subset"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1607,8 +1564,7 @@
       "snapshotPlatform": "none",
       "currentGates": [
         "test:e2e",
-        "check:all",
-        "CI E2E UTC"
+        "test:full UTC"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1639,8 +1595,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1669,8 +1626,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1699,8 +1657,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1728,8 +1687,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1757,8 +1717,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1786,8 +1747,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1815,8 +1777,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1845,8 +1808,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1876,8 +1840,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1909,8 +1874,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1938,8 +1904,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -1967,8 +1934,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2001,8 +1969,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2033,8 +2002,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2062,8 +2032,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2091,8 +2062,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2120,8 +2092,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2150,8 +2123,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2182,8 +2156,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2211,8 +2186,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2241,8 +2217,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2270,8 +2247,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2300,8 +2278,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2334,8 +2313,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2365,8 +2345,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2394,8 +2375,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2426,8 +2408,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2455,8 +2438,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2484,8 +2468,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2516,8 +2501,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2546,8 +2532,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2575,8 +2562,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2608,8 +2596,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2637,8 +2626,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2673,8 +2663,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2705,8 +2696,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2740,8 +2732,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2774,8 +2767,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2803,8 +2797,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2832,8 +2827,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2863,8 +2859,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2892,8 +2889,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2922,8 +2920,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2951,8 +2950,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -2981,8 +2981,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3012,8 +3013,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3041,8 +3043,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3074,8 +3077,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3107,8 +3111,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3146,8 +3151,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3184,8 +3190,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3213,8 +3220,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3243,8 +3251,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3275,8 +3284,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3308,8 +3318,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3337,8 +3348,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3367,8 +3379,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3397,8 +3410,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3426,8 +3440,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3455,8 +3470,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3484,8 +3500,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3514,8 +3531,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3543,8 +3561,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3572,8 +3591,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3601,8 +3621,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3634,8 +3655,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3663,8 +3685,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3700,8 +3723,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3729,8 +3753,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3758,8 +3783,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3787,8 +3813,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3816,8 +3843,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3845,8 +3873,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3874,8 +3903,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3903,8 +3933,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3936,8 +3967,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3965,8 +3997,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3994,8 +4027,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4023,8 +4057,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4054,8 +4089,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4085,8 +4121,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4114,8 +4151,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4146,8 +4184,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4179,8 +4218,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4208,8 +4248,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4242,8 +4283,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4273,8 +4315,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4302,8 +4345,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4332,8 +4376,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4361,8 +4406,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4390,8 +4436,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4424,8 +4471,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4455,8 +4503,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4488,8 +4537,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4517,8 +4567,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4546,8 +4597,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4575,8 +4627,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4604,8 +4657,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4633,8 +4687,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4662,8 +4717,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4691,8 +4747,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4721,8 +4778,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4751,8 +4809,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4783,8 +4842,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4817,8 +4877,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4846,8 +4907,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4880,8 +4942,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4912,8 +4975,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4941,8 +5005,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4970,8 +5035,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -4999,8 +5065,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5028,8 +5095,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5058,8 +5126,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5087,8 +5156,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5117,8 +5187,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5146,8 +5217,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5175,8 +5247,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5204,8 +5277,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5233,8 +5307,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5265,8 +5340,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5297,8 +5373,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5326,8 +5403,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5358,8 +5436,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5387,8 +5466,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5419,8 +5499,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5450,8 +5531,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5480,8 +5562,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5509,8 +5592,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5538,8 +5622,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5570,8 +5655,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5600,8 +5686,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5629,8 +5716,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5658,8 +5746,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5687,8 +5776,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5716,8 +5806,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5748,8 +5839,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5781,8 +5873,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5813,8 +5906,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5843,8 +5937,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5873,8 +5968,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5902,8 +5998,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5933,8 +6030,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5962,8 +6060,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -5992,8 +6091,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6021,8 +6121,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6053,8 +6154,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6082,8 +6184,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6112,8 +6215,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6141,8 +6245,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6171,8 +6276,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6200,8 +6306,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6232,8 +6339,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6262,8 +6370,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6295,8 +6404,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6324,8 +6434,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6353,8 +6464,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6388,8 +6500,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6419,8 +6532,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -6448,8 +6562,9 @@
       "currentGates": [
         "npm test",
         "check",
-        "check:all",
-        "CI checks UTC/SP"
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"

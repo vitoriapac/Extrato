@@ -20,6 +20,7 @@ for(const entry of testTierManifest.files){
   assert.ok(TEST_TIERS.includes(entry.tier),`Tier inválido: ${entry.file}`);
   assert.ok(entry.rationale,`Justificativa ausente: ${entry.file}`);
   if(entry.file.includes('/unit/'))assert.equal(entry.tier,'FAST_GATE','Todos os contratos Node permanecem no Fast nesta fase');
+  else assert.equal(entry.tier,'FULL','Promover jornadas por título; não promover a matriz inteira');
   const titles=(entry.promotions||[]).map(row=>row.title);
   assert.equal(new Set(titles).size,titles.length,`Promoção duplicada: ${entry.file}`);
   for(const promotion of entry.promotions||[]){

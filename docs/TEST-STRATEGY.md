@@ -2,7 +2,7 @@
 
 ## Estado da implementação
 
-Pacotes 1 a 3 concluídos: inventário, contrato de classificação e separação da responsividade representativa. Os scripts de execução e o GitHub Actions ainda usam a configuração anterior. `test:fast`, `test:regression` e `test:full` serão introduzidos no pacote 4; não são comandos disponíveis nesta etapa. Não houve remoção de testes, alteração de fórmulas, baselines ou redução do CI atual.
+Pacotes 1 a 4 concluídos: inventário, contrato, separação das jornadas/matrizes, runners e CI. Nenhum teste foi removido. As matrizes completas permanecem disponíveis no Full. As fórmulas e referências visuais não foram alteradas.
 
 O [inventário](TEST-SUITE-INVENTORY.md) registra 159 arquivos Node, 55 arquivos E2E e evidências da última execução local completa. Integrações existentes usam o runner Node e permanecem em tests/unit.
 
@@ -33,13 +33,13 @@ Esses valores são orçamentos, não tempos já comprovados para os novos comand
 
 Além delas, entram o smoke básico e dois casos extraídos para responsive-smoke.spec.js. Os títulos exatos estão no manifesto; selecionar o arquivo inteiro executaria suas matrizes, contrariando o orçamento. A jornada de simulado agora verifica o resultado salvo em Desempenho.
 
-Antes da extração dos casos responsivos, a soma histórica dos 11 casos selecionados era 206,6 s; ela não equivale ao tempo de parede do novo gate, pois os casos podem rodar em paralelo e há preparação. O smoke Fast levou 3,3 s. As metas só poderão ser confirmadas após os runners do pacote 4.
+Antes da extração dos casos responsivos, a soma histórica dos 11 casos selecionados era 206,6 s; ela não equivale ao tempo de parede do novo gate, pois os casos podem rodar em paralelo e há preparação. O smoke Fast levou 3,3 s. Os runners medem cada etapa e registram o tempo real, separado da evidência histórica.
 
 ## Manifesto e verificação
 
 `tests/config/test-tiers.json` classifica explicitamente todos os arquivos. Arquivos Node são FAST_GATE; arquivos browser têm base FULL e promoções por título exato. Um novo caso browser em arquivo conhecido permanece Full. Um arquivo novo sem classificação provoca erro na verificação. Não existe fallback que elimine testes desconhecidos.
 
-`tests/config/test-tiers.js` fornece classificação e seleção cumulativa para os futuros runners. As seleções não mudam prioridades, fixtures ou o comportamento da aplicação.
+`tests/config/test-tiers.js` fornece classificação e seleção cumulativa para os runners. As seleções não mudam prioridades, fixtures ou o comportamento da aplicação.
 
 ```sh
 node scripts/audit-test-suite.mjs
@@ -72,10 +72,51 @@ Alguns screenshots são condicionados a Windows e ficam sem comparação de pixe
 
 ## Próximos pacotes
 
-4. Implementar runners, medir orçamentos e configurar PR/main/release/manual no CI.
 5. Publicar política de execução durante desenvolvimento em AGENTS.md.
 6. Selecionar por impacto e registrar duração por etapa, sem excluir arquivos desconhecidos.
 
 ## Validação do pacote 3
 
 Três E2E direcionados passaram em UTC: simulado com resultado em Desempenho e responsividade em 375 claro/1440 escuro (58,3 s). A descoberta preserva 234 casos Full e 11 Regression. Sintaxe, inventário e seleção foram verificados; a suíte completa não foi executada nesta etapa.
+
+## Comandos e roteamento do CI
+
+```sh
+npm run test:fast
+npm run test:regression
+npm run test:full
+npm run test:visual
+```
+
+`test:visual` requer Windows e executa as sete superfícies oficiais (50 casos). No Full local em Windows, os screenshots dessas superfícies já fazem parte dos 234 E2E; não é preciso rodá-los novamente. No CI Ubuntu, o job visual Windows separado protege as comparações que antes não eram executadas naquela plataforma.
+
+`check:all` é alias de `test:full`: inclui sintaxe, inventário, contrato, bundle, todos os Node em UTC/SP, 234 E2E em UTC e o recorte de 47 em SP. `npm test`, `test:unit`, `check`, `test:e2e` e `test:e2e:timezone` continuam disponíveis para execução direcionada. Fast/Regression não substituem testes da área alterada; a seleção automática por impacto pertence ao pacote 6.
+
+| Evento | Gate |
+|---|---|
+| Pull request | Fast |
+| Push em main | Regression |
+| Release publicada | Full + visual Windows |
+| workflow_dispatch | Fast, Regression ou Full selecionado; Full inclui visual Windows |
+
+Mudanças somente em Markdown continuam dispensando validação da aplicação; release e execução manual sempre executam o gate selecionado. Execuções superadas do mesmo evento/ref são canceladas, exceto releases. A execução remota desses workflows ainda depende de envio ao GitHub; a validação local do YAML não comprova que um job remoto passou.
+
+## Funcionamento e falhas
+
+O runner usa Node e caminhos explícitos, sem sintaxe de shell dependente do sistema operacional. Antes de iniciar o browser, `check-test-selection.mjs` descobre a seleção do config Playwright e compara exatamente com o manifesto, protegendo contra títulos duplicados, filtros amplos e seleção vazia.
+
+Cada etapa interrompe o gate ao falhar e propaga seu código de saída. O runner grava `test-results/gate-summary.json`, imprime a tabela de tempos e publica no summary do Actions quando disponível. Instalação, fila e download do browser ficam fora da medição. Exceder o orçamento gera aviso para revisão; não transforma um teste aprovado em erro funcional.
+
+A suíte Full e visual foi validada por descoberta e planejamento (`node scripts/run-test-gate.mjs full --dry-run`), sem executar novamente toda a matriz neste pacote.
+
+## Validação local do pacote 4
+
+| Gate | Resultado | Tempo total |
+|---|---|---:|
+| Fast, primeira medição | 644 Node em cada fuso + 1 E2E | 37,53 s |
+| Fast, validação final | 644 Node em cada fuso + 1 E2E | 42,63 s |
+| Regression | 644 Node em cada fuso + 11 E2E | 139,76 s |
+
+Ambiente local Windows/Chromium, dois workers browser. Instalação e fila não incluídas. As duas metas ficaram abaixo dos máximos de 180/600 s nesta medição; o tempo do GitHub Actions ainda não foi confirmado.
+
+Verificações negativas com arquivos temporários isolados confirmaram que sintaxe inválida interrompe o gate na primeira etapa e fonte alterada sem rebuild falha na etapa de artefatos antes dos unitários. As sondas foram removidas e o bundle voltou a ser validado. O YAML foi parseado e os eventos/gates conferidos localmente; a execução remota não foi realizada. Full e visual foram conferidos por descoberta (234 e 50 casos), sem repetir a suíte completa.

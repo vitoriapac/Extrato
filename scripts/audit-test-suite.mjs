@@ -6,6 +6,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=path=>readFileSync(resolve(root,path),'utf8');
 const files=['unit','e2e'].flatMap(layer=>readdirSync(resolve(root,`tests/${layer}`)).filter(name=>name.endsWith(layer==='unit'?'.test.js':'.spec.js')).map(name=>`tests/${layer}/${name}`)).sort();
 const evidence=JSON.parse(read('tests/config/runtime-evidence.json'));
+const tiers=JSON.parse(read('tests/config/test-tiers.json')).files;
 const areas=[['recovery','Recuperação'],['adherence','Aderência'],['sustainability','Sustentabilidade'],['capacity','Capacidade'],['projection','Trajetória'],['exam','Inteligência da prova'],['demo','Demo'],['session','Sessões'],['weekly-close','Fechamento'],['planning','Planejamento'],['plan','Planejamento'],['date','Datas'],['clock','Datas'],['backup','Backup'],['storage','Persistência'],['state','Estado'],['performance','Desempenho'],['goal','Metas'],['onboarding','Onboarding'],['visual','Visual'],['responsive','Responsividade'],['recommend','Recomendações'],['review','Revisões']];
 const critical=/recovery|transaction|snapshot|history|historical|date|clock|backup|migration|storage|state|execution|reconciliation|capacity|availability|adherence|planning|replan|import|scope|priority|coherence/;
 const inventory=files.map(file=>{
@@ -21,7 +22,8 @@ const inventory=files.map(file=>{
     measuredCases:timed.length,observedCaseSeconds:timed.length?Math.round(timed.reduce((sum,row)=>sum+row.seconds,0)*10)/10:null,
     durationBasis:timed.length?'sum_of_reported_case_times_not_wall_clock':'not_measured_per_file',
     snapshotPlatform:/process\.platform\s*===?\s*['"]win32/.test(source)?'windows-only':snapshots?'inspect-platform-baselines':'none',
-    currentGates:layer==='node'?['npm test','check','check:all','CI checks UTC/SP']:['test:e2e','check:all','CI E2E UTC',...(read('package.json').includes(file)?['CI E2E SP subset']:[])],
+    currentGates:layer==='node'?['npm test','check','test:fast UTC/SP','test:regression UTC/SP','test:full UTC/SP']:
+      ['test:e2e','test:full UTC',...(tiers.find(row=>row.file===file)?.promotions||[]).map(row=>`${row.tier}: ${row.title}`),...(read('package.json').includes(file)?['Full E2E SP subset']:[])],
     stability:'not_assessed',removalDecision:'retain_pending_contract_review'};
 });
 const output={schemaVersion:1,baselineCommit:evidence.baselineCommit,inventoryScope:'Executable test files directly under tests/unit and tests/e2e; fixtures/helpers are support files.',inventory};
