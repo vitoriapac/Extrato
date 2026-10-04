@@ -68,3 +68,20 @@ test('execução diária explica estados vazios, parciais, concluídos e cronôm
   const complete=structuredClone(base);complete.studySessions=[{...partial.studySessions[0],durationSeconds:600},{...partial.studySessions[0],id:'questions',type:'questions',planItemId:'daily-second',durationSeconds:600}];
   await apply(complete);await expect(card).toContainText('100% de progresso do plano');await expect(card).toContainText('2 de 2 atividades concluídas');await expect(card).toContainText('Todas as atividades de hoje foram cumpridas');await expect(card.locator('[data-daily-start]')).toHaveCount(0);
 });
+
+test('sugestão fora do plano permite dispensar sem alterar a agenda',async({page})=>{
+ test.setTimeout(120_000);await page.setViewportSize({width:390,height:900});await prepare(page);
+ await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.studySessions=state.studySessions.filter(session=>session.date!=='2026-10-01');api.setState(state);api.renderAll()});
+ await activateTab(page,'hoje');
+ const action=page.locator('#studyRecommendation .study-recommendation').first();
+ await expect(action).toContainText('Sugestão fora do plano de hoje');
+ await expect(action.getByRole('button',{name:/Seguir plano de hoje/})).toBeVisible();
+ await expect(action.getByRole('button',{name:/Estudar como atividade adicional/})).toBeVisible();
+ const state=()=>page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return JSON.stringify({plans:s.dailyPlans,weekly:s.studyPlans,sessions:s.studySessions,capacity:s.metas.horasPorDia})});
+ const before=await state();
+ await expectNoPageOverflow(page);
+ expect((await new AxeBuilder({page}).include('#studyRecommendation').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+ await action.getByRole('button',{name:'Dispensar esta sugestão agora',exact:true}).click();
+ await expect(action).toBeHidden();expect(await state()).toBe(before);
+ await expectNoPageOverflow(page);
+});

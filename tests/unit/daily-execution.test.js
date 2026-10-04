@@ -26,3 +26,14 @@ test('renderer orienta plano sem conteúdo elegível e preserva detalhes limitad
 test('hierarquia operacional separa tópico, metadata e mantém CTA único',()=>{const html=render(buildDailyExecutionModel(fixture()));assert.match(html,/daily-execution-topic/);assert.match(html,/daily-execution-metadata/);assert.match(html,/daily-execution-progress/);assert.equal((html.match(/data-daily-start=/g)||[]).length,1);assert.match(html,/<details class="daily-execution-reasons">/);assert.doesNotMatch(html,/<details class="daily-execution-reasons" open/)});
 
 test('contexto excepcional recolhe detalhes, preserva alertas e não duplica recomendação',()=>{const input=fixture();input.sessions=[session({type:'study',durationSeconds:1800}),session({id:'extra',planItemId:null,durationSeconds:600})];input.nextBestAction.action.activityType='review';const model=buildDailyExecutionModel(input),before=structuredClone(model),html=render(model);assert.deepEqual(model,before);assert.match(html,/<details class="daily-execution-context"><summary>Conferir tempo adicional e vínculos/);assert.doesNotMatch(html,/<details class="daily-execution-context" open/);assert.match(html,/10 min de estudo adicional/);assert.match(html,/30 min com vínculo/);assert.match(html,/<\/details>[\s\S]*versão anterior do plano/);assert.match(html,/fora do plano do dia/);assert.doesNotMatch(html,/Recomendação estratégica:/);assert.match(html,/daily-execution-footer/);const clean=render(buildDailyExecutionModel(fixture()));assert.doesNotMatch(clean,/daily-execution-context/)});
+
+import {renderNextBestAction} from '../../src/ui/renderers/next-best-action-renderer.js';
+test('sugestão fora do plano mantém a atividade planejada como escolha operacional',()=>{
+ const input=fixture();input.nextBestAction.action.activityType='review';
+ const daily=buildDailyExecutionModel(input),action=input.nextBestAction.action;
+ const model={state:'ACTION_REQUIRED',label:'Revisar',topicName:'Tópico',subjectName:'Disciplina',action,reasons:[],weeklyCapacityMinutes:60};
+ const before=JSON.stringify(daily);
+ const html=renderNextBestAction(model,{escapeHtml:String,escapeAttr:String,dailyPriority:daily.priority});
+ assert.match(html,/Sugestão fora do plano de hoje/);assert.match(html,/Seguir plano de hoje/);assert.match(html,/Estudar como atividade adicional/);assert.match(html,/data-ignore-outside-suggestion/);assert.match(html,/data-next-best-preview/);
+ assert.equal(JSON.stringify(daily),before);
+});
