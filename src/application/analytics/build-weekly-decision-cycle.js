@@ -20,3 +20,17 @@ export function buildWeeklyDecisionCycle({close,start,end,previousStart,previous
   if(execution.unknownPlannedMinutes)attention.push(`${execution.unknownPlannedMinutes} minutos planejados sem classificação estratégica histórica.`);
   return {version:2,execution,readiness:{current,previous:previous||null,comparison:readinessComparison},simulations:simulations.filter(item=>item.date>=start&&item.date<=end).length,worked:worked.slice(0,3),attention:attention.slice(0,3),outcomes};
 }
+
+// Síntese transitória: não cria prioridades nem reescreve snapshots.
+export function buildWeeklyDecisionGuidance({cycle=null,trajectory=null,sustainability=null}={}){
+  if(!cycle)return null;
+  const advance=cycle.worked?.[0]||'Ainda não há avanço sustentado por evidência comparável.';
+  const risk=cycle.attention?.[0]||'Nenhum risco destacado nesta semana; acompanhe a próxima medição.';
+  const structuralAction=sustainability?.state==='ready'?sustainability.assessment?.action:null;
+  const decision=structuralAction==='review_capacity'?'Revise a disponibilidade semanal antes de confirmar o próximo plano. O volume ficou abaixo do planejado de forma recorrente, com prioridades preservadas.':structuralAction==='review_distribution'?'Revise a distribuição dos blocos prioritários antes de confirmar o próximo plano.':cycle.attention?.length
+    ? 'Revise as prioridades abaixo, confira a capacidade restante e pré-visualize o próximo plano.'
+    : 'Mantenha as prioridades justificadas e confira a capacidade antes de confirmar o próximo plano.';
+  const delta=trajectory?.state==='comparable'?trajectory.accuracyDelta:null;
+  return {advance,risk,decision,accuracyDelta:delta,comparisonAvailable:delta!=null,
+    comparisonNote:delta==null?'Sem comparação de simulados com a mesma meta, prova e escopo.':'Mudança observada nos simulados comparáveis; não representa ganho causado pelo planejamento.'};
+}
