@@ -113,6 +113,18 @@ export function createHelpController({document,window,activateTab}){
     group.scrollIntoView({block:'start',behavior:reduceMotion?'auto':'smooth'});
     group.focus({preventScroll:true});
   };
+  const openTopic=id=>{
+    const topic=[...root.querySelectorAll('[data-help-topic]')].find(item=>item.id===id);
+    if(!topic)return false;
+    activateTab('instrucoes');
+    openCategory(topic.closest('[data-help-group]').id);
+    window.requestAnimationFrame(()=>{
+      topic.tabIndex=-1;
+      topic.scrollIntoView({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+      topic.focus({preventScroll:true});
+    });
+    return true;
+  };
   const navigate=key=>{
     const destination=DESTINATIONS[key];
     if(!destination)return;
@@ -133,6 +145,10 @@ export function createHelpController({document,window,activateTab}){
     originalTopics=new Map([...root.querySelectorAll('[data-help-group]')].map(group=>[group,[...group.querySelectorAll('[data-help-topic]')]]));
     activeCategory=root.querySelector('[data-help-category]')?.dataset.helpCategory||'guide-start';
     applySearch();
+    document.addEventListener('click',event=>{
+      const link=event.target.closest('[data-help-topic-link]');
+      if(link&&openTopic(link.dataset.helpTopicLink))event.preventDefault();
+    });
     root.addEventListener('input',event=>{if(event.target.id==='helpSearch')applySearch()});
     root.addEventListener('keydown',event=>{if(event.target.id==='helpSearch'&&event.key==='Escape'){event.target.value='';applySearch();event.preventDefault()}});
     root.addEventListener('click',event=>{
@@ -147,5 +163,5 @@ export function createHelpController({document,window,activateTab}){
     });
     return true;
   };
-  return {mount,applySearch,openCategory,navigate};
+  return {mount,applySearch,openCategory,navigate,openTopic};
 }

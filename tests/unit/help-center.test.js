@@ -22,3 +22,9 @@ test('busca indexa conceitos e perguntas, sem depender de acentos ou ordem',()=>
 
 import {rankHelpSearch} from '../../src/ui/help/help-search.js';
 test('ranking prioriza título, termos estruturados e conteúdo com desempate estável',()=>{const categories=[{id:'x',title:'Grupo',entries:[{id:'body',title:'Outro',paragraphs:['Revisão']},{id:'keyword',title:'Agenda',keywords:['revisão']},{id:'title',title:'Revisão'},{id:'tie',title:'Agenda 2',keywords:['revisão']}]}];assert.deepEqual(searchHelpEntries(categories,'revisao').map(e=>e.id),['title','keyword','tie','body']);assert.equal(rankHelpSearch({title:'Revisão'},'zzzz'),0);assert.deepEqual(searchHelpEntries(categories,'').map(e=>e.id),['body','keyword','title','tie']);assert.ok(HELP_CATEGORIES.find(c=>c.id==='guide-workflows').entries.some(e=>e.id==='calendar-guide'));assert.ok(HELP_CATEGORIES.find(c=>c.id==='guide-areas').entries.some(e=>e.id==='pending-guide'))});
+
+test('ajuda da trajetória diferencia evidência, mudanças de base e simulação',()=>{
+ const entry=HELP_CATEGORIES.flatMap(category=>category.entries).find(entry=>entry.id==='projections');
+ assert.match(entry.paragraphs.join(' '),/mesma meta/);assert.match(entry.paragraphs.join(' '),/Simulações são temporárias/);
+ assert.match(entry.paragraphs.join(' '),/não acrescenta horas/);
+});

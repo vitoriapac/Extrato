@@ -126,3 +126,11 @@ export const HELP_FAQ=[
   ['Como levo meus dados para outro dispositivo?','Exporte um backup JSON, transfira o arquivo com segurança e importe-o no outro navegador. O PDF não restaura dados.'],
   ['O aplicativo funciona sem internet?','Depois do primeiro carregamento completo por HTTP e da instalação, o PWA pode abrir offline; os registros continuam locais.']
 ];
+
+Object.assign(HELP_CATEGORIES.find(category=>category.id==='guide-data').entries.find(entry=>entry.id==='projections'),{
+ title:'Trajetória, faixa e confiança',
+ keywords:['projeção','meta','confiança','simulados comparáveis','reta final'],
+ paragraphs:['A faixa atual usa simulados comparáveis recentes. A tendência descreve a continuação aproximada do padrão observado, sem prever a nota do dia da prova ou a chance de aprovação. Poucas observações, baixa cobertura ou composição desconhecida limitam a confiança.',
+ 'Comparações semanais exigem a mesma meta, prova, escopo e versão do cálculo. Alterar a meta não significa que seu desempenho piorou. Snapshots anteriores preservam a leitura registrada na época.',
+ 'A fase da prova pode sugerir outra distribuição entre teoria, questões e revisões. A prévia mantém a capacidade e exige confirmação; não acrescenta horas nem garante ganho de nota. Simulações são temporárias e não alteram o planejamento real.']
+});

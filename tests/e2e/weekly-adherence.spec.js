@@ -18,6 +18,11 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   state.dailyPlans=[{id:'current-plan',date:'2026-09-29',availableMinutes:60,plannedMinutes:30,items:[{id:'current-item',subjectId:subject.id,topicId:topic.id,type:'study',plannedMinutes:30,status:'planned',sessionIds:[],prioritySnapshot:{priority:true}}]}];state.studySessions=[];
   await page.evaluate(state=>{const api=window.__EXTRATO_TEST__,result=api.validateBackupData(state);if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()},state);
   await activateTab(page,'dashboard');const close=page.locator('#weeklyCloseDashboard');
+  await expect(close.getByRole('region',{name:'Síntese para a próxima decisão'})).toContainText('Decisão sugerida');
+  await close.getByRole('button',{name:'Entenda aderência',exact:true}).click();
+  await expect(page.locator('#adherence')).toBeFocused();
+  await expect(page.locator('#guide-data')).toBeVisible();
+  await activateTab(page,'dashboard');
   await expect(close.locator('.recurring-priority-list').first()).toContainText(topic.name);
   const before=await page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return {dailyPlans:s.dailyPlans,studySessions:s.studySessions,weeklyCloseSnapshots:s.weeklyCloseSnapshots}});
   await close.getByRole('button',{name:'Revisar planejamento',exact:true}).click();await expect(page.locator('#panel-metas')).toBeVisible();

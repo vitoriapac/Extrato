@@ -3649,7 +3649,7 @@
         "../../src/ui/help/help-search.js",
         "../../src/ui/help/help-search.js"
       ],
-      "staticTestDeclarations": 11,
+      "staticTestDeclarations": 12,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -6530,9 +6530,10 @@
       "imports": [
         "node:test",
         "node:assert/strict",
-        "../../src/application/analytics/weekly-close-actions.js"
+        "../../src/application/analytics/weekly-close-actions.js",
+        "../../src/application/analytics/build-weekly-decision-cycle.js"
       ],
-      "staticTestDeclarations": 1,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
