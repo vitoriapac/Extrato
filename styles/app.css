@@ -2229,3 +2229,6 @@ body.timer-focus-active .timer-context{display:none!important}
 .instruction-example .instruction-action{display:inline-block;padding:var(--space-2) var(--space-3);border:1px solid var(--border-emphasis)}
 @media(max-width:700px){.instruction-flow{grid-template-columns:minmax(0,1fr)}.instruction-flow li{padding-bottom:var(--space-3)}.instruction-flow li:not(:last-child):after{content:'↓';right:0;bottom:0;top:auto}}
 .instruction-example{margin-inline:0}.instruction-card--wide .help-topic-body{max-width:none}.instruction-flow li:nth-child(3):after{content:none}@media(max-width:700px){.instruction-flow li:nth-child(3):after{content:"↓"}}
+
+.instruction-allocation-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:var(--space-3);padding-block:var(--space-3);border-bottom:1px solid var(--border);font-size:var(--text-sm)}
+.instruction-allocation-row small{display:block;color:var(--ink-soft);line-height:1.5}.instruction-week+.instruction-week{margin-top:var(--space-5)}.instruction-example-bar--actual{margin-top:var(--space-2)}.instruction-example-bar--actual span{background:var(--ink-soft)}
