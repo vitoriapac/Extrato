@@ -335,3 +335,7 @@ A composição de fase e trajetória fica em src/application/planning/build-phas
 Os perfis opcionais de src/demo/demo-preparation-profiles.js produzem cenários fictícios determinísticos de recuperação, reta final e evidência limitada. O cenário público padrão e os contratos de persistência permanecem iguais. A validação e a jornada integrada estão em [DEMO-PROJECTION-VALIDATION.md](docs/DEMO-PROJECTION-VALIDATION.md).
 
 A síntese semanal reutiliza ciclo de decisões, sustentabilidade e comparação histórica compatível. A ajuda contextual abre artigos existentes com categoria e foco corretos; consulte [WEEKLY-DECISION-AND-CONTEXTUAL-HELP.md](docs/WEEKLY-DECISION-AND-CONTEXTUAL-HELP.md).
+
+## Experiência de decisão
+
+Os papéis das superfícies, fontes de autoridade e contratos de evidência estão em [Contrato da experiência de decisão](docs/DECISION-EXPERIENCE-CONTRACT.md). A narrativa do produto não impõe uma cadeia linear de dependências entre diagnóstico e projeção.
