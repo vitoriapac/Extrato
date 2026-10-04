@@ -4531,9 +4531,11 @@
         "node:assert/strict",
         "../fixtures/projection-scenarios/scenarios.js",
         "../../src/application/projection/index.js",
-        "../../src/application/projection/achievement-projection-history.js"
+        "../../src/application/projection/achievement-projection-history.js",
+        "../fixtures/projection-scenarios/evidence-audit.js",
+        "../../src/domain/forecasts/calibrated-score-projection.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
