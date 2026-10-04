@@ -73,3 +73,12 @@ A ajuda mantém conteúdo, controller e renderer em src/ui/help. Categorias pres
 O mapa conceitual usa uma lista ordenada de seis etapas; em mobile, vira uma coluna. Primeiros passos seguem objetivo, disponibilidade, conteúdo, prévia, Hoje e resultados. Os visuais de execução, sessões, próxima atividade e revisões são exemplos estáticos explicitamente identificados; não calculam indicadores nem iniciam sessões. Progresso temporal e quantidade de atividades concluídas têm textos distintos.
 
 Palavras-chave, conceitos e perguntas fazem parte do contrato do conteúdo e da busca existente. A indexação dedicada e as demais categorias visuais serão aprofundadas nos pacotes posteriores. A jornada dirigida cobre busca, troca de categoria e ação por teclado; referências Windows protegem o mapa em 375 px claro e 1440 px escuro.
+
+## Execução diária: hierarquia e estados
+
+A superfície mantém o grid existente: resumo temporal e próxima atividade, empilhados abaixo de 800 px. Valores usam o token de dados; disciplina, tópico e tipo/duração têm níveis próprios. Progresso temporal não equivale a atividades concluídas.
+
+- Sempre visíveis: métricas, progresso, próxima atividade e seu único CTA primário.
+- Contexto quando aplicável: recomendação fora do plano, orientação sem plano e alerta de distribuição antiga. O bloqueio por sessão ativa permanece visível.
+- Detalhes inicialmente fechados: justificativa pertinente à atividade, tempo adicional, vínculo divergente e próximas atividades.
+- Pendências permanecem no rodapé; nenhuma destas mudanças altera o cálculo ou a persistência.

@@ -59,6 +59,12 @@ test('execução diária explica estados vazios, parciais, concluídos e cronôm
   await card.getByRole('button',{name:'Iniciar estudo',exact:true}).click();await expect(card.getByRole('button',{name:'Retomar sessão'})).toBeVisible();
   const blocked=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState()));blocked.studySessions[0].durationSeconds=600;await apply(blocked);
   await expect(card.getByRole('button',{name:'Finalize a sessão atual'})).toBeDisabled();
+  const extra=structuredClone(base);extra.studySessions=[{...partial.studySessions[0],type:'questions',durationSeconds:300},{...partial.studySessions[0],id:'additional',planItemId:null,durationSeconds:300}];
+  await apply(extra);
+  const context=card.locator('.daily-execution-context');await expect(context).not.toHaveAttribute('open');
+  await expect(context.locator('p').first()).toBeHidden();await context.locator('summary').focus();await page.keyboard.press('Enter');
+  await expect(context).toHaveAttribute('open','');await expect(context).toContainText('estudo adicional');await expect(context).toContainText('atividade diferente');
+  await expect(card.locator('.daily-execution-footer')).toBeVisible();
   const complete=structuredClone(base);complete.studySessions=[{...partial.studySessions[0],durationSeconds:600},{...partial.studySessions[0],id:'questions',type:'questions',planItemId:'daily-second',durationSeconds:600}];
   await apply(complete);await expect(card).toContainText('100% de progresso do plano');await expect(card).toContainText('2 de 2 atividades concluídas');await expect(card).toContainText('Todas as atividades de hoje foram cumpridas');await expect(card.locator('[data-daily-start]')).toHaveCount(0);
 });
