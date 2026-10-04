@@ -279,7 +279,7 @@
         "../../src/demo/demo-generator.js",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 4,
       "observedCaseSeconds": 106.6,
@@ -2338,9 +2338,10 @@
         "../../src/application/daily-execution/build-daily-execution-model.js",
         "../../src/ui/controllers/daily-execution-controller.js",
         "../../src/domain/sessions/study-session.js",
-        "../../src/ui/renderers/daily-execution-renderer.js"
+        "../../src/ui/renderers/daily-execution-renderer.js",
+        "../../src/ui/renderers/next-best-action-renderer.js"
       ],
-      "staticTestDeclarations": 15,
+      "staticTestDeclarations": 16,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -3526,9 +3527,10 @@
         "node:test",
         "node:assert/strict",
         "../../src/ui/renderers/goals-renderer.js",
-        "../../src/application/goals/build-result-goals-view-model.js"
+        "../../src/application/goals/build-result-goals-view-model.js",
+        "../../src/domain/goals/initial-goal-guidance.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

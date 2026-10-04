@@ -18,3 +18,13 @@ test('accuracy gaps use readable percentage points without floating point residu
   const html=renderGoals(model,{adherenceTarget:null,escapeHtml});
   assert.match(html,/Faltam 10.4 p.p./);assert.doesNotMatch(html,/10.400000/);
 });
+
+import {initialGoalSuggestions,INITIAL_GOAL_VALUES} from '../../src/domain/goals/initial-goal-guidance.js';
+test('metas padrão sem atividade são sugestões e não pendências pessoais',()=>{
+ const model=buildResultGoalsViewModel({goals:INITIAL_GOAL_VALUES}),before=JSON.stringify(model);
+ const suggestions=initialGoalSuggestions(INITIAL_GOAL_VALUES);
+ const html=renderGoals(model,{escapeHtml,initialSuggestions:suggestions,weeklyCapacityMinutes:120});
+ assert.match(html,/Sugestão inicial editável/);assert.match(html,/2 h por semana/);assert.doesNotMatch(html,/Faltam/);
+ assert.equal(JSON.stringify(model),before);assert.deepEqual(initialGoalSuggestions(INITIAL_GOAL_VALUES,true),[]);
+ assert.ok(!initialGoalSuggestions({...INITIAL_GOAL_VALUES,semanal:8}).includes('semanal'));
+});

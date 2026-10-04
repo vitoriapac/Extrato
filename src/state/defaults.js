@@ -1,3 +1,4 @@
+import {INITIAL_GOAL_VALUES} from '../domain/goals/initial-goal-guidance.js';
 import { CURRENT_SCHEMA_VERSION } from './schema.js';
 import { nowISO, uid } from '../core/utils.js';
 import {DEFAULT_ALGORITHM_VERSIONS} from './strategic.js';
@@ -18,8 +19,7 @@ export function createDefaultState(){
     }],
     calendar: [], reviewAgenda: [], questoes: [], simulados: [], exams: [], examQuestions: [], planningCapacityHistory:[], executionMode:'agenda',
     metas: {
-      semanal: 5, mensal: 20, questoesSemanal: 150, simuladosSemanal: 1,
-      metaAprovacao: 70, consistenciaSemanal: 5, aderenciaSemanal: 80, horasDiarias: 2.5,
+      ...INITIAL_GOAL_VALUES, horasDiarias: 2.5,
       horasPorDia: {'0':2.5,'1':2.5,'2':2.5,'3':2.5,'4':2.5,'5':2.5,'6':2.5}
     },
     examDate: '', examBlueprint:{examDate:null,targetScore:80,masteryTarget:80,activeExamTags:[],configuredAt:null,subjects:[]},

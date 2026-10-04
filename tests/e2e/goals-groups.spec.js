@@ -7,6 +7,8 @@ test('grouped goals preserve topic targets and separate hours, routine and accur
   await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(node=>node.remove());
   await activateTab(page,'metas');const groups=page.locator('#metasContainer');
   for(const name of ['Volume','Rotina','Resultado'])await expect(groups.getByRole('heading',{name,exact:true})).toBeVisible();
+  await expect(groups).toContainText('Sugestão inicial editável');
+  await expect(groups).not.toContainText('Faltam 5');
   const hours=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().metas.horasPorDia));
   await groups.getByRole('spinbutton',{name:'Tópicos na semana',exact:true}).fill('8');await page.keyboard.press('Tab');
   await groups.getByRole('spinbutton',{name:'Tópicos no mês',exact:true}).fill('22');await page.keyboard.press('Tab');
