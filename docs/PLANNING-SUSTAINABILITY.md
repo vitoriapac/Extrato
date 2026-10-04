@@ -52,3 +52,12 @@ Consistência em Desempenho segue resumo → gráfico principal → interpretaç
 
 Metas agrupa os indicadores em Volume (tópicos, questões e simulados), Rotina (consistência e aderência) e Resultado (acerto). semanal/mensal continuam contando tópicos concluídos; disponibilidade em horas permanece no editor existente. Resultado oferece acesso às metas individuais de acerto. O renderer modular substitui a montagem de cards em app.js, sem alterar persistência, fórmulas ou handlers de edição.
 
+## Pacote 7 — Demo e regressão integrada
+
+A Demo contém quatro grupos de quatro semanas encerradas, calculados com sessões vinculadas e prioridades congeladas. O histórico de disponibilidade é declarado pelo cenário fictício; nenhum dado pessoal é preenchido retrospectivamente. Os 14 fechamentos preservam a interpretação disponível em cada data, e as questões pessoais continuam separadas das provas históricas.
+
+A jornada automatizada cobre Desempenho → Fechamento → prévia de capacidade → cancelar ou abrir disponibilidade. São verificados teclado, retorno de foco, leitor de tela via auditoria estrutural, claro/escuro, 320/375/430/1440 px e preservação da base real. Backup legado e alterações de sessão/capacidade continuam cobertos pelas regressões existentes. O gate de timezone inclui sustentabilidade, capacidade histórica e os grupos de Metas.
+
+### Validação final do ciclo
+
+Em 04/10/2026, o gate local passou: sintaxe e artefatos reproduzíveis, 644 testes unitários em UTC e America/Sao_Paulo, 234 E2E completos em UTC e 47 E2E do recorte de timezone em America/Sao_Paulo. A jornada completa de decisão, Demo densa, restauração de backup legado e atualização/offline do PWA estão incluídos nessas suítes. As referências visuais de Desempenho foram revistas para os novos dados demonstrativos e a sustentabilidade ganhou cinco referências em desktop/mobile e claro/escuro. Esses resultados são locais; não confirmam uma execução remota do GitHub Actions.

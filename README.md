@@ -253,4 +253,5 @@ Veja também a [jornada do produto](docs/product-journey.md), com cenários e me
 - Recuperação de atrasos com confirmação, desfazer e declaração de excedente.
 - Recomendações com ação direta, vínculo à sessão, resultado posterior e motivo opcional ao trocar.
 - Fechamento semanal com diagnóstico e até três prioridades estimadas.
+- Sustentabilidade do planejamento com semanas comparáveis, prioridades congeladas e prévia de revisão de capacidade. Veja o [contrato e a validação](docs/PLANNING-SUSTAINABILITY.md).
 - Registro de sessão enxuto, com detalhes adicionais recolhidos.

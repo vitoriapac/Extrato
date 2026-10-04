@@ -1,4 +1,6 @@
-import {addLocalDays} from '../../core/date-utils.js';
+import {addLocalDays,parseLocalDate} from '../../core/date-utils.js';
+import {buildWeeklyAdherence} from '../../application/adherence/build-weekly-adherence.js';
+import {buildSustainabilityModel} from '../../application/planning-sustainability/build-sustainability-model.js';
 import {measureRecommendationOutcome,captureRecommendationBaseline,captureRecommendationSnapshot} from '../../application/recommendations/outcome-service.js';
 import {buildWeeklyClose} from '../../domain/analytics/weekly-close.js';
 import {buildWeeklyStrategicFocus} from '../../application/analytics/build-weekly-strategic-focus.js';
@@ -48,11 +50,11 @@ function candidatesAt(end,{subjects,questions}){
   }));
 }
 
-export function buildDemoWeeklyCloses(scenario,{today,examDate,subjects,sessions,questions,dailyPlans,recommendations}){
+export function buildDemoWeeklyCloses(scenario,{today,examDate,subjects,sessions,questions,dailyPlans,recommendations,capacityHistory=[]}){
   const weeks=scenario.targets.weeklyCloses,bySubject=new Map(subjects.map(item=>[item.id,item.name])),byTopic=new Map(subjects.flatMap(subject=>subject.topics.map(topic=>[topic.id,topic.name])));
   const snapshots=[];
   for(let index=0;index<weeks;index++){
-    const start=addLocalDays(today,-(weeks-index+1)*7),end=addLocalDays(start,6),previousStart=addLocalDays(start,-7),previousEnd=addLocalDays(start,-1);
+    const monday=addLocalDays(today,-((parseLocalDate(today).getDay()+6)%7)),start=addLocalDays(monday,-(weeks-index)*7),end=addLocalDays(start,6),previousStart=addLocalDays(start,-7),previousEnd=addLocalDays(start,-1);
     const currentSessions=sessions.filter(row=>inRange(row,start,end)),currentQuestions=questions.filter(row=>inRange(row,start,end));
     const previousSessions=sessions.filter(row=>inRange(row,previousStart,previousEnd)),previousQuestions=questions.filter(row=>inRange(row,previousStart,previousEnd));
     const plans=dailyPlans.filter(plan=>plan.date>=start&&plan.date<=end).flatMap(plan=>plan.items||[]);
@@ -60,8 +62,11 @@ export function buildDemoWeeklyCloses(scenario,{today,examDate,subjects,sessions
     const previousResolved=sum(previousQuestions,'resolved');
     const weeklyClose=buildWeeklyClose({period:{start,end},current:{plannedMinutes:sum(plans,'plannedMinutes'),executedMinutes:Math.round(sum(currentSessions,'durationSeconds')/60)},previous:{executedMinutes:Math.round(sum(previousSessions,'durationSeconds')/60),resolved:previousResolved,...previousResolved?{accuracy:Math.round(sum(previousQuestions,'correct')/previousResolved*100)}:{}},plans,sessions:currentSessions,questions:currentQuestions,recommendations:feedback,targetAccuracy:scenario.goals.targetScorePct});
     weeklyClose.strategicFocus=buildWeeklyStrategicFocus({sessions:currentSessions,candidates,recommendations:feedback,start,end});
-    weeklyClose.adherence=buildWeeklyCloseAdherence({start,end,today:end,dailyPlans,sessions:currentSessions,subjects,
+    weeklyClose.adherence=buildWeeklyCloseAdherence({start,end,today:addLocalDays(end,1),dailyPlans,sessions:currentSessions,subjects,capacityHistory,
       activeExamTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA],snapshots});
+    const cutoff=addLocalDays(end,1),activeExamTags=[EXAM_TAGS.BB,EXAM_TAGS.CAIXA];
+    weeklyClose.adherence.sustainability=buildSustainabilityModel({today:cutoff,activeExamTags,snapshots,
+      weeklyAdherence:buildWeeklyAdherence({today:cutoff,dailyPlans,sessions,subjects,capacityHistory,activeExamTags,historyWeeks:4})});
     const model={period:{start,end},activeExamTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA],weeklyClose,gapMap:buildGapMap(candidates),decisionHistory:buildDecisionHistory(feedback,{limit:5,resolveSubjectName:id=>bySubject.get(id),resolveTopicName:id=>byTopic.get(id)})};
     const daysToExam=examDate?Math.round((Date.parse(`${examDate}T12:00:00Z`)-Date.parse(`${end}T12:00:00Z`))/86400000):null;
     const snapshot=createWeeklyCloseSnapshot(model,{id:`demo-weekly-close-${index+1}`,savedAt:stamp(end),examPhase:resolveExamPhase(daysToExam)});

@@ -3,7 +3,8 @@ import {generateDemoData} from '../../src/demo/demo-generator.js';
 import {addLocalDays} from '../../src/core/date-utils.js';
 import {freezePlanExecution} from '../../src/domain/planning/plan-execution-snapshot.js';
 import {recordPlanningCapacity} from '../../src/domain/planning/capacity-history.js';
-import {activateTab,expectNoPageOverflow} from './helpers.js';
+import {activateTab,expectNoPageOverflow,openDemo} from './helpers.js';
+import AxeBuilder from '@axe-core/playwright';
 
 test('sustainability opens a readonly capacity preview, navigates and freezes its explanation',async({page})=>{
   test.setTimeout(120_000);await page.setViewportSize({width:375,height:900});
@@ -34,4 +35,24 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
   await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.studySessions=[];state.metas.horasPorDia['1']=3;api.setState(state);api.renderAll()});
   expect(await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1)))).toEqual(snapshot);
   await expectNoPageOverflow(page);
+});
+
+for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light'],[1440,'light'],[1440,'dark']])test(`dense Demo sustainability journey: ${width}px ${theme}`,async({page},testInfo)=>{
+  test.setTimeout(120_000);await page.setViewportSize({width,height:900});
+  await page.clock.install({time:new Date('2026-10-03T12:00:00-03:00')});await openDemo(page);
+  if(theme==='dark')await page.locator('#themeToggleBtn').click();
+  const realBefore=await page.evaluate(()=>localStorage.getItem('bb-premium-study-data'));
+  await activateTab(page,'desempenho');await page.locator('[data-performance-section="consistency"]').click();
+  await expect(page.locator('.adherence-change')).toContainText('O que mudou?');await expectNoPageOverflow(page);
+  await activateTab(page,'dashboard');const section=page.locator('#weeklyCloseDashboard .planning-sustainability').first();
+  await expect(section).toContainText('Carga acima da execução recente');await expect(section).toContainText('4 comparáveis');
+  await section.screenshot({path:testInfo.outputPath('sustainability.png')});
+  if(process.platform==='win32')await expect(section).toHaveScreenshot(`sustainability-${width}-${theme}-win32.png`,{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08});
+  expect((await new AxeBuilder({page}).include('#weeklyCloseDashboard .planning-sustainability').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+  const review=section.getByRole('button',{name:'Revisar capacidade',exact:true});await review.focus();await page.keyboard.press('Enter');
+  await expect(page.locator('#modalMessage')).toContainText('Nenhum bloco foi redistribuído');await page.keyboard.press('Escape');
+  await expect(page.locator('#modalOverlay')).not.toHaveClass(/show/);await expect(review).toBeFocused();
+  await review.click();await page.getByRole('button',{name:'Abrir disponibilidade',exact:true}).click();
+  await expect(page.locator('#panel-metas')).toBeVisible();await expect(page.locator('#metasCapacityTitle')).toBeFocused();
+  await expectNoPageOverflow(page);expect(await page.evaluate(()=>localStorage.getItem('bb-premium-study-data'))).toBe(realBefore);
 });
