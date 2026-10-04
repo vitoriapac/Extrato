@@ -16,6 +16,9 @@ export function renderHelpVisual(visual){
     case 'readiness':content=`<div class="instruction-metric"><strong>${minutes(visual.value)} / 100</strong><span>Índice de Prontidão</span></div><div class="instruction-example-bar" aria-hidden="true"><span style="width:${Math.min(100,minutes(visual.value))}%"></span></div><p class="instruction-callout">Não representa probabilidade de aprovação.</p>`;break;
     case 'sample':content=`<p>Período anterior: ${minutes(visual.previous)} questões</p><p>Período recente: ${minutes(visual.recent)} questões</p><p class="instruction-legend">Amostra insuficiente não significa desempenho ruim. Os requisitos variam por análise.</p>`;break;
     case 'adherence':content=`<ul class="instruction-steps">${visual.rows.map(row=>`<li><strong>${escape(row.label)}</strong><span>Planejado: ${minutes(row.planned)} min · Realizado: ${minutes(row.actual)} min</span></li>`).join('')}</ul><div class="instruction-comparison"><div class="instruction-metric"><strong>${minutes(visual.load)}%</strong><span>Aderência de carga</span></div><div class="instruction-metric"><strong>${minutes(visual.priorities)}%</strong><span>Prioridades executadas</span></div></div>`;break;
+    case 'matrix':content=`<ul class="instruction-matrix">${visual.cells.map(cell=>`<li><strong>${escape(cell.title)}</strong><p>${escape(cell.detail)}</p></li>`).join('')}</ul>`;break;
+    case 'tree':content=`<strong>${escape(visual.subject)}</strong><ul class="instruction-tree">${visual.topics.map(topic=>`<li>${escape(topic)}</li>`).join('')}</ul>`;break;
+    case 'reference':content=`<ul class="instruction-reference">${visual.items.map(item=>`<li><strong>${escape(item.title)}</strong><p>${escape(item.detail)}</p></li>`).join('')}</ul>`;break;
     default:return '';
   }
   return `<figure class="instruction-example"><figcaption>Exemplo ilustrativo · ${escape(visual.title)}</figcaption>${content}</figure>`;

@@ -64,6 +64,15 @@ analysisGuide.entries.push({id:'insufficient-sample-guide',title:'Amostra insufi
 analysisGuide.entries.find(e=>e.id==='insufficient-sample-guide').visual={type:'sample',title:'Questões em períodos de comparação',previous:30,recent:8};
 const weeklyGuide=planningGuide.entries.find(e=>e.id==='weekly');weeklyGuide.visual={type:'flow',title:'Da semana à próxima decisão',steps:[{title:'Planejado',detail:'Intenção registrada'},{title:'Realizado',detail:'Sessões e resultados'},{title:'Prioridades',detail:'O que foi atendido'},{title:'Padrões',detail:'Semanas comparáveis'},{title:'Decisão',detail:'Manter ou revisar com confirmação'}]};
 planningGuide.entries=planningGuide.entries.filter(e=>e.id!=='weekly');analysisGuide.entries.push(weeklyGuide);
+const examGuide=BASE_HELP_CATEGORIES.find(c=>c.id==='guide-exam');
+Object.assign(examGuide.entries.find(e=>e.id==='exam-matrix'),{wide:true,visual:{type:'matrix',title:'Incidência e domínio orientam a interpretação',cells:[{title:'Alta incidência · baixo domínio',detail:'Maior atenção, conforme evidência e outros sinais.'},{title:'Alta incidência · alto domínio',detail:'Manutenção do conhecimento.'},{title:'Baixa incidência · baixo domínio',detail:'Necessidade pessoal com prioridade estratégica relativa menor.'},{title:'Baixa incidência · alto domínio',detail:'Acompanhar sem deslocar lacunas mais relevantes.'}]},note:'Incidência é presença nas provas analisadas. Impacto considera também pesos, fontes e confiança; a matriz didática não substitui o mecanismo de prioridade.'});
+examGuide.entries.push({id:'recommendation-origin-guide',title:'De onde vem a recomendação?',summary:'Evidências diferentes se encontram na próxima ação.',keywords:['origem','recomendação','prioridade','questões','simulados'],visual:{type:'flow',title:'Da evidência à ação',steps:[{title:'Evidências',detail:'Questões, simulados, progresso, revisões e histórico da prova'},{title:'Prioridade',detail:'Importância na prova × necessidade pessoal'},{title:'Próxima ação',detail:'Proposta explicada com os dados disponíveis'}]},paragraphs:['Quando um fator não tem evidência suficiente, o sistema explicita a limitação. Uma recomendação não cria horas, não garante uma nota futura e não aplica alterações estratégicas sem sua confirmação.'],action:{label:'Consultar recomendações',target:'diagnosis'}});
+const dataGuide=BASE_HELP_CATEGORIES.find(c=>c.id==='guide-safety');
+function getSubjectGuide(){return BASE_HELP_CATEGORIES.find(c=>c.id==='guide-areas').entries.find(e=>e.id==='subjects')}
+Object.assign(getSubjectGuide(),{visual:{type:'tree',title:'Organize o conteúdo',subject:'Português',topics:['Interpretação','Gramática','Redação']},keywords:['edital','disciplina','tópico','catálogo']});
+dataGuide.entries.push({id:'imports-guide',title:'Importar com revisão',summary:'Confira o formato e a prévia do fluxo escolhido.',keywords:['importação','importar','JSON','edital','provas históricas'],visual:{type:'flow',title:'Importação de provas históricas',steps:[{title:'Arquivo JSON',detail:'Prova e questões estruturadas'},{title:'Prévia',detail:'Mapear disciplinas, tópicos e conflitos'},{title:'Confirmar',detail:'Mesclar os registros revisados'}]},paragraphs:['O assistente de edital cadastra conteúdo. O importador de provas históricas alimenta incidência, sem criar resultados pessoais de questões respondidas. Backup é um terceiro fluxo: restaura a base e deve ser usado com atenção.','Confira as associações antes de confirmar. Tópicos desconhecidos exigem decisão e reimportar a mesma prova não deve duplicar suas questões.'],action:{label:'Consultar provas históricas',target:'exam'}});
+Object.assign(dataGuide.entries.find(e=>e.id==='backup'),{visual:{type:'flow',title:'Leve sua base para outro navegador',steps:[{title:'Exportar',detail:'Salvar backup JSON'},{title:'Guardar',detail:'Manter uma cópia segura do arquivo'},{title:'Restaurar',detail:'Selecionar e validar antes de confirmar'}]},note:'PDF é relatório, não backup. Faça uma cópia antes de limpar dados ou substituir a base.'});
+Object.assign(dataGuide.entries.find(e=>e.id==='demo'),{visual:{type:'reference',title:'Explore uma preparação fictícia',items:[{title:'3+ meses',detail:'Histórico de estudos'},{title:'Questões e simulados',detail:'Resultados ilustrativos'},{title:'Planejamento e análises',detail:'Explore o ciclo de decisões'}]},keywords:['demo','demonstração','dados fictícios'],note:'A demonstração usa uma base separada. Seus resultados fictícios não descrevem sua preparação real.'});
 // Stable IDs preserve navigation and search across the editorial update.
 const subjectEntry=BASE_HELP_CATEGORIES.find(category=>category.id==='guide-areas').entries.find(entry=>entry.id==='subjects');
 export const HELP_CATEGORIES=BASE_HELP_CATEGORIES.flatMap(category=>{
@@ -72,17 +81,22 @@ export const HELP_CATEGORIES=BASE_HELP_CATEGORIES.flatMap(category=>{
   return category.id==='guide-safety'?[{id:'guide-goals',title:'Metas',summary:'Volume, rotina e resultados para orientar sua preparação.',entries:[{id:'goals-guide',title:'Metas de estudo',summary:'Defina objetivos que caibam na sua rotina.',paragraphs:['Configure suas metas em Metas. Compare o realizado com o planejado e revise a disponibilidade antes de aceitar alterações na distribuição.'],action:{label:'Abrir Metas',target:'planning'}}]},result]:[result];
 }).map(category=>({...category,entries:category.entries.map(entry=>({kind:'feature',keywords:[],concepts:[],questions:[],...entry}))}));
 
+const goalsGuide=HELP_CATEGORIES.find(c=>c.id==='guide-goals').entries[0];
+Object.assign(goalsGuide,{keywords:['meta','volume','rotina','resultado','questões','horas'],visual:{type:'reference',title:'Objetivos com papéis diferentes',items:[{title:'Volume',detail:'Horas, questões e simulados'},{title:'Rotina',detail:'Consistência e aderência'},{title:'Resultado',detail:'Objetivo da preparação'}]},paragraphs:['Defina objetivos compatíveis com sua disponibilidade. Metas de volume e rotina acompanham execução; não equivalem a probabilidade de aprovação.','No exemplo, 124 questões de uma meta de 150 representam aproximadamente 83% do volume desejado, sem informar domínio ou precisão. Metas de precisão por disciplina devem ser lidas junto ao resultado observado.']});
 export const HELP_GLOSSARY=[
   ['Índice de Prontidão','Síntese de cobertura, domínio, retenção, consistência e simulados. Não é probabilidade de aprovação.'],
   ['Domínio','Estimativa do desempenho consolidado em um tópico, acompanhada da força da evidência.'],
   ['Retenção','Sinal de manutenção do conhecimento baseado no histórico disponível de estudo e revisão.'],
   ['Impacto','Importância estratégica do tópico para a prova; pode vir de configuração ou de histórico validado.'],
   ['Incidência','Presença de um tópico nas provas analisadas, distinta da participação em questões.'],
-  ['Confiança','Quanto dado sustenta uma medida. Evidência limitada preserva a incerteza.'],
+  ['Confiança','Força de uma medida considerando volume, qualidade e comparabilidade dos dados. Evidência limitada preserva a incerteza.'],
   ['Evidência','Sessões, questões, revisões e provas históricas usadas conforme a métrica calculada.'],
   ['Lacuna','Encontro entre relevância para a prova e necessidade pessoal de aprendizagem.'],
   ['Foco estratégico','Parcela do tempo registrado em tópicos de alto impacto; indicador sem meta mínima.'],
-  ['Planejamento adaptativo','Proposta confirmável de redistribuir minutos dentro da capacidade semanal.']
+  ['Planejamento adaptativo','Proposta confirmável de redistribuir minutos dentro da capacidade semanal.'],
+  ['Aderência','Relação entre plano e execução vinculada. A carga e a execução das prioridades são medidas distintas.'],
+  ['Prioridade','Importância relativa para orientar o estudo, combinando relevância na prova e necessidade pessoal.'],
+  ['Recovery','Proposta de reorganização segura do planejamento, com capacidade preservada e aplicação confirmada.']
 ];
 
 export const HELP_FAQ=[

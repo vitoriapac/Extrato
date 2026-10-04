@@ -3647,7 +3647,7 @@
         "../../src/ui/help/help-renderer.js",
         "../../src/ui/help/help-visuals.js"
       ],
-      "staticTestDeclarations": 8,
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
