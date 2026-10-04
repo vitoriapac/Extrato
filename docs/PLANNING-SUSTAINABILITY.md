@@ -23,3 +23,10 @@ O modelo puro em `src/application/planning-sustainability/` consome a aderência
 
 Classificação, explicações e integração visual pertencem aos próximos pacotes.
 
+
+## Pacote 3 — Classificação e explicações
+
+Política V1, escala percentual 0–100: compatibilidade requer aderência temporal ≥85% e prioridades ≥80%. Possível incompatibilidade de capacidade requer quatro semanas comparáveis, média temporal <75%, prioridades ≥80% e pelo menos três semanas com essa combinação e volume realizado abaixo do previsto. Desalinhamento prioritário requer quatro semanas, pelo menos três com volume ≥85% e prioridades <65%, e média prioritária <65%. Estudo adicional não vira crédito ao plano.
+
+Uma única semana ≥30 pontos abaixo da mediana, com as demais ≥85%, é desvio pontual. Depois dessa proteção, coeficiente de variação populacional do volume ≥0,35 sinaliza execução irregular. A precedência é: insuficiência, anomalia, irregularidade, incompatibilidade de capacidade, desalinhamento prioritário, compatibilidade, acompanhamento. Evidência preliminar não recomenda mudanças estruturais. Textos determinísticos descrevem associação e não afirmam causalidade.
+
