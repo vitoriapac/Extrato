@@ -4118,9 +4118,10 @@
         "../../src/domain/planning/phase-strategy.js",
         "../../src/application/planning/phase-strategy-controller.js",
         "../../src/application/planning/study-plan-service.js",
-        "../../src/domain/planning/phase-strategy-policy.js"
+        "../../src/domain/planning/phase-strategy-policy.js",
+        "../../src/application/planning/build-phase-planning-preview.js"
       ],
-      "staticTestDeclarations": 14,
+      "staticTestDeclarations": 17,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

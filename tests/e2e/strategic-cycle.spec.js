@@ -41,6 +41,7 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   expect(confirmed.items.some(item=>item.topicId===critical.topicId&&item.prioritySnapshot)).toBe(true);
   await page.getByRole('button',{name:'Revisar proposta de estratégia',exact:true}).click();
   expect((await getState(page)).studyPlans).toHaveLength(1);
+  await expect(page.locator('#examStudyPlan .phase-planning-context')).toContainText('sem prever ganho de nota');
   await page.getByRole('button',{name:'Confirmar nova versão do plano',exact:true}).click();
   const adapted=(await getState(page)).studyPlans.at(-1);
   expect(adapted.phaseStrategy.status).toBe('applied');
@@ -157,6 +158,10 @@ test('reversão, cooldown, escopo e falta de dados preservam o histórico em mob
   await page.getByRole('button',{name:'Confirmar e salvar plano',exact:true}).click();
   const confirmed=(await getState(page)).studyPlans.at(-1);
   await page.getByRole('button',{name:'Revisar proposta de estratégia',exact:true}).click();
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.examBlueprint.targetScore=85;state.metas.metaAprovacao=85;api.setState(state);api.renderAll()});
+  await page.getByRole('button',{name:'Confirmar nova versão do plano',exact:true}).click();
+  expect((await getState(page)).studyPlans).toHaveLength(1);
+  await expect(page.locator('#examStudyPlan')).toContainText('Meta: 85%');
   await page.getByRole('button',{name:'Confirmar nova versão do plano',exact:true}).click();
   await expect(page.locator('#examStudyPlan')).toContainText('Aguarde 14 dias');
   await page.getByRole('button',{name:'Reverter última estratégia por fase',exact:true}).click();

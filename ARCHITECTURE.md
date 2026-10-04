@@ -325,3 +325,7 @@ build-recommendation-explanation.js fornece ação, razões, evidências e conse
 A meta opcional `examBlueprint.subjects[].accuracyTarget` herda a meta global de acerto. É independente de `masteryTarget`, pesos e incidência. Os fechamentos e perfis de prioridade preservam a meta registrada. Não há migração retroativa desses indicadores.
 
 `buildPreparationSignals` agrega questões e sessões do escopo ativo para apresentar possível platô e consolidação em risco. São sinais descritivos, sem redistribuição automática. O custo de oportunidade deriva da mesma proposta de planejamento adaptativo, preservando seus limites, cooldown e confirmação.
+
+### Prévia integrada da estratégia por fase
+
+A composição de fase e trajetória fica em src/application/planning/build-phase-planning-preview.js. O motor existente continua definindo a divisão de atividades; projeção, meta, data e escopo servem à explicação e à revalidação da confirmação. As proporções existentes estão centralizadas em phase-strategy-policy.js. O contrato e a validação estão em [PHASE-PLANNING-INTEGRATION.md](docs/PHASE-PLANNING-INTEGRATION.md).

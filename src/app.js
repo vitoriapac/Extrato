@@ -23,7 +23,7 @@ import {buildPhaseComparison} from './application/analytics/build-phase-comparis
 import {renderPhaseComparison} from './ui/renderers/phase-comparison-renderer.js';
 import {renderPriorityHistory,renderCloseComparison,renderStrategicTimeline} from './ui/renderers/strategic-history-renderer.js';
 import {createPhaseStrategyController} from './application/planning/phase-strategy-controller.js';
-import {buildPhaseStrategyProposal} from './domain/planning/phase-strategy.js';
+import {buildPhasePlanningPreview} from './application/planning/build-phase-planning-preview.js';
 import {renderPhaseStrategy} from './ui/renderers/phase-strategy-renderer.js';
 import {buildCalibratedScoreProjection} from './domain/forecasts/calibrated-score-projection.js';
 import {renderScoreProjectionEvidence} from './ui/renderers/score-projection-renderer.js';
@@ -3548,7 +3548,7 @@ function undoLatestDailyPlanGeneration(){
   scheduleSave();renderStudyPlanBuilder();renderPlanoHoje();showToast(result.protectedItems.length?`${pluralize(result.removedItems,'atividade')} removida${result.removedItems===1?'':'s'}; itens executados foram preservados.`:'Criação dos planos diários desfeita.')
 }
 function weeklyStrategyCapacity(){return Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+Math.max(0,Number(hours)||0)*60,0)}
-function currentPhaseStrategy(){return buildPhaseStrategyProposal({plan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity(),candidates:intelligenceCandidates(),daysToExam:state.examDate?diasParaRevisao(state.examDate):null,today:todayISO(),history:state.adaptivePlanningHistory,readiness:readinessResult(computeApprovalMetrics())})}
+function currentPhaseStrategy(){const candidates=intelligenceCandidates();return buildPhasePlanningPreview({plan:latestStudyPlan(),weeklyCapacityMinutes:weeklyStrategyCapacity(),candidates,daysToExam:state.examDate?diasParaRevisao(state.examDate):null,today:todayISO(),history:state.adaptivePlanningHistory,readiness:readinessResult(computeApprovalMetrics()),trajectory:currentAchievementProjection(undefined,undefined,candidates).model,examDate:state.examDate,activeExamTags:state.examBlueprint.activeExamTags||[],eligibleTopicIds:examEvidenceContext().content.eligibleTopics.map(topic=>topic.id)})}
 const phaseStrategyController=createPhaseStrategyController({getProposal:currentPhaseStrategy,getLatestPlan:latestStudyPlan,getPlans:()=>state.studyPlans,confirmPlan:proposal=>studyPlanService.confirm(proposal),getCapacity:weeklyStrategyCapacity,getExamDate:()=>state.examDate,clock:{nowISO},onBeforeChange:captureReadinessBeforeStrategy});
 function previewPhaseStrategy(){phaseStrategyController.preview();renderStudyPlanBuilder()}
 function cancelPhaseStrategy(){phaseStrategyController.cancel();renderStudyPlanBuilder()}

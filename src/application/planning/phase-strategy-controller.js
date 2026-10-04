@@ -1,4 +1,4 @@
-const signature=proposal=>JSON.stringify([proposal.basePlanId,proposal.budget,proposal.capacity,proposal.phase,proposal.changes,proposal.candidateEvidence]);
+const signature=proposal=>JSON.stringify([proposal.basePlanId,proposal.budget,proposal.capacity,proposal.phase,proposal.changes,proposal.candidateEvidence,proposal.decisionContext]);
 
 export function createPhaseStrategyController({getProposal,getLatestPlan,getPlans,confirmPlan,getCapacity,getExamDate,clock,onBeforeChange=()=>{}}={}){
   let draft=null;
