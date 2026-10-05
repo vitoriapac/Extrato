@@ -13,9 +13,10 @@ Na consulta final de 5/10/2026, o [CI de c28b51d](https://github.com/vitoriapac/
 | Cenário | Contrato protegido | Cobertura |
 |---|---|---|
 | Iniciante | Sem projeção numérica fabricada; configuração acessível; sugestão introdutória opcional com evidência baixa | product-consolidation.spec.js e perfil beginner no Node |
-| Com dados | Recomendações reutilizam os motores; evidências e análise por disciplina acessíveis | Demo em product-consolidation.spec.js; perfil intermediate |
+| Regular | Recomendações reutilizam os motores; evidências e análise por disciplina acessíveis | Demo em product-consolidation.spec.js; perfil regular |
 | Sugestão fora do plano | Plano primário; sugestão dispensável; agenda preservada | daily-execution.spec.js e daily-execution.test.js |
 | Baixa aderência | Metas e fechamento classificam os mesmos insumos da mesma semana; capacidade preservada | perfil irregular e weekly-adherence.test.js |
+| Alto desempenho | Cobertura e resultados fortes não produzem intervenção obrigatória artificial; confiança respeita o limite real do modelo | perfil high_performance no Node; jornada dos cinco perfis no Full |
 | Reta final | Risco e próxima ação explicáveis; prévia, confirmação, execução e fechamento preservam capacidade e histórico | perfil final_stretch e strategic-cycle.spec.js |
 
 O [runner](../scripts/run-experience-gate.mjs) executa contratos Node em UTC/São Paulo e quatro jornadas browser em UTC, sem retries. Cada jornada tem seleção explícita por arquivo/título; uma seleção vazia falha. Artefatos por caso ficam separados em `.tmp-experience-gate`. O resumo local `.test-gates/experience-summary.json` registra commit, alterações locais, plataforma, tempos e resultados.

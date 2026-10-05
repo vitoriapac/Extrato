@@ -31,5 +31,5 @@ export function renderActionCard({contentHTML='',actions=[],className='action-ca
 }
 export function renderContextualHelp(topic,label){
  if(!/^[a-z][a-z0-9-]*$/.test(topic||''))throw new TypeError('Invalid help topic');
- return renderAction({label,attributes:{'data-help-topic-link':topic}});
+ return `<span class="analytical-contextual-help">${renderAction({label,attributes:{'data-help-topic-link':topic}})}</span>`;
 }

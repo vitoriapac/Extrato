@@ -1,6 +1,8 @@
 import {test,expect} from '@playwright/test';
 import {activateTab,openDemo,expectNoPageOverflow} from './helpers.js';
 import {createDefaultState} from '../../src/state/defaults.js';
+import {generateDemoData} from '../../src/demo/demo-generator.js';
+import {DEMO_EXPERIENCE_PROFILES} from '../../src/demo/demo-preparation-profiles.js';
 
 test('iniciante sem falsa precisão encontra configuração e coleta de evidências',async({page})=>{
   await page.clock.install({time:new Date('2026-10-03T12:00:00-03:00')});
@@ -24,6 +26,46 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
   await expect(action.locator('[data-study-action-source]')).toHaveClass(/ghost/);
   await activateTab(page,'dashboard');
   await expect(page.locator('#guidedOnboarding .onboarding-entry-cta')).toBeVisible();
+});
+
+test('cinco perfis percorrem a experiência consolidada com ação, contexto e leitura acessível',async({page},testInfo)=>{
+  test.setTimeout(300_000);
+  const today='2026-10-03';
+  await page.clock.install({time:new Date(today+'T12:00:00-03:00')});
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(node=>node.remove());
+  for(const profile of Object.keys(DEMO_EXPERIENCE_PROFILES)){
+    const state=generateDemoData({today,preparationProfile:profile});
+    await page.evaluate(value=>{const api=window.__EXTRATO_TEST__,result=api.validateBackupData(value);if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()},state);
+    await activateTab(page,'dashboard');
+    await expect(page.locator('#approvalDashboard')).not.toBeEmpty();
+    await expectNoPageOverflow(page);
+    await activateTab(page,'hoje');
+    await expect(page.locator('#panel-hoje')).toBeVisible();
+    await expectNoPageOverflow(page);
+    await activateTab(page,'desempenho');
+    await page.locator('[data-performance-section="overview"]').click();
+    const trajectory=page.locator('.achievement-projection');
+    await expect(trajectory).toBeVisible();
+    if(profile==='beginner')await expect(trajectory.locator('.achievement-projection__status')).toHaveText('Dados insuficientes');
+    if(profile==='high_performance')await expect(trajectory.locator('.achievement-projection__status')).toHaveText('No caminho');
+    if(profile==='irregular')await expect(trajectory).toContainText('Execução do plano baixa');
+    if(profile==='final_stretch')await expect(trajectory.locator('.achievement-projection__status')).toHaveText('Em risco');
+    await expectNoPageOverflow(page);
+    const capture=testInfo.outputPath(profile+'-desempenho-390.png');
+    const chrome=await page.evaluateHandle(()=>[...document.querySelectorAll('.sticky-shell,#backToTopBtn,.skip-link')].map(node=>{const position={node,parent:node.parentNode,next:node.nextSibling};node.remove();return position;}));
+    try{await trajectory.screenshot({path:capture,animations:'disabled'});}finally{await chrome.evaluate(positions=>positions.forEach(({node,parent,next})=>parent.insertBefore(node,next)));await chrome.dispose();}
+    await testInfo.attach(profile+'-desempenho-390',{path:capture,contentType:'image/png'});
+    await activateTab(page,'metas');
+    await expect(page.locator('#metasContainer')).not.toBeEmpty();
+    await expectNoPageOverflow(page);
+    await activateTab(page,'dashboard');
+    await expect(page.locator('#weeklyCloseDashboard')).not.toBeEmpty();
+    await expect(page.locator('.weekly-comparison-detail')).not.toHaveAttribute('open','');
+    await expectNoPageOverflow(page);
+  }
 });
 
 test('Demo apresenta próxima ação, evidências progressivas e explicação da Prontidão',async({page})=>{

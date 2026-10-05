@@ -21,6 +21,8 @@ import {renderNextBestAction} from '../../src/ui/renderers/next-best-action-rend
 import {buildWeeklyDecisionSummary} from '../../src/application/analytics/build-weekly-decision-cycle.js';
 import {buildPlanExecution} from '../../src/application/goals/build-plan-execution.js';
 import {buildWeeklyCloseAdherence} from '../../src/application/adherence/build-weekly-close-adherence.js';
+import {buildPerformanceOverview} from '../../src/application/performance/build-performance-overview.js';
+import {addLocalDays} from '../../src/core/date-utils.js';
 for(const profile of ['beginner','regular','irregular','high_performance','final_stretch'])test('contratos de produto com motores reais: '+profile,()=>{
  const result=buildProductDecisionProfile(profile),before=JSON.stringify(result.state),{daily,nextBestAction,trajectory,adherence}=result;
  const html=renderDailyExecution(daily,{escapeHtml:String,escapeAttr:String,formatMinutes:value=>value+' min'});
@@ -31,7 +33,11 @@ for(const profile of ['beginner','regular','irregular','high_performance','final
  if(profile==='final_stretch'){assert.equal(trajectory.exam.daysRemaining,10);assert.equal(trajectory.status,'at_risk')}
  if(profile==='regular')assert.notEqual(trajectory.status,'insufficient_data');
  if(profile==='irregular')assert.ok(adherence.model.summary.temporalAdherence<80);
- if(profile==='irregular'){assert.ok(result.readiness.factors.mastery>=80);assert.equal(trajectory.status,'attention');}
+ if(profile==='irregular'){assert.ok(result.readiness.factors.mastery>=80);assert.equal(result.readiness.factors.coverage,100);assert.equal(trajectory.status,'attention');assert.ok(trajectory.risks.some(reason=>reason.startsWith('Execução do plano baixa')));}
+ if(profile==='irregular'){
+  const recent=buildPerformanceOverview({today:PRODUCT_PROFILE_TODAY,range:{start:addLocalDays(PRODUCT_PROFILE_TODAY,-29),end:PRODUCT_PROFILE_TODAY},questions:result.state.questoes,sessions:result.state.studySessions,dailyPlans:result.state.dailyPlans});
+  assert.ok(recent.current.adherence<60,'Estudo adicional fictício não deve inflar o volume recente do perfil irregular');
+ }
  if(profile==='high_performance'){assert.equal(trajectory.status,'on_track');assert.equal(trajectory.confidence.level,'moderate');assert.ok(result.readiness.value>=80);assert.notEqual(nextBestAction.state,'ACTION_REQUIRED');}
  assert.equal(result.coherence.summary.unexplained,0,'Divergência entre motores sem explicação');
  const cycle=result.cycle;

@@ -60,7 +60,7 @@ O ciclo continua reutilizando as recomendações, plano e fechamento existentes.
 
 Prontidão, aderência e sustentabilidade oferecem artigos específicos. Projeção já tinha seu link metodológico; seu artigo passa a encaminhar à trajetória em Desempenho, proprietário do detalhe. A navegação contextual cria “Voltar à análise de origem” somente quando um artigo é aberto a partir de outra tela. O contexto é transitório, sem persistência; ao retornar, a análise e o foco são recuperados, inclusive quando o botão está em um disclosure.
 
-Cinco perfis novos da Demo e a auditoria final continuam nos pacotes 7–8. Não foi criada nova seleção browser no manifesto Full: o retorno contextual amplia a jornada de Demo já executada no Experience.
+Os cinco perfis novos da Demo e a auditoria final estão descritos nos pacotes 7–8 abaixo. O retorno contextual amplia a jornada de Demo já executada no Experience.
 
 ## Pacote 7 — cinco perfis reproduzíveis
 
@@ -93,6 +93,14 @@ A jornada dos cinco perfis percorre Visão Geral → Hoje → Desempenho → Met
 
 Essas verificações e a inspeção das imagens são uma auditoria técnica. Não equivalem a um estudo de compreensão de cinco segundos com participantes ou uma sessão manual com leitor de tela.
 
+### Correções encontradas na auditoria
+
+- O botão de ajuda contextual se esticava como item do grid de aderência. O componente agora mantém largura pelo conteúdo e a mesma ação secundária; os cinco baselines de aderência foram inspecionados e revistos sem elevar tolerância.
+- O perfil irregular herdava baixa cobertura e acumulava estudo adicional fictício que inflava seu volume recente. Sua massa agora representa cobertura concluída, bons acertos e execução limitada por semana, incluindo sessões sem vínculo. Identidades, resultados de questões e vínculos são preservados; a reconciliação existente recalcula o crédito. Os contratos verificam baixa execução tanto na semana civil quanto no recorte de 30 dias utilizado pela trajetória.
+- As imagens de auditoria removem temporariamente elementos fixos da página para capturar o módulo sem sobreposição, restaurando-os em seguida. Isso não altera a apresentação da aplicação nem cria novos baselines.
+
+Crédito temporal da semana e volume recente são medidas com períodos/denominadores distintos. A auditoria compara classificações com a mesma base quando possível, sem exigir igualdade numérica entre esses recortes.
+
 ## Validação local dos pacotes 1–3
 
 - 24 testes Node relacionados passaram (seleção de impacto, contratos de UI/controller e projeção).
@@ -115,3 +123,13 @@ Os commits destes pacotes estão locais; a aprovação do CI anterior não confi
 - Fast final passou em **52,75 s**, incluindo todos os testes Node em UTC/São Paulo, smoke browser, sintaxe, inventário e artefatos gerados.
 
 Full, a matriz visual global e avaliação humana com leitor de tela não foram executados nesta etapa. Permanecem no encerramento dos pacotes 7–8; esta etapa não alterou persistência, cálculos ou semântica dos snapshots.
+
+## Validação local dos pacotes 7–8
+
+- Os 15 testes Node relacionados de Demo e coerência passaram, incluindo determinismo, janela histórica, vínculo de questões/sessões/plano, soma de erros e capacidade de 720 minutos.
+- A jornada dos cinco perfis passou em aproximadamente dois minutos; percorreu as cinco superfícies em 390 px sem overflow ou contradição nos estados da trajetória.
+- Experience final passou em **107,83 s**; Fast final passou em **63,42 s**, dentro do orçamento de 120 s, com 725 testes Node em cada fuso. A auditoria dos cinco perfis fica no Full; o smoke cotidiano não ganhou essa massa browser.
+- Full final passou em **2.261,93 s (37min42s)**: 725 testes Node em UTC e outros 725 em São Paulo, 242 casos browser UTC e 48 no recorte São Paulo. Sintaxe, inventário, contratos dos tiers e artefatos gerados também passaram.
+- O Full incluiu referências visuais Windows, Demo densa, acessibilidade automatizada/teclado, backups legados, atualização PWA, isolamento do simulador e o ciclo Desempenho → Diagnóstico → prévia → confirmação → execução → fechamento.
+- As falhas visuais iniciais de aderência e o volume inflado do perfil irregular foram investigados e corrigidos; os casos falhos e relacionados passaram antes da execução final completa. Nenhuma tolerância visual foi ampliada.
+- A inspeção técnica das cinco imagens de trajetória foi concluída. Estudo com participantes e sessão manual com leitor de tela não foram executados. Os gates são locais; a execução do GitHub Actions depende da publicação dos commits.

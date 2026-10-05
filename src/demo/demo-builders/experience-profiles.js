@@ -1,6 +1,7 @@
 import {DEMO_EXPERIENCE_PROFILES} from '../demo-preparation-profiles.js';
-import {addLocalDays} from '../../core/date-utils.js';
+import {addLocalDays,parseLocalDate} from '../../core/date-utils.js';
 import {freezePlanExecution} from '../../domain/planning/plan-execution-snapshot.js';
+import {reconcileDemoPlanExecution} from './plan-execution.js';
 
 // Fictitious evidence only. These hooks never run on real user records.
 export function prepareDemoExperienceEvidence(state,{profile,today}){
@@ -28,7 +29,7 @@ export function prepareDemoExperienceEvidence(state,{profile,today}){
       if(session)session.correctAnswers=row.correct;
     }
   }
-  if(profile==='high_performance'){
+  if(profile==='high_performance'||profile==='irregular'){
     for(const subject of state.subjects)for(const topic of subject.topics){topic.status='Concluído';topic.firstCompletedAt=start+'T12:00:00.000Z';topic.lastCompletedAt=topic.firstCompletedAt;topic.completionCount=1;}
     for(const review of state.reviewAgenda)if(review.date<=today){review.status='Concluído';review.completedAt=review.date+'T12:00:00.000Z';}
   }
@@ -59,4 +60,14 @@ export function prepareDemoExperienceExecution(state,{profile,today}){
   }
   state.dailyPlans.sort((a,b)=>a.date.localeCompare(b.date));
   state.studySessions.sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));
+  if(profile==='irregular'){
+    const weeks=new Map(),capacity=Object.values(state.metas.horasPorDia).reduce((sum,value)=>sum+value*60,0);
+    for(const session of state.studySessions){const monday=addLocalDays(session.date,-((parseLocalDate(session.date).getDay()+6)%7));if(!weeks.has(monday))weeks.set(monday,[]);weeks.get(monday).push(session);}
+    for(const sessions of weeks.values()){
+      const total=sessions.reduce((sum,row)=>sum+row.durationSeconds,0),budget=Math.round(capacity*60*definition.executionRatio);
+      // Keep question evidence and identities; constrain all fictional study, including unmatched sessions.
+      for(const session of sessions){session.durationSeconds=Math.max(1,Math.floor(session.durationSeconds/total*budget));session.endedAt=new Date(Date.parse(session.startedAt)+session.durationSeconds*1000).toISOString();}
+    }
+    state.dailyPlans=reconcileDemoPlanExecution(state.dailyPlans,state.studySessions,{today});
+  }
 }

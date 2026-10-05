@@ -2540,7 +2540,9 @@
         "../../src/ui/renderers/next-best-action-renderer.js",
         "../../src/application/analytics/build-weekly-decision-cycle.js",
         "../../src/application/goals/build-plan-execution.js",
-        "../../src/application/adherence/build-weekly-close-adherence.js"
+        "../../src/application/adherence/build-weekly-close-adherence.js",
+        "../../src/application/performance/build-performance-overview.js",
+        "../../src/core/date-utils.js"
       ],
       "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
