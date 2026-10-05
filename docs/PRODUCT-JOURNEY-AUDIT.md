@@ -37,3 +37,33 @@ Este runner é uma auditoria explícita fora do manifesto cotidiano, não um sub
 ## Resultado inicial
 
 Os seis perfis passaram em 6,7 minutos. As duas jornadas dirigidas de primeiro uso e ciclo estratégico passaram em 21,4 segundos. A ordem da sugestão antes do plano foi registrada em todos os perfis. As medidas de escolhas e CTAs cobrem os elementos exibidos no layout, inclusive abaixo da primeira dobra; não representam apenas o primeiro viewport. O custo desta auditoria é registrado separadamente do orçamento do Fast.
+
+## Simplificação aplicada — pacote 4
+
+- **Hoje:** plano e atividades confirmadas precedem a sugestão opcional. As duas superfícies usam títulos e regiões semânticas distintos; os itens de execução continuam visíveis.
+- **Hoje no desktop:** as ações ficam abaixo da explicação da sugestão, evitando que seus botões comprimam o texto em uma coluna estreita. A inspeção das imagens detectou esse problema, e o E2E passou a proteger uma largura útil de leitura.
+- **Desempenho:** o resumo é seguido pelo histórico de evolução e então pela projeção. A comparação detalhada mantém seu disclosure; os valores dos motores são reutilizados.
+- **Metas:** objetivos editáveis precedem disponibilidade, planejamento e execução. A numeração das seções segue essa ordem. O fechamento continua sendo um resumo com acesso ao detalhe completo.
+- **Visão Geral:** a fórmula de retenção fica em “Como a retenção é calculada?”, depois dos resultados por tópico. A confiança e a disponibilidade continuam junto aos resultados que qualificam.
+
+Diagnóstico e Inteligência da Prova preservam os destinos identificados no inventário. Não foi identificada redundância semântica suficiente para transferir ou retirar seus blocos nesta rodada.
+
+## Rechecagem por perfil
+
+```powershell
+$env:AUDIT_PHASE='after'
+$env:AUDIT_MODE='inspection'
+npx playwright test --config=tests/audits/playwright.config.js
+```
+
+O [relatório após a simplificação](../tests/audits/product-journey-audit-after.json) registra uma inspeção dirigida dos seis perfis e exige o plano antes da sugestão. Este modo conserva as prévias de planejamento, a navegação e o retorno; não repete os quatro registros transacionais de cada perfil. As contagens totais antes/depois não são comparáveis porque a cobertura de interações difere. O relatório inclui hashes dos arquivos de apresentação para identificar o código inspecionado mesmo antes do commit.
+
+A auditoria tem servidor próprio na porta 4174. Uma primeira rechecagem compartilhava a porta cotidiana e falhou quando a outra suíte encerrou o servidor; o isolamento corrige esse problema de infraestrutura. Nenhum retry foi adicionado.
+
+## Validação dos pacotes 3 e 4
+
+A rechecagem dirigida dos seis perfis passou em 3,9 minutos e não registrou inversão entre plano/sugestão nem overflow de página. O Fast final passou em 55,09 segundos, incluindo Node em UTC/São Paulo, sintaxe, inventário e artefatos reproduzíveis. Os unitários relacionados a execução diária, diagnóstico, aderência e apresentação também passaram.
+
+As jornadas de primeiro plano e ciclo estratégico passaram em 21,4 segundos. A seleção inicial de ação compartilhada e refinamento visual passou em 57,6 segundos. Após a correção da coluna estreita, Hoje foi revalidado em 1440/390 px em 22,6 segundos; as duas comparações finais com Demo densa (desktop claro e mobile escuro) passaram em 55,8 segundos. Uma nova asserção usava um seletor inexistente para o histórico; o seletor foi corrigido e os dois casos afetados foram repetidos com sucesso. Nenhum PNG de referência foi atualizado.
+
+Full, matriz visual global e avaliação manual com leitor de tela ficam para o fechamento da fase. A auditoria não confirma resultados do GitHub Actions. `src/app.js` não recebeu lógica adicional.

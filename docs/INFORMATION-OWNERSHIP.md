@@ -70,6 +70,8 @@ Estas referências protegem contratos específicos; não equivalem a uma auditor
 
 Este pacote documenta o estado encontrado e não altera renderers, cálculo, persistência, snapshots ou navegação. O pacote seguinte pode usar esta matriz para selecionar mudanças de UX, começando por perfis densos e pelas ocorrências marcadas como candidatas. Uma futura declaração de redundância deve citar a mesma entidade, escopo, período, unidade e fonte, além do destino completo preservado.
 
+A [auditoria de jornadas](PRODUCT-JOURNEY-AUDIT.md) registra a execução dos seis perfis e as correções de apresentação dos pacotes 3 e 4. Esta matriz conserva a propriedade observada na inspeção inicial; a ordem do plano e da sugestão em Hoje foi corrigida depois dela.
+
 ## Validação do pacote 2
 
 Somente Markdown foi alterado. Foram revisados links locais para os arquivos citados e o diff; testes da aplicação não são necessários para este pacote documental, conforme [AGENTS.md](../AGENTS.md).

@@ -29,8 +29,16 @@ test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',
   const action=await page.locator('#studyRecommendation').evaluate(element=>element.getBoundingClientRect().top);
   const plan=await page.locator('#planoHojeContent').evaluate(element=>element.getBoundingClientRect().top);
   const alerts=await page.locator('#alertasInteligentesList').evaluate(element=>element.getBoundingClientRect().top);
-  expect(action).toBeLessThan(plan);
-  expect(plan).toBeLessThan(alerts);
+  expect(plan).toBeLessThan(action);
+  expect(action).toBeLessThan(alerts);
+  await expect(page.getByRole('heading',{name:'Sugestão opcional',exact:true})).toBeVisible();
+  for(const width of [1440,390]){
+    await page.setViewportSize({width,height:900});
+    await expect(page.locator('#planoHojeContent')).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+    if(width===1440)expect(await page.locator('#studyRecommendation .recommendation-content').first().evaluate(node=>node.getBoundingClientRect().width)).toBeGreaterThan(400);
+    await page.locator('#panel-hoje').screenshot({path:test.info().outputPath(`today-plan-first-${width}.png`)});
+  }
   await expect(page.locator('.today-analysis-details')).not.toHaveAttribute('open','');
   await page.locator('.today-analysis-details > summary').click();
   await expect(page.locator('#diagnosisCenter')).toBeVisible();

@@ -23,9 +23,11 @@ for(const {name,width,theme,columns} of [
     await expectNoPageOverflow(page);
     if(section==='exam')await expect(page.locator('#performanceSectionContent .exam-intelligence-hub')).toBeVisible();
     else await expect(page.locator('#performanceSectionContent .performance-summary')).toBeVisible();
+    if(section==='overview')expect(await page.locator('#performanceSectionContent').evaluate(root=>root.querySelector('.readiness-history-summary').compareDocumentPosition(root.querySelector('.achievement-projection'))&Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
     if(section==='overview'&&process.platform==='win32')await expect(page.locator('#performanceSectionContent .performance-summary')).toHaveScreenshot(screenshotName(`desempenho-resumo-${name}.png`),screenshotOptions);
   }
   await activateTab(page,'metas');
+  expect(await page.locator('#metasActiveGoals').evaluate(node=>node.compareDocumentPosition(document.querySelector('#metasCapacity'))&Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
   await expect(page.locator('#metasContainer .meta-card')).toHaveCount(7);
   await expect(page.locator('#metasContainer .goal-group--routine')).toContainText('Meta de Aderência');
   await expect(page.locator('#metasContainer .goal-group')).toHaveCount(3);

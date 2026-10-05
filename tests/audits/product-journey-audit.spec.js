@@ -3,7 +3,8 @@ import {activateTab} from '../e2e/helpers.js';
 import {AUDIT_TODAY,AUDIT_PROFILES,buildJourneyProfile} from './product-journey-profiles.js';
 
 for(const profile of AUDIT_PROFILES)test(`jornada auditada: ${profile}`,async({page})=>{
- const report={profile,status:'running',steps:[],issues:[],transactionCoverage:[]};
+ const inspectionOnly=process.env.AUDIT_MODE==='inspection';
+ const report={profile,mode:inspectionOnly?'inspection':'transactions',status:'running',steps:[],issues:[],transactionCoverage:[]};
  await page.clock.install({time:new Date(AUDIT_TODAY+'T12:00:00-03:00')});
  await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(node=>node.remove());
  await page.evaluate(state=>{const api=window.__EXTRATO_TEST__;api.setState(state);api.renderAll();window.__auditClicks=0;document.addEventListener('click',event=>{if(event.target.closest('button,a,summary'))window.__auditClicks++})},buildJourneyProfile(profile));
@@ -33,9 +34,10 @@ for(const profile of AUDIT_PROFILES)test(`jornada auditada: ${profile}`,async({p
  }else report.transactionCoverage.push('planning_missing_exam_date_inspected');
  await activateTab(page,'hoje');await capture('today','#panel-hoje');
  const order=await page.evaluate(()=>({plan:document.querySelector('#planoHojeContent').getBoundingClientRect().top,suggestion:document.querySelector('#studyRecommendation').getBoundingClientRect().top}));
+ if(process.env.AUDIT_PHASE==='after')expect(order.plan).toBeLessThan(order.suggestion);
  if(order.suggestion<order.plan)report.issues.push({screen:'today',type:'optional_action_before_plan',severity:'high',description:'A recomendação precede o plano confirmado.',recommendation:'Apresentar o plano antes da sugestão opcional.'});
  await activateTab(page,'dashboard');
- for(const type of ['study','questions','review','simulation']){
+ if(!inspectionOnly)for(const type of ['study','questions','review','simulation']){
   await page.locator('#timerTypeSelect').selectOption(type);
   await page.locator('#timerStartBtn').click();await page.clock.fastForward('02:00');await page.locator('#timerFinishBtn').click();
   await expect(page.locator('#sessionModalOverlay')).toBeVisible();
@@ -50,8 +52,10 @@ for(const profile of AUDIT_PROFILES)test(`jornada auditada: ${profile}`,async({p
   }else await capture(type==='study'?'session':type,'#panel-dashboard','transaction');
   report.transactionCoverage.push(type);if(type==='simulation')await activateTab(page,'dashboard');
  }
- const recorded=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState();return {sessions:state.studySessions.slice(-4).map(row=>row.type),questions:state.questoes.at(-1)?.resolved,simulation:state.simulados.at(-1)?.nome}});
- expect(recorded.sessions).toEqual(['study','questions','review','simulation']);expect(recorded.questions).toBe(10);expect(recorded.simulation).toBe('Simulado da auditoria');
+ if(!inspectionOnly){
+  const recorded=await page.evaluate(()=>{const state=window.__EXTRATO_TEST__.getState();return {sessions:state.studySessions.slice(-4).map(row=>row.type),questions:state.questoes.at(-1)?.resolved,simulation:state.simulados.at(-1)?.nome}});
+  expect(recorded.sessions).toEqual(['study','questions','review','simulation']);expect(recorded.questions).toBe(10);expect(recorded.simulation).toBe('Simulado da auditoria');
+ }
  await activateTab(page,'desempenho');await capture('performance','#performancePage');
  await activateTab(page,'hoje');await page.locator('.today-analysis-details > summary').click();
  await capture('diagnosis','#diagnosisCenter');await capture('replanning','#weeklyReplan');
