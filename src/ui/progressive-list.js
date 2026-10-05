@@ -46,7 +46,11 @@ const LISTS=[
   ['#historicoMetasContainer tbody',':scope > tr'],
   ['.adaptive-history > ol',':scope > li'],
   ['.weekly-focus-history > ol',':scope > li'],
-  ['.study-plan-details',':scope > .study-plan-topic']
+  ['.study-plan-details',':scope > .study-plan-topic'],
+  ['.performance-changes:not(.performance-topic-list)',':scope > li'],
+  ['.diagnostic-secondary-reasons',':scope > li'],
+  ['.readiness-change-factors',':scope > li'],
+  ['.performance-topic-events',':scope > li']
 ];
 
 export function mountProgressiveLists({document,window}){
