@@ -4,7 +4,7 @@
 
 Este é o contrato de apresentação da fase Simplificação e Coerência de Produto. Define o tratamento pretendido para as próximas correções; não declara que todas as telas já o implementam. A inspeção inicial foi feita sobre o código de `1c38079`, em 5 de outubro de 2026.
 
-O [contrato da experiência de decisão](DECISION-EXPERIENCE-CONTRACT.md) continua definindo autoridade, cálculos, confirmação e histórico. A [hierarquia visual](VISUAL-HIERARCHY.md) documenta os tratamentos visuais e sua evolução. O inventário de propriedade previsto no pacote 2 registrará ocorrências e candidatos à simplificação. Estes documentos têm responsabilidades diferentes; não estabelecem regras alternativas para a mesma informação.
+O [contrato da experiência de decisão](DECISION-EXPERIENCE-CONTRACT.md) continua definindo autoridade, cálculos, confirmação e histórico. A [hierarquia visual](VISUAL-HIERARCHY.md) documenta os tratamentos visuais e sua evolução. O [inventário de propriedade](INFORMATION-OWNERSHIP.md) registra ocorrências, atalhos e candidatos à simplificação. Estes documentos têm responsabilidades diferentes; não estabelecem regras alternativas para a mesma informação.
 
 ## Quatro níveis de leitura
 
