@@ -17,6 +17,7 @@
     "check:all": "npm run test:full",
     "test:unit": "node --test tests/unit/*.test.js",
     "test:fast": "node scripts/run-test-gate.mjs fast",
+    "test:experience": "node scripts/run-experience-gate.mjs",
     "test:regression": "node scripts/run-test-gate.mjs regression",
     "test:full": "node scripts/run-test-gate.mjs full",
     "test:visual": "node scripts/run-test-gate.mjs visual",

@@ -1,6 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {activateTab,expectNoPageOverflow,openDemo} from './helpers.js';
 import {generateDemoData} from '../../src/demo/demo-generator.js';
+import {withPixelAlignedCapture} from './helpers/visual-capture.js';
 
 const screenshotName=(name)=>`${name}-${process.platform}.png`;
 for(const {width,theme} of [{width:320,theme:'light'},{width:375,theme:'dark'},{width:430,theme:'light'},{width:1440,theme:'dark'}])test(`trajetória em Desempenho com Demo: ${width}px ${theme}`,async({page})=>{
@@ -25,7 +26,8 @@ for(const {width,theme} of [{width:320,theme:'light'},{width:375,theme:'dark'},{
   await expectNoPageOverflow(page);
   if(process.platform==='win32'){
     await page.evaluate(()=>document.querySelectorAll('.skip-link,.sticky-shell,#demoBanner,#backToTopBtn').forEach(element=>element.remove()));
-    await expect(page.locator('.achievement-projection')).toHaveScreenshot(screenshotName(`achievement-projection-${width}-${theme}`),{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08});
+    const surface=page.locator('.achievement-projection');
+    await withPixelAlignedCapture(surface,()=>expect(surface).toHaveScreenshot(screenshotName(`achievement-projection-${width}-${theme}`),{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08}));
   }
 });
 

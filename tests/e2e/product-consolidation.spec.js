@@ -1,5 +1,30 @@
 import {test,expect} from '@playwright/test';
 import {activateTab,openDemo,expectNoPageOverflow} from './helpers.js';
+import {createDefaultState} from '../../src/state/defaults.js';
+
+test('iniciante sem falsa precisão encontra configuração e coleta de evidências',async({page})=>{
+  await page.clock.install({time:new Date('2026-10-03T12:00:00-03:00')});
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(node=>node.remove());
+  await page.evaluate(state=>{window.__EXTRATO_TEST__.setState(state);window.__EXTRATO_TEST__.renderAll()},createDefaultState());
+  await activateTab(page,'dashboard');
+  await expect(page.locator('#guidedOnboarding .onboarding-entry-cta')).toBeVisible();
+  await activateTab(page,'desempenho');
+  const projection=page.locator('.achievement-projection');
+  await expect(projection.locator('.achievement-projection__status')).toHaveText('Dados insuficientes');
+  const metric=label=>projection.locator('.achievement-projection__metrics > div').filter({hasText:label}).locator('strong');
+  for(const label of ['Simulados comparáveis','Faixa atual','Tendência em 30 dias'])await expect(metric(label)).toHaveText('—');
+  await activateTab(page,'hoje');
+  await page.locator('.today-analysis-details > summary').click();
+  const action=page.locator('#diagnosisCenter .next-best-action');
+  // The default catalog permits introductory study, but cannot justify a required intervention.
+  await expect(action).toHaveAttribute('data-action-state','ACTION_OPTIONAL');
+  await expect(action).toContainText('Evidência: Baixa');
+  await expect(action.locator('[data-study-action-source]')).toHaveClass(/ghost/);
+  await activateTab(page,'dashboard');
+  await expect(page.locator('#guidedOnboarding .onboarding-entry-cta')).toBeVisible();
+});
 
 test('Demo apresenta próxima ação, evidências progressivas e explicação da Prontidão',async({page})=>{
   test.setTimeout(120_000);

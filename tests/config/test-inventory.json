@@ -47,7 +47,8 @@
       "imports": [
         "@playwright/test",
         "./helpers.js",
-        "../../src/demo/demo-generator.js"
+        "../../src/demo/demo-generator.js",
+        "./helpers/visual-capture.js"
       ],
       "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
@@ -277,7 +278,8 @@
         "@playwright/test",
         "@axe-core/playwright",
         "../../src/demo/demo-generator.js",
-        "./helpers.js"
+        "./helpers.js",
+        "./helpers/visual-capture.js"
       ],
       "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
@@ -789,9 +791,10 @@
       ],
       "imports": [
         "@playwright/test",
-        "./helpers.js"
+        "./helpers.js",
+        "../../src/state/defaults.js"
       ],
-      "staticTestDeclarations": 1,
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 1,
       "observedCaseSeconds": 23.9,
@@ -2532,7 +2535,9 @@
         "../fixtures/decision-coherence/product-profiles.js",
         "../../src/ui/renderers/daily-execution-renderer.js",
         "../../src/ui/renderers/next-best-action-renderer.js",
-        "../../src/application/analytics/build-weekly-decision-cycle.js"
+        "../../src/application/analytics/build-weekly-decision-cycle.js",
+        "../../src/application/goals/build-plan-execution.js",
+        "../../src/application/adherence/build-weekly-close-adherence.js"
       ],
       "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",

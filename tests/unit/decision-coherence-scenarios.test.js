@@ -15,10 +15,12 @@ for(const [name,scenario] of Object.entries(decisionCoherenceScenarios)){
   });
 }
 
-import {buildProductDecisionProfile} from '../fixtures/decision-coherence/product-profiles.js';
+import {buildProductDecisionProfile,PRODUCT_PROFILE_TODAY} from '../fixtures/decision-coherence/product-profiles.js';
 import {renderDailyExecution} from '../../src/ui/renderers/daily-execution-renderer.js';
 import {renderNextBestAction} from '../../src/ui/renderers/next-best-action-renderer.js';
 import {buildWeeklyDecisionSummary} from '../../src/application/analytics/build-weekly-decision-cycle.js';
+import {buildPlanExecution} from '../../src/application/goals/build-plan-execution.js';
+import {buildWeeklyCloseAdherence} from '../../src/application/adherence/build-weekly-close-adherence.js';
 for(const profile of ['beginner','intermediate','irregular','final_stretch'])test('contratos de produto com motores reais: '+profile,()=>{
  const result=buildProductDecisionProfile(profile),before=JSON.stringify(result.state),{daily,nextBestAction,trajectory,adherence}=result;
  const html=renderDailyExecution(daily,{escapeHtml:String,escapeAttr:String,formatMinutes:value=>value+' min'});
@@ -33,5 +35,14 @@ for(const profile of ['beginner','intermediate','irregular','final_stretch'])tes
  const cycle=result.cycle;
  const summary=buildWeeklyDecisionSummary({cycle,trajectory:result.closeContext,adherence});
  assert.equal(summary.trajectory.delta,result.closeContext.state==='comparable'?result.closeContext.accuracyDelta:null);
+ // Compare the same civil week: the profile's rolling six-day window is a different scope.
+ const input={today:PRODUCT_PROFILE_TODAY,subjects:result.state.subjects,dailyPlans:result.state.dailyPlans,sessions:result.state.studySessions,activeExamTags:result.state.examBlueprint.activeExamTags};
+ const execution=buildPlanExecution({...input,hoursByDay:result.state.metas.horasPorDia});
+ const close=buildWeeklyCloseAdherence({...input,start:execution.adherenceModel.period.start,end:execution.adherenceModel.period.end});
+ assert.deepEqual(close.model.summary,execution.adherenceModel.summary,'Metas e fechamento divergem no mesmo período');
+ assert.equal(close.assessment.status,execution.adherenceModel.assessment.status);
+ assert.equal(execution.capacityMinutes,result.weeklyCapacityMinutes);
+ const sameWeek=buildWeeklyDecisionSummary({cycle,trajectory:result.closeContext,adherence:close});
+ assert.equal(sameWeek.priorities?.percent??null,close.assessment.status==='insufficient_data'?null:execution.adherenceModel.priority.adherence);
  assert.equal(JSON.stringify(result.state),before);
 });

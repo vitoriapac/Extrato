@@ -2,6 +2,7 @@ import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {generateDemoData} from '../../src/demo/demo-generator.js';
 import {activateTab,expectNoPageOverflow} from './helpers.js';
+import {withPixelAlignedCapture} from './helpers/visual-capture.js';
 
 async function prepare(page,{dense=true}={}){
   await page.clock.install({time:new Date('2026-10-01T12:00:00-03:00')});await page.goto('/?test=1');
@@ -31,7 +32,13 @@ for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light']])test(`card
   const card=page.locator('#dailyExecutionDashboard');await expectNoPageOverflow(page);
   expect((await new AxeBuilder({page}).include('#dailyExecutionDashboard').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
   await card.evaluate(node=>window.scrollBy(0,node.getBoundingClientRect().top-120));
-  if(process.platform==='win32')await expect(card).toHaveScreenshot(`today-${width}-${theme}-win32.png`,{animations:'disabled',maxDiffPixelRatio:.03});
+  if(process.platform==='win32')await withPixelAlignedCapture(card,()=>expect(card).toHaveScreenshot(`today-${width}-${theme}-win32.png`,{animations:'disabled',maxDiffPixelRatio:.03}));
+  const suggestion=card.locator('.daily-execution-suggestion');
+  await expect(suggestion).not.toHaveAttribute('open','');
+  await suggestion.locator('summary').focus();await page.keyboard.press('Enter');
+  await expect(suggestion).toContainText('confira a prévia');
+  await expect(suggestion.getByRole('button',{name:'Ver recomendação',exact:true})).toBeVisible();
+  await page.keyboard.press('Enter');await expect(suggestion).not.toHaveAttribute('open','');
   await card.getByRole('button',{name:'Iniciar estudo',exact:true}).focus();await page.keyboard.press('Enter');
   await expect(card.getByRole('button',{name:'Retomar sessão'})).toBeVisible();
 });

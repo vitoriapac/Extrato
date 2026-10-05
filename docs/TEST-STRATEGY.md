@@ -8,6 +8,8 @@ O [inventário](TEST-SUITE-INVENTORY.md) registra 161 arquivos Node, 55 arquivos
 
 ## Contrato dos gates
 
+`npm run test:experience` oferece uma [seleção de coerência do produto](PRODUCT-EXPERIENCE-GATE.md) para primeiro uso, Demo, sugestão fora do plano, baixa aderência e reta final. Reutiliza jornadas existentes e não amplia a seleção browser do Fast.
+
 Os níveis são cumulativos: Regression inclui Fast; Full inclui Regression. A classificação é independente da camada: um teste Node da Demo pode continuar barato, enquanto uma jornada browser pode carregar a Demo para validar uma decisão importante.
 
 | Gate | Conteúdo contratado | Meta | Máximo |

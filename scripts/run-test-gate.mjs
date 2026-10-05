@@ -69,5 +69,5 @@ appendFileSync(resolve(root,'.test-gates/history.jsonl'),JSON.stringify(summary)
 const markdown=`## ${gate.toUpperCase()} gate\n\n| Etapa | Fuso | Tempo | Código |\n|---|---|---:|---:|\n${results.map(row=>`| ${row.phase} | ${row.timezone} | ${row.seconds} s | ${row.exitCode} |`).join('\n')}\n\nTotal: **${seconds} s**. Resultado: **${exitCode===0?'passou':'falhou'}**. Instalação e fila do CI não incluídas.\n`;
 console.log(markdown);
 if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,markdown);
-if(budget&&seconds>budget.max)console.warn(`Orçamento excedido: ${seconds} s > ${budget.max} s; revisar custo antes de ampliar o gate.`);
+if(Number.isFinite(budget?.max)&&seconds>budget.max)console.warn(`Orçamento excedido: ${seconds} s > ${budget.max} s; revisar custo antes de ampliar o gate.`);
 process.exitCode=exitCode;

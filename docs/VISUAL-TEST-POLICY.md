@@ -2,6 +2,8 @@
 
 ## Plataforma oficial de comparação de pixels
 
+Trajetória e Execução de hoje usam o [helper de captura](../tests/e2e/helpers/visual-capture.js) para alinhar temporariamente a origem do recorte ao pixel. Ele mantém dimensões e conteúdo, restaura o estilo após a asserção e não amplia a tolerância. Isso evita que coordenadas fracionárias acrescentem uma linha à imagem. A normalização do recorte em 320 px da trajetória e as três referências de Hoje com microcopy revisada foram inspecionadas junto aos seus diffs antes da atualização.
+
 As referências versionadas atuais foram capturadas em Windows/Chromium. Windows é a plataforma oficial dessas comparações até que referências Linux sejam capturadas e revistas em seu próprio ambiente. Não reutilizar PNGs Windows como referência Linux, nem criar baselines por atualização automática no CI.
 
 Ubuntu/Chromium continua validando jornadas, estrutura acessível, valores textuais e overflow. Uma execução verde no Ubuntu não comprova uma comparação condicionada a `process.platform === 'win32'`. O gate Full terá uma etapa Windows específica no CI para as superfícies abaixo; os gates cotidianos não carregam toda essa matriz.

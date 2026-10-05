@@ -75,3 +75,25 @@ A [fachada de apresentação analítica](../src/ui/components/analytical-present
 A lista progressiva também cobre mudanças de Desempenho, motivos auxiliares de diagnóstico, fatores de Prontidão e eventos de tópicos. Listas que já possuíam disclosure mantêm sua implementação, e atividades operacionais/confirmatórias preservam os itens necessários à decisão.
 
 A [revisão de microcopy](MICROCOPY-CONTRACT.md) encurta o contexto permanente da sugestão, do diagnóstico e das comparações. Critérios, escopo e limitações continuam acessíveis em disclosures. O pacote 7 passou em 27 testes Node relacionados, dois casos browser de execução/sugestão em 35,3 s e Fast em 55,58 s. Os bundles foram reproduzidos pelo build.
+
+## Pacote 8 — coerência do produto
+
+O [gate de experiência](PRODUCT-EXPERIENCE-GATE.md), executado por `npm run test:experience`, reúne os cenários de iniciante, estudante com dados, sugestão fora do plano, baixa aderência e reta final. Reutiliza quatro jornadas browser e os perfis Node existentes. Metas e Fechamento passam a ter uma asserção explícita de igualdade de classificação e medidas quando recebem a mesma semana civil, escopo e registros; janelas móveis não são comparadas como se fossem a mesma semana.
+
+A jornada de iniciante usa o estado padrão limpo. A projeção permanece sem número, a configuração tem CTA e o catálogo inicial pode oferecer estudo introdutório como sugestão opcional com evidência baixa. Isso distingue coleta de evidência de uma intervenção obrigatória injustificada.
+
+O gate dirigido passou em 88,38 s. O Fast final passou em 46,87 s. A seleção Full contém 241 casos browser e preserva um único smoke browser no Fast. Os quatro perfis de coerência reutilizam seus dados determinísticos e confirmam que a leitura não altera o estado.
+
+### Referências visuais revistas
+
+Uma primeira rodada de Full foi interrompida após identificar recortes da trajetória com 1 px extra. A reprodução mediu uma origem fracionária de 3027,9375 px para um card de 1784,6875 px: o PNG tinha 1786 linhas, embora seu conteúdo e dimensões fossem equivalentes à referência de 1785 linhas. O helper agora alinha apenas a origem da captura e restaura o estilo depois da asserção.
+
+As referências de 375, 430 e 1440 px da trajetória passaram sem alteração. A referência de 320 px tinha o mesmo pixel extra de recorte e foi revista após inspeção da imagem e do diff. As três referências de Hoje foram revistas por uma alteração visual real: texto curto e disclosure substituem a orientação longa e o botão permanente. Esses casos passaram com axe e teclado. Nenhuma tolerância foi ampliada. Sustentabilidade passou nas cinco combinações existentes, sem alteração dos PNGs.
+
+### Encerramento local da fase
+
+Full passou em Windows/Chromium, Node 24.20.0, em **2137,93 s (35 min 38 s)**: 716 testes Node em UTC e 716 em São Paulo, 241 E2E em UTC e 48 E2E no recorte de São Paulo. A execução inclui referências visuais, acessibilidade automática, teclado, Demo densa, backup legado, PWA e os ciclos estratégicos completos. Sintaxe, inventário, classificação e artefatos reproduzíveis também passaram.
+
+O runner emitia um aviso de orçamento para o Full porque comparava o tempo com `max: null`. A condição do aviso agora exige um limite numérico finito; os estágios, seleções e limites de Fast/Regression permanecem os mesmos. Essa correção do relatório foi validada por sintaxe, testes de seleção e descoberta em dry-run, sem repetir a matriz browser já aprovada.
+
+Os resultados são locais; o GitHub Actions não foi consultado nesta implementação. Não foi feita avaliação manual com leitor de tela. As revisões Markdown e do relatório posteriores ao Full não alteram os motores ou os assets da aplicação.
