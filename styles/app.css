@@ -2248,3 +2248,5 @@ body.timer-focus-active .timer-context{display:none!important}
 .subject-search input{width:100%;min-width:0;box-sizing:border-box;min-height:var(--touch-target)}
 .subject-search p{margin:0;color:var(--ink-soft);font-size:var(--text-small)}
 .subject-header .subject-toggle{flex-shrink:0;min-width:var(--touch-target);min-height:var(--touch-target)}
+.decision-explanation>summary:focus-visible,.weekly-decision-detail>summary:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.weekly-decision-summary,.weekly-decision-summary section{min-width:0;overflow-wrap:anywhere}

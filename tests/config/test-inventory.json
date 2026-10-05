@@ -1523,6 +1523,7 @@
       ],
       "imports": [
         "@playwright/test",
+        "@axe-core/playwright",
         "../../src/demo/demo-generator.js",
         "../../src/application/adherence/build-weekly-close-adherence.js",
         "../../src/application/analytics/weekly-close-snapshot.js",

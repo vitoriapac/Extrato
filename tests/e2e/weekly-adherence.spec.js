@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import {generateDemoData} from '../../src/demo/demo-generator.js';
 import {buildWeeklyCloseAdherence} from '../../src/application/adherence/build-weekly-close-adherence.js';
 import {createWeeklyCloseSnapshot} from '../../src/application/analytics/weekly-close-snapshot.js';
@@ -19,6 +20,14 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   await page.evaluate(state=>{const api=window.__EXTRATO_TEST__,result=api.validateBackupData(state);if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()},state);
   await activateTab(page,'dashboard');const close=page.locator('#weeklyCloseDashboard');
   await expect(close.getByRole('region',{name:'Síntese para a próxima decisão'})).toContainText('Decisão sugerida');
+  const signals=close.locator('.weekly-decision-detail');
+  await expect(signals).not.toHaveAttribute('open');
+  await signals.locator(':scope > summary').focus();await page.keyboard.press('Enter');
+  await expect(signals).toHaveAttribute('open','');
+  await expect(signals.locator(':scope > summary')).toBeFocused();
+  await page.keyboard.press('Space');await expect(signals).not.toHaveAttribute('open');
+  const audit=await new AxeBuilder({page}).include('#weeklyCloseDashboard').analyze();
+  expect(audit.violations).toEqual([]);
   await close.getByRole('button',{name:'Entenda aderência',exact:true}).click();
   await expect(page.locator('#adherence')).toBeFocused();
   await expect(page.locator('#guide-data')).toBeVisible();
