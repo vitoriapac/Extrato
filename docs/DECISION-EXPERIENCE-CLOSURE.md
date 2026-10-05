@@ -22,7 +22,20 @@ Axe, nomes acessíveis e interação por teclado são validações automatizadas
 
 ## Pacote 8 — fechamento técnico
 
-A validação final está em execução. Registrar o resultado do Full, Fast e CI do commit publicado nesta seção ao concluir o gate. Uma execução local não confirma o GitHub Actions.
+A validação local final passou em 5 de outubro de 2026 no Windows/Chromium, com dois workers:
+
+| Etapa | Resultado | Tempo |
+|---|---|---:|
+| Node UTC | 715 passaram | 20,97 s |
+| Node São Paulo | 715 passaram | 22,44 s |
+| Browser Full UTC | 240 passaram | 1.946,67 s |
+| Browser São Paulo | 48 passaram | 367,48 s |
+| Full completo, incluindo sintaxe, inventário, tiers e artefatos | Passou | 2.373,86 s |
+| Fast final | Passou | 52,63 s |
+
+As jornadas incluem decisão → prévia → confirmação → execução → fechamento, Demo densa, backup legado, capacidade, snapshots e matrizes responsivas/visuais. Os 240 casos existentes foram preservados. Instalação e fila não entram no tempo local informado. Full permanece um gate de fechamento com custo monitorado; o desenvolvimento continua usando seleções por risco.
+
+O CI do código publicado em 34b52e9 passou na [execução 37286323305](https://github.com/vitoriapac/Extrato/actions/runs/37286323305): seleção de alterações, validação Ubuntu com gate Full e comparação visual Windows. Essa conclusão foi consultada no GitHub; não foi inferida do resultado local. O commit posterior de fechamento altera somente esta documentação e não modifica o código validado.
 
 As referências Windows alteradas durante o ciclo foram revistas a partir das imagens reais e seus diffs. A correção anterior de sustentabilidade em 430 px claro mantém a tolerância original e corresponde à falha observada no CI de c586312. O primeiro Full também identificou cinco referências antigas de Aderência, anteriores aos perfis determinísticos da Demo e à composição do crédito de estudo. Essas referências foram revisadas; a captura remove temporariamente o menu e botão flutuante, restaurando os mesmos elementos antes das verificações de teclado e axe. A tolerância de 8% foi preservada.
 
