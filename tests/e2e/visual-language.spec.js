@@ -19,7 +19,9 @@ for(const {width,theme} of [{width:375,theme:'light'},{width:375,theme:'dark'},{
     await activateTab(page,'instrucoes');
     await expect(page.locator('#helpCenter .module-heading')).toBeVisible();
     await page.locator('[data-help-category="guide-areas"]').click();
-    await expect(page.locator('#helpCenter .context-note--tip')).toBeVisible();
+    const tips=page.locator('#guide-areas .context-note--tip');
+    expect(await tips.count()).toBeGreaterThan(0);
+    for(const tip of await tips.all())await expect(tip).toBeVisible();
     await expectNoPageOverflow(page);
     await activateTab(page,'desempenho');
     await page.locator('[data-performance-section="exam"]').click();

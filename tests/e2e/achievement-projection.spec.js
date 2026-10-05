@@ -68,6 +68,9 @@ test('prévia de recuperação no Demo explica origem e destino sem ação de ap
 });
 
 test('Recovery exige confirmação, revalida e registra plano e decisão sem reescrever sessões',async({page})=>{
+  // Aplicação, sessão e reversão com a Demo densa chegaram à última asserção após
+  // o orçamento global no runner Windows. Esta jornada completa tem orçamento próprio.
+  test.setTimeout(120_000);
   await page.clock.install({time:new Date('2026-10-01T12:00:00-03:00')});
   await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(node=>node.remove());
   const demo=generateDemoData({today:'2026-10-01'});

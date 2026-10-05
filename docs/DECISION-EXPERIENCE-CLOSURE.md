@@ -24,6 +24,8 @@ Axe, nomes acessíveis e interação por teclado são validações automatizadas
 
 A validação final está em execução. Registrar o resultado do Full, Fast e CI do commit publicado nesta seção ao concluir o gate. Uma execução local não confirma o GitHub Actions.
 
-As referências Windows alteradas durante o ciclo foram revistas a partir das imagens reais e seus diffs. A correção anterior de sustentabilidade em 430 px claro mantém a tolerância original e corresponde à falha observada no CI de c586312.
+As referências Windows alteradas durante o ciclo foram revistas a partir das imagens reais e seus diffs. A correção anterior de sustentabilidade em 430 px claro mantém a tolerância original e corresponde à falha observada no CI de c586312. O primeiro Full também identificou cinco referências antigas de Aderência, anteriores aos perfis determinísticos da Demo e à composição do crédito de estudo. Essas referências foram revisadas; a captura remove temporariamente o menu e botão flutuante, restaurando os mesmos elementos antes das verificações de teclado e axe. A tolerância de 8% foi preservada.
+
+O CI de 9fddcd3 revelou seletores antigos de texto de estudo adicional e de dicas da Ajuda. Os testes foram atualizados para o conteúdo atual. O trace Windows da jornada de aplicação, execução e reversão de Recovery chegou à última asserção antes do timeout global de 60 s; a jornada recebeu orçamento próprio de 120 s, preservando suas verificações e sem acrescentar retries. Fast passou em 56,44 s antes dessas correções exclusivamente browser.
 
 Os artefatos versionados são gerados por npm run build e conferidos por check:bundle. A configuração de CI mantém Node em UTC/São Paulo, seleção por impacto e validação visual Windows no Full. Nenhum gate foi reduzido para acomodar esta entrega.

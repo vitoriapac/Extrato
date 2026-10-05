@@ -14,8 +14,13 @@ for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light'],[1440,'ligh
   test.setTimeout(120_000);await page.setViewportSize({width,height:900});await prepare(page);
   if(theme==='dark')await page.locator('#themeToggleBtn').click();
   const content=page.locator('#performanceSectionContent');await expect(content).toContainText('Execução prioritária');
-  await content.locator('.adherence-summary').screenshot({path:testInfo.outputPath('adherence-review.png')});
-  if(process.platform==='win32')await expect(content.locator('.adherence-summary')).toHaveScreenshot(`adherence-${width}-${theme}-win32.png`,{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08});
+  const chrome=await page.evaluateHandle(()=>[...document.querySelectorAll('.sticky-shell,#backToTopBtn')].map(node=>{
+    const position={node,parent:node.parentNode,next:node.nextSibling};node.remove();return position;
+  }));
+  try{
+    await content.locator('.adherence-summary').screenshot({path:testInfo.outputPath('adherence-review.png')});
+    if(process.platform==='win32')await expect(content.locator('.adherence-summary')).toHaveScreenshot(`adherence-${width}-${theme}-win32.png`,{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08});
+  }finally{await chrome.evaluate(positions=>positions.forEach(({node,parent,next})=>parent.insertBefore(node,next)));await chrome.dispose();}
   await expectNoPageOverflow(page);
   const before=await page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return {dailyPlans:s.dailyPlans,studySessions:s.studySessions,weeklyCloseSnapshots:s.weeklyCloseSnapshots}});
   await content.locator('[data-adherence-weeks]').selectOption('12');await expect(content.locator('[data-adherence-weeks]')).toBeFocused();
