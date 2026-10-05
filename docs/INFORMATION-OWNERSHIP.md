@@ -13,7 +13,44 @@ Os rótulos descrevem a ocorrência na interface:
 
 Uma palavra ou um tópico repetido não basta para declarar redundância. O mesmo indicador pode ter denominadores, janelas ou finalidades diferentes.
 
-## Matriz de ocorrências
+## Contrato operacional — consolidação da experiência
+
+Revisão em `c28b51d`, 5/10/2026. A tabela abaixo define responsabilidades para os pacotes desta fase. **Superfície** não significa nova aba: Prova é a subvisão Inteligência da prova em Desempenho; Fechamento está na Visão Geral; planejamento e fase continuam acessíveis em Metas. Não criar destinos inexistentes.
+
+| Informação | Proprietário de detalhe | Resumo permitido fora dele | Destino e contexto obrigatório |
+|---|---|---|---|
+| Próxima atividade e execução diária | Hoje | Atividade elegível, progresso e início na Visão Geral | Hoje; preservar ID da atividade e plano confirmado |
+| Recomendação estratégica | Hoje / Diagnóstico | Próxima ação e justificativa curta | Mesmo ID/tipo da recomendação; sugestão não substitui atividade confirmada |
+| Prontidão atual global | Visão Geral | Indicador em Desempenho | Distinguir valor global de snapshots no período; fatores atuais permanecem na origem |
+| Evolução da Prontidão | Desempenho / Visão geral | Variação resumida em fechamento | Período, concurso e par de snapshots congelados |
+| Projeção e trajetória | Desempenho / Visão geral | Valor, confiança e referência em Metas/fechamento | Atual vs. snapshot semanal, meta e prova; sem recálculo do passado |
+| Meta de nota | Metas | Alvo e distância em Desempenho | Objetivo ativo; edição somente no proprietário |
+| Incidência × domínio | Desempenho / Inteligência da prova | Fator relevante na recomendação | Concurso, tópico, origem histórica e confiança |
+| Aderência temporal | Desempenho / Consistência | Resultado no período correspondente | Janela, denominador e classificação da evidência |
+| Execução da semana / metas | Metas | Balanço no fechamento | Semana civil, plano/versionamento, carga e prioridades separados |
+| Decisão semanal | Fechamento na Visão Geral | Sinal e acesso em Metas | Semana/snapshot de origem; resultado posterior sem atribuição causal |
+| Fase e capacidade | Planejamento em Metas | Contexto da ação/projeção | Data da prova, capacidade declarada e prévia confirmável |
+| Diagnóstico principal | Hoje / Central de Diagnóstico | Principal sinal e acesso contextual | Uma entidade, diagnóstico dominante e evidências auxiliares |
+
+Esta fase preserva a propriedade global da Prontidão já implementada. Transferir seus fatores para Desempenho exigiria migração de superfície e revisão dos destinos; não é consequência automática desta matriz. O pacote 3 reorganiza apenas a narrativa de Desempenho.
+
+### Critério para reduzir uma ocorrência
+
+Registrar **entidade + concurso + período + unidade + denominador + fonte**, classificar conteúdo como resultado, contexto, evidência ou ação e identificar o detalhe preservado. Só consolidar análises completas quando essa chave e a finalidade coincidirem. Resumos operacionais e snapshots semanais não são duplicações por exibirem o mesmo nome.
+
+### Backlog verificável
+
+| Candidata | Tratamento | Pacote |
+|---|---|---|
+| Históricos antes da trajetória em Desempenho | Mostrar trajetória atual antes da investigação histórica | 3 |
+| Texto explicativo recorrente | Aplicar o contrato de hierarquia; manter ressalvas que qualificam o resultado | 4 |
+| Projeção atual vs. fechamento | Preservar snapshot e resumir com link quando o mesmo detalhe estiver repetido | 5 |
+| Execução em Metas vs. Consistência | Comparar semanas e denominadores antes de reduzir apresentação | 5 |
+| Diagnóstico vs. evolução do tópico | Usar navegação contextual, sem fundir leitura atual e série histórica | 6 |
+
+Aceite: nenhum destino novo, nenhuma edição fora da autoridade existente, nenhum resultado histórico reinterpretado como atual. O inventário de ocorrências abaixo é evidência da inspeção inicial; o backlog registra decisões novas sem apagar essa proveniência.
+
+## Inventário observado
 
 | Informação | Ocorrência principal | Outras ocorrências | Classificação observada | Tratamento e ressalva |
 |---|---|---|---|---|
