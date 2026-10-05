@@ -14,3 +14,24 @@ for(const [name,scenario] of Object.entries(decisionCoherenceScenarios)){
     assert.deepEqual(outputs,before);
   });
 }
+
+import {buildProductDecisionProfile} from '../fixtures/decision-coherence/product-profiles.js';
+import {renderDailyExecution} from '../../src/ui/renderers/daily-execution-renderer.js';
+import {renderNextBestAction} from '../../src/ui/renderers/next-best-action-renderer.js';
+import {buildWeeklyDecisionSummary} from '../../src/application/analytics/build-weekly-decision-cycle.js';
+for(const profile of ['beginner','intermediate','irregular','final_stretch'])test('contratos de produto com motores reais: '+profile,()=>{
+ const result=buildProductDecisionProfile(profile),before=JSON.stringify(result.state),{daily,nextBestAction,trajectory,adherence}=result;
+ const html=renderDailyExecution(daily,{escapeHtml:String,escapeAttr:String,formatMinutes:value=>value+' min'});
+ assert.equal(trajectory.projection.examDayScore,null);assert.equal(trajectory.projection.approvalProbability,null);
+ if(daily.priority.nextItem)assert.ok(html.includes('data-daily-start="'+daily.priority.nextItem.id+'"'));
+ if(nextBestAction.action){const recommendation=result.recommendations[0];assert.equal(nextBestAction.action.topicId,recommendation.topicId);const actionHtml=renderNextBestAction(nextBestAction,{escapeHtml:String,escapeAttr:String,dailyPriority:daily.priority});if(nextBestAction.state==='ACTION_OPTIONAL')assert.match(actionHtml,/class="btn ghost small"[^>]*data-study-action-source/)}
+ if(profile==='beginner'){assert.equal(trajectory.status,'insufficient_data');assert.equal(nextBestAction.state,'INSUFFICIENT_EVIDENCE');assert.equal(result.readiness.state,'insufficient');assert.ok(result.readiness.confidence<.35);assert.equal(result.readiness.factors.retention,null)}
+ if(profile==='final_stretch'){assert.equal(trajectory.exam.daysRemaining,10);assert.equal(trajectory.status,'at_risk')}
+ if(profile==='intermediate')assert.notEqual(trajectory.status,'insufficient_data');
+ if(profile==='irregular')assert.ok(adherence.model.summary.temporalAdherence<80);
+ assert.equal(result.coherence.summary.unexplained,0,'Divergência entre motores sem explicação');
+ const cycle=result.cycle;
+ const summary=buildWeeklyDecisionSummary({cycle,trajectory:result.closeContext,adherence});
+ assert.equal(summary.trajectory.delta,result.closeContext.state==='comparable'?result.closeContext.accuracyDelta:null);
+ assert.equal(JSON.stringify(result.state),before);
+});

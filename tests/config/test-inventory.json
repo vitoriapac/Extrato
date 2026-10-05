@@ -2526,9 +2526,13 @@
         "node:test",
         "node:assert/strict",
         "../../src/application/diagnostics/build-decision-coherence-report.js",
-        "../fixtures/decision-coherence/scenarios.js"
+        "../fixtures/decision-coherence/scenarios.js",
+        "../fixtures/decision-coherence/product-profiles.js",
+        "../../src/ui/renderers/daily-execution-renderer.js",
+        "../../src/ui/renderers/next-best-action-renderer.js",
+        "../../src/application/analytics/build-weekly-decision-cycle.js"
       ],
-      "staticTestDeclarations": 1,
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -6543,9 +6547,11 @@
         "node:test",
         "node:assert/strict",
         "../../src/application/analytics/weekly-close-actions.js",
-        "../../src/application/analytics/build-weekly-decision-cycle.js"
+        "../../src/application/analytics/build-weekly-decision-cycle.js",
+        "../../src/application/analytics/build-weekly-decision-cycle.js",
+        "../../src/ui/renderers/weekly-decision-cycle-renderer.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

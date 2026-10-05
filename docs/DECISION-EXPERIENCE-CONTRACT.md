@@ -67,3 +67,21 @@ A atividade de execução diária recebe o rótulo Próxima atividade do plano. 
 Os handlers de início, cronômetro, prévia e aplicação permanecem os existentes. A apresentação não altera prioridade, capacidade ou persistência. A matriz Node cobre atividade alinhada, tipo divergente, plano vazio, cronômetro vinculado e cronômetro de outra atividade, além de preservar as proteções anteriores de plano antigo e elegibilidade.
 
 Validação dos pacotes 3 e 4: 32 testes Node passaram; sete casos visuais de Projeção/Hoje passaram em 1,8 min após inspeção das cinco referências alteradas. A jornada de dispensar sugestão e o resumo de Desempenho com Demo densa também passaram. Fast final: 105,99 s. check:bundle e inventário passaram. Full, matriz visual global e leitor de tela manual não executados.
+
+## Pacote 5 — síntese do fechamento
+
+buildWeeklyDecisionSummary é um contrato transitório de apresentação, derivado de buildWeeklyDecisionGuidance e do contexto de trajetória já validado. Não é salvo nos snapshots. A contagem de atividades prioritárias concluídas permanece separada do percentual de tempo prioritário creditado.
+
+O fechamento mantém a execução no resumo existente e apresenta prioridades, trajetória, principal sinal e decisão. O avanço continua disponível, enquanto os sinais adicionais ficam em Investigar os sinais da semana. Questões, resultados posteriores, aderência, sustentabilidade e histórico permanecem acessíveis. Quando há ciclo de decisão, a seção Próxima semana não repete outra próxima ação; conserva as prioridades e o fluxo de confirmação.
+
+A decisão de capacidade descreve explicitamente as semanas encerradas comparáveis. O sinal principal refere-se à semana em avaliação. Mudanças de meta, prova ou escopo sem base compatível não recebem delta de trajetória.
+
+## Pacote 6 — coerência integrada
+
+A fixture tests/fixtures/decision-coherence/product-profiles.js integra os motores existentes em quatro contextos determinísticos: iniciante com estado inicial; intermediário com o perfil de recuperação existente; irregular com a execução da Demo padrão; reta final com o perfil existente de dez dias. O gerador da Demo pública não foi alterado.
+
+As verificações usam Prontidão, evidência histórica de tópicos, ordenação das recomendações, próxima ação, plano diário, aderência, trajetória, comparação e relatório de coerência. A Prontidão inicial pode ser conservadora e de confiança baixa, enquanto a Projeção permanece indisponível; não se impõe zero ou ausência a resultados válidos dos motores.
+
+Os testes rejeitam divergências sem explicação, preservam o estudo do plano como ação operacional, verificam CTA secundário de sugestão opcional e não permitem comparação de trajetória sem base compatível. A jornada browser existente cobre confirmação, adaptação de fase, execução, resultado e fechamento, incluindo capacidade e história preservadas.
+
+Validação dos pacotes 5 e 6: 24 testes Node passaram. Três jornadas dirigidas de fechamento, sustentabilidade escura e composição mobile passaram em 1,4 min; a jornada estratégica completa passou em 19,5 s. O fechamento com o texto final foi revalidado em 32,2 s. A síntese foi inspecionada em 390 px. Fast final passou em 68,64 s; inventário e artefatos reproduzíveis passaram. Nenhuma referência visual foi atualizada. Full, matriz global e leitor de tela manual não executados.
