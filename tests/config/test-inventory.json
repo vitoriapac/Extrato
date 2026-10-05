@@ -6447,9 +6447,10 @@
         "../../src/domain/analytics/topic-signals.js",
         "../../src/ui/subjects/subject-navigation.js",
         "../../src/ui/format-study-time.js",
-        "../../src/ui/renderers/calendar-renderer.js"
+        "../../src/ui/renderers/calendar-renderer.js",
+        "../../src/ui/evidence-state.js"
       ],
-      "staticTestDeclarations": 7,
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

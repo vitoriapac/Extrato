@@ -1,3 +1,4 @@
+import {presentEvidence} from '../evidence-state.js';
 import {formatStudyMinutes,formatStudyMinuteDelta} from '../format-study-time.js';
 import {renderReadinessHistory} from '../renderers/readiness-history-renderer.js';
 import {renderPerformanceComparison} from './performance-comparison-renderer.js';
@@ -8,7 +9,7 @@ import {renderAchievementProjection} from './achievement-projection-renderer.js'
 
 const shown=value=>value==null?'—':String(Math.round(value*10)/10);
 const change=value=>value==null?'Sem base comparável':`${value>0?'+':''}${shown(value)}`;
-const card=(label,value,unit,detail)=>renderMetricCard({label,value:`${shown(value)}${value==null?'':unit}`,detail});
+const card=(label,value,unit,detail)=>renderMetricCard({label,value:presentEvidence({value,unit,format:shown}).text,detail});
 
 export function renderPerformanceOverview(model,{range,today,activeExamTags,formatDate,escapeHtml,escapeAttr=escapeHtml,comparisonModel=null,readinessChange=null,achievementProjection=null,achievementHistory=[],achievementCapacityMinutes=0,adherenceContext=null,recoveryPlan=null}={}){
   const current=model.current||{},previous=model.previous;

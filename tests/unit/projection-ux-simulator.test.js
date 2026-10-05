@@ -18,6 +18,11 @@ test('estado insuficiente deriva faltas dos limiares reais e orienta próximo pa
   assert.match(html,/Projeção ainda indisponível/);
   assert.match(html,/mais 2 simulado/);
   assert.match(html,/Registrar simulado/);
+  assert.match(html,/data-evidence-state="insufficient"/);
+  const absent=structuredClone(model);absent.evidence.observationCount=0;
+  assert.match(renderAchievementProjection(absent,{escapeHtml}),/data-evidence-state="no_data"/);
+  const configured=structuredClone(model);configured.evidence={...configured.evidence,observationCount:100,sampleSize:10000,spanDays:365};configured.exam.daysRemaining=null;
+  assert.match(renderAchievementProjection(configured,{escapeHtml}),/data-evidence-state="not_applicable"/);
 });
 
 test('histórico mostra cinco registros e expande os restantes sem recalcular passado',()=>{

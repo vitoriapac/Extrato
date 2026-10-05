@@ -1,3 +1,4 @@
+import {formatEvidencePercent,presentEvidence,EVIDENCE_STATES} from '../evidence-state.js';
 import {buildProjectionEvidenceExplanation} from '../../application/projection/build-projection-evidence-explanation.js';
 import {renderAdherenceTarget} from '../renderers/adherence-target-renderer.js';
 import {renderRecoveryPlan,formatRecoveryMinutes} from './recovery-plan-renderer.js';
@@ -7,7 +8,7 @@ const labels={insufficient_data:'Dados insuficientes',on_track:'No caminho',atte
 const confidenceLabels={insufficient:'Insuficiente',low:'Baixa',moderate:'Moderada'};
 const phaseLabels={undated:'Sem data',construction:'Construção',consolidation:'Consolidação',final_stretch:'Reta final',final_review:'Revisão final'};
 const recoveryLabels={not_needed:'Não necessária',recoverable:'Prévia disponível',limited:'Opções limitadas',unavailable:'Sem proposta segura'};
-const pct=value=>value==null?'—':`${Math.round(value)}%`;
+const pct=formatEvidencePercent;
 const hours=formatRecoveryMinutes;
 
 function renderRecoveryScenarioComparison(recovery,currentScenario,simulatedScenario,escapeHtml){
@@ -46,7 +47,8 @@ function renderTrajectory(model,escapeHtml){
 
 function renderRequirements(model,escapeHtml){
   const {requirements,pending}=buildProjectionRequirements(model);
-  return `<div class="achievement-projection__requirements" role="status"><strong>Projeção ainda indisponível</strong><p>Precisamos de mais evidências comparáveis.</p><ul>${requirements.map(item=>`<li>${item.met?'✓':'○'} ${escapeHtml(item.label)}</li>`).join('')}</ul>${pending.length?`<p>${escapeHtml(pending[0].guidance)}</p>`:''}<button type="button" class="btn ghost small" ${pending[0]?.label==='Data da prova'?'data-performance-open="metas"':'data-performance-section="simulations"'}>${pending[0]?.label==='Data da prova'?'Configurar prova':'Registrar simulado'}</button></div>`;
+  const evidence=presentEvidence({state:requirements.slice(2).every(item=>item.met)?EVIDENCE_STATES.NOT_APPLICABLE:(model.evidence?.observationCount||0)>0?EVIDENCE_STATES.INSUFFICIENT:EVIDENCE_STATES.NO_DATA,message:requirements.slice(2).every(item=>item.met)?'Revise a meta ou a data da prova para apresentar esta análise.':'Precisamos de mais evidências comparáveis.'});
+  return `<div class="achievement-projection__requirements" role="status"><strong>Projeção ainda indisponível</strong><p data-evidence-state="${evidence.state}">${escapeHtml(evidence.label)}. ${escapeHtml(evidence.message)}</p><ul>${requirements.map(item=>`<li>${item.met?'✓':'○'} ${escapeHtml(item.label)}</li>`).join('')}</ul>${pending.length?`<p>${escapeHtml(pending[0].guidance)}</p>`:''}<button type="button" class="btn ghost small" ${pending[0]?.label==='Data da prova'?'data-performance-open="metas"':'data-performance-section="simulations"'}>${pending[0]?.label==='Data da prova'?'Configurar prova':'Registrar simulado'}</button></div>`;
 }
 
 function renderHistory(history,escapeHtml){

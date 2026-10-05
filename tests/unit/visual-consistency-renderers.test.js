@@ -61,3 +61,19 @@ test('calendário explica origens do total de atrasos sem modificar registros',(
  const items=[{date:'2026-10-01',origem:'Calendário'},{date:'2026-10-02',origem:'Agenda de Revisões'},{date:'2026-10-03',origem:'Agenda de Revisões',status:'Concluído'}],before=JSON.stringify(items);
  const html=renderCalendarIndicators({items,today:'2026-10-04',daysUntil:()=>null});assert.match(html,/Calendário: 1 · Agenda: 1/);assert.equal(JSON.stringify(items),before);
 });
+
+import {presentEvidence,EVIDENCE_STATES,formatEvidencePercent} from '../../src/ui/evidence-state.js';
+test('estados de evidência distinguem zero medido, estimativa, ausência e insuficiência',()=>{
+ assert.equal(presentEvidence({value:0,unit:'%'}).text,'0%');
+ for(const value of [null,undefined,NaN,Infinity,'0'])assert.equal(presentEvidence({value}).text,'—');
+ assert.equal(presentEvidence({state:EVIDENCE_STATES.ESTIMATED,value:0,confidence:'low'}).state,'estimated');
+ for(const state of ['no_data','insufficient','not_applicable']){const result=presentEvidence({state,value:0});assert.equal(result.text,'—');assert.equal(result.state,state)}
+ assert.equal(presentEvidence({state:'measured',value:null}).state,'no_data');
+ assert.equal(formatEvidencePercent(0),'0%');assert.equal(formatEvidencePercent(null),'—');
+ assert.throws(()=>presentEvidence({state:'unknown'}),TypeError);
+});
+test('retenção com disponibilidade inconsistente continua sem declarar zero',()=>{
+ const rows=[{id:'t',name:'Tópico',subjectName:'Disciplina',r:{available:true,value:null,score:0},h:{value:0,reasons:[]}}];const before=JSON.stringify(rows);
+ const html=renderTopicRetentionDashboard({rows,subjects:[],filters:{},showAll:true,renderFooter:()=>'',escapeHtml:String,escapeAttr:String});
+ assert.match(html,/retenção —/);assert.match(html,/Sem dados/);assert.equal(JSON.stringify(rows),before);
+});

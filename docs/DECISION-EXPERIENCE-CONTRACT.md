@@ -41,3 +41,15 @@ A primeira padronização de evidência fica em src/ui/evidence-state.js e atend
 Usar Node para contratos e valores ausentes, zero, estimativa e amostra insuficiente. Jornadas browser verificam integração e foco. Fast ao concluir implementação; Full no fechamento integrado ou nas alterações abrangentes previstas em TEST-STRATEGY.md. Acrescentar um caso em arquivo existente também aumenta o número de casos Full, mesmo sem mudar seu manifesto.
 
 Avaliação manual com leitor de tela deve ser registrada separadamente de axe e nomes acessíveis automatizados.
+
+## Pacote 2 — apresentação compartilhada
+
+presentEvidence retorna estado, rótulo, texto, mensagem contextual e confiança recebida. Aceita medido, estimado, sem dados, amostra insuficiente e ainda não aplicável. Somente números finitos são apresentados como valores; zero é válido. Um resultado declarado medido/estimado sem valor finito é apresentado como sem dados. Estados desconhecidos geram erro de contrato.
+
+Retenção usa a mesma disponibilidade e o mesmo valor no resumo e na linha do tópico. Saúde da revisão continua separada. Desempenho reutiliza o helper para seus indicadores e Projeção para percentuais e orientação de disponibilidade. A orientação de Projeção deriva das exigências existentes de observações, questões e período; quando elas estão completas mas meta/data bloqueiam a análise, a mensagem orienta a configuração.
+
+Mensagens específicas podem ser fornecidas pelos consumidores. O helper não calcula confiança, não contém HTML e não acessa persistência. Não há migração ou mudança de snapshots.
+
+Validação dirigida: 22 testes Node de renderers, histórico e simulador passaram. Demo densa desktop claro e comparação visual passaram em 40,1 s, sem atualização de referências. Full, matriz visual completa e leitor de tela manual não foram executados nesta entrega.
+
+Fast passou em 52,61 s; check:bundle confirmou os quatro artefatos reproduzíveis. Resultados locais não confirmam GitHub Actions.
