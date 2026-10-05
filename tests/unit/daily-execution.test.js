@@ -37,3 +37,15 @@ test('sugestão fora do plano mantém a atividade planejada como escolha operaci
  assert.match(html,/Sugestão fora do plano de hoje/);assert.match(html,/Seguir plano de hoje/);assert.match(html,/Estudar como atividade adicional/);assert.match(html,/data-ignore-outside-suggestion/);assert.match(html,/data-next-best-preview/);
  assert.equal(JSON.stringify(daily),before);
 });
+
+test('sugestão opcional não recebe CTA primário mesmo quando alinhada',()=>{
+ const daily=buildDailyExecutionModel(fixture()),action=fixture().nextBestAction.action;
+ const html=renderNextBestAction({state:'ACTION_OPTIONAL',action,label:'Resolver questões',topicName:'Juros',subjectName:'Matemática',reasons:[],weeklyCapacityMinutes:60},{escapeHtml:String,escapeAttr:String,dailyPriority:daily.priority});
+ assert.match(html,/SUGESTÃO OPCIONAL/);assert.match(html,/class="btn ghost small"[^>]*data-study-action-source/);assert.match(html,/data-decision-role="recommendation"/);
+});
+test('matriz operacional preserva atividade do plano, sessão ativa e ausência de plano',()=>{
+ const input=fixture(),aligned=render(buildDailyExecutionModel(input));assert.match(aligned,/PRÓXIMA ATIVIDADE DO PLANO/);
+ input.nextBestAction.action.activityType='review';const model=buildDailyExecutionModel(input),html=render(model);assert.match(html,/Sugestão fora do plano do dia/);assert.match(html,/data-daily-start="i"/);assert.doesNotMatch(html,/Lacuna prioritária/);
+ const options={escapeHtml:String,formatMinutes:value=>value+' min'};assert.match(renderDailyExecution(model,{...options,timer:{active:true,planItemId:'i'}}),/Retomar sessão/);assert.match(renderDailyExecution(model,{...options,timer:{active:true,planItemId:'other'}}),/disabled>Finalize a sessão atual/);
+ input.dailyPlans=[];const empty=render(buildDailyExecutionModel(input));assert.match(empty,/Abrir planejamento/);assert.doesNotMatch(empty,/data-daily-start=/);
+});

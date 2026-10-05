@@ -53,3 +53,17 @@ Mensagens específicas podem ser fornecidas pelos consumidores. O helper não ca
 Validação dirigida: 22 testes Node de renderers, histórico e simulador passaram. Demo densa desktop claro e comparação visual passaram em 40,1 s, sem atualização de referências. Full, matriz visual completa e leitor de tela manual não foram executados nesta entrega.
 
 Fast passou em 52,61 s; check:bundle confirmou os quatro artefatos reproduzíveis. Resultados locais não confirmam GitHub Actions.
+
+## Pacote 3 — leitura de Desempenho e Projeção
+
+O resumo de Desempenho identifica a evolução no período e seus indicadores como estado atual. O histórico salvo de Prontidão tem identificação própria, separado da trajetória dos simulados.
+
+Na Projeção, o resultado observado dos simulados precede a meta. A faixa e a tendência mantêm os nomes e valores do motor existente; o observado não é renomeado para nota prevista. Confiança é contexto secundário após os valores. Entender esta projeção reúne fatores, tamanho da amostra e limites; o resumo não é repetido dentro do disclosure. O componente decision-explanation recebe fatores prontos e conteúdo metodológico escapado pelo consumidor. O link da Central de Ajuda continua na metodologia.
+
+## Pacote 4 — plano, sugestão e execução
+
+A atividade de execução diária recebe o rótulo Próxima atividade do plano. Uma sugestão divergente explica que o plano pode ser mantido. Em Diagnóstico, o rótulo identifica sugestão fora do plano, sugestão opcional ou recomendação estratégica. O CTA de uma sugestão opcional usa tratamento secundário mesmo quando coincide com a atividade planejada.
+
+Os handlers de início, cronômetro, prévia e aplicação permanecem os existentes. A apresentação não altera prioridade, capacidade ou persistência. A matriz Node cobre atividade alinhada, tipo divergente, plano vazio, cronômetro vinculado e cronômetro de outra atividade, além de preservar as proteções anteriores de plano antigo e elegibilidade.
+
+Validação dos pacotes 3 e 4: 32 testes Node passaram; sete casos visuais de Projeção/Hoje passaram em 1,8 min após inspeção das cinco referências alteradas. A jornada de dispensar sugestão e o resumo de Desempenho com Demo densa também passaram. Fast final: 105,99 s. check:bundle e inventário passaram. Full, matriz visual global e leitor de tela manual não executados.

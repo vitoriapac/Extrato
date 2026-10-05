@@ -2341,7 +2341,7 @@
         "../../src/ui/renderers/daily-execution-renderer.js",
         "../../src/ui/renderers/next-best-action-renderer.js"
       ],
-      "staticTestDeclarations": 16,
+      "staticTestDeclarations": 18,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -4578,7 +4578,7 @@
         "../../src/application/projection/build-projection-evidence-explanation.js",
         "../../src/application/projection/build-projection-confidence.js"
       ],
-      "staticTestDeclarations": 9,
+      "staticTestDeclarations": 10,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
