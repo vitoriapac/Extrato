@@ -17,8 +17,8 @@ export function createPerformanceController({document,getViewState,setViewState,
       if(event.target.closest('[data-recovery-cancel]')){document.getElementById('recoveryConfirmDialog')?.close();return}
       const recoveryApply=event.target.closest('[data-recovery-apply]');
       if(recoveryApply){document.getElementById('recoveryConfirmDialog')?.close();document.getElementById('recoveryPreviewDialog')?.close();applyRecovery(recoveryApply.dataset.recoverySignature);return}
-      const section=event.target.closest('[data-performance-section]');
-      if(section){update({section:section.dataset.performanceSection});render();return}
+      const section=event.target.closest('[data-performance-section],[data-performance-investigate]');
+      if(section){update({section:section.dataset.performanceSection||section.dataset.performanceInvestigate});render();return}
       const compared=event.target.closest('[data-performance-compare-subject]');
       if(compared){update({subjectId:compared.dataset.performanceCompareSubject});render();return}
       const stable=event.target.closest('[data-stability-subject]');

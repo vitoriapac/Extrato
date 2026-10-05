@@ -23,7 +23,17 @@ for(const {name,width,theme,columns} of [
     await expectNoPageOverflow(page);
     if(section==='exam')await expect(page.locator('#performanceSectionContent .exam-intelligence-hub')).toBeVisible();
     else await expect(page.locator('#performanceSectionContent .performance-summary')).toBeVisible();
-    if(section==='overview')expect(await page.locator('#performanceSectionContent').evaluate(root=>root.querySelector('.readiness-history-summary').compareDocumentPosition(root.querySelector('.achievement-projection'))&Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
+    if(section==='overview'){
+      expect(await page.locator('#performanceSectionContent').evaluate(root=>root.querySelector('.achievement-projection').compareDocumentPosition(root.querySelector('.readiness-history-summary'))&Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
+      await expect(page.getByRole('navigation',{name:'Detalhes da preparação'})).toBeVisible();
+      const period=await page.locator('#performancePeriod').inputValue();
+      const scope=await page.locator('.performance-scope-note').textContent();
+      await page.getByRole('button',{name:'Comparar disciplinas',exact:true}).click();
+      await expect(page.locator('[data-performance-section="subjects"].performance-section-button')).toHaveAttribute('aria-pressed','true');
+      await expect(page.locator('#performancePeriod')).toHaveValue(period);
+      await expect(page.locator('.performance-scope-note')).toHaveText(scope);
+      await page.locator('.performance-section-button[data-performance-section="overview"]').click();
+    }
     if(section==='overview'&&process.platform==='win32')await expect(page.locator('#performanceSectionContent .performance-summary')).toHaveScreenshot(screenshotName(`desempenho-resumo-${name}.png`),screenshotOptions);
   }
   await activateTab(page,'metas');

@@ -2,6 +2,30 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildNextBestAction,NEXT_BEST_ACTION_STATES} from '../../src/application/diagnostics/build-next-best-action.js';
 import {buildReadinessChangeExplanation} from '../../src/application/readiness/build-readiness-change-explanation.js';
+import {renderPerformanceOverview} from '../../src/ui/performance/performance-overview-renderer.js';
+import {createPerformanceController} from '../../src/ui/controllers/performance-controller.js';
+
+test('atalho de investigação mantém período, disciplina e comparação no controller',()=>{
+  const handlers={};let state={section:'overview',period:'90',comparePrevious:true,subjectId:'math',topicId:'interest'};let rendered=0;
+  const surface={addEventListener:(type,handler)=>{handlers[type]=handler}};
+  const document={addEventListener:()=>{},getElementById:id=>id==='performancePage'?surface:null};
+  createPerformanceController({document,getViewState:()=>state,setViewState:value=>{state=value},render:()=>{rendered++},activateTab:()=>{throw Error('Must keep performance context')}}).register();
+  handlers.click({target:{closest:selector=>selector.includes('[data-performance-investigate]')?{dataset:{performanceInvestigate:'subjects'}}:null}});
+  assert.deepEqual(state,{section:'subjects',period:'90',comparePrevious:true,subjectId:'math',topicId:'interest'});
+  assert.equal(rendered,1);
+});
+
+test('visão geral de desempenho orienta investigação antes do histórico sem modificar o modelo',()=>{
+  const model={current:{},weekly:[],changes:[],history:[],readiness:null};
+  const before=structuredClone(model);
+  const html=renderPerformanceOverview(model,{range:{comparePrevious:false},today:'2026-10-05',activeExamTags:[],formatDate:value=>value,escapeHtml:value=>String(value)});
+  assert.ok(html.indexOf('Resumo interpretativo')<html.indexOf('Investigar o resultado'));
+  assert.ok(html.indexOf('Investigar o resultado')<html.indexOf('Prontidão ao longo do tempo'));
+  for(const section of ['subjects','questions','simulations','consistency'])assert.match(html,new RegExp(`data-performance-investigate="${section}"`));
+  assert.match(html,/não é uma probabilidade de aprovação/);
+  assert.match(html,/Sem plano no período/);
+  assert.deepEqual(model,before);
+});
 
 const recommendation={id:'rec-1',subjectId:'s',topicId:'t',estimatedMinutes:30,score:83,reasons:['Retenção baixa'],evidence:{evidenceLabel:'Alta'}};
 const row={subjectId:'s',topicId:'t',name:'Juros',subjectName:'Matemática',state:'attention',severity:'important',primarySignal:'consolidation-risk',evidence:{label:'Alta'}};
