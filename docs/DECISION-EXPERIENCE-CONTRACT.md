@@ -2,6 +2,8 @@
 
 ## Papéis e autoridade
 
+O tratamento de decisão, evidência, explicação e metodologia segue o [contrato de hierarquia da informação](INFORMATION-HIERARCHY-CONTRACT.md). Este documento continua sendo a referência para autoridade dos motores, confirmação e snapshots.
+
 | Superfície | Pergunta | Fonte existente | Autoridade |
 |---|---|---|---|
 | Visão Geral | O que merece atenção agora? | View-models das áreas | Sintetiza; não calcula outra prioridade |

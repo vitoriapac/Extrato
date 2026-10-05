@@ -2,15 +2,18 @@
 
 Este documento orienta as próximas revisões de interface. Ele classifica o conteúdo existente pelo papel que exerce na decisão de estudo; não altera cálculos nem determina que cada nível precise de um card.
 
-## Três níveis de informação
+## Níveis de informação
 
 | Nível | Pergunta respondida | Tratamento visual |
 | --- | --- | --- |
-| A — decisão | O que preciso fazer ou revisar agora? | Título claro, sinal principal legível à primeira vista e uma ação dominante. Reservar o contraste mais forte da área. |
-| B — análise | Por que essa decisão faz sentido e como ela evoluiu? | Seções com títulos e divisores; gráficos e comparações com contraste intermediário. |
-| C — evidência | Quais dados, fontes e limites sustentam a análise? | Texto e metadados discretos, mas legíveis; acesso próximo da conclusão correspondente. |
+| 1 — decisão | O que preciso fazer ou revisar agora? | Título claro, sinal principal legível e ação dominante. |
+| 2 — evidência | Quais resultados sustentam essa leitura? | Valores, período, unidade, escopo e confiança relevantes visíveis. |
+| 3 — explicação | Por que esta conclusão ou ação? | Detalhes expansíveis com fatores e sinais auxiliares. |
+| 4 — metodologia | Como interpretar critérios e limites? | Detalhes metodológicos ou Central de Ajuda. |
 
-Confiança e ausência de dados não devem ser escondidas apenas para simplificar a tela. Elas pertencem ao nível C, salvo quando mudam a interpretação da decisão: nesse caso, o aviso sobe para junto do nível A.
+O [contrato de hierarquia da informação](INFORMATION-HIERARCHY-CONTRACT.md) define estas regras de apresentação. Confiança e ausência de dados que qualificam a conclusão permanecem visíveis junto ao resultado; somente os detalhes de cálculo ficam na metodologia.
+
+O mapa abaixo conserva a nomenclatura histórica A/B/C dos ciclos anteriores: A corresponde à decisão; B abrange análise e explicação; C reúne evidência e metodologia. Essa classificação histórica não autoriza ocultar evidência relevante. Nas próximas alterações, usar os quatro níveis do contrato.
 
 ## Mapa das áreas atuais
 
@@ -31,7 +34,7 @@ Confiança e ausência de dados não devem ser escondidas apenas para simplifica
 3. Um módulo deve ter título, descrição curta e, quando necessário, uma ação associada. A mesma hierarquia tipográfica deve funcionar em 375 px e em desktop.
 4. Usar notas com parcimônia: **Info** para contexto, **Dica** para prática útil e **Atenção** para limite ou risco. Cor sozinha não comunica o tipo de nota.
 5. Dados históricos ou estimados nunca devem receber o mesmo rótulo de um peso oficial. Confiança e escopo por concurso acompanham os números que qualificam.
-6. No mobile, preservar a ordem A → B → C e favorecer leitura vertical; não compactar vários indicadores em uma linha que exija decodificação.
+6. No mobile, preservar a ordem decisão → evidência → explicação → metodologia e favorecer leitura vertical; não compactar vários indicadores em uma linha que exija decodificação.
 7. Em light e dark, conferir contraste do texto secundário, estados de foco, divisores, barras e notas. O foco de teclado não pode ficar oculto por navegação fixa.
 
 ## Aplicação por pacote
