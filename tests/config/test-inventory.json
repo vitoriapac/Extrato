@@ -1833,9 +1833,10 @@
         "node:assert/strict",
         "../../src/application/performance/build-performance-consistency.js",
         "../../src/ui/performance/performance-consistency-renderer.js",
-        "../../src/application/performance/performance-view-state.js"
+        "../../src/application/performance/performance-view-state.js",
+        "../../src/ui/components/analytical-presentation.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

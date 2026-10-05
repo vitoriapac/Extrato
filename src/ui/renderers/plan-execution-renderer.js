@@ -1,6 +1,7 @@
 import {renderStrategicExecution} from './strategic-execution-renderer.js';
 import {renderChartFrame,renderChartTooltip} from '../chart-components.js';
 import {renderEmptyState} from '../components/presentation.js';
+import {renderActionCard} from '../components/analytical-presentation.js';
 const fmt=value=>`${Math.floor(value/60)}h${String(value%60).padStart(2,'0')}`;
 
 export function renderPlanExecution(model,{formatDate}){
@@ -8,7 +9,7 @@ export function renderPlanExecution(model,{formatDate}){
   const ratio=(value,total)=>total>0?`${Math.round(value/total*100)}%`:'—';
   const summary=`<div class="plan-execution-summary ui-metric-group"><div><span>Capacidade semanal</span><strong>${fmt(model.capacityMinutes)}</strong><small>Tempo disponível</small><span class="plan-execution-track" aria-hidden="true"><i style="width:${model.capacityMinutes/scale*100}%"></i></span></div><div><span>Planejado nos dias</span><strong>${fmt(model.plannedMinutes)}</strong><small>${ratio(model.plannedMinutes,model.capacityMinutes)} da capacidade</small><span class="plan-execution-track is-planned" aria-hidden="true"><i style="width:${model.plannedMinutes/scale*100}%"></i></span></div><div><span>Estudado até hoje</span><strong>${fmt(model.studiedMinutes)}</strong><small>${ratio(model.studiedMinutes,model.plannedMinutes)} do plano</small><span class="plan-execution-track is-studied" aria-hidden="true"><i style="width:${model.studiedMinutes/scale*100}%"></i></span></div></div>`;
   const warning=model.plannedMinutes>model.capacityMinutes?'<aside class="context-note context-note--attention"><strong>Atenção</strong><p>O tempo planejado nos dias supera a capacidade semanal informada. Revise a distribuição antes de confirmar novos planos.</p></aside>':'';
-  const unplanned=model.state==='unplanned'?renderEmptyState({title:'Você ainda não possui um plano para esta semana.',message:`Capacidade disponível: ${fmt(model.capacityMinutes)}. Monte o plano semanal e distribua os dias para acompanhar a execução.`})+'<a class="btn small" href="#metasPlanning">Montar planejamento</a>':'';
+  const unplanned=model.state==='unplanned'?renderActionCard({contentHTML:renderEmptyState({title:'Você ainda não possui um plano para esta semana.',message:`Capacidade disponível: ${fmt(model.capacityMinutes)}. Monte o plano semanal e distribua os dias para acompanhar a execução.`}),actions:[{href:'#metasPlanning',label:'Montar planejamento',className:'btn small'}],className:'plan-execution-next-step'}):'';
   const days=model.days.map(item=>`<li><span>${formatDate(item.date).slice(0,5)}${item.future?' · futuro':''}</span><div class="plan-execution-pair"><span class="plan-execution-track is-planned" aria-hidden="true"><i style="width:${item.plannedMinutes===null?0:Math.min(100,item.plannedMinutes/Math.max(item.plannedMinutes,item.studiedMinutes,1)*100)}%"></i></span><span class="plan-execution-track is-studied" aria-hidden="true"><i style="width:${Math.min(100,item.studiedMinutes/Math.max(item.plannedMinutes||0,item.studiedMinutes,1)*100)}%"></i></span></div><strong>${item.plannedMinutes===null?'Sem plano':fmt(item.plannedMinutes)} / ${fmt(item.studiedMinutes)}</strong></li>`).join('');
   const measured=model.history.filter(item=>item.adherence!==null);
   let trend='';

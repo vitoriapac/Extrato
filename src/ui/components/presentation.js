@@ -1,4 +1,5 @@
-const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+export const escapePresentationText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+const escape=escapePresentationText;
 
 // Shared HTML for editorial headings and empty states. Data stays with the caller.
 export function renderSectionHeader({title,description='',eyebrow='',level=3,compact=false,className='',period=''}={}){
