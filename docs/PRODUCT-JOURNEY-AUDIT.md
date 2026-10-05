@@ -67,3 +67,11 @@ A rechecagem dirigida dos seis perfis passou em 3,9 minutos e não registrou inv
 As jornadas de primeiro plano e ciclo estratégico passaram em 21,4 segundos. A seleção inicial de ação compartilhada e refinamento visual passou em 57,6 segundos. Após a correção da coluna estreita, Hoje foi revalidado em 1440/390 px em 22,6 segundos; as duas comparações finais com Demo densa (desktop claro e mobile escuro) passaram em 55,8 segundos. Uma nova asserção usava um seletor inexistente para o histórico; o seletor foi corrigido e os dois casos afetados foram repetidos com sucesso. Nenhum PNG de referência foi atualizado.
 
 Full, matriz visual global e avaliação manual com leitor de tela ficam para o fechamento da fase. A auditoria não confirma resultados do GitHub Actions. `src/app.js` não recebeu lógica adicional.
+
+## Pacotes 5 a 7 — apresentação, listas e microcopy
+
+A [fachada de apresentação analítica](../src/ui/components/analytical-presentation.js) reúne componentes para resumos, indicadores, evidências, explicações, insights, ações, tendências, vazios e disclosures. Desempenho e a orientação de planejamento reutilizam essa apresentação sem recalcular os indicadores.
+
+A lista progressiva também cobre mudanças de Desempenho, motivos auxiliares de diagnóstico, fatores de Prontidão e eventos de tópicos. Listas que já possuíam disclosure mantêm sua implementação, e atividades operacionais/confirmatórias preservam os itens necessários à decisão.
+
+A [revisão de microcopy](MICROCOPY-CONTRACT.md) encurta o contexto permanente da sugestão, do diagnóstico e das comparações. Critérios, escopo e limitações continuam acessíveis em disclosures. O pacote 7 passou em 27 testes Node relacionados, dois casos browser de execução/sugestão em 35,3 s e Fast em 55,58 s. Os bundles foram reproduzidos pelo build.
