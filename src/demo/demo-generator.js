@@ -1,4 +1,4 @@
-import {buildDemoPreparationScenario} from './demo-preparation-profiles.js';
+import {buildDemoPreparationScenario,DEMO_EXPERIENCE_PROFILES} from './demo-preparation-profiles.js';
 import {createDefaultState} from '../state/defaults.js';
 import {addLocalDays} from '../core/date-utils.js';
 import scenario from './demo-scenario.json' with {type:'json'};
@@ -10,6 +10,7 @@ import {buildDemoSimulations,addDemoEssays,buildDemoReviews} from './demo-builde
 import {buildDemoExams} from './demo-builders/exams.js';
 import {buildDemoPlanning} from './demo-builders/planning.js';
 import {buildDemoSustainability} from './demo-builders/sustainability.js';
+import {prepareDemoExperienceEvidence,prepareDemoExperienceExecution} from './demo-builders/experience-profiles.js';
 import {reconcileDemoPlanExecution} from './demo-builders/plan-execution.js';
 import {buildDemoStrategyCandidates} from './demo-builders/strategy-evidence.js';
 import {buildDemoRecommendations,buildDemoWeeklyCloses} from './demo-builders/learning-cycle.js';
@@ -33,6 +34,7 @@ export function generateDemoData({seed=DEMO_SCENARIO.seed,today,preparationProfi
   addDemoEssays(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions});
   state.simulados=buildDemoSimulations(demoScenario,{today,subjects:state.subjects});
   state.reviewAgenda=buildDemoReviews(demoScenario,{today,subjects:state.subjects});
+  prepareDemoExperienceEvidence(state,{profile:preparationProfile,today});
   state.calendar=Array.from({length:24},(_,index)=>{const entry=activeTopics[(index*3)%activeTopics.length],date=shiftDate(today,index-6);return{id:`demo-calendar-${index+1}`,date,week:'',subjectId:entry.subject.id,topicId:entry.topic.id,subject:entry.subject.name,topic:entry.topic.name,status:index<4?'Concluído':'Não iniciado',reviewType:index%2?'Questões':'Revisão rápida',createdAt:timestamp(shiftDate(date,-5))}});
   const completedDates=state.subjects.flatMap(subject=>subject.topics.map(topic=>topic.firstCompletedAt?.slice(0,10)).filter(Boolean));
   state.progressHistory=Array.from({length:demoScenario.meta.historyDays},(_,index)=>{const date=shiftDate(today,index-oldestAge);return {date,pct:Math.round(completedDates.filter(value=>value<=date).length/activeTopics.length*100)}});
@@ -43,10 +45,17 @@ export function generateDemoData({seed=DEMO_SCENARIO.seed,today,preparationProfi
   state.metasPorDisciplina=state.subjects.map((subject,index)=>({id:`demo-subject-goal-${index+1}`,subjectId:subject.id,meta:30+index*5,createdAt}));
   const candidates=buildDemoStrategyCandidates(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,exams:state.exams,examQuestions:state.examQuestions,blueprint:state.examBlueprint});
   const planning=buildDemoPlanning(demoScenario,{today,subjects:state.subjects,examDate:state.examDate,sessions:state.studySessions,candidates});state.metas=planning.metas;state.dailyPlans=reconcileDemoPlanExecution(planning.dailyPlans,state.studySessions,{today});state.studyPlans=planning.studyPlans;state.adaptivePlanningHistory=planning.adaptivePlanningHistory;
-  buildDemoSustainability(state,{today});
+  if(['standard','recovery','limited_evidence','final_stretch'].includes(preparationProfile))buildDemoSustainability(state,{today});
+  prepareDemoExperienceExecution(state,{profile:preparationProfile,today});
   state.planAdjustments=[{id:'demo-adjustment-1',periodStart:shiftDate(today,-7),periodEnd:shiftDate(today,7),plannedMinutes:480,executedMinutes:350,deficitMinutes:130,redistributedMinutes:100,discardedMinutes:30,allocations:[{date:shiftDate(today,1),minutes:50},{date:shiftDate(today,2),minutes:50}],confirmedAt:timestamp(shiftDate(today,-1)),status:'confirmed'}];
   const learning=buildDemoRecommendations(demoScenario,{today,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes});state.recommendationFeedback=learning.recommendationFeedback;state.recommendationHistory=learning.recommendationHistory;
   state.weeklyCloseSnapshots=buildDemoWeeklyCloses(demoScenario,{today,examDate:state.examDate,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,dailyPlans:state.dailyPlans,recommendations:state.recommendationFeedback,capacityHistory:state.planningCapacityHistory});
+  const experienceProfile=DEMO_EXPERIENCE_PROFILES[preparationProfile];
+  if(experienceProfile&&preparationProfile!=='final_stretch'){
+    const start=shiftDate(today,1-experienceProfile.historyDays);
+    state.progressHistory=state.progressHistory.filter(row=>row.date>=start);
+    state.weeklyCloseSnapshots=state.weeklyCloseSnapshots.filter(row=>row.period.start>=start);
+  }
   state.readinessSnapshots=state.weeklyCloseSnapshots.map((close,index)=>createReadinessSnapshot({id:`demo-readiness-${index+1}`,date:close.period.end,savedAt:close.savedAt,activeExamTags:close.activeExamTags,examPhase:close.examPhase,metrics:buildHistoricalReadinessMetrics({subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,reviews:state.reviewAgenda,simulations:state.simulados,dailyHours:state.metas.horasPorDia,date:close.period.end,activeExamTags:close.activeExamTags})})).filter(Boolean);
   state.topicHistory=activeTopics.flatMap((entry,index)=>[{id:`demo-history-start-${index+1}`,type:'topic_created',date:entry.topic.createdAt.slice(0,10),subjectId:entry.subject.id,topicId:entry.topic.id,createdAt:entry.topic.createdAt},...(entry.topic.firstCompletedAt?[{id:`demo-history-done-${index+1}`,type:'topic_completed',date:entry.topic.firstCompletedAt.slice(0,10),subjectId:entry.subject.id,topicId:entry.topic.id,createdAt:entry.topic.firstCompletedAt}]:[])]);
   state.alertStates=[];state.achievementsUnlocked={primeira_sessao:timestamp(shiftDate(today,-oldestAge+1)),cem_questoes:timestamp(shiftDate(today,-oldestAge+20))};state.lastBackupAt=timestamp(today);state.updatedAt=timestamp(today);

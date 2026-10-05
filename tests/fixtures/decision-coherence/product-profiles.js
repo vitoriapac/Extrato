@@ -12,21 +12,20 @@ import {buildAchievementProjection} from '../../../src/application/projection/bu
 import {buildProjectionTopicRisks} from '../../../src/application/projection/build-projection-topic-risks.js';
 import {buildProjectionCloseContext} from '../../../src/application/projection/build-projection-close-context.js';
 import {buildDecisionCoherenceReport} from '../../../src/application/diagnostics/build-decision-coherence-report.js';
-import {createDefaultState} from '../../../src/state/defaults.js';
 import {addLocalDays} from '../../../src/core/date-utils.js';
 
 export const PRODUCT_PROFILE_TODAY='2026-10-03';
 export function buildProductDecisionProfile(profile){
- if(!['beginner','intermediate','irregular','final_stretch'].includes(profile))throw new TypeError('Unknown product profile');
- const preparationProfile=profile==='final_stretch'?'final_stretch':profile==='intermediate'?'recovery':'standard';
- const today=PRODUCT_PROFILE_TODAY,state=profile==='beginner'?createDefaultState():generateDemoData({today,preparationProfile});
+ if(!['beginner','regular','intermediate','irregular','high_performance','final_stretch'].includes(profile))throw new TypeError('Unknown product profile');
+ const preparationProfile=profile==='intermediate'?'regular':profile;
+ const today=PRODUCT_PROFILE_TODAY,state=generateDemoData({today,preparationProfile});
  const start=addLocalDays(today,-6),activeExamTags=state.examBlueprint.activeExamTags||[],weeklyCapacityMinutes=Object.values(state.metas.horasPorDia||{}).reduce((sum,h)=>sum+Number(h)*60,0);
  // Irregular uses the Demo's existing low-credit execution graph. No outcomes are invented.
  const candidates=profile==='beginner'?[]:buildDemoStrategyCandidates(buildDemoPreparationScenario(preparationProfile),{today,subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,exams:state.exams,examQuestions:state.examQuestions,blueprint:state.examBlueprint});
  const recommendations=recommendStudy(candidates,{availableMinutes:120});
  const adherence=buildWeeklyCloseAdherence({start,end:today,today,subjects:state.subjects,dailyPlans:state.dailyPlans,sessions:state.studySessions,activeExamTags});
  const readiness=calculateReadinessScore(buildHistoricalReadinessMetrics({subjects:state.subjects,sessions:state.studySessions,questions:state.questoes,reviews:state.reviewAgenda,simulations:state.simulados,dailyHours:state.metas.horasPorDia,date:today,activeExamTags}));
- const topicRisks=buildProjectionTopicRisks(candidates),trajectory=buildAchievementProjection({today,examDate:state.examDate,targetScore:80,simulations:state.simulados,adherence:adherence.model.summary.temporalAdherence,topicRisks,openHighImpactPriorities:topicRisks.length});
+ const topicRisks=buildProjectionTopicRisks(candidates),trajectory=buildAchievementProjection({today,examDate:state.examDate,targetScore:80,simulations:state.simulados,readiness,coverage:readiness.factors.coverage,adherence:adherence.model.summary.temporalAdherence,topicRisks,openHighImpactPriorities:topicRisks.length});
  const activePlan=state.studyPlans.at(-1)||null,nextBestAction=buildNextBestAction({recommendations,projection:trajectory,activePlan,weeklyCapacityMinutes});
  const daily=buildDailyExecutionModel({today,subjects:state.subjects,dailyPlans:state.dailyPlans,sessions:state.studySessions,activeExamTags,nextBestAction,activePlan});
  const closeContext=buildProjectionCloseContext({current:trajectory,snapshots:state.projectionSnapshots,activeExamTags,periodStart:start,today});

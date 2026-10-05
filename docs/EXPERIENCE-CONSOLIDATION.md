@@ -62,6 +62,37 @@ Prontidão, aderência e sustentabilidade oferecem artigos específicos. Projeç
 
 Cinco perfis novos da Demo e a auditoria final continuam nos pacotes 7–8. Não foi criada nova seleção browser no manifesto Full: o retorno contextual amplia a jornada de Demo já executada no Experience.
 
+## Pacote 7 — cinco perfis reproduzíveis
+
+`DEMO_EXPERIENCE_PROFILES` descreve cinco massas fictícias, geradas com `generateDemoData({today:'2026-10-03',preparationProfile})`. A Demo pública padrão continua sendo o cenário denso de 140 dias; os perfis são opções explícitas do gerador para desenvolvimento e validação, sem novo seletor na interface.
+
+| Perfil | Histórico | Evidência e decisão esperadas |
+|---|---:|---|
+| `beginner` | 7 dias | Até três sessões, sem simulados; trajetória/confiança insuficientes. Prontidão explicita os fatores ausentes, sem transformar falta de dados em mau desempenho |
+| `regular` | 60 dias | Execução regular, simulados comparáveis e desempenho intermediário; interpretação conservadora das lacunas |
+| `irregular` | 90 dias | Bons acertos com crédito temporal baixo; alerta de execução, sem inventar deficiência de conhecimento |
+| `high_performance` | 100 dias | Cobertura concluída, bons resultados e execução consistente; trajetória no caminho e nenhuma intervenção obrigatória artificial |
+| `final_stretch` | 140 dias | Prova em dez dias, queda recente e lacunas; reta final e capacidade semanal preservada |
+
+O gerador usa os motores reais para produzir fechamento e Prontidão depois da evidência/execução fictícia. Os perfis não definem scores, estados de trajetória ou prioridade manualmente. Datas, IDs, vínculos sessão–questões–plano, somas de erros e orçamento de 720 minutos são verificados. Fechamentos anteriores à janela do perfil são excluídos antes de gerar seus snapshots; snapshots reais do usuário não passam por esse código.
+
+A projeção continua limitada a confiança moderada quando suas regras permitem. Alto volume de estudo não promove automaticamente a confiança da projeção nem gera probabilidade de aprovação.
+
+## Pacote 8 — auditoria de experiência
+
+A jornada dos cinco perfis percorre Visão Geral → Hoje → Desempenho → Metas → fechamento em 390 px, verifica a leitura principal da trajetória e registra imagens para inspeção. É um único caso browser adicional no Full; Experience mantém suas jornadas dirigidas e ganha o quinto perfil na matriz Node.
+
+| Pergunta de auditoria | Contrato observado |
+|---|---|
+| Qual informação vem primeiro? | Situação atual e trajetória antes do histórico/investigação |
+| Sei como agir? | Hoje apresenta atividade e CTA existentes; alteração estratégica conserva prévia/confirmar |
+| A conclusão foi duplicada? | Metas mantém resumo e acesso à origem; detalhes ficam no proprietário |
+| Preciso ler tudo? | Métodos, fatores e comparação começam em disclosures fechados |
+| Posso conferir a origem? | Evidência visível, métodos acessíveis e ajuda contextual com retorno |
+| O mobile continua legível? | Verificação de overflow nas cinco telas e capturas dos cinco perfis |
+
+Essas verificações e a inspeção das imagens são uma auditoria técnica. Não equivalem a um estudo de compreensão de cinco segundos com participantes ou uma sessão manual com leitor de tela.
+
 ## Validação local dos pacotes 1–3
 
 - 24 testes Node relacionados passaram (seleção de impacto, contratos de UI/controller e projeção).

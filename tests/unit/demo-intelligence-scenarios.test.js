@@ -60,7 +60,7 @@ test('demo extensa contém quatro cenários de inteligência distinguíveis',()=
 });
 
 import {buildAchievementProjection} from '../../src/application/projection/build-achievement-projection.js';
-import {buildDemoPreparationScenario} from '../../src/demo/demo-preparation-profiles.js';
+import {buildDemoPreparationScenario,DEMO_EXPERIENCE_PROFILES} from '../../src/demo/demo-preparation-profiles.js';
 test('Demo oferece recuperação, reta final e evidência limitada sem alterar o cenário padrão',()=>{
  const standard=generateDemoData({today});
  for(const profile of ['recovery','final_stretch','limited_evidence']){
@@ -74,4 +74,22 @@ test('Demo oferece recuperação, reta final e evidência limitada sem alterar o
  }
  assert.deepEqual(generateDemoData({today}),standard);
  assert.throws(()=>buildDemoPreparationScenario('unknown'),/desconhecido/);
+});
+
+test('cinco perfis de experiência possuem histórico reproduzível, vínculos e capacidade preservados',()=>{
+ for(const [profile,definition] of Object.entries(DEMO_EXPERIENCE_PROFILES)){
+  const state=generateDemoData({today,preparationProfile:profile});
+  assert.deepEqual(state,generateDemoData({today,preparationProfile:profile}));
+  assert.equal(state.progressHistory.length,definition.historyDays);
+  const first=state.progressHistory[0].date;
+  assert.ok(state.studySessions.every(row=>row.date>=first&&row.date<=today));
+  assert.ok(state.simulados.every(row=>row.date>=first&&row.date<=today));
+  assert.ok(state.weeklyCloseSnapshots.every(row=>profile==='final_stretch'||row.period.start>=first));
+  assert.equal(state.studyPlans.at(-1).weeklyAvailableMinutes,720);
+  assert.equal(state.studyPlans.at(-1).items.reduce((sum,item)=>sum+item.minutes,0),720);
+  assert.equal(new Set(state.studySessions.map(row=>row.id)).size,state.studySessions.length);
+  for(const row of state.questoes){const session=state.studySessions.find(item=>item.id===row.studySessionId);assert.ok(session);assert.equal(session.questionsResolved,row.resolved);assert.equal(session.correctAnswers,row.correct);assert.equal(Object.values(row.errorBreakdown).reduce((sum,value)=>sum+value,0),row.resolved-row.correct);}
+  for(const plan of state.dailyPlans)for(const item of plan.items)for(const id of item.sessionIds||[]){const session=state.studySessions.find(row=>row.id===id);assert.ok(session);assert.equal(session.planItemId,item.id);assert.equal(session.date,plan.date);}
+  if(profile==='beginner'){assert.equal(state.simulados.length,0);assert.ok(state.studySessions.length<=3);}
+ }
 });

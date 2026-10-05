@@ -793,9 +793,11 @@
       "imports": [
         "@playwright/test",
         "./helpers.js",
-        "../../src/state/defaults.js"
+        "../../src/state/defaults.js",
+        "../../src/demo/demo-generator.js",
+        "../../src/demo/demo-preparation-profiles.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 1,
       "observedCaseSeconds": 23.9,
@@ -2673,7 +2675,7 @@
         "../../src/application/projection/build-achievement-projection.js",
         "../../src/demo/demo-preparation-profiles.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

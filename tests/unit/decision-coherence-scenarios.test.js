@@ -21,16 +21,18 @@ import {renderNextBestAction} from '../../src/ui/renderers/next-best-action-rend
 import {buildWeeklyDecisionSummary} from '../../src/application/analytics/build-weekly-decision-cycle.js';
 import {buildPlanExecution} from '../../src/application/goals/build-plan-execution.js';
 import {buildWeeklyCloseAdherence} from '../../src/application/adherence/build-weekly-close-adherence.js';
-for(const profile of ['beginner','intermediate','irregular','final_stretch'])test('contratos de produto com motores reais: '+profile,()=>{
+for(const profile of ['beginner','regular','irregular','high_performance','final_stretch'])test('contratos de produto com motores reais: '+profile,()=>{
  const result=buildProductDecisionProfile(profile),before=JSON.stringify(result.state),{daily,nextBestAction,trajectory,adherence}=result;
  const html=renderDailyExecution(daily,{escapeHtml:String,escapeAttr:String,formatMinutes:value=>value+' min'});
  assert.equal(trajectory.projection.examDayScore,null);assert.equal(trajectory.projection.approvalProbability,null);
  if(daily.priority.nextItem)assert.ok(html.includes('data-daily-start="'+daily.priority.nextItem.id+'"'));
  if(nextBestAction.action){const recommendation=result.recommendations[0];assert.equal(nextBestAction.action.topicId,recommendation.topicId);const actionHtml=renderNextBestAction(nextBestAction,{escapeHtml:String,escapeAttr:String,dailyPriority:daily.priority});if(nextBestAction.state==='ACTION_OPTIONAL')assert.match(actionHtml,/class="btn ghost small"[^>]*data-study-action-source/)}
- if(profile==='beginner'){assert.equal(trajectory.status,'insufficient_data');assert.equal(nextBestAction.state,'INSUFFICIENT_EVIDENCE');assert.equal(result.readiness.state,'insufficient');assert.ok(result.readiness.confidence<.35);assert.equal(result.readiness.factors.retention,null)}
+ if(profile==='beginner'){assert.equal(trajectory.status,'insufficient_data');assert.equal(trajectory.confidence.level,'insufficient');assert.equal(nextBestAction.state,'INSUFFICIENT_EVIDENCE');assert.equal(result.readiness.factors.mastery,null);assert.equal(result.readiness.factors.simulations,null);assert.equal(result.readiness.factors.retention,null)}
  if(profile==='final_stretch'){assert.equal(trajectory.exam.daysRemaining,10);assert.equal(trajectory.status,'at_risk')}
- if(profile==='intermediate')assert.notEqual(trajectory.status,'insufficient_data');
+ if(profile==='regular')assert.notEqual(trajectory.status,'insufficient_data');
  if(profile==='irregular')assert.ok(adherence.model.summary.temporalAdherence<80);
+ if(profile==='irregular'){assert.ok(result.readiness.factors.mastery>=80);assert.equal(trajectory.status,'attention');}
+ if(profile==='high_performance'){assert.equal(trajectory.status,'on_track');assert.equal(trajectory.confidence.level,'moderate');assert.ok(result.readiness.value>=80);assert.notEqual(nextBestAction.state,'ACTION_REQUIRED');}
  assert.equal(result.coherence.summary.unexplained,0,'Divergência entre motores sem explicação');
  const cycle=result.cycle;
  const summary=buildWeeklyDecisionSummary({cycle,trajectory:result.closeContext,adherence});
