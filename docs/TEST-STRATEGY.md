@@ -4,7 +4,7 @@
 
 Pacotes 1 a 6 concluídos: inventário, contrato, separação das jornadas/matrizes, runners, CI, política de desenvolvimento e seleção por impacto. Nenhum teste foi removido. As matrizes completas permanecem disponíveis no Full. As fórmulas e referências visuais não foram alteradas.
 
-O [inventário](TEST-SUITE-INVENTORY.md) registra 160 arquivos Node, 55 arquivos E2E e evidências da última execução local completa. Integrações existentes usam o runner Node e permanecem em tests/unit.
+O [inventário](TEST-SUITE-INVENTORY.md) registra 161 arquivos Node, 55 arquivos E2E e evidências da última execução local completa. Integrações existentes usam o runner Node e permanecem em tests/unit.
 
 ## Contrato dos gates
 

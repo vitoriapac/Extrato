@@ -42,6 +42,8 @@ Usar Node para contratos e valores ausentes, zero, estimativa e amostra insufici
 
 Avaliação manual com leitor de tela deve ser registrada separadamente de axe e nomes acessíveis automatizados.
 
+O [fechamento do ciclo](DECISION-EXPERIENCE-CLOSURE.md) reúne as evidências finais de validação e seus limites.
+
 ## Pacote 2 — apresentação compartilhada
 
 presentEvidence retorna estado, rótulo, texto, mensagem contextual e confiança recebida. Aceita medido, estimado, sem dados, amostra insuficiente e ainda não aplicável. Somente números finitos são apresentados como valores; zero é válido. Um resultado declarado medido/estimado sem valor finito é apresentado como sem dados. Estados desconhecidos geram erro de contrato.

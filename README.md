@@ -259,3 +259,5 @@ Veja também a [jornada do produto](docs/product-journey.md), com cenários e me
 - Registro de sessão enxuto, com detalhes adicionais recolhidos.
 
 Para validar a área alterada, use `npm run test:affected -- --dry-run` antes da execução. O [mapa de impacto e as métricas](docs/TEST-IMPACT-SELECTION.md) explicam o fallback Full e a política está em [AGENTS.md](AGENTS.md).
+
+O [contrato da experiência de decisão](docs/DECISION-EXPERIENCE-CONTRACT.md) explica como as superfícies compartilham evidências e preservam o controle do usuário. O [fechamento do ciclo](docs/DECISION-EXPERIENCE-CLOSURE.md) registra validações e limitações.
