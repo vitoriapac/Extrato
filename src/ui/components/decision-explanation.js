@@ -1,0 +1,4 @@
+// Explanations use factors supplied by application models; no calculation here.
+export function renderDecisionExplanation({title='Por que esta análise?',factors=[],evidence='',confidence='',method='',helpTopic=null}, {escapeHtml,escapeAttr=escapeHtml}){
+ return '<details class="achievement-projection__details decision-explanation"><summary>'+escapeHtml(title)+'</summary>'+(factors.length?'<ul>'+factors.map(item=>'<li>'+escapeHtml(item)+'</li>').join('')+'</ul>':'')+(evidence?'<p>'+escapeHtml(evidence)+'</p>':'')+(confidence?'<p>'+escapeHtml(confidence)+'</p>':'')+(method?'<details class="projection-evidence-method"><summary>Faixa, confiança e limites do cálculo</summary>'+(helpTopic?'<button type="button" class="btn ghost small" data-help-topic-link="'+escapeAttr(helpTopic)+'">Entenda faixa e confiança na ajuda</button>':'')+method+'</details>':'')+'</details>';
+}

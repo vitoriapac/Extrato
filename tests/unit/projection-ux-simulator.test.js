@@ -106,3 +106,11 @@ import {buildProjectionEvidenceExplanation} from '../../src/application/projecti
 import {buildProjectionConfidence} from '../../src/application/projection/build-projection-confidence.js';
 test('explicação separa amostra, faixa atual, tendência e nota futura sem mutação',()=>{const model=buildAchievementProjection(input),before=structuredClone(model),explanation=buildProjectionEvidenceExplanation(model);assert.deepEqual(model,before);assert.equal(explanation.facts[0].value,model.evidence.observationCount);assert.equal(explanation.facts[1].value,model.evidence.sampleSize);assert.match(explanation.bandMeaning,/não é uma nota prevista/);assert.match(explanation.trendMeaning,/não é extrapolada/);const html=renderAchievementProjection(model,{escapeHtml});assert.match(html,/Faixa, confiança e limites do cálculo/);assert.match(html,/no máximo confiança moderada/)});
 test('confiança explica composição desconhecida e calibração sem promover o nível',()=>{const confidence=buildProjectionConfidence({available:true,confidence:'low',evidence:{compositionKnown:false},calibration:{state:'insufficient'}},{forecast30:{available:true}});assert.equal(confidence.level,'low');assert.ok(confidence.reasons.some(reason=>reason.includes('disciplina')));assert.ok(confidence.reasons.some(reason=>reason.includes('retrospectivos')));assert.equal(buildProjectionConfidence(null,null).level,'insufficient')});
+
+test('hierarquia da projeção preserva resultado, meta e confiança contextual sem repetir resumo',()=>{
+ const model=buildAchievementProjection(input),before=JSON.stringify(model),html=renderAchievementProjection(model,{escapeHtml});
+ assert.ok(html.indexOf('<span>Simulados comparáveis')<html.indexOf('<span>Meta de nota'));
+ assert.ok(html.indexOf('achievement-projection__metrics')<html.indexOf('Veja a base em'));
+ assert.match(html,/decision-explanation/);assert.doesNotMatch(html,/<details[^>]*decision-explanation[^>]* open/);
+ assert.equal(html.split(escapeHtml(model.summary)).length-1,1);assert.equal(JSON.stringify(model),before);
+});
