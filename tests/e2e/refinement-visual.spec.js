@@ -41,6 +41,7 @@ for(const {name,width,theme,columns} of [
   await expect(page.locator('#metasContainer .meta-card')).toHaveCount(7);
   await expect(page.locator('#metasContainer .goal-group--routine')).toContainText('Meta de Aderência');
   await expect(page.locator('#metasContainer .goal-group')).toHaveCount(3);
+  expect(await page.locator('#metasContainer .goal-group').evaluateAll(nodes=>nodes.map(node=>node.id||node.getAttribute('aria-labelledby')))).toEqual(['goalGroup-outcome','goalGroup-routine','goalGroup-volume']);
   const actualColumns=await page.locator('#metasContainer').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length);
   expect(actualColumns).toBe(columns);
   await expectNoPageOverflow(page);

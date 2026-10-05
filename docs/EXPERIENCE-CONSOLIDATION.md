@@ -46,6 +46,14 @@ Diagnóstico, aderência e sustentabilidade reutilizam `renderDisclosure` da fac
 
 O contrato de quatro níveis continua válido: os três níveis de leitura não ocultam condições que qualificam o resultado. Nenhum score ou vocabulário alternativo foi criado.
 
+## Pacote 5 — responsabilidades de Metas, fechamento e Visão Geral
+
+Metas apresenta Resultado → Rotina → Volume, mantendo os mesmos sete controles, unidades e autoridade de edição. Seu resumo semanal mostra apenas medidas da semana e encaminha ao fechamento existente, sem repetir avanço e risco completos.
+
+A Visão Geral mantém Prontidão global e confiança. Fatores ficam em “Como este índice foi calculado?”. A faixa atual aparece uma vez como resumo, com amostra/confiança e acesso a Desempenho; calibração especializada, critérios e diagnóstico detalhado continuam em “Investigar a faixa e o diagnóstico”. Essa calibração não foi apagada nem reinterpretada como a trajetória. O novo renderer é apresentação pura; cálculos e captura de snapshots permanecem nas funções existentes.
+
+No fechamento, síntese e decisão precedem sinais auxiliares. Comparação semanal e contexto de trajetória ficam sob demanda; o resumo mantém a nota sobre comparabilidade e a necessidade de confirmação. Capacidade, prioridades e resultados posteriores preservam suas fontes.
+
 ## Validação local dos pacotes 1–3
 
 - 24 testes Node relacionados passaram (seleção de impacto, contratos de UI/controller e projeção).

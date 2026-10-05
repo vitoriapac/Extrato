@@ -4,6 +4,19 @@ import {buildNextBestAction,NEXT_BEST_ACTION_STATES} from '../../src/application
 import {buildReadinessChangeExplanation} from '../../src/application/readiness/build-readiness-change-explanation.js';
 import {renderPerformanceOverview} from '../../src/ui/performance/performance-overview-renderer.js';
 import {createPerformanceController} from '../../src/ui/controllers/performance-controller.js';
+import {renderReadinessOverview} from '../../src/ui/renderers/readiness-overview-renderer.js';
+import {renderWeeklyCloseSummary} from '../../src/ui/renderers/overview-renderer.js';
+
+test('resumos de Prontidão e fechamento preservam valores, insuficiência e detalhe acessível',()=>{
+  const input={m:{retencao:{available:false}},score:0,level:{},confidence:{nivel:'Baixa',value:.2},projection:{available:false,calibration:{available:false}},projectionHistory:{total:0},factors:[],approvalState:'empty',approvalLabel:'Aguardando dados',diagnostics:[],candidates:[]};
+  const before=structuredClone(input);
+  const html=renderReadinessOverview(input,{escapeHtml:String,escapeAttr:String,getMetricDataState:()=>{},metricStateLabel:()=>{}});
+  assert.match(html,/Dados insuficientes para estimar/);assert.match(html,/data-performance-jump="overview"/);
+  assert.doesNotMatch(html,/<details[^>]* open/);
+  assert.match(html,/readiness-investigation/);assert.deepEqual(input,before);
+  const summary=renderWeeklyCloseSummary({state:'ready',questions:{resolved:31,accuracy:68},mainRisk:{message:'risco completo'},adherence:{model:{summary:{temporalAdherence:75}}}},{escapeHtml:String});
+  assert.match(summary,/75%/);assert.match(summary,/68%/);assert.doesNotMatch(summary,/risco completo/);
+});
 
 test('atalho de investigação mantém período, disciplina e comparação no controller',()=>{
   const handlers={};let state={section:'overview',period:'90',comparePrevious:true,subjectId:'math',topicId:'interest'};let rendered=0;

@@ -9,6 +9,7 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado',async({
  await page.evaluate(value=>{const api=window.__EXTRATO_TEST__,result=api.validateBackupData(value);if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()},buildStrategicCycleFixture(base));
  await activateTab(page,'dashboard');
  const initial=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().projectionSnapshots));expect(initial.length).toBeGreaterThan(0);
+ await page.locator('#approvalDashboard .readiness-investigation > summary').click();
  const quality=page.locator('#approvalDashboard .evidence-quality').first();await quality.locator('summary').focus();await page.keyboard.press('Enter');await expect(quality).toHaveAttribute('open','');
  await page.clock.setSystemTime(new Date('2026-09-30T12:00:00-03:00'));
  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),old=state.simulados.filter(item=>item.examTags?.includes('bb-escriturario')).at(-1);state.simulados.push({...structuredClone(old),id:'calibration-new',date:'2026-09-30',breakdown:old.breakdown.map(row=>({...row,id:row.id+'-calibration'}))});api.setState(state);api.renderAll()});
@@ -16,6 +17,7 @@ test('faixas emitidas sobrevivem ao backup e qualidade abre por teclado',async({
  const result=await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=api.getState();return {snapshots:structuredClone(state.projectionSnapshots),validation:api.validateBackupData(JSON.parse(JSON.stringify(state)))}});
  expect(result.snapshots[0]).toEqual(initial[0]);expect(result.validation.valid,result.validation.message).toBe(true);expect(result.validation.normalized.projectionSnapshots).toEqual(result.snapshots);
  const calibration=page.locator('#approvalDashboard .projection-calibration-list > details').first();
+ await page.locator('#approvalDashboard .readiness-investigation > summary').click();
  await calibration.locator(':scope > summary').click();await expect(calibration.locator('svg[role="img"]')).toBeVisible();
  for(const width of [320,375,390,430]){
   await page.setViewportSize({width,height:812});await expectNoPageOverflow(page);

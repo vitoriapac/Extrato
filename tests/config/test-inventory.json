@@ -4424,9 +4424,11 @@
         "../../src/application/diagnostics/build-next-best-action.js",
         "../../src/application/readiness/build-readiness-change-explanation.js",
         "../../src/ui/performance/performance-overview-renderer.js",
-        "../../src/ui/controllers/performance-controller.js"
+        "../../src/ui/controllers/performance-controller.js",
+        "../../src/ui/renderers/readiness-overview-renderer.js",
+        "../../src/ui/renderers/overview-renderer.js"
       ],
-      "staticTestDeclarations": 6,
+      "staticTestDeclarations": 7,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

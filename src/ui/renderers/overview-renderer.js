@@ -14,3 +14,9 @@ export function renderExecutiveSummary({summary,formatMinutes,escapeHtml}){
   const primary=summary.primaryAction?`<strong>${escapeHtml(summary.primaryAction.title)}</strong><p>${escapeHtml(summary.primaryAction.subject||'')} · ${escapeHtml(summary.primaryAction.topic||'')} · ${formatMinutes(summary.primaryAction.duration)}</p><small>${escapeHtml(summary.primaryAction.reason)}</small>`:'<p>Ainda não há uma prioridade confiável. Cadastre tópicos ou revisões pendentes.</p>';
   return `<div class="executive-kpis">${cards}</div><div class="executive-decision-grid"><section><h4>Prioridade principal</h4>${primary}</section><section><h4>Riscos e oportunidades</h4><p><strong>${summary.riskCount}</strong> risco${summary.riskCount===1?'':'s'} com evidência atual.</p><small>${escapeHtml(summary.opportunityMessage)}</small></section></div>`;
 }
+
+export function renderWeeklyCloseSummary(weekly,{escapeHtml}={}){
+  if(!weekly||weekly.state==='insufficient')return '<p class="analytics-note">Ainda não há evidência suficiente para interpretar o fechamento. Registre sessões e resultados ao longo da semana.</p>';
+  const adherence=weekly.adherence?.model?.summary?.temporalAdherence;
+  return `<div class="metas-close-metrics"><div><span>Aderência ao plano</span><strong>${adherence==null?'—':Math.round(adherence)+'%'}</strong></div><div><span>Questões resolvidas</span><strong>${weekly.questions?.resolved??0}</strong></div><div><span>Precisão</span><strong>${weekly.questions?.accuracy==null?'—':weekly.questions.accuracy+'%'}</strong></div></div><p>Resumo da semana encerrada. Consulte o fechamento para interpretar sinais e decidir a próxima semana.</p>`;
+}

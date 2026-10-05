@@ -8,6 +8,8 @@ test('groups volume, routine and outcome without converting topic goals into hou
   const model=buildResultGoalsViewModel({goals,achieved:{weeklyTopics:2,monthlyTopics:7,questions:50,simulations:1,studyDays:3,accuracy:null}});
   const html=renderGoals(model,{adherenceTarget:80,escapeHtml});
   for(const group of ['volume','routine','outcome'])assert.match(html,new RegExp(`goal-group--${group}`));
+  assert.ok(html.indexOf('goal-group--outcome')<html.indexOf('goal-group--routine'));
+  assert.ok(html.indexOf('goal-group--routine')<html.indexOf('goal-group--volume'));
   assert.match(html,/Tópicos concluídos nesta semana/);assert.match(html,/Tópicos concluídos neste mês/);
   assert.match(html,/href="#metasCapacity"/);assert.match(html,/href="#subjectAccuracyGoals"/);assert.match(html,/Meta de Aderência/);
   assert.match(html,/Sem dados/);assert.equal(JSON.stringify(goals),before);
