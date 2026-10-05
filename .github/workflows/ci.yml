@@ -23,6 +23,7 @@ jobs:
     outputs:
       docs_only: ${{ steps.detect.outputs.docs_only }}
       gate: ${{ steps.detect.outputs.gate }}
+      experience: ${{ steps.detect.outputs.experience }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -49,10 +50,12 @@ jobs:
           echo "gate=$gate" >> "$GITHUB_OUTPUT"
           if [[ "$EVENT_NAME" == "release" || "$EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            echo "experience=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           node scripts/select-affected-tests.mjs --base "$BASE_SHA" --head "$HEAD_SHA" --output test-impact.json > test-impact-selection.log
           impact_gate=$(node -e 'process.stdout.write(require("./test-impact.json").requiredGate)')
+          echo "experience=$(node -e 'process.stdout.write(String(require("./test-impact.json").experienceRequired))')" >> "$GITHUB_OUTPUT"
           if [[ "$impact_gate" == "full" ]]; then
             echo "gate=full" >> "$GITHUB_OUTPUT"
           fi
@@ -118,8 +121,35 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-${{ needs.changes.outputs.gate }}
-          path: test-results/
+          path: |
+            test-results/
+            playwright-report/
           if-no-files-found: ignore
+          retention-days: 14
+  experience:
+    needs: changes
+    if: needs.changes.outputs.experience == 'true' && needs.changes.outputs.docs_only != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:experience
+      - name: Upload experience timing and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experience
+          path: |
+            .test-gates/experience-summary.json
+            .tmp-experience-gate/
+            playwright-report/
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 14
   visual-windows:
     needs: changes

@@ -6052,7 +6052,7 @@
         "../../scripts/lib/affected-test-plan.js",
         "../../scripts/lib/browser-test-selection.js"
       ],
-      "staticTestDeclarations": 10,
+      "staticTestDeclarations": 11,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

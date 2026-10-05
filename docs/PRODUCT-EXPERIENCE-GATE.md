@@ -2,6 +2,14 @@
 
 Executar `npm run test:experience` depois de modificar a relação entre decisão, evidência e ação. É uma seleção dirigida dos contratos e jornadas existentes, com uma jornada adicional de primeiro uso. Não substitui Fast ou Full.
 
+## Integração remota
+
+O seletor de impacto publica `experienceRequired`. O CI executa um job `experience` independente nos caminhos de projeção, planejamento, analytics, execução diária, metas, desempenho, Recovery, aderência e Demo. Arquivos desconhecidos, contratos globais ou diff indisponível também exigem Experience. Markdown e CSS isolado não o acionam. Release e execução manual o incluem explicitamente.
+
+PR mantém Fast; push mantém Regression; risco global promove Full. Experience não substitui esses gates e pode repetir jornadas presentes no Full para publicar um status de produto independente. A seleção não altera o manifesto Full. O job preserva o resumo de tempos, relatórios JSON por jornada (cenário, projeto, viewport e falhas), screenshots, diffs, traces e vídeos em `.tmp-experience-gate`, por 14 dias. Os fusos constam no resumo; o trace permite inspecionar mudanças de viewport durante a jornada.
+
+Na consulta de 5/10/2026, o [CI de c28b51d](https://github.com/vitoriapac/Extrato/actions/runs/37350737266) ainda executava validation; changes e visual-windows passaram. Isso não confirma o resultado final nem a integração nova, que só será executada após publicação.
+
 | Cenário | Contrato protegido | Cobertura |
 |---|---|---|
 | Iniciante | Sem projeção numérica fabricada; configuração acessível; sugestão introdutória opcional com evidência baixa | product-consolidation.spec.js e perfil beginner no Node |

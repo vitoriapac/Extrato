@@ -2,6 +2,15 @@ import {posix} from 'node:path';
 import {impactAreas,globalImpactSources,impactMapVersion} from '../../tests/config/test-impact-map.js';
 
 export const matchPath=(path,pattern)=>new RegExp('^'+pattern.split(/(\*\*|\*)/).map(part=>part==='**'?'.*':part==='*'?'[^/]*':part.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('')+'$').test(path);
+const experienceSources=[
+  'src/application/projection/**','src/domain/forecasts/**','src/application/planning/**','src/domain/planning/**',
+  'src/application/analytics/**','src/domain/analytics/**','src/application/performance/**','src/ui/performance/**',
+  'src/application/goals/**','src/domain/goals/**','src/application/weekly*/**',
+  'src/application/daily-execution/**','src/ui/controllers/*daily-execution*.js',
+  'src/ui/controllers/*projection*.js','src/ui/controllers/*performance*.js',
+  'src/ui/renderers/*daily-execution*.js','src/ui/renderers/*weekly*.js','src/ui/renderers/goals-renderer.js',
+  'src/application/recovery/**','src/application/adherence/**','src/demo/**'
+];
 export function buildAffectedTestPlan({changedFiles=[],inventory=[],tierManifest,dependencies={},derivedFiles=[],diffAvailable=true}={}){
   const files=[...new Set(changedFiles.map(file=>String(file).replaceAll('\\','/').replace(/^\.\//,'')))].sort();
   const reasons=[],areas=new Set(),units=new Set(),browserFiles=new Set(),browserCases=[];
@@ -33,7 +42,8 @@ export function buildAffectedTestPlan({changedFiles=[],inventory=[],tierManifest
     }
   }
   if(areas.size&&!units.size&&!browserCases.length&&!browserFiles.size){full=true;reasons.push({code:'empty_area_selection'});}
-  return {schemaVersion:1,mapVersion:impactMapVersion,changedFiles:files,areas:[...areas].sort(),
+  const experienceRequired=full||files.some(file=>experienceSources.some(pattern=>matchPath(file,pattern)));
+  return {schemaVersion:1,mapVersion:impactMapVersion,changedFiles:files,areas:[...areas].sort(),experienceRequired,
     requiredGate:full?'full':files.length&&files.every(file=>file.endsWith('.md'))?'docs':'affected',reasons,
     unitFiles:full?allUnits:[...units].sort(),browserFiles:full?inventory.filter(row=>row.layer==='browser').map(row=>row.file).sort():[...browserFiles].sort(),
     browserCases:full?[]:[...new Map(browserCases.map(row=>[row.file+'|'+row.title,row])).values()].sort((a,b)=>(a.file+a.title).localeCompare(b.file+b.title))};

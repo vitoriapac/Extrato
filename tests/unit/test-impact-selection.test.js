@@ -7,6 +7,22 @@ import {selectGateBrowserCases} from '../../scripts/lib/browser-test-selection.j
 const inventory=JSON.parse(readFileSync(new URL('../config/test-inventory.json',import.meta.url),'utf8')).inventory;
 const tierManifest=JSON.parse(readFileSync(new URL('../config/test-tiers.json',import.meta.url),'utf8'));
 const plan=(changedFiles,options={})=>buildAffectedTestPlan({changedFiles,inventory,tierManifest,...options});
+test('experience follows decision surfaces and conservatively includes unknown contracts',()=>{
+  for(const file of ['src/application/projection/build-projection-page-model.js','src/domain/analytics/weekly-close.js','src/application/goals/goal-service.js','src/application/daily-execution/build-daily-progress.js','src/ui/performance/performance-overview-renderer.js','src/ui/renderers/weekly-decision-cycle-renderer.js','src/new-module.js'])assert.equal(plan([file]).experienceRequired,true,file);
+  for(const files of [[],['docs/INFORMATION-OWNERSHIP.md'],['styles/app.css'],['tests/unit/date-utils.test.js']])assert.equal(plan(files).experienceRequired,false);
+  assert.equal(plan([],{diffAvailable:false}).experienceRequired,true);
+});
+test('CI publishes the experience impact status and preserves per-case artifacts',()=>{
+  const workflow=readFileSync(new URL('../../.github/workflows/ci.yml',import.meta.url),'utf8');
+  assert.match(workflow,/experience: \$\{\{ steps\.detect\.outputs\.experience \}\}/);
+  assert.match(workflow,/require\("\.\/test-impact\.json"\)\.experienceRequired/);
+  assert.match(workflow,/  experience:\s+needs: changes\s+if: needs\.changes\.outputs\.experience == 'true'/);
+  assert.match(workflow,/run: npm run test:experience/);
+  assert.match(workflow,/\.tmp-experience-gate\//);
+  assert.match(workflow,/include-hidden-files: true/);
+  assert.match(workflow,/pull_request\) gate=fast/);
+  assert.match(workflow,/push\) gate=regression/);
+});
 test('impact glob respects directories, separators and exact boundaries',()=>{
   assert.ok(matchPath('src/application/recovery/a.js','src/application/recovery/**'));
   assert.equal(matchPath('src/application/recovery-other/a.js','src/application/recovery/**'),false);

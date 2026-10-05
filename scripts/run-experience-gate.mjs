@@ -14,13 +14,14 @@ const browser=[
 ];
 const escape=value=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const phases=['UTC','America/Sao_Paulo'].map(timezone=>({name:'Contratos de experiência',timezone,args:['--test','tests/unit/decision-coherence-scenarios.test.js','tests/unit/daily-execution.test.js','tests/unit/weekly-adherence.test.js']}));
-phases.push(...browser.map(([file,title],index)=>({name:title,timezone:'UTC',args:[playwright,'test',file,'--grep',`${escape(title)}$`,'--retries=0',`--output=.tmp-experience-gate/case-${index}`]})));
+phases.push(...browser.map(([file,title],index)=>({name:title,timezone:'UTC',report:resolve(root,`.tmp-experience-gate/report-${index}.json`),args:[playwright,'test',file,'--grep',`${escape(title)}$`,'--retries=0','--reporter=list,json',`--output=.tmp-experience-gate/case-${index}`]})));
+mkdirSync(resolve(root,'.tmp-experience-gate'),{recursive:true});
 const results=[],started=performance.now();let exitCode=0;
 for(const phase of phases){
  console.log(`\n${phase.name} [${phase.timezone}]`);
  const start=performance.now();
- const code=await new Promise((done,reject)=>{const child=spawn(process.execPath,phase.args,{cwd:root,stdio:'inherit',env:{...process.env,TZ:phase.timezone}});child.once('error',reject);child.once('exit',code=>done(code??1));});
- results.push({name:phase.name,timezone:phase.timezone,seconds:Number(((performance.now()-start)/1000).toFixed(2)),exitCode:code});
+ const code=await new Promise((done,reject)=>{const child=spawn(process.execPath,phase.args,{cwd:root,stdio:'inherit',env:{...process.env,TZ:phase.timezone,...(phase.report?{PLAYWRIGHT_JSON_OUTPUT_FILE:phase.report}:{})}});child.once('error',reject);child.once('exit',code=>done(code??1));});
+ results.push({name:phase.name,timezone:phase.timezone,report:phase.report,seconds:Number(((performance.now()-start)/1000).toFixed(2)),exitCode:code});
  if(code!==0){exitCode=code;break}
 }
 const revision=spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).stdout.trim();
