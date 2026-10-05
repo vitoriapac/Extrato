@@ -1,5 +1,6 @@
 import {renderScoreProjectionEvidence} from './score-projection-renderer.js';
 import {renderProjectionCalibration} from './projection-calibration-renderer.js';
+import {renderContextualHelp} from '../components/analytical-presentation.js';
 
 // Presentation only: the application supplies measured values and frozen history.
 export function renderReadinessOverview({m,score,level,confidence,projection,projectionHistory,factors,approvalState,approvalLabel,diagnostics,candidates},{escapeHtml,escapeAttr,getMetricDataState,metricStateLabel}){
@@ -10,6 +11,7 @@ export function renderReadinessOverview({m,score,level,confidence,projection,pro
     <div class="kpi-cell"><div class="n">${m.retencao.available?Math.round(m.retencao.raw)+'%':'—'}</div><div class="l">Retenção média</div></div>
   </div>
   <section class="readiness-projection-summary" aria-label="Resumo da projeção"><h4>Projeção atual</h4><p>${projection.available?'Faixa atual: '+projection.low+'–'+projection.high+'%':'Dados insuficientes para estimar uma faixa atual.'}</p><p>${projection.available?'Confiança '+escapeHtml(projection.calibration.confidenceLabel)+' · '+projection.evidence.observationCount+' simulados comparáveis · '+projection.evidence.sampleSize+' questões na amostra.':'Reúna mais evidências comparáveis.'} A faixa não representa chance de aprovação.</p><button type="button" class="btn ghost small" data-performance-jump="overview">Ver trajetória em Desempenho</button></section>
+  ${renderContextualHelp('readiness','Entenda o Índice de Prontidão')}
   <details class="readiness-explanation"><summary>Como este índice foi calculado?</summary>
   ${factors.map(([label,item])=>{const dataState=getMetricDataState(item);return `<div class="bar-row metric-row metric-row--${dataState}" title="${escapeAttr(item.detail)}"><div class="bar-label">${label}<small>${metricStateLabel(item)}</small></div><div class="bar-track"><div class="bar-fill" style="width:${dataState==='empty'?0:item.score}%"></div></div><div class="bar-pct">${dataState==='empty'?'—':item.score+'%'}</div></div>`}).join('')}<p>Os pesos são redistribuídos somente entre fatores com dados. Fatores ausentes reduzem a confiança e nunca recebem nota zero.</p><ul>${factors.map(([label,item,key])=>`<li><strong>${label}</strong>: ${item.available?item.score+'/100 · confiança '+Math.round(item.confidence*100)+'%':'aguardando dados'}${item.detail?' · '+escapeHtml(item.detail):''}</li>`).join('')}</ul></details>
   <details class="readiness-investigation"><summary>Investigar a faixa e o diagnóstico</summary>

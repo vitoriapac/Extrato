@@ -21,6 +21,15 @@ import {buildHelpSearchIndex,normalizeHelpText,matchesHelpSearch,searchHelpEntri
 test('busca indexa conceitos e perguntas, sem depender de acentos ou ordem',()=>{assert.equal(normalizeHelpText('REVISÃO'),'revisao');assert.ok(matchesHelpSearch('volume planejado versus realizado','REALIZADO planejado'));assert.ok(searchHelpEntries(HELP_CATEGORIES,'amostra insuficiente').some(e=>e.id==='insufficient-sample-guide'));assert.ok(searchHelpEntries(HELP_CATEGORIES,'salvar dados').some(e=>e.id==='backup'));assert.ok(searchHelpEntries(HELP_CATEGORIES,'recuperar plano').some(e=>e.id==='recovery-guide'));assert.equal(searchHelpEntries(HELP_CATEGORIES,'prontidao',{categoryId:'guide-goals'}).length,0);assert.equal(searchHelpEntries(HELP_CATEGORIES,'zzzinexistente').length,0);assert.equal(searchHelpEntries(HELP_CATEGORIES,'',{categoryId:'guide-exam'}).length,HELP_CATEGORIES.find(c=>c.id==='guide-exam').entries.length);assert.match(buildHelpSearchIndex({title:'Título',keywords:['atalho'],questions:['Como começar?']}),/como comecar/)});
 
 import {rankHelpSearch} from '../../src/ui/help/help-search.js';
+import {renderContextualHelp} from '../../src/ui/components/analytical-presentation.js';
+test('ajuda contextual usa artigos existentes e projeção retorna ao proprietário',()=>{
+  const entries=HELP_CATEGORIES.flatMap(category=>category.entries);
+  for(const topic of ['readiness','adherence','sustainability-guide','projections','recovery-guide','exam-history']){
+    assert.ok(entries.some(entry=>entry.id===topic));assert.match(renderContextualHelp(topic,'Entenda <conceito>'),/Entenda &lt;conceito&gt;/);
+  }
+  assert.equal(entries.find(entry=>entry.id==='projections').action.target,'projection');
+  assert.throws(()=>renderContextualHelp('bad"','Bad'),TypeError);
+});
 test('ranking prioriza título, termos estruturados e conteúdo com desempate estável',()=>{const categories=[{id:'x',title:'Grupo',entries:[{id:'body',title:'Outro',paragraphs:['Revisão']},{id:'keyword',title:'Agenda',keywords:['revisão']},{id:'title',title:'Revisão'},{id:'tie',title:'Agenda 2',keywords:['revisão']}]}];assert.deepEqual(searchHelpEntries(categories,'revisao').map(e=>e.id),['title','keyword','tie','body']);assert.equal(rankHelpSearch({title:'Revisão'},'zzzz'),0);assert.deepEqual(searchHelpEntries(categories,'').map(e=>e.id),['body','keyword','title','tie']);assert.ok(HELP_CATEGORIES.find(c=>c.id==='guide-workflows').entries.some(e=>e.id==='calendar-guide'));assert.ok(HELP_CATEGORIES.find(c=>c.id==='guide-areas').entries.some(e=>e.id==='pending-guide'))});
 
 test('ajuda da trajetória diferencia evidência, mudanças de base e simulação',()=>{

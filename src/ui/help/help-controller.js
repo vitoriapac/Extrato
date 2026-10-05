@@ -2,6 +2,7 @@ import {renderHelpCenter} from './help-renderer.js';
 import {normalizeHelpText as normalize,matchesHelpSearch,rankHelpSearch} from './help-search.js';
 
 const DESTINATIONS=Object.freeze({
+  projection:{tab:'desempenho',section:'overview',selector:'.achievement-projection'},
   adherence:{tab:'desempenho',section:'consistency',selector:'.adherence-summary'},
   subjects:{tab:'disciplinas',selector:'#addSubjectBtn'},overview:{tab:'dashboard',selector:'#balanceFigure'},timer:{tab:'dashboard',selector:'#timerSubjectSelect'},
   questions:{tab:'questoes',selector:'#addQuestaoRowBtn'},reviews:{tab:'agenda',selector:'#addAgendaRowBtn'},today:{tab:'hoje',selector:'#panel-hoje'},calendar:{tab:'calendario',selector:'#panel-calendario'},
@@ -50,6 +51,7 @@ export function createHelpController({document,window,activateTab}){
   const root=document.getElementById('helpCenter');
   if(!root)return {mount:()=>false};
   let activeCategory='guide-start';
+  let returnContext=null;
   let originalGroups=[],originalTopics=new Map();
   const applySearch=()=>{
     const parents=new Set();
@@ -116,7 +118,13 @@ export function createHelpController({document,window,activateTab}){
   const openTopic=id=>{
     const topic=[...root.querySelectorAll('[data-help-topic]')].find(item=>item.id===id);
     if(!topic)return false;
+    const origin=document.querySelector('[role="tab"][aria-selected="true"]')?.dataset.tab;
+    if(origin&&origin!=='instrucoes')returnContext={tab:origin,topic:id};
     activateTab('instrucoes');
+    if(returnContext&&!root.querySelector('[data-help-return]')){
+      const back=document.createElement('button');back.type='button';back.className='btn ghost small';back.dataset.helpReturn='';back.textContent='Voltar à análise de origem';
+      root.querySelector('.help-hero').append(back);
+    }
     openCategory(topic.closest('[data-help-group]').id);
     window.requestAnimationFrame(()=>{
       topic.tabIndex=-1;
@@ -152,6 +160,17 @@ export function createHelpController({document,window,activateTab}){
     root.addEventListener('input',event=>{if(event.target.id==='helpSearch')applySearch()});
     root.addEventListener('keydown',event=>{if(event.target.id==='helpSearch'&&event.key==='Escape'){event.target.value='';applySearch();event.preventDefault()}});
     root.addEventListener('click',event=>{
+      if(event.target.closest('[data-help-return]')&&returnContext){
+        const context=returnContext;returnContext=null;root.querySelector('[data-help-return]')?.remove();
+        activateTab(context.tab);
+        window.requestAnimationFrame(()=>{
+          const panel=document.getElementById('panel-'+context.tab);
+          const target=panel?.querySelector(`[data-help-topic-link="${window.CSS.escape(context.topic)}"]`)||document.getElementById('tab-'+context.tab);
+          if(!target)return;
+          for(let parent=target.closest('details');parent;parent=parent.parentElement?.closest('details'))parent.open=true;
+          target.scrollIntoView({block:'center',behavior:'auto'});target.focus({preventScroll:true});
+        });return;
+      }
       const category=event.target.closest('[data-help-category]');
       if(category){openCategory(category.dataset.helpCategory);return}
       if(event.target.closest('#helpSearchClear')){

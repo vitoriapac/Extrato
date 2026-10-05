@@ -129,6 +129,7 @@ export const HELP_FAQ=[
 
 Object.assign(HELP_CATEGORIES.find(category=>category.id==='guide-data').entries.find(entry=>entry.id==='projections'),{
  title:'Trajetória, faixa e confiança',
+ action:{label:'Ver trajetória em Desempenho',target:'projection'},
  keywords:['projeção','meta','confiança','simulados comparáveis','reta final'],
  paragraphs:['A faixa atual usa simulados comparáveis recentes. A tendência descreve a continuação aproximada do padrão observado, sem prever a nota do dia da prova ou a chance de aprovação. Poucas observações, baixa cobertura ou composição desconhecida limitam a confiança.',
  'Comparações semanais exigem a mesma meta, prova, escopo e versão do cálculo. Alterar a meta não significa que seu desempenho piorou. Snapshots anteriores preservam a leitura registrada na época.',

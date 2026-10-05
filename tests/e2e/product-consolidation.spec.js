@@ -54,4 +54,25 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
     await expect(page.locator('#performanceSectionContent')).not.toBeEmpty();
     await expectNoPageOverflow(page);
   }
+  await page.locator('#performancePeriod').selectOption('90');
+  const scope=await page.locator('.performance-scope-note').textContent();
+  const records=()=>page.evaluate(()=>localStorage.getItem('bb-premium-study-data'));
+  const before=await records();
+  await page.locator('.adherence-summary').getByRole('button',{name:'Entenda aderência',exact:true}).click();
+  await expect(page.locator('#adherence')).toBeFocused();
+  await page.getByRole('button',{name:'Voltar à análise de origem'}).click();
+  await expect(page.locator('#performancePeriod')).toHaveValue('90');
+  await expect(page.locator('.performance-section-button[data-performance-section="consistency"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.performance-scope-note')).toHaveText(scope);
+  await expect(page.locator('.adherence-summary').getByRole('button',{name:'Entenda aderência',exact:true})).toBeFocused();
+  await page.locator('[data-performance-section="overview"]').click();
+  await page.locator('.achievement-projection__details > summary').filter({hasText:'Entender esta projeção'}).click();
+  await page.locator('.projection-evidence-method > summary').click();
+  await page.getByRole('button',{name:'Entenda faixa e confiança na ajuda'}).click();
+  await expect(page.locator('#projections')).toBeFocused();
+  await page.locator('#projections').getByRole('button',{name:'Ver trajetória em Desempenho',exact:true}).click();
+  await expect(page.locator('.achievement-projection')).toBeFocused();
+  await expect(page.locator('#performancePeriod')).toHaveValue('90');
+  await expect(page.locator('.performance-scope-note')).toHaveText(scope);
+  expect(await records()).toBe(before);
 });

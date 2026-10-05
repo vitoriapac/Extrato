@@ -54,6 +54,14 @@ A Visão Geral mantém Prontidão global e confiança. Fatores ficam em “Como 
 
 No fechamento, síntese e decisão precedem sinais auxiliares. Comparação semanal e contexto de trajetória ficam sob demanda; o resumo mantém a nota sobre comparabilidade e a necessidade de confirmação. Capacidade, prioridades e resultados posteriores preservam suas fontes.
 
+## Pacote 6 — ciclo verificável e ajuda contextual
+
+O ciclo continua reutilizando as recomendações, plano e fechamento existentes. A jornada estratégica cobre prova → decisão → prévia/confirmar → execução → resultado → fechamento; a ajuda agora também é verificada na Demo, preservando registros, período de 90 dias, subvisão e concurso.
+
+Prontidão, aderência e sustentabilidade oferecem artigos específicos. Projeção já tinha seu link metodológico; seu artigo passa a encaminhar à trajetória em Desempenho, proprietário do detalhe. A navegação contextual cria “Voltar à análise de origem” somente quando um artigo é aberto a partir de outra tela. O contexto é transitório, sem persistência; ao retornar, a análise e o foco são recuperados, inclusive quando o botão está em um disclosure.
+
+Cinco perfis novos da Demo e a auditoria final continuam nos pacotes 7–8. Não foi criada nova seleção browser no manifesto Full: o retorno contextual amplia a jornada de Demo já executada no Experience.
+
 ## Validação local dos pacotes 1–3
 
 - 24 testes Node relacionados passaram (seleção de impacto, contratos de UI/controller e projeção).
@@ -63,3 +71,16 @@ No fechamento, síntese e decisão precedem sinais auxiliares. Comparação sema
 - Build reproduzido. Links locais e diff revisados. Full e avaliação humana com leitor de tela não foram executados nesta etapa.
 
 Os commits destes pacotes estão locais; a aprovação do CI anterior não confirma o workflow modificado até sua publicação.
+
+## Validação local dos pacotes 4–6
+
+- 43 testes Node relacionados passaram, incluindo apresentação, ajuda, metas, sustentabilidade e contratos do ciclo estratégico.
+- As quatro comparações de Desempenho/Metas passaram com as referências existentes em 375/1440 px, claro/escuro.
+- A jornada de calibração passou, preservando backup, histórico congelado e acesso por teclado aos detalhes.
+- As cinco jornadas densas de sustentabilidade passaram. As capturas agora usam alinhamento de pixels; as referências de 375 px escuro e 430 px claro foram substituídas individualmente após inspeção de expected/actual/diff. Conteúdo, valores e CTA foram preservados, com tolerância de 0,08. Veja a [política visual](VISUAL-TEST-POLICY.md).
+- A jornada contextual verifica ajuda → retorno à origem e ajuda de projeção → trajetória, preservando período, concurso e os dados locais.
+- Experience final passou em **105,63 s**, incluindo contratos nos dois fusos, iniciante, Demo densa, sugestão fora do plano e ciclo estratégico completo.
+- Build conferido com `npm run check:bundle`: os quatro artefatos versionados estão atualizados e reproduzíveis.
+- Fast final passou em **52,75 s**, incluindo todos os testes Node em UTC/São Paulo, smoke browser, sintaxe, inventário e artefatos gerados.
+
+Full, a matriz visual global e avaliação humana com leitor de tela não foram executados nesta etapa. Permanecem no encerramento dos pacotes 7–8; esta etapa não alterou persistência, cálculos ou semântica dos snapshots.

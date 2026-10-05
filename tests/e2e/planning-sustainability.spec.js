@@ -5,6 +5,7 @@ import {freezePlanExecution} from '../../src/domain/planning/plan-execution-snap
 import {recordPlanningCapacity} from '../../src/domain/planning/capacity-history.js';
 import {activateTab,expectNoPageOverflow,openDemo} from './helpers.js';
 import AxeBuilder from '@axe-core/playwright';
+import {withPixelAlignedCapture} from './helpers/visual-capture.js';
 
 test('sustainability opens a readonly capacity preview, navigates and freezes its explanation',async({page})=>{
   test.setTimeout(120_000);await page.setViewportSize({width:375,height:900});
@@ -46,7 +47,7 @@ for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light'],[1440,'ligh
   await expect(page.locator('.adherence-change')).toContainText('O que mudou?');await expectNoPageOverflow(page);
   await activateTab(page,'dashboard');const section=page.locator('#weeklyCloseDashboard .planning-sustainability').first();
   await expect(section).toContainText('Carga acima da execução recente');await expect(section).toContainText('4 comparáveis');
-  if(process.platform==='win32')await expect(section).toHaveScreenshot(`sustainability-${width}-${theme}-win32.png`,{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08});
+  if(process.platform==='win32')await withPixelAlignedCapture(section,()=>expect(section).toHaveScreenshot(`sustainability-${width}-${theme}-win32.png`,{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08}));
   expect((await new AxeBuilder({page}).include('#weeklyCloseDashboard .planning-sustainability').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
   const review=section.getByRole('button',{name:'Revisar capacidade',exact:true});await review.focus();await page.keyboard.press('Enter');
   await expect(page.locator('#modalMessage')).toContainText('Nenhum bloco foi redistribuído');await page.keyboard.press('Escape');

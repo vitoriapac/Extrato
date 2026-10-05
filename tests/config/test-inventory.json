@@ -705,7 +705,8 @@
         "../../src/domain/planning/plan-execution-snapshot.js",
         "../../src/domain/planning/capacity-history.js",
         "./helpers.js",
-        "@axe-core/playwright"
+        "@axe-core/playwright",
+        "./helpers/visual-capture.js"
       ],
       "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
@@ -3663,9 +3664,10 @@
         "../../src/ui/help/help-renderer.js",
         "../../src/ui/help/help-visuals.js",
         "../../src/ui/help/help-search.js",
-        "../../src/ui/help/help-search.js"
+        "../../src/ui/help/help-search.js",
+        "../../src/ui/components/analytical-presentation.js"
       ],
-      "staticTestDeclarations": 12,
+      "staticTestDeclarations": 13,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

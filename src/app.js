@@ -17,7 +17,6 @@ import {renderSubjectAccuracy} from './ui/renderers/subject-accuracy-renderer.js
 import {captureProjection,buildProjectionCalibration} from './application/analytics/projection-calibration-history.js';
 import {buildProjectionPageModel,captureAchievementProjection,achievementProjectionHistory,validAchievementProjectionSnapshot,buildProjectionCloseContext} from './application/projection/index.js';
 import {renderProjectionCloseContext} from './ui/renderers/projection-close-context-renderer.js';
-import {renderProjectionCalibration} from './ui/renderers/projection-calibration-renderer.js';
 import {buildRecommendationFollowup} from './application/recommendations/build-recommendation-followup.js';
 import {renderRecommendationFollowup} from './ui/renderers/recommendation-followup-renderer.js';
 import {buildPriorityHistory} from './application/analytics/build-priority-history.js';
@@ -30,7 +29,6 @@ import {createPhaseStrategyController} from './application/planning/phase-strate
 import {buildPhasePlanningPreview} from './application/planning/build-phase-planning-preview.js';
 import {renderPhaseStrategy} from './ui/renderers/phase-strategy-renderer.js';
 import {buildCalibratedScoreProjection} from './domain/forecasts/calibrated-score-projection.js';
-import {renderScoreProjectionEvidence} from './ui/renderers/score-projection-renderer.js';
 import {renderWeeklyDecisionCycle} from './ui/renderers/weekly-decision-cycle-renderer.js';
 import {buildPerformanceAnalysis,performancePeriodRecords} from './application/questions/build-performance-analysis.js';
 import {createPerformanceViewState,resolvePerformanceRange,updatePerformanceViewState} from './application/performance/performance-view-state.js';
@@ -5067,7 +5065,7 @@ function renderStudyTrack32Insights(){
  const scope=examEvidenceContext(),scopedTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id)),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),scopedPlans=(planningRepository.getDailyPlans?.()||[]).map(plan=>({...plan,items:(plan.items||[]).filter(item=>!item.topicId||scopedTopicIds.has(item.topicId))})),scopedRecommendations=state.recommendationFeedback.filter(item=>!item.topicId||scopedTopicIds.has(item.topicId)),model=buildStudyTrack32ViewModel({readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:scopedPlans,weeklyCloseSnapshots:state.weeklyCloseSnapshots,executionSource:{dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,capacityHistory:state.planningCapacityHistory,adherenceTarget:state.metas.aderenciaSemanal},planAdjustments:state.planAdjustments,recommendations:scopedRecommendations,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:state.metas.metaAprovacao,blueprint:state.examBlueprint,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
  model.comparisonMetrics=captureCloseComparisonMetrics(model,projectPerformance());
  const metasClose=document.getElementById('metasWeeklyCloseSummary'),weekly=model.weeklyClose;
- if(metasClose)metasClose.innerHTML=renderWeeklyCloseSummary(weekly,{escapeHtml});
+ if(metasClose)metasClose.innerHTML=renderWeeklyCloseSummary(weekly,{escapeHtml,period:model.period,formatDate:formatDatePt});
  if(close){
    const trajectory=currentAchievementProjection().model;
    const trajectoryClose=buildProjectionCloseContext({current:trajectory,snapshots:state.projectionSnapshots,activeExamTags:model.activeExamTags,periodStart:model.period.start,today:todayISO()});

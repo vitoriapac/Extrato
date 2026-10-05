@@ -38,3 +38,7 @@ No commit c586312, o job visual Windows identificou uma captura de 356 × 512 px
 A captura local correspondente foi inspecionada antes da substituição exclusiva de sustainability-430-light-win32.png. A tolerância permanece em 0,08. As outras quatro combinações de sustentabilidade passaram com suas referências existentes. Não houve alteração de CSS ou de cálculos para acomodar o teste.
 
 Após a revisão, o caso de 430 px passou em 37,2 s e o Fast passou em 52,73 s. Full e a matriz visual global não foram executados nesta correção dirigida.
+
+## Consolidação da experiência — captura de sustentabilidade
+
+A superfície de sustentabilidade usa `withPixelAlignedCapture`, já compartilhado pelas capturas do projeto, para evitar coordenadas fracionárias após mudanças na composição da página. Na consolidação dos pacotes 4–6, as referências de 375 px escuro e 430 px claro foram revistas individualmente: expected, actual e diff mantêm conteúdo, métricas e CTA; o recorte alinhado tem uma linha a menos. Somente esses dois PNGs foram substituídos pelas capturas inspecionadas. A tolerância permanece em 0,08; as outras três referências foram preservadas.
