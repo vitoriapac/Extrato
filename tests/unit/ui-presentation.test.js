@@ -2,6 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {renderSectionHeader,renderEmptyState,renderMetricCard} from '../../src/ui/components/presentation.js';
+import {renderDisclosure} from '../../src/ui/components/analytical-presentation.js';
+import {renderDiagnosticSummary} from '../../src/ui/renderers/diagnostic-summary-renderer.js';
+
+test('explicação compartilhada começa fechada e evidência do diagnóstico permanece visível',()=>{
+  const detail=renderDisclosure({title:'Entenda <resultado>',contentHTML:'<p>Dados fornecidos</p>'});
+  assert.match(detail,/Entenda &lt;resultado&gt;/);
+  assert.doesNotMatch(detail,/<details[^>]* open/);
+  const primary={metrics:{retention:54},reasons:['Retenção baixa']};
+  const html=renderDiagnosticSummary({primarySignal:'consolidation-risk',evidence:{label:'Baixa'},signals:[]},primary,{escapeHtml:String});
+  assert.ok(html.indexOf('Evidência: Baixa')<html.indexOf('<details'));
+  assert.match(html,/class="diagnostic-detail__body"/);
+  assert.match(html,/54\/100/);
+});
 
 test('componentes compartilhados escapam conteúdo e mantêm hierarquia semântica',()=>{
   const heading=renderSectionHeader({title:'<Prova>',description:'A & B',level:4,eyebrow:'Análise'});

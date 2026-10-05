@@ -28,7 +28,23 @@ Não há alteração de algoritmo, meta, capacidade, snapshot ou persistência. 
 
 As quatro comparações Windows de resumo/Metas passaram com os PNGs existentes. Os casos percorrem as seis subvisões e verificam overflow em 375/1440 px, claro/escuro. Isso comprova estrutura e navegação, não uma avaliação humana de compreensão em cinco segundos nem uso manual de leitor de tela.
 
-Os pacotes 4–8 continuam pendentes: padronização analítica mais ampla, revisão das demais superfícies, ciclo/ajuda contextual, cinco perfis da Demo e auditoria final. Full permanece previsto para o encerramento; não é necessário repetir a matriz completa a cada pacote de apresentação.
+Full permanece previsto para o encerramento; não é necessário repetir a matriz completa a cada pacote de apresentação.
+
+## Pacote 4 — apresentação analítica
+
+Diagnóstico, aderência e sustentabilidade reutilizam `renderDisclosure` da fachada analítica. Os detalhes começam fechados, com classe e corpo específicos da superfície. Não há cálculo nos componentes. Resultado, interpretação, evidência insuficiente e restrições permanecem fora da metodologia.
+
+| Análise | Resultado/contexto visível | Explicação sob demanda |
+|---|---|---|
+| Prontidão | Índice, nível e confiança | Fatores e cálculo |
+| Projeção | Estado, faixa, meta, confiança e limites essenciais | Base e método existentes |
+| Aderência | Crédito, prioridades e qualidade da classificação | Vínculos, denominadores e contagens |
+| Retenção/diagnóstico | Sinal dominante e evidência | Medidas e sinais auxiliares |
+| Sustentabilidade | Estado, leitura preliminar, capacidade e ressalva | Critérios e semanas excluídas |
+| Comparação | Mudança observada ou ausência de base | Critérios e detalhamento existentes |
+| Decisão semanal | Principal sinal, decisão e confirmação necessária | Sinais auxiliares e resultados posteriores |
+
+O contrato de quatro níveis continua válido: os três níveis de leitura não ocultam condições que qualificam o resultado. Nenhum score ou vocabulário alternativo foi criado.
 
 ## Validação local dos pacotes 1–3
 
