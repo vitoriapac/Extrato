@@ -23,7 +23,9 @@ for(const viewport of viewports){
     await expect(page.locator('.statement')).toHaveScreenshot(screenshotName(`hero-${viewport.name}.png`),screenshotOptions);
     await expect(page.locator('#weeklyCloseDashboard .weekly-strategic-focus')).toContainText('Foco estratégico da semana');
     const close=page.locator('#weeklyCloseDashboard');
-    await expect(close.locator('.weekly-next')).toContainText('Próxima ação');
+    await expect(close.locator('.weekly-next')).toContainText('Próxima semana');
+    await expect(close.locator('.weekly-decision-summary')).toContainText('Decisão sugerida');
+    await expect(close.locator('.weekly-next')).not.toContainText('Próxima ação');
     const order=await close.evaluate(element=>[...element.children].map(child=>child.className));
     expect(order.indexOf('weekly-kpis')).toBeLessThan(order.indexOf('weekly-assessment'));
     expect(order.indexOf('weekly-assessment')).toBeLessThan(order.indexOf('weekly-strategic-focus'));

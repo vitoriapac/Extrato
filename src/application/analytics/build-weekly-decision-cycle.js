@@ -27,10 +27,20 @@ export function buildWeeklyDecisionGuidance({cycle=null,trajectory=null,sustaina
   const advance=cycle.worked?.[0]||'Ainda não há avanço sustentado por evidência comparável.';
   const risk=cycle.attention?.[0]||'Nenhum risco destacado nesta semana; acompanhe a próxima medição.';
   const structuralAction=sustainability?.state==='ready'?sustainability.assessment?.action:null;
-  const decision=structuralAction==='review_capacity'?'Revise a disponibilidade semanal antes de confirmar o próximo plano. O volume ficou abaixo do planejado de forma recorrente, com prioridades preservadas.':structuralAction==='review_distribution'?'Revise a distribuição dos blocos prioritários antes de confirmar o próximo plano.':cycle.attention?.length
+  const decision=structuralAction==='review_capacity'?'Revise a disponibilidade semanal antes de confirmar o próximo plano. Nas semanas encerradas comparáveis, o volume ficou abaixo do planejado de forma recorrente, com prioridades preservadas.':structuralAction==='review_distribution'?'Revise a distribuição dos blocos prioritários antes de confirmar o próximo plano.':cycle.attention?.length
     ? 'Revise as prioridades abaixo, confira a capacidade restante e pré-visualize o próximo plano.'
     : 'Mantenha as prioridades justificadas e confira a capacidade antes de confirmar o próximo plano.';
   const delta=trajectory?.state==='comparable'?trajectory.accuracyDelta:null;
   return {advance,risk,decision,accuracyDelta:delta,comparisonAvailable:delta!=null,
     comparisonNote:delta==null?'Sem comparação de simulados com a mesma meta, prova e escopo.':'Mudança observada nos simulados comparáveis; não representa ganho causado pelo planejamento.'};
+}
+
+// Transient presentation contract: never attached to persisted closes.
+export function buildWeeklyDecisionSummary({cycle=null,trajectory=null,adherence=null}={}){
+ const guidance=buildWeeklyDecisionGuidance({cycle,trajectory,sustainability:adherence?.sustainability});
+ if(!guidance)return null;
+ const priority=adherence?.assessment?.status==='insufficient_data'?null:adherence?.model?.priority;
+ return {priorities:priority?{completed:priority.completedActivities??null,planned:priority.plannedActivities??null,percent:priority.adherence??null}:null,
+ trajectory:{state:trajectory?.state||'unavailable',status:trajectory?.current||null,delta:guidance.accuracyDelta,comparisonNote:guidance.comparisonNote},
+ advance:guidance.advance,signal:guidance.risk,decision:guidance.decision};
 }

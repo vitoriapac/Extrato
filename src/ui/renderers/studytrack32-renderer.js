@@ -25,7 +25,7 @@ export function renderStrategicFocusHistory(model){
 export function renderWeeklyCloseNext(model,{escapeHtml,formatMinutes}){
   if(model.state==='insufficient')return '';
   const priorities=(model.priorities||[]).map((item,index)=>`<li><strong>${index+1}. ${safe(escapeHtml,item.action)}</strong><span>${safe(escapeHtml,item.reason)} · ${formatMinutes(item.estimatedMinutes)}</span></li>`).join('');
-  return `<section class="weekly-next" aria-label="Próxima semana"><h4>Próxima semana</h4><p class="weekly-action"><b>Próxima ação</b>${safe(escapeHtml,model.recommendedAction)}</p>${priorities?`<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>`:''}</section>`;
+  return `<section class="weekly-next" aria-label="Próxima semana"><h4>Próxima semana</h4>${model.decisionCycle?'':`<p class="weekly-action"><b>Próxima ação</b>${safe(escapeHtml,model.recommendedAction)}</p>`}${priorities?`<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>`:''}</section>`;
 }
 export function renderWeeklyClose(model,{escapeHtml,formatMinutes,includeNext=true}){
   if(model.state==='insufficient')return '<div class="upcoming-empty ui-state--empty">Ainda não há evidência suficiente para fechar a semana.</div>';
