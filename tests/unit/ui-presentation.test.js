@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {renderSectionHeader,renderEmptyState,renderMetricCard} from '../../src/ui/components/presentation.js';
 import {renderDisclosure,renderActionGroup,renderDivider} from '../../src/ui/components/analytical-presentation.js';
 import {renderDiagnosticSummary} from '../../src/ui/renderers/diagnostic-summary-renderer.js';
+import {renderStrategicTimeline,renderPriorityHistory} from '../../src/ui/renderers/strategic-history-renderer.js';
 
 test('explicação compartilhada começa fechada e evidência do diagnóstico permanece visível',()=>{
   const detail=renderDisclosure({title:'Entenda <resultado>',contentHTML:'<p>Dados fornecidos</p>'});
@@ -44,4 +45,16 @@ test('grupos editoriais escapam rótulos e preservam ações e divisores decorat
  const tokens=readFileSync(new URL('../../styles/tokens.css',import.meta.url),'utf8');
  for(const name of ['line-height-heading','line-height-body','line-height-relaxed','space-action','space-block','space-section','font-weight-bold'])assert.match(tokens,new RegExp(`--${name}:`));
  assert.match(tokens,/--space-5:1.25rem/);assert.match(tokens,/--space-6:1.5rem/);
+});
+
+test('históricos editoriais mantêm metodologia, vazio orientado e singular correto',()=>{
+ const empty=renderStrategicTimeline({rows:[],filter:'all',groupBy:'week'});
+ assert.match(empty,/Filtros da linha do tempo/);assert.match(empty,/Nenhum evento neste filtro/);
+ assert.match(empty,/Sobre os registros desta linha do tempo/);assert.doesNotMatch(empty,/<details[^>]* open/);
+ const point={date:'2026-10-06',classification:'Evidência limitada',profile:{},change:{label:'Primeiro registro',reasons:[]}};
+ const model={subjects:[],rows:[{subjectName:'Português',topicName:'Texto',state:'Primeiro registro',history:[point]}]};
+ const before=structuredClone(model),html=renderPriorityHistory(model);
+ assert.match(html,/1 registro</);assert.doesNotMatch(html,/1 registros/);assert.match(html,/06\/10 Evidência limitada/);
+ assert.deepEqual(model,before);
+ assert.match(renderPriorityHistory({subjects:[],rows:[]}),/Nenhuma prioridade registrada/);
 });

@@ -227,7 +227,7 @@ import {buildTopicExamProfile} from './application/exam-intelligence/build-topic
 import {resolveValidatedExamImpact} from './domain/exam-intelligence/validated-impact.js';
 import {renderGlobalSearchPanel} from './ui/renderers/global-search-renderer.js';
 import {renderHeatmap as renderHeatmapView} from './ui/renderers/heatmap-renderer.js';
-import {renderStudySessionRead,renderStudySessionEdit,renderStudySessionDayHeader} from './ui/renderers/study-sessions-renderer.js';
+import {buildSessionHistoryPresentation,renderStudySessionRead,renderStudySessionEdit,renderStudySessionDayHeader} from './ui/renderers/study-sessions-renderer.js';
 import {renderProgressChart as renderProgressChartView,renderStudyHoursChart as renderStudyHoursChartView,renderSubjectHoursBars as renderSubjectHoursBarsView} from './ui/renderers/study-charts-renderer.js';
 import {renderIntelligentAlerts,renderWeeklyCloseSummary,renderExecutiveSummary as renderExecutiveSummaryView} from './ui/renderers/overview-renderer.js';
 import {renderDiagnosisCenter as renderDiagnosisCenterView} from './ui/renderers/diagnosis-renderer.js';
@@ -4358,14 +4358,15 @@ function renderStudySessionsHistory(){
   if(!body||!count) return;
   renderSessionHistoryFilterControls();
   const rows=filteredStudySessions();
-  count.textContent=rows.length===state.studySessions.length?`${rows.length} sess${rows.length===1?'ão':'ões'}`:`${rows.length} de ${state.studySessions.length}`;
+  const presentation=buildSessionHistoryPresentation({total:state.studySessions.length,filtered:rows.length,dateLabel:sessionHistoryFilters.date?formatDatePt(sessionHistoryFilters.date):''});
+  count.textContent=presentation.count;
   if(summary){
-    summary.textContent=sessionHistoryFilters.date?`Dia selecionado: ${formatDatePt(sessionHistoryFilters.date)}`:`${pluralize(rows.length,'sessão','sessões')} no filtro atual`;
+    summary.textContent=presentation.summary;summary.hidden=!presentation.summary;
   }
   if(rows.length===0){
     body.innerHTML='';
     if(tableWrap) tableWrap.hidden=true;
-    if(emptyState) emptyState.hidden=false;
+    if(emptyState){emptyState.hidden=false;emptyState.querySelector('strong').textContent=presentation.emptyTitle;emptyState.querySelector('p').textContent=presentation.emptyMessage;}
     return;
   }
   if(tableWrap) tableWrap.hidden=false;

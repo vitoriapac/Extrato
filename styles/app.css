@@ -2299,3 +2299,8 @@ body.timer-focus-active .timer-context{display:none!important}
 .session-filter-summary{line-height:var(--line-height-body)}
 #studySessionsCard .section-head{margin-bottom:var(--space-4);gap:var(--space-3);flex-wrap:wrap}
 @media(max-width:430px){.strategic-timeline>li{grid-template-columns:1fr;gap:var(--space-2)}.strategic-timeline-controls>label{flex:1 1 9rem}.timer-actions .btn{min-height:var(--touch-target)}}
+.editorial-empty-state{padding:var(--space-6) 0;margin-block:var(--space-4);background:transparent;border:0;border-top:1px solid var(--border-subtle)}
+.editorial-empty-state strong{color:var(--heading);font:var(--font-weight-semibold) var(--text-lg)/var(--line-height-heading) var(--font-body)}
+.editorial-empty-state p{max-width:70ch;margin-top:var(--space-3);line-height:var(--line-height-body)}
+#studySessionsEmpty p{max-width:70ch;line-height:var(--line-height-body)}
+#studySessionsEmpty .empty-state-actions{display:flex;gap:var(--space-action);flex-wrap:wrap;margin-top:var(--space-content-action)}
