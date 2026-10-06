@@ -2304,3 +2304,6 @@ body.timer-focus-active .timer-context{display:none!important}
 .editorial-empty-state p{max-width:70ch;margin-top:var(--space-3);line-height:var(--line-height-body)}
 #studySessionsEmpty p{max-width:70ch;line-height:var(--line-height-body)}
 #studySessionsEmpty .empty-state-actions{display:flex;gap:var(--space-action);flex-wrap:wrap;margin-top:var(--space-content-action)}
+#studyTimeStats:empty{display:none}
+.weekly-decision-summary .action-group{margin-block:var(--space-content-action)}
+body.timer-focus-active .study-distribution-heading{display:none}

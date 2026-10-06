@@ -797,7 +797,7 @@
         "../../src/demo/demo-generator.js",
         "../../src/demo/demo-preparation-profiles.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 1,
       "observedCaseSeconds": 23.9,
@@ -5367,9 +5367,10 @@
       "imports": [
         "node:test",
         "node:assert/strict",
-        "../../src/ui/session-history.js"
+        "../../src/ui/session-history.js",
+        "../../src/ui/renderers/study-sessions-renderer.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -6370,9 +6371,10 @@
         "node:fs",
         "../../src/ui/components/presentation.js",
         "../../src/ui/components/analytical-presentation.js",
-        "../../src/ui/renderers/diagnostic-summary-renderer.js"
+        "../../src/ui/renderers/diagnostic-summary-renderer.js",
+        "../../src/ui/renderers/strategic-history-renderer.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

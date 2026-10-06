@@ -4,6 +4,43 @@ import {createDefaultState} from '../../src/state/defaults.js';
 import {generateDemoData} from '../../src/demo/demo-generator.js';
 import {DEMO_EXPERIENCE_PROFILES} from '../../src/demo/demo-preparation-profiles.js';
 
+test('históricos editoriais distinguem filtros e mantêm estudo legível com poucos e muitos dados',async({page},testInfo)=>{
+  test.setTimeout(180_000);
+  await page.clock.install({time:new Date('2026-10-03T12:00:00-03:00')});
+  await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(node=>node.remove());await activateTab(page,'dashboard');
+  const inspect=async(name)=>{
+    for(const [width,theme] of [[390,'light'],[1440,'dark']]){
+      await page.setViewportSize({width,height:900});await page.evaluate(value=>document.documentElement.setAttribute('data-theme',value),theme);
+      await expectNoPageOverflow(page);
+      await expect(page.locator('.timer-actions')).toHaveAttribute('role','group');
+      await expect(page.locator('.study-distribution-heading')).toContainText('Ver evolução e consistência');
+      await expect(page.locator('.strategic-timeline-method')).not.toHaveAttribute('open','');
+      const chrome=await page.evaluateHandle(()=>[...document.querySelectorAll('.sticky-shell,.overview-nav,.demo-banner,#backToTopBtn,.skip-link,#saveIndicator,#toast')].map(node=>{const saved={node,parent:node.parentNode,next:node.nextSibling};node.remove();return saved}));
+      try{
+        for(const [id,selector] of [['timeline','#strategicTimelineDashboard'],['study','.chart-card:has(.timer-block)'],['sessions','#studySessionsCard'],['close','#weeklyCloseDashboard']]){
+          const path=testInfo.outputPath(`${name}-${id}-${width}-${theme}.png`);
+          await page.locator(selector).screenshot({path,animations:'disabled'});await testInfo.attach(`${name}-${id}-${width}-${theme}`,{path,contentType:'image/png'});
+        }
+      }finally{await chrome.evaluate(rows=>rows.forEach(({node,parent,next})=>parent.insertBefore(node,next)));await chrome.dispose()}
+    }
+    await page.setViewportSize({width:320,height:900});await expectNoPageOverflow(page);
+  };
+  await expect(page.locator('#studySessionsEmpty')).toContainText('Seu histórico de estudos começa aqui');
+  await expect(page.locator('#studySessionsCount')).toHaveText('0 sessões');await expect(page.locator('#studySessionsFilterSummary')).toBeHidden();
+  await page.locator('#strategicTimelineDashboard select').first().selectOption('assessments');
+  await expect(page.locator('#strategicTimelineDashboard')).toContainText('Nenhum evento neste filtro');
+  await inspect('empty');
+  await page.setViewportSize({width:1440,height:900});
+  await page.locator('#studySessionsEmpty').getByRole('button',{name:'Iniciar estudo',exact:true}).click();await expect(page.locator('#timerStartBtn')).toBeFocused();
+  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.studySessions=[{id:'editorial-session',date:'2026-10-03',startedAt:'2026-10-03T12:00:00-03:00',endedAt:'2026-10-03T12:05:00-03:00',durationSeconds:300,type:'study',subjectId:state.subjects[0].id,topicId:null,questionsResolved:0,correctAnswers:0,notes:''}];api.setState(state);api.renderAll()});
+  await expect(page.locator('#studySessionsCount')).toHaveText('1 sessão');await expect(page.locator('#studySessionsFilterSummary')).toBeHidden();
+  await page.locator('#studySessionsTypeFilter').selectOption('questions');await expect(page.locator('#studySessionsEmpty')).toContainText('Nenhuma sessão neste filtro');
+  await expect(page.locator('#studySessionsFilterSummary')).toHaveText('0 de 1 sessão no filtro atual');
+  await page.locator('#studySessionsEmpty').getByRole('button',{name:'Limpar filtros',exact:true}).click();await expect(page.locator('#studySessionsEmpty')).toBeHidden();
+  await openDemo(page);await activateTab(page,'dashboard');await inspect('dense');
+});
+
 test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mobile e desktop',async({page},testInfo)=>{
   test.setTimeout(180_000);
   await page.clock.install({time:new Date('2026-10-03T12:00:00-03:00')});
@@ -22,7 +59,7 @@ test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mob
       await expect(root.getByRole('button',{name:'Entenda o Índice de Prontidão'})).toBeHidden();
       const path=testInfo.outputPath(`${stateName}-${width}-${theme}.png`);
       await page.evaluate(()=>document.activeElement?.blur());
-      const chrome=await page.evaluateHandle(()=>[...document.querySelectorAll('.sticky-shell,.overview-nav,#backToTopBtn,.skip-link,#saveIndicator,#toast')].map(node=>{const saved={node,parent:node.parentNode,next:node.nextSibling};node.remove();return saved}));
+      const chrome=await page.evaluateHandle(()=>[...document.querySelectorAll('.sticky-shell,.overview-nav,.demo-banner,#backToTopBtn,.skip-link,#saveIndicator,#toast')].map(node=>{const saved={node,parent:node.parentNode,next:node.nextSibling};node.remove();return saved}));
       try{await root.screenshot({path,animations:'disabled'});}finally{await chrome.evaluate(rows=>rows.forEach(({node,parent,next})=>parent.insertBefore(node,next)));await chrome.dispose()}
       await testInfo.attach(`${stateName}-${width}-${theme}`,{path,contentType:'image/png'});
       await detail.locator('summary').focus();await page.keyboard.press('Enter');
