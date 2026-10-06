@@ -186,7 +186,7 @@
       <progress class="timer-goal-progress" id="studyTimerProgress" max="100" value="0" hidden aria-label="Progresso da meta da sessão"></progress>
       <div class="timer-target" id="studyTimerTarget" hidden></div>
       <div id="guidedStrategy" class="guided-strategy" hidden></div>
-        <div class="timer-actions">
+        <div class="timer-actions action-group" role="group" aria-label="Ações do cronômetro">
           <button class="btn" id="timerStartBtn">▶ Iniciar</button>
           <button class="btn" id="timerPauseBtn" style="display:none;">⏸ Pausar</button>
           <button class="btn ghost" id="timerResetBtn">↺ Zerar</button>
@@ -196,8 +196,7 @@
       </div>
       <section id="sessionResult" class="session-result" role="status" aria-live="polite" tabindex="-1" hidden></section>
       <div class="stat-grid" id="studyTimeStats" style="margin-top:18px;margin-bottom:0;"></div>
-      <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver evolução e consistência →</button>
-      <h3 style="margin-top:22px;">Distribuição por disciplina</h3>
+      <header class="study-distribution-heading"><h3>Distribuição por disciplina</h3><div class="action-group"><button class="btn ghost small" type="button" data-performance-jump="consistency">Ver evolução e consistência →</button></div></header>
       <div id="subjectHoursBars"></div>
     </div>
 
