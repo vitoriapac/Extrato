@@ -31,7 +31,7 @@ test('prévia explica fase da prova e sugere adaptação sem salvar automaticame
   await page.getByRole('button',{name:'Calcular proposta semanal'}).click();
   const preview=page.locator('#examStudyPlan');
   await expect(preview).toContainText('Fase até a prova');
-  await expect(preview).toContainText(/Adaptação de carga|Redistribuição sugerida|Plano continua adequado/);
+  await expect(preview.locator('.adaptive-advice')).toContainText(/Ajuste sugerido|Adaptação de carga|Plano continua adequado/);
   await expect(preview.getByRole('button',{name:'Confirmar e salvar plano'})).toBeVisible();
   await preview.getByRole('button',{name:'Descartar proposta'}).click();
   await expect(preview.getByRole('button',{name:'Calcular proposta semanal'})).toBeVisible();
