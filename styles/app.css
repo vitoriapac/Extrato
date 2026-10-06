@@ -2251,3 +2251,9 @@ body.timer-focus-active .timer-context{display:none!important}
 .subject-header .subject-toggle{flex-shrink:0;min-width:var(--touch-target);min-height:var(--touch-target)}
 .decision-explanation>summary:focus-visible,.weekly-decision-detail>summary:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
 .weekly-decision-summary,.weekly-decision-summary section{min-width:0;overflow-wrap:anywhere}
+
+/* Editorial text roles are opt-in; existing module scales remain unchanged. */
+.analytical-title{margin:0;color:var(--heading);font:var(--font-weight-semibold) var(--text-lg)/var(--line-height-heading) var(--font-body)}
+.analytical-result{margin:0;color:var(--text-primary);font:var(--font-weight-semibold) var(--text-title)/var(--line-height-heading) var(--font-body)}
+.supporting-text{color:var(--text-secondary);font:var(--font-weight-regular) var(--text-body)/var(--line-height-body) var(--font-body);max-width:70ch}
+.analytical-metadata{color:var(--text-secondary);font:var(--font-weight-medium) var(--text-caption)/var(--line-height-body) var(--font-data)}
