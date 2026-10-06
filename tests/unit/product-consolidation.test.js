@@ -11,9 +11,14 @@ test('resumos de Prontidão e fechamento preservam valores, insuficiência e det
   const input={m:{retencao:{available:false}},score:0,level:{},confidence:{nivel:'Baixa',value:.2},projection:{available:false,calibration:{available:false}},projectionHistory:{total:0},factors:[],approvalState:'empty',approvalLabel:'Aguardando dados',diagnostics:[],candidates:[]};
   const before=structuredClone(input);
   const html=renderReadinessOverview(input,{escapeHtml:String,escapeAttr:String,getMetricDataState:()=>{},metricStateLabel:()=>{}});
-  assert.match(html,/Dados insuficientes para estimar/);assert.match(html,/data-performance-jump="overview"/);
+  assert.match(html,/evidências comparáveis suficientes para estimar/);assert.match(html,/data-performance-jump="overview"/);
   assert.doesNotMatch(html,/<details[^>]* open/);
   assert.match(html,/readiness-investigation/);assert.deepEqual(input,before);
+  assert.match(html,/class="analytical-result">Dados insuficientes/);
+  assert.match(html,/class="readiness-explanation editorial-disclosure"/);
+  assert.ok(html.indexOf('Ver trajetória em Desempenho')<html.indexOf('<details'));
+  assert.ok(html.indexOf('data-help-topic-link="readiness"')>html.indexOf('<details'));
+  assert.match(html,/role="group" aria-label="Investigar a projeção"/);
   const measured={...input,projection:{available:true,low:70,high:78,calibration:{available:false,status:'below',confidenceLabel:'Baixa'},forecast30:{available:false,reason:'Histórico curto'},gap:{target:80,minimum:2,maximum:10},evidence:{observationCount:5,sampleSize:200}}};
   const measuredHTML=renderReadinessOverview(measured,{escapeHtml:String,escapeAttr:String,getMetricDataState:()=>{},metricStateLabel:()=>{}});
   const visible=measuredHTML.slice(0,measuredHTML.indexOf('<details'));

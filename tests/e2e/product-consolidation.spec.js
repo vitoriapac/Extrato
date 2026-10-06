@@ -4,6 +4,42 @@ import {createDefaultState} from '../../src/state/defaults.js';
 import {generateDemoData} from '../../src/demo/demo-generator.js';
 import {DEMO_EXPERIENCE_PROFILES} from '../../src/demo/demo-preparation-profiles.js';
 
+test('hierarquia editorial da Prontidão preserva ação, ajuda e leitura em mobile e desktop',async({page},testInfo)=>{
+  test.setTimeout(180_000);
+  await page.clock.install({time:new Date('2026-10-03T12:00:00-03:00')});
+  await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(node=>node.remove());
+  await activateTab(page,'dashboard');
+  const inspect=async(stateName)=>{
+    for(const [width,theme] of [[390,'light'],[390,'dark'],[1440,'light'],[1440,'dark'],[320,'light']]){
+      await page.setViewportSize({width,height:900});
+      await page.evaluate(value=>document.documentElement.setAttribute('data-theme',value),theme);
+      await expectNoPageOverflow(page);
+      const root=page.locator('#approvalDashboard'),detail=root.locator('.readiness-explanation');
+      await expect(root.locator('.analytical-result')).toBeVisible();
+      await expect(root.getByRole('button',{name:'Ver trajetória em Desempenho',exact:true})).toBeVisible();
+      await expect(detail).not.toHaveAttribute('open','');
+      await expect(root.getByRole('button',{name:'Entenda o Índice de Prontidão'})).toBeHidden();
+      const path=testInfo.outputPath(`${stateName}-${width}-${theme}.png`);
+      await page.evaluate(()=>document.activeElement?.blur());
+      const chrome=await page.evaluateHandle(()=>[...document.querySelectorAll('.sticky-shell,.overview-nav,#backToTopBtn,.skip-link,#saveIndicator,#toast')].map(node=>{const saved={node,parent:node.parentNode,next:node.nextSibling};node.remove();return saved}));
+      try{await root.screenshot({path,animations:'disabled'});}finally{await chrome.evaluate(rows=>rows.forEach(({node,parent,next})=>parent.insertBefore(node,next)));await chrome.dispose()}
+      await testInfo.attach(`${stateName}-${width}-${theme}`,{path,contentType:'image/png'});
+      await detail.locator('summary').focus();await page.keyboard.press('Enter');
+      await expect(detail).toHaveAttribute('open','');
+      await expect(root.getByRole('button',{name:'Entenda o Índice de Prontidão'})).toBeVisible();
+      await detail.locator('summary').click();
+    }
+  };
+  await inspect('insufficient');
+  await page.locator('#approvalDashboard .readiness-explanation > summary').click();
+  const help=page.locator('#approvalDashboard').getByRole('button',{name:'Entenda o Índice de Prontidão'});
+  await help.click();await expect(page.locator('#readiness')).toBeFocused();
+  await page.getByRole('button',{name:'Voltar à análise de origem'}).click();await expect(help).toBeFocused();
+  await openDemo(page);await activateTab(page,'dashboard');
+  await inspect('dense-demo');
+});
+
 test('iniciante sem falsa precisão encontra configuração e coleta de evidências',async({page})=>{
   await page.clock.install({time:new Date('2026-10-03T12:00:00-03:00')});
   await page.goto('/?test=1');

@@ -2267,3 +2267,16 @@ body.timer-focus-active .timer-context{display:none!important}
 .editorial-disclosure>summary:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 .editorial-disclosure>div{padding-bottom:var(--space-4);line-height:var(--line-height-body)}
 @media(max-width:600px){.action-group{align-items:flex-start}.action-group>.btn,.action-group>.analytical-contextual-help{flex-basis:100%}.action-group .btn{min-height:var(--touch-target)}}
+
+/* Overview: result, interpretation, action, then optional evidence. */
+#approvalDashboard .readiness-projection-summary{display:grid;gap:var(--space-3);padding-block:var(--space-block);min-width:0}
+#approvalDashboard .readiness-projection-summary p{margin:0}
+#approvalDashboard .readiness-projection-summary .action-group{margin-top:var(--space-2)}
+#approvalDashboard .readiness-explanation{margin:0;padding:0;border:0;border-top:1px solid var(--border-subtle);background:transparent}
+#approvalDashboard .readiness-investigation{margin:0}
+#approvalDashboard .editorial-disclosure p,#approvalDashboard .editorial-disclosure li{line-height:var(--line-height-body)}
+#approvalDashboard .editorial-disclosure .action-group{margin-top:var(--space-content-action)}
+#approvalDashboard .upcoming-list{margin-top:var(--space-4)}
+#approvalDashboard .editorial-disclosure>summary{font:var(--font-weight-semibold) var(--text-body)/var(--line-height-body) var(--font-body)}
+#approvalDashboard + button{margin-block:var(--space-content-action)}
+#approvalDashboard + button + .analytics-card{margin-top:var(--space-section);padding-top:var(--space-block);border-top:1px solid var(--border-default)}

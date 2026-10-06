@@ -797,7 +797,7 @@
         "../../src/demo/demo-generator.js",
         "../../src/demo/demo-preparation-profiles.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 1,
       "observedCaseSeconds": 23.9,
@@ -6372,7 +6372,7 @@
         "../../src/ui/components/analytical-presentation.js",
         "../../src/ui/renderers/diagnostic-summary-renderer.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
