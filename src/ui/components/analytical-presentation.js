@@ -33,3 +33,11 @@ export function renderContextualHelp(topic,label){
  if(!/^[a-z][a-z0-9-]*$/.test(topic||''))throw new TypeError('Invalid help topic');
  return `<span class="analytical-contextual-help">${renderAction({label,attributes:{'data-help-topic-link':topic}})}</span>`;
 }
+
+// HTML slots accept only trusted renderer output, like renderDisclosure.
+export function renderActionGroup({actions=[],contentHTML='',label='',vertical=false}={}){
+ return `<div class="action-group${vertical?' action-group--vertical':''}"${label?` role="group" aria-label="${escape(label)}"`:''}>${actions.map(renderAction).join('')}${contentHTML}</div>`;
+}
+export function renderDivider({section=false}={}){
+ return `<div class="${section?'section-divider':'divider'}" aria-hidden="true"></div>`;
+}

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {renderSectionHeader,renderEmptyState,renderMetricCard} from '../../src/ui/components/presentation.js';
-import {renderDisclosure} from '../../src/ui/components/analytical-presentation.js';
+import {renderDisclosure,renderActionGroup,renderDivider} from '../../src/ui/components/analytical-presentation.js';
 import {renderDiagnosticSummary} from '../../src/ui/renderers/diagnostic-summary-renderer.js';
 
 test('explicação compartilhada começa fechada e evidência do diagnóstico permanece visível',()=>{
@@ -33,4 +33,15 @@ test('tokens de superfícies e variantes de card existem para os dois temas',()=
   for(const name of ['surface-page','surface-card','surface-subtle','surface-highlight','surface-primary','text-on-primary','border-default','border-emphasis','accent-primary','accent-warning','space-12','space-16'])assert.match(tokens,new RegExp(`--${name}:`));
   for(const variant of ['default','insight','attention','primary'])assert.match(css,new RegExp(`\\.card--${variant}\\{`));
   assert.match(tokens,/\[data-theme="dark"\]/);
+});
+
+test('grupos editoriais escapam rótulos e preservam ações e divisores decorativos',()=>{
+ const html=renderActionGroup({label:'Ações <índice>',actions:[{label:'Ver <dados>',attributes:{'data-help-topic-link':'readiness'}}],vertical:true});
+ assert.match(html,/action-group--vertical/);assert.match(html,/role="group" aria-label="Ações &lt;índice&gt;"/);
+ assert.match(html,/Ver &lt;dados&gt;/);assert.match(html,/data-help-topic-link="readiness"/);
+ assert.match(renderDivider(),/class="divider" aria-hidden="true"/);
+ assert.match(renderDivider({section:true}),/class="section-divider"/);
+ const tokens=readFileSync(new URL('../../styles/tokens.css',import.meta.url),'utf8');
+ for(const name of ['line-height-heading','line-height-body','line-height-relaxed','space-action','space-block','space-section','font-weight-bold'])assert.match(tokens,new RegExp(`--${name}:`));
+ assert.match(tokens,/--space-5:1.25rem/);assert.match(tokens,/--space-6:1.5rem/);
 });
