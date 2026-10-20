@@ -1334,6 +1334,7 @@ input,select,textarea{font-size:max(1em,var(--text-sm))}
 .overview-action-card .overview-action-reason{font-size:11px}
 .overview-action-buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .overview-action-buttons .btn{min-height:42px}
+.overview-action-card .overview-action-suggestion{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:0;padding-top:12px;border-top:1px solid var(--paper-line);font-size:var(--text-sm)}
 .overview-action-explanation{grid-column:1/-1;padding-top:8px;border-top:1px solid var(--paper-line)}
 .overview-action-explanation summary{cursor:pointer;color:var(--heading);font:600 11px var(--font-data)}
 .overview-alert-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}

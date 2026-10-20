@@ -1,21 +1,26 @@
 import {test,expect} from '@playwright/test';
-import {activateTab,openDemo} from './helpers.js';
+import {activateTab,openDemo,overviewRecommendationId} from './helpers.js';
 
 test('Visão Geral e Hoje compartilham a mesma recomendação prioritária',async({page})=>{
   await openDemo(page);
   const overviewAction=page.locator('#overviewNextAction .overview-action-card');
   await expect(overviewAction).toBeVisible();
-  await expect(overviewAction).toHaveAttribute('data-study-action-source','overview');
   await expect(page.locator('.overview-now')).toBeVisible();
-  const topic=await overviewAction.locator('h3').innerText();
-  const actionId=await overviewAction.getAttribute('data-study-action-id');
+  const planned=await overviewAction.getAttribute('data-decision-role')==='planned';
+  if(planned){
+    // A pending plan item is the single primary action; the recommendation is only a suggestion line.
+    await expect(overviewAction.locator('button')).toHaveCount(2);
+    await expect(overviewAction.locator('[data-daily-start], [data-daily-resume], button:disabled')).toHaveCount(1);
+  }else await expect(overviewAction).toHaveAttribute('data-study-action-source','overview');
+  const topic=await (planned?overviewAction.locator('.overview-action-suggestion'):overviewAction.locator('h3')).innerText();
+  const actionId=await overviewRecommendationId(page);
   await expect(page.locator('#overviewAttention')).toBeVisible();
   await page.locator('#overviewAttentionViewAll').click();
   await expect(page.locator('#panel-hoje')).toHaveClass(/active/);
   const todayAction=page.locator('#studyRecommendation .study-recommendation').first();
   await expect(todayAction).toHaveAttribute('data-study-action-source','today');
   await expect(todayAction).toHaveAttribute('data-study-action-id',actionId);
-  await expect.poll(async()=> (await todayAction.locator('h4').innerText()).toLocaleLowerCase()).toBe(topic.replace(' · ',' — ').toLocaleLowerCase());
+  await expect.poll(async()=>topic.toLocaleLowerCase().includes((await todayAction.locator('h4').innerText()).replace(' — ',' · ').toLocaleLowerCase())).toBe(true);
   await expect(page.locator('#studyRecommendation .recommendation-actions .btn').first()).toBeVisible();
   await page.locator('.today-analysis-details > summary').click();
   const diagnosisActions=page.locator('#diagnosisCenter [data-study-action-source="diagnosis"]');

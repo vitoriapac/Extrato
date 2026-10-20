@@ -10,6 +10,10 @@ export async function activateTab(page,name){
   await page.locator(`[data-tab="${name}"]`).evaluate(button=>button.click());
   await expect(page.locator(`#panel-${name}`)).toBeVisible();
 }
+// The overview card is either the recommendation itself or a pending plan item carrying it as a suggestion line.
+export async function overviewRecommendationId(page){
+  return page.locator('#overviewNextAction .overview-action-card').evaluate(card=>card.dataset.studyActionId||card.querySelector('[data-suggested-action-id]')?.dataset.suggestedActionId||null);
+}
 export async function openExamImport(page){
   await page.locator('.subjects-import-menu summary').click();
   await page.getByTestId('open-exam-import').click();
