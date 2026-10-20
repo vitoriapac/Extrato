@@ -489,6 +489,11 @@
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Questões resolvidas</h2>
       <button class="btn" id="addQuestaoRowBtn">+ Registrar sessão</button>
+      <details class="action-menu questions-import-menu"><summary class="btn ghost" aria-label="Opções de importação de questões">Importar ▾</summary><div class="action-menu__items">
+        <button type="button" id="importQuestionsBtn">Importar CSV (QConcursos / Tec / Padrão)</button>
+        <button type="button" id="downloadQuestionsCsvBtn">Baixar modelo CSV</button>
+      </div></details>
+      <input type="file" id="questionsImportFile" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
       <button class="btn ghost small" type="button" data-performance-jump="questions">Ver análise completa →</button>
     </div>
     <div class="log-table-wrap">
@@ -664,6 +669,16 @@
     <h3 id="structuredImportTitle">Prévia da importação</h3>
     <div id="structuredImportContent"></div>
     <div class="modal-actions"><button class="btn ghost" id="structuredImportCancelBtn" type="button">Cancelar</button><button class="btn" id="structuredImportConfirmBtn" type="button">Confirmar importação</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="questionsImportOverlay" role="dialog" aria-modal="true" aria-labelledby="questionsImportTitle">
+  <div class="modal-box structured-import-box">
+    <h3 id="questionsImportTitle">Prévia da importação de questões</h3>
+    <div id="questionsImportContent"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="questionsImportCancelBtn" type="button">Cancelar</button>
+      <button class="btn" id="questionsImportConfirmBtn" type="button">Confirmar importação</button>
+    </div>
   </div>
 </div>
 <div id="guidedOnboardingOverlay" class="onboarding-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="guidedOnboardingTitle" aria-describedby="guidedOnboardingSubtitle">

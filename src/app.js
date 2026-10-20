@@ -158,6 +158,10 @@ import {createDemoController} from './ui/controllers/demo-controller.js';
 import {createStructuredImportController} from './features/structured-import/structured-import-controller.js';
 import {renderStructuredImport} from './features/structured-import/structured-import-renderer.js';
 import {parseStructuredStudyContent,createStructuredContentImportService} from './application/subjects/structured-content-import.js';
+import {createQuestionImportService} from './application/questions/question-import-service.js';
+import {createQuestionImportController} from './features/question-import/question-import-controller.js';
+import {renderQuestionImport} from './features/question-import/question-import-renderer.js';
+import {buildQuestionImportTemplate,QUESTION_IMPORT_TEMPLATE_FILE_NAME} from './features/question-import/question-import-template.js';
 import {createApplicationRenderer} from './ui/renderers/application-renderer.js';
 import {createGoalService} from './application/goals/goal-service.js';
 import {buildResultGoalsViewModel} from './application/goals/build-result-goals-view-model.js';
@@ -3331,6 +3335,41 @@ function updateSimulado(id, field, value){
 
 document.getElementById('addQuestaoRowBtn').addEventListener('click', addQuestaoRow);
 document.getElementById('addSimuladoRowBtn').addEventListener('click', addSimuladoRow);
+
+const questionImportService = createQuestionImportService({
+  subjectService,
+  questionService,
+  getSubjects: () => state.subjects,
+  getQuestions: () => state.questoes,
+  errorCategoryKeys: Object.keys(ERROR_CATEGORIES),
+  today: todayISO,
+  // Repositórios leem state a cada chamada, então restaurar as chaves desfaz disciplinas, tópicos e questões criados.
+  atomic: task => {
+    const snapshot = structuredClone(pickPersistentState(state));
+    try { return task(); } catch (error) { Object.assign(state, snapshot); throw error; }
+  }
+});
+const questionImportController = createQuestionImportController({
+  document,
+  window,
+  service: questionImportService,
+  render: renderQuestionImport,
+  notify: showToast,
+  onImported: result => {
+    studyPlanPreview = null;
+    persistAndRender();
+    showToast(`${pluralize(result.addedQuestionsCount, 'questão')} em ${pluralize(result.addedSessions, 'sessão')} importadas com sucesso.`);
+  }
+});
+document.getElementById('downloadQuestionsCsvBtn')?.addEventListener('click', () => {
+  const blob = new Blob(['\uFEFF' + buildQuestionImportTemplate(todayISO())], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = QUESTION_IMPORT_TEMPLATE_FILE_NAME;
+  link.click();
+  URL.revokeObjectURL(url);
+});
 
 /* ===== METAS ===== */
 const WEEKDAY_LABELS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
