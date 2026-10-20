@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-161 arquivos Node e 55 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+166 arquivos Node e 55 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -100,6 +100,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/cognitive-profile.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/consolidated-signal-contract.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/consolidated-signals.test.js | node | Datas | critical | — | contract | none |
+| tests/unit/crypto-utils.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/daily-execution.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/daily-plan-distribution.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/daily-session-reconciliation.test.js | node | Sessões | critical | — | contract | none |
@@ -171,6 +172,8 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/projection-context.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/projection-scenarios.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/projection-ux-simulator.test.js | node | Trajetória | functional | — | contract | none |
+| tests/unit/question-import-normalizer.test.js | node | Aplicação | critical | — | contract | none |
+| tests/unit/question-import-service.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/recommend-study.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-action.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-calibration.test.js | node | Recomendações | functional | — | contract | none |
@@ -185,6 +188,8 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/recovery-renderer.test.js | node | Recuperação | critical | — | contract | none |
 | tests/unit/recovery-transaction.test.js | node | Recuperação | critical | — | contract | none |
 | tests/unit/release-intelligence.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/remote-sync-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/remote-sync-provider.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/replan-controller.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/replan-renderer.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/replan-study.test.js | node | Planejamento | critical | — | contract | none |
