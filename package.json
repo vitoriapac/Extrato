@@ -7,6 +7,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check:syntax": "node scripts/check-syntax.mjs",
+    "check:types": "tsc -p jsconfig.json --noEmit",
     "serve": "node scripts/serve.mjs",
     "check:bundle": "node scripts/build.mjs --check",
     "test": "node --test tests/unit/*.test.js",
@@ -27,7 +28,8 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.62.1",
-    "esbuild": "^0.25.9"
+    "esbuild": "^0.25.9",
+    "typescript": "^7.0.2"
   },
   "engines": {
     "node": ">=22"

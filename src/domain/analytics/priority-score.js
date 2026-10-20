@@ -3,6 +3,24 @@ import {calculateFactorScore,createScoreResult,describeScoreEvidence} from './sc
 export const PRIORITY_ALGORITHM_VERSION=5;
 export const PRIORITY_WEIGHTS=Object.freeze({examImpact:.225,retentionRisk:.175,masteryGap:.175,trendRisk:.10,reviewUrgency:.10,reviewHealthRisk:.10,planAlignment:.0625,recencyRisk:.0625});
 
+/**
+ * @typedef {Object} PriorityCandidate
+ * @property {number} [examImpact]
+ * @property {number} [retentionRisk]
+ * @property {number} [retentionNeed]
+ * @property {number} [masteryGap]
+ * @property {number} [trendRisk]
+ * @property {number} [reviewUrgency]
+ * @property {number} [reviewHealthRisk]
+ * @property {number} [planAlignment]
+ * @property {number} [recencyRisk]
+ * @property {number} [evidenceStrength]
+ */
+
+/**
+ * Calcula a pontuação e justificativa de prioridade para um tópico ou candidato de estudo.
+ * @param {PriorityCandidate} [candidate]
+ */
 export function calculatePriorityScore(candidate={}){
   const result=calculateFactorScore({...candidate,retentionRisk:candidate.retentionRisk??candidate.retentionNeed},PRIORITY_WEIGHTS);
   const reasons=[];

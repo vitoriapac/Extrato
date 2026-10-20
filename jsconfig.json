@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": false,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "maxNodeModuleJsDepth": 0
+  },
+  "include": [
+    "src/core/**/*",
+    "src/domain/questions/**/*",
+    "src/domain/analytics/priority-score.js",
+    "src/domain/planning/adaptive-planning.js",
+    "src/storage/storage-provider.js",
+    "src/storage/remote-sync-provider.js",
+    "src/ui/controllers/remote-sync-controller.js",
+    "src/application/questions/question-import-service.js",
+    "src/features/question-import/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/app.bundle.js",
+    "src/exam-catalog.bundle.js"
+  ]
+}
