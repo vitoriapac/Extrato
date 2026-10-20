@@ -12,17 +12,17 @@ Plano: [tasks/plan.md](plan.md) · Spec: [docs/SPEC-build-hygiene.md](../docs/SP
   - Verify: `git show --stat HEAD`
   - Files: `.gitignore`, `.claude/launch.json`, `docs/SPEC-build-hygiene.md`, `tasks/plan.md`, `tasks/todo.md`, `tasks/plan-remote-sync.md`, `tasks/todo-remote-sync.md`
 
-- [ ] Tarefa 3: Commit `chore:` do grafo do código (R2)
+- [x] Tarefa 3: Commit `chore:` do grafo do código (R2) — `056304a`, feito por você no terminal
   - Acceptance: `graphify update .` roda sobre o branch atual; o commit contém só `graphify-out/graph.json` e `graphify-out/GRAPH_REPORT.md`.
   - Verify: `git show --stat HEAD` com exatamente esses 2 arquivos
   - Files: `graphify-out/graph.json`, `graphify-out/GRAPH_REPORT.md`
 
-- [ ] Tarefa 4: Commit `docs:` com `docs/recomendacoes-futuras.md` (R4)
+- [x] Tarefa 4: Commit `docs:` com `docs/recomendacoes-futuras.md` (R4) — `25a00c4`
   - Acceptance: arquivo lido por inteiro antes do commit; nada sensível, ou aviso antes de commitar; commit só com esse arquivo.
   - Verify: `git show --stat HEAD`
   - Files: `docs/recomendacoes-futuras.md`
 
-- [ ] Tarefa 5: Checkpoint final
+- [x] Tarefa 5: Checkpoint final — 782/782 testes; `check:types`, `check:bundle`, `test:tiers` e inventário verdes
   - Acceptance: `git status --short` vazio; todas as checagens verdes; `tasks/todo.md` atualizado.
   - Verify: `npm test`, `npm run check:types`, `npm run check:bundle`, `npm run test:tiers`, `node scripts/audit-test-suite.mjs --check`
   - Files: nenhum novo
