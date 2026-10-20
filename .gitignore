@@ -19,3 +19,13 @@ Thumbs.db
 .tmp-*
 *.patch
 *.png.diff.png
+
+# Ferramentas locais de IA e grafo do codigo
+# graphify-out/* (e nao graphify-out/) para que as negacoes abaixo funcionem.
+src/graphify-out/
+graphify-out/*
+!graphify-out/graph.json
+!graphify-out/GRAPH_REPORT.md
+/CLAUDE.md
+.claude/*
+!.claude/launch.json

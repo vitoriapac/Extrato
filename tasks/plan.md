@@ -1,40 +1,43 @@
-# Plano: remote-sync
+# Plano: build-hygiene
 
-Spec: [docs/SPEC-remote-sync.md](../docs/SPEC-remote-sync.md) · Mapa: [docs/CAPABILITY-MAP-review-remediation.md](../docs/CAPABILITY-MAP-review-remediation.md) · Módulo anterior: [plan-question-import.md](plan-question-import.md)
+Spec: [docs/SPEC-build-hygiene.md](../docs/SPEC-build-hygiene.md) · Mapa: [docs/CAPABILITY-MAP-review-remediation.md](../docs/CAPABILITY-MAP-review-remediation.md) · Módulos anteriores: [plan-question-import.md](plan-question-import.md), [plan-remote-sync.md](plan-remote-sync.md)
 
-## Componentes e dependências
+## Ordem
 
-```
-crypto-utils (PBKDF2, base64)  ──►  remote-sync-provider (WebDAV)  ──►  remote-sync-controller (fluxo e preferências)  ──►  app.js / index.html
-        R3, base64 p/ R5               R4 R5 R6, versão do envelope           R1 (confirmação, marcador), R6 na tela            R2, ajuda CORS
-```
+1. **Regras do `.gitignore` e limpeza do cache** (R1, R2, R3): uma seção nova para ferramentas locais; apagar `src/graphify-out/` só depois de `git check-ignore` confirmar a regra.
+2. **Commit `chore:` de higiene:** `.gitignore`, `.claude/launch.json`, esta spec, o plano e as tarefas (inclusive os arquivos do remote-sync com nome próprio).
+3. **Commit `chore:` do grafo** (R2): `graphify update .` para o grafo refletir o código do branch, depois versionar `graph.json` e `GRAPH_REPORT.md`.
+4. **Commit `docs:`** (R4): `docs/recomendacoes-futuras.md`, depois de ler o arquivo inteiro.
+5. **Checkpoint final:** `git status --short` vazio e todas as checagens verdes.
 
-## Ordem (sequencial — cada camada usa a API da anterior)
-
-1. **crypto-utils:** constante de 600 mil iterações, teto na leitura, exportar o conversor base64 (R3, base de R5).
-2. **provider:** recusa de `http://` com credenciais, Basic auth em UTF-8, erro de rede/CORS, `checkRemoteVersion` (lê só o `createdAt` do envelope), `downloadState` devolve o `createdAt`; o `reconcile` por `updatedAt` sai (R4, R5, R6, base de R1).
-3. **controller:** push consulta a versão e pede confirmação quando a nuvem mudou; push e pull gravam `lastSync`; "Verificar status" usa a mesma regra (R1).
-4. **app.js e index.html:** `getState` com `pickPersistentState`; linha de ajuda sobre CORS (R2, R6).
-5. **Checkpoint final:** checagens, inventário, e o critério 1 no navegador contra um WebDAV falso local.
+As tarefas são sequenciais: cada commit parte do anterior, e o grafo da tarefa 3 deve ser gerado depois das mudanças da tarefa 2.
 
 ## Decisões de implementação
 
-- **Marcador nas preferências:** `studytrack_remote_sync_config` passa a guardar `{ serverUrl, username, lastSync: { serverUrl, envelopeAt } }`. Se a URL atual for diferente de `lastSync.serverUrl`, não há marcador, e o app pede confirmação. `readRemoteSyncPreferences` precisa preservar `lastSync` ao limpar senhas antigas.
-- **`checkRemoteVersion` não decifra:** faz `GET`, tenta `JSON.parse` e lê `createdAt`/`algorithm`. Retorna `{ exists: false }` no 404, `{ exists: true, valid: false }` se não for envelope, ou `{ exists: true, valid: true, createdAt }`.
-- **`provider.reconcile` é removido:** a regra antiga (`updatedAt`) é justamente o que não detecta o conflito. O teste "reconciliação compara timestamps…" é **substituído** por testes da regra nova, e não apenas apagado.
-- **Mensagem de CORS:** o provider transforma o `TypeError` do `fetch` num erro com a origem (`location.origin`, injetada como `origin`), e o controller só exibe.
-- **Teste quebrado de preferências:** ele mora em `remote-sync-controller.test.js`, que a tarefa 3 vai editar. Proposta: corrigir já na tarefa 3 (falta `controller.mount()` no `setup`), em vez de esperar o `build-hygiene`.
+- **Regras do `.gitignore`**, com negação para os dois arquivos do grafo e para o `launch.json`:
+  ```gitignore
+  # Ferramentas locais de IA e grafo do código
+  src/graphify-out/
+  graphify-out/*
+  !graphify-out/graph.json
+  !graphify-out/GRAPH_REPORT.md
+  /CLAUDE.md
+  .claude/*
+  !.claude/launch.json
+  ```
+  `graphify-out/*`, e não `graphify-out/`, para que as negações funcionem: o Git não reinclui arquivos dentro de uma pasta ignorada por inteiro.
+- **`CLAUDE.md` com barra inicial:** a regra deve ser `/CLAUDE.md`, para valer só na raiz e não ignorar outros `CLAUDE.md` que venham a existir em subpastas.
+- **Grafo em commit separado:** isola o diff de ~4 MB do `graph.json`, para que a revisão dos commits de código e de configuração continue legível.
 
 ## Riscos
 
 | Risco | Mitigação |
 |---|---|
-| 600 mil iterações deixa push e pull lentos em celular (~0,5–1 s por derivação) | Uma derivação por operação; a checagem de versão não deriva. O status já mostra "Criptografando…". |
-| O `createdAt` do envelope é texto aberto e pode ser alterado no servidor | Só decide se a confirmação aparece; a integridade dos dados continua garantida pelo AES-GCM. |
-| `GET` extra antes de cada push dobra o tráfego | O arquivo é pequeno (dezenas de KB); aceitável. |
-| WebDAV real indisponível para testar | Servidor WebDAV falso em memória, com CORS, no scratchpad, permitido via `http://127.0.0.1` pela exceção de R4. |
+| O `graph.json` (4,3 MB) é reescrito por inteiro a cada `graphify update`, e cada commit que o atualizar carrega ~4 MB | Aceito na decisão R2. O `CLAUDE.md` já registra que esse diff é esperado. Opcional depois: o merge driver do graphify (`graphify hook install`) para conflitos em merges. |
+| Ignorar `CLAUDE.md` e `.claude/` esconde mudanças futuras nesses arquivos | É a decisão R3; eles continuam no disco e funcionando localmente. |
+| `docs/recomendacoes-futuras.md` pode conter algo que você não queira versionar | Leio o arquivo inteiro antes do commit e aviso se houver algo sensível. |
 
 ## Checkpoints de verificação
 
-- Após cada tarefa: `npm test` e `npm run check:types` verdes.
-- Após a tarefa 5: `npm run build`, `npm run check:bundle`, `node scripts/audit-test-suite.mjs --check`, os 5 critérios de sucesso da spec, e o critério 1 também no navegador.
+- Após a tarefa 1: `git check-ignore -v` para cada caminho e `git status --short` mostrando só o que vai ser versionado.
+- Após a tarefa 5: `git status --short` vazio; `npm test`, `npm run check:types`, `npm run check:bundle`, `npm run test:tiers` e `node scripts/audit-test-suite.mjs --check` verdes.
