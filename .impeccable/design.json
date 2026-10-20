@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T00:00:00Z",
+  "title": "Design System: StudyTrack — Extrato de Estudos",
+  "extensions": {
+    "colorMeta": {
+      "navy": { "role": "primary", "displayName": "Navy de Extrato", "canonical": "#0B2545", "tonalRamp": ["oklch(15% 0.06 255)", "oklch(26% 0.07 255)", "oklch(37% 0.08 255)", "oklch(48% 0.08 255)", "oklch(60% 0.07 255)", "oklch(72% 0.05 255)", "oklch(84% 0.03 255)", "oklch(95% 0.01 255)"] },
+      "blue": { "role": "primary", "displayName": "Azul Tinta", "canonical": "#0F3D73", "tonalRamp": ["oklch(15% 0.08 255)", "oklch(26% 0.1 255)", "oklch(37% 0.11 255)", "oklch(48% 0.12 255)", "oklch(60% 0.11 255)", "oklch(72% 0.08 255)", "oklch(84% 0.05 255)", "oklch(95% 0.02 255)"] },
+      "gold": { "role": "secondary", "displayName": "Ouro Envelhecido", "canonical": "#765500", "tonalRamp": ["oklch(15% 0.04 80)", "oklch(26% 0.07 80)", "oklch(37% 0.09 80)", "oklch(48% 0.11 80)", "oklch(60% 0.12 80)", "oklch(72% 0.12 80)", "oklch(84% 0.09 80)", "oklch(95% 0.04 80)"] },
+      "gold-bright": { "role": "secondary", "displayName": "Ouro Vivo", "canonical": "#E8B94A" },
+      "paper": { "role": "neutral", "displayName": "Papel", "canonical": "#F6F3EC", "tonalRamp": ["oklch(15% 0.01 85)", "oklch(26% 0.01 85)", "oklch(37% 0.01 85)", "oklch(48% 0.01 85)", "oklch(60% 0.01 85)", "oklch(72% 0.01 85)", "oklch(84% 0.012 85)", "oklch(96% 0.01 85)"] },
+      "paper-line": { "role": "neutral", "displayName": "Linha de Papel", "canonical": "#E4DFD1" },
+      "white": { "role": "neutral", "displayName": "Papel Branco", "canonical": "#FFFDF9" },
+      "slate-bg": { "role": "neutral", "displayName": "Ardósia Clara", "canonical": "#EDEAE0" },
+      "ink": { "role": "neutral", "displayName": "Tinta", "canonical": "#1C2430" },
+      "ink-soft": { "role": "neutral", "displayName": "Tinta Suave", "canonical": "#4F5865" },
+      "green": { "role": "tertiary", "displayName": "Verde Conta", "canonical": "#245F47" },
+      "amber": { "role": "tertiary", "displayName": "Âmbar Aviso", "canonical": "#765018" },
+      "red": { "role": "tertiary", "displayName": "Vermelho Débito", "canonical": "#8F302A" },
+      "info-bg": { "role": "tertiary", "displayName": "Azul Informe", "canonical": "#E3E9F3" },
+      "highlight-bg": { "role": "neutral", "displayName": "Destaque", "canonical": "#FFF8E6" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Título do extrato no cabeçalho." },
+      "headline": { "displayName": "Headline", "purpose": "Título de página e diálogos de entrada." },
+      "value": { "displayName": "Value", "purpose": "Números principais em KPIs e saldos." },
+      "title": { "displayName": "Title", "purpose": "Títulos de blocos de decisão." },
+      "body": { "displayName": "Body", "purpose": "Explicações e formulários; até 80ch." },
+      "label": { "displayName": "Label", "purpose": "Títulos de cards, abas e botões, em maiúsculas." },
+      "caption": { "displayName": "Caption", "purpose": "Eyebrows, rótulos de KPI, navegação de seções, badges." }
+    },
+    "shadows": [
+      { "name": "gold-rule", "value": "0 1px 0 var(--gold)", "purpose": "Base do cabeçalho do extrato." },
+      { "name": "sticky-bar", "value": "0 4px 12px rgba(11,37,69,.08)", "purpose": "Busca e cabeçalho compacto fixos." },
+      { "name": "floating-menu", "value": "0 10px 24px var(--shadow-color)", "purpose": "Menus e popovers." },
+      { "name": "dialog", "value": "0 24px 70px rgba(0,0,0,.25)", "purpose": "Modais e assistente inicial." }
+    ],
+    "motion": [
+      { "name": "state-change", "value": "150ms ease", "purpose": "Hover e foco de botões, abas e campos." },
+      { "name": "press", "value": "transform 100ms ease, translateY(1px)", "purpose": "Active de botões." },
+      { "name": "theme", "value": "200ms ease", "purpose": "Troca de tema no body." },
+      { "name": "panel-fade", "value": "250ms ease", "purpose": "Entrada de painel ao trocar de aba." },
+      { "name": "bar-fill", "value": "width 400ms ease", "purpose": "Preenchimento de barras de progresso." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "375px" },
+      { "name": "sm", "value": "430px" },
+      { "name": "mobile", "value": "760px" },
+      { "name": "tablet", "value": "900px" },
+      { "name": "wide", "value": "1100px" },
+      { "name": "container", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal: navy, rótulo mono.",
+      "html": "<button class=\"ds-btn\">Confirmar plano</button>",
+      "css": ".ds-btn { font: 12px 'IBM Plex Mono', monospace; letter-spacing: .03em; background: var(--navy, #0B2545); color: var(--on-navy, #F6F3EC); border: none; padding: 9px 16px; min-height: 36px; border-radius: 2px; cursor: pointer; transition: background-color .15s ease, transform .1s ease; } .ds-btn:hover { background: var(--blue, #0F3D73); } .ds-btn:focus-visible { outline: 2px solid var(--gold, #765500); outline-offset: 2px; } .ds-btn:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Ação secundária: contorno navy.",
+      "html": "<button class=\"ds-btn-ghost\">Ver evidências</button>",
+      "css": ".ds-btn-ghost { font: 12px 'IBM Plex Mono', monospace; letter-spacing: .03em; background: transparent; color: var(--heading, #0B2545); border: 1px solid var(--heading, #0B2545); padding: 9px 16px; min-height: 36px; border-radius: 2px; cursor: pointer; transition: background-color .15s ease, color .15s ease; } .ds-btn-ghost:hover { background: var(--navy, #0B2545); color: var(--on-navy, #F6F3EC); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--gold, #765500); outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Ação destrutiva: contorno vermelho.",
+      "html": "<button class=\"ds-btn-danger\">Apagar dados</button>",
+      "css": ".ds-btn-danger { font: 11px 'IBM Plex Mono', monospace; background: transparent; color: var(--red, #8F302A); border: 1px solid var(--red, #8F302A); padding: 7px 11px; min-height: 36px; border-radius: 2px; cursor: pointer; transition: background-color .15s ease, color .15s ease; } .ds-btn-danger:hover { background: var(--red, #8F302A); color: #fff; } .ds-btn-danger:focus-visible { outline: 2px solid var(--gold, #765500); outline-offset: 2px; }"
+    },
+    {
+      "name": "Select",
+      "kind": "input",
+      "refersTo": "select",
+      "description": "Seletor padrão em papel com texto mono.",
+      "html": "<select class=\"ds-select\"><option>Últimos 30 dias</option><option>Últimos 90 dias</option></select>",
+      "css": ".ds-select { min-height: 36px; padding: 7px 32px 7px 10px; border: 1px solid var(--paper-line, #E4DFD1); border-radius: 2px; background-color: var(--paper, #F6F3EC); color: var(--ink, #1C2430); font: 13px 'IBM Plex Mono', monospace; transition: border-color .15s ease; } .ds-select:hover { border-color: var(--ink-soft, #4F5865); } .ds-select:focus-visible { border-color: var(--gold, #765500); outline: 3px solid var(--gold, #765500); outline-offset: 1px; }"
+    },
+    {
+      "name": "Tabs",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Abas principais; ativa em navy com ouro vivo.",
+      "html": "<nav class=\"ds-tabs\"><button class=\"ds-tab is-active\">Hoje</button><button class=\"ds-tab\">Planejamento</button><button class=\"ds-tab\">Desempenho</button></nav>",
+      "css": ".ds-tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--navy, #0B2545); } .ds-tab { font: 12px 'IBM Plex Mono', monospace; letter-spacing: .06em; text-transform: uppercase; background: var(--slate-bg, #EDEAE0); color: var(--ink-soft, #4F5865); border: none; padding: 11px 18px; border-radius: 2px 2px 0 0; cursor: pointer; transition: background .15s, color .15s; } .ds-tab:hover:not(.is-active) { background: var(--tab-hover-bg, #E1DCCB); } .ds-tab.is-active { background: var(--navy, #0B2545); color: var(--gold-bright, #E8B94A); } .ds-tab:focus-visible { outline: 2px solid var(--gold, #765500); outline-offset: 2px; }"
+    },
+    {
+      "name": "Status Badges",
+      "kind": "chip",
+      "refersTo": "status-badge-success",
+      "description": "Estado textual semântico; cor nunca é o único sinal.",
+      "html": "<span class=\"ds-badge ds-badge--ok\">Meta atingida</span> <span class=\"ds-badge ds-badge--warn\">Revisar</span> <span class=\"ds-badge ds-badge--bad\">Em risco</span> <span class=\"ds-badge ds-badge--na\">Evidência insuficiente</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 4px 8px; font: 500 10px/1.35 'IBM Plex Mono', monospace; } .ds-badge--ok { background: var(--green-bg, #E4F0EA); color: var(--green, #245F47); } .ds-badge--warn { background: var(--amber-bg, #F5E9D4); color: var(--amber, #765018); } .ds-badge--bad { background: var(--red-bg, #F3E0DD); color: var(--red, #8F302A); } .ds-badge--na { background: var(--slate-bg, #EDEAE0); color: var(--ink-soft, #4F5865); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Agrupamento plano; faixa dourada para ação.",
+      "html": "<section class=\"ds-card ds-card--action\"><h3 class=\"ds-card__title\">Próxima melhor ação</h3><p>Revisar Juros Compostos: domínio 48, incidência alta.</p></section>",
+      "css": ".ds-card { background: var(--white, #FFFDF9); color: var(--ink, #1C2430); border: 1px solid var(--paper-line, #E4DFD1); border-radius: 2px; padding: 20px 22px; font: 14px/1.5 'IBM Plex Sans', sans-serif; } .ds-card--action { border-top: 3px solid var(--gold, #765500); } .ds-card__title { margin: 0 0 16px; font: 600 12px 'IBM Plex Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft, #4F5865); } .ds-card p { margin: 0; }"
+    },
+    {
+      "name": "KPI Cell",
+      "kind": "custom",
+      "refersTo": "kpi-cell",
+      "description": "Saldo do extrato: valor Fraunces em ouro sobre navy.",
+      "html": "<div class=\"ds-kpi\"><div class=\"ds-kpi__n\">72</div><div class=\"ds-kpi__l\">Prontidão</div></div>",
+      "css": ".ds-kpi { background: var(--navy, #0B2545); color: var(--on-navy, #F6F3EC); padding: 16px 18px; min-width: 140px; } .ds-kpi__n { font: 600 24px 'Fraunces', serif; color: var(--gold-bright, #E8B94A); } .ds-kpi__l { margin-top: 2px; font: 11px 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: .05em; color: rgba(246,243,236,.72); }"
+    },
+    {
+      "name": "Statement Header",
+      "kind": "custom",
+      "refersTo": "kpi-cell",
+      "description": "Cabeçalho do extrato com textura de linhas e fio dourado.",
+      "html": "<header class=\"ds-statement\"><div class=\"ds-statement__eyebrow\">Extrato de estudos</div><h1 class=\"ds-statement__title\">StudyTrack</h1></header>",
+      "css": ".ds-statement { position: relative; overflow: hidden; background: var(--navy, #0B2545); color: var(--on-navy, #F6F3EC); border-radius: 2px; padding: 32px 30px 26px; box-shadow: 0 1px 0 var(--gold, #765500); } .ds-statement::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, rgba(232,185,74,.05) 0 1px, transparent 1px 40px); pointer-events: none; } .ds-statement__eyebrow { font: 11px 'IBM Plex Mono', monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-bright, #E8B94A); } .ds-statement__title { margin: 4px 0 0; font: 600 28px 'Fraunces', serif; letter-spacing: -.01em; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "O Extrato Bancário",
+    "overview": "O StudyTrack apresenta o estudo como um extrato de conta: um cabeçalho navy com o saldo em serifa dourada, lançamentos em papel separados por linhas finas, rótulos em mono maiúscula como colunas de um documento financeiro. A prontidão é o saldo; cada sessão, questão e revisão é um lançamento. A confiança vem da mesma fonte que a de um extrato: números precisos, registro que não se reescreve, nenhuma decoração competindo com o dado.\n\nA densidade é de ferramenta de uso diário e prolongado. Cards agrupam; dentro deles, hierarquia vem de linha, espaço e tipografia, não de mais caixas. Componentes são precisos e contidos: cantos quase retos, texto mono para métricas e estados, cor reservada para significado. A interface é plana por padrão; sombra existe apenas onde algo realmente flutua sobre a página.\n\nOs dois temas (claro \"papel\" e escuro \"noite navy\") são o mesmo sistema com valores trocados nos tokens; nenhum componente define cor literal.",
+    "keyCharacteristics": [
+      "Navy estrutural, dourado de destaque, papel como superfície.",
+      "Três vozes tipográficas: Fraunces para marca e valores, IBM Plex Mono para dados e rótulos, IBM Plex Sans para leitura.",
+      "Cantos de 2px, bordas de 1px, faixas laterais/superiores de 3px como marcadores semânticos.",
+      "Plano por padrão; sombra só em sobreposições.",
+      "Estado sempre textual; cor nunca é o único indicador."
+    ],
+    "rules": [
+      { "name": "A Regra do Ouro sobre Navy", "body": "`gold-bright` aparece apenas sobre navy. Sobre papel, o dourado é `gold` e serve como linha ou foco, não como preenchimento.", "section": "colors" },
+      { "name": "A Regra do Significado", "body": "Verde, âmbar e vermelho só carregam estado. Nunca decoram, e sempre acompanham um rótulo textual.", "section": "colors" },
+      { "name": "A Regra da Coluna de Extrato", "body": "Se é um dado, uma data, um estado ou um rótulo de coluna, é Plex Mono. Se é um valor que importa, é Fraunces. Todo o resto é Plex Sans.", "section": "typography" },
+      { "name": "A Regra do Card como Agrupamento", "body": "Um card agrupa um assunto. Dentro dele, use linhas, espaço e tipo; nunca aninhe cards para criar hierarquia.", "section": "layout" },
+      { "name": "A Regra do Papel Plano", "body": "Um card em repouso não tem sombra. Se algo precisa de sombra, é porque está acima da página — modal, menu, barra fixa.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar apenas tokens de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`) em componentes novos, para que funcionem nos dois temas.",
+      "Do manter Plex Mono para métricas, datas, estados e rótulos, e Fraunces para valores e marca.",
+      "Do usar 2px de raio, 1px de borda e faixas de 3px como marcadores semânticos.",
+      "Do dar a todo badge de estado um rótulo textual.",
+      "Do funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px).",
+      "Do usar foco dourado visível em tudo que é interativo."
+    ],
+    "donts": [
+      "Don't aninhar cards para criar hierarquia; use linha, espaço e tipo.",
+      "Don't pôr sombra em cards em repouso.",
+      "Don't usar `gold-bright` sobre papel nem cor literal fora de `styles/tokens.css`.",
+      "Don't usar verde, âmbar ou vermelho como decoração.",
+      "Don't usar cantos arredondados grandes, pílulas ou gradientes (a textura de linhas do cabeçalho é a única exceção); o extrato é reto e plano.",
+      "Don't usar peso 700 como voz padrão; a hierarquia vai até 600."
+    ]
+  }
+}
