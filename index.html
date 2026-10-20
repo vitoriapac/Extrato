@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b2545">
   <meta name="description" content="Painel local para planejar estudos, revisões, questões e simulados.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>StudyTrack — Extrato de Estudos</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -637,6 +637,7 @@
       <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>⬇ Exportar backup</button>
       <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected>⏱ Baixar recuperação</button>
       <button class="btn ghost small" id="importBackupBtn" data-demo-protected>⬆ Importar backup</button>
+      <button class="btn ghost small" id="openRemoteSyncBtn" data-demo-protected>☁ Sincronização WebDAV (E2EE)</button>
       <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
     </div>
     <section class="backup-danger-zone" aria-labelledby="dangerZoneTitle"><div><strong id="dangerZoneTitle">Zona de perigo</strong><span>Apaga permanentemente os dados deste navegador. A demonstração permanece isolada.</span></div><button class="btn danger small" id="clearAllDataBtn" data-demo-protected>Limpar todos os dados</button></section>
@@ -678,6 +679,53 @@
     <div class="modal-actions">
       <button class="btn ghost" id="questionsImportCancelBtn" type="button">Cancelar</button>
       <button class="btn" id="questionsImportConfirmBtn" type="button">Confirmar importação</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="remoteSyncOverlay" role="dialog" aria-modal="true" aria-labelledby="remoteSyncTitle">
+  <div class="modal-box remote-sync-box" style="max-width:540px;">
+    <h3 id="remoteSyncTitle">☁ Sincronização em Nuvem (WebDAV + E2EE)</h3>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+      Conecte-se ao seu Nextcloud, ownCloud ou WebDAV pessoal. Os dados são <strong>criptografados com AES-GCM 256 bits</strong> antes do envio. O servidor nunca tem acesso ao conteúdo dos seus estudos.
+    </p>
+
+    <div class="field-group" style="margin-bottom:12px;">
+      <label for="remoteSyncUrl">URL da pasta WebDAV</label>
+      <input type="url" id="remoteSyncUrl" placeholder="https://meu-nextcloud.com/remote.php/dav/files/usuario/estudos/" class="input-control" style="width:100%;">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div class="field-group">
+        <label for="remoteSyncUsername">Usuário WebDAV</label>
+        <input type="text" id="remoteSyncUsername" placeholder="usuario" class="input-control" style="width:100%;">
+      </div>
+      <div class="field-group">
+        <label for="remoteSyncPassword">Senha / App Password</label>
+        <input type="password" id="remoteSyncPassword" placeholder="••••••••" autocomplete="off" class="input-control" style="width:100%;">
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin:-4px 0 12px;">Somente a URL, o usuário e a data da última sincronização são salvos neste navegador. A senha e a chave precisam ser informadas a cada sessão. O servidor precisa usar https:// e permitir acesso (CORS) a partir deste endereço — no Nextcloud/ownCloud, isso costuma exigir um app ou ajuste de CORS no servidor.</p>
+
+    <div class="field-group" style="margin-bottom:16px;">
+      <label for="remoteSyncPassphrase">Chave de Criptografia Mestre (E2EE)</label>
+      <input type="password" id="remoteSyncPassphrase" placeholder="Frase secreta para cifrar/decifrar os dados" class="input-control" style="width:100%;">
+      <small style="color:var(--text-muted);display:block;margin-top:4px;">Guarde esta chave. Sem ela, os dados na nuvem não poderão ser decifrados.</small>
+    </div>
+
+    <div id="remoteSyncStatusBox" class="callout callout-info" style="margin-bottom:16px;font-size:13px;" hidden>
+      <span id="remoteSyncStatusMsg"></span>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <button class="btn ghost small" type="button" id="testRemoteSyncBtn">Testar conexão</button>
+      <button class="btn ghost small" type="button" id="reconcileRemoteSyncBtn">Verificar status</button>
+      <button class="btn small" type="button" id="pushRemoteSyncBtn">⬆ Enviar para nuvem</button>
+      <button class="btn small" type="button" id="pullRemoteSyncBtn">⬇ Baixar da nuvem</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" id="closeRemoteSyncBtn" type="button">Fechar</button>
+      <button class="btn" id="saveRemoteSyncConfigBtn" type="button">Salvar URL e usuário</button>
     </div>
   </div>
 </div>

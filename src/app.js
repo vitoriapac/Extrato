@@ -152,6 +152,8 @@ import {createModalController} from './ui/controllers/modal-controller.js';
 import {createEditableCollectionController} from './ui/controllers/editable-collection-controller.js';
 import {createPreferencesController} from './ui/controllers/preferences-controller.js';
 import {createBackupController} from './ui/controllers/backup-controller.js';
+import {createRemoteSyncProvider} from './storage/remote-sync-provider.js';
+import {createRemoteSyncController} from './ui/controllers/remote-sync-controller.js';
 import {createDelegatedEventsController} from './ui/controllers/delegated-events-controller.js';
 import {createErrorBoundaryController} from './ui/controllers/error-boundary-controller.js';
 import {createDemoController} from './ui/controllers/demo-controller.js';
@@ -1328,8 +1330,23 @@ function backupSummary(data,version){
   const updatedLabel=Number.isFinite(updated)?new Date(updated).toLocaleString('pt-BR'):'data não informada';
   return `Backup v${version}: ${pluralize(subjectCount,'disciplina')}, ${pluralize(topicCount,'tópico')}, ${pluralize(sessionCount,'sessão','sessões')} e ${pluralize(questionCount,'registro')} de questões. Última atualização: ${updatedLabel}.`;
 }
-function applyImportedBackup(importedState){const previousState=state;try{state=importedState;ensureStateDefaults();restoreTimerFromState();persistAndRender();showToast('Backup importado com sucesso.')}catch(error){state=previousState;restoreTimerFromState();render();console.error('Erro ao importar backup',error);showToast('O backup passou pela validação inicial, mas não pôde ser convertido. Seus dados atuais foram preservados.')}}
+function applyImportedBackup(importedState){const previousState=state;try{state=importedState;ensureStateDefaults();restoreTimerFromState();persistAndRender();showToast('Backup importado com sucesso.');return true}catch(error){state=previousState;restoreTimerFromState();render();console.error('Erro ao importar backup',error);showToast('O backup passou pela validação inicial, mas não pôde ser convertido. Seus dados atuais foram preservados.');return false}}
 backupController.mount();
+const remoteSyncProvider = createRemoteSyncProvider({ fetch: window.fetch.bind(window), origin: location.origin });
+const remoteSyncController = createRemoteSyncController({
+  document,
+  window,
+  provider: remoteSyncProvider,
+  getState: () => pickPersistentState(state),
+  validate: validateBackupData,
+  describe: ({normalized, version}) => backupSummary(normalized, version),
+  confirm: showConfirm,
+  createSnapshot: () => rotateAutomaticBackup(JSON.stringify(pickPersistentState(state))),
+  onImported: applyImportedBackup,
+  notify: showToast,
+  isDisabled: () => IS_DEMO_MODE
+});
+remoteSyncController.mount();
 document.getElementById('clearAllDataBtn').addEventListener('click',()=>showConfirm('Esta ação excluirá disciplinas, sessões, revisões, questões, simulados, metas, histórico e configurações. Exporte um backup antes de continuar.',()=>showPrompt('Digite LIMPAR para confirmar a exclusão definitiva.',{label:'Confirmação',placeholder:'LIMPAR',confirmLabel:'Limpar dados',validate:value=>value==='LIMPAR'?'':'Digite LIMPAR exatamente como exibido.'},async()=>{const keys=[STORAGE_KEY,BACKUP_KEY,BACKUP_INDEX_KEY,...Array.from({length:AUTOMATIC_BACKUP_SLOTS},(_,index)=>`${BACKUP_KEY}-${index}`)];await Promise.all(keys.map(key=>appContext.storage.remove(key)));state=createDefaultState();ensureStateDefaults();suppressBeforeUnloadSave=true;location.reload()})));
 function reloadWithModeChange(){
   suppressBeforeUnloadSave=true;
