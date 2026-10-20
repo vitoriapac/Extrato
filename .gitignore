@@ -16,3 +16,6 @@ Thumbs.db
 *.tmp
 *.bak
 *~
+.tmp-*
+*.patch
+*.png.diff.png
