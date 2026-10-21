@@ -1645,9 +1645,9 @@ document.getElementById('timerFinishBtn').addEventListener('click', () => {
 document.getElementById('sessionModalSkipBtn').addEventListener('click', closeSessionModal);
 document.getElementById('sessionModalSubject').addEventListener('change',function(){ populateSessionTopicSelect(this.value); });
 document.getElementById('sessionModalType').addEventListener('change',function(){syncSessionModalActivityFields(this.value)});
-function showSessionResult(session,nextPriority,priorityChanged){
+function showSessionResult(session,nextPriority,priorityChanged,day=null){
   const result=document.getElementById('sessionResult');if(!result)return;
-  result.innerHTML=renderSessionResult(buildSessionResultViewModel(session,nextPriority,priorityChanged,{subjectName:getSubjectName,topicName:getTopicName,formatMinutes:formatPlanMinutes}),{escapeHtml});
+  result.innerHTML=renderSessionResult(buildSessionResultViewModel(session,nextPriority,priorityChanged,{subjectName:getSubjectName,topicName:getTopicName,formatMinutes:formatPlanMinutes,day}),{escapeHtml});
   result.hidden=false;activateTab('dashboard');result.scrollIntoView({block:'center',behavior:'smooth'});result.focus({preventScroll:true});
 }
 function openNextSessionAction(){activateTab('dashboard');document.getElementById('overviewNextAction')?.scrollIntoView({block:'center',behavior:'smooth'})}
@@ -1668,14 +1668,16 @@ document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
     recommendationId:state.activeTimer.recommendationId||null,recommendationSource:state.activeTimer.recommendationSource||null,
     recommendationType:state.activeTimer.recommendationType||null,prioritySnapshot:state.activeTimer.prioritySnapshot??null
   };
+  const dayBefore=session.date===todayISO()?dailyExecutionController.build():null;
   if(guidedStudyService.current())guidedStudyService.complete(session);else sessionService.complete(session);
   persistAndRender();
+  const dayAfter=dayBefore?dailyExecutionController.build():null;
   renderStudyRecommendation();renderDiagnosisCenter();
   const nextPriority=currentStudyRecommendations[0]||null;
   const priorityChanged=previousPriority&&nextPriority&&!sameStudyActionTarget(previousPriority,nextPriority);
   const openSimulationFlow=type==='simulation';
   closeSessionModal();
-  showSessionResult(session,nextPriority,priorityChanged);
+  showSessionResult(session,nextPriority,priorityChanged,dayBefore?.progress&&dayAfter?.progress?{before:dayBefore.progress,after:dayAfter.progress,total:dayAfter.items.length}:null);
   if(openSimulationFlow){activateTab('questoes');addSimuladoRow();showToast('Complete agora os resultados do simulado.');}
 });
 
