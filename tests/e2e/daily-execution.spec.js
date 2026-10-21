@@ -90,3 +90,14 @@ test('sugestão fora do plano permite dispensar sem alterar a agenda',async({pag
  await expect(action).toBeHidden();expect(await state()).toBe(before);
  await expectNoPageOverflow(page);
 });
+
+test('iniciar pelo Plano de hoje mostra disciplina e tópico no cronômetro',async({page})=>{
+  await prepare(page);
+  const names=await page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState().subjects[0];return {subject:s.name,topic:s.topics[0].name}});
+  await activateTab(page,'hoje');
+  await page.locator(`#planoHojeContent [data-delegated-click="startPlannedActivity('daily-first')"]`).click();
+  await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().activeTimer.planItemId)).toBe('daily-first');
+  const target=page.locator('#studyTimerTarget');
+  await expect(target).toContainText(`${names.subject} — ${names.topic}`);
+  await expect(target).not.toContainText('undefined');
+});

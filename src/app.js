@@ -1457,7 +1457,8 @@ function updateTimerDisplay(){
       const targetSeconds=targetMinutes*60;
       const difference=targetSeconds-timerSeconds;
       const planItem=findDailyPlanItem(state.activeTimer.planItemId)?.item;
-      const context=planItem?`${planItem.subjectName} — ${planItem.topicName} · `:'';
+      // Stored daily plan items keep only IDs; resolve names like the focus context does.
+      const context=planItem?`${[planItem.subjectId&&getSubjectName(planItem.subjectId),planItem.topicId&&getTopicName(planItem.topicId)].filter(Boolean).join(' — ')||'Sessão livre'} · `:'';
       targetEl.textContent=context+`meta ${formatPlanMinutes(targetMinutes)} · ${difference>=0?formatDuration(difference)+' restantes':formatDuration(Math.abs(difference))+' além da meta'}`;
       targetEl.hidden=false;
       if(progressEl){progressEl.value=Math.min(100,Math.round(timerSeconds/targetSeconds*100));progressEl.setAttribute('aria-valuetext',`${formatDuration(timerSeconds)} de ${formatPlanMinutes(targetMinutes)}`);progressEl.hidden=false}

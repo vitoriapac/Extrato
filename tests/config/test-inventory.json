@@ -281,7 +281,7 @@
         "./helpers.js",
         "./helpers/visual-capture.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 4,
       "observedCaseSeconds": 106.6,
