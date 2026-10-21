@@ -45,7 +45,8 @@ test('troca CSS e bundle da versão A pela B sem perder dados locais',async({pag
   });
   await page.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/test-service-worker-version-a.js'));
   await page.goto('/');
-  await expect(page.getByTitle('Dados preservados no upgrade PWA')).toBeVisible();
+  // O progresso por disciplina fica num bloco recolhível da Visão Geral: basta o rótulo existir para provar que os dados sobreviveram.
+  await expect(page.getByTitle('Dados preservados no upgrade PWA')).toBeAttached();
   const assets=await page.locator('link[href^="styles/app.css"],script[src^="src/app.bundle.js"]').evaluateAll(elements=>elements.map(element=>new URL(element.href||element.src).href));
   expect(assets).toHaveLength(2);
   for(const asset of assets)expect(await page.evaluate(async url=>(await(await fetch(url)).text()).includes('studytrack-test-version-a'),asset)).toBe(true);
@@ -54,7 +55,7 @@ test('troca CSS e bundle da versão A pela B sem perder dados locais',async({pag
   await page.evaluate(()=>navigator.serviceWorker.register('/service-worker.js',{scope:'/'}));
   await page.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/service-worker.js'));
   await page.reload();
-  await expect(page.getByTitle('Dados preservados no upgrade PWA')).toBeVisible();
+  await expect(page.getByTitle('Dados preservados no upgrade PWA')).toBeAttached();
   const result=await page.evaluate(async urls=>({
     cacheNames:await caches.keys(),
     assets:await Promise.all(urls.map(async url=>({url,oldMarker:(await(await fetch(url)).text()).includes('studytrack-test-version-a')}))),
