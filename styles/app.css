@@ -843,7 +843,7 @@
   .save-indicator{
     position:fixed;bottom:18px;right:18px;
     font-family:'IBM Plex Mono',monospace;font-size:11px;
-    background:var(--navy);color:var(--gold-bright);padding:8px 14px;border-radius:20px;
+    background:var(--navy);color:var(--gold-bright);padding:8px 14px;border-radius:var(--radius);
     opacity:0;visibility:hidden;transform:translateY(8px);transition:transform .3s ease;pointer-events:none;
   }
   .save-indicator.show{opacity:1;visibility:visible;transform:none;}
@@ -2348,3 +2348,16 @@ body.timer-focus-active .study-distribution-heading{display:none}
   .demo-banner>div:first-child span,.demo-tour{display:none}
   .demo-banner-actions{display:flex;flex:1 1 auto;justify-content:flex-end;gap:8px}
 }
+/* The full statement header belongs to Visão Geral; other areas start with the compact bar so their content leads. */
+body[data-active-tab]:not([data-active-tab="dashboard"]) .statement{display:none}
+body[data-active-tab]:not([data-active-tab="dashboard"]) .sticky-shell .compact-header{display:flex}
+.sticky-shell{top:calc(12px + var(--demo-banner-height,0px))}
+@media(max-width:760px){.sticky-shell{top:var(--demo-banner-height,0px)}}
+/* Transient save feedback lives bottom-left so it never stacks on back-to-top or the mobile navigation. */
+.save-indicator{right:auto;left:max(18px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom))}
+body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;pointer-events:none}
+@media(max-width:760px){.save-indicator{left:12px;bottom:calc(72px + env(safe-area-inset-bottom))}}
+.study-plan-summary.today-execution-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* Inside an existing card, empty states and goal tiles are rows, not nested cards. */
+.chart-card .sessions-empty-state{padding-inline:0;border:0;background:none}
+.today-agenda-grid .meta-hoje-card{min-height:0;padding:var(--space-3) 0;border:0;border-top:1px solid var(--paper-line);border-radius:0;background:none}

@@ -2007,12 +2007,16 @@ document.addEventListener('keydown',event=>{
   menus.at(-1)?.querySelector('summary')?.focus();
 });
 const syncStickyMetrics=()=>{
-  document.documentElement.style.setProperty('--sticky-stack-height',`${Math.ceil(stickyShell?.getBoundingClientRect().height||0)}px`);
+  // A sticky demo banner sits above the shell, so the shell and everything stacked under it shift down by its height.
+  const banner=document.getElementById('demoBanner'),bannerHeight=banner&&!banner.hidden&&getComputedStyle(banner).position==='sticky'?Math.ceil(banner.getBoundingClientRect().height):0;
+  document.documentElement.style.setProperty('--demo-banner-height',`${bannerHeight}px`);
+  document.documentElement.style.setProperty('--sticky-stack-height',`${Math.ceil(stickyShell?.getBoundingClientRect().height||0)+bannerHeight}px`);
   document.documentElement.style.setProperty('--overview-nav-height',`${Math.ceil(overviewNav?.getBoundingClientRect().height||0)}px`);
 };
 if('ResizeObserver' in window){
   const stickyMetricsObserver=new ResizeObserver(syncStickyMetrics);
   if(stickyShell)stickyMetricsObserver.observe(stickyShell);
+  const demoBanner=document.getElementById('demoBanner');if(demoBanner)stickyMetricsObserver.observe(demoBanner);
   if(overviewNav)stickyMetricsObserver.observe(overviewNav);
 }
 window.addEventListener('resize',syncStickyMetrics,{passive:true});
@@ -5440,6 +5444,8 @@ syncModalShell();
 document.querySelectorAll('[data-go-home]').forEach(button=>button.addEventListener('click',()=>{
   activateTab('dashboard');
   window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  // The compact brand that was clicked may hide at the top; keep focus on the visible hero brand.
+  document.querySelector('.statement [data-go-home]')?.focus({preventScroll:true});
 }));
 document.getElementById('guidedOnboardingOverlay')?.addEventListener('change',event=>{
   if(event.target.id==='guidedExamPreset'){uiState.onboarding.presetId=event.target.value;return}
