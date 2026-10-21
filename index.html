@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=72d1ef37912a">
+<link rel="stylesheet" href="styles/app.css?v=b03999597d6d">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -118,16 +118,12 @@
   <!-- DASHBOARD -->
   <div class="panel active" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
     <div class="print-report-meta" id="printReportMeta"></div>
-    <div class="kpi-grid" id="kpiGrid"></div>
-    <div class="stat-grid" id="quickStats"></div>
-    <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingEntryTitle">
-      <div id="guidedOnboardingEntry"></div>
-    </section>
     <section class="overview-now" aria-label="Ação prioritária e atenção">
       <article class="chart-card overview-now-action">
         <span class="overview-eyebrow">Agora</span>
         <h2>Próxima melhor ação</h2>
         <div id="overviewNextAction"></div>
+        <div id="dailyExecutionDashboard"></div>
       </article>
       <article class="chart-card overview-now-attention">
         <span class="overview-eyebrow">Precisa da sua atenção</span>
@@ -136,34 +132,11 @@
         <button class="btn ghost small" id="overviewAttentionViewAll" type="button">Ver atenção e diagnóstico na aba Hoje</button>
       </article>
     </section>
+    <section class="chart-card onboarding-entry" id="guidedOnboarding" hidden aria-labelledby="guidedOnboardingEntryTitle">
+      <div id="guidedOnboardingEntry"></div>
+    </section>
     <div id="overviewExamPhase"></div>
-    <div id="dailyExecutionDashboard"></div>
-
-    <nav class="overview-nav" aria-label="Atalhos da Visão Geral">
-      <div class="overview-nav-links"><a href="#overview-summary">Resumo</a><a href="#overview-performance">Prontidão</a><a href="#overview-study">Estudo</a><a href="#overview-evolution">Conquistas</a><a href="#overview-progress">Progresso</a><a href="#overview-next-actions">Próximas ações</a></div>
-      <label class="overview-nav-mobile"><span class="sr-only">Ir para seção da Visão Geral</span><select id="overviewNavSelect" class="select-control" aria-label="Seção da Visão Geral"><option value="overview-summary">Resumo</option><option value="overview-performance">Prontidão</option><option value="overview-study">Estudo</option><option value="overview-evolution">Conquistas</option><option value="overview-progress">Progresso</option><option value="overview-next-actions">Próximas ações</option></select></label>
-    </nav>
-
-    <div class="overview-section-heading" id="overview-summary"><span>Aprovação e retenção</span></div>
-    <div class="overview-pair" id="overview-performance">
-    <div class="chart-card intelligence-column">
-      <h3>Índice de Prontidão</h3>
-      <div id="approvalDashboard"></div>
-      <button class="btn ghost small" type="button" data-performance-jump="overview">Explorar desempenho completo →</button>
-      <section class="analytics-card"><header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Fechamento semanal</h3><p class="module-heading__description">Resultado, foco estratégico e decisões para a próxima semana.</p></header><div id="weeklyCloseDashboard"></div></section>
-      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3></header><div id="gapMapDashboard"></div></section>
-      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Histórico de decisões</h3></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Linha do Tempo Estratégica</h3><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Evolução das prioridades</h3><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
-      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
-    </div>
-    <div class="chart-card">
-      <h3>Retenção por tópico</h3>
-      <div id="topicRetentionDashboard"></div>
-      <details class="performance-details"><summary>Como a retenção é calculada?</summary><p class="retention-summary">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p></details>
-    </div>
-    </div>
-
-    <div class="overview-section-heading" id="overview-study"><span>Estudo e sessões</span></div>
-    <div class="chart-card">
+    <div class="chart-card" id="overview-timer">
       <h3>Cronômetro de estudo</h3>
       <div class="timer-block" role="region" aria-label="Cronômetro de estudo">
         <section class="timer-focus-context" id="timerFocusContext" hidden aria-live="polite" aria-label="Contexto do modo foco">
@@ -195,6 +168,36 @@
         </div>
       </div>
       <section id="sessionResult" class="session-result" role="status" aria-live="polite" tabindex="-1" hidden></section>
+    </div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+    <div class="stat-grid" id="quickStats"></div>
+
+    <nav class="overview-nav" aria-label="Atalhos da Visão Geral">
+      <div class="overview-nav-links"><a href="#overview-summary">Resumo</a><a href="#overview-performance">Prontidão</a><a href="#overview-study">Estudo</a><a href="#overview-evolution">Conquistas</a><a href="#overview-progress">Progresso</a><a href="#overview-next-actions">Próximas ações</a></div>
+      <label class="overview-nav-mobile"><span class="sr-only">Ir para seção da Visão Geral</span><select id="overviewNavSelect" class="select-control" aria-label="Seção da Visão Geral"><option value="overview-summary">Resumo</option><option value="overview-performance">Prontidão</option><option value="overview-study">Estudo</option><option value="overview-evolution">Conquistas</option><option value="overview-progress">Progresso</option><option value="overview-next-actions">Próximas ações</option></select></label>
+    </nav>
+
+    <div class="overview-section-heading" id="overview-summary"><span>Aprovação e retenção</span></div>
+    <div class="overview-pair" id="overview-performance">
+    <div class="chart-card intelligence-column">
+      <h3>Índice de Prontidão</h3>
+      <div id="approvalDashboard"></div>
+      <button class="btn ghost small" type="button" data-performance-jump="overview">Explorar desempenho completo →</button>
+      <section class="analytics-card"><header class="module-heading"><span class="module-heading__eyebrow">Análise</span><h3 class="module-heading__title">Fechamento semanal</h3><p class="module-heading__description">Resultado, foco estratégico e decisões para a próxima semana.</p></header><div id="weeklyCloseDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3></header><div id="gapMapDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Histórico de decisões</h3></header><div id="decisionHistoryDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Linha do Tempo Estratégica</h3><p class="module-heading__description">Decisões, prontidão, planejamento e simulados no concurso ativo.</p></header><div id="strategicTimelineDashboard"></div></section><section class="analytics-card"><header class="module-heading"><h3 class="module-heading__title">Evolução das prioridades</h3><p class="module-heading__description">Acompanhe a trajetória das lacunas e os indicadores registrados em cada decisão.</p></header><div id="priorityHistoryDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
+    </div>
+    <details class="chart-card overview-fold">
+      <summary>Retenção por tópico</summary>
+      <div id="topicRetentionDashboard"></div>
+      <details class="performance-details"><summary>Como a retenção é calculada?</summary><p class="retention-summary">Revisões feitas no prazo (45%) + acertos dos últimos 60 dias (35%) + tempo desde a última revisão (20%).</p></details>
+    </details>
+    </div>
+
+    <div class="overview-section-heading" id="overview-study"><span>Estudo e sessões</span></div>
+    <div class="chart-card">
+      <h3>Tempo de estudo</h3>
       <div class="stat-grid" id="studyTimeStats" style="margin-top:18px;margin-bottom:0;"></div>
       <header class="study-distribution-heading"><h3>Distribuição por disciplina</h3><div class="action-group"><button class="btn ghost small" type="button" data-performance-jump="consistency">Ver evolução e consistência →</button></div></header>
       <div id="subjectHoursBars"></div>
@@ -255,6 +258,8 @@
       <div class="badges-grid" id="badgesGrid"></div>
     </div>
     <div class="overview-section-heading" id="overview-progress"><span>Progresso e conquistas</span></div>
+    <details class="chart-card overview-fold">
+      <summary>Evolução, progresso por disciplina e radar</summary>
     <div class="chart-card">
       <h3>Evolução do progresso</h3>
       <div id="progressChart"></div>
@@ -274,6 +279,7 @@
       <div id="radarChart"></div>
     </div>
     </div>
+    </details>
 
     <div class="overview-section-heading" id="overview-next-actions"><span>Próximas ações</span></div>
     <div class="chart-card">
@@ -845,7 +851,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=72d1ef37912a"></script>
+  <script src="src/app.bundle.js?v=b03999597d6d"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>
