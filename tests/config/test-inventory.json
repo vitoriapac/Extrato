@@ -3955,7 +3955,7 @@
         "../../src/ui/controllers/onboarding-phase-controller.js",
         "../../src/ui/renderers/adaptive-planning-renderer.js"
       ],
-      "staticTestDeclarations": 9,
+      "staticTestDeclarations": 10,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

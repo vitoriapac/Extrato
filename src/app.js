@@ -203,7 +203,7 @@ import {createEditalImportFacade} from './application/subjects/edital-import-fac
 import {createGuidedStudyService} from './application/guided-study/guided-study-service.js';
 import {buildOnboardingViewModel} from './application/onboarding/build-onboarding-view-model.js';
 import {syncOnboardingPhase} from './ui/controllers/onboarding-phase-controller.js';
-import {renderOnboardingEntry,renderOnboardingProgress,renderOnboardingContent,renderOnboardingHelp,renderOnboardingActions} from './features/onboarding/onboarding-renderer.js';
+import {renderOnboardingEntry,renderOnboardingProgress,renderOnboardingContent,renderOnboardingHelp,renderOnboardingActions,onboardingBlockedReason} from './features/onboarding/onboarding-renderer.js';
 import {renderTopicStrategyEditor as renderTopicStrategyEditorView} from './features/topic-strategy/topic-strategy-renderer.js';
 import {buildTopicStrategyViewModel} from './features/topic-strategy/topic-strategy-view-model.js';
 import {buildExamIntelligenceViewModel} from './application/exam-intelligence/build-exam-intelligence-view-model.js';
@@ -4561,8 +4561,10 @@ function renderOverviewNextAction(availableMinutes){
   const action=buildStudyAction(item,{source:'overview'}),model=buildPriorityViewModel(item,1),label=recommendationActionLabel(action),mastery=action.evidence.mastery==null?'Domínio ainda sem evidência':`Domínio ${Math.round(action.evidence.mastery)}/100`,reasons=action.reasons.slice(0,3).join(' · '),minutes=action.suggestedMinutes==null?'Tempo não estimado':formatPlanMinutes(action.suggestedMinutes);
   const inProgress=activeTimerMatchesRecommendation(item),blocked=hasStartedStudyTimer()&&!inProgress,sessionLabel=state.activeTimer?.isRunning?'Cronômetro rodando':'Sessão pausada';
   const actionButton=inProgress?`<button class="btn" type="button" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`:blocked?'<button class="btn" type="button" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>':`<button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${action.source}')">▶ ${escapeHtml(label)}</button>`;
-  container.innerHTML=`${renderActiveStudyTimerNotice(item)}${outcome}<article class="card card--action overview-action-card ${inProgress?'is-in-progress':''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml(label)} · prioridade ${action.priority??'—'}/100</p><p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(action.evidence.label||model.evidenceLabel).toLowerCase()}</p>${inProgress?`<span class="active-study-status">Em andamento · ${sessionLabel}</span>`:''}</div><div class="overview-action-buttons">${actionButton}</div>${renderRecommendationExplanation(item.explanation||buildRecommendationExplanation(item))}</article>`;
+  container.innerHTML=`${renderActiveStudyTimerNotice(item)}${outcome}<article class="card card--action overview-action-card ${inProgress?'is-in-progress':''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml(label)} · prioridade ${action.priority??'—'}/100</p><p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(action.evidence.label||model.evidenceLabel).toLowerCase()}</p>${inProgress?`<span class="active-study-status">Em andamento · ${sessionLabel}</span>`:''}</div><div class="overview-action-buttons">${actionButton}</div>${renderRecommendationExplanation(item.explanation||buildRecommendationExplanation(item),{headingLevel:4})}</article>`;
 }
+// Update the Continue button in place: re-rendering here would swap the node under a click that fired this change.
+function syncGuidedNext(model){const actions=document.getElementById('guidedOnboardingActions'),next=actions?.querySelector('[data-guided-action="next"]');if(!next)return;const reason=onboardingBlockedReason(model);next.disabled=Boolean(reason);let hint=actions.querySelector('#guidedActionHint');if(!reason){hint?.remove();next.removeAttribute('aria-describedby');return}if(!hint){hint=document.createElement('p');hint.className='guided-action-hint';hint.id='guidedActionHint';actions.prepend(hint)}hint.textContent=reason;next.setAttribute('aria-describedby','guidedActionHint')}
 function renderOverviewDecisionArea(){const {availableMinutes}=refreshStudyRecommendationItems();renderOverviewNextAction(availableMinutes);renderAlertasInteligentes()}
 function renderStudyRecommendation(){
   const container=document.getElementById('studyRecommendation');if(!container)return;
@@ -5321,6 +5323,10 @@ function renderPerformance(){
   const sectionHtml=examSection?'<div id="examIntelligenceMount"></div>':renderPerformanceSection(pageModel,{range,today,activeExamTags,formatDate:formatDatePt,escapeHtml,escapeAttr,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:null});
   target.innerHTML=renderPerformancePage({viewState:performanceViewState,range,sectionHtml:analysisContextBanner('desempenho')+sectionHtml,activeExamCount:(state.examBlueprint?.activeExamTags||[]).length,escapeHtml,escapeAttr});
   if(examSection){target.querySelector('#examIntelligenceMount')?.append(examHub);renderExamIntelligenceSection()}
+  // Announce only a short summary, and only when section or period changes; the panel itself is re-rendered silently.
+  const status=document.getElementById('performanceStatus'),section=target.querySelector('.performance-section-button.active')?.textContent.trim();
+  const statusText=section?`Mostrando ${section}${examSection?'':` · ${range.label}`}.`:'';
+  if(status&&status.textContent!==statusText)status.textContent=statusText;
   const dialog=target.querySelector('#performanceTopicDialog');
   if(dialog){dialog.addEventListener('close',()=>{performanceViewState=updatePerformanceViewState(performanceViewState,{topicId:null})},{once:true});dialog.showModal()}
 }
@@ -5436,8 +5442,8 @@ document.querySelectorAll('[data-go-home]').forEach(button=>button.addEventListe
 }));
 document.getElementById('guidedOnboardingOverlay')?.addEventListener('change',event=>{
   if(event.target.id==='guidedExamPreset'){uiState.onboarding.presetId=event.target.value;return}
-  if(event.target.id==='guidedExamDate'){updateExamBlueprint('examDate',event.target.value,{refresh:false});document.querySelector('#guidedOnboardingActions [data-guided-action="next"]').disabled=!onboardingModel().canAdvance;return}
-  if(event.target.dataset.guidedDay!==undefined){updateMetaHoursDay(event.target.dataset.guidedDay,event.target.value,{refresh:false});const model=onboardingModel();document.querySelector('#guidedOnboardingActions [data-guided-action="next"]').disabled=!model.canAdvance;document.querySelector('#guidedOnboardingContent .guided-capacity strong').textContent=formatPlanMinutes(model.availableMinutes);return}
+  if(event.target.id==='guidedExamDate'){updateExamBlueprint('examDate',event.target.value,{refresh:false});syncGuidedNext(onboardingModel());return}
+  if(event.target.dataset.guidedDay!==undefined){updateMetaHoursDay(event.target.dataset.guidedDay,event.target.value,{refresh:false});const model=onboardingModel();syncGuidedNext(model);document.querySelector('#guidedOnboardingContent .guided-capacity strong').textContent=formatPlanMinutes(model.availableMinutes);return}
   if(event.target.dataset.guidedLevel)setGuidedSubjectLevel(event.target.dataset.guidedLevel,event.target.value,{refresh:false});
 });
 document.getElementById('guidedOnboarding')?.addEventListener('click',event=>{if(event.target.closest('[data-guided-action="open"]'))openGuidedOnboarding()});
