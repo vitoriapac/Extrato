@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=0e316bf1350e">
+<link rel="stylesheet" href="styles/app.css?v=e698a63e4453">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -67,7 +67,7 @@
         <div class="mini-stat"><div class="n" id="statAndamento">0</div><div class="l">Em andamento</div></div>
         <div class="mini-stat"><div class="n" id="statConcluido">0</div><div class="l">Concluídos</div></div>
         <div class="mini-stat"><div class="n" id="statRevisoes">0</div><div class="l">Revisões previstas</div></div>
-        <div class="mini-stat"><div class="n" id="statStreak">0</div><div class="l">🔥 Sequência</div></div>
+        <div class="mini-stat"><div class="n" id="statStreak">0</div><div class="l">Sequência</div></div>
       </div>
     </div>
     <div class="exam-countdown" id="examCountdownBlock">
@@ -87,7 +87,7 @@
       <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar ações, páginas, tópicos, notas ou tags" placeholder="🔎 O que você quer fazer? (Ctrl+K)">
       <div class="search-results" id="globalSearchResults" role="listbox" aria-label="Resultados e comandos"></div>
     </div>
-    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon">🌙</span></button>
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon">◐</span></button>
   </div>
 
   <div class="sticky-shell">
@@ -96,12 +96,12 @@
       <div class="tabs" role="tablist" aria-label="Seções do extrato">
         <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard">Visão geral</button>
         <button class="tab-btn tab-secondary" id="tab-desempenho" role="tab" aria-selected="false" aria-controls="panel-desempenho" data-tab="desempenho">Desempenho</button>
-        <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje">🎯 Hoje</button>
+        <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje">Hoje</button>
         <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas">Disciplinas</button>
         <button class="tab-btn" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario">Calendário</button>
         <button class="tab-btn tab-secondary" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda">Agenda de Revisões</button>
         <button class="tab-btn tab-secondary" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes">Questões &amp; Simulados</button>
-        <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Metas</button>
+        <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Planejamento</button>
         <button class="tab-btn tab-secondary" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes">Instruções</button>
       </div>
       <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu">Mais</button>
@@ -109,7 +109,7 @@
         <button type="button" role="menuitem" data-more-tab="desempenho">Desempenho</button>
         <button type="button" role="menuitem" data-more-tab="agenda">Agenda de Revisões</button>
         <button type="button" role="menuitem" data-more-tab="questoes">Questões e Simulados</button>
-        <button type="button" role="menuitem" data-more-tab="metas">Metas</button>
+        <button type="button" role="menuitem" data-more-tab="metas">Planejamento</button>
         <button type="button" role="menuitem" data-more-tab="instrucoes">Instruções</button>
       </div>
     </div>
@@ -228,7 +228,7 @@
         <span class="session-filter-summary" id="studySessionsFilterSummary"></span>
       </div>
       <div class="empty-state empty-state--compact sessions-empty-state" id="studySessionsEmpty" hidden>
-        <div class="empty-state__icon" aria-hidden="true">⏱</div>
+        
         <strong>Nenhuma sessão encontrada</strong>
         <p>Ajuste os filtros ou inicie uma nova sessão de estudo.</p>
         <div class="empty-state-actions">
@@ -307,7 +307,7 @@
   <!-- HOJE -->
   <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
     <div class="section-head">
-      <div class="section-title">🎯 Modo Hoje</div>
+      <div class="section-title">Modo Hoje</div>
       <div class="study-plan-actions" role="group" aria-label="Modo de execução"><button class="btn ghost small" id="executionAgendaBtn" aria-pressed="true">Agenda</button><button class="btn ghost small" id="executionSequenceBtn" aria-pressed="false">Sequência flexível</button></div>
     </div>
     <p class="helper-text">
@@ -317,7 +317,7 @@
     <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
 
     <section class="chart-card plano-hoje-card" aria-labelledby="todayPlanTitle">
-      <header class="module-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">📋 Plano de hoje</h3></header>
+      <header class="module-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3></header>
       <div id="planoHojeContent"></div>
     </section>
 
@@ -327,7 +327,7 @@
     </section>
 
     <div class="chart-card">
-      <h3>⚠️ Atenção</h3>
+      <h3>Atenção</h3>
       <div id="alertasInteligentesList"></div>
     </div>
 
@@ -571,7 +571,7 @@
 
   <!-- METAS -->
   <div class="panel" id="panel-metas" role="tabpanel" aria-labelledby="tab-metas">
-    <header class="metas-page-header ui-section-header"><span class="module-heading__eyebrow">Planejamento</span><h2>Metas</h2><p>Planeje sua capacidade e acompanhe a execução da sua preparação.</p><nav aria-label="Atalhos de Metas"><a class="btn ghost small" href="#metasWeekSummary">Esta semana</a><a class="btn ghost small" href="#metasActiveGoals">Configurar metas</a></nav></header>
+    <header class="metas-page-header ui-section-header"><h2>Planejamento</h2><p>Planeje sua capacidade e acompanhe a execução da sua preparação.</p><nav aria-label="Atalhos de Metas"><a class="btn ghost small" href="#metasWeekSummary">Esta semana</a><a class="btn ghost small" href="#metasActiveGoals">Configurar metas</a></nav></header>
 
     <section class="chart-card card--default metas-goals" id="metasActiveGoals" aria-labelledby="metasActiveGoalsTitle"><header class="module-heading"><span class="module-heading__eyebrow">01 · Objetivos</span><h3 class="module-heading__title" id="metasActiveGoalsTitle">Metas ativas</h3><p class="module-heading__description">Acompanhe os resultados desejados e ajuste os valores quando necessário.</p></header><div id="metasContainer"></div></section>
 
@@ -642,7 +642,7 @@
       <button class="btn small" id="enterDemoBtn">▶ Explorar demonstração</button>
       <button class="btn ghost small" id="exportReportBtn">▣ Exportar relatório PDF</button>
       <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>⬇ Exportar backup</button>
-      <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected>⏱ Baixar recuperação</button>
+      <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected>Baixar recuperação</button>
       <button class="btn ghost small" id="importBackupBtn" data-demo-protected>⬆ Importar backup</button>
       <button class="btn ghost small" id="openRemoteSyncBtn" data-demo-protected>☁ Sincronização WebDAV (E2EE)</button>
       <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
@@ -739,7 +739,7 @@
 <div id="guidedOnboardingOverlay" class="onboarding-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="guidedOnboardingTitle" aria-describedby="guidedOnboardingSubtitle">
   <div class="onboarding-modal" role="document">
     <header class="onboarding-modal-header">
-      <div><span class="onboarding-kicker">PRIMEIRA CONFIGURAÇÃO</span><h2 id="guidedOnboardingTitle">🎯 Vamos montar o seu plano?</h2><p id="guidedOnboardingSubtitle">Em apenas quatro passos, o StudyTrack transforma sua rotina e seu edital em um plano possível de executar.</p></div>
+      <div><span class="onboarding-kicker">PRIMEIRA CONFIGURAÇÃO</span><h2 id="guidedOnboardingTitle">Vamos montar o seu plano</h2><p id="guidedOnboardingSubtitle">Em apenas quatro passos, o StudyTrack transforma sua rotina e seu edital em um plano possível de executar.</p></div>
       <button class="onboarding-close" id="guidedOnboardingClose" type="button" aria-label="Fechar configuração">×</button>
     </header>
     <div class="guided-onboarding-steps" id="guidedOnboardingProgress" aria-label="Progresso da configuração"></div>
@@ -852,7 +852,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=0e316bf1350e"></script>
+  <script src="src/app.bundle.js?v=e698a63e4453"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

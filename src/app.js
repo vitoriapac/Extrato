@@ -1923,7 +1923,7 @@ const SEARCH_COMMANDS=[
   {label:'Adicionar revisão',keywords:'criar nova revisão agenda',action:'add-review'},
   {label:'Abrir Questões e Simulados',keywords:'questoes erros simulados desempenho',tab:'questoes'},
   {label:'Registrar questões',keywords:'lancar registrar acertos erros',action:'add-questions'},
-  {label:'Abrir Metas e Planejamento',keywords:'metas capacidade plano estrategia',tab:'metas'},
+  {label:'Abrir Planejamento e metas',keywords:'metas capacidade plano planejamento estrategia',tab:'metas'},
   {label:'Ver Diagnóstico',keywords:'diagnostico lacunas prioridades',action:'diagnosis'},
   {label:'Planejar semana',keywords:'plano semanal distribuir carga',tab:'metas'},
   {label:'Abrir Instruções',keywords:'ajuda guia como usar instrucoes',tab:'instrucoes'},
@@ -4761,10 +4761,10 @@ function renderPlanoHoje(){
     const actionButton=active?'<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>':canStart&&!blocked?`<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds>0?'▶ Continuar':'▶ Iniciar'}</button>`:canStart&&blocked?'<button type="button" class="btn small" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>':'';
     return `
     <div class="plano-item ${active?'is-active':''} ${item.status==='completed'?'is-completed':''}">
-      <div class="plano-item-head">${escapeHtml(item.statusIcon||'📌')} ${escapeHtml(item.statusLabel||planItemStatusLabel(item.status))}${Number.isFinite(Number(item.score))?' · '+Math.round(Number(item.score))+'/100':''}</div>
+      <div class="plano-item-head">${escapeHtml(item.statusLabel||planItemStatusLabel(item.status))}${Number.isFinite(Number(item.score))?' · '+Math.round(Number(item.score))+'/100':''}</div>
       <div class="plano-item-title">${escapeHtml(item.subjectName||getSubjectName(item.subjectId)||'Disciplina')} — ${escapeHtml(item.topicName||getTopicName(item.topicId)||'Tópico')}</div>
       <div class="plano-item-reason">${escapeHtml(item.reason)}</div>
-      <div class="plano-item-reason">⏱️ ${formatPlanMinutes(item.plannedMinutes)} · ${escapeHtml(item.action)}${item.recommendedQuestions?' · '+item.recommendedQuestions+' questões':''}</div>
+      <div class="plano-item-reason">${[formatPlanMinutes(item.plannedMinutes),item.action&&escapeHtml(item.action),item.recommendedQuestions&&item.recommendedQuestions+' questões'].filter(Boolean).join(' · ')}</div>
       <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>
       <div class="plano-item-actions">
         ${actionButton}
@@ -4779,10 +4779,10 @@ function renderPlanoHoje(){
   container.innerHTML=`
     ${todayModel.recoveryMinutes?`<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} pendentes de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>`:''}
     ${listaHtml}
-    ${plan.flexMinutes>0?`<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">⏱️ ${formatPlanMinutes(plan.flexMinutes)} para pausas, correção ou continuidade</div></div>`:''}
+    ${plan.flexMinutes>0?`<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">${formatPlanMinutes(plan.flexMinutes)} para pausas, correção ou continuidade</div></div>`:''}
     <div class="plano-meta">
       <div class="plano-depois-label">Planejamento:</div>
-      <div class="plano-depois-item">⏱️ ${formatPlanMinutes(plan.plannedMinutes)} planejados · ${formatDuration(executedSeconds)} executado (${executionPct}%)</div>
+      <div class="plano-depois-item">${formatPlanMinutes(plan.plannedMinutes)} planejados · ${formatDuration(executedSeconds)} executado (${executionPct}%)</div>
     </div>
   `;
 }
@@ -4852,7 +4852,7 @@ function renderMetasHoje(){
         <div class="meta-hoje-value">${revisoesConcluidasHoje} <span>/ ${revisoesHoje.length}</span></div>
       </div>
       <div class="meta-hoje-card">
-        <div class="meta-hoje-label">⏱️ Tempo estudado hoje</div>
+        <div class="meta-hoje-label">Tempo estudado hoje</div>
         <div class="meta-hoje-time">
           <div class="meta-hoje-time-main">
             <div class="meta-hoje-time-value">${formatDuration(tempoHoje)}</div>
@@ -5087,10 +5087,10 @@ function computeApprovalMetrics(){
   return {...base,conhecimento:approvalConhecimentoMetric(base),retencao:approvalRetencaoMetric(),questoes:base.acertos,consistencia:approvalConsistenciaMetric()};
 }
 function classificacaoAprovacao(score){
-  if(score>=85)return {nivel:'🏆 Excelente preparação',cor:'ok',faixa:'85–100'};
-  if(score>=70)return {nivel:'🟢 Preparação avançada',cor:'ok',faixa:'70–84'};
-  if(score>=50)return {nivel:'🟠 Em desenvolvimento',cor:'warn',faixa:'50–69'};
-  return {nivel:'🔴 Preparação inicial',cor:'danger',faixa:'0–49'};
+  if(score>=85)return {nivel:'Excelente preparação',cor:'ok',faixa:'85–100'};
+  if(score>=70)return {nivel:'Preparação avançada',cor:'ok',faixa:'70–84'};
+  if(score>=50)return {nivel:'Em desenvolvimento',cor:'warn',faixa:'50–69'};
+  return {nivel:'Preparação inicial',cor:'danger',faixa:'0–49'};
 }
 function renderApprovalDashboard(){
   const el=document.getElementById('approvalDashboard');if(!el)return;

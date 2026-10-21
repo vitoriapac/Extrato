@@ -4,7 +4,7 @@ export const ALERT_TYPES=Object.freeze([
   'low_mastery_high_exam_impact','insufficient_evidence','error_pattern'
 ]);
 
-const presentation={high:{level:'alta',icon:'🔴'},medium:{level:'media',icon:'🟠'},low:{level:'baixa',icon:'🟡'}};
+const presentation={high:{level:'alta',icon:''},medium:{level:'media',icon:''},low:{level:'baixa',icon:''}};
 
 export function createDiagnosticAlert({type,severity='medium',subjectId=null,topicId=null,reason,recommendedAction,createdAt=null,id}={}){
   if(!ALERT_TYPES.includes(type))throw new TypeError('Tipo de alerta inválido.');

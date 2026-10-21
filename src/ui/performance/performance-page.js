@@ -5,7 +5,7 @@ const pending={
   questions:{title:'Questões',description:'Evolução da precisão, volume e erros. Até a migração, a análise completa está em Questões e Simulados.',tab:'questoes',action:'Abrir Questões e Simulados'},
   simulations:{title:'Simulados',description:'Resultados, comparação por disciplina e calibração. Os registros e gráficos atuais estão em Questões e Simulados.',tab:'questoes',action:'Abrir Questões e Simulados'},
   subjects:{title:'Disciplinas',description:'A evolução por disciplina e tópico será reunida aqui. Consulte os registros atuais por disciplina.',tab:'disciplinas',action:'Abrir Disciplinas'},
-  consistency:{title:'Consistência',description:'Histórico de estudo e execução do plano. Consulte o planejamento atual em Metas.',tab:'metas',action:'Abrir Metas'}
+  consistency:{title:'Consistência',description:'Histórico de estudo e execução do plano. Consulte o plano atual em Planejamento.',tab:'metas',action:'Abrir Planejamento'}
 };
 
 export function renderPerformancePage({viewState,range,sectionHtml='',activeExamCount=0,escapeHtml,escapeAttr}={}){
