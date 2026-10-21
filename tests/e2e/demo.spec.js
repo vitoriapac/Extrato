@@ -34,7 +34,7 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real',asyn
     return serialized;
   });
   await openDemo(page);await expect(page.locator('#demoBanner')).toBeVisible();
-  await expect(page.locator('#guidedOnboarding')).toBeHidden();await expect(page.locator('#overviewExamPhase + #dailyExecutionDashboard')).toHaveCount(1);await expect(page.locator('#panel-dashboard .exam-phase-compact')).toHaveCount(1);
+  await expect(page.locator('#guidedOnboarding')).toBeHidden();await expect(page.locator('#guidedOnboarding + #overviewExamPhase')).toHaveCount(1);await expect(page.locator('#panel-dashboard .exam-phase-compact')).toHaveCount(1);
 await expect(page.locator('[data-demo-protected]').first()).toBeDisabled();
   const firstDemo=await page.evaluate(()=>sessionStorage.getItem('bb-premium-study-demo'));expect(firstDemo).toBeTruthy();const parsed=JSON.parse(firstDemo);
   expect(parsed.progressHistory).toHaveLength(140);expect(parsed.studySessions).toHaveLength(200);expect(parsed.simulados).toHaveLength(9);
@@ -47,6 +47,7 @@ await expect(page.locator('[data-demo-protected]').first()).toBeDisabled();
   expect(restored.subjects[0].name).toBe('Registro real preservado');
   expect(restored.subjects.some(subject=>subject.name==='Alteração fictícia')).toBe(false);
   expect(restored.studySessions.some(session=>String(session.id).startsWith('demo-'))).toBe(false);
+  await page.locator('.overview-fold',{has:page.locator('#progressBars')}).locator('summary').click();
   await expect(page.getByTitle('Registro real preservado')).toBeVisible();
 });
 

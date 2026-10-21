@@ -7,12 +7,11 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária',asyn
   await expect(overviewAction).toBeVisible();
   await expect(page.locator('.overview-now')).toBeVisible();
   const planned=await overviewAction.getAttribute('data-decision-role')==='planned';
-  if(planned){
-    // A pending plan item is the single primary action; the recommendation is only a suggestion line.
-    await expect(overviewAction.locator('button')).toHaveCount(2);
-    await expect(overviewAction.locator('[data-daily-start], [data-daily-resume], button:disabled')).toHaveCount(1);
-  }else await expect(overviewAction).toHaveAttribute('data-study-action-source','overview');
-  const topic=await (planned?overviewAction.locator('.overview-action-suggestion'):overviewAction.locator('h3')).innerText();
+  // A pending plan item is the single primary action; a different recommendation is only a suggestion line.
+  if(planned)await expect(overviewAction.locator('[data-daily-start], [data-daily-resume], button:disabled')).toHaveCount(1);
+  else await expect(overviewAction).toHaveAttribute('data-study-action-source','overview');
+  const suggestion=overviewAction.locator('.overview-action-suggestion',{hasText:'Sugestão fora do plano'});
+  const topic=await (await suggestion.count()?suggestion:overviewAction.locator('h3')).innerText();
   const actionId=await overviewRecommendationId(page);
   await expect(page.locator('#overviewAttention')).toBeVisible();
   await page.locator('#overviewAttentionViewAll').click();

@@ -16,7 +16,7 @@ for(const [name,scenario] of Object.entries(decisionCoherenceScenarios)){
 }
 
 import {buildProductDecisionProfile,PRODUCT_PROFILE_TODAY} from '../fixtures/decision-coherence/product-profiles.js';
-import {renderDailyExecution} from '../../src/ui/renderers/daily-execution-renderer.js';
+import {renderPlannedAction} from '../../src/ui/renderers/daily-execution-renderer.js';
 import {renderNextBestAction} from '../../src/ui/renderers/next-best-action-renderer.js';
 import {buildWeeklyDecisionSummary} from '../../src/application/analytics/build-weekly-decision-cycle.js';
 import {buildPlanExecution} from '../../src/application/goals/build-plan-execution.js';
@@ -25,7 +25,7 @@ import {buildPerformanceOverview} from '../../src/application/performance/build-
 import {addLocalDays} from '../../src/core/date-utils.js';
 for(const profile of ['beginner','regular','irregular','high_performance','final_stretch'])test('contratos de produto com motores reais: '+profile,()=>{
  const result=buildProductDecisionProfile(profile),before=JSON.stringify(result.state),{daily,nextBestAction,trajectory,adherence}=result;
- const html=renderDailyExecution(daily,{escapeHtml:String,escapeAttr:String,formatMinutes:value=>value+' min'});
+ const html=renderPlannedAction(daily.priority,{escapeHtml:String,escapeAttr:String,formatMinutes:value=>value+' min'});
  assert.equal(trajectory.projection.examDayScore,null);assert.equal(trajectory.projection.approvalProbability,null);
  if(daily.priority.nextItem)assert.ok(html.includes('data-daily-start="'+daily.priority.nextItem.id+'"'));
  if(nextBestAction.action){const recommendation=result.recommendations[0];assert.equal(nextBestAction.action.topicId,recommendation.topicId);const actionHtml=renderNextBestAction(nextBestAction,{escapeHtml:String,escapeAttr:String,dailyPriority:daily.priority});if(nextBestAction.state==='ACTION_OPTIONAL')assert.match(actionHtml,/class="btn ghost small"[^>]*data-study-action-source/)}

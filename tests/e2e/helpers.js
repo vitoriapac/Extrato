@@ -12,7 +12,7 @@ export async function activateTab(page,name){
 }
 // The overview card is either the recommendation itself or a pending plan item carrying it as a suggestion line.
 export async function overviewRecommendationId(page){
-  return page.locator('#overviewNextAction .overview-action-card').evaluate(card=>card.dataset.studyActionId||card.querySelector('[data-suggested-action-id]')?.dataset.suggestedActionId||null);
+  return page.locator('#overviewNextAction .overview-action-card').evaluate(card=>card.dataset.studyActionId||card.dataset.recommendationActionId||null);
 }
 export async function openExamImport(page){
   await page.locator('.subjects-import-menu summary').click();

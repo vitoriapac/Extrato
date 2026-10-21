@@ -13,7 +13,7 @@ test.beforeEach(async({page})=>{
 
 test('Visão Geral mantém ação antes da configuração em todos os estados de primeiro uso',async({page})=>{
   const inOrder=await page.evaluate(()=>{
-    const ids=['kpiGrid','quickStats','overviewNextAction','guidedOnboarding'];
+    const ids=['overviewNextAction','guidedOnboarding','kpiGrid','quickStats'];
     const nodes=ids.map(id=>document.getElementById(id));
     return nodes.every(Boolean)&&nodes.every((node,index)=>index===0||nodes[index-1].compareDocumentPosition(node)&Node.DOCUMENT_POSITION_FOLLOWING);
   });
@@ -79,7 +79,7 @@ test('primeiro uso preserva escolhas e chega à prévia do plano',async({page})=
   await activateTab(page,'dashboard');
   await expect(onboarding).toBeHidden();
   await expect(page.locator('#guidedOnboarding #overviewExamPhase')).toHaveCount(0);
-  await expect(page.locator('#overviewExamPhase + #dailyExecutionDashboard')).toHaveCount(1);
+  await expect(page.locator('#guidedOnboarding + #overviewExamPhase')).toHaveCount(1);
   await expect(page.locator('#panel-dashboard .exam-phase-compact')).toHaveCount(1);
 });
 

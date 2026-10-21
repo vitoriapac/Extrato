@@ -121,7 +121,7 @@ import {createReplanController} from './application/planning/replan-controller.j
 import {buildTodayViewModel} from './application/planning/build-today-view-model.js';
 import {buildNextBestAction} from './application/diagnostics/build-next-best-action.js';
 import {createDailyExecutionController,watchDailyExecutionDate} from './ui/controllers/daily-execution-controller.js';
-import {renderDailyExecution} from './ui/renderers/daily-execution-renderer.js';
+import {renderDailyExecution,renderPlannedAction} from './ui/renderers/daily-execution-renderer.js';
 import {ADAPTIVE_PLANNING_VERSION,applyAdaptivePlanningAdvice,buildAdaptivePlanningAdvice,resolveExamPhase} from './domain/planning/adaptive-planning.js';
 import {renderAdaptiveAllocationAdvice,renderExamPhase,renderExamPhaseCompact} from './ui/renderers/adaptive-planning-renderer.js';
 import {renderExamBlueprintConfigView} from './ui/renderers/exam-blueprint-config-renderer.js';
@@ -4552,21 +4552,14 @@ function renderOverviewNextAction(availableMinutes){
   const container=document.getElementById('overviewNextAction');if(!container)return;
   const outcome=renderPendingRecommendationOutcome();
   const item=currentStudyRecommendations[0];
-  if(!item){container.innerHTML=`${renderActiveStudyTimerNotice(null)}${outcome}<p class="overview-alert-empty">${availableMinutes<15?'Defina pelo menos 15 minutos para hoje para receber uma sugestão.':'Ainda não há uma atividade elegível com os dados atuais.'}</p><a class="btn ghost small" href="#overview-study">Ver cronômetro e registrar estudo</a>`;return}
-  const next=dailyExecutionController.build().priority.nextItem;
-  // One answer to "what now": a pending plan item wins; a different recommendation becomes a suggestion line.
-  if(next&&!(next.subjectId===item.subjectId&&next.topicId===item.topicId)){container.innerHTML=`${renderActiveStudyTimerNotice(null)}${outcome}${renderOverviewPlannedAction(next,item)}`;return}
+  const {priority}=dailyExecutionController.build();
+  // When plan and recommendation agree, the recommendation card stays primary so the session keeps its recommendation link.
+  if(priority.nextItem&&!(item&&priority.nextItem.subjectId===item.subjectId&&priority.nextItem.topicId===item.topicId)){const suggestion=item?{subjectId:item.subjectId,topicId:item.topicId,subjectName:item.subjectName,topicName:item.topicName,score:item.score,actionId:buildStudyAction(item,{source:'overview'})?.id}:null;const ownTimer=hasStartedStudyTimer()&&state.activeTimer?.planItemId===priority.nextItem.id;container.innerHTML=`${ownTimer?'':renderActiveStudyTimerNotice(null)}${outcome}${renderPlannedAction(priority,{suggestion,escapeHtml,escapeAttr,formatMinutes:formatPlanMinutes,timer:{active:hasStartedStudyTimer(),planItemId:state.activeTimer?.planItemId}})}`;return}
+  if(!item){container.innerHTML=`${renderActiveStudyTimerNotice(null)}${outcome}<p class="overview-alert-empty">${availableMinutes<15?'Defina pelo menos 15 minutos para hoje para receber uma sugestão.':'Ainda não há uma atividade elegível com os dados atuais.'}</p><a class="btn ghost small" href="#overview-timer">Ver cronômetro e registrar estudo</a>`;return}
   const action=buildStudyAction(item,{source:'overview'}),model=buildPriorityViewModel(item,1),label=recommendationActionLabel(action),mastery=action.evidence.mastery==null?'Domínio ainda sem evidência':`Domínio ${Math.round(action.evidence.mastery)}/100`,reasons=action.reasons.slice(0,3).join(' · '),minutes=action.suggestedMinutes==null?'Tempo não estimado':formatPlanMinutes(action.suggestedMinutes);
   const inProgress=activeTimerMatchesRecommendation(item),blocked=hasStartedStudyTimer()&&!inProgress,sessionLabel=state.activeTimer?.isRunning?'Cronômetro rodando':'Sessão pausada';
   const actionButton=inProgress?`<button class="btn" type="button" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`:blocked?'<button class="btn" type="button" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>':`<button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${action.source}')">▶ ${escapeHtml(label)}</button>`;
   container.innerHTML=`${renderActiveStudyTimerNotice(item)}${outcome}<article class="card card--action overview-action-card ${inProgress?'is-in-progress':''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml(label)} · prioridade ${action.priority??'—'}/100</p><p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(action.evidence.label||model.evidenceLabel).toLowerCase()}</p>${inProgress?`<span class="active-study-status">Em andamento · ${sessionLabel}</span>`:''}</div><div class="overview-action-buttons">${actionButton}</div>${renderRecommendationExplanation(item.explanation||buildRecommendationExplanation(item))}</article>`;
-}
-function renderOverviewPlannedAction(next,suggestion){
-  const timerActive=hasStartedStudyTimer(),own=timerActive&&state.activeTimer?.planItemId===next.id;
-  const button=own?'<button class="btn" type="button" data-daily-resume>▶ Retomar sessão</button>':timerActive?'<button class="btn" type="button" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>':`<button class="btn" type="button" data-daily-start="${escapeAttr(next.id)}">▶ Iniciar estudo</button>`;
-  const type={study:'Teoria',review:'Revisão',questions:'Questões',simulation:'Simulado'}[next.type]||'Estudo';
-  const priority=Number.isFinite(Number(suggestion.score))?` (prioridade ${Math.round(Number(suggestion.score))}/100)`:'';
-  return `<article class="card card--action overview-action-card" data-decision-role="planned" data-plan-item-id="${escapeAttr(next.id)}"><div><h3>${escapeHtml(next.subjectName||'Disciplina')} · ${escapeHtml(next.topicName||'Sem tópico')}</h3><p><strong>${formatPlanMinutes(Math.ceil(next.remainingSeconds/60))}</strong> · ${type} · prevista no plano de hoje</p>${own?'<span class="active-study-status">Em andamento</span>':''}</div><div class="overview-action-buttons">${button}</div><p class="overview-action-suggestion" data-suggested-action-id="${escapeAttr(buildStudyAction(suggestion,{source:'overview'})?.id||'')}">Sugestão fora do plano: ${escapeHtml(suggestion.subjectName)} · ${escapeHtml(suggestion.topicName)}${priority}. <button class="btn ghost small" type="button" data-delegated-click="navigateKpi('hoje')">Ver por quê</button></p></article>`;
 }
 function renderOverviewDecisionArea(){const {availableMinutes}=refreshStudyRecommendationItems();renderOverviewNextAction(availableMinutes);renderAlertasInteligentes()}
 function renderStudyRecommendation(){
@@ -4727,11 +4720,11 @@ const dailyExecutionController=createDailyExecutionController({
 function renderDailyExecutionCard(){
   const container=document.getElementById('dailyExecutionDashboard');if(!container)return;
   refreshStudyRecommendationItems({recordHistory:false});
-  container.innerHTML=renderDailyExecution(dailyExecutionController.build(),{escapeHtml,escapeAttr,formatMinutes:formatPlanMinutes,timer:{active:hasStartedStudyTimer(),planItemId:state.activeTimer?.planItemId}});
+  container.innerHTML=renderDailyExecution(dailyExecutionController.build(),{escapeHtml,formatMinutes:formatPlanMinutes});
 }
 document.addEventListener('click',event=>{
   const start=event.target.closest?.('[data-daily-start]');
-  if(start){const result=dailyExecutionController.start(start.dataset.dailyStart);if(result.state==='unavailable')showToast('A atividade mudou. Confira o plano atual.');if(result.state==='blocked')showToast('Finalize a sessão atual antes de iniciar outra.');renderDailyExecutionCard();}
+  if(start){const result=dailyExecutionController.start(start.dataset.dailyStart);if(result.state==='unavailable')showToast('A atividade mudou. Confira o plano atual.');if(result.state==='blocked')showToast('Finalize a sessão atual antes de iniciar outra.');renderDailyExecutionCard();renderOverviewDecisionArea();}
   if(event.target.closest?.('[data-daily-resume]'))openStudyTimerFocus();
 });
 function renderPlanoHoje(){

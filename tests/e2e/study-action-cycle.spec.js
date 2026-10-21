@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {activateTab} from './helpers.js';
+import {activateTab,overviewRecommendationId} from './helpers.js';
 
 async function prepareStudyCase(page){
   await page.goto('/?test=1');
@@ -69,6 +69,6 @@ for(const source of ['overview','today','diagnosis'])test(`ação ${source} perc
   expect(result.feedback?.snapshot).toBeTruthy();
   expect(result.candidate?.completed).toBe(true);
   await activateTab(page,'dashboard');
-  const nextId=await page.locator('#overviewNextAction .overview-action-card').getAttribute('data-study-action-id');
+  const nextId=await overviewRecommendationId(page);
   expect(nextId).toBeTruthy();expect(nextId).not.toBe(actionId);
 });

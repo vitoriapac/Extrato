@@ -14,8 +14,8 @@ async function prepare(page,{dense=true}={}){
   await activateTab(page,'dashboard');
 }
 test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload',async({page})=>{
-  await prepare(page);const card=page.locator('#dailyExecutionDashboard');
-  const summary=await card.locator('.daily-execution-summary').boundingBox(),next=await card.locator('.daily-execution-next').boundingBox();expect(next.x).toBeGreaterThan(summary.x+summary.width);
+  await prepare(page);const card=page.locator('.overview-now-action');
+  const action=await card.locator('.overview-action-card').boundingBox(),progress=await card.locator('.daily-execution-summary').boundingBox();expect(progress.y).toBeGreaterThan(action.y+action.height-1);
   await expect(card).toContainText('0% de progresso do plano');await card.getByRole('button',{name:'Iniciar estudo',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().activeTimer.planItemId)).toBe('daily-first');
   await expect(card.getByRole('button',{name:'Retomar sessão'})).toBeVisible();
@@ -29,16 +29,14 @@ test('Hoje inicia sessão vinculada, atualiza progresso e avança sem reload',as
 });
 for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light']])test(`card Hoje acessível: ${width}px ${theme}`,async({page})=>{
   await page.setViewportSize({width,height:1100});await prepare(page);if(theme==='dark')await page.locator('#themeToggleBtn').click();
-  const card=page.locator('#dailyExecutionDashboard');await expectNoPageOverflow(page);
-  expect((await new AxeBuilder({page}).include('#dailyExecutionDashboard').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+  const card=page.locator('.overview-now-action');await expectNoPageOverflow(page);
+  expect((await new AxeBuilder({page}).include('.overview-now-action').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
   await card.evaluate(node=>window.scrollBy(0,node.getBoundingClientRect().top-120));
   if(process.platform==='win32')await withPixelAlignedCapture(card,()=>expect(card).toHaveScreenshot(`today-${width}-${theme}-win32.png`,{animations:'disabled',maxDiffPixelRatio:.03}));
-  const suggestion=card.locator('.daily-execution-suggestion');
-  await expect(suggestion).not.toHaveAttribute('open','');
-  await suggestion.locator('summary').focus();await page.keyboard.press('Enter');
-  await expect(suggestion).toContainText('confira a prévia');
-  await expect(suggestion.getByRole('button',{name:'Ver recomendação',exact:true})).toBeVisible();
-  await page.keyboard.press('Enter');await expect(suggestion).not.toHaveAttribute('open','');
+  const suggestion=card.locator('.overview-action-suggestion');
+  await expect(suggestion).toContainText('Sugestão fora do plano');
+  await expect(suggestion.getByRole('button',{name:'Ver por quê',exact:true})).toBeVisible();
+  await expect(card.locator('[data-daily-start]')).toHaveCount(1);
   await card.getByRole('button',{name:'Iniciar estudo',exact:true}).focus();await page.keyboard.press('Enter');
   await expect(card.getByRole('button',{name:'Retomar sessão'})).toBeVisible();
 });
@@ -51,14 +49,14 @@ test('execução diária explica estados vazios, parciais, concluídos e cronôm
   subject.name='Língua Portuguesa e interpretação de textos em contextos de concursos públicos';
   topic.name='Interpretação e compreensão de textos extensos com análise de relações sintáticas e semânticas';
   const apply=state=>page.evaluate(state=>{const api=window.__EXTRATO_TEST__;api.setState(state);api.renderAll()},state);
-  const card=page.locator('#dailyExecutionDashboard');
+  const card=page.locator('.overview-now-action');
   const empty=structuredClone(base);empty.dailyPlans[0].items=[];empty.dailyPlans[0].plannedMinutes=0;await apply(empty);
   await expect(card).toContainText('Não há atividade elegível');await expect(card.getByRole('button',{name:'Abrir planejamento'})).toBeVisible();
   await apply(base);
   for(const width of [320,390,430,1440]){
     await page.setViewportSize({width,height:1100});await expectNoPageOverflow(page);
-    const boxes=await card.evaluate(node=>{const summary=node.querySelector('.daily-execution-summary').getBoundingClientRect(),next=node.querySelector('.daily-execution-next').getBoundingClientRect();return {summary:{right:summary.right,bottom:summary.bottom},next:{left:next.left,top:next.top}}});
-    if(width<800)expect(boxes.next.top).toBeGreaterThan(boxes.summary.bottom);else expect(boxes.next.left).toBeGreaterThan(boxes.summary.right);
+    const boxes=await card.evaluate(node=>{const action=node.querySelector('.overview-action-card').getBoundingClientRect(),summary=node.querySelector('.daily-execution-summary').getBoundingClientRect();return {action:action.bottom,summary:summary.top}});
+    expect(boxes.summary).toBeGreaterThanOrEqual(boxes.action);
   }
   await card.screenshot({path:test.info().outputPath('execution-desktop-long-names.png')});
   const partial=structuredClone(base);partial.studySessions=[{id:'partial',date:'2026-10-01',subjectId:subject.id,topicId:topic.id,type:'study',durationSeconds:300,planItemId:'daily-first'}];
