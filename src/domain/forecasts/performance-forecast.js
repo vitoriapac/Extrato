@@ -1,3 +1,4 @@
+import {pluralize} from '../../core/utils.js';
 import {describeScoreEvidence} from '../analytics/score-evidence.js';
 
 export const PERFORMANCE_FORECAST_VERSION='1.0.0';
@@ -38,8 +39,8 @@ export function buildPerformanceForecast({currentValue=null,currentConfidence=0,
   const movingAverage=recentSample?Math.round(recent.reduce((sum,item)=>sum+item.value*item.sampleSize,0)/recentSample):null;
   if(observationCount<4||sampleSize<120||spanDays<21){
     const needs=[];
-    if(observationCount<4)needs.push(`${4-observationCount} semana(s) adicional(is)`);
-    if(sampleSize<120)needs.push(`${120-sampleSize} questão(ões) adicional(is)`);
+    if(observationCount<4)needs.push(`${pluralize(4-observationCount,'semana adicional','semanas adicionais')}`);
+    if(sampleSize<120)needs.push(`${pluralize(120-sampleSize,'questão adicional','questões adicionais')}`);
     if(spanDays<21)needs.push('ao menos 21 dias de histórico');
     return {algorithmVersion:PERFORMANCE_FORECAST_VERSION,available:true,currentBand,gap,movingAverage,forecast30:{available:false,reason:`Aguardando ${needs.join(', ')}.`},evidence};
   }

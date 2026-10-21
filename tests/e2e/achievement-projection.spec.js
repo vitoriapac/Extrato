@@ -209,7 +209,7 @@ test('Demo de reta final conecta trajetória, ajuda e fechamento sem alterar his
  const before=await historical();
  await activateTab(page,'desempenho');
  await expect(page.locator('.achievement-projection__status')).toHaveText('Em risco');
- await expect(page.locator('.performance-method-note').filter({hasText:'10 dia(s)'})).toBeVisible();
+ await expect(page.locator('.performance-method-note').filter({hasText:'10 dias'})).toBeVisible();
  await page.locator('.achievement-projection__details > summary').filter({hasText:'Entender esta projeção'}).click();
  await page.locator('.projection-evidence-method > summary').click();
  await page.getByRole('button',{name:'Entenda faixa e confiança na ajuda'}).click();

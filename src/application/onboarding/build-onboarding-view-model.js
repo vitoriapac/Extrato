@@ -1,3 +1,4 @@
+import {pluralize} from '../../core/utils.js';
 import {parseLocalDate} from '../../core/date-utils.js';
 const CONTENT_PATHS=Object.freeze([{action:'import',label:'Carregar edital do catálogo',primary:true},{action:'structured',label:'Importar JSON ou CSV'},{action:'manual',label:'Cadastrar manualmente'}]);
 
@@ -15,8 +16,8 @@ export function buildOnboardingViewModel({examDate=null,hoursByDay={},subjects=[
   const planReasons=[...(planPreview?.reasons||[])];
   if(!hasEligibleActivities&&canConfigurePlan){
     if(planPreview?.reason)planReasons.push(planPreview.reason);
-    if(planPreview?.missingEffort?.length)planReasons.push(`${planPreview.missingEffort.length} tópico(s) sem esforço estimado.`);
-    if(planPreview?.blockedTopics?.length)planReasons.push(`${planPreview.blockedTopics.length} tópico(s) aguardam pré-requisitos.`);
+    if(planPreview?.missingEffort?.length)planReasons.push(`${pluralize(planPreview.missingEffort.length,'tópico','tópicos')} sem esforço estimado.`);
+    if(planPreview?.blockedTopics?.length)planReasons.push(`${pluralize(planPreview.blockedTopics.length,'tópico','tópicos')} aguardam pré-requisitos.`);
     if(!planReasons.length)planReasons.push('Revise esforço, pré-requisitos e disponibilidade para liberar atividades.');
   }
   return{visible:!hasHistory&&!hasPlan&&Boolean(next),steps,next,current,currentIndex,completed:steps.filter(step=>step.status==='complete').length,availableMinutes,hasGoal,hasAvailability,hasContent,canAdvance:current.id==='goal'?hasGoal:current.id==='availability'?hasAvailability:true,canConfigurePlan,hasEligibleActivities,canCreatePlan:canConfigurePlan&&hasEligibleActivities,topicCount,estimatedNeedMinutes,weeksUntilExam:days==null?null:Math.ceil(days/7),examDate,today,presets,presetId,subjects:subjectModels,contentPaths:CONTENT_PATHS,firstActivities,planPreviewState:planPreview?.state||null,planReasons,weekdays:['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((label,day)=>({day,label,hours:Math.max(0,Number(hoursByDay?.[String(day)])||0)}))};

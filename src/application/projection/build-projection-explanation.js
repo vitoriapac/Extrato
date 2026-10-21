@@ -1,3 +1,4 @@
+import {pluralize} from '../../core/utils.js';
 export function buildProjectionExplanation({status, calibrated, forecast, coverage, adherence, consistency, openHighImpactPriorities, target, daysRemaining}) {
   const drivers = [], risks = [];
   if (!calibrated.available) return {drivers, risks, summary: calibrated.reason};
@@ -11,8 +12,8 @@ export function buildProjectionExplanation({status, calibrated, forecast, covera
   if (coverage != null && coverage < 50) risks.push(`Cobertura de tópicos baixa (${Math.round(coverage)}%).`);
   if (adherence != null && adherence < 60) risks.push(`Execução do plano baixa (${Math.round(adherence)}%).`);
   if (consistency?.target > 0 && consistency.days >= consistency.target) drivers.push('Meta de consistência cumprida; isso não substitui evidência de desempenho.');
-  if (openHighImpactPriorities > 0) risks.push(`${openHighImpactPriorities} lacuna(s) de alto impacto com domínio baixo e evidência suficiente.`);
-  if (status === 'at_risk' && daysRemaining != null && daysRemaining <= 14) risks.push(`Prazo curto: ${daysRemaining} dia(s) até a prova para reduzir o déficit medido.`);
+  if (openHighImpactPriorities > 0) risks.push(`${pluralize(openHighImpactPriorities,'lacuna','lacunas')} de alto impacto com domínio baixo e evidência suficiente.`);
+  if (status === 'at_risk' && daysRemaining != null && daysRemaining <= 14) risks.push(`Prazo curto: ${pluralize(daysRemaining,'dia','dias')} até a prova para reduzir o déficit medido.`);
   const summaries = {
     insufficient_data: 'Ainda não há simulados comparáveis suficientes para avaliar a trajetória.',
     on_track: 'Os sinais medidos são compatíveis com a meta, sujeitos à incerteza indicada.',

@@ -1,3 +1,4 @@
+import {pluralize} from '../../core/utils.js';
 import {describeScoreEvidence} from '../analytics/score-evidence.js';
 
 export const RECOMMENDATION_OUTCOME_VERSION=1;
@@ -19,7 +20,7 @@ export function evaluateRecommendationOutcome({before={},after={},questionVolume
   const volume=Math.max(0,Math.floor(Number(questionVolume)||0)),elapsed=Math.max(0,Number(daysElapsed)||0),activities=Math.max(0,Math.floor(Number(otherActivities)||0));
   const reasons=[];
   if(elapsed<1)reasons.push('Aguardando ao menos 1 dia após a recomendação');
-  if(volume<20)reasons.push(`Aguardando ${20-volume} questão(ões) adicional(is)`);
+  if(volume<20)reasons.push(`Aguardando ${pluralize(20-volume,'questão adicional','questões adicionais')}`);
   if(comparable.length<2)reasons.push('Menos de 2 indicadores comparáveis');
   if(activities>3)reasons.push('Muitas outras atividades no tópico para atribuir o resultado');
   const state=elapsed<1?'pending':reasons.length?'insufficient':round(comparable.reduce((sum,value)=>sum+value,0)/comparable.length)>=3?'positive':round(comparable.reduce((sum,value)=>sum+value,0)/comparable.length)<=-3?'negative':'neutral';

@@ -1,3 +1,4 @@
+import {formatDecimal} from '../../core/format-number.js';
 import {presentEvidence} from '../evidence-state.js';
 import {formatStudyMinutes,formatStudyMinuteDelta} from '../format-study-time.js';
 import {renderReadinessHistory} from '../renderers/readiness-history-renderer.js';
@@ -7,7 +8,7 @@ import {renderReadinessChangeExplanation} from './readiness-change-explanation-r
 import {renderMetricCard,renderEmptyState} from '../components/presentation.js';
 import {renderAchievementProjection} from './achievement-projection-renderer.js';
 
-const shown=value=>value==null?'—':String(Math.round(value*10)/10);
+const shown=value=>value==null?'—':formatDecimal(value);
 const change=value=>value==null?'Sem base comparável':`${value>0?'+':''}${shown(value)}`;
 const card=(label,value,unit,detail)=>renderMetricCard({label,value:presentEvidence({value,unit,format:shown}).text,detail});
 

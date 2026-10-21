@@ -16,7 +16,7 @@ test('hero e compacto apresentam a mesma prontidão e conteúdo separado',()=>{
   assert.equal(document.nodes.compactReadiness.textContent,'45/100');
   assert.equal(document.nodes.statContent.textContent,'26%');
   assert.equal(document.nodes.statStreak.textContent,'7 dias');
-  assert.match(document.nodes.balanceSub.textContent,/Confiança alta/);
+  assert.match(document.nodes.balanceSub.textContent,/Confiança do índice: alta/);
 });
 
 test('cabeçalho compacto oculta integralmente prova ausente',()=>{

@@ -1,9 +1,10 @@
+import {formatDecimal} from '../../core/format-number.js';
 import {renderQuestionEvolution} from '../renderers/question-evolution-renderer.js';
 import {renderPerformanceStory,renderPerformanceSummary,renderPerformanceDetails} from './performance-story.js';
 
 const number=value=>value==null?'—':String(value);
 const percent=value=>value==null?'—':`${value}%`;
-const delta=value=>value==null?'Sem base anterior':`${value>0?'+':''}${Math.round(value*10)/10} p.p.`;
+const delta=value=>value==null?'Sem base anterior':`${value>0?'+':''}${formatDecimal(value)} p.p.`;
 
 export function renderPerformanceQuestions({evolution,analysis,previousAccuracy=null,range,formatDate,escapeHtml}={}){
   if(!analysis.questionCount)return '<div class="empty-state empty-state--compact" role="status"><strong>Sem questões neste período</strong><p>Registre questões pessoais vinculadas a tópicos do concurso ativo para acompanhar precisão, volume e erros.</p><button type="button" class="btn ghost small" data-performance-open="questoes">Registrar questões</button></div>';

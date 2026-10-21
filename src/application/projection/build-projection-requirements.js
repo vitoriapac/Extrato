@@ -1,3 +1,4 @@
+import {pluralize} from '../../core/utils.js';
 import {PROJECTION_EVIDENCE_POLICY as policy} from '../../domain/forecasts/projection-evidence-policy.js';
 // Mirrors the calibrated projection's actual availability gates.
 export function buildProjectionRequirements(model) {
@@ -7,11 +8,11 @@ export function buildProjectionRequirements(model) {
       guidance:'Configure uma data de prova futura em Planejamento.'},
     {label:'Meta de nota usada',met:Number.isFinite(model?.current?.targetScore),guidance:'Configure a meta de nota em Planejamento.'},
     {label:'Simulados comparáveis em datas distintas',met:(evidence.observationCount||0)>=policy.minimumObservations,
-      guidance:`Registre mais ${Math.max(0,policy.minimumObservations-(evidence.observationCount||0))} simulado(s) comparável(is) em datas distintas.`},
+      guidance:`Registre mais ${pluralize(Math.max(0,policy.minimumObservations-(evidence.observationCount||0)),'simulado comparável','simulados comparáveis')} em datas distintas.`},
     {label:'Questões nos simulados comparáveis',met:(evidence.sampleSize||0)>=policy.minimumQuestions,
-      guidance:`Acumule mais ${Math.max(0,policy.minimumQuestions-(evidence.sampleSize||0))} questão(ões) nos simulados comparáveis.`},
+      guidance:`Acumule mais ${pluralize(Math.max(0,policy.minimumQuestions-(evidence.sampleSize||0)),'questão','questões')} nos simulados comparáveis.`},
     {label:'Período observado',met:(evidence.spanDays||0)>=policy.minimumSpanDays,
-      guidance:`Observe os resultados por mais ${Math.max(0,policy.minimumSpanDays-(evidence.spanDays||0))} dia(s).`}
+      guidance:`Observe os resultados por mais ${pluralize(Math.max(0,policy.minimumSpanDays-(evidence.spanDays||0)),'dia','dias')}.`}
   ];
   return {requirements,pending:requirements.filter(item=>!item.met)};
 }

@@ -1,3 +1,4 @@
+import {pluralize} from '../../core/utils.js';
 import {describeScoreEvidence} from './score-evidence.js';
 
 export function clampMetric(value){return Math.max(0,Math.min(100,Math.round(Number(value)||0)))}
@@ -28,6 +29,6 @@ export function calculateReadinessScore(metrics,weights=READINESS_WEIGHTS){
     factors:Object.fromEntries(entries.map(([key])=>[key,metrics?.[key]?.available?Number(metrics[key].score):null])),
     missingFactors,availableFactors:available.map(([key])=>key),
     evidence:describeScoreEvidence({completeness:availableWeight/entries.reduce((sum,[,weight])=>sum+weight,0),evidenceStrength:evidenceConfidence}),
-    reasons:missingFactors.length?[missingFactors.length+' fator(es) aguardando dados']:['todos os fatores disponíveis'],algorithmVersion:1
+    reasons:missingFactors.length?[pluralize(missingFactors.length,'fator','fatores')+' aguardando dados']:['todos os fatores disponíveis'],algorithmVersion:1
   };
 }

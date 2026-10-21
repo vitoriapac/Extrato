@@ -2,7 +2,7 @@ export function buildExecutiveSummary({readiness,daysToExam=null,pace={},topPrio
   const readinessValue=readiness?.value;
   const general=readinessValue==null
     ?{value:'—',label:'Aguardando dados',detail:'Registre atividades para calcular a prontidão.'}
-    :{value:`${readinessValue}/100`,label:`Confiança ${String(readiness.confidenceLabel||'baixa').toLowerCase()}`,detail:`${readiness.availableFactors?.length||0} de 5 fatores disponíveis`};
+    :{value:`${readinessValue}/100`,label:`Confiança do índice: ${String(readiness.confidenceLabel||'baixa').toLowerCase()}`,detail:`${readiness.availableFactors?.length||0} de 5 fatores disponíveis`};
   const exam=daysToExam===null
     ?{value:'—',label:'Data da prova não definida',detail:'Configure a prova para avaliar o prazo.'}
     :{value:String(Math.max(0,daysToExam)),label:daysToExam===1?'dia até a prova':'dias até a prova',detail:daysToExam<0?'A data informada já passou.':''};

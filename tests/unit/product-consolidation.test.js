@@ -22,7 +22,7 @@ test('resumos de Prontidão e fechamento preservam valores, insuficiência e det
   const measured={...input,projection:{available:true,low:70,high:78,calibration:{available:false,status:'below',confidenceLabel:'Baixa'},forecast30:{available:false,reason:'Histórico curto'},gap:{target:80,minimum:2,maximum:10},evidence:{observationCount:5,sampleSize:200}}};
   const measuredHTML=renderReadinessOverview(measured,{escapeHtml:String,escapeAttr:String,getMetricDataState:()=>{},metricStateLabel:()=>{}});
   const visible=measuredHTML.slice(0,measuredHTML.indexOf('<details'));
-  assert.match(visible,/Faixa atual: 70–78%/);assert.match(visible,/Confiança Baixa/);assert.match(visible,/5 simulados comparáveis/);
+  assert.match(visible,/Faixa atual: 70–78%/);assert.match(visible,/Confiança da projeção: baixa/);assert.match(visible,/5 simulados comparáveis/);
   assert.doesNotMatch(visible,/Média móvel|projection-calibration-list/);
   const summary=renderWeeklyCloseSummary({state:'ready',questions:{resolved:31,accuracy:68},mainRisk:{message:'risco completo'},adherence:{model:{summary:{temporalAdherence:75}}}},{escapeHtml:String,period:{start:'2026-09-27',end:'2026-10-03'}});
   assert.match(summary,/75%/);assert.match(summary,/68%/);assert.doesNotMatch(summary,/risco completo/);

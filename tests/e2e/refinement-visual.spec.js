@@ -73,5 +73,5 @@ test('Desempenho mantém orientação dentro dos cards quando não há dados',as
     await expect(page.locator('#performanceSectionContent > .empty-state')).not.toHaveText('Sem dados.');
   }
   await page.locator('[data-performance-section="consistency"]').click();
-  await expect(page.locator('#performanceSectionContent')).toContainText('0 dia(s) com estudo');
+  await expect(page.locator('#performanceSectionContent')).toContainText('0 dias com estudo');
 });
