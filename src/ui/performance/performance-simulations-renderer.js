@@ -1,3 +1,4 @@
+import {formatDecimal} from '../../core/format-number.js';
 import {pluralize} from '../../core/utils.js';
 import {renderSimulationTrendChart} from '../renderers/simulations-renderer.js';
 import {renderSimulationComparison} from '../renderers/simulation-comparison-renderer.js';
@@ -5,8 +6,8 @@ import {renderProjectionCalibration} from '../renderers/projection-calibration-r
 import {renderPerformanceStory,renderPerformanceSummary,renderPerformanceDetails} from './performance-story.js';
 import {renderPerformanceSampleState} from './performance-sample-state.js';
 
-const percent=value=>value==null?'—':`${value}%`;
-const signed=value=>value==null?'Sem comparação':`${value>0?'+':''}${value} p.p.`;
+const percent=value=>value==null?'—':`${formatDecimal(value)}%`;
+const signed=value=>value==null?'Sem comparação':`${value>0?'+':''}${formatDecimal(value)} p.p.`;
 
 export function renderPerformanceSimulations(model,{range,targetScore,formatDate,escapeHtml}={}){
   if(!model.count)return '<div class="empty-state empty-state--compact" role="status"><strong>Sem simulados neste período</strong><p>Registre simulados para acompanhar as notas. Duas provas com disciplinas detalhadas em comum permitem a comparação por disciplina.</p><button type="button" class="btn ghost small" data-performance-open="questoes">Registrar simulado</button></div>';

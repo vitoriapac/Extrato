@@ -1,8 +1,9 @@
+import {formatDecimal} from '../../core/format-number.js';
 import {DEFAULT_LIST_VISIBLE_ITEMS} from '../progressive-list.js';
 export function renderQuestionAnalyticsSummary({resolved,accuracy,coverage,trend}){
   return [
-    ['Precisão',accuracy===null?'—':`${accuracy}%`],
-    ['Cobertura por tópico',`${coverage}%`],
+    ['Precisão',accuracy===null?'—':`${formatDecimal(accuracy)}%`],
+    ['Cobertura por tópico',`${formatDecimal(coverage)}%`],
     ['Questões',resolved]
   ].map(([label,value])=>`<div class="question-analysis-metric"><strong>${value}</strong><span>${label}</span></div>`).join('')+`<p class="question-analysis-trend">Tendência: ${trend.icon} ${trend.label}. A comparação exige pelo menos 30 questões em cada janela.</p>`;
 }
@@ -18,7 +19,7 @@ export function renderTopicQuestionPerformance({mode,topics,visible,masteryForTo
 }
 
 export function renderWeeklyQuestionTrend({weeks,trend,formatDate}){
-  return `<div class="trend-grid">${weeks.map(week=>`<div class="trend-week ${week.insufficientData?'insufficient':''}"><span>${formatDate(week.start).slice(0,5)}</span><strong>${week.insufficientData?'—':week.accuracy+'%'}</strong><small>${week.resolved} questões</small></div>`).join('')}</div><div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta===null?'':` · ${trend.delta>0?'+':''}${trend.delta.toFixed(1)} p.p.`}</div>`;
+  return `<div class="trend-grid">${weeks.map(week=>`<div class="trend-week ${week.insufficientData?'insufficient':''}"><span>${formatDate(week.start).slice(0,5)}</span><strong>${week.insufficientData?'—':formatDecimal(week.accuracy)+'%'}</strong><small>${week.resolved} questões</small></div>`).join('')}</div><div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta===null?'':` · ${trend.delta>0?'+':''}${trend.delta.toFixed(1)} p.p.`}</div>`;
 }
 
 export function renderQuestionErrorToolbar({days,topicId,topics,escapeHtml,escapeAttr}){

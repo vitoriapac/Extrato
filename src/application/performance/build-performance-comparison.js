@@ -1,3 +1,4 @@
+import {formatDecimal} from '../../core/format-number.js';
 const rounded=value=>Math.round(value*10)/10;
 const classify=(value,threshold)=>value>threshold?'improved':value< -threshold?'worsened':'stable';
 const metric=(label,before,after,unit,threshold,available=true)=>({
@@ -18,9 +19,9 @@ export function buildPerformanceComparison(overview,{comparePrevious=true}={}){
   const insights=[];
   const accuracy=rows[0],volume=rows[2],load=rows[3];
   if(accuracy.state==='improved'&&volume.delta!=null&&volume.delta>=0){
-    insights.push(`A precisão subiu ${accuracy.delta} p.p. enquanto o volume de questões ${volume.delta?'cresceu '+volume.delta:'se manteve'}. A mudança observada não indica, sozinha, sua causa.`);
+    insights.push(`A precisão subiu ${formatDecimal(accuracy.delta)} p.p. enquanto o volume de questões ${volume.delta?'cresceu '+volume.delta:'se manteve'}. A mudança observada não indica, sozinha, sua causa.`);
   }else if(accuracy.state==='worsened'){
-    insights.push(`A precisão caiu ${Math.abs(accuracy.delta)} p.p. em relação ao período anterior. Confira os erros e a composição das questões antes de ajustar o plano.`);
+    insights.push(`A precisão caiu ${formatDecimal(Math.abs(accuracy.delta))} p.p. em relação ao período anterior. Confira os erros e a composição das questões antes de ajustar o plano.`);
   }
   if(load.after>=90&&load.state!=='insufficient'&&overview.strategic?.strategicAdherence!=null&&overview.strategic.classifiedCoverage>=70&&overview.strategic.strategicAdherence<75){
     insights.push(`Você estudou ${rounded(load.after)}% do tempo planejado, mas executou ${overview.strategic.strategicAdherence}% do tempo prioritário previsto em sessões vinculadas.`);

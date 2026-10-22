@@ -1,3 +1,5 @@
+import {formatDecimal} from '../../core/format-number.js';
+import {formatDateBR} from '../../core/format-date.js';
 import {pluralize} from '../../core/utils.js';
 import {renderDecisionExplanation} from '../components/decision-explanation.js';
 import {formatEvidencePercent,presentEvidence,EVIDENCE_STATES} from '../evidence-state.js';
@@ -34,13 +36,13 @@ function renderTrajectory(model,escapeHtml){
   const historical=points.map((point,index)=>`${x(index).toFixed(1)},${y(point.value).toFixed(1)}`).join(' ');
   const last=points.at(-1),lastX=x(points.length-1),forecast=model.trajectory.forecast30;
   const future=forecast.available?`<line x1="${lastX}" y1="${y(last.value)}" x2="${width-right}" y2="${y(forecast.central)}" class="achievement-trajectory__future" tabindex="0" aria-label="Tendência de 30 dias: ${pct(forecast.central)}. Não representa nota prevista na prova."><title>Tendência de 30 dias: ${pct(forecast.central)}. Não representa nota prevista na prova.</title></line>` : '';
-  const values=points.map(point=>`<tr><th scope="row"><time datetime="${escapeHtml(point.date)}">${escapeHtml(point.date)}</time></th><td>${pct(point.value)}</td><td>${pct(model.current.targetScore)}</td></tr>`).join('');
+  const values=points.map(point=>`<tr><th scope="row"><time datetime="${escapeHtml(point.date)}">${escapeHtml(formatDateBR(point.date))}</time></th><td>${pct(point.value)}</td><td>${pct(model.current.targetScore)}</td></tr>`).join('');
   return `<div class="achievement-trajectory__scroll" tabindex="0" role="region" aria-label="Gráfico da trajetória de simulados"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Histórico de simulados e tendência de 30 dias">
     <title>Trajetória de desempenho</title><desc>Resultados registrados em linha sólida, tendência calculada de 30 dias em linha tracejada e meta em linha horizontal. Valores disponíveis abaixo.</desc>
     <line x1="${left}" x2="${width-right}" y1="${y(model.current.targetScore)}" y2="${y(model.current.targetScore)}" class="achievement-trajectory__target"/>
     <polyline points="${historical}" class="achievement-trajectory__observed"/>${future}
-    ${points.map((point,index)=>`<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot" tabindex="0" aria-label="${escapeHtml(point.date)}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}"><title>${escapeHtml(point.date)}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}</title></circle>`).join('')}
-    <text x="${left}" y="${height-7}">${escapeHtml(points[0].date)}</text><text x="${lastX}" y="${height-7}" text-anchor="middle">${escapeHtml(last.date)}</text>
+    ${points.map((point,index)=>`<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot" tabindex="0" aria-label="${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}"><title>${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}</title></circle>`).join('')}
+    <text x="${left}" y="${height-7}">${escapeHtml(formatDateBR(points[0].date))}</text><text x="${lastX}" y="${height-7}" text-anchor="middle">${escapeHtml(formatDateBR(last.date))}</text>
     ${forecast.available?`<text x="${width-right}" y="${height-7}" text-anchor="end">30 dias</text>`:''}
   </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span><span>┄ Tendência de 30 dias</span><span>─ Meta</span></div>
   <details class="limits-disclosure"><summary>Limites</summary><p class="analytics-note">O trecho tracejado é uma previsão de 30 dias, não uma nota estimada para a data da prova.</p></details>
@@ -55,7 +57,7 @@ function renderRequirements(model,escapeHtml){
 
 function renderHistory(history,escapeHtml){
   if(!history.length)return '';
-  const ordered=[...history].reverse(),rows=items=>items.map(item=>`<li><time datetime="${escapeHtml(item.date)}">${escapeHtml(item.date)}</time> · ${labels[item.status]||labels.insufficient_data} · confiança ${confidenceLabels[item.confidence?.level]||confidenceLabels.insufficient}</li>`).join('');
+  const ordered=[...history].reverse(),rows=items=>items.map(item=>`<li><time datetime="${escapeHtml(item.date)}">${escapeHtml(formatDateBR(item.date))}</time> · ${labels[item.status]||labels.insufficient_data} · confiança ${confidenceLabels[item.confidence?.level]||confidenceLabels.insufficient}</li>`).join('');
   const transitions=[...history].map(item=>labels[item.status]||labels.insufficient_data).filter((label,index,list)=>index===0||label!==list[index-1]);
   return `<details class="achievement-projection__details"><summary>Histórico da trajetória</summary>${transitions.length>1?`<p>Estados registrados: ${escapeHtml(transitions.join(' → '))}. A sequência não indica causalidade.</p>`:''}<ul>${rows(ordered.slice(0,5))}</ul>${ordered.length>5?`<details class="achievement-projection__details"><summary>Mostrar mais</summary><ul>${rows(ordered.slice(5))}</ul></details>`:''}</details>`;
 }
@@ -85,7 +87,7 @@ export function renderAchievementProjection(model,{history=[],escapeHtml,escapeA
     ${renderAdherenceTarget(adherenceContext,{escapeHtml})}
     <div class="achievement-projection__story"><div><strong>Evidência</strong><p>${escapeHtml(model.risks[0]||model.drivers[0]||model.confidence.reasons[0]||model.summary)}</p></div><div><strong>Ação</strong><p>${escapeHtml(model.recovery?.steps?.[0]||'Continue registrando simulados comparáveis.')}</p></div></div>
     ${renderDecisionExplanation({title:'Entender esta projeção',factors:entries.map(item=>item.text),evidence:(model.evidence.observationCount||0)+' simulados comparáveis · '+(model.evidence.sampleSize||0)+' questões na amostra.',confidence:model.confidence.reasons.join(' '),helpTopic:'projections',method:'<dl>'+evidenceExplanation.facts.map(fact=>'<dt>'+escapeHtml(fact.label)+'</dt><dd>'+escapeHtml(fact.value)+'</dd>').join('')+'</dl><p>'+[evidenceExplanation.bandMeaning,evidenceExplanation.method,evidenceExplanation.confidenceMeaning,evidenceExplanation.trendMeaning].map(escapeHtml).join('</p><p>')+'</p><p>Prontidão é um índice de preparação; não representa probabilidade de aprovação.</p>'},{escapeHtml,escapeAttr})}
-    ${model.recovery?`<details class="achievement-projection__details"><summary>O que seria necessário?</summary><p>${model.recovery.state==='collect_evidence'?'Primeiro, reúna uma base comparável.':`Déficit central medido: ${model.recovery.gap} p.p. · ${pluralize(model.recovery.weeksRemaining??'—','semana','semanas')} até a prova.`}</p><ol>${model.recovery.steps.map(step=>`<li>${escapeHtml(step)}</li>`).join('')}</ol><p class="analytics-note">Orientações para revisão do plano, sem previsão de ganho de nota ou alteração automática de horas.</p></details>`:''}
+    ${model.recovery?`<details class="achievement-projection__details"><summary>O que seria necessário?</summary><p>${model.recovery.state==='collect_evidence'?'Primeiro, reúna uma base comparável.':`Déficit central medido: ${formatDecimal(model.recovery.gap)} p.p. · ${pluralize(formatDecimal(model.recovery.weeksRemaining??'—'),'semana','semanas')} até a prova.`}</p><ol>${model.recovery.steps.map(step=>`<li>${escapeHtml(step)}</li>`).join('')}</ol><p class="analytics-note">Orientações para revisão do plano, sem previsão de ganho de nota ou alteração automática de horas.</p></details>`:''}
     ${['attention','at_risk'].includes(model.status)?renderRecoveryPlan(recoveryPlan,escapeHtml,escapeAttr):''}
     ${renderHistory(history,escapeHtml)}
     <button type="button" class="btn ghost small" data-projection-scenario-open>Simular cenário</button>

@@ -148,7 +148,7 @@ import {createExamImportState,resetExamImportState} from './features/exam-import
 import {buildExamImportViewModel} from './features/exam-import/exam-import-view-model.js';
 import {renderExamImport as renderExamImportView,syncExamSubjectCheckboxes as syncExamSubjectCheckboxesView} from './features/exam-import/exam-import-renderer.js';
 import {createExamImportController} from './features/exam-import/exam-import-controller.js';
-import {createNavigationController} from './ui/controllers/navigation-controller.js';
+import {TAB_HASHES,createNavigationController} from './ui/controllers/navigation-controller.js';
 import {createModalController} from './ui/controllers/modal-controller.js';
 import {createEditableCollectionController} from './ui/controllers/editable-collection-controller.js';
 import {createPreferencesController} from './ui/controllers/preferences-controller.js';
@@ -1328,7 +1328,7 @@ function backupSummary(data,version){
   const sessionCount=Array.isArray(data.studySessions)?data.studySessions.length:0;
   const questionCount=Array.isArray(data.questoes)?data.questoes.length:0;
   const updated=Date.parse(data.updatedAt||'');
-  const updatedLabel=Number.isFinite(updated)?new Date(updated).toLocaleString('pt-BR'):'data não informada';
+  const updatedLabel=Number.isFinite(updated)?new Date(updated).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'data não informada';
   return `Backup v${version}: ${pluralize(subjectCount,'disciplina')}, ${pluralize(topicCount,'tópico')}, ${pluralize(sessionCount,'sessão','sessões')} e ${pluralize(questionCount,'registro')} de questões. Última atualização: ${updatedLabel}.`;
 }
 function applyImportedBackup(importedState){const previousState=state;try{state=importedState;ensureStateDefaults();restoreTimerFromState();persistAndRender();showToast('Backup importado com sucesso.');return true}catch(error){state=previousState;restoreTimerFromState();render();console.error('Erro ao importar backup',error);showToast('O backup passou pela validação inicial, mas não pôde ser convertido. Seus dados atuais foram preservados.');return false}}
@@ -3636,7 +3636,7 @@ function renderStudyPlanBuilder(){
   if(!studyPlanPreview){
     if(dailyPlanPreview){const proposal=dailyPlanPreview,rows=proposal.days.map(day=>`<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`).join('');container.innerHTML=`<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${proposal.days.length}</strong><span>Dias utilizados</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Não alocados</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state==='proposal'?`<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>`:`<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;return}
     const activeOperation=[...(latest?.dailyPlanOperations||[])].reverse().find(item=>!item.undoneAt);
-    container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR')} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate?formatDatePt(latest.examDate):'data não definida'}</span></div>`:''}${renderPhaseStrategy(phaseStrategyController.view()||currentPhaseStrategy(),{preview:phaseStrategyController.view()?.state==='proposal',canRevert:latest?.phaseStrategy?.status==='applied'})}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest?'<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>':''}${activeOperation?'<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>':''}</div>`;return
+    container.innerHTML=`${latest?`<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate?formatDatePt(latest.examDate):'data não definida'}</span></div>`:''}${renderPhaseStrategy(phaseStrategyController.view()||currentPhaseStrategy(),{preview:phaseStrategyController.view()?.state==='proposal',canRevert:latest?.phaseStrategy?.status==='applied'})}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest?'<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>':''}${activeOperation?'<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>':''}</div>`;return
   }
   const plan=studyPlanPreview;
   const blockedNote=plan.blockedTopics?.length?`<details class="blocked-topics-note"><summary>${plan.blockedTopics.length} tópico${plan.blockedTopics.length===1?' aguarda':'s aguardam'} pré-requisitos</summary><p>${plan.blockedTopics.slice(0,5).map(item=>escapeHtml(item.topicName||item.id)+" — requer "+item.prerequisites.map(id=>escapeHtml(getTopicName(id)||id)).join(", ")).join("; ")}${plan.blockedTopics.length>5?` · e mais ${plan.blockedTopics.length-5}`:''}.</p><small>Conclua a base ou reforce o domínio e recalcule a proposta.</small></details>`:"";
@@ -3653,7 +3653,7 @@ function renderAdaptivePlanningHistory(){
   const container=document.getElementById('adaptivePlanningHistory');if(!container)return;
   const entries=[...state.adaptivePlanningHistory].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
   const labels={suggested:'Sugestão na prévia',applied:'Aplicado',rejected:'Recusado',reverted:'Revertido'};
-  container.innerHTML=`<details class="adaptive-history"><summary>Histórico de adaptações (${entries.length})</summary>${entries.length?`<ol>${entries.map(item=>`<li><div><strong>${escapeHtml(labels[item.status]||item.status)}</strong><small>${escapeHtml(new Date(item.createdAt).toLocaleString('pt-BR'))}</small></div><p>${escapeHtml(item.sourceName||getSubjectName(item.sourceSubjectId))} ${formatPlanMinutes(item.sourceBefore)} → ${formatPlanMinutes(item.sourceAfter)} · ${escapeHtml(item.targetName||getSubjectName(item.targetSubjectId))} ${formatPlanMinutes(item.targetBefore)} → ${formatPlanMinutes(item.targetAfter)}</p><small>${escapeHtml(item.reasons?.join(' ')||'Redistribuição proposta pelos indicadores disponíveis.')}</small>${renderRecommendationExplanation(item.explanationSnapshot)}${item.status==='applied'&&latestStudyPlan()?.id===item.planId?`<button class="btn ghost small" data-delegated-click="revertAdaptivePlanningDecision('${escapeAttr(item.id)}')">Reverter ajuste</button>`:''}</li>`).join('')}</ol>`:'<p>Nenhuma decisão de adaptação registrada.</p>'}</details>`;
+  container.innerHTML=`<details class="adaptive-history"><summary>Histórico de adaptações (${entries.length})</summary>${entries.length?`<ol>${entries.map(item=>`<li><div><strong>${escapeHtml(labels[item.status]||item.status)}</strong><small>${escapeHtml(new Date(item.createdAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}))}</small></div><p>${escapeHtml(item.sourceName||getSubjectName(item.sourceSubjectId))} ${formatPlanMinutes(item.sourceBefore)} → ${formatPlanMinutes(item.sourceAfter)} · ${escapeHtml(item.targetName||getSubjectName(item.targetSubjectId))} ${formatPlanMinutes(item.targetBefore)} → ${formatPlanMinutes(item.targetAfter)}</p><small>${escapeHtml(item.reasons?.join(' ')||'Redistribuição proposta pelos indicadores disponíveis.')}</small>${renderRecommendationExplanation(item.explanationSnapshot)}${item.status==='applied'&&latestStudyPlan()?.id===item.planId?`<button class="btn ghost small" data-delegated-click="revertAdaptivePlanningDecision('${escapeAttr(item.id)}')">Reverter ajuste</button>`:''}</li>`).join('')}</ol>`:'<p>Nenhuma decisão de adaptação registrada.</p>'}</details>`;
 }
 function updateExamBlueprint(field,value,{refresh=true}={}){
   const nextValue=field==='examDate'?value||null:field==='targetScore'?Math.max(0,Math.min(100,Number(value)||0)):field==='masteryTarget'?Math.max(0,Math.min(100,Number(value)||80)):undefined;
@@ -3906,7 +3906,7 @@ function renderRitmo(){
 
   const ritmoTxt = r.ratePerDay >= 1
     ? `${r.ratePerDay.toFixed(1)} tópicos por dia`
-    : `${(r.ratePerDay*7).toFixed(1)} tópicos por semana`;
+    : `${formatDecimal(r.ratePerDay*7)} tópicos por semana`;
 
   let statusHtml = '';
   if(r.comparativo === 'no-prazo'){
@@ -5491,7 +5491,7 @@ registerApplicationLifecycle({window,onBeforeUnload:()=>{if(!TEST_MODE&&!suppres
 registerMobileInputVisibility({window,document});
 
 setCalendarMobileView('month');
-const initialTab = location.hash.replace('#','');
+const initialHash = location.hash.replace('#',''),initialTab = Object.keys(TAB_HASHES).find(tab=>TAB_HASHES[tab]===initialHash)||initialHash;
 if(document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) activateTab(initialTab, false);
 
 if(TEST_MODE){

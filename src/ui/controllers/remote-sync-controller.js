@@ -187,7 +187,7 @@ export function createRemoteSyncController({
 
   const formatEnvelopeAt = iso => {
     const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? iso : date.toLocaleString('pt-BR');
+    return Number.isNaN(date.getTime()) ? iso : date.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
   };
 
   /** A nuvem só mudou "por fora" se o envelope remoto não for o da última sincronização deste navegador. */

@@ -1,3 +1,4 @@
+import {formatPeriodBR} from '../../core/format-date.js';
 import {diagnosticSignalLabel} from '../../domain/diagnostics/diagnostic-vocabulary.js';
 import {renderDisclosure} from '../components/analytical-presentation.js';
 
@@ -10,7 +11,7 @@ export function renderDiagnosticSummary(item,primary,{escapeHtml}){
   const primaryMeasurements=measurements(primary);
   const supporting=(item.signals||[]).filter(signal=>signal!==primary&&signal.active&&signal.kind!=='recommendation-available').filter((signal,index,rows)=>rows.findIndex(other=>other.kind===signal.kind)===index);
   const renderSupporting=rows=>`<ul>${rows.map(signal=>`<li><strong>${escapeHtml(diagnosticSignalLabel(signal.kind))}</strong>${signal.reasons?.[0]?` · ${escapeHtml(signal.reasons[0])}`:''}${renderMeasurements(measurements(signal),escapeHtml)}</li>`).join('')}</ul>`;
-  const period=primary?.period?.start&&primary?.period?.end?`${primary.period.start} a ${primary.period.end}`:null;
+  const period=primary?.period?.start&&primary?.period?.end?formatPeriodBR(primary.period.start,primary.period.end):null;
   return `<p class="diagnostic-primary-reason"><strong>${escapeHtml(diagnosticSignalLabel(item.primarySignal))}</strong>${reason?` · ${escapeHtml(reason)}`:''}</p>
     <p class="diagnostic-quality">Evidência: ${escapeHtml(item.evidence?.label||'Não avaliada')}</p>
     ${renderDisclosure({title:'Ver evidências',className:'diagnostic-detail',bodyClassName:'diagnostic-detail__body',contentHTML:`

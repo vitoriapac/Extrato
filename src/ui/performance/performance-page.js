@@ -1,3 +1,4 @@
+import {formatPeriodBR} from '../../core/format-date.js';
 import {pluralize} from '../../core/utils.js';
 const sections=[
   ['overview','Visão geral'],['subjects','Disciplinas'],['questions','Questões'],['simulations','Simulados'],['exam','Inteligência da prova'],['consistency','Consistência']
@@ -18,6 +19,6 @@ export function renderPerformancePage({viewState,range,sectionHtml='',activeExam
     <nav class="performance-section-nav" aria-label="Análises de desempenho">${nav}</nav>
     ${viewState.section==='exam'?'':`<div class="performance-toolbar ui-filter-bar"><label>Período<select class="select-control" id="performancePeriod" data-performance-period><option value="7" ${viewState.period==='7'?'selected':''}>7 dias</option><option value="30" ${viewState.period==='30'?'selected':''}>30 dias</option><option value="90" ${viewState.period==='90'?'selected':''}>90 dias</option><option value="all" ${viewState.period==='all'?'selected':''}>Tudo</option></select></label>
     <label class="performance-compare"><input type="checkbox" id="performanceCompare" data-performance-compare ${viewState.comparePrevious?'checked':''} ${viewState.period==='all'?'disabled':''}> Comparar período anterior</label><div class="performance-scope-control"><span>${activeExamCount?`Concurso ativo · ${pluralize(activeExamCount,'escopo','escopos')}`:'Todos os concursos'}</span><button type="button" class="btn ghost small" data-performance-open="metas">Alterar concurso</button></div></div>`}
-    <p class="performance-scope-note">${viewState.section==='exam'?'Histórico de provas · ':escapeHtml(range.label)+' · '}${activeExamCount?'Concurso ativo · '+pluralize(activeExamCount,'escopo'):'Todos os concursos'}${viewState.section==='exam'?'':range.previous?' · comparação: '+escapeHtml(range.previous.start)+' a '+escapeHtml(range.previous.end):''}</p>
+    <p class="performance-scope-note">${viewState.section==='exam'?'Histórico de provas · ':escapeHtml(range.label)+' · '}${activeExamCount?'Concurso ativo · '+pluralize(activeExamCount,'escopo'):'Todos os concursos'}${viewState.section==='exam'?'':range.previous?' · comparação: '+escapeHtml(formatPeriodBR(range.previous.start,range.previous.end)):''}</p>
     <div id="performanceSectionContent">${body}</div></div>`;
 }

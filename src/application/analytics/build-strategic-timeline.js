@@ -1,3 +1,4 @@
+import {formatPeriodBR} from '../../core/format-date.js';
 import {normalizeExamTags,isTopicInExamScope,isSimulationInExamScope} from '../../domain/exams/exam-scope.js';
 import {localDateFromTimestamp} from '../../domain/sessions/study-session.js';
 import {groupStrategicTimeline} from './group-strategic-timeline.js';
@@ -22,7 +23,7 @@ export function buildStrategicTimeline({readinessSnapshots=[],weeklyCloseSnapsho
   readiness.forEach((item,index)=>{const previous=readiness[index-1],delta=previous?item.score-previous.score:null;add('readiness',item.id,item.savedAt||item.date,'readiness','Prontidão',`${previous?previous.score+' → ':''}${item.score}/100${delta==null?'':` · ${delta>=0?'+':''}${delta}`} · ${item.reason||'Retrato da preparação'}`,item)});
   weeklyCloseSnapshots.filter(exact).forEach(item=>{
     const frame=item.weeklyClose?.adherence,value=frame?(frame.assessment?.status==='insufficient_data'?null:frame.model?.priority?.adherence):item.weeklyClose?.decisionCycle?.execution?.strategicAdherence;
-    add('close',item.id,item.savedAt||item.period?.end,'decisions','Fechamento semanal',`${item.period?.start} a ${item.period?.end} · aderência estratégica ${value==null?'sem dados':Math.round(value*10)/10+'%'}`,item);
+    add('close',item.id,item.savedAt||item.period?.end,'decisions','Fechamento semanal',`${formatPeriodBR(item.period?.start,item.period?.end)} · aderência estratégica ${value==null?'sem dados':Math.round(value*10)/10+'%'}`,item);
   });
   const feedbackIds=new Set(recommendations.map(item=>item.recommendationId).filter(Boolean));
   recommendations.filter(scoped).forEach(item=>{if(typeof item.accepted!=='boolean')return;const name=item.snapshot?.explanationSnapshot?.topicName||topics.find(topic=>topic.id===item.topicId)?.name||'Tópico removido';add('recommendation',item.id||item.recommendationId,item.createdAt||item.date,'decisions',item.accepted?'Recomendação aceita':'Recomendação rejeitada',`${name} · ${item.snapshot?.recommendedMinutes??'sem duração registrada'} min`,item)});

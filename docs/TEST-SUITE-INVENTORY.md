@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-168 arquivos Node e 55 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+168 arquivos Node e 57 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -44,12 +44,14 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/goals-groups.spec.js | browser | Metas | functional | 4.6 | journey, viewport | none |
 | tests/e2e/historical-capacity.spec.js | browser | Capacidade | critical | 1.6 | journey | none |
 | tests/e2e/legacy-backup.spec.js | browser | Backup | critical | 2.9 | journey | none |
+| tests/e2e/navigation-hash.spec.js | browser | Aplicação | functional | — | journey | none |
 | tests/e2e/onboarding.spec.js | browser | Onboarding | functional | 60.1 | journey, viewport | none |
 | tests/e2e/planning-sustainability.spec.js | browser | Sustentabilidade | critical | 168.8 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/planning.spec.js | browser | Planejamento | critical | 63.5 | journey, demo, viewport | none |
 | tests/e2e/preparation-signals.spec.js | browser | Aplicação | functional | 3.7 | journey, viewport | none |
 | tests/e2e/product-consolidation.spec.js | browser | Aplicação | functional | 23.9 | journey, demo, viewport | none |
 | tests/e2e/progressive-list.spec.js | browser | Aplicação | functional | 5.6 | journey, viewport | none |
+| tests/e2e/pt-br-format.spec.js | browser | Aplicação | functional | — | journey, demo, viewport | none |
 | tests/e2e/pwa.spec.js | browser | Aplicação | functional | 9.5 | journey | none |
 | tests/e2e/recent-flows.spec.js | browser | Aplicação | functional | 144.4 | journey, demo, viewport | none |
 | tests/e2e/recommendation-outcome.spec.js | browser | Recomendações | functional | 19.5 | journey, demo | none |

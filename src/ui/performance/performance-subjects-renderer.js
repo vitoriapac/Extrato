@@ -1,3 +1,4 @@
+import {formatDecimal} from '../../core/format-number.js';
 import {formatStudyMinutes} from '../format-study-time.js';
 import {renderQuestionEvolution} from '../renderers/question-evolution-renderer.js';
 import {renderPerformanceTopicDialog} from './performance-topic-renderer.js';
@@ -6,8 +7,8 @@ import {renderPerformanceSubjectComparison} from './performance-subject-comparis
 import {renderStabilityMap} from './stability-map-renderer.js';
 import {renderPerformanceSampleState} from './performance-sample-state.js';
 
-const value=(number,suffix='')=>number==null?'—':`${number}${suffix}`;
-const signed=number=>number==null?'Sem comparação':`${number>0?'+':''}${number} p.p.`;
+const value=(number,suffix='')=>number==null?'—':`${formatDecimal(number)}${suffix}`;
+const signed=number=>number==null?'Sem comparação':`${number>0?'+':''}${formatDecimal(number)} p.p.`;
 const topicRows=(items,escapeHtml,escapeAttr)=>items.map(row=>`<li><button type="button" class="performance-topic-link" data-performance-topic="${escapeAttr(row.id)}">${escapeHtml(row.name)}</button><span>${value(row.accuracy,'%')} · ${row.questions} questões · ${row.delta==null?'tendência indisponível':signed(row.delta)} · ${escapeHtml(row.state)}</span></li>`).join('');
 
 export function renderPerformanceSubjects(model,{range,formatDate,escapeHtml,escapeAttr,topicDetail=null,comparison=null,stabilityMap=null}={}){

@@ -1,5 +1,6 @@
-const value=(number,suffix='')=>number==null?'—':`${number}${suffix}`;
-const signed=number=>number==null?'—':`${number>0?'+':''}${number} p.p.`;
+import {formatDecimal} from '../../core/format-number.js';
+const value=(number,suffix='')=>number==null?'—':`${formatDecimal(number)}${suffix}`;
+const signed=number=>number==null?'—':`${number>0?'+':''}${formatDecimal(number)} p.p.`;
 const options=[['gap','Distância da meta'],['accuracy','Precisão'],['evolution','Evolução'],['questions','Questões'],['priority','Prioridade existente']];
 
 export function renderPerformanceSubjectComparison(model,{escapeHtml,escapeAttr}={}){

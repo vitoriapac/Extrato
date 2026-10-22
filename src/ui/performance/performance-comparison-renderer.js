@@ -1,7 +1,8 @@
+import {formatDecimal} from '../../core/format-number.js';
 import {renderInsightCard,renderTrendIndicator} from '../components/analytical-presentation.js';
 const labels={improved:'Melhorou',worsened:'Piorou',stable:'Estável',insufficient:'Amostra insuficiente'};
-const shown=(row,value)=>value==null?'—':row.unit==='min'?`${Math.floor(value/60)}h ${Math.round(value%60)}min`:row.unit==='questões'?String(value):`${value}%`;
-const delta=row=>row.delta==null?'—':`${row.delta>0?'+':''}${row.delta} ${row.unit}`;
+const shown=(row,value)=>value==null?'—':row.unit==='min'?`${Math.floor(value/60)}h ${Math.round(value%60)}min`:row.unit==='questões'?String(value):`${formatDecimal(value)}%`;
+const delta=row=>row.delta==null?'—':`${row.delta>0?'+':''}${formatDecimal(row.delta)} ${row.unit}`;
 
 export function renderPerformanceComparison(model,{escapeHtml}={}){
   if(model.state==='disabled')return '<section class="performance-block"><h3>Comparação de períodos</h3><p class="analytics-note">Escolha 7, 30 ou 90 dias e ative a comparação para ver dois intervalos de mesma duração.</p></section>';

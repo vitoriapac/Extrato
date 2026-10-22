@@ -1,4 +1,5 @@
-const display=(value,suffix='')=>value==null?'—':`${value}${suffix}`;
+import {formatDecimal} from '../../core/format-number.js';
+const display=(value,suffix='')=>value==null?'—':`${formatDecimal(value)}${suffix}`;
 const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
 export function renderPhaseComparison(model){
   if(model.state==='empty')return '<section class="phase-comparison performance-block"><h3>Comparação por fase da preparação</h3><p class="analytics-note">Salve fechamentos com uma fase registrada para comparar etapas da preparação. Fases de registros antigos não são estimadas retroativamente.</p></section>';
