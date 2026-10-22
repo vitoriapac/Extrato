@@ -1,7 +1,8 @@
 function renderLedger(ledger){
   if(!ledger)return '';
-  const line=(label,value)=>`<div><dt>${label}</dt><dd>${value.before} → <strong class="session-ledger__after">${value.after}</strong></dd></div>`;
-  return `<div class="session-ledger" role="group" aria-label="Lançamento no extrato de hoje"><p class="session-ledger__credit"><span>Lançamento</span><strong>${ledger.credit}</strong></p><dl>${line('Estudado hoje',ledger.studied)}${ledger.plan?line('Plano de hoje',ledger.plan):''}</dl>${ledger.completed?`<p class="session-ledger__done">Atividade do plano concluída · ${ledger.completed.done} de ${ledger.completed.total}</p>`:''}</div>`;
+  const line=(label,value)=>value?`<div><dt>${label}</dt><dd>${value.before} → <strong class="session-ledger__after">${value.after}</strong></dd></div>`:'';
+  const lines=line('Estudado hoje',ledger.studied)+line('Plano de hoje',ledger.plan);
+  return `<div class="session-ledger" role="group" aria-label="Lançamento no extrato de hoje"><p class="session-ledger__credit"><span>Lançamento</span><strong>${ledger.credit}</strong></p>${ledger.detail?`<p class="session-ledger__done">${ledger.detail}</p>`:''}${lines?`<dl>${lines}</dl>`:''}${ledger.completed?`<p class="session-ledger__done">Atividade do plano concluída · ${ledger.completed.done} de ${ledger.completed.total}</p>`:''}</div>`;
 }
 export function renderSessionResult(model,{escapeHtml}={}){
   const questionSummary=model.questions?` · ${model.questions.resolved} questões · ${model.questions.correct} acertos (${model.questions.accuracy}%)`:'';

@@ -5581,7 +5581,7 @@
         "../../src/application/sessions/build-session-result-view-model.js",
         "../../src/ui/renderers/session-result-renderer.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

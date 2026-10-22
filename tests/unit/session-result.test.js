@@ -9,7 +9,7 @@ const day={before:{studiedMinutes:35,progress:25,completedActivities:1},after:{s
 
 test('lançamento mostra crédito e saldo do dia antes e depois',()=>{
   const model=buildSessionResultViewModel(session,null,false,{...options,day});
-  assert.deepEqual(model.ledger,{credit:'+45 min',studied:{before:'35 min',after:'80 min'},plan:{before:'25%',after:'75%'},completed:{done:2,total:3}});
+  assert.deepEqual(model.ledger,{credit:'+45 min',detail:null,studied:{before:'35 min',after:'80 min'},plan:{before:'25%',after:'75%'},completed:{done:2,total:3}});
   const html=renderSessionResult(model,{escapeHtml:String});
   assert.match(html,/aria-label="Lançamento no extrato de hoje"/);
   assert.match(html,/Estudado hoje<\/dt><dd>35 min → <strong class="session-ledger__after">80 min/);
@@ -37,4 +37,24 @@ test('resultado aponta a próxima atividade do plano antes da sugestão do motor
   assert.doesNotMatch(same,/Sugestão fora do plano/);
   const noPlan=renderSessionResult(buildSessionResultViewModel(session,other,true,options),{escapeHtml:String});
   assert.match(noPlan,/Nova prioridade: <strong>Inglês — Leitura · 40 min<\/strong>/);
+});
+
+test('sessão curta lança o que foi feito em vez de +0 min',()=>{
+  const short={...session,durationSeconds:21,questionsResolved:10,correctAnswers:7};
+  const flat={before:{studiedMinutes:35,progress:25,completedActivities:1},after:{studiedMinutes:35,progress:25,completedActivities:1},total:3};
+  const model=buildSessionResultViewModel(short,null,false,{...options,day:flat});
+  assert.equal(model.ledger.credit,'+10 questões');assert.equal(model.ledger.detail,'70% de acerto');
+  assert.equal(model.ledger.studied,null);assert.equal(model.ledger.plan,null);
+  const html=renderSessionResult(model,{escapeHtml:String});
+  assert.ok(html.includes('<strong>+10 questões</strong>'));assert.match(html,/70% de acerto/);
+  assert.doesNotMatch(html,/0 min → |<dl>/);
+  const seconds=buildSessionResultViewModel({...session,durationSeconds:21},null,false,{...options,day:flat});
+  assert.equal(seconds.ledger.credit,'+21 s');
+  const one=buildSessionResultViewModel({...short,questionsResolved:1,correctAnswers:1},null,false,{...options,day:flat});
+  assert.equal(one.ledger.credit,'+1 questão');
+});
+
+test('resumo de sessão curta mostra segundos em vez de 0 min',()=>{
+  const html=renderSessionResult(buildSessionResultViewModel({...session,durationSeconds:21},null,false,options),{escapeHtml:String});
+  assert.ok(html.includes('· 21 s'));assert.ok(!html.includes('· 0 min'));
 });
