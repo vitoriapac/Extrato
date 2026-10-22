@@ -2361,3 +2361,5 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 /* Inside an existing card, empty states and goal tiles are rows, not nested cards. */
 .chart-card .sessions-empty-state{padding-inline:0;border:0;background:none}
 .today-agenda-grid .meta-hoje-card{min-height:0;padding:var(--space-3) 0;border:0;border-top:1px solid var(--paper-line);border-radius:0;background:none}
+.overview-close-link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-3);max-width:none;margin:var(--space-4) 0 0;padding-top:var(--space-3);border-top:1px solid var(--paper-line);color:var(--text-secondary);font-size:var(--text-caption)}
+.metas-close-section>h3{margin-bottom:var(--space-4)}

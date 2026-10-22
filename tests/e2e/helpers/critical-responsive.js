@@ -6,13 +6,14 @@ export async function assertCriticalResponsive(page,{width,theme}){
   if(theme==='dark')await page.locator('#themeToggleBtn').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
   await activateTab(page,'dashboard');await expectNoPageOverflow(page);
-  await expect(page.locator('#weeklyCloseDashboard')).toBeVisible();
+  await expect(page.locator('.overview-close-link')).toBeVisible();
   await activateTab(page,'hoje');
   const analyses=page.locator('.today-analysis-details');
   if(await analyses.count()&&!await analyses.first().evaluate(element=>element.open))await analyses.first().locator(':scope > summary').click();
   await expectNoPageOverflow(page);
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
   await activateTab(page,'metas');await expectNoPageOverflow(page);
+  await expect(page.locator('#weeklyCloseDashboard')).toBeVisible();
   await expect(page.locator('#examBlueprintConfig')).toBeVisible();
   await activateTab(page,'disciplinas');await expectNoPageOverflow(page);
   await activateTab(page,'agenda');await expectNoPageOverflow(page);

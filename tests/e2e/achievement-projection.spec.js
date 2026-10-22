@@ -215,7 +215,7 @@ test('Demo de reta final conecta trajetória, ajuda e fechamento sem alterar his
  await page.getByRole('button',{name:'Entenda faixa e confiança na ajuda'}).click();
  await expect(page.locator('#projections')).toBeFocused();
  await expect(page.locator('#projections')).toContainText('não acrescenta horas');
- await activateTab(page,'dashboard');
+ await activateTab(page,'metas');
  const close=page.locator('#weeklyCloseDashboard');
  await expect(close.getByRole('region',{name:'Síntese para a próxima decisão'})).toContainText('Decisão sugerida');
  await close.getByRole('button',{name:'Entenda o fechamento semanal'}).click();

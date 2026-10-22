@@ -18,7 +18,7 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   state.weeklyCloseSnapshots=[createWeeklyCloseSnapshot({period:{start:'2026-09-20',end:'2026-09-26'},activeExamTags:[],weeklyClose:{state:'available',algorithmVersion:'2.2.0',adherence:prior},gapMap:{items:[]},decisionHistory:{items:[]}},{id:'prior-close',savedAt:'2026-09-26T12:00:00Z'})];
   state.dailyPlans=[{id:'current-plan',date:'2026-09-29',availableMinutes:60,plannedMinutes:30,items:[{id:'current-item',subjectId:subject.id,topicId:topic.id,type:'study',plannedMinutes:30,status:'planned',sessionIds:[],prioritySnapshot:{priority:true}}]}];state.studySessions=[];
   await page.evaluate(state=>{const api=window.__EXTRATO_TEST__,result=api.validateBackupData(state);if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()},state);
-  await activateTab(page,'dashboard');const close=page.locator('#weeklyCloseDashboard');
+  await activateTab(page,'metas');const close=page.locator('#weeklyCloseDashboard');
   await expect(close.getByRole('region',{name:'Síntese para a próxima decisão'})).toContainText('Decisão sugerida');
   const signals=close.locator('.weekly-decision-detail');
   await expect(signals).not.toHaveAttribute('open');
@@ -31,7 +31,7 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   await close.getByRole('button',{name:'Entenda aderência',exact:true}).click();
   await expect(page.locator('#adherence')).toBeFocused();
   await expect(page.locator('#guide-data')).toBeVisible();
-  await activateTab(page,'dashboard');
+  await activateTab(page,'metas');
   await expect(close.locator('.execution-breakdown').first()).toContainText('Tempo registrado:');
   await close.locator('.execution-breakdown').first().getByText('Conferir a composição do tempo',{exact:true}).click();
   await expect(close.locator('.execution-breakdown').first()).toContainText('Estudo sem vínculo ao plano');
@@ -40,7 +40,7 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   await close.getByRole('button',{name:'Revisar planejamento',exact:true}).click();await expect(page.locator('#panel-metas')).toBeVisible();
   const after=await page.evaluate(()=>{const s=window.__EXTRATO_TEST__.getState();return {dailyPlans:s.dailyPlans,studySessions:s.studySessions,weeklyCloseSnapshots:s.weeklyCloseSnapshots}});
   expect(after).toEqual(before);
-  await activateTab(page,'dashboard');await close.getByRole('button',{name:'Salvar fechamento desta semana',exact:true}).click();
+  await activateTab(page,'metas');await close.getByRole('button',{name:'Salvar fechamento desta semana',exact:true}).click();
   const frozen=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1)));
   expect(frozen.version).toBe(3);expect(frozen.weeklyClose.adherence.recurring.items[0].periodCount).toBe(2);
   await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.dailyPlans[0].items[0].plannedMinutes=90;state.dailyPlans[0].items[0].prioritySnapshot.priority=false;const result=api.validateBackupData(JSON.parse(JSON.stringify(state)));if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()});

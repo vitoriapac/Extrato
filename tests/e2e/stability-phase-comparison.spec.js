@@ -17,7 +17,7 @@ test('Demo mostra mapa de estabilidade e fases gravadas sem perder o concurso',a
     await expect(page.locator('[data-performance-subject]')).toHaveValue(subjectId);
   }
   await expectNoPageOverflow(page);
-  await activateTab(page,'dashboard');
+  await activateTab(page,'metas');
   await expect(page.locator('#strategicTimelineDashboard .phase-comparison')).toBeVisible();
   await expect(page.locator('#strategicTimelineDashboard .phase-comparison table')).toContainText('Prontidão');
   await expectNoPageOverflow(page);

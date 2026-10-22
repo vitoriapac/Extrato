@@ -18,18 +18,22 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
       await expect(page.locator('.strategic-timeline-method')).not.toHaveAttribute('open','');
       const chrome=await page.evaluateHandle(()=>[...document.querySelectorAll('.sticky-shell,.overview-nav,.demo-banner,#backToTopBtn,.skip-link,#saveIndicator,#toast')].map(node=>{const saved={node,parent:node.parentNode,next:node.nextSibling};node.remove();return saved}));
       try{
-        for(const [id,selector] of [['timeline','#strategicTimelineDashboard'],['study','.chart-card:has(.timer-block)'],['sessions','#studySessionsCard'],['close','#weeklyCloseDashboard']]){
+        for(const [id,selector,panel] of [['timeline','#strategicTimelineDashboard','metas'],['study','.chart-card:has(.timer-block)','dashboard'],['sessions','#studySessionsCard','dashboard'],['close','#weeklyCloseDashboard','metas']]){
+          // Navigation chrome is detached here, so show the owning panel directly for the capture.
+          await page.evaluate(name=>document.querySelectorAll('.panel').forEach(node=>node.classList.toggle('active',node.id===`panel-${name}`)),panel);
           const path=testInfo.outputPath(`${name}-${id}-${width}-${theme}.png`);
           await page.locator(selector).screenshot({path,animations:'disabled'});await testInfo.attach(`${name}-${id}-${width}-${theme}`,{path,contentType:'image/png'});
         }
-      }finally{await chrome.evaluate(rows=>rows.forEach(({node,parent,next})=>parent.insertBefore(node,next)));await chrome.dispose()}
+      }finally{await chrome.evaluate(rows=>rows.forEach(({node,parent,next})=>parent.insertBefore(node,next)));await chrome.dispose();await page.evaluate(()=>document.querySelectorAll('.panel').forEach(node=>node.classList.toggle('active',node.id==='panel-dashboard')))}
     }
     await page.setViewportSize({width:320,height:900});await expectNoPageOverflow(page);
   };
   await expect(page.locator('#studySessionsEmpty')).toContainText('Seu histórico de estudos começa aqui');
   await expect(page.locator('#studySessionsCount')).toHaveText('0 sessões');await expect(page.locator('#studySessionsFilterSummary')).toBeHidden();
+  await activateTab(page,'metas');
   await page.locator('#strategicTimelineDashboard select').first().selectOption('assessments');
   await expect(page.locator('#strategicTimelineDashboard')).toContainText('Nenhum evento neste filtro');
+  await activateTab(page,'dashboard');
   await inspect('empty');
   await page.setViewportSize({width:1440,height:900});
   await page.locator('#studySessionsEmpty').getByRole('button',{name:'Iniciar estudo',exact:true}).click();await expect(page.locator('#timerStartBtn')).toBeFocused();

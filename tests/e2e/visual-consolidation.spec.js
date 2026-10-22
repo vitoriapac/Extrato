@@ -58,9 +58,11 @@ test('marca do cabeçalho volta para a Visão Geral e ao topo',async({page})=>{a
 test('fechamento semanal e configuração estratégica preservam a hierarquia visual',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await openDemo(page);
+  await activateTab(page,'metas');
   await expect(page.locator('#weeklyCloseDashboard .weekly-kpis')).toBeVisible();
   await expect(page.locator('#weeklyCloseDashboard .weekly-assessment')).toContainText('Diagnóstico');
   await expect(page.locator('#periodComparisonResults .comparison-head')).toContainText('Anterior');
+  await activateTab(page,'dashboard');
   const rows=page.locator('#gapMapDashboard .data-row');
   if(await rows.count())await expect(rows.first().locator('.data-score')).toContainText(/Prioridade \d+\/100/);
   await activateTab(page,'metas');

@@ -84,7 +84,7 @@ test('prova → decisão → plano → execução → resultado → fechamento �
   await page.locator('#timerStartBtn').click();await page.clock.fastForward('05:00');
   await page.locator('#timerFinishBtn').click();await page.locator('#sessionModalDifficulty').selectOption('medium');await page.locator('#sessionModalSaveBtn').click();
   await page.clock.setSystemTime(new Date('2026-10-04T12:00:00-03:00'));
-  await activateTab(page,'dashboard');
+  await activateTab(page,'metas');
   await expect(page.locator('#weeklyCloseDashboard')).toContainText('Da semana encerrada ao próximo plano');
   await page.locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"] ').click();
   const closed=await getState(page),close=closed.weeklyCloseSnapshots.at(-1);
@@ -142,7 +142,7 @@ test('Desempenho → Diagnóstico → prévia → confirmação → execução �
   const executed=await getState(page);
   expect(executed.studySessions.at(-1).recommendationId).toBe(timer.recommendationId);
   await page.clock.setSystemTime(new Date('2026-10-04T12:00:00-03:00'));
-  await activateTab(page,'dashboard');
+  await activateTab(page,'metas');
   await page.locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"] ').click();
   const closed=await getState(page);
   expect(closed.weeklyCloseSnapshots.at(-1).weeklyClose.decisionCycle.execution.linkedMinutes).toBeGreaterThan(0);

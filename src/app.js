@@ -1652,6 +1652,7 @@ function showSessionResult(session,nextPriority,priorityChanged,day=null,planNex
   result.innerHTML=renderSessionResult(buildSessionResultViewModel(session,nextPriority,priorityChanged,{subjectName:getSubjectName,topicName:getTopicName,formatMinutes:formatPlanMinutes,day,planNext}),{escapeHtml});
   result.hidden=false;activateTab('dashboard');result.scrollIntoView({block:'center',behavior:'smooth'});result.focus({preventScroll:true});
 }
+function openWeeklyClose(){activateTab('metas');document.getElementById('metasCloseSection')?.scrollIntoView({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 function openNextSessionAction(){activateTab('dashboard');document.getElementById('overviewNextAction')?.scrollIntoView({block:'center',behavior:'smooth'})}
 document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
   const subjectId = document.getElementById('sessionModalSubject').value || null;
@@ -5247,6 +5248,7 @@ function escapeAttr(str){ return escapeHtml(str); }
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTION_HANDLERS={
   openWeeklyAdherencePlanning:()=>activateTab('metas'),
+  openWeeklyClose,
   reviewPlanningCapacity:()=>sustainabilityController.review(),
   setStrategicTimelineFilter,setStrategicTimelineGroup,setPriorityHistorySubject,
   addAgendaRow,addBreakdownRow,addCalRow,addQuestaoRow,addSimuladoRow,addSubject,addTopic,applyTodayGoalToAllDays,archiveSubject,archiveTopic,clearWeekendGoals,

@@ -22,7 +22,7 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
     state.studySessions.push({id:`sustain-session-${week}-${part}`,date,subjectId:subject.id,topicId:topic.id,type:'study',planItemId:item.id,durationSeconds:executed*60});
   }
   await page.evaluate(state=>{const api=window.__EXTRATO_TEST__,result=api.validateBackupData(state);if(!result.valid)throw Error(result.message);api.setState(result.normalized);api.renderAll()},state);
-  await activateTab(page,'dashboard');const close=page.locator('#weeklyCloseDashboard'),section=close.locator('.planning-sustainability').first();
+  await activateTab(page,'metas');const close=page.locator('#weeklyCloseDashboard'),section=close.locator('.planning-sustainability').first();
   await expect(section).toContainText('Carga acima da execução recente');await expect(section).toContainText('4 comparáveis');
   const before=await page.evaluate(()=>JSON.stringify(window.__EXTRATO_TEST__.getState()));
   await section.getByRole('button',{name:'Revisar capacidade',exact:true}).click();
@@ -30,7 +30,7 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
   await page.locator('#modalCancelBtn').click();expect(await page.evaluate(()=>JSON.stringify(window.__EXTRATO_TEST__.getState()))).toBe(before);
   await section.getByRole('button',{name:'Revisar capacidade',exact:true}).click();await page.getByRole('button',{name:'Abrir disponibilidade',exact:true}).click();
   await expect(page.locator('#panel-metas')).toBeVisible();expect(await page.evaluate(()=>JSON.stringify(window.__EXTRATO_TEST__.getState()))).toBe(before);
-  await activateTab(page,'dashboard');await close.getByRole('button',{name:'Salvar fechamento desta semana',exact:true}).click();
+  await activateTab(page,'metas');await close.getByRole('button',{name:'Salvar fechamento desta semana',exact:true}).click();
   const snapshot=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1)));
   expect(snapshot.weeklyClose.adherence.sustainability.assessment.status).toBe('capacity_mismatch');
   await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.studySessions=[];state.metas.horasPorDia['1']=3;api.setState(state);api.renderAll()});
@@ -45,7 +45,7 @@ for(const [width,theme] of [[320,'light'],[375,'dark'],[430,'light'],[1440,'ligh
   const realBefore=await page.evaluate(()=>localStorage.getItem('bb-premium-study-data'));
   await activateTab(page,'desempenho');await page.locator('[data-performance-section="consistency"]').click();
   await expect(page.locator('.adherence-change')).toContainText('O que mudou?');await expectNoPageOverflow(page);
-  await activateTab(page,'dashboard');const section=page.locator('#weeklyCloseDashboard .planning-sustainability').first();
+  await activateTab(page,'metas');const section=page.locator('#weeklyCloseDashboard .planning-sustainability').first();
   await expect(section).toContainText('Carga acima da execução recente');await expect(section).toContainText('4 comparáveis');
   if(process.platform==='win32')await withPixelAlignedCapture(section,()=>expect(section).toHaveScreenshot(`sustainability-${width}-${theme}-win32.png`,{animations:'disabled',caret:'hide',maxDiffPixelRatio:.08}));
   expect((await new AxeBuilder({page}).include('#weeklyCloseDashboard .planning-sustainability').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);

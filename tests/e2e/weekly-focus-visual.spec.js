@@ -16,7 +16,7 @@ for(const scenario of cases){
     await page.goto('/?test=1');
     await expect(page.locator('#testReport')).toBeVisible();
     await page.locator('#testReport').evaluate(element=>element.remove());
-    await activateTab(page,'dashboard');
+    await activateTab(page,'metas');
     await page.evaluate(theme=>{document.documentElement.dataset.theme=theme},scenario.theme);
     await page.locator('#weeklyCloseDashboard').evaluate((element,html)=>{element.innerHTML=html},renderWeeklyStrategicFocus(scenario.model));
     await page.evaluate(()=>document.fonts.ready);

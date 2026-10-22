@@ -10,7 +10,7 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
   const base=await page.evaluate(()=>structuredClone(window.__EXTRATO_TEST__.getState())),fixture=buildStrategicCycleFixture(base);
   for(let index=0;index<7;index++)ensureRecommendationRecord(fixture.recommendationHistory,{id:'cycle-t0-0',recommendationId:`priority-observation-${index}`,topicId:'cycle-t0-0',subjectId:'cycle-s0',topicName:'Juros Compostos',subjectName:'Matemática Financeira',score:90-index*4,mastery:30+index*4,retention:40+index*3,estimatedMinutes:35,evidence:{evidenceStrength:.8},examIntelligence:{presencePercent:100},algorithmVersion:5,reasons:['Registro da lacuna']},{now:`2026-09-${String(10+index).padStart(2,'0')}T12:00:00-03:00`,activeExamTags:['bb-escriturario'],idGenerator:()=> 'unused'});
   await page.evaluate(value=>{const api=window.__EXTRATO_TEST__,validation=api.validateBackupData(value);if(!validation.valid)throw Error(validation.message);api.setState(validation.normalized);api.renderAll()},fixture);
-  await activateTab(page,'dashboard');
+  await activateTab(page,'metas');
   const timeline=page.locator('#strategicTimelineDashboard');
   await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(5);
   await timeline.getByRole('button',{name:/Mostrar mais/}).click();await expect(timeline.locator('.strategic-timeline > li:visible')).toHaveCount(13);

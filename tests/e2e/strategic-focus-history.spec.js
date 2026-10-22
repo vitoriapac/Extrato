@@ -15,7 +15,7 @@ test('histórico compara apenas retratos salvos no escopo ativo e registra o con
     state.weeklyCloseSnapshots=[old,{...old,id:'focus-legacy',activeExamTags:undefined,period:{start:api.addDays(today,-30),end:api.addDays(today,-24)}}];
     api.setState(state);api.renderAll();
   });
-  await activateTab(page,'dashboard');
+  await activateTab(page,'metas');
   const history=page.locator('#weeklyCloseDashboard .weekly-focus-history');
   await expect(history).toContainText('Foco estratégico ao longo do tempo');
   await expect(history.locator('.weekly-focus-history-row')).toHaveCount(2);
