@@ -26,3 +26,13 @@ test('expõe capacidade, necessidade, saldo e ritmo semanal',()=>{
   const surplus=buildStudyPlan({weeklyAvailableMinutes:300,weeksUntilExam:2,topics:[{id:'a',subjectId:'s1',estimatedMinutes:300}]});
   assert.equal(surplus.weeklyBalanceMinutes,150);assert.equal(surplus.paceState,'surplus');
 });
+
+test('não cria blocos semanais menores que 15 minutos quando o tópico é maior',()=>{
+  const topics=Array.from({length:40},(_,index)=>({id:'t'+index,subjectId:'s'+(index%8),subjectName:'S'+(index%8),estimatedMinutes:240,examImpact:90-index,masteryGap:60,retentionNeed:40}));
+  const plan=buildStudyPlan({weeklyAvailableMinutes:300,weeksUntilExam:4,topics});
+  assert.ok(plan.items.length>0);
+  for(const item of plan.items)assert.ok(item.minutes>=15,`${item.id} recebeu ${item.minutes} min`);
+  assert.equal(plan.weeklyPlannedMinutes,300);
+  const short=buildStudyPlan({weeklyAvailableMinutes:300,weeksUntilExam:1,topics:[{id:'curto',estimatedMinutes:10,examImpact:50},{id:'longo',estimatedMinutes:400,examImpact:90}]});
+  assert.equal(short.items.find(item=>item.id==='curto')?.minutes,10);
+});

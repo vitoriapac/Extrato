@@ -22,7 +22,9 @@ export function buildStudyPlan({topics=[],weeklyAvailableMinutes=0,weeksUntilExa
   const weeklyBudget=Math.min(availability,weeklyNeedMinutes);
   const scored=configured.map(item=>({...scoreStudyDecision(item),capacityMinutes:effort(item)})).sort((a,b)=>b.score-a.score||String(a.id).localeCompare(String(b.id)));
   const totalScore=scored.reduce((sum,item)=>sum+Math.max(1,item.score),0);
-  const allocations=new Map(scored.map(item=>[item.id,Math.min(item.capacityMinutes,Math.floor(weeklyBudget*Math.max(1,item.score)/totalScore))]));
+  // Slices under one study block go back to the budget (unless the whole topic is that short); the queue below reassigns them by priority.
+  const MIN_BLOCK_MINUTES=15;
+  const allocations=new Map(scored.map(item=>{const share=Math.min(item.capacityMinutes,Math.floor(weeklyBudget*Math.max(1,item.score)/totalScore));return [item.id,share<MIN_BLOCK_MINUTES&&share<item.capacityMinutes?0:share]}));
   let unallocated=weeklyBudget-[...allocations.values()].reduce((sum,value)=>sum+value,0);
   for(const item of scored){
     if(unallocated<=0)break;

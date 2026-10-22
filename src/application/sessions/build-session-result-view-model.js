@@ -1,4 +1,4 @@
-export function buildSessionResultViewModel(session,nextPriority,priorityChanged,{subjectName,topicName,formatMinutes,day=null}={}){
+export function buildSessionResultViewModel(session,nextPriority,priorityChanged,{subjectName,topicName,formatMinutes,day=null,planNext=null}={}){
   const typeLabels={study:'Estudo teórico',review:'Revisão',questions:'Questões',simulation:'Simulado'};
   const subject=session.subjectId?subjectName(session.subjectId):'Sem disciplina';
   const topic=session.topicId?topicName(session.topicId):null;
@@ -12,6 +12,9 @@ export function buildSessionResultViewModel(session,nextPriority,priorityChanged
     completed:day.after.completedActivities>day.before.completedActivities?{done:day.after.completedActivities,total:day.total}:null
   }:null;
   return {type:typeLabels[session.type]||'Sessão',subject,topic,duration:formatMinutes(minutes),questions,ledger,
-    next:nextPriority?{label:`${nextPriority.subjectName} — ${nextPriority.topicName} · ${formatMinutes(nextPriority.estimatedMinutes)}`,changed:Boolean(priorityChanged)}:null,
+    // A pending plan item is the next step; the engine's pick is only a suggestion when it points elsewhere.
+    plan:planNext?{label:`${planNext.subjectName||'Disciplina'} — ${planNext.topicName||'Sem tópico'} · ${formatMinutes(Math.ceil(planNext.remainingSeconds/60))}`,
+      suggestion:nextPriority&&!(nextPriority.subjectId===planNext.subjectId&&nextPriority.topicId===planNext.topicId)?`${nextPriority.subjectName} — ${nextPriority.topicName}`:null}:null,
+    next:!planNext&&nextPriority?{label:`${nextPriority.subjectName} — ${nextPriority.topicName} · ${formatMinutes(nextPriority.estimatedMinutes)}`,changed:Boolean(priorityChanged)}:null,
     simulation:session.type==='simulation'};
 }

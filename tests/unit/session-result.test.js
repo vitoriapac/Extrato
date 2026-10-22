@@ -25,3 +25,16 @@ test('lançamento omite plano e conclusão quando não há dados do dia',()=>{
   const past=buildSessionResultViewModel(session,null,false,options);
   assert.equal(past.ledger,null);assert.doesNotMatch(renderSessionResult(past,{escapeHtml:String}),/session-ledger/);
 });
+
+test('resultado aponta a próxima atividade do plano antes da sugestão do motor',()=>{
+  const planNext={subjectId:'s',topicId:'t',subjectName:'Português',topicName:'Crase',remainingSeconds:1800};
+  const other={subjectId:'x',topicId:'y',subjectName:'Inglês',topicName:'Leitura',estimatedMinutes:40};
+  const html=renderSessionResult(buildSessionResultViewModel(session,other,false,{...options,planNext}),{escapeHtml:String});
+  assert.match(html,/Próxima atividade do plano: <strong>Português — Crase · 30 min<\/strong>/);
+  assert.match(html,/Sugestão fora do plano: Inglês — Leitura/);
+  assert.doesNotMatch(html,/continua sendo|Nova prioridade/);
+  const same=renderSessionResult(buildSessionResultViewModel(session,{...other,subjectId:'s',topicId:'t'},false,{...options,planNext}),{escapeHtml:String});
+  assert.doesNotMatch(same,/Sugestão fora do plano/);
+  const noPlan=renderSessionResult(buildSessionResultViewModel(session,other,true,options),{escapeHtml:String});
+  assert.match(noPlan,/Nova prioridade: <strong>Inglês — Leitura · 40 min<\/strong>/);
+});
