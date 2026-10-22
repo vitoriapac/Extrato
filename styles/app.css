@@ -1518,7 +1518,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 .section-head.module-heading--section .btn{flex:0 0 auto}
 .module-heading__eyebrow{color:var(--gold);font:700 var(--text-micro)/1.4 var(--font-data);letter-spacing:.09em;text-transform:uppercase}
 .module-heading .module-heading__title,.ui-section-header .module-heading__title{margin:0;color:var(--heading);font:600 clamp(19px,2vw,24px)/1.25 var(--font-display)}
-.module-heading__description{max-width:72ch;margin:0;color:var(--ink-soft);font:13px/1.6 var(--font-body)}
+.module-heading__description{max-width:72ch;margin:0;color:var(--ink-soft);font:var(--text-md)/1.6 var(--font-body)}
 .context-note{display:grid;gap:5px;margin:16px 0;padding:13px 16px;border-left:3px solid var(--blue);background:var(--info-bg);color:var(--heading)}
 .context-note>strong{font:700 var(--text-micro)/1.4 var(--font-data);letter-spacing:.08em;text-transform:uppercase}.context-note p,.context-note ul{margin:0;color:color-mix(in srgb,currentColor 80%,transparent);font:12px/1.55 var(--font-body)}
 .context-note--tip{border-left-color:var(--green);background:var(--green-bg)}.context-note--attention{border-left-color:var(--amber);background:var(--amber-bg)}
@@ -2363,3 +2363,13 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 .today-agenda-grid .meta-hoje-card{min-height:0;padding:var(--space-3) 0;border:0;border-top:1px solid var(--paper-line);border-radius:0;background:none}
 .overview-close-link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-3);max-width:none;margin:var(--space-4) 0 0;padding-top:var(--space-3);border-top:1px solid var(--paper-line);color:var(--text-secondary);font-size:var(--text-caption)}
 .metas-close-section>h3{margin-bottom:var(--space-4)}
+/* Explanatory prose reads at body size; labels stay at the micro/caption sizes. */
+.analytics-note,.helper-text,.context-note p,.context-note ul,.retention-summary,.section-description{font-size:var(--text-md);line-height:1.55}
+/* Values that matter use the display face (DESIGN.md: Value role), not bold sans. */
+.performance-kpi>strong,.performance-topic-facts dd{font-family:var(--font-display);font-weight:600;font-variant-numeric:lining-nums tabular-nums}
+/* Methodological caveats live behind one closed "Limites" disclosure; essential caveats stay visible (docs/MICROCOPY-CONTRACT.md). */
+.limits-disclosure{margin:var(--space-2) 0}
+.limits-disclosure>summary{display:inline-flex;align-items:center;min-height:var(--touch-target);cursor:pointer;color:var(--text-secondary);font:600 var(--text-micro) var(--font-data);letter-spacing:.06em;text-transform:uppercase}
+.limits-disclosure>summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.limits-disclosure[open]>summary{color:var(--heading)}
+.limits-disclosure>.analytics-note{margin:0 0 var(--space-2)}

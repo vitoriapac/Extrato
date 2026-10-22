@@ -43,7 +43,7 @@ function renderTrajectory(model,escapeHtml){
     <text x="${left}" y="${height-7}">${escapeHtml(points[0].date)}</text><text x="${lastX}" y="${height-7}" text-anchor="middle">${escapeHtml(last.date)}</text>
     ${forecast.available?`<text x="${width-right}" y="${height-7}" text-anchor="end">30 dias</text>`:''}
   </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span><span>┄ Tendência de 30 dias</span><span>─ Meta</span></div>
-  <p class="analytics-note">O trecho tracejado é uma previsão de 30 dias, não uma nota estimada para a data da prova.</p>
+  <details class="limits-disclosure"><summary>Limites</summary><p class="analytics-note">O trecho tracejado é uma previsão de 30 dias, não uma nota estimada para a data da prova.</p></details>
   <details class="achievement-projection__details"><summary>Ver valores do gráfico</summary><div class="performance-table-scroll" tabindex="0"><table><thead><tr><th scope="col">Data</th><th scope="col">Simulado</th><th scope="col">Meta</th></tr></thead><tbody>${values}</tbody></table></div></details>`;
 }
 

@@ -19,4 +19,8 @@ Prontidão e Trajetória mantêm junto ao resultado a qualidade da evidência e 
 
 Esta revisão altera apresentação. Os indicadores, dados persistidos e condições dos motores continuam fornecidos pelos mesmos modelos. Antes de encurtar uma mensagem, conferir sua origem e preservar qualquer limite necessário à interpretação.
 
+## Disclosure "Limites"
+
+Notas metodológicas ou repetidas (critério de quadrantes, leitura de gráfico, decomposição de fatores, registros congelados, efeito automático ausente) ficam num `<details class="limits-disclosure">` fechado com o resumo "Limites". Continuam visíveis junto ao resultado: evidência insuficiente, efeito de prévias e confirmações, ausência de garantia de resultado e ausência de atribuição de causa.
+
 Referências: [hierarquia](INFORMATION-HIERARCHY-CONTRACT.md), [propriedade das informações](INFORMATION-OWNERSHIP.md) e [auditoria das jornadas](PRODUCT-JOURNEY-AUDIT.md).

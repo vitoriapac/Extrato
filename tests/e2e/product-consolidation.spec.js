@@ -166,7 +166,7 @@ test('Demo apresenta próxima ação, evidências progressivas e explicação da
   await activateTab(page,'desempenho');
   const explanation=page.locator('.readiness-change-explanation');
   await expect(explanation).toBeVisible();
-  await explanation.locator('summary').click();
+  await explanation.locator(':scope > summary').click();
   await expect(explanation).toContainText(/Prontidão|comparação/);
   for(const section of ['questions','simulations','subjects','consistency']){
     await page.locator(`[data-performance-section="${section}"]`).evaluate(button=>button.click());
