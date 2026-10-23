@@ -1110,7 +1110,11 @@ function focusStudyTimer(){
   activateTab('dashboard');
   document.getElementById('timerStartBtn')?.focus();
 }
+// Leaving focus mode returns to the tab the session was started from, so Hoje keeps its place.
+let timerFocusReturnTab=null;
 function openStudyTimerFocus(){
+  const origin=activeTabName();
+  timerFocusReturnTab=origin==='dashboard'?null:origin;
   activateTab('dashboard');
   toggleTimerFocus(true);
 }
@@ -1121,6 +1125,10 @@ function toggleTimerFocus(force=null){
   const toggle=document.getElementById('timerFocusToggle');
   if(toggle){toggle.setAttribute('aria-pressed',String(active));toggle.textContent=active?'Sair do modo foco':'⛶ Modo foco'}
   if(active){document.querySelector('#panel-dashboard .timer-block')?.scrollIntoView({block:'center',behavior:'smooth'});requestAnimationFrame(()=>document.getElementById(timerRunning?'timerPauseBtn':'timerStartBtn')?.focus())}
+  else if(timerFocusReturnTab){
+    const tab=timerFocusReturnTab;timerFocusReturnTab=null;activateTab(tab);
+    requestAnimationFrame(()=>(document.querySelector(`#panel-${tab} [data-delegated-click="openStudyTimerFocus()"]`)||document.getElementById(`tab-${tab}`))?.focus());
+  }
   else requestAnimationFrame(()=>toggle?.focus());
   return active;
 }
@@ -1417,9 +1425,9 @@ function startPlannedActivity(itemId){
   populateTimerContextControls();
   startTimer();
   renderPlanoHoje();
-  activateTab('dashboard');
-  document.getElementById('studyTimerDisplay')?.scrollIntoView({behavior:'smooth',block:'center'});
-  showToast(`Atividade iniciada · meta de ${formatPlanMinutes(state.activeTimer.targetMinutes)}.`);
+  // From another tab, focus mode keeps the running timer, its target and Pause in view; on Visão Geral the timer is already on the page.
+  if(activeTabName()!=='dashboard')openStudyTimerFocus();
+  else{document.querySelector('#panel-dashboard .timer-block')?.scrollIntoView({block:'center',behavior:'smooth'});requestAnimationFrame(()=>document.getElementById('timerPauseBtn')?.focus())}
 }
 function currentTimerSeconds(){
   const active=state.activeTimer||{};
@@ -1488,6 +1496,7 @@ function updateTimerControls(){
   const hasTime=timerSeconds>0;
   document.getElementById('timerStartBtn').style.display=timerRunning?'none':'inline-block';
   document.getElementById('timerPauseBtn').style.display=timerRunning?'inline-block':'none';
+  ['timerResetBtn','timerFinishBtn'].forEach(id=>{document.getElementById(id).disabled=!hasTime&&!timerRunning});
   ['timerSubjectSelect','timerTopicSelect','timerTypeSelect'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.disabled=hasTime;
   });
@@ -1624,6 +1633,16 @@ function closeSessionModal(){
   document.getElementById('sessionModalOverlay').classList.remove('show');
   resetTimer();
 }
+// Esc keeps the paused session; only an explicit, confirmed discard loses the time.
+function dismissSessionModal(){
+  document.getElementById('sessionModalOverlay').classList.remove('show');
+  document.getElementById('timerFinishBtn')?.focus();
+}
+function discardSessionFromModal(){
+  const overlay=document.getElementById('sessionModalOverlay');
+  overlay.classList.remove('show');
+  showConfirm(`Descartar esta sessão de ${formatDuration(timerSeconds)}? O tempo não será registrado.`,closeSessionModal,()=>{overlay.classList.add('show');document.getElementById('sessionModalSkipBtn')?.focus()},{confirmLabel:'Descartar sessão'});
+}
 document.getElementById('timerStartBtn').addEventListener('click', startTimer);
 document.getElementById('timerPauseBtn').addEventListener('click', pauseTimer);
 document.getElementById('timerSubjectSelect').addEventListener('change',function(){
@@ -1644,12 +1663,14 @@ document.getElementById('timerFinishBtn').addEventListener('click', () => {
   pauseTimer();
   showSessionModal();
 });
-document.getElementById('sessionModalSkipBtn').addEventListener('click', closeSessionModal);
+document.getElementById('sessionModalSkipBtn').addEventListener('click', discardSessionFromModal);
+document.getElementById('sessionModalOverlay').addEventListener('session-modal-dismiss',dismissSessionModal);
 document.getElementById('sessionModalSubject').addEventListener('change',function(){ populateSessionTopicSelect(this.value); });
 document.getElementById('sessionModalType').addEventListener('change',function(){syncSessionModalActivityFields(this.value)});
 function showSessionResult(session,nextPriority,priorityChanged,day=null,planNext=null){
   const result=document.getElementById('sessionResult');if(!result)return;
   result.innerHTML=renderSessionResult(buildSessionResultViewModel(session,nextPriority,priorityChanged,{subjectName:getSubjectName,topicName:getTopicName,formatMinutes:formatPlanMinutes,day,planNext}),{escapeHtml});
+  if(document.body.classList.contains('timer-focus-active')){timerFocusReturnTab=null;toggleTimerFocus(false)}
   result.hidden=false;activateTab('dashboard');result.scrollIntoView({block:'center',behavior:'smooth'});result.focus({preventScroll:true});
 }
 function openWeeklyClose(){activateTab('metas');document.getElementById('metasCloseSection')?.scrollIntoView({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}

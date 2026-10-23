@@ -101,3 +101,37 @@ test('iniciar pelo Plano de hoje mostra disciplina e tópico no cronômetro',asy
   await expect(target).toContainText(`${names.subject} — ${names.topic}`);
   await expect(target).not.toContainText('undefined');
 });
+
+test('iniciar pelo Plano de hoje abre o modo foco e Esc devolve ao Hoje',async({page})=>{
+  await prepare(page);
+  await activateTab(page,'hoje');
+  await page.locator(`#planoHojeContent [data-delegated-click="startPlannedActivity('daily-first')"]`).click();
+  await expect(page.locator('body')).toHaveClass(/timer-focus-active/);
+  await expect(page.locator('#studyTimerDisplay')).toBeInViewport();
+  await expect(page.locator('#timerPauseBtn')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#panel-hoje')).toBeVisible();
+  await expect(page.locator(`#panel-hoje [data-delegated-click="openStudyTimerFocus()"]`).first()).toBeFocused();
+});
+
+test('Esc no fim da sessão mantém o tempo e descartar pede confirmação',async({page})=>{
+  await prepare(page);
+  await expect(page.locator('#timerFinishBtn')).toBeDisabled();
+  await expect(page.locator('#timerResetBtn')).toBeDisabled();
+  await page.locator('#timerStartBtn').click();
+  await page.clock.fastForward('00:05:00');
+  await page.locator('#timerFinishBtn').click();
+  await expect(page.locator('#sessionModalOverlay')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#sessionModalOverlay')).toBeHidden();
+  await expect(page.locator('#studyTimerDisplay')).not.toHaveText('00:00');
+  await page.locator('#timerFinishBtn').click();
+  await page.locator('#sessionModalSkipBtn').click();
+  await expect(page.locator('#modalOverlay')).toBeVisible();
+  await page.locator('#modalCancelBtn').click();
+  await expect(page.locator('#sessionModalOverlay')).toBeVisible();
+  await expect(page.locator('#studyTimerDisplay')).not.toHaveText('00:00');
+  await page.locator('#sessionModalSkipBtn').click();
+  await page.locator('#modalConfirmBtn').click();
+  await expect(page.locator('#studyTimerDisplay')).toHaveText('00:00');
+});

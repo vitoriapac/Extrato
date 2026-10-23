@@ -1701,7 +1701,7 @@ body.timer-focus-active .timer-context{display:none!important}
 .active-study-notice .btn{flex:0 0 auto;min-height:40px}
 .active-study-status{display:inline-flex;align-items:center;width:fit-content;margin-top:4px;padding:4px 7px;border:1px solid color-mix(in srgb,var(--green) 45%,var(--paper-line));background:color-mix(in srgb,var(--green) 8%,var(--paper));color:var(--green);font:var(--text-micro) var(--font-data)}
 .overview-action-card.is-in-progress,.study-recommendation.is-in-progress{border-color:color-mix(in srgb,var(--green) 55%,var(--paper-line))}
-.overview-action-buttons .btn:disabled,.recommendation-actions .btn:disabled,.plano-item-actions .btn:disabled{cursor:not-allowed;opacity:.68}
+.overview-action-buttons .btn:disabled,.recommendation-actions .btn:disabled,.plano-item-actions .btn:disabled,.timer-actions .btn:disabled{cursor:not-allowed;opacity:.68}
 @media(max-width:600px){.active-study-notice{align-items:stretch;flex-direction:column}.active-study-notice .btn{width:100%}}
 /* Campos pós-sessão aparecem somente quando fazem sentido para a atividade registrada. */
 #sessionModalOverlay .modal-box{width:min(560px,calc(100vw - 28px));max-height:min(88dvh,780px);overflow:auto}

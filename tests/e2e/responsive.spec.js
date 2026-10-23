@@ -42,7 +42,7 @@ for(const width of [320,375,430,768,1440])test(`onboarding e modal de sessão ca
     const sessionBounds=await page.locator('#sessionModalOverlay .modal-box').boundingBox();
     expect(sessionBounds.x).toBeGreaterThanOrEqual(0);
     expect(sessionBounds.x+sessionBounds.width).toBeLessThanOrEqual(width+1);
-    await page.locator('#sessionModalSkipBtn').click();
+    await page.locator('#sessionModalSkipBtn').click();await page.locator('#modalConfirmBtn').click();
     await expect(page.locator('#sessionModalOverlay')).toBeHidden();
   }
 });
