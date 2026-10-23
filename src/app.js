@@ -2162,8 +2162,8 @@ function renderSubjects(){
       <div class="subject-header" data-delegated-click="toggleSubject('${s.id}')">
         <div class="subject-header-left">
           <div class="subject-order-btns" data-delegated-click="event.stopPropagation()">
-            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', -1)" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', 1)" ${idx===subjects.length-1?'disabled':''} title="Mover pra baixo">▼</button>
+            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', -1)" ${idx===0?'disabled':''} title="Mover ${escapeAttr(s.name)} para cima" aria-label="Mover ${escapeAttr(s.name)} para cima">▲</button>
+            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', 1)" ${idx===subjects.length-1?'disabled':''} title="Mover ${escapeAttr(s.name)} para baixo" aria-label="Mover ${escapeAttr(s.name)} para baixo">▼</button>
           </div>
           <button type="button" class="subject-toggle btn ghost small" aria-expanded="${!collapsed}" ${searchQuery?'disabled title="A busca mantém os resultados abertos"':''} aria-controls="subject-body-${escapeAttr(s.id)}" aria-label="Expandir ou recolher ${escapeAttr(s.name)}" data-delegated-click="event.stopPropagation();toggleSubject('${s.id}')">${collapsed ? '▸' : '▾'}</button>
           <span class="subject-name" contenteditable="true"
@@ -2197,31 +2197,31 @@ function renderSubjects(){
             ${visibleTopics.map(t => `
               <tr data-status="${t.status}" id="topic-row-${t.id}">
                 <td>
-                  <input type="text" value="${escapeAttr(t.name)}" placeholder="Nome do tópico"
+                  <input type="text" value="${escapeAttr(t.name)}" placeholder="Nome do tópico" aria-label="Nome do tópico"
                      data-delegated-blur="updateTopic('${s.id}','${t.id}','name', this.value)">
                   ${(t.examTags||[]).length||t.tags?.length?`<div class="tag-chips">${examBadges(t)}${(t.tags||[]).map(tag=>`<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}</div>`:''}
                 </td>
                 <td>
-                  <input type="url" value="${escapeAttr(t.link||'')}" placeholder="https://..."
+                  <input type="url" value="${escapeAttr(t.link||'')}" placeholder="https://..." aria-label="Link ou material de ${escapeAttr(t.name||'tópico sem nome')}"
                      data-delegated-blur="updateTopic('${s.id}','${t.id}','link', this.value)">
                 </td>
                 <td>
-                  <select class="status-select ${STATUS_CLASS[t.status]||'st-nao'}"
+                  <select class="status-select ${STATUS_CLASS[t.status]||'st-nao'}" aria-label="Status de ${escapeAttr(t.name||'tópico sem nome')}"
                      data-delegated-change="updateTopicStatus('${s.id}','${t.id}', this)">
                     ${STATUS_OPTIONS.map(o=>`<option value="${o}" ${o===t.status?'selected':''}>${o}</option>`).join('')}
                   </select>
                   <span class="stamp">✓ ok</span>
                 </td>
                 <td>
-                  <select class="status-select ${DIFFICULTY_CLASS[t.difficulty]||'diff-medio'}"
+                  <select class="status-select ${DIFFICULTY_CLASS[t.difficulty]||'diff-medio'}" aria-label="Dificuldade de ${escapeAttr(t.name||'tópico sem nome')}"
                      data-delegated-change="updateTopic('${s.id}','${t.id}','difficulty', this.value)">
                     ${DIFFICULTY_OPTIONS.map(o=>`<option value="${o}" ${o===t.difficulty?'selected':''}>${o}</option>`).join('')}
                   </select>
                 </td>
                 <td>
-                  <button class="btn ghost small notes-toggle-btn ${(t.notes || (t.tags && t.tags.length)) ? 'has-notes':''}" data-delegated-click="toggleNotes('${t.id}')">${(t.notes || (t.tags && t.tags.length)) ? '📝 ver' : '📝 add'}</button>
+                  <button class="btn ghost small notes-toggle-btn ${(t.notes || (t.tags && t.tags.length)) ? 'has-notes':''}" data-delegated-click="toggleNotes('${t.id}')" aria-label="${(t.notes || (t.tags && t.tags.length)) ? 'Ver notas de' : 'Anotar'} ${escapeAttr(t.name||'tópico sem nome')}">${(t.notes || (t.tags && t.tags.length)) ? 'Ver' : 'Anotar'}</button>
                 </td>
-                <td><button class="icon-btn" data-delegated-click="archiveTopic('${s.id}','${t.id}')" title="Arquivar tópico">✕</button></td>
+                <td><button class="icon-btn" data-delegated-click="archiveTopic('${s.id}','${t.id}')" title="Arquivar ${escapeAttr(t.name||'tópico sem nome')}" aria-label="Arquivar ${escapeAttr(t.name||'tópico sem nome')}">✕</button></td>
               </tr>
               ${openNotesIds.has(t.id) ? `
               <tr class="notes-row">
@@ -3785,7 +3785,7 @@ function renderMetasPorDisciplina(){
       <div class="meta-inputs">
         Meta:
         <input type="number" min="1" value="${md.meta}" data-delegated-blur="updateMetaDisciplina('${md.id}', this.value)">
-        <button class="icon-btn" data-delegated-click="deleteMetaDisciplina('${md.id}')" title="Remover">✕</button>
+        <button class="icon-btn" data-delegated-click="deleteMetaDisciplina('${md.id}')" title="Remover meta" aria-label="Remover meta de questões">✕</button>
       </div>
     </div>`;
   }).join('');
