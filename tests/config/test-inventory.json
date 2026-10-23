@@ -281,7 +281,7 @@
         "./helpers.js",
         "./helpers/visual-capture.js"
       ],
-      "staticTestDeclarations": 5,
+      "staticTestDeclarations": 7,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 4,
       "observedCaseSeconds": 106.6,
@@ -877,7 +877,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 1,
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -930,7 +930,7 @@
         "@playwright/test",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 13,
+      "staticTestDeclarations": 15,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 10,
       "observedCaseSeconds": 144.4,

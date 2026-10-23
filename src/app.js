@@ -46,7 +46,7 @@ import {renderGoals} from './ui/renderers/goals-renderer.js';
 import {createRecoveryController} from './ui/controllers/recovery-controller.js';
 import {createRecoveryStateCommitter} from './application/recovery/recovery-state-committer.js';
 import {buildPerformanceSubjectComparison} from './application/performance/build-performance-subject-comparison.js';
-import {renderNextBestAction,renderPlanRecommendationChoice} from './ui/renderers/next-best-action-renderer.js';
+import {renderNextBestAction,renderPlanRecommendationChoice,renderPlanRecommendationExtras} from './ui/renderers/next-best-action-renderer.js';
 import {createAnalysisContext,analysisContextInScope} from './application/navigation/analysis-context.js';
 import {updateSubjectAccuracyTargets} from './application/goals/update-subject-accuracy-targets.js';
 import {renderSubjectTargetEditor as renderSubjectTargetEditorView} from './ui/renderers/subject-target-editor-renderer.js';
@@ -236,7 +236,7 @@ import {renderGlobalSearchPanel} from './ui/renderers/global-search-renderer.js'
 import {renderHeatmap as renderHeatmapView} from './ui/renderers/heatmap-renderer.js';
 import {buildSessionHistoryPresentation,renderStudySessionRead,renderStudySessionEdit,renderStudySessionDayHeader} from './ui/renderers/study-sessions-renderer.js';
 import {renderProgressChart as renderProgressChartView,renderStudyHoursChart as renderStudyHoursChartView,renderSubjectHoursBars as renderSubjectHoursBarsView} from './ui/renderers/study-charts-renderer.js';
-import {renderIntelligentAlerts,renderWeeklyCloseSummary,renderExecutiveSummary as renderExecutiveSummaryView} from './ui/renderers/overview-renderer.js';
+import {renderIntelligentAlerts,renderExecutiveSummary as renderExecutiveSummaryView} from './ui/renderers/overview-renderer.js';
 import {renderDiagnosisCenter as renderDiagnosisCenterView} from './ui/renderers/diagnosis-renderer.js';
 import {renderTopicRetentionDashboard as renderTopicRetentionDashboardView} from './ui/renderers/retention-renderer.js';
 import {renderSimulationRead,renderSimulationBreakdown as renderSimulationBreakdownView,renderSimulationEdit,renderSimulationTrendChart,renderSubjectPerformanceRows,renderSimulationRows} from './ui/renderers/simulations-renderer.js';
@@ -2009,11 +2009,11 @@ document.getElementById('globalSearchInput').addEventListener('blur', () => {
 const headerObserver=new IntersectionObserver(entries=>{const hero=entries[0],shell=document.querySelector('.sticky-shell');shell?.classList.toggle('is-compact',!hero.isIntersecting&&hero.boundingClientRect.bottom<0);syncStickyMetrics()},{threshold:0});headerObserver.observe(document.querySelector('.statement'));
 const stickyShell=document.querySelector('.sticky-shell');
 const overviewNav=document.querySelector('.overview-nav');
-document.getElementById('overviewNavSelect')?.addEventListener('change',event=>{
+document.querySelectorAll('.overview-nav-mobile select').forEach(select=>select.addEventListener('change',event=>{
   const target=document.getElementById(event.target.value);if(!target)return;
   target.scrollIntoView({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   window.history.replaceState(null,'',`#${target.id}`);
-});
+}));
 document.getElementById('overviewAttentionViewAll')?.addEventListener('click',()=>activateTab('hoje'));
 document.addEventListener('click',event=>{
   const current=event.target.closest('.action-menu');
@@ -3476,7 +3476,7 @@ function renderMetas(){
   const atingidoSimulados = contarSimuladosNaSemana();
   const atingidoConsistencia=countStudyDaysThisWeek(state.studySessions,todayISO());
   const hasAccuracyEvidence=state.questoes.some(item=>Number(item.resolved)>0)||state.simulados.some(item=>Number(item.total)>0);
-  const resultGoals=buildResultGoalsViewModel({goals:m,achieved:{weeklyTopics:atingidoSemanal,monthlyTopics:atingidoMensal,questions:atingidoQuestoes,simulations:atingidoSimulados,accuracy:hasAccuracyEvidence?taxaAcertoGeral():null,studyDays:atingidoConsistencia}});
+  const resultGoals=buildResultGoalsViewModel({goals:m,achieved:{weeklyTopics:atingidoSemanal,monthlyTopics:atingidoMensal,questions:atingidoQuestoes,simulations:atingidoSimulados,accuracy:hasAccuracyEvidence?recentPerformance().current.accuracy:null,studyDays:atingidoConsistencia}});
   document.getElementById('metasContainer').innerHTML=renderGoals(resultGoals,{adherenceTarget:m.aderenciaSemanal,escapeHtml,initialSuggestions:initialGoalSuggestions(m,state.studySessions.length>0||state.questoes.length>0||state.simulados.length>0||atingidoSemanal>0||atingidoMensal>0),weeklyCapacityMinutes:weeklyStrategyCapacity()});
   renderSelectedPeriodComparison();
 }
@@ -3949,20 +3949,6 @@ function renderRitmo(){
   `;
 }
 
-function taxaAcertoGeral(){
-  const simCounts = state.simulados.map(s => simuladoEffectiveCounts(s));
-  const totalResolvidas = state.questoes.reduce((sum,q)=>sum + (Number(q.resolved)||0), 0)
-    + simCounts.reduce((sum,c)=>sum + c.total, 0);
-  const totalCorretas = state.questoes.reduce((sum,q)=>sum + (Number(q.correct)||0), 0)
-    + simCounts.reduce((sum,c)=>sum + c.correct, 0);
-  if(totalResolvidas <= 0) return 0;
-  return Math.round((totalCorretas/totalResolvidas)*1000)/10;
-}
-function mediaSimulados(){
-  if(state.simulados.length === 0) return 0;
-  const soma = state.simulados.reduce((sum,s)=> sum + simuladoNota(s), 0);
-  return Math.round((soma/state.simulados.length)*10)/10;
-}
 function revisoesAtrasadas(){
   const today=todayISO();
   const isCurrent=item=>isActiveStudyReference(entitySubjectId(item),item.topicId||item.topicRef||null);
@@ -4576,11 +4562,12 @@ function refreshStudyRecommendationItems({recordHistory=true}={}){
 }
 function renderPendingRecommendationOutcome(){
   const pending=state.recommendationFeedback.find(feedback=>feedback.completed&&feedback.useful===null);
-  return pending?`<div class="recommendation-outcome" role="group" aria-label="Avaliação do resultado da recomendação"><strong>Esta recomendação ajudou?</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'';
+  return pending?`<div class="recommendation-outcome" role="group" aria-label="Avaliação do resultado da recomendação"><strong>${pending.topicId?`O estudo de ${escapeHtml(getTopicName(pending.topicId))} ajudou?`:'Esta recomendação ajudou?'}</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`:'';
 }
 function renderOverviewNextAction(availableMinutes){
   const container=document.getElementById('overviewNextAction');if(!container)return;
-  const outcome=renderPendingRecommendationOutcome();
+  // The usefulness question lives on Hoje, next to the measured result it refers to; here it read as a question about the action not yet taken.
+  const outcome='';
   const item=currentStudyRecommendations[0];
   const {priority}=dailyExecutionController.build();
   // When plan and recommendation agree, the recommendation card stays primary so the session keeps its recommendation link.
@@ -4623,9 +4610,9 @@ function renderStudyRecommendation(){
     const inProgress=activeTimerMatchesRecommendation(item),blocked=hasStartedStudyTimer()&&!inProgress,sessionLabel=state.activeTimer?.isRunning?'Cronômetro rodando':'Sessão pausada';
     const contributionRows=model.contributionRows.map(row=>`<div><span>${escapeHtml(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100,row.value*4)}%"></i></span><strong>+${row.value}</strong></div>`).join('');
     const stateIcon={review:'↻',limited:'⚠',high:'★',calculated:'○',blocked:'🔒'}[model.state]||'○';
-    const planChoice=index===0?renderPlanRecommendationChoice(action,dailyPriority,{escapeHtml,escapeAttr}):'';
+    const planChoice=index===0?renderPlanRecommendationChoice(action,dailyPriority,{escapeHtml,escapeAttr,withExtras:false}):'',planExtras=planChoice?renderPlanRecommendationExtras(action,{escapeAttr}):'';
     const actionButton=inProgress?`<button class="btn" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`:blocked?'<button class="btn" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>':`<button class="btn ${planChoice?'ghost':''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${action.source}')">▶ ${escapeHtml(planChoice?'Estudar como atividade adicional':label)}</button>`;
-    return `<article class="study-recommendation ${index===0?'is-primary':''} ${inProgress?'is-in-progress':''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice?'Fora do plano de hoje · ':''}#${model.position} entre as sugestões${index===0&&visible[1]&&Math.round(Number(visible[1].score))===Math.round(Number(item.score))?` · empata com #2 em ${Math.round(Number(item.score))}; ${Number(item.score)!==Number(visible[1].score)?'diferença menor que 1 ponto':Number(item.estimatedMinutes)!==Number(visible[1].estimatedMinutes)?'vem primeiro a mais curta':'ordem de desempate fixa'}`:''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action||'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions?` · ${pluralize(item.recommendedQuestions,'questão','questões')}`:''} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p>${inProgress?`<span class="active-study-status">Em andamento · ${sessionLabel}</span>`:''}<div class="priority-reasons">${action.reasons.slice(0,4).map(reason=>`<span>+ ${escapeHtml(reason)}</span>`).join('')}</div>${renderRecommendationExplanation(item.explanation||buildRecommendationExplanation(item))}<details class="recommendation-explanation"><summary>Prova × Você · composição da prioridade</summary><p><strong>Prova:</strong> ${escapeHtml(model.examExplanation)}</p><p><strong>Você:</strong> ${escapeHtml(model.personalExplanation)}</p><p><strong>Ação:</strong> ${escapeHtml(label)}</p><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(action.evidence.label||model.evidenceLabel).toLowerCase()}. Algoritmo v${action.algorithmVersion||item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${action.priority??model.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details></div><div class="recommendation-actions">${planChoice}${actionButton}<button class="btn ghost" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></article>`;
+    return `<article class="study-recommendation ${index===0?'is-primary':''} ${inProgress?'is-in-progress':''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice?'Fora do plano de hoje · ':''}#${model.position} entre as sugestões${index===0&&visible[1]&&Math.round(Number(visible[1].score))===Math.round(Number(item.score))?` · empata com #2 em ${Math.round(Number(item.score))}; ${Number(item.score)!==Number(visible[1].score)?'diferença menor que 1 ponto':Number(item.estimatedMinutes)!==Number(visible[1].estimatedMinutes)?'vem primeiro a mais curta':'ordem de desempate fixa'}`:''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action||'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions?` · ${pluralize(item.recommendedQuestions,'questão','questões')}`:''} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p>${inProgress?`<span class="active-study-status">Em andamento · ${sessionLabel}</span>`:''}<div class="priority-reasons">${action.reasons.slice(0,4).map(reason=>`<span>+ ${escapeHtml(reason)}</span>`).join('')}</div>${renderRecommendationExplanation(item.explanation||buildRecommendationExplanation(item))}<details class="recommendation-explanation"><summary>Prova × Você · composição da prioridade</summary><p><strong>Prova:</strong> ${escapeHtml(model.examExplanation)}</p><p><strong>Você:</strong> ${escapeHtml(model.personalExplanation)}</p><p><strong>Ação:</strong> ${escapeHtml(label)}</p><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(action.evidence.label||model.evidenceLabel).toLowerCase()}. Algoritmo v${action.algorithmVersion||item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${action.priority??model.score}/100</strong></div></div>${item.missingFactors.length?`<small>${item.missingFactors.length} fator${item.missingFactors.length===1?'':'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>`:''}</details></div><div class="recommendation-actions">${planChoice}${actionButton}<details class="recommendation-more-options"><summary>Outras opções</summary><div class="recommendation-more-actions">${planExtras}<button class="btn ghost small" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost small" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></details></div></article>`;
   });
   const moreCards=cards.slice(1).join(''),moreRecommendations=moreCards?`<details class="study-recommendation-more"><summary>Ver outras ${cards.length-1} prioridades</summary><div class="study-recommendation-list">${moreCards}</div></details>`:'';
   container.innerHTML=`${renderActiveStudyTimerNotice(visible[0])}${cards[0]}${moreRecommendations}${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length===1?'prioridade elegível':'prioridades elegíveis'}</span></div>${excludedHtml}${history}`;
@@ -5033,13 +5020,17 @@ const projectionController=createProjectionController({
     examDate:state.examDate||null,targetScore:state.examBlueprint?.configuredAt?state.examBlueprint.targetScore:state.metas.metaAprovacao,
     consistencyTarget:state.metas.consistenciaSemanal,snapshots:state.projectionSnapshots,
     activeExamTags:state.examBlueprint.activeExamTags||[]}),
-  buildRecent:(scope,today)=>buildPerformanceOverview({range:resolvePerformanceRange({today,period:'30',comparePrevious:false}),today,
-    questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans:performanceScopedPlans(scope)}),
+  buildRecent:recentPerformance,
   getSimulations:()=>examScopedSimulations().map(item=>({...item,...simuladoEffectiveCounts(item),
     breakdown:(item.breakdown||[]).map(row=>({...row,subjectId:entitySubjectId(row)}))})),
   countStudyDays:countStudyDaysThisWeek,getCandidates:intelligenceCandidates,
   getPlan:latestStudyPlan,getCapacity:weeklyStrategyCapacity,getAdaptiveHistory:()=>state.adaptivePlanningHistory
 });
+// Same 30-day, exam-scoped window Desempenho opens with, so Visão Geral and Desempenho show one number.
+function recentPerformance(scope=examEvidenceContext(),today=todayISO()){
+  return buildPerformanceOverview({range:resolvePerformanceRange({today,period:'30',comparePrevious:false}),today,
+    questions:scope.questions.included,sessions:scope.sessions.included,dailyPlans:performanceScopedPlans(scope)});
+}
 function currentAchievementProjection(metrics=computeApprovalMetrics(),readiness=readinessResult(metrics),candidates=null){
   return projectionController.current(metrics,readiness,candidates);
 }
@@ -5156,8 +5147,6 @@ function renderStudyTrack32Insights(){
  const close=document.getElementById('weeklyCloseDashboard'),comparison=document.getElementById('periodComparisonDashboard'),gaps=document.getElementById('gapMapDashboard'),history=document.getElementById('decisionHistoryDashboard'),simReplan=document.getElementById('postSimulationReplanDashboard');
  const scope=examEvidenceContext(),scopedTopicIds=new Set(scope.content.eligibleTopics.map(item=>item.id)),scopedSubjectIds=new Set(scope.content.eligibleTopics.map(item=>item.subjectId)),scopedPlans=(planningRepository.getDailyPlans?.()||[]).map(plan=>({...plan,items:(plan.items||[]).filter(item=>!item.topicId||scopedTopicIds.has(item.topicId))})),scopedRecommendations=state.recommendationFeedback.filter(item=>!item.topicId||scopedTopicIds.has(item.topicId)),model=buildStudyTrack32ViewModel({readinessSnapshots:state.readinessSnapshots,readiness:readinessResult(computeApprovalMetrics()),today:todayISO(),sessions:scope.sessions.included,questions:scope.questions.included,dailyPlans:scopedPlans,weeklyCloseSnapshots:state.weeklyCloseSnapshots,executionSource:{dailyPlans:state.dailyPlans,sessions:state.studySessions,subjects:state.subjects,capacityHistory:state.planningCapacityHistory,adherenceTarget:state.metas.aderenciaSemanal},planAdjustments:state.planAdjustments,recommendations:scopedRecommendations,simulations:examScopedSimulations(),subjects:state.subjects.filter(subject=>scopedSubjectIds.has(subject.id)),activeExamTags:state.examBlueprint?.activeExamTags||[],weeklyCapacityMinutes:Object.values(state.metas.horasPorDia||{}).reduce((sum,hours)=>sum+(Number(hours)||0)*60,0),targetAccuracy:state.metas.metaAprovacao,blueprint:state.examBlueprint,algorithmServices:{addDays,buildWeeklyClose,buildGapMap,buildDecisionHistory,buildPostSimulationReplan,buildCandidates:intelligenceCandidates},nameResolvers:{subject:getSubjectName,topic:getTopicName}}),options={escapeHtml,formatMinutes:formatPlanMinutes};currentStudyTrackModel=model;
  model.comparisonMetrics=captureCloseComparisonMetrics(model,projectPerformance());
- const metasClose=document.getElementById('metasWeeklyCloseSummary'),weekly=model.weeklyClose;
- if(metasClose)metasClose.innerHTML=renderWeeklyCloseSummary(weekly,{escapeHtml,period:model.period,formatDate:formatDatePt});
  if(close){
    const trajectory=currentAchievementProjection().model;
    const trajectoryClose=buildProjectionCloseContext({current:trajectory,snapshots:state.projectionSnapshots,activeExamTags:model.activeExamTags,periodStart:model.period.start,today:todayISO()});
@@ -5250,12 +5239,12 @@ function renderCalAtrasadas(elId){
   ul.innerHTML=`<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>`+visible.map(([date,dateItems])=>{const expanded=overdueExpandedDates[elId].has(date);return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length,'revisão','revisões')} · ${Math.abs(diasParaRevisao(date)||0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded?'':'hidden'}>${dateItems.map(x=>`<li><span style="flex:1">${escapeHtml(x.subject||'—')} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x,elId)}</li>`).join('')}</ul></li>`}).join('')+`<li class="overdue-list-footer">${renderCollectionFooter({variant:'block',total:entries.length,visible:visible.length,step:DEFAULT_LIST_VISIBLE_ITEMS,label:'datas',showMoreAction:`changeOverdueGroupLimit('${elId}',3)`,showAllAction:`showAllOverdueGroups('${elId}')`,showLessAction:limit>DEFAULT_LIST_VISIBLE_ITEMS?`resetOverdueGroupLimit('${elId}')`:''})}</li>`;
 }
 function renderKPIs(){
-  const resolved=state.questoes.reduce((n,q)=>n+(Number(q.resolved)||0),0),accuracy=taxaAcertoGeral(),average=mediaSimulados(),late=revisoesAtrasadas(),target=state.metas.metaAprovacao;
-  const hasResults=state.questoes.length+state.simulados.length>0;
+  const resolved=state.questoes.reduce((n,q)=>n+(Number(q.resolved)||0),0),accuracy=recentPerformance().current.accuracy,simulations=projectPerformance().central,late=revisoesAtrasadas(),target=state.metas.metaAprovacao;
+  const hasResults=accuracy!=null,shown=value=>value==null?'—':`${formatDecimal(value)}%`;
   document.getElementById('kpiGrid').innerHTML=`
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(resolved)}</div><div class="l">Questões resolvidas</div></button>
-    <button type="button" class="kpi-cell kpi-link ${hasResults?(accuracy>=target?'ok':'warn'):''}" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(accuracy)}%</div><div class="l">Taxa de acerto</div></button>
-    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(average)}%</div><div class="l">Média simulados</div></button>
+    <button type="button" class="kpi-cell kpi-link ${hasResults?(accuracy>=target?'ok':'warn'):''}" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(accuracy)}</div><div class="l">Precisão · 30 dias</div></button>
+    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(simulations)}</div><div class="l">Simulados comparáveis</div></button>
     <button type="button" class="kpi-cell kpi-link ${late>0?'warn':''}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
     <button type="button" class="kpi-cell kpi-link ${hasResults?(accuracy>=target?'ok':'warn'):''}" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de aprovação</div></button>`;
 }

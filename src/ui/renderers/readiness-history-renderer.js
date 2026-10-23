@@ -4,20 +4,21 @@ import {renderChartFrame,renderChartTooltip} from '../chart-components.js';
 import {buildReadinessEvolution,compareReadinessSnapshots} from '../../application/analytics/build-readiness-evolution.js';
 
 const signed=value=>`${value>0?'+':''}${formatDecimal(value)}`;
+const points=value=>`${signed(value)} ${Math.abs(value)===1?'ponto':'pontos'}`;
 const value=item=>item?`${item.score}/100`:'—';
 
 export function renderReadinessHistory(items=[],{formatDate,escapeHtml,current=null,today=null,activeExamTags=items[0]?.activeExamTags||[],showComparisonDetails=true}={}){
   const model=buildReadinessEvolution({snapshots:items,activeExamTags,current,today});
   const currentDelta=model.currentComparison;
   const weekly=model.weeklyComparison;
-  const summary=`<div class="readiness-history-summary"><div><span>Prontidão atual</span><strong>${value(model.current)}</strong><small>${model.current?'Cálculo atual · confiança do índice: '+escapeHtml(model.current.confidenceLabel):'Aguardando dados atuais'}</small></div><div><span>Último registro salvo</span><strong>${value(model.latest)}</strong><small>${model.latest?escapeHtml(formatDate(model.latest.date)):'Salve um fechamento semanal'}</small></div><div><span>Variação entre fechamentos</span><strong>${weekly.delta===null?'—':signed(weekly.delta)+' pontos'}</strong><small>${model.weeklyPeriod?escapeHtml(formatDate(model.weeklyPeriod.start)+' a '+formatDate(model.weeklyPeriod.end)): 'São necessários dois fechamentos'}${weekly.state==='comparable'?' · '+weekly.trend:''}</small></div><div><span>Melhor registro comparável</span><strong>${value(model.best)}</strong><small>${model.best?escapeHtml(formatDate(model.best.date)):'Sem registro com a mesma base de cálculo'}</small></div></div>`;
+  const summary=`<div class="readiness-history-summary"><div><span>Prontidão atual</span><strong>${value(model.current)}</strong><small>${model.current?'Cálculo atual · confiança do índice: '+escapeHtml(model.current.confidenceLabel):'Aguardando dados atuais'}</small></div><div><span>Último registro salvo</span><strong>${value(model.latest)}</strong><small>${model.latest?escapeHtml(formatDate(model.latest.date)):'Salve um fechamento semanal'}</small></div><div><span>Variação entre fechamentos</span><strong>${weekly.delta===null?'—':points(weekly.delta)}</strong><small>${model.weeklyPeriod?escapeHtml(formatDate(model.weeklyPeriod.start)+' a '+formatDate(model.weeklyPeriod.end)): 'São necessários dois fechamentos'}${weekly.state==='comparable'?' · '+weekly.trend:''}</small></div><div><span>Melhor registro comparável</span><strong>${value(model.best)}</strong><small>${model.best?escapeHtml(formatDate(model.best.date)):'Sem registro com a mesma base de cálculo'}</small></div></div>`;
   const notice=weekly.state!=='comparable'&&model.weeklyPeriod?`<p class="context-note context-note--info">${escapeHtml(weekly.reason)}</p>`:'';
   const factors=comparison=>{
     if(comparison.state!=='comparable')return `<p class="analytics-note">${escapeHtml(comparison.reason)}</p>`;
     const rows=comparison.factors.filter(item=>item.delta!==0).slice(0,5);
-    return `<p class="analytics-note">${escapeHtml(comparison.reason)}</p>${rows.length?`<ul class="readiness-factor-changes">${rows.map(item=>`<li><strong>${escapeHtml(item.label)} · ${item.delta>0?'subiu':'caiu'}</strong><span>${item.before} → ${item.after}/100 · contribuição ${signed(item.contribution)} pontos</span></li>`).join('')}</ul>`:'<p class="analytics-note">Os fatores disponíveis permaneceram estáveis.</p>'}`;
+    return `<p class="analytics-note">${escapeHtml(comparison.reason)}</p>${rows.length?`<ul class="readiness-factor-changes">${rows.map(item=>`<li><strong>${escapeHtml(item.label)} · ${item.delta>0?'subiu':'caiu'}</strong><span>${item.before} → ${item.after}/100 · contribuição ${points(item.contribution)}</span></li>`).join('')}</ul>`:'<p class="analytics-note">Os fatores disponíveis permaneceram estáveis.</p>'}`;
   };
-  const explanation=model.latest&&model.current?`<details class="readiness-history-explanation"><summary>O que mudou desde o último registro?${currentDelta.delta===null?'':' · '+signed(currentDelta.delta)+' pontos'}</summary>${factors(currentDelta)}</details>`:'';
+  const explanation=model.latest&&model.current?`<details class="readiness-history-explanation"><summary>O que mudou desde o último registro?${currentDelta.delta===null?'':' · '+points(currentDelta.delta)}</summary>${factors(currentDelta)}</details>`:'';
   const weeklyFactors=model.weeklyPeriod?`<details class="readiness-history-explanation"><summary>Fatores da variação entre fechamentos</summary>${factors(weekly)}</details>`:'';
   const rows=model.history.slice(-12),width=640,height=152,left=32,right=16,top=12,bottom=27,plotWidth=width-left-right,plotHeight=height-top-bottom;
   const x=index=>left+(rows.length===1?plotWidth/2:index*plotWidth/(rows.length-1));

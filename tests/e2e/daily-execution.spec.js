@@ -86,6 +86,8 @@ test('sugestão fora do plano permite dispensar sem alterar a agenda',async({pag
  const before=await state();
  await expectNoPageOverflow(page);
  expect((await new AxeBuilder({page}).include('#studyRecommendation').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+ await expect(action.getByRole('button',{name:'Dispensar esta sugestão agora',exact:true})).toBeHidden();
+ await action.locator('.recommendation-more-options > summary').click();
  await action.getByRole('button',{name:'Dispensar esta sugestão agora',exact:true}).click();
  await expect(action).toBeHidden();expect(await state()).toBe(before);
  await expectNoPageOverflow(page);

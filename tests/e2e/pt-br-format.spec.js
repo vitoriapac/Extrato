@@ -27,3 +27,12 @@ test('textos da demo usam números, datas e horários no formato brasileiro',asy
   }
   expect([...new Set(findings)]).toEqual([]);
 });
+
+test('Visão Geral e Desempenho mostram a mesma precisão e os mesmos simulados comparáveis',async({page})=>{
+  await openDemo(page);
+  const kpi=label=>page.locator('#kpiGrid .kpi-cell').filter({hasText:label}).locator('.n').innerText();
+  const accuracy=await kpi('Precisão · 30 dias'),simulations=await kpi('Simulados comparáveis');
+  await activateTab(page,'desempenho');
+  await expect(page.locator('#panel-desempenho')).toContainText(accuracy);
+  await expect(page.locator('#panel-desempenho .achievement-projection__metrics')).toContainText(simulations);
+});
