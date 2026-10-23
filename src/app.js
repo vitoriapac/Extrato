@@ -2162,8 +2162,8 @@ function renderSubjects(){
       <div class="subject-header" data-delegated-click="toggleSubject('${s.id}')">
         <div class="subject-header-left">
           <div class="subject-order-btns" data-delegated-click="event.stopPropagation()">
-            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', -1)" ${idx===0?'disabled':''} title="Mover ${escapeAttr(s.name)} para cima" aria-label="Mover ${escapeAttr(s.name)} para cima">▲</button>
-            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', 1)" ${idx===subjects.length-1?'disabled':''} title="Mover ${escapeAttr(s.name)} para baixo" aria-label="Mover ${escapeAttr(s.name)} para baixo">▼</button>
+            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', -1)" ${idx===0?'disabled':''} title="Mover para cima" aria-label="Mover ${escapeAttr(s.name)} para cima">▲</button>
+            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', 1)" ${idx===subjects.length-1?'disabled':''} title="Mover para baixo" aria-label="Mover ${escapeAttr(s.name)} para baixo">▼</button>
           </div>
           <button type="button" class="subject-toggle btn ghost small" aria-expanded="${!collapsed}" ${searchQuery?'disabled title="A busca mantém os resultados abertos"':''} aria-controls="subject-body-${escapeAttr(s.id)}" aria-label="Expandir ou recolher ${escapeAttr(s.name)}" data-delegated-click="event.stopPropagation();toggleSubject('${s.id}')">${collapsed ? '▸' : '▾'}</button>
           <span class="subject-name" contenteditable="true"
@@ -2221,7 +2221,7 @@ function renderSubjects(){
                 <td>
                   <button class="btn ghost small notes-toggle-btn ${(t.notes || (t.tags && t.tags.length)) ? 'has-notes':''}" data-delegated-click="toggleNotes('${t.id}')" aria-label="${(t.notes || (t.tags && t.tags.length)) ? 'Ver notas de' : 'Anotar'} ${escapeAttr(t.name||'tópico sem nome')}">${(t.notes || (t.tags && t.tags.length)) ? 'Ver' : 'Anotar'}</button>
                 </td>
-                <td><button class="icon-btn" data-delegated-click="archiveTopic('${s.id}','${t.id}')" title="Arquivar ${escapeAttr(t.name||'tópico sem nome')}" aria-label="Arquivar ${escapeAttr(t.name||'tópico sem nome')}">✕</button></td>
+                <td><button class="icon-btn" data-delegated-click="archiveTopic('${s.id}','${t.id}')" title="Arquivar tópico" aria-label="Arquivar ${escapeAttr(t.name||'tópico sem nome')}">✕</button></td>
               </tr>
               ${openNotesIds.has(t.id) ? `
               <tr class="notes-row">
