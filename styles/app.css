@@ -2373,3 +2373,4 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 .limits-disclosure>summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .limits-disclosure[open]>summary{color:var(--heading)}
 .limits-disclosure>.analytics-note{margin:0 0 var(--space-2)}
+@media (max-width:360px){.compact-header .compact-plan{display:none}}
