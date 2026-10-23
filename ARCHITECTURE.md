@@ -339,3 +339,15 @@ A síntese semanal reutiliza ciclo de decisões, sustentabilidade e comparação
 ## Experiência de decisão
 
 Os papéis das superfícies, fontes de autoridade e contratos de evidência estão em [Contrato da experiência de decisão](docs/DECISION-EXPERIENCE-CONTRACT.md). A narrativa do produto não impõe uma cadeia linear de dependências entre diagnóstico e projeção.
+
+## Importação de histórico de questões (CSV)
+
+`src/domain/questions/question-import-normalizer.js` normaliza arquivos CSV/TSV exportados de plataformas de questões (QConcursos, Tec Concursos ou modelo padrão), agrupando registros granulares ou agregados por data, disciplina e tópico. `src/application/questions/question-import-service.js` gera uma prévia idempotente com detecção de duplicatas, identificação de novas disciplinas/tópicos e validação de categorias de erro, aplicando a importação de forma atômica após confirmação explícita em `src/features/question-import/`.
+
+## Sincronização remota WebDAV com criptografia de ponta a ponta (E2EE)
+
+`src/core/crypto-utils.js` implementa derivação de chave PBKDF2-HMAC-SHA256 (250.000 iterações) e cifragem autenticada AES-GCM de 256 bits usando exclusivamente a Web Crypto API nativa. `src/storage/remote-sync-provider.js` encapsula a comunicação WebDAV (`PROPFIND`, `GET`, `PUT`) exigindo HTTPS para servidores remotos (permitindo HTTP apenas em `localhost`/`127.0.0.1`). `src/ui/controllers/remote-sync-controller.js` coordena a configuração sem persistir senhas ou frases secretas no armazenamento local, verifica conflitos de versão remota antes de enviar e exige snapshot de segurança e validação de schema antes de restaurar dados baixados.
+
+## Checagem estática de tipos (JSDoc + TypeScript)
+
+`jsconfig.json` e `src/core/types.js` definem contratos estáticos verificados por `npm run check:types` (`tsc -p jsconfig.json --noEmit`), integrado ao runner de gates (`scripts/run-test-gate.mjs`) e ao workflow de CI sem introduzir etapa de transpilação ou dependências de runtime.

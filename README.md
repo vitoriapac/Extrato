@@ -18,6 +18,8 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Diagnóstico consolidado por tópico ou disciplina, próxima melhor ação, prévia do plano e confirmação antes de salvar.
 - Resultado mensurável das recomendações, comparando métricas antes e depois.
 - Recovery com capacidade preservada, confirmação, reversão segura e detalhes congelados na Timeline.
+- Importação de histórico de questões via CSV/TSV (QConcursos, Tec Concursos ou modelo padrão) com prévia, criação controlada de tópicos e prevenção de duplicatas.
+- Sincronização remota opcional via WebDAV com criptografia de ponta a ponta (E2EE AES-GCM 256 bits) antes do envio.
 - Relatório estratégico em PDF e backup completo em JSON.
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
 - Tema claro/escuro, layout responsivo e navegação por teclado.
@@ -185,11 +187,12 @@ Abra o endereço informado pelo servidor. O Service Worker exige HTTP; abrir `in
 
 ```powershell
 npm test
+npm run check:types
 npm run test:e2e
 npm run check:all
 ```
 
-`npm run test:fast` é o gate rápido: sintaxe, bundle reproduzível, todos os unitários em UTC/São Paulo e um smoke E2E. `test:regression` acrescenta jornadas e responsividade representativa; `test:full` (também disponível por `check:all`) preserva a suíte completa e o recorte E2E de timezone. Os testes E2E incluem axe para estrutura ARIA, contraste, modal, telas críticas e modo móvel.
+`npm run test:fast` é o gate rápido: sintaxe, checagem estática de tipos (`npm run check:types` via JSDoc/TypeScript), bundle reproduzível, todos os unitários em UTC/São Paulo e um smoke E2E. `test:regression` acrescenta jornadas e responsividade representativa; `test:full` (também disponível por `check:all`) preserva a suíte completa e o recorte E2E de timezone (com sharding paralelo no CI). Os testes E2E incluem axe para estrutura ARIA, contraste, modal, telas críticas e modo móvel.
 
 A [estratégia de testes por risco](docs/TEST-STRATEGY.md) define os gates Fast, Regression e Full. O [inventário da suíte](docs/TEST-SUITE-INVENTORY.md) registra cobertura e tempos observados. O CI combina Fast em PRs e Regression em main com testes por impacto; contratos globais ou arquivos desconhecidos ampliam a validação para Full. Releases e execução manual também oferecem Full. As referências visuais Windows têm job próprio no Full.
 
@@ -205,7 +208,7 @@ O projeto usa JavaScript vanilla e separa estado, domínio, aplicação, reposit
 
 ## Privacidade
 
-A aplicação não possui servidor de dados. Sessões, questões, simulados, planos e preferências permanecem no IndexedDB ou no armazenamento local do navegador. A versão publicada no GitHub Pages serve somente arquivos estáticos.
+A aplicação não possui servidor de dados próprio. Sessões, questões, simulados, planos e preferências permanecem no IndexedDB ou no armazenamento local do navegador. Quando a sincronização remota opcional via WebDAV é configurada pelo usuário, o backup é cifrado localmente no navegador com AES-GCM de 256 bits (derivado por PBKDF2-SHA256) antes do envio, e nem a senha WebDAV nem a frase secreta de criptografia são salvas em disco. A versão publicada no GitHub Pages serve somente arquivos estáticos.
 
 ## Escopo de concurso e precisão dos dados
 

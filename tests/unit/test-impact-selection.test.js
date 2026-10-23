@@ -14,7 +14,12 @@ test('experience follows decision surfaces and conservatively includes unknown c
 });
 test('CI publishes the experience impact status and preserves per-case artifacts',()=>{
   const workflow=readFileSync(new URL('../../.github/workflows/ci.yml',import.meta.url),'utf8');
+  const gateRunner=readFileSync(new URL('../../scripts/run-test-gate.mjs',import.meta.url),'utf8');
   assert.match(workflow,/experience: \$\{\{ steps\.detect\.outputs\.experience \}\}/);
+  assert.match(workflow,/shards: \$\{\{ steps\.detect\.outputs\.shards \}\}/);
+  assert.match(workflow,/shards=\["1\/4","2\/4","3\/4","4\/4"\]/);
+  assert.match(workflow,/shard: \$\{\{ fromJson\(needs\.changes\.outputs\.shards/);
+  assert.match(workflow,/run: npm run check:types/);
   assert.match(workflow,/require\("\.\/test-impact\.json"\)\.experienceRequired/);
   assert.match(workflow,/  experience:\s+needs: changes\s+if: needs\.changes\.outputs\.experience == 'true'/);
   assert.match(workflow,/run: npm run test:experience/);
@@ -22,6 +27,8 @@ test('CI publishes the experience impact status and preserves per-case artifacts
   assert.match(workflow,/include-hidden-files: true/);
   assert.match(workflow,/pull_request\) gate=fast/);
   assert.match(workflow,/push\) gate=regression/);
+  assert.match(gateRunner,/\['Typecheck',\[tsc,'-p','jsconfig\.json','--noEmit'\],'UTC'\]/);
+  assert.match(gateRunner,/--shard=\$\{shard\}/);
 });
 test('impact glob respects directories, separators and exact boundaries',()=>{
   assert.ok(matchPath('src/application/recovery/a.js','src/application/recovery/**'));
