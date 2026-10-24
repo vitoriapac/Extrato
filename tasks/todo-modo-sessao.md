@@ -58,7 +58,7 @@ Pré-requisito: as mudanças não commitadas que já estão na árvore precisam 
   - Verify: `npm test`, `npm run check:types`, `npm run build`, verificação manual no Chrome
   - Files: `index.html`, `src/app.js`, `styles/app.css`
 
-- [ ] Tarefa 7: checkpoint final
+- [x] Tarefa 7: checkpoint final
   - Acceptance: os 5 critérios de sucesso da spec atendidos (o critério 4, no Firefox, é verificado pelo teste de `supported === false` e pelo título).
   - Verify: `npm test`, `npm run check:types`, `npm run build`, `npm run check:bundle`, `npm run test:tiers`, `npm run test:fast`, `node scripts/audit-test-suite.mjs` e depois `--check`
   - Files: arquivos gerados (`src/app.bundle.js`, `index.html`, `service-worker.js`, `tests/config/test-inventory.json`)
