@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-169 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+170 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -163,6 +163,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/performance-scenarios.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/period-comparison-insights.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/phase-strategy.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/pip-timer-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/plan-execution-snapshot.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-repository.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-services.test.js | node | Planejamento | critical | — | contract | none |

@@ -29,7 +29,7 @@ Pré-requisito: as mudanças não commitadas que já estão na árvore precisam 
   - Verify: `npm test`, `npm run check:types`, `npm run build`, `npm run check:bundle`, `npm run test:tiers`, `npx playwright test tests/e2e/session-bookmark.spec.js`, `npm run test:fast`
   - Files: `src/app.js` e/ou `src/ui/renderers/next-best-action-renderer.js`, `tests/e2e/session-bookmark.spec.js`, `tests/config/test-tiers.json`
 
-- [ ] Tarefa 4: título da aba como cronômetro (R5)
+- [x] Tarefa 4: título da aba como cronômetro (R5)
   - Acceptance:
     - `formatTimerTitle` produz `▶ 24:15 · Português — StudyTrack`, `⏸ …`, a versão sem disciplina e, sem sessão, o título original.
     - O `app.js` só reescreve o título quando o texto muda e o restaura no `resetTimer`.

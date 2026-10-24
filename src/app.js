@@ -89,6 +89,7 @@ import {calculateWindowTrend,trendToRisk} from './domain/analytics/trends.js';
 import {summarizeStudyRecords} from './domain/analytics/study-metrics.js';
 import {normalizeTopicStrategy,normalizeExamBlueprint,normalizeAlgorithmVersions,EXAM_PRIORITIES} from './state/strategic.js';
 import {normalizeTopicBookmark,formatBookmarkLabel} from './domain/topic-bookmark.js';
+import {formatTimerTitle} from './ui/controllers/pip-timer-controller.js';
 import {buildExecutiveSummary} from './application/build-executive-summary.js';
 import {analyzeErrors} from './domain/diagnostics/error-analysis.js';
 import {buildErrorAnalysisViewModel} from './application/analytics/build-error-analysis-view-model.js';
@@ -1370,6 +1371,7 @@ demoController.mount();
 /* ===== CRONÔMETRO DE SESSÃO DE ESTUDO ===== */
 let timerSeconds = 0;
 let timerRunning = false;
+const BASE_DOCUMENT_TITLE=document.title;
 let timerIntervalId = null;
 let timerStartedAt = null;
 
@@ -1477,6 +1479,8 @@ function updateTimerDisplay(){
       if(progressEl){progressEl.value=0;progressEl.removeAttribute('aria-valuetext');progressEl.hidden=true}
     }
   }
+  const title=formatTimerTitle({started:hasStartedStudyTimer(),running:timerRunning,time:formatTimer(timerSeconds),subjectName:state.activeTimer?.subjectId?getSubjectName(state.activeTimer.subjectId):'',baseTitle:BASE_DOCUMENT_TITLE});
+  if(document.title!==title)document.title=title;
   renderTimerFocusContext();
   renderGuidedStrategy();
 }
