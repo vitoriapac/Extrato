@@ -3910,7 +3910,7 @@ function renderRitmo(){
   const container = document.getElementById('ritmoContainer');
 
   if(r.status === 'sem-topicos'){
-    container.innerHTML = `<div class="upcoming-empty">Adicione disciplinas e tópicos pra ver a estimativa de ritmo aqui.</div>`;
+    container.innerHTML = `<div class="upcoming-empty">Adicione disciplinas e tópicos para ver a estimativa de ritmo aqui.</div>`;
     return;
   }
   if(r.status === 'completo'){
@@ -4210,6 +4210,8 @@ function formatHoras(decimalHoras){
   return m>0 ? `${h}h${m.toString().padStart(2,'0')}` : `${h}h`;
 }
 function formatDuration(seconds){
+  // Under a minute, show seconds so a short session never reads as "0min".
+  if(Number(seconds)>0&&Number(seconds)<60) return Math.max(1,Math.floor(Number(seconds)))+" s";
   const minutes = Math.floor((Number(seconds)||0)/60);
   const hours = Math.floor(minutes/60);
   const mins = minutes%60;

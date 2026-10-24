@@ -137,3 +137,18 @@ test('Esc no fim da sessão mantém o tempo e descartar pede confirmação',asyn
   await page.locator('#modalConfirmBtn').click();
   await expect(page.locator('#studyTimerDisplay')).toHaveText('00:00');
 });
+
+test('finalizar no modo foco mostra o registro da sessão por cima do cronômetro',async({page})=>{
+  await prepare(page);
+  await activateTab(page,'hoje');
+  await page.locator(`#planoHojeContent [data-delegated-click="startPlannedActivity('daily-first')"]`).click();
+  await expect(page.locator('body')).toHaveClass(/timer-focus-active/);
+  await page.clock.fastForward('00:02:00');
+  await page.locator('#timerFinishBtn').click();
+  await expect(page.locator('#sessionModalOverlay')).toBeVisible();
+  // toBeVisible and elementFromPoint both miss this: the open modal makes the focus card inert, which removes it from hit testing while it still paints on top.
+  const layers=await page.evaluate(()=>({modal:Number(getComputedStyle(document.getElementById('sessionModalOverlay')).zIndex),focus:Number(getComputedStyle(document.querySelector('#panel-dashboard .chart-card:has(.timer-block)')).zIndex)}));
+  expect(layers.modal).toBeGreaterThan(layers.focus);
+  await page.locator('#sessionModalSaveBtn').click();
+  await expect(page.locator('body')).not.toHaveClass(/timer-focus-active/);
+});

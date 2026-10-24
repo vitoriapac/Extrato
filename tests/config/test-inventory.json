@@ -281,7 +281,7 @@
         "./helpers.js",
         "./helpers/visual-capture.js"
       ],
-      "staticTestDeclarations": 7,
+      "staticTestDeclarations": 8,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 4,
       "observedCaseSeconds": 106.6,
@@ -421,7 +421,7 @@
         "./helpers.js",
         ")?",
         ":section.getAttribute(",
-        "]);\n  await expect(page.locator("
+        "]);\r\n  await expect(page.locator("
       ],
       "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",

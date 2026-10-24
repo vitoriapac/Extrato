@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/app.css?v=7319b80453ef">
+<link rel="stylesheet" href="styles/app.css?v=a5a9564eb106">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -305,18 +305,12 @@
 
   <!-- HOJE -->
   <div class="panel" id="panel-hoje" role="tabpanel" aria-labelledby="tab-hoje">
-    <div class="section-head">
-      <div class="section-title">Modo Hoje</div>
-      <div class="study-plan-actions" role="group" aria-label="Modo de execução"><button class="btn ghost small" id="executionAgendaBtn" aria-pressed="true">Agenda</button><button class="btn ghost small" id="executionSequenceBtn" aria-pressed="false">Sequência flexível</button></div>
-    </div>
-    <p class="helper-text">
-      Só o que importa agora: alertas, plano do dia, prioridades, tarefas, atrasos, simulados planejados e metas. Sem distrações.
-    </p>
+    <h2 class="section-title today-title">Hoje</h2>
 
     <div id="todayExecutionSummary" aria-label="Progresso de hoje"></div>
 
     <section class="chart-card plano-hoje-card" aria-labelledby="todayPlanTitle">
-      <header class="module-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3></header>
+      <header class="module-heading today-plan-heading"><span class="module-heading__eyebrow">Execução</span><h3 class="module-heading__title" id="todayPlanTitle">Plano de hoje</h3><div class="study-plan-actions" role="group" aria-label="Modo de execução"><button class="btn ghost small" id="executionAgendaBtn" aria-pressed="true">Agenda</button><button class="btn ghost small" id="executionSequenceBtn" aria-pressed="false">Sequência flexível</button></div></header>
       <div id="planoHojeContent"></div>
     </section>
 
@@ -641,7 +635,7 @@
   <div class="backup-block">
     <div>
       <div class="backup-title">Backup dos dados</div>
-      <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando pra não perder nada — e importe pra restaurar em outro dispositivo.</div>
+      <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando para não perder nada — e importe pra restaurar em outro dispositivo.</div>
     </div>
     <div class="backup-actions">
       <label class="backup-period"><span>Período do relatório</span><select class="select-control select-control--compact" id="reportPeriodSelect" aria-label="Período do relatório"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option><option value="custom">Período personalizado</option></select></label>
@@ -859,7 +853,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=7319b80453ef"></script>
+  <script src="src/app.bundle.js?v=a5a9564eb106"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

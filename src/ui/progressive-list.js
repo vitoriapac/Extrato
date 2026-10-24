@@ -34,7 +34,8 @@ const LISTS=[
   ['.recommendation-followup-list',':scope > details'],
   ['#gapMapDashboard',':scope > .data-row'],
   ['#decisionHistoryDashboard',':scope > .data-row'],
-  ['#alertasInteligentesList',':scope > .alerta-item'],
+  // Hoje leads with the plan: two alerts, the rest behind "Mostrar mais".
+  ['#alertasInteligentesList',':scope > .alerta-item',2],
   ['.exam-intelligence-list',':scope > li'],
   ['.exam-configuration-audit > ul',':scope > li'],
   ['.diagnosis-summary > section',':scope > article'],
@@ -63,13 +64,13 @@ export function mountProgressiveLists({document,window}){
       const root=button.closest('tbody')||button.closest('.list-summary-footer')?.previousElementSibling;
       if(root){if(!root.id)root.id=`progressive-list-${++sequence}`;button.setAttribute('aria-controls',root.id)}
     });
-    LISTS.forEach(([selector,itemSelector])=>document.querySelectorAll(selector).forEach(root=>{
+    LISTS.forEach(([selector,itemSelector,initialLimit])=>document.querySelectorAll(selector).forEach(root=>{
       const items=[...root.querySelectorAll(itemSelector)];
       if(!root.id)root.id=`progressive-list-${++sequence}`;
       let state=states.get(root.id);
       if(!state||state.root!==root||state.items.length!==items.length||state.items.some((item,index)=>item!==items[index])){
         const expanded=state?.model.expanded&&state.root===root;
-        state={root,items,model:createProgressiveList({items})};
+        state={root,items,model:createProgressiveList({items,initialLimit})};
         if(expanded)state.model.expand();
         states.set(root.id,state);
       }
