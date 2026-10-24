@@ -11,7 +11,7 @@ test('mantém dados estratégicos ausentes em estado neutro',()=>{
 
 test('limita importância e normaliza esforço e pré-requisitos',()=>{
   const topic=normalizeTopicStrategy({id:'topic-1',examImportance:2,estimatedStudyMinutes:89.6,prerequisites:['topic-2','topic-2','topic-1',null]});
-  assert.deepEqual(topic,{id:'topic-1',examImportance:1,estimatedStudyMinutes:90,prerequisites:['topic-2']});
+  assert.deepEqual(topic,{id:'topic-1',examImportance:1,estimatedStudyMinutes:90,prerequisites:['topic-2'],bookmark:null});
 });
 
 test('migra a data legada para a configuração da prova',()=>{

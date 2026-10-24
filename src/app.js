@@ -88,6 +88,7 @@ import {calculateActivityStreak,calculateGoalConsistency} from './domain/analyti
 import {calculateWindowTrend,trendToRisk} from './domain/analytics/trends.js';
 import {summarizeStudyRecords} from './domain/analytics/study-metrics.js';
 import {normalizeTopicStrategy,normalizeExamBlueprint,normalizeAlgorithmVersions,EXAM_PRIORITIES} from './state/strategic.js';
+import {normalizeTopicBookmark} from './domain/topic-bookmark.js';
 import {buildExecutiveSummary} from './application/build-executive-summary.js';
 import {analyzeErrors} from './domain/diagnostics/error-analysis.js';
 import {buildErrorAnalysisViewModel} from './application/analytics/build-error-analysis-view-model.js';
@@ -1622,7 +1623,30 @@ function showSessionModal(){
   document.getElementById('sessionModalDifficulty').value = '';
   document.getElementById('sessionModalNotes').value = '';
   syncSessionModalActivityFields(document.getElementById('sessionModalType').value||'study');
+  fillSessionBookmarkFields(document.getElementById('sessionModalTopic').value);
   overlay.classList.add('show');
+}
+const SESSION_BOOKMARK_FIELDS={resourceType:'sessionBookmarkType',label:'sessionBookmarkLabel',currentUnit:'sessionBookmarkCurrent',totalUnits:'sessionBookmarkTotal',positionText:'sessionBookmarkPosition'};
+function fillSessionBookmarkFields(topicId){
+  const section=document.getElementById('sessionBookmarkSection'),bookmark=topicId?getTopicById(topicId)?.topic.bookmark:null;
+  section.hidden=!topicId;section.open=Boolean(bookmark);delete section.dataset.clear;
+  for(const [field,id] of Object.entries(SESSION_BOOKMARK_FIELDS))document.getElementById(id).value=bookmark?.[field]??(field==='resourceType'?'pdf':'');
+  const clear=document.getElementById('sessionBookmarkClearBtn');clear.hidden=!bookmark;clear.disabled=false;clear.textContent='Limpar ponto de parada';
+}
+function clearSessionBookmarkFields(){
+  const section=document.getElementById('sessionBookmarkSection'),clear=document.getElementById('sessionBookmarkClearBtn');
+  section.dataset.clear='1';
+  for(const [field,id] of Object.entries(SESSION_BOOKMARK_FIELDS))if(field!=='resourceType')document.getElementById(id).value='';
+  clear.disabled=true;clear.textContent='Será removido ao salvar';
+}
+// Empty fields keep the saved bookmark; only the explicit clear removes it.
+function saveSessionBookmark(topicId,endedAt){
+  const found=topicId?getTopicById(topicId):null;if(!found)return;
+  if(document.getElementById('sessionBookmarkSection').dataset.clear==='1'){if(found.topic.bookmark)subjectService.updateTopic(found.subject.id,topicId,{bookmark:null});return}
+  const next=normalizeTopicBookmark({...Object.fromEntries(Object.entries(SESSION_BOOKMARK_FIELDS).map(([field,id])=>[field,document.getElementById(id).value])),updatedAt:endedAt});
+  const current=found.topic.bookmark;
+  if(!next||(current&&Object.keys(SESSION_BOOKMARK_FIELDS).every(field=>current[field]===next[field])))return;
+  subjectService.updateTopic(found.subject.id,topicId,{bookmark:next});
 }
 function syncSessionModalActivityFields(type=document.getElementById('sessionModalType').value||'study'){
   const labels={study:'Registre o que você estudou e atualize seus indicadores.',questions:'Informe volume e acertos para atualizar seu desempenho.',review:'Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.',simulation:'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.'};
@@ -1665,7 +1689,9 @@ document.getElementById('timerFinishBtn').addEventListener('click', () => {
 });
 document.getElementById('sessionModalSkipBtn').addEventListener('click', discardSessionFromModal);
 document.getElementById('sessionModalOverlay').addEventListener('session-modal-dismiss',dismissSessionModal);
-document.getElementById('sessionModalSubject').addEventListener('change',function(){ populateSessionTopicSelect(this.value); });
+document.getElementById('sessionModalSubject').addEventListener('change',function(){ populateSessionTopicSelect(this.value); fillSessionBookmarkFields(''); });
+document.getElementById('sessionModalTopic').addEventListener('change',function(){ fillSessionBookmarkFields(this.value); });
+document.getElementById('sessionBookmarkClearBtn').addEventListener('click',clearSessionBookmarkFields);
 document.getElementById('sessionModalType').addEventListener('change',function(){syncSessionModalActivityFields(this.value)});
 function showSessionResult(session,nextPriority,priorityChanged,day=null,planNext=null){
   const result=document.getElementById('sessionResult');if(!result)return;
@@ -1692,6 +1718,7 @@ document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
     recommendationId:state.activeTimer.recommendationId||null,recommendationSource:state.activeTimer.recommendationSource||null,
     recommendationType:state.activeTimer.recommendationType||null,prioritySnapshot:state.activeTimer.prioritySnapshot??null
   };
+  saveSessionBookmark(topicId,session.endedAt);
   const dayBefore=session.date===todayISO()?dailyExecutionController.build():null;
   if(guidedStudyService.current())guidedStudyService.complete(session);else sessionService.complete(session);
   persistAndRender();
