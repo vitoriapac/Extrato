@@ -163,7 +163,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/performance-scenarios.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/period-comparison-insights.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/phase-strategy.test.js | node | Aplicação | functional | — | contract | none |
-| tests/unit/pip-timer-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/pip-timer-controller.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/plan-execution-snapshot.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-repository.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-services.test.js | node | Planejamento | critical | — | contract | none |

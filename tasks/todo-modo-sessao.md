@@ -36,7 +36,7 @@ Pré-requisito: as mudanças não commitadas que já estão na árvore precisam 
   - Verify: `npm test` (`pip-timer-controller.test.js`), `npm run check:types`, `npm run test:tiers`
   - Files: `src/ui/controllers/pip-timer-controller.js`, `src/app.js`, `tests/unit/pip-timer-controller.test.js`, `tests/config/test-tiers.json`
 
-- [ ] Tarefa 5: controller da janela flutuante (R6, lógica)
+- [x] Tarefa 5: controller da janela flutuante (R6, lógica)
   - Acceptance:
     - Sem suporte: `supported === false`, e `open()` não lança erro.
     - Duas chamadas de `open()` resultam em um único `requestWindow`.
