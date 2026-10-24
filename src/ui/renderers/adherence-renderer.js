@@ -1,39 +1,73 @@
-import {pluralize} from '../../core/utils.js';
-import {formatDecimal} from '../../core/format-number.js';
-import {renderExecutionBreakdown} from './execution-breakdown-renderer.js';
-import {renderAdherenceTarget} from './adherence-target-renderer.js';
-import {renderAdherenceChangeExplanation} from './adherence-change-renderer.js';
-import {renderPerformanceDetails} from '../performance/performance-story.js';
-import {renderDisclosure,renderContextualHelp} from '../components/analytical-presentation.js';
-import {adherenceStatus,ADHERENCE_STATUS_POLICY} from '../../application/adherence/adherence-status.js';
+import { pluralize } from '../../core/utils.js';
+import { formatDecimal } from '../../core/format-number.js';
+import { renderExecutionBreakdown } from './execution-breakdown-renderer.js';
+import { renderAdherenceTarget } from './adherence-target-renderer.js';
+import { renderAdherenceChangeExplanation } from './adherence-change-renderer.js';
+import { renderPerformanceDetails } from '../performance/performance-story.js';
+import { renderDisclosure, renderContextualHelp } from '../components/analytical-presentation.js';
+import {
+  adherenceStatus,
+  ADHERENCE_STATUS_POLICY,
+} from '../../application/adherence/adherence-status.js';
 
-const shown=value=>value==null?'—':formatDecimal(value);
-const percent=value=>value==null?'—':`${shown(value)}%`;
-export function renderAdherenceMetrics(model,{escapeHtml}={}){
-  if(!model?.summary)return '';
-  const {summary,priority}=model,assessment=adherenceStatus(model);
-  const supported=priority.classifiedCoverage>=ADHERENCE_STATUS_POLICY.minimumClassifiedCoverage&&priority.plannedMinutes>0&&!model.ambiguousItemCount;
+const shown = value => (value == null ? '—' : formatDecimal(value));
+const percent = value => (value == null ? '—' : `${shown(value)}%`);
+export function renderAdherenceMetrics(model, { escapeHtml } = {}) {
+  if (!model?.summary) return '';
+  const { summary, priority } = model,
+    assessment = adherenceStatus(model);
+  const supported =
+    priority.classifiedCoverage >= ADHERENCE_STATUS_POLICY.minimumClassifiedCoverage &&
+    priority.plannedMinutes > 0 &&
+    !model.ambiguousItemCount;
   return `<section class="adherence-summary performance-summary" aria-label="Resumo de aderência" data-adherence-assessment="${assessment.status}"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Execução do plano</h3><p class="module-heading__description">${escapeHtml(assessment.label)}. Crédito ao plano e estudo realizado são medidas distintas.</p></header><section class="performance-kpis" aria-label="Indicadores de aderência">
     <article class="performance-kpi"><span>Aderência ao plano</span><strong>${percent(summary.temporalAdherence)}</strong><small>${shown(summary.matchedMinutes)} min com crédito compatível.</small></article>
-    <article class="performance-kpi"><span>Execução prioritária</span><strong>${supported?percent(priority.adherence):'—'}</strong><small>${supported?`${shown(priority.executedMinutes)} de ${shown(priority.plannedMinutes)} min prioritários.`:'Evidência histórica insuficiente para interpretar prioridades.'}</small></article>
+    <article class="performance-kpi"><span>Execução prioritária</span><strong>${supported ? percent(priority.adherence) : '—'}</strong><small>${supported ? `${shown(priority.executedMinutes)} de ${shown(priority.plannedMinutes)} min prioritários.` : 'Evidência histórica insuficiente para interpretar prioridades.'}</small></article>
     <article class="performance-kpi"><span>Carga planejada</span><strong>${shown(summary.plannedMinutes)} min</strong><small>Somente atividades elegíveis no período.</small></article>
     <article class="performance-kpi"><span>Tempo realizado</span><strong>${shown(summary.executedMinutes)} min</strong><small>Inclui estudo adicional.</small></article>
-  </section>${renderContextualHelp('adherence','Entenda aderência')}${renderExecutionBreakdown(model)}${renderDisclosure({title:'Como interpretar a aderência',className:'adherence-method',bodyClassName:'adherence-method__body',contentHTML:`<p>Crédito exige vínculo seguro, disciplina, tópico e tipo compatíveis. Cada atividade recebe no máximo o tempo previsto. A execução prioritária usa a prioridade registrada quando o plano foi criado; atividades parciais recebem crédito proporcional.</p><p>Volume: ${percent(summary.volumeRatio)} do previsto; pode superar 100%. Classificação histórica: ${percent(priority.classifiedCoverage)}; ${shown(priority.unknownPlannedMinutes)} min sem classificação registrada.</p><p>${shown(summary.additionalMinutes)} min adicionais · ${shown(summary.excessLinkedMinutes)} min excedentes vinculados · ${shown(summary.incompatibleMinutes)} min com vínculo incompatível · ${shown(summary.otherPeriodMinutes)} min vinculados a outro período. Estudo adicional continua sendo estudo real.</p><p>${priority.completedActivities} de ${priority.plannedActivities} blocos prioritários completos; ${priority.partiallyExecutedActivities} parcialmente executados. Não são contagens de tópicos distintos.</p>`})}</section>`;
+  </section>${renderContextualHelp('adherence', 'Entenda aderência')}${renderExecutionBreakdown(model)}${renderDisclosure({ title: 'Como interpretar a aderência', className: 'adherence-method', bodyClassName: 'adherence-method__body', contentHTML: `<p>Crédito exige vínculo seguro, disciplina, tópico e tipo compatíveis. Cada atividade recebe no máximo o tempo previsto. A execução prioritária usa a prioridade registrada quando o plano foi criado; atividades parciais recebem crédito proporcional.</p><p>Volume: ${percent(summary.volumeRatio)} do previsto; pode superar 100%. Classificação histórica: ${percent(priority.classifiedCoverage)}; ${shown(priority.unknownPlannedMinutes)} min sem classificação registrada.</p><p>${shown(summary.additionalMinutes)} min adicionais · ${shown(summary.excessLinkedMinutes)} min excedentes vinculados · ${shown(summary.incompatibleMinutes)} min com vínculo incompatível · ${shown(summary.otherPeriodMinutes)} min vinculados a outro período. Estudo adicional continua sendo estudo real.</p><p>${priority.completedActivities} de ${priority.plannedActivities} blocos prioritários completos; ${priority.partiallyExecutedActivities} parcialmente executados. Não são contagens de tópicos distintos.</p>` })}</section>`;
 }
 
-export function renderAdherenceAnalysis({model,weekly,goal},{formatDate,escapeHtml}={}){
-  if(!model?.summary||!weekly?.current)return '<div class="empty-state empty-state--compact"><strong>Análise indisponível</strong><p>Configure uma data válida e registre atividades para acompanhar a aderência.</p></div>';
-  const rows=[weekly.current,...[...weekly.history].reverse()].filter(row=>row.summary.plannedMinutes||row.summary.executedMinutes);
-  const maximum=Math.max(1,...rows.flatMap(row=>[row.summary.plannedMinutes,row.summary.executedMinutes]));
-  const weeks=rows.map((row,index)=>{
-    const {summary,priority,assessment}=row,supported=assessment.status!=='insufficient_data';
-    return `<li${index>=5?' hidden':''}><strong>${escapeHtml(formatDate(row.period.start))} a ${escapeHtml(formatDate(row.period.end))}${row.period.complete?'':' · em andamento'}</strong><p>${escapeHtml(assessment.label)}</p><div class="performance-consistency-bars"><div><span>Plano</span><span class="performance-week-bar planned" aria-hidden="true" style="width:${Math.round(summary.plannedMinutes/maximum*100)}%"></span><b>${shown(summary.plannedMinutes)} min</b></div><div><span>Real</span><span class="performance-week-bar actual" aria-hidden="true" style="width:${Math.round(summary.executedMinutes/maximum*100)}%"></span><b>${shown(summary.executedMinutes)} min</b></div></div><small>Crédito ao plano: ${percent(summary.temporalAdherence)} · prioridades: ${supported?percent(priority.adherence):'dados insuficientes'} · classificação: ${percent(priority.classifiedCoverage)}</small></li>`;
-  }).join('');
-  const subjects=model.subjects.map((row,index)=>`<tr${index>=5?' hidden':''}><th scope="row">${escapeHtml(row.name)}</th><td>${shown(row.plannedMinutes)} min</td><td>${shown(row.executedMinutes)} min</td><td>${percent(row.temporalAdherence)}</td><td>${row.classifiedCoverage>=80?percent(row.priorityAdherence):'Sem evidência'}</td></tr>`).join('');
-  const principal=[...model.subjects].sort((a,b)=>b.plannedMinutes-a.plannedMinutes||String(a.subjectId||'').localeCompare(String(b.subjectId||''))).slice(0,5);
-  const scale=Math.max(1,...principal.flatMap(row=>[row.plannedMinutes,row.executedMinutes]));
-  const distribution=principal.map(row=>`<li><strong>${escapeHtml(row.name)}</strong><div class="performance-consistency-bars"><div><span>Plano</span><span class="performance-week-bar planned" aria-hidden="true" style="width:${Math.round(row.plannedMinutes/scale*100)}%"></span><b>${shown(row.plannedMinutes)} min</b></div><div><span>Real</span><span class="performance-week-bar actual" aria-hidden="true" style="width:${Math.round(row.executedMinutes/scale*100)}%"></span><b>${shown(row.executedMinutes)} min</b></div></div><small>Crédito: ${percent(row.temporalAdherence)} · prioridades: ${row.classifiedCoverage>=80?percent(row.priorityAdherence):'dados insuficientes'}.</small></li>`).join('');
-  const chart=`<section class="performance-block adherence-distribution"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Planejado × realizado por disciplina</h3><p class="module-heading__description">${pluralize(principal.length,'disciplina','disciplinas')} com maior carga planejada no período. Não é um ranking estratégico.</p></header><p class="analytics-note">${shown(model.summary.plannedMinutes)} min planejados e ${shown(model.summary.executedMinutes)} min realizados no período; ${shown(model.summary.matchedMinutes)} min receberam crédito compatível.</p>${distribution?`<ul class="performance-consistency-weeks">${distribution}</ul>`:'<p>Crie um plano e registre sessões vinculadas para acompanhar a aderência por disciplina.</p><button type="button" class="btn ghost small" data-performance-open="metas">Abrir planejamento</button>'}</section>`;
-  const table=subjects?`<div class="performance-table-scroll ui-data-table adherence-subjects" tabindex="0" role="region" aria-label="Aderência por disciplina"><table><caption>Tempo, crédito e prioridades por disciplina</caption><thead><tr><th scope="col">Disciplina</th><th scope="col">Plano</th><th scope="col">Real</th><th scope="col">Crédito</th><th scope="col">Prioridades</th></tr></thead><tbody>${subjects}</tbody></table></div>`:'<p>Distribua atividades por disciplina para obter esta comparação.</p>';
-  return `${renderAdherenceMetrics(model,{escapeHtml})}${renderAdherenceTarget(goal,{escapeHtml})}${chart}${renderAdherenceChangeExplanation(weekly.changeExplanation,{escapeHtml})}<section class="performance-block adherence-trend"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Investigar a execução</h3><p class="module-heading__description">A janela semanal é independente do período do resumo.</p></header><label class="adherence-window">Histórico<select class="select-control" data-adherence-weeks>${[4,8,12].map(count=>`<option value="${count}"${weekly.historyWeeks===count?' selected':''}>${count} semanas</option>`).join('')}</select></label>${renderPerformanceDetails('Execução por semana',weeks?`<ol class="performance-consistency-weeks adherence-week-list">${weeks}</ol>`:'<p>Registre planos e sessões para acompanhar as semanas.</p>')}${renderPerformanceDetails('Aderência por disciplina',table)}</section>`;
+export function renderAdherenceAnalysis({ model, weekly, goal }, { formatDate, escapeHtml } = {}) {
+  if (!model?.summary || !weekly?.current)
+    return '<div class="empty-state empty-state--compact"><strong>Análise indisponível</strong><p>Configure uma data válida e registre atividades para acompanhar a aderência.</p></div>';
+  const rows = [weekly.current, ...[...weekly.history].reverse()].filter(
+    row => row.summary.plannedMinutes || row.summary.executedMinutes
+  );
+  const maximum = Math.max(
+    1,
+    ...rows.flatMap(row => [row.summary.plannedMinutes, row.summary.executedMinutes])
+  );
+  const weeks = rows
+    .map((row, index) => {
+      const { summary, priority, assessment } = row,
+        supported = assessment.status !== 'insufficient_data';
+      return `<li${index >= 5 ? ' hidden' : ''}><strong>${escapeHtml(formatDate(row.period.start))} a ${escapeHtml(formatDate(row.period.end))}${row.period.complete ? '' : ' · em andamento'}</strong><p>${escapeHtml(assessment.label)}</p><div class="performance-consistency-bars"><div><span>Plano</span><span class="performance-week-bar planned" aria-hidden="true" style="width:${Math.round((summary.plannedMinutes / maximum) * 100)}%"></span><b>${shown(summary.plannedMinutes)} min</b></div><div><span>Real</span><span class="performance-week-bar actual" aria-hidden="true" style="width:${Math.round((summary.executedMinutes / maximum) * 100)}%"></span><b>${shown(summary.executedMinutes)} min</b></div></div><small>Crédito ao plano: ${percent(summary.temporalAdherence)} · prioridades: ${supported ? percent(priority.adherence) : 'dados insuficientes'} · classificação: ${percent(priority.classifiedCoverage)}</small></li>`;
+    })
+    .join('');
+  const subjects = model.subjects
+    .map(
+      (row, index) =>
+        `<tr${index >= 5 ? ' hidden' : ''}><th scope="row">${escapeHtml(row.name)}</th><td>${shown(row.plannedMinutes)} min</td><td>${shown(row.executedMinutes)} min</td><td>${percent(row.temporalAdherence)}</td><td>${row.classifiedCoverage >= 80 ? percent(row.priorityAdherence) : 'Sem evidência'}</td></tr>`
+    )
+    .join('');
+  const principal = [...model.subjects]
+    .sort(
+      (a, b) =>
+        b.plannedMinutes - a.plannedMinutes ||
+        String(a.subjectId || '').localeCompare(String(b.subjectId || ''))
+    )
+    .slice(0, 5);
+  const scale = Math.max(1, ...principal.flatMap(row => [row.plannedMinutes, row.executedMinutes]));
+  const distribution = principal
+    .map(
+      row =>
+        `<li><strong>${escapeHtml(row.name)}</strong><div class="performance-consistency-bars"><div><span>Plano</span><span class="performance-week-bar planned" aria-hidden="true" style="width:${Math.round((row.plannedMinutes / scale) * 100)}%"></span><b>${shown(row.plannedMinutes)} min</b></div><div><span>Real</span><span class="performance-week-bar actual" aria-hidden="true" style="width:${Math.round((row.executedMinutes / scale) * 100)}%"></span><b>${shown(row.executedMinutes)} min</b></div></div><small>Crédito: ${percent(row.temporalAdherence)} · prioridades: ${row.classifiedCoverage >= 80 ? percent(row.priorityAdherence) : 'dados insuficientes'}.</small></li>`
+    )
+    .join('');
+  const chart = `<section class="performance-block adherence-distribution"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Planejado × realizado por disciplina</h3><p class="module-heading__description">${pluralize(principal.length, 'disciplina', 'disciplinas')} com maior carga planejada no período. Não é um ranking estratégico.</p></header><p class="analytics-note">${shown(model.summary.plannedMinutes)} min planejados e ${shown(model.summary.executedMinutes)} min realizados no período; ${shown(model.summary.matchedMinutes)} min receberam crédito compatível.</p>${distribution ? `<ul class="performance-consistency-weeks">${distribution}</ul>` : '<p>Crie um plano e registre sessões vinculadas para acompanhar a aderência por disciplina.</p><button type="button" class="btn ghost small" data-performance-open="metas">Abrir planejamento</button>'}</section>`;
+  const table = subjects
+    ? `<div class="performance-table-scroll ui-data-table adherence-subjects" tabindex="0" role="region" aria-label="Aderência por disciplina"><table><caption>Tempo, crédito e prioridades por disciplina</caption><thead><tr><th scope="col">Disciplina</th><th scope="col">Plano</th><th scope="col">Real</th><th scope="col">Crédito</th><th scope="col">Prioridades</th></tr></thead><tbody>${subjects}</tbody></table></div>`
+    : '<p>Distribua atividades por disciplina para obter esta comparação.</p>';
+  return `${renderAdherenceMetrics(model, { escapeHtml })}${renderAdherenceTarget(goal, { escapeHtml })}${chart}${renderAdherenceChangeExplanation(weekly.changeExplanation, { escapeHtml })}<section class="performance-block adherence-trend"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Investigar a execução</h3><p class="module-heading__description">A janela semanal é independente do período do resumo.</p></header><label class="adherence-window">Histórico<select class="select-control" data-adherence-weeks>${[4, 8, 12].map(count => `<option value="${count}"${weekly.historyWeeks === count ? ' selected' : ''}>${count} semanas</option>`).join('')}</select></label>${renderPerformanceDetails('Execução por semana', weeks ? `<ol class="performance-consistency-weeks adherence-week-list">${weeks}</ol>` : '<p>Registre planos e sessões para acompanhar as semanas.</p>')}${renderPerformanceDetails('Aderência por disciplina', table)}</section>`;
 }

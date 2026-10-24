@@ -105,6 +105,7 @@ Depois dos seis pacotes, as próximas entregas podem ser tratadas separadamente:
 - prioridade de tópicos com edição e explicação mais ricas — primeira etapa concluída: impacto efetivo com origem visível, esforço explicado e pré-requisitos editáveis com prevenção de ciclos;
 - cenário demonstrativo determinístico com 130 dias — concluído, com 170 sessões e 13 simulados distribuídos na janela;
 - importação estruturada em JSON e CSV — concluída com prévia detalhada, erros por linha, modelo CSV para download, limites de segurança, mesclagem idempotente e preservação de histórico e ajustes manuais;
+- modernização incremental da base de código (Formatação com Prettier, TypeScript, Preact e Tailwind CSS) — planejada em [PLANO-MODERNIZACAO-TS-PREACT-TAILWIND.md](PLANO-MODERNIZACAO-TS-PREACT-TAILWIND.md);
 - gamificação discreta e opcional;
 - camada explicativa com IA, condicionada a backend, privacidade e gestão de chaves;
 - interpretação automática de PDF, somente após o importador estruturado.

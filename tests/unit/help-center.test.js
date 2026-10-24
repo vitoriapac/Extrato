@@ -1,39 +1,233 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {HELP_CATEGORIES} from '../../src/ui/help/help-content.js';
-import {renderHelpCenter} from '../../src/ui/help/help-renderer.js';
-test('ajuda preserva IDs únicos e oferece sete categorias com estrutura de busca',()=>{assert.deepEqual(HELP_CATEGORIES.map(category=>category.title),['Comece por aqui','Estudar','Planejar','Analisar','Prova','Metas','Dados']);const ids=HELP_CATEGORIES.flatMap(category=>[category.id,...category.entries.map(entry=>entry.id)]);assert.equal(new Set(ids).size,ids.length);for(const entry of HELP_CATEGORIES.flatMap(category=>category.entries)){assert.ok(Array.isArray(entry.keywords));assert.ok(Array.isArray(entry.concepts));assert.ok(Array.isArray(entry.questions))}});
-test('renderer mantém busca, ações e cards de leitura direta',()=>{const html=renderHelpCenter();assert.equal((html.match(/data-help-category=/g)||[]).length,7);assert.match(html,/instruction-card-grid/);assert.match(html,/id="helpSearch"/);assert.match(html,/data-help-action="today"/);assert.doesNotMatch(html,/<details/)});
-test('metadados e conteúdo são escapados na renderização',()=>{const html=renderHelpCenter({categories:[{id:'safe',title:'Teste',summary:'',entries:[{id:'one',title:'<script>',summary:'',keywords:['" onmouseover="bad'],paragraphs:['<img>']}]}]});assert.match(html,/&lt;script&gt;/);assert.match(html,/&quot; onmouseover=&quot;bad/);assert.doesNotMatch(html,/<img>/)});
-
-import {renderHelpVisual} from '../../src/ui/help/help-visuals.js';
-test('mapa semântico mantém seis etapas em ordem e primeiros passos sem accordion',()=>{const category=HELP_CATEGORIES.find(category=>category.id==='guide-start'),map=category.entries.find(entry=>entry.id==='how-it-works');assert.deepEqual(map.visual.steps.map(step=>step.title),['Configurar','Planejar','Estudar','Registrar','Analisar','Ajustar']);assert.equal(category.entries.find(entry=>entry.id==='first-steps').steps.length,6);const html=renderHelpVisual(map.visual);assert.match(html,/<ol class="instruction-flow">/);assert.equal((html.match(/<li>/g)||[]).length,6)});
-test('exemplos são identificados e não executam ações reais',()=>{const html=renderHelpVisual({type:'action',title:'Atividade',subject:'<img>',topic:'Texto',activity:'Teoria',minutes:35});assert.match(html,/Exemplo ilustrativo/);assert.match(html,/&lt;img&gt;/);assert.doesNotMatch(html,/<button|data-help-action/);assert.equal(renderHelpVisual({type:'unknown'}),'')});
-test('exemplo de progresso distingue minutos e atividades concluídas',()=>{const today=HELP_CATEGORIES.find(category=>category.id==='guide-areas').entries.find(entry=>entry.id==='today-guide');const html=renderHelpVisual(today.visual);assert.match(html,/35 min/);assert.match(html,/20 min/);assert.match(html,/57% de progresso/);assert.match(html,/0 de 1 atividade concluída/)});
-
-test('recuperação ilustrativa preserva capacidade e explica a origem',()=>{const entries=HELP_CATEGORIES.find(c=>c.id==='guide-workflows').entries, recovery=entries.find(e=>e.id==='recovery-guide');assert.equal(recovery.visual.rows.reduce((n,r)=>n+r.before,0),720);assert.equal(recovery.visual.rows.reduce((n,r)=>n+r.after,0),720);assert.match(renderHelpVisual(recovery.visual),/Redução de 30 minutos/);assert.match(renderHelpVisual(recovery.visual),/Aumento de 30 minutos/);assert.match(recovery.note,/confirmação/);assert.equal(entries.find(e=>e.id==='sustainability-guide').visual.weeks.length,3)});
-
-test('aderência didática separa carga e prioridades classificadas',()=>{const entries=HELP_CATEGORIES.find(c=>c.id==='guide-data').entries,visual=entries.find(e=>e.id==='adherence').visual;assert.equal(visual.rows.reduce((n,r)=>n+r.planned,0),90);assert.equal(visual.rows.reduce((n,r)=>n+r.actual,0),60);assert.equal(visual.load,Math.round(60/90*100));assert.match(renderHelpVisual(visual),/100%/);assert.match(entries.find(e=>e.id==='readiness').note,/não significa/);assert.ok(entries.some(e=>e.id==='weekly'));assert.match(renderHelpVisual(entries.find(e=>e.id==='insufficient-sample-guide').visual),/requisitos variam/)});
-
-test('guias de prova e dados mantêm conceitos e exemplos seguros',()=>{const entries=HELP_CATEGORIES.flatMap(c=>c.entries);assert.equal(entries.find(e=>e.id==='exam-matrix').visual.cells.length,4);assert.match(entries.find(e=>e.id==='exam-matrix').note,/Incidência é presença/);assert.equal(entries.find(e=>e.id==='imports-guide').visual.steps.length,3);assert.match(entries.find(e=>e.id==='backup').note,/não backup/);assert.match(entries.find(e=>e.id==='demo').note,/base separada/);for(const type of ['matrix','tree','reference'])assert.match(renderHelpVisual(entries.find(e=>e.visual?.type===type).visual),/Exemplo ilustrativo/)});
-
-import {buildHelpSearchIndex,normalizeHelpText,matchesHelpSearch,searchHelpEntries} from '../../src/ui/help/help-search.js';
-test('busca indexa conceitos e perguntas, sem depender de acentos ou ordem',()=>{assert.equal(normalizeHelpText('REVISÃO'),'revisao');assert.ok(matchesHelpSearch('volume planejado versus realizado','REALIZADO planejado'));assert.ok(searchHelpEntries(HELP_CATEGORIES,'amostra insuficiente').some(e=>e.id==='insufficient-sample-guide'));assert.ok(searchHelpEntries(HELP_CATEGORIES,'salvar dados').some(e=>e.id==='backup'));assert.ok(searchHelpEntries(HELP_CATEGORIES,'recuperar plano').some(e=>e.id==='recovery-guide'));assert.equal(searchHelpEntries(HELP_CATEGORIES,'prontidao',{categoryId:'guide-goals'}).length,0);assert.equal(searchHelpEntries(HELP_CATEGORIES,'zzzinexistente').length,0);assert.equal(searchHelpEntries(HELP_CATEGORIES,'',{categoryId:'guide-exam'}).length,HELP_CATEGORIES.find(c=>c.id==='guide-exam').entries.length);assert.match(buildHelpSearchIndex({title:'Título',keywords:['atalho'],questions:['Como começar?']}),/como comecar/)});
-
-import {rankHelpSearch} from '../../src/ui/help/help-search.js';
-import {renderContextualHelp} from '../../src/ui/components/analytical-presentation.js';
-test('ajuda contextual usa artigos existentes e projeção retorna ao proprietário',()=>{
-  const entries=HELP_CATEGORIES.flatMap(category=>category.entries);
-  for(const topic of ['readiness','adherence','sustainability-guide','projections','recovery-guide','exam-history']){
-    assert.ok(entries.some(entry=>entry.id===topic));assert.match(renderContextualHelp(topic,'Entenda <conceito>'),/Entenda &lt;conceito&gt;/);
+import { HELP_CATEGORIES } from '../../src/ui/help/help-content.js';
+import { renderHelpCenter } from '../../src/ui/help/help-renderer.js';
+test('ajuda preserva IDs únicos e oferece sete categorias com estrutura de busca', () => {
+  assert.deepEqual(
+    HELP_CATEGORIES.map(category => category.title),
+    ['Comece por aqui', 'Estudar', 'Planejar', 'Analisar', 'Prova', 'Metas', 'Dados']
+  );
+  const ids = HELP_CATEGORIES.flatMap(category => [
+    category.id,
+    ...category.entries.map(entry => entry.id),
+  ]);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const entry of HELP_CATEGORIES.flatMap(category => category.entries)) {
+    assert.ok(Array.isArray(entry.keywords));
+    assert.ok(Array.isArray(entry.concepts));
+    assert.ok(Array.isArray(entry.questions));
   }
-  assert.equal(entries.find(entry=>entry.id==='projections').action.target,'projection');
-  assert.throws(()=>renderContextualHelp('bad"','Bad'),TypeError);
 });
-test('ranking prioriza título, termos estruturados e conteúdo com desempate estável',()=>{const categories=[{id:'x',title:'Grupo',entries:[{id:'body',title:'Outro',paragraphs:['Revisão']},{id:'keyword',title:'Agenda',keywords:['revisão']},{id:'title',title:'Revisão'},{id:'tie',title:'Agenda 2',keywords:['revisão']}]}];assert.deepEqual(searchHelpEntries(categories,'revisao').map(e=>e.id),['title','keyword','tie','body']);assert.equal(rankHelpSearch({title:'Revisão'},'zzzz'),0);assert.deepEqual(searchHelpEntries(categories,'').map(e=>e.id),['body','keyword','title','tie']);assert.ok(HELP_CATEGORIES.find(c=>c.id==='guide-workflows').entries.some(e=>e.id==='calendar-guide'));assert.ok(HELP_CATEGORIES.find(c=>c.id==='guide-areas').entries.some(e=>e.id==='pending-guide'))});
+test('renderer mantém busca, ações e cards de leitura direta', () => {
+  const html = renderHelpCenter();
+  assert.equal((html.match(/data-help-category=/g) || []).length, 7);
+  assert.match(html, /instruction-card-grid/);
+  assert.match(html, /id="helpSearch"/);
+  assert.match(html, /data-help-action="today"/);
+  assert.doesNotMatch(html, /<details/);
+});
+test('metadados e conteúdo são escapados na renderização', () => {
+  const html = renderHelpCenter({
+    categories: [
+      {
+        id: 'safe',
+        title: 'Teste',
+        summary: '',
+        entries: [
+          {
+            id: 'one',
+            title: '<script>',
+            summary: '',
+            keywords: ['" onmouseover="bad'],
+            paragraphs: ['<img>'],
+          },
+        ],
+      },
+    ],
+  });
+  assert.match(html, /&lt;script&gt;/);
+  assert.match(html, /&quot; onmouseover=&quot;bad/);
+  assert.doesNotMatch(html, /<img>/);
+});
 
-test('ajuda da trajetória diferencia evidência, mudanças de base e simulação',()=>{
- const entry=HELP_CATEGORIES.flatMap(category=>category.entries).find(entry=>entry.id==='projections');
- assert.match(entry.paragraphs.join(' '),/mesma meta/);assert.match(entry.paragraphs.join(' '),/Simulações são temporárias/);
- assert.match(entry.paragraphs.join(' '),/não acrescenta horas/);
+import { renderHelpVisual } from '../../src/ui/help/help-visuals.js';
+test('mapa semântico mantém seis etapas em ordem e primeiros passos sem accordion', () => {
+  const category = HELP_CATEGORIES.find(category => category.id === 'guide-start'),
+    map = category.entries.find(entry => entry.id === 'how-it-works');
+  assert.deepEqual(
+    map.visual.steps.map(step => step.title),
+    ['Configurar', 'Planejar', 'Estudar', 'Registrar', 'Analisar', 'Ajustar']
+  );
+  assert.equal(category.entries.find(entry => entry.id === 'first-steps').steps.length, 6);
+  const html = renderHelpVisual(map.visual);
+  assert.match(html, /<ol class="instruction-flow">/);
+  assert.equal((html.match(/<li>/g) || []).length, 6);
+});
+test('exemplos são identificados e não executam ações reais', () => {
+  const html = renderHelpVisual({
+    type: 'action',
+    title: 'Atividade',
+    subject: '<img>',
+    topic: 'Texto',
+    activity: 'Teoria',
+    minutes: 35,
+  });
+  assert.match(html, /Exemplo ilustrativo/);
+  assert.match(html, /&lt;img&gt;/);
+  assert.doesNotMatch(html, /<button|data-help-action/);
+  assert.equal(renderHelpVisual({ type: 'unknown' }), '');
+});
+test('exemplo de progresso distingue minutos e atividades concluídas', () => {
+  const today = HELP_CATEGORIES.find(category => category.id === 'guide-areas').entries.find(
+    entry => entry.id === 'today-guide'
+  );
+  const html = renderHelpVisual(today.visual);
+  assert.match(html, /35 min/);
+  assert.match(html, /20 min/);
+  assert.match(html, /57% de progresso/);
+  assert.match(html, /0 de 1 atividade concluída/);
+});
+
+test('recuperação ilustrativa preserva capacidade e explica a origem', () => {
+  const entries = HELP_CATEGORIES.find(c => c.id === 'guide-workflows').entries,
+    recovery = entries.find(e => e.id === 'recovery-guide');
+  assert.equal(
+    recovery.visual.rows.reduce((n, r) => n + r.before, 0),
+    720
+  );
+  assert.equal(
+    recovery.visual.rows.reduce((n, r) => n + r.after, 0),
+    720
+  );
+  assert.match(renderHelpVisual(recovery.visual), /Redução de 30 minutos/);
+  assert.match(renderHelpVisual(recovery.visual), /Aumento de 30 minutos/);
+  assert.match(recovery.note, /confirmação/);
+  assert.equal(entries.find(e => e.id === 'sustainability-guide').visual.weeks.length, 3);
+});
+
+test('aderência didática separa carga e prioridades classificadas', () => {
+  const entries = HELP_CATEGORIES.find(c => c.id === 'guide-data').entries,
+    visual = entries.find(e => e.id === 'adherence').visual;
+  assert.equal(
+    visual.rows.reduce((n, r) => n + r.planned, 0),
+    90
+  );
+  assert.equal(
+    visual.rows.reduce((n, r) => n + r.actual, 0),
+    60
+  );
+  assert.equal(visual.load, Math.round((60 / 90) * 100));
+  assert.match(renderHelpVisual(visual), /100%/);
+  assert.match(entries.find(e => e.id === 'readiness').note, /não significa/);
+  assert.ok(entries.some(e => e.id === 'weekly'));
+  assert.match(
+    renderHelpVisual(entries.find(e => e.id === 'insufficient-sample-guide').visual),
+    /requisitos variam/
+  );
+});
+
+test('guias de prova e dados mantêm conceitos e exemplos seguros', () => {
+  const entries = HELP_CATEGORIES.flatMap(c => c.entries);
+  assert.equal(entries.find(e => e.id === 'exam-matrix').visual.cells.length, 4);
+  assert.match(entries.find(e => e.id === 'exam-matrix').note, /Incidência é presença/);
+  assert.equal(entries.find(e => e.id === 'imports-guide').visual.steps.length, 3);
+  assert.match(entries.find(e => e.id === 'backup').note, /não backup/);
+  assert.match(entries.find(e => e.id === 'demo').note, /base separada/);
+  for (const type of ['matrix', 'tree', 'reference'])
+    assert.match(
+      renderHelpVisual(entries.find(e => e.visual?.type === type).visual),
+      /Exemplo ilustrativo/
+    );
+});
+
+import {
+  buildHelpSearchIndex,
+  normalizeHelpText,
+  matchesHelpSearch,
+  searchHelpEntries,
+} from '../../src/ui/help/help-search.js';
+test('busca indexa conceitos e perguntas, sem depender de acentos ou ordem', () => {
+  assert.equal(normalizeHelpText('REVISÃO'), 'revisao');
+  assert.ok(matchesHelpSearch('volume planejado versus realizado', 'REALIZADO planejado'));
+  assert.ok(
+    searchHelpEntries(HELP_CATEGORIES, 'amostra insuficiente').some(
+      e => e.id === 'insufficient-sample-guide'
+    )
+  );
+  assert.ok(searchHelpEntries(HELP_CATEGORIES, 'salvar dados').some(e => e.id === 'backup'));
+  assert.ok(
+    searchHelpEntries(HELP_CATEGORIES, 'recuperar plano').some(e => e.id === 'recovery-guide')
+  );
+  assert.equal(
+    searchHelpEntries(HELP_CATEGORIES, 'prontidao', { categoryId: 'guide-goals' }).length,
+    0
+  );
+  assert.equal(searchHelpEntries(HELP_CATEGORIES, 'zzzinexistente').length, 0);
+  assert.equal(
+    searchHelpEntries(HELP_CATEGORIES, '', { categoryId: 'guide-exam' }).length,
+    HELP_CATEGORIES.find(c => c.id === 'guide-exam').entries.length
+  );
+  assert.match(
+    buildHelpSearchIndex({ title: 'Título', keywords: ['atalho'], questions: ['Como começar?'] }),
+    /como comecar/
+  );
+});
+
+import { rankHelpSearch } from '../../src/ui/help/help-search.js';
+import { renderContextualHelp } from '../../src/ui/components/analytical-presentation.js';
+test('ajuda contextual usa artigos existentes e projeção retorna ao proprietário', () => {
+  const entries = HELP_CATEGORIES.flatMap(category => category.entries);
+  for (const topic of [
+    'readiness',
+    'adherence',
+    'sustainability-guide',
+    'projections',
+    'recovery-guide',
+    'exam-history',
+  ]) {
+    assert.ok(entries.some(entry => entry.id === topic));
+    assert.match(renderContextualHelp(topic, 'Entenda <conceito>'), /Entenda &lt;conceito&gt;/);
+  }
+  assert.equal(entries.find(entry => entry.id === 'projections').action.target, 'projection');
+  assert.throws(() => renderContextualHelp('bad"', 'Bad'), TypeError);
+});
+test('ranking prioriza título, termos estruturados e conteúdo com desempate estável', () => {
+  const categories = [
+    {
+      id: 'x',
+      title: 'Grupo',
+      entries: [
+        { id: 'body', title: 'Outro', paragraphs: ['Revisão'] },
+        { id: 'keyword', title: 'Agenda', keywords: ['revisão'] },
+        { id: 'title', title: 'Revisão' },
+        { id: 'tie', title: 'Agenda 2', keywords: ['revisão'] },
+      ],
+    },
+  ];
+  assert.deepEqual(
+    searchHelpEntries(categories, 'revisao').map(e => e.id),
+    ['title', 'keyword', 'tie', 'body']
+  );
+  assert.equal(rankHelpSearch({ title: 'Revisão' }, 'zzzz'), 0);
+  assert.deepEqual(
+    searchHelpEntries(categories, '').map(e => e.id),
+    ['body', 'keyword', 'title', 'tie']
+  );
+  assert.ok(
+    HELP_CATEGORIES.find(c => c.id === 'guide-workflows').entries.some(
+      e => e.id === 'calendar-guide'
+    )
+  );
+  assert.ok(
+    HELP_CATEGORIES.find(c => c.id === 'guide-areas').entries.some(e => e.id === 'pending-guide')
+  );
+});
+
+test('ajuda da trajetória diferencia evidência, mudanças de base e simulação', () => {
+  const entry = HELP_CATEGORIES.flatMap(category => category.entries).find(
+    entry => entry.id === 'projections'
+  );
+  assert.match(entry.paragraphs.join(' '), /mesma meta/);
+  assert.match(entry.paragraphs.join(' '), /Simulações são temporárias/);
+  assert.match(entry.paragraphs.join(' '), /não acrescenta horas/);
 });

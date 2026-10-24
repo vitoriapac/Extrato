@@ -1,34 +1,200 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildStrategicReport} from '../../src/reports/report-data.js';
-import {renderStrategicReport} from '../../src/reports/report-template.js';
+import { buildStrategicReport } from '../../src/reports/report-data.js';
+import { renderStrategicReport } from '../../src/reports/report-template.js';
 
-test('consolida relatório estratégico sem depender do DOM',()=>{
-  const state={examDate:'2026-12-01',metas:{metaAprovacao:80},subjects:[{id:'s',name:'Direito',topics:[{id:'t',status:'Concluído'}]}],studySessions:[{date:'2026-09-02',subjectId:'s',durationSeconds:3600}],questoes:[{date:'2026-09-02',subjectId:'s',resolved:20,correct:15,errorBreakdown:{esqueci:2}}],simulados:[{date:'2026-09-02',total:100,correct:80}],reviewAgenda:[{date:'2026-09-02',status:'Não iniciado'}],studyPlans:[],dailyPlans:[],planAdjustments:[],recommendationFeedback:[{date:'2026-09-02',accepted:true,completed:true,useful:true,outcome:{}}]};
-  const report=buildStrategicReport({state,generatedAt:'2026-09-02T12:00:00.000Z',isDemo:true,readiness:{value:72},diagnosis:{bottlenecks:[],opportunities:[]},forecast:{forecast30:{low:74,high:82,central:78}}});
-  assert.equal(report.overview.accuracy,75);assert.equal(report.overview.studySeconds,3600);assert.equal(report.recommendations.useful,1);assert.equal(report.recommendations.measured,1);assert.equal(report.period.start,'2026-08-04');
-  const html=renderStrategicReport(report);assert.match(html,/Relatório estratégico de demonstração/);assert.match(html,/74–82%/);assert.doesNotMatch(html,/<script/);
-  assert.match(html,/Resumo executivo/);assert.match(html,/Foco recomendado/);assert.match(html,/Metodologia/);
-  assert.match(html,/Comparação entre períodos/);assert.equal(report.comparison.metrics.minutes.current,60);assert.equal(report.goals.targets.accuracy,80);assert.equal(report.goals.observed.questions,20);
-  assert.equal(report.comparisonInsights.accuracyMessage,'Acerto sem comparação: são necessárias questões resolvidas nos dois períodos.');
-  assert.equal(report.exam.phase.label,'Consolidação');assert.equal(report.exam.daysToExam,90);
+test('consolida relatório estratégico sem depender do DOM', () => {
+  const state = {
+    examDate: '2026-12-01',
+    metas: { metaAprovacao: 80 },
+    subjects: [{ id: 's', name: 'Direito', topics: [{ id: 't', status: 'Concluído' }] }],
+    studySessions: [{ date: '2026-09-02', subjectId: 's', durationSeconds: 3600 }],
+    questoes: [
+      {
+        date: '2026-09-02',
+        subjectId: 's',
+        resolved: 20,
+        correct: 15,
+        errorBreakdown: { esqueci: 2 },
+      },
+    ],
+    simulados: [{ date: '2026-09-02', total: 100, correct: 80 }],
+    reviewAgenda: [{ date: '2026-09-02', status: 'Não iniciado' }],
+    studyPlans: [],
+    dailyPlans: [],
+    planAdjustments: [],
+    recommendationFeedback: [
+      { date: '2026-09-02', accepted: true, completed: true, useful: true, outcome: {} },
+    ],
+  };
+  const report = buildStrategicReport({
+    state,
+    generatedAt: '2026-09-02T12:00:00.000Z',
+    isDemo: true,
+    readiness: { value: 72 },
+    diagnosis: { bottlenecks: [], opportunities: [] },
+    forecast: { forecast30: { low: 74, high: 82, central: 78 } },
+  });
+  assert.equal(report.overview.accuracy, 75);
+  assert.equal(report.overview.studySeconds, 3600);
+  assert.equal(report.recommendations.useful, 1);
+  assert.equal(report.recommendations.measured, 1);
+  assert.equal(report.period.start, '2026-08-04');
+  const html = renderStrategicReport(report);
+  assert.match(html, /Relatório estratégico de demonstração/);
+  assert.match(html, /74–82%/);
+  assert.doesNotMatch(html, /<script/);
+  assert.match(html, /Resumo executivo/);
+  assert.match(html, /Foco recomendado/);
+  assert.match(html, /Metodologia/);
+  assert.match(html, /Comparação entre períodos/);
+  assert.equal(report.comparison.metrics.minutes.current, 60);
+  assert.equal(report.goals.targets.accuracy, 80);
+  assert.equal(report.goals.observed.questions, 20);
+  assert.equal(
+    report.comparisonInsights.accuracyMessage,
+    'Acerto sem comparação: são necessárias questões resolvidas nos dois períodos.'
+  );
+  assert.equal(report.exam.phase.label, 'Consolidação');
+  assert.equal(report.exam.daysToExam, 90);
   assert.ok(html.includes(report.comparisonInsights.accuracyMessage));
-  assert.match(html,/Fase atual|Consolidação/);assert.match(html,/90 dias restantes/);
+  assert.match(html, /Fase atual|Consolidação/);
+  assert.match(html, /90 dias restantes/);
   assert.ok(html.includes(report.comparisonInsights.caveat));
 });
 
-test('período personalizado exclui registros externos ao recorte',()=>{const state={subjects:[],studySessions:[{date:'2026-08-01',durationSeconds:3600},{date:'2026-09-01',durationSeconds:1800}],questoes:[],simulados:[],reviewAgenda:[],studyPlans:[],dailyPlans:[],planAdjustments:[],recommendationFeedback:[]};const report=buildStrategicReport({state,generatedAt:'2026-09-02T12:00:00Z',period:{preset:'custom',start:'2026-09-01',end:'2026-09-02'}});assert.equal(report.overview.studySeconds,1800);assert.equal(report.period.label,'2026-09-01 a 2026-09-02')});
-test('comparação de revisões usa a data da conclusão, não a data prevista',()=>{const state={subjects:[],studySessions:[],questoes:[],simulados:[],reviewAgenda:[{id:'done-now',date:'2026-08-20',status:'Concluído',completedAt:'2026-09-04T12:00:00.000Z'},{id:'done-before',date:'2026-09-03',status:'Concluído',completedAt:'2026-08-30T12:00:00.000Z'}],studyPlans:[],dailyPlans:[],planAdjustments:[],recommendationFeedback:[]};const report=buildStrategicReport({state,generatedAt:'2026-09-05T12:00:00Z',period:{preset:'custom',start:'2026-09-01',end:'2026-09-05'}});assert.equal(report.comparison.metrics.reviews.current,1);assert.equal(report.comparison.metrics.reviews.previous,1)});
-test('relatório separa evidência atribuível ao edital de registros somente da disciplina',()=>{const state={examBlueprint:{activeExamTags:['bb-escriturario']},metas:{},subjects:[{id:'s',name:'Português',topics:[{id:'bb',examTags:['bb-escriturario']},{id:'caixa',examTags:['caixa-tbn']}]}],studySessions:[{date:'2026-09-02',subjectId:'s',topicId:'bb',durationSeconds:1800},{date:'2026-09-02',subjectId:'s',topicId:'caixa',durationSeconds:1200},{date:'2026-09-02',subjectId:'s',durationSeconds:900}],questoes:[{date:'2026-09-02',subjectId:'s',topicId:'bb',resolved:10,correct:8},{date:'2026-09-02',subjectId:'s',resolved:5,correct:5}],simulados:[],reviewAgenda:[],studyPlans:[],dailyPlans:[],planAdjustments:[],recommendationFeedback:[]};const report=buildStrategicReport({state,generatedAt:'2026-09-02T12:00:00Z'});assert.equal(report.overview.studySeconds,1800);assert.equal(report.overview.unscopedStudySeconds,2100);assert.equal(report.overview.resolved,10);assert.equal(report.overview.unscopedResolved,5);assert.equal(report.bySubject[0].accuracy,80)});
-
-test('template escapa nomes vindos do estado',()=>{
-  const report=buildStrategicReport({state:{subjects:[],studySessions:[],questoes:[],simulados:[],reviewAgenda:[],studyPlans:[],dailyPlans:[],planAdjustments:[],recommendationFeedback:[]},generatedAt:'2026-09-02T12:00:00.000Z',diagnosis:{bottlenecks:[{subjectName:'<script>',topicName:'X',reason:'Y'}],opportunities:[]}});
-  assert.match(renderStrategicReport(report),/&lt;script&gt;/);
+test('período personalizado exclui registros externos ao recorte', () => {
+  const state = {
+    subjects: [],
+    studySessions: [
+      { date: '2026-08-01', durationSeconds: 3600 },
+      { date: '2026-09-01', durationSeconds: 1800 },
+    ],
+    questoes: [],
+    simulados: [],
+    reviewAgenda: [],
+    studyPlans: [],
+    dailyPlans: [],
+    planAdjustments: [],
+    recommendationFeedback: [],
+  };
+  const report = buildStrategicReport({
+    state,
+    generatedAt: '2026-09-02T12:00:00Z',
+    period: { preset: 'custom', start: '2026-09-01', end: '2026-09-02' },
+  });
+  assert.equal(report.overview.studySeconds, 1800);
+  assert.equal(report.period.label, '2026-09-01 a 2026-09-02');
+});
+test('comparação de revisões usa a data da conclusão, não a data prevista', () => {
+  const state = {
+    subjects: [],
+    studySessions: [],
+    questoes: [],
+    simulados: [],
+    reviewAgenda: [
+      {
+        id: 'done-now',
+        date: '2026-08-20',
+        status: 'Concluído',
+        completedAt: '2026-09-04T12:00:00.000Z',
+      },
+      {
+        id: 'done-before',
+        date: '2026-09-03',
+        status: 'Concluído',
+        completedAt: '2026-08-30T12:00:00.000Z',
+      },
+    ],
+    studyPlans: [],
+    dailyPlans: [],
+    planAdjustments: [],
+    recommendationFeedback: [],
+  };
+  const report = buildStrategicReport({
+    state,
+    generatedAt: '2026-09-05T12:00:00Z',
+    period: { preset: 'custom', start: '2026-09-01', end: '2026-09-05' },
+  });
+  assert.equal(report.comparison.metrics.reviews.current, 1);
+  assert.equal(report.comparison.metrics.reviews.previous, 1);
+});
+test('relatório separa evidência atribuível ao edital de registros somente da disciplina', () => {
+  const state = {
+    examBlueprint: { activeExamTags: ['bb-escriturario'] },
+    metas: {},
+    subjects: [
+      {
+        id: 's',
+        name: 'Português',
+        topics: [
+          { id: 'bb', examTags: ['bb-escriturario'] },
+          { id: 'caixa', examTags: ['caixa-tbn'] },
+        ],
+      },
+    ],
+    studySessions: [
+      { date: '2026-09-02', subjectId: 's', topicId: 'bb', durationSeconds: 1800 },
+      { date: '2026-09-02', subjectId: 's', topicId: 'caixa', durationSeconds: 1200 },
+      { date: '2026-09-02', subjectId: 's', durationSeconds: 900 },
+    ],
+    questoes: [
+      { date: '2026-09-02', subjectId: 's', topicId: 'bb', resolved: 10, correct: 8 },
+      { date: '2026-09-02', subjectId: 's', resolved: 5, correct: 5 },
+    ],
+    simulados: [],
+    reviewAgenda: [],
+    studyPlans: [],
+    dailyPlans: [],
+    planAdjustments: [],
+    recommendationFeedback: [],
+  };
+  const report = buildStrategicReport({ state, generatedAt: '2026-09-02T12:00:00Z' });
+  assert.equal(report.overview.studySeconds, 1800);
+  assert.equal(report.overview.unscopedStudySeconds, 2100);
+  assert.equal(report.overview.resolved, 10);
+  assert.equal(report.overview.unscopedResolved, 5);
+  assert.equal(report.bySubject[0].accuracy, 80);
 });
 
-test('relatório distingue prova sem data e informa a orientação da fase',()=>{
-  const report=buildStrategicReport({state:{subjects:[],studySessions:[],questoes:[],simulados:[],reviewAgenda:[],studyPlans:[],dailyPlans:[],planAdjustments:[],recommendationFeedback:[]},generatedAt:'2026-09-02T12:00:00.000Z'});
-  assert.equal(report.exam.phase.state,'undated');
-  assert.match(renderStrategicReport(report),/Prova sem data/);
-  assert.match(renderStrategicReport(report),/Defina a data da prova/);
+test('template escapa nomes vindos do estado', () => {
+  const report = buildStrategicReport({
+    state: {
+      subjects: [],
+      studySessions: [],
+      questoes: [],
+      simulados: [],
+      reviewAgenda: [],
+      studyPlans: [],
+      dailyPlans: [],
+      planAdjustments: [],
+      recommendationFeedback: [],
+    },
+    generatedAt: '2026-09-02T12:00:00.000Z',
+    diagnosis: {
+      bottlenecks: [{ subjectName: '<script>', topicName: 'X', reason: 'Y' }],
+      opportunities: [],
+    },
+  });
+  assert.match(renderStrategicReport(report), /&lt;script&gt;/);
+});
+
+test('relatório distingue prova sem data e informa a orientação da fase', () => {
+  const report = buildStrategicReport({
+    state: {
+      subjects: [],
+      studySessions: [],
+      questoes: [],
+      simulados: [],
+      reviewAgenda: [],
+      studyPlans: [],
+      dailyPlans: [],
+      planAdjustments: [],
+      recommendationFeedback: [],
+    },
+    generatedAt: '2026-09-02T12:00:00.000Z',
+  });
+  assert.equal(report.exam.phase.state, 'undated');
+  assert.match(renderStrategicReport(report), /Prova sem data/);
+  assert.match(renderStrategicReport(report), /Defina a data da prova/);
 });

@@ -1,57 +1,179 @@
-const tags=new Set(['COMUM','BB','CAIXA']);
-const narrativeRoles=new Set(['priority_gap','consolidated','improving','declining','stable','insufficient_evidence']);
-const integer=value=>Number.isInteger(value)&&value>=0;
+const tags = new Set(['COMUM', 'BB', 'CAIXA']);
+const narrativeRoles = new Set([
+  'priority_gap',
+  'consolidated',
+  'improving',
+  'declining',
+  'stable',
+  'insufficient_evidence',
+]);
+const integer = value => Number.isInteger(value) && value >= 0;
 
-export function validateDemoScenario(scenario){
-  const errors=[];
-  if(scenario?.meta?.format!=='studytrack-demo-blueprint'||scenario.meta.version!==2)errors.push('Formato ou versão do cenário inválidos.');
-  if(typeof scenario?.meta?.seed!=='string'||!scenario.meta.seed.trim())errors.push('Seed inválida.');
-  if(!integer(scenario?.meta?.historyDays)||scenario.meta.historyDays<1)errors.push('Janela histórica inválida.');
-  if(!Array.isArray(scenario?.subjects))errors.push('Disciplinas ausentes.');
-  const subjects=Array.isArray(scenario?.subjects)?scenario.subjects:[];
-  const ids=new Set();
-  for(const subject of subjects){
-    if(!subject?.id||ids.has(subject.id))errors.push(`ID de disciplina inválido ou duplicado: ${subject?.id||'vazio'}.`);
+export function validateDemoScenario(scenario) {
+  const errors = [];
+  if (scenario?.meta?.format !== 'studytrack-demo-blueprint' || scenario.meta.version !== 2)
+    errors.push('Formato ou versão do cenário inválidos.');
+  if (typeof scenario?.meta?.seed !== 'string' || !scenario.meta.seed.trim())
+    errors.push('Seed inválida.');
+  if (!integer(scenario?.meta?.historyDays) || scenario.meta.historyDays < 1)
+    errors.push('Janela histórica inválida.');
+  if (!Array.isArray(scenario?.subjects)) errors.push('Disciplinas ausentes.');
+  const subjects = Array.isArray(scenario?.subjects) ? scenario.subjects : [];
+  const ids = new Set();
+  for (const subject of subjects) {
+    if (!subject?.id || ids.has(subject.id))
+      errors.push(`ID de disciplina inválido ou duplicado: ${subject?.id || 'vazio'}.`);
     ids.add(subject?.id);
-    if(!subject?.name||!Array.isArray(subject.topics)||!subject.topics.length)errors.push(`Disciplina incompleta: ${subject?.id||'vazio'}.`);
-    for(const topic of Array.isArray(subject?.topics)?subject.topics:[]){
-      if(!topic?.id||ids.has(topic.id))errors.push(`ID de tópico inválido ou duplicado: ${topic?.id||'vazio'}.`);
+    if (!subject?.name || !Array.isArray(subject.topics) || !subject.topics.length)
+      errors.push(`Disciplina incompleta: ${subject?.id || 'vazio'}.`);
+    for (const topic of Array.isArray(subject?.topics) ? subject.topics : []) {
+      if (!topic?.id || ids.has(topic.id))
+        errors.push(`ID de tópico inválido ou duplicado: ${topic?.id || 'vazio'}.`);
       ids.add(topic?.id);
-      if(!topic?.name||!Array.isArray(topic.examTags)||!topic.examTags.length||topic.examTags.some(tag=>!tags.has(tag)))errors.push(`Tópico com nome ou escopo inválido: ${topic?.id||'vazio'}.`);
-      if(topic?.targetMastery!=null&&(!Number.isFinite(topic.targetMastery)||topic.targetMastery<0||topic.targetMastery>100))errors.push(`Domínio-alvo inválido: ${topic?.id||'vazio'}.`);
-      if(topic?.narrativeRole!=null&&!narrativeRoles.has(topic.narrativeRole))errors.push(`Papel narrativo inválido: ${topic?.id||'vazio'}.`);
-      if(topic?.examImportance!=null&&(!Number.isFinite(topic.examImportance)||topic.examImportance<0||topic.examImportance>1))errors.push(`Importância de prova inválida: ${topic?.id||'vazio'}.`);
-      if(topic?.targetQuestionVolume!=null&&(!integer(topic.targetQuestionVolume)||topic.targetQuestionVolume<1))errors.push(`Volume de questões inválido: ${topic?.id||'vazio'}.`);
-      if(topic?.narrativeRole&&(!Number.isFinite(topic.targetMastery)||!Number.isFinite(topic.examImportance)||!integer(topic.targetQuestionVolume)))errors.push(`Evidências narrativas incompletas: ${topic?.id||'vazio'}.`);
+      if (
+        !topic?.name ||
+        !Array.isArray(topic.examTags) ||
+        !topic.examTags.length ||
+        topic.examTags.some(tag => !tags.has(tag))
+      )
+        errors.push(`Tópico com nome ou escopo inválido: ${topic?.id || 'vazio'}.`);
+      if (
+        topic?.targetMastery != null &&
+        (!Number.isFinite(topic.targetMastery) ||
+          topic.targetMastery < 0 ||
+          topic.targetMastery > 100)
+      )
+        errors.push(`Domínio-alvo inválido: ${topic?.id || 'vazio'}.`);
+      if (topic?.narrativeRole != null && !narrativeRoles.has(topic.narrativeRole))
+        errors.push(`Papel narrativo inválido: ${topic?.id || 'vazio'}.`);
+      if (
+        topic?.examImportance != null &&
+        (!Number.isFinite(topic.examImportance) ||
+          topic.examImportance < 0 ||
+          topic.examImportance > 1)
+      )
+        errors.push(`Importância de prova inválida: ${topic?.id || 'vazio'}.`);
+      if (
+        topic?.targetQuestionVolume != null &&
+        (!integer(topic.targetQuestionVolume) || topic.targetQuestionVolume < 1)
+      )
+        errors.push(`Volume de questões inválido: ${topic?.id || 'vazio'}.`);
+      if (
+        topic?.narrativeRole &&
+        (!Number.isFinite(topic.targetMastery) ||
+          !Number.isFinite(topic.examImportance) ||
+          !integer(topic.targetQuestionVolume))
+      )
+        errors.push(`Evidências narrativas incompletas: ${topic?.id || 'vazio'}.`);
     }
   }
-  const target=scenario?.targets||{};
-  if(subjects.length!==target.subjects)errors.push('Total de disciplinas diferente da meta.');
-  if(subjects.reduce((sum,subject)=>sum+(Array.isArray(subject?.topics)?subject.topics.length:0),0)!==target.topics)errors.push('Total de tópicos diferente da meta.');
-  if(!integer(target.studySessions)||target.studySessions<1||!integer(target.studyQuestions)||target.studyQuestions<1)errors.push('Metas de estudo inválidas.');
-  const phases=Array.isArray(scenario?.profile?.phases)?scenario.profile.phases:[];
-  let next=1;
-  for(const phase of phases){
-    if(!Array.isArray(phase?.days)||phase.days[0]!==next||!integer(phase.days[1])||phase.days[1]<next||!Number.isFinite(phase.weeklyHours)||phase.weeklyHours<=0)errors.push(`Fase inválida: ${phase?.name||'sem nome'}.`);
-    next=(phase?.days?.[1]||0)+1;
+  const target = scenario?.targets || {};
+  if (subjects.length !== target.subjects) errors.push('Total de disciplinas diferente da meta.');
+  if (
+    subjects.reduce(
+      (sum, subject) => sum + (Array.isArray(subject?.topics) ? subject.topics.length : 0),
+      0
+    ) !== target.topics
+  )
+    errors.push('Total de tópicos diferente da meta.');
+  if (
+    !integer(target.studySessions) ||
+    target.studySessions < 1 ||
+    !integer(target.studyQuestions) ||
+    target.studyQuestions < 1
+  )
+    errors.push('Metas de estudo inválidas.');
+  const phases = Array.isArray(scenario?.profile?.phases) ? scenario.profile.phases : [];
+  let next = 1;
+  for (const phase of phases) {
+    if (
+      !Array.isArray(phase?.days) ||
+      phase.days[0] !== next ||
+      !integer(phase.days[1]) ||
+      phase.days[1] < next ||
+      !Number.isFinite(phase.weeklyHours) ||
+      phase.weeklyHours <= 0
+    )
+      errors.push(`Fase inválida: ${phase?.name || 'sem nome'}.`);
+    next = (phase?.days?.[1] || 0) + 1;
   }
-  if(next!==scenario?.meta?.historyDays+1)errors.push('As fases não cobrem a janela histórica.');
-  const durations=scenario?.sessions?.durationsMinutes;
-  if(!Array.isArray(durations)||!durations.length||durations.some(value=>!integer(value)||value===0))errors.push('Durações de sessão inválidas.');
-  const types=scenario?.sessions?.types;
-  if(!Array.isArray(types)||!types.includes('questions')||types.some(type=>!['study','questions','review'].includes(type)))errors.push('Tipos de sessão inválidos.');
-  const categories=scenario?.questions?.errorCategories;
-  if(!Array.isArray(categories)||new Set(categories).size!==6||categories.some(value=>typeof value!=='string'))errors.push('Categorias de erro inválidas.');
-  const accuracy=scenario?.questions?.monthlyAccuracyPct;
-  if(!Array.isArray(accuracy)||!accuracy.length||accuracy.some(value=>!Number.isFinite(value)||value<0||value>100))errors.push('Trajetória de acertos inválida.');
-  const exams=scenario?.examIntelligence;
-  if(!exams||!integer(exams.historicalExams)||exams.historicalExams<1||!integer(exams.complete)||!integer(exams.partial)||exams.complete+exams.partial!==exams.historicalExams||!integer(exams.questions)||!integer(exams.unresolved)||exams.unresolved%Math.max(1,exams.partial)!==0)errors.push('Metas de provas históricas inválidas.');
-  const goals=scenario?.goals;
-  if(!goals||!Array.isArray(goals.history)||goals.history.some(row=>!integer(row.plannedMinutes)||!integer(row.actualMinutes))||!Number.isFinite(goals.weeklyHours))errors.push('Histórico de metas inválido.');
-  const adaptive=scenario?.adaptivePlanning;
-  if(!adaptive||!integer(adaptive.capacityMinutes)||!integer(adaptive.example?.minutes)||adaptive.example.minutes<1||!integer(adaptive.example?.sourceBeforeMinutes)||!integer(adaptive.example?.targetBeforeMinutes)||adaptive.example.sourceBeforeMinutes+adaptive.example.targetBeforeMinutes>=adaptive.capacityMinutes)errors.push('Exemplo de planejamento adaptativo inválido.');
-  if(!integer(target.recommendations)||target.recommendations<1||!integer(target.weeklyCloses)||target.weeklyCloses<1||!Array.isArray(scenario?.recommendations?.examples))errors.push('Ciclo de aprendizagem inválido.');
-  return {valid:errors.length===0,errors};
+  if (next !== scenario?.meta?.historyDays + 1)
+    errors.push('As fases não cobrem a janela histórica.');
+  const durations = scenario?.sessions?.durationsMinutes;
+  if (
+    !Array.isArray(durations) ||
+    !durations.length ||
+    durations.some(value => !integer(value) || value === 0)
+  )
+    errors.push('Durações de sessão inválidas.');
+  const types = scenario?.sessions?.types;
+  if (
+    !Array.isArray(types) ||
+    !types.includes('questions') ||
+    types.some(type => !['study', 'questions', 'review'].includes(type))
+  )
+    errors.push('Tipos de sessão inválidos.');
+  const categories = scenario?.questions?.errorCategories;
+  if (
+    !Array.isArray(categories) ||
+    new Set(categories).size !== 6 ||
+    categories.some(value => typeof value !== 'string')
+  )
+    errors.push('Categorias de erro inválidas.');
+  const accuracy = scenario?.questions?.monthlyAccuracyPct;
+  if (
+    !Array.isArray(accuracy) ||
+    !accuracy.length ||
+    accuracy.some(value => !Number.isFinite(value) || value < 0 || value > 100)
+  )
+    errors.push('Trajetória de acertos inválida.');
+  const exams = scenario?.examIntelligence;
+  if (
+    !exams ||
+    !integer(exams.historicalExams) ||
+    exams.historicalExams < 1 ||
+    !integer(exams.complete) ||
+    !integer(exams.partial) ||
+    exams.complete + exams.partial !== exams.historicalExams ||
+    !integer(exams.questions) ||
+    !integer(exams.unresolved) ||
+    exams.unresolved % Math.max(1, exams.partial) !== 0
+  )
+    errors.push('Metas de provas históricas inválidas.');
+  const goals = scenario?.goals;
+  if (
+    !goals ||
+    !Array.isArray(goals.history) ||
+    goals.history.some(row => !integer(row.plannedMinutes) || !integer(row.actualMinutes)) ||
+    !Number.isFinite(goals.weeklyHours)
+  )
+    errors.push('Histórico de metas inválido.');
+  const adaptive = scenario?.adaptivePlanning;
+  if (
+    !adaptive ||
+    !integer(adaptive.capacityMinutes) ||
+    !integer(adaptive.example?.minutes) ||
+    adaptive.example.minutes < 1 ||
+    !integer(adaptive.example?.sourceBeforeMinutes) ||
+    !integer(adaptive.example?.targetBeforeMinutes) ||
+    adaptive.example.sourceBeforeMinutes + adaptive.example.targetBeforeMinutes >=
+      adaptive.capacityMinutes
+  )
+    errors.push('Exemplo de planejamento adaptativo inválido.');
+  if (
+    !integer(target.recommendations) ||
+    target.recommendations < 1 ||
+    !integer(target.weeklyCloses) ||
+    target.weeklyCloses < 1 ||
+    !Array.isArray(scenario?.recommendations?.examples)
+  )
+    errors.push('Ciclo de aprendizagem inválido.');
+  return { valid: errors.length === 0, errors };
 }
 
-export function assertDemoScenario(scenario){const result=validateDemoScenario(scenario);if(!result.valid)throw new TypeError(`Cenário da demonstração inválido: ${result.errors.join(' ')}`);return scenario}
+export function assertDemoScenario(scenario) {
+  const result = validateDemoScenario(scenario);
+  if (!result.valid)
+    throw new TypeError(`Cenário da demonstração inválido: ${result.errors.join(' ')}`);
+  return scenario;
+}

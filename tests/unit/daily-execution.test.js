@@ -1,52 +1,338 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildDailyExecutionModel} from '../../src/application/daily-execution/build-daily-execution-model.js';
-import {createDailyExecutionController} from '../../src/ui/controllers/daily-execution-controller.js';
-import {localDateFromTimestamp} from '../../src/domain/sessions/study-session.js';
-const fixture=()=>({today:'2026-10-02',subjects:[{id:'s',name:'Matemática',topics:[{id:'t',name:'Juros',examTags:['bb']}]}],activeExamTags:['bb'],dailyPlans:[{id:'p',date:'2026-10-02',items:[{id:'i',subjectId:'s',topicId:'t',type:'questions',plannedMinutes:30,studyPlanId:'old'}]}],sessions:[],activePlan:{id:'new'},nextBestAction:{action:{id:'r',recommendationId:'r',subjectId:'s',topicId:'t',activityType:'questions',suggestedMinutes:30},reasons:['Lacuna prioritária']}});
-const session=(changes={})=>({id:'session',date:'2026-10-02',subjectId:'s',topicId:'t',type:'questions',durationSeconds:900,planItemId:'i',...changes});
-test('modelo diário preserva input e contextualiza prioridade sem alterar planos',()=>{const input=fixture(),before=structuredClone(input),result=buildDailyExecutionModel(input);assert.deepEqual(input,before);assert.equal(result.priority.nextItem.id,'i');assert.equal(result.needsPlanReview,true);assert.equal(result.progress.pendingActivities,1);});
-test('execução parcial, completa e excedente mantém crédito limitado',()=>{const input=fixture();input.sessions=[session()];let result=buildDailyExecutionModel(input);assert.equal(result.progress.progress,50);assert.equal(result.items[0].remainingSeconds,900);input.sessions[0].durationSeconds=2400;result=buildDailyExecutionModel(input);assert.equal(result.progress.progress,100);assert.equal(result.progress.creditedMinutes,30);assert.equal(result.progress.studiedMinutes,40);assert.equal(result.priority.executed,true);});
-test('teoria não cumpre questões; estudo sem vínculo é adicional',()=>{const input=fixture();input.sessions=[session({type:'study',durationSeconds:1800}),session({id:'extra',planItemId:null,durationSeconds:600})];const result=buildDailyExecutionModel(input);assert.equal(result.progress.progress,0);assert.equal(result.progress.mismatchedMinutes,30);assert.equal(result.progress.additionalMinutes,10);assert.equal(result.priority.executed,false);});
-test('editar e remover sessões recalcula execução sem usar status armazenado',()=>{const input=fixture();input.dailyPlans[0].items[0].status='completed';input.dailyPlans[0].items[0].executedSeconds=1800;input.sessions=[session({durationSeconds:1800})];assert.equal(buildDailyExecutionModel(input).progress.progress,100);input.sessions[0].type='study';assert.equal(buildDailyExecutionModel(input).progress.progress,0);input.sessions=[];assert.equal(buildDailyExecutionModel(input).progress.studiedMinutes,0);});
-test('arquivado e outro concurso não recebem próxima atividade',()=>{const input=fixture();input.activeExamTags=['caixa'];assert.equal(buildDailyExecutionModel(input).priority.nextItem,null);input.activeExamTags=['bb'];input.subjects[0].topics[0].archived=true;assert.equal(buildDailyExecutionModel(input).priority.action,null);});
-test('sem plano, data inválida e virada de dia não fabricam cumprimento',()=>{const input=fixture();input.dailyPlans=[];assert.equal(buildDailyExecutionModel(input).state,'unplanned');assert.equal(buildDailyExecutionModel({...input,today:'2026-02-30'}).state,'invalid_date');const stamp='2026-10-03T01:00:00Z';input.today=localDateFromTimestamp(stamp);input.sessions=[session({date:null,endedAt:stamp,planItemId:null})];assert.equal(buildDailyExecutionModel(input).progress.studiedMinutes,15);input.today='2026-10-04';assert.equal(buildDailyExecutionModel(input).progress.studiedMinutes,0);});
-test('sessão de outro dia não aumenta realizado hoje e duplicatas não dobram crédito',()=>{const input=fixture();input.sessions=[session({date:'2026-10-01'}),session({id:'current'}),session({id:'current'})];const result=buildDailyExecutionModel(input);assert.equal(result.progress.studiedMinutes,15);assert.equal(result.progress.progress,100);assert.equal(result.progress.creditedMinutes,15);});
-test('controlador revalida tarefa, mudança de prova e cronômetro ativo',()=>{const input=fixture();let started=null,timer={active:false},resumed=false;const controller=createDailyExecutionController({getContext:()=>input,getNextBestAction:()=>input.nextBestAction,onStart:id=>{started=id;},onResume:()=>{resumed=true;},getTimer:()=>timer});assert.equal(controller.start('i').state,'started');assert.equal(started,'i');timer={active:true,planItemId:'other'};assert.equal(controller.start('i').state,'blocked');timer.planItemId='i';assert.equal(controller.start('i').state,'resumed');assert.equal(resumed,true);input.activeExamTags=['caixa'];assert.equal(controller.start('i').state,'unavailable');});
-
-import {renderDailyExecution,renderPlannedAction} from '../../src/ui/renderers/daily-execution-renderer.js';
-const render=model=>renderDailyExecution(model,{escapeHtml:value=>String(value).replaceAll('<','&lt;'),formatMinutes:value=>value+' min'});
-const planned=(model,options={})=>renderPlannedAction(model.priority,{escapeHtml:String,escapeAttr:String,formatMinutes:value=>value+' min',...options});
-test('renderer distingue progresso parcial de atividade concluída',()=>{const input=fixture();input.sessions=[session()];const html=render(buildDailyExecutionModel(input));assert.match(html,/50%<\/strong> de progresso do plano/);assert.match(html,/0 de 1 atividade concluída/);const action=planned(buildDailyExecutionModel(input));assert.match(action,/Por que estudar isso agora/);assert.match(action,/Prioridade principal prevista no plano/);assert.doesNotMatch(html,/data-daily-start/)});
-test('renderer não atribui motivos estratégicos a outra atividade do plano',()=>{const input=fixture();input.nextBestAction.action.activityType='review';const html=planned(buildDailyExecutionModel(input),{suggestion:{subjectId:'x',topicId:'y',subjectName:'Outra',topicName:'Revisão',score:80}});assert.doesNotMatch(html,/Prioridade principal prevista no plano/);assert.doesNotMatch(html,/Lacuna prioritária/);assert.match(html,/Sugestão fora do plano: Outra · Revisão \(prioridade 80\/100\)/)});
-test('renderer apresenta dia concluído e orientação sem plano',()=>{const input=fixture();input.sessions=[session({durationSeconds:1800})];const html=render(buildDailyExecutionModel(input));assert.match(html,/1 de 1 atividade concluída/);assert.match(html,/Todas as atividades/);assert.equal(planned(buildDailyExecutionModel(input)),'');input.dailyPlans=[];assert.match(render(buildDailyExecutionModel(input)),/Abrir planejamento/)});
-
-test('ação planejada diferencia cronômetro da tarefa atual e de outra atividade',()=>{const model=buildDailyExecutionModel(fixture());assert.match(planned(model,{timer:{active:true,planItemId:'i'}}),/data-daily-resume/);const blocked=planned(model,{timer:{active:true,planItemId:'other'}});assert.match(blocked,/disabled>Finalize a sessão atual/);assert.doesNotMatch(blocked,/data-daily-start/)});
-test('renderer orienta plano sem conteúdo elegível e preserva detalhes limitados',()=>{const input=fixture();input.subjects[0].topics[0].archived=true;assert.match(render(buildDailyExecutionModel(input)),/Não há atividade elegível/);const model=buildDailyExecutionModel(fixture());model.priority.following=Array.from({length:6},(_,index)=>({...model.items[0],id:'following-'+index}));assert.match(render(model),/Mostrar mais/);assert.equal(render({state:'invalid_date'}),'')});
-
-test('hierarquia operacional separa progresso da ação e mantém CTA único',()=>{const model=buildDailyExecutionModel(fixture()),progress=render(model),html=planned(model);assert.match(html,/daily-execution-metadata/);assert.match(progress,/daily-execution-progress/);assert.doesNotMatch(progress,/data-daily-start=/);assert.equal((html.match(/data-daily-start=/g)||[]).length,1);assert.match(html,/<details class="daily-execution-reasons">/);assert.doesNotMatch(html,/<details class="daily-execution-reasons" open/)});
-
-test('contexto excepcional recolhe detalhes, preserva alertas e não duplica recomendação',()=>{const input=fixture();input.sessions=[session({type:'study',durationSeconds:1800}),session({id:'extra',planItemId:null,durationSeconds:600})];input.nextBestAction.action.activityType='review';const model=buildDailyExecutionModel(input),before=structuredClone(model),html=render(model);assert.deepEqual(model,before);assert.match(html,/<details class="daily-execution-context"><summary>Conferir tempo adicional e vínculos/);assert.doesNotMatch(html,/<details class="daily-execution-context" open/);assert.match(html,/10 min de estudo adicional/);assert.match(html,/30 min com vínculo/);assert.match(html,/<\/details>[\s\S]*versão anterior do plano/);assert.doesNotMatch(html,/Recomendação estratégica:/);assert.match(html,/daily-execution-footer/);assert.doesNotMatch(html,/daily-execution-suggestion/);const clean=render(buildDailyExecutionModel(fixture()));assert.doesNotMatch(clean,/daily-execution-context/)});
-
-import {renderNextBestAction} from '../../src/ui/renderers/next-best-action-renderer.js';
-test('sugestão fora do plano mantém a atividade planejada como escolha operacional',()=>{
- const input=fixture();input.nextBestAction.action.activityType='review';
- const daily=buildDailyExecutionModel(input),action=input.nextBestAction.action;
- const model={state:'ACTION_REQUIRED',label:'Revisar',topicName:'Tópico',subjectName:'Disciplina',action,reasons:[],weeklyCapacityMinutes:60};
- const before=JSON.stringify(daily);
- const html=renderNextBestAction(model,{escapeHtml:String,escapeAttr:String,dailyPriority:daily.priority});
- assert.match(html,/Sugestão fora do plano de hoje/);assert.match(html,/Seguir plano de hoje/);assert.match(html,/Estudar como atividade adicional/);assert.match(html,/data-ignore-outside-suggestion/);assert.match(html,/data-next-best-preview/);
- assert.equal(JSON.stringify(daily),before);
+import { buildDailyExecutionModel } from '../../src/application/daily-execution/build-daily-execution-model.js';
+import { createDailyExecutionController } from '../../src/ui/controllers/daily-execution-controller.js';
+import { localDateFromTimestamp } from '../../src/domain/sessions/study-session.js';
+const fixture = () => ({
+  today: '2026-10-02',
+  subjects: [
+    { id: 's', name: 'Matemática', topics: [{ id: 't', name: 'Juros', examTags: ['bb'] }] },
+  ],
+  activeExamTags: ['bb'],
+  dailyPlans: [
+    {
+      id: 'p',
+      date: '2026-10-02',
+      items: [
+        {
+          id: 'i',
+          subjectId: 's',
+          topicId: 't',
+          type: 'questions',
+          plannedMinutes: 30,
+          studyPlanId: 'old',
+        },
+      ],
+    },
+  ],
+  sessions: [],
+  activePlan: { id: 'new' },
+  nextBestAction: {
+    action: {
+      id: 'r',
+      recommendationId: 'r',
+      subjectId: 's',
+      topicId: 't',
+      activityType: 'questions',
+      suggestedMinutes: 30,
+    },
+    reasons: ['Lacuna prioritária'],
+  },
+});
+const session = (changes = {}) => ({
+  id: 'session',
+  date: '2026-10-02',
+  subjectId: 's',
+  topicId: 't',
+  type: 'questions',
+  durationSeconds: 900,
+  planItemId: 'i',
+  ...changes,
+});
+test('modelo diário preserva input e contextualiza prioridade sem alterar planos', () => {
+  const input = fixture(),
+    before = structuredClone(input),
+    result = buildDailyExecutionModel(input);
+  assert.deepEqual(input, before);
+  assert.equal(result.priority.nextItem.id, 'i');
+  assert.equal(result.needsPlanReview, true);
+  assert.equal(result.progress.pendingActivities, 1);
+});
+test('execução parcial, completa e excedente mantém crédito limitado', () => {
+  const input = fixture();
+  input.sessions = [session()];
+  let result = buildDailyExecutionModel(input);
+  assert.equal(result.progress.progress, 50);
+  assert.equal(result.items[0].remainingSeconds, 900);
+  input.sessions[0].durationSeconds = 2400;
+  result = buildDailyExecutionModel(input);
+  assert.equal(result.progress.progress, 100);
+  assert.equal(result.progress.creditedMinutes, 30);
+  assert.equal(result.progress.studiedMinutes, 40);
+  assert.equal(result.priority.executed, true);
+});
+test('teoria não cumpre questões; estudo sem vínculo é adicional', () => {
+  const input = fixture();
+  input.sessions = [
+    session({ type: 'study', durationSeconds: 1800 }),
+    session({ id: 'extra', planItemId: null, durationSeconds: 600 }),
+  ];
+  const result = buildDailyExecutionModel(input);
+  assert.equal(result.progress.progress, 0);
+  assert.equal(result.progress.mismatchedMinutes, 30);
+  assert.equal(result.progress.additionalMinutes, 10);
+  assert.equal(result.priority.executed, false);
+});
+test('editar e remover sessões recalcula execução sem usar status armazenado', () => {
+  const input = fixture();
+  input.dailyPlans[0].items[0].status = 'completed';
+  input.dailyPlans[0].items[0].executedSeconds = 1800;
+  input.sessions = [session({ durationSeconds: 1800 })];
+  assert.equal(buildDailyExecutionModel(input).progress.progress, 100);
+  input.sessions[0].type = 'study';
+  assert.equal(buildDailyExecutionModel(input).progress.progress, 0);
+  input.sessions = [];
+  assert.equal(buildDailyExecutionModel(input).progress.studiedMinutes, 0);
+});
+test('arquivado e outro concurso não recebem próxima atividade', () => {
+  const input = fixture();
+  input.activeExamTags = ['caixa'];
+  assert.equal(buildDailyExecutionModel(input).priority.nextItem, null);
+  input.activeExamTags = ['bb'];
+  input.subjects[0].topics[0].archived = true;
+  assert.equal(buildDailyExecutionModel(input).priority.action, null);
+});
+test('sem plano, data inválida e virada de dia não fabricam cumprimento', () => {
+  const input = fixture();
+  input.dailyPlans = [];
+  assert.equal(buildDailyExecutionModel(input).state, 'unplanned');
+  assert.equal(buildDailyExecutionModel({ ...input, today: '2026-02-30' }).state, 'invalid_date');
+  const stamp = '2026-10-03T01:00:00Z';
+  input.today = localDateFromTimestamp(stamp);
+  input.sessions = [session({ date: null, endedAt: stamp, planItemId: null })];
+  assert.equal(buildDailyExecutionModel(input).progress.studiedMinutes, 15);
+  input.today = '2026-10-04';
+  assert.equal(buildDailyExecutionModel(input).progress.studiedMinutes, 0);
+});
+test('sessão de outro dia não aumenta realizado hoje e duplicatas não dobram crédito', () => {
+  const input = fixture();
+  input.sessions = [
+    session({ date: '2026-10-01' }),
+    session({ id: 'current' }),
+    session({ id: 'current' }),
+  ];
+  const result = buildDailyExecutionModel(input);
+  assert.equal(result.progress.studiedMinutes, 15);
+  assert.equal(result.progress.progress, 100);
+  assert.equal(result.progress.creditedMinutes, 15);
+});
+test('controlador revalida tarefa, mudança de prova e cronômetro ativo', () => {
+  const input = fixture();
+  let started = null,
+    timer = { active: false },
+    resumed = false;
+  const controller = createDailyExecutionController({
+    getContext: () => input,
+    getNextBestAction: () => input.nextBestAction,
+    onStart: id => {
+      started = id;
+    },
+    onResume: () => {
+      resumed = true;
+    },
+    getTimer: () => timer,
+  });
+  assert.equal(controller.start('i').state, 'started');
+  assert.equal(started, 'i');
+  timer = { active: true, planItemId: 'other' };
+  assert.equal(controller.start('i').state, 'blocked');
+  timer.planItemId = 'i';
+  assert.equal(controller.start('i').state, 'resumed');
+  assert.equal(resumed, true);
+  input.activeExamTags = ['caixa'];
+  assert.equal(controller.start('i').state, 'unavailable');
 });
 
-test('sugestão opcional não recebe CTA primário mesmo quando alinhada',()=>{
- const daily=buildDailyExecutionModel(fixture()),action=fixture().nextBestAction.action;
- const html=renderNextBestAction({state:'ACTION_OPTIONAL',action,label:'Resolver questões',topicName:'Juros',subjectName:'Matemática',reasons:[],weeklyCapacityMinutes:60},{escapeHtml:String,escapeAttr:String,dailyPriority:daily.priority});
- assert.match(html,/SUGESTÃO OPCIONAL/);assert.match(html,/class="btn ghost small"[^>]*data-study-action-source/);assert.match(html,/data-decision-role="recommendation"/);
+import {
+  renderDailyExecution,
+  renderPlannedAction,
+} from '../../src/ui/renderers/daily-execution-renderer.js';
+const render = model =>
+  renderDailyExecution(model, {
+    escapeHtml: value => String(value).replaceAll('<', '&lt;'),
+    formatMinutes: value => value + ' min',
+  });
+const planned = (model, options = {}) =>
+  renderPlannedAction(model.priority, {
+    escapeHtml: String,
+    escapeAttr: String,
+    formatMinutes: value => value + ' min',
+    ...options,
+  });
+test('renderer distingue progresso parcial de atividade concluída', () => {
+  const input = fixture();
+  input.sessions = [session()];
+  const html = render(buildDailyExecutionModel(input));
+  assert.match(html, /50%<\/strong> de progresso do plano/);
+  assert.match(html, /0 de 1 atividade concluída/);
+  const action = planned(buildDailyExecutionModel(input));
+  assert.match(action, /Por que estudar isso agora/);
+  assert.match(action, /Prioridade principal prevista no plano/);
+  assert.doesNotMatch(html, /data-daily-start/);
 });
-test('matriz operacional preserva atividade do plano, sessão ativa e ausência de plano',()=>{
- const input=fixture(),aligned=planned(buildDailyExecutionModel(input));assert.match(aligned,/data-decision-role="planned"/);assert.match(aligned,/Prioridade principal prevista no plano/);
- input.nextBestAction.action.activityType='review';const model=buildDailyExecutionModel(input),html=planned(model,{suggestion:{subjectId:'x',topicId:'y',subjectName:'Outra',topicName:'Revisão'}});assert.match(html,/Sugestão fora do plano/);assert.match(html,/data-daily-start="i"/);assert.doesNotMatch(html,/Lacuna prioritária/);
- assert.match(planned(model,{timer:{active:true,planItemId:'i'}}),/Retomar sessão/);assert.match(planned(model,{timer:{active:true,planItemId:'other'}}),/disabled>Finalize a sessão atual/);
- input.dailyPlans=[];const emptyModel=buildDailyExecutionModel(input);assert.match(render(emptyModel),/Abrir planejamento/);assert.equal(planned(emptyModel),'');
+test('renderer não atribui motivos estratégicos a outra atividade do plano', () => {
+  const input = fixture();
+  input.nextBestAction.action.activityType = 'review';
+  const html = planned(buildDailyExecutionModel(input), {
+    suggestion: {
+      subjectId: 'x',
+      topicId: 'y',
+      subjectName: 'Outra',
+      topicName: 'Revisão',
+      score: 80,
+    },
+  });
+  assert.doesNotMatch(html, /Prioridade principal prevista no plano/);
+  assert.doesNotMatch(html, /Lacuna prioritária/);
+  assert.match(html, /Sugestão fora do plano: Outra · Revisão \(prioridade 80\/100\)/);
+});
+test('renderer apresenta dia concluído e orientação sem plano', () => {
+  const input = fixture();
+  input.sessions = [session({ durationSeconds: 1800 })];
+  const html = render(buildDailyExecutionModel(input));
+  assert.match(html, /1 de 1 atividade concluída/);
+  assert.match(html, /Todas as atividades/);
+  assert.equal(planned(buildDailyExecutionModel(input)), '');
+  input.dailyPlans = [];
+  assert.match(render(buildDailyExecutionModel(input)), /Abrir planejamento/);
+});
+
+test('ação planejada diferencia cronômetro da tarefa atual e de outra atividade', () => {
+  const model = buildDailyExecutionModel(fixture());
+  assert.match(planned(model, { timer: { active: true, planItemId: 'i' } }), /data-daily-resume/);
+  const blocked = planned(model, { timer: { active: true, planItemId: 'other' } });
+  assert.match(blocked, /disabled>Finalize a sessão atual/);
+  assert.doesNotMatch(blocked, /data-daily-start/);
+});
+test('renderer orienta plano sem conteúdo elegível e preserva detalhes limitados', () => {
+  const input = fixture();
+  input.subjects[0].topics[0].archived = true;
+  assert.match(render(buildDailyExecutionModel(input)), /Não há atividade elegível/);
+  const model = buildDailyExecutionModel(fixture());
+  model.priority.following = Array.from({ length: 6 }, (_, index) => ({
+    ...model.items[0],
+    id: 'following-' + index,
+  }));
+  assert.match(render(model), /Mostrar mais/);
+  assert.equal(render({ state: 'invalid_date' }), '');
+});
+
+test('hierarquia operacional separa progresso da ação e mantém CTA único', () => {
+  const model = buildDailyExecutionModel(fixture()),
+    progress = render(model),
+    html = planned(model);
+  assert.match(html, /daily-execution-metadata/);
+  assert.match(progress, /daily-execution-progress/);
+  assert.doesNotMatch(progress, /data-daily-start=/);
+  assert.equal((html.match(/data-daily-start=/g) || []).length, 1);
+  assert.match(html, /<details class="daily-execution-reasons">/);
+  assert.doesNotMatch(html, /<details class="daily-execution-reasons" open/);
+});
+
+test('contexto excepcional recolhe detalhes, preserva alertas e não duplica recomendação', () => {
+  const input = fixture();
+  input.sessions = [
+    session({ type: 'study', durationSeconds: 1800 }),
+    session({ id: 'extra', planItemId: null, durationSeconds: 600 }),
+  ];
+  input.nextBestAction.action.activityType = 'review';
+  const model = buildDailyExecutionModel(input),
+    before = structuredClone(model),
+    html = render(model);
+  assert.deepEqual(model, before);
+  assert.match(
+    html,
+    /<details class="daily-execution-context"><summary>Conferir tempo adicional e vínculos/
+  );
+  assert.doesNotMatch(html, /<details class="daily-execution-context" open/);
+  assert.match(html, /10 min de estudo adicional/);
+  assert.match(html, /30 min com vínculo/);
+  assert.match(html, /<\/details>[\s\S]*versão anterior do plano/);
+  assert.doesNotMatch(html, /Recomendação estratégica:/);
+  assert.match(html, /daily-execution-footer/);
+  assert.doesNotMatch(html, /daily-execution-suggestion/);
+  const clean = render(buildDailyExecutionModel(fixture()));
+  assert.doesNotMatch(clean, /daily-execution-context/);
+});
+
+import { renderNextBestAction } from '../../src/ui/renderers/next-best-action-renderer.js';
+test('sugestão fora do plano mantém a atividade planejada como escolha operacional', () => {
+  const input = fixture();
+  input.nextBestAction.action.activityType = 'review';
+  const daily = buildDailyExecutionModel(input),
+    action = input.nextBestAction.action;
+  const model = {
+    state: 'ACTION_REQUIRED',
+    label: 'Revisar',
+    topicName: 'Tópico',
+    subjectName: 'Disciplina',
+    action,
+    reasons: [],
+    weeklyCapacityMinutes: 60,
+  };
+  const before = JSON.stringify(daily);
+  const html = renderNextBestAction(model, {
+    escapeHtml: String,
+    escapeAttr: String,
+    dailyPriority: daily.priority,
+  });
+  assert.match(html, /Sugestão fora do plano de hoje/);
+  assert.match(html, /Seguir plano de hoje/);
+  assert.match(html, /Estudar como atividade adicional/);
+  assert.match(html, /data-ignore-outside-suggestion/);
+  assert.match(html, /data-next-best-preview/);
+  assert.equal(JSON.stringify(daily), before);
+});
+
+test('sugestão opcional não recebe CTA primário mesmo quando alinhada', () => {
+  const daily = buildDailyExecutionModel(fixture()),
+    action = fixture().nextBestAction.action;
+  const html = renderNextBestAction(
+    {
+      state: 'ACTION_OPTIONAL',
+      action,
+      label: 'Resolver questões',
+      topicName: 'Juros',
+      subjectName: 'Matemática',
+      reasons: [],
+      weeklyCapacityMinutes: 60,
+    },
+    { escapeHtml: String, escapeAttr: String, dailyPriority: daily.priority }
+  );
+  assert.match(html, /SUGESTÃO OPCIONAL/);
+  assert.match(html, /class="btn ghost small"[^>]*data-study-action-source/);
+  assert.match(html, /data-decision-role="recommendation"/);
+});
+test('matriz operacional preserva atividade do plano, sessão ativa e ausência de plano', () => {
+  const input = fixture(),
+    aligned = planned(buildDailyExecutionModel(input));
+  assert.match(aligned, /data-decision-role="planned"/);
+  assert.match(aligned, /Prioridade principal prevista no plano/);
+  input.nextBestAction.action.activityType = 'review';
+  const model = buildDailyExecutionModel(input),
+    html = planned(model, {
+      suggestion: { subjectId: 'x', topicId: 'y', subjectName: 'Outra', topicName: 'Revisão' },
+    });
+  assert.match(html, /Sugestão fora do plano/);
+  assert.match(html, /data-daily-start="i"/);
+  assert.doesNotMatch(html, /Lacuna prioritária/);
+  assert.match(planned(model, { timer: { active: true, planItemId: 'i' } }), /Retomar sessão/);
+  assert.match(
+    planned(model, { timer: { active: true, planItemId: 'other' } }),
+    /disabled>Finalize a sessão atual/
+  );
+  input.dailyPlans = [];
+  const emptyModel = buildDailyExecutionModel(input);
+  assert.match(render(emptyModel), /Abrir planejamento/);
+  assert.equal(planned(emptyModel), '');
 });

@@ -1,1 +1,1 @@
-export {bootstrapApplication} from './bootstrap/bootstrap-application.js';
+export { bootstrapApplication } from './bootstrap/bootstrap-application.js';

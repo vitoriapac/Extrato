@@ -13,7 +13,7 @@ test('remote-sync-provider: testa conexão WebDAV com sucesso', async () => {
   const result = await provider.testConnection({
     serverUrl: 'https://dav.exemplo.com/remote.php/dav/files/user/',
     username: 'estudante',
-    password: 'app-password'
+    password: 'app-password',
   });
 
   assert.equal(result.ok, true);
@@ -32,7 +32,7 @@ test('remote-sync-provider: faz upload criptografado e download decriptografado 
       return {
         ok: true,
         status: 200,
-        text: async () => remoteStore.get(url)
+        text: async () => remoteStore.get(url),
       };
     }
     return { ok: false, status: 400 };
@@ -43,13 +43,13 @@ test('remote-sync-provider: faz upload criptografado e download decriptografado 
     serverUrl: 'https://dav.exemplo.com/files/',
     username: 'user',
     password: 'pass',
-    passphrase: 'chave-mestra-segura'
+    passphrase: 'chave-mestra-segura',
   };
 
   const originalState = {
     schemaVersion: 28,
     updatedAt: '2026-10-20T10:00:00.000Z',
-    subjects: [{ id: 's1', name: 'Português', topics: [] }]
+    subjects: [{ id: 's1', name: 'Português', topics: [] }],
   };
 
   // 1. Upload
@@ -77,7 +77,7 @@ test('remote-sync-provider: checkRemoteVersion lê só o createdAt do envelope, 
     fetch: async (url, options) => {
       assert.equal(options.method, 'GET');
       return { ok: status < 400, status, text: async () => body };
-    }
+    },
   });
   const config = { serverUrl: 'https://dav.exemplo.com/files/' };
 
@@ -86,7 +86,11 @@ test('remote-sync-provider: checkRemoteVersion lê só o createdAt do envelope, 
   status = 200;
   body = JSON.stringify(envelope);
   // Sem passphrase no config: se tentasse decriptografar, falharia.
-  assert.deepEqual(await provider.checkRemoteVersion(config), { exists: true, valid: true, createdAt: envelope.createdAt });
+  assert.deepEqual(await provider.checkRemoteVersion(config), {
+    exists: true,
+    valid: true,
+    createdAt: envelope.createdAt,
+  });
 
   body = '<html>não é um backup</html>';
   assert.deepEqual(await provider.checkRemoteVersion(config), { exists: true, valid: false });
@@ -101,9 +105,12 @@ test('remote-sync-provider: upload e download devolvem o createdAt do envelope c
   let stored = null;
   const provider = createRemoteSyncProvider({
     fetch: async (url, options) => {
-      if (options.method === 'PUT') { stored = options.body; return { ok: true, status: 201 }; }
+      if (options.method === 'PUT') {
+        stored = options.body;
+        return { ok: true, status: 201 };
+      }
       return { ok: true, status: 200, text: async () => stored };
-    }
+    },
   });
   const config = { serverUrl: 'https://dav.exemplo.com/files/', passphrase: 'chave' };
 
@@ -119,37 +126,77 @@ test('remote-sync-provider: upload e download devolvem o createdAt do envelope c
 
 test('remote-sync-provider: http:// com credenciais é recusado antes de qualquer requisição', async () => {
   let calls = 0;
-  const provider = createRemoteSyncProvider({ fetch: async () => { calls++; return { ok: true, status: 207 }; } });
-  const insecure = { serverUrl: 'http://dav.exemplo.com/files/', username: 'u', password: 'p', passphrase: 'chave' };
+  const provider = createRemoteSyncProvider({
+    fetch: async () => {
+      calls++;
+      return { ok: true, status: 207 };
+    },
+  });
+  const insecure = {
+    serverUrl: 'http://dav.exemplo.com/files/',
+    username: 'u',
+    password: 'p',
+    passphrase: 'chave',
+  };
 
   await assert.rejects(() => provider.testConnection(insecure), /Use uma URL https:\/\//);
   await assert.rejects(() => provider.checkRemoteVersion(insecure), /Use uma URL https:\/\//);
   await assert.rejects(() => provider.uploadState({}, insecure), /Use uma URL https:\/\//);
   await assert.rejects(() => provider.downloadState(insecure), /Use uma URL https:\/\//);
-  await assert.rejects(() => provider.testConnection({ serverUrl: 'http://dav.exemplo.com/', password: 'só-senha' }), /https/);
+  await assert.rejects(
+    () => provider.testConnection({ serverUrl: 'http://dav.exemplo.com/', password: 'só-senha' }),
+    /https/
+  );
   assert.equal(calls, 0);
 
-  for (const serverUrl of ['http://localhost:8080/dav/', 'http://127.0.0.1/dav/', 'http://[::1]:8080/']) {
-    assert.equal((await provider.testConnection({ serverUrl, username: 'u', password: 'p' })).ok, true, serverUrl);
+  for (const serverUrl of [
+    'http://localhost:8080/dav/',
+    'http://127.0.0.1/dav/',
+    'http://[::1]:8080/',
+  ]) {
+    assert.equal(
+      (await provider.testConnection({ serverUrl, username: 'u', password: 'p' })).ok,
+      true,
+      serverUrl
+    );
   }
-  assert.equal((await provider.testConnection({ serverUrl: 'http://dav.exemplo.com/files/' })).ok, true, 'sem credenciais é aceito');
-  await assert.rejects(() => provider.testConnection({ serverUrl: 'não é url', username: 'u' }), /URL do servidor WebDAV inválida/);
+  assert.equal(
+    (await provider.testConnection({ serverUrl: 'http://dav.exemplo.com/files/' })).ok,
+    true,
+    'sem credenciais é aceito'
+  );
+  await assert.rejects(
+    () => provider.testConnection({ serverUrl: 'não é url', username: 'u' }),
+    /URL do servidor WebDAV inválida/
+  );
 });
 
 test('remote-sync-provider: cabeçalho Basic usa os bytes UTF-8 de usuário:senha', async () => {
   let header = null;
-  const provider = createRemoteSyncProvider({ fetch: async (url, options) => { header = options.headers.Authorization; return { ok: true, status: 207 }; } });
-  await provider.testConnection({ serverUrl: 'https://dav.exemplo.com/', username: 'joão', password: 'ção€' });
+  const provider = createRemoteSyncProvider({
+    fetch: async (url, options) => {
+      header = options.headers.Authorization;
+      return { ok: true, status: 207 };
+    },
+  });
+  await provider.testConnection({
+    serverUrl: 'https://dav.exemplo.com/',
+    username: 'joão',
+    password: 'ção€',
+  });
   assert.equal(header, `Basic ${Buffer.from('joão:ção€', 'utf8').toString('base64')}`);
 });
 
 test('remote-sync-provider: falha de rede/CORS vira mensagem clara com a origem do app', async () => {
   const provider = createRemoteSyncProvider({
     origin: 'https://app.studytrack.exemplo',
-    fetch: async () => { throw new TypeError('Failed to fetch'); }
+    fetch: async () => {
+      throw new TypeError('Failed to fetch');
+    },
   });
   const config = { serverUrl: 'https://dav.exemplo.com/', passphrase: 'chave' };
-  const expected = /permite acesso \(CORS\) a partir de https:\/\/app\.studytrack\.exemplo e se o navegador não bloqueou a conexão/;
+  const expected =
+    /permite acesso \(CORS\) a partir de https:\/\/app\.studytrack\.exemplo e se o navegador não bloqueou a conexão/;
 
   assert.match((await provider.testConnection(config)).message, expected);
   await assert.rejects(() => provider.checkRemoteVersion(config), expected);
@@ -162,7 +209,15 @@ test('index.html: CSP permite conectar ao WebDAV em https e ao servidor local, e
   const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
   const policy = html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)?.[1];
   assert.ok(policy, 'CSP não encontrada no index.html');
-  const connectSrc = policy.split(';').map(part => part.trim()).find(part => part.startsWith('connect-src '));
+  const connectSrc = policy
+    .split(';')
+    .map(part => part.trim())
+    .find(part => part.startsWith('connect-src '));
   // Sem https: a sincronização WebDAV não alcança nenhum servidor; com http: ou * a senha poderia vazar em texto aberto.
-  assert.deepEqual(connectSrc.split(/\s+/).slice(1).sort(), ["'self'", 'http://127.0.0.1:*', 'http://localhost:*', 'https:']);
+  assert.deepEqual(connectSrc.split(/\s+/).slice(1).sort(), [
+    "'self'",
+    'http://127.0.0.1:*',
+    'http://localhost:*',
+    'https:',
+  ]);
 });

@@ -1,60 +1,137 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-import {renderSectionHeader,renderEmptyState,renderMetricCard} from '../../src/ui/components/presentation.js';
-import {renderDisclosure,renderActionGroup,renderDivider} from '../../src/ui/components/analytical-presentation.js';
-import {renderDiagnosticSummary} from '../../src/ui/renderers/diagnostic-summary-renderer.js';
-import {renderStrategicTimeline,renderPriorityHistory} from '../../src/ui/renderers/strategic-history-renderer.js';
+import { readFileSync } from 'node:fs';
+import {
+  renderSectionHeader,
+  renderEmptyState,
+  renderMetricCard,
+} from '../../src/ui/components/presentation.js';
+import {
+  renderDisclosure,
+  renderActionGroup,
+  renderDivider,
+} from '../../src/ui/components/analytical-presentation.js';
+import { renderDiagnosticSummary } from '../../src/ui/renderers/diagnostic-summary-renderer.js';
+import {
+  renderStrategicTimeline,
+  renderPriorityHistory,
+} from '../../src/ui/renderers/strategic-history-renderer.js';
 
-test('explicação compartilhada começa fechada e evidência do diagnóstico permanece visível',()=>{
-  const detail=renderDisclosure({title:'Entenda <resultado>',contentHTML:'<p>Dados fornecidos</p>'});
-  assert.match(detail,/Entenda &lt;resultado&gt;/);
-  assert.doesNotMatch(detail,/<details[^>]* open/);
-  const primary={metrics:{retention:54},reasons:['Retenção baixa']};
-  const html=renderDiagnosticSummary({primarySignal:'consolidation-risk',evidence:{label:'Baixa'},signals:[]},primary,{escapeHtml:String});
-  assert.ok(html.indexOf('Evidência: Baixa')<html.indexOf('<details'));
-  assert.match(html,/class="diagnostic-detail__body"/);
-  assert.match(html,/54\/100/);
+test('explicação compartilhada começa fechada e evidência do diagnóstico permanece visível', () => {
+  const detail = renderDisclosure({
+    title: 'Entenda <resultado>',
+    contentHTML: '<p>Dados fornecidos</p>',
+  });
+  assert.match(detail, /Entenda &lt;resultado&gt;/);
+  assert.doesNotMatch(detail, /<details[^>]* open/);
+  const primary = { metrics: { retention: 54 }, reasons: ['Retenção baixa'] };
+  const html = renderDiagnosticSummary(
+    { primarySignal: 'consolidation-risk', evidence: { label: 'Baixa' }, signals: [] },
+    primary,
+    { escapeHtml: String }
+  );
+  assert.ok(html.indexOf('Evidência: Baixa') < html.indexOf('<details'));
+  assert.match(html, /class="diagnostic-detail__body"/);
+  assert.match(html, /54\/100/);
 });
 
-test('componentes compartilhados escapam conteúdo e mantêm hierarquia semântica',()=>{
-  const heading=renderSectionHeader({title:'<Prova>',description:'A & B',level:4,eyebrow:'Análise'});
-  assert.match(heading,/<h4 class="module-heading__title">&lt;Prova&gt;<\/h4>/);
-  assert.match(heading,/A &amp; B/);
-  assert.doesNotMatch(heading,/<Prova>/);
-  const empty=renderEmptyState({title:'Sem questões',message:'Registre <10> questões'});
-  assert.match(empty,/role="status"/);
-  assert.match(empty,/Registre &lt;10&gt; questões/);
-  assert.match(renderMetricCard({label:'Precisão',value:'76%',detail:'30 questões'}),/class="performance-kpi ui-metric"/);
+test('componentes compartilhados escapam conteúdo e mantêm hierarquia semântica', () => {
+  const heading = renderSectionHeader({
+    title: '<Prova>',
+    description: 'A & B',
+    level: 4,
+    eyebrow: 'Análise',
+  });
+  assert.match(heading, /<h4 class="module-heading__title">&lt;Prova&gt;<\/h4>/);
+  assert.match(heading, /A &amp; B/);
+  assert.doesNotMatch(heading, /<Prova>/);
+  const empty = renderEmptyState({ title: 'Sem questões', message: 'Registre <10> questões' });
+  assert.match(empty, /role="status"/);
+  assert.match(empty, /Registre &lt;10&gt; questões/);
+  assert.match(
+    renderMetricCard({ label: 'Precisão', value: '76%', detail: '30 questões' }),
+    /class="performance-kpi ui-metric"/
+  );
 });
 
-test('tokens de superfícies e variantes de card existem para os dois temas',()=>{
-  const tokens=readFileSync(new URL('../../styles/tokens.css',import.meta.url),'utf8');
-  const css=readFileSync(new URL('../../styles/app.css',import.meta.url),'utf8');
-  for(const name of ['surface-page','surface-card','surface-subtle','surface-highlight','surface-primary','text-on-primary','border-default','border-emphasis','accent-primary','accent-warning','space-12','space-16'])assert.match(tokens,new RegExp(`--${name}:`));
-  for(const variant of ['default','insight','attention','primary'])assert.match(css,new RegExp(`\\.card--${variant}\\{`));
-  assert.match(tokens,/\[data-theme="dark"\]/);
+test('tokens de superfícies e variantes de card existem para os dois temas', () => {
+  const tokens = readFileSync(new URL('../../styles/tokens.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../../styles/app.css', import.meta.url), 'utf8');
+  for (const name of [
+    'surface-page',
+    'surface-card',
+    'surface-subtle',
+    'surface-highlight',
+    'surface-primary',
+    'text-on-primary',
+    'border-default',
+    'border-emphasis',
+    'accent-primary',
+    'accent-warning',
+    'space-12',
+    'space-16',
+  ])
+    assert.match(tokens, new RegExp(`--${name}:`));
+  for (const variant of ['default', 'insight', 'attention', 'primary'])
+    assert.match(css, new RegExp(`\\.card--${variant}\\{`));
+  assert.match(tokens, /\[data-theme="dark"\]/);
 });
 
-test('grupos editoriais escapam rótulos e preservam ações e divisores decorativos',()=>{
- const html=renderActionGroup({label:'Ações <índice>',actions:[{label:'Ver <dados>',attributes:{'data-help-topic-link':'readiness'}}],vertical:true});
- assert.match(html,/action-group--vertical/);assert.match(html,/role="group" aria-label="Ações &lt;índice&gt;"/);
- assert.match(html,/Ver &lt;dados&gt;/);assert.match(html,/data-help-topic-link="readiness"/);
- assert.match(renderDivider(),/class="divider" aria-hidden="true"/);
- assert.match(renderDivider({section:true}),/class="section-divider"/);
- const tokens=readFileSync(new URL('../../styles/tokens.css',import.meta.url),'utf8');
- for(const name of ['line-height-heading','line-height-body','line-height-relaxed','space-action','space-block','space-section','font-weight-bold'])assert.match(tokens,new RegExp(`--${name}:`));
- assert.match(tokens,/--space-5:1.25rem/);assert.match(tokens,/--space-6:1.5rem/);
+test('grupos editoriais escapam rótulos e preservam ações e divisores decorativos', () => {
+  const html = renderActionGroup({
+    label: 'Ações <índice>',
+    actions: [{ label: 'Ver <dados>', attributes: { 'data-help-topic-link': 'readiness' } }],
+    vertical: true,
+  });
+  assert.match(html, /action-group--vertical/);
+  assert.match(html, /role="group" aria-label="Ações &lt;índice&gt;"/);
+  assert.match(html, /Ver &lt;dados&gt;/);
+  assert.match(html, /data-help-topic-link="readiness"/);
+  assert.match(renderDivider(), /class="divider" aria-hidden="true"/);
+  assert.match(renderDivider({ section: true }), /class="section-divider"/);
+  const tokens = readFileSync(new URL('../../styles/tokens.css', import.meta.url), 'utf8');
+  for (const name of [
+    'line-height-heading',
+    'line-height-body',
+    'line-height-relaxed',
+    'space-action',
+    'space-block',
+    'space-section',
+    'font-weight-bold',
+  ])
+    assert.match(tokens, new RegExp(`--${name}:`));
+  assert.match(tokens, /--space-5:1.25rem/);
+  assert.match(tokens, /--space-6:1.5rem/);
 });
 
-test('históricos editoriais mantêm metodologia, vazio orientado e singular correto',()=>{
- const empty=renderStrategicTimeline({rows:[],filter:'all',groupBy:'week'});
- assert.match(empty,/Filtros da linha do tempo/);assert.match(empty,/Nenhum evento neste filtro/);
- assert.match(empty,/Sobre os registros desta linha do tempo/);assert.doesNotMatch(empty,/<details[^>]* open/);
- const point={date:'2026-10-06',classification:'Evidência limitada',profile:{},change:{label:'Primeiro registro',reasons:[]}};
- const model={subjects:[],rows:[{subjectName:'Português',topicName:'Texto',state:'Primeiro registro',history:[point]}]};
- const before=structuredClone(model),html=renderPriorityHistory(model);
- assert.match(html,/1 registro</);assert.doesNotMatch(html,/1 registros/);assert.match(html,/06\/10 Evidência limitada/);
- assert.deepEqual(model,before);
- assert.match(renderPriorityHistory({subjects:[],rows:[]}),/Nenhuma prioridade registrada/);
+test('históricos editoriais mantêm metodologia, vazio orientado e singular correto', () => {
+  const empty = renderStrategicTimeline({ rows: [], filter: 'all', groupBy: 'week' });
+  assert.match(empty, /Filtros da linha do tempo/);
+  assert.match(empty, /Nenhum evento neste filtro/);
+  assert.match(empty, /Sobre os registros desta linha do tempo/);
+  assert.doesNotMatch(empty, /<details[^>]* open/);
+  const point = {
+    date: '2026-10-06',
+    classification: 'Evidência limitada',
+    profile: {},
+    change: { label: 'Primeiro registro', reasons: [] },
+  };
+  const model = {
+    subjects: [],
+    rows: [
+      {
+        subjectName: 'Português',
+        topicName: 'Texto',
+        state: 'Primeiro registro',
+        history: [point],
+      },
+    ],
+  };
+  const before = structuredClone(model),
+    html = renderPriorityHistory(model);
+  assert.match(html, /1 registro</);
+  assert.doesNotMatch(html, /1 registros/);
+  assert.match(html, /06\/10 Evidência limitada/);
+  assert.deepEqual(model, before);
+  assert.match(renderPriorityHistory({ subjects: [], rows: [] }), /Nenhuma prioridade registrada/);
 });

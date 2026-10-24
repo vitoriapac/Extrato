@@ -188,11 +188,12 @@ Abra o endereço informado pelo servidor. O Service Worker exige HTTP; abrir `in
 ```powershell
 npm test
 npm run check:types
+npm run check:format
 npm run test:e2e
 npm run check:all
 ```
 
-`npm run test:fast` é o gate rápido: sintaxe, checagem estática de tipos (`npm run check:types` via JSDoc/TypeScript), bundle reproduzível, todos os unitários em UTC/São Paulo e um smoke E2E. `test:regression` acrescenta jornadas e responsividade representativa; `test:full` (também disponível por `check:all`) preserva a suíte completa e o recorte E2E de timezone (com sharding paralelo no CI). Os testes E2E incluem axe para estrutura ARIA, contraste, modal, telas críticas e modo móvel.
+`npm run test:fast` é o gate rápido: sintaxe (`.js` e `.ts`), checagem estática de tipos (`npm run check:types` via `tsconfig.json`), bundle reproduzível, todos os unitários em UTC/São Paulo e um smoke E2E. Use `npm run format` (Prettier) para padronizar a formatação de `src/`, `scripts/` e `tests/`. `test:regression` acrescenta jornadas e responsividade representativa; `test:full` (também disponível por `check:all`) preserva a suíte completa e o recorte E2E de timezone (com sharding paralelo no CI). Os testes E2E incluem axe para estrutura ARIA, contraste, modal, telas críticas e modo móvel.
 
 A [estratégia de testes por risco](docs/TEST-STRATEGY.md) define os gates Fast, Regression e Full. O [inventário da suíte](docs/TEST-SUITE-INVENTORY.md) registra cobertura e tempos observados. O CI combina Fast em PRs e Regression em main com testes por impacto; contratos globais ou arquivos desconhecidos ampliam a validação para Full. Releases e execução manual também oferecem Full. As referências visuais Windows têm job próprio no Full.
 
@@ -202,7 +203,7 @@ O deploy para GitHub Pages ocorre somente após esse gate passar na branch `main
 
 ## Arquitetura
 
-O projeto usa JavaScript vanilla e separa estado, domínio, aplicação, repositórios, armazenamento e interface. As regras analíticas são puras e versionadas quando seus resultados precisam permanecer auditáveis. Consulte [ARCHITECTURE.md](ARCHITECTURE.md) e [SECURITY-AUDIT.md](SECURITY-AUDIT.md).
+O projeto utiliza TypeScript e JavaScript modular sem dependências pesadas de runtime, separando estado (`src/state/`), núcleo (`src/core/`), domínio (`src/domain/`), aplicação (`src/application/`), repositórios (`src/repositories/`), armazenamento (`src/storage/`) e interface (`src/ui/`). As regras analíticas são puras e versionadas quando seus resultados precisam permanecer auditáveis. Consulte [ARCHITECTURE.md](ARCHITECTURE.md), [PLANO-MODERNIZACAO-TS-PREACT-TAILWIND.md](docs/PLANO-MODERNIZACAO-TS-PREACT-TAILWIND.md) e [SECURITY-AUDIT.md](SECURITY-AUDIT.md).
 
 `src/app.bundle.js` e `src/exam-catalog.bundle.js` são gerados pelo esbuild; não devem ser editados manualmente. O catálogo fica no segundo arquivo e só é carregado quando o assistente inicial ou o importador de edital é aberto.
 

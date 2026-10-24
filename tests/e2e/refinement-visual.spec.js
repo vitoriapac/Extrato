@@ -1,76 +1,151 @@
-import {test,expect} from '@playwright/test';
-import {activateTab,expectNoPageOverflow,openDemo} from './helpers.js';
+import { test, expect } from '@playwright/test';
+import { activateTab, expectNoPageOverflow, openDemo } from './helpers.js';
 
-const sections=['overview','subjects','questions','simulations','exam','consistency'];
-const screenshotOptions={animations:'disabled',caret:'hide',maxDiffPixelRatio:.08};
-const screenshotName=(name)=>name.replace(/\.png$/,`-${process.platform}.png`);
+const sections = ['overview', 'subjects', 'questions', 'simulations', 'exam', 'consistency'];
+const screenshotOptions = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.08 };
+const screenshotName = name => name.replace(/\.png$/, `-${process.platform}.png`);
 
-for(const {name,width,theme,columns} of [
-  {name:'desktop-light',width:1440,theme:'light',columns:2},
-  {name:'desktop-dark',width:1440,theme:'dark',columns:2},
-  {name:'mobile-light',width:375,theme:'light',columns:1},
-  {name:'mobile-dark',width:375,theme:'dark',columns:1}
-])test(`refinamento visual em Demo densa: ${name}`,async({page})=>{
-  await page.clock.install({time:new Date('2026-09-30T12:00:00-03:00')});
-  await page.setViewportSize({width,height:900});
-  await openDemo(page);
-  await page.evaluate(()=>document.fonts.ready);
-  if(theme==='dark')await page.locator('#themeToggleBtn').click();
-  await activateTab(page,'desempenho');
-  for(const section of sections){
-    await page.locator(`[data-performance-section="${section}"]`).click();
-    await expect(page.locator(`[data-performance-section="${section}"]`)).toHaveAttribute('aria-pressed','true');
-    await expectNoPageOverflow(page);
-    if(section==='exam')await expect(page.locator('#performanceSectionContent .exam-intelligence-hub')).toBeVisible();
-    else await expect(page.locator('#performanceSectionContent .performance-summary')).toBeVisible();
-    if(section==='overview'){
-      expect(await page.locator('#performanceSectionContent').evaluate(root=>root.querySelector('.achievement-projection').compareDocumentPosition(root.querySelector('.readiness-history-summary'))&Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
-      await expect(page.getByRole('navigation',{name:'Detalhes da preparação'})).toBeVisible();
-      const period=await page.locator('#performancePeriod').inputValue();
-      const scope=await page.locator('.performance-scope-note').textContent();
-      await page.getByRole('button',{name:'Comparar disciplinas',exact:true}).click();
-      await expect(page.locator('[data-performance-section="subjects"].performance-section-button')).toHaveAttribute('aria-pressed','true');
-      await expect(page.locator('#performancePeriod')).toHaveValue(period);
-      await expect(page.locator('.performance-scope-note')).toHaveText(scope);
-      await page.locator('.performance-section-button[data-performance-section="overview"]').click();
+for (const { name, width, theme, columns } of [
+  { name: 'desktop-light', width: 1440, theme: 'light', columns: 2 },
+  { name: 'desktop-dark', width: 1440, theme: 'dark', columns: 2 },
+  { name: 'mobile-light', width: 375, theme: 'light', columns: 1 },
+  { name: 'mobile-dark', width: 375, theme: 'dark', columns: 1 },
+])
+  test(`refinamento visual em Demo densa: ${name}`, async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-09-30T12:00:00-03:00') });
+    await page.setViewportSize({ width, height: 900 });
+    await openDemo(page);
+    await page.evaluate(() => document.fonts.ready);
+    if (theme === 'dark') await page.locator('#themeToggleBtn').click();
+    await activateTab(page, 'desempenho');
+    for (const section of sections) {
+      await page.locator(`[data-performance-section="${section}"]`).click();
+      await expect(page.locator(`[data-performance-section="${section}"]`)).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      await expectNoPageOverflow(page);
+      if (section === 'exam')
+        await expect(
+          page.locator('#performanceSectionContent .exam-intelligence-hub')
+        ).toBeVisible();
+      else
+        await expect(page.locator('#performanceSectionContent .performance-summary')).toBeVisible();
+      if (section === 'overview') {
+        expect(
+          await page
+            .locator('#performanceSectionContent')
+            .evaluate(
+              root =>
+                root
+                  .querySelector('.achievement-projection')
+                  .compareDocumentPosition(root.querySelector('.readiness-history-summary')) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+            )
+        ).toBeTruthy();
+        await expect(
+          page.getByRole('navigation', { name: 'Detalhes da preparação' })
+        ).toBeVisible();
+        const period = await page.locator('#performancePeriod').inputValue();
+        const scope = await page.locator('.performance-scope-note').textContent();
+        await page.getByRole('button', { name: 'Comparar disciplinas', exact: true }).click();
+        await expect(
+          page.locator('[data-performance-section="subjects"].performance-section-button')
+        ).toHaveAttribute('aria-pressed', 'true');
+        await expect(page.locator('#performancePeriod')).toHaveValue(period);
+        await expect(page.locator('.performance-scope-note')).toHaveText(scope);
+        await page
+          .locator('.performance-section-button[data-performance-section="overview"]')
+          .click();
+      }
+      if (section === 'overview' && process.platform === 'win32')
+        await expect(
+          page.locator('#performanceSectionContent .performance-summary')
+        ).toHaveScreenshot(screenshotName(`desempenho-resumo-${name}.png`), screenshotOptions);
     }
-    if(section==='overview'&&process.platform==='win32')await expect(page.locator('#performanceSectionContent .performance-summary')).toHaveScreenshot(screenshotName(`desempenho-resumo-${name}.png`),screenshotOptions);
-  }
-  await activateTab(page,'metas');
-  expect(await page.locator('#metasActiveGoals').evaluate(node=>node.compareDocumentPosition(document.querySelector('#metasCapacity'))&Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
-  await expect(page.locator('#metasContainer .meta-card')).toHaveCount(7);
-  await expect(page.locator('#metasContainer .goal-group--routine')).toContainText('Meta de Aderência');
-  await expect(page.locator('#metasContainer .goal-group')).toHaveCount(3);
-  expect(await page.locator('#metasContainer .goal-group').evaluateAll(nodes=>nodes.map(node=>node.id||node.getAttribute('aria-labelledby')))).toEqual(['goalGroup-outcome','goalGroup-routine','goalGroup-volume']);
-  const actualColumns=await page.locator('#metasContainer').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length);
-  expect(actualColumns).toBe(columns);
-  await expectNoPageOverflow(page);
-  if(process.platform==='win32'){
-    const previous=await page.locator('.demo-banner,.sticky-shell,.skip-link').evaluateAll(nodes=>nodes.map(node=>{const opacity=node.style.opacity;node.style.opacity='0';return opacity}));
-    try{await expect(page.locator('#metasContainer')).toHaveScreenshot(screenshotName(`metas-${name}.png`),screenshotOptions)}
-    finally{await page.locator('.demo-banner,.sticky-shell,.skip-link').evaluateAll((nodes,values)=>nodes.forEach((node,index)=>node.style.opacity=values[index]),previous)}
-  }
-});
+    await activateTab(page, 'metas');
+    expect(
+      await page
+        .locator('#metasActiveGoals')
+        .evaluate(
+          node =>
+            node.compareDocumentPosition(document.querySelector('#metasCapacity')) &
+            Node.DOCUMENT_POSITION_FOLLOWING
+        )
+    ).toBeTruthy();
+    await expect(page.locator('#metasContainer .meta-card')).toHaveCount(7);
+    await expect(page.locator('#metasContainer .goal-group--routine')).toContainText(
+      'Meta de Aderência'
+    );
+    await expect(page.locator('#metasContainer .goal-group')).toHaveCount(3);
+    expect(
+      await page
+        .locator('#metasContainer .goal-group')
+        .evaluateAll(nodes => nodes.map(node => node.id || node.getAttribute('aria-labelledby')))
+    ).toEqual(['goalGroup-outcome', 'goalGroup-routine', 'goalGroup-volume']);
+    const actualColumns = await page
+      .locator('#metasContainer')
+      .evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length);
+    expect(actualColumns).toBe(columns);
+    await expectNoPageOverflow(page);
+    if (process.platform === 'win32') {
+      const previous = await page
+        .locator('.demo-banner,.sticky-shell,.skip-link')
+        .evaluateAll(nodes =>
+          nodes.map(node => {
+            const opacity = node.style.opacity;
+            node.style.opacity = '0';
+            return opacity;
+          })
+        );
+      try {
+        await expect(page.locator('#metasContainer')).toHaveScreenshot(
+          screenshotName(`metas-${name}.png`),
+          screenshotOptions
+        );
+      } finally {
+        await page
+          .locator('.demo-banner,.sticky-shell,.skip-link')
+          .evaluateAll(
+            (nodes, values) => nodes.forEach((node, index) => (node.style.opacity = values[index])),
+            previous
+          );
+      }
+    }
+  });
 
-test('Metas usa duas colunas em tablet',async({page})=>{
-  await page.setViewportSize({width:768,height:900});
+test('Metas usa duas colunas em tablet', async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 900 });
   await openDemo(page);
-  await activateTab(page,'metas');
-  const columns=await page.locator('#metasContainer').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length);
+  await activateTab(page, 'metas');
+  const columns = await page
+    .locator('#metasContainer')
+    .evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length);
   expect(columns).toBe(2);
   await expectNoPageOverflow(page);
 });
 
-test('Desempenho mantém orientação dentro dos cards quando não há dados',async({page})=>{
+test('Desempenho mantém orientação dentro dos cards quando não há dados', async ({ page }) => {
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
-  await page.locator('#testReport').evaluate(element=>element.remove());
-  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.studySessions=[];state.questoes=[];state.simulados=[];state.dailyPlans=[];api.setState(state);api.renderAll()});
-  await activateTab(page,'desempenho');
-  for(const section of ['questions','simulations']){
+  await page.locator('#testReport').evaluate(element => element.remove());
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__,
+      state = structuredClone(api.getState());
+    state.studySessions = [];
+    state.questoes = [];
+    state.simulados = [];
+    state.dailyPlans = [];
+    api.setState(state);
+    api.renderAll();
+  });
+  await activateTab(page, 'desempenho');
+  for (const section of ['questions', 'simulations']) {
     await page.locator(`[data-performance-section="${section}"]`).click();
     await expect(page.locator('#performanceSectionContent > .empty-state')).toBeVisible();
-    await expect(page.locator('#performanceSectionContent > .empty-state')).not.toHaveText('Sem dados.');
+    await expect(page.locator('#performanceSectionContent > .empty-state')).not.toHaveText(
+      'Sem dados.'
+    );
   }
   await page.locator('[data-performance-section="consistency"]').click();
   await expect(page.locator('#performanceSectionContent')).toContainText('0 dias com estudo');

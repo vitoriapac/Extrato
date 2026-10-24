@@ -17,11 +17,13 @@ export function createQuestionImportController({
   service,
   render,
   notify,
-  onImported = (_res) => {},
-  onCancel = (_status) => {},
-  maxBytes = 5 * 1024 * 1024
+  onImported = _res => {},
+  onCancel = _status => {},
+  maxBytes = 5 * 1024 * 1024,
 } = {}) {
-  const input = /** @type {HTMLInputElement | null} */ (document.getElementById('questionsImportFile'));
+  const input = /** @type {HTMLInputElement | null} */ (
+    document.getElementById('questionsImportFile')
+  );
   const open = document.getElementById('importQuestionsBtn');
   const overlay = document.getElementById('questionsImportOverlay');
   const content = document.getElementById('questionsImportContent');
@@ -32,7 +34,7 @@ export function createQuestionImportController({
     return Object.freeze({
       read: () => {},
       close: () => {},
-      choose: () => {}
+      choose: () => {},
     });
   }
 
@@ -72,10 +74,12 @@ export function createQuestionImportController({
         show(buildQuestionImportViewModel({ ...pending }));
       } catch (error) {
         pending = null;
-        show(buildQuestionImportViewModel({
-          fileName: file.name || 'questoes.csv',
-          issues: error?.issues || [{ message: error?.message || 'Arquivo inválido.' }]
-        }));
+        show(
+          buildQuestionImportViewModel({
+            fileName: file.name || 'questoes.csv',
+            issues: error?.issues || [{ message: error?.message || 'Arquivo inválido.' }],
+          })
+        );
       }
     };
     reader.readAsText(file, 'utf-8');

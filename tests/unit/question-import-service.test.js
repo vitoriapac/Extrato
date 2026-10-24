@@ -8,10 +8,8 @@ function createMockEnvironment() {
       {
         id: 's_portugues',
         name: 'Português',
-        topics: [
-          { id: 't_crase', name: 'Crase' }
-        ]
-      }
+        topics: [{ id: 't_crase', name: 'Crase' }],
+      },
     ],
     questoes: [
       {
@@ -20,23 +18,30 @@ function createMockEnvironment() {
         subjectId: 's_portugues',
         topicId: 't_crase',
         resolved: 10,
-        correct: 8
-      }
-    ]
+        correct: 8,
+      },
+    ],
   };
 
   const subjectService = {
     create(name) {
-      const subject = { id: `s_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, name, topics: [] };
+      const subject = {
+        id: `s_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        name,
+        topics: [],
+      };
       state.subjects.push(subject);
       return subject;
     },
     addTopic(subjectId, input) {
       const subject = state.subjects.find(s => s.id === subjectId);
-      const topic = { id: `t_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, name: input.name };
+      const topic = {
+        id: `t_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        name: input.name,
+      };
       subject.topics.push(topic);
       return topic;
-    }
+    },
   };
 
   const questionService = {
@@ -44,7 +49,7 @@ function createMockEnvironment() {
       const record = { id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, ...input };
       state.questoes.push(record);
       return record;
-    }
+    },
   };
 
   return { state, subjectService, questionService };
@@ -59,7 +64,7 @@ test('question-import-service: gera prévia precisa identificando correspondênc
     getQuestions: () => state.questoes,
     errorCategoryKeys: ['naoSabia', 'esqueci', 'interpretacao', 'calculo', 'desatencao', 'chute'],
     today: () => '2026-10-20',
-    atomic: task => task()
+    atomic: task => task(),
   });
 
   const csv = `Data,Disciplina,Tópico,Resolvidas,Acertos
@@ -80,7 +85,9 @@ test('question-import-service: gera prévia precisa identificando correspondênc
 
   // Linha 2 é disciplina existente, tópico novo
   assert.equal(preview.newTopics.length, 2);
-  assert.ok(preview.newTopics.some(t => t.topicName === 'Regência Verbal' && t.subjectName === 'Português'));
+  assert.ok(
+    preview.newTopics.some(t => t.topicName === 'Regência Verbal' && t.subjectName === 'Português')
+  );
 
   // Linha 3 é disciplina nova
   assert.equal(preview.newSubjects.length, 1);
@@ -96,7 +103,7 @@ test('question-import-service: executa importação atômica criando disciplinas
     getQuestions: () => state.questoes,
     errorCategoryKeys: ['naoSabia', 'esqueci', 'interpretacao', 'calculo', 'desatencao', 'chute'],
     today: () => '2026-10-20',
-    atomic: task => task()
+    atomic: task => task(),
   });
 
   const csv = `Data,Disciplina,Tópico,Resolvidas,Acertos
@@ -128,9 +135,22 @@ test('question-import-service: executa importação atômica criando disciplinas
 
 test('question-import-service: grava errorBreakdown nas chaves do app e conta categorias desconhecidas na prévia', () => {
   const { state, subjectService, questionService } = createMockEnvironment();
-  const errorCategoryKeys = ['naoSabia', 'esqueci', 'interpretacao', 'calculo', 'desatencao', 'chute'];
+  const errorCategoryKeys = [
+    'naoSabia',
+    'esqueci',
+    'interpretacao',
+    'calculo',
+    'desatencao',
+    'chute',
+  ];
   assert.throws(
-    () => createQuestionImportService({ subjectService, questionService, getSubjects: () => state.subjects, getQuestions: () => state.questoes }),
+    () =>
+      createQuestionImportService({
+        subjectService,
+        questionService,
+        getSubjects: () => state.subjects,
+        getQuestions: () => state.questoes,
+      }),
     /errorCategoryKeys/
   );
   const service = createQuestionImportService({
@@ -140,7 +160,7 @@ test('question-import-service: grava errorBreakdown nas chaves do app e conta ca
     getQuestions: () => state.questoes,
     errorCategoryKeys,
     today: () => '2026-10-20',
-    atomic: task => task()
+    atomic: task => task(),
   });
 
   const csv = `Data;Disciplina;Tópico;Resolvidas;Acertos;Erros;Motivo
@@ -168,7 +188,7 @@ test('question-import-service: prévia avisa registros que irão para disciplina
     getQuestions: () => state.questoes,
     errorCategoryKeys: ['naoSabia'],
     today: () => '2026-10-20',
-    atomic: task => task()
+    atomic: task => task(),
   });
 
   const csv = `Data,Disciplina,Tópico,Resolvidas,Acertos
@@ -186,7 +206,14 @@ test('question-import-service: prévia avisa registros que irão para disciplina
   assert.equal(preview.newTopics.length, 0);
 
   // Duplicata em tópico arquivado é ignorada na importação, então não entra no aviso.
-  state.questoes.push({ id: 'q2', date: '2026-10-19', subjectId: 's_historia', topicId: null, resolved: 6, correct: 3 });
+  state.questoes.push({
+    id: 'q2',
+    date: '2026-10-19',
+    subjectId: 's_historia',
+    topicId: null,
+    resolved: 6,
+    correct: 3,
+  });
   assert.equal(service.preview(csv).archivedRecordCount, 2);
 });
 
@@ -198,12 +225,17 @@ test('question-import-service: falha no meio da importação desfaz disciplinas,
     create(input) {
       if (++calls === 2) throw new Error('falha simulada ao gravar questão');
       return questionService.create(input);
-    }
+    },
   };
   // Mesmo contrato do atomic de app.js: snapshot antes, restaura as coleções no erro.
   const atomic = task => {
     const snapshot = structuredClone(state);
-    try { return task(); } catch (error) { Object.assign(state, snapshot); throw error; }
+    try {
+      return task();
+    } catch (error) {
+      Object.assign(state, snapshot);
+      throw error;
+    }
   };
   const service = createQuestionImportService({
     subjectService,
@@ -212,7 +244,7 @@ test('question-import-service: falha no meio da importação desfaz disciplinas,
     getQuestions: () => state.questoes,
     errorCategoryKeys: ['naoSabia'],
     today: () => '2026-10-20',
-    atomic
+    atomic,
   });
 
   const preview = service.preview(`Data,Disciplina,Tópico,Resolvidas,Acertos
@@ -226,15 +258,36 @@ test('question-import-service: falha no meio da importação desfaz disciplinas,
 
 test('question-import-service: exige atomic e executa a importação dentro dele', () => {
   const { state, subjectService, questionService } = createMockEnvironment();
-  const deps = { subjectService, questionService, getSubjects: () => state.subjects, getQuestions: () => state.questoes, errorCategoryKeys: ['naoSabia'], today: () => '2026-10-20' };
+  const deps = {
+    subjectService,
+    questionService,
+    getSubjects: () => state.subjects,
+    getQuestions: () => state.questoes,
+    errorCategoryKeys: ['naoSabia'],
+    today: () => '2026-10-20',
+  };
   assert.throws(() => createQuestionImportService(deps), /atomic/);
 
   let insideAtomic = false;
   const service = createQuestionImportService({
     ...deps,
-    questionService: { create(input) { assert.ok(insideAtomic, 'questão criada fora de atomic'); return questionService.create(input); } },
-    atomic: task => { insideAtomic = true; try { return task(); } finally { insideAtomic = false; } }
+    questionService: {
+      create(input) {
+        assert.ok(insideAtomic, 'questão criada fora de atomic');
+        return questionService.create(input);
+      },
+    },
+    atomic: task => {
+      insideAtomic = true;
+      try {
+        return task();
+      } finally {
+        insideAtomic = false;
+      }
+    },
   });
-  const result = service.import(service.preview('Data,Disciplina,Resolvidas,Acertos\n2026-10-19,Português,5,4'));
+  const result = service.import(
+    service.preview('Data,Disciplina,Resolvidas,Acertos\n2026-10-19,Português,5,4')
+  );
   assert.equal(result.addedSessions, 1);
 });

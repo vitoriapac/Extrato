@@ -11,8 +11,19 @@ export const PBKDF2_ITERATIONS = 600000;
 const MIN_ITERATIONS = 100000;
 const MAX_ITERATIONS = 2000000;
 
-export function bytesToBase64(bytes) {
-  const nodeBuffer = /** @type {any} */ (globalThis).Buffer;
+export interface EncryptedEnvelope {
+  version: number;
+  algorithm: string;
+  kdf: string;
+  iterations: number;
+  salt: string;
+  iv: string;
+  ciphertext: string;
+  createdAt: string;
+}
+
+export function bytesToBase64(bytes: Uint8Array): string {
+  const nodeBuffer = (globalThis as Record<string, any>).Buffer;
   if (nodeBuffer) {
     return nodeBuffer.from(bytes).toString('base64');
   }
@@ -23,8 +34,8 @@ export function bytesToBase64(bytes) {
   return globalThis.btoa(binary);
 }
 
-function base64ToBytes(base64) {
-  const nodeBuffer = /** @type {any} */ (globalThis).Buffer;
+function base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
+  const nodeBuffer = (globalThis as Record<string, any>).Buffer;
   if (nodeBuffer) {
     return new Uint8Array(nodeBuffer.from(base64, 'base64'));
   }
@@ -38,12 +49,12 @@ function base64ToBytes(base64) {
 
 /**
  * Deriva uma CryptoKey AES-GCM a partir de uma senha de texto e de um salt aleatório.
- * @param {string} passphrase
- * @param {Uint8Array} salt
- * @param {{ iterations?: number }} [options]
- * @returns {Promise<CryptoKey>}
  */
-export async function deriveKey(passphrase, salt, { iterations = PBKDF2_ITERATIONS } = {}) {
+export async function deriveKey(
+  passphrase: string,
+  salt: Uint8Array,
+  { iterations = PBKDF2_ITERATIONS }: { iterations?: number } = {}
+): Promise<CryptoKey> {
   if (!cryptoSubtle) {
     throw new Error('Web Crypto API não suportada neste ambiente.');
   }
@@ -52,20 +63,16 @@ export async function deriveKey(passphrase, salt, { iterations = PBKDF2_ITERATIO
   }
 
   const enc = new TextEncoder();
-  const keyMaterial = await cryptoSubtle.importKey(
-    'raw',
-    enc.encode(passphrase),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  );
+  const keyMaterial = await cryptoSubtle.importKey('raw', enc.encode(passphrase), 'PBKDF2', false, [
+    'deriveKey',
+  ]);
 
   return cryptoSubtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: /** @type {any} */ (salt),
+      salt: salt as BufferSource,
       iterations,
-      hash: 'SHA-256'
+      hash: 'SHA-256',
     },
     keyMaterial,
     { name: 'AES-GCM', length: 256 },
@@ -76,11 +83,11 @@ export async function deriveKey(passphrase, salt, { iterations = PBKDF2_ITERATIO
 
 /**
  * Criptografa um texto ou JSON usando AES-GCM 256 bits e PBKDF2 com salt aleatório.
- * @param {string} plainText
- * @param {string} passphrase
- * @returns {Promise<{ version: number, algorithm: string, kdf: string, iterations: number, salt: string, iv: string, ciphertext: string, createdAt: string }>}
  */
-export async function encryptPayload(plainText, passphrase) {
+export async function encryptPayload(
+  plainText: string,
+  passphrase: string
+): Promise<EncryptedEnvelope> {
   if (!cryptoSubtle) {
     throw new Error('Web Crypto API não suportada neste ambiente.');
   }
@@ -93,11 +100,7 @@ export async function encryptPayload(plainText, passphrase) {
   const key = await deriveKey(passphrase, salt);
 
   const encodedData = new TextEncoder().encode(plainText);
-  const ciphertextBuffer = await cryptoSubtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    encodedData
-  );
+  const ciphertextBuffer = await cryptoSubtle.encrypt({ name: 'AES-GCM', iv }, key, encodedData);
 
   return {
     version: 1,
@@ -107,22 +110,28 @@ export async function encryptPayload(plainText, passphrase) {
     salt: bytesToBase64(salt),
     iv: bytesToBase64(iv),
     ciphertext: bytesToBase64(new Uint8Array(ciphertextBuffer)),
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 }
 
 /**
  * Decriptografa um envelope criptografado previamente com encryptPayload.
- * @param {Object|string} envelope
- * @param {string} passphrase
- * @returns {Promise<string>}
  */
-export async function decryptPayload(envelope, passphrase) {
+export async function decryptPayload(
+  envelope: EncryptedEnvelope | Record<string, any> | string,
+  passphrase: string
+): Promise<string> {
   if (!cryptoSubtle) {
     throw new Error('Web Crypto API não suportada neste ambiente.');
   }
   const payload = typeof envelope === 'string' ? JSON.parse(envelope) : envelope;
-  if (!payload || payload.algorithm !== 'AES-GCM-256' || !payload.salt || !payload.iv || !payload.ciphertext) {
+  if (
+    !payload ||
+    payload.algorithm !== 'AES-GCM-256' ||
+    !payload.salt ||
+    !payload.iv ||
+    !payload.ciphertext
+  ) {
     throw new TypeError('Envelope criptográfico inválido ou não reconhecido.');
   }
 
@@ -138,13 +147,11 @@ export async function decryptPayload(envelope, passphrase) {
   const key = await deriveKey(passphrase, salt, { iterations });
 
   try {
-    const decryptedBuffer = await cryptoSubtle.decrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      ciphertext
-    );
+    const decryptedBuffer = await cryptoSubtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
     return new TextDecoder().decode(decryptedBuffer);
-  } catch (error) {
-    throw new Error('Não foi possível decriptografar. Verifique a chave de criptografia ou integridade dos dados.');
+  } catch {
+    throw new Error(
+      'Não foi possível decriptografar. Verifique a chave de criptografia ou integridade dos dados.'
+    );
   }
 }

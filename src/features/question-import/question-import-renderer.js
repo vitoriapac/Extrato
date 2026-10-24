@@ -1,10 +1,15 @@
-const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;'
-}[char]));
+const safe = value =>
+  String(value ?? '').replace(
+    /[&<>"']/g,
+    char =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[char]
+  );
 
 export function renderQuestionImport(model) {
   if (model.issues && model.issues.length) {
@@ -54,41 +59,62 @@ export function renderQuestionImport(model) {
           <p>${p.duplicateCount > 0 ? `${p.duplicateCount} sessões já existentes serão ignoradas.` : 'Nenhuma duplicata detectada.'}</p>
         </section>
 
-        ${p.unknownErrorCategoryCount > 0 ? `
+        ${
+          p.unknownErrorCategoryCount > 0
+            ? `
         <section>
           <h4>Categorias de erro</h4>
           <p>${p.unknownErrorCategoryCount} ${p.unknownErrorCategoryCount === 1 ? 'linha com categoria de erro não reconhecida' : 'linhas com categoria de erro não reconhecida'} (ignorada).</p>
         </section>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${p.archivedRecordCount > 0 ? `
+        ${
+          p.archivedRecordCount > 0
+            ? `
         <section>
           <h4>Itens arquivados</h4>
           <p>${p.archivedRecordCount} ${p.archivedRecordCount === 1 ? 'registro irá' : 'registros irão'} para disciplinas/tópicos arquivados: ${p.archivedMatches.map(safe).join(', ')}.</p>
         </section>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
 
-      ${p.newSubjects.length ? `
+      ${
+        p.newSubjects.length
+          ? `
         <details class="structured-conflicts">
           <summary>Novas disciplinas a criar (${p.newSubjects.length})</summary>
           <ul>
             ${p.newSubjects.map(s => `<li>${safe(s)}</li>`).join('')}
           </ul>
         </details>
-      ` : ''}
+      `
+          : ''
+      }
 
-      ${p.newTopics.length ? `
+      ${
+        p.newTopics.length
+          ? `
         <details class="structured-conflicts">
           <summary>Novos tópicos a criar (${p.newTopics.length})</summary>
           <ul>
-            ${p.newTopics.slice(0, 30).map(t => `<li><strong>${safe(t.subjectName)}:</strong> ${safe(t.topicName)}</li>`).join('')}
+            ${p.newTopics
+              .slice(0, 30)
+              .map(t => `<li><strong>${safe(t.subjectName)}:</strong> ${safe(t.topicName)}</li>`)
+              .join('')}
             ${p.newTopics.length > 30 ? `<li><em>...e mais ${p.newTopics.length - 30} tópicos</em></li>` : ''}
           </ul>
         </details>
-      ` : ''}
+      `
+          : ''
+      }
 
-      ${p.recordsSample.length ? `
+      ${
+        p.recordsSample.length
+          ? `
         <details class="structured-conflicts" open>
           <summary>Amostra dos registros (${p.recordsSample.length} de ${p.totalSessions})</summary>
           <table class="log" style="width:100%;font-size:12px;margin-top:8px;">
@@ -102,7 +128,9 @@ export function renderQuestionImport(model) {
               </tr>
             </thead>
             <tbody>
-              ${p.recordsSample.map(r => `
+              ${p.recordsSample
+                .map(
+                  r => `
                 <tr ${r.isDuplicate ? 'style="opacity:0.6;" title="Duplicata existente (será ignorada)"' : ''}>
                   <td>${safe(r.date)}</td>
                   <td>${safe(r.subjectName)}</td>
@@ -110,11 +138,15 @@ export function renderQuestionImport(model) {
                   <td>${r.resolved}</td>
                   <td>${r.correct}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join('')}
             </tbody>
           </table>
         </details>
-      ` : ''}
+      `
+          : ''
+      }
     </div>
   `;
 }

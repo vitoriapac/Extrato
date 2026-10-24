@@ -60,11 +60,14 @@ flowchart TD
 - `src/bootstrap.js`: reexportação temporária compatível do bootstrap modular.
 - `src/application/create-app-context.js`: registra provider, relógio, repositórios e gerador de IDs injetáveis.
 - `src/application/demo/demo-mode.js`: controla entrada, reinício e saída segura da demonstração.
-- `src/state/schema.js`: contrato do estado, versões, enums e chaves de armazenamento.
-- `src/state/defaults.js`: fábrica do estado inicial, sem compartilhar referências mutáveis.
-- `src/state/strategic.js`: normalização do plano de prova, importância/esforço dos tópicos e versões dos algoritmos.
-- `src/core/utils.js`: utilidades puras e validações primitivas.
-- `src/core/clock.js`: relógio injetável para datas locais e instantes reproduzíveis.
+- `src/state/schema.ts`: contrato do estado, versões, enums e chaves de armazenamento.
+- `src/state/defaults.ts`: fábrica do estado inicial, sem compartilhar referências mutáveis.
+- `src/state/strategic.ts`: normalização do plano de prova, importância/esforço dos tópicos, ponto de parada (`bookmark`) e versões dos algoritmos.
+- `src/core/types.ts`: definições de tipos e interfaces centrais do projeto (`Topic`, `Subject`, `AppState`, `TopicBookmark`, etc.).
+- `src/core/utils.ts`: utilidades puras e validações primitivas.
+- `src/core/clock.ts`: relógio injetável para datas locais e instantes reproduzíveis.
+- `src/core/date-utils.ts`, `src/core/format-date.ts` e `src/core/format-number.ts`: manipulação e formatação determinística de datas locais e números.
+- `src/core/crypto-utils.ts`: derivação PBKDF2-SHA256 e criptografia autenticada AES-GCM 256 bits.
 - `src/storage/repository.js`: acesso a IndexedDB, `localStorage` e `window.storage`.
 - `src/storage/storage-provider.js`: contrato dos providers, incluindo carga, gravação, remoção, exportação e importação.
 - `src/storage/indexed-db-provider.js`: acesso isolado ao IndexedDB.
@@ -75,7 +78,9 @@ flowchart TD
 - `src/storage/backup-service.js`: serialização, leitura segura e nomes dos arquivos de backup.
 - `src/repositories/collection-repository.js`: contrato uniforme de consulta e mutação das coleções do estado.
 - `src/demo/demo-generator.js`: cenário determinístico móvel de 130 dias para exploração do produto.
-- `src/domain/reviews.js`: regras puras de intervalos e revisões adaptativas.
+- `src/domain/reviews.ts`: regras puras de intervalos e revisões adaptativas.
+- `src/domain/topic-bookmark.ts`: normalização, progresso e microcopy do ponto de parada por tópico.
+- `src/ui/controllers/pip-timer-controller.ts`: controle do título da aba e da janela flutuante do cronômetro (Document Picture-in-Picture).
 - `src/domain/analytics/evidence.js`: contrato comum de amostra, período, confiança e fontes.
 - `src/domain/analytics/score-evidence.js`: separa disponibilidade de dados, força da evidência e incerteza heurística.
 - `src/domain/analytics/priority-score.js`: fórmula única de prioridade usada por recomendações e planejamento.
@@ -346,8 +351,8 @@ Os papéis das superfícies, fontes de autoridade e contratos de evidência est�
 
 ## Sincronização remota WebDAV com criptografia de ponta a ponta (E2EE)
 
-`src/core/crypto-utils.js` implementa derivação de chave PBKDF2-HMAC-SHA256 (250.000 iterações) e cifragem autenticada AES-GCM de 256 bits usando exclusivamente a Web Crypto API nativa. `src/storage/remote-sync-provider.js` encapsula a comunicação WebDAV (`PROPFIND`, `GET`, `PUT`) exigindo HTTPS para servidores remotos (permitindo HTTP apenas em `localhost`/`127.0.0.1`). `src/ui/controllers/remote-sync-controller.js` coordena a configuração sem persistir senhas ou frases secretas no armazenamento local, verifica conflitos de versão remota antes de enviar e exige snapshot de segurança e validação de schema antes de restaurar dados baixados.
+`src/core/crypto-utils.ts` implementa derivação de chave PBKDF2-HMAC-SHA256 (600.000 iterações para novos envelopes, aceitando mínimo de 100.000 para envelopes v1) e cifragem autenticada AES-GCM de 256 bits usando exclusivamente a Web Crypto API nativa. `src/storage/remote-sync-provider.js` encapsula a comunicação WebDAV (`PROPFIND`, `GET`, `PUT`) exigindo HTTPS para servidores remotos (permitindo HTTP apenas em `localhost`/`127.0.0.1`). `src/ui/controllers/remote-sync-controller.js` coordena a configuração sem persistir senhas ou frases secretas no armazenamento local, verifica conflitos de versão remota antes de enviar e exige snapshot de segurança e validação de schema antes de restaurar dados baixados.
 
-## Checagem estática de tipos (JSDoc + TypeScript)
+## Checagem estática de tipos e compilação (TypeScript + JSDoc)
 
-`jsconfig.json` e `src/core/types.js` definem contratos estáticos verificados por `npm run check:types` (`tsc -p jsconfig.json --noEmit`), integrado ao runner de gates (`scripts/run-test-gate.mjs`) e ao workflow de CI sem introduzir etapa de transpilação ou dependências de runtime.
+`tsconfig.json` e `src/core/types.ts` definem contratos estáticos verificados por `npm run check:types` (`tsc -p tsconfig.json --noEmit`), integrado ao runner de gates (`scripts/run-test-gate.mjs`) e ao workflow de CI. O projeto suporta convivência incremental entre módulos `.ts` e `.js`: o `esbuild` (`scripts/build.mjs`) empacota ambos diretamente para o navegador, e o Node.js executa os testes unitários nativamente com suporte ao hook de resolução `scripts/ts-resolve-hook.mjs`. O roteiro completo da modernização está em [PLANO-MODERNIZACAO-TS-PREACT-TAILWIND.md](docs/PLANO-MODERNIZACAO-TS-PREACT-TAILWIND.md).

@@ -1,29 +1,88 @@
-import {renderRecommendationExplanation} from './recommendation-explanation-renderer.js';
-import {renderConsolidatedDiagnosis} from './consolidated-diagnosis-renderer.js';
-export function renderDiagnosisCenter({model,studyActionForItem,escapeHtml,escapeAttr}){
-  if(model.consolidated?.rows?.length)return renderConsolidatedDiagnosis(model.consolidated,{studyActionForItem,escapeHtml,escapeAttr});
-  const emptyState=empty=>`<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(empty.title)}</strong><p>${escapeHtml(empty.message)}</p>${empty.action?`<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('${escapeAttr(empty.action.tab)}')">${escapeHtml(empty.action.label)}</button>`:''}</div>`;
-  if(model.state==='insufficient')return `<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(model.title)}</strong><p>${escapeHtml(model.message)}</p><button type="button" class="btn small" data-delegated-click="navigateKpi('${escapeAttr(model.action.tab)}')">${escapeHtml(model.action.label)}</button></div>`;
-  const consolidatedByEntity=new Map((model.consolidated?.rows||[]).map(item=>[JSON.stringify([item.subjectId,item.topicId]),item]));
-  const renderRow=(item,metricLabel,metricValue)=>{
-    const consolidated=consolidatedByEntity.get(JSON.stringify([item.subjectId,item.topicId||null]));
-    const consolidatedAttributes=consolidated?`data-consolidated-state="${escapeAttr(consolidated.state)}" data-consolidated-signal="${escapeAttr(consolidated.primarySignal||'unassessed')}" data-consolidated-evidence-quality="${escapeAttr(consolidated.evidenceQuality)}"`:'';
-    const presentation=item.presentation,badgeVariant={high:'danger',medium:'warning',low:'success',info:'info',insufficient:'insufficient'}[presentation.severity]||'info';
-    const evidence=presentation.evidence.map(row=>`<div><dt>${escapeHtml(row.label)}</dt><dd>${escapeHtml(row.value)}</dd></div>`).join('');
-    const visibleEvidenceLabels=new Set(presentation.evidence.map(row=>row.label));
-    const explanationRows=(item.diagnosisExplanation||[]).filter(row=>!visibleEvidenceLabels.has(row.label)).map(row=>`<div><dt>${escapeHtml(row.label)}</dt><dd>${escapeHtml(row.value)}</dd></div>`).join('');
-    const explanation=`<details class="diagnostic-understanding"><summary>Entender</summary><p>${escapeHtml(item.diagnosisExplanationSummary||'Esta leitura usa os indicadores disponíveis para orientar a próxima ação.')}</p>${explanationRows?`<dl>${explanationRows}</dl>`:''}</details>`;
-    const secondary=presentation.secondaryReasons.length?`<ul class="diagnostic-secondary-reasons">${presentation.secondaryReasons.map(reason=>`<li>${escapeHtml(reason)}</li>`).join('')}</ul>`:'';
-    const action=presentation.recommendedAction,studyAction=studyActionForItem(item);
-    const progress=presentation.type==='focus'?`<div class="diagnostic-progress" role="progressbar" aria-label="Distribuição do foco semanal para ${escapeAttr(presentation.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(item.percentage)}"><i style="--progress:${Math.min(100,Math.max(0,item.percentage))}%"></i></div>`:'';
-    const actionButtons=`<div class="diagnostic-row-buttons">${studyAction?`<button class="btn small" type="button" data-study-action-source="${studyAction.source}" data-study-action-id="${escapeAttr(studyAction.id)}" data-activity-type="${studyAction.activityType}" data-delegated-click="executeStudyRecommendation('${escapeAttr(studyAction.id)}','${studyAction.source}')">${escapeHtml(studyAction.label)}</button>`:''}<button class="btn ghost small" type="button" data-delegated-click="navigateKpi('${escapeAttr(action.targetId)}')">${escapeHtml(action.label)}</button>${item.subjectId?`<button class="btn ghost small" type="button" data-performance-jump="subjects" data-performance-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId?`data-performance-topic-id="${escapeAttr(item.topicId)}"`:''}>Ver evolução</button>`:''}</div>`;
-    const kicker=presentation.type==='bottleneck'?'PONTO DE ATENÇÃO':presentation.type==='opportunity'?'OPORTUNIDADE':presentation.type==='review'?'REVISÃO':'FOCO DA SEMANA';
-    return `<article class="diagnostic-row diagnostic-row--${escapeAttr(presentation.type)}" ${consolidatedAttributes} ${studyAction?`data-study-action-source="${studyAction.source}" data-study-action-id="${escapeAttr(studyAction.id)}" data-activity-type="${studyAction.activityType}"`:''}><div class="diagnostic-row-heading"><div class="diagnostic-row-identity"><span class="diagnostic-kicker">${kicker}</span><strong>${escapeHtml(presentation.title)}</strong></div><div class="diagnostic-row-signals"><span class="diagnostic-signal status-badge status-badge--${badgeVariant} is-${escapeAttr(item.signalTone)}">${escapeHtml(item.signalLabel)}</span>${metricValue?`<b class="diagnostic-score">${escapeHtml(metricLabel)} ${escapeHtml(metricValue)}</b>`:''}</div></div><p class="diagnostic-primary-reason">${escapeHtml(presentation.primaryReason)}</p>${evidence?`<dl class="diagnostic-evidence">${evidence}</dl>`:''}${progress}${secondary}${explanation}${renderRecommendationExplanation(studyAction?.explanation)}<div class="diagnostic-row-action"><span>AÇÃO RECOMENDADA</span>${actionButtons}</div></article>`;
+import { renderRecommendationExplanation } from './recommendation-explanation-renderer.js';
+import { renderConsolidatedDiagnosis } from './consolidated-diagnosis-renderer.js';
+export function renderDiagnosisCenter({ model, studyActionForItem, escapeHtml, escapeAttr }) {
+  if (model.consolidated?.rows?.length)
+    return renderConsolidatedDiagnosis(model.consolidated, {
+      studyActionForItem,
+      escapeHtml,
+      escapeAttr,
+    });
+  const emptyState = empty =>
+    `<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(empty.title)}</strong><p>${escapeHtml(empty.message)}</p>${empty.action ? `<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('${escapeAttr(empty.action.tab)}')">${escapeHtml(empty.action.label)}</button>` : ''}</div>`;
+  if (model.state === 'insufficient')
+    return `<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>${escapeHtml(model.title)}</strong><p>${escapeHtml(model.message)}</p><button type="button" class="btn small" data-delegated-click="navigateKpi('${escapeAttr(model.action.tab)}')">${escapeHtml(model.action.label)}</button></div>`;
+  const consolidatedByEntity = new Map(
+    (model.consolidated?.rows || []).map(item => [
+      JSON.stringify([item.subjectId, item.topicId]),
+      item,
+    ])
+  );
+  const renderRow = (item, metricLabel, metricValue) => {
+    const consolidated = consolidatedByEntity.get(
+      JSON.stringify([item.subjectId, item.topicId || null])
+    );
+    const consolidatedAttributes = consolidated
+      ? `data-consolidated-state="${escapeAttr(consolidated.state)}" data-consolidated-signal="${escapeAttr(consolidated.primarySignal || 'unassessed')}" data-consolidated-evidence-quality="${escapeAttr(consolidated.evidenceQuality)}"`
+      : '';
+    const presentation = item.presentation,
+      badgeVariant =
+        {
+          high: 'danger',
+          medium: 'warning',
+          low: 'success',
+          info: 'info',
+          insufficient: 'insufficient',
+        }[presentation.severity] || 'info';
+    const evidence = presentation.evidence
+      .map(row => `<div><dt>${escapeHtml(row.label)}</dt><dd>${escapeHtml(row.value)}</dd></div>`)
+      .join('');
+    const visibleEvidenceLabels = new Set(presentation.evidence.map(row => row.label));
+    const explanationRows = (item.diagnosisExplanation || [])
+      .filter(row => !visibleEvidenceLabels.has(row.label))
+      .map(row => `<div><dt>${escapeHtml(row.label)}</dt><dd>${escapeHtml(row.value)}</dd></div>`)
+      .join('');
+    const explanation = `<details class="diagnostic-understanding"><summary>Entender</summary><p>${escapeHtml(item.diagnosisExplanationSummary || 'Esta leitura usa os indicadores disponíveis para orientar a próxima ação.')}</p>${explanationRows ? `<dl>${explanationRows}</dl>` : ''}</details>`;
+    const secondary = presentation.secondaryReasons.length
+      ? `<ul class="diagnostic-secondary-reasons">${presentation.secondaryReasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul>`
+      : '';
+    const action = presentation.recommendedAction,
+      studyAction = studyActionForItem(item);
+    const progress =
+      presentation.type === 'focus'
+        ? `<div class="diagnostic-progress" role="progressbar" aria-label="Distribuição do foco semanal para ${escapeAttr(presentation.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(item.percentage)}"><i style="--progress:${Math.min(100, Math.max(0, item.percentage))}%"></i></div>`
+        : '';
+    const actionButtons = `<div class="diagnostic-row-buttons">${studyAction ? `<button class="btn small" type="button" data-study-action-source="${studyAction.source}" data-study-action-id="${escapeAttr(studyAction.id)}" data-activity-type="${studyAction.activityType}" data-delegated-click="executeStudyRecommendation('${escapeAttr(studyAction.id)}','${studyAction.source}')">${escapeHtml(studyAction.label)}</button>` : ''}<button class="btn ghost small" type="button" data-delegated-click="navigateKpi('${escapeAttr(action.targetId)}')">${escapeHtml(action.label)}</button>${item.subjectId ? `<button class="btn ghost small" type="button" data-performance-jump="subjects" data-performance-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-performance-topic-id="${escapeAttr(item.topicId)}"` : ''}>Ver evolução</button>` : ''}</div>`;
+    const kicker =
+      presentation.type === 'bottleneck'
+        ? 'PONTO DE ATENÇÃO'
+        : presentation.type === 'opportunity'
+          ? 'OPORTUNIDADE'
+          : presentation.type === 'review'
+            ? 'REVISÃO'
+            : 'FOCO DA SEMANA';
+    return `<article class="diagnostic-row diagnostic-row--${escapeAttr(presentation.type)}" ${consolidatedAttributes} ${studyAction ? `data-study-action-source="${studyAction.source}" data-study-action-id="${escapeAttr(studyAction.id)}" data-activity-type="${studyAction.activityType}"` : ''}><div class="diagnostic-row-heading"><div class="diagnostic-row-identity"><span class="diagnostic-kicker">${kicker}</span><strong>${escapeHtml(presentation.title)}</strong></div><div class="diagnostic-row-signals"><span class="diagnostic-signal status-badge status-badge--${badgeVariant} is-${escapeAttr(item.signalTone)}">${escapeHtml(item.signalLabel)}</span>${metricValue ? `<b class="diagnostic-score">${escapeHtml(metricLabel)} ${escapeHtml(metricValue)}</b>` : ''}</div></div><p class="diagnostic-primary-reason">${escapeHtml(presentation.primaryReason)}</p>${evidence ? `<dl class="diagnostic-evidence">${evidence}</dl>` : ''}${progress}${secondary}${explanation}${renderRecommendationExplanation(studyAction?.explanation)}<div class="diagnostic-row-action"><span>AÇÃO RECOMENDADA</span>${actionButtons}</div></article>`;
   };
-  const section=(key,title,renderItem)=>{
-    const value=model.sections.find(item=>item.key===key);
-    const content=value.items.length?value.items.map(renderItem).join(''):emptyState(value.empty);
+  const section = (key, title, renderItem) => {
+    const value = model.sections.find(item => item.key === key);
+    const content = value.items.length
+      ? value.items.map(renderItem).join('')
+      : emptyState(value.empty);
     return `<section><h4>${title}</h4>${content}</section>`;
   };
-  return `<div class="diagnosis-summary">${section('bottlenecks','Gargalos',item=>renderRow(item,'Risco',`${Math.round(item.risk?.value??item.severity)}/100`))}${section('opportunities','Oportunidades',item=>renderRow(item,'Potencial',`${Math.round(item.opportunityScore)}/100`))}${section('risk','Revisões críticas e risco',item=>{const urgency=Number(item.reviewUrgency);return renderRow(item,urgency>0?'Urgência':'Intervalo',urgency>0?`${Math.round(urgency)}/100`:item.daysSinceContact==null?'':`${Math.round(item.daysSinceContact)} dias`)})}${section('focus','Foco da semana',item=>renderRow(item,'',''))}</div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
+  return `<div class="diagnosis-summary">${section('bottlenecks', 'Gargalos', item => renderRow(item, 'Risco', `${Math.round(item.risk?.value ?? item.severity)}/100`))}${section('opportunities', 'Oportunidades', item => renderRow(item, 'Potencial', `${Math.round(item.opportunityScore)}/100`))}${section(
+    'risk',
+    'Revisões críticas e risco',
+    item => {
+      const urgency = Number(item.reviewUrgency);
+      return renderRow(
+        item,
+        urgency > 0 ? 'Urgência' : 'Intervalo',
+        urgency > 0
+          ? `${Math.round(urgency)}/100`
+          : item.daysSinceContact == null
+            ? ''
+            : `${Math.round(item.daysSinceContact)} dias`
+      );
+    }
+  )}${section('focus', 'Foco da semana', item => renderRow(item, '', ''))}</div><p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p>`;
 }

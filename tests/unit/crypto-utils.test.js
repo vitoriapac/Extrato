@@ -5,7 +5,7 @@ import {
   encryptPayload,
   decryptPayload,
   bytesToBase64,
-  PBKDF2_ITERATIONS
+  PBKDF2_ITERATIONS,
 } from '../../src/core/crypto-utils.js';
 
 test('crypto-utils: criptografa e decriptografa payload com sucesso usando Web Crypto API', async () => {
@@ -66,12 +66,30 @@ test('crypto-utils: envelope antigo com 100 mil iterações continua decriptogra
   const salt = globalThis.crypto.getRandomValues(new Uint8Array(16));
   const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
   const key = await deriveKey('chave-antiga', salt, { iterations: 100000 });
-  const ciphertext = new Uint8Array(await globalThis.crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode('backup v1')));
-  const legacy = { version: 1, algorithm: 'AES-GCM-256', kdf: 'PBKDF2-SHA256', iterations: 100000, salt: bytesToBase64(salt), iv: bytesToBase64(iv), ciphertext: bytesToBase64(ciphertext) };
+  const ciphertext = new Uint8Array(
+    await globalThis.crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      new TextEncoder().encode('backup v1')
+    )
+  );
+  const legacy = {
+    version: 1,
+    algorithm: 'AES-GCM-256',
+    kdf: 'PBKDF2-SHA256',
+    iterations: 100000,
+    salt: bytesToBase64(salt),
+    iv: bytesToBase64(iv),
+    ciphertext: bytesToBase64(ciphertext),
+  };
 
   assert.equal(await decryptPayload(legacy, 'chave-antiga'), 'backup v1');
   const { iterations, ...withoutIterations } = legacy;
-  assert.equal(await decryptPayload(withoutIterations, 'chave-antiga'), 'backup v1', 'sem campo usa o padrão v1');
+  assert.equal(
+    await decryptPayload(withoutIterations, 'chave-antiga'),
+    'backup v1',
+    'sem campo usa o padrão v1'
+  );
 });
 
 test('crypto-utils: iterações fora de [100 mil, 2 milhões] são recusadas antes de derivar a chave', async () => {

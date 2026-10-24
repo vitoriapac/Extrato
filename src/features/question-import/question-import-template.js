@@ -7,7 +7,9 @@ export const QUESTION_IMPORT_TEMPLATE_FILE_NAME = 'modelo-questoes-studytrack.cs
 export function buildQuestionImportTemplate(today) {
   const [year, month, day] = String(today).split('-');
   const date = `${day}/${month}/${year}`;
-  return 'Data,Disciplina,Tópico,Resolvidas,Acertos,Erros\n'
-    + `${date},Português,Interpretação de Texto,15,13,2\n`
-    + `${date},Matemática,Porcentagem,10,8,2\n`;
+  return (
+    'Data,Disciplina,Tópico,Resolvidas,Acertos,Erros\n' +
+    `${date},Português,Interpretação de Texto,15,13,2\n` +
+    `${date},Matemática,Porcentagem,10,8,2\n`
+  );
 }

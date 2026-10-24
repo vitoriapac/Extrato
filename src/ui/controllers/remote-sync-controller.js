@@ -13,12 +13,16 @@
 export const REMOTE_SYNC_CONFIG_KEY = 'studytrack_remote_sync_config';
 
 /** Mesma normalização do provider, para que "pasta" e "pasta/" sejam o mesmo servidor. */
-const sameServer = url => { const clean = String(url || '').trim(); return clean.endsWith('/') ? clean : `${clean}/`; };
+const sameServer = url => {
+  const clean = String(url || '').trim();
+  return clean.endsWith('/') ? clean : `${clean}/`;
+};
 
 /** @param {any} value */
-const validLastSync = value => value && typeof value.serverUrl === 'string' && typeof value.envelopeAt === 'string'
-  ? { serverUrl: value.serverUrl, envelopeAt: value.envelopeAt }
-  : null;
+const validLastSync = value =>
+  value && typeof value.serverUrl === 'string' && typeof value.envelopeAt === 'string'
+    ? { serverUrl: value.serverUrl, envelopeAt: value.envelopeAt }
+    : null;
 
 /**
  * Lê as preferências persistidas, descartando qualquer senha gravada por versões anteriores.
@@ -40,7 +44,7 @@ export function readRemoteSyncPreferences(storage) {
   /** @type {{ serverUrl: string, username: string, lastSync?: { serverUrl: string, envelopeAt: string } }} */
   const preferences = {
     serverUrl: typeof parsed.serverUrl === 'string' ? parsed.serverUrl : '',
-    username: typeof parsed.username === 'string' ? parsed.username : ''
+    username: typeof parsed.username === 'string' ? parsed.username : '',
   };
   const lastSync = validLastSync(parsed.lastSync);
   if (lastSync) preferences.lastSync = lastSync;
@@ -59,11 +63,17 @@ export function readRemoteSyncPreferences(storage) {
  * @param {Storage | undefined | null} storage
  * @param {{ serverUrl?: string, username?: string, lastSync?: { serverUrl: string, envelopeAt: string } | null }} config
  */
-export function writeRemoteSyncPreferences(storage, { serverUrl = '', username = '', lastSync = null } = {}) {
+export function writeRemoteSyncPreferences(
+  storage,
+  { serverUrl = '', username = '', lastSync = null } = {}
+) {
   if (!storage) return false;
   const marker = validLastSync(lastSync);
   try {
-    storage.setItem(REMOTE_SYNC_CONFIG_KEY, JSON.stringify(marker ? { serverUrl, username, lastSync: marker } : { serverUrl, username }));
+    storage.setItem(
+      REMOTE_SYNC_CONFIG_KEY,
+      JSON.stringify(marker ? { serverUrl, username, lastSync: marker } : { serverUrl, username })
+    );
     return true;
   } catch {
     return false;
@@ -93,12 +103,18 @@ export function createRemoteSyncController({
   describe = () => 'Backup remoto válido.',
   confirm,
   createSnapshot,
-  onImported = (_state) => {},
-  notify = (_msg) => {},
-  isDisabled = () => false
+  onImported = _state => {},
+  notify = _msg => {},
+  isDisabled = () => false,
 } = {}) {
-  if (typeof validate !== 'function' || typeof confirm !== 'function' || typeof createSnapshot !== 'function') {
-    throw new TypeError('Sincronização remota requer validação, confirmação e snapshot de segurança.');
+  if (
+    typeof validate !== 'function' ||
+    typeof confirm !== 'function' ||
+    typeof createSnapshot !== 'function'
+  ) {
+    throw new TypeError(
+      'Sincronização remota requer validação, confirmação e snapshot de segurança.'
+    );
   }
 
   const overlay = document?.getElementById('remoteSyncOverlay');
@@ -110,16 +126,28 @@ export function createRemoteSyncController({
   const pushBtn = document?.getElementById('pushRemoteSyncBtn');
   const pullBtn = document?.getElementById('pullRemoteSyncBtn');
 
-  const urlInput = /** @type {HTMLInputElement | null} */ (document?.getElementById('remoteSyncUrl'));
-  const userInput = /** @type {HTMLInputElement | null} */ (document?.getElementById('remoteSyncUsername'));
-  const passInput = /** @type {HTMLInputElement | null} */ (document?.getElementById('remoteSyncPassword'));
-  const phraseInput = /** @type {HTMLInputElement | null} */ (document?.getElementById('remoteSyncPassphrase'));
+  const urlInput = /** @type {HTMLInputElement | null} */ (
+    document?.getElementById('remoteSyncUrl')
+  );
+  const userInput = /** @type {HTMLInputElement | null} */ (
+    document?.getElementById('remoteSyncUsername')
+  );
+  const passInput = /** @type {HTMLInputElement | null} */ (
+    document?.getElementById('remoteSyncPassword')
+  );
+  const phraseInput = /** @type {HTMLInputElement | null} */ (
+    document?.getElementById('remoteSyncPassphrase')
+  );
 
   const statusBox = document?.getElementById('remoteSyncStatusBox');
   const statusMsg = document?.getElementById('remoteSyncStatusMsg');
 
   const storage = (() => {
-    try { return window?.localStorage; } catch { return null; }
+    try {
+      return window?.localStorage;
+    } catch {
+      return null;
+    }
   })();
 
   let previousFocus = null;
@@ -135,7 +163,7 @@ export function createRemoteSyncController({
     serverUrl: urlInput?.value?.trim() || '',
     username: userInput?.value?.trim() || '',
     password: passInput?.value || '',
-    passphrase: phraseInput?.value || ''
+    passphrase: phraseInput?.value || '',
   });
 
   const loadSavedConfig = () => {
@@ -176,18 +204,25 @@ export function createRemoteSyncController({
 
   const lastSyncedEnvelopeAt = serverUrl => {
     const { lastSync } = readRemoteSyncPreferences(storage);
-    return lastSync && sameServer(lastSync.serverUrl) === sameServer(serverUrl) ? lastSync.envelopeAt : null;
+    return lastSync && sameServer(lastSync.serverUrl) === sameServer(serverUrl)
+      ? lastSync.envelopeAt
+      : null;
   };
 
   const recordSync = (serverUrl, envelopeAt) => {
     if (!envelopeAt) return;
     const preferences = readRemoteSyncPreferences(storage);
-    writeRemoteSyncPreferences(storage, { ...preferences, lastSync: { serverUrl: sameServer(serverUrl), envelopeAt } });
+    writeRemoteSyncPreferences(storage, {
+      ...preferences,
+      lastSync: { serverUrl: sameServer(serverUrl), envelopeAt },
+    });
   };
 
   const formatEnvelopeAt = iso => {
     const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? iso : date.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+    return Number.isNaN(date.getTime())
+      ? iso
+      : date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
   };
 
   /** A nuvem só mudou "por fora" se o envelope remoto não for o da última sincronização deste navegador. */
@@ -227,10 +262,17 @@ export function createRemoteSyncController({
     showStatus('Consultando estado remoto...');
     try {
       const version = await provider.checkRemoteVersion(config);
-      if (!version.exists) showStatus('Nenhum backup na nuvem ainda. Envie o estado local para criar o primeiro.');
+      if (!version.exists)
+        showStatus('Nenhum backup na nuvem ainda. Envie o estado local para criar o primeiro.');
       else if (!version.valid) showStatus('O arquivo remoto não é um backup reconhecido.', true);
-      else if (remoteChangedSinceLastSync(version, config.serverUrl)) showStatus(`A nuvem tem um backup de ${formatEnvelopeAt(version.createdAt)} que este navegador ainda não baixou.`);
-      else showStatus('A nuvem está igual à última sincronização deste navegador. Envie se você fez mudanças aqui.');
+      else if (remoteChangedSinceLastSync(version, config.serverUrl))
+        showStatus(
+          `A nuvem tem um backup de ${formatEnvelopeAt(version.createdAt)} que este navegador ainda não baixou.`
+        );
+      else
+        showStatus(
+          'A nuvem está igual à última sincronização deste navegador. Envie se você fez mudanças aqui.'
+        );
     } catch (error) {
       showStatus(`Falha ao verificar: ${/** @type {any} */ (error)?.message}`, true);
     }
@@ -248,7 +290,10 @@ export function createRemoteSyncController({
     try {
       version = await provider.checkRemoteVersion(config);
     } catch (error) {
-      showStatus(`Erro ao consultar a nuvem: ${/** @type {any} */ (error)?.message} Nada foi enviado.`, true);
+      showStatus(
+        `Erro ao consultar a nuvem: ${/** @type {any} */ (error)?.message} Nada foi enviado.`,
+        true
+      );
       return;
     }
     if (!remoteChangedSinceLastSync(version, config.serverUrl)) {
@@ -259,7 +304,9 @@ export function createRemoteSyncController({
       ? `A nuvem tem um backup de ${formatEnvelopeAt(version.createdAt)} que este navegador ainda não baixou. Enviar vai substituí-lo. Continuar?`
       : 'O arquivo remoto não é um backup reconhecido. Enviar vai substituí-lo. Continuar?';
     close({ restoreFocus: false });
-    confirm(warning, () => { upload(config); });
+    confirm(warning, () => {
+      upload(config);
+    });
   };
 
   /** Pode rodar depois da confirmação, com o modal fechado: por isso também avisa por notify. */
@@ -321,14 +368,22 @@ export function createRemoteSyncController({
       validation = { valid: false, message: 'O backup remoto não pôde ser validado.' };
     }
     if (!validation?.valid || !validation.normalized) {
-      showStatus(`Backup remoto rejeitado: ${validation?.message || 'estrutura inválida.'} Seus dados locais foram preservados.`, true);
+      showStatus(
+        `Backup remoto rejeitado: ${validation?.message || 'estrutura inválida.'} Seus dados locais foram preservados.`,
+        true
+      );
       return;
     }
 
     close({ restoreFocus: false });
     confirm(
       `${describe(validation)} Baixar da nuvem vai substituir todos os dados atuais. Um snapshot de segurança do estado atual será criado antes. Continuar?`,
-      () => { applyConfirmed(validation.normalized, { serverUrl: config.serverUrl, envelopeAt: result.envelopeAt }); }
+      () => {
+        applyConfirmed(validation.normalized, {
+          serverUrl: config.serverUrl,
+          envelopeAt: result.envelopeAt,
+        });
+      }
     );
   };
 
@@ -351,6 +406,15 @@ export function createRemoteSyncController({
     return api;
   };
 
-  const api = Object.freeze({ open, close, mount, testConnection, reconcile, push, pull, applyConfirmed });
+  const api = Object.freeze({
+    open,
+    close,
+    mount,
+    testConnection,
+    reconcile,
+    push,
+    pull,
+    applyConfirmed,
+  });
   return api;
 }

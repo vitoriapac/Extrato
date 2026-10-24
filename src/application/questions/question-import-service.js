@@ -1,4 +1,7 @@
-import { normalizeKey, normalizeQuestionImportRows } from '../../domain/questions/question-import-normalizer.js';
+import {
+  normalizeKey,
+  normalizeQuestionImportRows,
+} from '../../domain/questions/question-import-normalizer.js';
 
 /**
  * @param {Object} [deps]
@@ -10,13 +13,35 @@ import { normalizeKey, normalizeQuestionImportRows } from '../../domain/question
  * @param {() => string} [deps.today] data local AAAA-MM-DD, usada quando a linha do CSV não traz data
  * @param {<T>(task: () => T) => T} [deps.atomic] executa a importação e desfaz todas as mudanças se ela lançar erro
  */
-export function createQuestionImportService({ subjectService, questionService, getSubjects, getQuestions, errorCategoryKeys, today, atomic } = {}) {
-  if (!subjectService || !questionService || typeof getSubjects !== 'function' || typeof getQuestions !== 'function' || !Array.isArray(errorCategoryKeys) || !errorCategoryKeys.length || typeof today !== 'function' || typeof atomic !== 'function') {
-    throw new TypeError('Serviço de importação de questões requer subjectService, questionService, getSubjects, getQuestions, errorCategoryKeys, today e atomic.');
+export function createQuestionImportService({
+  subjectService,
+  questionService,
+  getSubjects,
+  getQuestions,
+  errorCategoryKeys,
+  today,
+  atomic,
+} = {}) {
+  if (
+    !subjectService ||
+    !questionService ||
+    typeof getSubjects !== 'function' ||
+    typeof getQuestions !== 'function' ||
+    !Array.isArray(errorCategoryKeys) ||
+    !errorCategoryKeys.length ||
+    typeof today !== 'function' ||
+    typeof atomic !== 'function'
+  ) {
+    throw new TypeError(
+      'Serviço de importação de questões requer subjectService, questionService, getSubjects, getQuestions, errorCategoryKeys, today e atomic.'
+    );
   }
 
   const preview = (rawText, { fileName = '' } = {}) => {
-    const records = normalizeQuestionImportRows(rawText, { defaultDate: today(), errorCategoryKeys });
+    const records = normalizeQuestionImportRows(rawText, {
+      defaultDate: today(),
+      errorCategoryKeys,
+    });
     const subjects = getSubjects();
     const existingQuestions = getQuestions();
 
@@ -50,7 +75,11 @@ export function createQuestionImportService({ subjectService, questionService, g
           } else {
             const key = `${matchedSubject.id}|${topicKey}`;
             if (!newTopicsMap.has(key)) {
-              newTopicsMap.set(key, { subjectName: matchedSubject.name, topicName: record.topicName, subjectId: matchedSubject.id });
+              newTopicsMap.set(key, {
+                subjectName: matchedSubject.name,
+                topicName: record.topicName,
+                subjectId: matchedSubject.id,
+              });
             }
           }
         }
@@ -61,7 +90,11 @@ export function createQuestionImportService({ subjectService, questionService, g
         if (record.topicName) {
           const key = `${subjectKey}|${normalizeKey(record.topicName)}`;
           if (!newTopicsMap.has(key)) {
-            newTopicsMap.set(key, { subjectName: record.subjectName, topicName: record.topicName, subjectId: null });
+            newTopicsMap.set(key, {
+              subjectName: record.subjectName,
+              topicName: record.topicName,
+              subjectId: null,
+            });
           }
         }
       }
@@ -69,19 +102,21 @@ export function createQuestionImportService({ subjectService, questionService, g
       // Check for exact duplicate in existing questions
       const isDuplicate = Boolean(
         matchedSubject &&
-        existingQuestions.some(q =>
-          q.date === record.date &&
-          q.subjectId === matchedSubject.id &&
-          (record.topicName ? (matchedTopic && q.topicId === matchedTopic.id) : !q.topicId) &&
-          q.resolved === record.resolved &&
-          q.correct === record.correct
+        existingQuestions.some(
+          q =>
+            q.date === record.date &&
+            q.subjectId === matchedSubject.id &&
+            (record.topicName ? matchedTopic && q.topicId === matchedTopic.id : !q.topicId) &&
+            q.resolved === record.resolved &&
+            q.correct === record.correct
         )
       );
 
       // Duplicatas são ignoradas na importação, então não contam como destino arquivado.
       let archivedTarget = null;
       if (!isDuplicate && matchedSubject?.archived) archivedTarget = matchedSubject.name;
-      else if (!isDuplicate && matchedTopic?.archived) archivedTarget = `${matchedSubject.name}: ${matchedTopic.name}`;
+      else if (!isDuplicate && matchedTopic?.archived)
+        archivedTarget = `${matchedSubject.name}: ${matchedTopic.name}`;
       if (archivedTarget) {
         archivedRecordCount++;
         archivedMatches.add(archivedTarget);
@@ -95,7 +130,7 @@ export function createQuestionImportService({ subjectService, questionService, g
         ...record,
         matchedSubjectId: matchedSubject?.id || null,
         matchedTopicId: matchedTopic?.id || null,
-        isDuplicate
+        isDuplicate,
       };
     });
 
@@ -115,7 +150,7 @@ export function createQuestionImportService({ subjectService, questionService, g
       unknownErrorCategoryCount,
       archivedRecordCount,
       archivedMatches: Array.from(archivedMatches),
-      records: preparedRecords
+      records: preparedRecords,
     };
   };
 
@@ -141,7 +176,9 @@ export function createQuestionImportService({ subjectService, questionService, g
       for (const item of previewData.newTopics) {
         const subject = subjects.find(s => normalizeKey(s.name) === normalizeKey(item.subjectName));
         if (subject) {
-          const topicExists = (subject.topics || []).some(t => normalizeKey(t.name) === normalizeKey(item.topicName));
+          const topicExists = (subject.topics || []).some(
+            t => normalizeKey(t.name) === normalizeKey(item.topicName)
+          );
           if (!topicExists) {
             const created = subjectService.addTopic(subject.id, { name: item.topicName });
             createdTopics.push(created);
@@ -167,7 +204,9 @@ export function createQuestionImportService({ subjectService, questionService, g
 
       let topicId = null;
       if (record.topicName) {
-        const topic = (subject.topics || []).find(t => normalizeKey(t.name) === normalizeKey(record.topicName));
+        const topic = (subject.topics || []).find(
+          t => normalizeKey(t.name) === normalizeKey(record.topicName)
+        );
         topicId = topic?.id || null;
       }
 
@@ -178,7 +217,7 @@ export function createQuestionImportService({ subjectService, questionService, g
         resolved: record.resolved,
         correct: record.correct,
         errorBreakdown: record.errorBreakdown,
-        recommendationId: null
+        recommendationId: null,
       });
 
       addedSessions++;
@@ -190,13 +229,13 @@ export function createQuestionImportService({ subjectService, questionService, g
       addedQuestionsCount,
       createdSubjectsCount: createdSubjects.length,
       createdTopicsCount: createdTopics.length,
-      skippedDuplicatesCount
+      skippedDuplicatesCount,
     };
   };
 
   return Object.freeze({
     preview,
     // Criação de disciplinas, tópicos e questões acontece toda dentro de atomic: ou entra tudo, ou nada.
-    import: (previewData, options) => atomic(() => importQuestions(previewData, options))
+    import: (previewData, options) => atomic(() => importQuestions(previewData, options)),
   });
 }

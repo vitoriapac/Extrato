@@ -20,15 +20,15 @@ O gate de publicação roda `check:all` em UTC e `America/Sao_Paulo` no CI. Ele 
 
 ## Matriz de estabilidade da inteligência da prova
 
-| Cenário | Verificação |
-| --- | --- |
-| Estado vazio e dados demo | Fluxos E2E de recomendação vazia e demo |
-| Backup antigo e schema atual | Migração em `legacy-backup.spec.js`; ciclo exportar → limpar → recarregar → restaurar em `backup-schema24-cycle.spec.js` |
-| BB, Caixa TBN, Caixa TI e escopo conjunto | Fixture determinística de 16 provas e testes de escopo |
-| Prova parcial/completa e classificação manual | Qualidade, matriz, auditoria e importação histórica |
-| Histórico insuficiente/suficiente | Impacto efetivo e prioridade nos testes de integração |
-| Reimportação | Identidade estável e preservação das classificações revisadas |
-| Planejamento com e sem redistribuição | Capacidade semanal, proposta e cooldown |
-| Foco semanal e PDF | Mesmos candidatos e evidências do escopo ativo |
+| Cenário                                       | Verificação                                                                                                              |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Estado vazio e dados demo                     | Fluxos E2E de recomendação vazia e demo                                                                                  |
+| Backup antigo e schema atual                  | Migração em `legacy-backup.spec.js`; ciclo exportar → limpar → recarregar → restaurar em `backup-schema24-cycle.spec.js` |
+| BB, Caixa TBN, Caixa TI e escopo conjunto     | Fixture determinística de 16 provas e testes de escopo                                                                   |
+| Prova parcial/completa e classificação manual | Qualidade, matriz, auditoria e importação histórica                                                                      |
+| Histórico insuficiente/suficiente             | Impacto efetivo e prioridade nos testes de integração                                                                    |
+| Reimportação                                  | Identidade estável e preservação das classificações revisadas                                                            |
+| Planejamento com e sem redistribuição         | Capacidade semanal, proposta e cooldown                                                                                  |
+| Foco semanal e PDF                            | Mesmos candidatos e evidências do escopo ativo                                                                           |
 
 Os testes de integração e de backup exercitam esta matriz sem gravar no perfil real do navegador. Alterações em regras estratégicas devem atualizar o cenário correspondente antes de publicar.

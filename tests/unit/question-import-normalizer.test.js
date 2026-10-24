@@ -4,7 +4,7 @@ import {
   parseDate,
   parseCsvRows,
   normalizeQuestionImportRows,
-  QuestionImportError
+  QuestionImportError,
 } from '../../src/domain/questions/question-import-normalizer.js';
 
 // Espelha as chaves de ERROR_CATEGORIES em src/app.js.
@@ -33,7 +33,8 @@ test('parseCsvRows interpreta virgula, ponto-e-virgula e campos com aspas', () =
 });
 
 test('interpreta formato padrão StudyTrack (resumo com disciplina, tópico, acertos e erros)', () => {
-  const csv = 'Data,Disciplina,Tópico,Resolvidas,Acertos,Erros\n19/10/2026,Português,Crase,20,18,2\n19/10/2026,Matemática,Porcentagem,15,12,3';
+  const csv =
+    'Data,Disciplina,Tópico,Resolvidas,Acertos,Erros\n19/10/2026,Português,Crase,20,18,2\n19/10/2026,Matemática,Porcentagem,15,12,3';
   const result = normalizeQuestionImportRows(csv, opts);
   assert.equal(result.length, 2);
   assert.equal(result[0].subjectName, 'Português');
@@ -92,8 +93,14 @@ test('interpreta formato Tec Concursos (Data da Resolução, Matéria, Caderno, 
 });
 
 test('rejeita arquivo vazio, cabeçalhos inválidos e valores inconsistentes', () => {
-  assert.throws(() => normalizeQuestionImportRows('', opts), error => error instanceof QuestionImportError && error.issues[0].code === 'empty');
-  assert.throws(() => normalizeQuestionImportRows('sem_cabecalho_valido\n1,2,3', opts), error => error instanceof QuestionImportError);
+  assert.throws(
+    () => normalizeQuestionImportRows('', opts),
+    error => error instanceof QuestionImportError && error.issues[0].code === 'empty'
+  );
+  assert.throws(
+    () => normalizeQuestionImportRows('sem_cabecalho_valido\n1,2,3', opts),
+    error => error instanceof QuestionImportError
+  );
 
   const csvInvalido = `Data,Disciplina,Tópico,Resolvidas,Acertos
 19/10/2026,Português,Crase,10,15
@@ -101,22 +108,38 @@ test('rejeita arquivo vazio, cabeçalhos inválidos e valores inconsistentes', (
 data_errada,Matemática,Geometria,10,8
 19/10/2026,História,Brasil,0,0`;
 
-  assert.throws(() => normalizeQuestionImportRows(csvInvalido, opts), error => {
-    assert.ok(error instanceof QuestionImportError);
-    assert.equal(error.issues.length, 4);
-    return true;
-  });
+  assert.throws(
+    () => normalizeQuestionImportRows(csvInvalido, opts),
+    error => {
+      assert.ok(error instanceof QuestionImportError);
+      assert.equal(error.issues.length, 4);
+      return true;
+    }
+  );
 });
 
 test('categorias de erro do CSV são gravadas com as chaves de ERROR_CATEGORIES do app', () => {
   const expected = {
-    lacuna: 'naoSabia', 'Conteúdo': 'naoSabia', 'Não sabia': 'naoSabia', naoSabia: 'naoSabia',
-    'Atenção': 'desatencao', 'Distração': 'desatencao', 'Desatenção': 'desatencao',
-    'Interpretação': 'interpretacao', Leitura: 'interpretacao', Pegadinha: 'interpretacao',
-    Tempo: 'chute', Chute: 'chute', Esqueci: 'esqueci', 'Cálculo': 'calculo'
+    lacuna: 'naoSabia',
+    Conteúdo: 'naoSabia',
+    'Não sabia': 'naoSabia',
+    naoSabia: 'naoSabia',
+    Atenção: 'desatencao',
+    Distração: 'desatencao',
+    Desatenção: 'desatencao',
+    Interpretação: 'interpretacao',
+    Leitura: 'interpretacao',
+    Pegadinha: 'interpretacao',
+    Tempo: 'chute',
+    Chute: 'chute',
+    Esqueci: 'esqueci',
+    Cálculo: 'calculo',
   };
   for (const [raw, key] of Object.entries(expected)) {
-    const [record] = normalizeQuestionImportRows(`Disciplina,Data,Resolvidas,Acertos,Motivo\nPortuguês,19/10/2026,5,2,${raw}`, opts);
+    const [record] = normalizeQuestionImportRows(
+      `Disciplina,Data,Resolvidas,Acertos,Motivo\nPortuguês,19/10/2026,5,2,${raw}`,
+      opts
+    );
     assert.deepEqual(Object.keys(record.errorBreakdown), KEYS, raw);
     assert.equal(record.errorBreakdown[key], 3, `${raw} → ${key}`);
     assert.equal(record.unknownErrorCategoryCount, 0, raw);
@@ -132,11 +155,17 @@ Português,19/10/2026,Acertou,`;
   assert.equal(record.resolved, 3);
   assert.equal(record.unknownErrorCategoryCount, 1);
   assert.equal(record.errorBreakdown.desatencao, 1);
-  assert.equal(Object.values(record.errorBreakdown).reduce((a, b) => a + b, 0), 1);
+  assert.equal(
+    Object.values(record.errorBreakdown).reduce((a, b) => a + b, 0),
+    1
+  );
 });
 
 test('normalizeQuestionImportRows exige errorCategoryKeys', () => {
-  assert.throws(() => normalizeQuestionImportRows('Disciplina,Acertos\nPortuguês,1'), /errorCategoryKeys/);
+  assert.throws(
+    () => normalizeQuestionImportRows('Disciplina,Acertos\nPortuguês,1'),
+    /errorCategoryKeys/
+  );
 });
 
 test('parseDate rejeita datas que não existem no calendário', () => {
@@ -148,23 +177,49 @@ test('parseDate rejeita datas que não existem no calendário', () => {
   assert.equal(parseDate('29/02/2026'), null);
 
   assert.throws(
-    () => normalizeQuestionImportRows('Data,Disciplina,Resolvidas,Acertos\n31/02/2026,Português,10,8', opts),
-    error => error instanceof QuestionImportError && error.issues[0].code === 'invalid_date' && error.issues[0].line === 2
+    () =>
+      normalizeQuestionImportRows(
+        'Data,Disciplina,Resolvidas,Acertos\n31/02/2026,Português,10,8',
+        opts
+      ),
+    error =>
+      error instanceof QuestionImportError &&
+      error.issues[0].code === 'invalid_date' &&
+      error.issues[0].line === 2
   );
 });
 
 test('linha sem data usa a defaultDate injetada; defaultDate é obrigatória', () => {
-  const [semColuna] = normalizeQuestionImportRows('Disciplina,Resolvidas,Acertos\nPortuguês,10,8', opts);
+  const [semColuna] = normalizeQuestionImportRows(
+    'Disciplina,Resolvidas,Acertos\nPortuguês,10,8',
+    opts
+  );
   assert.equal(semColuna.date, '2026-10-20');
-  const [celulaVazia] = normalizeQuestionImportRows('Data,Disciplina,Resolvidas,Acertos\n,Português,10,8', opts);
+  const [celulaVazia] = normalizeQuestionImportRows(
+    'Data,Disciplina,Resolvidas,Acertos\n,Português,10,8',
+    opts
+  );
   assert.equal(celulaVazia.date, '2026-10-20');
 
-  assert.throws(() => normalizeQuestionImportRows('Disciplina,Acertos\nPortuguês,1', { errorCategoryKeys: KEYS }), /defaultDate/);
-  assert.throws(() => normalizeQuestionImportRows('Disciplina,Acertos\nPortuguês,1', { errorCategoryKeys: KEYS, defaultDate: '2026-02-31' }), /defaultDate/);
+  assert.throws(
+    () =>
+      normalizeQuestionImportRows('Disciplina,Acertos\nPortuguês,1', { errorCategoryKeys: KEYS }),
+    /defaultDate/
+  );
+  assert.throws(
+    () =>
+      normalizeQuestionImportRows('Disciplina,Acertos\nPortuguês,1', {
+        errorCategoryKeys: KEYS,
+        defaultDate: '2026-02-31',
+      }),
+    /defaultDate/
+  );
 });
 
 test('delimitador é detectado no cabeçalho e só ele separa colunas', () => {
-  const pontoEVirgula = parseCsvRows('Disciplina;Tópico;Resolvidas;Acertos\nPortuguês;Crase, regência;10;8');
+  const pontoEVirgula = parseCsvRows(
+    'Disciplina;Tópico;Resolvidas;Acertos\nPortuguês;Crase, regência;10;8'
+  );
   assert.deepEqual(pontoEVirgula[1].values, ['Português', 'Crase, regência', '10', '8']);
 
   const tab = parseCsvRows('Disciplina\tTópico\tResolvidas\nPortuguês\tCrase; regência, uso\t10');
@@ -177,13 +232,17 @@ test('delimitador é detectado no cabeçalho e só ele separa colunas', () => {
   assert.equal(parseCsvRows('"a;b;c",d\n1,2')[0].values.length, 2);
   assert.equal(parseCsvRows('Disciplina\nPortuguês;Crase')[1].values.length, 1);
 
-  const [record] = normalizeQuestionImportRows('Data;Disciplina;Tópico;Resolvidas;Acertos\n19/10/2026;Português;Crase, regência;10;8', opts);
+  const [record] = normalizeQuestionImportRows(
+    'Data;Disciplina;Tópico;Resolvidas;Acertos\n19/10/2026;Português;Crase, regência;10;8',
+    opts
+  );
   assert.equal(record.topicName, 'Crase, regência');
   assert.equal(record.resolved, 10);
 });
 
 test('modelo CSV para download é datado com o dia informado e passa na importação', async () => {
-  const { buildQuestionImportTemplate, QUESTION_IMPORT_TEMPLATE_FILE_NAME } = await import('../../src/features/question-import/question-import-template.js');
+  const { buildQuestionImportTemplate, QUESTION_IMPORT_TEMPLATE_FILE_NAME } =
+    await import('../../src/features/question-import/question-import-template.js');
   assert.match(QUESTION_IMPORT_TEMPLATE_FILE_NAME, /\.csv$/);
   const records = normalizeQuestionImportRows(buildQuestionImportTemplate('2026-03-07'), opts);
   assert.equal(records.length, 2);

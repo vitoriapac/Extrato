@@ -2,9 +2,9 @@
 
 1. Crie uma branch a partir de `main`.
 2. Mantenha regras de negócio fora da camada de DOM sempre que possível.
-3. Adicione testes para correções e novas regras.
-4. Execute `npm run build` e `npm run check`.
-5. Não edite `src/app.bundle.js` manualmente.
+3. Adicione testes para correções e novas regras e mantenha os contratos de tipos atualizados em `src/core/types.ts`.
+4. Execute `npm run format`, `npm run check:types`, `npm run build` e `npm run check`.
+5. Não edite `src/app.bundle.js` ou `src/exam-catalog.bundle.js` manualmente.
 6. Não inclua backups, históricos pessoais ou credenciais no repositório.
 7. Ao mudar primeiro uso, planejamento, execução, recuperação, recomendações ou persistência, confira os diagramas Mermaid do [README](README.md) e da [arquitetura](ARCHITECTURE.md). Eles devem descrever o comportamento implementado, não o roadmap.
 

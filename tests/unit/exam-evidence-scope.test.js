@@ -1,10 +1,108 @@
-import test from 'node:test';import assert from 'node:assert/strict';
-import {EXAM_TAGS} from '../../src/domain/exams/exam-catalog.js';
-import {classifyEvidenceScope,resolveExamEvidenceScope} from '../../src/domain/exams/exam-evidence-scope.js';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { EXAM_TAGS } from '../../src/domain/exams/exam-catalog.js';
+import {
+  classifyEvidenceScope,
+  resolveExamEvidenceScope,
+} from '../../src/domain/exams/exam-evidence-scope.js';
 
-const subjects=[{id:'subject-portuguese',topics:[{id:'topic-common',examTags:[EXAM_TAGS.BB,EXAM_TAGS.CAIXA]},{id:'topic-bb',examTags:[EXAM_TAGS.BB]},{id:'topic-caixa',examTags:[EXAM_TAGS.CAIXA]},{id:'topic-caixa-ti',examTags:[EXAM_TAGS.CAIXA_TI]},{id:'topic-personal',examTags:[]}]}];
-test('evidência com tópico segue o escopo e conteúdo pessoal permanece elegível',()=>{assert.equal(classifyEvidenceScope({topicId:'topic-bb'},subjects,[EXAM_TAGS.BB]).includedInExamMetrics,true);assert.equal(classifyEvidenceScope({topicId:'topic-caixa'},subjects,[EXAM_TAGS.BB]).includedInExamMetrics,false);assert.equal(classifyEvidenceScope({topicId:'topic-personal'},subjects,[EXAM_TAGS.BB]).includedInExamMetrics,true)});
-test('evidência apenas da disciplina não é atribuída a um edital específico',()=>{const scoped=classifyEvidenceScope({subjectId:'subject-portuguese'},subjects,[EXAM_TAGS.BB]),general=classifyEvidenceScope({subjectId:'subject-portuguese'},subjects,[]);assert.equal(scoped.state,'subject_only');assert.equal(scoped.includedInExamMetrics,false);assert.equal(general.includedInExamMetrics,true)});
-test('contexto separa evidência incluída, sem tópico e excluída',()=>{const context=resolveExamEvidenceScope({subjects,activeExamTags:[EXAM_TAGS.BB],sessions:[{id:'session-common-topic',topicId:'topic-common'},{id:'session-bb-topic',topicId:'topic-bb'},{id:'session-caixa-topic',topicId:'topic-caixa'},{id:'session-subject-only',subjectId:'subject-portuguese'}],questions:[{id:'question-common-topic',topicId:'topic-common'},{id:'question-bb-topic',topicId:'topic-bb'},{id:'question-subject-only',subjectId:'subject-portuguese'}]});assert.deepEqual(context.sessions.included.map(item=>item.id),['session-common-topic','session-bb-topic']);assert.deepEqual(context.sessions.subjectOnly.map(item=>item.id),['session-subject-only']);assert.deepEqual(context.questions.included.map(item=>item.id),['question-common-topic','question-bb-topic'])});
-test('não atribui evidência a tópico inexistente ou arquivado',()=>{const archived=[{id:'subject-archived',archived:true,topics:[{id:'topic-archived',archived:true,examTags:[EXAM_TAGS.BB]}]}];assert.equal(classifyEvidenceScope({topicId:'missing'},subjects,[EXAM_TAGS.BB]).state,'unscoped');assert.equal(classifyEvidenceScope({topicRef:'missing'},subjects,[EXAM_TAGS.BB]).state,'unscoped');assert.equal(classifyEvidenceScope({topicId:'topic-archived'},archived,[EXAM_TAGS.BB]).state,'unscoped')});
-test('snapshot de escopo preserva a classificação após mudança do tópico',()=>{const record={topicId:'topic-bb',examScope:[EXAM_TAGS.BB]};assert.equal(classifyEvidenceScope(record,subjects,[EXAM_TAGS.BB]).includedInExamMetrics,true);assert.equal(classifyEvidenceScope(record,subjects,[EXAM_TAGS.CAIXA]).includedInExamMetrics,false);assert.equal(classifyEvidenceScope({...record,examScope:[]},subjects,[EXAM_TAGS.CAIXA]).includedInExamMetrics,true)});
+const subjects = [
+  {
+    id: 'subject-portuguese',
+    topics: [
+      { id: 'topic-common', examTags: [EXAM_TAGS.BB, EXAM_TAGS.CAIXA] },
+      { id: 'topic-bb', examTags: [EXAM_TAGS.BB] },
+      { id: 'topic-caixa', examTags: [EXAM_TAGS.CAIXA] },
+      { id: 'topic-caixa-ti', examTags: [EXAM_TAGS.CAIXA_TI] },
+      { id: 'topic-personal', examTags: [] },
+    ],
+  },
+];
+test('evidência com tópico segue o escopo e conteúdo pessoal permanece elegível', () => {
+  assert.equal(
+    classifyEvidenceScope({ topicId: 'topic-bb' }, subjects, [EXAM_TAGS.BB]).includedInExamMetrics,
+    true
+  );
+  assert.equal(
+    classifyEvidenceScope({ topicId: 'topic-caixa' }, subjects, [EXAM_TAGS.BB])
+      .includedInExamMetrics,
+    false
+  );
+  assert.equal(
+    classifyEvidenceScope({ topicId: 'topic-personal' }, subjects, [EXAM_TAGS.BB])
+      .includedInExamMetrics,
+    true
+  );
+});
+test('evidência apenas da disciplina não é atribuída a um edital específico', () => {
+  const scoped = classifyEvidenceScope({ subjectId: 'subject-portuguese' }, subjects, [
+      EXAM_TAGS.BB,
+    ]),
+    general = classifyEvidenceScope({ subjectId: 'subject-portuguese' }, subjects, []);
+  assert.equal(scoped.state, 'subject_only');
+  assert.equal(scoped.includedInExamMetrics, false);
+  assert.equal(general.includedInExamMetrics, true);
+});
+test('contexto separa evidência incluída, sem tópico e excluída', () => {
+  const context = resolveExamEvidenceScope({
+    subjects,
+    activeExamTags: [EXAM_TAGS.BB],
+    sessions: [
+      { id: 'session-common-topic', topicId: 'topic-common' },
+      { id: 'session-bb-topic', topicId: 'topic-bb' },
+      { id: 'session-caixa-topic', topicId: 'topic-caixa' },
+      { id: 'session-subject-only', subjectId: 'subject-portuguese' },
+    ],
+    questions: [
+      { id: 'question-common-topic', topicId: 'topic-common' },
+      { id: 'question-bb-topic', topicId: 'topic-bb' },
+      { id: 'question-subject-only', subjectId: 'subject-portuguese' },
+    ],
+  });
+  assert.deepEqual(
+    context.sessions.included.map(item => item.id),
+    ['session-common-topic', 'session-bb-topic']
+  );
+  assert.deepEqual(
+    context.sessions.subjectOnly.map(item => item.id),
+    ['session-subject-only']
+  );
+  assert.deepEqual(
+    context.questions.included.map(item => item.id),
+    ['question-common-topic', 'question-bb-topic']
+  );
+});
+test('não atribui evidência a tópico inexistente ou arquivado', () => {
+  const archived = [
+    {
+      id: 'subject-archived',
+      archived: true,
+      topics: [{ id: 'topic-archived', archived: true, examTags: [EXAM_TAGS.BB] }],
+    },
+  ];
+  assert.equal(
+    classifyEvidenceScope({ topicId: 'missing' }, subjects, [EXAM_TAGS.BB]).state,
+    'unscoped'
+  );
+  assert.equal(
+    classifyEvidenceScope({ topicRef: 'missing' }, subjects, [EXAM_TAGS.BB]).state,
+    'unscoped'
+  );
+  assert.equal(
+    classifyEvidenceScope({ topicId: 'topic-archived' }, archived, [EXAM_TAGS.BB]).state,
+    'unscoped'
+  );
+});
+test('snapshot de escopo preserva a classificação após mudança do tópico', () => {
+  const record = { topicId: 'topic-bb', examScope: [EXAM_TAGS.BB] };
+  assert.equal(classifyEvidenceScope(record, subjects, [EXAM_TAGS.BB]).includedInExamMetrics, true);
+  assert.equal(
+    classifyEvidenceScope(record, subjects, [EXAM_TAGS.CAIXA]).includedInExamMetrics,
+    false
+  );
+  assert.equal(
+    classifyEvidenceScope({ ...record, examScope: [] }, subjects, [EXAM_TAGS.CAIXA])
+      .includedInExamMetrics,
+    true
+  );
+});

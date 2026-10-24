@@ -419,9 +419,9 @@
         "@playwright/test",
         "@axe-core/playwright",
         "./helpers.js",
-        ")?",
-        ":section.getAttribute(",
-        "]);\n  await expect(page.locator("
+        ")\n            ? ",
+        "\n            : section.getAttribute(",
+        ",\n  ]);\n  await expect(page.locator("
       ],
       "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
@@ -6097,7 +6097,7 @@
         "node:test",
         "node:assert/strict",
         "../../src/application/subjects/structured-content-import.js",
-        "}},state={subjects:[{id:"
+        " },\n    },\n    state = { subjects: [{ id: "
       ],
       "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",

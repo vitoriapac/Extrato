@@ -1,0 +1,12 @@
+node_modules/
+src/app.bundle.js
+src/exam-catalog.bundle.js
+service-worker.js
+src/domain/exams/exam-catalog-data.json
+src/demo/demo-scenario.json
+tests/config/*.json
+test-results/
+playwright-report/
+.test-gates/
+graphify-out/
+src/graphify-out/

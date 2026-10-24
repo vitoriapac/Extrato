@@ -1,168 +1,492 @@
-import {test,expect} from '@playwright/test';import {activateTab,openDemo} from './helpers.js';
-test('destaca prontidão e ativa o cabeçalho compacto ao rolar',async({page})=>{await openDemo(page);await expect(page.locator('.balance-label')).toHaveText('Índice de prontidão');await expect(page.locator('#statContent')).toContainText('%');const hero=(await page.locator('#balanceFigure').innerText()).replace(/\s/g,'');await page.evaluate(()=>scrollTo(0,600));await expect(page.locator('.sticky-shell')).toHaveClass(/is-compact/);const compact=(await page.locator('#compactReadiness').innerText()).replace(/\s/g,'');expect(compact).toBe(hero)});
-test('cabeçalho completo fica na Visão Geral e as demais áreas começam pela barra compacta',async({page})=>{await page.goto('/');await activateTab(page,'dashboard');await expect(page.locator('.statement')).not.toHaveClass(/statement--compact/);await expect(page.locator('.balance-label')).toBeVisible();await expect(page.locator('.mini-stats')).toBeVisible();await activateTab(page,'agenda');await expect(page.locator('.statement')).toBeHidden();await expect(page.locator('.compact-header')).toBeVisible()});
-test('limpeza exige confirmação textual e fica desabilitada na demo',async({page})=>{await page.goto('/');await page.evaluate(()=>{localStorage.clear();sessionStorage.clear()});await page.reload();await page.getByRole('button',{name:'Limpar todos os dados'}).click();await expect(page.locator('#modalMessage')).toContainText('excluirá');await page.getByRole('button',{name:'Confirmar'}).click();await expect(page.locator('#modalPromptInput')).toBeVisible();await page.locator('#modalPromptInput').fill('ERRADO');await page.getByRole('button',{name:'Limpar dados'}).click();await expect(page.locator('#modalPromptError')).toContainText('LIMPAR');await page.getByRole('button',{name:'Cancelar'}).click();await openDemo(page);await expect(page.getByRole('button',{name:'Limpar todos os dados'})).toBeDisabled()});
-test('backup mantém ações destrutivas em zona separada',async({page})=>{await page.goto('/');const danger=page.locator('.backup-block > .backup-danger-zone');await expect(danger).toContainText('Zona de perigo');await expect(danger.getByRole('button',{name:'Limpar todos os dados'})).toBeVisible()});
-test('configuração estratégica comunica herança e conquista de cem horas',async({page})=>{
+import { test, expect } from '@playwright/test';
+import { activateTab, openDemo } from './helpers.js';
+test('destaca prontidão e ativa o cabeçalho compacto ao rolar', async ({ page }) => {
+  await openDemo(page);
+  await expect(page.locator('.balance-label')).toHaveText('Índice de prontidão');
+  await expect(page.locator('#statContent')).toContainText('%');
+  const hero = (await page.locator('#balanceFigure').innerText()).replace(/\s/g, '');
+  await page.evaluate(() => scrollTo(0, 600));
+  await expect(page.locator('.sticky-shell')).toHaveClass(/is-compact/);
+  const compact = (await page.locator('#compactReadiness').innerText()).replace(/\s/g, '');
+  expect(compact).toBe(hero);
+});
+test('cabeçalho completo fica na Visão Geral e as demais áreas começam pela barra compacta', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await activateTab(page, 'dashboard');
+  await expect(page.locator('.statement')).not.toHaveClass(/statement--compact/);
+  await expect(page.locator('.balance-label')).toBeVisible();
+  await expect(page.locator('.mini-stats')).toBeVisible();
+  await activateTab(page, 'agenda');
+  await expect(page.locator('.statement')).toBeHidden();
+  await expect(page.locator('.compact-header')).toBeVisible();
+});
+test('limpeza exige confirmação textual e fica desabilitada na demo', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  await page.reload();
+  await page.getByRole('button', { name: 'Limpar todos os dados' }).click();
+  await expect(page.locator('#modalMessage')).toContainText('excluirá');
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(page.locator('#modalPromptInput')).toBeVisible();
+  await page.locator('#modalPromptInput').fill('ERRADO');
+  await page.getByRole('button', { name: 'Limpar dados' }).click();
+  await expect(page.locator('#modalPromptError')).toContainText('LIMPAR');
+  await page.getByRole('button', { name: 'Cancelar' }).click();
+  await openDemo(page);
+  await expect(page.getByRole('button', { name: 'Limpar todos os dados' })).toBeDisabled();
+});
+test('backup mantém ações destrutivas em zona separada', async ({ page }) => {
+  await page.goto('/');
+  const danger = page.locator('.backup-block > .backup-danger-zone');
+  await expect(danger).toContainText('Zona de perigo');
+  await expect(danger.getByRole('button', { name: 'Limpar todos os dados' })).toBeVisible();
+});
+test('configuração estratégica comunica herança e conquista de cem horas', async ({ page }) => {
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
-  await page.locator('#testReport').evaluate(element=>element.remove());
-  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState()),subjectId=state.subjects[0].id;state.examBlueprint.masteryTarget=80;state.examBlueprint.subjects=[{subjectId,priority:'normal',expectedQuestions:10,questionWeight:1,masteryTarget:null}];state.studySessions=[{id:'hours-100',date:api.todayISO(),durationSeconds:360000}];api.setState(state);api.renderAll()});
-  await activateTab(page,'metas');await expect(page.locator('#examBlueprintConfig')).toContainText('Configuração por disciplina');await expect(page.locator('#examBlueprintConfig .field-inheritance').first()).toHaveText('80% (geral)');
-  await activateTab(page,'dashboard');
-  await expect.poll(()=>page.evaluate(()=>window.__EXTRATO_TEST__.getState().studySessions.reduce((sum,item)=>sum+(Number(item.durationSeconds)||0),0))).toBe(360000);
-  await page.evaluate(()=>window.__EXTRATO_TEST__.renderAll());
-  await expect(page.locator('#badgesGrid .badge-card.unlocked').filter({hasText:'Cem horas'}).first()).toContainText('Cem horas');
-  await expect(page.locator('#badgesGrid .achievement-section h4').first()).toContainText('Desbloqueadas');
-  await expect(page.locator('#badgesGrid .achievement-upcoming summary')).toContainText('Próximas conquistas');
+  await page.locator('#testReport').evaluate(element => element.remove());
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__,
+      state = structuredClone(api.getState()),
+      subjectId = state.subjects[0].id;
+    state.examBlueprint.masteryTarget = 80;
+    state.examBlueprint.subjects = [
+      {
+        subjectId,
+        priority: 'normal',
+        expectedQuestions: 10,
+        questionWeight: 1,
+        masteryTarget: null,
+      },
+    ];
+    state.studySessions = [{ id: 'hours-100', date: api.todayISO(), durationSeconds: 360000 }];
+    api.setState(state);
+    api.renderAll();
+  });
+  await activateTab(page, 'metas');
+  await expect(page.locator('#examBlueprintConfig')).toContainText('Configuração por disciplina');
+  await expect(page.locator('#examBlueprintConfig .field-inheritance').first()).toHaveText(
+    '80% (geral)'
+  );
+  await activateTab(page, 'dashboard');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.__EXTRATO_TEST__
+          .getState()
+          .studySessions.reduce((sum, item) => sum + (Number(item.durationSeconds) || 0), 0)
+      )
+    )
+    .toBe(360000);
+  await page.evaluate(() => window.__EXTRATO_TEST__.renderAll());
+  await expect(
+    page.locator('#badgesGrid .badge-card.unlocked').filter({ hasText: 'Cem horas' }).first()
+  ).toContainText('Cem horas');
+  await expect(page.locator('#badgesGrid .achievement-section h4').first()).toContainText(
+    'Desbloqueadas'
+  );
+  await expect(page.locator('#badgesGrid .achievement-upcoming summary')).toContainText(
+    'Próximas conquistas'
+  );
 });
 
-test('modo foco mostra o contexto da tarefa, prende o teclado e Escape devolve o foco',async({page})=>{await page.setViewportSize({width:375,height:812});await page.goto('/?test=1');await expect(page.locator('#testReport')).toBeVisible();await page.locator('#testReport').evaluate(element=>element.remove());await activateTab(page,'dashboard');const subjectSelect=page.locator('#timerSubjectSelect'),subject=await subjectSelect.locator('option').evaluateAll(options=>{const option=options.find(item=>item.value);return option?{value:option.value,text:option.textContent}:null});expect(subject).toBeTruthy();await subjectSelect.selectOption(subject.value);const topicSelect=page.locator('#timerTopicSelect'),topic=await topicSelect.locator('option').evaluateAll(options=>{const option=options.find(item=>item.value);return option?{value:option.value,text:option.textContent}:null});expect(topic).toBeTruthy();await topicSelect.selectOption(topic.value);await page.locator('#timerTypeSelect').selectOption('questions');const toggle=page.locator('#timerFocusToggle');await toggle.click();await expect(page.locator('body')).toHaveClass(/timer-focus-active/);await expect(toggle).toHaveAttribute('aria-pressed','true');await expect(page.locator('.timer-block')).toHaveAttribute('role','region');await expect(page.locator('#timerFocusContext')).toBeVisible();await expect(page.locator('#timerFocusTitle')).toContainText(subject.text.trim());await expect(page.locator('#timerFocusTitle')).toContainText(topic.text.trim());await expect(page.locator('#timerFocusSubtitle')).toContainText('Questões');await expect(page.locator('.timer-context')).toBeHidden();await expect(page.locator('#timerStartBtn')).toBeFocused();const surface=page.locator('#panel-dashboard .chart-card:has(.timer-block)'),focusable=surface.locator('button:visible:not([disabled]),a[href]:visible,input:visible:not([disabled]),select:visible:not([disabled]),textarea:visible:not([disabled]),[tabindex]:visible:not([tabindex="-1"])'),first=focusable.first(),last=focusable.last();await first.focus();await page.keyboard.press('Shift+Tab');await expect(last).toBeFocused();await page.keyboard.press('Tab');await expect(first).toBeFocused();expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);await page.keyboard.press('Escape');await expect(page.locator('body')).not.toHaveClass(/timer-focus-active/);await expect(page.locator('#timerFocusContext')).toBeHidden();await expect(toggle).toHaveAttribute('aria-pressed','false');await expect(toggle).toBeFocused()});
+test('modo foco mostra o contexto da tarefa, prende o teclado e Escape devolve o foco', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/?test=1');
+  await expect(page.locator('#testReport')).toBeVisible();
+  await page.locator('#testReport').evaluate(element => element.remove());
+  await activateTab(page, 'dashboard');
+  const subjectSelect = page.locator('#timerSubjectSelect'),
+    subject = await subjectSelect.locator('option').evaluateAll(options => {
+      const option = options.find(item => item.value);
+      return option ? { value: option.value, text: option.textContent } : null;
+    });
+  expect(subject).toBeTruthy();
+  await subjectSelect.selectOption(subject.value);
+  const topicSelect = page.locator('#timerTopicSelect'),
+    topic = await topicSelect.locator('option').evaluateAll(options => {
+      const option = options.find(item => item.value);
+      return option ? { value: option.value, text: option.textContent } : null;
+    });
+  expect(topic).toBeTruthy();
+  await topicSelect.selectOption(topic.value);
+  await page.locator('#timerTypeSelect').selectOption('questions');
+  const toggle = page.locator('#timerFocusToggle');
+  await toggle.click();
+  await expect(page.locator('body')).toHaveClass(/timer-focus-active/);
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.timer-block')).toHaveAttribute('role', 'region');
+  await expect(page.locator('#timerFocusContext')).toBeVisible();
+  await expect(page.locator('#timerFocusTitle')).toContainText(subject.text.trim());
+  await expect(page.locator('#timerFocusTitle')).toContainText(topic.text.trim());
+  await expect(page.locator('#timerFocusSubtitle')).toContainText('Questões');
+  await expect(page.locator('.timer-context')).toBeHidden();
+  await expect(page.locator('#timerStartBtn')).toBeFocused();
+  const surface = page.locator('#panel-dashboard .chart-card:has(.timer-block)'),
+    focusable = surface.locator(
+      'button:visible:not([disabled]),a[href]:visible,input:visible:not([disabled]),select:visible:not([disabled]),textarea:visible:not([disabled]),[tabindex]:visible:not([tabindex="-1"])'
+    ),
+    first = focusable.first(),
+    last = focusable.last();
+  await first.focus();
+  await page.keyboard.press('Shift+Tab');
+  await expect(last).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(first).toBeFocused();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    )
+  ).toBeLessThanOrEqual(1);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('body')).not.toHaveClass(/timer-focus-active/);
+  await expect(page.locator('#timerFocusContext')).toBeHidden();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await expect(toggle).toBeFocused();
+});
 
-test('ações guiadas permanecem fáceis de tocar em celular e o aviso de sessão é anunciado',async({page})=>{await page.setViewportSize({width:375,height:812});await openDemo(page);await activateTab(page,'hoje');const buttons=page.locator('#studyRecommendation .recommendation-actions .btn');await expect(buttons.first()).toBeVisible();expect(await buttons.evaluateAll(items=>items.every(item=>item.getBoundingClientRect().height>=44))).toBe(true);expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);await expect(page.locator('#toast')).toHaveAttribute('aria-live','polite')});
-test('componentes visuais não transbordam e controles usam o padrão comum',async({page})=>{
-  await page.setViewportSize({width:375,height:900});
+test('ações guiadas permanecem fáceis de tocar em celular e o aviso de sessão é anunciado', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openDemo(page);
+  await activateTab(page, 'hoje');
+  const buttons = page.locator('#studyRecommendation .recommendation-actions .btn');
+  await expect(buttons.first()).toBeVisible();
+  expect(
+    await buttons.evaluateAll(items =>
+      items.every(item => item.getBoundingClientRect().height >= 44)
+    )
+  ).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    )
+  ).toBeLessThanOrEqual(1);
+  await expect(page.locator('#toast')).toHaveAttribute('aria-live', 'polite');
+});
+test('componentes visuais não transbordam e controles usam o padrão comum', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 900 });
   await openDemo(page);
   await expect(page.locator('#studyTimerTarget')).toBeHidden();
-  for(const select of await page.locator('#timerSubjectSelect,#timerTopicSelect,#timerTypeSelect,#studySessionsPeriod,#studySessionsSubjectFilter,#studySessionsTypeFilter').all())await expect(select).toHaveClass(/select-control/);
-  const dashboardOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  for (const select of await page
+    .locator(
+      '#timerSubjectSelect,#timerTopicSelect,#timerTypeSelect,#studySessionsPeriod,#studySessionsSubjectFilter,#studySessionsTypeFilter'
+    )
+    .all())
+    await expect(select).toHaveClass(/select-control/);
+  const dashboardOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
   expect(dashboardOverflow).toBeLessThanOrEqual(1);
-  await activateTab(page,'questoes');
-  const errorCards=page.locator('#subjectErrorProfile .error-profile-item');
-  if(await errorCards.count())expect(await errorCards.evaluateAll(cards=>cards.every(card=>card.scrollWidth<=card.clientWidth+1))).toBe(true);
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  await activateTab(page, 'questoes');
+  const errorCards = page.locator('#subjectErrorProfile .error-profile-item');
+  if (await errorCards.count())
+    expect(
+      await errorCards.evaluateAll(cards =>
+        cards.every(card => card.scrollWidth <= card.clientWidth + 1)
+      )
+    ).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    )
+  ).toBeLessThanOrEqual(1);
 });
 
-test('cronômetro não reserva espaço vazio e instruções explicam dados e rotina',async({page})=>{await page.goto('/');await expect(page.locator('#studyTimerTarget')).toBeHidden();await expect(page.locator('#guidedStrategy')).toBeHidden();await activateTab(page,'instrucoes');await expect(page.getByRole('heading',{name:'Como usar o StudyTrack'})).toBeVisible();await expect(page.locator('#guide-start')).toContainText('Monte o edital');await expect(page.locator('#guide-data')).toContainText('Prontidão');await expect(page.locator('#guide-safety')).toContainText('Os dados ficam neste navegador')});
+test('cronômetro não reserva espaço vazio e instruções explicam dados e rotina', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('#studyTimerTarget')).toBeHidden();
+  await expect(page.locator('#guidedStrategy')).toBeHidden();
+  await activateTab(page, 'instrucoes');
+  await expect(page.getByRole('heading', { name: 'Como usar o StudyTrack' })).toBeVisible();
+  await expect(page.locator('#guide-start')).toContainText('Monte o edital');
+  await expect(page.locator('#guide-data')).toContainText('Prontidão');
+  await expect(page.locator('#guide-safety')).toContainText('Os dados ficam neste navegador');
+});
 
-test('meta do cronômetro mostra progresso acessível somente quando configurada',async({page})=>{
+test('meta do cronômetro mostra progresso acessível somente quando configurada', async ({
+  page,
+}) => {
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
-  await page.locator('#testReport').evaluate(element=>element.remove());
+  await page.locator('#testReport').evaluate(element => element.remove());
   await expect(page.locator('#studyTimerProgress')).toBeHidden();
-  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.activeTimer={...(state.activeTimer||{}),accumulatedSeconds:450,isRunning:false,targetMinutes:15};api.setState(state);api.refreshTimerDisplay()});
-  await activateTab(page,'dashboard');
-  const progress=page.locator('#studyTimerProgress');
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__,
+      state = structuredClone(api.getState());
+    state.activeTimer = {
+      ...(state.activeTimer || {}),
+      accumulatedSeconds: 450,
+      isRunning: false,
+      targetMinutes: 15,
+    };
+    api.setState(state);
+    api.refreshTimerDisplay();
+  });
+  await activateTab(page, 'dashboard');
+  const progress = page.locator('#studyTimerProgress');
   await expect(progress).toBeVisible();
   await expect(page.locator('#studyTimerTarget')).toBeVisible();
-  await expect(progress).toHaveAttribute('aria-valuetext',/ de \d+min/);
+  await expect(progress).toHaveAttribute('aria-valuetext', / de \d+min/);
 });
 
-test('instruções detalham áreas, fluxos, atalhos e dúvidas',async({page})=>{await page.goto('/');await activateTab(page,'instrucoes');await expect(page.locator('#guide-areas')).toContainText('Questões e Simulados');await expect(page.locator('#guide-workflows')).toContainText('Planejar a semana');await expect(page.locator('#guide-shortcuts')).toContainText('Ctrl');await expect(page.locator('#guide-faq .help-reference-item')).toHaveCount(5)});
+test('instruções detalham áreas, fluxos, atalhos e dúvidas', async ({ page }) => {
+  await page.goto('/');
+  await activateTab(page, 'instrucoes');
+  await expect(page.locator('#guide-areas')).toContainText('Questões e Simulados');
+  await expect(page.locator('#guide-workflows')).toContainText('Planejar a semana');
+  await expect(page.locator('#guide-shortcuts')).toContainText('Ctrl');
+  await expect(page.locator('#guide-faq .help-reference-item')).toHaveCount(5);
+});
 
-test('atalho modificado navega sem capturar números isolados',async({page})=>{await page.goto('/');await page.keyboard.press('2');await expect(page.locator('#panel-dashboard')).toHaveClass(/active/);await page.keyboard.press('Control+Shift+Digit2');await expect(page.locator('#panel-hoje')).toHaveClass(/active/)});
+test('atalho modificado navega sem capturar números isolados', async ({ page }) => {
+  await page.goto('/');
+  await page.keyboard.press('2');
+  await expect(page.locator('#panel-dashboard')).toHaveClass(/active/);
+  await page.keyboard.press('Control+Shift+Digit2');
+  await expect(page.locator('#panel-hoje')).toHaveClass(/active/);
+});
 
-test('botão de retorno permanece visível e volta ao topo',async({page})=>{await openDemo(page);await expect(page.locator('#backToTopBtn')).toBeVisible();await page.evaluate(()=>scrollTo(0,900));await expect(page.locator('#backToTopBtn')).toBeVisible();await page.locator('#backToTopBtn').click();await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);await expect(page.locator('#mainContent')).toBeFocused()});
-test('marca do cabeçalho volta para a Visão Geral e ao topo',async({page})=>{await openDemo(page);await activateTab(page,'metas');await page.evaluate(()=>scrollTo(0,900));await page.locator('[data-go-home]:visible').first().click();await expect(page.locator('#panel-dashboard')).toHaveClass(/active/);await expect.poll(()=>page.evaluate(()=>scrollY)).toBe(0);await expect(page.locator('[data-go-home]').first()).toBeFocused()});
-
-test('fechamento semanal e configuração estratégica preservam a hierarquia visual',async({page})=>{
-  await page.setViewportSize({width:1440,height:1000});
+test('botão de retorno permanece visível e volta ao topo', async ({ page }) => {
   await openDemo(page);
-  await activateTab(page,'metas');
+  await expect(page.locator('#backToTopBtn')).toBeVisible();
+  await page.evaluate(() => scrollTo(0, 900));
+  await expect(page.locator('#backToTopBtn')).toBeVisible();
+  await page.locator('#backToTopBtn').click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await expect(page.locator('#mainContent')).toBeFocused();
+});
+test('marca do cabeçalho volta para a Visão Geral e ao topo', async ({ page }) => {
+  await openDemo(page);
+  await activateTab(page, 'metas');
+  await page.evaluate(() => scrollTo(0, 900));
+  await page.locator('[data-go-home]:visible').first().click();
+  await expect(page.locator('#panel-dashboard')).toHaveClass(/active/);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await expect(page.locator('[data-go-home]').first()).toBeFocused();
+});
+
+test('fechamento semanal e configuração estratégica preservam a hierarquia visual', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await openDemo(page);
+  await activateTab(page, 'metas');
   await expect(page.locator('#weeklyCloseDashboard .weekly-kpis')).toBeVisible();
-  await expect(page.locator('#weeklyCloseDashboard .weekly-assessment')).toContainText('Diagnóstico');
+  await expect(page.locator('#weeklyCloseDashboard .weekly-assessment')).toContainText(
+    'Diagnóstico'
+  );
   await expect(page.locator('#periodComparisonResults .comparison-head')).toContainText('Anterior');
-  await activateTab(page,'dashboard');
-  const rows=page.locator('#gapMapDashboard .data-row');
-  if(await rows.count())await expect(rows.first().locator('.data-score')).toContainText(/Prioridade \d+\/100/);
-  await activateTab(page,'metas');
-  const strategicRow=page.locator('#examBlueprintConfig .exam-subject-row').first();
-  expect(await strategicRow.evaluate(row=>row.scrollWidth<=row.clientWidth+1)).toBe(true);
+  await activateTab(page, 'dashboard');
+  const rows = page.locator('#gapMapDashboard .data-row');
+  if (await rows.count())
+    await expect(rows.first().locator('.data-score')).toContainText(/Prioridade \d+\/100/);
+  await activateTab(page, 'metas');
+  const strategicRow = page.locator('#examBlueprintConfig .exam-subject-row').first();
+  expect(await strategicRow.evaluate(row => row.scrollWidth <= row.clientWidth + 1)).toBe(true);
 });
 
-test('diagnóstico separa interpretação do sinal, score e cobertura',async({page})=>{
+test('diagnóstico separa interpretação do sinal, score e cobertura', async ({ page }) => {
   await openDemo(page);
-  await activateTab(page,'hoje');
+  await activateTab(page, 'hoje');
   await page.locator('.today-analysis-details > summary').click();
-  const diagnosis=page.locator('#diagnosisCenter');
+  const diagnosis = page.locator('#diagnosisCenter');
   await expect(diagnosis.locator('.diagnostic-row').first()).toBeVisible();
   await expect(diagnosis.locator('[data-consolidated-signal]').first()).toBeVisible();
   await expect(diagnosis.locator('.diagnostic-quality').first()).toContainText('Evidência');
-  const firstRow=diagnosis.locator('.diagnostic-row').first();
+  const firstRow = diagnosis.locator('.diagnostic-row').first();
   await expect(firstRow.locator('.diagnostic-primary-reason')).toBeVisible();
-  const action=firstRow.getByRole('button',{name:'Ver evolução'});
+  const action = firstRow.getByRole('button', { name: 'Ver evolução' });
   await expect(action).toBeVisible();
   await action.click();
   await expect(page.locator('#panel-desempenho')).toHaveClass(/active/);
 });
 
-test('diagnóstico vazio orienta o cadastro sem inventar risco',async({page})=>{
+test('diagnóstico vazio orienta o cadastro sem inventar risco', async ({ page }) => {
   await page.goto('/?test=1');
   await expect(page.locator('#testReport')).toBeVisible();
-  await page.locator('#testReport').evaluate(element=>element.remove());
-  await page.evaluate(()=>{const api=window.__EXTRATO_TEST__,state=structuredClone(api.getState());state.subjects=[];api.setState(state);api.renderAll()});
-  await activateTab(page,'hoje');await page.locator('.today-analysis-details > summary').click();
-  const empty=page.locator('#diagnosisCenter .diagnosis-empty-state');
+  await page.locator('#testReport').evaluate(element => element.remove());
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__,
+      state = structuredClone(api.getState());
+    state.subjects = [];
+    api.setState(state);
+    api.renderAll();
+  });
+  await activateTab(page, 'hoje');
+  await page.locator('.today-analysis-details > summary').click();
+  const empty = page.locator('#diagnosisCenter .diagnosis-empty-state');
   await expect(empty).toContainText('O diagnóstico ainda não pode ser calculado');
   await expect(empty).toContainText('Cadastre disciplinas e tópicos');
-  await expect(empty.getByRole('button',{name:'Cadastrar disciplinas e tópicos'})).toBeVisible();
-  await empty.getByRole('button',{name:'Cadastrar disciplinas e tópicos'}).click();
+  await expect(
+    empty.getByRole('button', { name: 'Cadastrar disciplinas e tópicos' })
+  ).toBeVisible();
+  await empty.getByRole('button', { name: 'Cadastrar disciplinas e tópicos' }).click();
   await expect(page.locator('#panel-disciplinas')).toHaveClass(/active/);
 });
 
 import AxeBuilder from '@axe-core/playwright';
-test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis',async({page})=>{
-  await page.goto('/?test=1');await page.locator('#testReport').evaluate(node=>node.remove());await activateTab(page,'instrucoes');
-  for(const [width,theme] of [[375,'light'],[1440,'dark']]){
-    await page.setViewportSize({width,height:1100});await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
+test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis', async ({ page }) => {
+  await page.goto('/?test=1');
+  await page.locator('#testReport').evaluate(node => node.remove());
+  await activateTab(page, 'instrucoes');
+  for (const [width, theme] of [
+    [375, 'light'],
+    [1440, 'dark'],
+  ]) {
+    await page.setViewportSize({ width, height: 1100 });
+    await page.evaluate(theme => (document.documentElement.dataset.theme = theme), theme);
     await page.locator('[data-help-category="guide-start"]').click();
-    await expect(page.locator('.help-guide-card')).toHaveCount(7);await expect(page.locator('#how-it-works .instruction-flow li')).toHaveCount(6);
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-    expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
-    await page.locator('#how-it-works').evaluate(node=>window.scrollBy(0,node.getBoundingClientRect().top-120));
-    if(process.platform==='win32')await expect(page.locator('#how-it-works .instruction-example')).toHaveScreenshot('help-map-'+width+'-'+theme+'-win32.png',{animations:'disabled',maxDiffPixelRatio:.02});
+    await expect(page.locator('.help-guide-card')).toHaveCount(7);
+    await expect(page.locator('#how-it-works .instruction-flow li')).toHaveCount(6);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true
+    );
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .include('#helpCenter')
+          .withTags(['wcag2a', 'wcag2aa'])
+          .analyze()
+      ).violations
+    ).toEqual([]);
+    await page
+      .locator('#how-it-works')
+      .evaluate(node => window.scrollBy(0, node.getBoundingClientRect().top - 120));
+    if (process.platform === 'win32')
+      await expect(page.locator('#how-it-works .instruction-example')).toHaveScreenshot(
+        'help-map-' + width + '-' + theme + '-win32.png',
+        { animations: 'disabled', maxDiffPixelRatio: 0.02 }
+      );
     await page.locator('[data-help-category="guide-areas"]').click();
-    await expect(page.locator('#today-guide')).toBeVisible();await expect(page.locator('#today-guide')).toContainText('57% de progresso do plano');
-    expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
-    await page.locator('#helpSearch').fill('execução diária');await expect(page.locator('#today-guide')).toBeVisible();await expect(page.locator('#helpNoResults')).toBeHidden();
-    await page.locator('#helpSearch').press('Escape');await expect(page.locator('#helpSearch')).toHaveValue('');
+    await expect(page.locator('#today-guide')).toBeVisible();
+    await expect(page.locator('#today-guide')).toContainText('57% de progresso do plano');
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .include('#helpCenter')
+          .withTags(['wcag2a', 'wcag2aa'])
+          .analyze()
+      ).violations
+    ).toEqual([]);
+    await page.locator('#helpSearch').fill('execução diária');
+    await expect(page.locator('#today-guide')).toBeVisible();
+    await expect(page.locator('#helpNoResults')).toBeHidden();
+    await page.locator('#helpSearch').press('Escape');
+    await expect(page.locator('#helpSearch')).toHaveValue('');
     await page.locator('[data-help-category="guide-workflows"]').click();
     await expect(page.locator('#recovery-guide')).toContainText('Aumento de 30 minutos');
     await expect(page.locator('#sustainability-guide')).toBeVisible();
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-    expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true
+    );
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .include('#helpCenter')
+          .withTags(['wcag2a', 'wcag2aa'])
+          .analyze()
+      ).violations
+    ).toEqual([]);
     await page.locator('[data-help-category="guide-data"]').click();
     await expect(page.locator('#adherence')).toContainText('Prioridades executadas');
     await expect(page.locator('#readiness')).toContainText('72/100 não significa');
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-    expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true
+    );
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .include('#helpCenter')
+          .withTags(['wcag2a', 'wcag2aa'])
+          .analyze()
+      ).violations
+    ).toEqual([]);
     await page.locator('#helpSearch').fill('amostra insuficiente');
     await expect(page.locator('#insufficient-sample-guide')).toBeVisible();
     await page.locator('#helpSearch').press('Escape');
 
-    for(const category of ['guide-exam','guide-goals','guide-safety']){
-      await page.locator('[data-help-category="'+category+'"]').click();
-      await expect(page.locator('#'+category)).toBeVisible();
-      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-      expect((await new AxeBuilder({page}).include('#helpCenter').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
+    for (const category of ['guide-exam', 'guide-goals', 'guide-safety']) {
+      await page.locator('[data-help-category="' + category + '"]').click();
+      await expect(page.locator('#' + category)).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true
+      );
+      expect(
+        (
+          await new AxeBuilder({ page })
+            .include('#helpCenter')
+            .withTags(['wcag2a', 'wcag2aa'])
+            .analyze()
+        ).violations
+      ).toEqual([]);
     }
     await expect(page.locator('#guide-glossary')).toBeVisible();
-    if(process.platform==='win32'&&width===1440)await expect(page.locator('#guide-glossary')).toHaveScreenshot('help-glossary-1440-dark-win32.png',{animations:'disabled',maxDiffPixelRatio:.02});
-    await page.locator('#helpSearch').fill('SALVAR dados');await expect(page.locator('#backup')).toBeVisible();
-    await page.locator('#helpSearchClear').click();await expect(page.locator('#helpSearch')).toBeFocused();
+    if (process.platform === 'win32' && width === 1440)
+      await expect(page.locator('#guide-glossary')).toHaveScreenshot(
+        'help-glossary-1440-dark-win32.png',
+        { animations: 'disabled', maxDiffPixelRatio: 0.02 }
+      );
+    await page.locator('#helpSearch').fill('SALVAR dados');
+    await expect(page.locator('#backup')).toBeVisible();
+    await page.locator('#helpSearchClear').click();
+    await expect(page.locator('#helpSearch')).toBeFocused();
     await page.locator('#helpSearch').fill('revisões');
-    await expect(page.locator('#guide-areas [data-help-topic]:visible').first()).toHaveAttribute('id','reviews');
+    await expect(page.locator('#guide-areas [data-help-topic]:visible').first()).toHaveAttribute(
+      'id',
+      'reviews'
+    );
     await page.locator('#helpSearch').press('Escape');
-    await page.locator('[data-help-category="guide-workflows"]').click();await expect(page.locator('#calendar-guide')).toBeVisible();
-    await page.locator('[data-help-category="guide-areas"]').click();await expect(page.locator('#pending-guide')).toBeVisible();
-    await expect(page.locator('#guide-areas [data-help-topic]').first()).toHaveAttribute('id','today-guide');
-    await page.locator('#helpSearch').fill('zzzinexistente');await expect(page.locator('#helpNoResults')).toBeVisible();
-    await page.locator('#helpSearch').press('Escape');await expect(page.locator('#helpNoResults')).toBeHidden();
-    await page.locator('[data-help-category="guide-exam"]').focus();await page.keyboard.press('Enter');
+    await page.locator('[data-help-category="guide-workflows"]').click();
+    await expect(page.locator('#calendar-guide')).toBeVisible();
+    await page.locator('[data-help-category="guide-areas"]').click();
+    await expect(page.locator('#pending-guide')).toBeVisible();
+    await expect(page.locator('#guide-areas [data-help-topic]').first()).toHaveAttribute(
+      'id',
+      'today-guide'
+    );
+    await page.locator('#helpSearch').fill('zzzinexistente');
+    await expect(page.locator('#helpNoResults')).toBeVisible();
+    await page.locator('#helpSearch').press('Escape');
+    await expect(page.locator('#helpNoResults')).toBeHidden();
+    await page.locator('[data-help-category="guide-exam"]').focus();
+    await page.keyboard.press('Enter');
     await expect(page.locator('#guide-exam')).toBeFocused();
-    if(process.platform==='win32'&&width===375)await expect(page.locator('#exam-matrix .instruction-example')).toHaveScreenshot('help-matrix-375-light-win32.png',{animations:'disabled',maxDiffPixelRatio:.02});
+    if (process.platform === 'win32' && width === 375)
+      await expect(page.locator('#exam-matrix .instruction-example')).toHaveScreenshot(
+        'help-matrix-375-light-win32.png',
+        { animations: 'disabled', maxDiffPixelRatio: 0.02 }
+      );
     await page.locator('[data-help-category="guide-areas"]').click();
   }
   // Narrow-width smoke stays in this journey; the full category audit uses representative widths above.
-  for(const width of [320,390]){
-    await page.setViewportSize({width,height:1100});
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 1100 });
     await page.locator('[data-help-category="guide-areas"]').click();
-    await page.locator('#helpSearch').fill('revisao');await expect(page.locator('#reviews')).toBeVisible();
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-    await page.locator('#helpSearchClear').click();await expect(page.locator('#helpSearch')).toBeFocused();
-    await page.locator('[data-help-category="guide-workflows"]').focus();await page.keyboard.press('Enter');
-    await expect(page.locator('#guide-workflows')).toBeFocused();await expect(page.locator('#calendar-guide')).toBeVisible();
+    await page.locator('#helpSearch').fill('revisao');
+    await expect(page.locator('#reviews')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true
+    );
+    await page.locator('#helpSearchClear').click();
+    await expect(page.locator('#helpSearch')).toBeFocused();
+    await page.locator('[data-help-category="guide-workflows"]').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#guide-workflows')).toBeFocused();
+    await expect(page.locator('#calendar-guide')).toBeVisible();
     await page.locator('[data-help-category="guide-areas"]').click();
   }
-  await page.locator('#today-guide [data-help-action="today"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#panel-hoje')).toBeVisible();
+  await page.locator('#today-guide [data-help-action="today"]').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#panel-hoje')).toBeVisible();
 });

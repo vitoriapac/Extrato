@@ -1,11 +1,12 @@
 const clean = value => String(value ?? '').trim();
 
-export const normalizeKey = value => clean(value)
-  .normalize('NFD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .replace(/[^a-zA-Z0-9]+/g, ' ')
-  .trim()
-  .toLocaleLowerCase('pt-BR');
+export const normalizeKey = value =>
+  clean(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .trim()
+    .toLocaleLowerCase('pt-BR');
 
 const finite = value => {
   if (value === '' || value == null) return null;
@@ -54,11 +55,32 @@ const HEADER_ALIASES = {
   categoria: 'errorCategory',
   'categoria do erro': 'errorCategory',
   'tipo de erro': 'errorCategory',
-  errorcategory: 'errorCategory'
+  errorcategory: 'errorCategory',
 };
 
-const RESULT_CORRECT = new Set(['acertou', 'certo', 'certa', 'correta', 'correto', '1', 'sim', 's', 'true', 'ok']);
-const RESULT_WRONG = new Set(['errou', 'errado', 'errada', 'incorreta', 'incorreto', '0', 'nao', 'n', 'false']);
+const RESULT_CORRECT = new Set([
+  'acertou',
+  'certo',
+  'certa',
+  'correta',
+  'correto',
+  '1',
+  'sim',
+  's',
+  'true',
+  'ok',
+]);
+const RESULT_WRONG = new Set([
+  'errou',
+  'errado',
+  'errada',
+  'incorreta',
+  'incorreto',
+  '0',
+  'nao',
+  'n',
+  'false',
+]);
 
 // Valores do CSV (já normalizados por normalizeKey) → chaves de ERROR_CATEGORIES do app.
 const ERROR_CATEGORY_MAP = {
@@ -75,7 +97,7 @@ const ERROR_CATEGORY_MAP = {
   tempo: 'chute',
   chute: 'chute',
   esqueci: 'esqueci',
-  calculo: 'calculo'
+  calculo: 'calculo',
 };
 
 export class QuestionImportError extends TypeError {
@@ -97,15 +119,23 @@ function detectDelimiter(text) {
     else if (!quoted && (char === '\n' || char === '\r')) break;
     else if (!quoted && char in counts) counts[char]++;
   }
-  return [';', '\t'].reduce((best, candidate) => counts[candidate] > counts[best] ? candidate : best, ',');
+  return [';', '\t'].reduce(
+    (best, candidate) => (counts[candidate] > counts[best] ? candidate : best),
+    ','
+  );
 }
 
 export function parseCsvRows(text) {
   const rows = [];
   const delimiter = detectDelimiter(text);
-  let row = [], field = '', quoted = false, line = 1, rowLine = 1;
+  let row = [],
+    field = '',
+    quoted = false,
+    line = 1,
+    rowLine = 1;
   for (let index = 0; index < text.length; index++) {
-    const char = text[index], next = text[index + 1];
+    const char = text[index],
+      next = text[index + 1];
     if (char === '"' && quoted && next === '"') {
       field += '"';
       index++;
@@ -134,7 +164,10 @@ export function parseCsvRows(text) {
   }
   row.push(field);
   if (row.some(val => clean(val))) rows.push({ values: row, line: rowLine });
-  if (quoted) throw new QuestionImportError([problem(line, 'arquivo', 'unclosed_quote', 'Há aspas sem fechamento no CSV.')]);
+  if (quoted)
+    throw new QuestionImportError([
+      problem(line, 'arquivo', 'unclosed_quote', 'Há aspas sem fechamento no CSV.'),
+    ]);
   return rows;
 }
 
@@ -150,11 +183,17 @@ export function parseDate(rawDate, defaultDate = '') {
 
   // DD/MM/YYYY or DD-MM-YYYY (with optional time)
   const brMatch = value.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[\sT].*)?$/);
-  if (brMatch) return calendarDate(`${brMatch[3]}-${brMatch[2].padStart(2, '0')}-${brMatch[1].padStart(2, '0')}`);
+  if (brMatch)
+    return calendarDate(
+      `${brMatch[3]}-${brMatch[2].padStart(2, '0')}-${brMatch[1].padStart(2, '0')}`
+    );
 
   // YYYY-MM-DD (with optional time)
   const isoMatch = value.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[\sT].*)?$/);
-  if (isoMatch) return calendarDate(`${isoMatch[1]}-${isoMatch[2].padStart(2, '0')}-${isoMatch[3].padStart(2, '0')}`);
+  if (isoMatch)
+    return calendarDate(
+      `${isoMatch[1]}-${isoMatch[2].padStart(2, '0')}-${isoMatch[3].padStart(2, '0')}`
+    );
 
   return null;
 }
@@ -165,7 +204,10 @@ export function parseDate(rawDate, defaultDate = '') {
  *   errorCategoryKeys: chaves de ERROR_CATEGORIES do app; obrigatório para que o domínio não tenha cópia da taxonomia.
  *   defaultDate: data local (AAAA-MM-DD) usada quando a linha não traz data; obrigatória, o domínio não lê o relógio.
  */
-export function normalizeQuestionImportRows(text, { defaultDate = '', aggregate = true, errorCategoryKeys } = {}) {
+export function normalizeQuestionImportRows(
+  text,
+  { defaultDate = '', aggregate = true, errorCategoryKeys } = {}
+) {
   if (!Array.isArray(errorCategoryKeys) || !errorCategoryKeys.length) {
     throw new TypeError('normalizeQuestionImportRows requer errorCategoryKeys.');
   }
@@ -178,19 +220,40 @@ export function normalizeQuestionImportRows(text, { defaultDate = '', aggregate 
 
   const rows = parseCsvRows(text);
   if (rows.length < 2) {
-    throw new QuestionImportError([problem(null, 'arquivo', 'empty_csv', 'O CSV precisa de cabeçalho e ao menos uma linha de dados.')]);
+    throw new QuestionImportError([
+      problem(
+        null,
+        'arquivo',
+        'empty_csv',
+        'O CSV precisa de cabeçalho e ao menos uma linha de dados.'
+      ),
+    ]);
   }
 
   const rawHeaders = rows.shift().values;
   const headers = rawHeaders.map(val => HEADER_ALIASES[normalizeKey(val)] || null);
 
   if (!headers.includes('subject')) {
-    throw new QuestionImportError([problem(1, 'disciplina', 'missing_column', 'A coluna "Disciplina" ou "Matéria" não foi encontrada.')]);
+    throw new QuestionImportError([
+      problem(
+        1,
+        'disciplina',
+        'missing_column',
+        'A coluna "Disciplina" ou "Matéria" não foi encontrada.'
+      ),
+    ]);
   }
 
   const hasMetrics = headers.some(h => ['resolved', 'correct', 'errors', 'result'].includes(h));
   if (!hasMetrics) {
-    throw new QuestionImportError([problem(1, 'metricas', 'missing_column', 'O arquivo deve conter colunas de quantidade ("Resolvidas", "Acertos", "Erros") ou de "Resultado".')]);
+    throw new QuestionImportError([
+      problem(
+        1,
+        'metricas',
+        'missing_column',
+        'O arquivo deve conter colunas de quantidade ("Resolvidas", "Acertos", "Erros") ou de "Resultado".'
+      ),
+    ]);
   }
 
   const issues = [];
@@ -212,7 +275,14 @@ export function normalizeQuestionImportRows(text, { defaultDate = '', aggregate 
     const rawDate = clean(record.date);
     const date = parseDate(rawDate, defaultDate);
     if (rawDate && !date) {
-      issues.push(problem(line, 'data', 'invalid_date', `Data inválida "${rawDate}". Use o formato DD/MM/AAAA ou AAAA-MM-DD.`));
+      issues.push(
+        problem(
+          line,
+          'data',
+          'invalid_date',
+          `Data inválida "${rawDate}". Use o formato DD/MM/AAAA ou AAAA-MM-DD.`
+        )
+      );
       return;
     }
 
@@ -252,23 +322,45 @@ export function normalizeQuestionImportRows(text, { defaultDate = '', aggregate 
     correct = correct == null ? null : Math.max(0, Math.floor(correct));
 
     if (resolved == null || resolved <= 0) {
-      issues.push(problem(line, 'resolvidas', 'invalid_value', 'A quantidade de questões resolvidas deve ser maior que zero.'));
+      issues.push(
+        problem(
+          line,
+          'resolvidas',
+          'invalid_value',
+          'A quantidade de questões resolvidas deve ser maior que zero.'
+        )
+      );
       return;
     }
 
     if (correct == null) {
-      issues.push(problem(line, 'acertos', 'invalid_value', 'Informe a quantidade de acertos ou o resultado da questão.'));
+      issues.push(
+        problem(
+          line,
+          'acertos',
+          'invalid_value',
+          'Informe a quantidade de acertos ou o resultado da questão.'
+        )
+      );
       return;
     }
 
     if (correct > resolved) {
-      issues.push(problem(line, 'acertos', 'range', 'Os acertos não podem ser superiores ao total de questões resolvidas.'));
+      issues.push(
+        problem(
+          line,
+          'acertos',
+          'range',
+          'Os acertos não podem ser superiores ao total de questões resolvidas.'
+        )
+      );
       return;
     }
 
     const rawCategory = normalizeKey(record.errorCategory);
     const mappedCategory = ERROR_CATEGORY_MAP[rawCategory];
-    const errorCategory = mappedCategory && errorCategoryKeys.includes(mappedCategory) ? mappedCategory : null;
+    const errorCategory =
+      mappedCategory && errorCategoryKeys.includes(mappedCategory) ? mappedCategory : null;
 
     parsedRecords.push({
       line,
@@ -278,7 +370,7 @@ export function normalizeQuestionImportRows(text, { defaultDate = '', aggregate 
       resolved,
       correct,
       errorCategory,
-      unknownErrorCategory: Boolean(rawCategory) && !errorCategory
+      unknownErrorCategory: Boolean(rawCategory) && !errorCategory,
     });
   });
 
@@ -303,7 +395,7 @@ export function normalizeQuestionImportRows(text, { defaultDate = '', aggregate 
         correct: 0,
         errorBreakdown: Object.fromEntries(errorCategoryKeys.map(categoryKey => [categoryKey, 0])),
         unknownErrorCategoryCount: 0,
-        lines: []
+        lines: [],
       });
     }
     const current = grouped.get(key);
@@ -311,7 +403,7 @@ export function normalizeQuestionImportRows(text, { defaultDate = '', aggregate 
     current.correct += item.correct;
     current.lines.push(item.line);
     if (item.errorCategory) {
-      current.errorBreakdown[item.errorCategory] += (item.resolved - item.correct);
+      current.errorBreakdown[item.errorCategory] += item.resolved - item.correct;
     }
     if (item.unknownErrorCategory) current.unknownErrorCategoryCount++;
   }
@@ -324,6 +416,6 @@ export function normalizeQuestionImportRows(text, { defaultDate = '', aggregate 
     correct: entry.correct,
     errorBreakdown: entry.errorBreakdown,
     unknownErrorCategoryCount: entry.unknownErrorCategoryCount,
-    sourceLinesCount: entry.lines.length
+    sourceLinesCount: entry.lines.length,
   }));
 }

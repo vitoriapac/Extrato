@@ -1,17 +1,146 @@
-import test from 'node:test';import assert from 'node:assert/strict';
-import {createCollectionRepository} from '../../src/repositories/collection-repository.js';
-import {createSessionsRepository} from '../../src/repositories/sessions-repository.js';
-import {createPlanningRepository} from '../../src/repositories/planning-repository.js';
-import {createSessionService} from '../../src/application/sessions/session-service.js';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createCollectionRepository } from '../../src/repositories/collection-repository.js';
+import { createSessionsRepository } from '../../src/repositories/sessions-repository.js';
+import { createPlanningRepository } from '../../src/repositories/planning-repository.js';
+import { createSessionService } from '../../src/application/sessions/session-service.js';
 
-function fixture(){
-  const state={studySessions:[],questoes:[],topicHistory:[],recommendationFeedback:[{id:'f1',recommendationId:'rec1',accepted:true,completed:false}],dailyPlans:[{id:'p1',date:'2026-09-02',updatedAt:null,items:[{id:'i1',plannedMinutes:30,executedSeconds:0,status:'planned',sessionIds:[],recommendationId:'rec1'}]}],studyPlans:[],planAdjustments:[]};let sequence=0;
-  const repository=createSessionsRepository({getState:()=>state}),questionsRepository=createCollectionRepository({getState:()=>state,field:'questoes'}),historyRepository=createCollectionRepository({getState:()=>state,field:'topicHistory'}),recommendationsRepository=createCollectionRepository({getState:()=>state,field:'recommendationFeedback'}),planningRepository=createPlanningRepository({getState:()=>state});
-  const service=createSessionService({repository,questionsRepository,historyRepository,recommendationsRepository,planningRepository,clock:{today:()=> '2026-09-02',nowISO:()=> '2026-09-02T12:00:00.000Z'},idGenerator:prefix=>`${prefix}-${++sequence}`,completeRecommendation:(list,id,{sessionId,completedAt})=>{const item=list.find(entry=>entry.recommendationId===id);Object.assign(item,{completed:true,resultingSessionId:sessionId,completedAt})}});
-  return{state,repository,service};
+function fixture() {
+  const state = {
+    studySessions: [],
+    questoes: [],
+    topicHistory: [],
+    recommendationFeedback: [
+      { id: 'f1', recommendationId: 'rec1', accepted: true, completed: false },
+    ],
+    dailyPlans: [
+      {
+        id: 'p1',
+        date: '2026-09-02',
+        updatedAt: null,
+        items: [
+          {
+            id: 'i1',
+            plannedMinutes: 30,
+            executedSeconds: 0,
+            status: 'planned',
+            sessionIds: [],
+            recommendationId: 'rec1',
+          },
+        ],
+      },
+    ],
+    studyPlans: [],
+    planAdjustments: [],
+  };
+  let sequence = 0;
+  const repository = createSessionsRepository({ getState: () => state }),
+    questionsRepository = createCollectionRepository({ getState: () => state, field: 'questoes' }),
+    historyRepository = createCollectionRepository({
+      getState: () => state,
+      field: 'topicHistory',
+    }),
+    recommendationsRepository = createCollectionRepository({
+      getState: () => state,
+      field: 'recommendationFeedback',
+    }),
+    planningRepository = createPlanningRepository({ getState: () => state });
+  const service = createSessionService({
+    repository,
+    questionsRepository,
+    historyRepository,
+    recommendationsRepository,
+    planningRepository,
+    clock: { today: () => '2026-09-02', nowISO: () => '2026-09-02T12:00:00.000Z' },
+    idGenerator: prefix => `${prefix}-${++sequence}`,
+    completeRecommendation: (list, id, { sessionId, completedAt }) => {
+      const item = list.find(entry => entry.recommendationId === id);
+      Object.assign(item, { completed: true, resultingSessionId: sessionId, completedAt });
+    },
+  });
+  return { state, repository, service };
 }
 
-test('repositório consulta sessões por período, tópico e item do plano',()=>{const{repository}=fixture();repository.add({id:'s1',date:'2026-09-02',topicId:'t1',planItemId:'i1'});assert.equal(repository.listByPeriod({start:'2026-09-01',end:'2026-09-03'}).length,1);assert.equal(repository.listByTopic('t1').length,1);assert.equal(repository.listByPlanItem('i1').length,1)});
-test('conclusão cria uma única sessão, questões e vínculos derivados',()=>{const{state,service}=fixture();state.dailyPlans[0].items[0].score=81;const session=service.complete({startedAt:'2026-09-02T11:30:00.000Z',endedAt:'2026-09-02T12:00:00.000Z',date:'2026-09-02',durationSeconds:1800,subjectId:'sub1',topicId:'t1',type:'questions',questionsResolved:20,correctAnswers:25,planItemId:'i1',recommendationSource:'today',recommendationType:'study',perceivedRetention:'easy',perceivedDifficulty:'hard'});assert.equal(state.studySessions.length,1);assert.equal(state.questoes.length,1);assert.equal(state.questoes[0].correct,20);assert.deepEqual(state.dailyPlans[0].items[0].sessionIds,[session.id]);assert.equal(state.dailyPlans[0].items[0].status,'completed');assert.equal(state.recommendationFeedback[0].resultingSessionId,session.id);assert.equal(session.source,'recommendation');assert.equal(session.recommendationId,'rec1');assert.equal(session.recommendationSource,'today');assert.equal(session.recommendationType,'study');assert.equal(session.perceivedRetention,'easy');assert.equal(session.perceivedDifficulty,'hard');assert.equal(session.prioritySnapshot,81);assert.equal(state.topicHistory[0].metadata.recommendationId,'rec1')});
-test('sessão recomendada concluída antes da meta também fecha o feedback sem alterar o snapshot',()=>{const{state,service}=fixture();const snapshot={priorityScore:81,masteryBefore:54,evidenceBefore:{sampleSize:12}};state.recommendationFeedback[0].snapshot=structuredClone(snapshot);state.dailyPlans[0].items[0].score=81;const session=service.complete({startedAt:'2026-09-02T11:59:00.000Z',endedAt:'2026-09-02T12:00:00.000Z',date:'2026-09-02',durationSeconds:60,subjectId:'sub1',topicId:'t1',planItemId:'i1'});assert.equal(state.dailyPlans[0].items[0].status,'partial');assert.equal(state.recommendationFeedback[0].completed,true);assert.equal(state.recommendationFeedback[0].resultingSessionId,session.id);assert.equal(session.recommendationId,'rec1');assert.equal(session.source,'recommendation');assert.deepEqual(state.recommendationFeedback[0].snapshot,snapshot);assert.equal(state.questoes.length,0)});
-test('edição sincroniza questão sem duplicar e exclusão preserva o plano',()=>{const{state,service}=fixture();const session=service.complete({date:'2026-09-02',endedAt:'2026-09-02T12:00:00.000Z',durationSeconds:900,questionsResolved:10,correctAnswers:6,planItemId:'i1'});service.edit(session.id,{durationSeconds:1200,questionsResolved:12,correctAnswers:8});assert.equal(state.questoes.length,1);assert.equal(state.questoes[0].resolved,12);service.remove(session.id);assert.equal(state.studySessions.length,0);assert.equal(state.questoes.length,0);assert.equal(state.topicHistory.length,0);assert.equal(state.dailyPlans[0].items[0].status,'planned');assert.equal(state.dailyPlans[0].items[0].executedSeconds,0)});
+test('repositório consulta sessões por período, tópico e item do plano', () => {
+  const { repository } = fixture();
+  repository.add({ id: 's1', date: '2026-09-02', topicId: 't1', planItemId: 'i1' });
+  assert.equal(repository.listByPeriod({ start: '2026-09-01', end: '2026-09-03' }).length, 1);
+  assert.equal(repository.listByTopic('t1').length, 1);
+  assert.equal(repository.listByPlanItem('i1').length, 1);
+});
+test('conclusão cria uma única sessão, questões e vínculos derivados', () => {
+  const { state, service } = fixture();
+  state.dailyPlans[0].items[0].score = 81;
+  const session = service.complete({
+    startedAt: '2026-09-02T11:30:00.000Z',
+    endedAt: '2026-09-02T12:00:00.000Z',
+    date: '2026-09-02',
+    durationSeconds: 1800,
+    subjectId: 'sub1',
+    topicId: 't1',
+    type: 'questions',
+    questionsResolved: 20,
+    correctAnswers: 25,
+    planItemId: 'i1',
+    recommendationSource: 'today',
+    recommendationType: 'study',
+    perceivedRetention: 'easy',
+    perceivedDifficulty: 'hard',
+  });
+  assert.equal(state.studySessions.length, 1);
+  assert.equal(state.questoes.length, 1);
+  assert.equal(state.questoes[0].correct, 20);
+  assert.deepEqual(state.dailyPlans[0].items[0].sessionIds, [session.id]);
+  assert.equal(state.dailyPlans[0].items[0].status, 'completed');
+  assert.equal(state.recommendationFeedback[0].resultingSessionId, session.id);
+  assert.equal(session.source, 'recommendation');
+  assert.equal(session.recommendationId, 'rec1');
+  assert.equal(session.recommendationSource, 'today');
+  assert.equal(session.recommendationType, 'study');
+  assert.equal(session.perceivedRetention, 'easy');
+  assert.equal(session.perceivedDifficulty, 'hard');
+  assert.equal(session.prioritySnapshot, 81);
+  assert.equal(state.topicHistory[0].metadata.recommendationId, 'rec1');
+});
+test('sessão recomendada concluída antes da meta também fecha o feedback sem alterar o snapshot', () => {
+  const { state, service } = fixture();
+  const snapshot = { priorityScore: 81, masteryBefore: 54, evidenceBefore: { sampleSize: 12 } };
+  state.recommendationFeedback[0].snapshot = structuredClone(snapshot);
+  state.dailyPlans[0].items[0].score = 81;
+  const session = service.complete({
+    startedAt: '2026-09-02T11:59:00.000Z',
+    endedAt: '2026-09-02T12:00:00.000Z',
+    date: '2026-09-02',
+    durationSeconds: 60,
+    subjectId: 'sub1',
+    topicId: 't1',
+    planItemId: 'i1',
+  });
+  assert.equal(state.dailyPlans[0].items[0].status, 'partial');
+  assert.equal(state.recommendationFeedback[0].completed, true);
+  assert.equal(state.recommendationFeedback[0].resultingSessionId, session.id);
+  assert.equal(session.recommendationId, 'rec1');
+  assert.equal(session.source, 'recommendation');
+  assert.deepEqual(state.recommendationFeedback[0].snapshot, snapshot);
+  assert.equal(state.questoes.length, 0);
+});
+test('edição sincroniza questão sem duplicar e exclusão preserva o plano', () => {
+  const { state, service } = fixture();
+  const session = service.complete({
+    date: '2026-09-02',
+    endedAt: '2026-09-02T12:00:00.000Z',
+    durationSeconds: 900,
+    questionsResolved: 10,
+    correctAnswers: 6,
+    planItemId: 'i1',
+  });
+  service.edit(session.id, { durationSeconds: 1200, questionsResolved: 12, correctAnswers: 8 });
+  assert.equal(state.questoes.length, 1);
+  assert.equal(state.questoes[0].resolved, 12);
+  service.remove(session.id);
+  assert.equal(state.studySessions.length, 0);
+  assert.equal(state.questoes.length, 0);
+  assert.equal(state.topicHistory.length, 0);
+  assert.equal(state.dailyPlans[0].items[0].status, 'planned');
+  assert.equal(state.dailyPlans[0].items[0].executedSeconds, 0);
+});

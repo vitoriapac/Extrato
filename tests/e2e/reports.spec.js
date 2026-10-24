@@ -1,61 +1,91 @@
-import {test,expect} from '@playwright/test';
-import {openDemo,activateTab} from './helpers.js';
+import { test, expect } from '@playwright/test';
+import { openDemo, activateTab } from './helpers.js';
 
-test('gera relatório estratégico identificado como demonstração',async({page})=>{
-  await openDemo(page);await page.locator('#reportPeriodSelect').selectOption('90');await page.getByRole('button',{name:/Exportar relatório PDF/i}).click();
-  const report=page.locator('.strategic-print-report');await expect(report).toBeAttached();await expect(report).toContainText(/demonstração|fictício/i);
-  await expect(report).toContainText('Últimos 90 dias');await expect(report).toContainText('Planejamento versus execução');await expect(report).toContainText('Prioridades do próximo período');
-  await expect(report).toContainText('Comparação entre períodos');await expect(report).toContainText('Alvos cadastrados');
-  await expect(report).toContainText(/Construção|Consolidação|Reta final|Revisão final|Prova sem data/);
-  const headings=await report.locator('h2').allTextContents();
-  expect(headings.indexOf('Diagnóstico')).toBeLessThan(headings.indexOf('Prioridades do próximo período'));
-  expect(headings.indexOf('Prioridades do próximo período')).toBeLessThan(headings.indexOf('Foco recomendado'));
-  await page.emulateMedia({media:'print'});await expect(report).toBeVisible();
+test('gera relatório estratégico identificado como demonstração', async ({ page }) => {
+  await openDemo(page);
+  await page.locator('#reportPeriodSelect').selectOption('90');
+  await page.getByRole('button', { name: /Exportar relatório PDF/i }).click();
+  const report = page.locator('.strategic-print-report');
+  await expect(report).toBeAttached();
+  await expect(report).toContainText(/demonstração|fictício/i);
+  await expect(report).toContainText('Últimos 90 dias');
+  await expect(report).toContainText('Planejamento versus execução');
+  await expect(report).toContainText('Prioridades do próximo período');
+  await expect(report).toContainText('Comparação entre períodos');
+  await expect(report).toContainText('Alvos cadastrados');
+  await expect(report).toContainText(
+    /Construção|Consolidação|Reta final|Revisão final|Prova sem data/
+  );
+  const headings = await report.locator('h2').allTextContents();
+  expect(headings.indexOf('Diagnóstico')).toBeLessThan(
+    headings.indexOf('Prioridades do próximo período')
+  );
+  expect(headings.indexOf('Prioridades do próximo período')).toBeLessThan(
+    headings.indexOf('Foco recomendado')
+  );
+  await page.emulateMedia({ media: 'print' });
+  await expect(report).toBeVisible();
 });
 
-test('metas comparam intervalos predefinidos e personalizados',async({page})=>{
-  await openDemo(page);await activateTab(page,'metas');await page.locator('.result-goals-card > summary').click();
+test('metas comparam intervalos predefinidos e personalizados', async ({ page }) => {
+  await openDemo(page);
+  await activateTab(page, 'metas');
+  await page.locator('.result-goals-card > summary').click();
   await expect(page.locator('#periodComparisonResults')).toContainText('Últimos 7 dias');
-  await expect(page.locator('#periodComparisonResults .comparison-insight')).toContainText('A variação descreve os registros dos períodos');
+  await expect(page.locator('#periodComparisonResults .comparison-insight')).toContainText(
+    'A variação descreve os registros dos períodos'
+  );
   await page.locator('#periodComparisonPreset').selectOption('30');
   await expect(page.locator('#periodComparisonResults')).toContainText('Últimos 30 dias');
   await page.locator('#periodComparisonPreset').selectOption('custom');
   await expect(page.locator('#periodComparisonStartWrap')).toBeVisible();
-  await page.locator('#periodComparisonStart').fill('2026-08-01');await page.locator('#periodComparisonEnd').fill('2026-08-10');
+  await page.locator('#periodComparisonStart').fill('2026-08-01');
+  await page.locator('#periodComparisonEnd').fill('2026-08-10');
   await expect(page.locator('#periodComparisonResults')).toContainText('2026-08-01 a 2026-08-10');
 });
 
-test('busca global abre instruções por teclado',async({page})=>{
+test('busca global abre instruções por teclado', async ({ page }) => {
   await openDemo(page);
-  const search=page.locator('#globalSearchInput');await search.fill('abrir instruções');
-  const command=page.getByRole('option',{name:/Abrir Instruções/});await expect(command).toBeVisible();await expect(search).toHaveAttribute('aria-expanded','true');await search.press('ArrowDown');await expect(command).toBeFocused();await page.keyboard.press('Enter');
+  const search = page.locator('#globalSearchInput');
+  await search.fill('abrir instruções');
+  const command = page.getByRole('option', { name: /Abrir Instruções/ });
+  await expect(command).toBeVisible();
+  await expect(search).toHaveAttribute('aria-expanded', 'true');
+  await search.press('ArrowDown');
+  await expect(command).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(page.locator('#panel-instrucoes')).toBeVisible();
 });
 
-test('paleta executa ações de registro por teclado e fecha com Escape',async({page})=>{
+test('paleta executa ações de registro por teclado e fecha com Escape', async ({ page }) => {
   await openDemo(page);
-  const search=page.locator('#globalSearchInput');
+  const search = page.locator('#globalSearchInput');
   await page.keyboard.press('Control+k');
   await expect(search).toBeFocused();
   await search.fill('registrar questões');
-  const command=page.getByRole('option',{name:/Registrar questões/});
+  const command = page.getByRole('option', { name: /Registrar questões/ });
   await expect(command).toBeVisible();
   await search.press('ArrowDown');
   await command.press('Enter');
   await expect(page.locator('#panel-questoes')).toHaveClass(/active/);
   await expect(page.locator('#questoesBody tr.row-editing')).toBeVisible();
-  await expect(page.locator('#questoesBody tr.row-editing input[type="number"]').first()).toBeVisible();
+  await expect(
+    page.locator('#questoesBody tr.row-editing input[type="number"]').first()
+  ).toBeVisible();
   await page.keyboard.press('Control+k');
   await search.fill('abrir calendário');
-  await expect(page.getByRole('option',{name:/Abrir Calendário/})).toBeVisible();
+  await expect(page.getByRole('option', { name: /Abrir Calendário/ })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('#globalSearchResults')).not.toHaveClass(/show/);
 });
 
-test('paleta apresenta acesso direto à recomendação prioritária',async({page})=>{
-  await openDemo(page);const search=page.locator('#globalSearchInput');
-  await page.keyboard.press('Control+k');await search.fill('recomendação prioritária');
-  const action=page.getByRole('option',{name:/Iniciar recomendação prioritária/});await expect(action).toBeVisible();
+test('paleta apresenta acesso direto à recomendação prioritária', async ({ page }) => {
+  await openDemo(page);
+  const search = page.locator('#globalSearchInput');
+  await page.keyboard.press('Control+k');
+  await search.fill('recomendação prioritária');
+  const action = page.getByRole('option', { name: /Iniciar recomendação prioritária/ });
+  await expect(action).toBeVisible();
   await action.click();
   await expect(page.locator('#globalSearchResults')).not.toHaveClass(/show/);
 });

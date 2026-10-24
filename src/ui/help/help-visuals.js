@@ -1,25 +1,63 @@
-const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const minutes=value=>Math.max(0,Number(value)||0);
-export function renderHelpVisual(visual){
-  if(!visual)return '';
-  const metric=(label,value)=>`<div class="instruction-metric"><strong>${minutes(value)} min</strong><span>${escape(label)}</span></div>`;
-  const steps=(items,className)=>`<ol class="${className}">${(items||[]).map((step,index)=>`<li><span class="instruction-step-number" aria-hidden="true">${String(index+1).padStart(2,'0')}</span><strong>${escape(step.title)}</strong><small>${escape(step.detail)}</small></li>`).join('')}</ol>`;
-  let content='';
-  switch(visual.type){
-    case 'flow':content=steps(visual.steps,'instruction-flow');break;
-    case 'reviews':content=steps(visual.steps,'instruction-steps');break;
-    case 'comparison':content=`<div class="instruction-comparison">${metric('Planejado',visual.planned)}${metric('Realizado',visual.actual)}</div><p class="instruction-legend">O tempo registrado pode ser diferente do previsto.</p>`;break;
-    case 'daily':content=`<div class="instruction-comparison">${metric('Planejado',visual.planned)}${metric('Realizado',visual.actual)}</div><p>${minutes(visual.progress)}% de progresso do plano</p><div class="instruction-example-bar" aria-hidden="true"><span style="width:${Math.min(100,minutes(visual.progress))}%"></span></div><p class="instruction-legend">${minutes(visual.completed)} de ${minutes(visual.total)} atividade concluída</p>`;break;
-    case 'action':content=`<strong>${escape(visual.subject)}</strong><p>${escape(visual.topic)}</p><p>${escape(visual.activity)} · ${minutes(visual.minutes)} min</p><span class="instruction-action">▶ Iniciar estudo</span><p class="instruction-legend">Representação de uma atividade; não inicia uma sessão.</p>`;break;
-    case 'allocation':content=`<div class="instruction-allocation"><div class="instruction-allocation-row instruction-legend"><span>Disciplina</span><span>Atual</span><span>Proposta</span></div>${visual.rows.map(row=>`<div class="instruction-allocation-row"><strong>${escape(row.label)}</strong><span>${minutes(row.before)} min</span><span>${minutes(row.after)} min<small>${row.after>row.before?'Aumento de '+minutes(row.after-row.before)+' minutos':row.after<row.before?'Redução de '+minutes(row.before-row.after)+' minutos':'Sem alteração'}</small></span></div>`).join('')}<div class="instruction-allocation-row"><strong>Total</strong><span>${minutes(visual.total)} min</span><span>${minutes(visual.total)} min</span></div></div>`;break;
-    case 'weekly-bars':content=visual.weeks.map(week=>`<div class="instruction-week"><strong>${escape(week.label)}</strong><p>Planejado: ${minutes(week.planned)} min · Realizado: ${minutes(week.actual)} min</p><div class="instruction-example-bar" aria-hidden="true"><span style="width:100%"></span></div><div class="instruction-example-bar instruction-example-bar--actual" aria-hidden="true"><span style="width:${Math.min(100,week.planned>0?minutes(week.actual)/week.planned*100:0)}%"></span></div></div>`).join('');break;
-    case 'readiness':content=`<div class="instruction-metric"><strong>${minutes(visual.value)} / 100</strong><span>Índice de Prontidão</span></div><div class="instruction-example-bar" aria-hidden="true"><span style="width:${Math.min(100,minutes(visual.value))}%"></span></div><p class="instruction-callout">Não representa probabilidade de aprovação.</p>`;break;
-    case 'sample':content=`<p>Período anterior: ${minutes(visual.previous)} questões</p><p>Período recente: ${minutes(visual.recent)} questões</p><p class="instruction-legend">Amostra insuficiente não significa desempenho ruim. Os requisitos variam por análise.</p>`;break;
-    case 'adherence':content=`<ul class="instruction-steps">${visual.rows.map(row=>`<li><strong>${escape(row.label)}</strong><span>Planejado: ${minutes(row.planned)} min · Realizado: ${minutes(row.actual)} min</span></li>`).join('')}</ul><div class="instruction-comparison"><div class="instruction-metric"><strong>${minutes(visual.load)}%</strong><span>Aderência de carga</span></div><div class="instruction-metric"><strong>${minutes(visual.priorities)}%</strong><span>Prioridades executadas</span></div></div>`;break;
-    case 'matrix':content=`<ul class="instruction-matrix">${visual.cells.map(cell=>`<li><strong>${escape(cell.title)}</strong><p>${escape(cell.detail)}</p></li>`).join('')}</ul>`;break;
-    case 'tree':content=`<strong>${escape(visual.subject)}</strong><ul class="instruction-tree">${visual.topics.map(topic=>`<li>${escape(topic)}</li>`).join('')}</ul>`;break;
-    case 'reference':content=`<ul class="instruction-reference">${visual.items.map(item=>`<li><strong>${escape(item.title)}</strong><p>${escape(item.detail)}</p></li>`).join('')}</ul>`;break;
-    default:return '';
+const escape = value =>
+  String(value ?? '').replace(
+    /[&<>"']/g,
+    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]
+  );
+const minutes = value => Math.max(0, Number(value) || 0);
+export function renderHelpVisual(visual) {
+  if (!visual) return '';
+  const metric = (label, value) =>
+    `<div class="instruction-metric"><strong>${minutes(value)} min</strong><span>${escape(label)}</span></div>`;
+  const steps = (items, className) =>
+    `<ol class="${className}">${(items || []).map((step, index) => `<li><span class="instruction-step-number" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span><strong>${escape(step.title)}</strong><small>${escape(step.detail)}</small></li>`).join('')}</ol>`;
+  let content = '';
+  switch (visual.type) {
+    case 'flow':
+      content = steps(visual.steps, 'instruction-flow');
+      break;
+    case 'reviews':
+      content = steps(visual.steps, 'instruction-steps');
+      break;
+    case 'comparison':
+      content = `<div class="instruction-comparison">${metric('Planejado', visual.planned)}${metric('Realizado', visual.actual)}</div><p class="instruction-legend">O tempo registrado pode ser diferente do previsto.</p>`;
+      break;
+    case 'daily':
+      content = `<div class="instruction-comparison">${metric('Planejado', visual.planned)}${metric('Realizado', visual.actual)}</div><p>${minutes(visual.progress)}% de progresso do plano</p><div class="instruction-example-bar" aria-hidden="true"><span style="width:${Math.min(100, minutes(visual.progress))}%"></span></div><p class="instruction-legend">${minutes(visual.completed)} de ${minutes(visual.total)} atividade concluída</p>`;
+      break;
+    case 'action':
+      content = `<strong>${escape(visual.subject)}</strong><p>${escape(visual.topic)}</p><p>${escape(visual.activity)} · ${minutes(visual.minutes)} min</p><span class="instruction-action">▶ Iniciar estudo</span><p class="instruction-legend">Representação de uma atividade; não inicia uma sessão.</p>`;
+      break;
+    case 'allocation':
+      content = `<div class="instruction-allocation"><div class="instruction-allocation-row instruction-legend"><span>Disciplina</span><span>Atual</span><span>Proposta</span></div>${visual.rows.map(row => `<div class="instruction-allocation-row"><strong>${escape(row.label)}</strong><span>${minutes(row.before)} min</span><span>${minutes(row.after)} min<small>${row.after > row.before ? 'Aumento de ' + minutes(row.after - row.before) + ' minutos' : row.after < row.before ? 'Redução de ' + minutes(row.before - row.after) + ' minutos' : 'Sem alteração'}</small></span></div>`).join('')}<div class="instruction-allocation-row"><strong>Total</strong><span>${minutes(visual.total)} min</span><span>${minutes(visual.total)} min</span></div></div>`;
+      break;
+    case 'weekly-bars':
+      content = visual.weeks
+        .map(
+          week =>
+            `<div class="instruction-week"><strong>${escape(week.label)}</strong><p>Planejado: ${minutes(week.planned)} min · Realizado: ${minutes(week.actual)} min</p><div class="instruction-example-bar" aria-hidden="true"><span style="width:100%"></span></div><div class="instruction-example-bar instruction-example-bar--actual" aria-hidden="true"><span style="width:${Math.min(100, week.planned > 0 ? (minutes(week.actual) / week.planned) * 100 : 0)}%"></span></div></div>`
+        )
+        .join('');
+      break;
+    case 'readiness':
+      content = `<div class="instruction-metric"><strong>${minutes(visual.value)} / 100</strong><span>Índice de Prontidão</span></div><div class="instruction-example-bar" aria-hidden="true"><span style="width:${Math.min(100, minutes(visual.value))}%"></span></div><p class="instruction-callout">Não representa probabilidade de aprovação.</p>`;
+      break;
+    case 'sample':
+      content = `<p>Período anterior: ${minutes(visual.previous)} questões</p><p>Período recente: ${minutes(visual.recent)} questões</p><p class="instruction-legend">Amostra insuficiente não significa desempenho ruim. Os requisitos variam por análise.</p>`;
+      break;
+    case 'adherence':
+      content = `<ul class="instruction-steps">${visual.rows.map(row => `<li><strong>${escape(row.label)}</strong><span>Planejado: ${minutes(row.planned)} min · Realizado: ${minutes(row.actual)} min</span></li>`).join('')}</ul><div class="instruction-comparison"><div class="instruction-metric"><strong>${minutes(visual.load)}%</strong><span>Aderência de carga</span></div><div class="instruction-metric"><strong>${minutes(visual.priorities)}%</strong><span>Prioridades executadas</span></div></div>`;
+      break;
+    case 'matrix':
+      content = `<ul class="instruction-matrix">${visual.cells.map(cell => `<li><strong>${escape(cell.title)}</strong><p>${escape(cell.detail)}</p></li>`).join('')}</ul>`;
+      break;
+    case 'tree':
+      content = `<strong>${escape(visual.subject)}</strong><ul class="instruction-tree">${visual.topics.map(topic => `<li>${escape(topic)}</li>`).join('')}</ul>`;
+      break;
+    case 'reference':
+      content = `<ul class="instruction-reference">${visual.items.map(item => `<li><strong>${escape(item.title)}</strong><p>${escape(item.detail)}</p></li>`).join('')}</ul>`;
+      break;
+    default:
+      return '';
   }
   return `<figure class="instruction-example"><figcaption>Exemplo ilustrativo · ${escape(visual.title)}</figcaption>${content}</figure>`;
 }

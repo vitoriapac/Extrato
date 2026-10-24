@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isISODate, isPlainObject, isSafeId, pluralize, structuredCloneSafe } from '../../src/core/utils.js';
+import {
+  isISODate,
+  isPlainObject,
+  isSafeId,
+  pluralize,
+  structuredCloneSafe,
+} from '../../src/core/utils.js';
 
 test('valida datas reais no formato ISO local', () => {
   assert.equal(isISODate('2024-02-29'), true);
@@ -8,9 +14,9 @@ test('valida datas reais no formato ISO local', () => {
   assert.equal(isISODate('2024-13-01'), false);
 });
 
-test('pluraliza substantivos regulares e irregulares',()=>{
-  assert.equal(pluralize(1,'sessão','sessões'),'1 sessão');
-  assert.equal(pluralize(2,'sessão','sessões'),'2 sessões');
+test('pluraliza substantivos regulares e irregulares', () => {
+  assert.equal(pluralize(1, 'sessão', 'sessões'), '1 sessão');
+  assert.equal(pluralize(2, 'sessão', 'sessões'), '2 sessões');
 });
 
 test('rejeita identificadores inseguros', () => {
@@ -19,7 +25,7 @@ test('rejeita identificadores inseguros', () => {
 });
 
 test('clona dados serializaveis sem compartilhar referencias', () => {
-  const source = {nested: {value: 1}, list: [1, 2]};
+  const source = { nested: { value: 1 }, list: [1, 2] };
   const copy = structuredCloneSafe(source);
   copy.nested.value = 2;
   assert.equal(source.nested.value, 1);

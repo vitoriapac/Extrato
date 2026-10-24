@@ -1,38 +1,179 @@
-import {historicalExecutionItem} from '../../domain/planning/plan-execution-snapshot.js';
-import {normalizeStudySession} from '../../domain/sessions/study-session.js';
-import {sessionMatchesDailyItem,EXCLUDED_DAILY_STATUSES} from '../daily-execution/reconcile-daily-execution.js';
-export function createSessionService({repository,questionsRepository,historyRepository,planningRepository,recommendationsRepository,clock,idGenerator,normalizeSession=normalizeStudySession,normalizeQuestion=()=>{},resolveEvidenceScope=()=>null,completeRecommendation=()=>{},onCompleted=()=>{}}={}){
-  if(!repository||typeof repository.add!=='function')throw new TypeError('Serviço de sessões requer repositório.');
-  if(!questionsRepository||!planningRepository||!clock||typeof idGenerator!=='function')throw new TypeError('Serviço de sessões requer dependências de aplicação.');
-  const normalize=input=>normalizeSession(input,{today:()=>clock.today()});
-  const findPlanItem=id=>{if(!id)return null;for(const plan of planningRepository.getDailyPlans()){const item=(plan.items||[]).find(candidate=>candidate.id===id);if(item)return{plan,item}}return null};
-  const markRecommendationCompleted=(recommendationId,session)=>{
-    if(!recommendationId)return null;
-    const feedback=(recommendationsRepository?.all?.()||[]).find(item=>item.recommendationId===recommendationId&&item.accepted);
-    if(!feedback||feedback.completed)return feedback;
-    return completeRecommendation(recommendationsRepository?.all?.()||[],recommendationId,{sessionId:session.id,completedAt:session.endedAt||clock.nowISO()});
+import { historicalExecutionItem } from '../../domain/planning/plan-execution-snapshot.js';
+import { normalizeStudySession } from '../../domain/sessions/study-session.js';
+import {
+  sessionMatchesDailyItem,
+  EXCLUDED_DAILY_STATUSES,
+} from '../daily-execution/reconcile-daily-execution.js';
+export function createSessionService({
+  repository,
+  questionsRepository,
+  historyRepository,
+  planningRepository,
+  recommendationsRepository,
+  clock,
+  idGenerator,
+  normalizeSession = normalizeStudySession,
+  normalizeQuestion = () => {},
+  resolveEvidenceScope = () => null,
+  completeRecommendation = () => {},
+  onCompleted = () => {},
+} = {}) {
+  if (!repository || typeof repository.add !== 'function')
+    throw new TypeError('Serviço de sessões requer repositório.');
+  if (!questionsRepository || !planningRepository || !clock || typeof idGenerator !== 'function')
+    throw new TypeError('Serviço de sessões requer dependências de aplicação.');
+  const normalize = input => normalizeSession(input, { today: () => clock.today() });
+  const findPlanItem = id => {
+    if (!id) return null;
+    for (const plan of planningRepository.getDailyPlans()) {
+      const item = (plan.items || []).find(candidate => candidate.id === id);
+      if (item) return { plan, item };
+    }
+    return null;
   };
-  const syncPlan=planItemId=>{
-    const found=findPlanItem(planItemId);if(!found)return null;
-    const linked=repository.listByPlanItem(planItemId),matching=linked.filter(session=>sessionMatchesDailyItem(session,found.item)),latest=[...matching].sort((a,b)=>String(a.endedAt||'').localeCompare(String(b.endedAt||''))).pop();
-    found.item.sessionIds=linked.map(item=>item.id);found.item.executedSeconds=matching.reduce((sum,item)=>sum+Math.max(0,Number(item.durationSeconds)||0),0);
-    if(!EXCLUDED_DAILY_STATUSES.has(found.item.status))found.item.status=!matching.length?'planned':historicalExecutionItem(found.item).plannedMinutes>0&&found.item.executedSeconds>=historicalExecutionItem(found.item).plannedMinutes*60?'completed':'partial';
-    found.item.lastExecutedAt=latest?.endedAt||null;found.plan.updatedAt=clock.nowISO();
-    if(latest&&found.item.recommendationId&&found.item.status==='completed')markRecommendationCompleted(found.item.recommendationId,latest);
+  const markRecommendationCompleted = (recommendationId, session) => {
+    if (!recommendationId) return null;
+    const feedback = (recommendationsRepository?.all?.() || []).find(
+      item => item.recommendationId === recommendationId && item.accepted
+    );
+    if (!feedback || feedback.completed) return feedback;
+    return completeRecommendation(recommendationsRepository?.all?.() || [], recommendationId, {
+      sessionId: session.id,
+      completedAt: session.endedAt || clock.nowISO(),
+    });
+  };
+  const syncPlan = planItemId => {
+    const found = findPlanItem(planItemId);
+    if (!found) return null;
+    const linked = repository.listByPlanItem(planItemId),
+      matching = linked.filter(session => sessionMatchesDailyItem(session, found.item)),
+      latest = [...matching]
+        .sort((a, b) => String(a.endedAt || '').localeCompare(String(b.endedAt || '')))
+        .pop();
+    found.item.sessionIds = linked.map(item => item.id);
+    found.item.executedSeconds = matching.reduce(
+      (sum, item) => sum + Math.max(0, Number(item.durationSeconds) || 0),
+      0
+    );
+    if (!EXCLUDED_DAILY_STATUSES.has(found.item.status))
+      found.item.status = !matching.length
+        ? 'planned'
+        : historicalExecutionItem(found.item).plannedMinutes > 0 &&
+            found.item.executedSeconds >= historicalExecutionItem(found.item).plannedMinutes * 60
+          ? 'completed'
+          : 'partial';
+    found.item.lastExecutedAt = latest?.endedAt || null;
+    found.plan.updatedAt = clock.nowISO();
+    if (latest && found.item.recommendationId && found.item.status === 'completed')
+      markRecommendationCompleted(found.item.recommendationId, latest);
     return found.item;
   };
-  const syncQuestion=session=>{
-    const linked=questionsRepository.all().filter(item=>item.studySessionId===session.id),existing=linked[0]||null;
-    linked.slice(1).forEach(item=>questionsRepository.remove(item.id));
-    if(session.questionsResolved<=0){if(existing)questionsRepository.remove(existing.id);return null}
-    const values={date:session.date,subjectId:session.subjectId||null,topicId:session.topicId||null,examScope:Array.isArray(session.examScope)?session.examScope:resolveEvidenceScope(session.topicId),resolved:session.questionsResolved,correct:session.correctAnswers,studySessionId:session.id};
-    const question=existing?questionsRepository.update(existing.id,values):questionsRepository.add({id:idGenerator('question'),createdAt:clock.nowISO(),...values});normalizeQuestion(question);return question;
+  const syncQuestion = session => {
+    const linked = questionsRepository.all().filter(item => item.studySessionId === session.id),
+      existing = linked[0] || null;
+    linked.slice(1).forEach(item => questionsRepository.remove(item.id));
+    if (session.questionsResolved <= 0) {
+      if (existing) questionsRepository.remove(existing.id);
+      return null;
+    }
+    const values = {
+      date: session.date,
+      subjectId: session.subjectId || null,
+      topicId: session.topicId || null,
+      examScope: Array.isArray(session.examScope)
+        ? session.examScope
+        : resolveEvidenceScope(session.topicId),
+      resolved: session.questionsResolved,
+      correct: session.correctAnswers,
+      studySessionId: session.id,
+    };
+    const question = existing
+      ? questionsRepository.update(existing.id, values)
+      : questionsRepository.add({
+          id: idGenerator('question'),
+          createdAt: clock.nowISO(),
+          ...values,
+        });
+    normalizeQuestion(question);
+    return question;
   };
   return Object.freeze({
-    complete:input=>{const linkedItem=findPlanItem(input.planItemId)?.item||null,recommendationId=input.recommendationId||(linkedItem&&sessionMatchesDailyItem(input,linkedItem)?linkedItem.recommendationId:null)||null;const session=normalize({id:idGenerator('session'),createdAt:clock.nowISO(),examScope:Array.isArray(input.examScope)?input.examScope:resolveEvidenceScope(input.topicId),...input,
-      source:input.source||(recommendationId?'recommendation':linkedItem?'plan':'manual'),recommendationId,prioritySnapshot:input.prioritySnapshot??linkedItem?.prioritySnapshot?.score??(linkedItem?.score!=null&&Number.isFinite(Number(linkedItem.score))?Number(linkedItem.score):null),planPrioritySnapshot:linkedItem?.prioritySnapshot?structuredClone(linkedItem.prioritySnapshot):null});const saved=repository.add(session);syncQuestion(saved);syncPlan(saved.planItemId);if(!linkedItem||sessionMatchesDailyItem(saved,linkedItem))markRecommendationCompleted(recommendationId,saved);const occurredAt=clock.nowISO();historyRepository?.add?.({id:idGenerator('history'),date:occurredAt,occurredAt,localDate:saved.date||clock.today(),type:'study_session',subjectId:saved.subjectId||null,topicId:saved.topicId||null,examScope:saved.examScope,metadata:{sessionId:saved.id,durationSeconds:saved.durationSeconds,recommendationId:saved.recommendationId||null}});onCompleted(saved);return saved},
-    edit:(id,changes)=>{const current=repository.findById(id);if(!current)return null;const oldPlanItemId=current.planItemId||null,saved=repository.update(id,normalize({...current,...changes}));syncQuestion(saved);if(oldPlanItemId&&oldPlanItemId!==saved.planItemId)syncPlan(oldPlanItemId);syncPlan(saved.planItemId);return saved},
-    remove:id=>{const session=repository.remove(id);if(!session)return null;questionsRepository.all().filter(item=>item.studySessionId===id).forEach(item=>questionsRepository.remove(item.id));historyRepository?.all?.().filter(item=>item.type==='study_session'&&item.metadata?.sessionId===id).forEach(item=>historyRepository.remove(item.id));syncPlan(session.planItemId);return session},
-    syncPlanItem:syncPlan
+    complete: input => {
+      const linkedItem = findPlanItem(input.planItemId)?.item || null,
+        recommendationId =
+          input.recommendationId ||
+          (linkedItem && sessionMatchesDailyItem(input, linkedItem)
+            ? linkedItem.recommendationId
+            : null) ||
+          null;
+      const session = normalize({
+        id: idGenerator('session'),
+        createdAt: clock.nowISO(),
+        examScope: Array.isArray(input.examScope)
+          ? input.examScope
+          : resolveEvidenceScope(input.topicId),
+        ...input,
+        source:
+          input.source || (recommendationId ? 'recommendation' : linkedItem ? 'plan' : 'manual'),
+        recommendationId,
+        prioritySnapshot:
+          input.prioritySnapshot ??
+          linkedItem?.prioritySnapshot?.score ??
+          (linkedItem?.score != null && Number.isFinite(Number(linkedItem.score))
+            ? Number(linkedItem.score)
+            : null),
+        planPrioritySnapshot: linkedItem?.prioritySnapshot
+          ? structuredClone(linkedItem.prioritySnapshot)
+          : null,
+      });
+      const saved = repository.add(session);
+      syncQuestion(saved);
+      syncPlan(saved.planItemId);
+      if (!linkedItem || sessionMatchesDailyItem(saved, linkedItem))
+        markRecommendationCompleted(recommendationId, saved);
+      const occurredAt = clock.nowISO();
+      historyRepository?.add?.({
+        id: idGenerator('history'),
+        date: occurredAt,
+        occurredAt,
+        localDate: saved.date || clock.today(),
+        type: 'study_session',
+        subjectId: saved.subjectId || null,
+        topicId: saved.topicId || null,
+        examScope: saved.examScope,
+        metadata: {
+          sessionId: saved.id,
+          durationSeconds: saved.durationSeconds,
+          recommendationId: saved.recommendationId || null,
+        },
+      });
+      onCompleted(saved);
+      return saved;
+    },
+    edit: (id, changes) => {
+      const current = repository.findById(id);
+      if (!current) return null;
+      const oldPlanItemId = current.planItemId || null,
+        saved = repository.update(id, normalize({ ...current, ...changes }));
+      syncQuestion(saved);
+      if (oldPlanItemId && oldPlanItemId !== saved.planItemId) syncPlan(oldPlanItemId);
+      syncPlan(saved.planItemId);
+      return saved;
+    },
+    remove: id => {
+      const session = repository.remove(id);
+      if (!session) return null;
+      questionsRepository
+        .all()
+        .filter(item => item.studySessionId === id)
+        .forEach(item => questionsRepository.remove(item.id));
+      historyRepository
+        ?.all?.()
+        .filter(item => item.type === 'study_session' && item.metadata?.sessionId === id)
+        .forEach(item => historyRepository.remove(item.id));
+      syncPlan(session.planItemId);
+      return session;
+    },
+    syncPlanItem: syncPlan,
   });
 }

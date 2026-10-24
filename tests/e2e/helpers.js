@@ -1,27 +1,50 @@
-import {expect} from '@playwright/test';
+import { expect } from '@playwright/test';
 
-export async function openDemo(page){
+export async function openDemo(page) {
   await page.goto('/');
-  await page.getByRole('button',{name:/Explorar demonstração/i}).click();
-  await page.getByRole('button',{name:'Carregar demonstração'}).click();
-  await expect(page.locator('#demoBanner').getByText('MODO DEMONSTRAÇÃO',{exact:true})).toBeVisible({timeout:15_000});
+  await page.getByRole('button', { name: /Explorar demonstração/i }).click();
+  await page.getByRole('button', { name: 'Carregar demonstração' }).click();
+  await expect(
+    page.locator('#demoBanner').getByText('MODO DEMONSTRAÇÃO', { exact: true })
+  ).toBeVisible({ timeout: 15_000 });
 }
-export async function activateTab(page,name){
-  await page.locator(`[data-tab="${name}"]`).evaluate(button=>button.click());
+export async function activateTab(page, name) {
+  await page.locator(`[data-tab="${name}"]`).evaluate(button => button.click());
   await expect(page.locator(`#panel-${name}`)).toBeVisible();
 }
 // The overview card is either the recommendation itself or a pending plan item carrying it as a suggestion line.
-export async function overviewRecommendationId(page){
-  return page.locator('#overviewNextAction .overview-action-card').evaluate(card=>card.dataset.studyActionId||card.dataset.recommendationActionId||null);
+export async function overviewRecommendationId(page) {
+  return page
+    .locator('#overviewNextAction .overview-action-card')
+    .evaluate(card => card.dataset.studyActionId || card.dataset.recommendationActionId || null);
 }
-export async function openExamImport(page){
+export async function openExamImport(page) {
   await page.locator('.subjects-import-menu summary').click();
   await page.getByTestId('open-exam-import').click();
 }
-export async function expectNoPageOverflow(page){
-  const dimensions=await page.evaluate(()=>({viewport:innerWidth,page:document.documentElement.scrollWidth,tab:document.querySelector('.tab-btn.active')?.dataset.tab}));
-  if(dimensions.page>dimensions.viewport){
-    const wide=await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(element=>{const box=element.getBoundingClientRect(),style=getComputedStyle(element);return style.position!=='fixed'&&box.right>innerWidth+2&&box.width>0}).slice(0,8).map(element=>`${element.tagName.toLowerCase()}#${element.id}.${String(element.className).split(' ').slice(0,2).join('.')}`));
-    expect(dimensions.page,`Aba ${dimensions.tab}; elementos excedentes: ${wide.join(', ')}`).toBeLessThanOrEqual(dimensions.viewport);
+export async function expectNoPageOverflow(page) {
+  const dimensions = await page.evaluate(() => ({
+    viewport: innerWidth,
+    page: document.documentElement.scrollWidth,
+    tab: document.querySelector('.tab-btn.active')?.dataset.tab,
+  }));
+  if (dimensions.page > dimensions.viewport) {
+    const wide = await page.evaluate(() =>
+      [...document.querySelectorAll('body *')]
+        .filter(element => {
+          const box = element.getBoundingClientRect(),
+            style = getComputedStyle(element);
+          return style.position !== 'fixed' && box.right > innerWidth + 2 && box.width > 0;
+        })
+        .slice(0, 8)
+        .map(
+          element =>
+            `${element.tagName.toLowerCase()}#${element.id}.${String(element.className).split(' ').slice(0, 2).join('.')}`
+        )
+    );
+    expect(
+      dimensions.page,
+      `Aba ${dimensions.tab}; elementos excedentes: ${wide.join(', ')}`
+    ).toBeLessThanOrEqual(dimensions.viewport);
   }
 }

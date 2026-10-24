@@ -1,44 +1,57 @@
-import {test,expect} from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {activateTab,openDemo} from './helpers.js';
+import { activateTab, openDemo } from './helpers.js';
 
-test.describe.configure({timeout:60_000});
+test.describe.configure({ timeout: 60_000 });
 
-async function expectAccessible(page,label,scope){
+async function expectAccessible(page, label, scope) {
   await page.waitForTimeout(400);
-  const audit=new AxeBuilder({page});
-  const results=await (scope?audit.include(scope):audit).analyze();
-  expect(results.violations, label+' possui violações sérias ou críticas').toEqual([]);
+  const audit = new AxeBuilder({ page });
+  const results = await (scope ? audit.include(scope) : audit).analyze();
+  expect(results.violations, label + ' possui violações sérias ou críticas').toEqual([]);
 }
 
-for(const [tab,label] of [['dashboard','Visão Geral'],['disciplinas','Disciplinas'],['metas','Planejamento'],['agenda','Agenda'],['calendario','Calendário'],['questoes','Questões e simulados']]){
-  test(`não possui violações estruturais em ${label}`,async({page})=>{
+for (const [tab, label] of [
+  ['dashboard', 'Visão Geral'],
+  ['disciplinas', 'Disciplinas'],
+  ['metas', 'Planejamento'],
+  ['agenda', 'Agenda'],
+  ['calendario', 'Calendário'],
+  ['questoes', 'Questões e simulados'],
+]) {
+  test(`não possui violações estruturais em ${label}`, async ({ page }) => {
     await openDemo(page);
-    await activateTab(page,tab);
-    await expectAccessible(page,label,`#panel-${tab}`);
+    await activateTab(page, tab);
+    await expectAccessible(page, label, `#panel-${tab}`);
   });
 }
 
-test('mantém estrutura acessível no modo móvel e no modal',async({page})=>{
+test('mantém estrutura acessível no modo móvel e no modal', async ({ page }) => {
   // Duas auditorias axe completas, incluindo a demo densa, precisam de seu próprio orçamento.
   test.setTimeout(120_000);
-  await page.setViewportSize({width:375,height:812});
+  await page.setViewportSize({ width: 375, height: 812 });
   await openDemo(page);
-  await expectAccessible(page,'Modo móvel');
-  await page.getByRole('button',{name:/Reiniciar demo/i}).click();
+  await expectAccessible(page, 'Modo móvel');
+  await page.getByRole('button', { name: /Reiniciar demo/i }).click();
   await expect(page.locator('#modalOverlay')).toHaveClass(/show/);
-  await expectAccessible(page,'Modal');
+  await expectAccessible(page, 'Modal');
   await expect(page.locator('#modalCancelBtn')).toBeFocused();
 });
 
-test('central de diagnóstico continua acessível quando expandida',async({page})=>{
-  await openDemo(page);await activateTab(page,'hoje');
+test('central de diagnóstico continua acessível quando expandida', async ({ page }) => {
+  await openDemo(page);
+  await activateTab(page, 'hoje');
   await page.locator('.today-analysis-details > summary').click();
-  await expectAccessible(page,'Central de diagnóstico expandida','#panel-hoje');
+  await expectAccessible(page, 'Central de diagnóstico expandida', '#panel-hoje');
 });
 
-test('configuração estratégica continua acessível quando expandida',async({page})=>{
-  await openDemo(page);await activateTab(page,'metas');
-  const disclosure=page.locator('#examBlueprintConfig .exam-subject-config').first();
-  if(await disclosure.count()){await disclosure.locator('summary').click();await expect(disclosure.locator('.exam-subject-row')).toBeVisible();await expectAccessible(page,'Configuração estratégica expandida','#examBlueprintConfig')}
+test('configuração estratégica continua acessível quando expandida', async ({ page }) => {
+  await openDemo(page);
+  await activateTab(page, 'metas');
+  const disclosure = page.locator('#examBlueprintConfig .exam-subject-config').first();
+  if (await disclosure.count()) {
+    await disclosure.locator('summary').click();
+    await expect(disclosure.locator('.exam-subject-row')).toBeVisible();
+    await expectAccessible(page, 'Configuração estratégica expandida', '#examBlueprintConfig');
+  }
 });

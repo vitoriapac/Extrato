@@ -1,137 +1,927 @@
-const BASE_HELP_CATEGORIES=[
-  {id:'guide-start',title:'Comece por aqui',summary:'Da prova ao primeiro fechamento semanal, um passo de cada vez.',entries:[
-    {id:'first-steps',title:'Primeiros passos',summary:'O caminho básico para começar a receber orientações úteis.',steps:[{title:'Configure sua prova',detail:'Escolha o concurso, a data e as informações estratégicas.'},{title:'Monte o edital',detail:'Cadastre ou importe disciplinas e tópicos.'},{title:'Defina sua disponibilidade',detail:'Informe o tempo que você realmente pode estudar.'},{title:'Registre seus estudos',detail:'Vincule sessões aos tópicos sempre que possível.'},{title:'Resolva questões e faça revisões',detail:'O desempenho e a manutenção do conhecimento ganham contexto.'},{title:'Acompanhe o diagnóstico',detail:'Veja riscos, lacunas e a força das evidências.'},{title:'Siga as recomendações',detail:'Escolha a próxima ação com base na prova e no seu progresso.'},{title:'Faça o fechamento semanal',detail:'Compare o plano com o que foi executado.'}],paragraphs:['Você não precisa configurar tudo de uma vez. Comece pela prova, pelo conteúdo e pela disponibilidade. Conforme registra sessões, questões e revisões, o StudyTrack personaliza as análises.'],action:{label:'Abrir Disciplinas',target:'subjects'}},
-    {id:'overview',title:'Visão Geral',summary:'Seu painel principal de acompanhamento.',paragraphs:['Reúne Índice de Prontidão, progresso, foco da semana, recomendações, evolução, riscos, oportunidades e conquistas. O índice resume sinais da preparação; não é probabilidade de aprovação.'],action:{label:'Abrir Visão Geral',target:'overview'}}
-  ]},
-  {id:'guide-areas',title:'Estudar',summary:'Disciplinas, sessões, Questões e Simulados, revisões e próxima ação.',entries:[
-    {id:'today-guide',title:'Hoje',summary:'A próxima ação e o plano do dia em um só lugar.',paragraphs:['O card Hoje na Visão Geral mostra o tempo planejado, o estudo realizado e a próxima atividade. Inicie pelo card para vincular a sessão à tarefa. O progresso considera disciplina, tópico e tipo: teoria não conclui uma tarefa de questões. Estudo sem vínculo aparece como adicional.','Após registrar, editar ou excluir uma sessão, o progresso é atualizado. Uma recomendação fora do plano deve ser revisada antes de mudar a carga. Após Recovery, confira atividades geradas por uma versão anterior do plano. Pendências ficam disponíveis na aba Hoje, sem fechamento diário obrigatório.'],action:{label:'Abrir Hoje',target:'today'}},
-    {id:'subjects',title:'Disciplinas e tópicos',summary:'A estrutura que conecta conteúdo e desempenho.',paragraphs:['Cada disciplina reúne tópicos. Sessões, questões, revisões, domínio e histórico ficam associados ao tópico quando você o informa. Cadastre manualmente ou importe um edital; conteúdos compartilhados entre concursos podem reutilizar o progresso.'],bullets:['Tags identificam em quais concursos cada tópico aparece.','O concurso ativo define o escopo padrão das análises.','Registros apenas da disciplina permanecem no histórico, mas não são atribuídos automaticamente a um edital específico.'],action:{label:'Cadastrar conteúdo',target:'subjects'}},
-    {id:'calendar-guide',title:'Calendário',summary:'Enxergue a carga de estudo por data.',paragraphs:['O calendário reúne sessões, revisões e atividades planejadas. Use seus filtros para investigar períodos e disciplinas antes de redistribuir a semana.'],action:{label:'Abrir Calendário',target:'calendar'}},
-    {id:'sessions',title:'Cronômetro e sessões',summary:'Registre o estudo real, com ou sem cronômetro.',paragraphs:['Escolha disciplina, tópico e tipo de estudo, registre a duração e finalize a sessão. Também é possível lançar uma sessão manual e vincular resultados posteriores. Prefira informar o tópico: isso melhora a precisão do domínio, das prioridades e do impacto da prova.'],action:{label:'Abrir cronômetro',target:'timer'}},
-    {id:'questions',title:'Questões e Simulados',summary:'Desempenho e análise de erros têm registro próprio.',paragraphs:['Informe quantidade de questões, acertos, tópico e, quando possível, a causa dos erros. Os simulados mostram desempenho por disciplina e podem fundamentar uma proposta de replanejamento.'],bullets:['Não sabia · Esqueci','Interpretação · Cálculo','Desatenção · Chute'],note:'Categorizar erros ajuda a distinguir falta de conhecimento de problemas de execução.',action:{label:'Registrar questões',target:'questions'}},
-    {id:'reviews',title:'Revisões',summary:'Acompanhe o que está próximo e o que já atrasou.',paragraphs:['A Agenda separa revisões atrasadas, de hoje e próximas. A saúde das revisões ajuda a sinalizar manutenção do conhecimento; concluir uma revisão registra a execução real. Uma revisão crítica merece atenção, mas não deve ser tratada apenas como checklist.'],action:{label:'Abrir Agenda de Revisões',target:'reviews'}},
-    {id:'recommendations',title:'Recomendações inteligentes',summary:'O que importa na prova + sua necessidade → próxima ação.',flow:['Prova: impacto e evidência','Você: domínio, retenção e tendência','Ação: estudar, revisar ou resolver questões'],paragraphs:['A prioridade considera impacto na prova, domínio, retenção, tendência, revisões, desempenho, evidência disponível e pré-requisitos. Sempre que há dados suficientes, o StudyTrack mostra os fatores que levaram à sugestão. Uma recomendação pode iniciar uma sessão vinculada à decisão.'],action:{label:'Ver próxima ação',target:'today'}}
-  ]},
-  {id:'guide-workflows',title:'Planejar',summary:'Capacidade semanal, planejamento adaptativo e fechamento.',entries:[
-    {id:'planning',title:'Planejar a semana',summary:'Compare disponibilidade, proposta e execução.',paragraphs:['Defina as horas disponíveis, gere uma proposta semanal e confira a distribuição por disciplina, tópico e atividade. O plano até a prova considera capacidade e pendências. Confirme antes de salvar; déficit e excedente indicam quando a carga não cabe.'],action:{label:'Abrir planejamento',target:'planning'}},
-    {id:'adaptive',title:'Planejamento Adaptativo',summary:'Redistribuir tempo sem criar horas adicionais.',flow:['Impacto na prova','Necessidade do estudante','Possível redistribuição'],paragraphs:['Quando uma disciplina está consolidada e outra apresenta necessidade estratégica maior, o StudyTrack pode propor uma transferência limitada de minutos. A capacidade semanal é preservada. A prévia explica o motivo e exige confirmação; um intervalo de proteção evita ajustes repetidos em pouco tempo.'],action:{label:'Ver planejamento adaptativo',target:'planning'}},
-    {id:'weekly',title:'Fechamento semanal',summary:'Entenda o que foi planejado, executado e medido.',paragraphs:['O fechamento reúne tempo, questões, acerto, lacunas, diagnóstico e próxima ação. O foco estratégico indica a parcela do tempo dedicada a tópicos de alto impacto; não é uma meta de 100%. Melhora ou estabilidade só aparece quando há resultado posterior medido no período.'],bullets:['Salve o fechamento para comparar semanas do mesmo concurso.','A comparação exige períodos sem sobreposição e dados completos.','O foco pode subir enquanto o tempo executado cai; leia os dois sinais juntos.'],action:{label:'Ver Fechamento Semanal',target:'weekly'}}
-  ]},
-  {id:'guide-data',title:'Analisar',summary:'Diagnóstico, prontidão, conquistas e resultados posteriores.',entries:[
-    {id:'adherence',title:'Execução e aderência',summary:'Entenda a diferença entre acumular horas e executar as prioridades do plano.',paragraphs:['Em Desempenho → Consistência, volume compara horas realizadas e previstas e pode superar 100%. Aderência ao plano usa apenas tempo com vínculo seguro e atividade compatível, limitado à duração prevista. Execução prioritária usa a prioridade registrada quando o planejamento foi criado.','O histórico de 4, 8 ou 12 semanas compara a semana em andamento com os mesmos dias da anterior. Pouca classificação histórica deixa a interpretação estratégica indisponível.','Em Metas, você pode definir uma meta pessoal de aderência entre 50 e 100% ou desativá-la. Consistência e Trajetória mostram o crédito da semana até hoje; a meta não altera Prontidão, prioridade ou projeção. Ao salvar um fechamento, os valores e as explicações ficam preservados. Pendências recorrentes usam períodos salvos sem sobreposição no mesmo concurso. Revisar planejamento abre Metas; qualquer alteração exige prévia e confirmação.'],action:{label:'Ver execução e aderência',target:'adherence'}},
-    {id:'diagnosis',title:'Central de Diagnóstico',summary:'Riscos, lacunas, oportunidades e qualidade das evidências.',paragraphs:['Domínio resume o desempenho observado; retenção indica manutenção do conhecimento; tendência aponta a direção recente; evidência mostra o quanto a conclusão é sustentada. Impacto representa importância na prova, e lacuna combina essa importância com a necessidade pessoal.'],action:{label:'Abrir diagnóstico',target:'diagnosis'}},
-    {id:'readiness',title:'Índice de Prontidão',summary:'Uma síntese de 0 a 100, sempre acompanhada de confiança.',paragraphs:['O índice combina cobertura, domínio, retenção, consistência e simulados. Progresso real, melhora nesses fatores e evidência mais completa podem elevar o indicador; deterioração ou revisão insuficiente podem reduzi-lo. Fatores ausentes diminuem a confiança. O número não estima a chance de aprovação.'],action:{label:'Ver Índice de Prontidão',target:'overview'}},
-    {id:'achievements',title:'Conquistas',summary:'Consistência, aprendizagem e decisões estratégicas.',paragraphs:['As conquistas reconhecem progresso, mas não alteram prioridades nem o Índice de Prontidão. Estrategista exige estudo em dez tópicos distintos de alto impacto; Cobertura crítica exige domínio com evidência suficiente nos tópicos críticos de uma disciplina; Prova mapeada exige quatro provas completas no concurso ativo. As conquistas bloqueadas mostram o que falta.'],action:{label:'Ver conquistas',target:'achievements'}},
-    {id:'outcomes',title:'Histórico e resultados posteriores',summary:'Recomendação → execução → medição → auditoria.',paragraphs:['O histórico guarda a recomendação, a decisão e o resultado observado depois. Isso ajuda a avaliar a estratégia, mas uma melhora posterior não prova que a recomendação causou a melhora.'],action:{label:'Ver histórico',target:'history'}},
-    {id:'report',title:'Relatório e PDF',summary:'Uma fotografia estratégica do período escolhido.',paragraphs:['O PDF resume planejamento, desempenho, recomendações, Inteligência da Prova e foco dos últimos sete dias do período. Inclui cobertura e confiança históricas e até três lacunas estratégicas. Use-o para revisar ou imprimir; ele não substitui o backup JSON.'],action:{label:'Ir ao relatório PDF',target:'report'}},
-    {id:'projections',title:'Projeções e cenários',summary:'Faixas estimadas para apoiar a leitura da preparação.',paragraphs:['Projeções e cenários refletem os dados disponíveis e hipóteses de capacidade. São estimativas para comparar caminhos, não probabilidade de aprovação nem garantia de resultado.'],action:{label:'Ver projeções',target:'overview'}}
-  ]},
-  {id:'guide-exam',title:'Inteligência da prova',summary:'Histórico, incidência, qualidade e Matriz Prova × Você.',entries:[
-    {id:'exam-history',title:'Provas históricas',summary:'Entenda o que costuma aparecer na prova.',flow:['Provas históricas','Questões classificadas','Tópicos e incidência','Confiança','Impacto na prova'],paragraphs:['Importe provas históricas em JSON com prévia e confirmação das associações. Essas questões formam evidência de incidência e ficam separadas das questões que você resolveu para medir seu desempenho. A reimportação da mesma prova evita duplicatas.'],action:{label:'Abrir Inteligência da Prova',target:'exam'}},
-    {id:'exam-quality',title:'Qualidade do histórico',summary:'A força da amostra vem antes do impacto.',paragraphs:['O StudyTrack observa provas completas e parciais, cobertura conhecida, questões classificadas, pendências e confiança. Provas parciais não são tratadas como ausência do tópico. Uma base pequena não significa desempenho ruim: quando o histórico é insuficiente, sua influência no impacto é limitada.'],action:{label:'Revisar qualidade da base',target:'exam'}},
-    {id:'exam-audit',title:'Configurado × Histórico',summary:'Compare sua estratégia com a evidência sem sobrescrever escolhas.',paragraphs:['A auditoria confronta o impacto configurado com o observado nas provas e destaca alinhamentos e divergências. Valores manuais ou oficiais continuam prevalecendo até você decidir alterá-los; inferência histórica nunca é apresentada como peso oficial.'],bullets:['Exemplo: configurado 80/100; histórico observado 84/100.','O estado pode ser alinhado, enquanto o valor usado segue a fonte configurada.'],action:{label:'Ver auditoria',target:'audit'}},
-    {id:'exam-matrix',title:'Matriz Prova × Você',summary:'Importância da prova e situação pessoal lado a lado.',flow:['Prova: incidência e impacto','Você: domínio, retenção e tendência','Prioridade: importância × necessidade'],paragraphs:['Um tópico frequente que você domina pode pedir manutenção. Outro, também importante e com domínio baixo, pode merecer estudo agora. A matriz permite filtrar provas e abrir o detalhe de um tópico para entender essa combinação.'],bullets:['Exemplo: impacto alto e domínio 42/100 indicam uma lacuna relevante.'],action:{label:'Abrir Matriz Prova × Você',target:'matrix'}}
-  ]},
-  {id:'guide-safety',title:'Dados e segurança',summary:'Backup, uso offline, atalhos e demonstração.',entries:[
-    {id:'backup',title:'Seus dados e backup',summary:'Os dados ficam neste navegador.',paragraphs:['O StudyTrack funciona com dados locais, sem conta obrigatória. Exporte backups JSON regularmente, sobretudo antes de limpar dados, trocar de navegador ou fazer mudanças importantes. A restauração valida o arquivo antes de substituir a base; o PDF não é restaurável. Depois do primeiro carregamento completo por HTTP, o PWA instalado pode abrir offline.'],action:{label:'Ir ao backup',target:'backup'}},
-    {id:'guide-shortcuts',title:'Acesso rápido e atalhos',summary:'Encontre áreas, ações e tópicos pelo teclado.',paragraphs:['Ctrl + K (ou Cmd + K no Mac) abre a busca global de ações, páginas e tópicos. Ctrl/Cmd + Shift + 1–8 alterna entre as oito áreas. Esc fecha busca, menu ou modal. Com uma aba em foco, use setas, Home e End para navegar.']},
-    {id:'demo',title:'Modo demonstração',summary:'Explore o produto com dados fictícios separados.',paragraphs:['A demonstração permite conhecer prioridades, planejamento, relatórios e histórico sem cadastrar uma base real. Reiniciar ou encerrar a demo não altera seus dados reais.'],action:{label:'Explorar demonstração',target:'demo'}}
-  ]}
+const BASE_HELP_CATEGORIES = [
+  {
+    id: 'guide-start',
+    title: 'Comece por aqui',
+    summary: 'Da prova ao primeiro fechamento semanal, um passo de cada vez.',
+    entries: [
+      {
+        id: 'first-steps',
+        title: 'Primeiros passos',
+        summary: 'O caminho básico para começar a receber orientações úteis.',
+        steps: [
+          {
+            title: 'Configure sua prova',
+            detail: 'Escolha o concurso, a data e as informações estratégicas.',
+          },
+          { title: 'Monte o edital', detail: 'Cadastre ou importe disciplinas e tópicos.' },
+          {
+            title: 'Defina sua disponibilidade',
+            detail: 'Informe o tempo que você realmente pode estudar.',
+          },
+          {
+            title: 'Registre seus estudos',
+            detail: 'Vincule sessões aos tópicos sempre que possível.',
+          },
+          {
+            title: 'Resolva questões e faça revisões',
+            detail: 'O desempenho e a manutenção do conhecimento ganham contexto.',
+          },
+          {
+            title: 'Acompanhe o diagnóstico',
+            detail: 'Veja riscos, lacunas e a força das evidências.',
+          },
+          {
+            title: 'Siga as recomendações',
+            detail: 'Escolha a próxima ação com base na prova e no seu progresso.',
+          },
+          {
+            title: 'Faça o fechamento semanal',
+            detail: 'Compare o plano com o que foi executado.',
+          },
+        ],
+        paragraphs: [
+          'Você não precisa configurar tudo de uma vez. Comece pela prova, pelo conteúdo e pela disponibilidade. Conforme registra sessões, questões e revisões, o StudyTrack personaliza as análises.',
+        ],
+        action: { label: 'Abrir Disciplinas', target: 'subjects' },
+      },
+      {
+        id: 'overview',
+        title: 'Visão Geral',
+        summary: 'Seu painel principal de acompanhamento.',
+        paragraphs: [
+          'Reúne Índice de Prontidão, progresso, foco da semana, recomendações, evolução, riscos, oportunidades e conquistas. O índice resume sinais da preparação; não é probabilidade de aprovação.',
+        ],
+        action: { label: 'Abrir Visão Geral', target: 'overview' },
+      },
+    ],
+  },
+  {
+    id: 'guide-areas',
+    title: 'Estudar',
+    summary: 'Disciplinas, sessões, Questões e Simulados, revisões e próxima ação.',
+    entries: [
+      {
+        id: 'today-guide',
+        title: 'Hoje',
+        summary: 'A próxima ação e o plano do dia em um só lugar.',
+        paragraphs: [
+          'O card Hoje na Visão Geral mostra o tempo planejado, o estudo realizado e a próxima atividade. Inicie pelo card para vincular a sessão à tarefa. O progresso considera disciplina, tópico e tipo: teoria não conclui uma tarefa de questões. Estudo sem vínculo aparece como adicional.',
+          'Após registrar, editar ou excluir uma sessão, o progresso é atualizado. Uma recomendação fora do plano deve ser revisada antes de mudar a carga. Após Recovery, confira atividades geradas por uma versão anterior do plano. Pendências ficam disponíveis na aba Hoje, sem fechamento diário obrigatório.',
+        ],
+        action: { label: 'Abrir Hoje', target: 'today' },
+      },
+      {
+        id: 'subjects',
+        title: 'Disciplinas e tópicos',
+        summary: 'A estrutura que conecta conteúdo e desempenho.',
+        paragraphs: [
+          'Cada disciplina reúne tópicos. Sessões, questões, revisões, domínio e histórico ficam associados ao tópico quando você o informa. Cadastre manualmente ou importe um edital; conteúdos compartilhados entre concursos podem reutilizar o progresso.',
+        ],
+        bullets: [
+          'Tags identificam em quais concursos cada tópico aparece.',
+          'O concurso ativo define o escopo padrão das análises.',
+          'Registros apenas da disciplina permanecem no histórico, mas não são atribuídos automaticamente a um edital específico.',
+        ],
+        action: { label: 'Cadastrar conteúdo', target: 'subjects' },
+      },
+      {
+        id: 'calendar-guide',
+        title: 'Calendário',
+        summary: 'Enxergue a carga de estudo por data.',
+        paragraphs: [
+          'O calendário reúne sessões, revisões e atividades planejadas. Use seus filtros para investigar períodos e disciplinas antes de redistribuir a semana.',
+        ],
+        action: { label: 'Abrir Calendário', target: 'calendar' },
+      },
+      {
+        id: 'sessions',
+        title: 'Cronômetro e sessões',
+        summary: 'Registre o estudo real, com ou sem cronômetro.',
+        paragraphs: [
+          'Escolha disciplina, tópico e tipo de estudo, registre a duração e finalize a sessão. Também é possível lançar uma sessão manual e vincular resultados posteriores. Prefira informar o tópico: isso melhora a precisão do domínio, das prioridades e do impacto da prova.',
+        ],
+        action: { label: 'Abrir cronômetro', target: 'timer' },
+      },
+      {
+        id: 'questions',
+        title: 'Questões e Simulados',
+        summary: 'Desempenho e análise de erros têm registro próprio.',
+        paragraphs: [
+          'Informe quantidade de questões, acertos, tópico e, quando possível, a causa dos erros. Os simulados mostram desempenho por disciplina e podem fundamentar uma proposta de replanejamento.',
+        ],
+        bullets: ['Não sabia · Esqueci', 'Interpretação · Cálculo', 'Desatenção · Chute'],
+        note: 'Categorizar erros ajuda a distinguir falta de conhecimento de problemas de execução.',
+        action: { label: 'Registrar questões', target: 'questions' },
+      },
+      {
+        id: 'reviews',
+        title: 'Revisões',
+        summary: 'Acompanhe o que está próximo e o que já atrasou.',
+        paragraphs: [
+          'A Agenda separa revisões atrasadas, de hoje e próximas. A saúde das revisões ajuda a sinalizar manutenção do conhecimento; concluir uma revisão registra a execução real. Uma revisão crítica merece atenção, mas não deve ser tratada apenas como checklist.',
+        ],
+        action: { label: 'Abrir Agenda de Revisões', target: 'reviews' },
+      },
+      {
+        id: 'recommendations',
+        title: 'Recomendações inteligentes',
+        summary: 'O que importa na prova + sua necessidade → próxima ação.',
+        flow: [
+          'Prova: impacto e evidência',
+          'Você: domínio, retenção e tendência',
+          'Ação: estudar, revisar ou resolver questões',
+        ],
+        paragraphs: [
+          'A prioridade considera impacto na prova, domínio, retenção, tendência, revisões, desempenho, evidência disponível e pré-requisitos. Sempre que há dados suficientes, o StudyTrack mostra os fatores que levaram à sugestão. Uma recomendação pode iniciar uma sessão vinculada à decisão.',
+        ],
+        action: { label: 'Ver próxima ação', target: 'today' },
+      },
+    ],
+  },
+  {
+    id: 'guide-workflows',
+    title: 'Planejar',
+    summary: 'Capacidade semanal, planejamento adaptativo e fechamento.',
+    entries: [
+      {
+        id: 'planning',
+        title: 'Planejar a semana',
+        summary: 'Compare disponibilidade, proposta e execução.',
+        paragraphs: [
+          'Defina as horas disponíveis, gere uma proposta semanal e confira a distribuição por disciplina, tópico e atividade. O plano até a prova considera capacidade e pendências. Confirme antes de salvar; déficit e excedente indicam quando a carga não cabe.',
+        ],
+        action: { label: 'Abrir planejamento', target: 'planning' },
+      },
+      {
+        id: 'adaptive',
+        title: 'Planejamento Adaptativo',
+        summary: 'Redistribuir tempo sem criar horas adicionais.',
+        flow: ['Impacto na prova', 'Necessidade do estudante', 'Possível redistribuição'],
+        paragraphs: [
+          'Quando uma disciplina está consolidada e outra apresenta necessidade estratégica maior, o StudyTrack pode propor uma transferência limitada de minutos. A capacidade semanal é preservada. A prévia explica o motivo e exige confirmação; um intervalo de proteção evita ajustes repetidos em pouco tempo.',
+        ],
+        action: { label: 'Ver planejamento adaptativo', target: 'planning' },
+      },
+      {
+        id: 'weekly',
+        title: 'Fechamento semanal',
+        summary: 'Entenda o que foi planejado, executado e medido.',
+        paragraphs: [
+          'O fechamento reúne tempo, questões, acerto, lacunas, diagnóstico e próxima ação. O foco estratégico indica a parcela do tempo dedicada a tópicos de alto impacto; não é uma meta de 100%. Melhora ou estabilidade só aparece quando há resultado posterior medido no período.',
+        ],
+        bullets: [
+          'Salve o fechamento para comparar semanas do mesmo concurso.',
+          'A comparação exige períodos sem sobreposição e dados completos.',
+          'O foco pode subir enquanto o tempo executado cai; leia os dois sinais juntos.',
+        ],
+        action: { label: 'Ver Fechamento Semanal', target: 'weekly' },
+      },
+    ],
+  },
+  {
+    id: 'guide-data',
+    title: 'Analisar',
+    summary: 'Diagnóstico, prontidão, conquistas e resultados posteriores.',
+    entries: [
+      {
+        id: 'adherence',
+        title: 'Execução e aderência',
+        summary: 'Entenda a diferença entre acumular horas e executar as prioridades do plano.',
+        paragraphs: [
+          'Em Desempenho → Consistência, volume compara horas realizadas e previstas e pode superar 100%. Aderência ao plano usa apenas tempo com vínculo seguro e atividade compatível, limitado à duração prevista. Execução prioritária usa a prioridade registrada quando o planejamento foi criado.',
+          'O histórico de 4, 8 ou 12 semanas compara a semana em andamento com os mesmos dias da anterior. Pouca classificação histórica deixa a interpretação estratégica indisponível.',
+          'Em Metas, você pode definir uma meta pessoal de aderência entre 50 e 100% ou desativá-la. Consistência e Trajetória mostram o crédito da semana até hoje; a meta não altera Prontidão, prioridade ou projeção. Ao salvar um fechamento, os valores e as explicações ficam preservados. Pendências recorrentes usam períodos salvos sem sobreposição no mesmo concurso. Revisar planejamento abre Metas; qualquer alteração exige prévia e confirmação.',
+        ],
+        action: { label: 'Ver execução e aderência', target: 'adherence' },
+      },
+      {
+        id: 'diagnosis',
+        title: 'Central de Diagnóstico',
+        summary: 'Riscos, lacunas, oportunidades e qualidade das evidências.',
+        paragraphs: [
+          'Domínio resume o desempenho observado; retenção indica manutenção do conhecimento; tendência aponta a direção recente; evidência mostra o quanto a conclusão é sustentada. Impacto representa importância na prova, e lacuna combina essa importância com a necessidade pessoal.',
+        ],
+        action: { label: 'Abrir diagnóstico', target: 'diagnosis' },
+      },
+      {
+        id: 'readiness',
+        title: 'Índice de Prontidão',
+        summary: 'Uma síntese de 0 a 100, sempre acompanhada de confiança.',
+        paragraphs: [
+          'O índice combina cobertura, domínio, retenção, consistência e simulados. Progresso real, melhora nesses fatores e evidência mais completa podem elevar o indicador; deterioração ou revisão insuficiente podem reduzi-lo. Fatores ausentes diminuem a confiança. O número não estima a chance de aprovação.',
+        ],
+        action: { label: 'Ver Índice de Prontidão', target: 'overview' },
+      },
+      {
+        id: 'achievements',
+        title: 'Conquistas',
+        summary: 'Consistência, aprendizagem e decisões estratégicas.',
+        paragraphs: [
+          'As conquistas reconhecem progresso, mas não alteram prioridades nem o Índice de Prontidão. Estrategista exige estudo em dez tópicos distintos de alto impacto; Cobertura crítica exige domínio com evidência suficiente nos tópicos críticos de uma disciplina; Prova mapeada exige quatro provas completas no concurso ativo. As conquistas bloqueadas mostram o que falta.',
+        ],
+        action: { label: 'Ver conquistas', target: 'achievements' },
+      },
+      {
+        id: 'outcomes',
+        title: 'Histórico e resultados posteriores',
+        summary: 'Recomendação → execução → medição → auditoria.',
+        paragraphs: [
+          'O histórico guarda a recomendação, a decisão e o resultado observado depois. Isso ajuda a avaliar a estratégia, mas uma melhora posterior não prova que a recomendação causou a melhora.',
+        ],
+        action: { label: 'Ver histórico', target: 'history' },
+      },
+      {
+        id: 'report',
+        title: 'Relatório e PDF',
+        summary: 'Uma fotografia estratégica do período escolhido.',
+        paragraphs: [
+          'O PDF resume planejamento, desempenho, recomendações, Inteligência da Prova e foco dos últimos sete dias do período. Inclui cobertura e confiança históricas e até três lacunas estratégicas. Use-o para revisar ou imprimir; ele não substitui o backup JSON.',
+        ],
+        action: { label: 'Ir ao relatório PDF', target: 'report' },
+      },
+      {
+        id: 'projections',
+        title: 'Projeções e cenários',
+        summary: 'Faixas estimadas para apoiar a leitura da preparação.',
+        paragraphs: [
+          'Projeções e cenários refletem os dados disponíveis e hipóteses de capacidade. São estimativas para comparar caminhos, não probabilidade de aprovação nem garantia de resultado.',
+        ],
+        action: { label: 'Ver projeções', target: 'overview' },
+      },
+    ],
+  },
+  {
+    id: 'guide-exam',
+    title: 'Inteligência da prova',
+    summary: 'Histórico, incidência, qualidade e Matriz Prova × Você.',
+    entries: [
+      {
+        id: 'exam-history',
+        title: 'Provas históricas',
+        summary: 'Entenda o que costuma aparecer na prova.',
+        flow: [
+          'Provas históricas',
+          'Questões classificadas',
+          'Tópicos e incidência',
+          'Confiança',
+          'Impacto na prova',
+        ],
+        paragraphs: [
+          'Importe provas históricas em JSON com prévia e confirmação das associações. Essas questões formam evidência de incidência e ficam separadas das questões que você resolveu para medir seu desempenho. A reimportação da mesma prova evita duplicatas.',
+        ],
+        action: { label: 'Abrir Inteligência da Prova', target: 'exam' },
+      },
+      {
+        id: 'exam-quality',
+        title: 'Qualidade do histórico',
+        summary: 'A força da amostra vem antes do impacto.',
+        paragraphs: [
+          'O StudyTrack observa provas completas e parciais, cobertura conhecida, questões classificadas, pendências e confiança. Provas parciais não são tratadas como ausência do tópico. Uma base pequena não significa desempenho ruim: quando o histórico é insuficiente, sua influência no impacto é limitada.',
+        ],
+        action: { label: 'Revisar qualidade da base', target: 'exam' },
+      },
+      {
+        id: 'exam-audit',
+        title: 'Configurado × Histórico',
+        summary: 'Compare sua estratégia com a evidência sem sobrescrever escolhas.',
+        paragraphs: [
+          'A auditoria confronta o impacto configurado com o observado nas provas e destaca alinhamentos e divergências. Valores manuais ou oficiais continuam prevalecendo até você decidir alterá-los; inferência histórica nunca é apresentada como peso oficial.',
+        ],
+        bullets: [
+          'Exemplo: configurado 80/100; histórico observado 84/100.',
+          'O estado pode ser alinhado, enquanto o valor usado segue a fonte configurada.',
+        ],
+        action: { label: 'Ver auditoria', target: 'audit' },
+      },
+      {
+        id: 'exam-matrix',
+        title: 'Matriz Prova × Você',
+        summary: 'Importância da prova e situação pessoal lado a lado.',
+        flow: [
+          'Prova: incidência e impacto',
+          'Você: domínio, retenção e tendência',
+          'Prioridade: importância × necessidade',
+        ],
+        paragraphs: [
+          'Um tópico frequente que você domina pode pedir manutenção. Outro, também importante e com domínio baixo, pode merecer estudo agora. A matriz permite filtrar provas e abrir o detalhe de um tópico para entender essa combinação.',
+        ],
+        bullets: ['Exemplo: impacto alto e domínio 42/100 indicam uma lacuna relevante.'],
+        action: { label: 'Abrir Matriz Prova × Você', target: 'matrix' },
+      },
+    ],
+  },
+  {
+    id: 'guide-safety',
+    title: 'Dados e segurança',
+    summary: 'Backup, uso offline, atalhos e demonstração.',
+    entries: [
+      {
+        id: 'backup',
+        title: 'Seus dados e backup',
+        summary: 'Os dados ficam neste navegador.',
+        paragraphs: [
+          'O StudyTrack funciona com dados locais, sem conta obrigatória. Exporte backups JSON regularmente, sobretudo antes de limpar dados, trocar de navegador ou fazer mudanças importantes. A restauração valida o arquivo antes de substituir a base; o PDF não é restaurável. Depois do primeiro carregamento completo por HTTP, o PWA instalado pode abrir offline.',
+        ],
+        action: { label: 'Ir ao backup', target: 'backup' },
+      },
+      {
+        id: 'guide-shortcuts',
+        title: 'Acesso rápido e atalhos',
+        summary: 'Encontre áreas, ações e tópicos pelo teclado.',
+        paragraphs: [
+          'Ctrl + K (ou Cmd + K no Mac) abre a busca global de ações, páginas e tópicos. Ctrl/Cmd + Shift + 1–8 alterna entre as oito áreas. Esc fecha busca, menu ou modal. Com uma aba em foco, use setas, Home e End para navegar.',
+        ],
+      },
+      {
+        id: 'demo',
+        title: 'Modo demonstração',
+        summary: 'Explore o produto com dados fictícios separados.',
+        paragraphs: [
+          'A demonstração permite conhecer prioridades, planejamento, relatórios e histórico sem cadastrar uma base real. Reiniciar ou encerrar a demo não altera seus dados reais.',
+        ],
+        action: { label: 'Explorar demonstração', target: 'demo' },
+      },
+    ],
+  },
 ];
 
 // Didactic examples only: no live state or domain calculations.
-const start=BASE_HELP_CATEGORIES.find(category=>category.id==='guide-start');
-start.entries.unshift({id:'how-it-works',kind:'feature',wide:true,title:'Como o StudyTrack funciona',summary:'Da configuração às decisões, cada registro dá contexto ao próximo passo.',visual:{type:'flow',title:'Mapa do StudyTrack',steps:[{title:'Configurar',detail:'Objetivo, prova e edital'},{title:'Planejar',detail:'Prioridades e disponibilidade'},{title:'Estudar',detail:'Aba Hoje e sessões'},{title:'Registrar',detail:'Questões, revisões e simulados'},{title:'Analisar',detail:'Desempenho, diagnóstico e prontidão'},{title:'Ajustar',detail:'Prévia, capacidade e confirmação'}]},keywords:['mapa','como funciona','fluxo','configuração'],paragraphs:['O sistema analisa e propõe. Você decide e confirma alterações no planejamento.'],action:{label:'Conhecer a aba Hoje',target:'today'}});
-const first=start.entries.find(entry=>entry.id==='first-steps');
-first.steps=[{title:'Configure sua prova',detail:'Escolha o objetivo e informe a data.'},{title:'Defina sua disponibilidade',detail:'Reserve horas que realmente cabem na semana.'},{title:'Monte o edital',detail:'Cadastre ou importe disciplinas e tópicos.'},{title:'Confira o planejamento',detail:'Revise a prévia e confirme o primeiro plano.'},{title:'Comece pela aba Hoje',detail:'Inicie uma atividade vinculada ao plano.'},{title:'Registre seus resultados',detail:'Informe questões, simulados e revisões para dar contexto às análises.'}];first.keywords=['primeiro acesso','onboarding','começar','configurar'];
-const study=BASE_HELP_CATEGORIES.find(category=>category.id==='guide-areas');
-const today=study.entries.find(entry=>entry.id==='today-guide');
-today.visual={type:'daily',title:'Execução do dia',planned:35,actual:20,progress:57,completed:0,total:1};
-today.paragraphs=['A aba Hoje reúne o plano diário e as pendências. O card de execução na Visão Geral também permite iniciar a próxima atividade com vínculo ao plano.'];today.bullets=['Progresso temporal não é contagem de atividades concluídas.','Teoria não conclui uma tarefa de questões; estudo sem vínculo aparece como adicional.','Registrar, editar ou excluir uma sessão atualiza o progresso.'];today.keywords=['execução diária','pendências','plano do dia'];
-const sessions=study.entries.find(entry=>entry.id==='sessions');sessions.visual={type:'comparison',title:'Planejado e realizado',planned:35,actual:32};sessions.paragraphs=['O planejado representa a intenção. O realizado vem das sessões registradas, com cronômetro ou lançamento manual. Informe disciplina, tópico e tipo de estudo.'];sessions.note='Prefira informar o tópico para dar contexto ao domínio e às prioridades.';sessions.keywords=['tempo de estudo','cronômetro','sessão manual'];
-const reviews=study.entries.find(entry=>entry.id==='reviews');reviews.visual={type:'reviews',title:'Manutenção do conhecimento',steps:[{title:'Estudo',detail:'Registre o contato com o tópico.'},{title:'Revisão',detail:'Consulte o que está atrasado, hoje ou próximo na Agenda.'},{title:'Nova revisão',detail:'Siga a agenda e registre a execução real.'}]};reviews.paragraphs=['A Agenda organiza revisões para acompanhar a manutenção do conhecimento. Uma revisão atrasada merece atenção; sua conclusão deve refletir o que você realizou.'];reviews.keywords=['revisão atrasada','agenda','retenção'];
-const recommendation=study.entries.find(entry=>entry.id==='recommendations');recommendation.visual={type:'action',title:'Próxima atividade',subject:'Português',topic:'Interpretação de texto',activity:'Teoria',minutes:35};recommendation.paragraphs=['A próxima atividade do plano informa disciplina, tópico, tipo e duração. A recomendação estratégica considera os fatores disponíveis e pode estar fora do plano atual.'];recommendation.bullets=['Consulte a justificativa e a força das evidências.','Antes de mudar a carga, confira a prévia e confirme a alteração.'];recommendation.keywords=['próxima ação','recomendação','justificativa'];recommendation.flow=null;
-
-const planningGuide=BASE_HELP_CATEGORIES.find(category=>category.id==='guide-workflows');
-Object.assign(planningGuide.entries.find(entry=>entry.id==='planning'),{visual:{type:'allocation',title:'Distribuir a disponibilidade semanal',rows:[{label:'Português',before:240,after:240},{label:'Matemática',before:300,after:300},{label:'Informática',before:180,after:180}],total:720},paragraphs:['Defina sua disponibilidade e confira como as atividades cabem na semana. No exemplo, 720 minutos disponíveis são distribuídos entre três disciplinas. Planejado é intenção; realizado vem dos registros de estudo.']});
-planningGuide.entries.push({id:'recovery-guide',title:'Plano de Recuperação',kind:'feature',wide:true,summary:'Entenda a proposta antes de decidir.',keywords:['recovery','recuperação','redistribuição','capacidade'],visual:{type:'allocation',title:'Recuperação com a mesma carga semanal',rows:[{label:'Português',before:240,after:210},{label:'Matemática',before:300,after:330},{label:'Informática',before:180,after:180}],total:720},paragraphs:['Neste exemplo, 30 minutos saem de Português, mais consolidado, para Matemática, uma lacuna de alto impacto. A carga permanece em 720 minutos; o exemplo não representa uma recomendação para seus dados.','A proposta reutiliza as proteções do planejamento adaptativo: manutenção, restrições, conteúdo ativo e intervalo entre alterações. Pode haver recuperação limitada ou nenhuma redistribuição segura.'],note:'Abrir a prévia não altera seu plano. A aplicação exige confirmação e nova validação do estado; sessões concluídas e histórico são preservados.',action:{label:'Consultar planejamento',target:'planning'}});
-planningGuide.entries.push({id:'sustainability-guide',title:'Sustentabilidade do plano',kind:'concept',summary:'Compare intenção e execução ao longo de semanas comparáveis.',keywords:['sustentabilidade','carga','planejado','realizado'],visual:{type:'weekly-bars',title:'Carga planejada e tempo realizado',weeks:[{label:'Semana 1',planned:720,actual:480},{label:'Semana 2',planned:720,actual:540},{label:'Semana 3',planned:720,actual:480}]},paragraphs:['Uma diferença recorrente pode indicar que a carga merece revisão. A análise usa semanas comparáveis e explicita quando faltam evidências; estes valores são apenas didáticos.','Revisar a disponibilidade é uma decisão separada de redistribuir o plano. Nenhuma mudança de capacidade é aplicada automaticamente.'],action:{label:'Revisar disponibilidade',target:'planning'}});
-const analysisGuide=BASE_HELP_CATEGORIES.find(category=>category.id==='guide-data');
-Object.assign(analysisGuide.entries.find(entry=>entry.id==='readiness'),{kind:'concept',visual:{type:'readiness',title:'Síntese da preparação',value:72},paragraphs:['O Índice de Prontidão reúne sinais de cobertura, domínio, retenção, consistência e simulados. Leia o índice junto ao diagnóstico e à qualidade das evidências.'],note:'72/100 não significa 72% de chance de aprovação.'});
-Object.assign(analysisGuide.entries.find(entry=>entry.id==='adherence'),{visual:{type:'adherence',title:'Volume e prioridades são medidas diferentes',rows:[{label:'Português · prioritária',planned:30,actual:30},{label:'Matemática · prioritária',planned:30,actual:30},{label:'Informática · manutenção',planned:30,actual:0}],load:67,priorities:100},paragraphs:['Neste exemplo, duas atividades prioritárias foram concluídas e uma atividade de manutenção ficou pendente: 60 dos 90 minutos previstos foram executados. Todas têm classificação registrada no plano.','Aderência de carga usa tempo vinculado e compatível, limitado ao previsto em cada atividade. Execução das prioridades usa a classificação preservada no planejamento. Volume adicional não substitui automaticamente uma atividade pendente.','Compare semanas equivalentes e observe a cobertura da classificação. Quando faltam registros, o sistema explicita a limitação; metas de aderência não mudam o algoritmo de prioridade.']});
-analysisGuide.entries.push({id:'evidence-guide',title:'Evidência e confiança',kind:'concept',summary:'Dados suficientes precisam também ser comparáveis.',keywords:['evidência','confiança','amostra insuficiente','poucos dados'],visual:{type:'flow',title:'Qualidade da análise',steps:[{title:'Poucos registros',detail:'Conclusões conservadoras'},{title:'Dados comparáveis',detail:'Mesmo escopo e períodos adequados'},{title:'Evidência consistente',detail:'Maior sustentação para interpretar'}]},paragraphs:['A confiança depende do volume, da qualidade e da comparabilidade dos registros. Mais dados não garantem uma conclusão mais forte quando pertencem a contextos diferentes.']});
-analysisGuide.entries.push({id:'insufficient-sample-guide',title:'Amostra insuficiente',kind:'concept',summary:'Não significa desempenho ruim.',keywords:['amostra insuficiente','tendência','respostas','questões'],visual:{type:'comparison',title:'Exemplo de volume diferente entre períodos',planned:30,actual:8},paragraphs:['Para comparar uma tendência, os períodos precisam ter evidência suficiente. Aqui, 30 e 8 representam quantidades de questões, não uma meta universal: cada análise tem suas próprias regras. Registre respostas no tópico e consulte os requisitos apresentados pela análise.']});
-analysisGuide.entries.find(e=>e.id==='insufficient-sample-guide').visual={type:'sample',title:'Questões em períodos de comparação',previous:30,recent:8};
-const weeklyGuide=planningGuide.entries.find(e=>e.id==='weekly');weeklyGuide.visual={type:'flow',title:'Da semana à próxima decisão',steps:[{title:'Planejado',detail:'Intenção registrada'},{title:'Realizado',detail:'Sessões e resultados'},{title:'Prioridades',detail:'O que foi atendido'},{title:'Padrões',detail:'Semanas comparáveis'},{title:'Decisão',detail:'Manter ou revisar com confirmação'}]};
-planningGuide.entries=planningGuide.entries.filter(e=>e.id!=='weekly');analysisGuide.entries.push(weeklyGuide);
-const examGuide=BASE_HELP_CATEGORIES.find(c=>c.id==='guide-exam');
-Object.assign(examGuide.entries.find(e=>e.id==='exam-matrix'),{wide:true,visual:{type:'matrix',title:'Incidência e domínio orientam a interpretação',cells:[{title:'Alta incidência · baixo domínio',detail:'Maior atenção, conforme evidência e outros sinais.'},{title:'Alta incidência · alto domínio',detail:'Manutenção do conhecimento.'},{title:'Baixa incidência · baixo domínio',detail:'Necessidade pessoal com prioridade estratégica relativa menor.'},{title:'Baixa incidência · alto domínio',detail:'Acompanhar sem deslocar lacunas mais relevantes.'}]},note:'Incidência é presença nas provas analisadas. Impacto considera também pesos, fontes e confiança; a matriz didática não substitui o mecanismo de prioridade.'});
-examGuide.entries.push({id:'recommendation-origin-guide',title:'De onde vem a recomendação?',summary:'Evidências diferentes se encontram na próxima ação.',keywords:['origem','recomendação','prioridade','questões','simulados'],visual:{type:'flow',title:'Da evidência à ação',steps:[{title:'Evidências',detail:'Questões, simulados, progresso, revisões e histórico da prova'},{title:'Prioridade',detail:'Importância na prova × necessidade pessoal'},{title:'Próxima ação',detail:'Proposta explicada com os dados disponíveis'}]},paragraphs:['Quando um fator não tem evidência suficiente, o sistema explicita a limitação. Uma recomendação não cria horas, não garante uma nota futura e não aplica alterações estratégicas sem sua confirmação.'],action:{label:'Consultar recomendações',target:'diagnosis'}});
-const dataGuide=BASE_HELP_CATEGORIES.find(c=>c.id==='guide-safety');
-function getSubjectGuide(){return BASE_HELP_CATEGORIES.find(c=>c.id==='guide-areas').entries.find(e=>e.id==='subjects')}
-Object.assign(getSubjectGuide(),{visual:{type:'tree',title:'Organize o conteúdo',subject:'Português',topics:['Interpretação','Gramática','Redação']},keywords:['edital','disciplina','tópico','catálogo']});
-dataGuide.entries.push({id:'imports-guide',title:'Importar com revisão',summary:'Confira o formato e a prévia do fluxo escolhido.',keywords:['importação','importar','JSON','edital','provas históricas'],visual:{type:'flow',title:'Importação de provas históricas',steps:[{title:'Arquivo JSON',detail:'Prova e questões estruturadas'},{title:'Prévia',detail:'Mapear disciplinas, tópicos e conflitos'},{title:'Confirmar',detail:'Mesclar os registros revisados'}]},paragraphs:['O assistente de edital cadastra conteúdo. O importador de provas históricas alimenta incidência, sem criar resultados pessoais de questões respondidas. Backup é um terceiro fluxo: restaura a base e deve ser usado com atenção.','Confira as associações antes de confirmar. Tópicos desconhecidos exigem decisão e reimportar a mesma prova não deve duplicar suas questões.'],action:{label:'Consultar provas históricas',target:'exam'}});
-Object.assign(dataGuide.entries.find(e=>e.id==='backup'),{visual:{type:'flow',title:'Leve sua base para outro navegador',steps:[{title:'Exportar',detail:'Salvar backup JSON'},{title:'Guardar',detail:'Manter uma cópia segura do arquivo'},{title:'Restaurar',detail:'Selecionar e validar antes de confirmar'}]},note:'PDF é relatório, não backup. Faça uma cópia antes de limpar dados ou substituir a base.'});
-Object.assign(dataGuide.entries.find(e=>e.id==='demo'),{visual:{type:'reference',title:'Explore uma preparação fictícia',items:[{title:'3+ meses',detail:'Histórico de estudos'},{title:'Questões e simulados',detail:'Resultados ilustrativos'},{title:'Planejamento e análises',detail:'Explore o ciclo de decisões'}]},keywords:['demo','demonstração','dados fictícios'],note:'A demonstração usa uma base separada. Seus resultados fictícios não descrevem sua preparação real.'});
-// Stable IDs preserve navigation and search across the editorial update.
-const subjectEntry=BASE_HELP_CATEGORIES.find(category=>category.id==='guide-areas').entries.find(entry=>entry.id==='subjects');
-export const HELP_CATEGORIES=BASE_HELP_CATEGORIES.flatMap(category=>{
-  const entries=category.id==='guide-areas'?category.entries.filter(entry=>entry.id!=='subjects'):category.id==='guide-safety'?[subjectEntry,...category.entries]:category.entries;
-  const result={...category,title:category.id==='guide-exam'?'Prova':category.id==='guide-safety'?'Dados':category.title,entries};
-  return category.id==='guide-safety'?[{id:'guide-goals',title:'Metas',summary:'Volume, rotina e resultados para orientar sua preparação.',entries:[{id:'goals-guide',title:'Metas de estudo',summary:'Defina objetivos que caibam na sua rotina.',paragraphs:['Configure suas metas em Metas. Compare o realizado com o planejado e revise a disponibilidade antes de aceitar alterações na distribuição.'],action:{label:'Abrir Metas',target:'planning'}}]},result]:[result];
-}).map(category=>({...category,entries:category.entries.map(entry=>({kind:'feature',keywords:[],concepts:[],questions:[],...entry}))}));
-
-const goalsGuide=HELP_CATEGORIES.find(c=>c.id==='guide-goals').entries[0];
-Object.assign(goalsGuide,{keywords:['meta','volume','rotina','resultado','questões','horas'],visual:{type:'reference',title:'Objetivos com papéis diferentes',items:[{title:'Volume',detail:'Horas, questões e simulados'},{title:'Rotina',detail:'Consistência e aderência'},{title:'Resultado',detail:'Objetivo da preparação'}]},paragraphs:['Defina objetivos compatíveis com sua disponibilidade. Metas de volume e rotina acompanham execução; não equivalem a probabilidade de aprovação.','No exemplo, 124 questões de uma meta de 150 representam aproximadamente 83% do volume desejado, sem informar domínio ou precisão. Metas de precisão por disciplina devem ser lidas junto ao resultado observado.']});
-const planningCategory=HELP_CATEGORIES.find(c=>c.id==='guide-workflows');
-const studyCategory=HELP_CATEGORIES.find(c=>c.id==='guide-areas');
-const calendarEntry=studyCategory.entries.find(e=>e.id==='calendar-guide');
-studyCategory.entries=studyCategory.entries.filter(e=>e.id!=='calendar-guide');planningCategory.entries.push(calendarEntry);
-Object.assign(calendarEntry,{keywords:['calendário','agenda','datas','carga por dia'],paragraphs:['Consulte a distribuição por data e os filtros de disciplinas. Compare atividades planejadas, sessões e revisões antes de decidir redistribuir a semana. Navegar pelo calendário não confirma mudanças no plano.']});
-studyCategory.entries.push({kind:'feature',concepts:[],questions:[],id:'pending-guide',title:'Pendências do dia',summary:'Um dia incompleto não apaga o que você estudou.',keywords:['pendência','pendências','atraso','não concluído'],paragraphs:['O rodapé da execução mostra atividades ainda pendentes. O progresso temporal e a contagem de atividades concluídas são medidas diferentes.','Registre o que foi realizado e confira as pendências em Hoje. Sessões sem vínculo contam como estudo adicional; uma atividade incompatível não conclui automaticamente a tarefa planejada. Replanejar exige revisar a proposta e confirmar.'],action:{label:'Revisar em Hoje',target:'today'}});
-studyCategory.entries.find(e=>e.id==='sessions').paragraphs=['Escolha disciplina, tópico e tipo antes de iniciar. Retome o cronômetro de uma sessão ativa ou finalize essa sessão antes de começar outra atividade. Ao finalizar, confira a duração e salve o registro.','Também é possível registrar uma sessão manual. O realizado vem dos registros salvos; quando houver vínculo compatível com o plano, ele alimenta o progresso da atividade, limitado ao previsto.'];
-const searchHints={
- 'readiness':{concepts:['índice de prontidão','aprovação'],questions:['Por que minha Prontidão não mudou?']},
- 'adherence':{concepts:['planejado versus realizado','execução do plano'],questions:['Por que planejado é diferente do realizado?']},
- 'recovery-guide':{concepts:['reorganizar planejamento','recuperar plano'],questions:['Recovery apaga meu planejamento anterior?']},
- 'backup':{keywords:['restaurar','restauração','exportar','trocar navegador'],questions:['Como salvar meus dados?']},
- 'reviews':{keywords:['revisão','revisões','atrasada','reabrir']},
- 'demo':{keywords:['demo','demonstração','experimentar','dados fictícios']},
- 'insufficient-sample-guide':{questions:['Por que aparece amostra insuficiente?']}
-};
-for(const entry of HELP_CATEGORIES.flatMap(category=>category.entries)){
- const hints=searchHints[entry.id];
- if(hints)for(const [field,values] of Object.entries(hints))entry[field]=[...entry[field],...values];
-}
-export const HELP_GLOSSARY=[
-  ['Índice de Prontidão','Síntese de cobertura, domínio, retenção, consistência e simulados. Não é probabilidade de aprovação.'],
-  ['Domínio','Estimativa do desempenho consolidado em um tópico, acompanhada da força da evidência.'],
-  ['Retenção','Sinal de manutenção do conhecimento baseado no histórico disponível de estudo e revisão.'],
-  ['Impacto','Importância estratégica do tópico para a prova; pode vir de configuração ou de histórico validado.'],
-  ['Incidência','Presença de um tópico nas provas analisadas, distinta da participação em questões.'],
-  ['Confiança','Força de uma medida considerando volume, qualidade e comparabilidade dos dados. Evidência limitada preserva a incerteza.'],
-  ['Evidência','Sessões, questões, revisões e provas históricas usadas conforme a métrica calculada.'],
-  ['Lacuna','Encontro entre relevância para a prova e necessidade pessoal de aprendizagem.'],
-  ['Foco estratégico','Parcela do tempo registrado em tópicos de alto impacto; indicador sem meta mínima.'],
-  ['Planejamento adaptativo','Proposta confirmável de redistribuir minutos dentro da capacidade semanal.'],
-  ['Aderência','Relação entre plano e execução vinculada. A carga e a execução das prioridades são medidas distintas.'],
-  ['Prioridade','Importância relativa para orientar o estudo, combinando relevância na prova e necessidade pessoal.'],
-  ['Recovery','Proposta de reorganização segura do planejamento, com capacidade preservada e aplicação confirmada.']
-];
-
-export const HELP_FAQ=[
-  ['Por que meu índice ainda tem baixa confiança?','Ainda há pouca evidência em um ou mais fatores. Baixa confiança não significa automaticamente baixo desempenho.'],
-  ['Prontidão é probabilidade de aprovação?','Não. É um índice composto de acompanhamento, que deve ser lido junto às análises detalhadas.'],
-  ['O que acontece se eu perder um dia do plano?','Registre o que foi feito, trate pendências em Hoje e confirme uma nova proposta se a carga deixar de ser viável.'],
-  ['Como levo meus dados para outro dispositivo?','Exporte um backup JSON, transfira o arquivo com segurança e importe-o no outro navegador. O PDF não restaura dados.'],
-  ['O aplicativo funciona sem internet?','Depois do primeiro carregamento completo por HTTP e da instalação, o PWA pode abrir offline; os registros continuam locais.']
-];
-
-Object.assign(HELP_CATEGORIES.find(category=>category.id==='guide-data').entries.find(entry=>entry.id==='projections'),{
- title:'Trajetória, faixa e confiança',
- action:{label:'Ver trajetória em Desempenho',target:'projection'},
- keywords:['projeção','meta','confiança','simulados comparáveis','reta final'],
- paragraphs:['A faixa atual usa simulados comparáveis recentes. A tendência descreve a continuação aproximada do padrão observado, sem prever a nota do dia da prova ou a chance de aprovação. Poucas observações, baixa cobertura ou composição desconhecida limitam a confiança.',
- 'Comparações semanais exigem a mesma meta, prova, escopo e versão do cálculo. Alterar a meta não significa que seu desempenho piorou. Snapshots anteriores preservam a leitura registrada na época.',
- 'A fase da prova pode sugerir outra distribuição entre teoria, questões e revisões. A prévia mantém a capacidade e exige confirmação; não acrescenta horas nem garante ganho de nota. Simulações são temporárias e não alteram o planejamento real.']
+const start = BASE_HELP_CATEGORIES.find(category => category.id === 'guide-start');
+start.entries.unshift({
+  id: 'how-it-works',
+  kind: 'feature',
+  wide: true,
+  title: 'Como o StudyTrack funciona',
+  summary: 'Da configuração às decisões, cada registro dá contexto ao próximo passo.',
+  visual: {
+    type: 'flow',
+    title: 'Mapa do StudyTrack',
+    steps: [
+      { title: 'Configurar', detail: 'Objetivo, prova e edital' },
+      { title: 'Planejar', detail: 'Prioridades e disponibilidade' },
+      { title: 'Estudar', detail: 'Aba Hoje e sessões' },
+      { title: 'Registrar', detail: 'Questões, revisões e simulados' },
+      { title: 'Analisar', detail: 'Desempenho, diagnóstico e prontidão' },
+      { title: 'Ajustar', detail: 'Prévia, capacidade e confirmação' },
+    ],
+  },
+  keywords: ['mapa', 'como funciona', 'fluxo', 'configuração'],
+  paragraphs: ['O sistema analisa e propõe. Você decide e confirma alterações no planejamento.'],
+  action: { label: 'Conhecer a aba Hoje', target: 'today' },
 });
+const first = start.entries.find(entry => entry.id === 'first-steps');
+first.steps = [
+  { title: 'Configure sua prova', detail: 'Escolha o objetivo e informe a data.' },
+  { title: 'Defina sua disponibilidade', detail: 'Reserve horas que realmente cabem na semana.' },
+  { title: 'Monte o edital', detail: 'Cadastre ou importe disciplinas e tópicos.' },
+  { title: 'Confira o planejamento', detail: 'Revise a prévia e confirme o primeiro plano.' },
+  { title: 'Comece pela aba Hoje', detail: 'Inicie uma atividade vinculada ao plano.' },
+  {
+    title: 'Registre seus resultados',
+    detail: 'Informe questões, simulados e revisões para dar contexto às análises.',
+  },
+];
+first.keywords = ['primeiro acesso', 'onboarding', 'começar', 'configurar'];
+const study = BASE_HELP_CATEGORIES.find(category => category.id === 'guide-areas');
+const today = study.entries.find(entry => entry.id === 'today-guide');
+today.visual = {
+  type: 'daily',
+  title: 'Execução do dia',
+  planned: 35,
+  actual: 20,
+  progress: 57,
+  completed: 0,
+  total: 1,
+};
+today.paragraphs = [
+  'A aba Hoje reúne o plano diário e as pendências. O card de execução na Visão Geral também permite iniciar a próxima atividade com vínculo ao plano.',
+];
+today.bullets = [
+  'Progresso temporal não é contagem de atividades concluídas.',
+  'Teoria não conclui uma tarefa de questões; estudo sem vínculo aparece como adicional.',
+  'Registrar, editar ou excluir uma sessão atualiza o progresso.',
+];
+today.keywords = ['execução diária', 'pendências', 'plano do dia'];
+const sessions = study.entries.find(entry => entry.id === 'sessions');
+sessions.visual = { type: 'comparison', title: 'Planejado e realizado', planned: 35, actual: 32 };
+sessions.paragraphs = [
+  'O planejado representa a intenção. O realizado vem das sessões registradas, com cronômetro ou lançamento manual. Informe disciplina, tópico e tipo de estudo.',
+];
+sessions.note = 'Prefira informar o tópico para dar contexto ao domínio e às prioridades.';
+sessions.keywords = ['tempo de estudo', 'cronômetro', 'sessão manual'];
+const reviews = study.entries.find(entry => entry.id === 'reviews');
+reviews.visual = {
+  type: 'reviews',
+  title: 'Manutenção do conhecimento',
+  steps: [
+    { title: 'Estudo', detail: 'Registre o contato com o tópico.' },
+    { title: 'Revisão', detail: 'Consulte o que está atrasado, hoje ou próximo na Agenda.' },
+    { title: 'Nova revisão', detail: 'Siga a agenda e registre a execução real.' },
+  ],
+};
+reviews.paragraphs = [
+  'A Agenda organiza revisões para acompanhar a manutenção do conhecimento. Uma revisão atrasada merece atenção; sua conclusão deve refletir o que você realizou.',
+];
+reviews.keywords = ['revisão atrasada', 'agenda', 'retenção'];
+const recommendation = study.entries.find(entry => entry.id === 'recommendations');
+recommendation.visual = {
+  type: 'action',
+  title: 'Próxima atividade',
+  subject: 'Português',
+  topic: 'Interpretação de texto',
+  activity: 'Teoria',
+  minutes: 35,
+};
+recommendation.paragraphs = [
+  'A próxima atividade do plano informa disciplina, tópico, tipo e duração. A recomendação estratégica considera os fatores disponíveis e pode estar fora do plano atual.',
+];
+recommendation.bullets = [
+  'Consulte a justificativa e a força das evidências.',
+  'Antes de mudar a carga, confira a prévia e confirme a alteração.',
+];
+recommendation.keywords = ['próxima ação', 'recomendação', 'justificativa'];
+recommendation.flow = null;
+
+const planningGuide = BASE_HELP_CATEGORIES.find(category => category.id === 'guide-workflows');
+Object.assign(
+  planningGuide.entries.find(entry => entry.id === 'planning'),
+  {
+    visual: {
+      type: 'allocation',
+      title: 'Distribuir a disponibilidade semanal',
+      rows: [
+        { label: 'Português', before: 240, after: 240 },
+        { label: 'Matemática', before: 300, after: 300 },
+        { label: 'Informática', before: 180, after: 180 },
+      ],
+      total: 720,
+    },
+    paragraphs: [
+      'Defina sua disponibilidade e confira como as atividades cabem na semana. No exemplo, 720 minutos disponíveis são distribuídos entre três disciplinas. Planejado é intenção; realizado vem dos registros de estudo.',
+    ],
+  }
+);
+planningGuide.entries.push({
+  id: 'recovery-guide',
+  title: 'Plano de Recuperação',
+  kind: 'feature',
+  wide: true,
+  summary: 'Entenda a proposta antes de decidir.',
+  keywords: ['recovery', 'recuperação', 'redistribuição', 'capacidade'],
+  visual: {
+    type: 'allocation',
+    title: 'Recuperação com a mesma carga semanal',
+    rows: [
+      { label: 'Português', before: 240, after: 210 },
+      { label: 'Matemática', before: 300, after: 330 },
+      { label: 'Informática', before: 180, after: 180 },
+    ],
+    total: 720,
+  },
+  paragraphs: [
+    'Neste exemplo, 30 minutos saem de Português, mais consolidado, para Matemática, uma lacuna de alto impacto. A carga permanece em 720 minutos; o exemplo não representa uma recomendação para seus dados.',
+    'A proposta reutiliza as proteções do planejamento adaptativo: manutenção, restrições, conteúdo ativo e intervalo entre alterações. Pode haver recuperação limitada ou nenhuma redistribuição segura.',
+  ],
+  note: 'Abrir a prévia não altera seu plano. A aplicação exige confirmação e nova validação do estado; sessões concluídas e histórico são preservados.',
+  action: { label: 'Consultar planejamento', target: 'planning' },
+});
+planningGuide.entries.push({
+  id: 'sustainability-guide',
+  title: 'Sustentabilidade do plano',
+  kind: 'concept',
+  summary: 'Compare intenção e execução ao longo de semanas comparáveis.',
+  keywords: ['sustentabilidade', 'carga', 'planejado', 'realizado'],
+  visual: {
+    type: 'weekly-bars',
+    title: 'Carga planejada e tempo realizado',
+    weeks: [
+      { label: 'Semana 1', planned: 720, actual: 480 },
+      { label: 'Semana 2', planned: 720, actual: 540 },
+      { label: 'Semana 3', planned: 720, actual: 480 },
+    ],
+  },
+  paragraphs: [
+    'Uma diferença recorrente pode indicar que a carga merece revisão. A análise usa semanas comparáveis e explicita quando faltam evidências; estes valores são apenas didáticos.',
+    'Revisar a disponibilidade é uma decisão separada de redistribuir o plano. Nenhuma mudança de capacidade é aplicada automaticamente.',
+  ],
+  action: { label: 'Revisar disponibilidade', target: 'planning' },
+});
+const analysisGuide = BASE_HELP_CATEGORIES.find(category => category.id === 'guide-data');
+Object.assign(
+  analysisGuide.entries.find(entry => entry.id === 'readiness'),
+  {
+    kind: 'concept',
+    visual: { type: 'readiness', title: 'Síntese da preparação', value: 72 },
+    paragraphs: [
+      'O Índice de Prontidão reúne sinais de cobertura, domínio, retenção, consistência e simulados. Leia o índice junto ao diagnóstico e à qualidade das evidências.',
+    ],
+    note: '72/100 não significa 72% de chance de aprovação.',
+  }
+);
+Object.assign(
+  analysisGuide.entries.find(entry => entry.id === 'adherence'),
+  {
+    visual: {
+      type: 'adherence',
+      title: 'Volume e prioridades são medidas diferentes',
+      rows: [
+        { label: 'Português · prioritária', planned: 30, actual: 30 },
+        { label: 'Matemática · prioritária', planned: 30, actual: 30 },
+        { label: 'Informática · manutenção', planned: 30, actual: 0 },
+      ],
+      load: 67,
+      priorities: 100,
+    },
+    paragraphs: [
+      'Neste exemplo, duas atividades prioritárias foram concluídas e uma atividade de manutenção ficou pendente: 60 dos 90 minutos previstos foram executados. Todas têm classificação registrada no plano.',
+      'Aderência de carga usa tempo vinculado e compatível, limitado ao previsto em cada atividade. Execução das prioridades usa a classificação preservada no planejamento. Volume adicional não substitui automaticamente uma atividade pendente.',
+      'Compare semanas equivalentes e observe a cobertura da classificação. Quando faltam registros, o sistema explicita a limitação; metas de aderência não mudam o algoritmo de prioridade.',
+    ],
+  }
+);
+analysisGuide.entries.push({
+  id: 'evidence-guide',
+  title: 'Evidência e confiança',
+  kind: 'concept',
+  summary: 'Dados suficientes precisam também ser comparáveis.',
+  keywords: ['evidência', 'confiança', 'amostra insuficiente', 'poucos dados'],
+  visual: {
+    type: 'flow',
+    title: 'Qualidade da análise',
+    steps: [
+      { title: 'Poucos registros', detail: 'Conclusões conservadoras' },
+      { title: 'Dados comparáveis', detail: 'Mesmo escopo e períodos adequados' },
+      { title: 'Evidência consistente', detail: 'Maior sustentação para interpretar' },
+    ],
+  },
+  paragraphs: [
+    'A confiança depende do volume, da qualidade e da comparabilidade dos registros. Mais dados não garantem uma conclusão mais forte quando pertencem a contextos diferentes.',
+  ],
+});
+analysisGuide.entries.push({
+  id: 'insufficient-sample-guide',
+  title: 'Amostra insuficiente',
+  kind: 'concept',
+  summary: 'Não significa desempenho ruim.',
+  keywords: ['amostra insuficiente', 'tendência', 'respostas', 'questões'],
+  visual: {
+    type: 'comparison',
+    title: 'Exemplo de volume diferente entre períodos',
+    planned: 30,
+    actual: 8,
+  },
+  paragraphs: [
+    'Para comparar uma tendência, os períodos precisam ter evidência suficiente. Aqui, 30 e 8 representam quantidades de questões, não uma meta universal: cada análise tem suas próprias regras. Registre respostas no tópico e consulte os requisitos apresentados pela análise.',
+  ],
+});
+analysisGuide.entries.find(e => e.id === 'insufficient-sample-guide').visual = {
+  type: 'sample',
+  title: 'Questões em períodos de comparação',
+  previous: 30,
+  recent: 8,
+};
+const weeklyGuide = planningGuide.entries.find(e => e.id === 'weekly');
+weeklyGuide.visual = {
+  type: 'flow',
+  title: 'Da semana à próxima decisão',
+  steps: [
+    { title: 'Planejado', detail: 'Intenção registrada' },
+    { title: 'Realizado', detail: 'Sessões e resultados' },
+    { title: 'Prioridades', detail: 'O que foi atendido' },
+    { title: 'Padrões', detail: 'Semanas comparáveis' },
+    { title: 'Decisão', detail: 'Manter ou revisar com confirmação' },
+  ],
+};
+planningGuide.entries = planningGuide.entries.filter(e => e.id !== 'weekly');
+analysisGuide.entries.push(weeklyGuide);
+const examGuide = BASE_HELP_CATEGORIES.find(c => c.id === 'guide-exam');
+Object.assign(
+  examGuide.entries.find(e => e.id === 'exam-matrix'),
+  {
+    wide: true,
+    visual: {
+      type: 'matrix',
+      title: 'Incidência e domínio orientam a interpretação',
+      cells: [
+        {
+          title: 'Alta incidência · baixo domínio',
+          detail: 'Maior atenção, conforme evidência e outros sinais.',
+        },
+        { title: 'Alta incidência · alto domínio', detail: 'Manutenção do conhecimento.' },
+        {
+          title: 'Baixa incidência · baixo domínio',
+          detail: 'Necessidade pessoal com prioridade estratégica relativa menor.',
+        },
+        {
+          title: 'Baixa incidência · alto domínio',
+          detail: 'Acompanhar sem deslocar lacunas mais relevantes.',
+        },
+      ],
+    },
+    note: 'Incidência é presença nas provas analisadas. Impacto considera também pesos, fontes e confiança; a matriz didática não substitui o mecanismo de prioridade.',
+  }
+);
+examGuide.entries.push({
+  id: 'recommendation-origin-guide',
+  title: 'De onde vem a recomendação?',
+  summary: 'Evidências diferentes se encontram na próxima ação.',
+  keywords: ['origem', 'recomendação', 'prioridade', 'questões', 'simulados'],
+  visual: {
+    type: 'flow',
+    title: 'Da evidência à ação',
+    steps: [
+      {
+        title: 'Evidências',
+        detail: 'Questões, simulados, progresso, revisões e histórico da prova',
+      },
+      { title: 'Prioridade', detail: 'Importância na prova × necessidade pessoal' },
+      { title: 'Próxima ação', detail: 'Proposta explicada com os dados disponíveis' },
+    ],
+  },
+  paragraphs: [
+    'Quando um fator não tem evidência suficiente, o sistema explicita a limitação. Uma recomendação não cria horas, não garante uma nota futura e não aplica alterações estratégicas sem sua confirmação.',
+  ],
+  action: { label: 'Consultar recomendações', target: 'diagnosis' },
+});
+const dataGuide = BASE_HELP_CATEGORIES.find(c => c.id === 'guide-safety');
+function getSubjectGuide() {
+  return BASE_HELP_CATEGORIES.find(c => c.id === 'guide-areas').entries.find(
+    e => e.id === 'subjects'
+  );
+}
+Object.assign(getSubjectGuide(), {
+  visual: {
+    type: 'tree',
+    title: 'Organize o conteúdo',
+    subject: 'Português',
+    topics: ['Interpretação', 'Gramática', 'Redação'],
+  },
+  keywords: ['edital', 'disciplina', 'tópico', 'catálogo'],
+});
+dataGuide.entries.push({
+  id: 'imports-guide',
+  title: 'Importar com revisão',
+  summary: 'Confira o formato e a prévia do fluxo escolhido.',
+  keywords: ['importação', 'importar', 'JSON', 'edital', 'provas históricas'],
+  visual: {
+    type: 'flow',
+    title: 'Importação de provas históricas',
+    steps: [
+      { title: 'Arquivo JSON', detail: 'Prova e questões estruturadas' },
+      { title: 'Prévia', detail: 'Mapear disciplinas, tópicos e conflitos' },
+      { title: 'Confirmar', detail: 'Mesclar os registros revisados' },
+    ],
+  },
+  paragraphs: [
+    'O assistente de edital cadastra conteúdo. O importador de provas históricas alimenta incidência, sem criar resultados pessoais de questões respondidas. Backup é um terceiro fluxo: restaura a base e deve ser usado com atenção.',
+    'Confira as associações antes de confirmar. Tópicos desconhecidos exigem decisão e reimportar a mesma prova não deve duplicar suas questões.',
+  ],
+  action: { label: 'Consultar provas históricas', target: 'exam' },
+});
+Object.assign(
+  dataGuide.entries.find(e => e.id === 'backup'),
+  {
+    visual: {
+      type: 'flow',
+      title: 'Leve sua base para outro navegador',
+      steps: [
+        { title: 'Exportar', detail: 'Salvar backup JSON' },
+        { title: 'Guardar', detail: 'Manter uma cópia segura do arquivo' },
+        { title: 'Restaurar', detail: 'Selecionar e validar antes de confirmar' },
+      ],
+    },
+    note: 'PDF é relatório, não backup. Faça uma cópia antes de limpar dados ou substituir a base.',
+  }
+);
+Object.assign(
+  dataGuide.entries.find(e => e.id === 'demo'),
+  {
+    visual: {
+      type: 'reference',
+      title: 'Explore uma preparação fictícia',
+      items: [
+        { title: '3+ meses', detail: 'Histórico de estudos' },
+        { title: 'Questões e simulados', detail: 'Resultados ilustrativos' },
+        { title: 'Planejamento e análises', detail: 'Explore o ciclo de decisões' },
+      ],
+    },
+    keywords: ['demo', 'demonstração', 'dados fictícios'],
+    note: 'A demonstração usa uma base separada. Seus resultados fictícios não descrevem sua preparação real.',
+  }
+);
+// Stable IDs preserve navigation and search across the editorial update.
+const subjectEntry = BASE_HELP_CATEGORIES.find(
+  category => category.id === 'guide-areas'
+).entries.find(entry => entry.id === 'subjects');
+export const HELP_CATEGORIES = BASE_HELP_CATEGORIES.flatMap(category => {
+  const entries =
+    category.id === 'guide-areas'
+      ? category.entries.filter(entry => entry.id !== 'subjects')
+      : category.id === 'guide-safety'
+        ? [subjectEntry, ...category.entries]
+        : category.entries;
+  const result = {
+    ...category,
+    title:
+      category.id === 'guide-exam'
+        ? 'Prova'
+        : category.id === 'guide-safety'
+          ? 'Dados'
+          : category.title,
+    entries,
+  };
+  return category.id === 'guide-safety'
+    ? [
+        {
+          id: 'guide-goals',
+          title: 'Metas',
+          summary: 'Volume, rotina e resultados para orientar sua preparação.',
+          entries: [
+            {
+              id: 'goals-guide',
+              title: 'Metas de estudo',
+              summary: 'Defina objetivos que caibam na sua rotina.',
+              paragraphs: [
+                'Configure suas metas em Metas. Compare o realizado com o planejado e revise a disponibilidade antes de aceitar alterações na distribuição.',
+              ],
+              action: { label: 'Abrir Metas', target: 'planning' },
+            },
+          ],
+        },
+        result,
+      ]
+    : [result];
+}).map(category => ({
+  ...category,
+  entries: category.entries.map(entry => ({
+    kind: 'feature',
+    keywords: [],
+    concepts: [],
+    questions: [],
+    ...entry,
+  })),
+}));
+
+const goalsGuide = HELP_CATEGORIES.find(c => c.id === 'guide-goals').entries[0];
+Object.assign(goalsGuide, {
+  keywords: ['meta', 'volume', 'rotina', 'resultado', 'questões', 'horas'],
+  visual: {
+    type: 'reference',
+    title: 'Objetivos com papéis diferentes',
+    items: [
+      { title: 'Volume', detail: 'Horas, questões e simulados' },
+      { title: 'Rotina', detail: 'Consistência e aderência' },
+      { title: 'Resultado', detail: 'Objetivo da preparação' },
+    ],
+  },
+  paragraphs: [
+    'Defina objetivos compatíveis com sua disponibilidade. Metas de volume e rotina acompanham execução; não equivalem a probabilidade de aprovação.',
+    'No exemplo, 124 questões de uma meta de 150 representam aproximadamente 83% do volume desejado, sem informar domínio ou precisão. Metas de precisão por disciplina devem ser lidas junto ao resultado observado.',
+  ],
+});
+const planningCategory = HELP_CATEGORIES.find(c => c.id === 'guide-workflows');
+const studyCategory = HELP_CATEGORIES.find(c => c.id === 'guide-areas');
+const calendarEntry = studyCategory.entries.find(e => e.id === 'calendar-guide');
+studyCategory.entries = studyCategory.entries.filter(e => e.id !== 'calendar-guide');
+planningCategory.entries.push(calendarEntry);
+Object.assign(calendarEntry, {
+  keywords: ['calendário', 'agenda', 'datas', 'carga por dia'],
+  paragraphs: [
+    'Consulte a distribuição por data e os filtros de disciplinas. Compare atividades planejadas, sessões e revisões antes de decidir redistribuir a semana. Navegar pelo calendário não confirma mudanças no plano.',
+  ],
+});
+studyCategory.entries.push({
+  kind: 'feature',
+  concepts: [],
+  questions: [],
+  id: 'pending-guide',
+  title: 'Pendências do dia',
+  summary: 'Um dia incompleto não apaga o que você estudou.',
+  keywords: ['pendência', 'pendências', 'atraso', 'não concluído'],
+  paragraphs: [
+    'O rodapé da execução mostra atividades ainda pendentes. O progresso temporal e a contagem de atividades concluídas são medidas diferentes.',
+    'Registre o que foi realizado e confira as pendências em Hoje. Sessões sem vínculo contam como estudo adicional; uma atividade incompatível não conclui automaticamente a tarefa planejada. Replanejar exige revisar a proposta e confirmar.',
+  ],
+  action: { label: 'Revisar em Hoje', target: 'today' },
+});
+studyCategory.entries.find(e => e.id === 'sessions').paragraphs = [
+  'Escolha disciplina, tópico e tipo antes de iniciar. Retome o cronômetro de uma sessão ativa ou finalize essa sessão antes de começar outra atividade. Ao finalizar, confira a duração e salve o registro.',
+  'Também é possível registrar uma sessão manual. O realizado vem dos registros salvos; quando houver vínculo compatível com o plano, ele alimenta o progresso da atividade, limitado ao previsto.',
+];
+const searchHints = {
+  readiness: {
+    concepts: ['índice de prontidão', 'aprovação'],
+    questions: ['Por que minha Prontidão não mudou?'],
+  },
+  adherence: {
+    concepts: ['planejado versus realizado', 'execução do plano'],
+    questions: ['Por que planejado é diferente do realizado?'],
+  },
+  'recovery-guide': {
+    concepts: ['reorganizar planejamento', 'recuperar plano'],
+    questions: ['Recovery apaga meu planejamento anterior?'],
+  },
+  backup: {
+    keywords: ['restaurar', 'restauração', 'exportar', 'trocar navegador'],
+    questions: ['Como salvar meus dados?'],
+  },
+  reviews: { keywords: ['revisão', 'revisões', 'atrasada', 'reabrir'] },
+  demo: { keywords: ['demo', 'demonstração', 'experimentar', 'dados fictícios'] },
+  'insufficient-sample-guide': { questions: ['Por que aparece amostra insuficiente?'] },
+};
+for (const entry of HELP_CATEGORIES.flatMap(category => category.entries)) {
+  const hints = searchHints[entry.id];
+  if (hints)
+    for (const [field, values] of Object.entries(hints))
+      entry[field] = [...entry[field], ...values];
+}
+export const HELP_GLOSSARY = [
+  [
+    'Índice de Prontidão',
+    'Síntese de cobertura, domínio, retenção, consistência e simulados. Não é probabilidade de aprovação.',
+  ],
+  [
+    'Domínio',
+    'Estimativa do desempenho consolidado em um tópico, acompanhada da força da evidência.',
+  ],
+  [
+    'Retenção',
+    'Sinal de manutenção do conhecimento baseado no histórico disponível de estudo e revisão.',
+  ],
+  [
+    'Impacto',
+    'Importância estratégica do tópico para a prova; pode vir de configuração ou de histórico validado.',
+  ],
+  [
+    'Incidência',
+    'Presença de um tópico nas provas analisadas, distinta da participação em questões.',
+  ],
+  [
+    'Confiança',
+    'Força de uma medida considerando volume, qualidade e comparabilidade dos dados. Evidência limitada preserva a incerteza.',
+  ],
+  [
+    'Evidência',
+    'Sessões, questões, revisões e provas históricas usadas conforme a métrica calculada.',
+  ],
+  ['Lacuna', 'Encontro entre relevância para a prova e necessidade pessoal de aprendizagem.'],
+  [
+    'Foco estratégico',
+    'Parcela do tempo registrado em tópicos de alto impacto; indicador sem meta mínima.',
+  ],
+  [
+    'Planejamento adaptativo',
+    'Proposta confirmável de redistribuir minutos dentro da capacidade semanal.',
+  ],
+  [
+    'Aderência',
+    'Relação entre plano e execução vinculada. A carga e a execução das prioridades são medidas distintas.',
+  ],
+  [
+    'Prioridade',
+    'Importância relativa para orientar o estudo, combinando relevância na prova e necessidade pessoal.',
+  ],
+  [
+    'Recovery',
+    'Proposta de reorganização segura do planejamento, com capacidade preservada e aplicação confirmada.',
+  ],
+];
+
+export const HELP_FAQ = [
+  [
+    'Por que meu índice ainda tem baixa confiança?',
+    'Ainda há pouca evidência em um ou mais fatores. Baixa confiança não significa automaticamente baixo desempenho.',
+  ],
+  [
+    'Prontidão é probabilidade de aprovação?',
+    'Não. É um índice composto de acompanhamento, que deve ser lido junto às análises detalhadas.',
+  ],
+  [
+    'O que acontece se eu perder um dia do plano?',
+    'Registre o que foi feito, trate pendências em Hoje e confirme uma nova proposta se a carga deixar de ser viável.',
+  ],
+  [
+    'Como levo meus dados para outro dispositivo?',
+    'Exporte um backup JSON, transfira o arquivo com segurança e importe-o no outro navegador. O PDF não restaura dados.',
+  ],
+  [
+    'O aplicativo funciona sem internet?',
+    'Depois do primeiro carregamento completo por HTTP e da instalação, o PWA pode abrir offline; os registros continuam locais.',
+  ],
+];
+
+Object.assign(
+  HELP_CATEGORIES.find(category => category.id === 'guide-data').entries.find(
+    entry => entry.id === 'projections'
+  ),
+  {
+    title: 'Trajetória, faixa e confiança',
+    action: { label: 'Ver trajetória em Desempenho', target: 'projection' },
+    keywords: ['projeção', 'meta', 'confiança', 'simulados comparáveis', 'reta final'],
+    paragraphs: [
+      'A faixa atual usa simulados comparáveis recentes. A tendência descreve a continuação aproximada do padrão observado, sem prever a nota do dia da prova ou a chance de aprovação. Poucas observações, baixa cobertura ou composição desconhecida limitam a confiança.',
+      'Comparações semanais exigem a mesma meta, prova, escopo e versão do cálculo. Alterar a meta não significa que seu desempenho piorou. Snapshots anteriores preservam a leitura registrada na época.',
+      'A fase da prova pode sugerir outra distribuição entre teoria, questões e revisões. A prévia mantém a capacidade e exige confirmação; não acrescenta horas nem garante ganho de nota. Simulações são temporárias e não alteram o planejamento real.',
+    ],
+  }
+);

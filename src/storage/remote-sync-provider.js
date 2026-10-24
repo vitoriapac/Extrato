@@ -17,7 +17,12 @@ function basicAuthHeader(username, password) {
 function parseEnvelope(text) {
   try {
     const envelope = JSON.parse(text);
-    return envelope && envelope.algorithm === 'AES-GCM-256' && envelope.ciphertext && typeof envelope.createdAt === 'string' ? envelope : null;
+    return envelope &&
+      envelope.algorithm === 'AES-GCM-256' &&
+      envelope.ciphertext &&
+      typeof envelope.createdAt === 'string'
+      ? envelope
+      : null;
   } catch {
     return null;
   }
@@ -30,7 +35,7 @@ function parseEnvelope(text) {
  */
 export function createRemoteSyncProvider({
   fetch = globalThis.fetch,
-  origin = globalThis.location?.origin || ''
+  origin = globalThis.location?.origin || '',
 } = {}) {
   const normalizeUrl = (/** @type {string} */ url) => {
     let clean = String(url || '').trim();
@@ -43,7 +48,10 @@ export function createRemoteSyncProvider({
    * @param {{ serverUrl?: string, username?: string, password?: string }} config
    * @param {string | null} fileName null aponta para a própria pasta
    */
-  const prepare = ({ serverUrl = '', username = '', password = '' } = {}, fileName = DEFAULT_FILE_NAME) => {
+  const prepare = (
+    { serverUrl = '', username = '', password = '' } = {},
+    fileName = DEFAULT_FILE_NAME
+  ) => {
     if (!serverUrl) throw new TypeError('URL do servidor WebDAV não informada.');
     const folderUrl = normalizeUrl(serverUrl);
     let parsed;
@@ -70,7 +78,9 @@ export function createRemoteSyncProvider({
       return await fetch(url, options);
     } catch (error) {
       if (error instanceof TypeError) {
-        throw new Error(`Não foi possível falar com o servidor. Verifique a URL, se ele permite acesso (CORS) a partir de ${origin || 'este endereço'} e se o navegador não bloqueou a conexão.`);
+        throw new Error(
+          `Não foi possível falar com o servidor. Verifique a URL, se ele permite acesso (CORS) a partir de ${origin || 'este endereço'} e se o navegador não bloqueou a conexão.`
+        );
       }
       throw error;
     }
@@ -88,8 +98,8 @@ export function createRemoteSyncProvider({
           method: 'PROPFIND',
           headers: {
             ...headers,
-            Depth: '0'
-          }
+            Depth: '0',
+          },
         });
 
         if (response.ok || response.status === 207 || response.status === 405) {
@@ -98,12 +108,12 @@ export function createRemoteSyncProvider({
         return {
           ok: false,
           status: response.status,
-          message: `O servidor retornou status HTTP ${response.status}.`
+          message: `O servidor retornou status HTTP ${response.status}.`,
         };
       } catch (error) {
         return {
           ok: false,
-          message: /** @type {any} */ (error)?.message || 'Falha de conexão com o servidor WebDAV.'
+          message: /** @type {any} */ (error)?.message || 'Falha de conexão com o servidor WebDAV.',
         };
       }
     },
@@ -117,9 +127,12 @@ export function createRemoteSyncProvider({
       const { url, headers } = prepare(config, config.fileName);
       const response = await request(url, { method: 'GET', headers });
       if (response.status === 404) return { exists: false };
-      if (!response.ok) throw new Error(`Falha ao consultar backup remoto (HTTP ${response.status}).`);
+      if (!response.ok)
+        throw new Error(`Falha ao consultar backup remoto (HTTP ${response.status}).`);
       const envelope = parseEnvelope(await response.text());
-      return envelope ? { exists: true, valid: true, createdAt: envelope.createdAt } : { exists: true, valid: false };
+      return envelope
+        ? { exists: true, valid: true, createdAt: envelope.createdAt }
+        : { exists: true, valid: false };
     },
 
     /**
@@ -137,7 +150,7 @@ export function createRemoteSyncProvider({
       const response = await request(url, {
         method: 'PUT',
         headers: { ...headers, 'Content-Type': 'application/json' },
-        body: envelopeString
+        body: envelopeString,
       });
 
       if (!response.ok && response.status !== 201 && response.status !== 204) {
@@ -147,7 +160,7 @@ export function createRemoteSyncProvider({
       return {
         ok: true,
         envelopeAt: envelope.createdAt,
-        sizeBytes: envelopeString.length
+        sizeBytes: envelopeString.length,
       };
     },
 
@@ -165,7 +178,7 @@ export function createRemoteSyncProvider({
         return {
           ok: false,
           notFound: true,
-          message: 'Nenhum backup encontrado no endereço remoto especificado.'
+          message: 'Nenhum backup encontrado no endereço remoto especificado.',
         };
       }
 
@@ -180,8 +193,8 @@ export function createRemoteSyncProvider({
       return {
         ok: true,
         state,
-        envelopeAt: envelope.createdAt
+        envelopeAt: envelope.createdAt,
       };
-    }
+    },
   });
 }

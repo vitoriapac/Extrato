@@ -16,15 +16,8 @@
           "clicksSincePreviousStep": 1,
           "clicks": 1,
           "choices": 56,
-          "primaryCtas": [
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar",
-            "Iniciar estudo"
-          ],
-          "repeatedHeadings": [
-            "Português"
-          ],
+          "primaryCtas": ["▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar", "Iniciar estudo"],
+          "repeatedHeadings": ["Português"],
           "horizontalOverflow": false,
           "topLevelSections": 18
         },
@@ -34,9 +27,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 2,
           "choices": 27,
-          "primaryCtas": [
-            "+ Nova disciplina"
-          ],
+          "primaryCtas": ["+ Nova disciplina"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -79,15 +70,8 @@
           "clicksSincePreviousStep": 4,
           "clicks": 8,
           "choices": 58,
-          "primaryCtas": [
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
-          "repeatedHeadings": [
-            "Consistência",
-            "Português"
-          ],
+          "primaryCtas": ["▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
+          "repeatedHeadings": ["Consistência", "Português"],
           "horizontalOverflow": false,
           "topLevelSections": 18
         },
@@ -97,15 +81,8 @@
           "clicksSincePreviousStep": 3,
           "clicks": 11,
           "choices": 60,
-          "primaryCtas": [
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
-          "repeatedHeadings": [
-            "Consistência",
-            "Português"
-          ],
+          "primaryCtas": ["▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
+          "repeatedHeadings": ["Consistência", "Português"],
           "horizontalOverflow": false,
           "topLevelSections": 18
         },
@@ -115,15 +92,8 @@
           "clicksSincePreviousStep": 3,
           "clicks": 14,
           "choices": 62,
-          "primaryCtas": [
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
-          "repeatedHeadings": [
-            "Consistência",
-            "Português"
-          ],
+          "primaryCtas": ["▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
+          "repeatedHeadings": ["Consistência", "Português"],
           "horizontalOverflow": false,
           "topLevelSections": 18
         },
@@ -133,11 +103,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 18,
           "choices": 16,
-          "primaryCtas": [
-            "+ Registrar sessão",
-            "Com dados",
-            "+ Registrar simulado"
-          ],
+          "primaryCtas": ["+ Registrar sessão", "Com dados", "+ Registrar simulado"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 6
@@ -159,9 +125,7 @@
           "clicksSincePreviousStep": 2,
           "clicks": 22,
           "choices": 11,
-          "primaryCtas": [
-            "Iniciar estudo"
-          ],
+          "primaryCtas": ["Iniciar estudo"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 4
@@ -172,9 +136,7 @@
           "clicksSincePreviousStep": 0,
           "clicks": 22,
           "choices": 1,
-          "primaryCtas": [
-            "Analisar execução da semana"
-          ],
+          "primaryCtas": ["Analisar execução da semana"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 1
@@ -219,12 +181,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 1,
           "choices": 104,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -241,9 +198,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 2,
           "choices": 1164,
-          "primaryCtas": [
-            "+ Nova disciplina"
-          ],
+          "primaryCtas": ["+ Nova disciplina"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -286,9 +241,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 4,
           "choices": 9,
-          "primaryCtas": [
-            "Confirmar e salvar plano"
-          ],
+          "primaryCtas": ["Confirmar e salvar plano"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 9
@@ -625,12 +578,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 10,
           "choices": 106,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -647,12 +595,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 13,
           "choices": 105,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -669,12 +612,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 16,
           "choices": 103,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -691,11 +629,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 20,
           "choices": 33,
-          "primaryCtas": [
-            "+ Registrar sessão",
-            "Amostra insuficiente",
-            "+ Registrar simulado"
-          ],
+          "primaryCtas": ["+ Registrar sessão", "Amostra insuficiente", "+ Registrar simulado"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 6
@@ -1034,9 +968,7 @@
           "clicksSincePreviousStep": 0,
           "clicks": 24,
           "choices": 1,
-          "primaryCtas": [
-            "Analisar execução da semana"
-          ],
+          "primaryCtas": ["Analisar execução da semana"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -1048,9 +980,7 @@
           "clicks": 25,
           "choices": 23,
           "primaryCtas": [],
-          "repeatedHeadings": [
-            "Sustentabilidade do plano"
-          ],
+          "repeatedHeadings": ["Sustentabilidade do plano"],
           "horizontalOverflow": false,
           "topLevelSections": 11
         }
@@ -1083,12 +1013,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 1,
           "choices": 123,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -1105,9 +1030,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 2,
           "choices": 1164,
-          "primaryCtas": [
-            "+ Nova disciplina"
-          ],
+          "primaryCtas": ["+ Nova disciplina"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -1150,9 +1073,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 4,
           "choices": 9,
-          "primaryCtas": [
-            "Confirmar e salvar plano"
-          ],
+          "primaryCtas": ["Confirmar e salvar plano"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 9
@@ -1484,12 +1405,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 10,
           "choices": 125,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -1506,12 +1422,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 13,
           "choices": 124,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -1528,12 +1439,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 16,
           "choices": 122,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -1550,11 +1456,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 20,
           "choices": 40,
-          "primaryCtas": [
-            "+ Registrar sessão",
-            "Com dados",
-            "+ Registrar simulado"
-          ],
+          "primaryCtas": ["+ Registrar sessão", "Com dados", "+ Registrar simulado"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 6
@@ -1888,9 +1790,7 @@
           "clicksSincePreviousStep": 0,
           "clicks": 24,
           "choices": 1,
-          "primaryCtas": [
-            "Analisar execução da semana"
-          ],
+          "primaryCtas": ["Analisar execução da semana"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -1902,9 +1802,7 @@
           "clicks": 25,
           "choices": 40,
           "primaryCtas": [],
-          "repeatedHeadings": [
-            "Sustentabilidade do plano"
-          ],
+          "repeatedHeadings": ["Sustentabilidade do plano"],
           "horizontalOverflow": false,
           "topLevelSections": 11
         }
@@ -1937,12 +1835,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 1,
           "choices": 123,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -1959,9 +1852,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 2,
           "choices": 1164,
-          "primaryCtas": [
-            "+ Nova disciplina"
-          ],
+          "primaryCtas": ["+ Nova disciplina"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -2004,9 +1895,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 4,
           "choices": 9,
-          "primaryCtas": [
-            "Confirmar e salvar plano"
-          ],
+          "primaryCtas": ["Confirmar e salvar plano"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 9
@@ -2338,12 +2227,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 10,
           "choices": 125,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -2360,12 +2244,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 13,
           "choices": 124,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -2382,12 +2261,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 16,
           "choices": 122,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -2404,11 +2278,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 20,
           "choices": 40,
-          "primaryCtas": [
-            "+ Registrar sessão",
-            "Com dados",
-            "+ Registrar simulado"
-          ],
+          "primaryCtas": ["+ Registrar sessão", "Com dados", "+ Registrar simulado"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 6
@@ -2742,9 +2612,7 @@
           "clicksSincePreviousStep": 0,
           "clicks": 24,
           "choices": 1,
-          "primaryCtas": [
-            "Analisar execução da semana"
-          ],
+          "primaryCtas": ["Analisar execução da semana"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -2756,9 +2624,7 @@
           "clicks": 25,
           "choices": 40,
           "primaryCtas": [],
-          "repeatedHeadings": [
-            "Sustentabilidade do plano"
-          ],
+          "repeatedHeadings": ["Sustentabilidade do plano"],
           "horizontalOverflow": false,
           "topLevelSections": 11
         }
@@ -2791,12 +2657,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 1,
           "choices": 123,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -2813,9 +2674,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 2,
           "choices": 1164,
-          "primaryCtas": [
-            "+ Nova disciplina"
-          ],
+          "primaryCtas": ["+ Nova disciplina"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -2858,9 +2717,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 4,
           "choices": 9,
-          "primaryCtas": [
-            "Confirmar e salvar plano"
-          ],
+          "primaryCtas": ["Confirmar e salvar plano"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 9
@@ -3192,12 +3049,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 10,
           "choices": 125,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -3214,12 +3066,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 13,
           "choices": 124,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -3236,12 +3083,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 16,
           "choices": 122,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -3258,11 +3100,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 20,
           "choices": 40,
-          "primaryCtas": [
-            "+ Registrar sessão",
-            "Com dados",
-            "+ Registrar simulado"
-          ],
+          "primaryCtas": ["+ Registrar sessão", "Com dados", "+ Registrar simulado"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 6
@@ -3596,9 +3434,7 @@
           "clicksSincePreviousStep": 0,
           "clicks": 24,
           "choices": 1,
-          "primaryCtas": [
-            "Analisar execução da semana"
-          ],
+          "primaryCtas": ["Analisar execução da semana"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -3610,9 +3446,7 @@
           "clicks": 25,
           "choices": 40,
           "primaryCtas": [],
-          "repeatedHeadings": [
-            "Sustentabilidade do plano"
-          ],
+          "repeatedHeadings": ["Sustentabilidade do plano"],
           "horizontalOverflow": false,
           "topLevelSections": 11
         }
@@ -3645,12 +3479,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 1,
           "choices": 123,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -3667,9 +3496,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 2,
           "choices": 1164,
-          "primaryCtas": [
-            "+ Nova disciplina"
-          ],
+          "primaryCtas": ["+ Nova disciplina"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -3712,9 +3539,7 @@
           "clicksSincePreviousStep": 1,
           "clicks": 4,
           "choices": 9,
-          "primaryCtas": [
-            "Confirmar e salvar plano"
-          ],
+          "primaryCtas": ["Confirmar e salvar plano"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 9
@@ -4046,12 +3871,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 10,
           "choices": 125,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -4068,12 +3888,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 13,
           "choices": 124,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -4090,12 +3905,7 @@
           "clicksSincePreviousStep": 3,
           "clicks": 16,
           "choices": 122,
-          "primaryCtas": [
-            "Sim",
-            "▶ Iniciar estudo",
-            "Iniciar estudo",
-            "▶ Iniciar"
-          ],
+          "primaryCtas": ["Sim", "▶ Iniciar estudo", "Iniciar estudo", "▶ Iniciar"],
           "repeatedHeadings": [
             "Sustentabilidade do plano",
             "Consistência",
@@ -4112,11 +3922,7 @@
           "clicksSincePreviousStep": 4,
           "clicks": 20,
           "choices": 40,
-          "primaryCtas": [
-            "+ Registrar sessão",
-            "Com dados",
-            "+ Registrar simulado"
-          ],
+          "primaryCtas": ["+ Registrar sessão", "Com dados", "+ Registrar simulado"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 6
@@ -4450,9 +4256,7 @@
           "clicksSincePreviousStep": 0,
           "clicks": 24,
           "choices": 1,
-          "primaryCtas": [
-            "Analisar execução da semana"
-          ],
+          "primaryCtas": ["Analisar execução da semana"],
           "repeatedHeadings": [],
           "horizontalOverflow": false,
           "topLevelSections": 2
@@ -4464,9 +4268,7 @@
           "clicks": 25,
           "choices": 40,
           "primaryCtas": [],
-          "repeatedHeadings": [
-            "Sustentabilidade do plano"
-          ],
+          "repeatedHeadings": ["Sustentabilidade do plano"],
           "horizontalOverflow": false,
           "topLevelSections": 11
         }

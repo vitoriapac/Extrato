@@ -1,56 +1,222 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {renderOnboardingEntry,renderOnboardingProgress,renderOnboardingContent,renderOnboardingHelp,renderOnboardingActions,onboardingBlockedReason} from '../../src/features/onboarding/onboarding-renderer.js';
+import {
+  renderOnboardingEntry,
+  renderOnboardingProgress,
+  renderOnboardingContent,
+  renderOnboardingHelp,
+  renderOnboardingActions,
+  onboardingBlockedReason,
+} from '../../src/features/onboarding/onboarding-renderer.js';
 
-const base={steps:[{id:'goal'},{id:'availability'},{id:'content'},{id:'plan'}],presets:[{id:'bb',name:'Banco do Brasil'}],presetId:'bb',today:'2026-09-14',examDate:'',weekdays:[],subjects:[],availableMinutes:0,topicCount:0,estimatedNeedMinutes:0,weeksUntilExam:null,currentIndex:0,canAdvance:false};
+const base = {
+  steps: [{ id: 'goal' }, { id: 'availability' }, { id: 'content' }, { id: 'plan' }],
+  presets: [{ id: 'bb', name: 'Banco do Brasil' }],
+  presetId: 'bb',
+  today: '2026-09-14',
+  examDate: '',
+  weekdays: [],
+  subjects: [],
+  availableMinutes: 0,
+  topicCount: 0,
+  estimatedNeedMinutes: 0,
+  weeksUntilExam: null,
+  currentIndex: 0,
+  canAdvance: false,
+};
 
-test('renderer de entrada percorre objetivo, disponibilidade, conteúdo e prévia',()=>{
-  assert.match(renderOnboardingContent({...base,current:{id:'goal'}}),/guidedExamDate/);
-  assert.match(renderOnboardingContent({...base,current:{id:'availability'},weekdays:[{day:1,label:'Seg',hours:2}],availableMinutes:120}),/data-guided-day="1"/);
-  assert.match(renderOnboardingContent({...base,current:{id:'content'},subjects:[{id:'s1',name:'Português',level:'Médio'}]}),/data-guided-level="s1"/);
-  const plan=renderOnboardingContent({...base,current:{id:'plan'},availableMinutes:300,topicCount:4,estimatedNeedMinutes:240,weeksUntilExam:8,canCreatePlan:true,firstActivities:[{subject:'Matemática',topic:'Porcentagem',minutes:45}]});
-  assert.match(plan,/Primeiras atividades priorizadas/);assert.match(plan,/Porcentagem/);assert.match(plan,/45 min/);assert.match(plan,/mesma prioridade, elegibilidade e capacidade/);
-  assert.match(renderOnboardingActions({...base,current:{id:'plan'},currentIndex:3,canCreatePlan:true}),/Confirmar e criar meu plano/);
+test('renderer de entrada percorre objetivo, disponibilidade, conteúdo e prévia', () => {
+  assert.match(renderOnboardingContent({ ...base, current: { id: 'goal' } }), /guidedExamDate/);
+  assert.match(
+    renderOnboardingContent({
+      ...base,
+      current: { id: 'availability' },
+      weekdays: [{ day: 1, label: 'Seg', hours: 2 }],
+      availableMinutes: 120,
+    }),
+    /data-guided-day="1"/
+  );
+  assert.match(
+    renderOnboardingContent({
+      ...base,
+      current: { id: 'content' },
+      subjects: [{ id: 's1', name: 'Português', level: 'Médio' }],
+    }),
+    /data-guided-level="s1"/
+  );
+  const plan = renderOnboardingContent({
+    ...base,
+    current: { id: 'plan' },
+    availableMinutes: 300,
+    topicCount: 4,
+    estimatedNeedMinutes: 240,
+    weeksUntilExam: 8,
+    canCreatePlan: true,
+    firstActivities: [{ subject: 'Matemática', topic: 'Porcentagem', minutes: 45 }],
+  });
+  assert.match(plan, /Primeiras atividades priorizadas/);
+  assert.match(plan, /Porcentagem/);
+  assert.match(plan, /45 min/);
+  assert.match(plan, /mesma prioridade, elegibilidade e capacidade/);
+  assert.match(
+    renderOnboardingActions({
+      ...base,
+      current: { id: 'plan' },
+      currentIndex: 3,
+      canCreatePlan: true,
+    }),
+    /Confirmar e criar meu plano/
+  );
 });
 
-test('renderer separa card de entrada, progresso e ajuda contextual',()=>{
-  const model={...base,current:{id:'goal',label:'Objetivo e data'},next:{id:'goal',label:'Objetivo e data'},completed:0};
-  const entry=renderOnboardingEntry(model);
-  assert.match(entry,/Montar meu plano/);
-  assert.match(entry,/role="progressbar"/);
-  assert.match(entry,/aria-valuenow="0"/);
-  assert.match(entry,/Objetivo e data/);
-  assert.match(renderOnboardingProgress(model),/aria-current="step"/);
-  assert.match(renderOnboardingHelp(model),/POR QUE ISSO IMPORTA/);
-  assert.match(renderOnboardingHelp(model),/calcular o ritmo necessário/);
+test('renderer separa card de entrada, progresso e ajuda contextual', () => {
+  const model = {
+    ...base,
+    current: { id: 'goal', label: 'Objetivo e data' },
+    next: { id: 'goal', label: 'Objetivo e data' },
+    completed: 0,
+  };
+  const entry = renderOnboardingEntry(model);
+  assert.match(entry, /Montar meu plano/);
+  assert.match(entry, /role="progressbar"/);
+  assert.match(entry, /aria-valuenow="0"/);
+  assert.match(entry, /Objetivo e data/);
+  assert.match(renderOnboardingProgress(model), /aria-current="step"/);
+  assert.match(renderOnboardingHelp(model), /POR QUE ISSO IMPORTA/);
+  assert.match(renderOnboardingHelp(model), /calcular o ritmo necessário/);
 });
 
-test('card de configuração informa progresso e próxima etapa sem depender do modal',()=>{
-  const model={...base,current:{id:'content',label:'Edital ou matérias'},next:{id:'content',label:'Edital ou matérias'},completed:2};
-  const entry=renderOnboardingEntry(model);
-  assert.match(entry,/2 de 4 etapas/);
-  assert.match(entry,/Falta concluir Edital ou matérias/);
-  assert.match(entry,/aria-valuenow="2"/);
-  assert.match(entry,/Continuar configuração/);
+test('card de configuração informa progresso e próxima etapa sem depender do modal', () => {
+  const model = {
+    ...base,
+    current: { id: 'content', label: 'Edital ou matérias' },
+    next: { id: 'content', label: 'Edital ou matérias' },
+    completed: 2,
+  };
+  const entry = renderOnboardingEntry(model);
+  assert.match(entry, /2 de 4 etapas/);
+  assert.match(entry, /Falta concluir Edital ou matérias/);
+  assert.match(entry, /aria-valuenow="2"/);
+  assert.match(entry, /Continuar configuração/);
 });
 
-test('stepper conclui somente etapas anteriores à etapa atual',()=>{const model={...base,current:{id:'availability'},currentIndex:1,steps:[{id:'goal',label:'Objetivo',complete:true},{id:'availability',label:'Disponibilidade',complete:true},{id:'content',label:'Conteúdo',complete:true},{id:'plan',label:'Prévia',complete:false}]};const html=renderOnboardingProgress(model);assert.equal((html.match(/is-complete/g)||[]).length,1);assert.match(html,/is-current[^>]*data-onboarding-step="availability"/);assert.match(html,/data-onboarding-step="content" aria-current="false"><b>3/)});
-test('prévia vazia explica o bloqueio e desabilita a confirmação',()=>{const model={...base,current:{id:'plan'},currentIndex:3,canConfigurePlan:true,canCreatePlan:false,planReasons:['Um tópico aguarda pré-requisito.']};assert.match(renderOnboardingContent(model),/Um tópico aguarda pré-requisito/);assert.match(renderOnboardingContent(model),/Revisar tópicos e pré-requisitos/);assert.match(renderOnboardingActions(model),/create-plan" disabled/)});
+test('stepper conclui somente etapas anteriores à etapa atual', () => {
+  const model = {
+    ...base,
+    current: { id: 'availability' },
+    currentIndex: 1,
+    steps: [
+      { id: 'goal', label: 'Objetivo', complete: true },
+      { id: 'availability', label: 'Disponibilidade', complete: true },
+      { id: 'content', label: 'Conteúdo', complete: true },
+      { id: 'plan', label: 'Prévia', complete: false },
+    ],
+  };
+  const html = renderOnboardingProgress(model);
+  assert.equal((html.match(/is-complete/g) || []).length, 1);
+  assert.match(html, /is-current[^>]*data-onboarding-step="availability"/);
+  assert.match(html, /data-onboarding-step="content" aria-current="false"><b>3/);
+});
+test('prévia vazia explica o bloqueio e desabilita a confirmação', () => {
+  const model = {
+    ...base,
+    current: { id: 'plan' },
+    currentIndex: 3,
+    canConfigurePlan: true,
+    canCreatePlan: false,
+    planReasons: ['Um tópico aguarda pré-requisito.'],
+  };
+  assert.match(renderOnboardingContent(model), /Um tópico aguarda pré-requisito/);
+  assert.match(renderOnboardingContent(model), /Revisar tópicos e pré-requisitos/);
+  assert.match(renderOnboardingActions(model), /create-plan" disabled/);
+});
 
-test('entrada preserva etapas concluídas fora de ordem e informa estados textuais',()=>{const html=renderOnboardingEntry({...base,completed:2,next:{id:'goal',label:'Objetivo e data'},steps:[{id:'goal',status:'current'},{id:'availability',status:'complete'},{id:'content',status:'complete'},{id:'plan',status:'pending'}]});assert.equal((html.match(/>Concluída</g)||[]).length,2);assert.match(html,/>Atual</);assert.match(html,/>Pendente</);assert.match(html,/2 de 4 etapas/)});
+test('entrada preserva etapas concluídas fora de ordem e informa estados textuais', () => {
+  const html = renderOnboardingEntry({
+    ...base,
+    completed: 2,
+    next: { id: 'goal', label: 'Objetivo e data' },
+    steps: [
+      { id: 'goal', status: 'current' },
+      { id: 'availability', status: 'complete' },
+      { id: 'content', status: 'complete' },
+      { id: 'plan', status: 'pending' },
+    ],
+  });
+  assert.equal((html.match(/>Concluída</g) || []).length, 2);
+  assert.match(html, />Atual</);
+  assert.match(html, />Pendente</);
+  assert.match(html, /2 de 4 etapas/);
+});
 
-import {syncOnboardingPhase} from '../../src/ui/controllers/onboarding-phase-controller.js';
-test('fase usa uma superfície única na configuração e retorna para a execução',()=>{const phase={},calls=[],elements={overviewExamPhase:phase,guidedOnboarding:{append:node=>calls.push(['entry',node]),after:node=>calls.push(['overview',node])}},document={getElementById:id=>elements[id]};syncOnboardingPhase(document,{visible:true});syncOnboardingPhase(document,{visible:false});assert.deepEqual(calls,[['entry',phase],['overview',phase]]);syncOnboardingPhase({getElementById:()=>null},{visible:true})});
+import { syncOnboardingPhase } from '../../src/ui/controllers/onboarding-phase-controller.js';
+test('fase usa uma superfície única na configuração e retorna para a execução', () => {
+  const phase = {},
+    calls = [],
+    elements = {
+      overviewExamPhase: phase,
+      guidedOnboarding: {
+        append: node => calls.push(['entry', node]),
+        after: node => calls.push(['overview', node]),
+      },
+    },
+    document = { getElementById: id => elements[id] };
+  syncOnboardingPhase(document, { visible: true });
+  syncOnboardingPhase(document, { visible: false });
+  assert.deepEqual(calls, [
+    ['entry', phase],
+    ['overview', phase],
+  ]);
+  syncOnboardingPhase({ getElementById: () => null }, { visible: true });
+});
 
-import {renderExamPhaseCompact} from '../../src/ui/renderers/adaptive-planning-renderer.js';
-test('fase compacta sem data não converte ausência em zero dias',()=>{for(const days of [null,undefined]){const html=renderExamPhaseCompact({label:'Prova sem data',days});assert.match(html,/Data da prova não definida/);assert.doesNotMatch(html,/0 dias restantes/)}assert.match(renderExamPhaseCompact({label:'Revisão final',days:0}),/0 dias restantes/)});
+import { renderExamPhaseCompact } from '../../src/ui/renderers/adaptive-planning-renderer.js';
+test('fase compacta sem data não converte ausência em zero dias', () => {
+  for (const days of [null, undefined]) {
+    const html = renderExamPhaseCompact({ label: 'Prova sem data', days });
+    assert.match(html, /Data da prova não definida/);
+    assert.doesNotMatch(html, /0 dias restantes/);
+  }
+  assert.match(renderExamPhaseCompact({ label: 'Revisão final', days: 0 }), /0 dias restantes/);
+});
 
-test('entrada indica etapa atual semanticamente e mantém um único CTA',()=>{const html=renderOnboardingEntry({...base,completed:2,next:{id:'goal'},steps:[{id:'goal',status:'current'},{id:'availability',status:'complete'},{id:'content',status:'complete'},{id:'plan',status:'pending'}]});assert.equal((html.match(/aria-current="step"/g)||[]).length,1);assert.equal((html.match(/data-guided-action="open"/g)||[]).length,1);assert.match(html,/>Atual</);assert.match(html,/>Pendente</);assert.match(html,/aria-valuetext="2 de 4 etapas concluídas"/)});
-test('ação primária desabilitada explica o motivo ao lado do botão',()=>{
- const goal=renderOnboardingActions({current:{id:'goal'},currentIndex:0,canAdvance:false});
- assert.match(goal,/<p class="guided-action-hint" id="guidedActionHint">Informe a data da prova para continuar\.<\/p>/);
- assert.match(goal,/data-guided-action="next" disabled aria-describedby="guidedActionHint">/);
- assert.equal(onboardingBlockedReason({current:{id:'content'},hasContent:false}),'Escolha um edital, importe um arquivo ou cadastre matérias para ver a prévia.');
- const ready=renderOnboardingActions({current:{id:'availability'},currentIndex:1,canAdvance:true});
- assert.doesNotMatch(ready,/guided-action-hint|aria-describedby|disabled/);
+test('entrada indica etapa atual semanticamente e mantém um único CTA', () => {
+  const html = renderOnboardingEntry({
+    ...base,
+    completed: 2,
+    next: { id: 'goal' },
+    steps: [
+      { id: 'goal', status: 'current' },
+      { id: 'availability', status: 'complete' },
+      { id: 'content', status: 'complete' },
+      { id: 'plan', status: 'pending' },
+    ],
+  });
+  assert.equal((html.match(/aria-current="step"/g) || []).length, 1);
+  assert.equal((html.match(/data-guided-action="open"/g) || []).length, 1);
+  assert.match(html, />Atual</);
+  assert.match(html, />Pendente</);
+  assert.match(html, /aria-valuetext="2 de 4 etapas concluídas"/);
+});
+test('ação primária desabilitada explica o motivo ao lado do botão', () => {
+  const goal = renderOnboardingActions({
+    current: { id: 'goal' },
+    currentIndex: 0,
+    canAdvance: false,
+  });
+  assert.match(
+    goal,
+    /<p class="guided-action-hint" id="guidedActionHint">Informe a data da prova para continuar\.<\/p>/
+  );
+  assert.match(goal, /data-guided-action="next" disabled aria-describedby="guidedActionHint">/);
+  assert.equal(
+    onboardingBlockedReason({ current: { id: 'content' }, hasContent: false }),
+    'Escolha um edital, importe um arquivo ou cadastre matérias para ver a prévia.'
+  );
+  const ready = renderOnboardingActions({
+    current: { id: 'availability' },
+    currentIndex: 1,
+    canAdvance: true,
+  });
+  assert.doesNotMatch(ready, /guided-action-hint|aria-describedby|disabled/);
 });

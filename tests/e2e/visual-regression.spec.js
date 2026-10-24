@@ -1,64 +1,111 @@
-import {test,expect} from '@playwright/test';
-import {activateTab,openDemo,openExamImport} from './helpers.js';
+import { test, expect } from '@playwright/test';
+import { activateTab, openDemo, openExamImport } from './helpers.js';
 
-const viewports=[
-  {name:'mobile-375',width:375,height:812},
-  {name:'desktop-1366',width:1366,height:768},
-  {name:'desktop-1440',width:1440,height:900},
-  {name:'desktop-1920',width:1920,height:1080}
+const viewports = [
+  { name: 'mobile-375', width: 375, height: 812 },
+  { name: 'desktop-1366', width: 1366, height: 768 },
+  { name: 'desktop-1440', width: 1440, height: 900 },
+  { name: 'desktop-1920', width: 1920, height: 1080 },
 ];
-const screenshotOptions={animations:'disabled',caret:'hide',maxDiffPixelRatio:.08};
-const screenshotName=name=>name.replace(/\.png$/,`-${process.platform}.png`);
+const screenshotOptions = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.08 };
+const screenshotName = name => name.replace(/\.png$/, `-${process.platform}.png`);
 
-async function openStableDemo(page,viewport){
-  await page.clock.install({time:new Date('2026-09-10T12:00:00-03:00')});
-  await page.setViewportSize({width:viewport.width,height:viewport.height});
+async function openStableDemo(page, viewport) {
+  await page.clock.install({ time: new Date('2026-09-10T12:00:00-03:00') });
+  await page.setViewportSize({ width: viewport.width, height: viewport.height });
   await openDemo(page);
-  await page.evaluate(()=>document.fonts.ready);
+  await page.evaluate(() => document.fonts.ready);
 }
 
-for(const viewport of viewports){
-  test(`regressão visual do hero e leitura do fechamento em ${viewport.width}px`,async({page})=>{
-    await openStableDemo(page,viewport);
-    await expect(page.locator('.statement')).toHaveScreenshot(screenshotName(`hero-${viewport.name}.png`),screenshotOptions);
-    await expect(page.locator('#weeklyCloseDashboard .weekly-strategic-focus')).toContainText('Foco estratégico da semana');
-    const close=page.locator('#weeklyCloseDashboard');
+for (const viewport of viewports) {
+  test(`regressão visual do hero e leitura do fechamento em ${viewport.width}px`, async ({
+    page,
+  }) => {
+    await openStableDemo(page, viewport);
+    await expect(page.locator('.statement')).toHaveScreenshot(
+      screenshotName(`hero-${viewport.name}.png`),
+      screenshotOptions
+    );
+    await expect(page.locator('#weeklyCloseDashboard .weekly-strategic-focus')).toContainText(
+      'Foco estratégico da semana'
+    );
+    const close = page.locator('#weeklyCloseDashboard');
     await expect(close.locator('.weekly-next')).toContainText('Próxima semana');
     await expect(close.locator('.weekly-decision-summary')).toContainText('Decisão sugerida');
     await expect(close.locator('.weekly-next')).not.toContainText('Próxima ação');
-    const order=await close.evaluate(element=>[...element.children].map(child=>child.className));
+    const order = await close.evaluate(element =>
+      [...element.children].map(child => child.className)
+    );
     expect(order.indexOf('weekly-kpis')).toBeLessThan(order.indexOf('weekly-assessment'));
-    expect(order.indexOf('weekly-assessment')).toBeLessThan(order.indexOf('weekly-strategic-focus'));
-    expect(order.indexOf('weekly-strategic-focus')).toBeLessThan(order.indexOf('weekly-focus-history'));
+    expect(order.indexOf('weekly-assessment')).toBeLessThan(
+      order.indexOf('weekly-strategic-focus')
+    );
+    expect(order.indexOf('weekly-strategic-focus')).toBeLessThan(
+      order.indexOf('weekly-focus-history')
+    );
     expect(order.indexOf('weekly-focus-history')).toBeLessThan(order.indexOf('weekly-next'));
-    const bounds=await close.evaluate(element=>({right:element.getBoundingClientRect().right,viewport:innerWidth}));
-    expect(bounds.right).toBeLessThanOrEqual(bounds.viewport+1);
+    const bounds = await close.evaluate(element => ({
+      right: element.getBoundingClientRect().right,
+      viewport: innerWidth,
+    }));
+    expect(bounds.right).toBeLessThanOrEqual(bounds.viewport + 1);
   });
 }
 
-test('regressão visual dos componentes críticos em desktop',async({page})=>{
-  await openStableDemo(page,{width:1440,height:900});
-  await page.locator('.demo-banner').evaluate(element=>element.hidden=true);
-  await page.evaluate(()=>scrollTo(0,600));
+test('regressão visual dos componentes críticos em desktop', async ({ page }) => {
+  await openStableDemo(page, { width: 1440, height: 900 });
+  await page.locator('.demo-banner').evaluate(element => (element.hidden = true));
+  await page.evaluate(() => scrollTo(0, 600));
   await expect(page.locator('.sticky-shell')).toHaveClass(/is-compact/);
-  await expect(page.locator('.compact-header')).toHaveScreenshot('cabecalho-compacto-desktop.png',screenshotOptions);
-  await page.evaluate(()=>scrollTo(0,0));
-  await page.evaluate(()=>{for(const [id,height] of [['studySessionsCard','650px'],['badgesGrid','520px'],['subjectErrorProfile','280px'],['examBlueprintConfig','820px']]){const element=document.getElementById(id);if(element){element.style.height=height;element.style.overflow='hidden'}}});
-  await expect(page.locator('#studySessionsCard')).toHaveScreenshot('historico-sessoes-desktop.png',screenshotOptions);
-  await expect(page.locator('#badgesGrid')).toHaveScreenshot('conquistas-desktop.png',screenshotOptions);
-  await activateTab(page,'questoes');
+  await expect(page.locator('.compact-header')).toHaveScreenshot(
+    'cabecalho-compacto-desktop.png',
+    screenshotOptions
+  );
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.evaluate(() => {
+    for (const [id, height] of [
+      ['studySessionsCard', '650px'],
+      ['badgesGrid', '520px'],
+      ['subjectErrorProfile', '280px'],
+      ['examBlueprintConfig', '820px'],
+    ]) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.style.height = height;
+        element.style.overflow = 'hidden';
+      }
+    }
+  });
+  await expect(page.locator('#studySessionsCard')).toHaveScreenshot(
+    'historico-sessoes-desktop.png',
+    screenshotOptions
+  );
+  await expect(page.locator('#badgesGrid')).toHaveScreenshot(
+    'conquistas-desktop.png',
+    screenshotOptions
+  );
+  await activateTab(page, 'questoes');
   await page.locator('#topicPerformanceCard > summary').click();
-  await expect(page.locator('#subjectErrorProfile')).toHaveScreenshot('erros-categorizados-desktop.png',screenshotOptions);
-  await activateTab(page,'metas');
-  await expect(page.locator('#examBlueprintConfig')).toHaveScreenshot('configuracao-estrategica-desktop.png',screenshotOptions);
+  await expect(page.locator('#subjectErrorProfile')).toHaveScreenshot(
+    'erros-categorizados-desktop.png',
+    screenshotOptions
+  );
+  await activateTab(page, 'metas');
+  await expect(page.locator('#examBlueprintConfig')).toHaveScreenshot(
+    'configuracao-estrategica-desktop.png',
+    screenshotOptions
+  );
 });
 
-test('regressão visual do assistente de edital inteligente',async({page})=>{
-  await page.setViewportSize({width:1440,height:900});
+test('regressão visual do assistente de edital inteligente', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  await activateTab(page,'disciplinas');
+  await activateTab(page, 'disciplinas');
   await openExamImport(page);
-  await page.getByRole('button',{name:'Continuar'}).click();
-  await page.evaluate(()=>document.fonts.ready);
-  await expect(page.locator('.exam-import-box')).toHaveScreenshot('edital-inteligente-desktop.png',screenshotOptions);
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await page.evaluate(() => document.fonts.ready);
+  await expect(page.locator('.exam-import-box')).toHaveScreenshot(
+    'edital-inteligente-desktop.png',
+    screenshotOptions
+  );
 });

@@ -1,10 +1,26 @@
-import {formatDateBR} from '../../core/format-date.js';
-import {pluralize} from '../../core/utils.js';
-import {diagnosticLabel} from '../../domain/diagnostics/diagnostic-vocabulary.js';
+import { formatDateBR } from '../../core/format-date.js';
+import { pluralize } from '../../core/utils.js';
+import { diagnosticLabel } from '../../domain/diagnostics/diagnostic-vocabulary.js';
 
-export function renderRecoveryReviewDebt({recoveries=[],debt},{escapeHtml}){
-  const recovery=recoveries.length?`<section class="diagnosis-positive"><h4>Recuperação consistente</h4><p class="analytics-note">Melhoras observadas em quatro semanas completas, com pelo menos 15 questões por semana. A dificuldade das questões pode variar.</p><ul>${recoveries.slice(0,5).map(item=>`<li><strong>${escapeHtml(item.name)}</strong><span>${item.weeks.map(week=>`${week.accuracy}%`).join(' → ')} · ${item.questionCount} questões · evidência ${diagnosticLabel('evidence','high').toLowerCase()}</span></li>`).join('')}</ul>${recoveries.length>5?`<p class="analytics-note">Mais ${pluralize(recoveries.length-5,'tópico','tópicos')} em recuperação nos detalhes abaixo.</p>`:''}</section>`:'';
-  const debtRows=debt.rows.slice(0,5).map(item=>`<li><strong>${escapeHtml(item.topicName)}</strong><span>${escapeHtml(formatDateBR(item.date))}${item.highPriority?' · alta prioridade existente':''}${item.consolidationRisk?' · consolidação em risco':''}</span></li>`).join('');
-  const debtHtml=`<section class="diagnosis-review-debt"><h4>Dívida de revisão</h4><p>${pluralize(debt.count,'revisão vencida','revisões vencidas')} · ${debt.highPriorityCount} em tópicos de alta prioridade e impacto · ${pluralize(debt.consolidationRiskCount,'tópico','tópicos')} com sinal de consolidação em risco.</p>${debt.count?`<ul>${debtRows}</ul>${debt.count>5?`<p class="analytics-note">Mais ${debt.count-5} revisões na Agenda.</p>`:''}`:'<p class="analytics-note">Nenhuma revisão vencida no concurso ativo.</p>'}<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('agenda')">Abrir revisões</button><details class="limits-disclosure"><summary>Limites</summary><p class="analytics-note">A contagem não altera automaticamente o plano. A relevância vem da prioridade e do impacto já calculados.</p></details></section>`;
+export function renderRecoveryReviewDebt({ recoveries = [], debt }, { escapeHtml }) {
+  const recovery = recoveries.length
+    ? `<section class="diagnosis-positive"><h4>Recuperação consistente</h4><p class="analytics-note">Melhoras observadas em quatro semanas completas, com pelo menos 15 questões por semana. A dificuldade das questões pode variar.</p><ul>${recoveries
+        .slice(0, 5)
+        .map(
+          item =>
+            `<li><strong>${escapeHtml(item.name)}</strong><span>${item.weeks.map(week => `${week.accuracy}%`).join(' → ')} · ${item.questionCount} questões · evidência ${diagnosticLabel('evidence', 'high').toLowerCase()}</span></li>`
+        )
+        .join(
+          ''
+        )}</ul>${recoveries.length > 5 ? `<p class="analytics-note">Mais ${pluralize(recoveries.length - 5, 'tópico', 'tópicos')} em recuperação nos detalhes abaixo.</p>` : ''}</section>`
+    : '';
+  const debtRows = debt.rows
+    .slice(0, 5)
+    .map(
+      item =>
+        `<li><strong>${escapeHtml(item.topicName)}</strong><span>${escapeHtml(formatDateBR(item.date))}${item.highPriority ? ' · alta prioridade existente' : ''}${item.consolidationRisk ? ' · consolidação em risco' : ''}</span></li>`
+    )
+    .join('');
+  const debtHtml = `<section class="diagnosis-review-debt"><h4>Dívida de revisão</h4><p>${pluralize(debt.count, 'revisão vencida', 'revisões vencidas')} · ${debt.highPriorityCount} em tópicos de alta prioridade e impacto · ${pluralize(debt.consolidationRiskCount, 'tópico', 'tópicos')} com sinal de consolidação em risco.</p>${debt.count ? `<ul>${debtRows}</ul>${debt.count > 5 ? `<p class="analytics-note">Mais ${debt.count - 5} revisões na Agenda.</p>` : ''}` : '<p class="analytics-note">Nenhuma revisão vencida no concurso ativo.</p>'}<button type="button" class="btn ghost small" data-delegated-click="navigateKpi('agenda')">Abrir revisões</button><details class="limits-disclosure"><summary>Limites</summary><p class="analytics-note">A contagem não altera automaticamente o plano. A relevância vem da prioridade e do impacto já calculados.</p></details></section>`;
   return `<div class="diagnosis-progress-signals">${recovery}${debtHtml}</div>`;
 }

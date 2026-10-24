@@ -1,68 +1,114 @@
-import {test,expect} from '@playwright/test';
-import {activateTab,openDemo,overviewRecommendationId} from './helpers.js';
+import { test, expect } from '@playwright/test';
+import { activateTab, openDemo, overviewRecommendationId } from './helpers.js';
 
-test('Visão Geral e Hoje compartilham a mesma recomendação prioritária',async({page})=>{
+test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', async ({ page }) => {
   await openDemo(page);
-  const overviewAction=page.locator('#overviewNextAction .overview-action-card');
+  const overviewAction = page.locator('#overviewNextAction .overview-action-card');
   await expect(overviewAction).toBeVisible();
   await expect(page.locator('.overview-now')).toBeVisible();
-  const planned=await overviewAction.getAttribute('data-decision-role')==='planned';
+  const planned = (await overviewAction.getAttribute('data-decision-role')) === 'planned';
   // A pending plan item is the single primary action; a different recommendation is only a suggestion line.
-  if(planned)await expect(overviewAction.locator('[data-daily-start], [data-daily-resume], button:disabled')).toHaveCount(1);
-  else await expect(overviewAction).toHaveAttribute('data-study-action-source','overview');
-  const suggestion=overviewAction.locator('.overview-action-suggestion',{hasText:'Sugestão fora do plano'});
-  const topic=await (await suggestion.count()?suggestion:overviewAction.locator('h3')).innerText();
-  const actionId=await overviewRecommendationId(page);
+  if (planned)
+    await expect(
+      overviewAction.locator('[data-daily-start], [data-daily-resume], button:disabled')
+    ).toHaveCount(1);
+  else await expect(overviewAction).toHaveAttribute('data-study-action-source', 'overview');
+  const suggestion = overviewAction.locator('.overview-action-suggestion', {
+    hasText: 'Sugestão fora do plano',
+  });
+  const topic = await (
+    (await suggestion.count()) ? suggestion : overviewAction.locator('h3')
+  ).innerText();
+  const actionId = await overviewRecommendationId(page);
   await expect(page.locator('#overviewAttention')).toBeVisible();
   await page.locator('#overviewAttentionViewAll').click();
   await expect(page.locator('#panel-hoje')).toHaveClass(/active/);
-  const todayAction=page.locator('#studyRecommendation .study-recommendation').first();
-  await expect(todayAction).toHaveAttribute('data-study-action-source','today');
-  await expect(todayAction).toHaveAttribute('data-study-action-id',actionId);
-  await expect.poll(async()=>topic.toLocaleLowerCase().includes((await todayAction.locator('h4').innerText()).replace(' — ',' · ').toLocaleLowerCase())).toBe(true);
-  await expect(page.locator('#studyRecommendation .recommendation-actions .btn').first()).toBeVisible();
+  const todayAction = page.locator('#studyRecommendation .study-recommendation').first();
+  await expect(todayAction).toHaveAttribute('data-study-action-source', 'today');
+  await expect(todayAction).toHaveAttribute('data-study-action-id', actionId);
+  await expect
+    .poll(async () =>
+      topic
+        .toLocaleLowerCase()
+        .includes(
+          (await todayAction.locator('h4').innerText()).replace(' — ', ' · ').toLocaleLowerCase()
+        )
+    )
+    .toBe(true);
+  await expect(
+    page.locator('#studyRecommendation .recommendation-actions .btn').first()
+  ).toBeVisible();
   await page.locator('.today-analysis-details > summary').click();
-  const diagnosisActions=page.locator('#diagnosisCenter [data-study-action-source="diagnosis"]');
+  const diagnosisActions = page.locator('#diagnosisCenter [data-study-action-source="diagnosis"]');
   await expect(diagnosisActions.first()).toBeVisible();
-  await expect(diagnosisActions.first()).toHaveAttribute('data-activity-type',/study|questions|review|prerequisite/);
+  await expect(diagnosisActions.first()).toHaveAttribute(
+    'data-activity-type',
+    /study|questions|review|prerequisite/
+  );
 });
 
-test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias',async({page})=>{
+test('aba Hoje prioriza ação e plano e recolhe apenas análises secundárias', async ({ page }) => {
   await openDemo(page);
-  await activateTab(page,'hoje');
-  const action=await page.locator('#studyRecommendation').evaluate(element=>element.getBoundingClientRect().top);
-  const plan=await page.locator('#planoHojeContent').evaluate(element=>element.getBoundingClientRect().top);
-  const alerts=await page.locator('#alertasInteligentesList').evaluate(element=>element.getBoundingClientRect().top);
+  await activateTab(page, 'hoje');
+  const action = await page
+    .locator('#studyRecommendation')
+    .evaluate(element => element.getBoundingClientRect().top);
+  const plan = await page
+    .locator('#planoHojeContent')
+    .evaluate(element => element.getBoundingClientRect().top);
+  const alerts = await page
+    .locator('#alertasInteligentesList')
+    .evaluate(element => element.getBoundingClientRect().top);
   expect(plan).toBeLessThan(action);
   expect(action).toBeLessThan(alerts);
-  await expect(page.getByRole('heading',{name:'Sugestão opcional',exact:true})).toBeVisible();
-  for(const width of [1440,390]){
-    await page.setViewportSize({width,height:900});
+  await expect(page.getByRole('heading', { name: 'Sugestão opcional', exact: true })).toBeVisible();
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
     await expect(page.locator('#planoHojeContent')).toBeVisible();
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
-    if(width===1440)expect(await page.locator('#studyRecommendation .recommendation-content').first().evaluate(node=>node.getBoundingClientRect().width)).toBeGreaterThan(400);
-    await page.locator('#panel-hoje').screenshot({path:test.info().outputPath(`today-plan-first-${width}.png`)});
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
+      true
+    );
+    if (width === 1440)
+      expect(
+        await page
+          .locator('#studyRecommendation .recommendation-content')
+          .first()
+          .evaluate(node => node.getBoundingClientRect().width)
+      ).toBeGreaterThan(400);
+    await page
+      .locator('#panel-hoje')
+      .screenshot({ path: test.info().outputPath(`today-plan-first-${width}.png`) });
   }
-  await expect(page.locator('.today-analysis-details')).not.toHaveAttribute('open','');
+  await expect(page.locator('.today-analysis-details')).not.toHaveAttribute('open', '');
   await page.locator('.today-analysis-details > summary').click();
   await expect(page.locator('#diagnosisCenter')).toBeVisible();
   await expect(page.locator('#weeklyReplan')).toBeVisible();
 });
 
-test('atalhos da Visão Geral viram seletor acessível no celular',async({page})=>{
-  await page.setViewportSize({width:375,height:850});
+test('atalhos da Visão Geral viram seletor acessível no celular', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 850 });
   await openDemo(page);
-  const selector=page.locator('#overviewNavSelect');
+  const selector = page.locator('#overviewNavSelect');
   await expect(selector).toBeVisible();
   await expect(page.locator('.overview-nav-links a').first()).toBeHidden();
   await selector.selectOption('overview-study');
   await expect(page).toHaveURL(/#overview-study$/);
-  await expect.poll(()=>page.evaluate(()=>document.getElementById('overview-study').getBoundingClientRect().top)).toBeGreaterThanOrEqual(0);
-  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.getElementById('overview-study').getBoundingClientRect().top)
+    )
+    .toBeGreaterThanOrEqual(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+      )
+    )
+    .toBeLessThanOrEqual(1);
 });
 
-test('atalhos da Visão Geral permanecem horizontais no desktop',async({page})=>{
-  await page.setViewportSize({width:1440,height:900});
+test('atalhos da Visão Geral permanecem horizontais no desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await openDemo(page);
   await expect(page.locator('.overview-nav-links a').first()).toBeVisible();
   await expect(page.locator('#overviewNavSelect')).toBeHidden();

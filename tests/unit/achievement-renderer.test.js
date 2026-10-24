@@ -1,39 +1,104 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {renderAchievementGroups} from '../../src/ui/renderers/achievement-renderer.js';
-import {buildAchievementViewModel} from '../../src/application/achievements/build-achievement-view-model.js';
+import { renderAchievementGroups } from '../../src/ui/renderers/achievement-renderer.js';
+import { buildAchievementViewModel } from '../../src/application/achievements/build-achievement-view-model.js';
 
-const escapeHtml=value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+const escapeHtml = value =>
+  String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 
-test('renderer apresenta desbloqueadas e próximas em grupos distintos',()=>{
-  const html=renderAchievementGroups(buildAchievementViewModel([{icon:'✓',name:'Concluída',desc:'Primeira sessão',unlocked:true},{icon:'◷',name:'Cem horas',desc:'100 horas',unlocked:false}]),{escapeHtml});
-  assert.match(html,/Desbloqueadas <span>1<\/span>/);assert.match(html,/Próximas conquistas <span>1<\/span>/);assert.match(html,/aria-label="Concluída: desbloqueada"/);assert.match(html,/aria-label="Cem horas: bloqueada"/);
+test('renderer apresenta desbloqueadas e próximas em grupos distintos', () => {
+  const html = renderAchievementGroups(
+    buildAchievementViewModel([
+      { icon: '✓', name: 'Concluída', desc: 'Primeira sessão', unlocked: true },
+      { icon: '◷', name: 'Cem horas', desc: '100 horas', unlocked: false },
+    ]),
+    { escapeHtml }
+  );
+  assert.match(html, /Desbloqueadas <span>1<\/span>/);
+  assert.match(html, /Próximas conquistas <span>1<\/span>/);
+  assert.match(html, /aria-label="Concluída: desbloqueada"/);
+  assert.match(html, /aria-label="Cem horas: bloqueada"/);
 });
 
-test('renderer escapa texto do catálogo',()=>{
-  const html=renderAchievementGroups(buildAchievementViewModel([{icon:'<',name:'<img src=x>',desc:'A & B'}]),{escapeHtml});
-  assert.match(html,/&lt;img src=x&gt;/);assert.match(html,/A &amp; B/);assert.doesNotMatch(html,/<img src=x>/);
+test('renderer escapa texto do catálogo', () => {
+  const html = renderAchievementGroups(
+    buildAchievementViewModel([{ icon: '<', name: '<img src=x>', desc: 'A & B' }]),
+    { escapeHtml }
+  );
+  assert.match(html, /&lt;img src=x&gt;/);
+  assert.match(html, /A &amp; B/);
+  assert.doesNotMatch(html, /<img src=x>/);
 });
 
-test('renderer mostra progresso somente em conquistas bloqueadas com meta mensurável',()=>{
-  const html=renderAchievementGroups(buildAchievementViewModel([
-    {icon:'✍️',name:'Cem questões',desc:'Resolver 100 questões',unlocked:false,progress:{current:74,target:100,unit:'questões'}},
-    {icon:'◷',name:'Dez horas',desc:'Registrar 10 horas',unlocked:true,progress:{current:10,target:10,unit:'horas'}},
-    {icon:'✓',name:'Primeira sessão',desc:'Estudar uma vez',unlocked:false}
-  ]),{escapeHtml});
-  assert.match(html,/74 \/ 100 questões/);
-  assert.match(html,/role="progressbar" aria-label="Progresso de Cem questões"/);
-  assert.doesNotMatch(html,/Progresso de Dez horas/);
-  assert.doesNotMatch(html,/Progresso de Primeira sessão/);
+test('renderer mostra progresso somente em conquistas bloqueadas com meta mensurável', () => {
+  const html = renderAchievementGroups(
+    buildAchievementViewModel([
+      {
+        icon: '✍️',
+        name: 'Cem questões',
+        desc: 'Resolver 100 questões',
+        unlocked: false,
+        progress: { current: 74, target: 100, unit: 'questões' },
+      },
+      {
+        icon: '◷',
+        name: 'Dez horas',
+        desc: 'Registrar 10 horas',
+        unlocked: true,
+        progress: { current: 10, target: 10, unit: 'horas' },
+      },
+      { icon: '✓', name: 'Primeira sessão', desc: 'Estudar uma vez', unlocked: false },
+    ]),
+    { escapeHtml }
+  );
+  assert.match(html, /74 \/ 100 questões/);
+  assert.match(html, /role="progressbar" aria-label="Progresso de Cem questões"/);
+  assert.doesNotMatch(html, /Progresso de Dez horas/);
+  assert.doesNotMatch(html, /Progresso de Primeira sessão/);
 });
 
-test('conquistas estratégicas mostram categoria e motivo do bloqueio com texto escapado',()=>{
-  const html=renderAchievementGroups(buildAchievementViewModel([
-    {id:'streak',category:'consistency',icon:'•',name:'Ritmo',desc:'Estudar',unlocked:true},
-    {id:'learn',category:'learning',icon:'•',name:'Aprender',desc:'Estudar',unlocked:false},
-    {id:'critical',category:'strategy',icon:'•',name:'Cobertura crítica',desc:'Domínio',unlocked:false,progress:{current:1,target:2,unit:'tópicos críticos'},guidance:'Complete o domínio',missing:['Juros <script> — domínio 64/100','SAC — evidência insuficiente']}
-  ]),{escapeHtml});
-  assert.match(html,/Consistência/);assert.match(html,/Aprendizado/);assert.match(html,/Estratégia/);
-  assert.match(html,/Complete o domínio/);assert.match(html,/Juros &lt;script&gt; — domínio 64\/100/);
-  assert.doesNotMatch(html,/<script>/);
+test('conquistas estratégicas mostram categoria e motivo do bloqueio com texto escapado', () => {
+  const html = renderAchievementGroups(
+    buildAchievementViewModel([
+      {
+        id: 'streak',
+        category: 'consistency',
+        icon: '•',
+        name: 'Ritmo',
+        desc: 'Estudar',
+        unlocked: true,
+      },
+      {
+        id: 'learn',
+        category: 'learning',
+        icon: '•',
+        name: 'Aprender',
+        desc: 'Estudar',
+        unlocked: false,
+      },
+      {
+        id: 'critical',
+        category: 'strategy',
+        icon: '•',
+        name: 'Cobertura crítica',
+        desc: 'Domínio',
+        unlocked: false,
+        progress: { current: 1, target: 2, unit: 'tópicos críticos' },
+        guidance: 'Complete o domínio',
+        missing: ['Juros <script> — domínio 64/100', 'SAC — evidência insuficiente'],
+      },
+    ]),
+    { escapeHtml }
+  );
+  assert.match(html, /Consistência/);
+  assert.match(html, /Aprendizado/);
+  assert.match(html, /Estratégia/);
+  assert.match(html, /Complete o domínio/);
+  assert.match(html, /Juros &lt;script&gt; — domínio 64\/100/);
+  assert.doesNotMatch(html, /<script>/);
 });
