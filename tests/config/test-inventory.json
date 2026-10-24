@@ -1059,6 +1059,32 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/e2e/reload-persistence.spec.js",
+      "layer": "browser",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "journey"
+      ],
+      "imports": [
+        "@playwright/test",
+        "./helpers.js"
+      ],
+      "staticTestDeclarations": 1,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "test:e2e",
+        "test:full UTC"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/e2e/reports.spec.js",
       "layer": "browser",
       "area": "Aplicação",

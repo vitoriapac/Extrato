@@ -5534,7 +5534,8 @@ registerMobileInputVisibility({window,document});
 
 setCalendarMobileView('month');
 const initialHash = location.hash.replace('#',''),initialTab = Object.keys(TAB_HASHES).find(tab=>TAB_HASHES[tab]===initialHash)||initialHash;
-if(document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) activateTab(initialTab, false);
+// Activating a tab renders and saves; before loadState that save stamps the default state as newest and it wins the load.
+const activateInitialTab=()=>{if(document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) activateTab(initialTab, false)};
 
 if(TEST_MODE){
   const pristineTestState=structuredCloneSafe(state);
@@ -5553,10 +5554,10 @@ if(TEST_MODE){
     computeApprovalMetrics,indiceProntidao,readinessResult,calculateReadinessScore,computeStudyPriorities,topicRetentionScore,topicMasteryIndex,intelligenceCandidates,studyPlanCandidates,buildStudyPlan,renderAll,
     sha256,rotateAutomaticBackup,StorageManager,structuredCloneSafe
   };
-  ensureStateDefaults();restoreTimerFromState();render();
+  activateInitialTab();ensureStateDefaults();restoreTimerFromState();render();
   const testScript=document.createElement('script');testScript.src='tests/tests.js';document.body.appendChild(testScript);
 }else{
-  bootstrapApplication({context:appContext,start:loadState,onError:error=>console.error('Falha na inicialização do aplicativo',error)});
+  bootstrapApplication({context:appContext,start:async context=>{await loadState(context);activateInitialTab()},onError:error=>console.error('Falha na inicialização do aplicativo',error)});
 }
 
 globalThis.studytrackProgressiveLists=mountProgressiveLists({document,window});

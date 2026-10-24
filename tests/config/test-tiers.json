@@ -264,6 +264,11 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
+      "file": "tests/e2e/reload-persistence.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
       "file": "tests/e2e/session-bookmark.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
