@@ -48,7 +48,7 @@ Pré-requisito: as mudanças não commitadas que já estão na árvore precisam 
   - Verify: `npm test`, `npm run check:types`
   - Files: `src/ui/controllers/pip-timer-controller.js`, `tests/unit/pip-timer-controller.test.js`
 
-- [ ] Tarefa 6: janela flutuante ligada ao app (R6, R7)
+- [x] Tarefa 6: janela flutuante ligada ao app (R6, R7)
   - Acceptance:
     - O botão "Janela flutuante" aparece só com suporte.
     - Os estilos e o `data-theme` são copiados.

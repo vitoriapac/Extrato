@@ -89,7 +89,7 @@ import {calculateWindowTrend,trendToRisk} from './domain/analytics/trends.js';
 import {summarizeStudyRecords} from './domain/analytics/study-metrics.js';
 import {normalizeTopicStrategy,normalizeExamBlueprint,normalizeAlgorithmVersions,EXAM_PRIORITIES} from './state/strategic.js';
 import {normalizeTopicBookmark,formatBookmarkLabel} from './domain/topic-bookmark.js';
-import {formatTimerTitle} from './ui/controllers/pip-timer-controller.js';
+import {formatTimerTitle,buildTimerMiniView,createPipTimerController,shouldMarkHidden} from './ui/controllers/pip-timer-controller.js';
 import {buildExecutiveSummary} from './application/build-executive-summary.js';
 import {analyzeErrors} from './domain/diagnostics/error-analysis.js';
 import {buildErrorAnalysisViewModel} from './application/analytics/build-error-analysis-view-model.js';
@@ -1372,6 +1372,16 @@ demoController.mount();
 let timerSeconds = 0;
 let timerRunning = false;
 const BASE_DOCUMENT_TITLE=document.title;
+const pipTimer=createPipTimerController({
+  getView:()=>{const active=state.activeTimer||{},steps=active.strategy?.steps||[],index=Math.min(active.strategyStep||0,Math.max(0,steps.length-1)),step=steps[index];
+    return buildTimerMiniView({running:timerRunning,seconds:currentTimerSeconds(),targetMinutes:active.targetMinutes,subjectName:active.subjectId?getSubjectName(active.subjectId):'',topicName:active.topicId?getTopicName(active.topicId):'',bookmarkLabel:topicResumeLabel(active.topicId),stepLabel:step?`Etapa ${index+1}/${steps.length}: ${step.label} · ${step.minutes} min`:'',formatTime:formatTimer,formatMinutes:formatPlanMinutes})},
+  onToggle:()=>timerRunning?pauseTimer():startTimer(),
+  onFinish:()=>{finishStudyTimer();window.focus()},
+  copyStyles:doc=>{
+    for(const node of document.querySelectorAll('link[rel="stylesheet"],style')){const copy=doc.importNode(node,true);if(node.href)copy.href=node.href;doc.head.append(copy)}
+    doc.documentElement.setAttribute('data-theme',document.documentElement.getAttribute('data-theme')||'light');doc.body.classList.add('pip-timer-window');doc.title='StudyTrack';
+  }
+});
 let timerIntervalId = null;
 let timerStartedAt = null;
 
@@ -1481,6 +1491,7 @@ function updateTimerDisplay(){
   }
   const title=formatTimerTitle({started:hasStartedStudyTimer(),running:timerRunning,time:formatTimer(timerSeconds),subjectName:state.activeTimer?.subjectId?getSubjectName(state.activeTimer.subjectId):'',baseTitle:BASE_DOCUMENT_TITLE});
   if(document.title!==title)document.title=title;
+  pipTimer.render();
   renderTimerFocusContext();
   renderGuidedStrategy();
 }
@@ -1579,6 +1590,7 @@ function resetTimer(){
   timerStartedAt = null;
   Object.assign(state.activeTimer,{startedAt:null,runStartedAt:null,accumulatedSeconds:0,isRunning:false,hiddenAt:null,planItemId:null,targetMinutes:null,strategy:null,strategyStep:0,recommendationId:null,recommendationSource:null,recommendationType:null,prioritySnapshot:null});
   guidedStudyService.reset();
+  pipTimer.close();
   updateTimerDisplay();
   updateTimerControls();
   scheduleSave();
@@ -1689,11 +1701,15 @@ document.getElementById('timerResetBtn').addEventListener('click', () => {
   if(timerSeconds === 0){ return; }
   showConfirm('Zerar o cronômetro? O tempo desta sessão será perdido.', resetTimer);
 });
-document.getElementById('timerFinishBtn').addEventListener('click', () => {
+function finishStudyTimer(){
   if(timerSeconds === 0){ showToast('O cronômetro ainda não começou.'); return; }
   pauseTimer();
   showSessionModal();
-});
+}
+document.getElementById('timerFinishBtn').addEventListener('click', finishStudyTimer);
+const timerPipBtn=document.getElementById('timerPipBtn');
+timerPipBtn.hidden=!pipTimer.supported;
+timerPipBtn.addEventListener('click',()=>pipTimer.open().catch(error=>{console.warn('Janela flutuante indisponível',error);showToast('Não foi possível abrir a janela flutuante.')}));
 document.getElementById('sessionModalSkipBtn').addEventListener('click', discardSessionFromModal);
 document.getElementById('sessionModalOverlay').addEventListener('session-modal-dismiss',dismissSessionModal);
 document.getElementById('sessionModalSubject').addEventListener('change',function(){ populateSessionTopicSelect(this.value); fillSessionBookmarkFields(''); });
@@ -1741,7 +1757,7 @@ document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
 
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){
-    if(state.activeTimer.isRunning){ state.activeTimer.hiddenAt=nowISO(); scheduleSave(); }
+    if(shouldMarkHidden({isRunning:state.activeTimer.isRunning,pipOpen:pipTimer.isOpen()})){ state.activeTimer.hiddenAt=nowISO(); scheduleSave(); }
     return;
   }
   const hiddenAt=state.activeTimer.hiddenAt?Date.parse(state.activeTimer.hiddenAt):0;

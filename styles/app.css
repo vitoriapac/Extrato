@@ -1721,6 +1721,18 @@ body.timer-focus-active .timer-context{display:none!important}
 #sessionModalOverlay .session-bookmark-fields>summary{min-height:var(--touch-target);display:flex;align-items:center;cursor:pointer;color:var(--heading);font:600 12px var(--font-data);letter-spacing:.04em;text-transform:uppercase}
 #sessionModalOverlay .session-bookmark-fields>summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #sessionModalOverlay .session-bookmark-fields>button{justify-self:start}
+/* .btn sets display, so [hidden] needs its own rule on these buttons. */
+#sessionModalOverlay .session-bookmark-fields>button[hidden],#timerPipBtn[hidden]{display:none}
+body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font-family:var(--font-body)}
+.pip-timer{display:grid;gap:6px;padding:12px 14px}
+.pip-timer p{margin:0}
+.pip-timer [hidden]{display:none}
+.pip-timer__title{color:var(--heading);font:600 13px/1.3 var(--font-body)}
+.pip-timer__bookmark,.pip-timer__target,.pip-timer__step{color:var(--ink-soft);font-size:var(--text-caption)}
+.pip-timer__time{color:var(--heading);font:600 34px/1 var(--font-data)}
+.pip-timer__progress{width:100%}
+.pip-timer__actions{display:flex;gap:8px}
+.pip-timer__notice{color:var(--heading);font-size:var(--text-caption)}
 #sessionModalOverlay .session-notes{min-height:76px;resize:vertical}
 @media(max-width:480px){#sessionModalOverlay .session-question-fields{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:850px){.history-desktop-row{display:none}.responsive-history-table{min-width:0!important}.responsive-history-table thead{display:none}.mobile-history-row td{display:table-cell!important;padding:8px!important;background:transparent!important}.mobile-history-card{display:block;width:100%;min-width:0;background:var(--white);border:1px solid var(--paper-line);padding:14px}.mobile-card-head,.mobile-card-metrics{width:100%;min-width:0}.mobile-card-head>div{min-width:0}.mobile-card-metrics>*{max-width:100%;overflow-wrap:anywhere}.responsive-history-table,.responsive-history-table tbody,.mobile-history-row,.mobile-history-row td{display:block!important;width:100%}.mobile-history-row td{overflow:visible!important}}

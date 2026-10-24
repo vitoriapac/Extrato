@@ -27,6 +27,7 @@ test('ponto de parada salvo no check-out aparece na próxima ação e volta pree
   const section=page.locator('#sessionBookmarkSection');
   await expect(section).toBeVisible();await expect(section).not.toHaveAttribute('open','');
   await section.locator('summary').click();
+  await expect(page.locator('#sessionBookmarkClearBtn')).toBeHidden();
   await page.locator('#sessionBookmarkCurrent').fill('42');await page.locator('#sessionBookmarkTotal').fill('110');
   await page.locator('#sessionModalSaveBtn').click();
   await expect(card(page)).toContainText('Continuar de: PDF · pág. 42 de 110 (38%)');
