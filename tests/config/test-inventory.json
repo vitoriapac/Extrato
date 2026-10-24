@@ -421,7 +421,7 @@
         "./helpers.js",
         ")?",
         ":section.getAttribute(",
-        "]);\r\n  await expect(page.locator("
+        "]);\n  await expect(page.locator("
       ],
       "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
