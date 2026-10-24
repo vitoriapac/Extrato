@@ -4,13 +4,13 @@ O aplicativo continua executando inteiramente no navegador e sem dependências e
 
 ## Visão geral da arquitetura
 
-`src/app.js` compõe estado, relógio, serviços e interface. As setas indicam dependências permitidas: a interface aciona a aplicação; regras de domínio não importam a interface nem acessam o estado global. Repositórios e providers isolam a persistência.
+`src/app.ts` compõe estado, relógio, serviços e interface. As setas indicam dependências permitidas: a interface aciona a aplicação; regras de domínio não importam a interface nem acessam o estado global. Repositórios e providers isolam a persistência.
 
 `application/adherence` reconcilia execução por período e escopo, calcula crédito e interpreta prioridades congeladas. A meta pessoal (`metas.aderenciaSemanal`, percentual de 50–100 ou `null`) é um contexto separado: não alimenta scores ou o cálculo da projeção. Backups antigos recebem o padrão 80; novos fechamentos capturam esse contexto sem reescrever os anteriores. A política analítica versionada mantém seu próprio limiar.
 
 ```mermaid
 flowchart TD
-    ROOT["Composition root: app.js"] --> UI["UI: controllers, view-models e renderers"]
+    ROOT["Composition root: app.ts"] --> UI["UI: controllers, view-models e renderers"]
     ROOT --> APP["Application: casos de uso e orquestração"]
     ROOT --> STATE["State: schema e estado inicial"]
     UI --> APP
@@ -52,14 +52,15 @@ flowchart TD
 
 - `index.html`: marcação e pontos de montagem da interface.
 - `styles/tokens.css`: cores, temas e tokens visuais.
-- `src/ui/components/presentation.js` e `docs/UI-FOUNDATIONS.md`: renderização compartilhada de cabeçalhos, métricas e estados vazios, com o contrato de superfícies e espaçamento usado na migração gradual das telas.
+- `src/ui/components/presentation.ts` e `docs/UI-FOUNDATIONS.md`: renderização compartilhada de cabeçalhos, métricas e estados vazios, com o contrato de superfícies e espaçamento usado na migração gradual das telas.
 - `styles/app.css`: layout e componentes.
-- `src/theme-bootstrap.js`: aplica o tema antes da primeira pintura.
-- `src/bootstrap/bootstrap-application.js`: executa a inicialização com contexto explícito e contenção de falhas.
-- `src/bootstrap/register-lifecycle.js`: registra e permite desmontar eventos globais do ciclo de vida.
-- `src/bootstrap.js`: reexportação temporária compatível do bootstrap modular.
-- `src/application/create-app-context.js`: registra provider, relógio, repositórios e gerador de IDs injetáveis.
-- `src/application/demo/demo-mode.js`: controla entrada, reinício e saída segura da demonstração.
+- `src/theme-bootstrap.js`: aplica o tema antes da primeira pintura (executado diretamente pelo navegador via `<script>`).
+- `src/pwa.js`: registro e ciclo de vida do Service Worker PWA (executado diretamente pelo navegador via `<script>`).
+- `src/bootstrap/bootstrap-application.ts`: executa a inicialização com contexto explícito e contenção de falhas.
+- `src/bootstrap/register-lifecycle.ts`: registra e permite desmontar eventos globais do ciclo de vida.
+- `src/bootstrap.ts`: reexportação modular do bootstrap tipado.
+- `src/application/create-app-context.ts`: registra provider, relógio, repositórios e gerador de IDs injetáveis.
+- `src/application/demo/demo-mode.ts`: controla entrada, reinício e saída segura da demonstração.
 - `src/state/schema.ts`: contrato do estado, versões, enums e chaves de armazenamento.
 - `src/state/defaults.ts`: fábrica do estado inicial, sem compartilhar referências mutáveis.
 - `src/state/strategic.ts`: normalização do plano de prova, importância/esforço dos tópicos, ponto de parada (`bookmark`) e versões dos algoritmos.

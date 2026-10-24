@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "allowJs": true,
@@ -14,23 +14,13 @@
     "maxNodeModuleJsDepth": 0
   },
   "include": [
-    "src/core/**/*",
-    "src/state/**/*",
-    "src/domain/reviews.*",
-    "src/domain/topic-bookmark.*",
-    "src/domain/questions/**/*",
-    "src/domain/analytics/priority-score.*",
-    "src/domain/planning/adaptive-planning.*",
-    "src/storage/storage-provider.*",
-    "src/storage/remote-sync-provider.*",
-    "src/ui/controllers/remote-sync-controller.*",
-    "src/ui/controllers/pip-timer-controller.*",
-    "src/application/questions/question-import-service.*",
-    "src/features/question-import/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "src/app.bundle.js",
-    "src/exam-catalog.bundle.js"
+    "src/exam-catalog.bundle.js",
+    "src/theme-bootstrap.js",
+    "src/pwa.js"
   ]
 }

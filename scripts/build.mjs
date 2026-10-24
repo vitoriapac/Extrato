@@ -6,8 +6,8 @@ import { fileURLToPath } from 'node:url';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const bundles = [
-  { entry: 'src/app.js', output: 'src/app.bundle.js' },
-  { entry: 'src/domain/exams/exam-catalog-runtime.js', output: 'src/exam-catalog.bundle.js' },
+  { entry: 'src/app.ts', output: 'src/app.bundle.js' },
+  { entry: 'src/domain/exams/exam-catalog-runtime.ts', output: 'src/exam-catalog.bundle.js' },
 ];
 const checkOnly = process.argv.includes('--check');
 const versionPlaceholder = '__BUILD_VERSION__';

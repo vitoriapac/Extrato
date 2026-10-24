@@ -1,0 +1,181 @@
+import { formatDecimal } from '../../core/format-number.js';
+import { formatDateBR } from '../../core/format-date.js';
+import { pluralize } from '../../core/utils.js';
+import { renderDecisionExplanation } from '../components/decision-explanation.js';
+import { formatEvidencePercent, presentEvidence, EVIDENCE_STATES } from '../evidence-state.js';
+import { buildProjectionEvidenceExplanation } from '../../application/projection/build-projection-evidence-explanation.js';
+import { renderAdherenceTarget } from '../renderers/adherence-target-renderer.js';
+import { renderRecoveryPlan, formatRecoveryMinutes } from './recovery-plan-renderer.js';
+import { buildProjectionRequirements } from '../../application/projection/build-projection-requirements.js';
+
+const labels = {
+  insufficient_data: 'Dados insuficientes',
+  on_track: 'No caminho',
+  attention: 'Atenção',
+  at_risk: 'Em risco',
+};
+const confidenceLabels = { insufficient: 'Insuficiente', low: 'Baixa', moderate: 'Moderada' };
+const phaseLabels = {
+  undated: 'Sem data',
+  construction: 'Construção',
+  consolidation: 'Consolidação',
+  final_stretch: 'Reta final',
+  final_review: 'Revisão final',
+};
+const recoveryLabels = {
+  not_needed: 'Não necessária',
+  recoverable: 'Prévia disponível',
+  limited: 'Opções limitadas',
+  unavailable: 'Sem proposta segura',
+};
+const pct = formatEvidencePercent;
+const hours = formatRecoveryMinutes;
+
+function renderRecoveryScenarioComparison(
+  recovery,
+  currentScenario,
+  simulatedScenario,
+  escapeHtml
+) {
+  if (!recovery) return '';
+  const currentPlanPanel = scenario =>
+    `<div><h4>Plano atual</h4><p>Trajetória: ${labels[scenario?.status] || labels.insufficient_data}</p><p>Capacidade semanal: ${hours(scenario?.weeklyCapacityMinutes ?? 0)}</p><p>Carga planejada: ${hours(scenario?.planFit?.plannedMinutes ?? 0)}</p><p>${scenario?.planFit?.shortfallMinutes > 0 ? `Faltam ${hours(scenario.planFit.shortfallMinutes)} para acomodar a carga.` : `A carga cabe; sobram ${hours(scenario?.planFit?.remainingMinutes ?? 0)}.`}</p></div>`;
+  const recoveryPlanPanel = (scenario, item) => {
+    if (!item) return `<div><h4>Plano de recuperação</h4><p>Prévia indisponível.</p></div>`;
+    const transfer =
+      item.status === 'recoverable'
+        ? `${escapeHtml(item.from?.name || 'Origem')} → ${escapeHtml(item.to?.name || 'Destino')} · ${hours(item.transferMinutes)}`
+        : escapeHtml(item.reason || recoveryLabels[item.status] || 'Sem transferência segura.');
+    return `<div><h4>Plano de recuperação</h4><p>${recoveryLabels[item.status] || recoveryLabels.unavailable}</p><p>${transfer}</p><p>Capacidade ${hours(item.capacity?.current ?? scenario?.weeklyCapacityMinutes ?? 0)} → ${hours(item.capacity?.proposed ?? item.capacity?.current ?? scenario?.weeklyCapacityMinutes ?? 0)} · carga ${hours(item.totalMinutes?.current ?? 0)} → ${hours(item.totalMinutes?.proposed ?? item.totalMinutes?.current ?? 0)}</p></div>`;
+  };
+  const alternative = (title, item) =>
+    `<div><h4>${title}</h4><p>${recoveryLabels[item?.status] || recoveryLabels.unavailable}</p><p>${item?.status === 'recoverable' ? `${escapeHtml(item.from?.name || 'Origem')} → ${escapeHtml(item.to?.name || 'Destino')} · ${hours(item.transferMinutes)}` : escapeHtml(item?.reason || 'Sem transferência segura.')}</p></div>`;
+  return `<section class="projection-recovery-comparison"><h4>Plano atual vs. plano de recuperação</h4><p>A simulação não prevê melhora de nota pela mudança de carga. Ela compara o encaixe e a redistribuição permitida pelas regras atuais.</p><div class="projection-scenario__comparison">${currentPlanPanel(currentScenario)}${recoveryPlanPanel(currentScenario, recovery.current)}</div><h4>Como meta e prazo alteram a proposta</h4><div class="projection-scenario__comparison">${alternative('Condições atuais', recovery.current)}${alternative('Condições simuladas', recovery.simulated)}</div></section>`;
+}
+
+function renderTrajectory(model, escapeHtml) {
+  const points = (model.trajectory.observations || []).slice(-12);
+  if (points.length < 2)
+    return '<p class="analytics-note">A trajetória visual aparece após simulados comparáveis em datas diferentes.</p>';
+  const width = 640,
+    height = 190,
+    left = 42,
+    right = 18,
+    top = 16,
+    bottom = 30;
+  const x = index => left + (index / (Math.max(1, points.length - 1) + 1)) * (width - left - right);
+  const y = value => top + ((100 - value) / 100) * (height - top - bottom);
+  const historical = points
+    .map((point, index) => `${x(index).toFixed(1)},${y(point.value).toFixed(1)}`)
+    .join(' ');
+  const last = points.at(-1),
+    lastX = x(points.length - 1),
+    forecast = model.trajectory.forecast30;
+  const future = forecast.available
+    ? `<line x1="${lastX}" y1="${y(last.value)}" x2="${width - right}" y2="${y(forecast.central)}" class="achievement-trajectory__future" tabindex="0" aria-label="Tendência de 30 dias: ${pct(forecast.central)}. Não representa nota prevista na prova."><title>Tendência de 30 dias: ${pct(forecast.central)}. Não representa nota prevista na prova.</title></line>`
+    : '';
+  const values = points
+    .map(
+      point =>
+        `<tr><th scope="row"><time datetime="${escapeHtml(point.date)}">${escapeHtml(formatDateBR(point.date))}</time></th><td>${pct(point.value)}</td><td>${pct(model.current.targetScore)}</td></tr>`
+    )
+    .join('');
+  return `<div class="achievement-trajectory__scroll" tabindex="0" role="region" aria-label="Gráfico da trajetória de simulados"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Histórico de simulados e tendência de 30 dias">
+    <title>Trajetória de desempenho</title><desc>Resultados registrados em linha sólida, tendência calculada de 30 dias em linha tracejada e meta em linha horizontal. Valores disponíveis abaixo.</desc>
+    <line x1="${left}" x2="${width - right}" y1="${y(model.current.targetScore)}" y2="${y(model.current.targetScore)}" class="achievement-trajectory__target"/>
+    <polyline points="${historical}" class="achievement-trajectory__observed"/>${future}
+    ${points.map((point, index) => `<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot" tabindex="0" aria-label="${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}"><title>${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}</title></circle>`).join('')}
+    <text x="${left}" y="${height - 7}">${escapeHtml(formatDateBR(points[0].date))}</text><text x="${lastX}" y="${height - 7}" text-anchor="middle">${escapeHtml(formatDateBR(last.date))}</text>
+    ${forecast.available ? `<text x="${width - right}" y="${height - 7}" text-anchor="end">30 dias</text>` : ''}
+  </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span><span>┄ Tendência de 30 dias</span><span>─ Meta</span></div>
+  <details class="limits-disclosure"><summary>Limites</summary><p class="analytics-note">O trecho tracejado é uma previsão de 30 dias, não uma nota estimada para a data da prova.</p></details>
+  <details class="achievement-projection__details"><summary>Ver valores do gráfico</summary><div class="performance-table-scroll" tabindex="0"><table><thead><tr><th scope="col">Data</th><th scope="col">Simulado</th><th scope="col">Meta</th></tr></thead><tbody>${values}</tbody></table></div></details>`;
+}
+
+function renderRequirements(model, escapeHtml) {
+  const { requirements, pending } = buildProjectionRequirements(model);
+  const evidence = presentEvidence({
+    state: requirements.slice(2).every(item => item.met)
+      ? EVIDENCE_STATES.NOT_APPLICABLE
+      : (model.evidence?.observationCount || 0) > 0
+        ? EVIDENCE_STATES.INSUFFICIENT
+        : EVIDENCE_STATES.NO_DATA,
+    message: requirements.slice(2).every(item => item.met)
+      ? 'Revise a meta ou a data da prova para apresentar esta análise.'
+      : 'Precisamos de mais evidências comparáveis.',
+  });
+  return `<div class="achievement-projection__requirements" role="status"><strong>Projeção ainda indisponível</strong><p data-evidence-state="${evidence.state}">${escapeHtml(evidence.label)}. ${escapeHtml(evidence.message)}</p><ul>${requirements.map(item => `<li>${item.met ? '✓' : '○'} ${escapeHtml(item.label)}</li>`).join('')}</ul>${pending.length ? `<p>${escapeHtml(pending[0].guidance)}</p>` : ''}<button type="button" class="btn ghost small" ${pending[0]?.label === 'Data da prova' ? 'data-performance-open="metas"' : 'data-performance-section="simulations"'}>${pending[0]?.label === 'Data da prova' ? 'Configurar prova' : 'Registrar simulado'}</button></div>`;
+}
+
+function renderHistory(history, escapeHtml) {
+  if (!history.length) return '';
+  const ordered = [...history].reverse(),
+    rows = items =>
+      items
+        .map(
+          item =>
+            `<li><time datetime="${escapeHtml(item.date)}">${escapeHtml(formatDateBR(item.date))}</time> · ${labels[item.status] || labels.insufficient_data} · confiança ${confidenceLabels[item.confidence?.level] || confidenceLabels.insufficient}</li>`
+        )
+        .join('');
+  const transitions = [...history]
+    .map(item => labels[item.status] || labels.insufficient_data)
+    .filter((label, index, list) => index === 0 || label !== list[index - 1]);
+  return `<details class="achievement-projection__details"><summary>Histórico da trajetória</summary>${transitions.length > 1 ? `<p>Estados registrados: ${escapeHtml(transitions.join(' → '))}. A sequência não indica causalidade.</p>` : ''}<ul>${rows(ordered.slice(0, 5))}</ul>${ordered.length > 5 ? `<details class="achievement-projection__details"><summary>Mostrar mais</summary><ul>${rows(ordered.slice(5))}</ul></details>` : ''}</details>`;
+}
+
+export function renderProjectionScenarioResult(result, { escapeHtml }: any = {}) {
+  if (result?.state !== 'ready')
+    return `<p role="alert">${escapeHtml(result?.reason || 'Não foi possível calcular este cenário.')}</p>`;
+  const fit = value =>
+    value == null
+      ? 'Sem plano semanal para comparar'
+      : value.shortfallMinutes > 0
+        ? `Faltam ${hours(value.shortfallMinutes)} para a carga atual`
+        : `A carga atual cabe; sobram ${hours(value.remainingMinutes)}`;
+  const column = (title, value) =>
+    `<div><h4>${title}</h4><dl><dt>Trajetória</dt><dd>${labels[value.status] || labels.insufficient_data}</dd><dt>Meta</dt><dd>${pct(value.targetScore)}</dd><dt>Prazo</dt><dd>${pluralize(value.daysRemaining, 'dia', 'dias')}</dd><dt>Capacidade semanal</dt><dd>${hours(value.weeklyCapacityMinutes)}</dd><dt>Plano</dt><dd>${fit(value.planFit)}</dd></dl></div>`;
+  return `<section aria-label="Resultado da simulação"><strong>Resultado simulado</strong><div class="projection-scenario__comparison">${column('Atual', result.current)}${column('Simulação', result.simulated)}</div><p class="analytics-note">${escapeHtml(result.note)} Nenhum dado real foi alterado.</p>${renderRecoveryScenarioComparison(result.recovery, result.current, result.simulated, escapeHtml)}</section>`;
+}
+
+export function renderAchievementProjection(
+  model,
+  {
+    history = [],
+    escapeHtml,
+    escapeAttr = escapeHtml,
+    weeklyCapacityMinutes = 0,
+    adherenceContext = null,
+    recoveryPlan = null,
+  }: any = {}
+) {
+  if (!model) return '';
+  const status = labels[model.status] || labels.insufficient_data;
+  const confidence = confidenceLabels[model.confidence.level] || confidenceLabels.insufficient;
+  const band = model.projection.calibratedSimulationBand;
+  const evidenceExplanation = buildProjectionEvidenceExplanation(model);
+  const forecast = model.trajectory.forecast30;
+  const entries = [
+    ...model.drivers.map(text => ({ text, type: 'driver' })),
+    ...model.risks.map(text => ({ text, type: 'risk' })),
+  ].slice(0, 4);
+  const context =
+    model.exam.daysRemaining == null
+      ? 'Data da prova não definida'
+      : `${pluralize(model.exam.daysRemaining, 'dia', 'dias')} até a prova`;
+  return `<section class="performance-block achievement-projection" aria-labelledby="achievementProjectionTitle">
+    <div class="achievement-projection__heading"><div><span class="section-eyebrow">TRAJETÓRIA</span><h3 id="achievementProjectionTitle">Projeção até a prova</h3></div><span class="achievement-projection__status achievement-projection__status--${model.status}">${status}</span></div>
+    <p>${escapeHtml(model.summary)}</p><p class="performance-method-note">${context} · fase ${phaseLabels[model.exam.phase] || phaseLabels.undated}</p>
+    <div class="achievement-projection__metrics"><div><span>Simulados comparáveis</span><strong>${pct(model.current.simulationAccuracy)}</strong></div><div><span>Meta de nota</span><strong>${pct(model.current.targetScore)}</strong></div><div><span>Faixa atual</span><strong>${band ? `${pct(band.low)}–${pct(band.high)}` : '—'}</strong></div><div><span>Tendência em 30 dias</span><strong>${forecast.available ? pct(forecast.central) : '—'}</strong></div></div>
+    <p class="performance-method-note">Confiança da projeção: ${confidence.toLowerCase()}. Veja a base em “Entender esta projeção”.</p>
+    ${model.status === 'insufficient_data' ? renderRequirements(model, escapeHtml) : renderTrajectory(model, escapeHtml)}
+    ${renderAdherenceTarget(adherenceContext, { escapeHtml })}
+    <div class="achievement-projection__story"><div><strong>Evidência</strong><p>${escapeHtml(model.risks[0] || model.drivers[0] || model.confidence.reasons[0] || model.summary)}</p></div><div><strong>Ação</strong><p>${escapeHtml(model.recovery?.steps?.[0] || 'Continue registrando simulados comparáveis.')}</p></div></div>
+    ${renderDecisionExplanation({ title: 'Entender esta projeção', factors: entries.map(item => item.text), evidence: (model.evidence.observationCount || 0) + ' simulados comparáveis · ' + (model.evidence.sampleSize || 0) + ' questões na amostra.', confidence: model.confidence.reasons.join(' '), helpTopic: 'projections', method: '<dl>' + evidenceExplanation.facts.map(fact => '<dt>' + escapeHtml(fact.label) + '</dt><dd>' + escapeHtml(fact.value) + '</dd>').join('') + '</dl><p>' + [evidenceExplanation.bandMeaning, evidenceExplanation.method, evidenceExplanation.confidenceMeaning, evidenceExplanation.trendMeaning].map(escapeHtml).join('</p><p>') + '</p><p>Prontidão é um índice de preparação; não representa probabilidade de aprovação.</p>' }, { escapeHtml, escapeAttr })}
+    ${model.recovery ? `<details class="achievement-projection__details"><summary>O que seria necessário?</summary><p>${model.recovery.state === 'collect_evidence' ? 'Primeiro, reúna uma base comparável.' : `Déficit central medido: ${formatDecimal(model.recovery.gap)} p.p. · ${pluralize(formatDecimal(model.recovery.weeksRemaining ?? '—'), 'semana', 'semanas')} até a prova.`}</p><ol>${model.recovery.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}</ol><p class="analytics-note">Orientações para revisão do plano, sem previsão de ganho de nota ou alteração automática de horas.</p></details>` : ''}
+    ${['attention', 'at_risk'].includes(model.status) ? renderRecoveryPlan(recoveryPlan, escapeHtml, escapeAttr) : ''}
+    ${renderHistory(history, escapeHtml)}
+    <button type="button" class="btn ghost small" data-projection-scenario-open>Simular cenário</button>
+    <dialog id="projectionScenarioDialog" class="projection-scenario" aria-labelledby="projectionScenarioTitle"><form method="dialog"><div class="projection-scenario__heading"><h3 id="projectionScenarioTitle">Simular cenário</h3><button type="submit" class="btn ghost small" aria-label="Fechar simulação">Fechar</button></div></form><p>Explore como meta, prazo e capacidade mudam a leitura e o encaixe do plano atual. Esta simulação não salva dados.</p>
+      <form data-projection-scenario-form><label>Capacidade semanal (horas)<input type="number" name="capacityHours" min="0" max="168" step="0.5" required value="${Math.round((weeklyCapacityMinutes / 60) * 10) / 10}"></label><label>Data da prova<input type="date" name="examDate" required value="${model.exam.date || ''}"></label><label>Meta de nota (%)<input type="number" name="targetScore" min="1" max="100" step="1" required value="${model.current.targetScore}"></label><button type="submit" class="btn primary">Executar simulação</button></form><div id="projectionScenarioResult" aria-live="polite"></div></dialog>
+  </section>`;
+}

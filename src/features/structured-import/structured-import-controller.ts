@@ -1,0 +1,91 @@
+import { buildStructuredImportViewModel } from './structured-import-view-model.js';
+export function createStructuredImportController({
+  document,
+  window,
+  parse,
+  service,
+  render,
+  notify,
+  onImported,
+  onCancel = () => {},
+  onOpen = () => {},
+  maxBytes = 2 * 1024 * 1024,
+}: any = {}) {
+  const input = document.getElementById('structuredContentFile'),
+    open = document.getElementById('structuredContentImportBtn'),
+    overlay = document.getElementById('structuredImportOverlay'),
+    content = document.getElementById('structuredImportContent'),
+    confirm = document.getElementById('structuredImportConfirmBtn'),
+    cancel = document.getElementById('structuredImportCancelBtn');
+  let pending = null,
+    previousFocus = null;
+  const close = ({ completed = false } = {}) => {
+    overlay.classList.remove('show');
+    pending = null;
+    onCancel({ completed });
+    previousFocus?.focus?.();
+    previousFocus = null;
+  };
+  const show = model => {
+    content.innerHTML = render(model);
+    confirm.hidden = !model.canConfirm;
+    overlay.classList.add('show');
+    cancel.focus();
+  };
+  const read = file => {
+    if (!file) return;
+    if (file.size > maxBytes) {
+      notify('O arquivo excede o limite de 2 MB.');
+      return;
+    }
+    const reader = new window.FileReader();
+    reader.onerror = () => notify('Não foi possível ler o arquivo.');
+    reader.onload = () => {
+      try {
+        const subjects = parse(String(reader.result || ''), { fileName: file.name || '' }),
+          preview = service.preview(subjects);
+        pending = { subjects, fileName: file.name || 'arquivo' };
+        show(buildStructuredImportViewModel({ ...pending, preview }));
+      } catch (error) {
+        pending = null;
+        show(
+          buildStructuredImportViewModel({
+            fileName: file.name || 'arquivo',
+            issues: error?.issues || [{ message: error?.message || 'Arquivo inválido.' }],
+          })
+        );
+      }
+    };
+    reader.readAsText(file);
+  };
+  const choose = () => {
+    previousFocus = document.activeElement;
+    input.click();
+  };
+  open.addEventListener('click', choose);
+  input.addEventListener('change', () => {
+    if (input.files?.[0]) {
+      onOpen();
+      read(input.files[0]);
+    } else onCancel({ completed: false });
+    input.value = '';
+  });
+  cancel.addEventListener('click', () => close());
+  confirm.addEventListener('click', () => {
+    if (!pending) return;
+    try {
+      const result = service.import(pending.subjects);
+      close({ completed: true });
+      onImported(result);
+    } catch (error) {
+      notify(error?.message || 'A importação falhou. Nenhum dado foi alterado.');
+    }
+  });
+  overlay.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      close();
+    }
+  });
+  return Object.freeze({ read, close, choose });
+}

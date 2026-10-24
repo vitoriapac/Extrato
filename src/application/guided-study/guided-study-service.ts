@@ -1,0 +1,66 @@
+export const GUIDED_STUDY_VERSION = '1.0.0';
+export function createGuidedStudyService({
+  recommend,
+  sessionService,
+  clock = { nowISO: () => new Date().toISOString() },
+}: any = {}) {
+  if (typeof recommend !== 'function' || !sessionService)
+    throw new TypeError('Guided study requires recommendation and session services');
+  let active: any = null;
+  return {
+    next({ id, source = null, type = null }: any = {}) {
+      const recommendation = recommend({ id })[0] || null;
+      active = recommendation
+        ? {
+            recommendation,
+            recommendationSource: source,
+            recommendationType:
+              type || recommendation.activityType || recommendation.studyType || 'study',
+            startedAt: null,
+            paused: false,
+          }
+        : null;
+      return active;
+    },
+    start() {
+      if (!active) return null;
+      active.startedAt = clock.nowISO();
+      active.paused = false;
+      return active;
+    },
+    pause() {
+      if (!active) return null;
+      active.paused = true;
+      return active;
+    },
+    resume() {
+      if (!active) return null;
+      active.paused = false;
+      return active;
+    },
+    complete(result: any = {}) {
+      if (!active) return null;
+      const session = sessionService.complete({
+        ...result,
+        recommendationId: active.recommendation.recommendationId || active.recommendation.id,
+        recommendationSource: active.recommendationSource,
+        recommendationType: active.recommendationType,
+        topicId: result.topicId ?? active.recommendation.topicId,
+        subjectId: result.subjectId ?? active.recommendation.subjectId,
+        startedAt: result.startedAt || active.startedAt,
+        endedAt: result.endedAt || clock.nowISO(),
+        durationSeconds: result.durationSeconds || 0,
+        questionsResolved: result.questionsResolved || 0,
+        correctAnswers: result.correctAnswers || 0,
+        type: result.type || 'study',
+        source: 'recommendation',
+      });
+      active = null;
+      return session;
+    },
+    reset() {
+      active = null;
+    },
+    current: () => active,
+  };
+}
