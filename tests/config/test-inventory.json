@@ -1144,6 +1144,34 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/e2e/session-bookmark.spec.js",
+      "layer": "browser",
+      "area": "Sessões",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "journey",
+        "demo"
+      ],
+      "imports": [
+        "@playwright/test",
+        "../../src/demo/demo-generator.js",
+        "./helpers.js"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "test:e2e",
+        "test:full UTC"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/e2e/sessions.spec.js",
       "layer": "browser",
       "area": "Sessões",

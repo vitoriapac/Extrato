@@ -22,7 +22,7 @@ Pré-requisito: as mudanças não commitadas que já estão na árvore precisam 
   - Verify: `npm test`, `npm run check:types`, teste manual no app
   - Files: `index.html`, `src/app.js`, `styles/app.css`
 
-- [ ] Tarefa 3: linha "Continuar de:" e e2e do fluxo (R4) — checkpoint do `session-bookmark`
+- [x] Tarefa 3: linha "Continuar de:" e e2e do fluxo (R4) — checkpoint do `session-bookmark`
   - Acceptance:
     - O card de próxima ação e o modo foco mostram `Continuar de: {formatBookmarkLabel}` quando o tópico tem bookmark, inclusive depois de recarregar a página.
     - O e2e cobre: concluir com pág. 42/110 faz o card mostrar `PDF · pág. 42 de 110 (38%)`; a próxima conclusão abre com 42 preenchido; esvaziar os campos mantém o bookmark; "Limpar" remove.
