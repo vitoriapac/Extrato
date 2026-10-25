@@ -43,6 +43,12 @@ export const impactAreas = [
     journeys: ['visual-consolidation.spec.js'],
   },
   {
+    id: 'subjects',
+    sources: ['src/ui/tabs/subjects/**', 'src/ui/subjects/**'],
+    units: ['subject-service.test.js', 'subjects-components.test.js'],
+    journeys: [],
+  },
+  {
     id: 'recovery',
     sources: [
       'src/application/recovery/**',

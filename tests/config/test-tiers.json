@@ -1137,6 +1137,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/subjects-components.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato de renderização e interatividade dos componentes Preact da aba Disciplinas."
+    },
+    {
       "file": "tests/unit/sustainability-insights.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-172 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+173 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -229,6 +229,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/studytrack32-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/subject-accuracy-target.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/subject-service.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/subjects-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/sustainability-insights.test.js | node | Sustentabilidade | functional | — | contract | none |
 | tests/unit/test-impact-selection.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/today-view-model.test.js | node | Aplicação | functional | — | contract | none |

@@ -14,6 +14,7 @@ import {
   matchesSubjectSearch,
   createSubjectSearchController,
 } from './ui/subjects/subject-navigation.js';
+import { createSubjectsController } from './ui/tabs/subjects/subjects-controller.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
 import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
@@ -4575,197 +4576,31 @@ function renderDashboard() {
 /* ===== RENDER: DISCIPLINAS ===== */
 function renderSubjects() {
   const container = document.getElementById('subjectsContainer');
-  const allActiveSubjects = activeSubjects();
-  const searchQuery = subjectSearchController.query;
-  const topicMatchesExam = topic =>
-    subjectExamFilter === 'all' ||
-    (subjectExamFilter === 'common' && isCommonTopic(topic, [EXAM_TAGS.BB, EXAM_TAGS.CAIXA])) ||
-    (subjectExamFilter === 'bb' && (topic.examTags || []).includes(EXAM_TAGS.BB)) ||
-    (subjectExamFilter === 'caixa' && (topic.examTags || []).includes(EXAM_TAGS.CAIXA)) ||
-    (subjectExamFilter === 'caixa-ti' && (topic.examTags || []).includes(EXAM_TAGS.CAIXA_TI));
-  const subjects = allActiveSubjects.filter(
-    subject =>
-      (subject.topics || []).some(
-        topic =>
-          !topic.archived &&
-          topicMatchesExam(topic) &&
-          matchesSubjectSearch(subject, topic, searchQuery)
-      ) ||
-      (!searchQuery && subjectExamFilter === 'all')
-  );
-  const archived = archivedSubjects();
-  if (
-    subjects.length === 0 &&
-    archived.length === 0 &&
-    !searchQuery &&
-    subjectExamFilter === 'all'
-  ) {
-    container.innerHTML = `<div class="empty-state">
-      <p>Nenhuma disciplina cadastrada ainda.</p>
-      <button class="btn" data-delegated-click="addSubject()">+ Adicionar primeira disciplina</button>
-    </div>`;
-    return;
-  }
+  if (!container) return;
 
-  const activeHtml =
-    subjects.length === 0
-      ? `<div class="empty-state"><p>Nenhuma disciplina corresponde à busca e aos filtros atuais.</p><button class="btn" data-delegated-click="addSubject()">+ Adicionar disciplina</button></div>`
-      : subjects
-          .map((s, idx) => {
-            const pct = subjectProgress(s);
-            const subjectTopics = s.topics.filter(t => !t.archived && topicMatchesExam(t));
-            const topicFilter = subjectTopicFilters.get(s.id) || { status: '', difficulty: '' };
-            const collapsed = s.collapsed && !searchQuery;
-            const allVisibleTopics = subjectTopics.filter(
-              topic =>
-                matchesSubjectSearch(s, topic, searchQuery) &&
-                (!topicFilter.status || topic.status === topicFilter.status) &&
-                (!topicFilter.difficulty || topic.difficulty === topicFilter.difficulty)
-            );
-            const topicLimit = subjectTopicLimits.get(s.id) || 10;
-            const visibleTopics = allVisibleTopics.slice(0, topicLimit);
-            const archivedTopics = s.topics.filter(t => t.archived);
-            return `
-    <div class="subject-block" data-subject-id="${s.id}">
-      <div class="subject-header" data-delegated-click="toggleSubject('${s.id}')">
-        <div class="subject-header-left">
-          <div class="subject-order-btns" data-delegated-click="event.stopPropagation()">
-            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', -1)" ${idx === 0 ? 'disabled' : ''} title="Mover para cima" aria-label="Mover ${escapeAttr(s.name)} para cima">▲</button>
-            <button class="icon-btn-nav" data-delegated-click="moveSubject('${s.id}', 1)" ${idx === subjects.length - 1 ? 'disabled' : ''} title="Mover para baixo" aria-label="Mover ${escapeAttr(s.name)} para baixo">▼</button>
-          </div>
-          <button type="button" class="subject-toggle btn ghost small" aria-expanded="${!collapsed}" ${searchQuery ? 'disabled title="A busca mantém os resultados abertos"' : ''} aria-controls="subject-body-${escapeAttr(s.id)}" aria-label="Expandir ou recolher ${escapeAttr(s.name)}" data-delegated-click="event.stopPropagation();toggleSubject('${s.id}')">${collapsed ? '▸' : '▾'}</button>
-          <span class="subject-name" contenteditable="true"
-                data-delegated-click="event.stopPropagation()"
-                data-delegated-blur="renameSubject('${s.id}', this.textContent)">${escapeHtml(s.name)}</span>
-        </div>
-        <div class="subject-header-actions">
-          <span class="subject-progress-pill">${pct}% · ${allVisibleTopics.length} de ${subjectTopics.length} tópico${subjectTopics.length === 1 ? '' : 's'}</span>
-          <details class="action-menu subject-action-menu" data-delegated-click="event.stopPropagation()"><summary class="btn ghost small" aria-label="Ações de ${escapeAttr(s.name)}" data-delegated-click="event.stopPropagation()">⋯</summary><div class="action-menu__items">
-            <button type="button" data-delegated-click="event.stopPropagation();duplicateSubject('${s.id}')">Duplicar disciplina</button>
-            <button type="button" data-delegated-click="event.stopPropagation();archiveSubject('${s.id}')">Arquivar disciplina</button>
-            <span class="action-menu__hint">Para excluir definitivamente, arquive primeiro e use a seção de disciplinas arquivadas.</span>
-          </div></details>
-        </div>
-      </div>
-      <div id="subject-body-${escapeAttr(s.id)}" class="subject-body ${collapsed ? 'collapsed' : ''}">
-        <div class="subject-topic-filters"><select aria-label="Filtrar tópicos de ${escapeAttr(s.name)} por status" data-delegated-change="setSubjectTopicFilter('${s.id}','status',this.value)"><option value="">Todos os status</option>${STATUS_OPTIONS.map(option => `<option value="${option}" ${topicFilter.status === option ? 'selected' : ''}>${option}</option>`).join('')}</select><select aria-label="Filtrar tópicos de ${escapeAttr(s.name)} por dificuldade" data-delegated-change="setSubjectTopicFilter('${s.id}','difficulty',this.value)"><option value="">Todas as dificuldades</option>${DIFFICULTY_OPTIONS.map(option => `<option value="${option}" ${topicFilter.difficulty === option ? 'selected' : ''}>${option}</option>`).join('')}</select></div>
-        <div class="ledger-scroll">
-        <table class="ledger">
-          <thead>
-            <tr>
-              <th style="width:22%;">Tópico</th>
-              <th style="width:15%;">Link / material</th>
-              <th style="width:13%;">Status</th>
-              <th style="width:13%;">Dificuldade</th>
-              <th style="width:9%;">Notas</th>
-              <th style="width:6%;"><span class="sr-only">Ações</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            ${visibleTopics
-              .map(
-                t => `
-              <tr data-status="${t.status}" id="topic-row-${t.id}">
-                <td>
-                  <input type="text" value="${escapeAttr(t.name)}" placeholder="Nome do tópico" aria-label="Nome do tópico"
-                     data-delegated-blur="updateTopic('${s.id}','${t.id}','name', this.value)">
-                  ${(t.examTags || []).length || t.tags?.length ? `<div class="tag-chips">${examBadges(t)}${(t.tags || []).map(tag => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
-                </td>
-                <td>
-                  <input type="url" value="${escapeAttr(t.link || '')}" placeholder="https://..." aria-label="Link ou material de ${escapeAttr(t.name || 'tópico sem nome')}"
-                     data-delegated-blur="updateTopic('${s.id}','${t.id}','link', this.value)">
-                </td>
-                <td>
-                  <select class="status-select ${STATUS_CLASS[t.status] || 'st-nao'}" aria-label="Status de ${escapeAttr(t.name || 'tópico sem nome')}"
-                     data-delegated-change="updateTopicStatus('${s.id}','${t.id}', this)">
-                    ${STATUS_OPTIONS.map(o => `<option value="${o}" ${o === t.status ? 'selected' : ''}>${o}</option>`).join('')}
-                  </select>
-                  <span class="stamp">✓ ok</span>
-                </td>
-                <td>
-                  <select class="status-select ${DIFFICULTY_CLASS[t.difficulty] || 'diff-medio'}" aria-label="Dificuldade de ${escapeAttr(t.name || 'tópico sem nome')}"
-                     data-delegated-change="updateTopic('${s.id}','${t.id}','difficulty', this.value)">
-                    ${DIFFICULTY_OPTIONS.map(o => `<option value="${o}" ${o === t.difficulty ? 'selected' : ''}>${o}</option>`).join('')}
-                  </select>
-                </td>
-                <td>
-                  <button class="btn ghost small notes-toggle-btn ${t.notes || (t.tags && t.tags.length) ? 'has-notes' : ''}" data-delegated-click="toggleNotes('${t.id}')" aria-label="${t.notes || (t.tags && t.tags.length) ? 'Ver notas de' : 'Anotar'} ${escapeAttr(t.name || 'tópico sem nome')}">${t.notes || (t.tags && t.tags.length) ? 'Ver' : 'Anotar'}</button>
-                </td>
-                <td><button class="icon-btn" data-delegated-click="archiveTopic('${s.id}','${t.id}')" title="Arquivar tópico" aria-label="Arquivar ${escapeAttr(t.name || 'tópico sem nome')}">✕</button></td>
-              </tr>
-              ${
-                openNotesIds.has(t.id)
-                  ? `
-              <tr class="notes-row">
-                <td colspan="6">
-                  ${renderTopicAnalyticsState(s, t)}
-                  ${renderTopicStrategyEditor(s, t)}
-                  <input type="text" class="topic-tags-input" placeholder="Tags separadas por vírgula (ex: cai muito, revisar antes da prova)"
-                    value="${escapeAttr((t.tags || []).join(', '))}"
-                    data-delegated-blur="updateTopicTags('${s.id}','${t.id}', this.value)">
-                  <textarea class="topic-notes-textarea" placeholder="Resumo, pegadinha da prova, dúvida pra revisar depois..."
-                    data-delegated-blur="updateTopic('${s.id}','${t.id}','notes', this.value)">${escapeHtml(t.notes || '')}</textarea>
-                </td>
-              </tr>`
-                  : ''
-              }
-            `
-              )
-              .join('')}
-          </tbody>
-        </table>
-        </div>
-        ${renderCollectionFooter({ variant: 'block', total: allVisibleTopics.length, visible: visibleTopics.length, step: 10, label: `tópicos filtrados · ${subjectTopics.length} no total`, showMoreAction: `changeSubjectTopicLimit('${s.id}',10)`, showAllAction: `showAllSubjectTopics('${s.id}')`, showLessAction: topicLimit > 10 ? `resetSubjectTopicLimit('${s.id}')` : '' })}
-        <div class="add-topic-row">
-          <button class="btn ghost small" data-delegated-click="addTopic('${s.id}')">+ Adicionar tópico</button>
-        </div>
-        ${
-          archivedTopics.length
-            ? `<div class="archived-section">
-          <div class="archived-section-title">Tópicos arquivados</div>
-          ${archivedTopics
-            .map(
-              t => `<div class="archived-item">
-            <div><div class="archived-item-name">${escapeHtml(t.name || 'Tópico sem nome')}</div><div class="archived-item-date">Arquivado em ${t.archivedAt ? new Date(t.archivedAt).toLocaleDateString('pt-BR') : '—'}</div></div>
-            <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreTopic('${s.id}','${t.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentTopicDelete('${s.id}','${t.id}')">Excluir definitivamente</button></div>
-          </div>`
-            )
-            .join('')}
-        </div>`
-            : ''
-        }
-      </div>
-    </div>`;
-          })
-          .join('');
-  const archivedHtml = archived.length
-    ? `<div class="archived-section">
-    <div class="archived-section-title">Disciplinas arquivadas</div>
-    ${archived
-      .map(
-        s => `<div class="archived-item">
-      <div><div class="archived-item-name">${escapeHtml(s.name)}</div><div class="archived-item-date">Arquivada em ${s.archivedAt ? new Date(s.archivedAt).toLocaleDateString('pt-BR') : '—'} · ${pluralize(s.topics.length, 'tópico')}</div></div>
-      <div class="archived-item-actions"><button class="btn ghost small" data-delegated-click="restoreSubject('${s.id}')">Restaurar</button><button class="btn danger" data-delegated-click="requestPermanentSubjectDelete('${s.id}')">Excluir definitivamente</button></div>
-    </div>`
-      )
-      .join('')}
-  </div>`
-    : '';
-  container.innerHTML =
-    `<div class="subject-search"><label for="subjectContentSearch">Buscar disciplina ou tópico</label><input type="search" id="subjectContentSearch" value="${escapeAttr(searchQuery)}" placeholder="Nome da disciplina ou tópico"><p role="status">${subjects.length} disciplinas encontradas.</p></div><div class="exam-scope-filter" role="group" aria-label="Filtrar conteúdo por concurso">${[
-      ['all', 'Todos'],
-      ['bb', 'BB'],
-      ['caixa', 'Caixa'],
-      ['caixa-ti', 'Caixa TI'],
-      ['common', 'Comuns'],
-    ]
-      .map(
-        ([value, label]) =>
-          `<button class="btn ghost small ${subjectExamFilter === value ? 'active' : ''}" data-delegated-click="setSubjectExamFilter('${value}')">${label}</button>`
-      )
-      .join('')}</div>` +
-    activeHtml +
-    archivedHtml;
+  const controller = createSubjectsController({
+    state,
+    subjectSearchController,
+    subjectExamFilter,
+    subjectTopicFilters,
+    subjectTopicLimits,
+    openNotesIds,
+    isCommonTopic,
+    EXAM_TAGS,
+    STATUS_OPTIONS,
+    STATUS_CLASS,
+    DIFFICULTY_OPTIONS,
+    DIFFICULTY_CLASS,
+    subjectProgress,
+    matchesSubjectSearch,
+    pluralize,
+    renderCollectionFooter,
+    examBadges,
+    renderTopicAnalyticsState,
+    renderTopicStrategyEditor,
+  });
+
+  container.innerHTML = controller.renderHtml();
 }
 
 let openNotesIds = new Set();
