@@ -96,6 +96,7 @@ import { renderPerformancePage } from './ui/performance/performance-page.js';
 import { renderPerformanceSection } from './ui/performance/render-performance-section.js';
 import { renderProjectionScenarioResult } from './ui/performance/achievement-projection-renderer.js';
 import { createPerformanceController } from './ui/controllers/performance-controller.js';
+import { createPerformanceAnalyticsController } from './ui/controllers/performance-analytics-controller.js';
 import { createDiagnosisController } from './ui/controllers/diagnosis-controller.js';
 import { createProjectionController } from './ui/controllers/projection-controller.js';
 import {
@@ -7380,7 +7381,6 @@ function renderPrioridadeHoje() {
 }
 
 /* ===== RADAR DE DISCIPLINAS ===== */
-const radarView = { subjectIds: [] };
 function subjectRadarModel(subject) {
   const topics = subject.topics.filter(topic => !topic.archived),
     coverage = topics.length ? subjectProgress(subject) : null;
@@ -7416,119 +7416,24 @@ function subjectRadarModel(subject) {
   });
   return { ...result, id: subject.id, name: subject.name };
 }
+
+const performanceAnalyticsController = createPerformanceAnalyticsController({
+  getSubjects: () => activeSubjects(),
+  getSubjectRadarModel: subjectRadarModel,
+  onRender: renderRadarDisciplinas,
+  escapeHtml,
+  escapeAttr,
+});
+const radarView = performanceAnalyticsController.getRadarViewState();
+
 function setRadarSubject(slot, value) {
-  const index = Math.max(0, Math.min(1, Number(slot) || 0));
-  radarView.subjectIds[index] = value || '';
-  if (value)
-    radarView.subjectIds = radarView.subjectIds.map((id, i) =>
-      i !== index && id === value ? '' : id
-    );
-  renderRadarDisciplinas();
+  performanceAnalyticsController.setRadarSubject(slot, value);
 }
+
 function renderRadarDisciplinas() {
   const container = document.getElementById('radarChart');
   if (!container) return;
-  const subjects = activeSubjects().filter(s => s.topics.some(t => !t.archived));
-
-  if (!subjects.length) {
-    container.innerHTML = `<div class="radar-empty">Cadastre uma disciplina com tópicos para ver o radar.</div>`;
-    return;
-  }
-  if (!radarView.subjectIds[0] || !subjects.some(subject => subject.id === radarView.subjectIds[0]))
-    radarView.subjectIds[0] = subjects[0].id;
-  radarView.subjectIds = radarView.subjectIds.slice(0, 2);
-  const selected = radarView.subjectIds
-    .map(id => subjects.find(subject => subject.id === id))
-    .filter(Boolean)
-    .map(subjectRadarModel);
-  const axisMeta = [
-    ['coverage', 'Cobertura'],
-    ['mastery', 'Domínio'],
-    ['retention', 'Retenção'],
-    ['frequency', 'Frequência'],
-    ['consistency', 'Consistência'],
-  ];
-  const N = axisMeta.length,
-    W = 560,
-    H = 430,
-    cx = W / 2,
-    cy = 190,
-    maxR = 125;
-  const angleFor = i => (Math.PI * 2 * i) / N - Math.PI / 2;
-  const gridRings = [0.25, 0.5, 0.75, 1]
-    .map(frac => {
-      const pts = axisMeta
-        .map((_, i) => {
-          const a = angleFor(i);
-          const r = maxR * frac;
-          return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
-        })
-        .join(' ');
-      return `<polygon class="radar-grid" points="${pts}"></polygon>`;
-    })
-    .join('');
-
-  const axes = axisMeta
-    .map((_, i) => {
-      const a = angleFor(i);
-      return `<line class="radar-axis" x1="${cx}" y1="${cy}" x2="${cx + maxR * Math.cos(a)}" y2="${cy + maxR * Math.sin(a)}"></line>`;
-    })
-    .join('');
-
-  const labels = axisMeta
-    .map(([, label], i) => {
-      const a = angleFor(i);
-      const labelR = maxR + 28;
-      const x = cx + labelR * Math.cos(a);
-      const y = cy + labelR * Math.sin(a);
-      const anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : Math.cos(a) > 0 ? 'start' : 'end';
-      return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle">${label}</text>`;
-    })
-    .join('');
-  const series = selected
-    .map((model, seriesIndex) => {
-      const values = axisMeta.map(([key]) => model.axes[key]);
-      const complete = values.every(value => value !== null);
-      const points = values
-        .map((value, index) => {
-          if (value === null) return '';
-          const a = angleFor(index),
-            r = maxR * (value / 100);
-          return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
-        })
-        .filter(Boolean);
-      const shape = complete
-        ? `<polygon class="radar-shape radar-series-${seriesIndex + 1}" points="${points.join(' ')}"></polygon>`
-        : '';
-      const dots = values
-        .map((value, index) => {
-          if (value === null) return '';
-          const a = angleFor(index),
-            r = maxR * (value / 100);
-          return `<circle class="radar-dot radar-series-${seriesIndex + 1}" cx="${cx + r * Math.cos(a)}" cy="${cy + r * Math.sin(a)}" r="4"><title>${escapeHtml(model.name)} · ${axisMeta[index][1]}: ${value}/100</title></circle>`;
-        })
-        .join('');
-      return shape + dots;
-    })
-    .join('');
-  const options = (selectedId = '') =>
-    `<option value="">Nenhuma</option>` +
-    subjects
-      .map(
-        subject =>
-          `<option value="${escapeAttr(subject.id)}" ${subject.id === selectedId ? 'selected' : ''}>${escapeHtml(subject.name)}</option>`
-      )
-      .join('');
-  container.innerHTML = `
-    <div class="radar-toolbar"><label>Disciplina 1<select data-delegated-change="setRadarSubject(0,this.value)">${options(radarView.subjectIds[0])}</select></label><label>Comparar com<select data-delegated-change="setRadarSubject(1,this.value)">${options(radarView.subjectIds[1])}</select></label></div>
-    <svg class="radar-svg" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:460px;height:auto;display:block;margin:0 auto;">
-      ${gridRings}
-      ${axes}
-      ${series}
-      ${labels}
-    </svg>
-    <div class="radar-analysis">${selected.map((model, index) => `<section><h4><span class="radar-key radar-key-${index + 1}"></span>${escapeHtml(model.name)}</h4><p>${escapeHtml(model.interpretation)}</p><small>${model.availableAxes} de 5 eixos · confiança ${model.confidenceLabel.toLowerCase()}</small><dl>${axisMeta.map(([key, label]) => `<div><dt>${label}</dt><dd>${model.axes[key] === null ? 'Aguardando dados' : model.axes[key] + '/100'}</dd></div>`).join('')}</dl></section>`).join('')}</div>
-  `;
+  container.innerHTML = performanceAnalyticsController.renderRadarHtml();
 }
 
 /* ===== SIMULADOS PLANEJADOS ===== */

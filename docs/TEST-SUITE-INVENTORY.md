@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-187 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+188 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -167,6 +167,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/onboarding-view-model.test.js | node | Onboarding | functional | — | contract | none |
 | tests/unit/overview-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/packages-3-5.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/performance-analytics-controller.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-forecast.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-scenarios.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/period-comparison-insights.test.js | node | Aplicação | functional | — | contract | none |
