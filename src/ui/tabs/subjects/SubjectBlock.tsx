@@ -175,21 +175,25 @@ export function SubjectBlock({
               </tr>
             </thead>
             <tbody>
-              {visibleTopics.map(topic => (
-                <SubjectTopicRow
-                  key={topic.id}
-                  subjectId={subject.id}
-                  topic={topic}
-                  isOpenNotes={openNotesIds.has(topic.id)}
-                  statusOptions={statusOptions}
-                  statusClasses={statusClasses}
-                  difficultyOptions={difficultyOptions}
-                  difficultyClasses={difficultyClasses}
-                  examBadgesHtml={getExamBadgesHtml?.(topic)}
-                  analyticsStateHtml={getAnalyticsStateHtml?.(subject, topic)}
-                  strategyEditorHtml={getStrategyEditorHtml?.(subject, topic)}
-                />
-              ))}
+              {visibleTopics.map(topic => {
+                const isOpenNotes = openNotesIds.has(topic.id);
+                // Analytics and the strategy editor are costly per topic and only show in the open notes row.
+                return (
+                  <SubjectTopicRow
+                    key={topic.id}
+                    subjectId={subject.id}
+                    topic={topic}
+                    isOpenNotes={isOpenNotes}
+                    statusOptions={statusOptions}
+                    statusClasses={statusClasses}
+                    difficultyOptions={difficultyOptions}
+                    difficultyClasses={difficultyClasses}
+                    examBadgesHtml={getExamBadgesHtml?.(topic)}
+                    analyticsStateHtml={isOpenNotes ? getAnalyticsStateHtml?.(subject, topic) : ''}
+                    strategyEditorHtml={isOpenNotes ? getStrategyEditorHtml?.(subject, topic) : ''}
+                  />
+                );
+              })}
             </tbody>
           </table>
         </div>

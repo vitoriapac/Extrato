@@ -1,6 +1,6 @@
 import { parseLocalDate } from '../../core/date-utils.js';
 import { buildHistoricalPlanningContext } from '../planning/build-historical-planning-context.js';
-import { classifyEvidenceScope } from '../../domain/exams/exam-evidence-scope.js';
+import { classifyEvidenceScope, indexExamTopics } from '../../domain/exams/exam-evidence-scope.js';
 import { buildStrategicExecution } from '../goals/build-strategic-execution.js';
 import { buildAdherenceSummary } from './build-adherence-summary.js';
 import { buildPriorityAdherence } from './build-priority-adherence.js';
@@ -35,8 +35,10 @@ export function buildAdherenceModel({
     archived: false,
     topics: (subject.topics || []).map(topic => ({ ...topic, archived: false })),
   }));
+  const historicalIndex = indexExamTopics(historicalSubjects);
   const included = record =>
-    classifyEvidenceScope(record, historicalSubjects, activeExamTags).includedInExamMetrics;
+    classifyEvidenceScope(record, historicalSubjects, activeExamTags, historicalIndex)
+      .includedInExamMetrics;
   const scopedPlans = dailyPlans
     .filter(plan =>
       Array.isArray(plan.activeExamTags) ? included({ examScope: plan.activeExamTags }) : true

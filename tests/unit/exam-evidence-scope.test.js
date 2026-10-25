@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { EXAM_TAGS } from '../../src/domain/exams/exam-catalog.js';
 import {
   classifyEvidenceScope,
+  indexExamTopics,
   resolveExamEvidenceScope,
 } from '../../src/domain/exams/exam-evidence-scope.js';
 
@@ -105,4 +106,21 @@ test('snapshot de escopo preserva a classificação após mudança do tópico', 
       .includedInExamMetrics,
     true
   );
+});
+test('índice pré-construído classifica igual ao índice montado por registro', () => {
+  const index = indexExamTopics(subjects),
+    records = [
+      { topicId: 'topic-bb' },
+      { topicId: 'topic-caixa' },
+      { topicId: 'topic-missing' },
+      { subjectId: 'subject-portuguese' },
+      { topicId: 'topic-bb', examScope: [EXAM_TAGS.CAIXA] },
+      {},
+    ];
+  for (const tags of [[EXAM_TAGS.BB], []])
+    for (const record of records)
+      assert.deepEqual(
+        classifyEvidenceScope(record, subjects, tags, index),
+        classifyEvidenceScope(record, subjects, tags)
+      );
 });

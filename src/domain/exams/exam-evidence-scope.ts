@@ -15,8 +15,14 @@ export function indexExamTopics(subjects = []) {
         }
   return { topics, byId };
 }
-export function classifyEvidenceScope(record, subjects = [], activeExamTags = []) {
-  const { byId } = indexExamTopics(subjects),
+// Callers classifying a list pass one prebuilt index; rebuilding it per record was O(records × topics).
+export function classifyEvidenceScope(
+  record,
+  subjects = [],
+  activeExamTags = [],
+  index = indexExamTopics(subjects)
+) {
+  const { byId } = index,
     topicId = topicIdOf(record),
     subjectId = subjectIdOf(record),
     hasSpecificScope = (activeExamTags || []).length > 0;
@@ -64,12 +70,12 @@ export function resolveExamEvidenceScope({
   questions = [],
   reviews = [],
 } = {}) {
-  const { topics } = indexExamTopics(subjects),
-    content = resolveExamScope(topics, activeExamTags);
+  const index = indexExamTopics(subjects),
+    content = resolveExamScope(index.topics, activeExamTags);
   const classify = list =>
     (list || []).map(record => ({
       record,
-      scope: classifyEvidenceScope(record, subjects, activeExamTags),
+      scope: classifyEvidenceScope(record, subjects, activeExamTags, index),
     }));
   const partition = list => {
     const classified = classify(list);

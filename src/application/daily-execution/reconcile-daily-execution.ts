@@ -13,7 +13,7 @@ export {
   dailyActivityType,
   sessionMatchesDailyItem,
 } from '../../domain/planning/execution-contract.js';
-import { classifyEvidenceScope } from '../../domain/exams/exam-evidence-scope.js';
+import { classifyEvidenceScope, indexExamTopics } from '../../domain/exams/exam-evidence-scope.js';
 import { normalizeExamTags, isTopicInExamScope } from '../../domain/exams/exam-scope.js';
 import { parseLocalDate } from '../../core/date-utils.js';
 
@@ -68,6 +68,7 @@ export function reconcileDailyExecution({
   let studiedSeconds = 0,
     additionalSeconds = 0,
     mismatchedSeconds = 0;
+  const topicIndex = indexExamTopics(subjects);
   for (const session of sessions) {
     if (session.id && seen.has(session.id)) continue;
     if (session.id) seen.add(session.id);
@@ -76,7 +77,7 @@ export function reconcileDailyExecution({
     if (
       !date ||
       date > today ||
-      !classifyEvidenceScope(session, subjects, activeExamTags).includedInExamMetrics
+      !classifyEvidenceScope(session, subjects, activeExamTags, topicIndex).includedInExamMetrics
     )
       continue;
     const current = date === today;

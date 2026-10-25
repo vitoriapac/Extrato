@@ -56,7 +56,7 @@ export function renderTopicQuestionPerformance({
 }
 
 export function renderWeeklyQuestionTrend({ weeks, trend, formatDate }) {
-  return `<div class="trend-grid">${weeks.map(week => `<div class="trend-week ${week.insufficientData ? 'insufficient' : ''}"><span>${formatDate(week.start).slice(0, 5)}</span><strong>${week.insufficientData ? '—' : formatDecimal(week.accuracy) + '%'}</strong><small>${week.resolved} questões</small></div>`).join('')}</div><div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta === null ? '' : ` · ${trend.delta > 0 ? '+' : ''}${trend.delta.toFixed(1)} p.p.`}</div>`;
+  return `<div class="trend-grid">${weeks.map(week => `<div class="trend-week ${week.insufficientData ? 'insufficient' : ''}"><span>${formatDate(week.start).slice(0, 5)}</span><strong>${week.insufficientData ? '—' : formatDecimal(week.accuracy) + '%'}</strong><small>${week.resolved} questões</small></div>`).join('')}</div><div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta === null ? '' : ` · ${trend.delta > 0 ? '+' : ''}${formatDecimal(trend.delta)} p.p.`}</div>`;
 }
 
 export function renderQuestionErrorToolbar({ days, topicId, topics, escapeHtml, escapeAttr }) {

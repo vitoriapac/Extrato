@@ -55,7 +55,8 @@ export function createNavigationController({
     const button = document.querySelector(`.tab-btn[data-tab="${tabName}"]`),
       panel = document.getElementById(`panel-${tabName}`);
     if (!button || !panel) return false;
-    document.querySelectorAll('.tab-btn').forEach(item => {
+    // Only real tabs carry tab state; "Mais" is a menu button, where aria-selected is invalid.
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(item => {
       const active = item === button;
       item.classList.toggle('active', active);
       item.setAttribute('aria-selected', String(active));

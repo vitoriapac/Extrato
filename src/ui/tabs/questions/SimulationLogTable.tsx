@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { formatDecimal } from '../../../core/format-number.js';
 
 export interface SimulationBreakdownItem {
   id: string;
@@ -177,7 +178,7 @@ export function SimulationLogTable({
                       <span>
                         {vm.correct} / {vm.total}
                       </span>
-                      <strong>Nota {vm.score.toFixed(1)}%</strong>
+                      <strong>Nota {formatDecimal(vm.score)}%</strong>
                       {detailsBtn}
                     </div>
                   </article>
@@ -191,7 +192,7 @@ export function SimulationLogTable({
                 </td>
                 <td class="number-cell">{vm.correct}</td>
                 <td class="number-cell">{vm.total}</td>
-                <td class="number-cell">{vm.score.toFixed(1)}%</td>
+                <td class="number-cell">{formatDecimal(vm.score)}%</td>
                 <td>{detailsBtn}</td>
                 <td>
                   <button

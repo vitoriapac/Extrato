@@ -314,6 +314,7 @@ import {
 } from './domain/exams/exam-scope.js';
 import {
   classifyEvidenceScope,
+  indexExamTopics,
   resolveExamEvidenceScope,
 } from './domain/exams/exam-evidence-scope.js';
 import { setActiveExamTags } from './application/exams/exam-scope-transition.js';
@@ -1818,10 +1819,10 @@ function examEvidenceContext() {
   });
 }
 function examScopedRecords(records = []) {
+  const tags = state.examBlueprint?.activeExamTags || [],
+    index = indexExamTopics(state.subjects);
   return records.filter(
-    record =>
-      classifyEvidenceScope(record, state.subjects, state.examBlueprint?.activeExamTags || [])
-        .includedInExamMetrics
+    record => classifyEvidenceScope(record, state.subjects, tags, index).includedInExamMetrics
   );
 }
 function examScopedSimulations() {
@@ -5124,6 +5125,7 @@ function getQuestionsTabController() {
     errorCategories: ERROR_CATEGORIES,
     isMobileLayout: isMobileHistoryLayout,
     questionViewModel,
+    simulationViewModel,
     questionCategorizedErrors,
     renderListViewFooter,
     LIST_VIEW_STEPS,

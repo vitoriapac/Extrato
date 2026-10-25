@@ -102,7 +102,7 @@ test('SimulationLogTable Preact Component — renderiza simulados e breakdown ex
   );
 
   assert.match(html, /Simulado Geral 1/);
-  assert.match(html, /70\.0%/);
+  assert.match(html, />70%</);
   assert.match(html, /Desempenho por disciplina/);
   assert.match(html, /Português/);
 });
@@ -136,5 +136,5 @@ test('createQuestionsController — coordena a renderização de questões e sim
 
   assert.match(questionsHtml, /90%/);
   assert.match(simulationsHtml, /Simulado Alpha/);
-  assert.match(simulationsHtml, /80\.0%/);
+  assert.match(simulationsHtml, />80%</);
 });
