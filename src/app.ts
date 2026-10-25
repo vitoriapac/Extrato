@@ -18,6 +18,7 @@ import { createSubjectsController } from './ui/tabs/subjects/subjects-controller
 import { createQuestionsController } from './ui/tabs/questions/questions-controller.js';
 import { createReviewsTabController } from './ui/tabs/reviews/reviews-tab-controller.js';
 import { createCalendarTabController } from './ui/tabs/calendar/calendar-tab-controller.js';
+import { createGoalsTabController } from './ui/tabs/goals/goals-tab-controller.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
 import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
@@ -7015,15 +7016,37 @@ function clearWeekendGoals() {
   persistAndRender();
   showToast('Metas do fim de semana removidas.');
 }
+function getGoalsTabController() {
+  return createGoalsTabController({
+    state,
+    parseLocalDate,
+    todayISO,
+    buildWeeklyAvailability,
+    formatPlanMinutes,
+    metaHoursToday,
+    metaHoursForDate,
+    addDays,
+    startOfWeek,
+    WEEKDAY_LABELS,
+    buildPlanExecution,
+    buildStudyDistribution,
+    buildPlanImpactAlignment,
+    examScopedTopics,
+    resolveValidatedExamImpact,
+    buildTopicExamProfile,
+    renderPlanExecutionView,
+    renderStudyDistribution,
+    renderPlanImpactAlignment,
+    formatDatePt,
+    escapeHtml,
+    entitySubjectId,
+  });
+}
+
 function renderWeeklyHoursGoals() {
   const container = document.getElementById('weeklyHoursGoals');
   if (!container) return;
-  const todayDay = parseLocalDate(todayISO()).getDay();
-  const availability = buildWeeklyAvailability(state.metas.horasPorDia);
-  container.innerHTML = `<div class="weekly-availability-summary"><div><strong>${formatPlanMinutes(availability.totalMinutes)}</strong><span>disponíveis por semana</span></div><div><strong>${availability.activeDays}</strong><span>dias com estudo</span></div><div><strong>${formatPlanMinutes(Math.round(availability.averageHours * 60))}</strong><span>média por dia ativo</span></div><div><strong>${formatPlanMinutes(Math.round(metaHoursToday() * 60))}</strong><span>disponíveis hoje</span></div></div>${availability.state === 'empty' ? '<p class="availability-warning">Defina ao menos um dia para habilitar recomendações e planejamento.</p>' : ''}<div class="weekday-goal-actions"><button class="btn ghost small" data-delegated-click="applyTodayGoalToAllDays()">Aplicar hoje a todos</button><button class="btn ghost small" data-delegated-click="clearWeekendGoals()">Limpar fim de semana</button></div><div class="weekday-goals">${WEEKDAY_LABELS.map(
-    (label, day) =>
-      `<label class="weekday-goal ${day === todayDay ? 'today' : ''}"><span>${label}${day === todayDay ? ' · hoje' : ''}</span><div><input type="number" min="0" max="24" step="0.25" value="${metaHoursForDate(addDays(startOfWeek(todayISO()), day === 0 ? 6 : day - 1))}" data-delegated-blur="updateMetaHoursDay(${day},this.value)" aria-label="Disponibilidade em horas de ${label}"><small>h</small></div></label>`
-  ).join('')}</div>`;
+  container.innerHTML = getGoalsTabController().renderWeeklyAvailabilityHtml();
 }
 
 function contarTopicosConcluidosNoPeriodo(pred) {
@@ -7083,39 +7106,7 @@ function renderMetas() {
 function renderPlanExecution() {
   const container = document.getElementById('planExecutionResults');
   if (!container) return;
-  const model = buildPlanExecution({
-    today: todayISO(),
-    dailyPlans: state.dailyPlans,
-    sessions: state.studySessions.map(item => ({ ...item, subjectId: entitySubjectId(item) })),
-    hoursByDay: state.metas.horasPorDia,
-    subjects: state.subjects,
-    activeExamTags: state.examBlueprint?.activeExamTags || [],
-  });
-  const distribution = buildStudyDistribution({
-    today: todayISO(),
-    dailyPlans: state.dailyPlans,
-    sessions: state.studySessions.map(item => ({ ...item, subjectId: entitySubjectId(item) })),
-    subjects: state.subjects,
-  });
-  const alignment = buildPlanImpactAlignment({
-    distribution,
-    topics: examScopedTopics(),
-    impactForTopic: topic =>
-      resolveValidatedExamImpact(
-        buildTopicExamProfile({
-          topic,
-          subjectConfig: state.examBlueprint.subjects.find(
-            item => item.subjectId === topic.subjectId
-          ),
-          activeExamTags: state.examBlueprint.activeExamTags || [],
-          exams: state.exams,
-          examQuestions: state.examQuestions,
-        })
-      ).value,
-  });
-  container.innerHTML =
-    renderPlanExecutionView(model, { formatDate: formatDatePt }) +
-    `<details class="study-distribution" id="studyDistribution"><summary>Distribuição entre disciplinas</summary>${renderStudyDistribution(distribution, { escapeHtml })}</details><details class="study-distribution" id="planImpactAlignment"><summary>Plano × impacto na prova</summary>${renderPlanImpactAlignment(alignment, { escapeHtml })}</details>`;
+  container.innerHTML = getGoalsTabController().renderPlanExecutionHtml();
 }
 
 function updateMeta(key, value) {

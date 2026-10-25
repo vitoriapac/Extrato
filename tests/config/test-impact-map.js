@@ -59,6 +59,12 @@ export const impactAreas = [
     journeys: [],
   },
   {
+    id: 'goals',
+    sources: ['src/ui/tabs/goals/**', 'src/domain/goals/**'],
+    units: ['goals-components.test.js', 'goal-service.test.js', 'goals-renderer.test.js'],
+    journeys: [],
+  },
+  {
     id: 'recovery',
     sources: [
       'src/application/recovery/**',

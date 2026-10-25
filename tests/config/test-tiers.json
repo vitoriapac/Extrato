@@ -717,6 +717,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/goals-components.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; componentes Preact e controllers da aba de metas e disponibilidade."
+    },
+    {
       "file": "tests/unit/guided-study-service.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
