@@ -458,7 +458,7 @@ import { buildPlanImpactAlignment } from './application/goals/build-plan-impact-
 import { renderPlanImpactAlignment } from './ui/renderers/plan-impact-alignment-renderer.js';
 import { buildTopicExamProfile } from './application/exam-intelligence/build-topic-exam-profile.js';
 import { resolveValidatedExamImpact } from './domain/exam-intelligence/validated-impact.js';
-import { renderGlobalSearchPanel } from './ui/renderers/global-search-renderer.js';
+import { createSearchController } from './ui/controllers/search-controller.js';
 import { renderHeatmap as renderHeatmapView } from './ui/renderers/heatmap-renderer.js';
 import {
   buildSessionHistoryPresentation,
@@ -4106,198 +4106,16 @@ function renderDesempenhoDisciplina() {
 }
 
 /* ===== BUSCA GLOBAL ===== */
-const normalizeSearchText = value =>
-  String(value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('pt-BR');
-function performGlobalSearch(query) {
-  const q = normalizeSearchText(query.trim());
-  if (!q) return [];
-  const results = [];
-  state.subjects.forEach(s => {
-    s.topics.forEach(t => {
-      const hay = normalizeSearchText([t.name || '', t.notes || '', ...(t.tags || [])].join(' '));
-      if (hay.includes(q)) {
-        results.push({
-          subjectId: s.id,
-          subjectName: s.name,
-          topicId: t.id,
-          topicName: t.name || '(sem nome)',
-        });
-      }
-    });
-  });
-  return results.slice(0, 8);
-}
-const SEARCH_COMMANDS = [
-  { label: 'Visão Geral', keywords: 'inicio dashboard resumo prontidao', tab: 'dashboard' },
-  {
-    label: 'Abrir Desempenho',
-    keywords: 'evolucao historico tendencias comparacao progresso',
-    tab: 'desempenho',
-  },
-  { label: 'Ir para Hoje', keywords: 'hoje tarefa recomendacao estudo', tab: 'hoje' },
-  {
-    label: 'Iniciar recomendação prioritária',
-    keywords: 'começar iniciar próxima ação estudar recomendação prioritária',
-    action: 'recommendation',
-  },
-  { label: 'Abrir cronômetro', keywords: 'iniciar sessao timer estudar foco', action: 'timer' },
-  { label: 'Abrir Disciplinas', keywords: 'materias edital topicos', tab: 'disciplinas' },
-  {
-    label: 'Carregar edital do catálogo',
-    keywords: 'importar edital concurso bb caixa',
-    action: 'exam-import',
-  },
-  {
-    label: 'Importar JSON ou CSV',
-    keywords: 'importar arquivo conteudo disciplinas',
-    action: 'structured-import',
-  },
-  { label: 'Abrir Calendário', keywords: 'calendario sessoes datas', tab: 'calendario' },
-  { label: 'Abrir Agenda de Revisões', keywords: 'agenda revisao atrasadas', tab: 'agenda' },
-  { label: 'Adicionar revisão', keywords: 'criar nova revisão agenda', action: 'add-review' },
-  {
-    label: 'Abrir Questões e Simulados',
-    keywords: 'questoes erros simulados desempenho',
-    tab: 'questoes',
-  },
-  {
-    label: 'Registrar questões',
-    keywords: 'lancar registrar acertos erros',
-    action: 'add-questions',
-  },
-  {
-    label: 'Abrir Planejamento e metas',
-    keywords: 'metas capacidade plano planejamento estrategia',
-    tab: 'metas',
-  },
-  { label: 'Ver Diagnóstico', keywords: 'diagnostico lacunas prioridades', action: 'diagnosis' },
-  { label: 'Planejar semana', keywords: 'plano semanal distribuir carga', tab: 'metas' },
-  { label: 'Abrir Instruções', keywords: 'ajuda guia como usar instrucoes', tab: 'instrucoes' },
-  { label: 'Exportar backup', keywords: 'backup salvar dados json', action: 'backup' },
-  {
-    label: 'Exportar relatório PDF',
-    keywords: 'pdf relatorio imprimir exportar',
-    action: 'report',
-  },
-];
-function renderGlobalSearchResults() {
-  const input = document.getElementById('globalSearchInput');
-  const panel = document.getElementById('globalSearchResults');
-  const q = input.value;
-  const normalized = normalizeSearchText(q.trim()),
-    commands = (
-      normalized
-        ? SEARCH_COMMANDS.filter(item =>
-            normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalized)
-          )
-        : SEARCH_COMMANDS
-    ).slice(0, 18),
-    results = normalized ? performGlobalSearch(q) : [];
-  panel.innerHTML = renderGlobalSearchPanel({
-    query: q,
-    commands,
-    results,
-    escapeHtml,
-    escapeAttr,
-  });
-  panel.classList.add('show');
-  input.setAttribute('aria-expanded', 'true');
-  const inputRect = input.getBoundingClientRect(),
-    left = Math.max(8, inputRect.left),
-    width = Math.min(inputRect.width, innerWidth - left - 8),
-    top = Math.min(inputRect.bottom + 4, innerHeight - 80);
-  panel.style.left = `${left}px`;
-  panel.style.width = `${Math.max(180, width)}px`;
-  panel.style.top = `${Math.max(8, top)}px`;
-}
-document.getElementById('globalSearchResults').addEventListener('click', event => {
-  const button = event.target.closest('.search-result-item');
-  if (!button) return;
-  if (button.dataset.searchTopic) {
-    jumpToTopic(button.dataset.searchSubject, button.dataset.searchTopic);
-    return;
-  }
-  const action = button.dataset.searchAction,
-    input = document.getElementById('globalSearchInput'),
-    panel = document.getElementById('globalSearchResults');
-  if (action === 'report') document.getElementById('exportReportBtn')?.click();
-  else if (action === 'backup') document.getElementById('exportBackupBtn')?.click();
-  else if (action === 'exam-import') {
-    activateTab('disciplinas');
-    openExamImport();
-  } else if (action === 'structured-import') {
-    activateTab('disciplinas');
-    document.getElementById('structuredContentImportBtn')?.click();
-  } else if (action === 'add-review') {
-    activateTab('agenda');
-    document.getElementById('addAgendaRowBtn')?.click();
-  } else if (action === 'add-questions') {
-    activateTab('questoes');
-    document.getElementById('addQuestaoRowBtn')?.click();
-  } else if (action === 'timer') {
-    activateTab('dashboard');
-    document.getElementById('timerSubjectSelect')?.focus();
-  } else if (action === 'diagnosis') {
-    activateTab('dashboard');
-    document
-      .getElementById('diagnosisCenter')
-      ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  } else if (action === 'recommendation') {
-    const recommendation = currentStudyRecommendations?.[0];
-    if (recommendation) executeStudyRecommendation(recommendation.id);
-    else {
-      activateTab('hoje');
-      showToast(
-        'Ainda não há uma recomendação elegível. Revise o planejamento e as evidências disponíveis.'
-      );
-    }
-  } else if (button.dataset.searchTab) activateTab(button.dataset.searchTab);
-  panel.classList.remove('show');
-  input.setAttribute('aria-expanded', 'false');
-  input.blur();
-});
-const globalSearchInput = document.getElementById('globalSearchInput'),
-  globalSearchResults = document.getElementById('globalSearchResults');
-globalSearchInput.addEventListener('keydown', event => {
-  if (!['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) return;
-  const items = [...globalSearchResults.querySelectorAll('.search-result-item')],
-    selected = event.key === 'ArrowUp' ? items.at(-1) : items[0];
-  if (selected) {
-    event.preventDefault();
-    if (event.key === 'Enter') selected.click();
-    else selected.focus();
-  }
-});
-globalSearchResults.addEventListener('keydown', event => {
-  if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
-  const items = [...globalSearchResults.querySelectorAll('.search-result-item')],
-    index = items.indexOf(document.activeElement);
-  if (!items.length) return;
-  event.preventDefault();
-  if (event.key === 'ArrowUp' && index === 0) {
-    globalSearchInput.focus();
-    return;
-  }
-  const next =
-    event.key === 'Home'
-      ? 0
-      : event.key === 'End'
-        ? items.length - 1
-        : event.key === 'ArrowDown'
-          ? Math.min(items.length - 1, index + 1)
-          : Math.max(0, index - 1);
-  items[next]?.focus();
-});
 function jumpToTopic(subjectId, topicId) {
   const s = state.subjects.find(x => x.id === subjectId);
   if (s) s.collapsed = false;
-  document.getElementById('globalSearchInput').value = '';
-  document.getElementById('globalSearchResults').classList.remove('show');
-  document.getElementById('globalSearchInput').setAttribute('aria-expanded', 'false');
-  document.querySelector('.tab-btn[data-tab="disciplinas"]').click();
+  const input = document.getElementById('globalSearchInput') as HTMLInputElement | null;
+  if (input) {
+    input.value = '';
+    input.setAttribute('aria-expanded', 'false');
+  }
+  document.getElementById('globalSearchResults')?.classList.remove('show');
+  (document.querySelector('.tab-btn[data-tab="disciplinas"]') as HTMLElement | null)?.click();
   persistAndRender();
   setTimeout(() => {
     const row = document.getElementById('topic-row-' + topicId);
@@ -4308,16 +4126,21 @@ function jumpToTopic(subjectId, topicId) {
     }
   }, 150);
 }
-document.getElementById('globalSearchInput').addEventListener('input', renderGlobalSearchResults);
-document.getElementById('globalSearchInput').addEventListener('focus', renderGlobalSearchResults);
-document.getElementById('globalSearchInput').addEventListener('blur', () => {
-  setTimeout(() => {
-    const panel = document.getElementById('globalSearchResults');
-    if (panel.contains(document.activeElement)) return;
-    panel.classList.remove('show');
-    document.getElementById('globalSearchInput').setAttribute('aria-expanded', 'false');
-  }, 150);
+
+const searchController = createSearchController({
+  document,
+  window,
+  getState: () => state,
+  activateTab,
+  showToast,
+  openExamImport,
+  getRecommendations: () => currentStudyRecommendations,
+  onExecuteRecommendation: id => executeStudyRecommendation(id),
+  jumpToTopic,
+  escapeHtml,
+  escapeAttr,
 });
+searchController.mount();
 const headerObserver = new IntersectionObserver(
   entries => {
     const hero = entries[0],

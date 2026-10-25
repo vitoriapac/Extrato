@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-181 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+182 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -213,6 +213,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/reviews-calendar-components.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/reviews.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/risk-score.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/search-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/session-history.test.js | node | Sessões | critical | — | contract | none |
 | tests/unit/session-result.test.js | node | Sessões | functional | — | contract | none |
 | tests/unit/session-service.test.js | node | Sessões | functional | — | contract | none |
