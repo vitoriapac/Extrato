@@ -1,13 +1,26 @@
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+// Hot path: renders parse the same few hundred dates millions of times. Only the validated parts
+// are cached, so the Date is still built in the current time zone on every call.
+const parsedParts = new Map<string, [number, number, number] | null>();
+
 export function parseLocalDate(value: unknown): Date | null {
   if (value instanceof Date) return new Date(value.getTime());
-  if (typeof value !== 'string' || !ISO_DATE.test(value)) return null;
-  const [year, month, day] = value.split('-').map(Number);
-  const date = new Date(year, month - 1, day, 12, 0, 0, 0);
-  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
-    ? date
-    : null;
+  if (typeof value !== 'string') return null;
+  let parts = parsedParts.get(value);
+  if (parts === undefined) {
+    parts = null;
+    if (ISO_DATE.test(value)) {
+      const [year, month, day] = value.split('-').map(Number);
+      const date = new Date(year, month - 1, day, 12, 0, 0, 0);
+      if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day)
+        parts = [year, month - 1, day];
+    }
+    // shortcut: plain bounded cache, cleared when full; switch to LRU only if profiles show churn.
+    if (parsedParts.size >= 10_000) parsedParts.clear();
+    parsedParts.set(value, parts);
+  }
+  return parts ? new Date(parts[0], parts[1], parts[2], 12, 0, 0, 0) : null;
 }
 
 export function formatLocalDate(value: unknown): string | null {
