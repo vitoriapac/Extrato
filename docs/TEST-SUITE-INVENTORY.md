@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-177 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+178 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -108,6 +108,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/daily-execution.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/daily-plan-distribution.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/daily-session-reconciliation.test.js | node | Sessões | critical | — | contract | none |
+| tests/unit/dashboard-components.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/date-utils.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/decision-coherence-debug-renderer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/decision-coherence-report.test.js | node | Aplicação | critical | — | contract | none |

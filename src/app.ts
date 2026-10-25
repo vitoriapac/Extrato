@@ -20,6 +20,7 @@ import { createReviewsTabController } from './ui/tabs/reviews/reviews-tab-contro
 import { createCalendarTabController } from './ui/tabs/calendar/calendar-tab-controller.js';
 import { createGoalsTabController } from './ui/tabs/goals/goals-tab-controller.js';
 import { createTodayTabController } from './ui/tabs/today/today-tab-controller.js';
+import { createDashboardTabController } from './ui/tabs/dashboard/dashboard-tab-controller.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
 import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
@@ -4497,34 +4498,35 @@ function renderDashboard() {
   const andamento = topics.filter(t => t.status === 'Em andamento').length;
   const naoIniciado = topics.filter(t => t.status === 'Não iniciado').length;
 
+  const controller = createDashboardTabController();
+
   const qs = document.getElementById('quickStats');
-  qs.innerHTML = `
-    <div class="stat-cell"><div class="n">${total}</div><div class="l">Tópicos totais</div></div>
-    <div class="stat-cell"><div class="n">${naoIniciado}</div><div class="l">Não iniciados</div></div>
-    <div class="stat-cell"><div class="n">${andamento}</div><div class="l">Em andamento</div></div>
-    <div class="stat-cell"><div class="n">${done}</div><div class="l">Concluídos</div></div>
-  `;
+  if (qs) {
+    qs.innerHTML = controller.renderQuickStatsHtml({
+      total,
+      naoIniciado,
+      emAndamento: andamento,
+      concluido: done,
+    });
+  }
 
   const bars = document.getElementById('progressBars');
-  if (activeSubjects().length === 0) {
-    bars.innerHTML = `<div class="upcoming-empty">Adicione disciplinas na aba "Disciplinas" para ver o progresso aqui.</div>`;
-  } else {
-    bars.innerHTML = activeSubjects()
-      .map(s => {
-        const pct = subjectProgress(s);
-        return `<div class="bar-row">
-        <div class="bar-label" title="${escapeAttr(s.name)}">${escapeHtml(s.name)}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-        <div class="bar-pct">${pct}%</div>
-      </div>`;
-      })
-      .join('');
+  if (bars) {
+    bars.innerHTML = controller.renderProgressBarsHtml(
+      activeSubjects().map(s => ({
+        id: s.id,
+        name: s.name,
+        percentage: subjectProgress(s),
+      }))
+    );
   }
 
   const calItems = state.calendar
     .filter(c => c.date >= todayISO())
     .map(c => ({
+      id: c.id,
       date: c.date,
+      dateFormatted: formatDatePt(c.date),
       subject: entitySubjectName(c),
       label: c.reviewType && c.reviewType !== '—' ? c.reviewType : 'Revisão',
       status: c.status,
@@ -4533,7 +4535,9 @@ function renderDashboard() {
   const agendaItems = state.reviewAgenda
     .filter(a => a.date >= todayISO())
     .map(a => ({
+      id: a.id,
       date: a.date,
+      dateFormatted: formatDatePt(a.date),
       subject: entitySubjectName(a),
       label: `${a.topicId ? getTopicName(a.topicId) : a.topic || 'Tópico'} · ${a.tipo}`,
       status: a.status,
@@ -4547,22 +4551,13 @@ function renderDashboard() {
   const title = document.getElementById('upcomingTitle'),
     footer = document.getElementById('upcomingFooter');
   if (title) title.textContent = `Próximas revisões · ${allUpcoming.length}`;
-  if (upcoming.length === 0) {
-    ul.innerHTML = `<li class="upcoming-empty">Nenhuma revisão futura cadastrada. Adicione datas no Calendário ou gere a Agenda de Revisões.</li>`;
-    if (footer) footer.innerHTML = '';
-  } else {
-    ul.innerHTML = upcoming
-      .map(
-        c => `
-      <li>
-        <span class="upcoming-date">${formatDatePt(c.date)}</span>
-        <span style="flex:1;"><strong>${escapeHtml(c.subject || '—')}</strong> — ${escapeHtml(unifiedItemLabel(c))}<span class="item-origin">${escapeHtml(c.origem)}</span></span>
-        <span class="subject-progress-pill">${escapeHtml(c.status || 'Não iniciado')}</span>
-      </li>
-    `
-      )
-      .join('');
-    if (footer)
+  if (ul) {
+    ul.innerHTML = controller.renderUpcomingListHtml(upcoming);
+  }
+  if (footer) {
+    if (upcoming.length === 0) {
+      footer.innerHTML = '';
+    } else {
       footer.innerHTML =
         renderCollectionFooter({
           variant: 'block',
@@ -4575,6 +4570,7 @@ function renderDashboard() {
           showLessAction: upcomingVisible > 5 ? 'resetUpcomingLimit()' : '',
         }) +
         `<button class="btn ghost small upcoming-calendar-link" data-delegated-click="navigateKpi('calendario')">Ver todas no calendário</button>`;
+    }
   }
 }
 

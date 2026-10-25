@@ -65,6 +65,12 @@ export const impactAreas = [
     journeys: [],
   },
   {
+    id: 'dashboard',
+    sources: ['src/ui/tabs/dashboard/**'],
+    units: ['dashboard-components.test.js', 'overview-view-model.test.js'],
+    journeys: [],
+  },
+  {
     id: 'recovery',
     sources: [
       'src/application/recovery/**',

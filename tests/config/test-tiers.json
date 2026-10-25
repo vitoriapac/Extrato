@@ -797,6 +797,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/dashboard-components.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; componentes Preact e controller da aba de Visão Geral."
+    },
+    {
       "file": "tests/unit/packages-3-5.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
