@@ -1,6 +1,6 @@
 import { confidenceLabel } from './evidence.js';
 
-const unit = value => Math.max(0, Math.min(1, Number(value) || 0));
+const unit = (value: unknown): number => Math.max(0, Math.min(1, Number(value) || 0));
 
 // Input completeness is distinct from observational evidence and uncertainty.
 export function describeScoreEvidence({

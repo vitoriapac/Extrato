@@ -8,7 +8,10 @@ export const INITIAL_GOAL_VALUES = Object.freeze({
   aderenciaSemanal: 80,
 });
 // Sem registro de aceite legado, não inferimos que a pessoa confirmou um padrão.
-export function initialGoalSuggestions(goals = {}, hasActivity = false) {
+export function initialGoalSuggestions(
+  goals: Record<string, any> = {},
+  hasActivity: boolean = false
+) {
   return hasActivity
     ? []
     : Object.entries(INITIAL_GOAL_VALUES)

@@ -13,7 +13,7 @@ import { EXAM_PRIORITIES } from '../state/strategic.js';
 import { EXAM_INTELLIGENCE_CONFIG } from '../domain/exam-intelligence/config.js';
 import { validateExam } from '../domain/exam-intelligence/exam.js';
 import { validateExamQuestion } from '../domain/exam-intelligence/exam-question.js';
-import { validAchievementProjectionSnapshot } from '../application/projection/index.js';
+import { validAchievementProjectionSnapshot } from '../application/projection/achievement-projection-history.js';
 import { validCapacityRecord } from '../domain/planning/capacity-history.js';
 import { validateBackupEnvelope } from './migration-service.js';
 import { validAdherenceTarget } from '../application/adherence/adherence-target.js';
@@ -166,8 +166,10 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     questionKeys.add(key);
   }
   if (
-    data.exams.some(exam =>
-      (exam.unresolvedQuestions || []).some(row => questionKeys.has(`${exam.id}:${row.number}`))
+    data.exams.some((exam: any) =>
+      (exam.unresolvedQuestions || []).some((row: any) =>
+        questionKeys.has(`${exam.id}:${row.number}`)
+      )
     )
   )
     return fail('Uma questão histórica não pode estar classificada e pendente ao mesmo tempo.');
@@ -314,7 +316,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
       Number(item.minutes) < EXAM_INTELLIGENCE_CONFIG.transferMinimumMinutes ||
       Number(item.minutes) > EXAM_INTELLIGENCE_CONFIG.transferMaximumMinutes ||
       !Array.isArray(item.reasons) ||
-      item.reasons.some(reason => !textOk(reason, 500)) ||
+      item.reasons.some((reason: any) => !textOk(reason, 500)) ||
       [item.sourceBefore, item.sourceAfter, item.targetBefore, item.targetAfter].some(
         value => !isFiniteNonNegative(value)
       ) ||
@@ -362,7 +364,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
       !isOptionalTimestamp(item.expiredAt) ||
       !['study', 'review', 'questions', 'prerequisite'].includes(item.activityType) ||
       !Array.isArray(item.reasons) ||
-      item.reasons.some(reason => typeof reason !== 'string' || reason.length > 500) ||
+      item.reasons.some((reason: any) => typeof reason !== 'string' || reason.length > 500) ||
       (item.suggestedMinutes != null && !isFiniteNonNegative(item.suggestedMinutes)) ||
       (item.priority != null && !isFiniteNonNegative(item.priority)) ||
       [item.subjectId, item.topicId, item.sessionId, item.feedbackId, item.candidateId].some(
@@ -393,9 +395,9 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
   const validRef = (value: unknown, set: Set<string>) =>
     value == null || (typeof value === 'string' && isSafeId(value) && set.has(value));
   if (
-    data.subjects.some(subject =>
-      subject.topics.some(topic =>
-        topic.prerequisites.some(id => !topicIds.has(id) || id === topic.id)
+    data.subjects.some((subject: any) =>
+      subject.topics.some((topic: any) =>
+        topic.prerequisites.some((id: any) => !topicIds.has(id) || id === topic.id)
       )
     )
   )
@@ -409,23 +411,27 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
   ];
   if (
     referenceCollections.some(
-      item => !validRef(item.subjectId, subjectIds) || !validRef(item.topicId, topicIds)
+      (item: any) => !validRef(item.subjectId, subjectIds) || !validRef(item.topicId, topicIds)
     )
   )
     return fail('O backup contém referência para disciplina ou tópico inexistente.');
-  if (data.simulados.some(sim => sim.breakdown.some(item => !validRef(item.subjectId, subjectIds))))
+  if (
+    data.simulados.some((sim: any) =>
+      sim.breakdown.some((item: any) => !validRef(item.subjectId, subjectIds))
+    )
+  )
     return fail('O backup contém detalhamento de simulado para uma disciplina inexistente.');
   if (
-    data.dailyPlans.some(plan =>
+    data.dailyPlans.some((plan: any) =>
       plan.items.some(
-        item => !validRef(item.subjectId, subjectIds) || !validRef(item.topicId, topicIds)
+        (item: any) => !validRef(item.subjectId, subjectIds) || !validRef(item.topicId, topicIds)
       )
     )
   )
     return fail('O backup contém item de plano com referência inexistente.');
   if (
     data.topicHistory.some(
-      item =>
+      (item: any) =>
         (item.subjectId != null && !isSafeId(item.subjectId)) ||
         (item.topicId != null && !isSafeId(item.topicId))
     )
@@ -433,13 +439,13 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     return fail('O backup contém histórico com identificador inseguro.');
   if (
     data.questoes.some(
-      item => item.studySessionId != null && !validRef(item.studySessionId, sessionIds)
+      (item: any) => item.studySessionId != null && !validRef(item.studySessionId, sessionIds)
     )
   )
     return fail('O backup contém questões vinculadas a uma sessão inexistente.');
   if (
     data.studySessions.some(
-      item => item.planItemId != null && !validRef(item.planItemId, planItemIds)
+      (item: any) => item.planItemId != null && !validRef(item.planItemId, planItemIds)
     )
   )
     return fail('O backup contém sessão vinculada a um item de plano inexistente.');
@@ -473,7 +479,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     return fail('O backup contém configuração de prova inválida.');
   if (
     data.examBlueprint.subjects.some(
-      item =>
+      (item: any) =>
         item?.accuracyTarget != null &&
         (typeof item.accuracyTarget !== 'number' ||
           !Number.isFinite(item.accuracyTarget) ||
@@ -484,7 +490,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     return fail('O backup contém meta de acerto por disciplina inválida.');
   if (
     data.examBlueprint.subjects.some(
-      item =>
+      (item: any) =>
         !isPlainObject(item) ||
         !validRef(item.subjectId, subjectIds) ||
         !isFiniteNonNegative(item.expectedQuestions) ||
@@ -502,7 +508,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     return fail('O backup contém versões de algoritmos inválidas.');
   if (
     data.progressHistory.some(
-      item =>
+      (item: any) =>
         !isPlainObject(item) ||
         !isISODate(item.date) ||
         !isFiniteNonNegative(item.pct) ||
@@ -512,7 +518,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     return fail('O backup contém histórico de progresso inválido.');
   if (
     data.projectionSnapshots.some(
-      item =>
+      (item: any) =>
         !isPlainObject(item) ||
         !isSafeId(item.id) ||
         !isISODate(item.date) ||
@@ -523,7 +529,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
         (item.kind === 'achievement'
           ? !validAchievementProjectionSnapshot(item) ||
             item.source.simulations.some(
-              input =>
+              (input: any) =>
                 !isPlainObject(input) ||
                 !isSafeId(input.id) ||
                 !isISODate(input.date) ||
@@ -546,7 +552,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
             item.central > item.high ||
             item.algorithmVersion !== 1 ||
             item.inputs.some(
-              input =>
+              (input: any) =>
                 !isPlainObject(input) ||
                 !isSafeId(input.id) ||
                 !isISODate(input.date) ||
@@ -560,7 +566,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     return fail('O backup contém faixas de projeção inválidas.');
   if (
     data.readinessSnapshots.some(
-      item =>
+      (item: any) =>
         !isPlainObject(item) ||
         !isSafeId(item.id) ||
         !isISODate(item.date) ||
@@ -574,7 +580,7 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     return fail('O backup contém histórico de prontidão inválido.');
   if (
     data.readinessSnapshots.some(
-      item =>
+      (item: any) =>
         (item.weights !== undefined &&
           (!isPlainObject(item.weights) ||
             !Object.keys(item.weights).length ||

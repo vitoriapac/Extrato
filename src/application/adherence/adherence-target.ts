@@ -1,15 +1,16 @@
-export function validAdherenceTarget(value) {
+export function validAdherenceTarget(value: unknown): boolean {
   return (
     value === null ||
     (typeof value === 'number' && Number.isFinite(value) && value >= 50 && value <= 100)
   );
 }
-export function normalizeAdherenceTarget(value) {
-  return validAdherenceTarget(value) ? value : 80;
+
+export function normalizeAdherenceTarget(value: unknown): number | null {
+  return validAdherenceTarget(value) ? (value as number | null) : 80;
 }
 
 // Personal monitoring context. Never feeds readiness, priority or projection status.
-export function buildAdherenceTarget(model, target) {
+export function buildAdherenceTarget(model: any, target: unknown) {
   const value = normalizeAdherenceTarget(target),
     actual = model?.summary?.temporalAdherence ?? null;
   return {

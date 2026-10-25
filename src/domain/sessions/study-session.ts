@@ -16,14 +16,16 @@ export const RECOMMENDATION_SESSION_TYPES = Object.freeze([
 ]);
 export const PERCEIVED_RETENTION_VALUES = Object.freeze(['easy', 'effortful', 'unable']);
 export const PERCEIVED_DIFFICULTY_VALUES = Object.freeze(['easy', 'medium', 'hard']);
-const nullable = value => (value == null || value === '' ? null : String(value));
-const nonNegative = value => Math.max(0, Number(value) || 0);
-const nonNegativeInteger = value => Math.floor(nonNegative(value));
-const finiteOrNull = value =>
+const nullable = (value: unknown): string | null =>
+  value == null || value === '' ? null : String(value);
+const nonNegative = (value: unknown): number => Math.max(0, Number(value) || 0);
+const nonNegativeInteger = (value: unknown): number => Math.floor(nonNegative(value));
+const finiteOrNull = (value: unknown): number | null =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
-const isLocalDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
-export function localDateFromTimestamp(value) {
-  if (!value) return null;
+const isLocalDate = (value: unknown): boolean =>
+  typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+export function localDateFromTimestamp(value: unknown): string | null {
+  if (!value || (typeof value !== 'string' && typeof value !== 'number')) return null;
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return null;
   const year = parsed.getFullYear(),

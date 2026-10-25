@@ -7,8 +7,8 @@ export const PROJECTION_STATUS = Object.freeze({
   atRisk: 'at_risk',
 });
 
-export function daysBetweenCalendarDates(today, examDate) {
-  const parse = value => {
+export function daysBetweenCalendarDates(today: unknown, examDate: unknown): number | null {
+  const parse = (value: unknown): number | null => {
     if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
     const [year, month, day] = value.split('-').map(Number);
     const timestamp = Date.UTC(year, month - 1, day);

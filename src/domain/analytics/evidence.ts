@@ -1,6 +1,6 @@
 export const CONFIDENCE_THRESHOLDS = { medium: 0.35, high: 0.7 };
 
-export function confidenceLabel(value) {
+export function confidenceLabel(value: unknown): string {
   const confidence = Math.max(0, Math.min(1, Number(value) || 0));
   return confidence >= CONFIDENCE_THRESHOLDS.high
     ? 'Alta'
@@ -15,6 +15,12 @@ export function createMetricEvidence({
   periodEnd = null,
   confidence = 0,
   sources = [],
+}: {
+  sampleSize?: number;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  confidence?: number;
+  sources?: any[];
 } = {}) {
   const normalizedConfidence = Math.max(0, Math.min(1, Number(confidence) || 0));
   return {

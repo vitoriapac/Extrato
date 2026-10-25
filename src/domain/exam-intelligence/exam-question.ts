@@ -2,7 +2,7 @@ import { isSafeId } from '../../core/utils.js';
 
 const METHODS = new Set(['manual', 'catalog', 'imported', 'assisted']);
 
-export function validateExamQuestion(question) {
+export function validateExamQuestion(question: any): string | null {
   if (!question || typeof question !== 'object' || Array.isArray(question))
     return 'Questão histórica inválida.';
   if (
@@ -35,7 +35,7 @@ export function validateExamQuestion(question) {
   return null;
 }
 
-export function createExamQuestion(input) {
+export function createExamQuestion(input: any) {
   const question = {
     id: input?.id,
     examId: input?.examId,

@@ -1,11 +1,15 @@
 import { ACHIEVEMENT_PROJECTION_VERSION } from './projection-status.js';
 
-const scope = tags => JSON.stringify([...(tags || [])].sort());
-const validPercent = value =>
+const scope = (tags: any) => JSON.stringify([...(tags || [])].sort());
+const validPercent = (value: unknown): boolean =>
   value == null ||
   (typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100);
 
-export function achievementProjectionHistory(snapshots = [], activeExamTags = [], today = null) {
+export function achievementProjectionHistory(
+  snapshots: any[] = [],
+  activeExamTags: any[] = [],
+  today: string | null = null
+) {
   return snapshots
     .filter(
       item =>
@@ -33,23 +37,25 @@ export function captureAchievementProjection({
     !/^\d{4}-\d{2}-\d{2}$/.test(date || '')
   )
     return false;
-  const selectedIds = new Set((model.trajectory?.observations || []).map(item => item.id));
+  const selectedIds = new Set((model.trajectory?.observations || []).map((item: any) => item.id));
   const observed = simulations
     .filter(
-      item =>
+      (item: any) =>
         selectedIds.has(item.id) &&
         item.date <= date &&
         Number(item.total) > 0 &&
         Number(item.correct) >= 0 &&
         Number(item.correct) <= Number(item.total)
     )
-    .map(item => ({
+    .map((item: any) => ({
       id: item.id,
       date: item.date,
       correct: Number(item.correct),
       total: Number(item.total),
     }))
-    .sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
+    .sort(
+      (a: any, b: any) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id))
+    );
   const source = {
     examDate: model.exam.date,
     targetScore: model.current.targetScore,
@@ -67,7 +73,7 @@ export function captureAchievementProjection({
     ACHIEVEMENT_PROJECTION_VERSION,
     source,
   ]);
-  if (snapshots.some(item => item.kind === 'achievement' && item.signature === signature))
+  if (snapshots.some((item: any) => item.kind === 'achievement' && item.signature === signature))
     return false;
   snapshots.push(
     structuredClone({
@@ -96,14 +102,16 @@ export function captureAchievementProjection({
   return true;
 }
 
-export function validAchievementProjectionSnapshot(item) {
+export function validAchievementProjectionSnapshot(item: any): boolean {
   if (
     item?.kind !== 'achievement' ||
     ![1, ACHIEVEMENT_PROJECTION_VERSION].includes(item.algorithmVersion) ||
     !['insufficient_data', 'on_track', 'attention', 'at_risk'].includes(item.status) ||
     !['insufficient', 'low', 'moderate'].includes(item.confidence?.level) ||
     !Array.isArray(item.confidence.reasons) ||
-    !item.confidence.reasons.every(value => typeof value === 'string' && value.length <= 500) ||
+    !item.confidence.reasons.every(
+      (value: any) => typeof value === 'string' && value.length <= 500
+    ) ||
     !item.source ||
     !validPercent(item.source.targetScore) ||
     !validPercent(item.source.coverage) ||
@@ -117,7 +125,7 @@ export function validAchievementProjectionSnapshot(item) {
         item.topicRisks.length !== item.source.topicRisks.length ||
         item.topicRisks.length > 1000 ||
         item.topicRisks.some(
-          risk =>
+          (risk: any) =>
             typeof risk.topicId !== 'string' ||
             typeof risk.subjectId !== 'string' ||
             typeof risk.topicName !== 'string' ||
@@ -129,7 +137,7 @@ export function validAchievementProjectionSnapshot(item) {
         !['collect_evidence', 'guidance'].includes(item.recovery.state) ||
         !Array.isArray(item.recovery.steps) ||
         item.recovery.steps.length > 4 ||
-        item.recovery.steps.some(step => typeof step !== 'string' || step.length > 500))) ||
+        item.recovery.steps.some((step: any) => typeof step !== 'string' || step.length > 500))) ||
     (item.source.consistency != null &&
       (!Number.isInteger(item.source.consistency.days) ||
         item.source.consistency.days < 0 ||
@@ -141,7 +149,7 @@ export function validAchievementProjectionSnapshot(item) {
     !Array.isArray(item.drivers) ||
     !Array.isArray(item.risks) ||
     [...item.drivers, ...item.risks].some(
-      value => typeof value !== 'string' || value.length > 500
+      (value: any) => typeof value !== 'string' || value.length > 500
     ) ||
     typeof item.summary !== 'string' ||
     item.summary.length > 1000
@@ -161,7 +169,7 @@ export function validAchievementProjectionSnapshot(item) {
     Array.isArray(item.trajectory?.observations) &&
     item.trajectory.observations.length <= 12 &&
     item.trajectory.observations.every(
-      point =>
+      (point: any) =>
         /^\d{4}-\d{2}-\d{2}$/.test(point.date || '') &&
         validPercent(point.value) &&
         Number.isFinite(point.sampleSize) &&

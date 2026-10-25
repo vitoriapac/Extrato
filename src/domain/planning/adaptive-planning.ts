@@ -12,7 +12,7 @@ export const EXAM_PHASE_THRESHOLDS = Object.freeze({
   finalStretch: 7,
 });
 
-export function resolveExamPhase(daysToExam, thresholds = EXAM_PHASE_THRESHOLDS) {
+export function resolveExamPhase(daysToExam: unknown, thresholds = EXAM_PHASE_THRESHOLDS) {
   if (daysToExam == null || !Number.isFinite(Number(daysToExam)))
     return {
       state: 'undated',
@@ -49,21 +49,21 @@ export function resolveExamPhase(daysToExam, thresholds = EXAM_PHASE_THRESHOLDS)
   };
 }
 
-const minutesValue = value =>
+const minutesValue = (value: unknown): number | null =>
   value == null || value === '' || !Number.isFinite(Number(value)) || Number(value) < 0
     ? null
     : Math.round(Number(value));
-const sameMinutes = (left, right) => Math.abs(left - right) < 0.001;
-const byIdentity = (left, right) =>
+const sameMinutes = (left: number, right: number): boolean => Math.abs(left - right) < 0.001;
+const byIdentity = (left: any, right: any): number =>
   String(left.subjectId || '').localeCompare(String(right.subjectId || '')) ||
   String(left.topicId || '').localeCompare(String(right.topicId || '')) ||
   String(left.id || '').localeCompare(String(right.id || ''));
-const decisionTime = item =>
+const decisionTime = (item: any) =>
   item.status === 'reverted'
     ? item.revertedAt || item.decidedAt || item.createdAt
     : item.decidedAt || item.createdAt;
 
-function validPlanBudget(plan) {
+function validPlanBudget(plan: any): boolean {
   const budget = minutesValue(plan?.weeklyPlannedMinutes),
     subjects = Array.isArray(plan?.subjects) ? plan.subjects : [],
     items = Array.isArray(plan?.items) ? plan.items : [];
@@ -72,10 +72,16 @@ function validPlanBudget(plan) {
     const available = minutesValue(plan.weeklyAvailableMinutes);
     if (available == null || available === 0 || budget > available) return false;
   }
-  const subjectIds = subjects.map(item => item.subjectId).filter(Boolean);
+  const subjectIds = subjects.map((item: any) => item.subjectId).filter(Boolean);
   if (new Set(subjectIds).size < 2 || subjectIds.length !== subjects.length) return false;
-  const subjectTotal = subjects.reduce((sum, item) => sum + (minutesValue(item.minutes) ?? NaN), 0);
-  const itemTotal = items.reduce((sum, item) => sum + (minutesValue(item.minutes) ?? NaN), 0);
+  const subjectTotal = subjects.reduce(
+    (sum: number, item: any) => sum + (minutesValue(item.minutes) ?? NaN),
+    0
+  );
+  const itemTotal = items.reduce(
+    (sum: number, item: any) => sum + (minutesValue(item.minutes) ?? NaN),
+    0
+  );
   if (
     !Number.isFinite(subjectTotal) ||
     !Number.isFinite(itemTotal) ||
@@ -83,7 +89,7 @@ function validPlanBudget(plan) {
     !sameMinutes(itemTotal, budget)
   )
     return false;
-  const grouped = new Map<string, number>(subjectIds.map(id => [id, 0]));
+  const grouped = new Map<string, number>(subjectIds.map((id: string) => [id, 0]));
   for (const item of items) {
     const minutes = minutesValue(item.minutes),
       capacity = minutesValue(item.capacityMinutes);
@@ -97,7 +103,7 @@ function validPlanBudget(plan) {
     if (!Number.isFinite(activityTotal) || !sameMinutes(activityTotal, minutes)) return false;
     grouped.set(item.subjectId, (grouped.get(item.subjectId) ?? 0) + minutes);
   }
-  return subjects.every(subject =>
+  return subjects.every((subject: any) =>
     sameMinutes(grouped.get(subject.subjectId) ?? -1, subject.minutes)
   );
 }
@@ -123,40 +129,43 @@ export function buildAdaptivePlanningAdvice({
         item.subjectId && item.mastery != null && Number(item.evidenceStrength) >= minimumEvidence
     )
     .sort(byIdentity);
-  const groups = plan.subjects.map(subject => {
-    const rows = measured.filter(item => item.subjectId === subject.subjectId),
+  const groups = plan.subjects.map((subject: any) => {
+    const rows = measured.filter((item: any) => item.subjectId === subject.subjectId),
       weight = rows.reduce(
-        (sum, item) => sum + Math.max(0.1, Number(item.evidenceStrength) || 0),
+        (sum: number, item: any) => sum + Math.max(0.1, Number(item.evidenceStrength) || 0),
         0
       );
     const mastery = weight
       ? Math.round(
           rows.reduce(
-            (sum, item) => sum + item.mastery * Math.max(0.1, Number(item.evidenceStrength) || 0),
+            (sum: number, item: any) =>
+              sum + item.mastery * Math.max(0.1, Number(item.evidenceStrength) || 0),
             0
           ) / weight
         )
       : null;
-    const impact = rows.length ? Math.max(...rows.map(item => Number(item.examImpact) || 0)) : null;
+    const impact = rows.length
+      ? Math.max(...rows.map((item: any) => Number(item.examImpact) || 0))
+      : null;
     const need = rows.length
       ? Math.max(
           ...rows.map(
-            item =>
+            (item: any) =>
               ((Number(item.examImpact) || 0) * Math.max(0, 100 - Number(item.mastery || 0))) / 100
           )
         )
       : 0;
     const historical =
       rows
-        .filter(item => item.examIntelligence?.usedHistory)
+        .filter((item: any) => item.examIntelligence?.usedHistory)
         .sort(
-          (a, b) =>
+          (a: any, b: any) =>
             (Number(b.examImpact) || 0) * (100 - (Number(b.mastery) || 0)) -
             (Number(a.examImpact) || 0) * (100 - (Number(a.mastery) || 0))
         )[0] || null;
     const incidences = rows
-      .map(item => item.examIntelligence?.presencePercent)
-      .filter(value => typeof value === 'number' && Number.isFinite(value));
+      .map((item: any) => item.examIntelligence?.presencePercent)
+      .filter((value: any) => typeof value === 'number' && Number.isFinite(value));
     return {
       ...subject,
       incidence: incidences.length ? Math.max(...incidences) : null,
@@ -164,9 +173,11 @@ export function buildAdaptivePlanningAdvice({
       impact,
       need,
       historical,
-      falling: rows.some(item => item.trend?.direction === 'down' || item.trend?.key === 'down'),
+      falling: rows.some(
+        (item: any) => item.trend?.direction === 'down' || item.trend?.key === 'down'
+      ),
       severeDeterioration: rows.some(
-        item =>
+        (item: any) =>
           (item.trend?.direction === 'down' || item.trend?.key === 'down') &&
           (item.trend?.state === 'strong_down' || Number(item.trend?.delta) <= -12) &&
           Number(item.evidenceStrength) >= 0.7
@@ -176,17 +187,18 @@ export function buildAdaptivePlanningAdvice({
   });
   const target = groups
     .filter(
-      item =>
+      (item: any) =>
         item.impact >= EXAM_INTELLIGENCE_CONFIG.minimumAdaptiveImpact &&
         item.need >= EXAM_INTELLIGENCE_CONFIG.minimumAdaptiveNeed &&
         (item.mastery <= 60 || item.falling)
     )
     .sort(
-      (a, b) => b.need - a.need || (a.mastery ?? 100) - (b.mastery ?? 100) || byIdentity(a, b)
+      (a: any, b: any) =>
+        b.need - a.need || (a.mastery ?? 100) - (b.mastery ?? 100) || byIdentity(a, b)
     )[0];
   const source = groups
     .filter(
-      item =>
+      (item: any) =>
         target &&
         item.subjectId !== target.subjectId &&
         item.mastery >= 80 &&
@@ -195,10 +207,11 @@ export function buildAdaptivePlanningAdvice({
         (item.impact == null || item.impact <= target.impact)
     )
     .sort(
-      (a, b) => (a.impact ?? 0) - (b.impact ?? 0) || b.mastery - a.mastery || byIdentity(a, b)
+      (a: any, b: any) =>
+        (a.impact ?? 0) - (b.impact ?? 0) || b.mastery - a.mastery || byIdentity(a, b)
     )[0];
   if (!source || !target)
-    return groups.filter(item => item.measuredTopics).length < 2
+    return groups.filter((item: any) => item.measuredTopics).length < 2
       ? {
           state: 'insufficient',
           reasonCode: 'insufficient_evidence',
@@ -213,12 +226,17 @@ export function buildAdaptivePlanningAdvice({
           algorithmVersion: ADAPTIVE_PLANNING_VERSION,
         };
   const sourceItem = plan.items
-    .filter(item => item.subjectId === source.subjectId && item.minutes > ADAPTIVE_TRANSFER_MINUTES)
-    .sort((a, b) => b.minutes - a.minutes || byIdentity(a, b))[0];
+    .filter(
+      (item: any) => item.subjectId === source.subjectId && item.minutes > ADAPTIVE_TRANSFER_MINUTES
+    )
+    .sort((a: any, b: any) => b.minutes - a.minutes || byIdentity(a, b))[0];
   const targetItem = plan.items
-    .filter(item => item.subjectId === target.subjectId && item.capacityMinutes > item.minutes)
+    .filter(
+      (item: any) => item.subjectId === target.subjectId && item.capacityMinutes > item.minutes
+    )
     .sort(
-      (a, b) => b.capacityMinutes - b.minutes - (a.capacityMinutes - a.minutes) || byIdentity(a, b)
+      (a: any, b: any) =>
+        b.capacityMinutes - b.minutes - (a.capacityMinutes - a.minutes) || byIdentity(a, b)
     )[0];
   const transferMinutes = Math.min(
     ADAPTIVE_TRANSFER_MAX_MINUTES,
@@ -333,7 +351,7 @@ const scaleMix = (mix: any, minutes: number) => {
   return next;
 };
 
-export function applyAdaptivePlanningAdvice(plan, advice) {
+export function applyAdaptivePlanningAdvice(plan: any, advice: any) {
   if (
     advice?.state !== 'proposal' ||
     advice.applied ||
@@ -352,8 +370,8 @@ export function applyAdaptivePlanningAdvice(plan, advice) {
     !sameMinutes(minutesValue(advice.weeklyBudgetMinutes) ?? -1, budget)
   )
     return null;
-  const fromSubject = plan.subjects.find(item => item.subjectId === advice.from.subjectId),
-    toSubject = plan.subjects.find(item => item.subjectId === advice.to.subjectId);
+  const fromSubject = plan.subjects.find((item: any) => item.subjectId === advice.from.subjectId),
+    toSubject = plan.subjects.find((item: any) => item.subjectId === advice.to.subjectId);
   if (
     !fromSubject ||
     !toSubject ||
@@ -363,13 +381,17 @@ export function applyAdaptivePlanningAdvice(plan, advice) {
     return null;
   const from = plan.items
     .filter(
-      item => item.subjectId === advice.from.subjectId && item.minutes > ADAPTIVE_TRANSFER_MINUTES
+      (item: any) =>
+        item.subjectId === advice.from.subjectId && item.minutes > ADAPTIVE_TRANSFER_MINUTES
     )
-    .sort((a, b) => b.minutes - a.minutes || byIdentity(a, b))[0];
+    .sort((a: any, b: any) => b.minutes - a.minutes || byIdentity(a, b))[0];
   const to = plan.items
-    .filter(item => item.subjectId === advice.to.subjectId && item.capacityMinutes > item.minutes)
+    .filter(
+      (item: any) => item.subjectId === advice.to.subjectId && item.capacityMinutes > item.minutes
+    )
     .sort(
-      (a, b) => b.capacityMinutes - b.minutes - (a.capacityMinutes - a.minutes) || byIdentity(a, b)
+      (a: any, b: any) =>
+        b.capacityMinutes - b.minutes - (a.capacityMinutes - a.minutes) || byIdentity(a, b)
     )[0];
   if (
     !from ||
@@ -385,13 +407,13 @@ export function applyAdaptivePlanningAdvice(plan, advice) {
     return null;
   const moved = requested;
   const next = structuredClone(plan),
-    source = next.items.find(item => item.id === from.id),
-    target = next.items.find(item => item.id === to.id);
+    source = next.items.find((item: any) => item.id === from.id),
+    target = next.items.find((item: any) => item.id === to.id);
   source.minutes -= moved;
   target.minutes += moved;
   source.activityMix = scaleMix(source.activityMix, source.minutes);
   target.activityMix = scaleMix(target.activityMix, target.minutes);
-  next.subjects = next.subjects.map(item =>
+  next.subjects = next.subjects.map((item: any) =>
     item.subjectId === advice.from.subjectId
       ? { ...item, minutes: item.minutes - moved }
       : item.subjectId === advice.to.subjectId
@@ -399,8 +421,8 @@ export function applyAdaptivePlanningAdvice(plan, advice) {
         : item
   );
   next.maintenanceMinutes = next.items
-    .filter(item => item.covered)
-    .reduce((sum, item) => sum + item.minutes, 0);
+    .filter((item: any) => item.covered)
+    .reduce((sum: number, item: any) => sum + item.minutes, 0);
   next.adaptiveAdvice = { ...advice, transferMinutes: moved, applied: true };
   return validPlanBudget(next) &&
     sameMinutes(next.weeklyPlannedMinutes, budget) &&

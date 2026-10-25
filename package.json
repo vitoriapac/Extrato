@@ -10,6 +10,7 @@
     "check:format": "prettier --check src scripts tests",
     "check:syntax": "node scripts/check-syntax.mjs",
     "check:types": "tsc -p tsconfig.json --noEmit",
+    "check:types:pure": "tsc -p tsconfig.pure.json --noEmit",
     "serve": "node scripts/serve.mjs",
     "check:bundle": "node scripts/build.mjs --check",
     "test": "node --import ./scripts/ts-resolve-hook.mjs --test tests/unit/*.test.js",

@@ -2,12 +2,12 @@ import { isSafeId, isISODate } from '../../core/utils.js';
 
 const SOURCES = new Set(['manual', 'catalog', 'imported', 'assisted']);
 const COVERAGE = new Set(['unknown', 'partial', 'complete']);
-const safeText = (value, max) =>
+const safeText = (value: unknown, max: number): boolean =>
   typeof value === 'string' && value.trim().length > 0 && value.length <= max;
-const optionalText = (value, max) =>
+const optionalText = (value: unknown, max: number): boolean =>
   value == null || (typeof value === 'string' && value.length <= max);
 
-export function validateExam(exam) {
+export function validateExam(exam: any): string | null {
   if (!exam || typeof exam !== 'object' || Array.isArray(exam)) return 'Prova inválida.';
   if (!isSafeId(exam.id)) return 'A prova precisa de um ID seguro.';
   if (
@@ -51,7 +51,7 @@ export function validateExam(exam) {
     (!Array.isArray(exam.unresolvedQuestions) ||
       exam.unresolvedQuestions.length > 10000 ||
       exam.unresolvedQuestions.some(
-        row =>
+        (row: any) =>
           !Number.isInteger(row?.number) ||
           row.number < 1 ||
           !safeText(row.subject, 300) ||
@@ -62,7 +62,7 @@ export function validateExam(exam) {
     return 'As questões pendentes da prova são inválidas.';
   if (
     (exam.unresolvedQuestions?.length || 0) !==
-    new Set((exam.unresolvedQuestions || []).map(row => row.number)).size
+    new Set((exam.unresolvedQuestions || []).map((row: any) => row.number)).size
   )
     return 'A prova contém questões pendentes duplicadas.';
   if (
@@ -73,13 +73,13 @@ export function validateExam(exam) {
   if (
     !Array.isArray(exam.examTags) ||
     exam.examTags.length > 20 ||
-    exam.examTags.some(tag => !safeText(tag, 100))
+    exam.examTags.some((tag: any) => !safeText(tag, 100))
   )
     return 'O escopo da prova é inválido.';
   return null;
 }
 
-export function createExam(input) {
+export function createExam(input: any) {
   const exam = {
     id: input?.id,
     institution: input?.institution,

@@ -1,12 +1,13 @@
 import { parseLocalDate, localDateRange } from '../../core/date-utils.js';
 
-const validHours = hours =>
+const validHours = (hours: any): boolean =>
   hours &&
   typeof hours === 'object' &&
   Array.from({ length: 7 }, (_, day) => hours[String(day)]).every(
     value => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 24
   );
-export function validCapacityRecord(record: any) {
+
+export function validCapacityRecord(record: any): boolean {
   return (
     record?.version === 1 &&
     typeof record.id === 'string' &&
@@ -28,10 +29,11 @@ export function validCapacityRecord(record: any) {
     Object.keys(record.hoursByDay).length === 7
   );
 }
+
 export function recordPlanningCapacity(
-  history: any,
+  history: any[],
   { hoursByDay, today, capturedAt, id, source = 'observed' }: Record<string, any> = {}
-) {
+): boolean {
   if (!Array.isArray(history) || !validHours(hoursByDay) || !parseLocalDate(today)) return false;
   const hours: Record<string, number> = Object.fromEntries(
     Array.from({ length: 7 }, (_, day) => [String(day), hoursByDay[String(day)]])
@@ -39,7 +41,7 @@ export function recordPlanningCapacity(
   const prior = history
     .filter(record => validCapacityRecord(record) && record.effectiveDate <= today)
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         a.effectiveDate.localeCompare(b.effectiveDate) ||
         Date.parse(a.capturedAt) - Date.parse(b.capturedAt)
     )
@@ -58,30 +60,32 @@ export function recordPlanningCapacity(
   history.push(record);
   return true;
 }
-export function capacityForPeriod(history: any, { start, end }: Record<string, any> = {}) {
+
+export function capacityForPeriod(history: any[], { start, end }: Record<string, any> = {}) {
   const records = (history || [])
     .filter(validCapacityRecord)
-    .map((record, index) => ({ ...record, index }))
+    .map((record: any, index: number) => ({ ...record, index }))
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         a.effectiveDate.localeCompare(b.effectiveDate) ||
         Date.parse(a.capturedAt) - Date.parse(b.capturedAt) ||
         a.index - b.index
     );
   const days = localDateRange(start, end).map(date => {
-    const record = records.filter(record => record.effectiveDate <= date).at(-1);
+    const record = records.filter((r: any) => r.effectiveDate <= date).at(-1);
+    const parsed = parseLocalDate(date);
     return {
       date,
-      availableMinutes: record
-        ? record.hoursByDay[String(parseLocalDate(date).getDay())] * 60
-        : null,
+      availableMinutes: record && parsed ? record.hoursByDay[String(parsed.getDay())] * 60 : null,
       recordId: record?.id || null,
     };
   });
   const complete = days.length > 0 && days.every(day => day.availableMinutes !== null);
   return {
     state: complete ? 'recorded' : 'unknown',
-    availableMinutes: complete ? days.reduce((sum, day) => sum + day.availableMinutes, 0) : null,
+    availableMinutes: complete
+      ? days.reduce((sum, day) => sum + (day.availableMinutes ?? 0), 0)
+      : null,
     changedWithinPeriod: new Set(days.map(day => day.recordId).filter(Boolean)).size > 1,
     days,
   };
