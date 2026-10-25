@@ -9,6 +9,7 @@ const APP_SHELL = [
   './src/theme-bootstrap.js',
   './src/app.bundle.js?v=__BUILD_VERSION__',
   './src/report.bundle.js?v=__BUILD_VERSION__',
+  './src/exam-catalog.bundle.js?v=__BUILD_VERSION__',
   './src/pwa.js',
   './manifest.webmanifest',
   './icons/app-icon.svg',
