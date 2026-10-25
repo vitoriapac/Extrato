@@ -16,6 +16,8 @@ import {
 } from './ui/subjects/subject-navigation.js';
 import { createSubjectsController } from './ui/tabs/subjects/subjects-controller.js';
 import { createQuestionsController } from './ui/tabs/questions/questions-controller.js';
+import { createReviewsTabController } from './ui/tabs/reviews/reviews-tab-controller.js';
+import { createCalendarTabController } from './ui/tabs/calendar/calendar-tab-controller.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
 import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
@@ -5451,27 +5453,26 @@ function renderCalendarEditRow(item) {
 }
 function renderCalendar() {
   const body = document.getElementById('calBody');
-  const filterSubject = document.getElementById('calFilterSubject').value;
-  const filterStatus = document.getElementById('calFilterStatus').value;
-  const filterMes = document.getElementById('calFilterMes').value;
-  const filterTipo = document.getElementById('calFilterTipo').value;
+  if (!body) return;
+  const filterSubject =
+    (document.getElementById('calFilterSubject') as HTMLSelectElement)?.value || '';
+  const filterStatus =
+    (document.getElementById('calFilterStatus') as HTMLSelectElement)?.value || '';
+  const filterMes = (document.getElementById('calFilterMes') as HTMLSelectElement)?.value || '';
+  const filterTipo = (document.getElementById('calFilterTipo') as HTMLSelectElement)?.value || '';
 
-  const rows = state.calendar
-    .filter(c => !filterSubject || entitySubjectId(c) === filterSubject)
-    .filter(c => !filterStatus || c.status === filterStatus)
-    .filter(c => !filterMes || monthKey(c.date) === filterMes)
-    .filter(c => !filterTipo || c.reviewType === filterTipo)
-    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-
-  body.innerHTML = renderCalendarRows({
-    rows,
-    visible: calendarUiState.visible,
-    editingId: calendarUiState.editingId,
-    renderReadRow: renderCalendarReadRow,
-    renderEditRow: renderCalendarEditRow,
-    renderFooter: renderCollectionFooter,
-    escapeHtml,
+  const controller = createCalendarTabController({
+    state,
+    filters: { subjectId: filterSubject, status: filterStatus, month: filterMes, type: filterTipo },
+    entitySubjectId,
+    monthKey,
+    calendarUiState,
+    renderCalendarReadRow,
+    renderCalendarEditRow,
+    renderCollectionFooter,
   });
+
+  body.innerHTML = controller.renderHtml();
 }
 
 function addCalRow() {
@@ -5818,113 +5819,31 @@ function renderAgendaEditRow(item) {
 }
 function renderAgenda() {
   const body = document.getElementById('agendaBody');
-  const filterSubject = document.getElementById('agendaFilterSubject').value;
-  const filterStatus = document.getElementById('agendaFilterStatus').value;
-  const filterMes = document.getElementById('agendaFilterMes').value;
-  const filterTipo = document.getElementById('agendaFilterTipo').value;
+  if (!body) return;
+  const filterSubject =
+    (document.getElementById('agendaFilterSubject') as HTMLSelectElement)?.value || '';
+  const filterStatus =
+    (document.getElementById('agendaFilterStatus') as HTMLSelectElement)?.value || '';
+  const filterMes = (document.getElementById('agendaFilterMes') as HTMLSelectElement)?.value || '';
+  const filterTipo =
+    (document.getElementById('agendaFilterTipo') as HTMLSelectElement)?.value || '';
 
-  const rows = state.reviewAgenda
-    .filter(a => !filterSubject || entitySubjectId(a) === filterSubject)
-    .filter(
-      a =>
-        !filterStatus ||
-        (filterStatus === 'Atrasadas'
-          ? Boolean(a.date && a.date < todayISO() && a.status !== 'Concluído')
-          : a.status === filterStatus)
-    )
-    .filter(a => !filterMes || monthKey(a.date) === filterMes)
-    .filter(a => !filterTipo || a.tipo === filterTipo)
-    .sort((a, b) => {
-      const dateCompare = (a.date || '').localeCompare(b.date || '');
-      if (dateCompare !== 0) return dateCompare;
-      const wA = DIFFICULTY_WEIGHT[getTopicDifficulty(a.topicId || a.topicRef)] || 2;
-      const wB = DIFFICULTY_WEIGHT[getTopicDifficulty(b.topicId || b.topicRef)] || 2;
-      return wB - wA;
-    });
+  const controller = createReviewsTabController({
+    state,
+    filters: { subjectId: filterSubject, status: filterStatus, month: filterMes, type: filterTipo },
+    entitySubjectId,
+    todayISO,
+    monthKey,
+    DIFFICULTY_WEIGHT,
+    getTopicDifficulty,
+    agendaUiState,
+    renderAgendaReadRow,
+    renderAgendaEditRow,
+    renderGroupHeader,
+    renderCollectionFooter,
+  });
 
-  if (rows.length === 0) {
-    body.innerHTML = `<tr><td colspan="8"><div class="empty-state" style="border:none;">
-      <p>Nenhuma revisão encontrada com esses filtros.</p>
-      <button class="btn ghost small" data-delegated-click="gerarAgendaAutomatica()">⟳ Gerar a partir dos concluídos</button>
-      <button class="btn small" data-delegated-click="addAgendaRow()">+ Adicionar manualmente</button>
-    </div></td></tr>`;
-    return;
-  }
-
-  const today = todayISO();
-  const groups = {
-    overdue: rows.filter(item => item.status !== 'Concluído' && item.date && item.date < today),
-    today: rows.filter(item => item.status !== 'Concluído' && item.date === today),
-    upcoming: rows.filter(item => item.status !== 'Concluído' && (!item.date || item.date > today)),
-    completed: rows
-      .filter(item => item.status === 'Concluído')
-      .sort((a, b) =>
-        String(b.completedAt || b.date || '').localeCompare(String(a.completedAt || a.date || ''))
-      ),
-  };
-  const html = [];
-  const renderItems = items =>
-    items
-      .map(item =>
-        agendaUiState.editingId === item.id ? renderAgendaEditRow(item) : renderAgendaReadRow(item)
-      )
-      .join('');
-  if (groups.overdue.length) {
-    html.push(
-      renderGroupHeader({ title: '🔴 Atrasadas', count: groups.overdue.length, tone: 'overdue' }),
-      renderItems(groups.overdue)
-    );
-  }
-  if (groups.today.length) {
-    html.push(
-      renderGroupHeader({ title: '🟡 Hoje', count: groups.today.length, tone: 'today' }),
-      renderItems(groups.today)
-    );
-  }
-  if (groups.upcoming.length) {
-    const visible = groups.upcoming.slice(0, agendaUiState.upcomingVisible);
-    html.push(
-      renderGroupHeader({ title: '🔵 Próximas', count: groups.upcoming.length, tone: 'upcoming' }),
-      renderItems(visible),
-      renderCollectionFooter({
-        total: groups.upcoming.length,
-        visible: agendaUiState.upcomingVisible,
-        showMoreAction: "changeAgendaLimit('upcoming',5)",
-        showLessAction: agendaUiState.upcomingVisible > 5 ? "resetAgendaLimit('upcoming')" : '',
-        colspan: 8,
-        label: 'revisões',
-      })
-    );
-  }
-  if (groups.completed.length) {
-    html.push(
-      renderGroupHeader({
-        title: '✓ Concluídas',
-        count: groups.completed.length,
-        tone: 'completed',
-        expanded: agendaUiState.completedExpanded,
-        toggleAction: 'toggleCompletedReviews()',
-      })
-    );
-    if (agendaUiState.completedExpanded) {
-      const visible = groups.completed.slice(0, agendaUiState.completedVisible);
-      html.push(
-        renderItems(visible),
-        renderCollectionFooter({
-          total: groups.completed.length,
-          visible: agendaUiState.completedVisible,
-          showMoreAction: "changeAgendaLimit('completed',10)",
-          showLessAction:
-            agendaUiState.completedVisible > DEFAULT_LIST_VISIBLE_ITEMS
-              ? "resetAgendaLimit('completed')"
-              : '',
-          colspan: 8,
-          label: 'revisões',
-        })
-      );
-    }
-  }
-  body.innerHTML = html.join('');
+  body.innerHTML = controller.renderHtml();
 }
 
 function addAgendaRow() {

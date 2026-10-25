@@ -49,6 +49,16 @@ export const impactAreas = [
     journeys: [],
   },
   {
+    id: 'reviews-calendar',
+    sources: ['src/ui/tabs/reviews/**', 'src/ui/tabs/calendar/**'],
+    units: [
+      'reviews-calendar-components.test.js',
+      'calendar-controller.test.js',
+      'reviews.test.js',
+    ],
+    journeys: [],
+  },
+  {
     id: 'recovery',
     sources: [
       'src/application/recovery/**',

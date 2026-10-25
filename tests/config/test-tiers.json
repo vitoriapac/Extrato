@@ -1027,6 +1027,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/reviews-calendar-components.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; componentes Preact e controllers de revisões e calendário."
+    },
+    {
       "file": "tests/unit/risk-score.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

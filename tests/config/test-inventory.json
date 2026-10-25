@@ -5681,6 +5681,41 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/reviews-calendar-components.test.js",
+      "layer": "node",
+      "area": "Revisões",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "preact",
+        "preact-render-to-string",
+        "../../src/ui/tabs/reviews/ReviewsTable.js",
+        "../../src/ui/tabs/reviews/reviews-tab-controller.js",
+        "../../src/ui/tabs/calendar/CalendarTable.js",
+        "../../src/ui/tabs/calendar/calendar-tab-controller.js"
+      ],
+      "staticTestDeclarations": 3,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/reviews.test.js",
       "layer": "node",
       "area": "Revisões",
