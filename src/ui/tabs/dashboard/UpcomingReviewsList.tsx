@@ -14,14 +14,12 @@ export interface UpcomingReviewsListProps {
   items: UpcomingReviewItem[];
 }
 
-export function UpcomingReviewsList({
-  items,
-}: UpcomingReviewsListProps): JSX.Element {
+export function UpcomingReviewsList({ items }: UpcomingReviewsListProps): JSX.Element {
   if (items.length === 0) {
     return (
       <li class="upcoming-empty">
-        Nenhuma revisão futura cadastrada. Adicione datas no Calendário ou gere a
-        Agenda de Revisões.
+        Nenhuma revisão futura cadastrada. Adicione datas no Calendário ou gere a Agenda de
+        Revisões.
       </li>
     );
   }
@@ -35,9 +33,7 @@ export function UpcomingReviewsList({
             <strong>{item.subject || '—'}</strong> — {item.label}
             <span class="item-origin">{item.origem}</span>
           </span>
-          <span class="subject-progress-pill">
-            {item.status || 'Não iniciado'}
-          </span>
+          <span class="subject-progress-pill">{item.status || 'Não iniciado'}</span>
         </li>
       ))}
     </>

@@ -86,9 +86,7 @@ test('createDashboardTabController — gera HTML dos 3 blocos da visão geral', 
   });
   assert.match(statsHtml, /Tópicos totais/);
 
-  const barsHtml = controller.renderProgressBarsHtml([
-    { id: 's1', name: 'TI', percentage: 100 },
-  ]);
+  const barsHtml = controller.renderProgressBarsHtml([{ id: 's1', name: 'TI', percentage: 100 }]);
   assert.match(barsHtml, /TI/);
   assert.match(barsHtml, /100%/);
 

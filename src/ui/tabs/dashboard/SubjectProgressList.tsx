@@ -10,9 +10,7 @@ export interface SubjectProgressListProps {
   subjects: SubjectProgressItem[];
 }
 
-export function SubjectProgressList({
-  subjects,
-}: SubjectProgressListProps): JSX.Element {
+export function SubjectProgressList({ subjects }: SubjectProgressListProps): JSX.Element {
   if (subjects.length === 0) {
     return (
       <div class="upcoming-empty">
@@ -23,7 +21,7 @@ export function SubjectProgressList({
 
   return (
     <>
-      {subjects.map((s) => (
+      {subjects.map(s => (
         <div key={s.id} class="bar-row">
           <div class="bar-label" title={s.name}>
             {s.name}

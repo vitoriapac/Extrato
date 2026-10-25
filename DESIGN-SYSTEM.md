@@ -43,7 +43,7 @@ Todo componente deve usar tokens de cor, preservar contraste em ambos os temas e
 
 ## Listas progressivas
 
-Listas de registros usam DEFAULT_LIST_VISIBLE_ITEMS (5), definido em src/ui/progressive-list.js. Até cinco registros ficam visíveis; a partir de seis, o controle secundário mostra “Mostrar mais · +N” e expande a coleção completa. “Mostrar menos” recolhe e mantém o foco.
+Listas de registros usam DEFAULT_LIST_VISIBLE_ITEMS (5), definido em `src/ui/progressive-list.ts`. Até cinco registros ficam visíveis; a partir de seis, o controle secundário mostra “Mostrar mais · +N” e expande a coleção completa. “Mostrar menos” recolhe e mantém o foco.
 
 Aplicar escopo, filtros, busca e ordenação antes da apresentação. Sessões, questões, simulados e decisões priorizam os mais recentes; revisões mantêm urgência; lacunas mantêm prioridade. Filtros e navegação recolhem as listas. O estado é transitório e não integra armazenamento ou backups. Atualizações de dados recalculam a contagem.
 
@@ -53,24 +53,40 @@ O adaptador mountProgressiveLists usa uma relação explícita de seletores e re
 
 ## Contrato compartilhado dos gráficos
 
-Use renderChartFrame de src/ui/chart-components.js para título (module-heading), descrição, período, legenda, evidência, visualização e registros textuais. renderChartEmptyState apresenta a evidência necessária; renderChartTooltip escapa os detalhes dos pontos SVG. Os seletores existentes mantêm os próprios eventos e usam chart-period-controls.
+Use renderChartFrame de `src/ui/chart-components.ts` para título (module-heading), descrição, período, legenda, evidência, visualização e registros textuais. renderChartEmptyState apresenta a evidência necessária; renderChartTooltip escapa os detalhes dos pontos SVG. Os seletores existentes mantêm os próprios eventos e usam chart-period-controls.
 
 Os tokens --chart-series-primary, --chart-series-secondary e --chart-series-target definem os papéis visuais nos dois temas. Questões, Simulados e Plano e execução usam esse contrato. A legenda deve corresponder às séries e a consulta textual precisa informar valores e unidades. A cor não pode ser a única forma de interpretar o gráfico.
 
-### Inventário de componentes
+### Inventário de componentes primitivos (Preact)
 
-| Papel | Contrato existente | Componente Preact (`src/ui/primitives/`) |
-|---|---|---|
-| Ações e botões | `btn`, `btn-primary`, `btn-ghost`, `btn-danger`, `btn-small` | `<Button variant="..." size="..." />` |
-| Badges e status | `status-badge`, `status-pill`, `badge` | `<Badge variant="..." />` / `<StatusPill />` |
-| Cards e seções | `card`, `card--insight`, `card--attention`, `card--primary` | `<Card variant="..." as="..." />` |
-| Cabeçalhos editoriais | `module-heading`, `ui-section-header` | `<SectionHeader title="..." eyebrow="..." />` |
-| Progresso acessível | `bar-track`, `bar-fill`, `ui-progress` | `<ProgressBar value={...} max={...} />` |
-| Estados vazios | `empty-state`, `empty-state--compact` | `<EmptyState title="..." message="..." />` |
-| Métricas | `performance-kpi`, `ui-metric` | `<MetricCard label="..." value="..." />` |
-| Diálogos e modais | `modal-overlay`, `<dialog>` | `<Dialog open={...} onClose={...} title="..." />` |
-| Listas de registros | `progressive-list.js` e `list-components.js` | Em migração incremental |
-| Gráficos | `chart-components.js`, `chart-frame`, `chart-period-controls` | Contrato compartilhado mantido |
+| Papel                 | Contrato existente                                                   | Componente Preact (`src/ui/primitives/`)                 |
+| --------------------- | -------------------------------------------------------------------- | -------------------------------------------------------- |
+| Ações e botões        | `btn`, `btn-primary`, `btn-ghost`, `btn-danger`, `btn-small`         | `<Button variant="..." size="..." />`                    |
+| Badges e status       | `status-badge`, `status-pill`, `badge`                               | `<Badge variant="..." />` / `<StatusPill />`             |
+| Cards e seções        | `card`, `card--insight`, `card--attention`, `card--primary`          | `<Card variant="..." as="..." />`                        |
+| Cabeçalhos editoriais | `module-heading`, `ui-section-header`                                | `<SectionHeader title="..." eyebrow="..." />`            |
+| Progresso acessível   | `bar-track`, `bar-fill`, `ui-progress`                               | `<ProgressBar value={...} max={...} />`                  |
+| Estados vazios        | `empty-state`, `empty-state--compact`                                | `<EmptyState title="..." message="..." />`               |
+| Métricas              | `performance-kpi`, `ui-metric`                                       | `<MetricCard label="..." value="..." />`                 |
+| Diálogos e modais     | `modal-overlay`, `<dialog>`                                          | `<Dialog open={...} onClose={...} title="..." />`        |
+| Abas de navegação     | `tab-nav`, `nav-item`                                                | `<Tabs items={...} activeTab={...} onTabChange={...} />` |
+| Listas de registros   | `src/ui/progressive-list.ts` e `src/ui/list-components.ts`           | Em migração incremental                                  |
+| Gráficos              | `src/ui/chart-components.ts`, `chart-frame`, `chart-period-controls` | Contrato compartilhado mantido                           |
+
+### Componentes de tela das abas (Preact `.tsx`)
+
+A migração incremental da interface introduziu componentes funcionais Preact para as telas centrais, organizados por domínio funcional:
+
+| Aba             | Componente TSX                           | Localização                                       | Responsabilidade                                                        |
+| --------------- | ---------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Disciplinas** | `<SubjectTopicManager />`                | `src/ui/tabs/disciplinas/SubjectTopicManager.tsx` | Gerenciamento de disciplinas, tópicos, importância, esforço e bookmarks |
+| **Questões**    | `<QuestionsTable />`                     | `src/ui/tabs/questoes/QuestionsTable.tsx`         | Histórico progressivo de questões, acertos, erros e filtros contextuais |
+| **Simulados**   | `<SimulationsTable />`                   | `src/ui/tabs/questoes/SimulationsTable.tsx`       | Lista e cadastro de simulados completos com notas e metas               |
+| **Revisões**    | `<ReviewsSchedule />`                    | `src/ui/tabs/revisoes/ReviewsSchedule.tsx`        | Fila de revisões adaptativas, cartões de urgência e ações rápidas       |
+| **Calendário**  | `<CalendarView />` / `<CalendarTable />` | `src/ui/tabs/calendar/`                           | Visão mensal interativa e grade operacional de estudo                   |
+| **Metas**       | `<WeeklyGoals />`                        | `src/ui/tabs/metas/WeeklyGoals.tsx`               | Distribuição de capacidade, horas planejadas e metas semanais           |
+| **Hoje**        | `<TodaySchedule />`                      | `src/ui/tabs/hoje/TodaySchedule.tsx`              | Próxima melhor ação, cronograma do dia e execução em tempo real         |
+| **Visão Geral** | `<DashboardOverview />`                  | `src/ui/tabs/visao-geral/DashboardOverview.tsx`   | Painel executivo, índices de prontidão e KPIs resumidos                 |
 
 Componentes novos devem reutilizar esses contratos antes de criar variantes. Matrizes e comparações mantêm a visualização simultânea dos dados.
 
@@ -79,9 +95,11 @@ Componentes novos devem reutilizar esses contratos antes de criar variantes. Mat
 A estilização foi enriquecida com **Tailwind CSS v4** integrado diretamente aos design tokens em [`styles/tokens.css`](styles/tokens.css) através de [`styles/tailwind.input.css`](styles/tailwind.input.css).
 
 ### Regra de Coexistência Visual (Sem Preflight)
+
 Para garantir fidelidade visual pixel a pixel e prevenir regressões nas suítes visuais com baselines PNG, o reset global (`Preflight`) está **desativado**. O Tailwind atua estritamente gerando utilitários e temas sob demanda.
 
 ### Classes Utilitárias Semânticas do Tema
+
 - **Fundos:** `bg-surface-page`, `bg-surface-card`, `bg-surface-card-muted`, `bg-surface-primary`, `bg-navy`, `bg-paper`, `bg-surface-subtle`, `bg-surface-highlight`.
 - **Textos:** `text-primary`, `text-secondary`, `text-muted`, `text-on-navy`, `text-green`, `text-amber`, `text-red`.
 - **Bordas:** `border-border-default`, `border-border-subtle`, `border-border-emphasis`, `rounded-default`.
