@@ -21,6 +21,14 @@ import { createCalendarTabController } from './ui/tabs/calendar/calendar-tab-con
 import { createGoalsTabController } from './ui/tabs/goals/goals-tab-controller.js';
 import { createTodayTabController } from './ui/tabs/today/today-tab-controller.js';
 import { createDashboardTabController } from './ui/tabs/dashboard/dashboard-tab-controller.js';
+import {
+  computeTimerSeconds,
+  hasActiveTimer,
+  activeTimerMatchesRecommendation as activeTimerMatchesRecommendationModule,
+  renderActiveStudyTimerNoticeHtml,
+  renderGuidedStrategyHtml,
+  advanceGuidedStrategyStep,
+} from './ui/controllers/timer-controller.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
 import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
@@ -3006,41 +3014,31 @@ function startPlannedActivity(itemId) {
   }
 }
 function currentTimerSeconds() {
-  const active = state.activeTimer || {};
-  let seconds = Math.max(0, Number(active.accumulatedSeconds) || 0);
-  if (active.isRunning && active.runStartedAt) {
-    const runStart = Date.parse(active.runStartedAt);
-    if (Number.isFinite(runStart))
-      seconds += Math.max(0, Math.floor((Date.now() - runStart) / 1000));
-  }
-  return seconds;
+  return computeTimerSeconds(state.activeTimer);
 }
 function hasStartedStudyTimer() {
-  const active = state.activeTimer || {};
-  return Boolean(active.startedAt || active.isRunning || Number(active.accumulatedSeconds) > 0);
+  return hasActiveTimer(state.activeTimer);
 }
 function activeTimerMatchesRecommendation(recommendation) {
-  if (!hasStartedStudyTimer() || !recommendation) return false;
-  const active = state.activeTimer || {},
-    sameTarget =
-      active.subjectId === recommendation.subjectId && active.topicId === recommendation.topicId;
-  if (!sameTarget) return false;
-  const actionType = recommendationActionKind(recommendation);
-  return (
-    !active.recommendationType ||
-    active.recommendationType === actionType ||
-    active.type === actionType
+  return activeTimerMatchesRecommendationModule(
+    state.activeTimer,
+    recommendation,
+    recommendationActionKind
   );
 }
 function renderActiveStudyTimerNotice(recommendation) {
-  if (!hasStartedStudyTimer() || activeTimerMatchesRecommendation(recommendation)) return '';
-  const active = state.activeTimer || {},
-    subject = active.subjectId ? getSubjectName(active.subjectId) : 'Disciplina não selecionada',
-    topic = active.topicId ? getTopicName(active.topicId) : 'Tópico não selecionado',
-    elapsed = formatDuration(currentTimerSeconds()),
-    targetMinutes = Math.max(0, Number(active.targetMinutes) || 0),
-    target = targetMinutes ? ` · meta ${formatPlanMinutes(targetMinutes)}` : '';
-  return `<aside class="active-study-notice" aria-label="Sessão em andamento"><div><strong>Sessão em andamento</strong><span>${escapeHtml(subject)} — ${escapeHtml(topic)} · ${elapsed}${target} · ${active.isRunning ? 'cronômetro rodando' : 'pausada'}</span></div><button class="btn ghost small" type="button" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button></aside>`;
+  const active = state.activeTimer || {};
+  return renderActiveStudyTimerNoticeHtml({
+    active,
+    recommendation,
+    subjectName: active.subjectId ? getSubjectName(active.subjectId) : 'Disciplina não selecionada',
+    topicName: active.topicId ? getTopicName(active.topicId) : 'Tópico não selecionado',
+    elapsed: formatDuration(currentTimerSeconds()),
+    targetMinutes: active.targetMinutes,
+    formatTargetFn: formatPlanMinutes,
+    escapeFn: escapeHtml,
+    getActionKind: recommendationActionKind,
+  });
 }
 function updateTimerDisplay() {
   const el = document.getElementById('studyTimerDisplay');
@@ -3115,26 +3113,26 @@ function renderTimerFocusContext() {
   resume.hidden = !resumeLabel;
 }
 function renderGuidedStrategy() {
-  const el = document.getElementById('guidedStrategy'),
-    strategy = state.activeTimer?.strategy;
+  const el = document.getElementById('guidedStrategy');
   if (!el) return;
+  const strategy = state.activeTimer?.strategy;
   el.hidden = !strategy;
   if (!strategy) {
     el.innerHTML = '';
     return;
   }
-  const index = Math.min(state.activeTimer.strategyStep || 0, strategy.steps.length - 1),
-    step = strategy.steps[index];
-  el.innerHTML = `<strong>${escapeHtml(strategy.label)} · etapa ${index + 1}/${strategy.steps.length}</strong><span>${escapeHtml(step.label)} · ${step.minutes} min</span><button class="btn ghost small" data-delegated-click="advanceGuidedStrategy()">${index === strategy.steps.length - 1 ? 'Concluir etapas' : 'Próxima etapa'}</button>`;
+  el.innerHTML = renderGuidedStrategyHtml(
+    strategy,
+    state.activeTimer?.strategyStep || 0,
+    escapeHtml
+  );
 }
 function advanceGuidedStrategy() {
-  const strategy = state.activeTimer?.strategy;
-  if (!strategy) return;
-  const index = state.activeTimer.strategyStep || 0;
-  strategy.steps[index].status = 'completed';
-  if (index < strategy.steps.length - 1) state.activeTimer.strategyStep = index + 1;
-  renderGuidedStrategy();
-  scheduleSave();
+  if (state.activeTimer?.strategy) {
+    advanceGuidedStrategyStep(state.activeTimer);
+    renderGuidedStrategy();
+    scheduleSave();
+  }
 }
 function updateTimerControls() {
   const hasTime = timerSeconds > 0;
