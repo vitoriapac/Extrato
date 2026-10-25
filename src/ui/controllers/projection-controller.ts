@@ -15,7 +15,7 @@ export function createProjectionController({
   getExecutionContext = () => null,
 }) {
   return {
-    current(metrics, readiness, candidates) {
+    current(metrics: any = null, readiness: any = null, candidates: any = null) {
       const context = getContext(metrics, readiness);
       const recent = buildRecent(context.scope, context.today);
       return {

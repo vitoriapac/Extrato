@@ -228,15 +228,15 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 
 ---
 
-### Fase 5: Catálogo Dinâmico de Editais na Nuvem (`src/application/subjects/cloud-catalog-service.js`)
+### Fase 5: Catálogo Dinâmico de Editais na Nuvem (`src/application/subjects/cloud-catalog-service.ts`)
 
 * **Objetivo:** Transformar a dor de "cadastrar edital" no maior ímã de conversão para o plano Pro.
 * **Como Implementar:**
-  1. Hoje [`exam-catalog-runtime.js`](file:///c:/Users/vitor/Documents/Extrato/src/domain/exams/exam-catalog-runtime.js) carrega BB e Caixa de um bundle estático.
-  2. Criar `src/application/subjects/cloud-catalog-service.js` que consulta `GET /api/v1/exam-catalog`:
+  1. Hoje [`exam-catalog-runtime.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/exams/exam-catalog-runtime.ts) carrega BB e Caixa de um bundle estático.
+  2. Criar `src/application/subjects/cloud-catalog-service.ts` que consulta `GET /api/v1/exam-catalog`:
      - Lista todos os concursos disponíveis na nuvem com filtros por área (*Bancária, Fiscal, Tribunais, Policial, Administrativa, ENEM/Vestibulares, OAB*).
      - Cada item mostra: *Quantidade de disciplinas, Total de tópicos mapeados, Banca organizadora e Pesos calibrados*.
-     - Ao selecionar um edital no plano Pro, o JSON do edital é baixado e passado diretamente para o [`exam-import-service.js`](file:///c:/Users/vitor/Documents/Extrato/src/application/subjects/exam-import-service.js) já existente, que faz o merge idempotente com o estado do aluno.
+     - Ao selecionar um edital no plano Pro, o JSON do edital é baixado e passado diretamente para o [`exam-import-service.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/subjects/exam-import-service.ts) já existente, que faz o merge idempotente com o estado do aluno.
 
 ---
 
@@ -246,7 +246,7 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 * **Como Implementar:**
   1. **Convite por Link:** O mentor gera um link de vínculo. O aluno aceita compartilhar a leitura do seu extrato com o mentor.
   2. **Visão Consolidada da Turma:**
-     - O mentor vê uma tabela com seus alunos ordenada por **Risco de Abandono / Queda de Aderência** ([`risk-score.js`](file:///c:/Users/vitor/Documents/Extrato/src/domain/diagnostics/risk-score.js)):
+     - O mentor vê uma tabela com seus alunos ordenada por **Risco de Abandono / Queda de Aderência** ([`risk-score.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/diagnostics/risk-score.ts)):
        - `Nome do Aluno` | `Horas na Semana (Meta vs Real)` | `Índice de Prontidão` | `Principal Gargalo Atual` | `Última Sessão`.
   3. **Injeção de Metas / Edital:** O mentor pode publicar um edital verticalizado customizado da sua mentoria para todos os seus alunos com 1 clique.
 
@@ -255,12 +255,12 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 ### Fase 7: Go-To-Market, Landing Page Conversiva e Empacotamento Mobile
 
 1. **Landing Page com "Live Demo de 1 clique":**
-   - A maior arma de vendas do StudyTrack já está pronta: o [`demo-generator.js`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-generator.js) que cria 130 dias de histórico realista.
+   - A maior arma de vendas do StudyTrack já está pronta: o [`demo-generator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-generator.ts) que cria 130 dias de histórico realista.
    - Na página inicial de vendas, em vez de apenas prints estáticos, colocar o botão: **"Testar Plataforma Ao Vivo (Com 130 dias de dados simulados)"**. O visitante entra imediatamente no Modo Demo, interage com o Índice de Prontidão, vê a Matriz do Edital e o Simulador, e tem um CTA no topo: *"Criar minha conta e começar meu plano real"*.
 2. **Publicação nas Lojas (Google Play & App Store):**
    - Empacotar o bundle gerado por [`scripts/build-app-bundle.mjs`](file:///c:/Users/vitor/Documents/Extrato/scripts/build-app-bundle.mjs) via **Capacitor** ou **Bubblewrap (TWA)** para presença nas lojas oficiais.
 3. **Conformidade LGPD Nativa:**
-   - Como o app já possui Exportação Completa em JSON e Limpeza Total de Dados em [`backup-service.js`](file:///c:/Users/vitor/Documents/Extrato/src/storage/backup-service.js), basta adicionar o endpoint `DELETE /api/v1/account` (que apaga a linha em `auth.users` com `ON DELETE CASCADE`) para cumprir 100% dos requisitos de portabilidade e direito ao esquecimento da LGPD.
+   - Como o app já possui Exportação Completa em JSON e Limpeza Total de Dados em [`backup-service.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/backup-service.ts), basta adicionar o endpoint `DELETE /api/v1/account` (que apaga a linha em `auth.users` com `ON DELETE CASCADE`) para cumprir 100% dos requisitos de portabilidade e direito ao esquecimento da LGPD.
 
 ---
 
@@ -268,9 +268,9 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 
 | Semana | Entrega Principal | Critério de Pronto (DoD) |
 |:---:|---|---|
-| **Semanas 1–2** | **Hub Completo Core** (Ponto de Parada, Edital Verticalizado e Ciclo de Estudos da Seção 4 de [O-QUE-FALTA-IMPLEMENTAR.md](file:///c:/Users/vitor/Documents/Extrato/docs/O-QUE-FALTA-IMPLEMENTAR.md)) | Funcionalidades testadas em `npm run test:fast` e integradas à UI. |
-| **Semana 3** | **Fase 5 do Roadmap** (Simulador *"E se?"* e Modo Reta Final) | Motor preditivo completo pronto para ser o carro-chefe do plano Pro. |
-| **Semana 4** | **Setup Supabase + Auth + `entitlements.js`** | Login por Magic Link/Google funcionando + fusão segura do estado local anônimo. |
+| **Semanas 1–2** | **Hub Completo Core** (Ponto de Parada, Edital Verticalizado e Ciclo de Estudos da Seção 4 de [O-QUE-FALTA-IMPLEMENTAR.md](file:///c:/Users/vitor/Documents/Extrato/docs/O-QUE-FALTA-IMPLEMENTAR.md)) | Funcionalidades testadas em `npm run test:fast` e integradas à UI em Preact. |
+| **Semana 3** | **Fase 5 do Roadmap** (Simulador *"E se?"* e Modo Reta Final) | Motor preditivo completo em TS com modal Preact pronto para ser o carro-chefe do plano Pro. |
+| **Semana 4** | **Setup Supabase + Auth + `entitlements.ts`** | Login por Magic Link/Google funcionando + fusão segura do estado local anônimo. |
 | **Semana 5** | **`CloudSaaSProvider` (Sync Automático PC ↔ Celular)** | Sincronização com debounce, fila offline e validação de checksum SHA-256. |
 | **Semana 6** | **Checkout PIX/Cartão + Webhooks + Catálogo de 15 Editais na Nuvem** | Fluxo completo de assinatura ativando o plano `pro` em menos de 5 segundos após o PIX. |
 | **Semana 7** | **Landing Page + Integração da Demo de 130 dias + Termos LGPD** | Página pública no ar com conversão para criação de conta gratuita ou Pro. |

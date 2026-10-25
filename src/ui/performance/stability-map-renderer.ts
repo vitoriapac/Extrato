@@ -4,10 +4,10 @@ const cells = [
   ['maintain', 'Manter', 'Na meta e sem queda relevante'],
   ['intervene', 'Intervir', 'Abaixo da meta e sem melhora relevante'],
   ['evolving', 'Evoluindo', 'Abaixo da meta, com melhora'],
-];
+] as const;
 export function renderStabilityMap(model, { escapeHtml, escapeAttr }: any = {}) {
   if (!model?.total) return '';
-  const cell = ([key, label, description]) =>
+  const cell = ([key, label, description]: any) =>
     `<div class="stability-map-cell stability-map-cell--${key}"><h4>${label}</h4><p>${description}</p><ul>${model.groups[
       key
     ]
