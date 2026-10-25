@@ -29,6 +29,8 @@ const phases = ['UTC', 'America/Sao_Paulo'].map(timezone => ({
   name: 'Contratos de experiência',
   timezone,
   args: [
+    '--import',
+    './scripts/ts-resolve-hook.mjs',
     '--test',
     'tests/unit/decision-coherence-scenarios.test.js',
     'tests/unit/daily-execution.test.js',

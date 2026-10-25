@@ -72,8 +72,26 @@ async function writeOrCheck(output, generated) {
   const stableGenerated = generated.replace(/\r\n/g, '\n');
   if (checkOnly) {
     const current = await readFile(outputFile, 'utf8').catch(() => null);
-    if (current?.replace(/\r\n/g, '\n') !== stableGenerated) {
+    const normalizedCurrent = current?.replace(/\r\n/g, '\n');
+    if (normalizedCurrent !== stableGenerated) {
       console.error(`${output} esta desatualizado. Execute npm run build.`);
+      if (normalizedCurrent) {
+        console.error(
+          `build-check: Diferenca detectada em ${output}: atual=${normalizedCurrent.length}B, gerado=${stableGenerated.length}B`
+        );
+        for (let i = 0; i < Math.max(normalizedCurrent.length, stableGenerated.length); i++) {
+          if (normalizedCurrent[i] !== stableGenerated[i]) {
+            console.error(`build-check: Primeiro caractere diferente no indice ${i}:`);
+            console.error(
+              `  Atual:  ${JSON.stringify(normalizedCurrent.slice(Math.max(0, i - 15), i + 35))}`
+            );
+            console.error(
+              `  Gerado: ${JSON.stringify(stableGenerated.slice(Math.max(0, i - 15), i + 35))}`
+            );
+            break;
+          }
+        }
+      }
       stale = true;
     } else console.log(`${output} atualizado e reproduzivel.`);
   } else {
