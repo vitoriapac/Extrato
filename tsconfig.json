@@ -12,6 +12,11 @@
     "jsxImportSource": "preact",
     "strict": false,
     "noImplicitAny": false,
+    "noImplicitThis": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "alwaysStrict": true,
+    "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "maxNodeModuleJsDepth": 0
   },
