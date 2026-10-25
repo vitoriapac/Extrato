@@ -1172,6 +1172,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/today-components.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; componentes Preact e controller da aba Hoje."
+    },
+    {
       "file": "tests/unit/topic-exam-profile.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

@@ -19,6 +19,7 @@ import { createQuestionsController } from './ui/tabs/questions/questions-control
 import { createReviewsTabController } from './ui/tabs/reviews/reviews-tab-controller.js';
 import { createCalendarTabController } from './ui/tabs/calendar/calendar-tab-controller.js';
 import { createGoalsTabController } from './ui/tabs/goals/goals-tab-controller.js';
+import { createTodayTabController } from './ui/tabs/today/today-tab-controller.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
 import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
@@ -10158,10 +10159,11 @@ function planItemStatusLabel(status) {
 function renderTodayExecutionSummary(model) {
   const container = document.getElementById('todayExecutionSummary');
   if (!container) return;
-  const progress = model.progress,
-    progressLabel =
-      progress === null ? 'Plano diário ainda não montado' : `${progress}% do plano executado`;
-  container.innerHTML = `<section class="study-plan-summary today-execution-summary" aria-label="Resumo de execução de hoje"><div><strong>${formatPlanMinutes(model.availableMinutes)}</strong><span>Disponível hoje</span></div><div><strong>${formatPlanMinutes(model.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatPlanMinutes(model.executedMinutes)}</strong><span>Executado</span></div><div class="today-execution-progress"><div><span>${escapeHtml(formatDatePt(model.date))} · ${progressLabel}</span>${progress === null ? '' : '<strong>' + progress + '%</strong>'}</div><progress max="100" value="${progress ?? 0}" aria-label="${escapeAttr(progressLabel)}" ${progress === null ? 'hidden' : ''}></progress></div></section>`;
+  const controller = createTodayTabController({
+    formatPlanMinutes,
+    formatDatePt,
+  });
+  container.innerHTML = controller.renderExecutionSummaryHtml(model);
 }
 const dailyExecutionController = createDailyExecutionController({
   getContext: () => ({

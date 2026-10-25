@@ -160,6 +160,7 @@ export const impactAreas = [
       'src/application/questions/**',
       'src/application/simulations/**',
       'src/ui/tabs/questions/**',
+      'src/ui/tabs/today/**',
     ],
     units: [
       '*session*.test.js',
@@ -169,6 +170,7 @@ export const impactAreas = [
       '*adherence*.test.js',
       '*simulation*.test.js',
       'questions-components.test.js',
+      'today-components.test.js',
     ],
     journeys: ['daily-execution.spec.js', 'sessions.spec.js'],
   },
