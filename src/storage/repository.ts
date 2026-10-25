@@ -22,6 +22,7 @@ function serializedTimestamp(value: string): number {
 export interface StorageManager {
   get: (key: string) => Promise<string | null>;
   set: (key: string, value: string) => Promise<boolean>;
+  setDurable: (key: string, value: string) => Promise<boolean>;
   remove: (key: string) => Promise<boolean>;
 }
 
@@ -86,6 +87,27 @@ export function createStorageManager(
         }
       }
       if (local.set(key, value)) success = true;
+      return success;
+    },
+    // Large copies (automatic backups) skip localStorage: its ~5M-character quota would fill and
+    // then silently stop updating the main state. A stale local copy of the key is dropped.
+    async setDurable(key: string, value: string): Promise<boolean> {
+      let success = false;
+      try {
+        await indexedDb.set(key, value);
+        success = true;
+      } catch (error) {
+        console.warn('Falha no IndexedDB', error);
+      }
+      if (windowStorage && typeof windowStorage.set === 'function') {
+        try {
+          await windowStorage.set(key, value, false);
+          success = true;
+        } catch (error) {
+          console.warn('Falha no window.storage', error);
+        }
+      }
+      if (success) local.remove(key);
       return success;
     },
     async remove(key: string): Promise<boolean> {

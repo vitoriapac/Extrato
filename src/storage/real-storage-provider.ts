@@ -4,6 +4,7 @@ export interface RealStorageProviderOptions {
   manager?: {
     get: (key: string) => Promise<any>;
     set: (key: string, value: any) => Promise<any>;
+    setDurable?: (key: string, value: any) => Promise<any>;
     remove: (key: string) => Promise<any>;
   };
   readLocal?: (key: string) => any;
@@ -27,6 +28,8 @@ export function createRealStorageProvider({
   return assertStorageProvider({
     get: (key: string) => manager.get(key),
     set: (key: string, value: any) => manager.set(key, value),
+    setDurable: (key: string, value: any) =>
+      manager.setDurable ? manager.setDurable(key, value) : manager.set(key, value),
     remove: async (key: string) => {
       const removed = await manager.remove(key);
       if (typeof removeLocal === 'function') removeLocal(key);

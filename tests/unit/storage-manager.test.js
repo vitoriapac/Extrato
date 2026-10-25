@@ -68,3 +68,19 @@ test('sem IndexedDB, lê e grava pelo localStorage', async () => {
   assert.equal(JSON.parse(local.values.state).marker, 'novo');
   assert.equal(await quiet(() => manager.get('ausente')), null);
 });
+
+test('setDurable grava fora do localStorage e libera a cópia local da chave', async () => {
+  const indexedDb = fakeIndexedDb(),
+    local = fakeLocal({ backup: 'cópia antiga', other: 'mantém' });
+  const manager = createStorageManager(undefined, { indexedDb, local, windowStorage: null });
+  assert.equal(await manager.setDurable('backup', 'novo'), true);
+  assert.equal(indexedDb.values.backup, 'novo');
+  assert.equal(local.values.backup, undefined);
+  assert.equal(local.values.other, 'mantém');
+  const offline = createStorageManager(undefined, {
+    indexedDb: fakeIndexedDb({}, { failing: true }),
+    local: fakeLocal({ backup: 'cópia antiga' }),
+    windowStorage: null,
+  });
+  assert.equal(await quiet(() => offline.setDurable('backup', 'novo')), false);
+});

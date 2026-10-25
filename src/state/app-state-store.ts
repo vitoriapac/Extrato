@@ -21,6 +21,10 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
   let pendingSave: { serialized: string; previousRaw: string | null } | null = null;
   let stateTransactionActive = false;
   let transactionDeferredSave = false;
+  // The previous state for automatic backups comes from memory: a full localStorage stops
+  // updating silently, and reading it back would back up the same old copy every day.
+  let lastSerialized: string | null = null;
+  const previousSnapshot = () => lastSerialized ?? opts.readLocalState(opts.STORAGE_KEY);
 
   async function enqueueSave(serialized: string, previousRaw: string | null = null): Promise<any> {
     pendingSave = { serialized, previousRaw };
@@ -48,9 +52,10 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
       transactionDeferredSave = true;
       return;
     }
-    const previousRaw = opts.readLocalState(opts.STORAGE_KEY);
+    const previousRaw = previousSnapshot();
     state.updatedAt = opts.nowISO();
     const serialized = JSON.stringify(opts.pickPersistentState(state));
+    lastSerialized = serialized;
     opts.writeLocalState(serialized);
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => enqueueSave(serialized, previousRaw), 350);
@@ -67,10 +72,9 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
     clearTimeout(saveTimeout);
     saveTimeout = null;
     const state = opts.getState();
-    const flush = enqueueSave(
-      JSON.stringify(opts.pickPersistentState(state)),
-      opts.readLocalState(opts.STORAGE_KEY)
-    );
+    const previousRaw = previousSnapshot();
+    lastSerialized = JSON.stringify(opts.pickPersistentState(state));
+    const flush = enqueueSave(lastSerialized, previousRaw);
     const result = flush.then(async () => {
       stateTransactionActive = true;
       try {
@@ -159,8 +163,9 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
       clearTimeout(saveTimeout);
       saveTimeout = null;
       const state = opts.getState();
-      const previousRaw = opts.readLocalState(opts.STORAGE_KEY);
+      const previousRaw = previousSnapshot();
       const serialized = JSON.stringify(opts.pickPersistentState(state));
+      lastSerialized = serialized;
       await enqueueSave(serialized, previousRaw);
     }
     await saveQueue;
@@ -174,6 +179,9 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
     cancelPendingSave,
     settleSaves,
     flushSaves,
+    markPersisted: (serialized: string | null) => {
+      lastSerialized = serialized;
+    },
     isTransactionActive: () => stateTransactionActive,
     hasDeferredSave: () => transactionDeferredSave,
   };

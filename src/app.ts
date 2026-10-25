@@ -1565,6 +1565,7 @@ async function loadState() {
   let loadWarning = '';
   try {
     const raw = await StorageManager.get(STORAGE_KEY);
+    appStateStore.markPersisted(raw);
     if (raw) {
       try {
         state = normalizeAndValidateState(raw);
@@ -1647,7 +1648,7 @@ async function rotateAutomaticBackup(previousRaw, options: any = {}) {
   const slot = Math.max(0, Number(index.nextSlot) || 0) % slotCount;
   const key = `${backupKey}-${slot}`;
   const checksum = await sha256(previousRaw);
-  const saved = await StorageManager.set(key, previousRaw);
+  const saved = await (StorageManager.setDurable || StorageManager.set)(key, previousRaw);
   if (!saved) return false;
   const verification = await StorageManager.get(key);
   if (verification !== previousRaw || (checksum && (await sha256(verification)) !== checksum))
@@ -1714,6 +1715,7 @@ STATE_CHANNEL?.addEventListener('message', event => {
     applyingRemoteState = true;
     state = normalizeAndValidateState(message.serialized);
     writeLocalState(message.serialized);
+    appStateStore.markPersisted(message.serialized);
     render();
     showToast('Dados atualizados por outra aba.');
   } catch (error) {

@@ -9,6 +9,7 @@ export const STORAGE_PROVIDER_METHODS = Object.freeze([
 export interface StorageProvider {
   get: (key: string) => Promise<any>;
   set: (key: string, value: any) => Promise<any>;
+  setDurable?: (key: string, value: any) => Promise<any>;
   remove: (key: string) => Promise<any>;
   readLocal: (key: string) => any;
   writeLocal: (key: string, value: any) => any;

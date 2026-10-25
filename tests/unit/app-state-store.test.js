@@ -65,3 +65,33 @@ test('createAppStateStore — executa transação atômica e defere gravações 
   assert.equal(transactionDone, true);
   assert.equal(store.isTransactionActive(), false);
 });
+
+test('createAppStateStore — backup usa o estado anterior em memória, não o localStorage parado', async () => {
+  const backups = [];
+  const state = { count: 0, updatedAt: '', lastBackupAt: null };
+  const store = createAppStateStore({
+    getState: () => state,
+    pickPersistentState: s => ({ count: s.count }),
+    // localStorage cheio: a escrita falha e a leitura devolve sempre a mesma cópia antiga.
+    writeLocalState: () => false,
+    readLocalState: () => '{"count":-1,"stale":true}',
+    STORAGE_KEY: 'test-key',
+    nowISO: () => '2026-03-16T12:00:00Z',
+    isDemoMode: () => false,
+    rotateAutomaticBackup: async previousRaw => (backups.push(previousRaw), true),
+    writePersistentState: async () => true,
+    showToast: () => {},
+  });
+  const settle = async () => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    await store.settleSaves();
+  };
+  store.markPersisted('{"count":0}');
+  state.count = 1;
+  store.scheduleSave();
+  await settle();
+  state.count = 2;
+  store.scheduleSave();
+  await settle();
+  assert.deepEqual(backups, ['{"count":0}', '{"count":1}']);
+});
