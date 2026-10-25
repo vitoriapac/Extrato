@@ -12,18 +12,42 @@ Este documento descreve o roteiro técnico e arquitetural para modernizar a base
 ```mermaid
 flowchart LR
   subgraph M1["Momento 1: Formatação & TypeScript"]
-    P0["Fase 0: Prettier"] --> P1["Fase 1: Infra TS & Gates"]
-    P1 --> P2["Fase 2: Core, State & Storage (.ts)"]
-    P2 --> P3["Fase 3: Domínio (.ts)"]
-    P3 --> P4["Fase 4: Application & ViewModels (.ts)"]
-    P4 --> P5["Fase 5: Controllers, app.ts & Docs M1"]
+    P0["Fase 0: Prettier (Concluída)"] --> P1["Fase 1: Infra TS & Gates (Concluída)"]
+    P1 --> P2["Fase 2: Core, State & Storage (Concluída)"]
+    P2 --> P3["Fase 3: Domínio (Concluída)"]
+    P3 --> P4["Fase 4: Application & ViewModels (Concluída)"]
+    P4 --> P5["Fase 5: Controllers, app.ts & Docs M1 (Concluída)"]
   end
   subgraph M2["Momento 2: Preact + Tailwind CSS"]
-    P6["Fase 6: Setup Preact + Tailwind (Tokens)"] --> P7["Fase 7: UI Kit / Componentes Base (.tsx)"]
-    P7 --> P8["Fase 8: Migração de Abas, CSS & Docs M2"]
+    P6["Fase 6: Setup Preact + Tailwind (Concluída)"] --> P7["Fase 7: UI Kit / Primitives (Concluída)"]
+    P7 --> P8["Fase 8: Migração de Abas para Preact (Concluída)"]
   end
   P5 --> P6
+  P8 --> P9["Fase 9: Documentação & Governança (Concluída)"]
 ```
+
+---
+
+## Status de Execução do Plano
+
+| Fase | Escopo | Status | Principais Entregas e Commits |
+| :---: | :--- | :---: | :--- |
+| **Fase 0** | Padronização com Prettier | **Concluída** | `.prettierrc.json`, `.prettierignore`, scripts `npm run format` e `npm run check:format` (`bd47514`). |
+| **Fase 1** | Infraestrutura TS e Gates de Build | **Concluída** | `tsconfig.json` (`strict: true`), loader hook `ts-resolve-hook.mjs`, `esbuild` nativo `.ts`/`.tsx`, `npm run check:types` integrado aos gates (`bd47514`, `842ad3a`). |
+| **Fase 2** | Core, State e Storage (`.ts`) | **Concluída** | Tipagem completa de `src/core/types.ts`, utilitários puros, schemas de estado (`AppState`), migrações e providers (`bd47514`, `842ad3a`). |
+| **Fase 3** | Camada de Domínio (`.ts`) | **Concluída** | 100% de `src/domain/` migrado para `.ts` com `strictNullChecks` e `noImplicitAny` (`842ad3a`). |
+| **Fase 4** | Camada de Aplicação e View-Models (`.ts`) | **Concluída** | 100% de `src/application/` migrado para `.ts` com contratos de `ViewModel` exportados (`842ad3a`). |
+| **Fase 5** | Controllers, Renderers e Fatiamento de `app.ts` | **Concluída** | Controllers em `.ts`, extração de `TabRouter`, `AppStateStore`, `delegated-actions` e `search-controller` de `src/app.ts` (`842ad3a`, `c0d99c1`, `79a6b7f`). |
+| **Fase 6** | Setup Preact + Tailwind CSS com Tokens | **Concluída** | JSX automático Preact no `esbuild`, Tailwind CSS v4 conectado a `styles/tokens.css` sem `Preflight` invasivo (`be5cfab`). |
+| **Fase 7** | UI Kit de Componentes Primitivos (`.tsx`) | **Concluída** | `src/ui/primitives/*.tsx`: `Button`, `Card`, `Badge`, `ProgressBar`, `Dialog`, `Tabs`, `SectionHeader` e `EmptyState` (`be5cfab`). |
+| **Fase 8** | Migração das Abas para Preact (`.tsx`) | **Concluída** | Disciplinas (`39a4f82`), Questões/Simulados (`65e2b23`), Revisões/Calendário (`5c0fcf7`), Metas/Planejamento (`b5c2325`), Hoje (`e7bef4e`), Dashboard (`86da4af`). |
+| **Fase 9** | Atualização da Documentação Central | **Concluída** | Guias de arquitetura, visual, testes e segurança alinhados à nova baseline TS + Preact (`42a5e67`). |
+
+### Estado Atual da Base de Código (Métricas Pós-Migração)
+* **Arquivos TypeScript:** 437 módulos `.ts` e 22 componentes `.tsx`.
+* **Arquivos JavaScript Legados:** Apenas 4 scripts bootstrap mantidos intencionalmente como `.js` puros para o runtime da PWA (`src/theme-bootstrap.js`, `src/pwa.js`, `service-worker.template.js` e `service-worker.js`).
+* **Verificação Estática:** `npm run check:types` valida a tipagem sem erros em modo estrito (`tsconfig.json`).
+* **Integridade Visual & E2E:** Zero quebras em seletores de teste (`id`, `data-*`, `role`) e baselines visuais em conformidade com [`docs/VISUAL-TEST-POLICY.md`](VISUAL-TEST-POLICY.md).
 
 ---
 
