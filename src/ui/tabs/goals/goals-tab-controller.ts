@@ -1,5 +1,6 @@
 import { h } from 'preact';
 import { render } from 'preact-render-to-string';
+import { mountPreact } from '../../preact-mount.js';
 import { WeeklyAvailabilityGrid } from './WeeklyAvailabilityGrid.js';
 import { PlanExecutionCard } from './PlanExecutionCard.js';
 
@@ -29,7 +30,7 @@ export interface GoalsTabControllerContext {
 }
 
 export function createGoalsTabController(ctx: GoalsTabControllerContext) {
-  function renderWeeklyAvailabilityHtml(): string {
+  function createWeeklyAvailabilityVNode() {
     const today = ctx.todayISO();
     const todayDay = ctx.parseLocalDate(today).getDay();
     const availability = ctx.buildWeeklyAvailability(ctx.state.metas?.horasPorDia);
@@ -49,19 +50,25 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       };
     });
 
-    return render(
-      h(WeeklyAvailabilityGrid, {
-        summary: availability,
-        formattedTotal,
-        formattedAverage,
-        formattedToday,
-        days,
-      })
-    );
+    return h(WeeklyAvailabilityGrid, {
+      summary: availability,
+      formattedTotal,
+      formattedAverage,
+      formattedToday,
+      days,
+    });
   }
 
-  function renderPlanExecutionHtml(): string {
-    if (!ctx.buildPlanExecution || !ctx.renderPlanExecutionView) return '';
+  function renderWeeklyAvailabilityHtml(): string {
+    return render(createWeeklyAvailabilityVNode());
+  }
+
+  function mountWeeklyAvailability(container: Element): void {
+    mountPreact(createWeeklyAvailabilityVNode(), container);
+  }
+
+  function createPlanExecutionVNode() {
+    if (!ctx.buildPlanExecution || !ctx.renderPlanExecutionView) return null;
 
     const today = ctx.todayISO();
     const model = ctx.buildPlanExecution({
@@ -122,17 +129,31 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
         ? ctx.renderPlanImpactAlignment(alignment, { escapeHtml: ctx.escapeHtml })
         : '';
 
-    return render(
-      h(PlanExecutionCard, {
-        executionViewHtml,
-        distributionHtml,
-        alignmentHtml,
-      })
-    );
+    return h(PlanExecutionCard, {
+      executionViewHtml,
+      distributionHtml,
+      alignmentHtml,
+    });
+  }
+
+  function renderPlanExecutionHtml(): string {
+    const vnode = createPlanExecutionVNode();
+    return vnode ? render(vnode) : '';
+  }
+
+  function mountPlanExecution(container: Element): void {
+    const vnode = createPlanExecutionVNode();
+    if (vnode) {
+      mountPreact(vnode, container);
+    } else {
+      container.innerHTML = '';
+    }
   }
 
   return {
     renderWeeklyAvailabilityHtml,
+    mountWeeklyAvailability,
     renderPlanExecutionHtml,
+    mountPlanExecution,
   };
 }

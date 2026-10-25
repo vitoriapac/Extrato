@@ -338,6 +338,7 @@ import { createEditableCollectionController } from './ui/controllers/editable-co
 import { createPreferencesController } from './ui/controllers/preferences-controller.js';
 import {
   validateBackupData as validateBackupDataValidator,
+  validateNormalizedBackup,
   backupSummary,
 } from './storage/backup-validator.js';
 import { createBackupModalController } from './ui/controllers/backup-modal-controller.js';
@@ -3352,7 +3353,7 @@ function renderDashboard() {
 
   const qs = document.getElementById('quickStats');
   if (qs) {
-    qs.innerHTML = controller.renderQuickStatsHtml({
+    controller.mountQuickStats(qs, {
       total,
       naoIniciado,
       emAndamento: andamento,
@@ -3362,7 +3363,8 @@ function renderDashboard() {
 
   const bars = document.getElementById('progressBars');
   if (bars) {
-    bars.innerHTML = controller.renderProgressBarsHtml(
+    controller.mountProgressBars(
+      bars,
       activeSubjects().map(s => ({
         id: s.id,
         name: s.name,
@@ -3402,7 +3404,7 @@ function renderDashboard() {
     footer = document.getElementById('upcomingFooter');
   if (title) title.textContent = `Próximas revisões · ${allUpcoming.length}`;
   if (ul) {
-    ul.innerHTML = controller.renderUpcomingListHtml(upcoming);
+    controller.mountUpcomingList(ul, upcoming);
   }
   if (footer) {
     if (upcoming.length === 0) {
@@ -5893,7 +5895,7 @@ function getGoalsTabController() {
 function renderWeeklyHoursGoals() {
   const container = document.getElementById('weeklyHoursGoals');
   if (!container) return;
-  container.innerHTML = getGoalsTabController().renderWeeklyAvailabilityHtml();
+  getGoalsTabController().mountWeeklyAvailability(container);
 }
 
 function contarTopicosConcluidosNoPeriodo(pred) {
@@ -5953,7 +5955,7 @@ function renderMetas() {
 function renderPlanExecution() {
   const container = document.getElementById('planExecutionResults');
   if (!container) return;
-  container.innerHTML = getGoalsTabController().renderPlanExecutionHtml();
+  getGoalsTabController().mountPlanExecution(container);
 }
 
 function updateMeta(key, value) {
@@ -8889,7 +8891,7 @@ function renderTodayExecutionSummary(model) {
     formatPlanMinutes,
     formatDatePt,
   });
-  container.innerHTML = controller.renderExecutionSummaryHtml(model);
+  controller.mountExecutionSummary(container, model);
 }
 const dailyExecutionController = createDailyExecutionController({
   getContext: () => ({
