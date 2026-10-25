@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-170 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+172 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -147,6 +147,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/guided-study-service.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/header-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/heatmap.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/help-center-component.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/help-center.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/historical-adherence-integrity.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/import-exam-json.test.js | node | Inteligência da prova | critical | — | contract | none |
@@ -241,6 +242,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/topic-strategy-renderer.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-strategy.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/ui-presentation.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/ui-primitives.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/utils.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/validated-exam-impact.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/visual-consistency-renderers.test.js | node | Visual | visual | — | contract | none |

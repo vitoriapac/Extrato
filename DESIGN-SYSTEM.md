@@ -59,18 +59,33 @@ Os tokens --chart-series-primary, --chart-series-secondary e --chart-series-targ
 
 ### Inventário de componentes
 
-| Papel | Contrato existente |
-|---|---|
-| Cards e análise | card, chart-card, module-heading |
-| Indicadores | kpi-cell, mini-stat |
-| Estados e evidência | status-badge, context-note, empty-state |
-| Ações e campos | btn, select-control, controles existentes |
-| Progresso | bar-track, bar-fill |
-| Listas de registros | progressive-list.js e list-components.js |
-| Gráficos | chart-components.js, chart-frame, chart-period-controls |
-| Diálogos | modal-overlay e controladores existentes de foco |
+| Papel | Contrato existente | Componente Preact (`src/ui/primitives/`) |
+|---|---|---|
+| Ações e botões | `btn`, `btn-primary`, `btn-ghost`, `btn-danger`, `btn-small` | `<Button variant="..." size="..." />` |
+| Badges e status | `status-badge`, `status-pill`, `badge` | `<Badge variant="..." />` / `<StatusPill />` |
+| Cards e seções | `card`, `card--insight`, `card--attention`, `card--primary` | `<Card variant="..." as="..." />` |
+| Cabeçalhos editoriais | `module-heading`, `ui-section-header` | `<SectionHeader title="..." eyebrow="..." />` |
+| Progresso acessível | `bar-track`, `bar-fill`, `ui-progress` | `<ProgressBar value={...} max={...} />` |
+| Estados vazios | `empty-state`, `empty-state--compact` | `<EmptyState title="..." message="..." />` |
+| Métricas | `performance-kpi`, `ui-metric` | `<MetricCard label="..." value="..." />` |
+| Diálogos e modais | `modal-overlay`, `<dialog>` | `<Dialog open={...} onClose={...} title="..." />` |
+| Listas de registros | `progressive-list.js` e `list-components.js` | Em migração incremental |
+| Gráficos | `chart-components.js`, `chart-frame`, `chart-period-controls` | Contrato compartilhado mantido |
 
 Componentes novos devem reutilizar esses contratos antes de criar variantes. Matrizes e comparações mantêm a visualização simultânea dos dados.
+
+## Integração Tailwind CSS e Design Tokens
+
+A estilização foi enriquecida com **Tailwind CSS v4** integrado diretamente aos design tokens em [`styles/tokens.css`](styles/tokens.css) através de [`styles/tailwind.input.css`](styles/tailwind.input.css).
+
+### Regra de Coexistência Visual (Sem Preflight)
+Para garantir fidelidade visual pixel a pixel e prevenir regressões nas suítes visuais com baselines PNG, o reset global (`Preflight`) está **desativado**. O Tailwind atua estritamente gerando utilitários e temas sob demanda.
+
+### Classes Utilitárias Semânticas do Tema
+- **Fundos:** `bg-surface-page`, `bg-surface-card`, `bg-surface-card-muted`, `bg-surface-primary`, `bg-navy`, `bg-paper`, `bg-surface-subtle`, `bg-surface-highlight`.
+- **Textos:** `text-primary`, `text-secondary`, `text-muted`, `text-on-navy`, `text-green`, `text-amber`, `text-red`.
+- **Bordas:** `border-border-default`, `border-border-subtle`, `border-border-emphasis`, `rounded-default`.
+- **Tipografia:** `font-body` (IBM Plex Sans), `font-display` (Fraunces), `font-data` (IBM Plex Mono).
 
 ## Histórico explicável de prontidão
 

@@ -52,6 +52,8 @@ flowchart TD
 
 - `index.html`: marcação e pontos de montagem da interface.
 - `styles/tokens.css`: cores, temas e tokens visuais.
+- `styles/tailwind.input.css` e `styles/tailwind.css`: estilos utilitários gerados sob demanda via Tailwind CSS v4, conectados aos tokens sem Preflight global.
+- `src/ui/primitives/*.tsx`: catálogo de componentes base em Preact (`Button`, `Badge`, `Card`, `SectionHeader`, `ProgressBar`, `Dialog`, `EmptyState`, `MetricCard`).
 - `src/ui/components/presentation.ts` e `docs/UI-FOUNDATIONS.md`: renderização compartilhada de cabeçalhos, métricas e estados vazios, com o contrato de superfícies e espaçamento usado na migração gradual das telas.
 - `styles/app.css`: layout e componentes.
 - `src/theme-bootstrap.js`: aplica o tema antes da primeira pintura (executado diretamente pelo navegador via `<script>`).

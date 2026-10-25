@@ -1,5 +1,5 @@
 import { formatDateBR } from '../../core/format-date.js';
-export const escapePresentationText = value =>
+export const escapePresentationText = (value: any) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]

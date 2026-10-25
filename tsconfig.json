@@ -8,6 +8,8 @@
     "checkJs": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "strict": false,
     "noImplicitAny": false,
     "skipLibCheck": true,

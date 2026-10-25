@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { build } from 'esbuild';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
@@ -11,7 +12,8 @@ const bundles = [
 ];
 const checkOnly = process.argv.includes('--check');
 const versionPlaceholder = '__BUILD_VERSION__';
-const assetVersionPattern = /((?:styles\/app\.css|src\/app\.bundle\.js)\?v=)[^"'\s]+/g;
+const assetVersionPattern =
+  /((?:styles\/app\.css|styles\/tailwind\.css|src\/app\.bundle\.js)\?v=)[^"'\s]+/g;
 
 async function filesUnder(directory) {
   const absoluteDirectory = resolve(projectRoot, directory),
@@ -35,7 +37,9 @@ const sourceFiles = [
   ...(await filesUnder('src')).filter(
     path => /\.(?:js|ts|tsx)$/.test(path) && !bundles.some(bundle => bundle.output === path)
   ),
-  ...(await filesUnder('styles')).filter(path => path.endsWith('.css')),
+  ...(await filesUnder('styles')).filter(
+    path => path.endsWith('.css') && path !== 'styles/tailwind.css'
+  ),
   ...(await filesUnder('icons')),
   'index.html',
   'manifest.webmanifest',
@@ -78,6 +82,22 @@ async function writeOrCheck(output, generated) {
   }
 }
 
+const tailwindCli = resolve(projectRoot, 'node_modules/@tailwindcss/cli/dist/index.mjs');
+const tailwindInput = resolve(projectRoot, 'styles/tailwind.input.css');
+
+let generatedTailwind;
+try {
+  generatedTailwind = execFileSync(
+    process.execPath,
+    [tailwindCli, '-i', tailwindInput, '--minify'],
+    { cwd: projectRoot, encoding: 'utf8' }
+  );
+} catch (error) {
+  console.error('Erro ao compilar Tailwind CSS:', error.message);
+  process.exit(1);
+}
+await writeOrCheck('styles/tailwind.css', generatedTailwind);
+
 for (const bundle of bundles) {
   const result = await build({
     entryPoints: [resolve(projectRoot, bundle.entry)],
@@ -87,6 +107,8 @@ for (const bundle of bundles) {
     platform: 'browser',
     target: ['es2020'],
     charset: 'utf8',
+    jsx: 'automatic',
+    jsxImportSource: 'preact',
     legalComments: 'none',
     minify: true,
     define: { __STUDYTRACK_BUILD_VERSION__: JSON.stringify(buildVersion) },
