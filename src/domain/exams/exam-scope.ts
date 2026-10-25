@@ -41,7 +41,7 @@ export function resolveExamScope(topics = [], activeExamTags = []) {
     activeExamTags: activeTags,
   });
 }
-export function isCommonTopic(topic, examTags = [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]) {
+export function isCommonTopic(topic, examTags: string[] = [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]) {
   const tags = new Set(tagsOf(topic));
   return examTags.length > 1 && examTags.every(tag => tags.has(tag));
 }

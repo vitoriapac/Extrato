@@ -1,10 +1,9 @@
-// @ts-nocheck
 declare const __STUDYTRACK_BUILD_VERSION__: string;
-
 declare global {
   interface Window {
     StudyTrackExamCatalog?: any;
     appState?: any;
+    __EXTRATO_TEST__?: Record<string, unknown>;
   }
 }
 
@@ -1438,7 +1437,8 @@ const sessionService = createSessionService({
   onCompleted: measureRecommendationResults,
 });
 const guidedStudyService = createGuidedStudyService({
-  recommend: ({ id } = {}) => currentStudyRecommendations.filter(item => !id || item.id === id),
+  recommend: ({ id }: { id?: string } = {}) =>
+    currentStudyRecommendations.filter(item => !id || item.id === id),
   sessionService,
   clock: appClock,
 });
@@ -1538,7 +1538,7 @@ function writeLocalState(value, key = STORAGE_KEY) {
 function normalizeAndValidateState(raw) {
   const parsed = typeof raw === 'string' ? JSON.parse(raw) : structuredCloneSafe(raw);
   const validation = validateBackupData(parsed);
-  if (!validation.valid) throw new Error(validation.message);
+  if (!validation.valid) throw new Error((validation as { message: string }).message);
   return validation.normalized;
 }
 
@@ -1632,12 +1632,15 @@ async function rotateAutomaticBackup(previousRaw, options: any = {}) {
     return false;
   }
   if (!previous || !Array.isArray(previous.subjects)) return false;
-  let index = { nextSlot: 0, snapshots: [] };
+  let index: { nextSlot: number; snapshots: any[]; version?: number; updatedAt?: string } = {
+    nextSlot: 0,
+    snapshots: [],
+  };
   try {
     const rawIndex = await StorageManager.get(indexKey);
     if (rawIndex) {
       const parsed = JSON.parse(rawIndex);
-      if (isPlainObject(parsed) && Array.isArray(parsed.snapshots)) index = parsed;
+      if (isPlainObject(parsed) && Array.isArray(parsed.snapshots)) index = parsed as typeof index;
     }
   } catch (e) {
     console.warn('Índice de backups inválido; iniciando um novo.', e);
@@ -1723,10 +1726,10 @@ STATE_CHANNEL?.addEventListener('message', event => {
 
 /* ===== MODAL DE CONFIRMAÇÃO (substitui confirm()) ===== */
 const modalController = createModalController({ document, window });
-function showConfirm(message, onConfirm, onCancel, options: any = {}) {
+function showConfirm(message, onConfirm, onCancel?, options: any = {}) {
   return modalController.confirm(message, onConfirm, onCancel, options);
 }
-function showPrompt(message, options, onConfirm, onCancel) {
+function showPrompt(message, options, onConfirm, onCancel?) {
   return modalController.prompt(message, options, onConfirm, onCancel);
 }
 
@@ -1907,7 +1910,7 @@ function diasParaRevisao(iso) {
   const alvo = parseLocalDate(iso);
   const hoje = parseLocalDate(todayISO());
   if (!alvo || !hoje) return null;
-  return Math.round((alvo - hoje) / 86400000);
+  return Math.round((Number(alvo) - Number(hoje)) / 86400000);
 }
 function diasParaRevisaoPill(iso, status) {
   const dias = diasParaRevisao(iso);
@@ -1921,9 +1924,11 @@ function diasParaRevisaoPill(iso, status) {
   return `<span class="dias-pill dias-futura">em ${dias}d</span>`;
 }
 
-document.getElementById('examDateInput').addEventListener('change', function () {
-  updateExamBlueprint('examDate', this.value);
-});
+document
+  .getElementById('examDateInput')
+  .addEventListener('change', function (this: HTMLInputElement) {
+    updateExamBlueprint('examDate', this.value);
+  });
 
 /* ===== SEQUÊNCIA DE DIAS ESTUDANDO (STREAK) ===== */
 function getDailyStudySummary(date, options: any = {}) {
@@ -1981,7 +1986,7 @@ function getDailyStudySummary(date, options: any = {}) {
   };
 }
 function getActivityDates() {
-  const set = new Set();
+  const set = new Set<string>();
   const sessionIds = new Set(state.studySessions.map(s => s.id));
   const dates = new Set(
     [
@@ -2051,8 +2056,9 @@ function toggleTimerFocus(force = null) {
     activateTab(tab);
     requestAnimationFrame(() =>
       (
-        document.querySelector(`#panel-${tab} [data-delegated-click="openStudyTimerFocus()"]`) ||
-        document.getElementById(`tab-${tab}`)
+        document.querySelector<HTMLElement>(
+          `#panel-${tab} [data-delegated-click="openStudyTimerFocus()"]`
+        ) || document.getElementById(`tab-${tab}`)
       )?.focus()
     );
   } else requestAnimationFrame(() => toggle?.focus());
@@ -2081,8 +2087,8 @@ document.addEventListener('keydown', event => {
     event.preventDefault();
     return;
   }
-  const first = focusable[0],
-    last = focusable.at(-1);
+  const first = focusable[0] as HTMLElement,
+    last = focusable.at(-1) as HTMLElement;
   if (
     event.shiftKey &&
     (document.activeElement === first || !focusSurface.contains(document.activeElement))
@@ -2267,7 +2273,7 @@ const pipTimer = createPipTimerController({
     window.focus();
   },
   copyStyles: doc => {
-    for (const node of document.querySelectorAll('link[rel="stylesheet"],style')) {
+    for (const node of document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"],style')) {
       const copy = doc.importNode(node, true);
       if (node.href) copy.href = node.href;
       doc.head.append(copy);
@@ -2394,7 +2400,7 @@ function updateTimerDisplay() {
   const el = document.getElementById('studyTimerDisplay');
   if (el) el.textContent = formatTimer(timerSeconds);
   const targetEl = document.getElementById('studyTimerTarget');
-  const progressEl = document.getElementById('studyTimerProgress');
+  const progressEl = document.getElementById('studyTimerProgress') as HTMLProgressElement;
   if (targetEl) {
     const targetMinutes = Math.max(0, Number(state.activeTimer?.targetMinutes) || 0);
     if (targetMinutes > 0) {
@@ -2463,7 +2469,7 @@ function renderTimerFocusContext() {
   resume.hidden = !resumeLabel;
 }
 function renderGuidedStrategy() {
-  const el = document.getElementById('guidedStrategy');
+  const el = document.getElementById('guidedStrategy') as HTMLElement;
   if (!el) return;
   const strategy = state.activeTimer?.strategy;
   el.hidden = !strategy;
@@ -2489,10 +2495,10 @@ function updateTimerControls() {
   document.getElementById('timerStartBtn').style.display = timerRunning ? 'none' : 'inline-block';
   document.getElementById('timerPauseBtn').style.display = timerRunning ? 'inline-block' : 'none';
   ['timerResetBtn', 'timerFinishBtn'].forEach(id => {
-    document.getElementById(id).disabled = !hasTime && !timerRunning;
+    (document.getElementById(id) as HTMLButtonElement).disabled = !hasTime && !timerRunning;
   });
   ['timerSubjectSelect', 'timerTopicSelect', 'timerTypeSelect'].forEach(id => {
-    const el = document.getElementById(id);
+    const el = document.getElementById(id) as HTMLSelectElement;
     if (el) el.disabled = hasTime;
   });
 }
@@ -2500,7 +2506,7 @@ function refreshStudyActionViews() {
   if (document.getElementById('studyRecommendation')) renderStudyRecommendation();
 }
 function populateTimerTopicSelect(subjectId, selectedTopicId) {
-  const select = document.getElementById('timerTopicSelect');
+  const select = document.getElementById('timerTopicSelect') as HTMLSelectElement;
   if (!select) return;
   const subject = getSubjectById(subjectId);
   select.innerHTML =
@@ -2517,8 +2523,8 @@ function populateTimerTopicSelect(subjectId, selectedTopicId) {
   if (select.value !== (selectedTopicId || '')) state.activeTimer.topicId = null;
 }
 function populateTimerContextControls() {
-  const subjectSelect = document.getElementById('timerSubjectSelect');
-  const typeSelect = document.getElementById('timerTypeSelect');
+  const subjectSelect = document.getElementById('timerSubjectSelect') as HTMLSelectElement;
+  const typeSelect = document.getElementById('timerTypeSelect') as HTMLSelectElement;
   if (!subjectSelect || !typeSelect) return;
   subjectSelect.innerHTML =
     `<option value="">Sem disciplina específica</option>` +
@@ -2551,9 +2557,10 @@ function startTimer() {
     active.startedAt = nowISO();
     active.accumulatedSeconds = 0;
   }
-  active.subjectId = document.getElementById('timerSubjectSelect').value || null;
-  active.topicId = document.getElementById('timerTopicSelect').value || null;
-  active.type = document.getElementById('timerTypeSelect').value || 'study';
+  active.subjectId =
+    (document.getElementById('timerSubjectSelect') as HTMLSelectElement).value || null;
+  active.topicId = (document.getElementById('timerTopicSelect') as HTMLSelectElement).value || null;
+  active.type = (document.getElementById('timerTypeSelect') as HTMLSelectElement).value || 'study';
   active.runStartedAt = nowISO();
   active.isRunning = true;
   active.hiddenAt = null;
@@ -2658,7 +2665,7 @@ function populateSessionTopicSelect(subjectId, selectedTopicId = null) {
 function showSessionModal() {
   const overlay = document.getElementById('sessionModalOverlay');
   document.getElementById('sessionModalDuration').textContent = formatTimer(timerSeconds);
-  const sel = document.getElementById('sessionModalSubject');
+  const sel = document.getElementById('sessionModalSubject') as HTMLSelectElement;
   sel.innerHTML =
     `<option value="">Sem disciplina específica</option>` +
     subjectsForSelection(state.activeTimer.subjectId)
@@ -2669,15 +2676,21 @@ function showSessionModal() {
       .join('');
   sel.value = state.activeTimer.subjectId || '';
   populateSessionTopicSelect(sel.value, state.activeTimer.topicId);
-  document.getElementById('sessionModalTopic').value = state.activeTimer.topicId || '';
-  document.getElementById('sessionModalType').value = state.activeTimer.type || 'study';
-  document.getElementById('sessionModalResolved').value = '';
-  document.getElementById('sessionModalCorrect').value = '';
-  document.getElementById('sessionModalRetention').value = '';
-  document.getElementById('sessionModalDifficulty').value = '';
-  document.getElementById('sessionModalNotes').value = '';
-  syncSessionModalActivityFields(document.getElementById('sessionModalType').value || 'study');
-  fillSessionBookmarkFields(document.getElementById('sessionModalTopic').value);
+  (document.getElementById('sessionModalTopic') as HTMLSelectElement).value =
+    state.activeTimer.topicId || '';
+  (document.getElementById('sessionModalType') as HTMLSelectElement).value =
+    state.activeTimer.type || 'study';
+  (document.getElementById('sessionModalResolved') as HTMLInputElement).value = '';
+  (document.getElementById('sessionModalCorrect') as HTMLInputElement).value = '';
+  (document.getElementById('sessionModalRetention') as HTMLSelectElement).value = '';
+  (document.getElementById('sessionModalDifficulty') as HTMLSelectElement).value = '';
+  (document.getElementById('sessionModalNotes') as HTMLTextAreaElement).value = '';
+  syncSessionModalActivityFields(
+    (document.getElementById('sessionModalType') as HTMLSelectElement).value || 'study'
+  );
+  fillSessionBookmarkFields(
+    (document.getElementById('sessionModalTopic') as HTMLSelectElement).value
+  );
   overlay.classList.add('show');
 }
 function topicResumeLabel(topicId) {
@@ -2691,25 +2704,25 @@ const SESSION_BOOKMARK_FIELDS = {
   positionText: 'sessionBookmarkPosition',
 };
 function fillSessionBookmarkFields(topicId) {
-  const section = document.getElementById('sessionBookmarkSection'),
+  const section = document.getElementById('sessionBookmarkSection') as HTMLDetailsElement,
     bookmark = topicId ? getTopicById(topicId)?.topic.bookmark : null;
   section.hidden = !topicId;
   section.open = Boolean(bookmark);
   delete section.dataset.clear;
   for (const [field, id] of Object.entries(SESSION_BOOKMARK_FIELDS))
-    document.getElementById(id).value =
+    (document.getElementById(id) as HTMLInputElement).value =
       bookmark?.[field] ?? (field === 'resourceType' ? 'pdf' : '');
-  const clear = document.getElementById('sessionBookmarkClearBtn');
+  const clear = document.getElementById('sessionBookmarkClearBtn') as HTMLButtonElement;
   clear.hidden = !bookmark;
   clear.disabled = false;
   clear.textContent = 'Limpar ponto de parada';
 }
 function clearSessionBookmarkFields() {
-  const section = document.getElementById('sessionBookmarkSection'),
-    clear = document.getElementById('sessionBookmarkClearBtn');
+  const section = document.getElementById('sessionBookmarkSection') as HTMLDetailsElement,
+    clear = document.getElementById('sessionBookmarkClearBtn') as HTMLButtonElement;
   section.dataset.clear = '1';
   for (const [field, id] of Object.entries(SESSION_BOOKMARK_FIELDS))
-    if (field !== 'resourceType') document.getElementById(id).value = '';
+    if (field !== 'resourceType') (document.getElementById(id) as HTMLInputElement).value = '';
   clear.disabled = true;
   clear.textContent = 'Será removido ao salvar';
 }
@@ -2726,7 +2739,7 @@ function saveSessionBookmark(topicId, endedAt) {
     ...Object.fromEntries(
       Object.entries(SESSION_BOOKMARK_FIELDS).map(([field, id]) => [
         field,
-        document.getElementById(id).value,
+        (document.getElementById(id) as HTMLInputElement).value,
       ])
     ),
     updatedAt: endedAt,
@@ -2740,7 +2753,7 @@ function saveSessionBookmark(topicId, endedAt) {
   subjectService.updateTopic(found.subject.id, topicId, { bookmark: next });
 }
 function syncSessionModalActivityFields(
-  type = document.getElementById('sessionModalType').value || 'study'
+  type = (document.getElementById('sessionModalType') as HTMLSelectElement).value || 'study'
 ) {
   const labels = {
     study: 'Registre o que você estudou e atualize seus indicadores.',
@@ -2749,7 +2762,7 @@ function syncSessionModalActivityFields(
     simulation: 'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.',
   };
   document.getElementById('sessionModalActivityHint').textContent = labels[type] || labels.study;
-  document.querySelectorAll('[data-session-fields]').forEach(section => {
+  document.querySelectorAll<HTMLElement>('[data-session-fields]').forEach(section => {
     section.hidden = !section.dataset.sessionFields.split(/\s+/).includes(type);
   });
 }
@@ -2776,24 +2789,30 @@ function discardSessionFromModal() {
   );
 }
 document.getElementById('timerStartBtn').addEventListener('click', startTimer);
-document.getElementById('timerPauseBtn').addEventListener('click', pauseTimer);
-document.getElementById('timerSubjectSelect').addEventListener('change', function () {
-  state.activeTimer.subjectId = this.value || null;
-  state.activeTimer.topicId = null;
-  populateTimerTopicSelect(state.activeTimer.subjectId, null);
-  renderTimerFocusContext();
-  scheduleSave();
-});
-document.getElementById('timerTopicSelect').addEventListener('change', function () {
-  state.activeTimer.topicId = this.value || null;
-  renderTimerFocusContext();
-  scheduleSave();
-});
-document.getElementById('timerTypeSelect').addEventListener('change', function () {
-  state.activeTimer.type = this.value || 'study';
-  renderTimerFocusContext();
-  scheduleSave();
-});
+document.getElementById('timerPauseBtn').addEventListener('click', () => pauseTimer());
+document
+  .getElementById('timerSubjectSelect')
+  .addEventListener('change', function (this: HTMLSelectElement) {
+    state.activeTimer.subjectId = this.value || null;
+    state.activeTimer.topicId = null;
+    populateTimerTopicSelect(state.activeTimer.subjectId, null);
+    renderTimerFocusContext();
+    scheduleSave();
+  });
+document
+  .getElementById('timerTopicSelect')
+  .addEventListener('change', function (this: HTMLSelectElement) {
+    state.activeTimer.topicId = this.value || null;
+    renderTimerFocusContext();
+    scheduleSave();
+  });
+document
+  .getElementById('timerTypeSelect')
+  .addEventListener('change', function (this: HTMLSelectElement) {
+    state.activeTimer.type = this.value || 'study';
+    renderTimerFocusContext();
+    scheduleSave();
+  });
 document.getElementById('timerResetBtn').addEventListener('click', () => {
   if (timerSeconds === 0) {
     return;
@@ -2821,19 +2840,25 @@ document.getElementById('sessionModalSkipBtn').addEventListener('click', discard
 document
   .getElementById('sessionModalOverlay')
   .addEventListener('session-modal-dismiss', dismissSessionModal);
-document.getElementById('sessionModalSubject').addEventListener('change', function () {
-  populateSessionTopicSelect(this.value);
-  fillSessionBookmarkFields('');
-});
-document.getElementById('sessionModalTopic').addEventListener('change', function () {
-  fillSessionBookmarkFields(this.value);
-});
+document
+  .getElementById('sessionModalSubject')
+  .addEventListener('change', function (this: HTMLSelectElement) {
+    populateSessionTopicSelect(this.value);
+    fillSessionBookmarkFields('');
+  });
+document
+  .getElementById('sessionModalTopic')
+  .addEventListener('change', function (this: HTMLSelectElement) {
+    fillSessionBookmarkFields(this.value);
+  });
 document
   .getElementById('sessionBookmarkClearBtn')
   .addEventListener('click', clearSessionBookmarkFields);
-document.getElementById('sessionModalType').addEventListener('change', function () {
-  syncSessionModalActivityFields(this.value);
-});
+document
+  .getElementById('sessionModalType')
+  .addEventListener('change', function (this: HTMLSelectElement) {
+    syncSessionModalActivityFields(this.value);
+  });
 function showSessionResult(session, nextPriority, priorityChanged, day = null, planNext = null) {
   const result = document.getElementById('sessionResult');
   if (!result) return;
@@ -2870,14 +2895,19 @@ function openNextSessionAction() {
     ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
-  const subjectId = document.getElementById('sessionModalSubject').value || null;
-  const topicId = document.getElementById('sessionModalTopic').value || null;
-  const type = document.getElementById('sessionModalType').value || 'study';
-  const resolved = Number(document.getElementById('sessionModalResolved').value) || 0;
-  const correct = Number(document.getElementById('sessionModalCorrect').value) || 0;
-  const perceivedRetention = document.getElementById('sessionModalRetention').value || null;
-  const perceivedDifficulty = document.getElementById('sessionModalDifficulty').value || null;
-  const notes = document.getElementById('sessionModalNotes').value.trim();
+  const subjectId =
+    (document.getElementById('sessionModalSubject') as HTMLSelectElement).value || null;
+  const topicId = (document.getElementById('sessionModalTopic') as HTMLSelectElement).value || null;
+  const type = (document.getElementById('sessionModalType') as HTMLSelectElement).value || 'study';
+  const resolved =
+    Number((document.getElementById('sessionModalResolved') as HTMLInputElement).value) || 0;
+  const correct =
+    Number((document.getElementById('sessionModalCorrect') as HTMLInputElement).value) || 0;
+  const perceivedRetention =
+    (document.getElementById('sessionModalRetention') as HTMLSelectElement).value || null;
+  const perceivedDifficulty =
+    (document.getElementById('sessionModalDifficulty') as HTMLSelectElement).value || null;
+  const notes = (document.getElementById('sessionModalNotes') as HTMLTextAreaElement).value.trim();
   const previousPriority = currentStudyRecommendations[0]
     ? { ...currentStudyRecommendations[0] }
     : null;
@@ -2995,7 +3025,9 @@ function renderHeatmap() {
   const historyDays = earliest
     ? Math.max(
         1,
-        Math.round((parseLocalDate(todayISO()) - parseLocalDate(earliest)) / 86400000) + 1
+        Math.round(
+          (Number(parseLocalDate(todayISO())) - Number(parseLocalDate(earliest))) / 86400000
+        ) + 1
       )
     : DEFAULT_STREAK_WEEKS * 7;
   const days = streakView.expanded ? historyDays : DEFAULT_STREAK_WEEKS * 7;
@@ -3239,7 +3271,7 @@ const stickyShell = document.querySelector('.sticky-shell');
 const overviewNav = document.querySelector('.overview-nav');
 document.querySelectorAll('.overview-nav-mobile select').forEach(select =>
   select.addEventListener('change', event => {
-    const target = document.getElementById(event.target.value);
+    const target = document.getElementById((event.target as HTMLInputElement).value);
     if (!target) return;
     target.scrollIntoView({
       block: 'start',
@@ -3252,14 +3284,15 @@ document
   .getElementById('overviewAttentionViewAll')
   ?.addEventListener('click', () => activateTab('hoje'));
 document.addEventListener('click', event => {
-  const current = event.target.closest('.action-menu');
-  document.querySelectorAll('.action-menu[open]').forEach(menu => {
-    if (menu !== current || event.target.closest('.action-menu__items button')) menu.open = false;
+  const current = (event.target as HTMLElement).closest('.action-menu');
+  document.querySelectorAll<HTMLDetailsElement>('.action-menu[open]').forEach(menu => {
+    if (menu !== current || (event.target as HTMLElement).closest('.action-menu__items button'))
+      menu.open = false;
   });
 });
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape') return;
-  const menus = [...document.querySelectorAll('.action-menu[open]')];
+  const menus = [...document.querySelectorAll<HTMLDetailsElement>('.action-menu[open]')];
   if (!menus.length) return;
   event.preventDefault();
   menus.forEach(menu => (menu.open = false));
@@ -3456,7 +3489,7 @@ function renderSubjects() {
   container.innerHTML = controller.renderHtml();
 }
 
-let openNotesIds = new Set();
+let openNotesIds = new Set<string>();
 const subjectSearchController = createSubjectSearchController({
   document,
   onChange: () => {
@@ -3600,12 +3633,12 @@ function renderTopicAnalyticsState(subject, topic) {
           reviewHealthRisk: reviewHealth.value === null ? null : 100 - reviewHealth.value,
         })
       ? '✓ Consolidado'
-      : reviewHealth.level === 'critical'
+      : (reviewHealth as { level?: string }).level === 'critical'
         ? '↻ Revisão recomendada'
         : masteryResult.evidence?.evidenceStrength < 0.35
           ? '⚠ Poucos dados'
           : '★ Elegível para priorização';
-  return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>${escapeHtml(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric('Cobertura', coverage)}${pctMetric('Domínio', mastery, mastery === null ? 'Registre questões deste tópico' : 'Evidência ' + masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric('Retenção', retention, retention === null ? 'Conclua revisões vinculadas' : 'Evidência ' + retentionResult.evidence.evidenceLabel.toLowerCase())}${pctMetric('Saúde da revisão', reviewHealth.value, reviewHealth.reasons[0])}${textMetric('Último contato', lastContact === null ? 'Sem registro' : lastContact === 0 ? 'Hoje' : lastContact + ' dias')}${textMetric('Última revisão', lastReview === null ? 'Sem registro' : lastReview === 0 ? 'Hoje' : lastReview + ' dias')}${pctMetric('Desempenho recente', performance, diagnosis?.performance?.resolved ? diagnosis.performance.resolved + ' questões' : 'Sem questões')}${textMetric('Tendência', trendText, trend?.delta == null ? '' : (trend.delta >= 0 ? '+' : '') + trend.delta + ' p.p.')}</div></div>`;
+  return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>${escapeHtml(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric('Cobertura', coverage)}${pctMetric('Domínio', mastery, mastery === null ? 'Registre questões deste tópico' : 'Evidência ' + masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric('Retenção', retention, retention === null ? 'Conclua revisões vinculadas' : 'Evidência ' + (retentionResult as { evidence: { evidenceLabel: string } }).evidence.evidenceLabel.toLowerCase())}${pctMetric('Saúde da revisão', reviewHealth.value, reviewHealth.reasons[0] as string)}${textMetric('Último contato', lastContact === null ? 'Sem registro' : lastContact === 0 ? 'Hoje' : lastContact + ' dias')}${textMetric('Última revisão', lastReview === null ? 'Sem registro' : lastReview === 0 ? 'Hoje' : lastReview + ' dias')}${pctMetric('Desempenho recente', performance, diagnosis?.performance?.resolved ? diagnosis.performance.resolved + ' questões' : 'Sem questões')}${textMetric('Tendência', trendText, trend?.delta == null ? '' : (trend.delta >= 0 ? '+' : '') + trend.delta + ' p.p.')}</div></div>`;
 }
 function moveSubject(id, direction) {
   const active = activeSubjects();
@@ -3799,7 +3832,7 @@ function syncExamSubjectCheckboxes() {
 function renderExamImport() {
   const content = document.getElementById('examImportContent'),
     back = document.getElementById('examImportBackBtn'),
-    next = document.getElementById('examImportNextBtn'),
+    next = document.getElementById('examImportNextBtn') as HTMLButtonElement,
     preset = selectedExamPreset(),
     preview =
       examImportState.step === 3
@@ -3837,7 +3870,7 @@ async function openExamImport(initialPreset = null, origin = null) {
     editalImportFacade.begin(examImportState.presetId);
     document.getElementById('examImportOverlay').classList.add('show');
     renderExamImport();
-    document.querySelector('[name="examPreset"]')?.focus();
+    document.querySelector<HTMLElement>('[name="examPreset"]')?.focus();
   } catch (error) {
     showToast(error.message || 'Não foi possível abrir a importação de edital.');
   }
@@ -3927,7 +3960,7 @@ function getSubjectDependencies(subjectId) {
   };
 }
 function dependencyTotal(dependencies) {
-  return Object.values(dependencies).reduce((sum, value) => sum + (Number(value) || 0), 0);
+  return Object.values(dependencies).reduce<number>((sum, value) => sum + (Number(value) || 0), 0);
 }
 function requestPermanentSubjectDelete(id) {
   const subject = getSubjectById(id);
@@ -3993,7 +4026,7 @@ function requestPermanentTopicDelete(subjectId, topicId) {
 }
 function updateTopic(subjectId, topicId, field, value) {
   const found = getTopicById(topicId),
-    patch = { [field]: value };
+    patch: Record<string, any> = { [field]: value };
   if (found && ['difficulty', 'examImportance', 'estimatedStudyMinutes'].includes(field)) {
     patch.fieldOrigins = { ...(found.topic.fieldOrigins || {}), [field]: 'manual' };
   }
@@ -4135,8 +4168,8 @@ function renderMonthCalendar() {
   const result = renderCalendarMonthView({
     month: calendarUiState.month,
     events: getRevisoesUnificadas(),
-    filterSubject: document.getElementById('calFilterSubject').value,
-    filterStatus: document.getElementById('calFilterStatus').value,
+    filterSubject: (document.getElementById('calFilterSubject') as HTMLSelectElement).value,
+    filterStatus: (document.getElementById('calFilterStatus') as HTMLSelectElement).value,
     today: todayISO(),
     daysUntil: diasParaRevisao,
     escapeHtml,
@@ -4158,11 +4191,11 @@ document.getElementById('monthTodayBtn').addEventListener('click', () => {
 });
 
 function renderCalendarFilters() {
-  const sel = document.getElementById('calFilterSubject');
+  const sel = document.getElementById('calFilterSubject') as HTMLSelectElement;
   const current = sel.value;
-  const selMes = document.getElementById('calFilterMes'),
+  const selMes = document.getElementById('calFilterMes') as HTMLSelectElement,
     currentMes = selMes.value;
-  const selTipo = document.getElementById('calFilterTipo'),
+  const selTipo = document.getElementById('calFilterTipo') as HTMLSelectElement,
     currentTipo = selTipo.value;
   const options = renderCalendarFilterOptions({
     subjects: state.subjects,
@@ -4202,14 +4235,14 @@ function setCalendarMobileView(view) {
   const normalized = view === 'agenda' ? 'agenda' : 'month';
   calendarUiState.view = normalized;
   document.getElementById('panel-calendario')?.setAttribute('data-calendar-view', normalized);
-  document.querySelectorAll('.calendar-view-btn').forEach(button => {
+  document.querySelectorAll<HTMLElement>('.calendar-view-btn').forEach(button => {
     const active = button.dataset.calendarView === normalized;
     button.classList.toggle('active', active);
     button.classList.toggle('ghost', !active);
     button.setAttribute('aria-pressed', String(active));
   });
 }
-document.querySelectorAll('.calendar-view-btn').forEach(button =>
+document.querySelectorAll<HTMLElement>('.calendar-view-btn').forEach(button =>
   button.addEventListener('click', () => {
     calendarController.setView(button.dataset.calendarView);
     setCalendarMobileView(calendarUiState.view);
@@ -4217,7 +4250,7 @@ document.querySelectorAll('.calendar-view-btn').forEach(button =>
 );
 const calendarEditController = {
   state: calendarUiState,
-  begin: (id, options = {}) =>
+  begin: (id, options: { isNew?: boolean } = {}) =>
     options.isNew ? calendarController.beginEdit(id) : calendarController.beginEdit(id),
   update: calendarController.update,
   cancel: calendarController.cancelEdit,
@@ -4351,17 +4384,23 @@ function updateCal(id, field, value) {
 document
   .getElementById('calFilterSubject')
   .addEventListener('change', event =>
-    calendarController.setFilter('subjectId', event.target.value)
+    calendarController.setFilter('subjectId', (event.target as HTMLInputElement).value)
   );
 document
   .getElementById('calFilterStatus')
-  .addEventListener('change', event => calendarController.setFilter('status', event.target.value));
+  .addEventListener('change', event =>
+    calendarController.setFilter('status', (event.target as HTMLInputElement).value)
+  );
 document
   .getElementById('calFilterMes')
-  .addEventListener('change', event => calendarController.setFilter('month', event.target.value));
+  .addEventListener('change', event =>
+    calendarController.setFilter('month', (event.target as HTMLInputElement).value)
+  );
 document
   .getElementById('calFilterTipo')
-  .addEventListener('change', event => calendarController.setFilter('type', event.target.value));
+  .addEventListener('change', event =>
+    calendarController.setFilter('type', (event.target as HTMLInputElement).value)
+  );
 document.getElementById('addSubjectBtn').addEventListener('click', addSubject);
 document.getElementById('addCalRowBtn').addEventListener('click', addCalRow);
 
@@ -4460,7 +4499,7 @@ function getTopicDifficulty(topicId) {
 }
 
 function renderAgendaFilters() {
-  const sel = document.getElementById('agendaFilterSubject');
+  const sel = document.getElementById('agendaFilterSubject') as HTMLSelectElement;
   const current = sel.value;
   sel.innerHTML =
     `<option value="">Todas as disciplinas</option>` +
@@ -4469,7 +4508,7 @@ function renderAgendaFilters() {
       .join('');
   sel.value = current;
 
-  const selMes = document.getElementById('agendaFilterMes');
+  const selMes = document.getElementById('agendaFilterMes') as HTMLSelectElement;
   const currentMes = selMes.value;
   const meses = collectMonthKeys(state.reviewAgenda);
   selMes.innerHTML =
@@ -4477,7 +4516,7 @@ function renderAgendaFilters() {
     meses.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join('');
   selMes.value = currentMes;
 
-  const selTipo = document.getElementById('agendaFilterTipo');
+  const selTipo = document.getElementById('agendaFilterTipo') as HTMLSelectElement;
   const currentTipo = selTipo.value;
   selTipo.innerHTML =
     `<option value="">Todos os tipos</option>` +
@@ -4604,7 +4643,7 @@ function completeAgendaReview(id) {
   const overlay = document.getElementById('reviewRatingOverlay');
   overlay.classList.add('show');
   overlay.removeAttribute('aria-hidden');
-  overlay.querySelector('[data-review-rating="good"]')?.focus();
+  overlay.querySelector<HTMLElement>('[data-review-rating="good"]')?.focus();
 }
 function adaptiveReviewType(days) {
   return (
@@ -4742,7 +4781,7 @@ function calcAcertoPct(correct, resolved) {
   return Math.round((c / r) * 1000) / 10;
 }
 
-let openQuestionErrorIds = new Set();
+let openQuestionErrorIds = new Set<string>();
 let performanceSubjectId = null;
 const questionEvolutionView = { scope: 'all', subjectId: '', topicId: '', period: '90' };
 function setQuestionEvolutionFilter(field, value) {
@@ -4768,10 +4807,10 @@ function renderQuestionEvolution() {
   if (!topics.some(item => item.id === questionEvolutionView.topicId))
     questionEvolutionView.topicId = topics[0]?.id || '';
   const controls = {
-    scope: document.getElementById('questionEvolutionScope'),
-    subject: document.getElementById('questionEvolutionSubject'),
-    topic: document.getElementById('questionEvolutionTopic'),
-    period: document.getElementById('questionEvolutionPeriod'),
+    scope: document.getElementById('questionEvolutionScope') as HTMLSelectElement,
+    subject: document.getElementById('questionEvolutionSubject') as HTMLSelectElement,
+    topic: document.getElementById('questionEvolutionTopic') as HTMLSelectElement,
+    period: document.getElementById('questionEvolutionPeriod') as HTMLSelectElement,
   };
   controls.scope.value = questionEvolutionView.scope;
   controls.period.value = questionEvolutionView.period;
@@ -5170,7 +5209,7 @@ function updateQuestionError(id, key, value) {
     (Number(question.resolved) || 0) - (Number(question.correct) || 0)
   );
   const others = Object.entries(question.errorBreakdown).reduce(
-    (sum, [category, count]) => (category === key ? sum : sum + count),
+    (sum, [category, count]) => (category === key ? sum : sum + (count as number)),
     0
   );
   const requested = Math.max(0, Math.floor(Number(value) || 0));
@@ -5656,7 +5695,7 @@ function simuladoNota(sim) {
   return calcAcertoPct(correct, total);
 }
 
-let openBreakdownIds = new Set();
+let openBreakdownIds = new Set<string>();
 function toggleBreakdown(simuladoId) {
   if (openBreakdownIds.has(simuladoId)) openBreakdownIds.delete(simuladoId);
   else openBreakdownIds.add(simuladoId);
@@ -5985,7 +6024,9 @@ let selectedExamMatrixTopicId = null;
 function renderHistoricalExamMatrix() {
   const container = document.getElementById('examHistoricalMatrix');
   if (!container) return;
-  const advancedWasOpen = container.querySelector('.exam-matrix-more-filters')?.open;
+  const advancedWasOpen = container.querySelector<HTMLDetailsElement>(
+    '.exam-matrix-more-filters'
+  )?.open;
   const personal = new Map();
   for (const record of examEvidenceContext().questions.included) {
     const entry = personal.get(record.topicId) || { total: 0, correct: 0 };
@@ -6039,18 +6080,18 @@ function renderHistoricalExamMatrix() {
   container.innerHTML = renderExamMatrix(model, { selectedTopicId: selectedExamMatrixTopicId });
   const opportunity = document.getElementById('examOpportunity');
   if (opportunity) opportunity.innerHTML = renderExamOpportunity(model);
-  const advanced = container.querySelector('.exam-matrix-more-filters');
+  const advanced = container.querySelector<HTMLDetailsElement>('.exam-matrix-more-filters');
   if (advanced) advanced.open = advancedWasOpen ?? !window.matchMedia('(max-width:600px)').matches;
   for (const [key, value] of Object.entries(examMatrixFilters)) {
-    const select = container.querySelector(`[data-exam-matrix-filter="${key}"]`);
+    const select = container.querySelector<HTMLSelectElement>(`[data-exam-matrix-filter="${key}"]`);
     if (select && [...select.options].some(option => option.value === String(value)))
       select.value = String(value);
   }
 }
 document.getElementById('examHistoricalMatrix')?.addEventListener('change', event => {
-  const key = event.target?.dataset?.examMatrixFilter;
+  const key = (event.target as HTMLElement)?.dataset?.examMatrixFilter;
   if (!['scope', 'board', 'year', 'role', 'subject', 'sort'].includes(key)) return;
-  examMatrixFilters[key] = event.target.value;
+  examMatrixFilters[key] = (event.target as HTMLInputElement).value;
   if (key === 'scope') {
     examMatrixFilters.board = 'all';
     examMatrixFilters.year = 'all';
@@ -6060,26 +6101,30 @@ document.getElementById('examHistoricalMatrix')?.addEventListener('change', even
   renderHistoricalExamMatrix();
 });
 document.getElementById('examHistoricalMatrix')?.addEventListener('input', event => {
-  if (!event.target.matches('[data-exam-matrix-search]')) return;
-  examMatrixFilters.search = event.target.value;
-  const start = event.target.selectionStart;
+  if (!(event.target as HTMLElement).matches('[data-exam-matrix-search]')) return;
+  examMatrixFilters.search = (event.target as HTMLInputElement).value;
+  const start = (event.target as HTMLInputElement).selectionStart;
   renderHistoricalExamMatrix();
-  const search = document.querySelector('#examHistoricalMatrix [data-exam-matrix-search]');
+  const search = document.querySelector<HTMLInputElement>(
+    '#examHistoricalMatrix [data-exam-matrix-search]'
+  );
   search?.focus();
   search?.setSelectionRange(start, start);
 });
 document.getElementById('examHistoricalMatrix')?.addEventListener('click', event => {
-  const mode = event.target?.closest?.('[data-exam-matrix-mode]');
+  const mode = (event.target as HTMLElement)?.closest?.<HTMLElement>('[data-exam-matrix-mode]');
   if (mode) {
     examMatrixFilters.mode = mode.dataset.examMatrixMode;
     examMatrixFilters.sort = examMatrixFilters.mode === 'priorities' ? 'gap' : 'incidence';
     renderHistoricalExamMatrix();
     document
-      .querySelector(`#examHistoricalMatrix [data-exam-matrix-mode="${examMatrixFilters.mode}"]`)
+      .querySelector<HTMLElement>(
+        `#examHistoricalMatrix [data-exam-matrix-mode="${examMatrixFilters.mode}"]`
+      )
       ?.focus();
     return;
   }
-  const button = event.target?.closest?.('[data-exam-matrix-topic]');
+  const button = (event.target as HTMLElement)?.closest?.<HTMLElement>('[data-exam-matrix-topic]');
   if (!button) return;
   selectedExamMatrixTopicId = button.dataset.examMatrixTopic;
   renderHistoricalExamMatrix();
@@ -6145,7 +6190,7 @@ function renderExamIntelligenceSection() {
   renderHistoricalExamMatrix();
 }
 document.getElementById('examConfigurationAudit')?.addEventListener('click', event => {
-  const topic = event.target.closest('[data-audit-topic]');
+  const topic = (event.target as HTMLElement).closest<HTMLElement>('[data-audit-topic]');
   if (!topic) return;
   selectedExamMatrixTopicId = topic.dataset.auditTopic;
   examMatrixFilters.scope = 'active';
@@ -6182,7 +6227,7 @@ function closeExamClassificationReview() {
   examClassificationPreviousFocus = null;
 }
 document.getElementById('examDataQuality')?.addEventListener('click', event => {
-  if (!event.target.closest('#openExamClassificationReview')) return;
+  if (!(event.target as HTMLElement).closest('#openExamClassificationReview')) return;
   examClassificationPreviousFocus = document.activeElement;
   examClassificationFilter = 'all';
   examClassificationPage = 0;
@@ -6198,18 +6243,18 @@ examClassificationOverlay?.addEventListener('click', event => {
     closeExamClassificationReview();
     return;
   }
-  const pageButton = event.target.closest('[data-review-page]');
+  const pageButton = (event.target as HTMLElement).closest<HTMLElement>('[data-review-page]');
   if (pageButton) {
     examClassificationPage = Number(pageButton.dataset.reviewPage) || 0;
     updateExamClassificationReview();
     document.getElementById('examClassificationFilter')?.focus();
     return;
   }
-  const button = event.target.closest('[data-review-save]');
+  const button = (event.target as HTMLElement).closest('[data-review-save]');
   if (!button) return;
-  const row = button.closest('[data-review-exam]'),
-    topicId = row?.querySelector('[data-review-topic]')?.value,
-    confidence = Number(row?.querySelector('[data-review-confidence]')?.value);
+  const row = button.closest<HTMLElement>('[data-review-exam]'),
+    topicId = row?.querySelector<HTMLInputElement>('[data-review-topic]')?.value,
+    confidence = Number(row?.querySelector<HTMLInputElement>('[data-review-confidence]')?.value);
   try {
     const result = reviewExamClassification(state, {
       examId: row?.dataset.reviewExam,
@@ -6231,8 +6276,8 @@ examClassificationOverlay?.addEventListener('click', event => {
   }
 });
 examClassificationOverlay?.addEventListener('change', event => {
-  if (event.target.id === 'examClassificationFilter') {
-    examClassificationFilter = event.target.value;
+  if ((event.target as HTMLElement).id === 'examClassificationFilter') {
+    examClassificationFilter = (event.target as HTMLInputElement).value;
     examClassificationPage = 0;
     updateExamClassificationReview();
     document.getElementById('examClassificationFilter')?.focus();
@@ -6249,7 +6294,7 @@ function topicExamMetricForActiveScope(topic) {
     entries = Object.entries(topic.examMetrics || {}).filter(
       ([profile]) => !active.length || active.some(tag => profile.startsWith(tag))
     );
-  return entries[0]?.[1] || null;
+  return (entries[0]?.[1] as Record<string, any>) || null;
 }
 function renderExamMasteryMatrix() {
   const el = document.getElementById('examMasteryMatrix');
@@ -6311,7 +6356,7 @@ function studyPlanCandidates({ guidedDefaults = false }: any = {}) {
 }
 function buildCurrentStudyPlanProposal({ guidedDefaults = false }: any = {}) {
   const days = state.examDate ? diasParaRevisao(state.examDate) : null;
-  const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce(
+  const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce<number>(
     (sum, hours) => sum + Math.max(0, Number(hours) || 0) * 60,
     0
   );
@@ -6535,7 +6580,7 @@ function undoLatestDailyPlanGeneration() {
   );
 }
 function weeklyStrategyCapacity() {
-  return Object.values(state.metas.horasPorDia || {}).reduce(
+  return Object.values(state.metas.horasPorDia || {}).reduce<number>(
     (sum, hours) => sum + Math.max(0, Number(hours) || 0) * 60,
     0
   );
@@ -6769,11 +6814,11 @@ function updateExamSubject(subjectId, field, value) {
   persistAndRender();
 }
 function saveExamSubjectConfig(subjectId) {
-  const details = [...document.querySelectorAll('#examBlueprintConfig .exam-subject-config')].find(
-    item => item.dataset.subjectId === subjectId
-  );
+  const details = [
+    ...document.querySelectorAll<HTMLElement>('#examBlueprintConfig .exam-subject-config'),
+  ].find(item => item.dataset.subjectId === subjectId);
   if (!details) return;
-  const read = name => details.querySelector(`[name="${name}"]`)?.value ?? '';
+  const read = name => details.querySelector<HTMLInputElement>(`[name="${name}"]`)?.value ?? '';
   const existing = state.examBlueprint.subjects.find(item => item.subjectId === subjectId);
   const config = buildSavedSubjectConfig(subjectId, existing, {
     priority: read('priority'),
@@ -6829,7 +6874,7 @@ function toggleActiveExamTag(tag, checked) {
 
 /* ===== METAS POR DISCIPLINA ===== */
 function renderSubjectTargetEditor() {
-  const container = document.getElementById('subjectTargetEditor');
+  const container = document.getElementById('subjectTargetEditor') as HTMLElement;
   if (!container) return;
   const scope = examEvidenceContext(),
     subjects = examScopedSubjects(),
@@ -6877,25 +6922,29 @@ function saveSubjectAccuracyTargets(subjectIds, rawValue) {
   showToast('Metas de acerto atualizadas.');
 }
 document.getElementById('subjectTargetEditor')?.addEventListener('click', event => {
-  const container = event.currentTarget;
+  const container = event.currentTarget as HTMLElement;
   const selected = () =>
-    [...container.querySelectorAll('[data-accuracy-select]:checked')].map(item => item.value);
-  const save = event.target.closest('[data-accuracy-save]');
+    [...container.querySelectorAll<HTMLInputElement>('[data-accuracy-select]:checked')].map(
+      item => item.value
+    );
+  const save = (event.target as HTMLElement).closest<HTMLElement>('[data-accuracy-save]');
   if (save) {
     saveSubjectAccuracyTargets(
       [save.dataset.accuracySave],
-      container.querySelector(`[data-accuracy-value="${CSS.escape(save.dataset.accuracySave)}"]`)
-        ?.value ?? ''
+      container.querySelector<HTMLInputElement>(
+        `[data-accuracy-value="${CSS.escape(save.dataset.accuracySave)}"]`
+      )?.value ?? ''
     );
     return;
   }
-  const restore = event.target.closest('[data-accuracy-restore]');
+  const restore = (event.target as HTMLElement).closest<HTMLElement>('[data-accuracy-restore]');
   if (restore) {
     saveSubjectAccuracyTargets([restore.dataset.accuracyRestore], '');
     return;
   }
-  if (event.target.closest('[data-accuracy-apply]')) {
-    const value = container.querySelector('[data-accuracy-bulk-value]')?.value ?? '';
+  if ((event.target as HTMLElement).closest('[data-accuracy-apply]')) {
+    const value =
+      container.querySelector<HTMLInputElement>('[data-accuracy-bulk-value]')?.value ?? '';
     if (value === '') {
       showToast('Informe o valor a aplicar.');
       return;
@@ -6903,14 +6952,16 @@ document.getElementById('subjectTargetEditor')?.addEventListener('click', event 
     saveSubjectAccuracyTargets(selected(), value);
     return;
   }
-  if (event.target.closest('[data-accuracy-restore-selected]'))
+  if ((event.target as HTMLElement).closest('[data-accuracy-restore-selected]'))
     saveSubjectAccuracyTargets(selected(), '');
 });
 document.getElementById('subjectTargetEditor')?.addEventListener('change', event => {
-  if (event.target.matches('[data-accuracy-select-all]'))
-    event.currentTarget.querySelectorAll('[data-accuracy-select]').forEach(input => {
-      input.checked = event.target.checked;
-    });
+  if ((event.target as HTMLElement).matches('[data-accuracy-select-all]'))
+    (event.currentTarget as HTMLElement)
+      .querySelectorAll<HTMLInputElement>('[data-accuracy-select]')
+      .forEach(input => {
+        input.checked = (event.target as HTMLInputElement).checked;
+      });
 });
 function somarQuestoesDisciplinaNaSemana(subjectId) {
   return state.questoes
@@ -6918,7 +6969,7 @@ function somarQuestoesDisciplinaNaSemana(subjectId) {
     .reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
 }
 function renderMetasPorDisciplina() {
-  const sel = document.getElementById('novaMetaDisciplinaSelect');
+  const sel = document.getElementById('novaMetaDisciplinaSelect') as HTMLSelectElement;
   const current = sel.value;
   sel.innerHTML =
     activeSubjects()
@@ -6962,8 +7013,10 @@ function renderMetasPorDisciplina() {
     .join('');
 }
 function addMetaDisciplina() {
-  const subjectId = document.getElementById('novaMetaDisciplinaSelect').value;
-  const meta = Number(document.getElementById('novaMetaDisciplinaValor').value) || 20;
+  const subjectId = (document.getElementById('novaMetaDisciplinaSelect') as HTMLSelectElement)
+    .value;
+  const meta =
+    Number((document.getElementById('novaMetaDisciplinaValor') as HTMLInputElement).value) || 20;
   if (!subjectId) {
     showToast('Cadastre uma disciplina primeiro.');
     return;
@@ -7058,15 +7111,16 @@ function renderHistoricoMetas() {
 
 function renderSelectedPeriodComparison() {
   const container = document.getElementById('periodComparisonResults'),
-    preset = document.getElementById('periodComparisonPreset');
+    preset = document.getElementById('periodComparisonPreset') as HTMLSelectElement;
   if (!container || !preset) return;
   const startWrap = document.getElementById('periodComparisonStartWrap'),
     endWrap = document.getElementById('periodComparisonEndWrap'),
     custom = preset.value === 'custom';
   if (startWrap) startWrap.hidden = !custom;
   if (endWrap) endWrap.hidden = !custom;
-  const start = document.getElementById('periodComparisonStart')?.value || null,
-    end = document.getElementById('periodComparisonEnd')?.value || null;
+  const start =
+      (document.getElementById('periodComparisonStart') as HTMLInputElement)?.value || null,
+    end = (document.getElementById('periodComparisonEnd') as HTMLInputElement)?.value || null;
   if (custom && (!start || !end || start > end)) {
     container.innerHTML =
       '<p class="diagnosis-empty">Escolha um intervalo válido para comparar os períodos.</p>';
@@ -7589,7 +7643,7 @@ function renderSubjectHoursBars() {
     const key = entitySubjectId(session) || '__none';
     map[key] = (map[key] || 0) + (Number(session.durationSeconds) || 0);
   });
-  const rows = Object.entries(map)
+  const rows = Object.entries(map as Record<string, number>)
     .filter(([, seconds]) => seconds > 0)
     .sort((a, b) => b[1] - a[1])
     .map(([subjectId, seconds]) => ({ subjectId, seconds }));
@@ -7664,9 +7718,9 @@ function toggleSessionDetails(id) {
   renderStudySessionsHistory();
 }
 function renderSessionHistoryFilterControls() {
-  const period = document.getElementById('studySessionsPeriod');
-  const subject = document.getElementById('studySessionsSubjectFilter');
-  const type = document.getElementById('studySessionsTypeFilter');
+  const period = document.getElementById('studySessionsPeriod') as HTMLSelectElement;
+  const subject = document.getElementById('studySessionsSubjectFilter') as HTMLSelectElement;
+  const type = document.getElementById('studySessionsTypeFilter') as HTMLSelectElement;
   if (!period || !subject || !type) return;
   period.value = sessionHistoryFilters.period;
   subject.innerHTML =
@@ -7932,7 +7986,7 @@ function computeAlertasInteligentes() {
         .sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
       const lastStudyDay = parseLocalDate(lastSession?.date);
       const daysSinceStudy = lastStudyDay
-        ? Math.max(0, Math.floor((parseLocalDate(today) - lastStudyDay) / 86400000))
+        ? Math.max(0, Math.floor((Number(parseLocalDate(today)) - Number(lastStudyDay)) / 86400000))
         : null;
       return {
         subjectId: subject.id,
@@ -7955,7 +8009,7 @@ function computeAlertasInteligentes() {
     dominantError: item.diagnosis?.dominantError,
   }));
   const days = state.examDate ? diasParaRevisao(state.examDate) : null;
-  const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce(
+  const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce<number>(
     (sum, hours) => sum + Math.max(0, Number(hours) || 0) * 60,
     0
   );
@@ -8068,7 +8122,7 @@ function renderExecutiveSummary() {
   });
 }
 
-const dismissedRecommendationIds = new Set();
+const dismissedRecommendationIds = new Set<string>();
 let currentStudyRecommendations = [];
 function intelligenceCandidates() {
   const priorities = collectStudyCandidates(),
@@ -8311,7 +8365,7 @@ function renderOverviewNextAction(availableMinutes) {
 // Update the Continue button in place: re-rendering here would swap the node under a click that fired this change.
 function syncGuidedNext(model) {
   const actions = document.getElementById('guidedOnboardingActions'),
-    next = actions?.querySelector('[data-guided-action="next"]');
+    next = actions?.querySelector<HTMLButtonElement>('[data-guided-action="next"]');
   if (!next) return;
   const reason = onboardingBlockedReason(model);
   next.disabled = Boolean(reason);
@@ -8662,7 +8716,7 @@ function startStudyRecommendation(id, source = 'today') {
 const recommendationController = createRecommendationController({
   getRecommendations: () => currentStudyRecommendations,
   actionKind: recommendationActionKind,
-  onQuestions: (recommendation, kind, context = {}) => {
+  onQuestions: (recommendation, kind, context: { source?: string } = {}) => {
     const feedback = recordRecommendationFeedback(recommendation, {
         accepted: true,
         source: context.source,
@@ -8679,7 +8733,7 @@ const recommendationController = createRecommendationController({
     showToast('Registro de questões aberto e vinculado à recomendação.');
     return question;
   },
-  onReview: (recommendation, kind, context = {}) => {
+  onReview: (recommendation, kind, context: { source?: string } = {}) => {
     const feedback = recordRecommendationFeedback(recommendation, {
       accepted: true,
       source: context.source,
@@ -8706,7 +8760,7 @@ const recommendationController = createRecommendationController({
     completeAgendaReview(review.id);
     return review;
   },
-  onPrerequisite: (recommendation, kind, context = {}) => {
+  onPrerequisite: (recommendation, kind, context: { source?: string } = {}) => {
     const blocker = getTopicById(recommendation.blockedPrerequisites?.[0]);
     if (!blocker) return null;
     const feedback = recordRecommendationFeedback(recommendation, {
@@ -8720,7 +8774,7 @@ const recommendationController = createRecommendationController({
     showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);
     return blocker.topic;
   },
-  onStudy: (recommendation, kind, context = {}) =>
+  onStudy: (recommendation, kind, context: { source?: string } = {}) =>
     startStudyRecommendation(recommendation.id, context.source),
 });
 function executeStudyRecommendation(id, source = 'today') {
@@ -8923,7 +8977,7 @@ function renderDailyExecutionCard() {
   });
 }
 document.addEventListener('click', event => {
-  const start = event.target.closest?.('[data-daily-start]');
+  const start = (event.target as HTMLElement).closest?.<HTMLElement>('[data-daily-start]');
   if (start) {
     const result = dailyExecutionController.start(start.dataset.dailyStart);
     if (result.state === 'unavailable') showToast('A atividade mudou. Confira o plano atual.');
@@ -8931,7 +8985,7 @@ document.addEventListener('click', event => {
     renderDailyExecutionCard();
     renderOverviewDecisionArea();
   }
-  if (event.target.closest?.('[data-daily-resume]')) openStudyTimerFocus();
+  if ((event.target as HTMLElement).closest?.('[data-daily-resume]')) openStudyTimerFocus();
 });
 function renderPlanoHoje() {
   const container = document.getElementById('planoHojeContent');
@@ -9080,7 +9134,8 @@ function renderGuidedOnboarding() {
   const manualBanner = document.getElementById('guidedManualReturn');
   if (manualBanner) {
     manualBanner.hidden = !uiState.onboarding.manualReturn;
-    manualBanner.querySelector('[data-guided-manual-return]').disabled = !model.hasContent;
+    manualBanner.querySelector<HTMLButtonElement>('[data-guided-manual-return]').disabled =
+      !model.hasContent;
   }
 }
 function onboardingModel() {
@@ -9115,7 +9170,7 @@ async function openGuidedOnboarding({ step = null }: any = {}) {
   try {
     await ensureExamCatalog();
     const model = onboardingModel();
-    uiState.onboarding.previousFocus = document.activeElement;
+    uiState.onboarding.previousFocus = document.activeElement as HTMLElement;
     uiState.onboarding.open = true;
     uiState.onboarding.manualReturn = false;
     uiState.onboarding.currentStep = step || model.next?.id || model.current.id;
@@ -9148,7 +9203,7 @@ function closeGuidedOnboarding({ manual = false }: any = {}) {
   syncModalShell();
   const focusTarget = previousFocus?.isConnected
     ? previousFocus
-    : document.querySelector('#guidedOnboarding [data-guided-action="open"]');
+    : document.querySelector<HTMLElement>('#guidedOnboarding [data-guided-action="open"]');
   (focusTarget?.getClientRects().length
     ? focusTarget
     : document.getElementById('tab-dashboard')
@@ -9200,7 +9255,9 @@ function createGuidedInitialPlan() {
   document.body.classList.remove('onboarding-open');
   render();
   activateTab('hoje');
-  requestAnimationFrame(() => document.querySelector('#planoHojeContent .btn')?.focus());
+  requestAnimationFrame(() =>
+    document.querySelector<HTMLElement>('#planoHojeContent .btn')?.focus()
+  );
 }
 
 function renderMetasHoje() {
@@ -9517,7 +9574,7 @@ function confiancaAprovacao(metrics) {
   const result = readinessResult(metrics);
   return { value: result.confidence, nivel: result.confidenceLabel };
 }
-function projectPerformance(metrics) {
+function projectPerformance() {
   const calibration = buildCalibratedScoreProjection({
     simulations: examScopedSimulations().map(item => ({
       ...item,
@@ -9548,7 +9605,7 @@ function projectPerformance(metrics) {
     targetScore: calibration.target,
     observations: calibration.observations,
   });
-  const future = forecast.forecast30;
+  const future = forecast.forecast30 as Record<string, any>;
   if (future.available) {
     const margin = Math.max(
       future.central - future.low,
@@ -9884,7 +9941,7 @@ function renderApprovalDashboard() {
     score = readiness.value ?? 0,
     level = classificacaoAprovacao(score),
     confidence = { value: readiness.confidence, nivel: readiness.confidenceLabel },
-    projection = projectPerformance(m);
+    projection = projectPerformance();
   const projectionInputs = examScopedSimulations().map(item => ({
     ...item,
     ...simuladoEffectiveCounts(item),
@@ -10030,7 +10087,7 @@ let weeklyCloseController = null;
 const sustainabilityController = createSustainabilityController({
   getModel: () => currentStudyTrackModel?.weeklyClose?.adherence?.sustainability,
   getCapacity: () =>
-    Object.values(state.metas.horasPorDia || {}).reduce(
+    Object.values(state.metas.horasPorDia || {}).reduce<number>(
       (sum, value) => sum + (Number(value) || 0) * 60,
       0
     ),
@@ -10080,7 +10137,7 @@ function renderStudyTrack32Insights() {
       simulations: examScopedSimulations(),
       subjects: state.subjects.filter(subject => scopedSubjectIds.has(subject.id)),
       activeExamTags: state.examBlueprint?.activeExamTags || [],
-      weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce(
+      weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce<number>(
         (sum, hours) => sum + (Number(hours) || 0) * 60,
         0
       ),
@@ -10098,7 +10155,10 @@ function renderStudyTrack32Insights() {
     }),
     options = { escapeHtml, formatMinutes: formatPlanMinutes };
   currentStudyTrackModel = model;
-  model.comparisonMetrics = captureCloseComparisonMetrics(model, projectPerformance());
+  (model as { comparisonMetrics?: unknown }).comparisonMetrics = captureCloseComparisonMetrics(
+    model,
+    projectPerformance()
+  );
   if (close) {
     const trajectory = currentAchievementProjection().model;
     const trajectoryClose = buildProjectionCloseContext({
@@ -10302,7 +10362,9 @@ function saveWeeklyCloseSnapshot() {
   scheduleSave();
   renderApprovalDashboard();
   document
-    .querySelector('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]')
+    .querySelector<HTMLElement>(
+      '#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]'
+    )
     ?.focus();
   showToast('Fechamento semanal salvo como retrato deste período.');
 }
@@ -10382,7 +10444,7 @@ function renderExamProgress() {
     start = planStartDate(),
     exam = state.examDate;
   const diff = (a, b) =>
-    Math.max(0, Math.round((parseLocalDate(b) - parseLocalDate(a)) / 86400000));
+    Math.max(0, Math.round((Number(parseLocalDate(b)) - Number(parseLocalDate(a))) / 86400000));
   const total = Math.max(1, diff(start, exam)),
     elapsed = Math.min(total, diff(start, today)),
     remaining = Math.max(0, diasParaRevisao(exam) ?? 0),
@@ -10390,7 +10452,7 @@ function renderExamProgress() {
   el.innerHTML = `<span class="exam-progress-label">Hoje</span><div class="exam-progress-track" role="progressbar" aria-label="Progresso até a prova" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div class="exam-progress-fill" style="width:${pct}%"></div></div><strong>${pct}%</strong><span class="exam-progress-days">${total} dias totais · ${elapsed} passaram · ${remaining} faltam</span>`;
 }
 function renderExamCountdown() {
-  const input = document.getElementById('examDateInput');
+  const input = document.getElementById('examDateInput') as HTMLInputElement;
   if (document.activeElement !== input) input.value = state.examDate || '';
   const fig = document.getElementById('examCountdownFigure');
   renderExamProgress();
@@ -10409,7 +10471,7 @@ function renderExamCountdown() {
 function navigateKpi(tab, filter) {
   activateTab(tab);
   if (tab === 'agenda' && filter === 'overdue') {
-    const select = document.getElementById('agendaFilterStatus');
+    const select = document.getElementById('agendaFilterStatus') as HTMLSelectElement;
     select.value = 'Atrasadas';
     renderAgenda();
   }
@@ -10820,7 +10882,7 @@ function renderPerformance() {
     ? `Mostrando ${section}${examSection ? '' : ` · ${range.label}`}.`
     : '';
   if (status && status.textContent !== statusText) status.textContent = statusText;
-  const dialog = target.querySelector('#performanceTopicDialog');
+  const dialog = target.querySelector<HTMLDialogElement>('#performanceTopicDialog');
   if (dialog) {
     dialog.addEventListener(
       'close',
@@ -10845,7 +10907,7 @@ createPerformanceController({
   applyRecovery: signature => applyConfirmedRecoveryPlan(signature),
 }).register();
 document.addEventListener('click', event => {
-  const back = event.target.closest('[data-analysis-return]');
+  const back = (event.target as HTMLElement).closest('[data-analysis-return]');
   if (back) {
     const previous = analysisNavigationContext;
     if (!analysisContextInScope(previous, state.examBlueprint?.activeExamTags || [])) return;
@@ -10860,7 +10922,7 @@ document.addEventListener('click', event => {
     activateTab(previous.origin);
     return;
   }
-  const button = event.target.closest('[data-analysis-nav]');
+  const button = (event.target as HTMLElement).closest<HTMLElement>('[data-analysis-nav]');
   if (!button) return;
   const destination = button.dataset.analysisNav,
     subjectId = button.dataset.subjectId || null,
@@ -10873,7 +10935,7 @@ document.addEventListener('click', event => {
     period: performanceViewState.period,
     activeExamTags: state.examBlueprint?.activeExamTags || [],
   });
-  const topicDialog = document.getElementById('performanceTopicDialog');
+  const topicDialog = document.getElementById('performanceTopicDialog') as HTMLDialogElement;
   if (topicDialog?.open) topicDialog.close();
   if (destination === 'desempenho')
     performanceViewState = updatePerformanceViewState(performanceViewState, {
@@ -11046,7 +11108,7 @@ tabRouter.registerShortcuts();
 const modalLayers = [
   ...document.querySelectorAll('.modal-overlay'),
   document.getElementById('guidedOnboardingOverlay'),
-].filter(Boolean);
+].filter(Boolean) as HTMLElement[];
 const syncModalShell = () => {
   const active = modalLayers.some(layer => layer.classList.contains('show') && !layer.hidden);
   document.getElementById('mainContent').inert = active;
@@ -11066,35 +11128,46 @@ document.querySelectorAll('[data-go-home]').forEach(button =>
       behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
     // The compact brand that was clicked may hide at the top; keep focus on the visible hero brand.
-    document.querySelector('.statement [data-go-home]')?.focus({ preventScroll: true });
+    document
+      .querySelector<HTMLElement>('.statement [data-go-home]')
+      ?.focus({ preventScroll: true });
   })
 );
 document.getElementById('guidedOnboardingOverlay')?.addEventListener('change', event => {
-  if (event.target.id === 'guidedExamPreset') {
-    uiState.onboarding.presetId = event.target.value;
+  if ((event.target as HTMLElement).id === 'guidedExamPreset') {
+    uiState.onboarding.presetId = (event.target as HTMLInputElement).value;
     return;
   }
-  if (event.target.id === 'guidedExamDate') {
-    updateExamBlueprint('examDate', event.target.value, { refresh: false });
+  if ((event.target as HTMLElement).id === 'guidedExamDate') {
+    updateExamBlueprint('examDate', (event.target as HTMLInputElement).value, { refresh: false });
     syncGuidedNext(onboardingModel());
     return;
   }
-  if (event.target.dataset.guidedDay !== undefined) {
-    updateMetaHoursDay(event.target.dataset.guidedDay, event.target.value, { refresh: false });
+  if ((event.target as HTMLElement).dataset.guidedDay !== undefined) {
+    updateMetaHoursDay(
+      (event.target as HTMLElement).dataset.guidedDay,
+      (event.target as HTMLInputElement).value,
+      { refresh: false }
+    );
     const model = onboardingModel();
     syncGuidedNext(model);
     document.querySelector('#guidedOnboardingContent .guided-capacity strong').textContent =
       formatPlanMinutes(model.availableMinutes);
     return;
   }
-  if (event.target.dataset.guidedLevel)
-    setGuidedSubjectLevel(event.target.dataset.guidedLevel, event.target.value, { refresh: false });
+  if ((event.target as HTMLElement).dataset.guidedLevel)
+    setGuidedSubjectLevel(
+      (event.target as HTMLElement).dataset.guidedLevel,
+      (event.target as HTMLInputElement).value,
+      { refresh: false }
+    );
 });
 document.getElementById('guidedOnboarding')?.addEventListener('click', event => {
-  if (event.target.closest('[data-guided-action="open"]')) openGuidedOnboarding();
+  if ((event.target as HTMLElement).closest('[data-guided-action="open"]')) openGuidedOnboarding();
 });
 document.getElementById('guidedOnboardingOverlay')?.addEventListener('click', event => {
-  const action = event.target.closest('[data-guided-action]')?.dataset.guidedAction;
+  const action = (event.target as HTMLElement).closest<HTMLElement>('[data-guided-action]')?.dataset
+    .guidedAction;
   if (!action) return;
   if (action === 'cancel') closeGuidedOnboarding();
   if (action === 'back') moveOnboarding(-1);
@@ -11241,8 +11314,8 @@ if (TEST_MODE) {
 } else {
   bootstrapApplication({
     context: appContext,
-    start: async context => {
-      await loadState(context);
+    start: async () => {
+      await loadState();
       activateInitialTab();
     },
     onError: error => console.error('Falha na inicialização do aplicativo', error),

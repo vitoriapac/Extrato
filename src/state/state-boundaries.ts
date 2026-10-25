@@ -35,7 +35,8 @@ export interface OnboardingUiState {
   open: boolean;
   currentStep: string | number | null;
   presetId: string | null;
-  previousFocus: unknown;
+  previousFocus: HTMLElement | null;
+  manualReturn?: boolean;
   dismissedForSession: boolean;
 }
 

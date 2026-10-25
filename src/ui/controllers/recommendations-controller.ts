@@ -147,7 +147,6 @@ export interface RecommendationHistorySummary {
   accepted: number;
   completed: number;
   rated: number;
-  useful: number;
   acceptanceRate: number;
   completionRate: number;
   usefulnessRate: number;
