@@ -25,9 +25,29 @@ export interface StorageManager {
   remove: (key: string) => Promise<boolean>;
 }
 
-export function createStorageManager(config?: IndexedDbProviderConfig): StorageManager {
-  const indexedDb = createIndexedDbProvider(config);
-  const windowStorage = (globalThis as Record<string, any>).storage;
+export interface StorageManagerProviders {
+  indexedDb?: {
+    get: (key: string) => Promise<any>;
+    set: (key: string, value: any) => Promise<any>;
+    remove: (key: string) => Promise<any>;
+  };
+  local?: {
+    get: (key: string) => string | null;
+    set: (key: string, value: string) => boolean;
+    remove: (key: string) => boolean;
+  };
+  windowStorage?: any;
+}
+
+// Providers are injectable so the "newest copy wins" rule can be tested without a browser.
+export function createStorageManager(
+  config?: IndexedDbProviderConfig,
+  {
+    indexedDb = createIndexedDbProvider(config),
+    local = localProvider,
+    windowStorage = (globalThis as Record<string, any>).storage,
+  }: StorageManagerProviders = {}
+): StorageManager {
   return {
     async get(key: string): Promise<string | null> {
       const values: string[] = [];
@@ -45,7 +65,7 @@ export function createStorageManager(config?: IndexedDbProviderConfig): StorageM
           console.warn('window.storage indisponível', error);
         }
       }
-      const localValue = repositoryReadLocalState(key);
+      const localValue = local.get(key);
       if (localValue) values.push(localValue);
       return values.sort((a, b) => serializedTimestamp(b) - serializedTimestamp(a))[0] || null;
     },
@@ -65,7 +85,7 @@ export function createStorageManager(config?: IndexedDbProviderConfig): StorageM
           console.warn('Falha no window.storage', error);
         }
       }
-      if (repositoryWriteLocalState(value, key)) success = true;
+      if (local.set(key, value)) success = true;
       return success;
     },
     async remove(key: string): Promise<boolean> {
@@ -84,7 +104,7 @@ export function createStorageManager(config?: IndexedDbProviderConfig): StorageM
           console.warn('Falha ao remover do window.storage', error);
         }
       }
-      if (localProvider.remove(key)) success = true;
+      if (local.remove(key)) success = true;
       return success;
     },
   };

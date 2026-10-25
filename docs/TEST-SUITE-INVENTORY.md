@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-189 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+190 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -225,6 +225,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/session-service.test.js | node | Sessões | functional | — | contract | none |
 | tests/unit/stability-phase-comparison.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/state-boundaries.test.js | node | Estado | critical | — | contract | none |
+| tests/unit/storage-manager.test.js | node | Persistência | critical | — | contract | none |
 | tests/unit/storage-services.test.js | node | Persistência | critical | — | contract | none |
 | tests/unit/strategic-achievements.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/strategic-cycle-fixture.test.js | node | Aplicação | functional | — | contract | none |
