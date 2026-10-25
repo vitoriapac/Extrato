@@ -71,6 +71,12 @@ export const impactAreas = [
     journeys: [],
   },
   {
+    id: 'navigation',
+    sources: ['src/ui/navigation/**', 'src/ui/controllers/navigation-controller.*'],
+    units: ['tab-router.test.js'],
+    journeys: ['navigation-hash.spec.js'],
+  },
+  {
     id: 'recovery',
     sources: [
       'src/application/recovery/**',

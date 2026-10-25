@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-178 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+180 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -94,6 +94,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/analytics-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/analytics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/app-foundation.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/app-state-store.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/application-lifecycle.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/application-renderer.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/backup-controller.test.js | node | Backup | critical | — | contract | none |
@@ -235,6 +236,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/subject-service.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/subjects-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/sustainability-insights.test.js | node | Sustentabilidade | functional | — | contract | none |
+| tests/unit/tab-router.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/test-impact-selection.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/today-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/today-view-model.test.js | node | Aplicação | functional | — | contract | none |

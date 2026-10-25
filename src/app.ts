@@ -318,7 +318,8 @@ import {
   syncExamSubjectCheckboxes as syncExamSubjectCheckboxesView,
 } from './features/exam-import/exam-import-renderer.js';
 import { createExamImportController } from './features/exam-import/exam-import-controller.js';
-import { TAB_HASHES, createNavigationController } from './ui/controllers/navigation-controller.js';
+import { createTabRouter } from './ui/navigation/tab-router.js';
+import { createAppStateStore } from './state/app-state-store.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createEditableCollectionController } from './ui/controllers/editable-collection-controller.js';
 import { createPreferencesController } from './ui/controllers/preferences-controller.js';
@@ -1574,11 +1575,23 @@ async function loadState() {
   else if (modeMessage) showToast(modeMessage);
 }
 
-let saveTimeout;
-let saveQueue = Promise.resolve();
-let pendingSave = null;
-let stateTransactionActive = false;
-let transactionDeferredSave = false;
+function flashSaved() {
+  const el = document.getElementById('saveIndicator');
+  el?.classList.add('show');
+  clearTimeout((flashSaved as any)._t);
+  (flashSaved as any)._t = setTimeout(() => el?.classList.remove('show'), 1200);
+}
+
+/* ===== TOAST (substitui alert()) ===== */
+function showToast(message) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add('show');
+  clearTimeout((showToast as any)._t);
+  (showToast as any)._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
 async function sha256(value) {
   if (!window.crypto?.subtle) return null;
   const bytes = new TextEncoder().encode(value);
@@ -1632,92 +1645,39 @@ async function rotateAutomaticBackup(previousRaw, options: any = {}) {
   index.updatedAt = nowISO();
   return StorageManager.set(indexKey, JSON.stringify(index));
 }
-function enqueueSave(serialized, previousRaw) {
-  pendingSave = { serialized, previousRaw };
-  saveQueue = saveQueue
-    .then(async () => {
-      while (pendingSave) {
-        const job = pendingSave;
-        pendingSave = null;
-        await saveState(job.serialized, job.previousRaw);
-      }
-    })
-    .catch(error => {
-      console.error('Falha na fila de gravação', error);
-      showToast(
-        'Não foi possível concluir a gravação. Exporte um backup para proteger seus dados.'
-      );
-    });
-  return saveQueue;
-}
+
+/* ===== STORE DE ESTADO PERSISTENTE ===== */
+const appStateStore = createAppStateStore({
+  getState: () => state,
+  pickPersistentState,
+  writeLocalState,
+  readLocalState,
+  STORAGE_KEY,
+  nowISO,
+  isDemoMode: () => IS_DEMO_MODE,
+  rotateAutomaticBackup,
+  writePersistentState: serialized => StorageManager.set(STORAGE_KEY, serialized),
+  notifyRemoteState: serialized => {
+    if (!applyingRemoteState) {
+      STATE_CHANNEL?.postMessage({
+        source: INSTANCE_ID,
+        serialized,
+        updatedAt: JSON.parse(serialized).updatedAt || null,
+      });
+    }
+  },
+  onSaved: () => flashSaved(),
+  showToast,
+});
+
 function scheduleSave() {
-  if (stateTransactionActive) {
-    state.updatedAt = nowISO();
-    transactionDeferredSave = true;
-    return;
-  }
-  const previousRaw = readLocalState(STORAGE_KEY);
-  state.updatedAt = nowISO();
-  const serialized = JSON.stringify(pickPersistentState(state));
-  writeLocalState(serialized);
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(() => enqueueSave(serialized, previousRaw), 350);
+  appStateStore.scheduleSave();
 }
 function enqueueStateTransaction(task) {
-  clearTimeout(saveTimeout);
-  saveTimeout = null;
-  const flush = enqueueSave(JSON.stringify(pickPersistentState(state)), readLocalState());
-  const result = flush.then(async () => {
-    stateTransactionActive = true;
-    try {
-      return await task();
-    } finally {
-      stateTransactionActive = false;
-      if (transactionDeferredSave) {
-        transactionDeferredSave = false;
-        scheduleSave();
-      }
-    }
-  });
-  saveQueue = result.catch(() => {});
-  return result;
+  return appStateStore.enqueueStateTransaction(task);
 }
-async function saveState(
-  serialized = JSON.stringify(pickPersistentState(state)),
-  previousRaw = null
-) {
-  try {
-    let backupWarning = false;
-    const lastBackup = state.lastBackupAt ? Date.parse(state.lastBackupAt) : 0;
-    if (!IS_DEMO_MODE && previousRaw && Date.now() - lastBackup >= 24 * 60 * 60 * 1000) {
-      const backupSuccess = await rotateAutomaticBackup(previousRaw);
-      if (backupSuccess) {
-        state.lastBackupAt = nowISO();
-        const parsed = JSON.parse(serialized);
-        parsed.lastBackupAt = state.lastBackupAt;
-        parsed.updatedAt = state.updatedAt;
-        serialized = JSON.stringify(parsed);
-        writeLocalState(serialized);
-      } else backupWarning = true;
-    }
-    const success = await StorageManager.set(STORAGE_KEY, serialized);
-    if (success) {
-      if (!applyingRemoteState)
-        STATE_CHANNEL?.postMessage({
-          source: INSTANCE_ID,
-          serialized,
-          updatedAt: JSON.parse(serialized).updatedAt || null,
-        });
-      flashSaved();
-      if (backupWarning)
-        showToast(
-          'Os dados atuais foram salvos, mas o backup automático não pôde ser atualizado. Exporte um backup manual.'
-        );
-    } else showToast('Não foi possível salvar. Exporte um backup para proteger seus dados.');
-  } catch (e) {
-    console.error('Erro ao salvar estado', e);
-    showToast('Não foi possível salvar. Exporte um backup para proteger seus dados.');
-  }
+function saveState(serialized = JSON.stringify(pickPersistentState(state)), previousRaw = null) {
+  return appStateStore.saveState(serialized, previousRaw);
 }
 
 STATE_CHANNEL?.addEventListener('message', event => {
@@ -1738,21 +1698,6 @@ STATE_CHANNEL?.addEventListener('message', event => {
     applyingRemoteState = false;
   }
 });
-function flashSaved() {
-  const el = document.getElementById('saveIndicator');
-  el.classList.add('show');
-  clearTimeout(flashSaved._t);
-  flashSaved._t = setTimeout(() => el.classList.remove('show'), 1200);
-}
-
-/* ===== TOAST (substitui alert()) ===== */
-function showToast(message) {
-  const el = document.getElementById('toast');
-  el.textContent = message;
-  el.classList.add('show');
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => el.classList.remove('show'), 2600);
-}
 
 /* ===== MODAL DE CONFIRMAÇÃO (substitui confirm()) ===== */
 const modalController = createModalController({ document, window });
@@ -1763,11 +1708,12 @@ function showPrompt(message, options, onConfirm, onCancel) {
   return modalController.prompt(message, options, onConfirm, onCancel);
 }
 
-/* ===== TABS ===== */
-const navigationController = createNavigationController({
+/* ===== TABS & ROUTER ===== */
+const tabRouter = createTabRouter({
   document,
   window,
-  render: tab => render(tab),
+  onRenderTab: tab => render(tab),
+  onResetLists: resetRecordListLimits,
   trapModalTab: event =>
     trapModalTab(event, [
       document.getElementById('guidedOnboardingOverlay'),
@@ -1778,12 +1724,10 @@ const navigationController = createNavigationController({
       document.getElementById('sessionModalOverlay'),
       document.getElementById('modalOverlay'),
     ]),
-  closeReview: closeReviewRating,
+  onCancelReview: closeReviewRating,
 });
 function activateTab(tabName, updateHash = true) {
-  globalThis.studytrackProgressiveLists?.reset();
-  resetRecordListLimits();
-  return navigationController.activate(tabName, updateHash);
+  return tabRouter.activateTab(tabName, updateHash);
 }
 createHelpController({ document, window, activateTab }).mount();
 
@@ -2914,8 +2858,7 @@ document.getElementById('clearAllDataBtn').addEventListener('click', () =>
 );
 function reloadWithModeChange() {
   suppressBeforeUnloadSave = true;
-  if (saveTimeout) clearTimeout(saveTimeout);
-  pendingSave = null;
+  appStateStore.cancelPendingSave();
   location.reload();
 }
 const demoController = createDemoController({
@@ -12249,7 +12192,7 @@ const RENDER_SCOPE_SECTIONS = {
   ]),
 };
 function activeTabName() {
-  return document.querySelector('.tab-btn.active')?.dataset.tab || 'dashboard';
+  return tabRouter.activeTabName();
 }
 let applicationRenderer;
 const errorBoundary = createErrorBoundaryController({ document, onRetry: () => render('active') });
@@ -12331,7 +12274,7 @@ function renderAll() {
 watchDailyExecutionDate({ document, window, getToday: todayISO, onChange: () => render('active') });
 
 /* ===== ATALHOS DE TECLADO ===== */
-navigationController.registerShortcuts();
+tabRouter.registerShortcuts();
 const modalLayers = [
   ...document.querySelectorAll('.modal-overlay'),
   document.getElementById('guidedOnboardingOverlay'),
@@ -12445,7 +12388,7 @@ if (backToTopBtn) {
 registerApplicationLifecycle({
   window,
   onBeforeUnload: () => {
-    if (!TEST_MODE && !suppressBeforeUnloadSave && !stateTransactionActive)
+    if (!TEST_MODE && !suppressBeforeUnloadSave && !appStateStore.isTransactionActive())
       writeLocalState(JSON.stringify(pickPersistentState(state)));
   },
   onResponsiveChange: () => {
@@ -12459,11 +12402,9 @@ registerApplicationLifecycle({
 registerMobileInputVisibility({ window, document });
 
 setCalendarMobileView('month');
-const initialHash = location.hash.replace('#', ''),
-  initialTab = Object.keys(TAB_HASHES).find(tab => TAB_HASHES[tab] === initialHash) || initialHash;
 // Activating a tab renders and saves; before loadState that save stamps the default state as newest and it wins the load.
 const activateInitialTab = () => {
-  if (document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) activateTab(initialTab, false);
+  tabRouter.activateInitialTab();
 };
 
 if (TEST_MODE) {
@@ -12476,13 +12417,7 @@ if (TEST_MODE) {
     IS_DEMO_MODE,
     getState: () => state,
     getConsolidatedDiagnosis: () => structuredCloneSafe(currentConsolidatedDiagnosis),
-    settleSaves: async () => {
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
-        saveTimeout = null;
-      }
-      await saveQueue;
-    },
+    settleSaves: () => appStateStore.settleSaves(),
     setState: value => {
       state = migrateState(structuredCloneSafe(value));
       ensureStateDefaults();
