@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-190 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+187 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -98,7 +98,6 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/app-state-store.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/application-lifecycle.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/application-renderer.test.js | node | Aplicação | functional | — | contract | none |
-| tests/unit/backup-controller.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/backup-modal-controller.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/backup-validator.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/calendar-controller.test.js | node | Aplicação | functional | — | contract | none |
@@ -154,7 +153,6 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/guided-study-service.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/header-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/heatmap.test.js | node | Aplicação | functional | — | contract | none |
-| tests/unit/help-center-component.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/help-center.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/historical-adherence-integrity.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/import-exam-json.test.js | node | Inteligência da prova | critical | — | contract | none |
@@ -169,7 +167,6 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/packages-3-5.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/performance-analytics-controller.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-forecast.test.js | node | Desempenho | functional | — | contract | none |
-| tests/unit/performance-scenarios.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/period-comparison-insights.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/phase-strategy.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/pip-timer-controller.test.js | node | Aplicação | functional | — | contract, viewport | none |

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createClock } from '../../src/core/clock.js';
 import { createAppContext } from '../../src/application/create-app-context.js';
 import { createRealStorageProvider } from '../../src/storage/real-storage-provider.js';
-import { bootstrapApplication } from '../../src/bootstrap.js';
+import { bootstrapApplication } from '../../src/bootstrap/bootstrap-application.js';
 
 function memoryManager() {
   const values = new Map();

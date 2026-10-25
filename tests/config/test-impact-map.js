@@ -39,7 +39,7 @@ export const impactAreas = [
   {
     id: 'help',
     sources: ['src/ui/help/**'],
-    units: ['help-center.test.js', 'help-center-component.test.js'],
+    units: ['help-center.test.js'],
     journeys: ['visual-consolidation.spec.js'],
   },
   {

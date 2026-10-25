@@ -1,20 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeQuestion } from '../../src/application/questions/question-service.js';
-import { buildQuestionMetrics } from '../../src/application/questions/question-metrics-service.js';
 import { createQuestionController } from '../../src/application/questions/question-controller.js';
 import { createGuidedStudyService } from '../../src/application/guided-study/guided-study-service.js';
 import { createEditalImportFacade } from '../../src/application/subjects/edital-import-facade.js';
-test('question service normalizes counts and metrics without DOM', () => {
-  assert.deepEqual(normalizeQuestion({ resolved: 3, correct: 5 }), {
-    resolved: 3,
-    correct: 3,
-    errorCategory: null,
-  });
-  const metrics = buildQuestionMetrics([{ resolved: 3, correct: 2, errorCategory: 'desatenção' }]);
-  assert.equal(metrics.errors, 1);
-  assert.equal(metrics.accuracy, 67);
-});
 test('question controller refreshes after CRUD', () => {
   const rows = [];
   const service = {

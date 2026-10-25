@@ -122,7 +122,6 @@ flowchart TD
 - `src/domain/exams/exam-catalog.ts` e `src/domain/exams/exam-presets.ts`: normalização, validação e estruturas completas de BB, Caixa e combinada.
 - `src/domain/exams/exam-catalog-runtime.ts`: entrada do bundle sob demanda que expõe as estruturas completas ao navegador.
 - `src/domain/analytics/recommendation-calibration.ts`: leitura agregada dos resultados reais sem ajuste automático de pesos.
-- `src/domain/forecasts/performance-scenarios.ts`: simulações conservadoras de capacidade sobre a projeção de 30 dias.
 - `src/domain/analytics/exam-mastery-matrix.ts`: matriz explicável de cobertura, domínio, retenção e lacunas por edital.
 - `src/domain/recommendations/study-strategy.ts`: estratégia versionada e etapas executáveis pelo cronômetro existente.
 - `src/ui/view-models/` e `src/ui/renderers/`: Questões, Agenda/Revisões, Calendário, calibração e cenários mantêm preparação de dados e HTML fora do composition root.
@@ -134,7 +133,7 @@ flowchart TD
 - `src/ui/controllers/modal-controller.ts`: confirmações e prompts acessíveis com validação e restauração de foco.
 - `src/ui/controllers/editable-collection-controller.ts`: estado de rascunho e ciclo de edição dos registros operacionais.
 - `src/ui/controllers/preferences-controller.ts`: tema visual e persistência das preferências locais.
-- `src/ui/controllers/backup-controller.ts`: leitura, exportação e importação de arquivos de backup no navegador.
+- `src/ui/controllers/backup-modal-controller.ts`: leitura, exportação e importação de arquivos de backup no navegador.
 - `src/ui/controllers/delegated-events-controller.ts`: roteamento seguro das ações declarativas da interface sem funções globais.
 - `src/ui/renderers/application-renderer.ts`: composição resiliente e seletiva das seções visuais.
 - `src/application/goals/goal-service.ts`: regras de metas globais e disponibilidade diária.

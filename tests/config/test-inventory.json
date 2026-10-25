@@ -2140,7 +2140,7 @@
         "../../src/core/clock.js",
         "../../src/application/create-app-context.js",
         "../../src/storage/real-storage-provider.js",
-        "../../src/bootstrap.js"
+        "../../src/bootstrap/bootstrap-application.js"
       ],
       "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
@@ -2233,36 +2233,6 @@
         "../../src/ui/renderers/application-renderer.js"
       ],
       "staticTestDeclarations": 2,
-      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
-      "measuredCases": 0,
-      "observedCaseSeconds": null,
-      "durationBasis": "not_measured_per_file",
-      "snapshotPlatform": "none",
-      "currentGates": [
-        "npm test",
-        "check",
-        "test:fast UTC/SP",
-        "test:regression UTC/SP",
-        "test:full UTC/SP"
-      ],
-      "stability": "not_assessed",
-      "removalDecision": "retain_pending_contract_review"
-    },
-    {
-      "file": "tests/unit/backup-controller.test.js",
-      "layer": "node",
-      "area": "Backup",
-      "areaBasis": "filename_hint",
-      "criticality": "critical",
-      "roles": [
-        "contract"
-      ],
-      "imports": [
-        "node:test",
-        "node:assert/strict",
-        "../../src/ui/controllers/backup-controller.js"
-      ],
-      "staticTestDeclarations": 1,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -3444,12 +3414,9 @@
         "node:test",
         "node:assert/strict",
         "../../src/domain/exam-intelligence/exam.js",
-        "../../src/domain/exam-intelligence/exam-question.js",
-        "../../src/application/exam-intelligence/exam-registry.js",
-        "../../src/state/defaults.js",
-        "../../src/state/state-boundaries.js"
+        "../../src/domain/exam-intelligence/exam-question.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 1,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -4041,38 +4008,6 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
-      "file": "tests/unit/help-center-component.test.js",
-      "layer": "node",
-      "area": "Aplicação",
-      "areaBasis": "filename_hint",
-      "criticality": "functional",
-      "roles": [
-        "contract"
-      ],
-      "imports": [
-        "node:test",
-        "node:assert/strict",
-        "preact",
-        "preact-render-to-string",
-        "../../src/ui/help/help-center.js"
-      ],
-      "staticTestDeclarations": 2,
-      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
-      "measuredCases": 0,
-      "observedCaseSeconds": null,
-      "durationBasis": "not_measured_per_file",
-      "snapshotPlatform": "none",
-      "currentGates": [
-        "npm test",
-        "check",
-        "test:fast UTC/SP",
-        "test:regression UTC/SP",
-        "test:full UTC/SP"
-      ],
-      "stability": "not_assessed",
-      "removalDecision": "retain_pending_contract_review"
-    },
-    {
       "file": "tests/unit/help-center.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -4433,13 +4368,11 @@
       "imports": [
         "node:test",
         "node:assert/strict",
-        "../../src/application/questions/question-service.js",
-        "../../src/application/questions/question-metrics-service.js",
         "../../src/application/questions/question-controller.js",
         "../../src/application/guided-study/guided-study-service.js",
         "../../src/application/subjects/edital-import-facade.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -4500,36 +4433,6 @@
         "../../src/domain/forecasts/performance-forecast.js"
       ],
       "staticTestDeclarations": 4,
-      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
-      "measuredCases": 0,
-      "observedCaseSeconds": null,
-      "durationBasis": "not_measured_per_file",
-      "snapshotPlatform": "none",
-      "currentGates": [
-        "npm test",
-        "check",
-        "test:fast UTC/SP",
-        "test:regression UTC/SP",
-        "test:full UTC/SP"
-      ],
-      "stability": "not_assessed",
-      "removalDecision": "retain_pending_contract_review"
-    },
-    {
-      "file": "tests/unit/performance-scenarios.test.js",
-      "layer": "node",
-      "area": "Desempenho",
-      "areaBasis": "filename_hint",
-      "criticality": "functional",
-      "roles": [
-        "contract"
-      ],
-      "imports": [
-        "node:test",
-        "node:assert/strict",
-        "../../src/domain/forecasts/performance-scenarios.js"
-      ],
-      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -7167,8 +7070,7 @@
       "imports": [
         "node:test",
         "node:assert/strict",
-        "../../src/domain/exam-intelligence/topic-incidence.js",
-        "../../src/application/exam-intelligence/build-exam-intelligence.js"
+        "../../src/domain/exam-intelligence/topic-incidence.js"
       ],
       "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",

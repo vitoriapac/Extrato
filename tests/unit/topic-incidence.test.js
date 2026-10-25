@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateTopicIncidence } from '../../src/domain/exam-intelligence/topic-incidence.js';
-import { buildExamIntelligence } from '../../src/application/exam-intelligence/build-exam-intelligence.js';
 
 const exams = [2018, 2019, 2021, 2023, 2025].map((year, index) => ({
   id: `bb-${year}`,
@@ -86,11 +85,9 @@ test('amostra única permanece limitada e filtro exclui outro concurso', () => {
 
 test('classificação fraca reduz confiança e aplicação mantém perfil por tópico', () => {
   const weak = questions.map(question => ({ ...question, classification: { confidence: 0.2 } }));
-  const profiles = buildExamIntelligence({
-    topics: [{ id: 'juros' }, { id: 'outro' }],
-    exams,
-    examQuestions: weak,
-  });
+  const profiles = ['juros', 'outro'].map(topicId =>
+    calculateTopicIncidence({ topicId, exams, questions: weak, activeExamTags: [] })
+  );
   assert.equal(profiles[0].confidence, 'low');
   assert.equal(profiles[1].questionCount, 1);
   assert.equal(profiles[1].presencePercent, 20);
