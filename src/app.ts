@@ -160,6 +160,7 @@ import {
 import { createRealStorageProvider } from './storage/real-storage-provider.js';
 import { createDemoStorageProvider } from './storage/demo-storage-provider.js';
 import { createClock } from './core/clock.js';
+import { formatDateBR } from './core/format-date.js';
 import { formatDecimal } from './core/format-number.js';
 import { parseLocalDate } from './core/date-utils.js';
 import { createAppContext } from './application/create-app-context.js';
@@ -1851,10 +1852,9 @@ function timestampToLocalDateISO(value) {
 function todayISO() {
   return appContext.clock.today();
 }
+// Empty dates read as "—" here; the DD/MM/AAAA rule lives in core/format-date (handles timestamps too).
 function formatDatePt(iso) {
-  if (!iso) return '—';
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y}`;
+  return iso ? formatDateBR(iso) : '—';
 }
 const MESES_PT = [
   'Janeiro',
