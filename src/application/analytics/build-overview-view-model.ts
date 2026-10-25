@@ -43,14 +43,9 @@ export function buildStudyTimeViewModel({
   for (let index = 0; index < days; index++)
     planned += hoursForDate(addDays(firstRecent, index)) * 3600;
   const elapsed = daySpan(weekStart, today) + 1,
-    byDate = Object.groupBy
-      ? Object.groupBy(
-          dated.filter(item => item.date >= weekStart && item.date <= today),
-          (item: any) => item.date
-        )
-      : dated
-          .filter(item => item.date >= weekStart && item.date <= today)
-          .reduce((map, item) => ((map[item.date] ??= []).push(item), map), {});
+    byDate = dated
+      .filter(item => item.date >= weekStart && item.date <= today)
+      .reduce((map, item) => ((map[item.date] ??= []).push(item), map), {});
   let achieved = 0;
   for (let index = 0; index < elapsed; index++) {
     const date = addDays(weekStart, index),
