@@ -106,8 +106,19 @@ jobs:
       - name: Static type check (JSDoc/tsc)
         if: needs.changes.outputs.docs_only != 'true' && (matrix.shard == '1/1' || matrix.shard == '1/4')
         run: npm run check:types
-      - run: npx playwright install --with-deps chromium
+      - name: Cache Playwright Chromium
         if: needs.changes.outputs.docs_only != 'true'
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright system dependencies
+        if: needs.changes.outputs.docs_only != 'true'
+        run: npx playwright install-deps chromium
+      - name: Install Playwright Chromium browser binary
+        if: needs.changes.outputs.docs_only != 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
       - name: Download impact plan
         if: needs.changes.outputs.docs_only != 'true' && github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         uses: actions/download-artifact@v4
@@ -161,7 +172,17 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Cache Playwright Chromium
+        uses: actions/cache@v4
+        id: playwright-cache-experience
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright system dependencies
+        run: npx playwright install-deps chromium
+      - name: Install Playwright Chromium browser binary
+        if: steps.playwright-cache-experience.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
       - run: npm run test:experience
       - name: Upload experience timing and diagnostics
         if: always()
@@ -186,7 +207,15 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx playwright install chromium
+      - name: Cache Playwright Chromium (Windows)
+        uses: actions/cache@v4
+        id: playwright-cache-win
+        with:
+          path: ~\AppData\Local\ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright Chromium browser binary
+        if: steps.playwright-cache-win.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
       - run: npm run test:visual
       - name: Upload visual gate timing and diagnostics
         if: always()

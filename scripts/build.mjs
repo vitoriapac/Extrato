@@ -69,10 +69,10 @@ const generatedServiceWorker = serviceWorkerTemplate.replaceAll(versionPlacehold
 let stale = false;
 async function writeOrCheck(output, generated) {
   const outputFile = resolve(projectRoot, output);
-  const stableGenerated = generated.replace(/\r\n/g, '\n');
+  const stableGenerated = generated.replace(/\r\n/g, '\n').trim() + '\n';
   if (checkOnly) {
     const current = await readFile(outputFile, 'utf8').catch(() => null);
-    const normalizedCurrent = current?.replace(/\r\n/g, '\n');
+    const normalizedCurrent = current ? current.replace(/\r\n/g, '\n').trim() + '\n' : null;
     if (normalizedCurrent !== stableGenerated) {
       console.error(`${output} esta desatualizado. Execute npm run build.`);
       if (normalizedCurrent) {
