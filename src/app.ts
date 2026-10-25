@@ -466,8 +466,6 @@ import {
   renderWeeklyQuestionTrend,
   renderQuestionErrorToolbar,
 } from './ui/renderers/question-analytics-renderer.js';
-import { buildQuestionEvolution } from './application/questions/build-question-evolution.js';
-import { renderQuestionEvolution as renderQuestionEvolutionView } from './ui/renderers/question-evolution-renderer.js';
 import { buildPlanExecution } from './application/goals/build-plan-execution.js';
 import { renderPlanExecution as renderPlanExecutionView } from './ui/renderers/plan-execution-renderer.js';
 import { buildStudyDistribution } from './application/goals/build-study-distribution.js';
@@ -3103,7 +3101,7 @@ function renderSimuladosChart() {
   if (!card || !container) return;
   const data = performancePeriodRecords(examScopedSimulations(), {
     today: todayISO(),
-    period: questionEvolutionView.period,
+    period: '90',
   }).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   const comparison = buildSimulationComparison({
     simulations: data.map(item => ({
@@ -4784,86 +4782,6 @@ function calcAcertoPct(correct, resolved) {
 
 let openQuestionErrorIds = new Set<string>();
 let performanceSubjectId = null;
-const questionEvolutionView = { scope: 'all', subjectId: '', topicId: '', period: '90' };
-function setQuestionEvolutionFilter(field, value) {
-  if (field === 'scope' && ['all', 'subject', 'topic'].includes(value))
-    questionEvolutionView.scope = value;
-  if (field === 'subjectId') {
-    questionEvolutionView.subjectId = value;
-    questionEvolutionView.topicId = '';
-  }
-  if (field === 'topicId') questionEvolutionView.topicId = value;
-  if (field === 'period' && ['30', '90', '180', 'all'].includes(value))
-    questionEvolutionView.period = value;
-  renderQuestionEvolution();
-  renderSimuladosChart();
-}
-function renderQuestionEvolution() {
-  const result = document.getElementById('questionEvolutionResults');
-  if (!result) return;
-  const subjects = activeSubjects();
-  if (!subjects.some(item => item.id === questionEvolutionView.subjectId))
-    questionEvolutionView.subjectId = subjects[0]?.id || '';
-  const topics = activeTopics().filter(item => item.subjectId === questionEvolutionView.subjectId);
-  if (!topics.some(item => item.id === questionEvolutionView.topicId))
-    questionEvolutionView.topicId = topics[0]?.id || '';
-  const controls = {
-    scope: document.getElementById('questionEvolutionScope') as HTMLSelectElement,
-    subject: document.getElementById('questionEvolutionSubject') as HTMLSelectElement,
-    topic: document.getElementById('questionEvolutionTopic') as HTMLSelectElement,
-    period: document.getElementById('questionEvolutionPeriod') as HTMLSelectElement,
-  };
-  controls.scope.value = questionEvolutionView.scope;
-  controls.period.value = questionEvolutionView.period;
-  controls.subject.innerHTML = subjects
-    .map(item => `<option value="${escapeAttr(item.id)}">${escapeHtml(item.name)}</option>`)
-    .join('');
-  controls.subject.value = questionEvolutionView.subjectId;
-  controls.topic.innerHTML = topics
-    .map(item => `<option value="${escapeAttr(item.id)}">${escapeHtml(item.name)}</option>`)
-    .join('');
-  controls.topic.value = questionEvolutionView.topicId;
-  document.getElementById('questionEvolutionSubjectWrap').hidden =
-    questionEvolutionView.scope === 'all';
-  document.getElementById('questionEvolutionTopicWrap').hidden =
-    questionEvolutionView.scope !== 'topic';
-  const model = buildQuestionEvolution({
-    questions: examEvidenceContext().questions.included.map(item => ({
-      ...item,
-      subjectId: entitySubjectId(item),
-    })),
-    today: todayISO(),
-    ...questionEvolutionView,
-  });
-  const analysis = buildPerformanceAnalysis({
-    questions: examEvidenceContext().questions.included,
-    simulations: examScopedSimulations().map(item => ({
-      ...item,
-      ...simuladoEffectiveCounts(item),
-    })),
-    candidates: intelligenceCandidates(),
-    today: todayISO(),
-    period: questionEvolutionView.period,
-  });
-  result.innerHTML =
-    renderPerformanceAnalysis(analysis) +
-    renderSubjectAccuracy(
-      buildSubjectAccuracy({
-        subjects: examScopedSubjects(),
-        questions: performancePeriodRecords(examEvidenceContext().questions.included, {
-          today: todayISO(),
-          period: questionEvolutionView.period,
-        }),
-        simulations: performancePeriodRecords(examScopedSimulations(), {
-          today: todayISO(),
-          period: questionEvolutionView.period,
-        }),
-        blueprint: state.examBlueprint,
-        globalTarget: state.metas.metaAprovacao,
-      })
-    ) +
-    renderQuestionEvolutionView(model, { formatDate: formatDatePt });
-}
 let performanceViewMode = 'with-data';
 const errorAnalysisView = { days: 30, topicId: '' };
 let performanceVisible = DEFAULT_LIST_VISIBLE_ITEMS;
@@ -10692,7 +10610,6 @@ const DELEGATED_ACTION_HANDLERS = {
   startPlannedActivity,
   toggleBreakdown,
   toggleNotes,
-  setQuestionEvolutionFilter,
   toggleCompletedReviews,
   toggleFilterPanel,
   toggleOverdueDate,
