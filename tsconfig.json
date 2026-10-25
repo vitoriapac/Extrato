@@ -17,12 +17,13 @@
     "strictFunctionTypes": true,
     "alwaysStrict": true,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
     "skipLibCheck": true,
     "maxNodeModuleJsDepth": 0
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
     "src/app.bundle.js",
