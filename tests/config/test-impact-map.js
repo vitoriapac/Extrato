@@ -143,6 +143,7 @@ export const impactAreas = [
       'src/ui/controllers/pip-timer-controller.*',
       'src/application/questions/**',
       'src/application/simulations/**',
+      'src/ui/tabs/questions/**',
     ],
     units: [
       '*session*.test.js',
@@ -151,6 +152,7 @@ export const impactAreas = [
       'execution-contract.test.js',
       '*adherence*.test.js',
       '*simulation*.test.js',
+      'questions-components.test.js',
     ],
     journeys: ['daily-execution.spec.js', 'sessions.spec.js'],
   },

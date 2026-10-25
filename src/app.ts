@@ -15,6 +15,7 @@ import {
   createSubjectSearchController,
 } from './ui/subjects/subject-navigation.js';
 import { createSubjectsController } from './ui/tabs/subjects/subjects-controller.js';
+import { createQuestionsController } from './ui/tabs/questions/questions-controller.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
 import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
@@ -6304,35 +6305,41 @@ function renderQuestionEditRow(q) {
       .join(''),
   });
 }
+function getQuestionsTabController() {
+  return createQuestionsController({
+    state,
+    listViewState,
+    questionEditController,
+    simulationEditController,
+    openQuestionErrorIds,
+    openBreakdownIds,
+    errorCategories: ERROR_CATEGORIES,
+    isMobileLayout: isMobileHistoryLayout,
+    questionViewModel,
+    questionCategorizedErrors,
+    renderListViewFooter,
+    LIST_VIEW_STEPS,
+    getSubjectOptionsHtml: subjectId =>
+      subjectsForSelection(subjectId)
+        .map(
+          s =>
+            `<option value="${escapeAttr(s.id)}" ${s.id === subjectId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`
+        )
+        .join(''),
+    getTopicOptionsHtml: (subjectId, topicId) =>
+      topicsForSelection(subjectId, topicId)
+        .map(
+          t =>
+            `<option value="${escapeAttr(t.id)}" ${t.id === topicId ? 'selected' : ''}>${escapeHtml(t.name)}</option>`
+        )
+        .join(''),
+  });
+}
+
 function renderQuestoes() {
   const body = document.getElementById('questoesBody');
-  const rows = [...state.questoes].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  if (rows.length === 0) {
-    body.innerHTML = `<tr><td colspan="8"><div class="empty-state" style="border:none;">
-      <p>Nenhuma sessão de questões registrada ainda.</p>
-      <button class="btn small" data-delegated-click="addQuestaoRow()">+ Registrar sessão</button>
-    </div></td></tr>`;
-    return;
-  }
-  const visibleRows = rows.slice(0, listViewState.questionsVisible);
-  body.innerHTML =
-    visibleRows
-      .map(q => {
-        normalizeErrorBreakdown(q);
-        return questionEditController.state.editingId === q.id
-          ? renderQuestionEditRow(q)
-          : renderQuestionReadRow(q);
-      })
-      .join('') +
-    renderListViewFooter(
-      rows.length,
-      listViewState.questionsVisible,
-      LIST_VIEW_STEPS.questions,
-      "changeListLimit('questions',LIST_VIEW_STEPS.questions,renderQuestoes)",
-      "changeListLimit('questions',-listViewState.questionsVisible,renderQuestoes)",
-      8,
-      'registros'
-    );
+  if (!body) return;
+  body.innerHTML = getQuestionsTabController().renderQuestionsHtml();
 }
 function addQuestaoRow(initial: any = {}) {
   listViewState.questionsVisible = LIST_VIEW_STEPS.questions;
@@ -6968,15 +6975,8 @@ function renderSimulationEditRow(sim) {
 
 function renderSimulados() {
   const body = document.getElementById('simuladosBody');
-  const rows = [...state.simulados].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  body.innerHTML = renderSimulationRows({
-    items: rows,
-    visible: listViewState.simulationsVisible,
-    editingId: simulationEditController.state.editingId,
-    renderReadRow: renderSimulationReadRow,
-    renderEditRow: renderSimulationEditRow,
-    renderFooter: renderListViewFooter,
-  });
+  if (!body) return;
+  body.innerHTML = getQuestionsTabController().renderSimulationsHtml();
 }
 function addSimuladoRow() {
   listViewState.simulationsVisible = LIST_VIEW_STEPS.simulations;

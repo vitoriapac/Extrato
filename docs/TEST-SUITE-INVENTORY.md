@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-173 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+174 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -181,6 +181,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/projection-ux-simulator.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/question-import-normalizer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/question-import-service.test.js | node | Aplicação | critical | — | contract | none |
+| tests/unit/questions-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/recommend-study.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-action.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-calibration.test.js | node | Recomendações | functional | — | contract | none |
