@@ -327,6 +327,10 @@ import { createBackupController } from './ui/controllers/backup-controller.js';
 import { createRemoteSyncProvider } from './storage/remote-sync-provider.js';
 import { createRemoteSyncController } from './ui/controllers/remote-sync-controller.js';
 import { createDelegatedEventsController } from './ui/controllers/delegated-events-controller.js';
+import {
+  createDelegatedArgumentResolver,
+  createSpecialActionResolver,
+} from './ui/events/delegated-actions.js';
 import { createErrorBoundaryController } from './ui/controllers/error-boundary-controller.js';
 import { createDemoController } from './ui/controllers/demo-controller.js';
 import { createStructuredImportController } from './features/structured-import/structured-import-controller.js';
@@ -11873,44 +11877,23 @@ const DELEGATED_ACTION_HANDLERS = {
   saveExamSubjectConfig,
   cancelExamSubjectConfig,
 };
-function delegatedArgument(expression, element) {
-  const value = expression.trim();
-  if (value === 'this.value') return element.value;
-  if (value === 'this.value||null') return element.value || null;
-  if (value === 'this.textContent') return element.textContent;
-  if (value === 'this.checked') return Boolean(element.checked);
-  if (value === 'this') return element;
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  if (value === 'null') return null;
-  if (value === 'parseLocalDate(todayISO()).getDay()') return parseLocalDate(todayISO()).getDay();
-  if (/^-?\d+(?:\.\d+)?$/.test(value)) return Number(value);
-  if (
-    (value.startsWith("'") && value.endsWith("'")) ||
-    (value.startsWith('"') && value.endsWith('"'))
-  )
-    return value.slice(1, -1).replace(/\\(['"\\])/g, '$1');
-  throw new Error('Argumento de evento não permitido: ' + value);
-}
-function resolveDelegatedSpecial(normalized, event, element) {
-  if (normalized === 'performanceSubjectId=this.value;renderQuestionAnalytics()') {
-    performanceSubjectId = element.value;
-    renderQuestionAnalytics();
-    return true;
-  }
-  const listMatch = normalized.match(
-    /^changeListLimit\('(questions|simulations|sessionDays)',(-?)(?:LIST_VIEW_STEPS\.\1|listViewState\.\1Visible),(renderQuestoes|renderSimulados|renderStudySessionsHistory)\)$/
-  );
-  if (listMatch) {
-    const delta = listMatch[2]
-      ? -listViewState[`${listMatch[1]}Visible`]
-      : LIST_VIEW_STEPS[listMatch[1]];
-    const renderers = { renderQuestoes, renderSimulados, renderStudySessionsHistory };
-    changeListLimit(listMatch[1], delta, renderers[listMatch[3]]);
-    return true;
-  }
-  return false;
-}
+const delegatedArgument = createDelegatedArgumentResolver({
+  getTodayDayOfWeek: () => parseLocalDate(todayISO()).getDay(),
+});
+const resolveDelegatedSpecial = createSpecialActionResolver({
+  onSetPerformanceSubject: value => {
+    performanceSubjectId = value;
+  },
+  renderQuestionAnalytics,
+  getListViewSteps: () => LIST_VIEW_STEPS,
+  getListViewState: () => listViewState,
+  changeListLimit,
+  getRenderers: () => ({
+    renderQuestoes,
+    renderSimulados,
+    renderStudySessionsHistory,
+  }),
+});
 createDelegatedEventsController({
   document,
   handlers: DELEGATED_ACTION_HANDLERS,

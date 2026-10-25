@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-180 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+181 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -114,6 +114,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/decision-coherence-debug-renderer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/decision-coherence-report.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/decision-coherence-scenarios.test.js | node | Aplicação | critical | — | contract | none |
+| tests/unit/delegated-actions.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/delegated-events-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/demo-adherence.test.js | node | Aderência | critical | — | contract, demo | none |
 | tests/unit/demo-controller.test.js | node | Demo | functional | — | contract | none |

@@ -562,6 +562,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/delegated-actions.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
       "file": "tests/unit/delegated-events-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
