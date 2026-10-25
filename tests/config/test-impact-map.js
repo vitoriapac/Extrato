@@ -26,8 +26,22 @@ export const globalImpactSources = [
   'manifest.webmanifest',
   'service-worker.js',
   'service-worker.template.js',
+  'styles/tailwind.css',
+  'styles/tailwind.input.css',
 ];
 export const impactAreas = [
+  {
+    id: 'primitives',
+    sources: ['src/ui/primitives/**'],
+    units: ['ui-primitives.test.js'],
+    journeys: ['responsive-smoke.spec.js'],
+  },
+  {
+    id: 'help',
+    sources: ['src/ui/help/**'],
+    units: ['help-center.test.js', 'help-center-component.test.js'],
+    journeys: ['visual-consolidation.spec.js'],
+  },
   {
     id: 'recovery',
     sources: [

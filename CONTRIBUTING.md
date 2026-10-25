@@ -7,5 +7,6 @@
 5. Não edite `src/app.bundle.js` ou `src/exam-catalog.bundle.js` manualmente.
 6. Não inclua backups, históricos pessoais ou credenciais no repositório.
 7. Ao mudar primeiro uso, planejamento, execução, recuperação, recomendações ou persistência, confira os diagramas Mermaid do [README](README.md) e da [arquitetura](ARCHITECTURE.md). Eles devem descrever o comportamento implementado, não o roadmap.
+8. Novos componentes de interface devem utilizar os primitivos Preact em `src/ui/primitives/*.tsx` e utilitários semânticos do Tailwind CSS conectados aos design tokens, preservando a política de não utilizar Preflight global.
 
 Pull requests devem explicar o comportamento alterado, os riscos de migração de dados e como a mudança foi verificada.

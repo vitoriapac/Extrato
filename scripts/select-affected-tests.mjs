@@ -126,7 +126,10 @@ for (const file of ['index.html', 'service-worker.js'].filter(file => changedFil
     const normalize = value =>
       value
         .replace(/\r\n/g, '\n')
-        .replace(/((?:styles\/app\.css|src\/app\.bundle\.js)\?v=)[a-f0-9]{12}/g, '$1__VERSION__')
+        .replace(
+          /((?:styles\/app\.css|styles\/tailwind\.css|src\/app\.bundle\.js)\?v=)[a-f0-9]{12}/g,
+          '$1__VERSION__'
+        )
         .replace(/studytrack-[a-f0-9]{12}/g, 'studytrack-__VERSION__');
     if (normalize(before) === normalize(after)) derivedFiles.push(file);
   } catch {

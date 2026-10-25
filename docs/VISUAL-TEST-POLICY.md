@@ -48,3 +48,10 @@ A superfície de sustentabilidade usa `withPixelAlignedCapture`, já compartilha
 O Full dos pacotes 7–8 identificou cinco referências anteriores ao link “Entenda aderência”. Foram inspecionados expected, actual e diff em 320 claro, 375 escuro, 430 claro e 1440 claro/escuro. As métricas e a interpretação eram iguais; a inclusão do acesso à ajuda deslocou os detalhes abaixo dele. A inspeção também identificou que o botão secundário se esticava no grid desktop: o componente compartilhado agora mantém sua largura pelo conteúdo.
 
 Somente os cinco PNGs `adherence-*-win32.png` de `adherence.spec.js` foram substituídos pelas capturas finais inspecionadas. A tolerância permanece em 0,08. O caso continua verificando teclado, listas progressivas, axe, overflow e isolamento dos registros; a revisão visual não substitui esses contratos.
+
+## Política de coexistência — Preact e Tailwind CSS
+
+Durante a transição para componentes Preact e classes utilitárias do Tailwind CSS:
+1. **Sem Preflight global:** O reset global do Tailwind (`Preflight`) permanece rigorosamente desativado (`styles/tailwind.input.css`). Isso impede que regras utilitárias alterem a altura de linha, box-sizing, margens ou fontes de elementos HTML existentes sob `styles/app.css`, evitando qualquer quebra visual de pixels nas superfícies listadas na tabela oficial.
+2. **Tokens semânticos:** As classes utilitárias de cores e fontes (`bg-surface-*`, `text-primary`, `font-body`, etc.) mapeiam exclusivamente para variáveis de `styles/tokens.css`, preservando a alternância automática entre os temas claro e escuro.
+3. **Validação visual dirigida:** A migração de cada componente para `.tsx` deve preservar os mesmos seletores semânticos (`id`, `data-*`, `role`) e ser inspecionada nas referências visuais oficiais antes de qualquer atualização de snapshots.
