@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-184 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+185 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -195,6 +195,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/recommendation-followup.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-outcome-view-model.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-outcome.test.js | node | Recomendações | functional | — | contract | none |
+| tests/unit/recommendations-controller.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/record-service.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/recovery-dense-scenarios.test.js | node | Recuperação | critical | — | contract, demo | none |
 | tests/unit/recovery-plan.test.js | node | Recuperação | critical | — | contract, demo | none |

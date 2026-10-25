@@ -29,6 +29,12 @@ import {
   renderGuidedStrategyHtml,
   advanceGuidedStrategyStep,
 } from './ui/controllers/timer-controller.js';
+import {
+  buildExcludedCandidates,
+  renderExcludedCandidatesHtml,
+  renderPendingOutcomeHtml,
+  formatRecommendationHistoryLabel,
+} from './ui/controllers/recommendations-controller.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
 import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
@@ -8989,12 +8995,12 @@ function refreshStudyRecommendationItems({ recordHistory = true }: any = {}) {
   return { availableMinutes, candidates };
 }
 function renderPendingRecommendationOutcome() {
-  const pending = state.recommendationFeedback.find(
-    feedback => feedback.completed && feedback.useful === null
+  return renderPendingOutcomeHtml(
+    state.recommendationFeedback,
+    getTopicName,
+    escapeHtml,
+    escapeAttr
   );
-  return pending
-    ? `<div class="recommendation-outcome" role="group" aria-label="Avaliação do resultado da recomendação"><strong>${pending.topicId ? `O estudo de ${escapeHtml(getTopicName(pending.topicId))} ajudou?` : 'Esta recomendação ajudou?'}</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(pending.recommendationId)}',false)">Não</button></div>`
-    : '';
 }
 function renderOverviewNextAction(availableMinutes) {
   const container = document.getElementById('overviewNextAction');
@@ -9092,41 +9098,17 @@ function renderStudyRecommendation() {
     );
   const outcome = impact + renderPendingRecommendationOutcome();
   const history = summary.shown
-    ? `<small class="recommendation-history">Histórico: ${summary.acceptanceRate}% aceitas · ${summary.completionRate ?? 0}% concluídas${summary.rated ? ` · ${summary.usefulnessRate}% úteis` : ''}</small>`
+    ? `<small class="recommendation-history">${formatRecommendationHistoryLabel(summary)}</small>`
     : '';
   const visibleIds = new Set(visible.map(item => item.id));
-  const excluded = candidates
-    .filter(item => !visibleIds.has(item.id))
-    .map(item => {
-      if (item.blockedPrerequisites?.length)
-        return {
-          ...item,
-          stateIcon: '🔒',
-          stateText:
-            'Aguarda ' + item.blockedPrerequisites.map(id => getTopicName(id) || id).join(', '),
-        };
-      if (item.completed)
-        return { ...item, stateIcon: '✓', stateText: 'Atividade já realizada hoje' };
-      if (item.covered && !needsMaintenance(item))
-        return { ...item, stateIcon: '✓', stateText: 'Concluído e consolidado' };
-      if (item.remainingMinutes === null && !item.covered)
-        return { ...item, stateIcon: '○', stateText: 'Carga de estudo ainda não configurada' };
-      if (dismissedRecommendationIds.has(item.id))
-        return { ...item, stateIcon: '○', stateText: 'Ocultado nesta sessão' };
-      return {
-        ...item,
-        stateIcon: item.examImpact != null && item.examImpact < 30 ? '○' : '★',
-        stateText:
-          item.examImpact != null && item.examImpact < 30
-            ? 'Baixa relevância configurada para a prova'
-            : 'Prioridade inferior às três recomendações atuais',
-      };
-    })
-    .filter(Boolean)
-    .slice(0, 6);
-  const excludedHtml = excluded.length
-    ? `<details class="recommendation-exclusions"><summary>Por que outros tópicos não aparecem?</summary>${excluded.map(item => `<div><span>${item.stateIcon}</span><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</strong><small>${escapeHtml(item.stateText)}</small></div>`).join('')}</details>`
-    : '';
+  const excluded = buildExcludedCandidates(
+    candidates,
+    visibleIds,
+    dismissedRecommendationIds,
+    getTopicName,
+    needsMaintenance
+  );
+  const excludedHtml = renderExcludedCandidatesHtml(excluded, escapeHtml);
   if (!visible.length) {
     const hasContent = activeTopics().length > 0,
       tab = availableMinutes < 15 || !hasContent ? 'metas' : 'disciplinas',
