@@ -1,15 +1,28 @@
 import { EXAM_PRIORITIES } from '../../state/strategic.js';
+import type { ExamBlueprintSubject, ExamPriority } from '../../core/types.ts';
 
 export function buildSavedSubjectConfig(
-  subjectId,
-  current,
-  { priority, masteryTarget, expectedQuestions, questionWeight, accuracyTarget }
-) {
+  subjectId: string,
+  current: ExamBlueprintSubject | null | undefined,
+  {
+    priority,
+    masteryTarget,
+    expectedQuestions,
+    questionWeight,
+    accuracyTarget,
+  }: {
+    priority: string;
+    masteryTarget: string | number;
+    expectedQuestions: string | number;
+    questionWeight: string | number;
+    accuracyTarget?: string | number;
+  }
+): ExamBlueprintSubject | null {
   const mastery = masteryTarget === '' ? null : Number(masteryTarget),
     questions = expectedQuestions === '' ? 0 : Number(expectedQuestions),
     weight = questionWeight === '' ? 1 : Number(questionWeight);
   if (
-    !EXAM_PRIORITIES.includes(priority) ||
+    !EXAM_PRIORITIES.includes(priority as ExamPriority) ||
     (mastery !== null && (!Number.isFinite(mastery) || mastery < 0 || mastery > 100)) ||
     !Number.isInteger(questions) ||
     questions < 0 ||
@@ -25,12 +38,12 @@ export function buildSavedSubjectConfig(
         : Number(accuracyTarget);
   if (accuracy !== null && (!Number.isFinite(accuracy) || accuracy < 0 || accuracy > 100))
     return null;
-  const next = {
+  const next: ExamBlueprintSubject = {
     ...(current || {
       subjectId,
       expectedQuestions: 0,
       questionWeight: 1,
-      priority: 'normal',
+      priority: 'normal' as const,
       masteryTarget: null,
     }),
   };
@@ -41,7 +54,7 @@ export function buildSavedSubjectConfig(
   }
   return {
     ...next,
-    priority,
+    priority: priority as ExamPriority,
     accuracyTarget: accuracy,
     masteryTarget: mastery,
     expectedQuestions: questions,

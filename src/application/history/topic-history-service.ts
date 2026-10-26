@@ -5,7 +5,13 @@ const IGNORED_ACTIVITY_TYPES = new Set([
   'subject_restored',
 ]);
 
-export function historyEventLocalDate(event, toLocalDate = value => value) {
+type Row = Record<string, any>;
+type ToLocalDate = (value: unknown) => string | null | undefined;
+
+export function historyEventLocalDate(
+  event: Row | null | undefined,
+  toLocalDate: ToLocalDate = value => value as string
+) {
   if (typeof event?.localDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(event.localDate))
     return event.localDate;
   if (typeof event?.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(event.date)) return event.date;
@@ -16,21 +22,21 @@ export function createTopicHistoryService({
   getState,
   clock,
   idGenerator,
-  toLocalDate = value => value,
+  toLocalDate = (value: unknown) => value as string,
 }: any = {}) {
   if (typeof getState !== 'function' || !clock || typeof idGenerator !== 'function')
     throw new TypeError('Serviço de histórico requer estado, relógio e gerador de IDs.');
-  const records = () => {
+  const records = (): Row[] => {
     const state = getState();
     if (!Array.isArray(state.topicHistory)) state.topicHistory = [];
     return state.topicHistory;
   };
-  const referenceOf = metadata =>
+  const referenceOf = (metadata: Row | null | undefined) =>
     metadata?.sessionId || metadata?.reviewId || metadata?.operationId || null;
   const add = (
     type: any,
     subjectId: any,
-    topicId = null,
+    topicId: string | null = null,
     metadata: any = {},
     options: any = {}
   ) => {
@@ -66,8 +72,8 @@ export function createTopicHistoryService({
       const date = historyEventLocalDate(event, toLocalDate);
       return (!start || date >= start) && (!end || date <= end);
     });
-  const lastActivity = filter =>
-    list({ ...filter, includeLifecycle: false }).reduce((latest, event) => {
+  const lastActivity = (filter: Row) =>
+    list({ ...filter, includeLifecycle: false }).reduce((latest: string | null, event) => {
       const date = historyEventLocalDate(event, toLocalDate);
       return date && (!latest || date > latest) ? date : latest;
     }, null);
@@ -75,6 +81,6 @@ export function createTopicHistoryService({
     add,
     list,
     lastActivity,
-    eventLocalDate: event => historyEventLocalDate(event, toLocalDate),
+    eventLocalDate: (event: Row) => historyEventLocalDate(event, toLocalDate),
   });
 }

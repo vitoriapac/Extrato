@@ -7,7 +7,11 @@ const DERIVED_FIELDS = Object.freeze([
   'masteryMatrix',
   'pdfPreview',
 ]);
-export function setActiveExamTags(state, tags = [], { configuredAt = null }: any = {}) {
+export function setActiveExamTags(
+  state: Record<string, any>,
+  tags: string[] = [],
+  { configuredAt = null }: any = {}
+) {
   if (!state?.examBlueprint) throw new TypeError('Estado da prova inválido.');
   const next = normalizeExamTags(tags),
     changed =

@@ -1,9 +1,10 @@
 import { normalizeExamTags } from '../../domain/exams/exam-scope.js';
 
-const topicIdOf = record => record?.topicId || record?.topicRef || null;
+const topicIdOf = (record: Record<string, any> | null | undefined) =>
+  record?.topicId || record?.topicRef || null;
 
-export function buildTopicScopeIndex(subjects = []) {
-  const index = new Map();
+export function buildTopicScopeIndex(subjects: Array<Record<string, any>> = []) {
+  const index = new Map<string, string[]>();
   for (const subject of subjects || [])
     for (const topic of subject?.topics || []) {
       if (topic?.id) index.set(topic.id, normalizeExamTags(topic.examTags));

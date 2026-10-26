@@ -21,6 +21,10 @@
     "src/application/generate-diagnosis.ts",
     "src/application/build-study-candidates.ts",
     "src/application/alert-lifecycle.ts",
-    "src/application/build-study-plan.ts"
+    "src/application/build-study-plan.ts",
+    "src/application/exams/**/*",
+    "src/application/history/**/*",
+    "src/application/reviews/**/*",
+    "src/application/onboarding/**/*"
   ]
 }

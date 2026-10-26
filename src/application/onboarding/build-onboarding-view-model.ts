@@ -20,6 +20,7 @@ export function buildOnboardingViewModel({
   presets = [],
   presetId = null,
 }: any = {}) {
+  type Row = Record<string, any>;
   const hasGoal = Boolean(examDate),
     availableMinutes = (Object.values(hoursByDay || {}) as any[]).reduce(
       (sum, hours) => sum + Math.max(0, Number(hours) || 0) * 60,
@@ -27,11 +28,12 @@ export function buildOnboardingViewModel({
     ),
     hasAvailability = availableMinutes > 0,
     hasContent = (subjects || []).some(
-      subject => !subject.archived && (subject.topics || []).some(topic => !topic.archived)
+      (subject: Row) =>
+        !subject.archived && (subject.topics || []).some((topic: Row) => !topic.archived)
     ),
     hasPlan = Array.isArray(studyPlans)
       ? studyPlans.length > 0
-      : (dailyPlans || []).some(plan => (plan.items || []).length > 0),
+      : (dailyPlans || []).some((plan: Row) => (plan.items || []).length > 0),
     hasHistory = (sessions || []).length > 0 || (questions || []).length > 0;
   const steps: Array<{ id: string; label: string; complete: boolean; status?: string }> = [
     { id: 'goal', label: 'Objetivo e data', complete: hasGoal },
@@ -54,19 +56,22 @@ export function buildOnboardingViewModel({
   const examDay = parseLocalDate(examDate),
     currentDay = parseLocalDate(today);
   const activeSubjects = (subjects || []).filter(
-      subject => !subject.archived && (subject.topics || []).some(topic => !topic.archived)
+      (subject: Row) =>
+        !subject.archived && (subject.topics || []).some((topic: Row) => !topic.archived)
     ),
     topicCount = activeSubjects.reduce(
-      (sum, subject) => sum + subject.topics.filter(topic => !topic.archived).length,
+      (sum: number, subject: Row) =>
+        sum + subject.topics.filter((topic: Row) => !topic.archived).length,
       0
     ),
     estimatedNeedMinutes = activeSubjects.reduce(
-      (sum, subject) =>
+      (sum: number, subject: Row) =>
         sum +
         subject.topics
-          .filter(topic => !topic.archived)
+          .filter((topic: Row) => !topic.archived)
           .reduce(
-            (total, topic) => total + Math.max(15, Number(topic.estimatedStudyMinutes) || 60),
+            (total: number, topic: Row) =>
+              total + Math.max(15, Number(topic.estimatedStudyMinutes) || 60),
             0
           ),
       0
@@ -75,10 +80,10 @@ export function buildOnboardingViewModel({
       examDay && currentDay
         ? Math.max(0, Math.ceil((examDay.getTime() - currentDay.getTime()) / 86400000))
         : null;
-  const subjectModels = activeSubjects.map(subject => {
-    const levels = subject.topics
-        .filter(topic => !topic.archived)
-        .map(topic => topic.difficulty || 'Médio'),
+  const subjectModels = activeSubjects.map((subject: Row) => {
+    const levels: string[] = subject.topics
+        .filter((topic: Row) => !topic.archived)
+        .map((topic: Row) => topic.difficulty || 'Médio'),
       level = levels.includes('Difícil')
         ? 'Difícil'
         : levels.every(value => value === 'Fácil')
@@ -86,7 +91,7 @@ export function buildOnboardingViewModel({
           : 'Médio';
     return { id: subject.id, name: subject.name, level };
   });
-  const firstActivities = (planPreview?.items || []).slice(0, 3).map(item => ({
+  const firstActivities = (planPreview?.items || []).slice(0, 3).map((item: Row) => ({
     subject: item.subjectName || 'Sem disciplina',
     topic: item.topicName || item.name || 'Tópico sem nome',
     minutes: Math.max(0, Number(item.minutes) || 0),

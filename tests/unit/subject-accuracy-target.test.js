@@ -5,6 +5,7 @@ import { buildSubjectAccuracy } from '../../src/application/analytics/build-subj
 import { buildSavedSubjectConfig } from '../../src/application/exams/save-subject-config.js';
 import { normalizeExamBlueprint } from '../../src/state/strategic.js';
 test('meta opcional herda a geral e preserva zero e peso oficial', () => {
+  /** @type {import('../../src/core/types.ts').ExamBlueprintSubject} */
   const current = {
     subjectId: 's',
     expectedQuestions: 10,

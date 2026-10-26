@@ -1,4 +1,5 @@
-const REVIEW_TYPES = Object.freeze({
+type Row = Record<string, any>;
+const REVIEW_TYPES: Readonly<Record<number, string>> = Object.freeze({
   1: 'Revisão 24h',
   3: 'Revisão 3 dias',
   7: 'Revisão 7 dias',
@@ -7,7 +8,7 @@ const REVIEW_TYPES = Object.freeze({
   30: 'Revisão 30 dias',
 });
 
-export function reviewTypeForDays(days) {
+export function reviewTypeForDays(days: unknown) {
   return REVIEW_TYPES[Number(days)] || 'Revisão livre';
 }
 
@@ -15,8 +16,8 @@ export function createReviewService({
   repository,
   clock,
   idGenerator,
-  findTopic = () => null,
-  resolveEvidenceScope = () => null,
+  findTopic = (_topicId: string): Row | null => null,
+  resolveEvidenceScope = (_topicId: string): string[] | null => null,
   calculateAdaptiveState,
   algorithmVersion = () => 1,
   onEvent = () => {},
@@ -28,8 +29,8 @@ export function createReviewService({
     throw new TypeError('Serviço de revisões requer relógio.');
   if (typeof idGenerator !== 'function')
     throw new TypeError('Serviço de revisões requer gerador de IDs.');
-  const topicIdOf = review => review?.topicId || review?.topicRef || null;
-  const complete = (review, completedAt = clock.nowISO()) => {
+  const topicIdOf = (review: Row | null | undefined) => review?.topicId || review?.topicRef || null;
+  const complete = (review: Row | null | undefined, completedAt = clock.nowISO()) => {
     if (!review || review.status === 'Concluído') return review || null;
     repository.update(review.id, { status: 'Concluído', completedAt });
     onEvent('review_completed', review, { reviewId: review.id, reviewType: review.tipo });
@@ -37,8 +38,8 @@ export function createReviewService({
     return review;
   };
   return Object.freeze({
-    completeReview: id => complete(repository.findById(id)),
-    createManualReview: input =>
+    completeReview: (id: string) => complete(repository.findById(id)),
+    createManualReview: (input: Row) =>
       repository.add({
         id: idGenerator('review'),
         topicId: null,
@@ -59,10 +60,10 @@ export function createReviewService({
           ? input.examScope
           : resolveEvidenceScope(input.topicId || input.topicRef),
       }),
-    removeReview: id => repository.remove(id),
-    rescheduleReview: (id, date) =>
+    removeReview: (id: string) => repository.remove(id),
+    rescheduleReview: (id: string, date: string) =>
       repository.update(id, { date, manualDate: true, adaptive: false }),
-    restoreAdaptiveSchedule: (id, suggestion) =>
+    restoreAdaptiveSchedule: (id: string, suggestion: { date: string; reason?: string | null }) =>
       repository.update(id, {
         date: suggestion.date,
         suggestedDate: suggestion.date,
@@ -70,7 +71,7 @@ export function createReviewService({
         manualDate: false,
         adaptive: true,
       }),
-    rateReview: (id, rating, { label = 'adaptativa' } = {}) => {
+    rateReview: (id: string, rating: unknown, { label = 'adaptativa' } = {}) => {
       const review = repository.findById(id),
         topicId = topicIdOf(review),
         topic = topicId ? findTopic(topicId) : null;
