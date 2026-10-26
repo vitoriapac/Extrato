@@ -408,7 +408,13 @@ import {
 import { createQuestionController } from './application/questions/question-controller.js';
 import { createEditalImportFacade } from './application/subjects/edital-import-facade.js';
 import { createGuidedStudyService } from './application/guided-study/guided-study-service.js';
-import { buildOnboardingViewModel } from './application/onboarding/build-onboarding-view-model.js';
+import {
+  buildOnboardingViewModel,
+  applyOnboardingDateShortcut,
+  AVAILABILITY_PRESETS,
+} from './application/onboarding/build-onboarding-view-model.js';
+import { buildFirstStepsMission } from './application/onboarding/build-first-steps-mission.js';
+import { createGuidedTourController } from './ui/controllers/guided-tour-controller.js';
 import { syncOnboardingPhase } from './ui/controllers/onboarding-phase-controller.js';
 import {
   renderOnboardingEntry,
@@ -3102,6 +3108,12 @@ const searchController = createSearchController({
   escapeAttr,
 });
 searchController.mount();
+const guidedTourController = createGuidedTourController({
+  document,
+  window,
+  activateTab,
+  showToast,
+});
 const headerObserver = new IntersectionObserver(
   entries => {
     const hero = entries[0],
@@ -8479,6 +8491,62 @@ function renderTodayExecutionSummary(model: any) {
   });
   controller.mountExecutionSummary(container, model);
 }
+function renderFirstStepsMissionCard() {
+  let slot = document.getElementById('firstStepsMissionSlot');
+  if (!slot) {
+    const summary = document.getElementById('todayExecutionSummary');
+    if (summary) {
+      slot = document.createElement('div');
+      slot.id = 'firstStepsMissionSlot';
+      summary.parentNode?.insertBefore(slot, summary);
+    }
+  }
+  if (!slot) return;
+
+  let dismissed = false;
+  try {
+    dismissed = Boolean(localStorage.getItem('studytrack_first_steps_dismissed'));
+  } catch {}
+
+  const hasPlan =
+    (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
+    (Array.isArray(state.dailyPlans) &&
+      state.dailyPlans.some(p => Array.isArray(p.items) && p.items.length > 0));
+  const sessionsCount = Array.isArray(state.studySessions) ? state.studySessions.length : 0;
+  const questionsCount = Array.isArray(state.questoes) ? state.questoes.length : 0;
+
+  const missionModel = buildFirstStepsMission({
+    hasPlan,
+    sessionsCount,
+    questionsCount,
+    dismissed,
+  });
+
+  const controller = createTodayTabController({
+    formatPlanMinutes,
+    formatDatePt,
+    onDismissFirstSteps: () => {
+      try {
+        localStorage.setItem('studytrack_first_steps_dismissed', '1');
+      } catch {}
+      renderFirstStepsMissionCard();
+    },
+    onStartTour: () => {
+      guidedTourController.start();
+    },
+    onExecuteFirstStepsMission: (action: string) => {
+      if (action === 'open-onboarding') {
+        openGuidedOnboarding();
+      } else if (action === 'start-first-session') {
+        openStudyTimerFocus();
+      } else if (action === 'open-questions') {
+        activateTab('questoes');
+      }
+    },
+  });
+
+  controller.mountFirstStepsMission(slot, missionModel);
+}
 const dailyExecutionController = createDailyExecutionController({
   getContext: () => ({
     today: todayISO(),
@@ -8548,6 +8616,7 @@ function renderPlanoHoje() {
     }),
   });
   renderTodayExecutionSummary(todayModel);
+  renderFirstStepsMissionCard();
 
   if (!plan && priorities.length === 0) {
     container.innerHTML =
@@ -10685,6 +10754,38 @@ document.getElementById('guidedOnboarding')?.addEventListener('click', event => 
   if ((event.target as HTMLElement).closest('[data-guided-action="open"]')) openGuidedOnboarding();
 });
 document.getElementById('guidedOnboardingOverlay')?.addEventListener('click', event => {
+  const dateOffsetBtn = (event.target as HTMLElement).closest<HTMLElement>('[data-guided-date-offset]');
+  if (dateOffsetBtn) {
+    const offset = Number(dateOffsetBtn.dataset.guidedDateOffset) || 0;
+    const input = document.getElementById('guidedExamDate') as HTMLInputElement | null;
+    if (input) {
+      const today = input.min || todayISO();
+      input.value = applyOnboardingDateShortcut(today, offset);
+      updateExamBlueprint('examDate', input.value, { refresh: false });
+      syncGuidedNext(onboardingModel());
+    }
+    return;
+  }
+  const routinePresetBtn = (event.target as HTMLElement).closest<HTMLElement>(
+    '[data-guided-availability-preset]'
+  );
+  if (routinePresetBtn) {
+    const presetId = routinePresetBtn.dataset.guidedAvailabilityPreset;
+    const preset = AVAILABILITY_PRESETS.find(p => p.id === presetId);
+    if (preset) {
+      for (let day = 0; day <= 6; day++) {
+        const hours = preset.hoursByDay[String(day)] ?? 0;
+        updateMetaHoursDay(String(day), String(hours), { refresh: false });
+        const input = document.querySelector<HTMLInputElement>(`[data-guided-day="${day}"]`);
+        if (input) input.value = String(hours);
+      }
+      const model = onboardingModel();
+      syncGuidedNext(model);
+      const cap = document.querySelector('#guidedOnboardingContent .guided-capacity strong');
+      if (cap) cap.textContent = formatPlanMinutes(model.availableMinutes);
+    }
+    return;
+  }
   const action = (event.target as HTMLElement).closest<HTMLElement>('[data-guided-action]')?.dataset
     .guidedAction;
   if (!action) return;
@@ -10710,6 +10811,17 @@ document.getElementById('guidedOnboardingOverlay')?.addEventListener('click', ev
     document.getElementById('guidedOnboardingClose')?.focus();
 });
 document.getElementById('guidedOnboardingClose')?.addEventListener('click', closeGuidedOnboarding);
+document.addEventListener('click', event => {
+  if ((event.target as HTMLElement).closest('[data-guided-tour-start]')) {
+    guidedTourController.start();
+  }
+  if ((event.target as HTMLElement).closest('[data-first-steps-dismiss]')) {
+    try {
+      localStorage.setItem('studytrack_first_steps_dismissed', '1');
+    } catch {}
+    renderFirstStepsMissionCard();
+  }
+});
 document.querySelector('[data-guided-manual-return]')?.addEventListener('click', () => {
   activateTab('dashboard');
   openGuidedOnboarding({ step: 'content' });

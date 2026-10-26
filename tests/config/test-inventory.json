@@ -698,7 +698,7 @@
         "./helpers.js",
         "]"
       ],
-      "staticTestDeclarations": 9,
+      "staticTestDeclarations": 12,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 13,
       "observedCaseSeconds": 60.1,
@@ -3902,6 +3902,38 @@
         "../../src/domain/goals/initial-goal-guidance.js"
       ],
       "staticTestDeclarations": 3,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/guided-first-run.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/application/onboarding/build-onboarding-view-model.js",
+        "../../src/application/onboarding/build-first-steps-mission.js",
+        "../../src/domain/onboarding/guided-tour-steps.js"
+      ],
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

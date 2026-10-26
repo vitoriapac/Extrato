@@ -354,3 +354,131 @@ test('campos da configuração possuem nomes acessíveis e retorno por teclado',
   await expect(overlay).toBeHidden();
   await expect(open).toBeFocused();
 });
+
+test('atalhos de 1 clique no wizard inicial agilizam data e rotina', async ({ page }) => {
+  const open = page.locator('#guidedOnboarding [data-guided-action="open"]');
+  await open.click();
+  const overlay = page.locator('#guidedOnboardingOverlay');
+  await expect(overlay).toBeVisible();
+
+  // 1. Clicar no atalho de 6 meses (pré-edital)
+  const shortcut6m = overlay.locator('[data-guided-date-offset="180"]');
+  await expect(shortcut6m).toBeVisible();
+  await shortcut6m.click();
+
+  const dateInput = overlay.locator('#guidedExamDate');
+  const dateValue = await dateInput.inputValue();
+  expect(dateValue).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  expect(dateValue).not.toBe('');
+
+  const nextBtn = overlay.locator('[data-guided-action="next"]');
+  await expect(nextBtn).toBeEnabled();
+  await nextBtn.click();
+
+  // 2. Etapa de disponibilidade: rotina sugerida de Trabalho + Estudo
+  await expect(overlay).toContainText('Quanto tempo cabe na sua semana?');
+  const presetWork = overlay.locator('[data-guided-availability-preset="work_study"]');
+  await expect(presetWork).toBeVisible();
+  await presetWork.click();
+
+  await expect(overlay.locator('[data-guided-day="1"]')).toHaveValue('2');
+  await expect(overlay.locator('[data-guided-day="6"]')).toHaveValue('4');
+  await expect(overlay.locator('.guided-capacity strong')).toContainText(/14\s*h|840\s*min/);
+  await expect(nextBtn).toBeEnabled();
+
+  await page.keyboard.press('Escape');
+  await expect(overlay).toBeHidden();
+});
+
+test('missão do primeiro dia é exibida na aba hoje e orienta ativação pós-plano', async ({
+  page,
+}) => {
+  // Configura estado com plano criado, mas 0 sessões e 0 questões
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__,
+      state = structuredClone(api.getState());
+    state.studyPlans = [
+      {
+        id: 'plan_1',
+        createdAt: '2026-10-26T10:00:00.000Z',
+        items: [{ id: 'item_1', subjectId: 's1', minutes: 60 }],
+      },
+    ];
+    state.dailyPlans = [
+      {
+        date: '2026-10-26',
+        items: [{ id: 'item_1', subjectId: 's1', minutes: 60 }],
+      },
+    ];
+    state.studySessions = [];
+    state.questoes = [];
+    localStorage.removeItem('studytrack_first_steps_dismissed');
+    api.setState(state);
+    api.renderAll();
+  });
+
+  await activateTab(page, 'hoje');
+
+  const missionCard = page.locator('#firstStepsMissionCard');
+  await expect(missionCard).toBeVisible();
+  await expect(missionCard).toContainText('Comece a estudar hoje');
+  await expect(missionCard).toContainText('1 de 3 concluídos');
+  await expect(missionCard.locator('[data-mission-id="plan"]')).toHaveAttribute(
+    'data-mission-done',
+    'true'
+  );
+  await expect(missionCard.locator('[data-mission-id="session"]')).toHaveAttribute(
+    'data-mission-done',
+    'false'
+  );
+
+  // Dispensar guia
+  const dismissBtn = missionCard.locator('[data-first-steps-dismiss="true"]');
+  await dismissBtn.click();
+  await expect(missionCard).toBeHidden();
+});
+
+test('tour guiado interativo percorre paradas e fecha com Escape', async ({ page }) => {
+  // Inicia o tour a partir do botão
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__,
+      state = structuredClone(api.getState());
+    state.studyPlans = [
+      {
+        id: 'plan_1',
+        createdAt: '2026-10-26T10:00:00.000Z',
+        items: [{ id: 'item_1', subjectId: 's1', minutes: 60 }],
+      },
+    ];
+    state.dailyPlans = [
+      {
+        date: '2026-10-26',
+        items: [{ id: 'item_1', subjectId: 's1', minutes: 60 }],
+      },
+    ];
+    localStorage.removeItem('studytrack_first_steps_dismissed');
+    api.setState(state);
+    api.renderAll();
+  });
+
+  await activateTab(page, 'hoje');
+  const tourStartBtn = page.locator('[data-guided-tour-start="true"]').first();
+  await expect(tourStartBtn).toBeVisible();
+  await tourStartBtn.click();
+
+  const tourPopover = page.locator('#guidedTourPopover');
+  await expect(tourPopover).toBeVisible();
+  await expect(tourPopover).toContainText('Sua única prioridade de agora');
+
+  // Próxima parada -> vai para aba Hoje
+  const nextBtn = tourPopover.locator('[data-guided-tour-next="true"]');
+  await nextBtn.click();
+
+  await expect(page.locator('#panel-hoje')).toBeVisible();
+  await expect(tourPopover).toContainText('Execução guiada e cronômetro');
+
+  // Fecha com Escape
+  await page.keyboard.press('Escape');
+  await expect(tourPopover).toBeHidden();
+  await expect(page.locator('.is-tour-highlighted')).toHaveCount(0);
+});

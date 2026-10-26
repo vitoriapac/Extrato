@@ -109,10 +109,30 @@ export function renderOnboardingContent(
 ) {
   const step = model.current || model.next || model.steps?.[0],
     copy = stepCopy[step.id] || stepCopy.goal;
-  if (step.id === 'goal')
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso">${model.presets.map((item: any) => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}</select></label><label for="guidedExamDate">Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr(model.today)}" value="${escapeAttr(model.examDate || '')}"></label></div>`;
-  if (step.id === 'availability')
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="guided-availability">${model.weekdays.map((item: any) => `<label for="guided-day-${item.day}"><span>${escapeHtml(item.label)}</span><input id="guided-day-${item.day}" type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr(item.label)}"><small>h</small></label>`).join('')}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div></div>`;
+  if (step.id === 'goal') {
+    const shortcuts = (model.dateShortcuts || [])
+      .map(
+        (shortcut: any) =>
+          `<button type="button" class="btn ghost small guided-shortcut-btn" data-guided-date-offset="${shortcut.offsetDays}" aria-label="Definir data para ${escapeAttr(shortcut.label)} (${escapeAttr(shortcut.sublabel)})">${escapeHtml(shortcut.label)} <small>(${escapeHtml(shortcut.sublabel)})</small></button>`
+      )
+      .join('');
+    const shortcutsGroup = shortcuts
+      ? `<div class="guided-date-shortcuts" role="group" aria-label="Atalhos de data da prova"><span class="guided-shortcut-title">Estimativa rápida (pré-edital):</span><div class="guided-shortcut-chips">${shortcuts}</div></div>`
+      : '';
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso">${model.presets.map((item: any) => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}</select></label><label for="guidedExamDate">Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr(model.today)}" value="${escapeAttr(model.examDate || '')}"></label>${shortcutsGroup}</div>`;
+  }
+  if (step.id === 'availability') {
+    const presets = (model.availabilityPresets || [])
+      .map(
+        (preset: any) =>
+          `<button type="button" class="btn ghost small guided-preset-btn" data-guided-availability-preset="${escapeAttr(preset.id)}" aria-label="Aplicar rotina ${escapeAttr(preset.label)}">${escapeHtml(preset.label)}</button>`
+      )
+      .join('');
+    const presetsGroup = presets
+      ? `<div class="guided-routine-presets" role="group" aria-label="Rotinas sugeridas"><span class="guided-shortcut-title">Rotinas sugeridas em 1 clique:</span><div class="guided-shortcut-chips">${presets}</div></div>`
+      : '';
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p>${presetsGroup}<div class="guided-availability">${model.weekdays.map((item: any) => `<label for="guided-day-${item.day}"><span>${escapeHtml(item.label)}</span><input id="guided-day-${item.day}" type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr(item.label)}"><small>h</small></label>`).join('')}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div></div>`;
+  }
   if (step.id === 'content')
     return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-actions">${(model.contentPaths || []).map((path: any) => `<button class="btn${path.primary ? '' : ' ghost'}" data-guided-action="${escapeAttr(path.action)}">${escapeHtml(path.label)}</button>`).join('')}</div>${model.subjects.length ? `<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject: any) => `<label for="guided-level-${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)}</span><select id="guided-level-${escapeAttr(subject.id)}" data-guided-level="${escapeAttr(subject.id)}"><option value="Fácil" ${subject.level === 'Fácil' ? 'selected' : ''}>Tenho boa base</option><option value="Médio" ${subject.level === 'Médio' ? 'selected' : ''}>Base intermediária</option><option value="Difícil" ${subject.level === 'Difícil' ? 'selected' : ''}>Preciso começar pela base</option></select></label>`).join('')}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
   const activities = (model.firstActivities || [])

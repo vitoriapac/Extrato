@@ -757,6 +757,11 @@
       "rationale": "Contrato Node barato; componentes Preact e controllers da aba de metas e disponibilidade."
     },
     {
+      "file": "tests/unit/guided-first-run.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; regras de atalhos do wizard, missão do primeiro dia e passos do tour guiado."
+    },
+    {
       "file": "tests/unit/guided-study-service.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

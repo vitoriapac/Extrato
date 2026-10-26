@@ -1,5 +1,56 @@
 import { pluralize } from '../../core/utils.js';
 import { parseLocalDate } from '../../core/date-utils.js';
+
+export interface ExamDateShortcut {
+  offsetDays: number;
+  label: string;
+  sublabel: string;
+}
+
+export const EXAM_DATE_SHORTCUTS: readonly ExamDateShortcut[] = Object.freeze([
+  { offsetDays: 90, label: '3 meses', sublabel: 'Reta curta' },
+  { offsetDays: 180, label: '6 meses', sublabel: 'Pré-edital' },
+  { offsetDays: 365, label: '1 ano', sublabel: 'Base longa' },
+]);
+
+export interface AvailabilityPreset {
+  id: string;
+  label: string;
+  weeklyHours: number;
+  hoursByDay: Record<string, number>;
+}
+
+export const AVAILABILITY_PRESETS: readonly AvailabilityPreset[] = Object.freeze([
+  {
+    id: 'work_study',
+    label: 'Trabalho + Estudo (14h/sem)',
+    weeklyHours: 14,
+    hoursByDay: { '0': 0, '1': 2, '2': 2, '3': 2, '4': 2, '5': 2, '6': 4 },
+  },
+  {
+    id: 'intensive',
+    label: 'Dedicação Intensa (28h/sem)',
+    weeklyHours: 28,
+    hoursByDay: { '0': 0, '1': 4.5, '2': 4.5, '3': 4.5, '4': 4.5, '5': 5, '6': 5 },
+  },
+  {
+    id: 'light_habit',
+    label: 'Ritmo Leve (10h30/sem)',
+    weeklyHours: 10.5,
+    hoursByDay: { '0': 1.5, '1': 1.5, '2': 1.5, '3': 1.5, '4': 1.5, '5': 1.5, '6': 1.5 },
+  },
+]);
+
+export function applyOnboardingDateShortcut(todayStr: string, offsetDays: number): string {
+  const parsed = parseLocalDate(todayStr) || new Date();
+  const target = new Date(parsed.getTime());
+  target.setDate(target.getDate() + Math.max(0, Number(offsetDays) || 0));
+  const year = target.getFullYear();
+  const month = String(target.getMonth() + 1).padStart(2, '0');
+  const day = String(target.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 const CONTENT_PATHS = Object.freeze([
   { action: 'import', label: 'Carregar edital do catálogo', primary: true },
   { action: 'structured', label: 'Importar JSON ou CSV' },
@@ -135,6 +186,8 @@ export function buildOnboardingViewModel({
     today,
     presets,
     presetId,
+    dateShortcuts: EXAM_DATE_SHORTCUTS,
+    availabilityPresets: AVAILABILITY_PRESETS,
     subjects: subjectModels,
     contentPaths: CONTENT_PATHS,
     firstActivities,

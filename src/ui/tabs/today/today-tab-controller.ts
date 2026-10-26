@@ -3,10 +3,15 @@ import { render } from 'preact-render-to-string';
 import { mountPreact } from '../../preact-mount.js';
 import { TodayExecutionSummary } from './TodayExecutionSummary.js';
 import { TodayAgendaSections, type TodayAgendaSectionsProps } from './TodayAgendaSections.js';
+import { FirstStepsMission } from '../../components/FirstStepsMission.js';
+import type { FirstStepsMissionModel } from '../../../application/onboarding/build-first-steps-mission.js';
 
 export interface TodayTabControllerContext {
   formatPlanMinutes: (mins: number) => string;
   formatDatePt: (date: string) => string;
+  onDismissFirstSteps?: () => void;
+  onStartTour?: () => void;
+  onExecuteFirstStepsMission?: (action: string) => void;
 }
 
 export function createTodayTabController(ctx: TodayTabControllerContext) {
@@ -62,10 +67,40 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     mountPreact(h(TodayAgendaSections, props), container);
   }
 
+  function renderFirstStepsMissionHtml(model: FirstStepsMissionModel): string {
+    if (!model.visible) return '';
+    return render(
+      h(FirstStepsMission, {
+        model,
+        onDismiss: ctx.onDismissFirstSteps,
+        onStartTour: ctx.onStartTour,
+        onExecuteMission: ctx.onExecuteFirstStepsMission,
+      })
+    );
+  }
+
+  function mountFirstStepsMission(container: Element, model: FirstStepsMissionModel): void {
+    if (!model.visible) {
+      container.innerHTML = '';
+      return;
+    }
+    mountPreact(
+      h(FirstStepsMission, {
+        model,
+        onDismiss: ctx.onDismissFirstSteps,
+        onStartTour: ctx.onStartTour,
+        onExecuteMission: ctx.onExecuteFirstStepsMission,
+      }),
+      container
+    );
+  }
+
   return {
     renderExecutionSummaryHtml,
     mountExecutionSummary,
     renderAgendaSectionsHtml,
     mountAgendaSections,
+    renderFirstStepsMissionHtml,
+    mountFirstStepsMission,
   };
 }
