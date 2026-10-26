@@ -17,7 +17,7 @@ export const RISK_WEIGHTS = Object.freeze({
 export function calculateRiskScore(
   factors = {},
   weights = RISK_WEIGHTS,
-  { evidenceStrength = null } = {}
+  { evidenceStrength = null }: { evidenceStrength?: number | null } = {}
 ) {
   const result = calculateFactorScore(factors, weights);
   const evidence = describeScoreEvidence({

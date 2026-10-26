@@ -42,15 +42,17 @@ export const DIAGNOSTIC_SIGNAL_LABELS = Object.freeze({
   'redistribution-source': 'Redistribuição proposta',
   'redistribution-target': 'Redistribuição proposta',
 });
-export const diagnosticSignalLabel = kind => DIAGNOSTIC_SIGNAL_LABELS[kind] || 'Sinal complementar';
-const key = value =>
+export const diagnosticSignalLabel = (kind: string) =>
+  (DIAGNOSTIC_SIGNAL_LABELS as Record<string, string>)[kind] || 'Sinal complementar';
+const key = (value: unknown) =>
   String(value ?? '')
     .trim()
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
-const resolve = (value, aliases, fallback) => aliases[key(value)] || fallback;
-export function normalizeSeverity(value) {
+const resolve = (value: unknown, aliases: Record<string, string>, fallback: string) =>
+  aliases[key(value)] || fallback;
+export function normalizeSeverity(value: unknown) {
   return resolve(
     value,
     {
@@ -71,7 +73,7 @@ export function normalizeSeverity(value) {
     'insufficient'
   );
 }
-export function normalizeEvidenceLevel(value) {
+export function normalizeEvidenceLevel(value: unknown) {
   return resolve(
     value,
     {
@@ -90,7 +92,7 @@ export function normalizeEvidenceLevel(value) {
     'unassessed'
   );
 }
-export function normalizeTrend(value) {
+export function normalizeTrend(value: unknown) {
   return resolve(
     value,
     {
@@ -109,7 +111,7 @@ export function normalizeTrend(value) {
     'insufficient'
   );
 }
-export function normalizeOutcome(value) {
+export function normalizeOutcome(value: unknown) {
   return resolve(
     value,
     {
@@ -128,6 +130,9 @@ export function normalizeOutcome(value) {
     'insufficient'
   );
 }
-export function diagnosticLabel(category, value) {
-  return DIAGNOSTIC_VOCABULARY[category]?.[value] || 'Dados insuficientes';
+export function diagnosticLabel(category: string, value: string) {
+  return (
+    (DIAGNOSTIC_VOCABULARY as Record<string, Record<string, string>>)[category]?.[value] ||
+    'Dados insuficientes'
+  );
 }

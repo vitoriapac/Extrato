@@ -1,6 +1,9 @@
 export const COGNITIVE_CONFIDENCE_LIMITS = Object.freeze({ low: 20, medium: 40, high: 80 });
 
-export function cognitiveConfidence(categorizedErrors, limits = COGNITIVE_CONFIDENCE_LIMITS) {
+export function cognitiveConfidence(
+  categorizedErrors: unknown,
+  limits = COGNITIVE_CONFIDENCE_LIMITS
+) {
   const count = Math.max(0, Number(categorizedErrors) || 0);
   if (count < limits.low) return { key: 'insufficient', label: 'Insuficiente' };
   if (count < limits.medium) return { key: 'low', label: 'Baixa' };

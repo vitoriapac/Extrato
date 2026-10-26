@@ -1,6 +1,7 @@
 import { isHighImpact } from '../strategy/config.js';
 // Same reading as the plan (1h20), so a weekly gap does not show up as thousands of minutes.
-const hoursAndMinutes = minutes => {
+type Row = Record<string, any>;
+const hoursAndMinutes = (minutes: number) => {
   const value = Math.round(Math.abs(minutes)),
     hours = Math.floor(value / 60),
     rest = value % 60;
@@ -16,7 +17,7 @@ export const ALERT_TYPES = Object.freeze([
   'error_pattern',
 ]);
 
-const presentation = {
+const presentation: Record<string, { level: string; icon: string }> = {
   high: { level: 'alta', icon: '' },
   medium: { level: 'media', icon: '' },
   low: { level: 'baixa', icon: '' },
@@ -45,7 +46,7 @@ export function createDiagnosticAlert({
     reason: String(reason),
     recommendedAction: String(recommendedAction),
     createdAt: createdAt || null,
-    resolvedAt: null,
+    resolvedAt: null as string | null,
     nivel: view.level,
     icon: view.icon,
     texto: String(reason),
@@ -79,7 +80,7 @@ export function buildIntelligentAlerts({
         recommendedAction: 'Conclua primeiro as revisões vencidas.',
       })
     );
-  subjects.forEach(subject => {
+  subjects.forEach((subject: Row) => {
     if (subject.trend?.direction === 'down')
       alerts.push(
         createDiagnosticAlert({
@@ -134,10 +135,11 @@ export function buildIntelligentAlerts({
     );
   topics
     .filter(
-      topic => topic.mastery != null && Number(topic.mastery) < 50 && isHighImpact(topic.examImpact)
+      (topic: Row) =>
+        topic.mastery != null && Number(topic.mastery) < 50 && isHighImpact(topic.examImpact)
     )
     .slice(0, 3)
-    .forEach(topic =>
+    .forEach((topic: Row) =>
       alerts.push(
         createDiagnosticAlert({
           type: 'low_mastery_high_exam_impact',
@@ -151,9 +153,11 @@ export function buildIntelligentAlerts({
       )
     );
   topics
-    .filter(topic => topic.dominantError?.recommendation && Number(topic.dominantError.share) >= 30)
+    .filter(
+      (topic: Row) => topic.dominantError?.recommendation && Number(topic.dominantError.share) >= 30
+    )
     .slice(0, 3)
-    .forEach(topic =>
+    .forEach((topic: Row) =>
       alerts.push(
         createDiagnosticAlert({
           type: 'error_pattern',
@@ -192,9 +196,9 @@ export function buildIntelligentAlerts({
       })
     );
   topics
-    .filter(topic => topic.evidenceStrength != null && Number(topic.evidenceStrength) < 0.25)
+    .filter((topic: Row) => topic.evidenceStrength != null && Number(topic.evidenceStrength) < 0.25)
     .slice(0, 1)
-    .forEach(topic =>
+    .forEach((topic: Row) =>
       alerts.push(
         createDiagnosticAlert({
           type: 'insufficient_evidence',

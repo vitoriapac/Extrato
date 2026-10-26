@@ -11,9 +11,10 @@ export const PRIMARY_SIGNAL_ORDER = Object.freeze([
   'recovery',
   'maintenance',
 ]);
-export const compareSignalIds = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
-export function selectPrimarySignal(signals = []) {
-  const rank = kind => PRIMARY_SIGNAL_ORDER.indexOf(kind);
+export const compareSignalIds = (left: string, right: string) =>
+  left < right ? -1 : left > right ? 1 : 0;
+export function selectPrimarySignal(signals: Array<Record<string, any>> = []) {
+  const rank = (kind: string) => PRIMARY_SIGNAL_ORDER.indexOf(kind);
   return (
     signals
       .filter(signal => signal.active && rank(signal.kind) >= 0)

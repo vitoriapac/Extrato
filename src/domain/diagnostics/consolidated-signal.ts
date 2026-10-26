@@ -21,19 +21,26 @@ export const SIGNAL_KINDS = Object.freeze([
   'recovery',
   'maintenance',
 ]);
-const text = value => (typeof value === 'string' && value.trim() ? value.trim() : null);
-const list = value => (Array.isArray(value) ? value : []);
-const ordered = value => [...new Set(list(value).map(text).filter(Boolean))];
-const distinct = value => [...new Set(list(value).map(text).filter(Boolean))].sort();
-export const signalNumber = value =>
+const text = (value: unknown) => (typeof value === 'string' && value.trim() ? value.trim() : null);
+const list = (value: unknown) => (Array.isArray(value) ? value : []);
+const ordered = (value: unknown) => [...new Set(list(value).map(text).filter(Boolean))];
+const distinct = (value: unknown) => [...new Set(list(value).map(text).filter(Boolean))].sort();
+export const signalNumber = (value: unknown) =>
   typeof value === 'number' && Number.isFinite(value) ? value : null;
-const ratio = value => {
+const ratio = (value: unknown) => {
   const number = signalNumber(value);
   return number == null || number < 0 || number > 1 ? null : number;
 };
-const day = value => (typeof value === 'string' && parseLocalDate(value) ? value : null);
-export const signalEntityKey = ({ subjectId, topicId, granularity }) =>
-  JSON.stringify([granularity, subjectId, topicId]);
+const day = (value: unknown) => (typeof value === 'string' && parseLocalDate(value) ? value : null);
+export const signalEntityKey = ({
+  subjectId,
+  topicId,
+  granularity,
+}: {
+  subjectId?: string | null;
+  topicId?: string | null;
+  granularity?: string;
+}) => JSON.stringify([granularity, subjectId, topicId]);
 
 export function createConsolidatedSignal(input: Record<string, any> = {}) {
   const subjectId = text(input.subjectId),

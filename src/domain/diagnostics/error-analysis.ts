@@ -61,7 +61,12 @@ export function analyzeErrors(records: any[] = [], options: Record<string, any> 
     top?.[1] > 0 &&
     share >= minimumShare;
   const dominant = eligible
-    ? { key: top[0], count: top[1], share, recommendation: ERROR_ACTIONS[top[0]] }
+    ? {
+        key: top[0],
+        count: top[1],
+        share,
+        recommendation: ERROR_ACTIONS[top[0] as keyof typeof ERROR_ACTIONS],
+      }
     : null;
   const mode = !dominant
     ? 'insufficient'
