@@ -15,6 +15,7 @@
     "src/ui/**/*",
     "src/reports/**/*",
     "src/features/**/*",
-    "src/demo/**/*"
+    "src/demo/**/*",
+    "src/bootstrap/**/*"
   ]
 }

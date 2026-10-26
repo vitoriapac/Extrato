@@ -7,7 +7,7 @@ export function registerApplicationLifecycle({
   if (!window) throw new TypeError('Ciclo de vida requer janela.');
   const media = window.matchMedia(mediaQuery),
     beforeUnload = () => onBeforeUnload?.(),
-    responsive = event => onResponsiveChange?.(event);
+    responsive = (event: MediaQueryListEvent) => onResponsiveChange?.(event);
   window.addEventListener('beforeunload', beforeUnload);
   media.addEventListener('change', responsive);
   return Object.freeze({
