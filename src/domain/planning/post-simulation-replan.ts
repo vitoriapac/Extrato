@@ -15,7 +15,7 @@ export function buildPostSimulationReplan({
   existingSimulationIds?: string[];
 } = {}) {
   const rows = Array.isArray(simulation?.breakdown)
-    ? simulation.breakdown.filter((row: Row) => n(row.total) >= minimumQuestions)
+    ? simulation!.breakdown.filter((row: Row) => (n(row.total) ?? 0) >= minimumQuestions)
     : [];
   if (!simulation || !rows.length)
     return {

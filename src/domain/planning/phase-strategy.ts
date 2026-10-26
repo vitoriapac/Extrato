@@ -62,7 +62,7 @@ export function buildPhaseStrategyProposal({
   ]
     .map(localDateFromTimestamp)
     .filter(date => date && date <= today)
-    .some(date => date > cutoff);
+    .some(date => date! > cutoff!);
   if (recent)
     return {
       state: 'cooldown',

@@ -25,8 +25,8 @@ export function historicalImpactEstimate(profile: ExamImpactProfile) {
 
 export function isHistoricalImpactUsable(profile: ExamImpactProfile) {
   return (
-    ['moderate', 'high'].includes(profile.confidence) &&
-    profile.analyzedExamCount >= EXAM_INTELLIGENCE_CONFIG.minimumHistoricalExams &&
+    ['moderate', 'high'].includes(profile.confidence ?? '') &&
+    Number(profile.analyzedExamCount) >= EXAM_INTELLIGENCE_CONFIG.minimumHistoricalExams &&
     profile.presencePercent != null
   );
 }
@@ -34,7 +34,7 @@ export function isHistoricalImpactUsable(profile: ExamImpactProfile) {
 export function resolveValidatedExamImpact(profile: ExamImpactProfile) {
   const baseline = profile.impactValue;
   const usable = isHistoricalImpactUsable(profile);
-  if (!usable || ['manual', 'official'].includes(profile.impactSourceType))
+  if (!usable || ['manual', 'official'].includes(profile.impactSourceType ?? ''))
     return { value: baseline, usedHistory: false };
   const historical = historicalImpactEstimate(profile);
   const { maximumHistoricalAdjustment, historicalAdjustmentFactor } = EXAM_INTELLIGENCE_CONFIG;
@@ -51,7 +51,7 @@ export function resolveValidatedExamImpact(profile: ExamImpactProfile) {
                   -maximumHistoricalAdjustment,
                   Math.min(
                     maximumHistoricalAdjustment,
-                    (historical - baseline) * historicalAdjustmentFactor
+                    (historical! - baseline) * historicalAdjustmentFactor
                   )
                 )
             )

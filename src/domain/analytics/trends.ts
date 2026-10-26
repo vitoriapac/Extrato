@@ -66,7 +66,7 @@ export function calculateWindowTrend(weeklyData: Row[] = [], minWindow = 30, win
       reasons: ['Cada período precisa atingir a amostra mínima'],
       algorithmVersion: TREND_ALGORITHM_VERSION,
     };
-  const delta = round(recentAccuracy - previousAccuracy),
+  const delta = round(recentAccuracy! - previousAccuracy!),
     kind = classification(delta);
   return {
     ...kind,

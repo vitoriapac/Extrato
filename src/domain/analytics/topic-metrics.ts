@@ -67,7 +67,7 @@ export function calculateTopicMastery({
   );
   const score = available
     ? clamp(
-        observed.reduce((sum, [value, weight]) => sum + value * weight, 0) /
+        observed.reduce((sum, [value, weight]) => sum + value! * weight, 0) /
           observed.reduce((sum, [, weight]) => sum + weight, 0)
       )
     : 0;

@@ -19,7 +19,7 @@ export function capturePlanPriority(
     priority:
       score == null && !selectedPriority
         ? null
-        : selectedPriority || score >= PLAN_PRIORITY_THRESHOLD,
+        : selectedPriority || score! >= PLAN_PRIORITY_THRESHOLD,
     score,
     selection: selectedPriority ? 'weekly-close' : 'score',
     capturedAt,

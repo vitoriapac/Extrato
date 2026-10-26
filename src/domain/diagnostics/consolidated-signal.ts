@@ -53,7 +53,7 @@ export function createConsolidatedSignal(input: Record<string, any> = {}) {
     !id ||
     !source ||
     !subjectId ||
-    !SIGNAL_KINDS.includes(kind) ||
+    !SIGNAL_KINDS.includes(kind ?? '') ||
     !['topic', 'subject'].includes(granularity) ||
     (granularity === 'topic' && !topicId) ||
     (granularity === 'subject' && topicId)

@@ -31,9 +31,9 @@ export function needsMaintenance(item: Open<MaintenanceSignals>) {
   return (
     (item.masteryGap != null && item.masteryGap > 40) ||
     ((item.retentionRisk ?? item.retentionNeed) != null &&
-      (item.retentionRisk ?? item.retentionNeed) > 40) ||
+      (item.retentionRisk ?? item.retentionNeed)! > 40) ||
     (item.reviewHealthRisk != null && item.reviewHealthRisk > 40) ||
-    item.reviewUrgency >= 40
+    (item.reviewUrgency ?? 0) >= 40
   );
 }
 
@@ -75,7 +75,7 @@ export function prerequisiteBlockers(topic: PrerequisiteNode, topics: Prerequisi
       return;
     }
     const known = base.mastery != null && Number.isFinite(Number(base.mastery));
-    if (known ? base.mastery < 60 : !(base.covered || base.status === 'Concluído'))
+    if (known ? base.mastery! < 60 : !(base.covered || base.status === 'Concluído'))
       blockers.add(id);
     const next = new Set(path);
     next.add(id);
@@ -101,10 +101,13 @@ export function resolveStudyEligibility(
   >,
   topics?: PrerequisiteNode[]
 ): Open<PrerequisiteNode & { blockedPrerequisites: string[] }>[] {
-  return candidates.filter(Boolean).map(item => ({
+  const present = candidates.filter(
+    (item): item is Open<PrerequisiteNode & { blockedPrerequisites?: string[] }> => Boolean(item)
+  );
+  return present.map(item => ({
     ...item,
     blockedPrerequisites: topics
       ? prerequisiteBlockers(item, topics)
-      : (item.blockedPrerequisites ?? prerequisiteBlockers(item, candidates.filter(Boolean))),
+      : (item.blockedPrerequisites ?? prerequisiteBlockers(item, present)),
   }));
 }

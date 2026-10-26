@@ -36,7 +36,7 @@ function normalizeObservations(observations: unknown) {
         Number.isFinite(item.sampleSize) &&
         item.sampleSize > 0
     )
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .sort((a, b) => a.date!.localeCompare(b.date!));
 }
 
 export function buildPerformanceForecast({
@@ -59,7 +59,7 @@ export function buildPerformanceForecast({
   const periodStart = normalized[0]?.date || null,
     periodEnd = normalized.at(-1)?.date || null;
   const spanDays =
-    periodStart && periodEnd ? Math.round(dayNumber(periodEnd) - dayNumber(periodStart)) : 0;
+    periodStart && periodEnd ? Math.round(dayNumber(periodEnd)! - dayNumber(periodStart)!) : 0;
   const evidence = {
     sampleSize,
     observationCount,
@@ -119,7 +119,7 @@ export function buildPerformanceForecast({
   }
   const origin = dayNumber(periodStart),
     points = normalized.map(item => ({
-      x: dayNumber(item.date) - origin,
+      x: dayNumber(item.date)! - origin!,
       y: item.value,
       w: item.sampleSize,
     }));
@@ -137,7 +137,7 @@ export function buildPerformanceForecast({
       Math.min(1, spanDays / 56) * 0.25
   );
   const slopePerDay = clamp(rawSlope, -1, 1) * (0.35 + forecastConfidence * 0.35);
-  const projected = clamp(normalized.at(-1).value + slopePerDay * 30);
+  const projected = clamp(normalized.at(-1)!.value + slopePerDay * 30);
   const forecastMargin = Math.max(margin, Math.round(16 * (1 - forecastConfidence)));
   const forecast30 = {
     available: true,

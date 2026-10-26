@@ -33,7 +33,7 @@ export function interpretRadar(axes: Record<string, number | null>) {
     return 'Domínio alto, mas pouco contato recente: programe manutenção.';
   const values = Object.entries(axes).filter(([, value]) => value !== null);
   if (values.length < 2) return 'Aguardando mais dados para interpretar o perfil.';
-  const weakest = values.sort((a, b) => a[1] - b[1])[0];
+  const weakest = values.sort((a, b) => a[1]! - b[1]!)[0];
   const labels: Record<string, string> = {
     coverage: 'cobertura',
     mastery: 'domínio',

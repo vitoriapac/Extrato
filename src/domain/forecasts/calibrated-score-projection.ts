@@ -41,8 +41,8 @@ export function buildCalibratedScoreProjection({
     .filter(item => {
       if (
         !parseLocalDate(item.date) ||
-        item.date > today ||
-        item.date < cutoff ||
+        item.date > today! ||
+        item.date < cutoff! ||
         seen.has(item.id) ||
         !(Number(item.total) > 0)
       )
@@ -66,7 +66,7 @@ export function buildCalibratedScoreProjection({
     sampleSize = comparable.reduce((sum, item) => sum + Number(item.total), 0);
   const spanDays = comparable.length
     ? Math.round(
-        (Date.parse(comparable.at(-1).date + 'T12:00:00Z') -
+        (Date.parse(comparable.at(-1)!.date + 'T12:00:00Z') -
           Date.parse(comparable[0].date + 'T12:00:00Z')) /
           86400000
       )

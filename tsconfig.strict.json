@@ -8,6 +8,7 @@
     "src/state/**/*",
     "src/storage/**/*",
     "src/repositories/**/*",
-    "src/bootstrap/**/*"
+    "src/bootstrap/**/*",
+    "src/domain/**/*"
   ]
 }

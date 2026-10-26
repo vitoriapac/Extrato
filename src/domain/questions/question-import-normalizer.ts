@@ -237,7 +237,7 @@ export function normalizeQuestionImportRows(
     ]);
   }
 
-  const rawHeaders = rows.shift().values;
+  const rawHeaders = rows.shift()!.values;
   const headers = rawHeaders.map(val => HEADER_ALIASES[normalizeKey(val)] || null);
 
   if (!headers.includes('subject')) {
@@ -251,7 +251,9 @@ export function normalizeQuestionImportRows(
     ]);
   }
 
-  const hasMetrics = headers.some(h => ['resolved', 'correct', 'errors', 'result'].includes(h));
+  const hasMetrics = headers.some(h =>
+    ['resolved', 'correct', 'errors', 'result'].includes(h ?? '')
+  );
   if (!hasMetrics) {
     throw new QuestionImportError([
       problem(

@@ -31,7 +31,7 @@ export function buildGapMap<T extends Record<string, any> = any>(
           weight = available.reduce((sum, [key]) => sum + weights[key], 0),
           score = weight
             ? Math.round(
-                available.reduce((sum, [key, value]) => sum + value * weights[key], 0) / weight
+                available.reduce((sum, [key, value]) => sum + value! * weights[key], 0) / weight
               )
             : null,
           confidence = available.length / Object.keys(weights).length;

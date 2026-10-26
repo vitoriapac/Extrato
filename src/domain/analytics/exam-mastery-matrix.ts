@@ -69,7 +69,7 @@ export function buildExamMasteryMatrix({
         coverage: average('coverage'),
         mastery: average('mastery'),
         retention: average('retention'),
-        gap: known.length ? Math.round((target - average('mastery')) * 10) / 10 : null,
+        gap: known.length ? Math.round((target - average('mastery')!) * 10) / 10 : null,
         topics,
       };
     })

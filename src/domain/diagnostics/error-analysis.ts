@@ -81,7 +81,7 @@ export function analyzeErrors(records: any[] = [], options: Record<string, any> 
     dominant,
     recommendedMode: mode,
     reasons: eligible
-      ? [share + '% dos erros categorizados são de ' + dominant.key]
+      ? [share + '% dos erros categorizados são de ' + dominant!.key]
       : ['Amostra ou cobertura insuficiente para orientar o estudo'],
     algorithmVersion: ERROR_ANALYSIS_VERSION,
   };

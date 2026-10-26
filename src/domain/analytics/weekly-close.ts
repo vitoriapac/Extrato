@@ -61,9 +61,9 @@ export function buildWeeklyClose({
   };
   const accuracyGap = accuracy == null ? null : Math.round((accuracy - targetAccuracy) * 10) / 10,
     bestSignal =
-      comparisons.accuracy.delta > 0
+      (comparisons.accuracy.delta ?? 0) > 0
         ? { type: 'accuracy', message: `O acerto avançou ${comparisons.accuracy.delta} p.p.` }
-        : comparisons.minutes.delta > 0
+        : (comparisons.minutes.delta ?? 0) > 0
           ? { type: 'minutes', message: 'O tempo de estudo aumentou.' }
           : resolved > 0
             ? { type: 'questions', message: `Você resolveu ${resolved} questões.` }

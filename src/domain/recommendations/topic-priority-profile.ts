@@ -42,7 +42,8 @@ export function captureTopicPriorityProfile(
 export function classifyTopicPriority(profile: PriorityProfileSignals) {
   if (profile.score == null) return 'Sem prioridade registrada';
   if (profile.confidence == null || profile.confidence < 0.35) return 'Evidência limitada';
-  if (profile.score < 40 && profile.mastery >= 70 && profile.retention >= 60) return 'Manutenção';
+  if (profile.score < 40 && (profile.mastery ?? 0) >= 70 && (profile.retention ?? 0) >= 60)
+    return 'Manutenção';
   return profile.score >= 85
     ? 'Crítica'
     : profile.score >= 70
