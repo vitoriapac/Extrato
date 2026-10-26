@@ -2,7 +2,7 @@ import { applyAdaptivePlanningAdvice } from '../../domain/planning/adaptive-plan
 import { compareRecoveryPlan } from './compare-recovery-plan.js';
 import { validateRecoveryAllocation } from './recovery-invariants.js';
 
-export function buildRecoveryAllocation(plan, advice) {
+export function buildRecoveryAllocation(plan: Record<string, any>, advice: Record<string, any>) {
   const proposed = applyAdaptivePlanningAdvice(plan, advice);
   if (
     !validateRecoveryAllocation({

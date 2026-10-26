@@ -37,6 +37,15 @@
     "src/application/sessions/**/*",
     "src/application/questions/**/*",
     "src/application/replan-study.ts",
-    "src/application/planning-sustainability/**/*"
+    "src/application/planning-sustainability/**/*",
+    "src/application/diagnostics/**/*",
+    "src/application/recovery/**/*",
+    "src/application/exam-intelligence/**/*",
+    "src/application/analytics/build-analytics-view-model.ts",
+    "src/application/analytics/build-preparation-signals.ts",
+    "src/application/analytics/build-topic-gap-inputs.ts",
+    "src/application/planning/study-plan-service.ts",
+    "src/application/recommendations/build-recommendation-explanation.ts",
+    "src/application/recommendations/recommendation-action.ts"
   ]
 }

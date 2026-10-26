@@ -1,8 +1,14 @@
 import { buildOpportunityCost } from '../../domain/planning/opportunity-cost.js';
 import { recommendationActionKind, recommendationActionLabel } from './recommendation-action.js';
-const number = value =>
+const IMPACT_SOURCE_LABELS: Record<string, string> = {
+  official: 'Oficial',
+  manual: 'Manual',
+  historical: 'Histórica',
+  estimated: 'Estimada',
+};
+const number = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
-const row = (label, value, unit = '') =>
+const row = (label: string, value: unknown, unit = '') =>
   number(value) === null ? null : { label, value: number(value) + unit };
 
 export function buildRecommendationExplanation(
@@ -40,10 +46,7 @@ export function buildRecommendationExplanation(
   if (!redistribution && historical.impactSourceType)
     evidence.push({
       label: 'Origem do impacto',
-      value:
-        { official: 'Oficial', manual: 'Manual', historical: 'Histórica', estimated: 'Estimada' }[
-          historical.impactSourceType
-        ] || historical.impactSourceType,
+      value: IMPACT_SOURCE_LABELS[historical.impactSourceType] || historical.impactSourceType,
     });
   const reasons = redistribution
     ? [item.reason, ...(item.rationale || [])]

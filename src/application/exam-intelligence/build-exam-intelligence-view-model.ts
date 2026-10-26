@@ -12,9 +12,9 @@ export function buildExamIntelligenceViewModel({
   const scoped = examsInScope(exams, activeExamTags),
     complete = scoped.filter(exam => exam.coverage === 'complete');
   const rows = topics
-    .map(topic => {
+    .map((topic: any) => {
       const subjectConfig =
-        (blueprint.subjects || []).find(item => item.subjectId === topic.subjectId) || null;
+        (blueprint.subjects || []).find((item: any) => item.subjectId === topic.subjectId) || null;
       const profile = buildTopicExamProfile({
         topic,
         subjectConfig,
@@ -29,9 +29,9 @@ export function buildExamIntelligenceViewModel({
         subjectName: topic.subjectName,
       };
     })
-    .filter(item => item.questionCount > 0)
+    .filter((item: any) => item.questionCount > 0)
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         (b.impact ?? -1) - (a.impact ?? -1) ||
         (b.presencePercent ?? -1) - (a.presencePercent ?? -1) ||
         String(a.name).localeCompare(String(b.name), 'pt-BR')

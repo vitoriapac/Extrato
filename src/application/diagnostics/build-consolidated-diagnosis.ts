@@ -12,10 +12,10 @@ export function buildConsolidatedDiagnosis({
   opportunityCosts = [],
   activeExamTags = [],
 }: any = {}) {
-  const subjectNames = new Map(subjects.map(item => [item.id || item.subjectId, item.name]));
+  const subjectNames = new Map(subjects.map((item: any) => [item.id || item.subjectId, item.name]));
   const topics = eligibleTopics
-    .filter(item => !item.archived && !item.topicArchived && !item.subjectArchived)
-    .map(item => ({
+    .filter((item: any) => !item.archived && !item.topicArchived && !item.subjectArchived)
+    .map((item: any) => ({
       ...item,
       topicId: item.topicId || item.id,
       subjectId: item.subjectId,
@@ -23,16 +23,16 @@ export function buildConsolidatedDiagnosis({
       granularity: 'topic',
       name: item.topicName || item.name,
     }));
-  const ids = new Set(topics.map(item => JSON.stringify([item.subjectId, item.topicId]))),
-    subjectIds = new Set(topics.map(item => item.subjectId));
+  const ids = new Set(topics.map((item: any) => JSON.stringify([item.subjectId, item.topicId]))),
+    subjectIds = new Set(topics.map((item: any) => item.subjectId));
   const scopedCandidates = candidates.filter(
-    item => ids.has(JSON.stringify([item.subjectId, item.topicId])) && !item.archived
+    (item: any) => ids.has(JSON.stringify([item.subjectId, item.topicId])) && !item.archived
   );
   const subjectEntities = subjects
-    .filter(item => subjectIds.has(item.id || item.subjectId) && !item.archived)
-    .map(item => ({
+    .filter((item: any) => subjectIds.has(item.id || item.subjectId) && !item.archived)
+    .map((item: any) => ({
       subjectId: item.id || item.subjectId,
-      topicId: null,
+      topicId: null as string | null,
       granularity: 'subject',
       name: item.name,
     }));
@@ -48,7 +48,7 @@ export function buildConsolidatedDiagnosis({
     recommendations,
     opportunityCosts,
     reviewSignals: scopedCandidates,
-    examIntelligence: scopedCandidates.map(item => ({
+    examIntelligence: scopedCandidates.map((item: any) => ({
       ...item.examIntelligence,
       subjectId: item.subjectId,
       topicId: item.topicId,

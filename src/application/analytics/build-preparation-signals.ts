@@ -1,15 +1,16 @@
 import { addLocalDays } from '../../core/date-utils.js';
 import { resolveSubjectAccuracyTarget } from '../../domain/analytics/subject-accuracy-target.js';
-const count = value => Math.max(0, Number(value) || 0);
-const totals = records => {
-  const total = records.reduce((sum, item) => sum + count(item.resolved), 0),
+type Row = Record<string, any>;
+const count = (value: unknown) => Math.max(0, Number(value) || 0);
+const totals = (records: Row[]) => {
+  const total = records.reduce((sum: any, item: any) => sum + count(item.resolved), 0),
     correct = records.reduce(
-      (sum, item) => sum + Math.min(count(item.resolved), count(item.correct)),
+      (sum: any, item: any) => sum + Math.min(count(item.resolved), count(item.correct)),
       0
     );
   return { total, accuracy: total ? Math.round((correct / total) * 1000) / 10 : null };
 };
-const inRange = (item, start, end) => item.date >= start && item.date <= end;
+const inRange = (item: Row, start: string, end: string) => item.date >= start && item.date <= end;
 export function buildPreparationSignals({
   subjects = [],
   candidates = [],
@@ -21,7 +22,9 @@ export function buildPreparationSignals({
 }: any = {}) {
   const rows = [],
     seen = new Set(),
-    uniqueQuestions = questions.filter(item => item.id && !seen.has(item.id) && seen.add(item.id)),
+    uniqueQuestions = questions.filter(
+      (item: any) => item.id && !seen.has(item.id) && seen.add(item.id)
+    ),
     sessionMap = new Map<string, any>(sessions.map((item: any) => [item.id, item]));
   const end = addLocalDays(today, -1),
     start = addLocalDays(today, -28);
@@ -35,7 +38,7 @@ export function buildPreparationSignals({
         end: last,
         ...totals(
           uniqueQuestions.filter(
-            item => item.subjectId === subject.id && inRange(item, first, last)
+            (item: any) => item.subjectId === subject.id && inRange(item, first, last)
           )
         ),
       };
@@ -88,7 +91,7 @@ export function buildPreparationSignals({
     const target = resolveSubjectAccuracyTarget(item.subjectId, blueprint, globalTarget),
       recent = totals(
         uniqueQuestions.filter(
-          question =>
+          (question: any) =>
             question.topicId === item.topicId &&
             question.subjectId === item.subjectId &&
             inRange(question, addLocalDays(today, -13), today)
@@ -103,7 +106,7 @@ export function buildPreparationSignals({
         end: last,
         ...totals(
           uniqueQuestions.filter(
-            question =>
+            (question: any) =>
               question.topicId === item.topicId &&
               question.subjectId === item.subjectId &&
               inRange(question, first, last)
@@ -179,12 +182,12 @@ export function buildPreparationSignals({
       source: 'preparation-signals',
       observationIds: uniqueQuestions
         .filter(
-          item =>
+          (item: any) =>
             item.subjectId === row.subjectId &&
             (!row.topicId || item.topicId === row.topicId) &&
             inRange(item, row.period.start, row.period.end)
         )
-        .map(item => item.id),
+        .map((item: any) => item.id),
     })),
     start,
     end,

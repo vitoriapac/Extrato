@@ -15,7 +15,7 @@ export async function revertRecoveryPlan({
   reason = 'Reversão solicitada pelo usuário',
 }: any = {}) {
   const entry = state.adaptivePlanningHistory.find(
-    item => item.id === decisionId && item.status === 'applied'
+    (item: any) => item.id === decisionId && item.status === 'applied'
   );
   if (!entry || !currentPlan || entry.planId !== currentPlan.id)
     return rejectRecovery(
@@ -31,10 +31,14 @@ export async function revertRecoveryPlan({
     const before = structuredClone(state),
       draft = structuredClone(before),
       restored = structuredClone(currentPlan);
-    const source = restored.subjects.find(item => item.subjectId === entry.sourceSubjectId),
-      target = restored.subjects.find(item => item.subjectId === entry.targetSubjectId),
-      sourceItem = restored.items.find(item => (item.topicId || item.id) === entry.sourceTopicId),
-      targetItem = restored.items.find(item => (item.topicId || item.id) === entry.targetTopicId);
+    const source = restored.subjects.find((item: any) => item.subjectId === entry.sourceSubjectId),
+      target = restored.subjects.find((item: any) => item.subjectId === entry.targetSubjectId),
+      sourceItem = restored.items.find(
+        (item: any) => (item.topicId || item.id) === entry.sourceTopicId
+      ),
+      targetItem = restored.items.find(
+        (item: any) => (item.topicId || item.id) === entry.targetTopicId
+      );
     if (
       !source ||
       !target ||
@@ -58,8 +62,8 @@ export async function revertRecoveryPlan({
     sourceItem.activityMix = structuredClone(entry.sourceMixBefore);
     targetItem.activityMix = structuredClone(entry.targetMixBefore);
     restored.maintenanceMinutes = restored.items
-      .filter(item => item.covered)
-      .reduce((sum, item) => sum + item.minutes, 0);
+      .filter((item: any) => item.covered)
+      .reduce((sum: any, item: any) => sum + item.minutes, 0);
     restored.adaptiveAdvice = null;
     restored.adaptiveHistoryId = null;
     const allocation: any = validateRecoveryAllocation({
@@ -86,7 +90,7 @@ export async function revertRecoveryPlan({
       activeExamTags,
     });
     if (!confirmed.valid) return rejectRecovery(confirmed.reasonCode);
-    const record = draft.adaptivePlanningHistory.find(item => item.id === decisionId);
+    const record = draft.adaptivePlanningHistory.find((item: any) => item.id === decisionId);
     Object.assign(record, {
       status: 'reverted',
       revertedAt: createdAt,

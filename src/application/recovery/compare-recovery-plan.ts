@@ -1,7 +1,4 @@
 export function compareRecoveryPlan(currentPlan: any, proposedPlan: any) {
-  const current = new Map<string, any>(
-    currentPlan.subjects.map((item: any) => [item.subjectId, item])
-  );
   const proposed = new Map<string, any>(
     proposedPlan.subjects.map((item: any) => [item.subjectId, item])
   );
@@ -19,8 +16,8 @@ export function compareRecoveryPlan(currentPlan: any, proposedPlan: any) {
   });
   return {
     changes,
-    increased: changes.filter(item => item.direction === 'increase'),
-    reduced: changes.filter(item => item.direction === 'decrease'),
-    preserved: changes.filter(item => item.direction === 'preserved'),
+    increased: changes.filter((item: any) => item.direction === 'increase'),
+    reduced: changes.filter((item: any) => item.direction === 'decrease'),
+    preserved: changes.filter((item: any) => item.direction === 'preserved'),
   };
 }

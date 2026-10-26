@@ -5,9 +5,10 @@ import {
   EXAM_CONFIDENCE_LABELS,
 } from '../../domain/exam-intelligence/exam-confidence.js';
 
-const byName = (a, b) => String(a).localeCompare(String(b), 'pt-BR');
-const options = values => [...new Set(values.filter(Boolean))].sort(byName);
-const percentage = (part, total) => (total ? Math.round((part / total) * 100) : null);
+const byName = (a: unknown, b: unknown) => String(a).localeCompare(String(b), 'pt-BR');
+const options = (values: unknown[]) => [...new Set(values.filter(Boolean))].sort(byName);
+const percentage = (part: number, total: number) =>
+  total ? Math.round((part / total) * 100) : null;
 
 export function buildExamMatrix({
   topics = [],
@@ -18,7 +19,7 @@ export function buildExamMatrix({
   metricsByTopic = {},
   auditByTopic = {},
 }: any = {}) {
-  const tags = options(exams.flatMap(exam => exam.examTags || []));
+  const tags = options(exams.flatMap((exam: any) => exam.examTags || []));
   const scope = filters.scope || 'active';
   const scoped =
     scope === 'all'
@@ -30,27 +31,27 @@ export function buildExamMatrix({
     years = [...new Set(scoped.map((exam: any) => exam.year).filter(Number.isInteger))].sort(
       (a: any, b: any) => b - a
     ),
-    roles = options(scoped.map(exam => exam.role));
+    roles = options(scoped.map((exam: any) => exam.role));
   const subjects = options(
     topics
-      .filter(topic => !topic.archived && !topic.topicArchived && !topic.subjectArchived)
-      .map(topic => topic.subjectName)
+      .filter((topic: any) => !topic.archived && !topic.topicArchived && !topic.subjectArchived)
+      .map((topic: any) => topic.subjectName)
   );
   const selected = scoped.filter(
-    exam =>
+    (exam: any) =>
       (!filters.board || filters.board === 'all' || exam.board === filters.board) &&
       (!filters.year || filters.year === 'all' || String(exam.year) === String(filters.year)) &&
       (!filters.role || filters.role === 'all' || exam.role === filters.role)
   );
   const complete = selected
-    .filter(exam => exam.coverage === 'complete')
+    .filter((exam: any) => exam.coverage === 'complete')
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         a.year - b.year ||
         String(a.date || '').localeCompare(String(b.date || '')) ||
         byName(a.examName, b.examName)
     );
-  const ids = new Set(complete.map(exam => exam.id));
+  const ids = new Set(complete.map((exam: any) => exam.id));
   const indexed = new Map();
   let analyzedQuestionCount = 0;
   for (const question of examQuestions) {
@@ -67,7 +68,7 @@ export function buildExamMatrix({
     .toLocaleLowerCase('pt-BR');
   const rows = topics
     .filter(
-      topic =>
+      (topic: any) =>
         !topic.archived &&
         !topic.topicArchived &&
         !topic.subjectArchived &&
@@ -75,29 +76,33 @@ export function buildExamMatrix({
         (!filters.subject || filters.subject === 'all' || topic.subjectName === filters.subject) &&
         (!query || `${topic.subjectName} ${topic.name}`.toLocaleLowerCase('pt-BR').includes(query))
     )
-    .map(topic => {
-      const cells = complete.map(exam => {
+    .map((topic: any) => {
+      const cells = complete.map((exam: any) => {
         const questions = indexed.get(`${topic.id}|${exam.id}`) || [];
-        const weighted = questions.filter(question => Number.isFinite(question.weight));
+        const weighted = questions.filter((question: any) => Number.isFinite(question.weight));
         return {
           examId: exam.id,
           year: exam.year,
           examName: exam.examName,
           count: questions.length,
           weight: weighted.length
-            ? Math.round(weighted.reduce((sum, question) => sum + question.weight, 0) * 100) / 100
+            ? Math.round(
+                weighted.reduce((sum: any, question: any) => sum + question.weight, 0) * 100
+              ) / 100
             : null,
         };
       });
-      const count = cells.reduce((sum, cell) => sum + cell.count, 0),
-        present = cells.filter(cell => cell.count > 0).length;
-      const classified = complete.flatMap(exam => indexed.get(`${topic.id}|${exam.id}`) || []);
+      const count = cells.reduce((sum: any, cell: any) => sum + cell.count, 0),
+        present = cells.filter((cell: any) => cell.count > 0).length;
+      const classified = complete.flatMap(
+        (exam: any) => indexed.get(`${topic.id}|${exam.id}`) || []
+      );
       const confidence = classifyExamConfidence({
         examCount: complete.length,
         questionCount: analyzedQuestionCount,
         classificationConfidence: classified.length
           ? classified.reduce(
-              (sum, question) => sum + (question.classification?.confidence ?? 0),
+              (sum: any, question: any) => sum + (question.classification?.confidence ?? 0),
               0
             ) / classified.length
           : null,
@@ -130,7 +135,7 @@ export function buildExamMatrix({
       };
     });
   const sort = filters.sort || 'incidence';
-  rows.sort((a, b) =>
+  rows.sort((a: any, b: any) =>
     sort === 'subject'
       ? byName(a.subjectName, b.subjectName) || byName(a.name, b.name)
       : sort === 'mastery'

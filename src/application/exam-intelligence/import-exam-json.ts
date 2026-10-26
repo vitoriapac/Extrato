@@ -1,15 +1,16 @@
 import { createExam } from '../../domain/exam-intelligence/exam.js';
 import { createExamQuestion } from '../../domain/exam-intelligence/exam-question.js';
 
-const clean = value => (typeof value === 'string' ? value.trim() : '');
-const key = value =>
+type Row = Record<string, any>;
+const clean = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+const key = (value: unknown) =>
   clean(value)
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLocaleLowerCase('pt-BR')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
-const hash = value => {
+const hash = (value: string) => {
   let n = 2166136261;
   for (const char of value) {
     n ^= char.charCodeAt(0);
@@ -17,11 +18,11 @@ const hash = value => {
   }
   return (n >>> 0).toString(36);
 };
-const identity = exam =>
+const identity = (exam: Row) =>
   [exam.institution, exam.examName, exam.role, exam.board, exam.year].map(key).join('|');
-const unique = items => [...new Set(items)];
+const unique = <T>(items: T[]) => [...new Set(items)];
 
-export function parseExamImportJson(text) {
+export function parseExamImportJson(text: unknown) {
   if (typeof text !== 'string' || !text.trim() || text.length > 2 * 1024 * 1024)
     throw new TypeError('Arquivo vazio ou maior que 2 MB.');
   let data;
@@ -86,19 +87,20 @@ export function parseExamImportJson(text) {
 }
 
 export function previewExamImport(
-  parsed,
+  parsed: Row,
   { subjects = [], exams = [], examQuestions = [] }: any = {}
 ) {
   const examId = `exam-import-${hash(identity(parsed.exam))}`;
   const existing = exams.find(
-    item => item.id === examId || identity(item) === identity(parsed.exam)
+    (item: any) => item.id === examId || identity(item) === identity(parsed.exam)
   );
   const existingQuestions = examQuestions.filter(
-    question => question.examId === (existing?.id || examId)
+    (question: any) => question.examId === (existing?.id || examId)
   );
-  const rows = parsed.questions.map(question => {
+  const rows = parsed.questions.map((question: any) => {
     const reviewed = existingQuestions.find(
-      item => item.questionNumber === question.number && item.classification?.method === 'manual'
+      (item: any) =>
+        item.questionNumber === question.number && item.classification?.method === 'manual'
     );
     if (reviewed)
       return {
@@ -108,12 +110,12 @@ export function previewExamImport(
         topicId: reviewed.topicId,
       };
     const matches = subjects.filter(
-      subject => !subject.archived && key(subject.name) === key(question.subject)
+      (subject: any) => !subject.archived && key(subject.name) === key(question.subject)
     );
     const subject = matches.length === 1 ? matches[0] : null;
     const topics =
       subject?.topics?.filter(
-        topic => !topic.archived && key(topic.name) === key(question.topic)
+        (topic: any) => !topic.archived && key(topic.name) === key(question.topic)
       ) || [];
     const topic = topics.length === 1 ? topics[0] : null;
     const status = !subject ? 'subject-unresolved' : !topic ? 'topic-unresolved' : 'mapped';
@@ -124,17 +126,17 @@ export function previewExamImport(
     existingExam: existing || null,
     rows,
     existingQuestionCount: existingQuestions.length,
-    mappedCount: rows.filter(row => row.status === 'mapped').length,
-    unresolvedCount: rows.filter(row => row.status !== 'mapped').length,
+    mappedCount: rows.filter((row: any) => row.status === 'mapped').length,
+    unresolvedCount: rows.filter((row: any) => row.status !== 'mapped').length,
   };
 }
 
 // Decisions are explicit per question: existing topic, create under an existing
 // subject, or ignore. The function returns a new snapshot and never mutates input.
 export function mergeExamImport(
-  parsed,
-  preview,
-  decisions,
+  parsed: Row,
+  preview: Row,
+  decisions: Row,
   { subjects = [], exams = [], examQuestions = [] }: any = {}
 ) {
   const nextSubjects = structuredClone(subjects),
@@ -142,9 +144,11 @@ export function mergeExamImport(
     nextQuestions = structuredClone(examQuestions);
   const examId = preview.examId,
     createdAt = new Date().toISOString();
-  const existingIndex = nextExams.findIndex(exam => exam.id === examId);
+  const existingIndex = nextExams.findIndex((exam: any) => exam.id === examId);
   const previousExam = existingIndex >= 0 ? nextExams[existingIndex] : null;
-  const pending = new Map((previousExam?.unresolvedQuestions || []).map(row => [row.number, row]));
+  const pending = new Map(
+    (previousExam?.unresolvedQuestions || []).map((row: any) => [row.number, row])
+  );
   let added = 0,
     updated = 0,
     preserved = 0,
@@ -154,7 +158,11 @@ export function mergeExamImport(
     const decision = decisions?.[row.number];
     if (decision?.action === 'ignore') {
       ignored++;
-      if (!nextQuestions.some(item => item.examId === examId && item.questionNumber === row.number))
+      if (
+        !nextQuestions.some(
+          (item: any) => item.examId === examId && item.questionNumber === row.number
+        )
+      )
         pending.set(row.number, {
           number: row.number,
           subject: row.subject,
@@ -166,19 +174,25 @@ export function mergeExamImport(
     let subjectId = row.subjectId,
       topicId = row.topicId;
     if (decision?.action === 'associate') {
-      const subject = nextSubjects.find(item => item.id === decision.subjectId && !item.archived),
-        topic = subject?.topics?.find(item => item.id === decision.topicId && !item.archived);
+      const subject = nextSubjects.find(
+          (item: any) => item.id === decision.subjectId && !item.archived
+        ),
+        topic = subject?.topics?.find(
+          (item: any) => item.id === decision.topicId && !item.archived
+        );
       if (!topic) throw new TypeError(`Questão ${row.number}: associação inválida.`);
       subjectId = subject.id;
       topicId = topic.id;
     } else if (decision?.action === 'create') {
-      const subject = nextSubjects.find(item => item.id === decision.subjectId && !item.archived);
+      const subject = nextSubjects.find(
+        (item: any) => item.id === decision.subjectId && !item.archived
+      );
       if (!subject)
         throw new TypeError(
           `Questão ${row.number}: escolha uma disciplina existente para criar o tópico.`
         );
       const name = clean(row.topic);
-      const existing = subject.topics.find(item => key(item.name) === key(name));
+      const existing = subject.topics.find((item: any) => key(item.name) === key(name));
       if (existing) {
         topicId = existing.id;
       } else {
@@ -209,7 +223,7 @@ export function mergeExamImport(
     } else if (row.status !== 'mapped')
       throw new TypeError(`Questão ${row.number}: resolva o conflito antes de importar.`);
     const index = nextQuestions.findIndex(
-      item => item.examId === examId && item.questionNumber === row.number
+      (item: any) => item.examId === examId && item.questionNumber === row.number
     );
     const existingQuestion = index >= 0 ? nextQuestions[index] : null;
     const question =
@@ -236,7 +250,9 @@ export function mergeExamImport(
     pending.delete(row.number);
   }
   const classifiedNumbers = new Set(
-    nextQuestions.filter(item => item.examId === examId).map(item => item.questionNumber)
+    nextQuestions
+      .filter((item: any) => item.examId === examId)
+      .map((item: any) => item.questionNumber)
   );
   for (const number of classifiedNumbers) pending.delete(number);
   const importedQuestionCount = new Set([...classifiedNumbers, ...pending.keys()]).size;

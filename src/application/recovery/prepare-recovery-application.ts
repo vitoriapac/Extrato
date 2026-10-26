@@ -1,6 +1,6 @@
 import { validateRecoveryAllocation } from './recovery-invariants.js';
 import { compareRecoveryPlan } from './compare-recovery-plan.js';
-const scopeKey = tags => JSON.stringify([...(Array.isArray(tags) ? tags : [])].sort());
+const scopeKey = (tags: unknown) => JSON.stringify([...(Array.isArray(tags) ? tags : [])].sort());
 
 export function prepareRecoveryApplication({
   displayedSignature,
@@ -42,7 +42,7 @@ export function prepareRecoveryApplication({
       reason: 'A proposta não preserva as invariantes do plano atual.',
     };
   const changes = compareRecoveryPlan(currentPlan, proposed).changes.filter(
-    item => item.direction !== 'preserved'
+    (item: any) => item.direction !== 'preserved'
   );
   return {
     state: 'ready',

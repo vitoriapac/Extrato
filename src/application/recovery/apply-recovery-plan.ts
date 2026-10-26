@@ -6,11 +6,15 @@ import { createPlanningRepository } from '../../repositories/planning-repository
 import { buildRecommendationExplanation } from '../recommendations/build-recommendation-explanation.js';
 
 export const rejectRecovery = (
-  reasonCode,
+  reasonCode: string,
   reason = 'A operação não foi aplicada. Revise a proposta e tente novamente.'
 ) => ({ status: 'rejected', reasonCode, reason });
 
-export function confirmRecoveryDraft(plan, draft, { clock, idGenerator }: any = {}) {
+export function confirmRecoveryDraft(
+  plan: Record<string, any>,
+  draft: Record<string, any>,
+  { clock, idGenerator }: any = {}
+) {
   return createStudyPlanService({
     repository: createPlanningRepository({ getState: () => draft }),
     clock,

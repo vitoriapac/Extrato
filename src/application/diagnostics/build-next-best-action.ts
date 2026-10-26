@@ -34,13 +34,13 @@ export function buildNextBestAction({
       continue;
     const row =
       diagnosis?.topics?.find(
-        item => item.subjectId === action.subjectId && item.topicId === action.topicId
+        (item: any) => item.subjectId === action.subjectId && item.topicId === action.topicId
       ) || null;
-    const allocation = activePlan?.items?.find(item => item.topicId === action.topicId);
+    const allocation = activePlan?.items?.find((item: any) => item.topicId === action.topicId);
     const projectionRisk =
       projection?.status !== 'insufficient_data'
         ? (projection?.topicRisks || []).find(
-            item => item.subjectId === action.subjectId && item.topicId === action.topicId
+            (item: any) => item.subjectId === action.subjectId && item.topicId === action.topicId
           )
         : null;
     const projectionReason = projectionRisk
@@ -74,13 +74,13 @@ export function buildNextBestAction({
     };
   }
   const rows = diagnosis?.rows || [...(diagnosis?.topics || []), ...(diagnosis?.subjects || [])];
-  if (rows.some(item => item.state === 'attention'))
+  if (rows.some((item: any) => item.state === 'attention'))
     return {
       state: NEXT_BEST_ACTION_STATES.NO_ELIGIBLE_ACTION,
       reason:
         'Há um ponto de atenção, mas nenhuma ação está elegível agora. Confira disponibilidade, pré-requisitos e o plano.',
     };
-  if (rows.some(item => ['controlled', 'progress'].includes(item.state)))
+  if (rows.some((item: any) => ['controlled', 'progress'].includes(item.state)))
     return {
       state: NEXT_BEST_ACTION_STATES.MAINTAIN_PLAN,
       reason: activePlan?.id

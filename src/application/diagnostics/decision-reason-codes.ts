@@ -22,6 +22,6 @@ export const DECISION_REASON_LABELS = Object.freeze({
   unknown: 'Motivo estruturado indisponível',
 });
 
-export function decisionReasonCode(value) {
-  return DECISION_REASON_CODES.includes(value) ? value : 'unknown';
+export function decisionReasonCode(value: string) {
+  return (DECISION_REASON_CODES as readonly string[]).includes(value) ? value : 'unknown';
 }

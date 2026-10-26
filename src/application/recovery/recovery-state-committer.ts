@@ -1,6 +1,6 @@
 import { pickPersistentState } from '../../state/state-boundaries.js';
 
-const revision = state => {
+const revision = (state: Record<string, any>) => {
   const value = pickPersistentState(state);
   delete value.updatedAt;
   delete value.lastBackupAt;
@@ -12,14 +12,18 @@ export function createRecoveryStateCommitter({
   getState,
   publish,
   persist,
-  runExclusive = task => task(),
+  runExclusive = (task: () => Promise<unknown>) => task(),
   clock,
   onCommitted = () => {},
 }: any = {}) {
-  return ({ before, after }) =>
+  return ({ before, after }: { before: Record<string, any>; after: Record<string, any> }) =>
     runExclusive(async () => {
       const baseline = revision(before),
-        rejected = (reasonCode, reason) => ({ status: 'rejected', reasonCode, reason });
+        rejected = (reasonCode: string, reason: string) => ({
+          status: 'rejected',
+          reasonCode,
+          reason,
+        });
       if (revision(getState()) !== baseline)
         return rejected(
           'state_changed',

@@ -6,20 +6,20 @@ import { buildRecoveryCandidates } from './build-recovery-candidates.js';
 import { buildRecoveryAllocation } from './build-recovery-allocation.js';
 import { RECOVERY_STATUS } from './recovery-status.js';
 
-const base = (status, reasonCode, reason) => ({
+const base = (status: string, reasonCode: string, reason: string) => ({
   available: false,
   status,
   reasonCode,
   reason,
-  capacity: null,
-  totalMinutes: null,
-  changes: [],
-  preserved: [],
-  reduced: [],
-  increased: [],
-  explanation: [],
+  capacity: null as number | null,
+  totalMinutes: null as number | null,
+  changes: [] as any[],
+  preserved: [] as any[],
+  reduced: [] as any[],
+  increased: [] as any[],
+  explanation: [] as string[],
 });
-const scope = tags => JSON.stringify([...(tags || [])].sort());
+const scope = (tags: string[] | null | undefined) => JSON.stringify([...(tags || [])].sort());
 
 // Preview only. The adaptive planner owns pair selection, limits and cooldown.
 export function buildRecoveryPlan({
@@ -136,22 +136,23 @@ export function buildRecoveryPlan({
     targetScore: trajectory.current?.targetScore ?? null,
     trajectoryStatus: trajectory.status,
     risks: topicRisks
-      .map(item => [item.subjectId, item.topicId, item.examImpact ?? null])
+      .map((item: any) => [item.subjectId, item.topicId, item.examImpact ?? null])
       .sort(
-        ([a, b], [c, d]) => String(a).localeCompare(String(c)) || String(b).localeCompare(String(d))
+        ([a, b]: any[], [c, d]: any[]) =>
+          String(a).localeCompare(String(c)) || String(b).localeCompare(String(d))
       ),
     subjectMinutes: currentPlan.subjects
-      .map(item => [item.subjectId, item.minutes])
-      .sort(([left], [right]) => left.localeCompare(right)),
+      .map((item: any) => [item.subjectId, item.minutes])
+      .sort(([left]: any[], [right]: any[]) => left.localeCompare(right)),
     itemMinutes: currentPlan.items
-      .map(item => [
+      .map((item: any) => [
         item.id,
         item.topicId || null,
         item.minutes,
         item.capacityMinutes,
         item.activityMix,
       ])
-      .sort(([left], [right]) => String(left).localeCompare(String(right))),
+      .sort(([left]: any[], [right]: any[]) => String(left).localeCompare(String(right))),
     transfer: { from: advice.from, to: advice.to, minutes: advice.transferMinutes },
     algorithmVersion: ADAPTIVE_PLANNING_VERSION,
   };

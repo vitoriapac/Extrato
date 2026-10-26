@@ -11,12 +11,12 @@ export function buildExamDataQuality({
   const activeExamTags = blueprint.activeExamTags || [];
   const scoped = examsInScope(exams, activeExamTags),
     examIds = new Set(scoped.map(exam => exam.id));
-  const questions = examQuestions.filter(question => examIds.has(question.examId));
+  const questions = examQuestions.filter((question: any) => examIds.has(question.examId));
   const questionCountByExam = new Map();
   for (const question of questions)
     questionCountByExam.set(question.examId, (questionCountByExam.get(question.examId) || 0) + 1);
   const pending = scoped.flatMap(exam =>
-    (exam.unresolvedQuestions || []).map(row => ({ ...row, examId: exam.id }))
+    (exam.unresolvedQuestions || []).map((row: any) => ({ ...row, examId: exam.id }))
   );
   const knownCounts = scoped.every(exam => Number.isInteger(exam.importedQuestionCount));
   const denominator = knownCounts
@@ -36,22 +36,22 @@ export function buildExamDataQuality({
     : null;
   const completeExamCount = scoped.filter(exam => exam.coverage === 'complete').length;
   const lowConfidenceQuestions = questions.filter(
-    question => question.classification.confidence < 0.5
+    (question: any) => question.classification.confidence < 0.5
   ).length;
   const moderateConfidenceQuestions = questions.filter(
-    question =>
+    (question: any) =>
       question.classification.confidence >= 0.5 && question.classification.confidence < 0.75
   ).length;
   const unreviewedQuestions = questions.filter(
-    question => question.classification.method === 'imported'
+    (question: any) => question.classification.method === 'imported'
   ).length;
-  const eligibleTopicIds = new Set(topics.map(topic => topic.id)),
+  const eligibleTopicIds = new Set(topics.map((topic: any) => topic.id)),
     mappedTopicIds = new Set(
       questions
-        .filter(question => eligibleTopicIds.has(question.topicId))
-        .map(question => question.topicId)
+        .filter((question: any) => eligibleTopicIds.has(question.topicId))
+        .map((question: any) => question.topicId)
     );
-  const importantTopicsWithoutHistory = topics.filter(topic => {
+  const importantTopicsWithoutHistory = topics.filter((topic: any) => {
     if (
       topic.archived ||
       topic.topicArchived ||
@@ -60,7 +60,7 @@ export function buildExamDataQuality({
     )
       return false;
     const subjectConfig =
-      (blueprint.subjects || []).find(item => item.subjectId === topic.subjectId) || null;
+      (blueprint.subjects || []).find((item: any) => item.subjectId === topic.subjectId) || null;
     return isHighImpact(resolveTopicExamImpact({ topic, subjectConfig, activeExamTags }).value);
   }).length;
   const confidence =

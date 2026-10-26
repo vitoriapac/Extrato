@@ -29,7 +29,8 @@ export function buildOpportunityCost(advice: Row | null | undefined) {
     typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100
       ? value
       : null;
-  const side = (item: Row, state: string) => ({
+  // Callers read the original side fields (beforeMinutes...), so the spread stays open.
+  const side = (item: Row, state: string): Row => ({
     ...item,
     mastery: metric(item.mastery),
     impact: metric(item.impact),

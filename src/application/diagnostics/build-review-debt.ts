@@ -11,7 +11,7 @@ export function buildReviewDebt({
     seen = new Set();
   const rows = reviews
     .filter(
-      item =>
+      (item: any) =>
         item.id &&
         !seen.has(item.id) &&
         seen.add(item.id) &&
@@ -19,7 +19,7 @@ export function buildReviewDebt({
         item.date < today &&
         item.status !== 'Concluído'
     )
-    .map(item => {
+    .map((item: any) => {
       const topicId = item.topicId || item.topicRef,
         candidate = byTopic.get(topicId);
       return {
@@ -36,7 +36,7 @@ export function buildReviewDebt({
       };
     })
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         Number(b.highPriority) - Number(a.highPriority) ||
         a.date.localeCompare(b.date) ||
         a.topicName.localeCompare(b.topicName, 'pt-BR')
@@ -44,9 +44,9 @@ export function buildReviewDebt({
   return {
     rows,
     count: rows.length,
-    highPriorityCount: rows.filter(item => item.highPriority).length,
+    highPriorityCount: rows.filter((item: any) => item.highPriority).length,
     consolidationRiskCount: new Set(
-      rows.filter(item => item.consolidationRisk).map(item => item.topicId)
+      rows.filter((item: any) => item.consolidationRisk).map((item: any) => item.topicId)
     ).size,
   };
 }

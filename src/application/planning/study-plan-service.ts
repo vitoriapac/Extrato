@@ -5,13 +5,13 @@ export function createStudyPlanService({
   clock,
   idGenerator,
   algorithmVersion = () => 1,
-  getActiveExamTags = () => [],
+  getActiveExamTags = (): string[] => [],
 }: any = {}) {
   if (!repository || typeof repository.saveStudyPlan !== 'function')
     throw new TypeError('Serviço de plano requer repositório.');
   return Object.freeze({
-    calculate: input => calculate(input),
-    confirm: proposal => {
+    calculate: (input: unknown) => calculate(input),
+    confirm: (proposal: Record<string, any> | null | undefined) => {
       if (!proposal || proposal.state === 'insufficient' || !proposal.items?.length) return null;
       const id = idGenerator('study-plan'),
         confirmedAt = clock.nowISO(),
@@ -21,8 +21,8 @@ export function createStudyPlanService({
           confirmedAt,
           activeExamTags: [...getActiveExamTags()],
           algorithmVersion: algorithmVersion(),
-          dailyPlanOperations: [],
-          items: proposal.items.map(item => ({
+          dailyPlanOperations: [] as any[],
+          items: proposal.items.map((item: any) => ({
             ...structuredClone(item),
             prioritySnapshot: item.prioritySnapshot
               ? structuredClone(item.prioritySnapshot)

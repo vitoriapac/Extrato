@@ -12,18 +12,19 @@ import {
 import { canStudy } from '../../domain/study-eligibility.js';
 import { adaptDiagnosticSignals } from './adapt-diagnostic-signals.js';
 
-const tags = value =>
+type Row = Record<string, any>;
+const tags = (value: unknown) =>
   [...new Set((Array.isArray(value) ? value : []).filter(item => typeof item === 'string'))].sort();
-const scopeKey = value => JSON.stringify(tags(value));
-const identity = item =>
+const scopeKey = (value: unknown) => JSON.stringify(tags(value));
+const identity = (item: Row) =>
   signalEntityKey({
     subjectId: item.subjectId,
     topicId: item.topicId || null,
     granularity: item.granularity || (item.topicId ? 'topic' : 'subject'),
   });
-const archived = item => item.archived || item.topicArchived || item.subjectArchived;
-const distinct = value => [...new Set(value.filter(Boolean))];
-const stable = (left, right) => compareSignalIds(left.entityKey, right.entityKey);
+const archived = (item: Row) => item.archived || item.topicArchived || item.subjectArchived;
+const distinct = (value: unknown[]) => [...new Set(value.filter(Boolean))];
+const stable = (left: Row, right: Row) => compareSignalIds(left.entityKey, right.entityKey);
 
 // eligibleEntities is the caller's current, verified content scope (including archived flags).
 // Unknown legacy subject aggregates cannot be inferred from a topic's membership.
@@ -42,13 +43,13 @@ export function buildConsolidatedSignals(input: any = {}) {
       archived(entity) ||
       (entity.examTags?.length &&
         active.length &&
-        !entity.examTags.some(tag => active.includes(tag)))
+        !entity.examTags.some((tag: any) => active.includes(tag)))
     )
       continue;
     const key = identity(entity);
     if (!entities.has(key)) entities.set(key, entity);
   }
-  const inScope = signal =>
+  const inScope = (signal: Row) =>
     entities.has(signal.entityKey) &&
     (signal.activeExamTags == null
       ? active.length === 0 || signal.granularity === 'topic' || inputsAlreadyScoped
@@ -122,7 +123,7 @@ export function buildConsolidatedSignals(input: any = {}) {
   const rows = [];
   for (const [key, entity] of entities) {
     const signals = (groups.get(key) || []).sort(
-      (a, b) =>
+      (a: any, b: any) =>
         compareSignalIds(a.source, b.source) ||
         compareSignalIds(a.sourceId, b.sourceId) ||
         compareSignalIds(a.kind, b.kind) ||
@@ -130,8 +131,8 @@ export function buildConsolidatedSignals(input: any = {}) {
         compareSignalIds(b.period.start || '', a.period.start || '')
     );
     const primary = selectPrimarySignal(signals),
-      supporting = signals.filter(signal => signal !== primary && signal.active);
-    const priority = (input.priorities || []).find(item => identity(item) === key);
+      supporting = signals.filter((signal: any) => signal !== primary && signal.active);
+    const priority = (input.priorities || []).find((item: any) => identity(item) === key);
     const evidence = primary?.evidence || {
       strength: null,
       completeness: null,
@@ -166,7 +167,7 @@ export function buildConsolidatedSignals(input: any = {}) {
       primarySource: primary
         ? { source: primary.source, id: primary.sourceId, period: primary.period }
         : null,
-      supportingSignals: distinct(supporting.map(signal => signal.kind)),
+      supportingSignals: distinct(supporting.map((signal: any) => signal.kind)),
       signals: structuredClone(signals),
       evidenceQuality: evidence.level,
       evidence: structuredClone(evidence),
@@ -174,9 +175,9 @@ export function buildConsolidatedSignals(input: any = {}) {
       recommendedActionId: actions.get(key) || null,
       reasons: distinct([
         ...(primary?.reasons || []),
-        ...supporting.flatMap(signal => signal.reasons),
+        ...supporting.flatMap((signal: any) => signal.reasons),
       ]),
-      sources: signals.map(signal => ({
+      sources: signals.map((signal: any) => ({
         source: signal.source,
         id: signal.sourceId,
         kind: signal.kind,
@@ -187,13 +188,15 @@ export function buildConsolidatedSignals(input: any = {}) {
     });
   }
   rows.sort((a, b) => (b.priority ?? -Infinity) - (a.priority ?? -Infinity) || stable(a, b));
-  const summarize = items => ({
+  const summarize = (items: Row[]) => ({
     total: items.length,
-    attention: items.filter(item => item.state === 'attention').length,
-    critical: items.filter(item => item.state === 'attention' && item.severity === 'critical')
+    attention: items.filter((item: any) => item.state === 'attention').length,
+    critical: items.filter(
+      (item: any) => item.state === 'attention' && item.severity === 'critical'
+    ).length,
+    controlled: items.filter((item: any) => item.state === 'controlled').length,
+    insufficient: items.filter((item: any) => ['insufficient', 'unassessed'].includes(item.state))
       .length,
-    controlled: items.filter(item => item.state === 'controlled').length,
-    insufficient: items.filter(item => ['insufficient', 'unassessed'].includes(item.state)).length,
   });
   const topics = rows.filter(item => item.granularity === 'topic'),
     subjects = rows.filter(item => item.granularity === 'subject');

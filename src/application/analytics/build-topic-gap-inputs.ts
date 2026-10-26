@@ -1,10 +1,10 @@
 // Shared inputs for the existing gap engine in the overview and consolidated diagnosis.
 export function buildTopicGapInputs(
-  candidates = [],
+  candidates: Array<Record<string, any>> = [],
   {
-    resolveAccuracyTarget = (_, item) => item.accuracyTarget ?? null,
-    topicName = () => null,
-    subjectName = () => null,
+    resolveAccuracyTarget = (_: unknown, item: Record<string, any>) => item.accuracyTarget ?? null,
+    topicName = (_item: unknown): string | null => null,
+    subjectName = (_item: unknown): string | null => null,
   }: any = {}
 ) {
   return candidates.map(item => ({

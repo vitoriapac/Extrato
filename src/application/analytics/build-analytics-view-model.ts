@@ -6,7 +6,7 @@ export function buildHeatmapViewModel({
   selectedDate = null,
 }: any = {}) {
   const normalizedMetric = HEATMAP_METRICS.includes(metric) ? metric : 'hours';
-  const cells = summaries.map(summary => ({
+  const cells = summaries.map((summary: any) => ({
     ...summary,
     level: heatmapMetricLevel(summary, normalizedMetric),
     selected: summary.date === selectedDate,
@@ -14,22 +14,23 @@ export function buildHeatmapViewModel({
   return {
     metric: normalizedMetric,
     cells,
-    hasActivity: cells.some(item => item.level > 0),
-    selected: cells.find(item => item.selected) || null,
+    hasActivity: cells.some((item: any) => item.level > 0),
+    selected: cells.find((item: any) => item.selected) || null,
   };
 }
 
-const severityFor = (score, insufficient = false) =>
+type Row = Record<string, any>;
+const severityFor = (score: number, insufficient = false) =>
   insufficient ? 'insufficient' : score >= 70 ? 'high' : score >= 45 ? 'medium' : 'low';
-const titleFor = item =>
+const titleFor = (item: Row) =>
   [item.subjectName, item.topicName].filter(Boolean).join(' — ') || 'Tópico sem nome';
-const evidenceRow = (label, value) =>
+const evidenceRow = (label: string, value: unknown) =>
   value == null || value === '' ? null : { label, value: String(value) };
-const numericValue = value =>
+const numericValue = (value: unknown) =>
   value == null || value === '' ? null : Number.isFinite(Number(value)) ? Number(value) : null;
 
 function presentDiagnosisItem(
-  item,
+  item: Row,
   {
     type,
     reason,
@@ -69,15 +70,18 @@ function presentDiagnosisItem(
               : 'Risco baixo';
   const validEvidence = evidence.filter(Boolean),
     validExplanation = [...evidence, ...explanation].filter(Boolean);
-  const explanationSummary = {
-    bottleneck:
-      'A leitura combina domínio, retenção, tendência, recência e impacto na prova quando esses dados estão disponíveis.',
-    opportunity:
-      'O potencial considera a lacuna de domínio, a relevância na prova e o esforço estimado quando configurados.',
-    review:
-      'A urgência considera o tempo sem contato, a retenção e o domínio disponíveis para este tópico.',
-    focus: 'A distribuição usa a prioridade das disciplinas e a disponibilidade semanal informada.',
-  }[type];
+  const explanationSummary = (
+    {
+      bottleneck:
+        'A leitura combina domínio, retenção, tendência, recência e impacto na prova quando esses dados estão disponíveis.',
+      opportunity:
+        'O potencial considera a lacuna de domínio, a relevância na prova e o esforço estimado quando configurados.',
+      review:
+        'A urgência considera o tempo sem contato, a retenção e o domínio disponíveis para este tópico.',
+      focus:
+        'A distribuição usa a prioridade das disciplinas e a disponibilidade semanal informada.',
+    } as Record<string, string>
+  )[type];
   return {
     ...item,
     diagnosisExplanation: validExplanation,
@@ -106,7 +110,7 @@ function presentDiagnosisItem(
 }
 
 export function buildDiagnosisViewModel(
-  diagnosis,
+  diagnosis: Row | null | undefined,
   { limit = 4, hasTopics = true, weeklyCapacityMinutes = null }: any = {}
 ) {
   if (!diagnosis || diagnosis.state === 'insufficient') {
@@ -120,10 +124,10 @@ export function buildDiagnosisViewModel(
         ? 'Há tópicos cadastrados, mas ainda faltam registros de estudo ou questões para formar uma leitura confiável.'
         : 'Cadastre disciplinas e tópicos para o StudyTrack identificar prioridades e revisões.',
       action,
-      sections: [],
+      sections: [] as Row[],
     };
   }
-  const bottlenecks = (diagnosis.bottlenecks || []).map(item => {
+  const bottlenecks = (diagnosis.bottlenecks || []).map((item: any) => {
     const completeness = numericValue(item.risk?.evidence?.completeness);
     const confidence =
       numericValue(item.evidenceStrength ?? item.risk?.evidence?.evidenceStrength) ?? completeness;
@@ -172,7 +176,7 @@ export function buildDiagnosisViewModel(
       ],
     });
   });
-  const opportunities = (diagnosis.opportunities || []).map(item => {
+  const opportunities = (diagnosis.opportunities || []).map((item: any) => {
     const reason = item.missingFactors?.includes('examImpact')
       ? 'O impacto desta matéria na prova ainda não foi configurado.'
       : 'Este tópico combina potencial de melhora, relevância e esforço estimado.';
@@ -222,7 +226,7 @@ export function buildDiagnosisViewModel(
     (diagnosis.criticalReviews || []).length
       ? diagnosis.criticalReviews
       : diagnosis.topicsAtRisk || []
-  ).map(item => {
+  ).map((item: any) => {
     const urgency = numericValue(item.reviewUrgency),
       days = numericValue(item.daysSinceContact);
     const reason =
@@ -260,7 +264,7 @@ export function buildDiagnosisViewModel(
       ],
     });
   });
-  const weeklyFocus = (diagnosis.weeklyFocus || []).map(item => {
+  const weeklyFocus = (diagnosis.weeklyFocus || []).map((item: any) => {
     const percentage = Math.max(0, Number(item.percentage) || 0);
     const capacity = numericValue(weeklyCapacityMinutes);
     const allocated =
@@ -324,7 +328,7 @@ export function buildDiagnosisViewModel(
   return { state: 'estimated', sections };
 }
 
-export function buildApprovalSignals(metrics, { target = 70 }: any = {}) {
+export function buildApprovalSignals(metrics: Row, { target = 70 }: any = {}) {
   const signals = [];
   if (metrics.simulados?.available && metrics.simulados.raw >= 75)
     signals.push({ level: 'positive', text: 'Boa média nos simulados' });

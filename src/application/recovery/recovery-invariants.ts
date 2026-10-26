@@ -1,10 +1,11 @@
-const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
-const total = rows => rows.reduce((sum, row) => sum + row.minutes, 0);
-const validRows = rows =>
+type Row = Record<string, any>;
+const same = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right);
+const total = (rows: Row[]) => rows.reduce((sum: any, row: any) => sum + row.minutes, 0);
+const validRows = (rows: unknown): rows is Row[] =>
   Array.isArray(rows) &&
   rows.length > 0 &&
   rows.every(row => Number.isSafeInteger(row.minutes) && row.minutes >= 0);
-const tags = values => JSON.stringify([...(values || [])].sort());
+const tags = (values: string[] | null | undefined) => JSON.stringify([...(values || [])].sort());
 
 // Validate actual allocations, independently of the presentation's change list.
 export function validateRecoveryAllocation({
@@ -15,7 +16,7 @@ export function validateRecoveryAllocation({
   minutes,
   activeExamTags = [],
 }: any = {}) {
-  const reject = reasonCode => ({ valid: false, reasonCode });
+  const reject = (reasonCode: string) => ({ valid: false, reasonCode });
   if (
     !before ||
     !after ||
@@ -62,7 +63,7 @@ export function validateRecoveryAllocation({
   for (const subject of before.subjects) {
     if (subjectIds.has(subject.subjectId)) return reject('duplicate_content');
     subjectIds.add(subject.subjectId);
-    const next = after.subjects.find(row => row.subjectId === subject.subjectId),
+    const next = after.subjects.find((row: any) => row.subjectId === subject.subjectId),
       delta =
         subject.subjectId === fromSubjectId
           ? -minutes
@@ -76,8 +77,9 @@ export function validateRecoveryAllocation({
     )
       return reject('unexpected_subject_change');
     if (
-      total(before.items.filter(row => row.subjectId === subject.subjectId)) !== subject.minutes ||
-      total(after.items.filter(row => row.subjectId === subject.subjectId)) !== next.minutes
+      total(before.items.filter((row: any) => row.subjectId === subject.subjectId)) !==
+        subject.minutes ||
+      total(after.items.filter((row: any) => row.subjectId === subject.subjectId)) !== next.minutes
     )
       return reject('subject_item_mismatch');
   }
@@ -86,7 +88,7 @@ export function validateRecoveryAllocation({
   for (const item of before.items) {
     if (itemIds.has(item.id)) return reject('duplicate_content');
     itemIds.add(item.id);
-    const next = after.items.find(row => row.id === item.id);
+    const next = after.items.find((row: any) => row.id === item.id);
     if (!next) return reject('content_changed');
     const delta = next.minutes - item.minutes;
     if (delta !== 0) {
@@ -129,7 +131,7 @@ export function validateRecoveryAllocation({
     'adaptiveAdvice',
     'adaptiveHistoryId',
   ];
-  const strip = plan =>
+  const strip = (plan: Row) =>
     Object.fromEntries(Object.entries(plan).filter(([key]) => !allowed.includes(key)));
   return same(strip(before), strip(after))
     ? { valid: true, reasonCode: null }
@@ -137,15 +139,15 @@ export function validateRecoveryAllocation({
 }
 
 export function validateRecoveryState({ before, after, revertedDecisionId = null }: any = {}) {
-  const reject = reasonCode => ({ valid: false, reasonCode });
+  const reject = (reasonCode: string) => ({ valid: false, reasonCode });
   const allowed = ['studyPlans', 'adaptivePlanningHistory', 'readinessSnapshots', 'updatedAt'];
-  const strip = value =>
+  const strip = (value: Row) =>
     Object.fromEntries(Object.entries(value).filter(([key]) => !allowed.includes(key)));
   if (!same(strip(before), strip(after))) return reject('protected_state_changed');
   if (
     after.studyPlans.length !== before.studyPlans.length + 1 ||
     !same(after.studyPlans.slice(0, -1), before.studyPlans) ||
-    before.studyPlans.some(plan => plan.id === after.studyPlans.at(-1).id)
+    before.studyPlans.some((plan: any) => plan.id === after.studyPlans.at(-1).id)
   )
     return reject('plan_history_changed');
   if (
@@ -176,7 +178,7 @@ export function validateRecoveryState({ before, after, revertedDecisionId = null
         'revertReason',
         'originalDecisionId',
       ];
-      const clean = record =>
+      const clean = (record: Row) =>
         Object.fromEntries(Object.entries(record).filter(([key]) => !fields.includes(key)));
       if (next.status !== 'reverted' || !same(clean(original), clean(next)))
         return reject('decision_history_changed');
@@ -190,7 +192,7 @@ export function validateRecoveryConfirmation({
   confirmed,
   activeExamTags = [],
 }: any = {}) {
-  const normalizeItem = ({ id, studyPlanId, prioritySnapshot, topicId, ...item }) => ({
+  const normalizeItem = ({ id, studyPlanId, prioritySnapshot, topicId, ...item }: Row) => ({
     ...item,
     topicId: topicId || id,
   });
@@ -207,7 +209,7 @@ export function validateRecoveryConfirmation({
     return { valid: false, reasonCode: 'confirmation_changed_allocation' };
   if (
     expected.items.some(
-      (item, index) =>
+      (item: any, index: any) =>
         item.prioritySnapshot &&
         !same(item.prioritySnapshot, confirmed.items[index].prioritySnapshot)
     )

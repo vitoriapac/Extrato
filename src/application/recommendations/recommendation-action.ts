@@ -1,4 +1,12 @@
-export const STUDY_ACTION_SOURCES = Object.freeze([
+type Row = Record<string, any>;
+const ACTION_LABELS: Record<string, string> = {
+  questions: 'Resolver questões',
+  review: 'Iniciar revisão',
+  prerequisite: 'Estudar pré-requisito',
+  study: 'Iniciar estudo',
+};
+
+export const STUDY_ACTION_SOURCES: readonly string[] = Object.freeze([
   'overview',
   'today',
   'diagnosis',
@@ -14,17 +22,10 @@ export function recommendationActionKind(item: any = {}) {
   return 'study';
 }
 
-export function recommendationActionLabel(item) {
-  return (
-    {
-      questions: 'Resolver questões',
-      review: 'Iniciar revisão',
-      prerequisite: 'Estudar pré-requisito',
-      study: 'Iniciar estudo',
-    }[recommendationActionKind(item)] || 'Iniciar estudo'
-  );
+export function recommendationActionLabel(item: Row) {
+  return ACTION_LABELS[recommendationActionKind(item)] || 'Iniciar estudo';
 }
-export function sameStudyActionTarget(left, right) {
+export function sameStudyActionTarget(left: Row | null | undefined, right: Row | null | undefined) {
   return (
     Boolean(left && right) &&
     left.subjectId === right.subjectId &&
@@ -33,17 +34,21 @@ export function sameStudyActionTarget(left, right) {
   );
 }
 
-const finiteOrNull = value =>
+const finiteOrNull = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
-const sourceOrDefault = source => (STUDY_ACTION_SOURCES.includes(source) ? source : 'overview');
-function freezeDeep(value, seen = new WeakSet()) {
+const sourceOrDefault = (source: string) =>
+  STUDY_ACTION_SOURCES.includes(source) ? source : 'overview';
+function freezeDeep<T>(value: T, seen = new WeakSet<object>()): T {
   if (!value || typeof value !== 'object' || seen.has(value)) return value;
   seen.add(value);
   Object.values(value).forEach(child => freezeDeep(child, seen));
   return Object.freeze(value);
 }
 
-export function buildStudyAction(recommendation, { source = 'overview' }: any = {}) {
+export function buildStudyAction(
+  recommendation: Row | null | undefined,
+  { source = 'overview' }: any = {}
+) {
   if (!recommendation) return null;
   const recommendationId = recommendation.recommendationId || null;
   const id = recommendationId || recommendation.id || null;

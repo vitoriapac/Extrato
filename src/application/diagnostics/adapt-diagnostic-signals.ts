@@ -8,18 +8,21 @@ import {
 } from '../../domain/recommendations/topic-priority-profile.js';
 import { buildOpportunityCost } from '../../domain/planning/opportunity-cost.js';
 
-const rows = value => (Array.isArray(value) ? value : value?.items || value?.rows || []);
-const identity = item => JSON.stringify([item.subjectId, item.topicId || null]);
-const strength = item => signalNumber(item?.evidenceStrength ?? item?.evidence?.evidenceStrength);
-const scope = (item, context) =>
+type Row = Record<string, any>;
+const rows = (value: any): Row[] =>
+  Array.isArray(value) ? value : value?.items || value?.rows || [];
+const identity = (item: Row) => JSON.stringify([item.subjectId, item.topicId || null]);
+const strength = (item: Row | null | undefined) =>
+  signalNumber(item?.evidenceStrength ?? item?.evidence?.evidenceStrength);
+const scope = (item: Row, context: { activeExamTags: string[]; inputsAlreadyScoped: boolean }) =>
   item.activeExamTags ?? (context.inputsAlreadyScoped ? context.activeExamTags : null);
 
 export function adaptDiagnosticSignals(input: any = {}) {
   const { priorities = [], activeExamTags = [], inputsAlreadyScoped = false } = input,
-    signals = [];
+    signals: Row[] = [];
   const context = { activeExamTags, inputsAlreadyScoped },
     candidates = new Map<string, any>(priorities.map((item: any) => [identity(item), item]));
-  const add = (item, source, kind, extra = {}) => {
+  const add = (item: Row, source: string, kind: string, extra: Row = {}) => {
     if (item.archived || item.topicArchived || item.subjectArchived) return;
     const candidate = candidates.get(identity(item)),
       knownStrength = strength(item) ?? strength(candidate);
@@ -174,7 +177,7 @@ export function adaptDiagnosticSignals(input: any = {}) {
           }
     );
     if (!cost) continue;
-    for (const role of ['from', 'to'])
+    for (const role of ['from', 'to'] as const)
       add(
         {
           ...cost[role],

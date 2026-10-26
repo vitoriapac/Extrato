@@ -3,7 +3,11 @@ import { createExamQuestion } from '../../domain/exam-intelligence/exam-question
 import { isTopicInExamScope } from '../../domain/exams/exam-scope.js';
 
 export function reviewExamClassification(
-  { exams = [], examQuestions = [], subjects = [] },
+  {
+    exams = [],
+    examQuestions = [],
+    subjects = [],
+  }: { exams?: any[]; examQuestions?: any[]; subjects?: any[] },
   { examId, questionNumber, topicId, confidence, now, idGenerator }: any = {}
 ) {
   const exam = exams.find(item => item.id === examId),
@@ -11,7 +15,7 @@ export function reviewExamClassification(
       item =>
         !item.archived &&
         (item.topics || []).some(
-          topic =>
+          (topic: any) =>
             topic.id === topicId &&
             !topic.archived &&
             isTopicInExamScope(topic, exam?.examTags || [])
@@ -32,7 +36,9 @@ export function reviewExamClassification(
   const existing = examQuestions.find(
     item => item.examId === examId && item.questionNumber === questionNumber
   );
-  const pending = (exam.unresolvedQuestions || []).find(item => item.number === questionNumber);
+  const pending = (exam.unresolvedQuestions || []).find(
+    (item: any) => item.number === questionNumber
+  );
   if (!existing && !pending) throw new TypeError('Questão histórica não encontrada.');
   const question = createExamQuestion({
     id: existing?.id || idGenerator('exam-question'),
@@ -47,7 +53,7 @@ export function reviewExamClassification(
   const nextQuestions = examQuestions.map(item => (item === existing ? question : item));
   if (!existing) nextQuestions.push(question);
   const unresolvedQuestions = (exam.unresolvedQuestions || []).filter(
-    item => item.number !== questionNumber
+    (item: any) => item.number !== questionNumber
   );
   const count =
     exam.importedQuestionCount == null

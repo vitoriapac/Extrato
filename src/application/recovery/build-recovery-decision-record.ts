@@ -15,14 +15,18 @@ export function buildRecoveryDecisionRecord({
   )
     return null;
   const afterPlan = application.plan,
-    source = afterPlan.subjects.find(item => item.subjectId === application.from.subjectId),
-    target = afterPlan.subjects.find(item => item.subjectId === application.to.subjectId),
-    sourceBefore = beforePlan.subjects.find(item => item.subjectId === application.from.subjectId),
-    targetBefore = beforePlan.subjects.find(item => item.subjectId === application.to.subjectId);
-  const findChanged = (subjectId, direction) =>
-    afterPlan.items.find(item => {
+    source = afterPlan.subjects.find((item: any) => item.subjectId === application.from.subjectId),
+    target = afterPlan.subjects.find((item: any) => item.subjectId === application.to.subjectId),
+    sourceBefore = beforePlan.subjects.find(
+      (item: any) => item.subjectId === application.from.subjectId
+    ),
+    targetBefore = beforePlan.subjects.find(
+      (item: any) => item.subjectId === application.to.subjectId
+    );
+  const findChanged = (subjectId: string, direction: string) =>
+    afterPlan.items.find((item: any) => {
       if (item.subjectId !== subjectId) return false;
-      const previous = beforePlan.items.find(row => row.id === item.id);
+      const previous = beforePlan.items.find((row: any) => row.id === item.id);
       return (
         previous &&
         (direction === 'decrease'
@@ -32,8 +36,8 @@ export function buildRecoveryDecisionRecord({
     });
   const sourceItem = findChanged(application.from.subjectId, 'decrease'),
     targetItem = findChanged(application.to.subjectId, 'increase'),
-    sourceItemBefore = beforePlan.items.find(item => item.id === sourceItem?.id),
-    targetItemBefore = beforePlan.items.find(item => item.id === targetItem?.id);
+    sourceItemBefore = beforePlan.items.find((item: any) => item.id === sourceItem?.id),
+    targetItemBefore = beforePlan.items.find((item: any) => item.id === targetItem?.id);
   if (
     !source ||
     !target ||
