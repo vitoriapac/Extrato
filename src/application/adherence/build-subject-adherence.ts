@@ -1,7 +1,7 @@
 import { adherencePercent } from './build-adherence-summary.js';
 
-export function buildSubjectAdherence(execution) {
-  return execution.subjects.map(row => ({
+export function buildSubjectAdherence(execution: Record<string, any>) {
+  return execution.subjects.map((row: any) => ({
     subjectId: row.subjectId,
     name: row.name,
     plannedMinutes: row.plannedMinutes,

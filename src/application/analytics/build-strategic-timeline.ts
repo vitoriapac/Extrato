@@ -8,9 +8,17 @@ import { localDateFromTimestamp } from '../../domain/sessions/study-session.js';
 import { groupStrategicTimeline } from './group-strategic-timeline.js';
 import { buildRecoveryTimelineDetail } from './build-recovery-timeline-detail.js';
 
-export const strategicScopeKey = tags =>
+type Row = Record<string, any>;
+const TRAJECTORY_LABELS: Record<string, string> = {
+  on_track: 'no caminho',
+  attention: 'em atenção',
+  at_risk: 'em risco',
+  insufficient_data: 'com dados insuficientes',
+};
+
+export const strategicScopeKey = (tags: unknown) =>
   Array.isArray(tags) ? JSON.stringify(normalizeExamTags(tags)) : null;
-export function strategicRecordInScope(record, activeExamTags, topics = []) {
+export function strategicRecordInScope(record: Row, activeExamTags: string[], topics: Row[] = []) {
   if (Array.isArray(record.activeExamTags))
     return strategicScopeKey(record.activeExamTags) === strategicScopeKey(activeExamTags);
   const topic = topics.find(item => item.id === record.topicId);
@@ -31,9 +39,17 @@ export function buildStrategicTimeline({
   groupBy = 'week',
   today = null,
 }: any = {}) {
-  const events = [],
-    seen = new Set();
-  const add = (source, id, time, category, title, description, record) => {
+  const events: Row[] = [],
+    seen = new Set<string>();
+  const add = (
+    source: string,
+    id: string,
+    time: string | null | undefined,
+    category: string,
+    title: string,
+    description: string,
+    record: Row
+  ) => {
     const date = /^\d{4}-\d{2}-\d{2}$/.test(record.date || '')
       ? record.date
       : /^\d{4}-\d{2}-\d{2}$/.test(time || '')
@@ -63,17 +79,17 @@ export function buildStrategicTimeline({
       sequence: events.length,
     });
   };
-  const exact = record =>
+  const exact = (record: Row) =>
     strategicScopeKey(record.activeExamTags) === strategicScopeKey(activeExamTags);
-  const scoped = record => strategicRecordInScope(record, activeExamTags, topics);
+  const scoped = (record: Row) => strategicRecordInScope(record, activeExamTags, topics);
   const readiness = readinessSnapshots
     .filter(exact)
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         a.date.localeCompare(b.date) ||
         String(a.savedAt || '').localeCompare(String(b.savedAt || ''))
     );
-  readiness.forEach((item, index) => {
+  readiness.forEach((item: any, index: any) => {
     const previous = readiness[index - 1],
       delta = previous ? item.score - previous.score : null;
     add(
@@ -86,7 +102,7 @@ export function buildStrategicTimeline({
       item
     );
   });
-  weeklyCloseSnapshots.filter(exact).forEach(item => {
+  weeklyCloseSnapshots.filter(exact).forEach((item: any) => {
     const frame = item.weeklyClose?.adherence,
       value = frame
         ? frame.assessment?.status === 'insufficient_data'
@@ -103,12 +119,14 @@ export function buildStrategicTimeline({
       item
     );
   });
-  const feedbackIds = new Set(recommendations.map(item => item.recommendationId).filter(Boolean));
-  recommendations.filter(scoped).forEach(item => {
+  const feedbackIds = new Set(
+    recommendations.map((item: any) => item.recommendationId).filter(Boolean)
+  );
+  recommendations.filter(scoped).forEach((item: any) => {
     if (typeof item.accepted !== 'boolean') return;
     const name =
       item.snapshot?.explanationSnapshot?.topicName ||
-      topics.find(topic => topic.id === item.topicId)?.name ||
+      topics.find((topic: any) => topic.id === item.topicId)?.name ||
       'Tópico removido';
     add(
       'recommendation',
@@ -122,23 +140,25 @@ export function buildStrategicTimeline({
   });
   recommendationHistory
     .filter(
-      item =>
+      (item: any) =>
         !feedbackIds.has(item.id) && ['executed', 'dismissed'].includes(item.status) && scoped(item)
     )
-    .forEach(item =>
+    .forEach((item: any) =>
       add(
         'recommendation-history',
         item.id,
         item.executedAt || item.dismissedAt || item.createdAt,
         'decisions',
         item.status === 'executed' ? 'Recomendação aceita' : 'Recomendação rejeitada',
-        topics.find(topic => topic.id === item.topicId)?.name || 'Tópico removido',
+        topics.find((topic: any) => topic.id === item.topicId)?.name || 'Tópico removido',
         item
       )
     );
   studyPlans
-    .filter(item => (Array.isArray(item.activeExamTags) ? exact(item) : !activeExamTags.length))
-    .forEach(item => {
+    .filter((item: any) =>
+      Array.isArray(item.activeExamTags) ? exact(item) : !activeExamTags.length
+    )
+    .forEach((item: any) => {
       const phase = item.phaseStrategy;
       add(
         'plan',
@@ -156,11 +176,11 @@ export function buildStrategicTimeline({
     });
   adaptiveHistory
     .filter(
-      item =>
+      (item: any) =>
         ['applied', 'reverted'].includes(item.status) &&
         scoped({ ...item, topicId: item.targetTopicId })
     )
-    .forEach(item => {
+    .forEach((item: any) => {
       const recovery = item.decisionType === 'recovery',
         transfer = `${item.minutes ?? '—'} min de ${item.sourceName || 'origem'} para ${item.targetName || 'destino'}`;
       const capacity =
@@ -168,7 +188,7 @@ export function buildStrategicTimeline({
           ? ` · carga semanal ${item.totalMinutesBefore} → ${item.totalMinutesAfter} min`
           : '';
       const status = item.trajectoryStatus
-        ? ` · trajetória ${{ on_track: 'no caminho', attention: 'em atenção', at_risk: 'em risco', insufficient_data: 'com dados insuficientes' }[item.trajectoryStatus] || 'reavaliada'}`
+        ? ` · trajetória ${TRAJECTORY_LABELS[item.trajectoryStatus] || 'reavaliada'}`
         : '';
       add(
         'adaptive',
@@ -196,12 +216,14 @@ export function buildStrategicTimeline({
     });
   planAdjustments
     .filter(
-      item =>
+      (item: any) =>
         scoped(item) ||
         (!Array.isArray(item.activeExamTags) &&
-          (item.allocations || []).some(allocation => scoped({ topicId: allocation.topicId })))
+          (item.allocations || []).some((allocation: any) =>
+            scoped({ topicId: allocation.topicId })
+          ))
     )
-    .forEach(item => {
+    .forEach((item: any) => {
       add(
         'adjustment',
         item.id,
@@ -223,8 +245,8 @@ export function buildStrategicTimeline({
         );
     });
   simulations
-    .filter(item => isSimulationInExamScope(item, activeExamTags))
-    .forEach(item =>
+    .filter((item: any) => isSimulationInExamScope(item, activeExamTags))
+    .forEach((item: any) =>
       add(
         'simulation',
         item.id,
@@ -235,7 +257,7 @@ export function buildStrategicTimeline({
         { ...item, activeExamTags: item.examTags }
       )
     );
-  const accepts = category =>
+  const accepts = (category: string) =>
     filter === 'all' ||
     filter === category ||
     (filter === 'performance' && category === 'readiness') ||

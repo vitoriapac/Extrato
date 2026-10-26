@@ -14,10 +14,15 @@ export function buildWeeklyAdherence({
     !date ||
     (start !== null && (typeof start !== 'string' || parseLocalDate(start)?.getDay() !== 1))
   )
-    return { state: 'invalid_period', current: null, history: [], comparison: null };
+    return {
+      state: 'invalid_period',
+      current: null as Record<string, any> | null,
+      history: [] as any[],
+      comparison: null as Record<string, any> | null,
+    };
   const weekStart = start || addLocalDays(today, -((date.getDay() + 6) % 7));
   const count = [4, 8, 12].includes(historyWeeks) ? historyWeeks : 8;
-  const build = (first, cutoff = today) => {
+  const build = (first: string, cutoff = today) => {
     const model = buildAdherenceModel({
       ...input,
       start: first,

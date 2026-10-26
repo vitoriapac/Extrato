@@ -1,8 +1,11 @@
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 
-const localLabel = date =>
+const localLabel = (date: string) =>
   new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(parseLocalDate(date));
-export function groupStrategicTimeline(rows, { groupBy = 'week' }: any = {}) {
+export function groupStrategicTimeline(
+  rows: Array<Record<string, any>>,
+  { groupBy = 'week' }: any = {}
+) {
   const selected = ['week', 'month', 'phase'].includes(groupBy) ? groupBy : 'week';
   const groups = new Map();
   for (const item of rows) {

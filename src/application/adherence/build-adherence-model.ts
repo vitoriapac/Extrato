@@ -22,29 +22,29 @@ export function buildAdherenceModel({
   )
     return {
       state: 'invalid_period',
-      period: null,
-      summary: null,
-      priority: null,
-      subjects: [],
-      items: [],
+      period: null as Record<string, any> | null,
+      summary: null as Record<string, any> | null,
+      priority: null as Record<string, any> | null,
+      subjects: [] as any[],
+      items: [] as any[],
     };
   const evaluatedEnd = end < today ? end : today;
   // Archiving governs new actions, not the interpretation of past activity.
-  const historicalSubjects = subjects.map(subject => ({
+  const historicalSubjects = subjects.map((subject: any) => ({
     ...subject,
     archived: false,
-    topics: (subject.topics || []).map(topic => ({ ...topic, archived: false })),
+    topics: (subject.topics || []).map((topic: any) => ({ ...topic, archived: false })),
   }));
   const historicalIndex = indexExamTopics(historicalSubjects);
-  const included = record =>
+  const included = (record: Record<string, any>) =>
     classifyEvidenceScope(record, historicalSubjects, activeExamTags, historicalIndex)
       .includedInExamMetrics;
   const scopedPlans = dailyPlans
-    .filter(plan =>
+    .filter((plan: any) =>
       Array.isArray(plan.activeExamTags) ? included({ examScope: plan.activeExamTags }) : true
     )
-    .map(plan => {
-      const items = (plan.items || []).filter(item => {
+    .map((plan: any) => {
+      const items = (plan.items || []).filter((item: any) => {
         const snapshot = item.executionSnapshot;
         return included(
           snapshot?.version === 1 ? { ...snapshot, examScope: snapshot.activeExamTags } : item

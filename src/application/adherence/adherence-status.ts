@@ -4,7 +4,7 @@ export const ADHERENCE_STATUS_POLICY = Object.freeze({
   minimumClassifiedCoverage: 80,
 });
 
-const labels = Object.freeze({
+const labels: Readonly<Record<string, string>> = Object.freeze({
   aligned: 'Execução alinhada',
   time_gap: 'Carga parcialmente executada',
   priority_gap: 'Prioridades pouco executadas',
@@ -12,8 +12,8 @@ const labels = Object.freeze({
   insufficient_data: 'Dados insuficientes',
 });
 
-export function adherenceStatus(model) {
-  const result = (status, reasonCodes) => ({
+export function adherenceStatus(model: Record<string, any> | null | undefined) {
+  const result = (status: string, reasonCodes: string[]) => ({
     status,
     label: labels[status],
     reasonCodes,

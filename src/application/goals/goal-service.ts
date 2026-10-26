@@ -1,4 +1,5 @@
-const clamp = (value, min = 0, max = Infinity) => Math.max(min, Math.min(max, Number(value) || 0));
+const clamp = (value: unknown, min = 0, max = Infinity) =>
+  Math.max(min, Math.min(max, Number(value) || 0));
 import { validAdherenceTarget } from '../adherence/adherence-target.js';
 
 export function createGoalService({
@@ -9,20 +10,20 @@ export function createGoalService({
   if (!repository || typeof repository.getGoals !== 'function')
     throw new TypeError('Serviço de metas requer repositório.');
   return Object.freeze({
-    hoursForDay: day =>
+    hoursForDay: (day: number) =>
       clamp(
         repository.getGoals()?.horasPorDia?.[String(day)] ?? repository.getGoals()?.horasDiarias,
         0,
         24
       ),
-    hoursForDate: date =>
+    hoursForDate: (date: string) =>
       clamp(
         repository.getGoals()?.horasPorDia?.[String(getDayOfWeek(date))] ??
           repository.getGoals()?.horasDiarias,
         0,
         24
       ),
-    updateDailyHours: (day, value, { isToday = false } = {}) => {
+    updateDailyHours: (day: number, value: unknown, { isToday = false } = {}) => {
       onCapacityObserved('observed');
       const hours = clamp(value, 0, 24);
       repository.updateDailyHours(day, hours);
@@ -30,7 +31,7 @@ export function createGoalService({
       onCapacityObserved('edited');
       return hours;
     },
-    applyHoursToEveryDay: value => {
+    applyHoursToEveryDay: (value: unknown) => {
       onCapacityObserved('observed');
       const hours = clamp(value, 0, 24);
       for (let day = 0; day < 7; day++) repository.updateDailyHours(day, hours);
@@ -44,7 +45,7 @@ export function createGoalService({
       repository.updateDailyHours(6, 0);
       onCapacityObserved('edited');
     },
-    update: (key, value) => {
+    update: (key: string, value: unknown) => {
       if (key === 'aderenciaSemanal') {
         const target = value === null ? null : value === '' ? NaN : Number(value);
         if (!validAdherenceTarget(target)) return false;

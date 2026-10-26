@@ -1,16 +1,21 @@
-const trajectoryLabels = {
+type Row = Record<string, any>;
+const trajectoryLabels: Record<string, string> = {
   on_track: 'No caminho',
   attention: 'Atenção',
   at_risk: 'Em risco',
   insufficient_data: 'Dados insuficientes',
 };
-const minutes = value => (Number.isFinite(value) && value >= 0 ? `${value} min` : 'Não registrado');
+const minutes = (value: number | null | undefined) =>
+  Number.isFinite(value) && value >= 0 ? `${value} min` : 'Não registrado';
 
 // Audit fields come exclusively from the decision recorded at confirmation.
-export function buildRecoveryTimelineDetail(record, { reverted = false }: any = {}) {
+export function buildRecoveryTimelineDetail(
+  record: Row | null | undefined,
+  { reverted = false }: any = {}
+) {
   if (record?.decisionType !== 'recovery') return null;
   const snapshot = record.explanationSnapshot?.action;
-  const metric = (side, key) =>
+  const metric = (side: string, key: string) =>
     Number.isFinite(snapshot?.[side]?.[key]) ? `${snapshot[side][key]}/100` : 'Não registrado';
   return {
     decisionId: record.id,
@@ -41,7 +46,7 @@ export function buildRecoveryTimelineDetail(record, { reverted = false }: any = 
       },
     ],
     reasons: (Array.isArray(record.reasons) ? record.reasons : []).filter(
-      reason => typeof reason === 'string'
+      (reason: any) => typeof reason === 'string'
     ),
     revertReason: reverted ? record.revertReason || 'Motivo não registrado' : null,
     note: reverted

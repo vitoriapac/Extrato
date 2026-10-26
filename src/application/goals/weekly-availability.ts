@@ -1,4 +1,4 @@
-const clampHours = value => Math.max(0, Math.min(24, Number(value) || 0));
+const clampHours = (value: unknown) => Math.max(0, Math.min(24, Number(value) || 0));
 
 export function buildWeeklyAvailability(hoursByDay: any = {}) {
   const days = Array.from({ length: 7 }, (_, day) => ({

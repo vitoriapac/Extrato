@@ -3,7 +3,8 @@ import { strategicScopeKey } from '../analytics/build-strategic-timeline.js';
 import { ADHERENCE_STATUS_POLICY } from './adherence-status.js';
 import { isTopicInExamScope } from '../../domain/exams/exam-scope.js';
 
-const validPeriod = period =>
+type Row = Record<string, any>;
+const validPeriod = (period: Row | null | undefined) =>
   Boolean(
     typeof period?.start === 'string' &&
     typeof period?.end === 'string' &&
@@ -41,7 +42,7 @@ export function savedAdherencePeriods({ snapshots = [], activeExamTags = [], tod
         b.period.end.localeCompare(a.period.end) || b.period.start.localeCompare(a.period.start)
     );
 }
-function supported(frame) {
+function supported(frame: Row | null | undefined) {
   return (
     frame?.version === 1 &&
     frame.model?.version === 1 &&
@@ -52,7 +53,7 @@ function supported(frame) {
     !frame.model.ambiguousItemCount
   );
 }
-function gaps(model) {
+function gaps(model: Row) {
   const rows = new Map();
   for (const item of model.items || []) {
     if (
@@ -93,7 +94,7 @@ export function buildRecurringPriorities({
     return { version: 1, state: 'insufficient_data', historyPeriods: 0, items: [] };
   const period = current.model.period,
     earliest = addLocalDays(period.start, -28),
-    selected = [];
+    selected: Row[] = [];
   for (const snapshot of savedAdherencePeriods({
     snapshots,
     activeExamTags,
@@ -121,8 +122,8 @@ export function buildRecurringPriorities({
       if (gap) periods.push({ start: previous.period.start, end: previous.period.end, ...gap });
     }
     if (periods.length < 2) continue;
-    const subject = subjects.find(item => item.id === row.subjectId),
-      topic = subject?.topics?.find(item => item.id === row.topicId);
+    const subject = subjects.find((item: any) => item.id === row.subjectId),
+      topic = subject?.topics?.find((item: any) => item.id === row.topicId);
     const executionPattern = periods.every(period => period.creditedMinutes === 0)
       ? 'not_started'
       : periods.every(

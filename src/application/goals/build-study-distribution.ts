@@ -1,8 +1,8 @@
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 
 const excluded = new Set(['skipped', 'replaced', 'discarded']);
-const key = value => value || 'unassigned';
-const minutes = value => Math.max(0, Number(value) || 0);
+const key = (value: string | null | undefined) => value || 'unassigned';
+const minutes = (value: unknown) => Math.max(0, Number(value) || 0);
 
 export function buildStudyDistribution({
   today,
@@ -11,11 +11,11 @@ export function buildStudyDistribution({
   subjects = [],
 }: any = {}) {
   const date = parseLocalDate(today);
-  if (!date) return { state: 'empty', rows: [], plannedMinutes: 0, studiedMinutes: 0 };
+  if (!date) return { state: 'empty', rows: [] as any[], plannedMinutes: 0, studiedMinutes: 0 };
   const start = addLocalDays(today, -((date.getDay() + 6) % 7));
   const rowsById = new Map(),
-    names = new Map(subjects.map(subject => [subject.id, subject.name]));
-  const rowFor = id => {
+    names = new Map(subjects.map((subject: any) => [subject.id, subject.name]));
+  const rowFor = (id: string | null | undefined) => {
     const subjectId = key(id);
     if (!rowsById.has(subjectId))
       rowsById.set(subjectId, {

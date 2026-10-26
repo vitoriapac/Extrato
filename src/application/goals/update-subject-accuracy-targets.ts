@@ -1,4 +1,8 @@
-export function updateSubjectAccuracyTargets(blueprint: any = {}, subjectIds = [], value = null) {
+export function updateSubjectAccuracyTargets(
+  blueprint: any = {},
+  subjectIds: string[] = [],
+  value: unknown = null
+) {
   if (
     value !== null &&
     (!Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 100)

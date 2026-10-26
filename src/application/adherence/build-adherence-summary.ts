@@ -1,7 +1,7 @@
-export const adherencePercent = (credit, planned) =>
+export const adherencePercent = (credit: number, planned: number) =>
   planned > 0 ? Math.min(100, Math.max(0, (credit / planned) * 100)) : null;
 
-export function buildAdherenceSummary(execution) {
+export function buildAdherenceSummary(execution: Record<string, any>) {
   const data = execution.reconciliation;
   return {
     plannedMinutes: data.plannedMinutes,

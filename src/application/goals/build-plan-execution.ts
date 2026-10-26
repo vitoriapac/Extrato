@@ -3,16 +3,16 @@ import { buildWeeklyAdherence } from '../adherence/build-weekly-adherence.js';
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 
 const excluded = new Set(['skipped', 'replaced', 'discarded', 'deferred']);
-const minutes = value => Math.max(0, Math.round(Number(value) || 0));
-const weekStart = date => {
+const minutes = (value: unknown) => Math.max(0, Math.round(Number(value) || 0));
+const weekStart = (date: string) => {
   const day = parseLocalDate(date)?.getDay();
   return day == null ? null : addLocalDays(date, -((day + 6) % 7));
 };
-export const plannedMinutesForPlan = plan =>
+export const plannedMinutesForPlan = (plan: Record<string, any>) =>
   Array.isArray(plan.items) && plan.items.length
     ? plan.items
-        .filter(item => !excluded.has(item.status))
-        .reduce((sum, item) => sum + minutes(item.plannedMinutes), 0)
+        .filter((item: any) => !excluded.has(item.status))
+        .reduce((sum: any, item: any) => sum + minutes(item.plannedMinutes), 0)
     : minutes(plan.plannedMinutes);
 
 export function buildPlanExecution({
@@ -25,7 +25,7 @@ export function buildPlanExecution({
   activeExamTags = [],
 }: any = {}) {
   const start = weekStart(today);
-  if (!start) return { state: 'empty', days: [], history: [] };
+  if (!start) return { state: 'empty', days: [] as any[], history: [] as any[] };
   const plansByDate = new Map(),
     studyByDate = new Map();
   for (const plan of dailyPlans) {

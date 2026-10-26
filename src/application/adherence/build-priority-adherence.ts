@@ -8,8 +8,8 @@ export function buildPriorityAdherence({
   priorityCreditedMinutes = 0,
   unknownPlannedMinutes = 0,
 }: any = {}) {
-  const priorities = items.filter(item => item.priority === true && item.plannedMinutes > 0);
-  const equivalent = priorities.reduce((sum, item) => sum + item.completion, 0);
+  const priorities = items.filter((item: any) => item.priority === true && item.plannedMinutes > 0);
+  const equivalent = priorities.reduce((sum: any, item: any) => sum + item.completion, 0);
   return {
     policyVersion: 1,
     policy: 'frozen-priority-minutes',
@@ -17,9 +17,9 @@ export function buildPriorityAdherence({
     executedMinutes: priorityCreditedMinutes,
     adherence: adherencePercent(priorityCreditedMinutes, priorityPlannedMinutes),
     plannedActivities: priorities.length,
-    completedActivities: priorities.filter(item => item.completion === 1).length,
+    completedActivities: priorities.filter((item: any) => item.completion === 1).length,
     partiallyExecutedActivities: priorities.filter(
-      item => item.completion > 0 && item.completion < 1
+      (item: any) => item.completion > 0 && item.completion < 1
     ).length,
     equivalentExecutedActivities: equivalent,
     activityAdherence: adherencePercent(equivalent, priorities.length),

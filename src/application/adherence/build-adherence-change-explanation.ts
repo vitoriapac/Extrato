@@ -1,7 +1,9 @@
 import { adherenceStatus } from './adherence-status.js';
 
-const finite = value => typeof value === 'number' && Number.isFinite(value);
-const direction = value => (Math.abs(value) < 1e-9 ? 'stable' : value > 0 ? 'up' : 'down');
+const finite = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+const direction = (value: number) =>
+  Math.abs(value) < 1e-9 ? 'stable' : value > 0 ? 'up' : 'down';
 export function buildAdherenceChangeExplanation({
   current,
   previous,
@@ -13,7 +15,7 @@ export function buildAdherenceChangeExplanation({
     state: 'insufficient_data',
     mainDriver,
     direction: 'insufficient_data',
-    changes: null,
+    changes: null as Record<string, any> | null,
     message:
       mainDriver === 'coverage'
         ? 'A classificação histórica não permite comparar as prioridades com segurança.'

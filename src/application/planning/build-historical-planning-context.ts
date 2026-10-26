@@ -7,9 +7,9 @@ export function buildHistoricalPlanningContext({
   end,
 }: any = {}) {
   const items = dailyPlans
-    .filter(plan => plan.date >= start && plan.date <= end)
-    .flatMap(plan =>
-      (plan.items || []).map(item => {
+    .filter((plan: any) => plan.date >= start && plan.date <= end)
+    .flatMap((plan: any) =>
+      (plan.items || []).map((item: any) => {
         const snapshot =
           item.executionSnapshot?.version === 1 &&
           item.executionSnapshot.historicalContextKnown !== false
@@ -35,17 +35,18 @@ export function buildHistoricalPlanningContext({
         };
       })
     );
-  const roots = items.filter(item => item.recorded && item.originItemId === item.id);
+  const roots = items.filter((item: any) => item.recorded && item.originItemId === item.id);
   return {
     version: 1,
     capacity: capacityForPeriod(capacityHistory, { start, end }),
     items,
-    originalRootMinutes: items.every(item => item.recorded)
-      ? roots.reduce((sum, item) => sum + item.originalMinutes, 0)
+    originalRootMinutes: items.every((item: any) => item.recorded)
+      ? roots.reduce((sum: any, item: any) => sum + item.originalMinutes, 0)
       : null,
-    legacyItems: items.filter(item => !item.recorded).length,
-    deferredItems: items.filter(item => item.status === 'deferred').length,
-    replacedItems: items.filter(item => item.status === 'replaced').length,
-    skippedItems: items.filter(item => ['skipped', 'discarded'].includes(item.status)).length,
+    legacyItems: items.filter((item: any) => !item.recorded).length,
+    deferredItems: items.filter((item: any) => item.status === 'deferred').length,
+    replacedItems: items.filter((item: any) => item.status === 'replaced').length,
+    skippedItems: items.filter((item: any) => ['skipped', 'discarded'].includes(item.status))
+      .length,
   };
 }

@@ -1,4 +1,4 @@
-const number = value => (Number.isFinite(Number(value)) ? Number(value) : 0);
+const number = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
 
 export function buildResultGoalsViewModel({ goals = {}, achieved = {}, period = {} }: any = {}) {
   const definitions = [

@@ -25,6 +25,12 @@
     "src/application/exams/**/*",
     "src/application/history/**/*",
     "src/application/reviews/**/*",
-    "src/application/onboarding/**/*"
+    "src/application/onboarding/**/*",
+    "src/application/adherence/**/*",
+    "src/application/goals/**/*",
+    "src/application/analytics/build-recovery-timeline-detail.ts",
+    "src/application/analytics/build-strategic-timeline.ts",
+    "src/application/analytics/group-strategic-timeline.ts",
+    "src/application/planning/build-historical-planning-context.ts"
   ]
 }

@@ -7,7 +7,7 @@ import {
   indexExecutionItems,
   executionSeconds as number,
 } from '../../domain/planning/execution-contract.js';
-const minutes = seconds => Math.round((seconds / 60) * 10) / 10;
+const minutes = (seconds: number) => Math.round((seconds / 60) * 10) / 10;
 
 export function buildStrategicExecution({
   start,
@@ -17,30 +17,31 @@ export function buildStrategicExecution({
   sessions = [],
   subjects = [],
 }: any = {}) {
-  const inPeriod = date => date && date >= start && date <= end;
-  const plans = dailyPlans.filter(plan => inPeriod(plan.date));
+  const inPeriod = (date: string | null | undefined) => date && date >= start && date <= end;
+  const plans = dailyPlans.filter((plan: any) => inPeriod(plan.date));
   const index = indexExecutionItems(
-    dailyPlans.flatMap(plan => (plan.items || []).map(historicalExecutionItem))
+    dailyPlans.flatMap((plan: any) => (plan.items || []).map(historicalExecutionItem))
   );
   const allItems = index.byId;
-  const items = plans.flatMap(plan =>
+  const items = plans.flatMap((plan: any) =>
     (plan.items || []).filter(
-      item =>
+      (item: any) =>
         (!excluded.has(item.status) || (item.status === 'deferred' && item.executionSnapshot)) &&
         allItems.has(item.id)
     )
   );
   const historicalItems = items.map(historicalExecutionItem);
-  const itemIds = new Set(items.map(item => item.id));
+  const itemIds = new Set(items.map((item: any) => item.id));
   const executed = new Map(),
     bySubject = new Map(),
     seen = new Set();
-  const subjectRow = id => {
+  const subjectRow = (id: string | null | undefined) => {
     const key = id || 'unassigned';
     if (!bySubject.has(key))
       bySubject.set(key, {
         subjectId: id || null,
-        name: subjects.find(subject => subject.id === id)?.name || 'Sem disciplina identificada',
+        name:
+          subjects.find((subject: any) => subject.id === id)?.name || 'Sem disciplina identificada',
         plannedMinutes: 0,
         studiedSeconds: 0,
         creditedMinutes: 0,
@@ -119,19 +120,19 @@ export function buildStrategicExecution({
     });
   }
   plans
-    .filter(plan => !plan.items?.length)
-    .forEach(plan => {
+    .filter((plan: any) => !plan.items?.length)
+    .forEach((plan: any) => {
       unknownPlanned += number(plan.plannedMinutes);
     });
   const classifiedPlanned = historicalItems.reduce(
-      (sum, item) => sum + number(item.plannedMinutes),
+      (sum: any, item: any) => sum + number(item.plannedMinutes),
       0
     ),
     planned =
       classifiedPlanned +
       plans
-        .filter(plan => !plan.items?.length)
-        .reduce((sum, plan) => sum + number(plan.plannedMinutes), 0);
+        .filter((plan: any) => !plan.items?.length)
+        .reduce((sum: any, plan: any) => sum + number(plan.plannedMinutes), 0);
   return {
     reconciliation: {
       plannedMinutes: planned,
@@ -150,8 +151,8 @@ export function buildStrategicExecution({
       incompatibleMinutes: invalidLinkSeconds / 60,
       otherPeriodMinutes: otherPeriodSeconds / 60,
       ambiguousItemCount: plans
-        .flatMap(plan => plan.items || [])
-        .filter(item => !excluded.has(item.status) && !allItems.has(item.id)).length,
+        .flatMap((plan: any) => plan.items || [])
+        .filter((item: any) => !excluded.has(item.status) && !allItems.has(item.id)).length,
     },
     priorityPlannedMinutes: Math.round(priorityPlanned),
     priorityExecutedMinutes: Math.round(priorityCredited),

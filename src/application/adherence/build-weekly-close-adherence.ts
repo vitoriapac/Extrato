@@ -22,7 +22,7 @@ export function buildWeeklyCloseAdherence({ snapshots = [], ...input }: any = {}
     }),
   };
 }
-export function buildAdherenceCloseHistory(input) {
+export function buildAdherenceCloseHistory(input: Parameters<typeof savedAdherencePeriods>[0]) {
   return savedAdherencePeriods(input).map(snapshot => ({
     id: snapshot.id,
     revision: snapshot.revision || 1,
