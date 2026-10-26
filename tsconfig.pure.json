@@ -19,6 +19,7 @@
     "src/domain/study-eligibility.ts",
     "src/domain/forecasts/**/*",
     "src/domain/exam-intelligence/**/*",
-    "src/domain/analytics/topic-strategy.ts"
+    "src/domain/analytics/topic-strategy.ts",
+    "src/domain/questions/**/*"
   ]
 }

@@ -1,6 +1,6 @@
-const clean = value => String(value ?? '').trim();
+const clean = (value: unknown) => String(value ?? '').trim();
 
-export const normalizeKey = value =>
+export const normalizeKey = (value: unknown) =>
   clean(value)
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -8,13 +8,13 @@ export const normalizeKey = value =>
     .trim()
     .toLocaleLowerCase('pt-BR');
 
-const finite = value => {
+const finite = (value: unknown) => {
   if (value === '' || value == null) return null;
   const num = Number(value);
   return Number.isFinite(num) ? num : null;
 };
 
-const HEADER_ALIASES = {
+const HEADER_ALIASES: Record<string, string> = {
   disciplina: 'subject',
   materia: 'subject',
   subject: 'subject',
@@ -83,7 +83,7 @@ const RESULT_WRONG = new Set([
 ]);
 
 // Valores do CSV (já normalizados por normalizeKey) → chaves de ERROR_CATEGORIES do app.
-const ERROR_CATEGORY_MAP = {
+const ERROR_CATEGORY_MAP: Record<string, string> = {
   lacuna: 'naoSabia',
   conteudo: 'naoSabia',
   'nao sabia': 'naoSabia',
@@ -109,11 +109,16 @@ export class QuestionImportError extends TypeError {
   }
 }
 
-const problem = (line, field, code, message) => ({ line, field, code, message });
+const problem = (line: number | null, field: string, code: string, message: string) => ({
+  line,
+  field,
+  code,
+  message,
+});
 
 // Delimitador mais frequente na linha de cabeçalho (fora de aspas); empate → vírgula.
-function detectDelimiter(text) {
-  const counts = { ',': 0, ';': 0, '\t': 0 };
+function detectDelimiter(text: string) {
+  const counts: Record<string, number> = { ',': 0, ';': 0, '\t': 0 };
   let quoted = false;
   for (const char of text) {
     if (char === '"') quoted = !quoted;
@@ -126,7 +131,7 @@ function detectDelimiter(text) {
   );
 }
 
-export function parseCsvRows(text) {
+export function parseCsvRows(text: string) {
   const rows = [];
   const delimiter = detectDelimiter(text);
   let row = [],
@@ -173,12 +178,12 @@ export function parseCsvRows(text) {
 }
 
 // Date.parse aceita 31/02 (vira 03/03); o ida-e-volta só confirma datas reais do calendário.
-const calendarDate = iso => {
+const calendarDate = (iso: string) => {
   const parsed = new Date(`${iso}T00:00:00Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === iso ? iso : null;
 };
 
-export function parseDate(rawDate, defaultDate = '') {
+export function parseDate(rawDate: unknown, defaultDate = '') {
   const value = clean(rawDate);
   if (!value) return defaultDate || null;
 
@@ -207,9 +212,8 @@ export function normalizeQuestionImportRows(
   text: string,
   {
     defaultDate = '',
-    aggregate = true,
     errorCategoryKeys,
-  }: { defaultDate?: string; aggregate?: boolean; errorCategoryKeys?: string[] } = {}
+  }: { defaultDate?: string; errorCategoryKeys?: string[] } = {}
 ) {
   if (!Array.isArray(errorCategoryKeys) || !errorCategoryKeys.length) {
     throw new TypeError('normalizeQuestionImportRows requer errorCategoryKeys.');
@@ -259,8 +263,17 @@ export function normalizeQuestionImportRows(
     ]);
   }
 
-  const issues = [];
-  const parsedRecords = [];
+  const issues: ReturnType<typeof problem>[] = [];
+  const parsedRecords: Array<{
+    line: number;
+    subjectName: string;
+    topicName: string | null;
+    date: string | null;
+    resolved: number;
+    correct: number;
+    errorCategory: string | null;
+    unknownErrorCategory: boolean;
+  }> = [];
 
   rows.forEach(({ values, line }) => {
     const record: Record<string, string> = {};
@@ -379,10 +392,6 @@ export function normalizeQuestionImportRows(
 
   if (issues.length) {
     throw new QuestionImportError(issues);
-  }
-
-  if (!aggregate) {
-    return parsedRecords;
   }
 
   // Aggregate by (date, subjectName, topicName)
