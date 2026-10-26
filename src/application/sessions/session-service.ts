@@ -14,7 +14,7 @@ export function createSessionService({
   idGenerator,
   normalizeSession = normalizeStudySession,
   normalizeQuestion = () => {},
-  resolveEvidenceScope = () => null,
+  resolveEvidenceScope = (_topicId: string): string[] | null => null,
   completeRecommendation = () => {},
   onCompleted = () => {},
 }: any = {}) {
@@ -22,19 +22,23 @@ export function createSessionService({
     throw new TypeError('Serviço de sessões requer repositório.');
   if (!questionsRepository || !planningRepository || !clock || typeof idGenerator !== 'function')
     throw new TypeError('Serviço de sessões requer dependências de aplicação.');
-  const normalize = input => normalizeSession(input, { today: () => clock.today() });
-  const findPlanItem = id => {
+  type Row = Record<string, any>;
+  const normalize = (input: Row) => normalizeSession(input, { today: () => clock.today() });
+  const findPlanItem = (id: string | null | undefined) => {
     if (!id) return null;
     for (const plan of planningRepository.getDailyPlans()) {
-      const item = (plan.items || []).find(candidate => candidate.id === id);
+      const item = (plan.items || []).find((candidate: any) => candidate.id === id);
       if (item) return { plan, item };
     }
     return null;
   };
-  const markRecommendationCompleted = (recommendationId, session) => {
+  const markRecommendationCompleted = (
+    recommendationId: string | null | undefined,
+    session: Row
+  ) => {
     if (!recommendationId) return null;
     const feedback = (recommendationsRepository?.all?.() || []).find(
-      item => item.recommendationId === recommendationId && item.accepted
+      (item: any) => item.recommendationId === recommendationId && item.accepted
     );
     if (!feedback || feedback.completed) return feedback;
     return completeRecommendation(recommendationsRepository?.all?.() || [], recommendationId, {
@@ -42,17 +46,17 @@ export function createSessionService({
       completedAt: session.endedAt || clock.nowISO(),
     });
   };
-  const syncPlan = planItemId => {
+  const syncPlan = (planItemId: string | null | undefined) => {
     const found = findPlanItem(planItemId);
     if (!found) return null;
     const linked = repository.listByPlanItem(planItemId),
-      matching = linked.filter(session => sessionMatchesDailyItem(session, found.item)),
+      matching = linked.filter((session: any) => sessionMatchesDailyItem(session, found.item)),
       latest = [...matching]
         .sort((a, b) => String(a.endedAt || '').localeCompare(String(b.endedAt || '')))
         .pop();
-    found.item.sessionIds = linked.map(item => item.id);
+    found.item.sessionIds = linked.map((item: any) => item.id);
     found.item.executedSeconds = matching.reduce(
-      (sum, item) => sum + Math.max(0, Number(item.durationSeconds) || 0),
+      (sum: any, item: any) => sum + Math.max(0, Number(item.durationSeconds) || 0),
       0
     );
     if (!EXCLUDED_DAILY_STATUSES.has(found.item.status))
@@ -68,10 +72,12 @@ export function createSessionService({
       markRecommendationCompleted(found.item.recommendationId, latest);
     return found.item;
   };
-  const syncQuestion = session => {
-    const linked = questionsRepository.all().filter(item => item.studySessionId === session.id),
+  const syncQuestion = (session: Row) => {
+    const linked = questionsRepository
+        .all()
+        .filter((item: any) => item.studySessionId === session.id),
       existing = linked[0] || null;
-    linked.slice(1).forEach(item => questionsRepository.remove(item.id));
+    linked.slice(1).forEach((item: any) => questionsRepository.remove(item.id));
     if (session.questionsResolved <= 0) {
       if (existing) questionsRepository.remove(existing.id);
       return null;
@@ -98,7 +104,7 @@ export function createSessionService({
     return question;
   };
   return Object.freeze({
-    complete: input => {
+    complete: (input: Row) => {
       const linkedItem = findPlanItem(input.planItemId)?.item || null,
         recommendationId =
           input.recommendationId ||
@@ -150,7 +156,7 @@ export function createSessionService({
       onCompleted(saved);
       return saved;
     },
-    edit: (id, changes) => {
+    edit: (id: string, changes: Row) => {
       const current = repository.findById(id);
       if (!current) return null;
       const oldPlanItemId = current.planItemId || null,
@@ -160,17 +166,17 @@ export function createSessionService({
       syncPlan(saved.planItemId);
       return saved;
     },
-    remove: id => {
+    remove: (id: string) => {
       const session = repository.remove(id);
       if (!session) return null;
       questionsRepository
         .all()
-        .filter(item => item.studySessionId === id)
-        .forEach(item => questionsRepository.remove(item.id));
+        .filter((item: any) => item.studySessionId === id)
+        .forEach((item: any) => questionsRepository.remove(item.id));
       historyRepository
         ?.all?.()
-        .filter(item => item.type === 'study_session' && item.metadata?.sessionId === id)
-        .forEach(item => historyRepository.remove(item.id));
+        .filter((item: any) => item.type === 'study_session' && item.metadata?.sessionId === id)
+        .forEach((item: any) => historyRepository.remove(item.id));
       syncPlan(session.planItemId);
       return session;
     },

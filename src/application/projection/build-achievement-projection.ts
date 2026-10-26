@@ -10,7 +10,7 @@ import {
   daysBetweenCalendarDates,
 } from './projection-status.js';
 
-const percent = value =>
+const percent = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value))
     ? null
     : Math.max(0, Math.min(100, Number(value)));
@@ -114,8 +114,8 @@ export function buildAchievementProjection({
     },
     exam,
     projection: {
-      examDayScore: null,
-      approvalProbability: null,
+      examDayScore: null as number | null,
+      approvalProbability: null as number | null,
       calibratedSimulationBand: calibrated.available
         ? { low: calibrated.low, central: calibrated.central, high: calibrated.high }
         : null,

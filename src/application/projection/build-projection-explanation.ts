@@ -9,9 +9,9 @@ export function buildProjectionExplanation({
   openHighImpactPriorities,
   target,
   daysRemaining,
-}) {
-  const drivers = [],
-    risks = [];
+}: Record<string, any>) {
+  const drivers: string[] = [],
+    risks: string[] = [];
   if (!calibrated.available) return { drivers, risks, summary: calibrated.reason };
   const current = calibrated.central;
   if (current >= target)
@@ -40,7 +40,7 @@ export function buildProjectionExplanation({
     risks.push(
       `Prazo curto: ${pluralize(daysRemaining, 'dia', 'dias')} até a prova para reduzir o déficit medido.`
     );
-  const summaries = {
+  const summaries: Record<string, string> = {
     insufficient_data: 'Ainda não há simulados comparáveis suficientes para avaliar a trajetória.',
     on_track: 'Os sinais medidos são compatíveis com a meta, sujeitos à incerteza indicada.',
     attention: 'A meta exige atenção aos sinais de desempenho e cobertura.',

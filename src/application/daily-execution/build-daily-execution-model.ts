@@ -26,8 +26,8 @@ export function buildDailyExecutionModel({
     activeExamTags,
   });
   reconciled.items = reconciled.items.map(item => {
-    const subject = subjects.find(row => row.id === item.subjectId),
-      topic = subject?.topics?.find(row => row.id === item.topicId);
+    const subject = subjects.find((row: any) => row.id === item.subjectId),
+      topic = subject?.topics?.find((row: any) => row.id === item.topicId);
     return {
       ...item,
       subjectName: subject?.name || item.subjectName,

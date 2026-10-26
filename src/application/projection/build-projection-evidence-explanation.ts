@@ -1,4 +1,4 @@
-export function buildProjectionEvidenceExplanation(model) {
+export function buildProjectionEvidenceExplanation(model: Record<string, any>) {
   const evidence = model?.evidence || {},
     band = model?.projection?.calibratedSimulationBand;
   const facts = [

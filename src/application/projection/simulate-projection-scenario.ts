@@ -1,8 +1,9 @@
 import { buildAchievementProjection } from './build-achievement-projection.js';
 import { daysBetweenCalendarDates } from './projection-status.js';
 
-const validNumber = value => typeof value === 'number' && Number.isFinite(value);
-const planFit = (capacity, planned) =>
+const validNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+const planFit = (capacity: number, planned: number) =>
   planned == null
     ? null
     : {

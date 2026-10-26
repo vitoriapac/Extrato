@@ -9,7 +9,7 @@ export function buildProjectionRecovery({
   if (status === 'insufficient_data')
     return {
       state: 'collect_evidence',
-      gap: null,
+      gap: null as number | null,
       steps: ['Registre simulados comparáveis em datas diferentes para medir a trajetória.'],
     };
   const gap = Math.max(

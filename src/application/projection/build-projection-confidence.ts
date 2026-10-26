@@ -1,4 +1,7 @@
-export function buildProjectionConfidence(calibrated, forecast) {
+export function buildProjectionConfidence(
+  calibrated: Record<string, any>,
+  forecast: Record<string, any>
+) {
   if (!calibrated?.available)
     return {
       level: 'insufficient',

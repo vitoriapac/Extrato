@@ -4,7 +4,8 @@ export function buildDailyProgress({
   additionalSeconds = 0,
   mismatchedSeconds = 0,
 }: any = {}) {
-  const total = field => items.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
+  const total = (field: string) =>
+    items.reduce((sum: any, item: any) => sum + (Number(item[field]) || 0), 0);
   const plannedMinutes = total('plannedMinutes'),
     creditedMinutes = total('creditedTodaySeconds') / 60,
     remainingMinutes = total('remainingSeconds') / 60;
@@ -23,7 +24,7 @@ export function buildDailyProgress({
     todayAdherence: plannedMinutes
       ? Math.min(100, Math.round((creditedMinutes / plannedMinutes) * 100))
       : null,
-    completedActivities: items.filter(item => item.remainingSeconds === 0).length,
-    pendingActivities: items.filter(item => item.remainingSeconds > 0).length,
+    completedActivities: items.filter((item: any) => item.remainingSeconds === 0).length,
+    pendingActivities: items.filter((item: any) => item.remainingSeconds > 0).length,
   };
 }

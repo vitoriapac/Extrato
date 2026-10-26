@@ -1,7 +1,6 @@
 import { historicalExecutionItem } from '../../domain/planning/plan-execution-snapshot.js';
 import {
   EXCLUDED_DAILY_STATUSES,
-  dailyActivityType,
   sessionMatchesDailyItem,
   executionDate as dateOf,
   executionSeconds as seconds,
@@ -15,15 +14,15 @@ export {
 } from '../../domain/planning/execution-contract.js';
 import { classifyEvidenceScope, indexExamTopics } from '../../domain/exams/exam-evidence-scope.js';
 import { normalizeExamTags, isTopicInExamScope } from '../../domain/exams/exam-scope.js';
-import { parseLocalDate } from '../../core/date-utils.js';
 
-const scopeKey = tags => JSON.stringify(normalizeExamTags(tags));
+type Row = Record<string, any>;
+const scopeKey = (tags: unknown) => JSON.stringify(normalizeExamTags(tags));
 
-export function dailyItemEligible(item, subjects, activeExamTags) {
+export function dailyItemEligible(item: Row, subjects: Row[], activeExamTags: string[]) {
   if (EXCLUDED_DAILY_STATUSES.has(item.status) || item.archived) return false;
-  const subject = subjects.find(row => row.id === item.subjectId);
+  const subject = subjects.find((row: any) => row.id === item.subjectId);
   if (!subject || subject.archived) return false;
-  const topic = subject.topics?.find(row => row.id === item.topicId);
+  const topic = subject.topics?.find((row: any) => row.id === item.topicId);
   return (
     !item.topicId || Boolean(topic && !topic.archived && isTopicInExamScope(topic, activeExamTags))
   );
@@ -38,29 +37,29 @@ export function reconcileDailyExecution({
   activeExamTags = [],
 }: any = {}) {
   const plans = dailyPlans.filter(
-    plan =>
+    (plan: any) =>
       plan.date === today &&
       (!Array.isArray(plan.activeExamTags) ||
         scopeKey(plan.activeExamTags) === scopeKey(activeExamTags))
   );
-  const items = plans.flatMap(plan =>
+  const items = plans.flatMap((plan: any) =>
     (plan.items || [])
-      .filter(item => dailyItemEligible(item, subjects, activeExamTags))
-      .map(item => ({
+      .filter((item: any) => dailyItemEligible(item, subjects, activeExamTags))
+      .map((item: any) => ({
         ...structuredClone(historicalExecutionItem(item)),
         dailyPlanId: plan.id,
         date: today,
       }))
   );
-  const globalIndex = indexExecutionItems(dailyPlans.flatMap(plan => plan.items || []));
+  const globalIndex = indexExecutionItems(dailyPlans.flatMap((plan: any) => plan.items || []));
   const { eligible, byId, resolve } = indexExecutionItems(
-    items.filter(item => globalIndex.byId.has(item.id))
+    items.filter((item: any) => globalIndex.byId.has(item.id))
   );
   const ambiguousItemCount = items.length - eligible.length;
   const execution = new Map(
     eligible.map(item => [
       item.id,
-      { todaySeconds: 0, previousSeconds: 0, mismatchedSeconds: 0, sessionIds: [] },
+      { todaySeconds: 0, previousSeconds: 0, mismatchedSeconds: 0, sessionIds: [] as string[] },
     ])
   );
   const seen = new Set(),

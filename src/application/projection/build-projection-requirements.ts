@@ -1,7 +1,7 @@
 import { pluralize } from '../../core/utils.js';
 import { PROJECTION_EVIDENCE_POLICY as policy } from '../../domain/forecasts/projection-evidence-policy.js';
 // Mirrors the calibrated projection's actual availability gates.
-export function buildProjectionRequirements(model) {
+export function buildProjectionRequirements(model: Record<string, any>) {
   const evidence = model?.evidence || {};
   const requirements = [
     {

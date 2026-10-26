@@ -1,10 +1,10 @@
 export function buildSessionResultViewModel(
-  session,
-  nextPriority,
-  priorityChanged,
+  session: Record<string, any>,
+  nextPriority: Record<string, any> | null | undefined,
+  priorityChanged: boolean,
   { subjectName, topicName, formatMinutes, day = null, planNext = null }: any = {}
 ) {
-  const typeLabels = {
+  const typeLabels: Record<string, string> = {
     study: 'Estudo teórico',
     review: 'Revisão',
     questions: 'Questões',
@@ -23,7 +23,8 @@ export function buildSessionResultViewModel(
   const minutes = Math.round(session.durationSeconds / 60);
   // Today's statement moves only when the day progress before and after the save is known.
   // A session too short to credit a whole minute posts what was actually done instead of "+0min".
-  const changed = (before, after) => (before === after ? null : { before, after });
+  const changed = (before: unknown, after: unknown) =>
+    before === after ? null : { before, after };
   const seconds = `${Math.max(0, Math.round(Number(session.durationSeconds) || 0))} s`,
     duration = minutes > 0 ? formatMinutes(minutes) : seconds;
   const credit =

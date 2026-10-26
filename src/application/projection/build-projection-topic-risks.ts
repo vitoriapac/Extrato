@@ -1,5 +1,5 @@
 // Uses the existing priority candidate order. It annotates evidence; it does not rank or score topics.
-export function buildProjectionTopicRisks(candidates = []) {
+export function buildProjectionTopicRisks(candidates: Array<Record<string, any>> = []) {
   const seen = new Set();
   return candidates
     .filter(

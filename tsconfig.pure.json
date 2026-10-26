@@ -31,6 +31,9 @@
     "src/application/analytics/build-recovery-timeline-detail.ts",
     "src/application/analytics/build-strategic-timeline.ts",
     "src/application/analytics/group-strategic-timeline.ts",
-    "src/application/planning/build-historical-planning-context.ts"
+    "src/application/planning/build-historical-planning-context.ts",
+    "src/application/projection/**/*",
+    "src/application/daily-execution/**/*",
+    "src/application/sessions/**/*"
   ]
 }
