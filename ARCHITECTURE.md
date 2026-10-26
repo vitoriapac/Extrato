@@ -175,7 +175,7 @@ npm run build
 npm run check
 ```
 
-`src/app.bundle.js`, `src/exam-catalog.bundle.js`, `index.html` e `service-worker.js` são artefatos gerados e não devem ser editados para alterar suas versões manualmente. O build calcula um fingerprint determinístico dos fontes e assets, aplica o mesmo valor às URLs versionadas e ao nome do cache PWA, e injeta essa versão no carregamento sob demanda do catálogo. A implantação no GitHub Pages executa `npm ci` e `npm run build` antes de preparar o site. `npm run check:bundle` verifica a reprodução dos bundles e dos arquivos versionados. O bundle principal não incorpora os dados completos do catálogo; o segundo bundle é carregado ao abrir o assistente ou o importador. `build.ps1` é um atalho para `npm run build`.
+`src/app.bundle.js`, `src/exam-catalog.bundle.js`, `index.html` e `service-worker.js` são artefatos gerados e não devem ser editados para alterar suas versões manualmente. O build calcula um fingerprint determinístico dos fontes e assets, aplica o mesmo valor às URLs versionadas e ao nome do cache PWA, e injeta essa versão no carregamento sob demanda do catálogo. A implantação no GitHub Pages executa `npm ci` e `npm run build` antes de preparar o site. `npm run check:bundle` verifica a reprodução dos bundles e dos arquivos versionados. O bundle principal não incorpora os dados completos do catálogo; o segundo bundle é carregado ao abrir o assistente ou o importador.
 
 ## Persistência
 
