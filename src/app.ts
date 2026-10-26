@@ -8046,7 +8046,17 @@ function renderExecutiveSummary() {
 
 const dismissedRecommendationIds = new Set<string>();
 let currentStudyRecommendations = [];
+// One render pass asks for the candidates in ~28 places; computing them once per pass saves
+// seconds on long histories. Outside a render every call recomputes, so edits are never stale.
+let renderDepth = 0,
+  renderCandidates = null;
 function intelligenceCandidates() {
+  if (renderCandidates) return renderCandidates;
+  const candidates = computeIntelligenceCandidates();
+  if (renderDepth > 0) renderCandidates = candidates;
+  return candidates;
+}
+function computeIntelligenceCandidates() {
   const priorities = collectStudyCandidates(),
     topics = allTopics();
   const retentions = Object.fromEntries(
@@ -11001,6 +11011,14 @@ applicationRenderer = createApplicationRenderer({
   onError: (error, name) => errorBoundary.report(error, name),
 });
 function render(scope = 'all') {
+  renderDepth++;
+  try {
+    return renderScope(scope);
+  } finally {
+    if (--renderDepth === 0) renderCandidates = null;
+  }
+}
+function renderScope(scope) {
   const result = applicationRenderer.render(scope);
   if (
     scope === 'all' ||
