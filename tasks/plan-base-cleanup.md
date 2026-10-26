@@ -25,7 +25,7 @@ Origem: análise de 2026-10-25 (TypeScript, Preact e Tailwind). Decisões da aut
    - ✅ **`state` com tipo real** (feito; o commit traz os números): trocar `let state: any` por `AppState` e descrever as coleções que hoje são `unknown[]` (`calendar`, `reviewAgenda`, `exams`, `examQuestions`, `planningCapacityHistory`...). Medição: 307 erros, sobretudo `date`, `topicId`, `status` e `id`. As funções de normalização (`normalizeStudySession` e similares) definem o formato de cada coleção.
    - ✅ **Testes checados:** `tsconfig.tests.json` (tipos do Node só nele; o `tsconfig.json` do navegador ganhou `"types": []`) roda em `npm run check:types:tests` e na fase "Typecheck (tests)" do gate. 148 dos 187 testes já são checados; 39 ficam no `exclude` (fakes de DOM, retornos em união, entrada inválida de propósito) e saem um a um, como as pastas do `tsconfig.pure.json`.
    - ✅ **JSDoc redundante:** remover as 52 anotações `@param {…}`/`@returns {…}` dentro de `.ts`; o tipo fica só no TypeScript.
-3. **`noImplicitAny` + `noUnusedLocals`/`noUnusedParameters` pasta a pasta:** os flags de código não usado entram junto, para achar código morto como o parâmetro `metrics` de `projectPerformance`.
+3. ✅ **`noImplicitAny` + `noUnusedLocals`/`noUnusedParameters` pasta a pasta:** os flags de código não usado entram junto, para achar código morto como o parâmetro `metrics` de `projectPerformance`.
    **Mecânica de `noImplicitAny`:** cada pasta corrigida entra no `include` do `tsconfig.pure.json`. Ordem: `domain/`, `application/`, `ui/` (maior número de `any`), `demo/` por último.
    - ✅ `core/`, `state/`, `storage/`, `repositories/` e todo o `domain/` (`2dbe869`). Saíram parâmetros mortos: `aggregate` do importador de questões, `topics` do replanejamento pós-simulado, `topic` de `calculateTopicMastery` e `sessions` de `buildWeeklyClose`.
    - **Armadilha:** fazer spread de `Record<string, any>` perde a assinatura de índice, e quem chama perde os campos. Funções que devolvem o registro espalhado usam um genérico com padrão `any` (`<T extends Row = any>`) ou retorno `any` explícito.
@@ -48,7 +48,10 @@ Origem: análise de 2026-10-25 (TypeScript, Preact e Tailwind). Decisões da aut
    - ✅ `reports/`, `features/`, `demo/` e `bootstrap/` (`bfd664b`, `21e39dc`, `5afc042`).
      - O estado da importação de edital ganhou a interface `ExamImportState`.
      - Os registros fictícios da demo deixam o `any` explícito no valor (`null as any`).
-   - O `tsconfig.pure.json` cobre todo o `src/` menos o `app.ts`, que tem ~924 erros com `noImplicitAny`. Esse arquivo é o próximo, e deve ser feito em fatias, pelo tamanho.
+   - ✅ `app.ts` (`57b5eca`, `2c8a9ee`). O `tsconfig.pure.json` cobre todos os arquivos TypeScript de `src/`.
+     - Primeiro saiu o código morto que o `noUnusedLocals` revelou: 44 funções sem chamador (helpers antigos de questões, simulados, horas de estudo e notas, já substituídos pelos renderers e view models extraídos) e os 41 imports que só elas usavam. A mensagem do `57b5eca` diz 37, mas a contagem certa é 41.
+     - Depois veio a tipagem. Valores lidos do DOM ficam como `any` explícito, e lookups por texto em estado tipado usam cast no ponto do índice.
+   - Possível simplificação antes do passo 4: com o pure cobrindo tudo, os três flags podem passar para o `tsconfig.json` e o `tsconfig.pure.json` deixa de existir.
 4. **`strict` gradual:** mesma mecânica, depois do passo 3, num `tsconfig.strict.json` ou no próprio `tsconfig.pure.json`.
 5. **Preact montado, uma aba por commit:** trocar `render-to-string` + `innerHTML` e `dangerouslySetInnerHTML` por componentes montados com `mountPreact`. Ordem: questões e calendário (mostram texto digitado), depois revisões, disciplinas, metas, Hoje, Visão Geral, ajuda.
 6. **Tailwind junto do passo 5:** a aba convertida usa os utilitários do `@theme` (que já apontam para os tokens) e remove do `app.css` as regras que deixaram de ser usadas, no mesmo commit.
