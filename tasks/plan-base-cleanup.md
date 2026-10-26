@@ -27,6 +27,9 @@ Origem: análise de 2026-10-25 (TypeScript, Preact e Tailwind). Decisões da aut
    - ✅ **JSDoc redundante:** remover as 52 anotações `@param {…}`/`@returns {…}` dentro de `.ts`; o tipo fica só no TypeScript.
 3. **`noImplicitAny` + `noUnusedLocals`/`noUnusedParameters` pasta a pasta:** os flags de código não usado entram junto, para achar código morto como o parâmetro `metrics` de `projectPerformance`.
    **Mecânica de `noImplicitAny`:** cada pasta corrigida entra no `include` do `tsconfig.pure.json`. Ordem: `domain/`, `application/`, `ui/` (maior número de `any`), `demo/` por último.
+   - ✅ `core/`, `state/`, `storage/`, `repositories/` e todo o `domain/` (`2dbe869`). Saíram parâmetros mortos: `aggregate` do importador de questões, `topics` do replanejamento pós-simulado, `topic` de `calculateTopicMastery` e `sessions` de `buildWeeklyClose`.
+   - **Armadilha:** fazer spread de `Record<string, any>` perde a assinatura de índice, e quem chama perde os campos. Funções que devolvem o registro espalhado usam um genérico com padrão `any` (`<T extends Row = any>`) ou retorno `any` explícito.
+   - Próximo: `application/` (~1.476 erros), depois `ui/`, `demo/`, `features/` e `reports/`.
 4. **`strict` gradual:** mesma mecânica, depois do passo 3, num `tsconfig.strict.json` ou no próprio `tsconfig.pure.json`.
 5. **Preact montado, uma aba por commit:** trocar `render-to-string` + `innerHTML` e `dangerouslySetInnerHTML` por componentes montados com `mountPreact`. Ordem: questões e calendário (mostram texto digitado), depois revisões, disciplinas, metas, Hoje, Visão Geral, ajuda.
 6. **Tailwind junto do passo 5:** a aba convertida usa os utilitários do `@theme` (que já apontam para os tokens) e remove do `app.css` as regras que deixaram de ser usadas, no mesmo commit.
