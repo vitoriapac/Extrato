@@ -33,7 +33,19 @@ Origem: análise de 2026-10-25 (TypeScript, Preact e Tailwind). Decisões da aut
      - Callbacks de `filter`/`map`/`reduce` sobre arrays que já eram `any` (vindos de `}: any = {}`) ganharam `: any` explícito por codemod.
      - Auxiliares e métodos de serviço receberam tipos de verdade, e tabelas de rótulos montadas inline viraram constantes tipadas.
      - Parâmetros mortos removidos: `addDays` de `reconcileAlerts`, um `Map` sem leitura em `compareRecoveryPlan` e um índice de `forEach`.
-   - Próximo: `ui/` (~1.103 erros), `demo/` (~312), `features/` (~147) e `reports/` (~146).
+   - ✅ Todo o `ui/` (`6662f65`, quatro commits a partir de `d6557bf`).
+     - Codemods cobriram três padrões:
+       - callbacks e listeners sobre alvos `any`;
+       - desestruturações de opções (`: any`, a convenção do projeto para dependências injetadas);
+       - lookups em tabelas de rótulos (`Record`).
+     - Os parâmetros dos renderers foram tipados pelo papel: `model` e `item` como registros abertos, rótulos como `string`, contagens como `number` e escapes como `(value: any) => string`.
+     - Entradas mortas removidas:
+       - o `step` de `showMore`;
+       - a prop `totalActiveSubjectsCount`;
+       - o `escapeHtml` de `renderPerformanceStory`, já que o resumo já escapa;
+       - `simulatedScenario`;
+       - opções de filtro do calendário que não eram lidas.
+   - Próximo: `demo/` (~312 erros), `features/` (~147) e `reports/` (~146).
 4. **`strict` gradual:** mesma mecânica, depois do passo 3, num `tsconfig.strict.json` ou no próprio `tsconfig.pure.json`.
 5. **Preact montado, uma aba por commit:** trocar `render-to-string` + `innerHTML` e `dangerouslySetInnerHTML` por componentes montados com `mountPreact`. Ordem: questões e calendário (mostram texto digitado), depois revisões, disciplinas, metas, Hoje, Visão Geral, ajuda.
 6. **Tailwind junto do passo 5:** a aba convertida usa os utilitários do `@theme` (que já apontam para os tokens) e remove do `app.css` as regras que deixaram de ser usadas, no mesmo commit.
