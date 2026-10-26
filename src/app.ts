@@ -306,7 +306,14 @@ import {
 import { createExamImportController } from './features/exam-import/exam-import-controller.js';
 import { createTabRouter } from './ui/navigation/tab-router.js';
 import { createAppStateStore } from './state/app-state-store.js';
-import type { ActiveTimerState, AppState, Metas, Subject } from './core/types.js';
+import type {
+  ActiveTimerState,
+  AppState,
+  Metas,
+  Subject,
+  Topic,
+  TopicStatus,
+} from './core/types.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createEditableCollectionController } from './ui/controllers/editable-collection-controller.js';
 import { createPreferencesController } from './ui/controllers/preferences-controller.js';
@@ -512,7 +519,7 @@ document
   .getElementById('periodComparisonEnd')
   ?.addEventListener('change', renderSelectedPeriodComparison);
 
-const ERROR_CATEGORIES = {
+const ERROR_CATEGORIES: Record<string, any> = {
   naoSabia: { label: 'Não sabia', icon: '📚' },
   esqueci: { label: 'Esqueci', icon: '🧠' },
   interpretacao: { label: 'Interpretação', icon: '📖' },
@@ -531,9 +538,9 @@ const streakView = {
   onlyActiveDays: false,
   metric: 'hours',
   subjectId: '',
-  selectedDate: null,
+  selectedDate: null as any,
 };
-const ERROR_RECOMMENDATIONS = {
+const ERROR_RECOMMENDATIONS: Record<string, any> = {
   naoSabia: {
     action: 'Revisar a teoria e os conceitos-base',
     studyType: 'study',
@@ -571,7 +578,7 @@ const ERROR_RECOMMENDATIONS = {
     questions: 10,
   },
 };
-const DIAGNOSIS_STATUS_ICON = {
+const DIAGNOSIS_STATUS_ICON: Record<string, any> = {
   Crítico: '🔴',
   Atenção: '🟠',
   Acompanhamento: '🟡',
@@ -583,12 +590,12 @@ const uiState = createUiState();
 const EXAM_PRESETS = EXAM_PRESET_OPTIONS.map(option => ({
   ...option,
   version: CATALOG_VERSION,
-  examTags: [],
-  sources: [],
+  examTags: [] as any[],
+  sources: [] as any[],
   description: '',
-  subjects: [],
+  subjects: [] as any[],
 }));
-let examCatalogLoadPromise = null;
+let examCatalogLoadPromise: any = null;
 let examCatalogLoaded = false;
 async function ensureExamCatalog() {
   if (examCatalogLoaded) return EXAM_PRESETS;
@@ -631,40 +638,40 @@ async function ensureExamCatalog() {
 }
 uiState.onboarding.presetId = EXAM_PRESETS[0]?.id || null;
 
-function getSubjectById(subjectId) {
+function getSubjectById(subjectId: string) {
   return state.subjects.find(s => s.id === subjectId) || null;
 }
-function getTopicById(topicId) {
+function getTopicById(topicId: string) {
   for (const subject of state.subjects) {
     const topic = subject.topics.find(t => t.id === topicId);
     if (topic) return { subject, topic };
   }
   return null;
 }
-function evidenceScopeForTopic(topicId) {
+function evidenceScopeForTopic(topicId: string) {
   const found = getTopicById(topicId);
   return found ? normalizeExamTags(found.topic.examTags) : null;
 }
-function getSubjectName(subjectId) {
+function getSubjectName(subjectId: string) {
   return getSubjectById(subjectId)?.name || 'Disciplina removida';
 }
-function getTopicName(topicId) {
+function getTopicName(topicId: string) {
   return getTopicById(topicId)?.topic?.name || 'Tópico removido';
 }
-function entitySubjectId(item) {
+function entitySubjectId(item: Record<string, any>) {
   if (item?.subjectId) return item.subjectId;
   return state.subjects.find(s => s.name === item?.subject)?.id || null;
 }
-function entitySubjectName(item) {
+function entitySubjectName(item: Record<string, any>) {
   const id = entitySubjectId(item);
   return id ? getSubjectName(id) : item?.subject || '—';
 }
 
-function historicalLocalDate(value) {
+function historicalLocalDate(value: any) {
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   return timestampToLocalDateISO(value) || todayISO();
 }
-function normalizeHistoryEvent(event) {
+function normalizeHistoryEvent(event: Record<string, any>) {
   if (!event.id) event.id = uid('history');
   if (!event.occurredAt) event.occurredAt = event.date || nowISO();
   if (!event.date) event.date = event.occurredAt;
@@ -675,52 +682,52 @@ function normalizeHistoryEvent(event) {
   return event;
 }
 
-function migrateV1toV2(data) {
+function migrateV1toV2(data: Record<string, any>) {
   const subjectIdByName = new Map();
-  (data.subjects || []).forEach(subject => {
+  (data.subjects || []).forEach((subject: any) => {
     if (!subject.id) subject.id = uid('subject');
     subject.archived = Boolean(subject.archived);
     subject.createdAt = subject.createdAt || nowISO();
     if (!Array.isArray(subject.topics)) subject.topics = [];
     subjectIdByName.set(subject.name, subject.id);
-    subject.topics.forEach(topic => {
+    subject.topics.forEach((topic: any) => {
       if (!topic.id) topic.id = uid('topic');
       topic.createdAt = topic.createdAt || nowISO();
     });
   });
 
-  (data.questoes || []).forEach(q => {
+  (data.questoes || []).forEach((q: any) => {
     q.id = q.id || uid('question');
     q.subjectId = q.subjectId || subjectIdByName.get(q.subject) || null;
     q.topicId = q.topicId || null;
     q.createdAt = q.createdAt || nowISO();
   });
-  (data.calendar || []).forEach(item => {
+  (data.calendar || []).forEach((item: any) => {
     item.id = item.id || uid('calendar');
     item.subjectId = item.subjectId || subjectIdByName.get(item.subject) || null;
     item.topicId = item.topicId || null;
     item.createdAt = item.createdAt || nowISO();
   });
-  (data.reviewAgenda || []).forEach(item => {
+  (data.reviewAgenda || []).forEach((item: any) => {
     item.id = item.id || uid('review');
     item.subjectId = item.subjectId || subjectIdByName.get(item.subject) || null;
     item.topicId = item.topicId || item.topicRef || null;
     item.createdAt = item.createdAt || nowISO();
     item.completedAt = item.completedAt || null;
   });
-  (data.simulados || []).forEach(sim => {
+  (data.simulados || []).forEach((sim: any) => {
     sim.id = sim.id || uid('simulado');
     sim.createdAt = sim.createdAt || nowISO();
-    (sim.breakdown || []).forEach(b => {
+    (sim.breakdown || []).forEach((b: any) => {
       b.id = b.id || uid('breakdown');
       b.subjectId = b.subjectId || subjectIdByName.get(b.subject) || null;
     });
   });
-  (data.metasPorDisciplina || []).forEach(meta => {
+  (data.metasPorDisciplina || []).forEach((meta: any) => {
     meta.id = meta.id || uid('goal');
     meta.subjectId = meta.subjectId || subjectIdByName.get(meta.subject) || null;
   });
-  (data.studySessions || []).forEach(session => {
+  (data.studySessions || []).forEach((session: any) => {
     session.id = session.id || uid('session');
     session.subjectId = session.subjectId || subjectIdByName.get(session.subject) || null;
     session.topicId = session.topicId || null;
@@ -729,9 +736,9 @@ function migrateV1toV2(data) {
   return data;
 }
 
-function migrateV2toV3(data) {
-  (data.subjects || []).forEach(subject =>
-    (subject.topics || []).forEach(topic => {
+function migrateV2toV3(data: Record<string, any>) {
+  (data.subjects || []).forEach((subject: any) =>
+    (subject.topics || []).forEach((topic: any) => {
       topic.firstCompletedAt =
         topic.firstCompletedAt || (topic.completedAt ? `${topic.completedAt}T12:00:00.000Z` : null);
       topic.lastCompletedAt = topic.lastCompletedAt || topic.firstCompletedAt || null;
@@ -741,17 +748,17 @@ function migrateV2toV3(data) {
     })
   );
   if (!Array.isArray(data.topicHistory)) data.topicHistory = [];
-  data.topicHistory.forEach(event => {
+  data.topicHistory.forEach((event: any) => {
     if (!event.id) event.id = uid('history');
     if (!event.occurredAt) event.occurredAt = event.date || nowISO();
     if (!event.date) event.date = event.occurredAt;
   });
-  (data.subjects || []).forEach(subject =>
-    (subject.topics || []).forEach(topic => {
+  (data.subjects || []).forEach((subject: any) =>
+    (subject.topics || []).forEach((topic: any) => {
       if (
         topic.completedAt &&
         !data.topicHistory.some(
-          event => event.type === 'topic_completed' && event.topicId === topic.id
+          (event: any) => event.type === 'topic_completed' && event.topicId === topic.id
         )
       ) {
         const occurredAt = topic.lastCompletedAt || `${topic.completedAt}T12:00:00.000Z`;
@@ -767,12 +774,12 @@ function migrateV2toV3(data) {
       }
     })
   );
-  (data.reviewAgenda || []).forEach(review => {
+  (data.reviewAgenda || []).forEach((review: any) => {
     const topicId = review.topicId || review.topicRef || null;
     if (
       review.completedAt &&
       !data.topicHistory.some(
-        event => event.type === 'review_completed' && event.metadata?.reviewId === review.id
+        (event: any) => event.type === 'review_completed' && event.metadata?.reviewId === review.id
       )
     ) {
       data.topicHistory.push({
@@ -790,11 +797,11 @@ function migrateV2toV3(data) {
   return data;
 }
 
-function migrateV3toV4(data) {
-  (data.subjects || []).forEach(subject => {
+function migrateV3toV4(data: Record<string, any>) {
+  (data.subjects || []).forEach((subject: any) => {
     if (!('archived' in subject)) subject.archived = false;
     if (!('archivedAt' in subject)) subject.archivedAt = null;
-    (subject.topics || []).forEach(topic => {
+    (subject.topics || []).forEach((topic: any) => {
       if (!('archived' in topic)) topic.archived = false;
       if (!('archivedAt' in topic)) topic.archivedAt = null;
     });
@@ -803,8 +810,8 @@ function migrateV3toV4(data) {
   return data;
 }
 
-function migrateV4toV5(data) {
-  (data.questoes || []).forEach(question => {
+function migrateV4toV5(data: Record<string, any>) {
+  (data.questoes || []).forEach((question: any) => {
     question.topicId = question.topicId || null;
     const source = question.errorBreakdown || {};
     question.errorBreakdown = {};
@@ -816,14 +823,14 @@ function migrateV4toV5(data) {
   return data;
 }
 
-function migrateV5toV6(data) {
+function migrateV5toV6(data: Record<string, any>) {
   if (!Array.isArray(data.topicHistory)) data.topicHistory = [];
   data.topicHistory.forEach(normalizeHistoryEvent);
   data.schemaVersion = 6;
   return data;
 }
 
-function migrateV6toV7(data) {
+function migrateV6toV7(data: Record<string, any>) {
   if (!data.metas || typeof data.metas !== 'object') data.metas = {};
   const legacyHours = Number(data.metas.horasDiarias);
   const base = Number.isFinite(legacyHours) ? Math.max(0, legacyHours) : 2.5;
@@ -834,7 +841,7 @@ function migrateV6toV7(data) {
   data.metas.horasPorDia = {};
   for (let day = 0; day < 7; day++)
     data.metas.horasPorDia[String(day)] = Math.max(0, Number(source[String(day)] ?? base) || 0);
-  (data.reviewAgenda || []).forEach(review => {
+  (data.reviewAgenda || []).forEach((review: any) => {
     review.manualDate = Boolean(review.manualDate);
     review.adaptive = review.adaptive !== false;
     review.adaptiveReason = review.adaptiveReason || null;
@@ -848,7 +855,7 @@ function migrateV6toV7(data) {
   return data;
 }
 
-function migrateV7toV8(data) {
+function migrateV7toV8(data: Record<string, any>) {
   if (!Array.isArray(data.dailyPlans)) data.dailyPlans = [];
   if (!data.activeTimer || typeof data.activeTimer !== 'object') data.activeTimer = {};
   data.activeTimer.planItemId = data.activeTimer.planItemId || null;
@@ -857,24 +864,26 @@ function migrateV7toV8(data) {
   return data;
 }
 
-function migrateV8toV9(data) {
+function migrateV8toV9(data: Record<string, any>) {
   data.examBlueprint = normalizeExamBlueprint(data.examBlueprint, data.examDate);
   data.algorithmVersions = normalizeAlgorithmVersions(data.algorithmVersions);
-  (data.subjects || []).forEach(subject => (subject.topics || []).forEach(normalizeTopicStrategy));
+  (data.subjects || []).forEach((subject: any) =>
+    (subject.topics || []).forEach(normalizeTopicStrategy)
+  );
   data.schemaVersion = 9;
   return data;
 }
 
-function migrateV9toV10(data) {
+function migrateV9toV10(data: Record<string, any>) {
   if (!Array.isArray(data.studyPlans)) data.studyPlans = [];
   data.schemaVersion = 10;
   return data;
 }
-function migrateV10toV11(data) {
+function migrateV10toV11(data: Record<string, any>) {
   if (!Array.isArray(data.planAdjustments)) data.planAdjustments = [];
   if (!Array.isArray(data.recommendationFeedback)) data.recommendationFeedback = [];
-  (data.dailyPlans || []).forEach(plan =>
-    (plan.items || []).forEach(item => {
+  (data.dailyPlans || []).forEach((plan: any) =>
+    (plan.items || []).forEach((item: any) => {
       item.originalDate = item.originalDate || plan.date;
       item.currentDate = item.currentDate || plan.date;
       item.rescheduleCount = Math.max(0, Number(item.rescheduleCount) || 0);
@@ -885,16 +894,16 @@ function migrateV10toV11(data) {
   data.schemaVersion = 11;
   return data;
 }
-function migrateV11toV12(data) {
+function migrateV11toV12(data: Record<string, any>) {
   if (!Array.isArray(data.alertStates)) data.alertStates = [];
   data.schemaVersion = 12;
   return data;
 }
-function migrateV12toV13(data) {
-  (data.dailyPlans || []).forEach(plan => {
+function migrateV12toV13(data: Record<string, any>) {
+  (data.dailyPlans || []).forEach((plan: any) => {
     plan.studyPlanId = plan.studyPlanId || null;
     plan.generationOperationId = plan.generationOperationId || null;
-    (plan.items || []).forEach(item => {
+    (plan.items || []).forEach((item: any) => {
       item.studyPlanId = item.studyPlanId || null;
       item.studyPlanItemId = item.studyPlanItemId || null;
       item.generationOperationId = item.generationOperationId || null;
@@ -902,10 +911,10 @@ function migrateV12toV13(data) {
       item.rescheduleOperationId = item.rescheduleOperationId || null;
     });
   });
-  (data.studyPlans || []).forEach(plan => {
+  (data.studyPlans || []).forEach((plan: any) => {
     if (!Array.isArray(plan.dailyPlanOperations)) plan.dailyPlanOperations = [];
   });
-  (data.planAdjustments || []).forEach(item => {
+  (data.planAdjustments || []).forEach((item: any) => {
     item.operationId = item.operationId || null;
     item.changes = Array.isArray(item.changes) ? item.changes : [];
     item.undoneAt = item.undoneAt || null;
@@ -913,8 +922,8 @@ function migrateV12toV13(data) {
   data.schemaVersion = 13;
   return data;
 }
-function migrateV13toV14(data) {
-  (data.recommendationFeedback || []).forEach(item => {
+function migrateV13toV14(data: Record<string, any>) {
+  (data.recommendationFeedback || []).forEach((item: any) => {
     item.shownAt = item.shownAt || item.createdAt || null;
     item.ratedAt = item.ratedAt || null;
     item.algorithmVersion = Math.max(1, Number(item.algorithmVersion) || 1);
@@ -924,21 +933,23 @@ function migrateV13toV14(data) {
   data.schemaVersion = 14;
   return data;
 }
-function migrateV14toV15(data) {
+function migrateV14toV15(data: Record<string, any>) {
   data.algorithmVersions = normalizeAlgorithmVersions(data.algorithmVersions);
   data.algorithmVersions.adaptiveReview = Math.max(
     2,
     Number(data.algorithmVersions.adaptiveReview) || 2
   );
-  (data.subjects || []).forEach(subject =>
-    (subject.topics || []).forEach(topic => {
+  (data.subjects || []).forEach((subject: any) =>
+    (subject.topics || []).forEach((topic: any) => {
       topic.adaptiveReview = topic.adaptiveReview
         ? createAdaptiveReviewState(topic.adaptiveReview)
         : null;
     })
   );
-  (data.reviewAgenda || []).forEach(review => {
-    review.lastRating = REVIEW_RATINGS[review.lastRating] ? review.lastRating : null;
+  (data.reviewAgenda || []).forEach((review: any) => {
+    review.lastRating = (REVIEW_RATINGS as Record<string, any>)[review.lastRating]
+      ? review.lastRating
+      : null;
     review.adaptiveState = review.adaptiveState
       ? createAdaptiveReviewState(review.adaptiveState)
       : null;
@@ -946,8 +957,8 @@ function migrateV14toV15(data) {
   data.schemaVersion = 15;
   return data;
 }
-function migrateV15toV16(data) {
-  (data.studySessions || []).forEach(session => {
+function migrateV15toV16(data: Record<string, any>) {
+  (data.studySessions || []).forEach((session: any) => {
     session.source = session.source || 'manual';
     session.recommendationId = session.recommendationId || null;
     session.prioritySnapshot =
@@ -957,7 +968,7 @@ function migrateV15toV16(data) {
           ? Number(session.prioritySnapshot)
           : null;
   });
-  (data.recommendationFeedback || []).forEach(item => {
+  (data.recommendationFeedback || []).forEach((item: any) => {
     item.snapshot = item.snapshot || null;
     if (item.outcome && !item.outcome.state)
       item.outcome.state = item.outcome.attributionEligible ? 'neutral' : 'insufficient';
@@ -966,13 +977,15 @@ function migrateV15toV16(data) {
   return data;
 }
 
-function migrateV16toV17(data) {
-  data.studySessions = (data.studySessions || []).map(session => normalizeStudySession(session));
+function migrateV16toV17(data: Record<string, any>) {
+  data.studySessions = (data.studySessions || []).map((session: any) =>
+    normalizeStudySession(session)
+  );
   data.schemaVersion = 17;
   return data;
 }
 
-function migrateV17toV18(data) {
+function migrateV17toV18(data: Record<string, any>) {
   data.examBlueprint = normalizeExamBlueprint(data.examBlueprint, data.examDate);
   data.activeTimer = data.activeTimer || {};
   data.activeTimer.strategy = data.activeTimer.strategy || null;
@@ -981,35 +994,37 @@ function migrateV17toV18(data) {
   return data;
 }
 
-function migrateV18toV19(data) {
+function migrateV18toV19(data: Record<string, any>) {
   snapshotEvidenceScopes(data);
   data.schemaVersion = 19;
   return data;
 }
-function migrateV19toV20(data) {
-  data.studySessions = (data.studySessions || []).map(session => normalizeStudySession(session));
+function migrateV19toV20(data: Record<string, any>) {
+  data.studySessions = (data.studySessions || []).map((session: any) =>
+    normalizeStudySession(session)
+  );
   data.schemaVersion = 20;
   return data;
 }
-function migrateV20toV21(data) {
+function migrateV20toV21(data: Record<string, any>) {
   if (!Array.isArray(data.adaptivePlanningHistory)) data.adaptivePlanningHistory = [];
   data.schemaVersion = 21;
   return data;
 }
-function migrateV21toV22(data) {
+function migrateV21toV22(data: Record<string, any>) {
   data.recommendationHistory = Array.isArray(data.recommendationHistory)
     ? data.recommendationHistory
     : migrateRecommendationHistory(data.recommendationFeedback || []);
   data.schemaVersion = 22;
   return data;
 }
-function migrateV22toV23(data) {
+function migrateV22toV23(data: Record<string, any>) {
   data.exams = Array.isArray(data.exams) ? data.exams : [];
   data.examQuestions = Array.isArray(data.examQuestions) ? data.examQuestions : [];
   data.schemaVersion = 23;
   return data;
 }
-function migrateV23toV24(data) {
+function migrateV23toV24(data: Record<string, any>) {
   for (const exam of data.exams || []) {
     exam.importedQuestionCount = null;
     exam.expectedQuestionCount = null;
@@ -1019,20 +1034,20 @@ function migrateV23toV24(data) {
   data.schemaVersion = 24;
   return data;
 }
-function migrateV24toV25(data) {
+function migrateV24toV25(data: Record<string, any>) {
   data.readinessSnapshots = Array.isArray(data.readinessSnapshots) ? data.readinessSnapshots : [];
   data.schemaVersion = 25;
   return data;
 }
 
-function migrateV25toV26(data) {
+function migrateV25toV26(data: Record<string, any>) {
   data.projectionSnapshots = Array.isArray(data.projectionSnapshots)
     ? data.projectionSnapshots
     : [];
   data.schemaVersion = 26;
   return data;
 }
-function migrateV26toV27(data) {
+function migrateV26toV27(data: Record<string, any>) {
   if (!data.metas || typeof data.metas !== 'object') data.metas = {};
   const days = Number(data.metas.consistenciaSemanal);
   data.metas.consistenciaSemanal = Number.isFinite(days)
@@ -1041,14 +1056,14 @@ function migrateV26toV27(data) {
   data.schemaVersion = 27;
   return data;
 }
-function migrateV27toV28(data) {
+function migrateV27toV28(data: Record<string, any>) {
   data.projectionSnapshots = Array.isArray(data.projectionSnapshots)
     ? data.projectionSnapshots
     : [];
   data.schemaVersion = 28;
   return data;
 }
-function migrateState(data) {
+function migrateState(data: Record<string, any>) {
   return runStateMigrations(data, {
     currentVersion: CURRENT_SCHEMA_VERSION,
     migrations: {
@@ -1108,8 +1123,10 @@ function ensureStateDefaults() {
   const consistencyTarget = state.metas.consistenciaSemanal;
   state.metas.aderenciaSemanal = normalizeAdherenceTarget(state.metas.aderenciaSemanal);
   Object.entries(metaDefaults).forEach(([key, value]) => {
-    if (!Number.isFinite(Number(state.metas[key]))) state.metas[key] = value;
-    else state.metas[key] = Number(state.metas[key]);
+    if (!Number.isFinite(Number((state.metas as Record<string, any>)[key])))
+      (state.metas as Record<string, any>)[key] = value;
+    else
+      (state.metas as Record<string, any>)[key] = Number((state.metas as Record<string, any>)[key]);
   });
   state.metas.consistenciaSemanal =
     consistencyTarget == null
@@ -1288,7 +1305,9 @@ function ensureStateDefaults() {
     review.adaptive = review.adaptive !== false;
     review.adaptiveReason = review.adaptiveReason || null;
     review.suggestedDate = review.suggestedDate || null;
-    review.lastRating = REVIEW_RATINGS[review.lastRating] ? review.lastRating : null;
+    review.lastRating = (REVIEW_RATINGS as Record<string, any>)[review.lastRating]
+      ? review.lastRating
+      : null;
     review.adaptiveState = review.adaptiveState
       ? createAdaptiveReviewState(review.adaptiveState)
       : null;
@@ -1329,19 +1348,19 @@ const reviewService = createReviewService({
   repository: appContext.repositories.reviewAgenda,
   clock: appClock,
   idGenerator: uid,
-  findTopic: topicId => getTopicById(topicId)?.topic || null,
+  findTopic: (topicId: string) => getTopicById(topicId)?.topic || null,
   resolveEvidenceScope: evidenceScopeForTopic,
-  calculateAdaptiveState: (current, rating, options) =>
+  calculateAdaptiveState: (current: any, rating: any, options: Record<string, any>) =>
     applyAdaptiveReviewRating(current, rating, options),
   algorithmVersion: () => state.algorithmVersions.adaptiveReview,
-  onEvent: (type, review, details) =>
+  onEvent: (type: string, review: Record<string, any>, details: Record<string, any>) =>
     addHistoryEvent(
       type,
       entitySubjectId(review),
       review.topicId || review.topicRef || null,
       details
     ),
-  onTopicChanged: topicId => refreshTopicReviewStats(topicId),
+  onTopicChanged: (topicId: string) => refreshTopicReviewStats(topicId),
 });
 const planningRepository = appContext.repositories.planning;
 const studyPlanService = createStudyPlanService({
@@ -1399,7 +1418,7 @@ const calendarService = createRecordService({
     clock: appClock,
     idGenerator: uid,
     prefix: 'question',
-    normalize: item => {
+    normalize: (item: Record<string, any>) => {
       item.resolved = Math.max(0, Math.floor(Number(item.resolved) || 0));
       item.correct = Math.min(item.resolved, Math.max(0, Math.floor(Number(item.correct) || 0)));
       normalizeErrorBreakdown(item);
@@ -1411,7 +1430,7 @@ const calendarService = createRecordService({
     clock: appClock,
     idGenerator: uid,
     prefix: 'simulado',
-    normalize: item => {
+    normalize: (item: Record<string, any>) => {
       item.total = Math.max(0, Math.floor(Number(item.total) || 0));
       item.correct = Math.min(item.total, Math.max(0, Math.floor(Number(item.correct) || 0)));
       return item;
@@ -1434,7 +1453,7 @@ function observePlanningCapacity(source = 'observed') {
 }
 const goalsService = createGoalService({
   repository: appContext.repositories.settings,
-  getDayOfWeek: date => parseLocalDate(date)?.getDay() ?? new Date().getDay(),
+  getDayOfWeek: (date: string) => parseLocalDate(date)?.getDay() ?? new Date().getDay(),
   onCapacityObserved: observePlanningCapacity,
 });
 const subjectService = createSubjectService({
@@ -1477,11 +1496,11 @@ let applyingRemoteState = false;
 function readLocalState(key = STORAGE_KEY) {
   return appContext.storage.readLocal(key);
 }
-function writeLocalState(value, key = STORAGE_KEY) {
+function writeLocalState(value: any, key = STORAGE_KEY) {
   return appContext.storage.writeLocal(key, value);
 }
 
-function normalizeAndValidateState(raw) {
+function normalizeAndValidateState(raw: any) {
   const parsed = typeof raw === 'string' ? JSON.parse(raw) : structuredCloneSafe(raw);
   const validation = validateBackupData(parsed);
   if (!validation.valid) throw new Error((validation as { message: string }).message);
@@ -1493,7 +1512,9 @@ async function readLatestValidSnapshot() {
   if (!rawIndex) return null;
   const index = JSON.parse(rawIndex);
   const snapshots = Array.isArray(index.snapshots)
-    ? index.snapshots.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+    ? index.snapshots
+        .slice()
+        .sort((a: any, b: any) => String(b.createdAt).localeCompare(String(a.createdAt)))
     : [];
   for (const snapshot of snapshots) {
     try {
@@ -1552,7 +1573,7 @@ function flashSaved() {
 }
 
 /* ===== TOAST (substitui alert()) ===== */
-function showToast(message) {
+function showToast(message: string) {
   const el = document.getElementById('toast');
   if (!el) return;
   el.textContent = message;
@@ -1561,13 +1582,13 @@ function showToast(message) {
   (showToast as any)._t = setTimeout(() => el.classList.remove('show'), 2600);
 }
 
-async function sha256(value) {
+async function sha256(value: any) {
   if (!window.crypto?.subtle) return null;
   const bytes = new TextEncoder().encode(value);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
-async function rotateAutomaticBackup(previousRaw, options: any = {}) {
+async function rotateAutomaticBackup(previousRaw: string | null, options: any = {}) {
   if (!previousRaw) return true;
   const backupKey = options.backupKey || BACKUP_KEY;
   const indexKey = options.indexKey || BACKUP_INDEX_KEY;
@@ -1645,7 +1666,7 @@ const appStateStore = createAppStateStore({
 function scheduleSave() {
   appStateStore.scheduleSave();
 }
-function enqueueStateTransaction(task) {
+function enqueueStateTransaction(task: () => any) {
   return appStateStore.enqueueStateTransaction(task);
 }
 
@@ -1671,10 +1692,20 @@ STATE_CHANNEL?.addEventListener('message', event => {
 
 /* ===== MODAL DE CONFIRMAÇÃO (substitui confirm()) ===== */
 const modalController = createModalController({ document, window });
-function showConfirm(message, onConfirm, onCancel?, options: any = {}) {
+function showConfirm(
+  message: string,
+  onConfirm: (value?: any) => void,
+  onCancel?: () => void,
+  options: any = {}
+) {
   return modalController.confirm(message, onConfirm, onCancel, options);
 }
-function showPrompt(message, options, onConfirm, onCancel?) {
+function showPrompt(
+  message: string,
+  options: Record<string, any>,
+  onConfirm: (value?: any) => void,
+  onCancel?: () => void
+) {
   return modalController.prompt(message, options, onConfirm, onCancel);
 }
 
@@ -1696,7 +1727,7 @@ const tabRouter = createTabRouter({
     ]),
   onCancelReview: closeReviewRating,
 });
-function activateTab(tabName, updateHash = true) {
+function activateTab(tabName: string, updateHash = true) {
   return tabRouter.activateTab(tabName, updateHash);
 }
 createHelpController({ document, window, activateTab }).mount();
@@ -1716,31 +1747,31 @@ function allTopics() {
 function activeSubjects() {
   return state.subjects.filter(subject => !subject.archived);
 }
-function topicsForSelection(subjectOrId, selectedTopicId) {
+function topicsForSelection(subjectOrId: any, selectedTopicId: string) {
   const subject =
     subjectOrId && typeof subjectOrId === 'object' ? subjectOrId : getSubjectById(subjectOrId);
   if (!subject || !Array.isArray(subject.topics)) return [];
-  return subject.topics.filter(topic => !topic.archived || topic.id === selectedTopicId);
+  return subject.topics.filter((topic: any) => !topic.archived || topic.id === selectedTopicId);
 }
-function isActiveSubjectId(subjectId) {
+function isActiveSubjectId(subjectId: string) {
   const subject = getSubjectById(subjectId);
   return Boolean(subject && !subject.archived);
 }
-function isActiveTopicId(topicId) {
+function isActiveTopicId(topicId: string) {
   const found = getTopicById(topicId);
   return Boolean(found && !found.subject.archived && !found.topic.archived);
 }
-function isActiveStudyReference(subjectId, topicId = null) {
+function isActiveStudyReference(subjectId: string, topicId: string = null) {
   if (!isActiveSubjectId(subjectId)) return false;
   return !topicId || isActiveTopicId(topicId);
 }
-function subjectsForSelection(selectedId = null) {
+function subjectsForSelection(selectedId: string | null = null) {
   return state.subjects.filter(subject => !subject.archived || subject.id === selectedId);
 }
 function activeTopics() {
   return allTopics().filter(topic => !topic.subjectArchived && !topic.topicArchived);
 }
-function topicInActiveExamScope(topic) {
+function topicInActiveExamScope(topic: Record<string, any>) {
   return isTopicInExamScope(topic, state.examBlueprint?.activeExamTags || []);
 }
 function examScopedTopics() {
@@ -1759,7 +1790,7 @@ function examEvidenceContext() {
     reviews: state.reviewAgenda,
   });
 }
-function examScopedRecords(records = []) {
+function examScopedRecords(records: any[] = []) {
   const tags = state.examBlueprint?.activeExamTags || [],
     index = indexExamTopics(state.subjects);
   return records.filter(
@@ -1770,10 +1801,10 @@ function examScopedSimulations() {
   const active = state.examBlueprint?.activeExamTags || [];
   return state.simulados.filter(item => isSimulationInExamScope(item, active));
 }
-function subjectProgress(subject) {
+function subjectProgress(subject: Record<string, any>) {
   return calculateTopicCoverage(subject.topics).value;
 }
-function localDateISO(value) {
+function localDateISO(value: any) {
   if (arguments.length === 0) value = new Date();
   if (value === null || value === undefined || value === '') return '';
   const d = value instanceof Date ? value : new Date(value);
@@ -1783,17 +1814,17 @@ function localDateISO(value) {
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
-function localDateFromTimestamp(value) {
+function localDateFromTimestamp(value: any) {
   return localDateISO(value);
 }
-function timestampToLocalDateISO(value) {
+function timestampToLocalDateISO(value: any) {
   return localDateISO(value);
 }
 function todayISO() {
   return appContext.clock.today();
 }
 // Empty dates read as "—" here; the DD/MM/AAAA rule lives in core/format-date (handles timestamps too).
-function formatDatePt(iso) {
+function formatDatePt(iso: string) {
   return iso ? formatDateBR(iso) : '—';
 }
 const MESES_PT = [
@@ -1810,26 +1841,26 @@ const MESES_PT = [
   'Novembro',
   'Dezembro',
 ];
-function monthKey(iso) {
+function monthKey(iso: string) {
   if (!iso) return null;
   return iso.slice(0, 7); // "AAAA-MM"
 }
-function monthLabel(key) {
+function monthLabel(key: string) {
   if (!key) return '';
   const [y, m] = key.split('-');
   return `${MESES_PT[parseInt(m, 10) - 1]} de ${y}`;
 }
-function collectMonthKeys(...arrays) {
-  const set = new Set();
+function collectMonthKeys(...arrays: any[][]) {
+  const set = new Set<string>();
   arrays.forEach(arr =>
-    arr.forEach(item => {
+    arr.forEach((item: any) => {
       const k = monthKey(item.date);
       if (k) set.add(k);
     })
   );
   return [...set].sort();
 }
-function startOfWeek(d) {
+function startOfWeek(d: any) {
   const date = parseLocalDate(d);
   if (!date) return '';
   const day = date.getDay(); // 0 = domingo
@@ -1837,23 +1868,23 @@ function startOfWeek(d) {
   date.setDate(date.getDate() + diff);
   return localDateISO(date);
 }
-function isSameWeek(iso) {
+function isSameWeek(iso: string) {
   if (!iso) return false;
   return startOfWeek(iso) === startOfWeek(todayISO());
 }
-function isSameMonth(iso) {
+function isSameMonth(iso: string) {
   if (!iso) return false;
   return monthKey(iso) === monthKey(todayISO());
 }
 
 /* ===== "=A2-HOJE()" — Dias para Revisão ===== */
-function diasParaRevisao(iso) {
+function diasParaRevisao(iso: string) {
   const alvo = parseLocalDate(iso);
   const hoje = parseLocalDate(todayISO());
   if (!alvo || !hoje) return null;
   return Math.round((Number(alvo) - Number(hoje)) / 86400000);
 }
-function diasParaRevisaoPill(iso, status) {
+function diasParaRevisaoPill(iso: string, status: string) {
   const dias = diasParaRevisao(iso);
   if (dias === null) return `<span class="dias-pill dias-futura">—</span>`;
   if (status === 'Concluído') {
@@ -1872,9 +1903,10 @@ document
   });
 
 /* ===== SEQUÊNCIA DE DIAS ESTUDANDO (STREAK) ===== */
-function getDailyStudySummary(date, options: any = {}) {
+function getDailyStudySummary(date: string, options: any = {}) {
   const subjectId = options.subjectId || '';
-  const matchesSubject = item => !subjectId || entitySubjectId(item) === subjectId;
+  const matchesSubject = (item: Record<string, any>) =>
+    !subjectId || entitySubjectId(item) === subjectId;
   const sessions = state.studySessions.filter(s => s.date === date && matchesSubject(s));
   const allSessionIds = new Set(state.studySessions.map(s => s.id));
   const independentQuestions = state.questoes.filter(
@@ -1944,13 +1976,13 @@ function getActivityDates() {
   return set;
 }
 function getGoalDates() {
-  const set = new Set();
+  const set = new Set<string>();
   new Set(state.studySessions.map(s => s.date).filter(Boolean)).forEach(date => {
     if (getDailyStudySummary(date).goalAchieved) set.add(date);
   });
   return set;
 }
-function computeStreak(activityDates) {
+function computeStreak(activityDates: Set<string>) {
   return calculateActivityStreak(activityDates, { today: todayISO(), addDays });
 }
 
@@ -1967,14 +1999,14 @@ function focusStudyTimer() {
   document.getElementById('timerStartBtn')?.focus();
 }
 // Leaving focus mode returns to the tab the session was started from, so Hoje keeps its place.
-let timerFocusReturnTab = null;
+let timerFocusReturnTab: any = null;
 function openStudyTimerFocus() {
   const origin = activeTabName();
   timerFocusReturnTab = origin === 'dashboard' ? null : origin;
   activateTab('dashboard');
   toggleTimerFocus(true);
 }
-function toggleTimerFocus(force = null) {
+function toggleTimerFocus(force: boolean | null = null) {
   const active =
     force == null ? !document.body.classList.contains('timer-focus-active') : Boolean(force);
   document.body.classList.toggle('timer-focus-active', active);
@@ -2046,7 +2078,7 @@ document.addEventListener('keydown', event => {
 });
 
 /* ===== GRÁFICO DE EVOLUÇÃO DO PROGRESSO ===== */
-function recordProgressSnapshot(pct) {
+function recordProgressSnapshot(pct: number) {
   const today = todayISO();
   const existing = state.progressHistory.find(p => p.date === today);
   if (existing) {
@@ -2068,7 +2100,7 @@ function renderProgressChart() {
 }
 
 /* ===== BACKUP: EXPORTAR / IMPORTAR / ZONA DE PERIGO ===== */
-function validateBackupData(data) {
+function validateBackupData(data: Record<string, any>) {
   return validateBackupDataValidator(data, {
     ensureDefaults: candidate => {
       const previous = state;
@@ -2117,7 +2149,7 @@ const backupModalController = createBackupModalController({
   },
 });
 
-function applyImportedBackup(importedState) {
+function applyImportedBackup(importedState: AppState) {
   const previousState = state;
   try {
     state = importedState;
@@ -2148,7 +2180,7 @@ const remoteSyncController = createRemoteSyncController({
   provider: remoteSyncProvider,
   getState: () => pickPersistentState(state),
   validate: validateBackupData,
-  describe: ({ normalized, version }) => backupSummary(normalized, version),
+  describe: ({ normalized, version }: any) => backupSummary(normalized, version),
   confirm: showConfirm,
   createSnapshot: () => rotateAutomaticBackup(JSON.stringify(pickPersistentState(state))),
   onImported: applyImportedBackup,
@@ -2220,10 +2252,10 @@ const pipTimer = createPipTimerController({
     doc.title = 'StudyTrack';
   },
 });
-let timerIntervalId = null;
-let timerStartedAt = null;
+let timerIntervalId: any = null;
+let timerStartedAt: any = null;
 
-function formatTimer(totalSeconds) {
+function formatTimer(totalSeconds: number) {
   const total = Math.max(0, Math.floor(Number(totalSeconds) || 0));
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60)
@@ -2232,7 +2264,7 @@ function formatTimer(totalSeconds) {
   const s = (total % 60).toString().padStart(2, '0');
   return h > 0 ? `${String(h).padStart(2, '0')}:${m}:${s}` : `${m}:${s}`;
 }
-function findDailyPlanItem(itemId) {
+function findDailyPlanItem(itemId: string) {
   if (!itemId) return null;
   for (const plan of state.dailyPlans) {
     const item = plan.items.find(candidate => candidate.id === itemId);
@@ -2247,7 +2279,7 @@ function releaseActivePlanItem() {
     found.plan.updatedAt = nowISO();
   }
 }
-function startPlannedActivity(itemId) {
+function startPlannedActivity(itemId: string) {
   const found = findDailyPlanItem(itemId);
   if (!found) {
     showToast('Esta atividade não está mais disponível no plano.');
@@ -2265,7 +2297,7 @@ function startPlannedActivity(itemId) {
   const { plan, item } = found;
   if (item.topicId) {
     const candidate = intelligenceCandidates().find(
-      candidate => candidate.topicId === item.topicId
+      (candidate: any) => candidate.topicId === item.topicId
     );
     if (!candidate || candidate.archived || candidate.blockedPrerequisites.length) {
       showToast(
@@ -2303,14 +2335,14 @@ function currentTimerSeconds() {
 function hasStartedStudyTimer() {
   return hasActiveTimer(state.activeTimer);
 }
-function activeTimerMatchesRecommendation(recommendation) {
+function activeTimerMatchesRecommendation(recommendation: Record<string, any>) {
   return activeTimerMatchesRecommendationModule(
     state.activeTimer,
     recommendation,
     recommendationActionKind
   );
 }
-function renderActiveStudyTimerNotice(recommendation) {
+function renderActiveStudyTimerNotice(recommendation: Record<string, any>) {
   const active = (state.activeTimer || {}) as Partial<ActiveTimerState>;
   return renderActiveStudyTimerNoticeHtml({
     active,
@@ -2381,7 +2413,7 @@ function renderTimerFocusContext() {
   const active = (state.activeTimer || {}) as Partial<ActiveTimerState>,
     subject = active.subjectId ? getSubjectName(active.subjectId) : 'Disciplina não selecionada',
     topic = active.topicId ? getTopicName(active.topicId) : 'Tópico não selecionado';
-  const activityLabels = {
+  const activityLabels: Record<string, any> = {
     study: 'Estudo teórico',
     review: 'Revisão',
     questions: 'Questões',
@@ -2433,7 +2465,7 @@ function updateTimerControls() {
 function refreshStudyActionViews() {
   if (document.getElementById('studyRecommendation')) renderStudyRecommendation();
 }
-function populateTimerTopicSelect(subjectId, selectedTopicId) {
+function populateTimerTopicSelect(subjectId: string, selectedTopicId: string) {
   const select = document.getElementById('timerTopicSelect') as HTMLSelectElement;
   if (!select) return;
   const subject = getSubjectById(subjectId);
@@ -2442,7 +2474,7 @@ function populateTimerTopicSelect(subjectId, selectedTopicId) {
     (subject
       ? topicsForSelection(subject, selectedTopicId)
           .map(
-            topic =>
+            (topic: any) =>
               `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || '(tópico sem nome)')}</option>`
           )
           .join('')
@@ -2576,7 +2608,7 @@ function restoreTimerFromState() {
   populateTimerContextControls();
   updateTimerControls();
 }
-function populateSessionTopicSelect(subjectId, selectedTopicId = null) {
+function populateSessionTopicSelect(subjectId: string, selectedTopicId: string = null) {
   const select = document.getElementById('sessionModalTopic');
   const subject = getSubjectById(subjectId);
   select.innerHTML =
@@ -2584,7 +2616,7 @@ function populateSessionTopicSelect(subjectId, selectedTopicId = null) {
     (subject
       ? topicsForSelection(subject, selectedTopicId)
           .map(
-            topic =>
+            (topic: any) =>
               `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || '(tópico sem nome)')}</option>`
           )
           .join('')
@@ -2621,7 +2653,7 @@ function showSessionModal() {
   );
   overlay.classList.add('show');
 }
-function topicResumeLabel(topicId) {
+function topicResumeLabel(topicId: string) {
   return topicId ? formatBookmarkLabel(getTopicById(topicId)?.topic.bookmark) : '';
 }
 const SESSION_BOOKMARK_FIELDS = {
@@ -2631,7 +2663,7 @@ const SESSION_BOOKMARK_FIELDS = {
   totalUnits: 'sessionBookmarkTotal',
   positionText: 'sessionBookmarkPosition',
 };
-function fillSessionBookmarkFields(topicId) {
+function fillSessionBookmarkFields(topicId: string) {
   const section = document.getElementById('sessionBookmarkSection') as HTMLDetailsElement,
     bookmark = topicId ? getTopicById(topicId)?.topic.bookmark : null;
   section.hidden = !topicId;
@@ -2639,7 +2671,7 @@ function fillSessionBookmarkFields(topicId) {
   delete section.dataset.clear;
   for (const [field, id] of Object.entries(SESSION_BOOKMARK_FIELDS))
     (document.getElementById(id) as HTMLInputElement).value =
-      bookmark?.[field] ?? (field === 'resourceType' ? 'pdf' : '');
+      (bookmark as Record<string, any> | null)?.[field] ?? (field === 'resourceType' ? 'pdf' : '');
   const clear = document.getElementById('sessionBookmarkClearBtn') as HTMLButtonElement;
   clear.hidden = !bookmark;
   clear.disabled = false;
@@ -2655,7 +2687,7 @@ function clearSessionBookmarkFields() {
   clear.textContent = 'Será removido ao salvar';
 }
 // Empty fields keep the saved bookmark; only the explicit clear removes it.
-function saveSessionBookmark(topicId, endedAt) {
+function saveSessionBookmark(topicId: string, endedAt: string) {
   const found = topicId ? getTopicById(topicId) : null;
   if (!found) return;
   if (document.getElementById('sessionBookmarkSection').dataset.clear === '1') {
@@ -2675,7 +2707,10 @@ function saveSessionBookmark(topicId, endedAt) {
   const current = found.topic.bookmark;
   if (
     !next ||
-    (current && Object.keys(SESSION_BOOKMARK_FIELDS).every(field => current[field] === next[field]))
+    (current &&
+      Object.keys(SESSION_BOOKMARK_FIELDS).every(
+        field => (current as Record<string, any>)[field] === (next as Record<string, any>)[field]
+      ))
   )
     return;
   subjectService.updateTopic(found.subject.id, topicId, { bookmark: next });
@@ -2683,7 +2718,7 @@ function saveSessionBookmark(topicId, endedAt) {
 function syncSessionModalActivityFields(
   type = (document.getElementById('sessionModalType') as HTMLSelectElement).value || 'study'
 ) {
-  const labels = {
+  const labels: Record<string, any> = {
     study: 'Registre o que você estudou e atualize seus indicadores.',
     questions: 'Informe volume e acertos para atualizar seu desempenho.',
     review: 'Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.',
@@ -2787,7 +2822,13 @@ document
   .addEventListener('change', function (this: HTMLSelectElement) {
     syncSessionModalActivityFields(this.value);
   });
-function showSessionResult(session, nextPriority, priorityChanged, day = null, planNext = null) {
+function showSessionResult(
+  session: Record<string, any>,
+  nextPriority: Record<string, any> | null,
+  priorityChanged: boolean,
+  day: any = null,
+  planNext: Record<string, any> | null = null
+) {
   const result = document.getElementById('sessionResult');
   if (!result) return;
   result.innerHTML = renderSessionResult(
@@ -2932,7 +2973,7 @@ function renderBadges() {
 }
 
 /* ===== HEATMAP DE HORAS E META DIÁRIA ===== */
-function heatmapTooltip(summary) {
+function heatmapTooltip(summary: Record<string, any>) {
   const parts = [
     formatDatePt(summary.date),
     formatDuration(summary.seconds),
@@ -2997,13 +3038,13 @@ function renderHeatmap() {
   });
 }
 
-function setHeatmapFilter(field, value) {
+function setHeatmapFilter(field: string, value: any) {
   if (field === 'metric' && HEATMAP_METRICS.includes(value)) streakView.metric = value;
   if (field === 'subjectId') streakView.subjectId = value;
   streakView.selectedDate = null;
   renderHeatmap();
 }
-function selectHeatmapDay(date) {
+function selectHeatmapDay(date: string) {
   streakView.selectedDate = date;
   renderHeatmap();
 }
@@ -3011,12 +3052,12 @@ function viewSelectedHeatmapSessions() {
   if (streakView.selectedDate) selectSessionHistoryDate(streakView.selectedDate);
 }
 
-function getMetricDataState(metric, minimumConfidence = 0.35) {
+function getMetricDataState(metric: Record<string, any>, minimumConfidence = 0.35) {
   if (!metric?.available || metric.raw === null) return 'empty';
   if ((Number(metric.confidence) || 0) < minimumConfidence) return 'insufficient';
   return 'ready';
 }
-function metricStateLabel(metric, minimumConfidence = 0.35) {
+function metricStateLabel(metric: Record<string, any>, minimumConfidence = 0.35) {
   const status = getMetricDataState(metric, minimumConfidence);
   if (status === 'empty') return 'Aguardando dados';
   if (status === 'insufficient') return 'Estimativa inicial';
@@ -3026,7 +3067,7 @@ function metricStateLabel(metric, minimumConfidence = 0.35) {
 /* ===== GRÁFICO: EVOLUÇÃO DOS SIMULADOS ===== */
 
 /* ===== BUSCA GLOBAL ===== */
-function jumpToTopic(subjectId, topicId) {
+function jumpToTopic(subjectId: string, topicId: string) {
   const s = state.subjects.find(x => x.id === subjectId);
   if (s) s.collapsed = false;
   const input = document.getElementById('globalSearchInput') as HTMLInputElement | null;
@@ -3166,7 +3207,7 @@ function renderHeader() {
 
 /* ===== RENDER: DASHBOARD ===== */
 let upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-function changeUpcomingLimit(_delta) {
+function changeUpcomingLimit(_delta: number) {
   upcomingVisible = Number.MAX_SAFE_INTEGER;
   renderDashboard();
 }
@@ -3307,7 +3348,7 @@ const subjectSearchController = createSubjectSearchController({
 let subjectExamFilter = 'all';
 const subjectTopicLimits = new Map();
 const subjectTopicFilters = new Map();
-function toggleNotes(topicId) {
+function toggleNotes(topicId: string) {
   if (openNotesIds.has(topicId)) openNotesIds.clear();
   else {
     openNotesIds.clear();
@@ -3315,52 +3356,57 @@ function toggleNotes(topicId) {
   }
   renderSubjects();
 }
-function changeSubjectTopicLimit(subjectId, delta) {
+function changeSubjectTopicLimit(subjectId: string, delta: number) {
   subjectTopicLimits.set(subjectId, (subjectTopicLimits.get(subjectId) || 10) + Number(delta || 0));
   renderSubjects();
 }
-function showAllSubjectTopics(subjectId) {
+function showAllSubjectTopics(subjectId: string) {
   subjectTopicLimits.set(subjectId, Number.MAX_SAFE_INTEGER);
   renderSubjects();
 }
-function resetSubjectTopicLimit(subjectId) {
+function resetSubjectTopicLimit(subjectId: string) {
   subjectTopicLimits.set(subjectId, 10);
   renderSubjects();
 }
-function setSubjectTopicFilter(subjectId, field, value) {
+function setSubjectTopicFilter(subjectId: string, field: string, value: any) {
   const current = subjectTopicFilters.get(subjectId) || { status: '', difficulty: '' };
   if (field === 'status' || field === 'difficulty') current[field] = value;
   subjectTopicFilters.set(subjectId, current);
   subjectTopicLimits.set(subjectId, 10);
   renderSubjects();
 }
-function setSubjectExamFilter(value) {
+function setSubjectExamFilter(value: any) {
   if (['all', 'bb', 'caixa', 'caixa-ti', 'common'].includes(value)) subjectExamFilter = value;
   renderSubjects();
 }
-function examBadges(topic) {
+function examBadges(topic: Record<string, any>) {
   const tags = topic.examTags || [];
   return `${tags.includes(EXAM_TAGS.BB) ? '<span class="exam-tag exam-tag--bb">BB</span>' : ''}${tags.includes(EXAM_TAGS.CAIXA) ? '<span class="exam-tag exam-tag--caixa">CAIXA</span>' : ''}${tags.includes(EXAM_TAGS.CAIXA_TI) ? '<span class="exam-tag exam-tag--caixa">CAIXA TI</span>' : ''}`;
 }
-function updateTopicTags(subjectId, topicId, value) {
+function updateTopicTags(subjectId: string, topicId: string, value: any) {
   const found = getTopicById(topicId),
     fieldOrigins = { ...(found?.topic?.fieldOrigins || {}), tags: 'manual' };
   subjectService.updateTopic(subjectId, topicId, {
     tags: value
       .split(',')
-      .map(tag => tag.trim())
+      .map((tag: any) => tag.trim())
       .filter(Boolean),
     fieldOrigins,
   });
   persistAndRender();
 }
-function updateTopicStrategy(subjectId, topicId, field, value) {
+function updateTopicStrategy(subjectId: string, topicId: string, field: string, value: any) {
   topicStrategyController.update(subjectId, topicId, field, value);
 }
-function toggleTopicPrerequisite(subjectId, topicId, prerequisiteId, checked) {
+function toggleTopicPrerequisite(
+  subjectId: string,
+  topicId: string,
+  prerequisiteId: string,
+  checked: boolean
+) {
   topicStrategyController.togglePrerequisite(subjectId, topicId, prerequisiteId, checked);
 }
-function renderTopicStrategyEditor(subject, topic) {
+function renderTopicStrategyEditor(subject: Record<string, any>, topic: Record<string, any>) {
   const subjectConfig =
     state.examBlueprint.subjects.find(item => item.subjectId === subject.id) || null;
   return renderTopicStrategyEditorView(
@@ -3375,7 +3421,7 @@ function renderTopicStrategyEditor(subject, topic) {
     })
   );
 }
-function renderTopicAnalyticsState(subject, topic) {
+function renderTopicAnalyticsState(subject: Subject, topic: Topic) {
   const coverage =
     topic.status === 'Concluído'
       ? 100
@@ -3424,9 +3470,9 @@ function renderTopicAnalyticsState(subject, topic) {
     })
   )
     label = 'Estudado, mas precisa consolidação';
-  const pctMetric = (name, value, detail = '') =>
+  const pctMetric = (name: string, value: any, detail = '') =>
     `<div class="topic-metric"><span>${name}</span><strong>${value === null ? 'Aguardando dados' : Math.round(value) + '%'}</strong><div class="topic-metric-track"><i style="width:${value === null ? 0 : Math.round(value)}%"></i></div>${detail ? `<small>${escapeHtml(detail)}</small>` : ''}</div>`;
-  const textMetric = (name, value, detail = '') =>
+  const textMetric = (name: string, value: any, detail = '') =>
     `<div class="topic-metric"><span>${name}</span><strong>${escapeHtml(value)}</strong>${detail ? `<small>${escapeHtml(detail)}</small>` : ''}</div>`;
   const trendText =
     !trend || trend.key === 'insufficient' ? 'Aguardando dados' : `${trend.icon} ${trend.label}`;
@@ -3447,7 +3493,7 @@ function renderTopicAnalyticsState(subject, topic) {
           : '★ Elegível para priorização';
   return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>${escapeHtml(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric('Cobertura', coverage)}${pctMetric('Domínio', mastery, mastery === null ? 'Registre questões deste tópico' : 'Evidência ' + masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric('Retenção', retention, retention === null ? 'Conclua revisões vinculadas' : 'Evidência ' + (retentionResult as { evidence: { evidenceLabel: string } }).evidence.evidenceLabel.toLowerCase())}${pctMetric('Saúde da revisão', reviewHealth.value, reviewHealth.reasons[0] as string)}${textMetric('Último contato', lastContact === null ? 'Sem registro' : lastContact === 0 ? 'Hoje' : lastContact + ' dias')}${textMetric('Última revisão', lastReview === null ? 'Sem registro' : lastReview === 0 ? 'Hoje' : lastReview + ' dias')}${pctMetric('Desempenho recente', performance, diagnosis?.performance?.resolved ? diagnosis.performance.resolved + ' questões' : 'Sem questões')}${textMetric('Tendência', trendText, trend?.delta == null ? '' : (trend.delta >= 0 ? '+' : '') + trend.delta + ' p.p.')}</div></div>`;
 }
-function moveSubject(id, direction) {
+function moveSubject(id: string, direction: number) {
   const active = activeSubjects();
   const activeIdx = active.findIndex(s => s.id === id);
   const target = active[activeIdx + direction];
@@ -3460,7 +3506,7 @@ function moveSubject(id, direction) {
   ];
   persistAndRender();
 }
-function duplicateSubject(id) {
+function duplicateSubject(id: string) {
   const idx = state.subjects.findIndex(s => s.id === id);
   if (idx === -1) return;
   const original = state.subjects[idx];
@@ -3477,19 +3523,19 @@ function duplicateSubject(id) {
       link: t.link || '',
       status: 'Não iniciado',
       archived: false,
-      archivedAt: null,
+      archivedAt: null as any,
       notes: '',
       tags: [...(t.tags || [])],
       difficulty: t.difficulty || 'Médio',
       createdAt: nowISO(),
-      firstCompletedAt: null,
-      lastCompletedAt: null,
+      firstCompletedAt: null as any,
+      lastCompletedAt: null as any,
       completionCount: 0,
-      lastReviewedAt: null,
+      lastReviewedAt: null as any,
       reviewCount: 0,
       examImportance: t.examImportance ?? null,
       estimatedStudyMinutes: t.estimatedStudyMinutes ?? null,
-      prerequisites: [],
+      prerequisites: [] as any[],
     })),
   };
   state.subjects.splice(idx + 1, 0, copy);
@@ -3497,11 +3543,11 @@ function duplicateSubject(id) {
   showToast(`"${copy.name}" criada com os mesmos tópicos (progresso zerado).`);
 }
 
-function toggleSubject(id) {
+function toggleSubject(id: string) {
   subjectService.toggle(id);
   renderSubjects();
 }
-function renameSubject(id, name) {
+function renameSubject(id: string, name: string) {
   const clean = name.trim() || 'Disciplina sem nome';
   const s = appContext.repositories.subjects.findById(id);
   if (s?.name !== clean) {
@@ -3518,7 +3564,7 @@ function addSubject() {
       label: 'Nome da disciplina',
       placeholder: 'Ex.: Conhecimentos Bancários',
       confirmLabel: 'Criar',
-      validate: name => {
+      validate: (name: string) => {
         if (!name) return 'Informe o nome da disciplina.';
         if (
           state.subjects.some(
@@ -3530,7 +3576,7 @@ function addSubject() {
         return '';
       },
     },
-    name => {
+    (name: string) => {
       subjectService.create(name);
       persistAndRender();
       showToast(`Disciplina "${name}" criada.`);
@@ -3552,7 +3598,7 @@ const structuredContentImportService = createStructuredContentImportService({
   subjectService,
   getSubjects: () => state.subjects,
 });
-let structuredImportOrigin = null;
+let structuredImportOrigin: any = null;
 const structuredImportController = createStructuredImportController({
   document,
   window,
@@ -3563,13 +3609,13 @@ const structuredImportController = createStructuredImportController({
   onOpen: () => {
     if (structuredImportOrigin === 'onboarding') suspendGuidedOnboarding();
   },
-  onCancel: ({ completed }) => {
+  onCancel: ({ completed }: any) => {
     if (structuredImportOrigin === 'onboarding') {
       resumeGuidedOnboarding(completed ? 'plan' : 'content');
       structuredImportOrigin = null;
     }
   },
-  onImported: result => {
+  onImported: (result: Record<string, any>) => {
     studyPlanPreview = null;
     persistAndRender();
     showToast(
@@ -3584,7 +3630,7 @@ const historicalExamImportController = createHistoricalExamImportController({
   document,
   getState: () => state,
   notify: showToast,
-  onImported: result => {
+  onImported: (result: Record<string, any>) => {
     state.subjects = result.subjects;
     state.exams = result.exams;
     state.examQuestions = result.examQuestions;
@@ -3609,13 +3655,13 @@ const editalImportFacade = createEditalImportFacade({
   importService: examImportService,
 });
 const examImportState = createExamImportState(EXAM_PRESETS[0]);
-let examImportOrigin = null;
+let examImportOrigin: any = null;
 function selectedExamPreset() {
   return EXAM_PRESETS.find(item => item.id === examImportState.presetId) || EXAM_PRESETS[0];
 }
-function applyPresetBlueprintDefaults(preset) {
+function applyPresetBlueprintDefaults(preset: Record<string, any>) {
   const source = (preset.sources || []).length === 1 ? preset.sources[0] : null;
-  if (!source || !EXAM_SOURCES[source]?.official) return;
+  if (!source || !(EXAM_SOURCES as Record<string, any>)[source]?.official) return;
   for (const subject of state.subjects) {
     if (state.examBlueprint.subjects.some(item => item.subjectId === subject.id)) continue;
     const metric = subject.examMetrics?.[source];
@@ -3662,11 +3708,14 @@ function renderExamImport() {
     escapeHtml,
     escapeAttr,
     renderBadges: examBadges,
-    sourceLabel: source => EXAM_SOURCES[source]?.label || source,
+    sourceLabel: (source: string) => (EXAM_SOURCES as Record<string, any>)[source]?.label || source,
   });
   if (model.step === 2) syncExamSubjectCheckboxes();
 }
-async function openExamImport(initialPreset = null, origin = null) {
+async function openExamImport(
+  initialPreset: string | Record<string, any> | null = null,
+  origin: string = null
+) {
   try {
     await ensureExamCatalog();
     const requestedId = typeof initialPreset === 'string' ? initialPreset : initialPreset?.id,
@@ -3697,7 +3746,7 @@ const examImportController = createExamImportController({
   facade: editalImportFacade,
   render: renderExamImport,
   close: () => closeExamImport(),
-  includeTopic: (action, topic) => {
+  includeTopic: (action: string, topic: Record<string, any>) => {
     const tags = topic.examTags || [];
     return (
       action === 'all' ||
@@ -3723,21 +3772,21 @@ const examImportController = createExamImportController({
 });
 examImportController.mount();
 
-function archiveSubject(id) {
+function archiveSubject(id: string) {
   const subject = getSubjectById(id);
   if (!subject) return showToast('Disciplina não encontrada.');
   subjectService.archive(id);
   persistAndRender();
   showToast(`"${subject.name}" foi arquivada.`);
 }
-function restoreSubject(id) {
+function restoreSubject(id: string) {
   const subject = getSubjectById(id);
   if (!subject) return;
   subjectService.restore(id);
   persistAndRender();
   showToast(`"${subject.name}" foi restaurada.`);
 }
-function getSubjectDependencies(subjectId) {
+function getSubjectDependencies(subjectId: string) {
   const subject = getSubjectById(subjectId);
   const topicIds = new Set((subject?.topics || []).map(t => t.id));
   return {
@@ -3766,10 +3815,10 @@ function getSubjectDependencies(subjectId) {
       state.activeTimer.subjectId === subjectId || topicIds.has(state.activeTimer.topicId) ? 1 : 0,
   };
 }
-function dependencyTotal(dependencies) {
+function dependencyTotal(dependencies: Record<string, any>) {
   return Object.values(dependencies).reduce<number>((sum, value) => sum + (Number(value) || 0), 0);
 }
-function requestPermanentSubjectDelete(id) {
+function requestPermanentSubjectDelete(id: string) {
   const subject = getSubjectById(id);
   if (!subject) return;
   if (!subject.archived)
@@ -3785,25 +3834,25 @@ function requestPermanentSubjectDelete(id) {
     showToast('Disciplina excluída definitivamente.');
   });
 }
-function addTopic(subjectId) {
+function addTopic(subjectId: string) {
   subjectService.addTopic(subjectId);
   persistAndRender();
 }
-function archiveTopic(subjectId, topicId) {
+function archiveTopic(subjectId: string, topicId: string) {
   const found = getTopicById(topicId);
   if (!found || found.subject.id !== subjectId) return;
   subjectService.archiveTopic(subjectId, topicId);
   persistAndRender();
   showToast('Tópico arquivado.');
 }
-function restoreTopic(subjectId, topicId) {
+function restoreTopic(subjectId: string, topicId: string) {
   const found = getTopicById(topicId);
   if (!found || found.subject.id !== subjectId) return;
   subjectService.restoreTopic(subjectId, topicId);
   persistAndRender();
   showToast('Tópico restaurado.');
 }
-function getTopicDependencies(topicId) {
+function getTopicDependencies(topicId: string) {
   return {
     questions: state.questoes.filter(item => item.topicId === topicId).length,
     sessions: state.studySessions.filter(item => item.topicId === topicId).length,
@@ -3815,7 +3864,7 @@ function getTopicDependencies(topicId) {
     activeTimer: state.activeTimer.topicId === topicId ? 1 : 0,
   };
 }
-function requestPermanentTopicDelete(subjectId, topicId) {
+function requestPermanentTopicDelete(subjectId: string, topicId: string) {
   const found = getTopicById(topicId);
   if (!found || found.subject.id !== subjectId) return;
   if (!found.topic.archived)
@@ -3831,7 +3880,7 @@ function requestPermanentTopicDelete(subjectId, topicId) {
     showToast('Tópico excluído definitivamente.');
   });
 }
-function updateTopic(subjectId, topicId, field, value) {
+function updateTopic(subjectId: string, topicId: string, field: string, value: any) {
   const found = getTopicById(topicId),
     patch: Record<string, any> = { [field]: value };
   if (found && ['difficulty', 'examImportance', 'estimatedStudyMinutes'].includes(field)) {
@@ -3840,21 +3889,26 @@ function updateTopic(subjectId, topicId, field, value) {
   subjectService.updateTopic(subjectId, topicId, patch);
   persistAndRender();
 }
-function addHistoryEvent(type, subjectId, topicId = null, metadata: any = {}) {
+function addHistoryEvent(
+  type: string,
+  subjectId: string,
+  topicId: string = null,
+  metadata: any = {}
+) {
   return topicHistoryService.add(type, subjectId, topicId, metadata, {
     examScope: evidenceScopeForTopic(topicId),
   });
 }
-function historyEvents(type) {
+function historyEvents(type: string) {
   return topicHistoryService.list({ type });
 }
-function eventLocalDate(event) {
+function eventLocalDate(event: Record<string, any>) {
   return topicHistoryService.eventLocalDate(event);
 }
 function topicCompletionEvents() {
   return historyEvents('topic_completed');
 }
-function uniqueTopicsCompletedBetween(startDate, endDate) {
+function uniqueTopicsCompletedBetween(startDate: string, endDate: string) {
   const ids = new Set();
   topicCompletionEvents().forEach(event => {
     const date = eventLocalDate(event);
@@ -3862,12 +3916,12 @@ function uniqueTopicsCompletedBetween(startDate, endDate) {
   });
   return ids.size;
 }
-function completedReviewsForTopic(topicId) {
+function completedReviewsForTopic(topicId: string) {
   return state.reviewAgenda.filter(
     review => (review.topicId || review.topicRef) === topicId && review.status === 'Concluído'
   );
 }
-function refreshTopicReviewStats(topicId) {
+function refreshTopicReviewStats(topicId: string) {
   const found = getTopicById(topicId);
   if (!found) return;
   const completed = completedReviewsForTopic(topicId);
@@ -3884,21 +3938,21 @@ function refreshAllTopicReviewStats() {
   );
 }
 
-function markTopicCompleted(topic) {
+function markTopicCompleted(topic: Record<string, any>) {
   const now = nowISO();
   if (!topic.firstCompletedAt) topic.firstCompletedAt = now;
   topic.lastCompletedAt = now;
   topic.completedAt = todayISO();
   topic.completionCount = (Number(topic.completionCount) || 0) + 1;
 }
-function updateTopicStatus(subjectId, topicId, selectEl) {
+function updateTopicStatus(subjectId: string, topicId: string, selectEl: HTMLSelectElement) {
   const s = getSubjectById(subjectId);
   const t = s?.topics.find(x => x.id === topicId);
   if (!t) return;
   const oldStatus = t.status;
   const newStatus = selectEl.value;
   if (oldStatus === newStatus) return;
-  t.status = newStatus;
+  t.status = newStatus as TopicStatus;
   if (newStatus === 'Concluído') {
     markTopicCompleted(t);
     addHistoryEvent('topic_completed', subjectId, topicId);
@@ -3922,26 +3976,29 @@ function getRevisoesUnificadas() {
     topicName: getTopicName,
   });
 }
-const overdueGroupLimits = {
+const overdueGroupLimits: Record<string, any> = {
   calAtrasadas: DEFAULT_LIST_VISIBLE_ITEMS,
   hojeAtrasadas: DEFAULT_LIST_VISIBLE_ITEMS,
 };
-const overdueExpandedDates = { calAtrasadas: new Set(), hojeAtrasadas: new Set() };
+const overdueExpandedDates: Record<string, any> = {
+  calAtrasadas: new Set(),
+  hojeAtrasadas: new Set(),
+};
 const overdueExpansionInitialized = new Set();
-function changeOverdueGroupLimit(elId, delta) {
+function changeOverdueGroupLimit(elId: string, delta: number) {
   overdueGroupLimits[elId] =
     (overdueGroupLimits[elId] || DEFAULT_LIST_VISIBLE_ITEMS) + Number(delta || 0);
   renderCalAtrasadas(elId);
 }
-function showAllOverdueGroups(elId) {
+function showAllOverdueGroups(elId: string) {
   overdueGroupLimits[elId] = Number.MAX_SAFE_INTEGER;
   renderCalAtrasadas(elId);
 }
-function resetOverdueGroupLimit(elId) {
+function resetOverdueGroupLimit(elId: string) {
   overdueGroupLimits[elId] = DEFAULT_LIST_VISIBLE_ITEMS;
   renderCalAtrasadas(elId);
 }
-function toggleOverdueDate(elId, date) {
+function toggleOverdueDate(elId: string, date: string) {
   const dates = overdueExpandedDates[elId] || (overdueExpandedDates[elId] = new Set());
   if (dates.has(date)) dates.delete(date);
   else dates.add(date);
@@ -4023,7 +4080,7 @@ function renderCalendarFilters() {
   selTipo.value = currentTipo;
 }
 
-function toggleFilterPanel(scope) {
+function toggleFilterPanel(scope: any) {
   const id =
     scope === 'agenda'
       ? 'agendaFilters'
@@ -4038,7 +4095,7 @@ function toggleFilterPanel(scope) {
   button?.setAttribute('aria-expanded', String(expanded));
   if (scope === 'sessions') renderSessionHistoryFilterControls();
 }
-function setCalendarMobileView(view) {
+function setCalendarMobileView(view: string) {
   const normalized = view === 'agenda' ? 'agenda' : 'month';
   calendarUiState.view = normalized;
   document.getElementById('panel-calendario')?.setAttribute('data-calendar-view', normalized);
@@ -4057,7 +4114,7 @@ document.querySelectorAll<HTMLElement>('.calendar-view-btn').forEach(button =>
 );
 const calendarEditController = {
   state: calendarUiState,
-  begin: (id, options: { isNew?: boolean } = {}) =>
+  begin: (id: string, options: { isNew?: boolean } = {}) =>
     options.isNew ? calendarController.beginEdit(id) : calendarController.beginEdit(id),
   update: calendarController.update,
   cancel: calendarController.cancelEdit,
@@ -4075,39 +4132,39 @@ const calendarEditController = {
     calendarUiState.isNew = false;
   },
 };
-function calendarViewModel(item) {
+function calendarViewModel(item: Record<string, any>) {
   return buildCalendarItemViewModel(item, {
     formatDate: formatDatePt,
     getSubjectName,
     subjectIdOf: entitySubjectId,
   });
 }
-function changeCalendarLimit(_delta) {
+function changeCalendarLimit(_delta: number) {
   calendarController.showMore();
 }
 function resetCalendarLimit() {
   calendarController.showLess();
 }
-function editCalendarItem(id) {
+function editCalendarItem(id: string) {
   calendarEditController.begin(id);
 }
 function cancelCalendarEdit() {
   calendarEditController.cancel();
 }
-function updateCalendarDraft(field, value) {
+function updateCalendarDraft(field: string, value: any) {
   calendarEditController.update(field, value);
 }
 function saveCalendarEdit() {
   if (!calendarEditController.save()) cancelCalendarEdit();
 }
-function completeCalendarItem(id) {
+function completeCalendarItem(id: string) {
   const item = calendarController.complete(id);
   if (item) {
     persistAndRender();
     showToast('Item concluído.');
   }
 }
-function renderCalendarReadRow(item) {
+function renderCalendarReadRow(item: Record<string, any>) {
   return renderCalendarRead({
     item,
     view: calendarViewModel(item),
@@ -4118,7 +4175,7 @@ function renderCalendarReadRow(item) {
     today: todayISO(),
   });
 }
-function renderCalendarEditRow(item) {
+function renderCalendarEditRow(item: Record<string, any>) {
   const draft = calendarUiState.draft,
     subjectId = entitySubjectId(draft);
   return renderCalendarEdit({
@@ -4175,16 +4232,16 @@ function addCalRow() {
     reviewType: '—',
   });
 }
-function deleteCalRow(id) {
+function deleteCalRow(id: string) {
   showConfirm('Excluir este item do calendário?', () => {
     calendarController.remove(id);
     persistAndRender();
     showToast('Item excluído.');
   });
 }
-function updateCal(id, field, value) {
+function updateCal(id: string, field: string, value: any) {
   const c = state.calendar.find(x => x.id === id);
-  c[field] = value;
+  (c as Record<string, any>)[field] = value;
   persistAndRender();
 }
 
@@ -4212,19 +4269,19 @@ document.getElementById('addSubjectBtn').addEventListener('click', addSubject);
 document.getElementById('addCalRowBtn').addEventListener('click', addCalRow);
 
 /* ===== AGENDA DE REVISÕES ===== */
-function addDays(iso, days) {
+function addDays(iso: string, days: number) {
   const d = parseLocalDate(iso);
   if (!d) return '';
   d.setDate(d.getDate() + Number(days || 0));
   return localDateISO(d);
 }
 
-function reviewBaseDaysFromType(type) {
+function reviewBaseDaysFromType(type: string) {
   if (type === 'Revisão 24h') return 1;
   const match = String(type || '').match(/(\d+)/);
   return match ? Math.max(1, Number(match[1])) : 7;
 }
-function adaptiveReviewSuggestion(topicId, baseDays, baseDate) {
+function adaptiveReviewSuggestion(topicId: string, baseDays: number, baseDate: string) {
   const found = getTopicById(topicId);
   const diagnosis = found ? diagnoseTopic(found.subject.id, topicId) : null;
   const result = calculateAdaptiveInterval({
@@ -4238,7 +4295,7 @@ function adaptiveReviewSuggestion(topicId, baseDays, baseDate) {
   });
   return { ...result, date: addDays(baseDate, result.days) };
 }
-function resetAdaptiveReviewDate(id) {
+function resetAdaptiveReviewDate(id: string) {
   const review = appContext.repositories.reviewAgenda.findById(id);
   if (!review || !review.topicId) return;
   const found = getTopicById(review.topicId);
@@ -4296,7 +4353,7 @@ function gerarAgendaAutomatica() {
     showToast('A agenda já está atualizada — nenhuma revisão nova para gerar.');
   }
 }
-function getTopicDifficulty(topicId) {
+function getTopicDifficulty(topicId: string) {
   if (!topicId) return 'Médio';
   for (const s of state.subjects) {
     const t = s.topics.find(x => x.id === topicId);
@@ -4335,11 +4392,11 @@ const agendaUiState = {
   upcomingVisible: DEFAULT_LIST_VISIBLE_ITEMS,
   completedVisible: DEFAULT_LIST_VISIBLE_ITEMS,
   completedExpanded: false,
-  editingId: null,
+  editingId: null as string | null,
   editingIsNew: false,
-  draft: null,
+  draft: null as Record<string, any> | null,
 };
-function agendaViewModel(item) {
+function agendaViewModel(item: Record<string, any>) {
   const topicId = item.topicId || item.topicRef;
   return createReviewViewModel(item, {
     subjectName: getSubjectName(entitySubjectId(item)),
@@ -4352,17 +4409,18 @@ function toggleCompletedReviews() {
   agendaUiState.completedExpanded = !agendaUiState.completedExpanded;
   renderAgenda();
 }
-function changeAgendaLimit(group, delta) {
+function changeAgendaLimit(group: string, delta: number) {
   const key = `${group}Visible`,
     minimum = DEFAULT_LIST_VISIBLE_ITEMS;
-  agendaUiState[key] = Number(delta) > 0 ? Number.MAX_SAFE_INTEGER : minimum;
+  (agendaUiState as Record<string, any>)[key] =
+    Number(delta) > 0 ? Number.MAX_SAFE_INTEGER : minimum;
   renderAgenda();
 }
-function resetAgendaLimit(group) {
-  agendaUiState[`${group}Visible`] = DEFAULT_LIST_VISIBLE_ITEMS;
+function resetAgendaLimit(group: string) {
+  (agendaUiState as Record<string, any>)[`${group}Visible`] = DEFAULT_LIST_VISIBLE_ITEMS;
   renderAgenda();
 }
-function editAgenda(id) {
+function editAgenda(id: string) {
   if (agendaUiState.editingIsNew && agendaUiState.editingId !== id)
     state.reviewAgenda = state.reviewAgenda.filter(item => item.id !== agendaUiState.editingId);
   const item = state.reviewAgenda.find(entry => entry.id === id);
@@ -4380,18 +4438,18 @@ function cancelAgendaEdit() {
   agendaUiState.draft = null;
   renderAgenda();
 }
-function updateAgendaDraft(field, value) {
+function updateAgendaDraft(field: string, value: any) {
   const draft = agendaUiState.draft;
   if (!draft) return;
   draft[field] = value;
   if (
     field === 'subjectId' &&
     draft.topicId &&
-    !topicsForSelection(value, draft.topicId).some(topic => topic.id === draft.topicId)
+    !topicsForSelection(value, draft.topicId).some((topic: any) => topic.id === draft.topicId)
   )
     draft.topicId = null;
 }
-function applyAgendaField(item, field, value) {
+function applyAgendaField(item: Record<string, any>, field: string, value: any) {
   const oldStatus = item.status,
     oldValue = item[field];
   item[field] = value;
@@ -4422,7 +4480,8 @@ function saveAgendaEdit() {
     item = state.reviewAgenda.find(entry => entry.id === agendaUiState.editingId);
   if (!draft || !item) return cancelAgendaEdit();
   ['date', 'subjectId', 'topic', 'tipo', 'status'].forEach(field => {
-    if (item[field] !== draft[field]) applyAgendaField(item, field, draft[field]);
+    if ((item as Record<string, any>)[field] !== draft[field])
+      applyAgendaField(item, field, draft[field]);
   });
   agendaUiState.editingId = null;
   agendaUiState.editingIsNew = false;
@@ -4430,14 +4489,14 @@ function saveAgendaEdit() {
   persistAndRender();
   showToast('Revisão atualizada.');
 }
-let pendingReviewRatingId = null;
+let pendingReviewRatingId: any = null;
 function closeReviewRating() {
   pendingReviewRatingId = null;
   const overlay = document.getElementById('reviewRatingOverlay');
   overlay.classList.remove('show');
   overlay.setAttribute('aria-hidden', 'true');
 }
-function completeAgendaReview(id) {
+function completeAgendaReview(id: string) {
   const item = appContext.repositories.reviewAgenda.findById(id);
   if (!item || item.status === 'Concluído') return;
   if (!(item.topicId || item.topicRef)) {
@@ -4452,17 +4511,17 @@ function completeAgendaReview(id) {
   overlay.removeAttribute('aria-hidden');
   overlay.querySelector<HTMLElement>('[data-review-rating="good"]')?.focus();
 }
-function rateCompletedReview(rating) {
-  if (!REVIEW_RATINGS[rating]) return closeReviewRating();
+function rateCompletedReview(rating: number) {
+  if (!(REVIEW_RATINGS as Record<string, any>)[rating]) return closeReviewRating();
   const result = reviewService.rateReview(pendingReviewRatingId, rating, {
-    label: REVIEW_RATINGS[rating].label,
+    label: (REVIEW_RATINGS as Record<string, any>)[rating].label,
   });
   if (!result) return closeReviewRating();
   closeReviewRating();
   persistAndRender();
   showToast(`Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState.nextReviewDate)}.`);
 }
-function renderAgendaReadRow(item) {
+function renderAgendaReadRow(item: Record<string, any>) {
   return renderReviewRead({
     item,
     view: agendaViewModel(item),
@@ -4472,11 +4531,11 @@ function renderAgendaReadRow(item) {
     daysPill: diasParaRevisaoPill(item.date, item.status),
     difficultyClass: DIFFICULTY_CLASS,
     statusClass: STATUS_CLASS,
-    ratingLabel: key => REVIEW_RATINGS[key]?.label || key,
+    ratingLabel: (key: string) => (REVIEW_RATINGS as Record<string, any>)[key]?.label || key,
     today: todayISO(),
   });
 }
-function renderAgendaEditRow(item) {
+function renderAgendaEditRow(item: Record<string, any>) {
   const draft = agendaUiState.draft,
     subjectId = entitySubjectId(draft);
   if (!draft) return '';
@@ -4537,7 +4596,7 @@ function addAgendaRow() {
   agendaUiState.draft = cloneRecord(item);
   renderAgenda();
 }
-function deleteAgendaRow(id) {
+function deleteAgendaRow(id: string) {
   showConfirm('Excluir esta revisão?', () => {
     reviewService.removeReview(id);
     agendaUiState.editingId = null;
@@ -4547,7 +4606,7 @@ function deleteAgendaRow(id) {
     showToast('Revisão excluída.');
   });
 }
-function updateAgenda(id, field, value) {
+function updateAgenda(id: string, field: string, value: any) {
   const a = state.reviewAgenda.find(x => x.id === id);
   if (!a) return;
   applyAgendaField(a, field, value);
@@ -4569,7 +4628,7 @@ createReviewsController({
 }).register();
 
 /* ===== QUESTÕES & SIMULADOS ===== */
-function calcAcertoPct(correct, resolved) {
+function calcAcertoPct(correct: number, resolved: number) {
   const r = Number(resolved) || 0;
   const c = Number(correct) || 0;
   if (r <= 0) return 0;
@@ -4577,26 +4636,26 @@ function calcAcertoPct(correct, resolved) {
 }
 
 let openQuestionErrorIds = new Set<string>();
-let performanceSubjectId = null;
+let performanceSubjectId: any = null;
 let performanceViewMode = 'with-data';
 const errorAnalysisView = { days: 30, topicId: '' };
 let performanceVisible = DEFAULT_LIST_VISIBLE_ITEMS;
 let retentionShowAll = false;
-const retentionView = { subjectId: '', order: 'asc', confidence: 'all' };
-function setPerformanceViewMode(mode) {
+const retentionView: Record<string, any> = { subjectId: '', order: 'asc', confidence: 'all' };
+function setPerformanceViewMode(mode: string) {
   performanceViewMode = ['with-data', 'insufficient', 'without-data', 'all'].includes(mode)
     ? mode
     : 'with-data';
   performanceVisible = DEFAULT_LIST_VISIBLE_ITEMS;
   renderQuestionAnalytics();
 }
-function setErrorAnalysisFilter(field, value) {
+function setErrorAnalysisFilter(field: string, value: any) {
   if (field === 'days' && [7, 30, 60, 90].includes(Number(value)))
     errorAnalysisView.days = Number(value);
   if (field === 'topicId') errorAnalysisView.topicId = value || '';
   renderQuestionAnalytics();
 }
-function changePerformanceLimit(_delta) {
+function changePerformanceLimit(_delta: number) {
   performanceVisible = Number.MAX_SAFE_INTEGER;
   renderQuestionAnalytics();
 }
@@ -4616,7 +4675,7 @@ function resetRetentionLimit() {
   retentionShowAll = false;
   renderTopicRetentionDashboard();
 }
-function setRetentionFilter(field, value) {
+function setRetentionFilter(field: string, value: any) {
   if (field in retentionView) retentionView[field] = value;
   retentionShowAll = false;
   renderTopicRetentionDashboard();
@@ -4631,8 +4690,8 @@ const LIST_VIEW_STEPS = {
   simulations: DEFAULT_LIST_VISIBLE_ITEMS,
   sessionDays: DEFAULT_LIST_VISIBLE_ITEMS,
 };
-const historyEditState = { sessionId: null };
-const historyEditDraft = { session: null };
+const historyEditState = { sessionId: null as any };
+const historyEditDraft = { session: null as any };
 const questionCrudController = createQuestionController({
   service: questionService,
   onChange: () => {},
@@ -4641,7 +4700,7 @@ const questionEditController = createEditableCollectionController({
     service: questionService,
     clone: cloneRecord,
     render: renderQuestoes,
-    normalize: draft => {
+    normalize: (draft: Record<string, any>) => {
       draft.resolved = Math.max(0, Math.floor(Number(draft.resolved) || 0));
       draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.resolved));
       normalizeErrorBreakdown(draft);
@@ -4656,7 +4715,7 @@ const questionEditController = createEditableCollectionController({
     service: simulationService,
     clone: cloneRecord,
     render: renderSimulados,
-    normalize: draft => {
+    normalize: (draft: Record<string, any>) => {
       draft.total = Math.max(0, Math.floor(Number(draft.total) || 0));
       draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.total));
       return draft;
@@ -4666,7 +4725,7 @@ const questionEditController = createEditableCollectionController({
       showToast('Simulado atualizado.');
     },
   });
-function cloneRecord(record) {
+function cloneRecord(record: Record<string, any>) {
   return record ? JSON.parse(JSON.stringify(record)) : null;
 }
 function isMobileHistoryLayout() {
@@ -4674,13 +4733,13 @@ function isMobileHistoryLayout() {
 }
 
 function renderListViewFooter(
-  total,
-  visible,
-  step,
-  showMoreAction,
-  showLessAction,
-  colspan,
-  label
+  total: number,
+  visible: number,
+  step: number,
+  showMoreAction: string,
+  showLessAction: string,
+  colspan: number,
+  label: string
 ) {
   return renderCollectionFooter({
     total,
@@ -4692,13 +4751,14 @@ function renderListViewFooter(
     label,
   });
 }
-function changeListLimit(key, delta, renderFn) {
-  listViewState[`${key}Visible`] = delta > 0 ? Number.MAX_SAFE_INTEGER : DEFAULT_LIST_VISIBLE_ITEMS;
+function changeListLimit(key: string, delta: number, renderFn: () => void) {
+  (listViewState as Record<string, any>)[`${key}Visible`] =
+    delta > 0 ? Number.MAX_SAFE_INTEGER : DEFAULT_LIST_VISIBLE_ITEMS;
   renderFn();
 }
 function resetRecordListLimits() {
   Object.keys(LIST_VIEW_STEPS).forEach(key => {
-    listViewState[`${key}Visible`] = DEFAULT_LIST_VISIBLE_ITEMS;
+    (listViewState as Record<string, any>)[`${key}Visible`] = DEFAULT_LIST_VISIBLE_ITEMS;
   });
   agendaUiState.upcomingVisible = agendaUiState.completedVisible = DEFAULT_LIST_VISIBLE_ITEMS;
   upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
@@ -4710,7 +4770,7 @@ function resetRecordListLimits() {
 function emptyErrorBreakdown() {
   return Object.fromEntries(Object.keys(ERROR_CATEGORIES).map(key => [key, 0]));
 }
-function normalizeErrorBreakdown(question) {
+function normalizeErrorBreakdown(question: Record<string, any>) {
   const normalized = emptyErrorBreakdown();
   Object.keys(normalized).forEach(key => {
     normalized[key] = Math.max(0, Math.floor(Number(question?.errorBreakdown?.[key]) || 0));
@@ -4732,19 +4792,19 @@ function normalizeErrorBreakdown(question) {
 function validQuestionRecords() {
   return state.questoes.filter(q => q.date && (Number(q.resolved) || 0) > 0);
 }
-function accuracyFromCounts(correct, total) {
+function accuracyFromCounts(correct: number, total: number) {
   return total > 0 ? Math.round((correct / total) * 1000) / 10 : null;
 }
-function toggleQuestionErrors(id) {
+function toggleQuestionErrors(id: string) {
   if (openQuestionErrorIds.has(id)) openQuestionErrorIds.delete(id);
   else openQuestionErrorIds.add(id);
   renderQuestoes();
   renderQuestionAnalytics();
 }
-function questionCategorizedErrors(question) {
+function questionCategorizedErrors(question: Record<string, any>) {
   return Object.values(normalizeErrorBreakdown(question)).reduce((sum, value) => sum + value, 0);
 }
-function questionViewModel(q) {
+function questionViewModel(q: Record<string, any>) {
   return buildQuestionViewModel(q, {
     formatDate: formatDatePt,
     getSubjectName,
@@ -4753,13 +4813,13 @@ function questionViewModel(q) {
     accuracy: calcAcertoPct,
   });
 }
-function editQuestion(id) {
+function editQuestion(id: string) {
   questionEditController.begin(id);
 }
 function cancelQuestionEdit() {
   questionEditController.cancel();
 }
-function updateQuestionDraft(field, value) {
+function updateQuestionDraft(field: string, value: any) {
   const draft = questionEditController.state.draft;
   if (!draft) return;
   questionEditController.update(
@@ -4771,7 +4831,7 @@ function updateQuestionDraft(field, value) {
   if (
     field === 'subjectId' &&
     draft.topicId &&
-    !topicsForSelection(value, draft.topicId).some(t => t.id === draft.topicId)
+    !topicsForSelection(value, draft.topicId).some((t: any) => t.id === draft.topicId)
   )
     draft.topicId = null;
   if (field === 'subjectId') renderQuestoes();
@@ -4804,7 +4864,7 @@ function getQuestionsTabController() {
     getTopicOptionsHtml: (subjectId, topicId) =>
       topicsForSelection(subjectId, topicId)
         .map(
-          t =>
+          (t: any) =>
             `<option value="${escapeAttr(t.id)}" ${t.id === topicId ? 'selected' : ''}>${escapeHtml(t.name)}</option>`
         )
         .join(''),
@@ -4833,7 +4893,7 @@ function addQuestaoRow(initial: any = {}) {
   questionEditController.begin(question.id, { isNew: true });
   return question;
 }
-function deleteQuestaoRow(id) {
+function deleteQuestaoRow(id: string) {
   showConfirm('Excluir este registro de questões?', () => {
     questionCrudController.remove(id);
     openQuestionErrorIds.delete(id);
@@ -4842,7 +4902,7 @@ function deleteQuestaoRow(id) {
     showToast('Registro excluído.');
   });
 }
-function updateQuestionError(id, key, value) {
+function updateQuestionError(id: string, key: string, value: any) {
   const question = state.questoes.find(q => q.id === id);
   if (!question || !ERROR_CATEGORIES[key]) return;
   normalizeErrorBreakdown(question);
@@ -4861,29 +4921,29 @@ function updateQuestionError(id, key, value) {
   persistAndRender();
 }
 
-function performanceConfidence(total) {
+function performanceConfidence(total: number) {
   if (total < MIN_WEEKLY_QUESTIONS) return { key: 'insufficient', label: 'Amostra insuficiente' };
   if (total < 20) return { key: 'low', label: 'Confiança da amostra: baixa' };
   if (total < 50) return { key: 'medium', label: 'Confiança da amostra: média' };
   return { key: 'high', label: 'Confiança da amostra: alta' };
 }
-function subjectAccuracyTarget(subjectId) {
+function subjectAccuracyTarget(subjectId: string) {
   return resolveSubjectAccuracyTarget(subjectId, state.examBlueprint, state.metas.metaAprovacao);
 }
-function classifyAccuracy(accuracy, subjectId) {
+function classifyAccuracy(accuracy: number | null, subjectId: string) {
   if (accuracy === null) return { key: 'none', icon: '⚪', label: 'Sem dados' };
   const target = subjectAccuracyTarget(subjectId);
   if (accuracy >= target) return { key: 'strong', icon: '🟢', label: 'Na meta' };
   if (accuracy >= target - 10) return { key: 'attention', icon: '🟡', label: 'Atenção' };
   return { key: 'weak', icon: '🔴', label: 'Prioritário' };
 }
-function getTopicPerformance(topicId) {
+function getTopicPerformance(topicId: string) {
   const records = validQuestionRecords().filter(q => q.topicId === topicId);
   const resolved = records.reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
   const correct = records.reduce((sum, q) => sum + (Number(q.correct) || 0), 0);
   return { resolved, correct, accuracy: accuracyFromCounts(correct, resolved) };
 }
-function getSubjectTopicPerformance(subjectId) {
+function getSubjectTopicPerformance(subjectId: string) {
   const subject = state.subjects.find(item => item.id === subjectId);
   if (!subject) return [];
   return subject.topics
@@ -4903,14 +4963,14 @@ function getSubjectTopicPerformance(subjectId) {
       return a.accuracy - b.accuracy;
     });
 }
-function buildErrorProfile(records) {
+function buildErrorProfile(records: any[]) {
   records.forEach(normalizeErrorBreakdown);
   return analyzeErrors(records, {
     minimumErrors: MIN_ERROR_RECOMMENDATION_COUNT,
     minimumCoverage: MIN_ERROR_RECOMMENDATION_COVERAGE,
   });
 }
-function getTopicErrorProfile(topicId) {
+function getTopicErrorProfile(topicId: string) {
   const cutoff = addDays(todayISO(), -29);
   return buildErrorProfile(
     validQuestionRecords().filter(
@@ -4919,7 +4979,7 @@ function getTopicErrorProfile(topicId) {
     )
   );
 }
-function getSubjectPerformanceCounts(subjectId) {
+function getSubjectPerformanceCounts(subjectId: string) {
   let resolved = 0,
     correct = 0;
   state.questoes
@@ -4938,7 +4998,7 @@ function getSubjectPerformanceCounts(subjectId) {
   );
   return { resolved, correct, accuracy: accuracyFromCounts(correct, resolved) };
 }
-function topicErrorRate(topicId, subjectId) {
+function topicErrorRate(topicId: string, subjectId: string) {
   const topicPerformance = getTopicPerformance(topicId);
   const subjectPerformance = getSubjectPerformanceCounts(subjectId);
   const topicRate = topicPerformance.accuracy === null ? null : 100 - topicPerformance.accuracy;
@@ -4973,12 +5033,17 @@ function topicErrorRate(topicId, subjectId) {
     subjectPerformance,
   };
 }
-function getWeekRange(weeksAgo) {
+function getWeekRange(weeksAgo: number) {
   const currentStart = startOfWeek(todayISO());
   const start = addDays(currentStart, -7 * weeksAgo);
   return { start, end: addDays(start, 6) };
 }
-function getSubjectPerformanceBetween(subjectId, start, end, records = validQuestionRecords()) {
+function getSubjectPerformanceBetween(
+  subjectId: string,
+  start: string,
+  end: string,
+  records = validQuestionRecords()
+) {
   records = records.filter(
     question =>
       entitySubjectId(question) === subjectId && question.date >= start && question.date <= end
@@ -4994,13 +5059,13 @@ function getSubjectPerformanceBetween(subjectId, start, end, records = validQues
     insufficientData: resolved < MIN_WEEKLY_QUESTIONS,
   };
 }
-function getSubjectWeeklyTrend(subjectId, weeks = 8, records = validQuestionRecords()) {
+function getSubjectWeeklyTrend(subjectId: string, weeks = 8, records = validQuestionRecords()) {
   return Array.from({ length: weeks }, (_, index) => {
     const range = getWeekRange(weeks - 1 - index);
     return getSubjectPerformanceBetween(subjectId, range.start, range.end, records);
   });
 }
-function getTopicPerformanceBetween(topicId, start, end) {
+function getTopicPerformanceBetween(topicId: string, start: string, end: string) {
   const records = validQuestionRecords().filter(
     question => question.topicId === topicId && question.date >= start && question.date <= end
   );
@@ -5015,18 +5080,18 @@ function getTopicPerformanceBetween(topicId, start, end) {
     insufficientData: resolved < MIN_WEEKLY_QUESTIONS,
   };
 }
-function getTopicWeeklyTrend(topicId, weeks = 8) {
+function getTopicWeeklyTrend(topicId: string, weeks = 8) {
   return Array.from({ length: weeks }, (_, index) => {
     const range = getWeekRange(weeks - 1 - index);
     return getTopicPerformanceBetween(topicId, range.start, range.end);
   });
 }
-function calculateWeightedTrend(weeklyData, minWindow = MIN_TREND_WINDOW_QUESTIONS) {
+function calculateWeightedTrend(weeklyData: any[], minWindow = MIN_TREND_WINDOW_QUESTIONS) {
   return calculateWindowTrend(weeklyData, minWindow);
 }
-function topicLastActivityDate(topicId) {
-  let last = null;
-  const bump = date => {
+function topicLastActivityDate(topicId: string) {
+  let last: any = null;
+  const bump = (date: string) => {
     if (date && (!last || date > last)) last = date;
   };
   topicHistoryService
@@ -5046,7 +5111,7 @@ function topicLastActivityDate(topicId) {
     .forEach(item => bump(item.date));
   return last;
 }
-function pendingReviewForTopic(topicId) {
+function pendingReviewForTopic(topicId: string) {
   return (
     state.reviewAgenda
       .filter(
@@ -5055,7 +5120,7 @@ function pendingReviewForTopic(topicId) {
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0] || null
   );
 }
-function dominantTopicError(profile) {
+function dominantTopicError(profile: Record<string, any>) {
   const dominant = profile?.dominant;
   if (!dominant) return null;
   return {
@@ -5064,7 +5129,7 @@ function dominantTopicError(profile) {
     recommendation: dominant.recommendation || ERROR_RECOMMENDATIONS[dominant.key],
   };
 }
-function topicMasteryIndex(_subjectId, topicId) {
+function topicMasteryIndex(_subjectId: string, topicId: string) {
   const found = getTopicById(topicId);
   if (!found) return calculateTopicMastery();
   const today = todayISO(),
@@ -5084,7 +5149,7 @@ function topicMasteryIndex(_subjectId, topicId) {
     periodEnd: today,
   });
 }
-function diagnoseTopic(subjectId, topicId) {
+function diagnoseTopic(subjectId: string, topicId: string) {
   const found = getTopicById(topicId);
   if (!found) return null;
   const performance = getTopicPerformance(topicId);
@@ -5258,7 +5323,7 @@ function renderQuestionAnalytics() {
     mode: performanceViewMode,
     topics: filteredPerformance,
     visible: performanceVisible,
-    masteryForTopic: id => topicMasteryIndex(performanceSubjectId, id),
+    masteryForTopic: (id: string) => topicMasteryIndex(performanceSubjectId, id),
     renderFooter: renderCollectionFooter,
     visibleLimit: performanceVisible,
     escapeHtml,
@@ -5305,26 +5370,26 @@ function renderQuestionAnalytics() {
   profileEl.innerHTML = renderErrorAnalysis(errorModel, { toolbar: errorToolbar, escapeHtml });
 }
 
-function simuladoEffectiveCounts(sim) {
+function simuladoEffectiveCounts(sim: Record<string, any>) {
   if (sim.breakdown && sim.breakdown.length > 0) {
-    const correct = sim.breakdown.reduce((s, b) => s + (Number(b.correct) || 0), 0);
-    const total = sim.breakdown.reduce((s, b) => s + (Number(b.total) || 0), 0);
+    const correct = sim.breakdown.reduce((s: any, b: any) => s + (Number(b.correct) || 0), 0);
+    const total = sim.breakdown.reduce((s: any, b: any) => s + (Number(b.total) || 0), 0);
     return { correct, total };
   }
   return { correct: Number(sim.correct) || 0, total: Number(sim.total) || 0 };
 }
-function simuladoNota(sim) {
+function simuladoNota(sim: Record<string, any>) {
   const { correct, total } = simuladoEffectiveCounts(sim);
   return calcAcertoPct(correct, total);
 }
 
 let openBreakdownIds = new Set<string>();
-function toggleBreakdown(simuladoId) {
+function toggleBreakdown(simuladoId: string) {
   if (openBreakdownIds.has(simuladoId)) openBreakdownIds.delete(simuladoId);
   else openBreakdownIds.add(simuladoId);
   renderSimulados();
 }
-function addBreakdownRow(simuladoId) {
+function addBreakdownRow(simuladoId: string) {
   const sim = state.simulados.find(s => s.id === simuladoId);
   if (!sim.breakdown) sim.breakdown = [];
   sim.breakdown.push({
@@ -5335,23 +5400,24 @@ function addBreakdownRow(simuladoId) {
   });
   persistAndRender();
 }
-function updateBreakdownRow(simuladoId, breakdownId, field, value) {
+function updateBreakdownRow(simuladoId: string, breakdownId: string, field: string, value: any) {
   const sim = state.simulados.find(s => s.id === simuladoId);
   const b = sim.breakdown.find(x => x.id === breakdownId);
-  b[field] = field === 'correct' || field === 'total' ? Number(value) || 0 : value;
+  (b as Record<string, any>)[field] =
+    field === 'correct' || field === 'total' ? Number(value) || 0 : value;
   b.total = Math.max(0, Number(b.total) || 0);
   if ((Number(b.correct) || 0) > b.total)
     showToast('Os acertos foram limitados ao total de questões.');
   b.correct = Math.max(0, Math.min(Number(b.correct) || 0, b.total));
   persistAndRender();
 }
-function deleteBreakdownRow(simuladoId, breakdownId) {
+function deleteBreakdownRow(simuladoId: string, breakdownId: string) {
   const sim = state.simulados.find(s => s.id === simuladoId);
   sim.breakdown = sim.breakdown.filter(x => x.id !== breakdownId);
   persistAndRender();
 }
 
-function simulationViewModel(sim) {
+function simulationViewModel(sim: Record<string, any>) {
   const counts = simuladoEffectiveCounts(sim);
   return {
     date: sim.date ? formatDatePt(sim.date) : 'Sem data',
@@ -5361,13 +5427,13 @@ function simulationViewModel(sim) {
     score: simuladoNota(sim),
   };
 }
-function editSimulation(id) {
+function editSimulation(id: string) {
   simulationEditController.begin(id);
 }
 function cancelSimulationEdit() {
   simulationEditController.cancel();
 }
-function updateSimulationDraft(field, value) {
+function updateSimulationDraft(field: string, value: any) {
   simulationEditController.update(
     field,
     field === 'correct' || field === 'total' ? Math.max(0, Math.floor(Number(value) || 0)) : value
@@ -5393,7 +5459,7 @@ function addSimuladoRow() {
   });
   simulationEditController.begin(sim.id, { isNew: true });
 }
-function deleteSimuladoRow(id) {
+function deleteSimuladoRow(id: string) {
   showConfirm('Excluir este simulado?', () => {
     simulationService.remove(id);
     openBreakdownIds.delete(id);
@@ -5414,7 +5480,7 @@ const questionImportService = createQuestionImportService({
   errorCategoryKeys: Object.keys(ERROR_CATEGORIES),
   today: todayISO,
   // Repositórios leem state a cada chamada, então restaurar as chaves desfaz disciplinas, tópicos e questões criados.
-  atomic: task => {
+  atomic: (task: () => any) => {
     const snapshot = structuredClone(pickPersistentState(state));
     try {
       return task();
@@ -5430,7 +5496,7 @@ createQuestionImportController({
   service: questionImportService,
   render: renderQuestionImport,
   notify: showToast,
-  onImported: result => {
+  onImported: (result: Record<string, any>) => {
     studyPlanPreview = null;
     persistAndRender();
     showToast(
@@ -5458,7 +5524,7 @@ function metaHoursForDate(date = todayISO()) {
 function metaHoursToday() {
   return metaHoursForDate(todayISO());
 }
-function updateMetaHoursDay(day, value, { refresh = true }: any = {}) {
+function updateMetaHoursDay(day: any, value: any, { refresh = true }: any = {}) {
   if (
     Number(day) >= 0 &&
     Number(day) <= 6 &&
@@ -5524,7 +5590,7 @@ function renderWeeklyHoursGoals() {
   getGoalsTabController().mountWeeklyAvailability(container);
 }
 
-function contarTopicosConcluidosNoPeriodo(pred) {
+function contarTopicosConcluidosNoPeriodo(pred: (event: any) => boolean) {
   const ids = new Set();
   topicCompletionEvents().forEach(event => {
     const date = eventLocalDate(event);
@@ -5584,10 +5650,10 @@ function renderPlanExecution() {
   getGoalsTabController().mountPlanExecution(container);
 }
 
-function updateMeta(key, value) {
+function updateMeta(key: string, value: any) {
   if (
     key === 'metaAprovacao' &&
-    state.metas[key] !== Math.max(0, Math.min(100, Number(value) || 0))
+    (state.metas as Record<string, any>)[key] !== Math.max(0, Math.min(100, Number(value) || 0))
   )
     captureReadinessBeforeStrategy('Antes de alterar a meta de nota');
   if (goalsService.update(key, value) === false) {
@@ -5597,7 +5663,7 @@ function updateMeta(key, value) {
   persistAndRender();
 }
 
-const examMatrixFilters = {
+const examMatrixFilters: Record<string, any> = {
   scope: 'active',
   board: 'all',
   year: 'all',
@@ -5607,7 +5673,7 @@ const examMatrixFilters = {
   sort: 'incidence',
   mode: 'quadrants',
 };
-let selectedExamMatrixTopicId = null;
+let selectedExamMatrixTopicId: any = null;
 function renderHistoricalExamMatrix() {
   const container = document.getElementById('examHistoricalMatrix');
   if (!container) return;
@@ -5625,7 +5691,7 @@ function renderHistoricalExamMatrix() {
     personal.set(record.topicId, entry);
   }
   const metricsByTopic = Object.fromEntries(
-    intelligenceCandidates().map(item => {
+    intelligenceCandidates().map((item: any) => {
       const data = personal.get(item.topicId);
       return [
         item.topicId,
@@ -5650,7 +5716,7 @@ function renderHistoricalExamMatrix() {
           blueprint: state.examBlueprint,
           exams: state.exams,
           examQuestions: state.examQuestions,
-        }).rows.map(row => [row.topicId, row])
+        }).rows.map((row: any) => [row.topicId, row])
       )
     : {};
   const model = buildExamMatrix({
@@ -5662,7 +5728,7 @@ function renderHistoricalExamMatrix() {
     metricsByTopic,
     auditByTopic,
   });
-  if (!model.rows.some(row => row.topicId === selectedExamMatrixTopicId))
+  if (!model.rows.some((row: any) => row.topicId === selectedExamMatrixTopicId))
     selectedExamMatrixTopicId = null;
   container.innerHTML = renderExamMatrix(model, { selectedTopicId: selectedExamMatrixTopicId });
   const opportunity = document.getElementById('examOpportunity');
@@ -5791,7 +5857,7 @@ document.getElementById('examConfigurationAudit')?.addEventListener('click', eve
 });
 let examClassificationFilter = 'all',
   examClassificationPage = 0,
-  examClassificationPreviousFocus = null;
+  examClassificationPreviousFocus: any = null;
 const examClassificationOverlay = document.getElementById('examClassificationOverlay');
 function updateExamClassificationReview() {
   const content = document.getElementById('examClassificationContent');
@@ -5876,7 +5942,7 @@ examClassificationOverlay?.addEventListener('keydown', event => {
     closeExamClassificationReview();
   }
 });
-function topicExamMetricForActiveScope(topic) {
+function topicExamMetricForActiveScope(topic: Record<string, any>) {
   const active = state.examBlueprint.activeExamTags || [],
     entries = Object.entries(topic.examMetrics || {}).filter(
       ([profile]) => !active.length || active.some(tag => profile.startsWith(tag))
@@ -5888,7 +5954,7 @@ function renderExamMasteryMatrix() {
   if (!el) return;
   const candidates = intelligenceCandidates(),
     metrics = Object.fromEntries(
-      candidates.map(c => [
+      candidates.map((c: any) => [
         c.topicId,
         {
           coverage: c.coverage,
@@ -5911,7 +5977,7 @@ function renderExamMasteryMatrix() {
         .map(
           row =>
             `<details><summary><strong>${escapeHtml(row.name)}</strong><span data-label="Cobertura">${row.coverage ?? '—'}%</span><span data-label="Domínio">${row.mastery ?? '—'}%</span><span data-label="Retenção">${row.retention ?? '—'}%</span><span data-label="Gap">${row.gap == null ? '—' : (row.gap > 0 ? '-' : '') + Math.abs(row.gap) + ' pts'}</span></summary>${row.topics
-              .map(t => {
+              .map((t: any) => {
                 const metric = topicExamMetricForActiveScope(t),
                   meta = [
                     metric?.questionWeight != null ? metric.questionWeight + ' pt/questão' : null,
@@ -5926,12 +5992,12 @@ function renderExamMasteryMatrix() {
         .join('')}</div>`
     : '<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>';
 }
-let studyPlanPreview = null,
-  dailyPlanPreview = null;
+let studyPlanPreview: any = null,
+  dailyPlanPreview: any = null;
 function studyPlanCandidates({ guidedDefaults = false }: any = {}) {
   return intelligenceCandidates()
-    .filter(item => item.topicId)
-    .map(item => {
+    .filter((item: any) => item.topicId)
+    .map((item: any) => {
       let estimatedMinutes = item.remainingMinutes;
       if (guidedDefaults && estimatedMinutes == null) {
         const topic = getTopicById(item.topicId)?.topic;
@@ -5969,18 +6035,23 @@ function calculateStudyPlanPreview() {
   studyPlanPreview = buildCurrentStudyPlanProposal();
   renderStudyPlanBuilder();
 }
-function recordAdaptiveDecision(advice, status, planBefore = null, planAfter = null) {
+function recordAdaptiveDecision(
+  advice: Record<string, any>,
+  status: string,
+  planBefore: Record<string, any> | null = null,
+  planAfter: Record<string, any> | null = null
+) {
   const from = advice?.from || {},
     to = advice?.to || {};
   if (advice?.state !== 'proposal') return null;
   const changed =
     planAfter?.items?.filter(
-      item =>
+      (item: any) =>
         item.minutes !==
-        planBefore?.items?.find(previous => previous.topicId === item.topicId)?.minutes
+        planBefore?.items?.find((previous: any) => previous.topicId === item.topicId)?.minutes
     ) || [];
-  const sourceItem = changed.find(item => item.subjectId === from.subjectId),
-    targetItem = changed.find(item => item.subjectId === to.subjectId);
+  const sourceItem = changed.find((item: any) => item.subjectId === from.subjectId),
+    targetItem = changed.find((item: any) => item.subjectId === to.subjectId);
   const entry = {
     id: uid('adaptive-plan'),
     activeExamTags: [...(state.examBlueprint.activeExamTags || [])],
@@ -6002,23 +6073,23 @@ function recordAdaptiveDecision(advice, status, planBefore = null, planAfter = n
     reasons: [...(advice.rationale || [])],
     algorithmVersion: advice.algorithmVersion,
     status,
-    planId: null,
+    planId: null as any,
     sourceTopicId: sourceItem?.topicId || null,
     targetTopicId: targetItem?.topicId || null,
     sourceItemBefore: sourceItem
-      ? planBefore.items.find(item => item.topicId === sourceItem.topicId)?.minutes
+      ? planBefore.items.find((item: any) => item.topicId === sourceItem.topicId)?.minutes
       : null,
     targetItemBefore: targetItem
-      ? planBefore.items.find(item => item.topicId === targetItem.topicId)?.minutes
+      ? planBefore.items.find((item: any) => item.topicId === targetItem.topicId)?.minutes
       : null,
     sourceMixBefore: sourceItem
       ? structuredClone(
-          planBefore.items.find(item => item.topicId === sourceItem.topicId)?.activityMix
+          planBefore.items.find((item: any) => item.topicId === sourceItem.topicId)?.activityMix
         )
       : null,
     targetMixBefore: targetItem
       ? structuredClone(
-          planBefore.items.find(item => item.topicId === targetItem.topicId)?.activityMix
+          planBefore.items.find((item: any) => item.topicId === targetItem.topicId)?.activityMix
         )
       : null,
   };
@@ -6095,7 +6166,7 @@ function confirmStudyPlan() {
   renderStudyPlanBuilder();
   showToast('Plano semanal confirmado e salvo.');
 }
-async function revertAdaptivePlanningDecision(id) {
+async function revertAdaptivePlanningDecision(id: string) {
   return feedbackRecoveryResult(await recoveryController.revert(id));
 }
 function latestStudyPlan() {
@@ -6132,8 +6203,8 @@ function calculateDailyPlanPreview() {
     dueReviews,
     reserveRatio: 0.1,
     eligibleTopicIds: intelligenceCandidates()
-      .filter(item => !item.archived && !item.blockedPrerequisites.length)
-      .map(item => item.topicId),
+      .filter((item: any) => !item.archived && !item.blockedPrerequisites.length)
+      .map((item: any) => item.topicId),
   });
   renderStudyPlanBuilder();
 }
@@ -6192,7 +6263,7 @@ const phaseStrategyController = createPhaseStrategyController({
   getProposal: currentPhaseStrategy,
   getLatestPlan: latestStudyPlan,
   getPlans: () => state.studyPlans,
-  confirmPlan: proposal => studyPlanService.confirm(proposal),
+  confirmPlan: (proposal: Record<string, any>) => studyPlanService.confirm(proposal),
   getCapacity: weeklyStrategyCapacity,
   getExamDate: () => state.examDate,
   clock: { nowISO },
@@ -6206,7 +6277,7 @@ function cancelPhaseStrategy() {
   phaseStrategyController.cancel();
   renderStudyPlanBuilder();
 }
-function savePhaseStrategyResult(result) {
+function savePhaseStrategyResult(result: Record<string, any>) {
   if (!['applied', 'reverted'].includes(result.state)) {
     renderStudyPlanBuilder();
     showToast(result.reason || 'A proposta mudou. Confira os dados e confirme novamente.');
@@ -6240,7 +6311,7 @@ function renderStudyPlanBuilder() {
       const proposal = dailyPlanPreview,
         rows = proposal.days
           .map(
-            day =>
+            (day: any) =>
               `<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`
           )
           .join('');
@@ -6258,10 +6329,10 @@ function renderStudyPlanBuilder() {
     ? `<details class="blocked-topics-note"><summary>${plan.blockedTopics.length} tópico${plan.blockedTopics.length === 1 ? ' aguarda' : 's aguardam'} pré-requisitos</summary><p>${plan.blockedTopics
         .slice(0, 5)
         .map(
-          item =>
+          (item: any) =>
             escapeHtml(item.topicName || item.id) +
             ' — requer ' +
-            item.prerequisites.map(id => escapeHtml(getTopicName(id) || id)).join(', ')
+            item.prerequisites.map((id: any) => escapeHtml(getTopicName(id) || id)).join(', ')
         )
         .join(
           '; '
@@ -6273,13 +6344,13 @@ function renderStudyPlanBuilder() {
   }
   const subjectRows = plan.subjects
     .map(
-      item =>
+      (item: any) =>
         `<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`
     )
     .join('');
   const topicRows = plan.items
     .map(
-      item =>
+      (item: any) =>
         `<div class="study-plan-topic" tabindex="-1" data-plan-topic-id="${escapeAttr(item.topicId)}"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}<small>${escapeHtml(item.reasonSummary || 'Prioridade calculada pelos fatores disponíveis')}</small>${item.examIntelligence?.usedHistory ? `<small>Histórico validado: ${item.examIntelligence.presentExamCount} de ${item.examIntelligence.analyzedExamCount} provas · confiança ${escapeHtml(item.examIntelligence.confidenceLabel.toLowerCase())}. Impacto estimado ${Math.round(item.examImpact)}/100.</small>` : ''}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? ' · manutenção' : ''} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span><button type="button" class="btn ghost small" data-analysis-nav="hoje" data-subject-id="${escapeAttr(item.subjectId)}" data-topic-id="${escapeAttr(item.topicId)}">Por que é prioridade?</button></div>`
     )
     .join('');
@@ -6303,7 +6374,7 @@ function renderAdaptivePlanningHistory() {
   const entries = [...state.adaptivePlanningHistory].sort((a, b) =>
     String(b.createdAt).localeCompare(String(a.createdAt))
   );
-  const labels = {
+  const labels: Record<string, any> = {
     suggested: 'Sugestão na prévia',
     applied: 'Aplicado',
     rejected: 'Recusado',
@@ -6311,7 +6382,7 @@ function renderAdaptivePlanningHistory() {
   };
   container.innerHTML = `<details class="adaptive-history"><summary>Histórico de adaptações (${entries.length})</summary>${entries.length ? `<ol>${entries.map(item => `<li><div><strong>${escapeHtml(labels[item.status] || item.status)}</strong><small>${escapeHtml(new Date(item.createdAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))}</small></div><p>${escapeHtml(item.sourceName || getSubjectName(item.sourceSubjectId))} ${formatPlanMinutes(item.sourceBefore)} → ${formatPlanMinutes(item.sourceAfter)} · ${escapeHtml(item.targetName || getSubjectName(item.targetSubjectId))} ${formatPlanMinutes(item.targetBefore)} → ${formatPlanMinutes(item.targetAfter)}</p><small>${escapeHtml(item.reasons?.join(' ') || 'Redistribuição proposta pelos indicadores disponíveis.')}</small>${renderRecommendationExplanation(item.explanationSnapshot)}${item.status === 'applied' && latestStudyPlan()?.id === item.planId ? `<button class="btn ghost small" data-delegated-click="revertAdaptivePlanningDecision('${escapeAttr(item.id)}')">Reverter ajuste</button>` : ''}</li>`).join('')}</ol>` : '<p>Nenhuma decisão de adaptação registrada.</p>'}</details>`;
 }
-function updateExamBlueprint(field, value, { refresh = true }: any = {}) {
+function updateExamBlueprint(field: string, value: any, { refresh = true }: any = {}) {
   const nextValue =
     field === 'examDate'
       ? value || null
@@ -6320,14 +6391,16 @@ function updateExamBlueprint(field, value, { refresh = true }: any = {}) {
         : field === 'masteryTarget'
           ? Math.max(0, Math.min(100, Number(value) || 80))
           : undefined;
-  if (nextValue !== undefined && state.examBlueprint[field] !== nextValue)
+  if (nextValue !== undefined && (state.examBlueprint as Record<string, any>)[field] !== nextValue)
     captureReadinessBeforeStrategy(
       'Antes de alterar ' +
-        {
-          examDate: 'a data da prova',
-          targetScore: 'a meta de nota',
-          masteryTarget: 'a meta de domínio',
-        }[field]
+        (
+          {
+            examDate: 'a data da prova',
+            targetScore: 'a meta de nota',
+            masteryTarget: 'a meta de domínio',
+          } as Record<string, any>
+        )[field]
     );
   studyPlanPreview = null;
   const previousPhase =
@@ -6354,7 +6427,7 @@ function updateExamBlueprint(field, value, { refresh = true }: any = {}) {
       showToast(`Você entrou na fase de ${nextPhase.label}. ${nextPhase.strategy}`);
   }
 }
-function updateExamSubject(subjectId, field, value) {
+function updateExamSubject(subjectId: string, field: string, value: any) {
   studyPlanPreview = null;
   let config = state.examBlueprint.subjects.find(item => item.subjectId === subjectId);
   const nextValue =
@@ -6372,7 +6445,7 @@ function updateExamSubject(subjectId, field, value) {
   if (
     nextValue !== undefined &&
     (!config ||
-      config[field] !== nextValue ||
+      (config as Record<string, any>)[field] !== nextValue ||
       (['expectedQuestions', 'questionWeight'].includes(field) && config.official))
   )
     captureReadinessBeforeStrategy('Antes de alterar a configuração estratégica da disciplina');
@@ -6400,12 +6473,13 @@ function updateExamSubject(subjectId, field, value) {
   state.examBlueprint.configuredAt = nowISO();
   persistAndRender();
 }
-function saveExamSubjectConfig(subjectId) {
+function saveExamSubjectConfig(subjectId: string) {
   const details = [
     ...document.querySelectorAll<HTMLElement>('#examBlueprintConfig .exam-subject-config'),
   ].find(item => item.dataset.subjectId === subjectId);
   if (!details) return;
-  const read = name => details.querySelector<HTMLInputElement>(`[name="${name}"]`)?.value ?? '';
+  const read = (name: string) =>
+    details.querySelector<HTMLInputElement>(`[name="${name}"]`)?.value ?? '';
   const existing = state.examBlueprint.subjects.find(item => item.subjectId === subjectId);
   const config = buildSavedSubjectConfig(subjectId, existing, {
     priority: read('priority'),
@@ -6428,7 +6502,11 @@ function saveExamSubjectConfig(subjectId) {
       'questionWeight',
       'official',
       'sourceRef',
-    ].some(key => JSON.stringify(existing[key]) !== JSON.stringify(config[key]))
+    ].some(
+      key =>
+        JSON.stringify((existing as Record<string, any>)[key]) !==
+        JSON.stringify((config as Record<string, any>)[key])
+    )
   )
     captureReadinessBeforeStrategy('Antes de alterar a configuração estratégica da disciplina');
   if (existing) Object.assign(existing, config);
@@ -6441,8 +6519,8 @@ function saveExamSubjectConfig(subjectId) {
 function cancelExamSubjectConfig() {
   renderExamBlueprintConfig();
 }
-function toggleActiveExamTag(tag, checked) {
-  globalThis.studytrackProgressiveLists?.reset();
+function toggleActiveExamTag(tag: string, checked: boolean) {
+  (globalThis as Record<string, any>).studytrackProgressiveLists?.reset();
   resetRecordListLimits();
   const valid = ['bb-escriturario', 'caixa-tbn', 'caixa-tbn-ti'];
   if (!valid.includes(tag)) return;
@@ -6485,7 +6563,7 @@ function renderSubjectTargetEditor() {
     { escapeHtml, escapeAttr }
   );
 }
-function saveSubjectAccuracyTargets(subjectIds: string[], rawValue) {
+function saveSubjectAccuracyTargets(subjectIds: string[], rawValue: any) {
   const eligible = new Set(examScopedSubjects().map(item => item.id)),
     ids = [...new Set(subjectIds)].filter(id => eligible.has(id));
   if (!ids.length) {
@@ -6550,7 +6628,7 @@ document.getElementById('subjectTargetEditor')?.addEventListener('change', event
         input.checked = (event.target as HTMLInputElement).checked;
       });
 });
-function somarQuestoesDisciplinaNaSemana(subjectId) {
+function somarQuestoesDisciplinaNaSemana(subjectId: string) {
   return state.questoes
     .filter(q => entitySubjectId(q) === subjectId && isSameWeek(q.date))
     .reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
@@ -6615,22 +6693,22 @@ function addMetaDisciplina() {
   subjectGoalService.create({ subjectId, meta });
   persistAndRender();
 }
-function updateMetaDisciplina(id, value) {
+function updateMetaDisciplina(id: string, value: any) {
   subjectGoalService.update(id, { meta: Number(value) || 1 });
   persistAndRender();
 }
-function deleteMetaDisciplina(id) {
+function deleteMetaDisciplina(id: string) {
   subjectGoalService.remove(id);
   persistAndRender();
 }
 document.getElementById('addMetaDisciplinaBtn').addEventListener('click', addMetaDisciplina);
 
 /* ===== HISTÓRICO DE METAS (retroativo, últimas 8 semanas) ===== */
-function getWeekStartMinus(weeksAgo) {
+function getWeekStartMinus(weeksAgo: number) {
   const currentWeekStart = startOfWeek(todayISO());
   return addDays(currentWeekStart, -7 * weeksAgo);
 }
-function computeWeeklyHistory(numWeeks) {
+function computeWeeklyHistory(numWeeks: number) {
   const weeks = [];
   for (let i = 0; i < numWeeks; i++) {
     const weekStart = getWeekStartMinus(i);
@@ -6659,7 +6737,7 @@ function computeWeeklyHistory(numWeeks) {
 function renderHistoricoMetas() {
   const weeks = computeWeeklyHistory(8);
   const container = document.getElementById('historicoMetasContainer');
-  const badge = (ok, current) =>
+  const badge = (ok: boolean, current: any) =>
     current
       ? `<span class="wk-current">em andamento</span>`
       : ok
@@ -6804,7 +6882,7 @@ function renderRitmo() {
 
 function revisoesAtrasadas() {
   const today = todayISO();
-  const isCurrent = item =>
+  const isCurrent = (item: Record<string, any>) =>
     isActiveStudyReference(entitySubjectId(item), item.topicId || item.topicRef || null);
   const doCalendario = state.calendar.filter(
     c => c.date && c.date < today && c.status !== 'Concluído' && isCurrent(c)
@@ -6816,7 +6894,7 @@ function revisoesAtrasadas() {
 }
 
 /* ===== TAXA DE ERRO / ÚLTIMA ATIVIDADE POR DISCIPLINA ===== */
-function taxaErroDisciplina(subjectId) {
+function taxaErroDisciplina(subjectId: string) {
   let correct = 0,
     total = 0;
   state.questoes
@@ -6836,9 +6914,9 @@ function taxaErroDisciplina(subjectId) {
   if (total === 0) return 0;
   return Math.round((1 - correct / total) * 1000) / 10;
 }
-function ultimaAtividadeDisciplina(subjectId) {
-  let last = null;
-  const bump = d => {
+function ultimaAtividadeDisciplina(subjectId: string) {
+  let last: any = null;
+  const bump = (d: any) => {
     if (d && (!last || d > last)) last = d;
   };
   topicHistoryService
@@ -6856,7 +6934,7 @@ function ultimaAtividadeDisciplina(subjectId) {
     .forEach(session => bump(session.date));
   return last;
 }
-function diasSemEstudarDisciplina(subjectId) {
+function diasSemEstudarDisciplina(subjectId: string) {
   const last = ultimaAtividadeDisciplina(subjectId);
   if (!last) return 0;
   const d = diasParaRevisao(last);
@@ -6866,7 +6944,7 @@ function diasSemEstudarDisciplina(subjectId) {
 /* ===== PRIORIDADE INTELIGENTE DE ESTUDOS (Score 0-100) ===== */
 /* Prioridade compartilhada com recomendações e planejamento semanal. */
 
-const PRIORITY_TIER_EMOJI = { Alta: '🔴', Média: '🟠', Baixa: '🟡' };
+const PRIORITY_TIER_EMOJI: Record<string, any> = { Alta: '🔴', Média: '🟠', Baixa: '🟡' };
 
 function proximidadeProvaScore() {
   if (!state.examDate) return 0;
@@ -6878,7 +6956,7 @@ function collectStudyCandidates() {
   const today = todayISO();
 
   const candidateMap = new Map();
-  const addCandidate = (key, candidate) => {
+  const addCandidate = (key: string, candidate: Record<string, any>) => {
     const current = candidateMap.get(key);
     if (
       !current ||
@@ -6967,7 +7045,7 @@ function computeStudyPriorities() {
     tier: item.score >= 70 ? 'Alta' : item.score >= 40 ? 'Média' : 'Baixa',
   }));
 }
-function motivoPrioridade(priority) {
+function motivoPrioridade(priority: Record<string, any>) {
   if (priority.reasonSummary) return priority.reasonSummary;
   if (priority.reasons?.length) return priority.reasons.join(' · ');
   if (priority.diasAtrasado > 0) return 'Revisão atrasada (' + priority.diasAtrasado + 'd)';
@@ -6989,20 +7067,20 @@ function motivoPrioridade(priority) {
 }
 
 /* ===== RADAR DE DISCIPLINAS ===== */
-function subjectRadarModel(subject) {
-  const topics = subject.topics.filter(topic => !topic.archived),
+function subjectRadarModel(subject: Record<string, any>) {
+  const topics = subject.topics.filter((topic: any) => !topic.archived),
     coverage = topics.length ? subjectProgress(subject) : null;
   const masteryValues = topics
-    .map(topic => topicMasteryIndex(subject.id, topic.id))
-    .filter(item => item.confidence > 0);
+    .map((topic: any) => topicMasteryIndex(subject.id, topic.id))
+    .filter((item: any) => item.confidence > 0);
   const retentionValues = topics
-    .map(topic => topicRetentionScore(subject.id, topic.id))
-    .filter(item => item.available);
+    .map((topic: any) => topicRetentionScore(subject.id, topic.id))
+    .filter((item: any) => item.available);
   const mastery = masteryValues.length
-    ? masteryValues.reduce((sum, item) => sum + item.score, 0) / masteryValues.length
+    ? masteryValues.reduce((sum: any, item: any) => sum + item.score, 0) / masteryValues.length
     : null;
   const retention = retentionValues.length
-    ? retentionValues.reduce((sum, item) => sum + item.score, 0) / retentionValues.length
+    ? retentionValues.reduce((sum: any, item: any) => sum + item.score, 0) / retentionValues.length
     : null;
   const last = ultimaAtividadeDisciplina(subject.id),
     distance = last ? diasParaRevisao(last) : null,
@@ -7033,7 +7111,7 @@ const performanceAnalyticsController = createPerformanceAnalyticsController({
   escapeAttr,
 });
 
-function setRadarSubject(slot, value) {
+function setRadarSubject(slot: string, value: any) {
   performanceAnalyticsController.setRadarSubject(slot, value);
 }
 
@@ -7076,13 +7154,13 @@ function renderSimuladosPlanejados() {
 }
 
 /* ===== METAS DE HOJE ===== */
-function formatHoras(decimalHoras) {
+function formatHoras(decimalHoras: number) {
   const totalMin = Math.round(decimalHoras * 60);
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
   return m > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${h}h`;
 }
-function formatDuration(seconds) {
+function formatDuration(seconds: number) {
   // Under a minute, show seconds so a short session never reads as "0min".
   if (Number(seconds) > 0 && Number(seconds) < 60)
     return Math.max(1, Math.floor(Number(seconds))) + ' s';
@@ -7092,21 +7170,21 @@ function formatDuration(seconds) {
   if (hours <= 0) return `${mins}min`;
   return mins === 0 ? `${hours}h` : `${hours}h${String(mins).padStart(2, '0')}`;
 }
-function totalStudySeconds(filterFn) {
+function totalStudySeconds(filterFn: (session: any) => boolean) {
   const fn = filterFn || (() => true);
   return state.studySessions
     .filter(fn)
     .reduce((sum, s) => sum + (Number(s.durationSeconds) || 0), 0);
 }
 function segundosEstudadosHoje() {
-  return totalStudySeconds(s => s.date === todayISO());
+  return totalStudySeconds((s: Record<string, any>) => s.date === todayISO());
 }
-function studyTimeByTopic(topicId) {
-  return totalStudySeconds(s => s.topicId === topicId);
+function studyTimeByTopic(topicId: string) {
+  return totalStudySeconds((s: Record<string, any>) => s.topicId === topicId);
 }
 
 function studySecondsByDate(sessions = state.studySessions) {
-  const map = {};
+  const map: Record<string, any> = {};
   sessions.forEach(s => {
     if (!s.date) return;
     map[s.date] = (map[s.date] || 0) + (Number(s.durationSeconds) || 0);
@@ -7114,20 +7192,25 @@ function studySecondsByDate(sessions = state.studySessions) {
   return map;
 }
 
-const SESSION_TYPES = {
+const SESSION_TYPES: Record<string, any> = {
   study: 'Estudo teórico',
   review: 'Revisão',
   questions: 'Questões',
   simulation: 'Simulado',
 };
-let sessionHistoryFilters = { period: '30', subjectId: '', type: '', date: '' };
+let sessionHistoryFilters: Record<string, any> = {
+  period: '30',
+  subjectId: '',
+  type: '',
+  date: '',
+};
 let expandedSessionDays = new Set();
 let expandedSessionDetails = new Set();
 let sessionHistoryExpansionInitialized = false;
-function sessionTypeLabel(type) {
+function sessionTypeLabel(type: string) {
   return SESSION_TYPES[type] || SESSION_TYPES.study;
 }
-function sessionTypeOptions(selected) {
+function sessionTypeOptions(selected: string) {
   return Object.entries(SESSION_TYPES)
     .map(
       ([value, label]) =>
@@ -7135,7 +7218,7 @@ function sessionTypeOptions(selected) {
     )
     .join('');
 }
-function updateSessionHistoryFilter(field, value) {
+function updateSessionHistoryFilter(field: string, value: any) {
   sessionHistoryFilters[field] = value;
   if (field === 'period') sessionHistoryFilters.date = '';
   listViewState.sessionDaysVisible = LIST_VIEW_STEPS.sessionDays;
@@ -7152,7 +7235,7 @@ function clearSessionHistoryFilters() {
   renderStudySessionsHistory();
   renderHeatmap();
 }
-function selectSessionHistoryDate(date) {
+function selectSessionHistoryDate(date: string) {
   sessionHistoryFilters.date = date;
   sessionHistoryFilters.period = 'all';
   listViewState.sessionDaysVisible = LIST_VIEW_STEPS.sessionDays;
@@ -7164,13 +7247,13 @@ function selectSessionHistoryDate(date) {
     .getElementById('studySessionsCard')
     ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-function toggleSessionDay(date) {
+function toggleSessionDay(date: string) {
   sessionHistoryExpansionInitialized = true;
   if (expandedSessionDays.has(date)) expandedSessionDays.delete(date);
   else expandedSessionDays.add(date);
   renderStudySessionsHistory();
 }
-function toggleSessionDetails(id) {
+function toggleSessionDetails(id: string) {
   if (expandedSessionDetails.has(id)) expandedSessionDetails.delete(id);
   else expandedSessionDetails = new Set([id]);
   renderStudySessionsHistory();
@@ -7206,24 +7289,24 @@ function filteredStudySessions() {
     subjectIdOf: entitySubjectId,
   });
 }
-function sessionStartTime(session) {
+function sessionStartTime(session: Record<string, any>) {
   if (!session.startedAt) return '—';
   const date = new Date(session.startedAt);
   return Number.isNaN(date.getTime())
     ? '—'
     : date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
-function syncQuestionFromStudySession(session) {
+function syncQuestionFromStudySession(session: Record<string, any>) {
   return sessionService.edit(session.id, session);
 }
-function deleteStudySession(id) {
+function deleteStudySession(id: string) {
   showConfirm('Excluir esta sessão e as questões vinculadas a ela?', () => {
     sessionService.remove(id);
     persistAndRender();
     showToast('Sessão excluída.');
   });
 }
-function sessionViewModel(session) {
+function sessionViewModel(session: Record<string, any>) {
   const resolved = Number(session.questionsResolved) || 0,
     correct = Number(session.correctAnswers) || 0;
   return {
@@ -7239,7 +7322,7 @@ function sessionViewModel(session) {
     notes: session.notes || '',
   };
 }
-function editStudySession(id) {
+function editStudySession(id: string) {
   const session = state.studySessions.find(s => s.id === id);
   if (!session) return;
   historyEditState.sessionId = id;
@@ -7251,7 +7334,7 @@ function cancelStudySessionEdit() {
   historyEditDraft.session = null;
   renderStudySessionsHistory();
 }
-function updateStudySessionDraft(field, value) {
+function updateStudySessionDraft(field: string, value: any) {
   const d = historyEditDraft.session;
   if (!d) return;
   if (field === 'durationMinutes') d.durationSeconds = Math.max(0, Number(value) || 0) * 60;
@@ -7281,7 +7364,7 @@ function saveStudySessionEdit() {
   persistAndRender();
   showToast('Sessão atualizada.');
 }
-function renderStudySessionReadRow(session) {
+function renderStudySessionReadRow(session: Record<string, any>) {
   const vm = sessionViewModel(session);
   const detailsId = `session-details-${session.id}`,
     expanded = expandedSessionDetails.has(session.id);
@@ -7296,7 +7379,7 @@ function renderStudySessionReadRow(session) {
     pluralize,
   });
 }
-function renderStudySessionEditRow(session) {
+function renderStudySessionEditRow(session: Record<string, any>) {
   const draft = historyEditDraft.session,
     subjectId = entitySubjectId(draft),
     subject = getSubjectById(subjectId),
@@ -7373,7 +7456,7 @@ function renderStudySessionsHistory() {
       })
     );
     if (!expanded) return;
-    sessions.forEach(session =>
+    sessions.forEach((session: any) =>
       html.push(
         historyEditState.sessionId === session.id
           ? renderStudySessionEditRow(session)
@@ -7423,7 +7506,7 @@ function computeAlertasInteligentes() {
         daysSinceStudy,
       };
     });
-  const topics = intelligenceCandidates().map(item => ({
+  const topics = intelligenceCandidates().map((item: any) => ({
     topicId: item.topicId,
     subjectId: item.subjectId,
     name: item.topicName,
@@ -7499,7 +7582,7 @@ function renderAlertasInteligentes() {
   if (container) container.innerHTML = presentation.list;
   if (overview) overview.innerHTML = presentation.overview;
 }
-function dismissIntelligentAlert(id) {
+function dismissIntelligentAlert(id: string) {
   state.alertStates = dismissAlert(state.alertStates, id, todayISO(), addDays, 7);
   scheduleSave();
   renderAlertasInteligentes();
@@ -7546,11 +7629,11 @@ function renderExecutiveSummary() {
 }
 
 const dismissedRecommendationIds = new Set<string>();
-let currentStudyRecommendations = [];
+let currentStudyRecommendations: any[] = [];
 // One render pass asks for the candidates in ~28 places; computing them once per pass saves
 // seconds on long histories. Outside a render every call recomputes, so edits are never stale.
 let renderDepth = 0,
-  renderCandidates = null;
+  renderCandidates: any = null;
 function intelligenceCandidates() {
   if (renderCandidates) return renderCandidates;
   const candidates = computeIntelligenceCandidates();
@@ -7587,7 +7670,7 @@ function computeIntelligenceCandidates() {
     examQuestions: state.examQuestions,
   }).map(item => ({ ...item, accuracyTarget: subjectAccuracyTarget(item.subjectId) }));
 }
-let currentConsolidatedDiagnosis = null;
+let currentConsolidatedDiagnosis: any = null;
 function renderDiagnosisCenter() {
   const container = document.getElementById('diagnosisCenter');
   if (!container) return;
@@ -7619,7 +7702,7 @@ function renderDiagnosisCenter() {
   currentConsolidatedDiagnosis = consolidated;
   const diagnosisHtml = renderDiagnosisCenterView({
     model: diagnosis,
-    studyActionForItem: item => {
+    studyActionForItem: (item: Record<string, any>) => {
       const recommendation = currentStudyRecommendations.find(
           candidate => candidate.subjectId === item.subjectId && candidate.topicId === item.topicId
         ),
@@ -7666,11 +7749,11 @@ createDiagnosisController({
   activateTab,
   requestFrame: requestAnimationFrame,
 }).register();
-function renderRecommendationImpact(model) {
+function renderRecommendationImpact(model: Record<string, any>) {
   if (!model.available) return '';
   const metrics = model.metrics
     .map(
-      metric =>
+      (metric: any) =>
         `<div><span>${escapeHtml(metric.label)}</span><strong>${metric.before} → ${metric.after}</strong><small class="${metric.delta >= 0 ? 'positive' : 'negative'}">${metric.delta >= 0 ? '+' : ''}${metric.delta} ${metric.key === 'risk' ? 'de melhora' : 'p.p.'}</small></div>`
     )
     .join('');
@@ -7738,7 +7821,7 @@ function renderPendingRecommendationOutcome() {
     escapeAttr
   );
 }
-function renderOverviewNextAction(availableMinutes) {
+function renderOverviewNextAction(availableMinutes: number) {
   const container = document.getElementById('overviewNextAction');
   if (!container) return;
   // The usefulness question lives on Hoje, next to the measured result it refers to; here it read as a question about the action not yet taken.
@@ -7795,7 +7878,7 @@ function renderOverviewNextAction(availableMinutes) {
   container.innerHTML = `${renderActiveStudyTimerNotice(item)}${outcome}<article class="card card--action overview-action-card ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml(label)} · prioridade ${action.priority ?? '—'}/100</p>${topicResumeLabel(item.topicId) ? `<p class="overview-action-resume">Continuar de: ${escapeHtml(topicResumeLabel(item.topicId))}</p>` : ''}<p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(action.evidence.label || model.evidenceLabel).toLowerCase()}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}</div><div class="overview-action-buttons">${actionButton}</div>${renderRecommendationExplanation(item.explanation || buildRecommendationExplanation(item), { headingLevel: 4 })}</article>`;
 }
 // Update the Continue button in place: re-rendering here would swap the node under a click that fired this change.
-function syncGuidedNext(model) {
+function syncGuidedNext(model: Record<string, any>) {
   const actions = document.getElementById('guidedOnboardingActions'),
     next = actions?.querySelector<HTMLButtonElement>('[data-guided-action="next"]');
   if (!next) return;
@@ -7909,7 +7992,7 @@ function renderStudyRecommendation() {
       : '';
   container.innerHTML = `${renderActiveStudyTimerNotice(visible[0])}${cards[0]}${moreRecommendations}${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length === 1 ? 'prioridade elegível' : 'prioridades elegíveis'}</span></div>${excludedHtml}${history}`;
 }
-function recommendationBaseline(recommendation) {
+function recommendationBaseline(recommendation: Record<string, any>) {
   const topicId = recommendation.topicId,
     performance = getTopicPerformance(topicId),
     found = getTopicById(topicId),
@@ -7930,7 +8013,7 @@ function recommendationBaseline(recommendation) {
   });
 }
 function recordRecommendationFeedback(
-  recommendation,
+  recommendation: Record<string, any>,
   { accepted, reasonSkipped = null, source = null }: any = {}
 ) {
   const baseline = recommendationBaseline(recommendation),
@@ -7960,7 +8043,7 @@ function recordRecommendationFeedback(
   renderRecommendationHistorySummary();
   return feedback;
 }
-function measureRecommendationResults(session) {
+function measureRecommendationResults(session: Record<string, any>) {
   if (session?.recommendationId)
     attachRecommendationSession(state.recommendationHistory, session.recommendationId, session.id);
   if (!session?.topicId) return;
@@ -7989,7 +8072,7 @@ function measureRecommendationResults(session) {
             item.id !== session.id &&
             Date.parse(String(item.createdAt || item.startedAt || 0)) >= since
         ).length,
-        candidate = intelligenceCandidates().find(item => item.topicId === session.topicId);
+        candidate = intelligenceCandidates().find((item: any) => item.topicId === session.topicId);
       measureRecommendationOutcome(feedback, {
         masteryAfter: candidate?.mastery,
         accuracyAfter: volume ? Math.round((correct / volume) * 1000) / 10 : null,
@@ -8003,7 +8086,7 @@ function measureRecommendationResults(session) {
       });
     });
 }
-function dismissStudyRecommendation(id) {
+function dismissStudyRecommendation(id: string) {
   const recommendation = currentStudyRecommendations.find(item => item.id === id);
   if (!recommendation) return;
   showPrompt(
@@ -8014,7 +8097,7 @@ function dismissStudyRecommendation(id) {
       confirmLabel: 'Trocar',
       required: false,
     },
-    reason => {
+    (reason: string) => {
       recordRecommendationFeedback(recommendation, {
         accepted: false,
         reasonSkipped: reason?.trim() || 'swapped',
@@ -8025,7 +8108,7 @@ function dismissStudyRecommendation(id) {
     }
   );
 }
-function markRecommendationNotUseful(id) {
+function markRecommendationNotUseful(id: string) {
   const recommendation = currentStudyRecommendations.find(item => item.id === id);
   if (recommendation) {
     const feedback = recordRecommendationFeedback(recommendation, {
@@ -8038,7 +8121,7 @@ function markRecommendationNotUseful(id) {
   dismissedRecommendationIds.add(id);
   renderStudyRecommendation();
 }
-function rateRecommendationOutcome(recommendationId, useful) {
+function rateRecommendationOutcome(recommendationId: string, useful: boolean) {
   if (
     rateRecommendationFeedback(state.recommendationFeedback, recommendationId, {
       useful,
@@ -8050,7 +8133,7 @@ function rateRecommendationOutcome(recommendationId, useful) {
     showToast('Obrigado. Esse retorno melhora a avaliação das recomendações.');
   }
 }
-function startStudyRecommendation(id, source = 'today') {
+function startStudyRecommendation(id: string, source = 'today') {
   const recommendation = currentStudyRecommendations.find(item => item.id === id);
   if (!recommendation) return;
   const fresh = recommendStudy(intelligenceCandidates(), {
@@ -8148,7 +8231,11 @@ function startStudyRecommendation(id, source = 'today') {
 const recommendationController = createRecommendationController({
   getRecommendations: () => currentStudyRecommendations,
   actionKind: recommendationActionKind,
-  onQuestions: (recommendation, kind, context: { source?: string } = {}) => {
+  onQuestions: (
+    recommendation: Record<string, any>,
+    kind: string,
+    context: { source?: string } = {}
+  ) => {
     const feedback = recordRecommendationFeedback(recommendation, {
         accepted: true,
         source: context.source,
@@ -8165,7 +8252,11 @@ const recommendationController = createRecommendationController({
     showToast('Registro de questões aberto e vinculado à recomendação.');
     return question;
   },
-  onReview: (recommendation, kind, context: { source?: string } = {}) => {
+  onReview: (
+    recommendation: Record<string, any>,
+    kind: string,
+    context: { source?: string } = {}
+  ) => {
     const feedback = recordRecommendationFeedback(recommendation, {
       accepted: true,
       source: context.source,
@@ -8192,7 +8283,11 @@ const recommendationController = createRecommendationController({
     completeAgendaReview(review.id);
     return review;
   },
-  onPrerequisite: (recommendation, kind, context: { source?: string } = {}) => {
+  onPrerequisite: (
+    recommendation: Record<string, any>,
+    kind: string,
+    context: { source?: string } = {}
+  ) => {
     const blocker = getTopicById(recommendation.blockedPrerequisites?.[0]);
     if (!blocker) return null;
     const feedback = recordRecommendationFeedback(recommendation, {
@@ -8206,10 +8301,13 @@ const recommendationController = createRecommendationController({
     showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);
     return blocker.topic;
   },
-  onStudy: (recommendation, _kind, context: { source?: string } = {}) =>
-    startStudyRecommendation(recommendation.id, context.source),
+  onStudy: (
+    recommendation: Record<string, any>,
+    _kind: string,
+    context: { source?: string } = {}
+  ) => startStudyRecommendation(recommendation.id, context.source),
 });
-function executeStudyRecommendation(id, source = 'today') {
+function executeStudyRecommendation(id: string, source = 'today') {
   return recommendationController.execute(id, { source });
 }
 
@@ -8218,9 +8316,9 @@ const replanController = createReplanController({
   repository: planningRepository,
   getState: () => state,
   clock: { today: todayISO, startOfWeek, addDays },
-  getDailyCapacity: date => metaHoursForDate(date) * 60,
+  getDailyCapacity: (date: string) => metaHoursForDate(date) * 60,
   onChanged: renderWeeklyReplan,
-  onConfirmed: ({ result }) => {
+  onConfirmed: ({ result }: any) => {
     scheduleSave();
     renderWeeklyReplan();
     renderPlanoHoje();
@@ -8228,7 +8326,7 @@ const replanController = createReplanController({
       `${pluralize(result.createdItems, 'atividade')} redistribuída${result.createdItems === 1 ? '' : 's'} para os próximos dias.`
     );
   },
-  onUndone: result => {
+  onUndone: (result: Record<string, any>) => {
     scheduleSave();
     renderWeeklyReplan();
     renderPlanoHoje();
@@ -8248,7 +8346,7 @@ function clearReplanPreview() {
 function confirmReplan() {
   return replanController.confirm();
 }
-function undoPlanAdjustment(id) {
+function undoPlanAdjustment(id: string) {
   return replanController.undo(id);
 }
 function renderWeeklyReplan() {
@@ -8272,14 +8370,14 @@ function renderWeeklyReplan() {
 
 /* ===== PLANO DE HOJE ===== */
 
-function formatPlanMinutes(minutes) {
+function formatPlanMinutes(minutes: number | null) {
   const value = Math.max(0, Math.round(Number(minutes) || 0));
   if (value < 60) return value + 'min';
   const hours = Math.floor(value / 60);
   const rest = value % 60;
   return hours + 'h' + (rest ? String(rest).padStart(2, '0') : '');
 }
-function buildDailyStudyPlan(priorities, availableMinutes) {
+function buildDailyStudyPlan(priorities: any[], availableMinutes: number) {
   let remaining = Math.max(0, Math.round(Number(availableMinutes) || 0));
   const items = [];
   for (const priority of priorities.slice(0, 5)) {
@@ -8297,7 +8395,7 @@ function buildDailyStudyPlan(priorities, availableMinutes) {
     flexMinutes: remaining,
   };
 }
-function materializeDailyStudyPlan(priorities, availableMinutes) {
+function materializeDailyStudyPlan(priorities: any[], availableMinutes: number) {
   const calculated = buildDailyStudyPlan(priorities, availableMinutes);
   if (!calculated.items.length) return null;
   const createdAt = nowISO();
@@ -8323,7 +8421,7 @@ function materializeDailyStudyPlan(priorities, availableMinutes) {
       plannedMinutes: item.minutes,
       executedSeconds: 0,
       status: 'planned',
-      sessionIds: [],
+      sessionIds: [] as any[],
       score: Number(item.score) || 0,
       tier: item.tier || 'Baixa',
       position: index + 1,
@@ -8335,8 +8433,8 @@ function materializeDailyStudyPlan(priorities, availableMinutes) {
       originalDate: todayISO(),
       currentDate: todayISO(),
       rescheduleCount: 0,
-      skippedReason: null,
-      recommendationId: null,
+      skippedReason: null as any,
+      recommendationId: null as any,
       createdAt,
     })),
   };
@@ -8354,23 +8452,25 @@ function materializeDailyStudyPlan(priorities, availableMinutes) {
 function todayDailyStudyPlan() {
   return state.dailyPlans.find(plan => plan.date === todayISO()) || null;
 }
-function ensureTodayDailyStudyPlan(priorities, availableMinutes) {
+function ensureTodayDailyStudyPlan(priorities: any[], availableMinutes: number) {
   return todayDailyStudyPlan() || materializeDailyStudyPlan(priorities, availableMinutes);
 }
-function planItemStatusLabel(status) {
+function planItemStatusLabel(status: string) {
   return (
-    {
-      planned: 'Planejada',
-      in_progress: 'Em andamento',
-      partial: 'Parcial',
-      completed: 'Concluída',
-      deferred: 'Adiada',
-      replaced: 'Substituída',
-      skipped: 'Ignorada',
-    }[status] || 'Planejada'
+    (
+      {
+        planned: 'Planejada',
+        in_progress: 'Em andamento',
+        partial: 'Parcial',
+        completed: 'Concluída',
+        deferred: 'Adiada',
+        replaced: 'Substituída',
+        skipped: 'Ignorada',
+      } as Record<string, any>
+    )[status] || 'Planejada'
   );
 }
-function renderTodayExecutionSummary(model) {
+function renderTodayExecutionSummary(model: any) {
   const container = document.getElementById('todayExecutionSummary');
   if (!container) return;
   const controller = createTodayTabController({
@@ -8592,7 +8692,7 @@ function onboardingModel() {
     presetId: uiState.onboarding.presetId,
   });
 }
-function moveOnboarding(direction) {
+function moveOnboarding(direction: number) {
   const model = onboardingModel(),
     index = Math.max(0, Math.min(model.steps.length - 1, model.currentIndex + direction));
   uiState.onboarding.currentStep = model.steps[index].id;
@@ -8642,8 +8742,8 @@ function closeGuidedOnboarding({ manual = false }: any = {}) {
   )?.focus();
   uiState.onboarding.previousFocus = null;
 }
-function setGuidedSubjectLevel(subjectId, level, { refresh = true }: any = {}) {
-  if (!DIFFICULTY_OPTIONS.includes(level)) return;
+function setGuidedSubjectLevel(subjectId: string, level: string, { refresh = true }: any = {}) {
+  if (!(DIFFICULTY_OPTIONS as readonly string[]).includes(level)) return;
   const subject = getSubjectById(subjectId);
   if (!subject) return;
   for (const topic of subject.topics.filter(item => !item.archived)) {
@@ -8744,11 +8844,11 @@ function renderMetasHoje() {
 }
 
 /* ===== DASHBOARD DE APROVAÇÃO ===== */
-function clampScore(value) {
+function clampScore(value: any) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 }
-function average(values) {
-  return values.length ? values.reduce((sum, n) => sum + n, 0) / values.length : 0;
+function average(values: number[]) {
+  return values.length ? values.reduce((sum: any, n: any) => sum + n, 0) / values.length : 0;
 }
 
 function approvalSimuladosMetric() {
@@ -8964,7 +9064,7 @@ function approvalPrazoMetric() {
   };
 }
 
-function readinessFactors(metrics) {
+function readinessFactors(metrics: Record<string, any>) {
   const m = metrics || computeApprovalMetrics();
   return {
     coverage: m.edital,
@@ -8974,10 +9074,10 @@ function readinessFactors(metrics) {
     simulations: m.simulados,
   };
 }
-function readinessResult(metrics) {
+function readinessResult(metrics: Record<string, any>) {
   return calculateReadinessScore(readinessFactors(metrics), READINESS_WEIGHTS);
 }
-function indiceProntidao(metrics) {
+function indiceProntidao(metrics: Record<string, any>) {
   return readinessResult(metrics).value ?? 0;
 }
 function projectPerformance() {
@@ -8995,9 +9095,9 @@ function projectPerformance() {
   if (!calibration.available)
     return {
       available: false,
-      low: null,
-      high: null,
-      central: null,
+      low: null as any,
+      high: null as any,
+      central: null as any,
       confidence: 0,
       confidenceLabel: 'Baixa',
       detail: calibration.reason,
@@ -9046,7 +9146,7 @@ function projectPerformance() {
     movingAverage: forecast.movingAverage,
     forecast30,
     evidence: calibration.evidence,
-    scenarios: { available: false, scenarios: [] },
+    scenarios: { available: false, scenarios: [] as any[] },
     detail: calibration.reason,
   };
 }
@@ -9098,7 +9198,7 @@ function recentPerformance(scope = examEvidenceContext(), today = todayISO()) {
 function currentAchievementProjection(
   metrics = computeApprovalMetrics(),
   readiness = readinessResult(metrics),
-  candidates = null
+  candidates: any[] = null
 ) {
   return projectionController.current(metrics, readiness, candidates);
 }
@@ -9107,22 +9207,22 @@ const recoveryController = createRecoveryController({
   getState: () => state,
   getPlan: latestStudyPlan,
   getActiveExamTags: () => state.examBlueprint.activeExamTags || [],
-  getPreview: trajectory => projectionController.recovery(trajectory),
+  getPreview: (trajectory: Record<string, any> | null) => projectionController.recovery(trajectory),
   isDisabled: () => IS_DEMO_MODE,
   services: {
     clock: appClock,
     idGenerator: uid,
-    buildReadinessSnapshot: (_before, timestamp, reason) =>
+    buildReadinessSnapshot: (_before: unknown, timestamp: string, reason: string) =>
       buildReadinessBeforeStrategySnapshot(reason, timestamp),
     commitState: createRecoveryStateCommitter({
       getState: () => state,
-      publish: value => {
+      publish: (value: any) => {
         Object.assign(state, value);
       },
-      persist: serialized => StorageManager.set(STORAGE_KEY, serialized),
+      persist: (serialized: string) => StorageManager.set(STORAGE_KEY, serialized),
       runExclusive: enqueueStateTransaction,
       clock: appClock,
-      onCommitted: value => {
+      onCommitted: (value: any) => {
         flashSaved();
         STATE_CHANNEL?.postMessage({
           source: INSTANCE_ID,
@@ -9133,10 +9233,10 @@ const recoveryController = createRecoveryController({
     }),
   },
 });
-async function applyConfirmedRecoveryPlan(signature) {
+async function applyConfirmedRecoveryPlan(signature: string) {
   return feedbackRecoveryResult(await recoveryController.apply(signature));
 }
-function feedbackRecoveryResult(result) {
+function feedbackRecoveryResult(result: Record<string, any>) {
   if (result.status === 'rejected') {
     showToast(result.reason);
     return false;
@@ -9155,19 +9255,19 @@ function feedbackRecoveryResult(result) {
   return true;
 }
 
-function gerarDiagnosticoAprovacao(metrics) {
+function gerarDiagnosticoAprovacao(metrics: Record<string, any>) {
   const m = metrics || computeApprovalMetrics();
-  const icons = { positive: '✅', warning: '⚠️', info: 'ℹ️' };
+  const icons: Record<string, any> = { positive: '✅', warning: '⚠️', info: 'ℹ️' };
   return buildApprovalSignals(m, { target: state.metas.metaAprovacao }).map(
     item => `${icons[item.level]} ${item.text}`
   );
 }
-function topicRetentionScore(_subjectId, topicId) {
+function topicRetentionScore(_subjectId: string, topicId: string) {
   const found = getTopicById(topicId);
   if (!found)
     return {
       score: 0,
-      raw: null,
+      raw: null as any,
       confidence: 0,
       confidenceLabel: 'Baixa',
       available: false,
@@ -9207,7 +9307,7 @@ function topicRetentionScore(_subjectId, topicId) {
 }
 
 function topicReviewHealthScore(
-  topic,
+  topic: Record<string, any>,
   masteryResult = topicMasteryIndex(topic.subjectId, topic.id),
   retentionResult = topicRetentionScore(topic.subjectId, topic.id),
   diagnosis = diagnoseTopic(topic.subjectId, topic.id)
@@ -9262,7 +9362,7 @@ function approvalRetencaoMetric() {
     detail: Math.round(raw) + '% em ' + values.length + ' de ' + topics.length + ' tópicos',
   };
 }
-function approvalConhecimentoMetric(base) {
+function approvalConhecimentoMetric(base: Record<string, any>) {
   const parts = [];
   if (base.dominio.available)
     parts.push({ v: base.dominio.raw ?? base.dominio.score, c: base.dominio.confidence, w: 0.65 });
@@ -9333,7 +9433,7 @@ function computeApprovalMetrics() {
     consistencia: approvalConsistenciaMetric(),
   };
 }
-function classificacaoAprovacao(score) {
+function classificacaoAprovacao(score: number) {
   if (score >= 85) return { nivel: 'Excelente preparação', cor: 'ok', faixa: '85–100' };
   if (score >= 70) return { nivel: 'Preparação avançada', cor: 'ok', faixa: '70–84' };
   if (score >= 50) return { nivel: 'Em desenvolvimento', cor: 'warn', faixa: '50–69' };
@@ -9470,13 +9570,13 @@ function renderRecommendationHistorySummary() {
     );
 }
 let priorityHistorySubject = '';
-function setPriorityHistorySubject(value) {
+function setPriorityHistorySubject(value: any) {
   priorityHistorySubject = value;
   renderStudyTrack32Insights();
 }
 let strategicTimelineFilter = 'all';
 let strategicTimelineGroup = 'week';
-function setStrategicTimelineFilter(value) {
+function setStrategicTimelineFilter(value: any) {
   strategicTimelineFilter = ['all', 'decisions', 'performance', 'planning', 'assessments'].includes(
     value
   )
@@ -9484,12 +9584,12 @@ function setStrategicTimelineFilter(value) {
     : 'all';
   renderStudyTrack32Insights();
 }
-function setStrategicTimelineGroup(value) {
+function setStrategicTimelineGroup(value: any) {
   strategicTimelineGroup = ['week', 'month', 'phase'].includes(value) ? value : 'week';
   renderStudyTrack32Insights();
 }
-let currentStudyTrackModel = null;
-let weeklyCloseController = null;
+let currentStudyTrackModel: any = null;
+let weeklyCloseController: any = null;
 const sustainabilityController = createSustainabilityController({
   getModel: () => currentStudyTrackModel?.weeklyClose?.adherence?.sustainability,
   getCapacity: () =>
@@ -9498,7 +9598,8 @@ const sustainabilityController = createSustainabilityController({
       0
     ),
   formatMinutes: formatPlanMinutes,
-  showPreview: (text, accept, options) => showConfirm(text, accept, undefined, options),
+  showPreview: (text: string, accept: () => void, options: Record<string, any>) =>
+    showConfirm(text, accept, undefined, options),
   navigate: () => {
     activateTab('metas');
     const target = document.getElementById('metasCapacityTitle');
@@ -9516,9 +9617,11 @@ function renderStudyTrack32Insights() {
   const scope = examEvidenceContext(),
     scopedTopicIds = new Set(scope.content.eligibleTopics.map(item => item.id)),
     scopedSubjectIds = new Set(scope.content.eligibleTopics.map(item => item.subjectId)),
-    scopedPlans = (planningRepository.getDailyPlans?.() || []).map(plan => ({
+    scopedPlans = (planningRepository.getDailyPlans?.() || []).map((plan: any) => ({
       ...plan,
-      items: (plan.items || []).filter(item => !item.topicId || scopedTopicIds.has(item.topicId)),
+      items: (plan.items || []).filter(
+        (item: any) => !item.topicId || scopedTopicIds.has(item.topicId)
+      ),
     })),
     scopedRecommendations = state.recommendationFeedback.filter(
       item => !item.topicId || scopedTopicIds.has(item.topicId)
@@ -9665,13 +9768,13 @@ function renderWeeklySnapshotHistory() {
     )
   );
 }
-function renderWeeklyCloseActions(close) {
+function renderWeeklyCloseActions(close: Record<string, any>) {
   const priorities = close.priorities || [];
   if (!priorities.length)
     return `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`;
   const draft = weeklyCloseController.view(),
     checks = priorities
-      .map((item, index) => {
+      .map((item: any, index: any) => {
         const id = item.priorityId || item.topicId || String(index);
         return `<label class="weekly-priority-choice"><input type="checkbox" data-delegated-change="toggleWeeklyPriority('${escapeAttr(id)}',this.checked)" ${draft.selectedIds.includes(id) ? 'checked' : ''}><span>${escapeHtml(item.action)} · ${formatPlanMinutes(item.estimatedMinutes)}</span></label>`;
       })
@@ -9682,7 +9785,7 @@ function renderWeeklyCloseActions(close) {
 function previewWeeklyCloseActions() {
   weeklyCloseController.preview();
 }
-function toggleWeeklyPriority(id, checked) {
+function toggleWeeklyPriority(id: string, checked: boolean) {
   weeklyCloseController.toggle(id, checked);
 }
 function confirmWeeklyCloseActions() {
@@ -9714,7 +9817,7 @@ function saveCurrentReadinessSnapshot({
     });
   return upsertReadinessSnapshot(state.readinessSnapshots, snapshot);
 }
-function buildReadinessBeforeStrategySnapshot(reason, timestamp = nowISO()) {
+function buildReadinessBeforeStrategySnapshot(reason: string, timestamp = nowISO()) {
   return createReadinessSnapshot({
     id: uid('readiness'),
     date: todayISO(),
@@ -9727,7 +9830,7 @@ function buildReadinessBeforeStrategySnapshot(reason, timestamp = nowISO()) {
     metrics: readinessFactors(computeApprovalMetrics()),
   });
 }
-function captureReadinessBeforeStrategy(reason) {
+function captureReadinessBeforeStrategy(reason: string) {
   return upsertReadinessSnapshot(
     state.readinessSnapshots,
     buildReadinessBeforeStrategySnapshot(reason)
@@ -9737,12 +9840,12 @@ weeklyCloseController = createWeeklyCloseController({
   getModel: () => currentStudyTrackModel,
   getState: () => state,
   buildProposal: buildWeeklyCloseActionProposal,
-  createSnapshot: (model, options) =>
+  createSnapshot: (model: Record<string, any>, options: Record<string, any>) =>
     createWeeklyCloseSnapshot(model, { ...options, examPhase: recordedExamPhase() }),
   upsertSnapshot: upsertWeeklyCloseSnapshot,
   clock: { today: todayISO, nowISO, addDays },
   idGenerator: uid,
-  getDailyCapacity: date => metaHoursForDate(date) * 60,
+  getDailyCapacity: (date: string) => metaHoursForDate(date) * 60,
   onChanged: renderStudyTrack32Insights,
   onBeforeApply: () => {
     saveCurrentReadinessSnapshot();
@@ -9781,7 +9884,7 @@ function renderTopicRetentionDashboard() {
     const r = topicRetentionScore(t.subjectId, t.id);
     return { ...t, r, h: topicReviewHealthScore(t, topicMasteryIndex(t.subjectId, t.id), r) };
   });
-  const confidenceMatch = row =>
+  const confidenceMatch = (row: Record<string, any>) =>
     retentionView.confidence === 'all' ||
     row.r.confidenceLabel.toLowerCase() === retentionView.confidence;
   const rows = baseRows
@@ -9815,7 +9918,7 @@ function renderTopicRetentionDashboard() {
 }
 
 function planStartDate() {
-  const dates = [];
+  const dates: any[] = [];
   state.studySessions.forEach(x => {
     if (x.date) dates.push(x.date);
   });
@@ -9849,7 +9952,7 @@ function renderExamProgress() {
   const today = todayISO(),
     start = planStartDate(),
     exam = state.examDate;
-  const diff = (a, b) =>
+  const diff = (a: any, b: any) =>
     Math.max(0, Math.round((Number(parseLocalDate(b)) - Number(parseLocalDate(a))) / 86400000));
   const total = Math.max(1, diff(start, exam)),
     elapsed = Math.min(total, diff(start, today)),
@@ -9874,7 +9977,7 @@ function renderExamCountdown() {
   else if (dias === 0) fig.textContent = 'a prova é hoje!';
   else fig.textContent = 'faltam ' + pluralize(dias, 'dia') + ' para a prova';
 }
-function navigateKpi(tab, filter) {
+function navigateKpi(tab: string, filter: string) {
   activateTab(tab);
   if (tab === 'agenda' && filter === 'overdue') {
     const select = document.getElementById('agendaFilterStatus') as HTMLSelectElement;
@@ -9883,7 +9986,7 @@ function navigateKpi(tab, filter) {
   }
   document.getElementById('panel-' + tab)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-function completeUnifiedReview(id, origin) {
+function completeUnifiedReview(id: string, origin: string) {
   if (origin === 'Agenda de Revisões') {
     completeAgendaReview(id);
   } else {
@@ -9893,11 +9996,11 @@ function completeUnifiedReview(id, origin) {
   }
   showToast('Revisão concluída e indicadores atualizados.');
 }
-function quickReviewButton(item, elId) {
+function quickReviewButton(item: Record<string, any>, elId: string) {
   if (!String(elId || '').startsWith('hoje') || item.status === 'Concluído') return '';
   return `<button type="button" class="btn small quick-review-btn" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">✓ Revisar</button>`;
 }
-function renderCalTarefasHoje(elId) {
+function renderCalTarefasHoje(elId: string) {
   elId = elId || 'calTarefasHoje';
   const today = todayISO(),
     items = getRevisoesUnificadas()
@@ -9916,7 +10019,7 @@ function renderCalTarefasHoje(elId) {
     )
     .join('');
 }
-function renderCalAtrasadas(elId) {
+function renderCalAtrasadas(elId: string) {
   elId = elId || 'calAtrasadas';
   const today = todayISO(),
     items = getRevisoesUnificadas()
@@ -9945,7 +10048,7 @@ function renderCalAtrasadas(elId) {
     visible
       .map(([date, dateItems]) => {
         const expanded = overdueExpandedDates[elId].has(date);
-        return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'revisão', 'revisões')} · ${Math.abs(diasParaRevisao(date) || 0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map(x => `<li><span style="flex:1">${escapeHtml(x.subject || '—')} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
+        return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'revisão', 'revisões')} · ${Math.abs(diasParaRevisao(date) || 0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.subject || '—')} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
       })
       .join('') +
     `<li class="overdue-list-footer">${renderCollectionFooter({ variant: 'block', total: entries.length, visible: visible.length, step: DEFAULT_LIST_VISIBLE_ITEMS, label: 'datas', showMoreAction: `changeOverdueGroupLimit('${elId}',3)`, showAllAction: `showAllOverdueGroups('${elId}')`, showLessAction: limit > DEFAULT_LIST_VISIBLE_ITEMS ? `resetOverdueGroupLimit('${elId}')` : '' })}</li>`;
@@ -9957,7 +10060,7 @@ function renderKPIs() {
     late = revisoesAtrasadas(),
     target = state.metas.metaAprovacao;
   const hasResults = accuracy != null,
-    shown = value => (value == null ? '—' : `${formatDecimal(value)}%`);
+    shown = (value: any) => (value == null ? '—' : `${formatDecimal(value)}%`);
   document.getElementById('kpiGrid').innerHTML = `
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(resolved)}</div><div class="l">Questões resolvidas</div></button>
     <button type="button" class="kpi-cell kpi-link ${hasResults ? (accuracy >= target ? 'ok' : 'warn') : ''}" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(accuracy)}</div><div class="l">Precisão · 30 dias</div></button>
@@ -9967,13 +10070,13 @@ function renderKPIs() {
 }
 
 /* ===== ESCAPE HELPERS ===== */
-function escapeHtml(str) {
+function escapeHtml(str: string) {
   return String(str || '').replace(
     /[&<>"']/g,
     m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
   );
 }
-function escapeAttr(str) {
+function escapeAttr(str: string) {
   return escapeHtml(str);
 }
 
@@ -10151,15 +10254,15 @@ createDelegatedEventsController({
   handlers: DELEGATED_ACTION_HANDLERS,
   parseArgument: delegatedArgument,
   resolveSpecial: resolveDelegatedSpecial,
-  onError: error => {
+  onError: (error: unknown) => {
     console.error('Evento delegado bloqueado', error);
     showToast('Uma ação inválida foi bloqueada por segurança.');
   },
 }).register();
 /* ===== MASTER RENDER ===== */
 let performanceViewState = createPerformanceViewState();
-let analysisNavigationContext = null;
-function analysisContextBanner(destination) {
+let analysisNavigationContext: any = null;
+function analysisContextBanner(destination: string) {
   if (
     !analysisContextInScope(analysisNavigationContext, state.examBlueprint?.activeExamTags || []) ||
     analysisNavigationContext.origin === destination
@@ -10172,9 +10275,9 @@ function analysisContextBanner(destination) {
       : 'análise';
   return `<div class="analysis-context-banner"><span>Contexto: ${escapeHtml(label || 'análise')} · ${analysisNavigationContext.period === 'all' ? 'todo o histórico' : `período de ${escapeHtml(analysisNavigationContext.period)} dias`}</span><button type="button" class="btn ghost small" data-analysis-return>Voltar à origem</button></div>`;
 }
-function performanceScopedPlans(scope) {
+function performanceScopedPlans(scope: any) {
   if (!(state.examBlueprint?.activeExamTags || []).length) return state.dailyPlans;
-  const eligible = new Set(scope.content.eligibleTopics.map(item => item.id));
+  const eligible = new Set(scope.content.eligibleTopics.map((item: any) => item.id));
   return state.dailyPlans
     .map(plan => ({
       ...plan,
@@ -10237,8 +10340,9 @@ function renderPerformance() {
         },
         subjectIdFor: entitySubjectId,
         simulationCountsFor: simuladoEffectiveCounts,
-        reviewCompletedDateFor: item => localDateFromTimestamp(item.completedAt),
-        topicMetricsFor: (subjectId, topicId) => {
+        reviewCompletedDateFor: (item: Record<string, any>) =>
+          localDateFromTimestamp(item.completedAt),
+        topicMetricsFor: (subjectId: string, topicId: string) => {
           const mastery = topicMasteryIndex(subjectId, topicId),
             retention = topicRetentionScore(subjectId, topicId);
           return {
@@ -10247,7 +10351,7 @@ function renderPerformance() {
             evidence: mastery?.confidence || 0,
           };
         },
-        topicProfileFor: (topic, subject) =>
+        topicProfileFor: (topic: Record<string, any>, subject: Record<string, any>) =>
           buildTopicExamProfile({
             topic,
             subjectConfig: state.examBlueprint.subjects.find(item => item.subjectId === subject.id),
@@ -10255,7 +10359,8 @@ function renderPerformance() {
             exams: state.exams,
             examQuestions: state.examQuestions,
           }),
-        topicHistoryFor: topicId => topicHistoryService.list({ topicId, includeLifecycle: false }),
+        topicHistoryFor: (topicId: string) =>
+          topicHistoryService.list({ topicId, includeLifecycle: false }),
       });
   const sectionHtml = examSection
     ? '<div id="examIntelligenceMount"></div>'
@@ -10302,14 +10407,15 @@ function renderPerformance() {
 createPerformanceController({
   document,
   getViewState: () => performanceViewState,
-  setViewState: value => {
+  setViewState: (value: any) => {
     performanceViewState = value;
   },
   render: () => render('desempenho'),
   activateTab,
-  simulateScenario: scenario => projectionController.simulate(scenario),
-  renderScenarioResult: result => renderProjectionScenarioResult(result, { escapeHtml }),
-  applyRecovery: signature => applyConfirmedRecoveryPlan(signature),
+  simulateScenario: (scenario: Record<string, any>) => projectionController.simulate(scenario),
+  renderScenarioResult: (result: Record<string, any>) =>
+    renderProjectionScenarioResult(result, { escapeHtml }),
+  applyRecovery: (signature: string) => applyConfirmedRecoveryPlan(signature),
 }).register();
 document.addEventListener('click', event => {
   const back = (event.target as HTMLElement).closest('[data-analysis-return]');
@@ -10355,11 +10461,11 @@ document.addEventListener('click', event => {
       document.querySelector('.today-analysis-details')?.setAttribute('open', '');
     if (destination === 'metas')
       document.querySelector('#examStudyPlan .study-plan-details')?.setAttribute('open', '');
-    const targets =
+    const targets: HTMLElement[] | NodeListOf<HTMLElement> =
       destination === 'hoje'
-        ? document.querySelectorAll('#diagnosisCenter [data-diagnosis-subject-id]')
+        ? document.querySelectorAll<HTMLElement>('#diagnosisCenter [data-diagnosis-subject-id]')
         : destination === 'metas'
-          ? document.querySelectorAll('#examStudyPlan [data-plan-topic-id]')
+          ? document.querySelectorAll<HTMLElement>('#examStudyPlan [data-plan-topic-id]')
           : [];
     const selected = [...targets].find(
       node =>
@@ -10429,7 +10535,7 @@ const RENDER_SCOPE_SECTIONS = {
 function activeTabName() {
   return tabRouter.activeTabName();
 }
-let applicationRenderer;
+let applicationRenderer: ReturnType<typeof createApplicationRenderer>;
 const errorBoundary = createErrorBoundaryController({ document, onRetry: () => render('active') });
 applicationRenderer = createApplicationRenderer({
   sections: [
@@ -10482,7 +10588,7 @@ applicationRenderer = createApplicationRenderer({
   globalSections: ['indicadores', 'cabeçalho', 'execução diária'],
   getActiveScope: activeTabName,
   afterRender: labelDynamicControls,
-  onError: (error, name) => errorBoundary.report(error, name),
+  onError: (error: unknown, name: string) => errorBoundary.report(error, name),
 });
 function render(scope = 'all') {
   renderDepth++;
@@ -10492,7 +10598,7 @@ function render(scope = 'all') {
     if (--renderDepth === 0) renderCandidates = null;
   }
 }
-function renderScope(scope) {
+function renderScope(scope: any) {
   const result = applicationRenderer.render(scope);
   if (
     scope === 'all' ||
@@ -10672,7 +10778,7 @@ if (TEST_MODE) {
     getState: () => state,
     getConsolidatedDiagnosis: () => structuredCloneSafe(currentConsolidatedDiagnosis),
     settleSaves: () => appStateStore.settleSaves(),
-    setState: value => {
+    setState: (value: any) => {
       state = migrateState(structuredCloneSafe(value));
       ensureStateDefaults();
       return state;
@@ -10686,7 +10792,7 @@ if (TEST_MODE) {
       ensureStateDefaults();
       return state;
     },
-    migrateState: value => migrateState(structuredCloneSafe(value)),
+    migrateState: (value: any) => migrateState(structuredCloneSafe(value)),
     validateBackupData,
     validateNormalizedBackup,
     startOfWeek,
@@ -10731,13 +10837,16 @@ if (TEST_MODE) {
       await loadState();
       activateInitialTab();
     },
-    onError: error => console.error('Falha na inicialização do aplicativo', error),
+    onError: (error: unknown) => console.error('Falha na inicialização do aplicativo', error),
   });
 }
 
-globalThis.studytrackProgressiveLists = mountProgressiveLists({ document, window });
+(globalThis as Record<string, any>).studytrackProgressiveLists = mountProgressiveLists({
+  document,
+  window,
+});
 
 document.addEventListener('studytrack:navigate', () => {
-  globalThis.studytrackProgressiveLists?.reset();
+  (globalThis as Record<string, any>).studytrackProgressiveLists?.reset();
   resetRecordListLimits();
 });

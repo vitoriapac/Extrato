@@ -16,6 +16,7 @@
     "src/reports/**/*",
     "src/features/**/*",
     "src/demo/**/*",
-    "src/bootstrap/**/*"
+    "src/bootstrap/**/*",
+    "src/app.ts"
   ]
 }
