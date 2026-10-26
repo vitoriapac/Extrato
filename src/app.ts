@@ -4279,7 +4279,7 @@ function calendarViewModel(item) {
   });
 }
 function changeCalendarLimit(delta) {
-  calendarController.showMore(delta);
+  calendarController.showMore();
 }
 function resetCalendarLimit() {
   calendarController.showLess();

@@ -76,17 +76,17 @@ const LISTS = [
   ['.performance-topic-events', ':scope > li'],
 ];
 
-export function mountProgressiveLists({ document, window }) {
+export function mountProgressiveLists({ document, window }: { document: any; window: any }) {
   const states = new Map();
   let sequence = 0,
     scheduled = false,
-    pendingFocus = null;
+    pendingFocus: { id: string | null; collapse: boolean } | null = null;
   const sync = () => {
     scheduled = false;
     states.forEach((state, id) => {
       if (!state.root.isConnected) states.delete(id);
     });
-    document.querySelectorAll('[data-progressive-legacy]').forEach(button => {
+    document.querySelectorAll('[data-progressive-legacy]').forEach((button: any) => {
       const root =
         button.closest('tbody') || button.closest('.list-summary-footer')?.previousElementSibling;
       if (root) {
@@ -95,7 +95,7 @@ export function mountProgressiveLists({ document, window }) {
       }
     });
     LISTS.forEach(([selector, itemSelector, initialLimit]) =>
-      document.querySelectorAll(selector).forEach(root => {
+      document.querySelectorAll(selector).forEach((root: any) => {
         const items = [...root.querySelectorAll(itemSelector)];
         if (!root.id) root.id = `progressive-list-${++sequence}`;
         let state = states.get(root.id);
@@ -103,7 +103,7 @@ export function mountProgressiveLists({ document, window }) {
           !state ||
           state.root !== root ||
           state.items.length !== items.length ||
-          state.items.some((item, index) => item !== items[index])
+          state.items.some((item: any, index: any) => item !== items[index])
         ) {
           const expanded = state?.model.expanded && state.root === root;
           state = { root, items, model: createProgressiveList({ items, initialLimit }) };
@@ -166,7 +166,7 @@ export function mountProgressiveLists({ document, window }) {
     states.forEach(state => state.model.reset());
     schedule();
   };
-  const click = event => {
+  const click = (event: any) => {
     const legacy = event.target.closest('[data-progressive-legacy]');
     if (legacy) {
       pendingFocus = {
@@ -193,7 +193,7 @@ export function mountProgressiveLists({ document, window }) {
         behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
       });
   };
-  const filter = event => {
+  const filter = (event: any) => {
     if (event.target.matches('input[type="search"],select,input[type="date"]')) reset();
   };
   const observer = new window.MutationObserver(schedule);

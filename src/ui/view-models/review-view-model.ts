@@ -1,6 +1,11 @@
 export function createReviewViewModel(
-  review,
-  { subjectName = '', topicName = '', difficulty = 'Médio', formatDate = value => value }: any = {}
+  review: Record<string, any>,
+  {
+    subjectName = '',
+    topicName = '',
+    difficulty = 'Médio',
+    formatDate = (value: string) => value,
+  }: any = {}
 ) {
   return Object.freeze({
     id: review.id,

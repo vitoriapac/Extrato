@@ -11,6 +11,13 @@
     "src/storage/**/*",
     "src/repositories/**/*",
     "src/domain/**/*",
-    "src/application/**/*"
+    "src/application/**/*",
+    "src/ui/*.ts",
+    "src/ui/*.tsx",
+    "src/ui/tabs/**/*",
+    "src/ui/view-models/**/*",
+    "src/ui/components/**/*",
+    "src/ui/subjects/**/*",
+    "src/ui/calendar/**/*"
   ]
 }

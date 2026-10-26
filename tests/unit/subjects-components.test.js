@@ -24,7 +24,6 @@ test('SubjectsTab Preact Component — exibe estado vazio quando sem disciplinas
     h(SubjectsTab, {
       subjects: [],
       archivedSubjects: [],
-      totalActiveSubjectsCount: 0,
       subjectProgressFn: () => 0,
       subjectTopicFilters: new Map(),
       subjectTopicLimits: new Map(),
@@ -75,7 +74,6 @@ test('SubjectsTab Preact Component — renderiza disciplinas ativas e arquivadas
     h(SubjectsTab, {
       subjects: [sampleSubject],
       archivedSubjects: [archivedSubject],
-      totalActiveSubjectsCount: 1,
       subjectProgressFn: () => 100,
       subjectTopicFilters: new Map(),
       subjectTopicLimits: new Map(),

@@ -1,15 +1,18 @@
 import { renderSectionHeader, renderEmptyState } from './components/presentation.js';
-const escape = value =>
-  String(value ?? '').replace(
-    /[&<>"']/g,
-    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
-  );
+const ENTITIES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#039;',
+};
+const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, char => ENTITIES[char]);
 
-export function renderChartTooltip(text) {
+export function renderChartTooltip(text: unknown) {
   return `<title>${escape(text)}</title>`;
 }
 
-export function renderChartLegend(items = []) {
+export function renderChartLegend(items: Array<{ tone?: string; label?: unknown }> = []) {
   return items.length
     ? `<ul class="chart-frame__legend" aria-label="Legenda">${items.map(item => `<li><span class="chart-frame__swatch chart-frame__swatch--${['primary', 'secondary', 'target'].includes(item.tone) ? item.tone : 'primary'}" aria-hidden="true"></span>${escape(item.label)}</li>`).join('')}</ul>`
     : '';

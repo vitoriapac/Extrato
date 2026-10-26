@@ -81,7 +81,6 @@ export function createSubjectsController(ctx: SubjectsControllerContext) {
       h(SubjectsTab, {
         subjects,
         archivedSubjects: archived,
-        totalActiveSubjectsCount: getActiveSubjects().length,
         searchQuery: query,
         subjectExamFilter: ctx.subjectExamFilter,
         subjectProgressFn: ctx.subjectProgress,

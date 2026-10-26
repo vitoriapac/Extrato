@@ -18,7 +18,7 @@ export function renderDecisionSummary({ title, summary, details = [] }: any = {}
     details.length
       ? `<ul>${details
           .slice(0, 3)
-          .map(text => renderInsightCard({ text, tag: 'li' }))
+          .map((text: any) => renderInsightCard({ text, tag: 'li' }))
           .join('')}</ul>`
       : ''
   }</section>`;
@@ -63,7 +63,7 @@ export function renderActionCard({
 }: any = {}) {
   return `<section class="${escape(className)}">${contentHTML}${actions.map(renderAction).join('')}</section>`;
 }
-export function renderContextualHelp(topic, label) {
+export function renderContextualHelp(topic: string, label: string) {
   if (!/^[a-z][a-z0-9-]*$/.test(topic || '')) throw new TypeError('Invalid help topic');
   return `<span class="analytical-contextual-help">${renderAction({ label, attributes: { 'data-help-topic-link': topic } })}</span>`;
 }

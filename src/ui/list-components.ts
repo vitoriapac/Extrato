@@ -8,6 +8,16 @@ export function renderCollectionFooter({
   colspan = 1,
   label = 'itens',
   variant = 'table',
+}: {
+  total: number;
+  visible: number;
+  step?: number;
+  showMoreAction?: string;
+  showAllAction?: string;
+  showLessAction?: string;
+  colspan?: number;
+  label?: string;
+  variant?: string;
 }) {
   if (total <= visible && visible <= 0) return '';
   const shown = Math.min(total, visible);
@@ -30,6 +40,13 @@ export function renderGroupHeader({
   expanded = true,
   toggleAction = '',
   colspan = 8,
+}: {
+  title: string;
+  count: number | string;
+  tone?: string;
+  expanded?: boolean;
+  toggleAction?: string;
+  colspan?: number;
 }) {
   const content = `<span class="review-group-title">${title}</span><span class="review-group-meta"><span class="count-badge">${count}</span>${toggleAction ? `<span class="review-group-chevron" aria-hidden="true">›</span>` : ''}</span>`;
   return `<tr class="review-group-row ${tone}"><td colspan="${colspan}">${toggleAction ? `<button type="button" class="review-group-header" aria-expanded="${expanded}" data-delegated-click="${toggleAction}">${content}</button>` : `<div class="review-group-header static">${content}</div>`}</td></tr>`;

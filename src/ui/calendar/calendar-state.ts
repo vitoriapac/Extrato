@@ -10,10 +10,10 @@ export function createCalendarState(initial: any = {}) {
     },
     view: initial.view || 'month',
     visible: Number(initial.visible) || DEFAULT_LIST_VISIBLE_ITEMS,
-    editingId: null,
-    draft: null,
+    editingId: null as string | null,
+    draft: null as Record<string, any> | null,
     isNew: false,
-    selectedId: null,
-    expandedIds: new Set(),
+    selectedId: null as string | null,
+    expandedIds: new Set<string>(),
   };
 }

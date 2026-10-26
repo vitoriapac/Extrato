@@ -36,7 +36,7 @@ export function presentEvidence({
     throw new TypeError('Estado de evidência desconhecido: ' + selected);
   const numeric = selected === EVIDENCE_STATES.MEASURED || selected === EVIDENCE_STATES.ESTIMATED;
   const effective = numeric && !validValue ? EVIDENCE_STATES.NO_DATA : selected;
-  const description = descriptions[effective];
+  const description = descriptions[effective as keyof typeof descriptions];
   return {
     state: effective,
     label: description.label,
@@ -45,5 +45,6 @@ export function presentEvidence({
     confidence,
   };
 }
-export const formatEvidencePercent = value =>
-  presentEvidence({ value, unit: '%', format: number => String(Math.round(number)) }).text;
+export const formatEvidencePercent = (value: unknown) =>
+  presentEvidence({ value, unit: '%', format: (number: number) => String(Math.round(number)) })
+    .text;

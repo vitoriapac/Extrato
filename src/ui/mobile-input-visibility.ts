@@ -11,7 +11,8 @@ const NON_TEXT_INPUT_TYPES = new Set([
   'submit',
 ]);
 
-function isKeyboardField(element) {
+// Elements come from the injected document (fakes in tests), so this is duck-typed.
+function isKeyboardField(element: any) {
   if (!element || element.disabled || element.readOnly) return false;
   if (element.isContentEditable) return true;
   if (element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') return true;
@@ -32,8 +33,8 @@ export function registerMobileInputVisibility({
     removeEventListener() {},
   };
   const viewport = window.visualViewport;
-  let focused = null,
-    frame = null,
+  let focused: any = null,
+    frame: number | null = null,
     frameIsAnimation = false,
     destroyed = false;
   const cancelFrame = () => {
@@ -81,7 +82,7 @@ export function registerMobileInputVisibility({
       frame = window.setTimeout(reveal, 0);
     }
   };
-  const onFocusIn = event => {
+  const onFocusIn = (event: Event) => {
     focused = isKeyboardField(event.target) ? event.target : null;
     if (focused) schedule();
   };

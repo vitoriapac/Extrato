@@ -35,7 +35,7 @@ export function buildPriorityViewModel(item: any = {}, position = 1) {
   const contributionRows = Object.entries(item.contributions || {})
     .map(([key, value]) => ({
       key,
-      label: PRIORITY_FACTOR_LABELS[key] || key,
+      label: (PRIORITY_FACTOR_LABELS as Record<string, string>)[key] || key,
       value: Math.max(0, Math.round(Number(value) || 0)),
       factor: item.factors?.[key] ?? null,
     }))

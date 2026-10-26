@@ -1,5 +1,5 @@
 export function buildCalendarItemViewModel(
-  item,
+  item: Record<string, any>,
   { formatDate, getSubjectName, subjectIdOf }: any = {}
 ) {
   return {

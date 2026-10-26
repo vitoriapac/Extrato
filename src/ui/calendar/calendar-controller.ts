@@ -1,8 +1,8 @@
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../progressive-list.js';
-const clone = value => (value == null ? value : JSON.parse(JSON.stringify(value)));
+const clone = <T>(value: T): T => (value == null ? value : JSON.parse(JSON.stringify(value)));
 const localToday = () => {
   const date = new Date(),
-    pad = value => String(value).padStart(2, '0');
+    pad = (value: number) => String(value).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 };
 export function createCalendarController({
@@ -27,13 +27,13 @@ export function createCalendarController({
       refresh();
       return item;
     },
-    beginEdit(id) {
+    beginEdit(id: string) {
       state.editingId = id;
       state.draft = clone(service.getById?.(id));
       state.isNew = false;
       refresh();
     },
-    update(field, value) {
+    update(field: string, value: unknown) {
       if (state.draft) state.draft[field] = value;
       refresh();
     },
@@ -49,21 +49,21 @@ export function createCalendarController({
       refresh();
       return result;
     },
-    complete(id) {
+    complete(id: string) {
       const item = service.getById?.(id);
       if (!item || item.status === 'Concluído') return item;
       const result = service.update(id, { ...item, status: 'Concluído' });
       refresh();
       return result;
     },
-    remove(id) {
+    remove(id: string) {
       const result = service.remove(id);
       if (state.selectedId === id) state.selectedId = null;
       if (state.editingId === id) resetEdit();
       refresh();
       return result;
     },
-    setFilter(name, value) {
+    setFilter(name: string, value: string) {
       if (name in state.filters) state.filters[name] = value;
       state.visible = DEFAULT_LIST_VISIBLE_ITEMS;
       refresh();
@@ -73,11 +73,11 @@ export function createCalendarController({
       state.visible = DEFAULT_LIST_VISIBLE_ITEMS;
       refresh();
     },
-    setView(view) {
+    setView(view: string) {
       state.view = view === 'agenda' ? 'agenda' : 'month';
       refresh();
     },
-    select(id) {
+    select(id: string | null) {
       state.selectedId = id;
       refresh();
     },
@@ -85,7 +85,7 @@ export function createCalendarController({
       state.selectedId = null;
       refresh();
     },
-    showMore(step = 10) {
+    showMore() {
       state.visible = Number.MAX_SAFE_INTEGER;
       refresh();
     },
@@ -93,7 +93,7 @@ export function createCalendarController({
       state.visible = DEFAULT_LIST_VISIBLE_ITEMS;
       refresh();
     },
-    setMonth(month) {
+    setMonth(month: string | Date) {
       state.month = month instanceof Date ? new Date(month) : new Date(month);
       state.visible = DEFAULT_LIST_VISIBLE_ITEMS;
       refresh();
@@ -114,7 +114,7 @@ export function createCalendarController({
       state.month = new Date();
       refresh();
     },
-    toggleExpanded(id) {
+    toggleExpanded(id: string) {
       state.expandedIds.has(id) ? state.expandedIds.delete(id) : state.expandedIds.add(id);
       refresh();
     },

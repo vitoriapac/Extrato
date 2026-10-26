@@ -1,4 +1,18 @@
-export function filterStudySessions(sessions, filters, { today, addDays, subjectIdOf }) {
+type Row = Record<string, any>;
+
+export function filterStudySessions(
+  sessions: Row[],
+  filters: Row,
+  {
+    today,
+    addDays,
+    subjectIdOf,
+  }: {
+    today: string;
+    addDays: (date: string, days: number) => string;
+    subjectIdOf: (session: Row) => string | null;
+  }
+) {
   let rows = [...(sessions || [])];
   if (filters.date) rows = rows.filter(item => item.date === filters.date);
   else if (filters.period !== 'all') {
@@ -11,7 +25,7 @@ export function filterStudySessions(sessions, filters, { today, addDays, subject
   return rows.sort((a, b) => (b.endedAt || b.date || '').localeCompare(a.endedAt || a.date || ''));
 }
 
-export function groupStudySessionsByDate(sessions) {
+export function groupStudySessionsByDate(sessions: Row[]) {
   const groups = new Map();
   for (const session of sessions || []) {
     const date = session.date || 'Sem data';

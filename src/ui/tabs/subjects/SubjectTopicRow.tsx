@@ -1,5 +1,3 @@
-import type { JSX } from 'preact';
-
 export interface SubjectTopicRowProps {
   subjectId: string;
   topic: any;

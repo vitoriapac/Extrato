@@ -1,10 +1,8 @@
-import type { JSX } from 'preact';
 import { SubjectBlock } from './SubjectBlock.js';
 
 export interface SubjectsTabProps {
   subjects: any[];
   archivedSubjects: any[];
-  totalActiveSubjectsCount: number;
   searchQuery?: string;
   subjectExamFilter?: string;
   subjectProgressFn: (subject: any) => number;
@@ -27,7 +25,6 @@ export interface SubjectsTabProps {
 export function SubjectsTab({
   subjects,
   archivedSubjects,
-  totalActiveSubjectsCount,
   searchQuery = '',
   subjectExamFilter = 'all',
   subjectProgressFn,

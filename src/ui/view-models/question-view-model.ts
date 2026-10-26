@@ -1,5 +1,5 @@
 export function buildQuestionViewModel(
-  item,
+  item: Record<string, any>,
   { formatDate, getSubjectName, getTopicName, subjectIdOf, accuracy }: any = {}
 ) {
   const resolved = Number(item.resolved) || 0,

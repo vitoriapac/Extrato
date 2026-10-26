@@ -1,4 +1,4 @@
-export function formatStudyMinutes(value) {
+export function formatStudyMinutes(value: unknown) {
   if (value == null || value === '' || !Number.isFinite(Number(value))) return '—';
   const rounded = Math.round(Math.abs(Number(value))),
     hours = Math.floor(rounded / 60),
@@ -6,7 +6,7 @@ export function formatStudyMinutes(value) {
     sign = Number(value) < 0 ? '−' : '';
   return sign + (hours ? hours + ' h' + (minutes ? ' ' + minutes + ' min' : '') : minutes + ' min');
 }
-export function formatStudyMinuteDelta(value) {
+export function formatStudyMinuteDelta(value: unknown) {
   return value == null
     ? 'Sem base comparável'
     : (Number(value) > 0 ? '+' : '') + formatStudyMinutes(value);

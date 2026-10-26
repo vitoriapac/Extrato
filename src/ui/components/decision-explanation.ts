@@ -7,8 +7,18 @@ export function renderDecisionExplanation(
     confidence = '',
     method = '',
     helpTopic = null,
+  }: {
+    title?: string;
+    factors?: Array<Record<string, any>>;
+    evidence?: string;
+    confidence?: string;
+    method?: string;
+    helpTopic?: string | null;
   },
-  { escapeHtml, escapeAttr = escapeHtml }
+  {
+    escapeHtml,
+    escapeAttr = escapeHtml,
+  }: { escapeHtml: (value: unknown) => string; escapeAttr?: (value: unknown) => string }
 ) {
   return (
     '<details class="achievement-projection__details decision-explanation"><summary>' +

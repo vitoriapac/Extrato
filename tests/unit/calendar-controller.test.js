@@ -60,7 +60,7 @@ test('controlador cobre visualização, paginação, seleção, filtros e mês',
     state = createCalendarState({ month: new Date(2026, 8, 1) }),
     controller = createCalendarController({ service: repository, state });
   controller.setView('agenda');
-  controller.showMore(5);
+  controller.showMore();
   controller.select('c1');
   controller.setFilter('status', 'Concluído');
   controller.clearFilters();

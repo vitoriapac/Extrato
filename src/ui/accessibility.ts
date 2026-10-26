@@ -22,13 +22,13 @@ export function labelDynamicControls(root = document) {
   });
 }
 
-export function trapModalTab(event, modals) {
+export function trapModalTab(event: KeyboardEvent, modals: Array<HTMLElement | null>) {
   if (event.key !== 'Tab') return false;
-  const modal = modals.find(item => item?.classList.contains('show'));
+  const modal = modals.find((item: any) => item?.classList.contains('show'));
   if (!modal) return false;
   const selector =
     'button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])';
-  const focusable = [...modal.querySelectorAll(selector)].filter(
+  const focusable = [...modal.querySelectorAll<HTMLElement>(selector)].filter(
     item => !item.hidden && item.offsetParent !== null
   );
   if (!focusable.length) return false;

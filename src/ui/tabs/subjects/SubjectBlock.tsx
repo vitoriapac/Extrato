@@ -1,4 +1,3 @@
-import type { JSX } from 'preact';
 import { SubjectTopicRow } from './SubjectTopicRow.js';
 
 export interface SubjectBlockProps {
