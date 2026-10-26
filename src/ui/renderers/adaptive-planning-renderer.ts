@@ -8,7 +8,10 @@ const PHASES = [
   { id: 'final_review', label: 'Revisão final' },
 ];
 
-export function renderExamPhase(phase, { escapeHtml = value => String(value ?? '') }: any = {}) {
+export function renderExamPhase(
+  phase: Record<string, any>,
+  { escapeHtml = (value: unknown) => String(value ?? '') }: any = {}
+) {
   const current = phase?.state;
   const undated = current === 'undated' || !current;
   const days =
@@ -23,8 +26,8 @@ export function renderExamPhase(phase, { escapeHtml = value => String(value ?? '
 }
 
 export function renderExamPhaseCompact(
-  phase,
-  { escapeHtml = value => String(value ?? '') }: any = {}
+  phase: Record<string, any>,
+  { escapeHtml = (value: unknown) => String(value ?? '') }: any = {}
 ) {
   const label = phase?.label || 'Prova sem data',
     days =
@@ -35,12 +38,12 @@ export function renderExamPhaseCompact(
 }
 
 export function renderAdaptiveAllocationAdvice(
-  advice,
+  advice: Record<string, any>,
   {
     weeklyPlannedMinutes = 0,
     weeklyAvailableMinutes = null,
-    formatMinutes = value => `${value} min`,
-    escapeHtml = value => String(value ?? ''),
+    formatMinutes = (value: unknown) => `${value} min`,
+    escapeHtml = (value: unknown) => String(value ?? ''),
   }: any = {}
 ) {
   if (advice?.state !== 'proposal') {
@@ -51,7 +54,7 @@ export function renderAdaptiveAllocationAdvice(
   const applied = Boolean(advice.applied);
   const rationale =
     Array.isArray(advice.rationale) && advice.rationale.length
-      ? `<ul class="adaptive-rationale">${advice.rationale.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul>`
+      ? `<ul class="adaptive-rationale">${advice.rationale.map((reason: any) => `<li>${escapeHtml(reason)}</li>`).join('')}</ul>`
       : '';
   return `<section class="adaptive-advice${applied ? ' is-applied' : ''}" aria-label="Sugestão de redistribuição semanal"><div class="adaptive-advice-heading"><div><span class="exam-phase-eyebrow">Ajuste sugerido</span><strong>Redistribuir ${escapeHtml(formatMinutes(advice.transferMinutes))} por semana</strong></div><span class="adaptive-capacity">Carga distribuída mantida · ${escapeHtml(formatMinutes(weeklyPlannedMinutes))}</span></div><div class="adaptive-transfer"><div><span>De</span><strong>${escapeHtml(from.name || 'Disciplina de origem')}</strong><small>${escapeHtml(formatMinutes(from.beforeMinutes || 0))} → ${escapeHtml(formatMinutes(from.afterMinutes || 0))}</small></div><span class="adaptive-transfer-arrow" aria-hidden="true">→</span><div><span>Para</span><strong>${escapeHtml(to.name || 'Disciplina prioritária')}</strong><small>${escapeHtml(formatMinutes(to.beforeMinutes || 0))} → ${escapeHtml(formatMinutes(to.afterMinutes || 0))}</small></div></div><p>${escapeHtml(advice.reason || 'Ajuste baseado nos indicadores disponíveis.')}</p>${rationale}${renderOpportunityCost(advice)}${renderRecommendationExplanation({ ...buildRecommendationExplanation(advice, { weeklyPlannedMinutes, weeklyAvailableMinutes }), opportunityCost: null })}${applied ? '<small class="adaptive-applied-note" role="status">Aplicado somente à prévia. Confirme o plano para salvar.</small>' : '<div class="study-plan-actions"><button class="btn ghost small" data-delegated-click="useAdaptivePlanAdvice()">Aplicar à prévia</button><button class="btn ghost small" data-delegated-click="rejectAdaptivePlanAdvice()">Recusar sugestão</button></div>'}<p class="adaptive-unsaved-note">Nenhuma alteração será salva até você confirmar o plano.</p></section>`;
 }

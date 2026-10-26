@@ -2,7 +2,7 @@ import { formatPeriodBR } from '../../core/format-date.js';
 import { diagnosticSignalLabel } from '../../domain/diagnostics/diagnostic-vocabulary.js';
 import { renderDisclosure } from '../components/analytical-presentation.js';
 
-const metrics = {
+const metrics: Record<string, any> = {
   mastery: ['Domínio', '/100'],
   retention: ['Retenção', '/100'],
   accuracy: ['Precisão', '%'],
@@ -13,28 +13,36 @@ const metrics = {
   urgency: ['Urgência da revisão', '/100'],
   presencePercent: ['Incidência', '%'],
 };
-const measurements = signal =>
+const measurements = (signal: Record<string, any>) =>
   Object.entries(signal?.metrics || {}).filter(
     ([key, value]) =>
       metrics[key] &&
       (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) &&
       Number.isFinite(Number(value))
   );
-const renderMeasurements = (rows, escapeHtml) =>
+const renderMeasurements = (rows: any[], escapeHtml: (value: any) => string) =>
   rows.length
     ? `<dl class="diagnostic-evidence">${rows.map(([key, value]) => `<div><dt>${metrics[key][0]}</dt><dd>${escapeHtml(value)}${metrics[key][1]}</dd></div>`).join('')}</dl>`
     : '';
 
-export function renderDiagnosticSummary(item, primary, { escapeHtml }) {
+export function renderDiagnosticSummary(
+  item: Record<string, any>,
+  primary: Record<string, any>,
+  { escapeHtml }: any
+) {
   const reason = primary?.reasons?.[0];
   const primaryMeasurements = measurements(primary);
   const supporting = (item.signals || [])
     .filter(
-      signal => signal !== primary && signal.active && signal.kind !== 'recommendation-available'
+      (signal: any) =>
+        signal !== primary && signal.active && signal.kind !== 'recommendation-available'
     )
-    .filter((signal, index, rows) => rows.findIndex(other => other.kind === signal.kind) === index);
-  const renderSupporting = rows =>
-    `<ul>${rows.map(signal => `<li><strong>${escapeHtml(diagnosticSignalLabel(signal.kind))}</strong>${signal.reasons?.[0] ? ` · ${escapeHtml(signal.reasons[0])}` : ''}${renderMeasurements(measurements(signal), escapeHtml)}</li>`).join('')}</ul>`;
+    .filter(
+      (signal: any, index: any, rows: any) =>
+        rows.findIndex((other: any) => other.kind === signal.kind) === index
+    );
+  const renderSupporting = (rows: any[]) =>
+    `<ul>${rows.map((signal: any) => `<li><strong>${escapeHtml(diagnosticSignalLabel(signal.kind))}</strong>${signal.reasons?.[0] ? ` · ${escapeHtml(signal.reasons[0])}` : ''}${renderMeasurements(measurements(signal), escapeHtml)}</li>`).join('')}</ul>`;
   const period =
     primary?.period?.start && primary?.period?.end
       ? formatPeriodBR(primary.period.start, primary.period.end)

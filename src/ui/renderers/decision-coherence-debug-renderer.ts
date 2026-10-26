@@ -1,14 +1,17 @@
-export function renderDecisionCoherenceDebug(report, { escapeHtml }: any = {}) {
-  const safe = value => escapeHtml(String(value ?? ''));
+export function renderDecisionCoherenceDebug(
+  report: Record<string, any>,
+  { escapeHtml }: any = {}
+) {
+  const safe = (value: unknown) => escapeHtml(String(value ?? ''));
   const rows = report.signals
     .map(
-      signal =>
+      (signal: any) =>
         `<li>${safe(signal.subjectId)} / ${safe(signal.topicId)} · trajetória ${signal.trajectoryRisk ? '✓' : '—'} · prova ${signal.highExamImpact ? '✓' : '—'} · plano ${signal.planned ? '✓' : '—'} · ação ${signal.nextAction ? '✓' : '—'}</li>`
     )
     .join('');
   const divergences = report.divergences
     .map(
-      item =>
+      (item: any) =>
         `<li>${safe(item.type)}: ${safe(item.riskTopicId)} → ${safe(item.actionTopicId)} · ${safe(item.reasonCode)}${item.reason ? ` (${safe(item.reason)})` : ''}</li>`
     )
     .join('');

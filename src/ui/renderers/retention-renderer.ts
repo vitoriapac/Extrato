@@ -8,8 +8,8 @@ export function renderTopicRetentionDashboard({
   renderFooter,
   escapeHtml,
   escapeAttr,
-}) {
-  const toolbar = `<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${subjects.map(subject => `<option value="${escapeAttr(subject.id)}" ${filters.subjectId === subject.id ? 'selected' : ''}>${escapeHtml(subject.name)}</option>`).join('')}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${filters.order === 'asc' ? 'selected' : ''}>Menor retenção</option><option value="desc" ${filters.order === 'desc' ? 'selected' : ''}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${filters.confidence === 'alta' ? 'selected' : ''}>Confiança alta</option><option value="média" ${filters.confidence === 'média' ? 'selected' : ''}>Confiança média</option><option value="baixa" ${filters.confidence === 'baixa' ? 'selected' : ''}>Confiança baixa</option></select></div>`;
+}: any) {
+  const toolbar = `<div class="retention-toolbar"><select aria-label="Filtrar retenção por disciplina" data-delegated-change="setRetentionFilter('subjectId',this.value)"><option value="">Todas as disciplinas</option>${subjects.map((subject: any) => `<option value="${escapeAttr(subject.id)}" ${filters.subjectId === subject.id ? 'selected' : ''}>${escapeHtml(subject.name)}</option>`).join('')}</select><select aria-label="Ordenar retenção" data-delegated-change="setRetentionFilter('order',this.value)"><option value="asc" ${filters.order === 'asc' ? 'selected' : ''}>Menor retenção</option><option value="desc" ${filters.order === 'desc' ? 'selected' : ''}>Maior retenção</option></select><select aria-label="Filtrar retenção por confiança" data-delegated-change="setRetentionFilter('confidence',this.value)"><option value="all">Todas as confianças</option><option value="alta" ${filters.confidence === 'alta' ? 'selected' : ''}>Confiança alta</option><option value="média" ${filters.confidence === 'média' ? 'selected' : ''}>Confiança média</option><option value="baixa" ${filters.confidence === 'baixa' ? 'selected' : ''}>Confiança baixa</option></select></div>`;
   if (!rows.length)
     return (
       toolbar + '<div class="upcoming-empty">Nenhum tópico corresponde aos filtros atuais.</div>'
@@ -17,8 +17,8 @@ export function renderTopicRetentionDashboard({
   const visible = showAll ? rows : rows.slice(0, DEFAULT_LIST_VISIBLE_ITEMS),
     scoreCounts = new Map();
   rows
-    .filter(row => row.r.available && row.r.value != null)
-    .forEach(row => {
+    .filter((row: any) => row.r.available && row.r.value != null)
+    .forEach((row: any) => {
       const score = row.r.value;
       scoreCounts.set(score, (scoreCounts.get(score) || 0) + 1);
     });
@@ -28,7 +28,7 @@ export function renderTopicRetentionDashboard({
       ? `<div class="retention-pattern-note">${repeated[1]} tópicos apresentam retenção estimada em ${repeated[0]}%. Compare a confiança antes de interpretar o resultado como definitivo.</div>`
       : '';
   const items = visible
-    .map(row => {
+    .map((row: any) => {
       const evidence = presentEvidence({
           state: row.r.available ? EVIDENCE_STATES.ESTIMATED : EVIDENCE_STATES.NO_DATA,
           value: row.r.value,

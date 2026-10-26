@@ -6,7 +6,7 @@ export function renderCalendarRead({
   daysPill,
   statusClass,
   today,
-}) {
+}: any) {
   if (mobile)
     return `<tr class="mobile-history-row" data-id="${item.id}"><td colspan="7"><article class="mobile-history-card"><div class="mobile-card-head"><div><div class="mobile-card-date">${escapeHtml(view.date)} · ${escapeHtml(view.week)}</div><div class="mobile-card-title">${escapeHtml(view.subject)}</div><div class="mobile-card-subtitle">${escapeHtml(view.reviewType)}</div></div><button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div><div class="mobile-card-metrics"><span>${escapeHtml(view.status)}</span><span>${daysPill}</span></div><div class="mobile-card-actions">${view.pending ? `<button class="btn small history-primary-action" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>` : ''}</div></article></td></tr>`;
   return `<tr class="history-read-row history-desktop-row ${item.date === today ? 'today' : ''}" data-id="${item.id}"><td>${escapeHtml(view.date)}</td><td>${escapeHtml(view.week)}</td><td><div class="row-primary">${escapeHtml(view.subject)}</div></td><td><span class="history-status ${statusClass[item.status] || ''}">${escapeHtml(view.status)}</span></td><td>${escapeHtml(view.reviewType)}</td><td>${daysPill}</td><td><div class="row-actions">${view.pending ? `<button class="btn small" data-delegated-click="completeCalendarItem('${item.id}')">Concluir</button>` : ''}<button class="btn ghost small" data-delegated-click="editCalendarItem('${item.id}')">Editar</button></div></td></tr>`;
@@ -18,22 +18,22 @@ export function renderCalendarEdit({
   statusOptions,
   reviewOptions,
   escapeAttr,
-}) {
+}: any) {
   if (!draft) return '';
   return `<tr class="row-editing" data-id="${item.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ''}" data-delegated-change="updateCalendarDraft('date',this.value)"></label><label>Semana<input type="text" value="${escapeAttr(draft.week || '')}" data-delegated-input="updateCalendarDraft('week',this.value)"></label><label>Disciplina<select data-delegated-change="updateCalendarDraft('subjectId',this.value||null)"><option value="">Sem disciplina</option>${subjectOptions}</select></label><label>Status<select data-delegated-change="updateCalendarDraft('status',this.value)">${statusOptions}</select></label><label>Tipo de revisão<select data-delegated-change="updateCalendarDraft('reviewType',this.value)">${reviewOptions}</select></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelCalendarEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveCalendarEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteCalRow('${item.id}')">Excluir</button></div></div></td></tr>`;
 }
 
-export function renderCalendarIndicators({ items = [], today, daysUntil }) {
+export function renderCalendarIndicators({ items = [], today, daysUntil }: any) {
   const total = items.length;
   const overdueItems = items.filter(
-      item => item.date && item.date < today && item.status !== 'Concluído'
+      (item: any) => item.date && item.date < today && item.status !== 'Concluído'
     ),
     overdue = overdueItems.length;
-  const calendarOverdue = overdueItems.filter(item => item.origem === 'Calendário').length,
-    agendaOverdue = overdueItems.filter(item => item.origem === 'Agenda de Revisões').length,
+  const calendarOverdue = overdueItems.filter((item: any) => item.origem === 'Calendário').length,
+    agendaOverdue = overdueItems.filter((item: any) => item.origem === 'Agenda de Revisões').length,
     otherOverdue = overdue - calendarOverdue - agendaOverdue;
-  const todayCount = items.filter(item => item.date === today).length;
-  const upcoming = items.filter(item => {
+  const todayCount = items.filter((item: any) => item.date === today).length;
+  const upcoming = items.filter((item: any) => {
     const days = daysUntil(item.date);
     return days !== null && days > 0 && days <= 7;
   }).length;
@@ -53,11 +53,11 @@ export function renderCalendarMonth({
   escapeHtml,
   escapeAttr,
   maxEventsPerDay = 3,
-}) {
+}: any) {
   const year = month.getFullYear(),
     monthIndex = month.getMonth();
   const visibleEvents = events.filter(
-    event =>
+    (event: any) =>
       (!filterSubject || event.subjectId === filterSubject) &&
       (!filterStatus || event.status === filterStatus)
   );
@@ -72,11 +72,11 @@ export function renderCalendarMonth({
       .join('');
   for (let index = 0; index < 42; index++) {
     const iso = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
-    const dayEvents = visibleEvents.filter(event => event.date === iso),
+    const dayEvents = visibleEvents.filter((event: any) => event.date === iso),
       isToday = iso === today,
       outside = cursor.getMonth() !== monthIndex;
     html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''}"><div class="day-number">${cursor.getDate()}</div>`;
-    dayEvents.slice(0, maxEventsPerDay).forEach(event => {
+    dayEvents.slice(0, maxEventsPerDay).forEach((event: any) => {
       let className = 'event-futura';
       if (event.status === 'Concluído') className = 'event-concluida';
       else {
@@ -99,19 +99,16 @@ export function renderCalendarFilterOptions({
   subjects = [],
   monthKeys = [],
   reviewTypes = [],
-  selectedSubject = '',
-  selectedMonth = '',
-  selectedType = '',
   escapeHtml,
   escapeAttr,
   monthLabel,
-}) {
+}: any) {
   return {
-    subjects: `<option value="">Todas as disciplinas</option>${subjects.map(subject => `<option value="${escapeAttr(subject.id)}">${escapeHtml(subject.name)}</option>`).join('')}`,
-    months: `<option value="">Todos os meses</option>${monthKeys.map(key => `<option value="${escapeAttr(key)}">${escapeHtml(monthLabel(key))}</option>`).join('')}`,
+    subjects: `<option value="">Todas as disciplinas</option>${subjects.map((subject: any) => `<option value="${escapeAttr(subject.id)}">${escapeHtml(subject.name)}</option>`).join('')}`,
+    months: `<option value="">Todos os meses</option>${monthKeys.map((key: any) => `<option value="${escapeAttr(key)}">${escapeHtml(monthLabel(key))}</option>`).join('')}`,
     types: `<option value="">Todos os tipos de revisão</option>${reviewTypes
-      .filter(type => type !== '—')
-      .map(type => `<option value="${escapeAttr(type)}">${escapeHtml(type)}</option>`)
+      .filter((type: any) => type !== '—')
+      .map((type: any) => `<option value="${escapeAttr(type)}">${escapeHtml(type)}</option>`)
       .join('')}`,
   };
 }
@@ -123,14 +120,13 @@ export function renderCalendarRows({
   renderReadRow,
   renderEditRow,
   renderFooter,
-  escapeHtml,
-}) {
+}: any) {
   if (!rows.length)
     return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum item encontrado com esses filtros.</p><button class="btn" data-delegated-click="addCalRow()">+ Adicionar item</button></div></td></tr>`;
   return (
     rows
       .slice(0, visible)
-      .map(item => (editingId === item.id ? renderEditRow(item) : renderReadRow(item)))
+      .map((item: any) => (editingId === item.id ? renderEditRow(item) : renderReadRow(item)))
       .join('') +
     renderFooter({
       total: rows.length,

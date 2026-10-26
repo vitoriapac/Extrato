@@ -1,9 +1,9 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { diagnosticLabel } from '../../domain/diagnostics/diagnostic-vocabulary.js';
 
-const signed = value =>
+const signed = (value: number | null | undefined) =>
   value == null ? '—' : `${value > 0 ? '+' : ''}${formatDecimal(value)} p.p.`;
-const trend = value =>
+const trend = (value: number | null | undefined) =>
   value == null
     ? diagnosticLabel('trend', 'insufficient')
     : value > 1
@@ -21,7 +21,7 @@ export function renderSubjectTargetEditor(
   if (!rows.length)
     return '<p class="empty-state empty-state--compact">Cadastre disciplinas no concurso ativo para configurar metas de acerto.</p>';
   const body = rows
-    .map(row => {
+    .map((row: any) => {
       const custom = configs.get(row.subjectId)?.accuracyTarget;
       return `<tr><td><label><input type="checkbox" data-accuracy-select value="${escapeAttr(row.subjectId)}"> ${escapeHtml(row.name)}</label></td><td><input type="number" min="0" max="100" step="1" aria-label="Meta de acerto de ${escapeAttr(row.name)}" data-accuracy-value="${escapeAttr(row.subjectId)}" value="${custom ?? ''}" placeholder="${globalTarget}"><small>${custom == null ? 'Herda a meta global' : 'Personalizada'}</small></td><td>${row.state === 'insufficient' ? 'Dados insuficientes' : `${formatDecimal(row.accuracy)}%`}</td><td>${signed(row.gap)}</td><td>${trend(row.evolution)}</td><td><button type="button" class="btn ghost small" data-accuracy-save="${escapeAttr(row.subjectId)}">Salvar</button><button type="button" class="btn ghost small" data-accuracy-restore="${escapeAttr(row.subjectId)}" ${custom == null ? 'disabled' : ''}>Restaurar global</button></td></tr>`;
     })

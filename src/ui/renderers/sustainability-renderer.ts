@@ -1,15 +1,15 @@
 import { formatPeriodBR } from '../../core/format-date.js';
 import { renderDisclosure, renderContextualHelp } from '../components/analytical-presentation.js';
-const escape = value =>
+const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
   );
-const minutes = value =>
+const minutes = (value: number | null | undefined) =>
   value == null
     ? '—'
     : `${Math.floor(Math.round(value) / 60)}h${String(Math.round(value) % 60).padStart(2, '0')}`;
-const reasons = {
+const reasons: Record<string, any> = {
   missing_week: 'sem semana registrada',
   incompatible_policy: 'política incompatível',
   incomplete_period: 'período incompleto',
@@ -22,7 +22,7 @@ const reasons = {
   capacity_changed_within_week: 'capacidade alterada durante a semana',
   different_capacity: 'capacidade diferente do grupo recente',
 };
-export function renderSustainability(model, { historical = false }: any = {}) {
+export function renderSustainability(model: Record<string, any>, { historical = false }: any = {}) {
   if (
     !model?.assessment ||
     !model.capacity ||
@@ -33,5 +33,5 @@ export function renderSustainability(model, { historical = false }: any = {}) {
     return '';
   const capacity = model.capacity,
     range = capacity.observedRange;
-  return `<section class="planning-sustainability" aria-label="Sustentabilidade do plano"><header class="module-heading module-heading--compact"><h4 class="module-heading__title">Sustentabilidade do plano</h4><p class="module-heading__description">Últimas ${model.historyWeeks} semanas encerradas · ${model.evidence.comparableWeeks} comparáveis${model.insights.preliminary ? ' · leitura preliminar' : ''}${historical ? ' · interpretação registrada' : ''}</p></header><p class="context-note"><strong>${escape(model.assessment.label)}</strong></p><p>${escape(model.insights.message)}</p>${model.evidence.comparableWeeks ? `<dl class="sustainability-metrics"><div><dt>Capacidade histórica média</dt><dd>${minutes(capacity.averageAvailableMinutes)}</dd></div><div><dt>Carga planejada média</dt><dd>${minutes(capacity.averagePlannedMinutes)}</dd></div><div><dt>Execução média</dt><dd>${minutes(capacity.averageExecutedMinutes)}</dd></div><div><dt>Prioridades executadas</dt><dd>${Math.round(model.execution.priorityAdherence)}%</dd></div></dl>` : ''}${range ? `<p>Faixa recente observada: <strong>${minutes(range.lowMinutes)}–${minutes(range.highMinutes)}</strong> por semana.</p>` : ''}<p class="analytics-note">${escape(model.insights.caveat)}</p>${renderDisclosure({ title: 'Como interpretamos estas semanas?', className: 'sustainability-method', bodyClassName: 'sustainability-method__body', contentHTML: `${renderContextualHelp('sustainability-guide', 'Entenda sustentabilidade')}<p>Aderência temporal: ${model.execution.timeAdherence == null ? '—' : Math.round(model.execution.timeAdherence) + '%'}. Crédito ponderado pelos minutos planejados; horas adicionais não substituem prioridades.</p><p>São necessárias quatro semanas comparáveis e pelo menos três com o mesmo desvio para recomendar uma revisão estrutural. A faixa usa os 50% centrais da execução, arredondados para fora em passos de 30 minutos.</p>${model.insights.excludedWeeks.length ? `<ul class="sustainability-exclusions">${model.insights.excludedWeeks.map(week => `<li>${escape(formatPeriodBR(week.period.start, week.period.end))}: ${week.reasonCodes.map(code => escape(reasons[code] || 'evidência incompatível')).join('; ')}.</li>`).join('')}</ul>` : '<p>Todas as semanas desta janela foram comparáveis.</p>'}` })}${historical ? '' : model.assessment.action === 'review_capacity' ? '<button type="button" class="btn ghost small" data-delegated-click="reviewPlanningCapacity()">Revisar capacidade</button>' : model.assessment.action === 'review_distribution' ? '<button type="button" class="btn ghost small" data-delegated-click="openWeeklyAdherencePlanning()">Revisar distribuição do plano</button>' : ''}</section>`;
+  return `<section class="planning-sustainability" aria-label="Sustentabilidade do plano"><header class="module-heading module-heading--compact"><h4 class="module-heading__title">Sustentabilidade do plano</h4><p class="module-heading__description">Últimas ${model.historyWeeks} semanas encerradas · ${model.evidence.comparableWeeks} comparáveis${model.insights.preliminary ? ' · leitura preliminar' : ''}${historical ? ' · interpretação registrada' : ''}</p></header><p class="context-note"><strong>${escape(model.assessment.label)}</strong></p><p>${escape(model.insights.message)}</p>${model.evidence.comparableWeeks ? `<dl class="sustainability-metrics"><div><dt>Capacidade histórica média</dt><dd>${minutes(capacity.averageAvailableMinutes)}</dd></div><div><dt>Carga planejada média</dt><dd>${minutes(capacity.averagePlannedMinutes)}</dd></div><div><dt>Execução média</dt><dd>${minutes(capacity.averageExecutedMinutes)}</dd></div><div><dt>Prioridades executadas</dt><dd>${Math.round(model.execution.priorityAdherence)}%</dd></div></dl>` : ''}${range ? `<p>Faixa recente observada: <strong>${minutes(range.lowMinutes)}–${minutes(range.highMinutes)}</strong> por semana.</p>` : ''}<p class="analytics-note">${escape(model.insights.caveat)}</p>${renderDisclosure({ title: 'Como interpretamos estas semanas?', className: 'sustainability-method', bodyClassName: 'sustainability-method__body', contentHTML: `${renderContextualHelp('sustainability-guide', 'Entenda sustentabilidade')}<p>Aderência temporal: ${model.execution.timeAdherence == null ? '—' : Math.round(model.execution.timeAdherence) + '%'}. Crédito ponderado pelos minutos planejados; horas adicionais não substituem prioridades.</p><p>São necessárias quatro semanas comparáveis e pelo menos três com o mesmo desvio para recomendar uma revisão estrutural. A faixa usa os 50% centrais da execução, arredondados para fora em passos de 30 minutos.</p>${model.insights.excludedWeeks.length ? `<ul class="sustainability-exclusions">${model.insights.excludedWeeks.map((week: any) => `<li>${escape(formatPeriodBR(week.period.start, week.period.end))}: ${week.reasonCodes.map((code: any) => escape(reasons[code] || 'evidência incompatível')).join('; ')}.</li>`).join('')}</ul>` : '<p>Todas as semanas desta janela foram comparáveis.</p>'}` })}${historical ? '' : model.assessment.action === 'review_capacity' ? '<button type="button" class="btn ghost small" data-delegated-click="reviewPlanningCapacity()">Revisar capacidade</button>' : model.assessment.action === 'review_distribution' ? '<button type="button" class="btn ghost small" data-delegated-click="openWeeklyAdherencePlanning()">Revisar distribuição do plano</button>' : ''}</section>`;
 }

@@ -1,14 +1,17 @@
 import { renderDiagnosticSummary } from './diagnostic-summary-renderer.js';
 
-export function renderConsolidatedDiagnosis(model, { studyActionForItem, escapeHtml, escapeAttr }) {
+export function renderConsolidatedDiagnosis(
+  model: Record<string, any>,
+  { studyActionForItem, escapeHtml, escapeAttr }: any
+) {
   const rows = [...(model.topics || []), ...(model.subjects || [])].filter(
     item => item.primarySignal
   );
   if (!rows.length)
     return '<div class="empty-state empty-state--compact diagnosis-empty-state" role="status"><strong>Nenhum diagnóstico principal disponível</strong><p>Registre sessões, questões e revisões para reunir evidências no concurso ativo. A ausência de alerta não confirma consolidação.</p></div>';
-  const renderRow = (item, index) => {
+  const renderRow = (item: Record<string, any>, index: number) => {
     const primary = item.signals.find(
-      signal => signal.kind === item.primarySignal && signal.active
+      (signal: any) => signal.kind === item.primarySignal && signal.active
     );
     const action = studyActionForItem(item);
     return `<article class="diagnostic-row consolidated-diagnosis-row" tabindex="-1" data-diagnosis-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-diagnosis-topic-id="${escapeAttr(item.topicId)}"` : ''} data-consolidated-state="${escapeAttr(item.state)}" data-consolidated-signal="${escapeAttr(item.primarySignal)}" data-consolidated-evidence-quality="${escapeAttr(item.evidenceQuality)}" ${action ? `data-study-action-source="${escapeAttr(action.source)}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${escapeAttr(action.activityType)}"` : ''}>

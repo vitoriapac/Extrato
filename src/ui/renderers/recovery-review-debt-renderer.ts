@@ -2,13 +2,13 @@ import { formatDateBR } from '../../core/format-date.js';
 import { pluralize } from '../../core/utils.js';
 import { diagnosticLabel } from '../../domain/diagnostics/diagnostic-vocabulary.js';
 
-export function renderRecoveryReviewDebt({ recoveries = [], debt }, { escapeHtml }) {
+export function renderRecoveryReviewDebt({ recoveries = [], debt }: any, { escapeHtml }: any) {
   const recovery = recoveries.length
     ? `<section class="diagnosis-positive"><h4>Recuperação consistente</h4><p class="analytics-note">Melhoras observadas em quatro semanas completas, com pelo menos 15 questões por semana. A dificuldade das questões pode variar.</p><ul>${recoveries
         .slice(0, 5)
         .map(
-          item =>
-            `<li><strong>${escapeHtml(item.name)}</strong><span>${item.weeks.map(week => `${week.accuracy}%`).join(' → ')} · ${item.questionCount} questões · evidência ${diagnosticLabel('evidence', 'high').toLowerCase()}</span></li>`
+          (item: any) =>
+            `<li><strong>${escapeHtml(item.name)}</strong><span>${item.weeks.map((week: any) => `${week.accuracy}%`).join(' → ')} · ${item.questionCount} questões · evidência ${diagnosticLabel('evidence', 'high').toLowerCase()}</span></li>`
         )
         .join(
           ''
@@ -17,7 +17,7 @@ export function renderRecoveryReviewDebt({ recoveries = [], debt }, { escapeHtml
   const debtRows = debt.rows
     .slice(0, 5)
     .map(
-      item =>
+      (item: any) =>
         `<li><strong>${escapeHtml(item.topicName)}</strong><span>${escapeHtml(formatDateBR(item.date))}${item.highPriority ? ' · alta prioridade existente' : ''}${item.consolidationRisk ? ' · consolidação em risco' : ''}</span></li>`
     )
     .join('');

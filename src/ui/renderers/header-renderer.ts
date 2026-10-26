@@ -1,4 +1,4 @@
-export function renderHeroHeader(model, { document }) {
+export function renderHeroHeader(model: Record<string, any>, { document }: any) {
   const readiness = model.readiness,
     stats = model.stats;
   document.getElementById('balanceFigure').innerHTML = `${readiness.value ?? '—'}<span>/100</span>`;
@@ -14,7 +14,7 @@ export function renderHeroHeader(model, { document }) {
   document.getElementById('statStreak').textContent =
     `${model.streak.days} ${model.streak.days === 1 ? 'dia' : 'dias'}`;
 }
-export function renderCompactHeader(model, { document, formatDate }) {
+export function renderCompactHeader(model: Record<string, any>, { document, formatDate }: any) {
   document.getElementById('compactReadiness').textContent =
     model.readiness.value == null ? '—' : model.readiness.value + '/100';
   const exam = document.getElementById('compactExamDate');

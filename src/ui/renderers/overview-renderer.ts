@@ -4,19 +4,19 @@ export function renderIntelligentAlerts({
   currentAction = null,
   escapeHtml,
   escapeAttr,
-}) {
+}: any) {
   if (!alerts.length)
     return {
       list: '<div class="upcoming-empty">Nenhum alerta no momento — tudo sob controle. 🎉</div>',
       overview: '<p class="overview-alert-empty">Sem alertas prioritários neste momento.</p>',
     };
-  const renderAlert = alert =>
+  const renderAlert = (alert: Record<string, any>) =>
     `<div class="alerta-item alerta-${escapeAttr(alert.nivel)}"><span class="alerta-icon">${escapeHtml(alert.icon || '')}</span><span><strong>${escapeHtml(alert.reason || alert.texto)}</strong> <small>${escapeHtml(alert.recommendedAction || '')}</small></span>${alert.severity !== 'ok' ? `<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(alert.id)}')">Dispensar 7 dias</button>` : ''}</div>`;
   const list = [...alerts, ...additional].map(renderAlert).join('');
   const overview = `<div class="overview-alert-list">${alerts
     .slice(0, 2)
     .map(
-      alert =>
+      (alert: any) =>
         `<article class="overview-alert alerta-${escapeAttr(alert.severity)}">${alert.topicId && alert.topicId === currentAction?.topicId && alert.subjectId === currentAction?.subjectId ? '<span class="overview-alert-related">Relacionado à recomendação atual</span>' : ''}<strong>${escapeHtml(alert.reason || alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction || '')}</small></article>`
     )
     .join(
@@ -25,10 +25,10 @@ export function renderIntelligentAlerts({
   return { list, overview };
 }
 
-export function renderExecutiveSummary({ summary, formatMinutes, escapeHtml }) {
+export function renderExecutiveSummary({ summary, formatMinutes, escapeHtml }: any) {
   const cards = summary.cards
     .map(
-      card =>
+      (card: any) =>
         `<div class="executive-kpi"><strong>${escapeHtml(card.value)}</strong><span>${escapeHtml(card.label)}</span><small>${escapeHtml(card.detail)}</small></div>`
     )
     .join('');
@@ -39,7 +39,7 @@ export function renderExecutiveSummary({ summary, formatMinutes, escapeHtml }) {
 }
 
 export function renderWeeklyCloseSummary(
-  weekly,
+  weekly: Record<string, any>,
   { escapeHtml, period = null, formatDate = String }: any = {}
 ) {
   if (!weekly || weekly.state === 'insufficient')

@@ -1,11 +1,11 @@
 import { renderChartFrame } from '../chart-components.js';
-const escape = value =>
+const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
   );
 
-export function renderIncidenceQuadrants(rows = []) {
+export function renderIncidenceQuadrants(rows: any[] = []) {
   const groups = [
     { key: 'reinforce', label: 'Alta incidência · desenvolver domínio' },
     { key: 'maintain', label: 'Alta incidência · manter domínio' },

@@ -10,14 +10,14 @@ export function renderExamBlueprintConfigView({
   EXAM_SOURCES,
   globalAccuracyTarget = 80,
   document = globalThis.document,
-}) {
+}: any) {
   const generalWasOpen = container.querySelector('.exam-general-config')?.open || false;
   const rows = subjects
-    .map(subject => {
-      const config = blueprint.subjects.find(item => item.subjectId === subject.id);
-      const priorityLabel = { high: 'Alta', low: 'Baixa', normal: 'Normal' }[
-        config?.priority || 'normal'
-      ];
+    .map((subject: any) => {
+      const config = blueprint.subjects.find((item: any) => item.subjectId === subject.id);
+      const priorityLabel = (
+        { high: 'Alta', low: 'Baixa', normal: 'Normal' } as Record<string, any>
+      )[config?.priority || 'normal'];
       const masteryLabel =
         config?.masteryTarget == null
           ? `Herdar ${blueprint.masteryTarget}% (geral)`
@@ -52,7 +52,7 @@ export function renderExamBlueprintConfigView({
   main.before(general);
   general.append(main, container.querySelector('.active-exams'));
   general.open = generalWasOpen;
-  container.querySelectorAll('.exam-subject-config').forEach((details, index) => {
+  container.querySelectorAll('.exam-subject-config').forEach((details: any, index: any) => {
     const subject = subjects[index];
     if (!subject) return;
     details.dataset.subjectId = subject.id;
@@ -65,9 +65,11 @@ export function renderExamBlueprintConfigView({
       }
     );
     const levels = [
-      ...new Set((subject.topics || []).map(topic => topic.incidence?.level).filter(Boolean)),
+      ...new Set(
+        (subject.topics || []).map((topic: any) => topic.incidence?.level).filter(Boolean)
+      ),
     ];
-    const tags = [...new Set((subject.topics || []).flatMap(topic => topic.examTags || []))];
+    const tags = [...new Set((subject.topics || []).flatMap((topic: any) => topic.examTags || []))];
     const summary = document.createElement('span');
     summary.className = 'exam-subject-scope';
     summary.textContent = `Incidência: ${levels.length === 1 ? levels[0] : levels.length ? 'Variável' : 'Não informada'} · Concursos: ${tags.length ? tags.map(tag => (tag === EXAM_TAGS.BB ? 'BB' : tag === EXAM_TAGS.CAIXA ? 'Caixa' : tag === EXAM_TAGS.CAIXA_TI ? 'Caixa TI' : tag)).join(', ') : 'não informados'}`;

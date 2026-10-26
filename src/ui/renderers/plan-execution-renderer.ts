@@ -2,11 +2,12 @@ import { renderStrategicExecution } from './strategic-execution-renderer.js';
 import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
 import { renderEmptyState } from '../components/presentation.js';
 import { renderActionCard } from '../components/analytical-presentation.js';
-const fmt = value => `${Math.floor(value / 60)}h${String(value % 60).padStart(2, '0')}`;
+const fmt = (value: number) => `${Math.floor(value / 60)}h${String(value % 60).padStart(2, '0')}`;
 
-export function renderPlanExecution(model, { formatDate }) {
+export function renderPlanExecution(model: Record<string, any>, { formatDate }: any) {
   const scale = Math.max(60, model.capacityMinutes, model.plannedMinutes, model.studiedMinutes);
-  const ratio = (value, total) => (total > 0 ? `${Math.round((value / total) * 100)}%` : '—');
+  const ratio = (value: number, total: number) =>
+    total > 0 ? `${Math.round((value / total) * 100)}%` : '—';
   const summary = `<div class="plan-execution-summary ui-metric-group"><div><span>Capacidade semanal</span><strong>${fmt(model.capacityMinutes)}</strong><small>Tempo disponível</small><span class="plan-execution-track" aria-hidden="true"><i style="width:${(model.capacityMinutes / scale) * 100}%"></i></span></div><div><span>Planejado nos dias</span><strong>${fmt(model.plannedMinutes)}</strong><small>${ratio(model.plannedMinutes, model.capacityMinutes)} da capacidade</small><span class="plan-execution-track is-planned" aria-hidden="true"><i style="width:${(model.plannedMinutes / scale) * 100}%"></i></span></div><div><span>Estudado até hoje</span><strong>${fmt(model.studiedMinutes)}</strong><small>${ratio(model.studiedMinutes, model.plannedMinutes)} do plano</small><span class="plan-execution-track is-studied" aria-hidden="true"><i style="width:${(model.studiedMinutes / scale) * 100}%"></i></span></div></div>`;
   const warning =
     model.plannedMinutes > model.capacityMinutes
@@ -27,28 +28,31 @@ export function renderPlanExecution(model, { formatDate }) {
       : '';
   const days = model.days
     .map(
-      item =>
+      (item: any) =>
         `<li><span>${formatDate(item.date).slice(0, 5)}${item.future ? ' · futuro' : ''}</span><div class="plan-execution-pair"><span class="plan-execution-track is-planned" aria-hidden="true"><i style="width:${item.plannedMinutes === null ? 0 : Math.min(100, (item.plannedMinutes / Math.max(item.plannedMinutes, item.studiedMinutes, 1)) * 100)}%"></i></span><span class="plan-execution-track is-studied" aria-hidden="true"><i style="width:${Math.min(100, (item.studiedMinutes / Math.max(item.plannedMinutes || 0, item.studiedMinutes, 1)) * 100)}%"></i></span></div><strong>${item.plannedMinutes === null ? 'Sem plano' : fmt(item.plannedMinutes)} / ${fmt(item.studiedMinutes)}</strong></li>`
     )
     .join('');
-  const measured = model.history.filter(item => item.adherence !== null);
+  const measured = model.history.filter((item: any) => item.adherence !== null);
   let trend = '';
   if (measured.length >= 2) {
     const width = 480,
       height = 136,
-      max = Math.max(100, Math.ceil(Math.max(...measured.map(item => item.adherence)) / 50) * 50);
-    const x = index => 25 + (index / (measured.length - 1)) * 440,
-      y = value => 104 - (value / max) * 86;
+      max = Math.max(
+        100,
+        Math.ceil(Math.max(...measured.map((item: any) => item.adherence)) / 50) * 50
+      );
+    const x = (index: number) => 25 + (index / (measured.length - 1)) * 440,
+      y = (value: number) => 104 - (value / max) * 86;
     const segments = measured
       .slice(1)
       .map(
-        (item, index) =>
+        (item: any, index: any) =>
           `<line x1="${x(index)}" y1="${y(measured[index].adherence)}" x2="${x(index + 1)}" y2="${y(item.adherence)}"/>`
       )
       .join('');
     const points = measured
       .map(
-        (item, index) =>
+        (item: any, index: any) =>
           `<circle cx="${x(index)}" cy="${y(item.adherence)}" r="4">${renderChartTooltip(formatDate(item.start) + ' a ' + formatDate(item.end) + ': ' + item.adherence + '% de cumprimento')}</circle>`
       )
       .join('');
@@ -56,7 +60,7 @@ export function renderPlanExecution(model, { formatDate }) {
   }
   const weeks = model.history
     .map(
-      item =>
+      (item: any) =>
         `<li><span>${formatDate(item.start).slice(0, 5)} a ${formatDate(item.end).slice(0, 5)}</span><strong>${item.adherence === null ? 'Sem plano' : item.adherence + '%'}</strong><small>${fmt(item.studiedMinutes)} estudados${item.strategic ? ' · aderência estratégica ' + (item.strategic.strategicAdherence === null ? 'sem base' : item.strategic.strategicAdherence + '%') : ''} · ${item.plannedMinutes ? fmt(item.plannedMinutes) + ' planejados' : 'nenhum plano registrado'}</small></li>`
     )
     .join('');

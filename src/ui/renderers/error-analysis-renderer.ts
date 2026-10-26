@@ -1,14 +1,14 @@
 import { formatDecimal } from '../../core/format-number.js';
 export function renderErrorAnalysis(
-  model,
-  { toolbar = '', escapeHtml = value => String(value) }: any = {}
+  model: Record<string, any>,
+  { toolbar = '', escapeHtml = (value: unknown) => String(value) }: any = {}
 ) {
   if (model.state === 'empty')
     return toolbar + '<div class="empty-state"><p>' + escapeHtml(model.message) + '</p></div>';
   const items = model.items
-    .filter(item => item.value > 0)
-    .sort((a, b) => b.value - a.value)
-    .map(item => {
+    .filter((item: any) => item.value > 0)
+    .sort((a: any, b: any) => b.value - a.value)
+    .map((item: any) => {
       const share = Math.round((item.value / model.totalErrors) * 100);
       return (
         '<li class="error-profile-item"><span class="error-profile-label">' +

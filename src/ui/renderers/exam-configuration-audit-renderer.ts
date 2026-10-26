@@ -1,9 +1,9 @@
-const escape = value =>
+const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
   );
-const labels = {
+const labels: Record<string, any> = {
   divergent: 'Divergente',
   review: 'Revisar',
   aligned: 'Alinhado',
@@ -11,13 +11,13 @@ const labels = {
   unconfigured: 'Sem configuração',
 };
 
-export function renderExamConfigurationAudit(model) {
+export function renderExamConfigurationAudit(model: Record<string, any>) {
   const candidates = model.rows.filter(
-    row => row.status === 'divergent' || row.status === 'review'
+    (row: any) => row.status === 'divergent' || row.status === 'review'
   );
   const items = candidates
     .map(
-      row =>
+      (row: any) =>
         `<li><button class="btn ghost small" type="button" data-audit-topic="${escape(row.topicId)}">${escape(row.subjectName)} — ${escape(row.name)}</button><span>${escape(labels[row.status])} · diferença ${row.divergence} pontos · ${escape(row.confidenceLabel.toLowerCase())}</span><small>Configurado ${Math.round(row.configuredImpact)} · Histórico ${Math.round(row.historicalEstimate)} · Usado ${Math.round(row.validatedImpact)} (${escape(row.configuredSourceLabel)})</small></li>`
     )
     .join('');

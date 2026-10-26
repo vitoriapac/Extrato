@@ -15,16 +15,16 @@ export function renderHeatmap({
   escapeHtml,
   escapeAttr,
   pluralize,
-}) {
+}: any) {
   const cellsHtml = cells
-    .map(summary => {
+    .map((summary: any) => {
       const tooltip = tooltipForSummary(summary);
       return `<button type="button" class="heatmap-cell ${summary.level > 0 ? 'heat-' + summary.level : ''} ${summary.selected ? 'selected' : ''}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" data-delegated-click="selectHeatmapDay('${summary.date}')"></button>`;
     })
     .join('');
   const subjectOptions = subjects
     .map(
-      subject =>
+      (subject: any) =>
         `<option value="${escapeAttr(subject.id)}" ${subjectId === subject.id ? 'selected' : ''}>${escapeHtml(subject.name)}</option>`
     )
     .join('');

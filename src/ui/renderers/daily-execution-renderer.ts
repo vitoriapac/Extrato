@@ -1,14 +1,14 @@
-const TYPE_LABELS = {
+const TYPE_LABELS: Record<string, any> = {
   study: 'Teoria',
   review: 'Revisão',
   questions: 'Questões',
   simulation: 'Simulado',
 };
-const typeLabel = type => TYPE_LABELS[type] || 'Estudo';
+const typeLabel = (type: string) => TYPE_LABELS[type] || 'Estudo';
 
 // The pending plan item is the overview's single primary action; a different recommendation becomes one suggestion line.
 export function renderPlannedAction(
-  priority,
+  priority: Record<string, any>,
   {
     suggestion = null,
     escapeHtml,
@@ -46,16 +46,19 @@ export function renderPlannedAction(
   return `<article class="card card--action overview-action-card${own ? ' is-in-progress' : ''}" data-decision-role="planned" data-plan-item-id="${escapeAttr(next.id)}"${suggestion?.actionId ? ` data-recommendation-action-id="${escapeAttr(suggestion.actionId)}"` : ''}><div><h3>${escapeHtml(next.subjectName || 'Disciplina')} · ${escapeHtml(next.topicName || 'Sem tópico')}</h3><p class="daily-execution-metadata"><strong>${formatMinutes(Math.ceil(next.remainingSeconds / 60))}</strong> · ${typeLabel(next.type)} · prevista no plano de hoje</p>${resumeLabel ? `<p class="overview-action-resume">Continuar de: ${escapeHtml(resumeLabel)}</p>` : ''}${own ? '<span class="active-study-status">Em andamento</span>' : ''}</div><div class="overview-action-buttons">${button}</div>${note}${reasons.length ? `<details class="daily-execution-reasons"><summary>Por que estudar isso agora?</summary><ul>${reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul></details>` : ''}</article>`;
 }
 
-export function renderDailyExecution(model, { escapeHtml, formatMinutes }: any = {}) {
+export function renderDailyExecution(
+  model: Record<string, any>,
+  { escapeHtml, formatMinutes }: any = {}
+) {
   if (!model || model.state === 'invalid_date') return '';
   const { progress, priority } = model,
     next = priority.nextItem;
-  const description = item =>
+  const description = (item: Record<string, any>) =>
     `${escapeHtml(item.topicName || 'Sem tópico')} · ${typeLabel(item.type)} · ${formatMinutes(Math.ceil(item.remainingSeconds / 60))}`;
-  const rows = items =>
+  const rows = (items: any[]) =>
     items
       .map(
-        item =>
+        (item: any) =>
           `<li><strong>${escapeHtml(item.subjectName || 'Disciplina')}</strong> · ${description(item)}</li>`
       )
       .join('');

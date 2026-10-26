@@ -1,12 +1,13 @@
 import { examsInScope } from '../../domain/exam-intelligence/exam-evidence.js';
 import { isTopicInExamScope } from '../../domain/exams/exam-scope.js';
 
-const escape = value =>
+const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
   );
-const confidenceLabel = value => (value < 0.5 ? 'Baixa' : value < 0.75 ? 'Moderada' : 'Alta');
+const confidenceLabel = (value: number) =>
+  value < 0.5 ? 'Baixa' : value < 0.75 ? 'Moderada' : 'Alta';
 
 export function renderExamClassificationReview({
   exams = [],
@@ -19,10 +20,10 @@ export function renderExamClassificationReview({
   const scoped = examsInScope(exams, activeExamTags),
     examById = new Map(scoped.map(exam => [exam.id, exam]));
   const classified = examQuestions
-    .filter(question => examById.has(question.examId))
-    .map(question => ({ ...question, pending: false }));
+    .filter((question: any) => examById.has(question.examId))
+    .map((question: any) => ({ ...question, pending: false }));
   const pending = scoped.flatMap(exam =>
-    (exam.unresolvedQuestions || []).map(row => ({
+    (exam.unresolvedQuestions || []).map((row: any) => ({
       ...row,
       examId: exam.id,
       questionNumber: row.number,
@@ -48,11 +49,11 @@ export function renderExamClassificationReview({
         a.questionNumber - b.questionNumber
     );
   const topicOptions = subjects
-    .filter(subject => !subject.archived)
-    .flatMap(subject =>
+    .filter((subject: any) => !subject.archived)
+    .flatMap((subject: any) =>
       (subject.topics || [])
-        .filter(topic => !topic.archived)
-        .map(topic => ({ id: topic.id, label: `${subject.name} → ${topic.name}` }))
+        .filter((topic: any) => !topic.archived)
+        .map((topic: any) => ({ id: topic.id, label: `${subject.name} → ${topic.name}` }))
     );
   const pageCount = Math.max(1, Math.ceil(rows.length / 100)),
     currentPage = Math.max(0, Math.min(pageCount - 1, page));
@@ -60,18 +61,18 @@ export function renderExamClassificationReview({
     .slice(currentPage * 100, (currentPage + 1) * 100)
     .map(row => {
       const exam = examById.get(row.examId),
-        current = topicOptions.find(topic => topic.id === row.topicId);
+        current = topicOptions.find((topic: any) => topic.id === row.topicId);
       const eligible = new Set(
-        subjects.flatMap(subject =>
+        subjects.flatMap((subject: any) =>
           (subject.topics || [])
-            .filter(topic => isTopicInExamScope(topic, exam.examTags || []))
-            .map(topic => topic.id)
+            .filter((topic: any) => isTopicInExamScope(topic, exam.examTags || []))
+            .map((topic: any) => topic.id)
         )
       );
       const options = topicOptions
-        .filter(topic => eligible.has(topic.id))
+        .filter((topic: any) => eligible.has(topic.id))
         .map(
-          topic =>
+          (topic: any) =>
             `<option value="${escape(topic.id)}"${topic.id === row.topicId ? ' selected' : ''}>${escape(topic.label)}</option>`
         )
         .join('');

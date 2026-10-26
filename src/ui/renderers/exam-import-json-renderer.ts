@@ -1,10 +1,14 @@
-const escape = value =>
+const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
   );
 
-export function renderExamJsonPreview(parsed, preview, subjects = []) {
+export function renderExamJsonPreview(
+  parsed: Record<string, any>,
+  preview: Record<string, any>,
+  subjects: any[] = []
+) {
   const subjectOptions = subjects
     .filter(item => !item.archived)
     .map(item => `<option value="${escape(item.id)}">${escape(item.name)}</option>`)
@@ -13,17 +17,17 @@ export function renderExamJsonPreview(parsed, preview, subjects = []) {
     .filter(item => !item.archived)
     .flatMap(subject =>
       (subject.topics || [])
-        .filter(topic => !topic.archived)
+        .filter((topic: any) => !topic.archived)
         .map(
-          topic =>
+          (topic: any) =>
             `<option value="${escape(subject.id)}|${escape(topic.id)}">${escape(subject.name)} — ${escape(topic.name)}</option>`
         )
     )
     .join('');
   const conflicts = preview.rows
-    .filter(row => row.status !== 'mapped')
+    .filter((row: any) => row.status !== 'mapped')
     .map(
-      row =>
+      (row: any) =>
         `<div class="exam-json-conflict" data-exam-row="${row.number}"><strong>Questão ${row.number}: ${escape(row.subject)} → ${escape(row.topic)}</strong><p>${row.status === 'subject-unresolved' ? 'Disciplina não encontrada.' : 'Tópico não encontrado.'} Escolha uma ação.</p><label>Ação<select data-exam-decision="${row.number}"><option value="">Revisar</option><option value="associate">Associar a tópico existente</option><option value="create">Criar tópico explicitamente</option><option value="ignore">Ignorar questão</option></select></label><label>Tópico existente<select data-exam-associate="${row.number}"><option value="">Selecione</option>${topicOptions}</select></label><label>Disciplina para criar tópico<select data-exam-create="${row.number}"><option value="">Selecione</option>${subjectOptions}</select></label></div>`
     )
     .join('');

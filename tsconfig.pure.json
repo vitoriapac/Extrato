@@ -12,26 +12,6 @@
     "src/repositories/**/*",
     "src/domain/**/*",
     "src/application/**/*",
-    "src/ui/*.ts",
-    "src/ui/*.tsx",
-    "src/ui/tabs/**/*",
-    "src/ui/view-models/**/*",
-    "src/ui/components/**/*",
-    "src/ui/subjects/**/*",
-    "src/ui/calendar/**/*",
-    "src/ui/help/**/*",
-    "src/ui/controllers/**/*",
-    "src/ui/renderers/achievement-renderer.ts",
-    "src/ui/renderers/global-search-renderer.ts",
-    "src/ui/performance/**/*",
-    "src/ui/renderers/adherence-change-renderer.ts",
-    "src/ui/renderers/adherence-renderer.ts",
-    "src/ui/renderers/adherence-target-renderer.ts",
-    "src/ui/renderers/execution-breakdown-renderer.ts",
-    "src/ui/renderers/projection-calibration-renderer.ts",
-    "src/ui/renderers/question-evolution-renderer.ts",
-    "src/ui/renderers/readiness-history-renderer.ts",
-    "src/ui/renderers/simulation-comparison-renderer.ts",
-    "src/ui/renderers/simulations-renderer.ts"
+    "src/ui/**/*"
   ]
 }

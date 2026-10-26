@@ -1,13 +1,17 @@
 import { NEXT_BEST_ACTION_STATES } from '../../application/diagnostics/build-next-best-action.js';
 
-const minutes = value => (value == null ? 'Não estimado' : `${Math.round(value)} min`);
-export function renderNextBestAction(model, { escapeHtml, escapeAttr, dailyPriority = null }) {
+const minutes = (value: number | null | undefined) =>
+  value == null ? 'Não estimado' : `${Math.round(value)} min`;
+export function renderNextBestAction(
+  model: Record<string, any>,
+  { escapeHtml, escapeAttr, dailyPriority = null }: any
+) {
   const actionable = [
     NEXT_BEST_ACTION_STATES.ACTION_REQUIRED,
     NEXT_BEST_ACTION_STATES.ACTION_OPTIONAL,
   ].includes(model.state);
   if (!actionable)
-    return `<section class="next-best-action" aria-label="Próxima melhor ação" data-action-state="${escapeAttr(model.state)}"><span class="diagnostic-kicker">PRÓXIMA MELHOR AÇÃO</span><h4>${escapeHtml({ MAINTAIN_PLAN: 'Manter o plano', INSUFFICIENT_EVIDENCE: 'Reunir evidências', NO_ELIGIBLE_ACTION: 'Nenhuma ação elegível agora' }[model.state] || 'Próxima ação indisponível')}</h4><p>${escapeHtml(model.reason)}</p></section>`;
+    return `<section class="next-best-action" aria-label="Próxima melhor ação" data-action-state="${escapeAttr(model.state)}"><span class="diagnostic-kicker">PRÓXIMA MELHOR AÇÃO</span><h4>${escapeHtml(({ MAINTAIN_PLAN: 'Manter o plano', INSUFFICIENT_EVIDENCE: 'Reunir evidências', NO_ELIGIBLE_ACTION: 'Nenhuma ação elegível agora' } as Record<string, any>)[model.state] || 'Próxima ação indisponível')}</h4><p>${escapeHtml(model.reason)}</p></section>`;
   const action = model.action;
   const outside = Boolean(dailyPriority?.unplannedAction && dailyPriority.action?.id === action.id);
   const planned = dailyPriority?.nextItem;
@@ -22,9 +26,9 @@ export function renderNextBestAction(model, { escapeHtml, escapeAttr, dailyPrior
 }
 
 export function renderPlanRecommendationChoice(
-  action,
-  priority,
-  { escapeHtml, escapeAttr, withExtras = true }
+  action: Record<string, any>,
+  priority: Record<string, any>,
+  { escapeHtml, escapeAttr, withExtras = true }: any
 ) {
   if (!priority?.unplannedAction || priority.action?.id !== action.id) return '';
   const item = priority.nextItem;
@@ -44,7 +48,7 @@ export function renderPlanRecommendationChoice(
   );
 }
 // Secondary plan-choice actions, kept separate so the study card can tuck them under "Outras opções".
-export function renderPlanRecommendationExtras(action, { escapeAttr }) {
+export function renderPlanRecommendationExtras(action: Record<string, any>, { escapeAttr }: any) {
   return (
     '<button class="btn ghost small" type="button" data-next-best-preview="' +
     escapeAttr(action.id) +

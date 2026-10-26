@@ -1,6 +1,6 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../progressive-list.js';
-export function renderQuestionAnalyticsSummary({ resolved, accuracy, coverage, trend }) {
+export function renderQuestionAnalyticsSummary({ resolved, accuracy, coverage, trend }: any) {
   return (
     [
       ['Precisão', accuracy === null ? '—' : `${formatDecimal(accuracy)}%`],
@@ -24,7 +24,7 @@ export function renderTopicQuestionPerformance({
   renderFooter,
   visibleLimit,
   escapeHtml,
-}) {
+}: any) {
   const tabs = `<div class="analytics-view-tabs" role="group" aria-label="Filtrar desempenho por dados"><button class="btn small ${mode === 'with-data' ? '' : 'ghost'}" data-delegated-click="setPerformanceViewMode('with-data')">Com dados</button><button class="btn small ${mode === 'insufficient' ? '' : 'ghost'}" data-delegated-click="setPerformanceViewMode('insufficient')">Amostra insuficiente</button><button class="btn small ${mode === 'without-data' ? '' : 'ghost'}" data-delegated-click="setPerformanceViewMode('without-data')">Sem dados</button><button class="btn small ${mode === 'all' ? '' : 'ghost'}" data-delegated-click="setPerformanceViewMode('all')">Todos</button></div>`;
   if (!topics.length)
     return (
@@ -33,7 +33,7 @@ export function renderTopicQuestionPerformance({
     );
   const rows = topics
     .slice(0, visible)
-    .map(topic => {
+    .map((topic: any) => {
       const mastery = masteryForTopic(topic.id),
         width = topic.accuracy === null ? 0 : topic.accuracy;
       return `<div class="performance-row"><div class="performance-name">${escapeHtml(topic.name)}<div class="performance-meta">${topic.resolved} questões · ${topic.confidence.label} · domínio ${mastery.value == null ? 'aguardando dados' : mastery.value + '/100'}</div></div><div class="performance-track"><div class="performance-fill ${topic.classification.key}" style="width:${width}%"></div></div><div class="performance-value">${topic.classification.icon} ${topic.accuracy === null ? '—' : topic.accuracy + '%'}</div></div>`;
@@ -55,10 +55,10 @@ export function renderTopicQuestionPerformance({
   );
 }
 
-export function renderWeeklyQuestionTrend({ weeks, trend, formatDate }) {
-  return `<div class="trend-grid">${weeks.map(week => `<div class="trend-week ${week.insufficientData ? 'insufficient' : ''}"><span>${formatDate(week.start).slice(0, 5)}</span><strong>${week.insufficientData ? '—' : formatDecimal(week.accuracy) + '%'}</strong><small>${week.resolved} questões</small></div>`).join('')}</div><div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta === null ? '' : ` · ${trend.delta > 0 ? '+' : ''}${formatDecimal(trend.delta)} p.p.`}</div>`;
+export function renderWeeklyQuestionTrend({ weeks, trend, formatDate }: any) {
+  return `<div class="trend-grid">${weeks.map((week: any) => `<div class="trend-week ${week.insufficientData ? 'insufficient' : ''}"><span>${formatDate(week.start).slice(0, 5)}</span><strong>${week.insufficientData ? '—' : formatDecimal(week.accuracy) + '%'}</strong><small>${week.resolved} questões</small></div>`).join('')}</div><div class="trend-summary ${trend.key}">${trend.icon} ${trend.label}${trend.delta === null ? '' : ` · ${trend.delta > 0 ? '+' : ''}${formatDecimal(trend.delta)} p.p.`}</div>`;
 }
 
-export function renderQuestionErrorToolbar({ days, topicId, topics, escapeHtml, escapeAttr }) {
-  return `<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7, 30, 60, 90].map(option => `<option value="${option}" ${days === option ? 'selected' : ''}>Últimos ${option} dias</option>`).join('')}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${topics.map(topic => `<option value="${escapeAttr(topic.id)}" ${topicId === topic.id ? 'selected' : ''}>${escapeHtml(topic.name)}</option>`).join('')}</select></div>`;
+export function renderQuestionErrorToolbar({ days, topicId, topics, escapeHtml, escapeAttr }: any) {
+  return `<div class="error-analysis-toolbar"><select aria-label="Período do perfil de erros" data-delegated-change="setErrorAnalysisFilter('days',this.value)">${[7, 30, 60, 90].map(option => `<option value="${option}" ${days === option ? 'selected' : ''}>Últimos ${option} dias</option>`).join('')}</select><select aria-label="Tópico do perfil de erros" data-delegated-change="setErrorAnalysisFilter('topicId',this.value)"><option value="">Todos os tópicos</option>${topics.map((topic: any) => `<option value="${escapeAttr(topic.id)}" ${topicId === topic.id ? 'selected' : ''}>${escapeHtml(topic.name)}</option>`).join('')}</select></div>`;
 }

@@ -2,24 +2,25 @@ import { formatDecimal } from '../../core/format-number.js';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { renderSubjectAccuracy } from './subject-accuracy-renderer.js';
 import { renderRecommendationExplanation } from './recommendation-explanation-renderer.js';
-const safe = (escapeHtml, value) => escapeHtml(String(value ?? ''));
-const focusMinutes = value => {
+const safe = (escapeHtml: (value: any) => string, value: unknown) =>
+  escapeHtml(String(value ?? ''));
+const focusMinutes = (value: unknown) => {
   const minutes = Math.max(0, Math.round(Number(value) || 0));
   return minutes >= 60
     ? `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}min`
     : `${minutes} min`;
 };
-const focusPercent = value => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-function renderFocusTrend(rows) {
+const focusPercent = (value: unknown) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+function renderFocusTrend(rows: any[]) {
   if (rows.length < 2) return '';
-  const points = rows.map((item, index) => ({
+  const points = rows.map((item: any, index: any) => ({
     x: 20 + (index * 280) / (rows.length - 1),
     y: 90 - focusPercent(item.focusPercent) * 0.75,
   }));
-  const line = points.map(point => `${point.x},${point.y}`).join(' ');
-  return `<div class="weekly-focus-trend" aria-hidden="true"><svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid meet" focusable="false"><line class="weekly-focus-trend-grid" x1="20" y1="15" x2="300" y2="15"/><line class="weekly-focus-trend-grid" x1="20" y1="52.5" x2="300" y2="52.5"/><line class="weekly-focus-trend-grid" x1="20" y1="90" x2="300" y2="90"/><polyline class="weekly-focus-trend-line" points="${line}"/>${points.map((point, index) => `<circle class="weekly-focus-trend-point" cx="${point.x}" cy="${point.y}" r="4"/><text x="${point.x}" y="111" text-anchor="middle">S${index + 1}</text>`).join('')}</svg></div>`;
+  const line = points.map((point: any) => `${point.x},${point.y}`).join(' ');
+  return `<div class="weekly-focus-trend" aria-hidden="true"><svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid meet" focusable="false"><line class="weekly-focus-trend-grid" x1="20" y1="15" x2="300" y2="15"/><line class="weekly-focus-trend-grid" x1="20" y1="52.5" x2="300" y2="52.5"/><line class="weekly-focus-trend-grid" x1="20" y1="90" x2="300" y2="90"/><polyline class="weekly-focus-trend-line" points="${line}"/>${points.map((point: any, index: any) => `<circle class="weekly-focus-trend-point" cx="${point.x}" cy="${point.y}" r="4"/><text x="${point.x}" y="111" text-anchor="middle">S${index + 1}</text>`).join('')}</svg></div>`;
 }
-export function renderWeeklyStrategicFocus(model) {
+export function renderWeeklyStrategicFocus(model: Record<string, any>) {
   if (!model || model.state === 'insufficient')
     return '<section class="weekly-strategic-focus is-insufficient" aria-label="Foco estratégico da semana"><h4>Foco estratégico da semana</h4><p>Registre sessões para ver como o tempo foi distribuído entre os tópicos da prova.</p></section>';
   const percent = Math.max(0, Math.min(100, Math.round(Number(model.highImpactPercent) || 0)));
@@ -28,11 +29,11 @@ export function renderWeeklyStrategicFocus(model) {
     : '<p class="weekly-focus-empty">Nenhuma lacuna de alto impacto com domínio baixo foi trabalhada nesta semana.</p>';
   return `<section class="weekly-strategic-focus" aria-label="Foco estratégico da semana"><h4>Foco estratégico da semana</h4><div class="weekly-focus-main"><strong>${percent}%</strong><span>do tempo em tópicos de alto impacto</span></div><div class="weekly-focus-bar" role="progressbar" aria-label="Parcela do tempo em tópicos de alto impacto" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-valuetext="${percent}% do tempo estudado"><span style="width:${percent}%"></span></div><p class="weekly-focus-time"><b>${focusMinutes(model.highImpactMinutes)}</b> em tópicos de alto impacto · ${focusMinutes(model.totalMinutes)} estudadas</p><p class="weekly-focus-time">Lacunas prioritárias: ${focusMinutes(model.priorityMinutes)} · domínio consolidado: ${focusMinutes(model.consolidatedMinutes)} · sem impacto classificado: ${focusMinutes(model.unknownMinutes)}</p>${outcomes}<small>Indicador descritivo, sem meta mínima. As categorias descrevem sinais diferentes e não formam uma partição do tempo. Melhora e estabilidade exigem resultado posterior medido.</small></section>`;
 }
-export function renderStrategicFocusHistory(model) {
+export function renderStrategicFocusHistory(model: Record<string, any>) {
   if (!model?.rows?.length) return '';
   const rows = model.rows
     .map(
-      item =>
+      (item: any) =>
         `<li class="weekly-focus-history-row"><span>${formatPeriodBR(item.start, item.end)}${item.current ? ' · período atual' : ''}</span><div class="weekly-focus-history-bar" aria-hidden="true"><span style="width:${item.focusPercent}%"></span></div><strong>${item.focusPercent}%</strong><small>Foco: ${focusMinutes(item.highImpactMinutes)} de ${focusMinutes(item.studiedMinutes)} · ${item.accuracy == null ? 'acerto sem amostra' : item.accuracy + '% de acerto'}</small><div class="weekly-execution-history-bar" aria-hidden="true"><span style="width:${item.plannedMinutes ? Math.min(100, Math.round((item.executedMinutes / item.plannedMinutes) * 100)) : 0}%"></span></div><small>Execução: ${focusMinutes(item.executedMinutes)} de ${item.plannedMinutes == null ? '—' : focusMinutes(item.plannedMinutes)} planejados</small></li>`
     )
     .join('');
@@ -42,17 +43,23 @@ export function renderStrategicFocusHistory(model) {
   const totals = model.totals;
   return `<section class="weekly-focus-history" aria-label="Histórico do foco estratégico"><h4>Foco estratégico ao longo do tempo</h4><p class="analytics-note">Períodos salvos mantêm os cálculos e o concurso ativo da data do registro. O período atual ainda pode mudar.</p>${renderFocusTrend(model.rows)}<ol>${rows}</ol>${comparison}<p class="weekly-focus-history-results">Nos períodos exibidos: ${totals.workedGaps} lacunas trabalhadas; ${totals.measured} com resultado posterior medido (${totals.improved} melhoraram, ${totals.stable} estáveis, ${totals.declined} pioraram).</p><small>O histórico descreve associação entre foco e resultados; não atribui causalidade nem exige aumento contínuo do percentual.</small></section>`;
 }
-export function renderWeeklyCloseNext(model, { escapeHtml, formatMinutes }) {
+export function renderWeeklyCloseNext(
+  model: Record<string, any>,
+  { escapeHtml, formatMinutes }: any
+) {
   if (model.state === 'insufficient') return '';
   const priorities = (model.priorities || [])
     .map(
-      (item, index) =>
+      (item: any, index: any) =>
         `<li><strong>${index + 1}. ${safe(escapeHtml, item.action)}</strong><span>${safe(escapeHtml, item.reason)} · ${formatMinutes(item.estimatedMinutes)}</span></li>`
     )
     .join('');
   return `<section class="weekly-next" aria-label="Próxima semana"><h4>Próxima semana</h4>${model.decisionCycle ? '' : `<p class="weekly-action"><b>Próxima ação</b>${safe(escapeHtml, model.recommendedAction)}</p>`}${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ''}</section>`;
 }
-export function renderWeeklyClose(model, { escapeHtml, formatMinutes, includeNext = true }) {
+export function renderWeeklyClose(
+  model: Record<string, any>,
+  { escapeHtml, formatMinutes, includeNext = true }: any
+) {
   if (model.state === 'insufficient')
     return '<div class="upcoming-empty ui-state--empty">Ainda não há evidência suficiente para fechar a semana.</div>';
   const summary = model.adherence?.model?.summary,
@@ -61,15 +68,22 @@ export function renderWeeklyClose(model, { escapeHtml, formatMinutes, includeNex
     decisions = model.recommendations || {};
   return `<section class="weekly-kpis" aria-label="Resultado da semana"><div><strong>${(summary?.plannedMinutes ?? model.investment?.plannedMinutes) == null ? '—' : formatMinutes(summary?.plannedMinutes ?? model.investment.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(summary?.executedMinutes ?? model.investment?.executedMinutes ?? 0)}</strong><span>Realizado</span></div><div><strong>${adherence == null ? '—' : formatDecimal(adherence) + '%'}</strong><span>${summary ? 'Crédito ao plano' : 'Volume de carga'}</span></div></section><section class="weekly-assessment" aria-label="Auditoria da semana"><small>Questões</small><p><b>Resolvidas e precisão</b>${model.questions?.resolved ?? 0} questões · ${model.questions?.accuracy == null ? 'sem precisão medida' : model.questions.accuracy + '% de acerto'}</p><p><b>Comparação anterior</b>${delta == null ? 'Sem semana comparável' : `${delta >= 0 ? '+' : ''}${delta} p.p. de precisão`}</p><p><b>Decisões</b>${decisions.accepted ?? 0} aceitas · ${decisions.declined ?? 0} recusadas · ${decisions.completed ?? 0} executadas · ${decisions.measured ?? 0} com resultado medido</p><small>Diagnóstico</small><strong>${model.assessment === 'attention' ? 'Atenção' : model.assessment === 'on_target' ? 'Meta alcançada' : 'Semana em formação'}</strong>${model.mainRisk ? `<p class="weekly-risk"><b>Principal risco</b>${safe(escapeHtml, model.mainRisk.message)}</p>` : ''}${model.bestSignal ? `<p><b>Melhor sinal</b>${safe(escapeHtml, model.bestSignal.message)}</p>` : ''}</section>${model.subjectAccuracy ? renderSubjectAccuracy(model.subjectAccuracy) : ''}${includeNext ? renderWeeklyCloseNext(model, { escapeHtml, formatMinutes }) : ''}`;
 }
-export function renderPeriodComparison(model, { escapeHtml, formatMinutes }) {
-  const labels = { accuracy: 'Acerto', minutes: 'Tempo estudado', questions: 'Questões' },
-    value = (key, n) =>
+export function renderPeriodComparison(
+  model: Record<string, any>,
+  { escapeHtml, formatMinutes }: any
+) {
+  const labels: Record<string, any> = {
+      accuracy: 'Acerto',
+      minutes: 'Tempo estudado',
+      questions: 'Questões',
+    },
+    value = (key: string, n: number) =>
       key === 'accuracy'
         ? `${formatDecimal(n)}%`
         : key === 'minutes'
           ? formatMinutes(n)
           : String(n),
-    delta = (key, n) =>
+    delta = (key: string, n: number) =>
       key === 'accuracy'
         ? `${n > 0 ? '+' : ''}${n} p.p.`
         : key === 'minutes'
@@ -85,26 +99,26 @@ export function renderPeriodComparison(model, { escapeHtml, formatMinutes }) {
     )
     .join('')}</div>`;
 }
-export function renderGapMap(model, { escapeHtml }) {
+export function renderGapMap(model: Record<string, any>, { escapeHtml }: any) {
   return model.items.length
     ? model.items
         .map(
-          item =>
+          (item: any) =>
             `<article class="data-row"><strong>${safe(escapeHtml, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Gap de domínio ${item.gap ?? '—'} pts · impacto ${item.factors.examImpact ?? '—'}%${item.accuracyGap == null ? '' : ` · lacuna de acerto ${item.accuracyGap} p.p. até a meta de ${item.accuracyTarget}%`}</span></article>`
         )
         .join('')
     : '<div class="analytics-empty"><span aria-hidden="true">◎</span><div><strong>Nenhuma lacuna priorizada</strong><p>As lacunas aparecerão quando houver tópicos e evidências suficientes.</p></div></div>';
 }
-export function renderDecisionHistory(model, { escapeHtml }) {
+export function renderDecisionHistory(model: Record<string, any>, { escapeHtml }: any) {
   return model.items.length
     ? model.items
         .map(
-          item =>
+          (item: any) =>
             `<article class="data-row"><strong>${safe(escapeHtml, item.subjectName)} — ${safe(escapeHtml, item.topicName)}</strong><span>${safe(escapeHtml, item.strategyLabel)}</span>${
               item.reasons.length
                 ? `<small>${item.reasons
                     .slice(0, 2)
-                    .map(reason => safe(escapeHtml, reason))
+                    .map((reason: any) => safe(escapeHtml, reason))
                     .join(' · ')}</small>`
                 : item.examImpact != null || item.masteryBefore != null
                   ? `<small>Prova: impacto ${item.examImpact ?? '—'}/100 · Você: domínio ${item.masteryBefore ?? '—'}/100</small>`
@@ -114,11 +128,11 @@ export function renderDecisionHistory(model, { escapeHtml }) {
         .join('')
     : '<div class="analytics-empty"><span aria-hidden="true">↺</span><div><strong>Nenhuma decisão registrada</strong><p>Aceite recomendações e registre resultados para formar o histórico.</p></div></div>';
 }
-export function renderPostSimulationReplan(model, { escapeHtml }) {
+export function renderPostSimulationReplan(model: Record<string, any>, { escapeHtml }: any) {
   const need =
-    (model.adjustments || []).reduce((sum, item) => sum + item.deltaMinutes, 0) +
+    (model.adjustments || []).reduce((sum: any, item: any) => sum + item.deltaMinutes, 0) +
     (model.unallocatedMinutes || 0);
   if (model.state !== 'proposal')
     return `<div class="analytics-empty"><span aria-hidden="true">±</span><div><strong>Replanejamento indisponível</strong><p>${safe(escapeHtml, model.reason || model.message)}</p></div></div>`;
-  return `<div class="replan-summary"><strong>Proposta para ${safe(escapeHtml, model.simulationDate || 'simulado recente')}</strong><p>${model.adjustments.map(item => `${safe(escapeHtml, item.subjectName)}: +${item.deltaMinutes} min`).join(' · ')}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${model.availableMinutes} min</dd></div>${model.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${model.unallocatedMinutes} min</dd></div>` : ''}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`;
+  return `<div class="replan-summary"><strong>Proposta para ${safe(escapeHtml, model.simulationDate || 'simulado recente')}</strong><p>${model.adjustments.map((item: any) => `${safe(escapeHtml, item.subjectName)}: +${item.deltaMinutes} min`).join(' · ')}</p><dl><div><dt>Necessidade adicional</dt><dd>${need} min</dd></div><div><dt>Capacidade livre</dt><dd>${model.availableMinutes} min</dd></div>${model.unallocatedMinutes ? `<div><dt>Sem alocação</dt><dd>${model.unallocatedMinutes} min</dd></div>` : ''}</dl><small>A proposta não altera seu plano até ser confirmada.</small></div>`;
 }

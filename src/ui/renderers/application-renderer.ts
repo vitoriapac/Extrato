@@ -2,7 +2,7 @@ export function createApplicationRenderer({
   sections = [],
   scopes = {},
   globalSections = [],
-  getActiveScope = () => null,
+  getActiveScope = (): string | null => null,
   afterRender = () => {},
   onError = () => {},
 }: any = {}) {
@@ -10,8 +10,10 @@ export function createApplicationRenderer({
   const render = (scope = 'all') => {
     const selected = scope === 'all' ? null : scopes[scope === 'active' ? getActiveScope() : scope];
     sections
-      .filter(([name]) => !selected || globals.has(name) || selected.has(name))
-      .forEach(([name, renderer]) => {
+      .filter(
+        ([name]: [string, () => void]) => !selected || globals.has(name) || selected.has(name)
+      )
+      .forEach(([name, renderer]: [string, () => void]) => {
         try {
           renderer();
         } catch (error) {

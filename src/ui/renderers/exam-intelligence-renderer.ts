@@ -1,21 +1,24 @@
 import { renderEvidenceQuality } from './evidence-quality-renderer.js';
-const escapeHtml = value =>
+const escapeHtml = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
   );
 
-export function renderExamIntelligence(model, { projection = null }: any = {}) {
+export function renderExamIntelligence(
+  model: Record<string, any>,
+  { projection = null }: any = {}
+) {
   if (model.state === 'empty')
     return '<p class="analytics-note">Nenhuma prova histórica completa no concurso ativo. Provas parciais não contam como ausência de tópicos.</p>';
   const riskIds = new Set(
     projection?.status !== 'insufficient_data'
-      ? (projection?.topicRisks || []).map(item => item.topicId)
+      ? (projection?.topicRisks || []).map((item: any) => item.topicId)
       : []
   );
   const rows = model.rows
     .map(
-      row =>
+      (row: any) =>
         `<li class="exam-intelligence-item"><strong>${escapeHtml(row.subjectName)} — ${escapeHtml(row.name)}</strong><span>Impacto ${row.impact == null ? 'sem dados' : `${Math.round(row.impact)}/100`} · presença ${row.presencePercent}% · ${row.presentExamCount} de ${row.analyzedExamCount} provas</span><span>${row.questionCount} questões · participação ${row.participationPercent ?? '—'}% · Confiança ${escapeHtml(row.confidenceLabel.toLowerCase())}</span>${riskIds.has(row.topicId) ? '<span class="context-note context-note--info">Lacuna pessoal de alto impacto também considerada na trajetória até a prova.</span>' : ''}${renderEvidenceQuality({ label: row.confidenceLabel, counts: { 'Provas analisadas': row.analyzedExamCount, 'Questões históricas': row.questionCount }, reasons: ['A confiança se refere ao histórico da prova, separado do desempenho pessoal.'] })}</li>`
     )
     .join('');

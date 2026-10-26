@@ -1,13 +1,13 @@
-function renderLedger(ledger) {
+function renderLedger(ledger: Record<string, any>) {
   if (!ledger) return '';
-  const line = (label, value) =>
+  const line = (label: string, value: Record<string, any> | null | undefined) =>
     value
       ? `<div><dt>${label}</dt><dd>${value.before} → <strong class="session-ledger__after">${value.after}</strong></dd></div>`
       : '';
   const lines = line('Estudado hoje', ledger.studied) + line('Plano de hoje', ledger.plan);
   return `<div class="session-ledger" role="group" aria-label="Lançamento no extrato de hoje"><p class="session-ledger__credit"><span>Lançamento</span><strong>${ledger.credit}</strong></p>${ledger.detail ? `<p class="session-ledger__done">${ledger.detail}</p>` : ''}${lines ? `<dl>${lines}</dl>` : ''}${ledger.completed ? `<p class="session-ledger__done">Atividade do plano concluída · ${ledger.completed.done} de ${ledger.completed.total}</p>` : ''}</div>`;
 }
-export function renderSessionResult(model, { escapeHtml }: any = {}) {
+export function renderSessionResult(model: Record<string, any>, { escapeHtml }: any = {}) {
   const questionSummary = model.questions
     ? ` · ${model.questions.resolved} questões · ${model.questions.correct} acertos (${model.questions.accuracy}%)`
     : '';

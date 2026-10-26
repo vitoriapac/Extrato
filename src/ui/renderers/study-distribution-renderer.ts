@@ -1,9 +1,9 @@
-const fmt = value => `${Math.floor(value / 60)}h${String(value % 60).padStart(2, '0')}`;
+const fmt = (value: number) => `${Math.floor(value / 60)}h${String(value % 60).padStart(2, '0')}`;
 
-export function renderStudyDistribution(model, { escapeHtml }) {
+export function renderStudyDistribution(model: Record<string, any>, { escapeHtml }: any) {
   if (model.state !== 'ready')
     return '<div class="ui-state--empty">Registre planos ou sessões para comparar a distribuição do tempo entre disciplinas.</div>';
-  const row = item =>
+  const row = (item: Record<string, any>) =>
     `<li><strong>${escapeHtml(item.name)}</strong><div class="study-distribution-pair"><span>Plano</span><span class="study-distribution-track" aria-hidden="true"><span style="width:${item.plannedShare ?? 0}%"></span></span><b>${item.plannedShare === null ? '—' : item.plannedShare + '%'}</b><span>Estudo</span><span class="study-distribution-track is-studied" aria-hidden="true"><span style="width:${item.studiedShare ?? 0}%"></span></span><b>${item.studiedShare === null ? '—' : item.studiedShare + '%'}</b></div><small>${fmt(item.plannedMinutes)} planejados · ${fmt(item.studiedMinutes)} estudados</small></li>`;
   const visible = model.rows.slice(0, 8).map(row).join(''),
     more =

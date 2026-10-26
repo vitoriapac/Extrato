@@ -1,5 +1,5 @@
 import { buildEvidenceQuality } from '../../application/analytics/build-evidence-quality.js';
-const escape = value =>
+const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]

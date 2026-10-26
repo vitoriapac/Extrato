@@ -1,4 +1,4 @@
-export function renderProgressChart({ data, formatDate }) {
+export function renderProgressChart({ data, formatDate }: any) {
   if (data.length < 2)
     return `<div class="progress-chart-empty">Continue estudando — o gráfico aparece a partir do segundo dia com dados.</div>`;
   const W = 640,
@@ -10,9 +10,9 @@ export function renderProgressChart({ data, formatDate }) {
     plotW = W - padL - padR,
     plotH = H - padT - padB,
     n = data.length;
-  const xFor = index => padL + (n === 1 ? 0 : (index / (n - 1)) * plotW),
-    yFor = pct => padT + plotH - (pct / 100) * plotH;
-  const points = data.map((item, index) => `${xFor(index)},${yFor(item.pct)}`).join(' ');
+  const xFor = (index: number) => padL + (n === 1 ? 0 : (index / (n - 1)) * plotW),
+    yFor = (pct: number) => padT + plotH - (pct / 100) * plotH;
+  const points = data.map((item: any, index: any) => `${xFor(index)},${yFor(item.pct)}`).join(' ');
   const areaPoints = `${padL},${padT + plotH} ${points} ${xFor(n - 1)},${padT + plotH}`;
   const gridLines = [0, 25, 50, 75, 100]
     .map(
@@ -33,15 +33,15 @@ export function renderProgressChart({ data, formatDate }) {
     .join('');
   const dots = data
     .map(
-      (item, index) =>
+      (item: any, index: any) =>
         `<circle class="chart-dot" cx="${xFor(index)}" cy="${yFor(item.pct)}" r="3"><title>${formatDate(item.date)}: ${item.pct}%</title></circle>`
     )
     .join('');
   return `<svg class="progress-chart-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${gridLines}<polygon class="chart-area" points="${areaPoints}"></polygon><polyline class="chart-line" points="${points}"></polyline>${dots}${dateLabels}</svg>`;
 }
 
-export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatDuration }) {
-  if (data.reduce((sum, item) => sum + item.seconds, 0) <= 0)
+export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatDuration }: any) {
+  if (data.reduce((sum: any, item: any) => sum + item.seconds, 0) <= 0)
     return `<div class="progress-chart-empty">Registre sessões para visualizar a evolução das horas.</div>`;
   const W = 640,
     H = 180,
@@ -51,10 +51,12 @@ export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatD
     padB = 26,
     plotW = W - padL - padR,
     plotH = H - padT - padB;
-  const maxSeconds = Math.max(targetSeconds, ...data.map(item => item.seconds), 3600);
-  const xFor = index => padL + (index / (data.length - 1)) * plotW,
-    yFor = seconds => padT + plotH - (seconds / maxSeconds) * plotH;
-  const points = data.map((item, index) => `${xFor(index)},${yFor(item.seconds)}`).join(' '),
+  const maxSeconds = Math.max(targetSeconds, ...data.map((item: any) => item.seconds), 3600);
+  const xFor = (index: number) => padL + (index / (data.length - 1)) * plotW,
+    yFor = (seconds: number) => padT + plotH - (seconds / maxSeconds) * plotH;
+  const points = data
+      .map((item: any, index: any) => `${xFor(index)},${yFor(item.seconds)}`)
+      .join(' '),
     gridValues = [0, maxSeconds / 2, maxSeconds];
   const grid = gridValues
     .map(
@@ -70,7 +72,7 @@ export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatD
     .join('');
   const dots = data
     .map(
-      (item, index) =>
+      (item: any, index: any) =>
         `<circle class="chart-dot" cx="${xFor(index)}" cy="${yFor(item.seconds)}" r="3"><title>${formatDate(item.date)} · ${formatDuration(item.seconds)}</title></circle>`
     )
     .join('');
@@ -87,11 +89,11 @@ export function renderSubjectHoursBars({
   formatDuration,
   escapeHtml,
   escapeAttr,
-}) {
+}: any) {
   if (!rows.length) return `<div class="upcoming-empty">Nenhuma sessão registrada.</div>`;
-  const total = rows.reduce((sum, row) => sum + row.seconds, 0);
+  const total = rows.reduce((sum: any, row: any) => sum + row.seconds, 0);
   return rows
-    .map(row => {
+    .map((row: any) => {
       const name = row.subjectId === '__none' ? 'Sem disciplina' : getSubjectName(row.subjectId),
         pct = total > 0 ? Math.round((row.seconds / total) * 100) : 0;
       return `<div class="bar-row"><div class="bar-label" title="${escapeAttr(name)}">${escapeHtml(name)}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-pct" title="${pct}% do tempo total">${formatDuration(row.seconds)}</div></div>`;
