@@ -39,23 +39,19 @@ import { buildAdherenceCloseHistory } from './application/adherence/build-weekly
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
 import { renderAdherenceCloseHistory } from './ui/renderers/weekly-adherence-renderer.js';
 import { freezePlanExecution } from './domain/planning/plan-execution-snapshot.js';
-import { recordPlanningCapacity, validCapacityRecord } from './domain/planning/capacity-history.js';
+import { recordPlanningCapacity } from './domain/planning/capacity-history.js';
 import { buildDiagnosisPageModel } from './application/diagnostics/build-diagnosis-page-model.js';
 import { buildDecisionCoherenceReport } from './application/diagnostics/build-decision-coherence-report.js';
 import { renderDecisionCoherenceDebug } from './ui/renderers/decision-coherence-debug-renderer.js';
 import { renderPreparationSignals } from './ui/renderers/preparation-signals-renderer.js';
 import { resolveSubjectAccuracyTarget } from './domain/analytics/subject-accuracy-target.js';
-import { buildSubjectAccuracy } from './application/analytics/build-subject-accuracy.js';
-import { renderSubjectAccuracy } from './ui/renderers/subject-accuracy-renderer.js';
 import {
   captureProjection,
   buildProjectionCalibration,
 } from './application/analytics/projection-calibration-history.js';
 import {
-  buildProjectionPageModel,
   captureAchievementProjection,
   achievementProjectionHistory,
-  validAchievementProjectionSnapshot,
   buildProjectionCloseContext,
 } from './application/projection/index.js';
 import { renderProjectionCloseContext } from './ui/renderers/projection-close-context-renderer.js';
@@ -80,10 +76,6 @@ import { renderPhaseStrategy } from './ui/renderers/phase-strategy-renderer.js';
 import { buildCalibratedScoreProjection } from './domain/forecasts/calibrated-score-projection.js';
 import { renderWeeklyDecisionCycle } from './ui/renderers/weekly-decision-cycle-renderer.js';
 import {
-  buildPerformanceAnalysis,
-  performancePeriodRecords,
-} from './application/questions/build-performance-analysis.js';
-import {
   createPerformanceViewState,
   resolvePerformanceRange,
   updatePerformanceViewState,
@@ -98,10 +90,7 @@ import { createPerformanceController } from './ui/controllers/performance-contro
 import { createPerformanceAnalyticsController } from './ui/controllers/performance-analytics-controller.js';
 import { createDiagnosisController } from './ui/controllers/diagnosis-controller.js';
 import { createProjectionController } from './ui/controllers/projection-controller.js';
-import {
-  normalizeAdherenceTarget,
-  validAdherenceTarget,
-} from './application/adherence/adherence-target.js';
+import { normalizeAdherenceTarget } from './application/adherence/adherence-target.js';
 import { renderGoals } from './ui/renderers/goals-renderer.js';
 import { createRecoveryController } from './ui/controllers/recovery-controller.js';
 import { createRecoveryStateCommitter } from './application/recovery/recovery-state-committer.js';
@@ -118,7 +107,6 @@ import {
 import { updateSubjectAccuracyTargets } from './application/goals/update-subject-accuracy-targets.js';
 import { renderSubjectTargetEditor as renderSubjectTargetEditorView } from './ui/renderers/subject-target-editor-renderer.js';
 import { renderRecoveryReviewDebt } from './ui/renderers/recovery-review-debt-renderer.js';
-import { renderPerformanceAnalysis } from './ui/renderers/performance-analysis-renderer.js';
 import { buildRecommendationExplanation } from './application/recommendations/build-recommendation-explanation.js';
 import { renderRecommendationExplanation } from './ui/renderers/recommendation-explanation-renderer.js';
 import { capturePlanPriority } from './domain/planning/plan-priority-snapshot.js';
@@ -129,7 +117,6 @@ import {
   BACKUP_INDEX_KEY,
   AUTOMATIC_BACKUP_SLOTS,
   CURRENT_SCHEMA_VERSION,
-  MAX_BACKUP_FILE_SIZE,
   DB_NAME,
   DB_VERSION,
   STORE_NAME,
@@ -142,16 +129,7 @@ import {
   DIFFICULTY_CLASS,
   DEMO_STORAGE_KEY,
 } from './state/schema.js';
-import {
-  uid,
-  isPlainObject,
-  isSafeId,
-  isISODate,
-  isOptionalTimestamp,
-  isFiniteNonNegative,
-  structuredCloneSafe,
-  pluralize,
-} from './core/utils.js';
+import { uid, isPlainObject, structuredCloneSafe, pluralize } from './core/utils.js';
 import {
   createStorageManager,
   repositoryReadLocalState,
@@ -176,12 +154,7 @@ import {
   applyAdaptiveReviewRating,
 } from './domain/reviews.js';
 import { createDefaultState } from './state/defaults.js';
-import { validateExam } from './domain/exam-intelligence/exam.js';
-import { validateExamQuestion } from './domain/exam-intelligence/exam-question.js';
-import {
-  EXAM_INTELLIGENCE_CONFIG,
-  EXAM_INTELLIGENCE_VERSION,
-} from './domain/exam-intelligence/config.js';
+import { EXAM_INTELLIGENCE_VERSION } from './domain/exam-intelligence/config.js';
 import { createHistoricalExamImportController } from './features/exam-intelligence-import/exam-import-controller.js';
 import { labelDynamicControls, trapModalTab } from './ui/accessibility.js';
 import { renderCollectionFooter, renderGroupHeader } from './ui/list-components.js';
@@ -193,7 +166,7 @@ import {
   calculateActivityStreak,
   calculateGoalConsistency,
 } from './domain/analytics/consistency.js';
-import { calculateWindowTrend, trendToRisk } from './domain/analytics/trends.js';
+import { calculateWindowTrend } from './domain/analytics/trends.js';
 import { summarizeStudyRecords } from './domain/analytics/study-metrics.js';
 import {
   normalizeTopicStrategy,
@@ -223,7 +196,7 @@ import {
 } from './domain/analytics/topic-metrics.js';
 import { PRIORITY_ALGORITHM_VERSION } from './domain/analytics/priority-score.js';
 import { calculateReviewHealth } from './domain/analytics/review-health.js';
-import { canStudy, needsMaintenance, prerequisiteBlockers } from './domain/study-eligibility.js';
+import { needsMaintenance, prerequisiteBlockers } from './domain/study-eligibility.js';
 import {
   canReuseRecommendationPresentation,
   createRecommendationPresentation,
@@ -262,7 +235,6 @@ import {
   buildHeatmapViewModel,
   buildApprovalSignals,
 } from './application/analytics/build-analytics-view-model.js';
-import { calculateRiskScore } from './domain/diagnostics/risk-score.js';
 import { buildStudyPlan } from './application/build-study-plan.js';
 import { buildReplanProposal, applyReplan, undoReplan } from './application/replan-study.js';
 import {
@@ -373,7 +345,6 @@ import { buildPeriodComparisonViewModel } from './application/analytics/build-pe
 import { renderPeriodComparisonDetail } from './ui/renderers/period-comparison-detail-renderer.js';
 import { buildWeeklyAvailability } from './application/goals/weekly-availability.js';
 import { buildPriorityViewModel } from './ui/view-models/priority-view-model.js';
-import { buildStudyTimeViewModel } from './application/analytics/build-overview-view-model.js';
 import { buildHeaderViewModel } from './application/analytics/build-header-view-model.js';
 import { renderHeroHeader, renderCompactHeader } from './ui/renderers/header-renderer.js';
 import { buildStudyTrack32ViewModel } from './application/analytics/build-studytrack32-view-model.js';
@@ -381,7 +352,6 @@ import { buildStrategicFocusHistory } from './application/analytics/build-strate
 import {
   createReadinessSnapshot,
   upsertReadinessSnapshot,
-  readinessHistoryForScope,
 } from './application/analytics/readiness-history.js';
 import { renderReadinessHistory } from './ui/renderers/readiness-history-renderer.js';
 import {
@@ -407,7 +377,7 @@ import {
   resetDemoMode,
 } from './application/demo/demo-mode.js';
 import { generateDemoData } from './demo/demo-generator.js';
-import { runStateMigrations, validateBackupEnvelope } from './storage/migration-service.js';
+import { runStateMigrations } from './storage/migration-service.js';
 import { serializeBackup, backupFileName } from './storage/backup-service.js';
 import { createAppRepositories } from './repositories/collection-repository.js';
 import { createReviewService } from './application/reviews/review-service.js';
@@ -421,7 +391,6 @@ import {
   renderCalendarIndicators,
   renderCalendarMonth as renderCalendarMonthView,
   renderCalendarFilterOptions,
-  renderCalendarRows,
 } from './ui/renderers/calendar-renderer.js';
 import { createCalendarState } from './ui/calendar/calendar-state.js';
 import { createCalendarController } from './ui/calendar/calendar-controller.js';
@@ -458,11 +427,6 @@ import { createTopicStrategyController } from './features/topic-strategy/topic-s
 import { renderReplanProposal } from './features/replan/replan-renderer.js';
 import { buildQuestionViewModel } from './ui/view-models/question-view-model.js';
 import {
-  renderQuestionRead,
-  renderQuestionEdit,
-  renderQuestionErrorFields as renderQuestionErrorFieldsView,
-} from './ui/renderers/questions-renderer.js';
-import {
   renderQuestionAnalyticsSummary,
   renderTopicQuestionPerformance,
   renderWeeklyQuestionTrend,
@@ -484,27 +448,13 @@ import {
   renderStudySessionEdit,
   renderStudySessionDayHeader,
 } from './ui/renderers/study-sessions-renderer.js';
-import {
-  renderProgressChart as renderProgressChartView,
-  renderStudyHoursChart as renderStudyHoursChartView,
-  renderSubjectHoursBars as renderSubjectHoursBarsView,
-} from './ui/renderers/study-charts-renderer.js';
+import { renderProgressChart as renderProgressChartView } from './ui/renderers/study-charts-renderer.js';
 import {
   renderIntelligentAlerts,
   renderExecutiveSummary as renderExecutiveSummaryView,
 } from './ui/renderers/overview-renderer.js';
 import { renderDiagnosisCenter as renderDiagnosisCenterView } from './ui/renderers/diagnosis-renderer.js';
 import { renderTopicRetentionDashboard as renderTopicRetentionDashboardView } from './ui/renderers/retention-renderer.js';
-import {
-  renderSimulationRead,
-  renderSimulationBreakdown as renderSimulationBreakdownView,
-  renderSimulationEdit,
-  renderSimulationTrendChart,
-  renderSubjectPerformanceRows,
-  renderSimulationRows,
-} from './ui/renderers/simulations-renderer.js';
-import { buildSimulationComparison } from './application/simulations/build-simulation-comparison.js';
-import { renderSimulationComparison } from './ui/renderers/simulation-comparison-renderer.js';
 import { buildExamMasteryMatrix } from './domain/analytics/exam-mastery-matrix.js';
 import { buildStudyStrategy } from './domain/recommendations/study-strategy.js';
 import { buildWeeklyClose } from './domain/analytics/weekly-close.js';
@@ -536,12 +486,6 @@ const preferencesController = createPreferencesController({
   storage: localStorage,
   key: THEME_STORAGE_KEY,
 });
-function getCurrentTheme() {
-  return preferencesController.current();
-}
-function setTheme(theme) {
-  return preferencesController.set(theme);
-}
 function toggleTheme() {
   return preferencesController.toggle();
 }
@@ -1704,9 +1648,6 @@ function scheduleSave() {
 function enqueueStateTransaction(task) {
   return appStateStore.enqueueStateTransaction(task);
 }
-function saveState(serialized = JSON.stringify(pickPersistentState(state)), previousRaw = null) {
-  return appStateStore.saveState(serialized, previousRaw);
-}
 
 STATE_CHANNEL?.addEventListener('message', event => {
   const message = event.data;
@@ -1774,9 +1715,6 @@ function allTopics() {
 }
 function activeSubjects() {
   return state.subjects.filter(subject => !subject.archived);
-}
-function archivedSubjects() {
-  return state.subjects.filter(subject => subject.archived);
 }
 function topicsForSelection(subjectOrId, selectedTopicId) {
   const subject =
@@ -2179,13 +2117,6 @@ const backupModalController = createBackupModalController({
   },
 });
 
-function downloadJsonBackup(raw, name) {
-  backupModalController.download(raw, name);
-}
-
-async function exportLatestAutomaticBackup() {
-  return backupModalController.exportAutomatic();
-}
 function applyImportedBackup(importedState) {
   const previousState = state;
   try {
@@ -2315,12 +2246,6 @@ function releaseActivePlanItem() {
     found.item.status = found.item.executedSeconds > 0 ? 'partial' : 'planned';
     found.plan.updatedAt = nowISO();
   }
-}
-function recordPlannedExecution(planItemId, session) {
-  return sessionService.syncPlanItem(planItemId);
-}
-function syncPlannedExecution(planItemId) {
-  return sessionService.syncPlanItem(planItemId);
 }
 function startPlannedActivity(itemId) {
   const found = findDailyPlanItem(itemId);
@@ -3099,127 +3024,6 @@ function metricStateLabel(metric, minimumConfidence = 0.35) {
 }
 
 /* ===== GRÁFICO: EVOLUÇÃO DOS SIMULADOS ===== */
-function renderSimuladosChart() {
-  const card = document.getElementById('simuladosChartCard');
-  const container = document.getElementById('simuladosChart');
-  if (!card || !container) return;
-  const data = performancePeriodRecords(examScopedSimulations(), {
-    today: todayISO(),
-    period: '90',
-  }).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-  const comparison = buildSimulationComparison({
-    simulations: data.map(item => ({
-      ...item,
-      breakdown: (item.breakdown || []).map(row => ({ ...row, subjectId: entitySubjectId(row) })),
-    })),
-    subjects: state.subjects,
-  });
-  document.getElementById('simulationComparisonResults').innerHTML = renderSimulationComparison(
-    comparison,
-    { escapeHtml, formatDate: formatDatePt }
-  );
-  card.style.display = 'block';
-  container.innerHTML = renderSimulationTrendChart({
-    items: data.slice(-12),
-    scoreFor: simuladoNota,
-    formatDate: formatDatePt,
-    escapeHtml,
-    targetScore: state.examBlueprint?.configuredAt ? state.examBlueprint.targetScore : null,
-  });
-}
-
-function getSubjectQuestionRecords(subjectId) {
-  const records = [];
-  state.questoes
-    .filter(q => entitySubjectId(q) === subjectId)
-    .forEach(q => {
-      records.push({
-        date: q.date,
-        correct: Number(q.correct) || 0,
-        total: Number(q.resolved) || 0,
-      });
-    });
-  state.simulados.forEach(sim => {
-    (sim.breakdown || [])
-      .filter(b => entitySubjectId(b) === subjectId)
-      .forEach(b => {
-        records.push({
-          date: sim.date,
-          correct: Number(b.correct) || 0,
-          total: Number(b.total) || 0,
-        });
-      });
-  });
-  return records
-    .filter(r => r.total > 0)
-    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-}
-
-function computeSubjectPerformance() {
-  const subjectIds = new Set();
-  state.questoes.forEach(q => {
-    const id = entitySubjectId(q);
-    if (id) subjectIds.add(id);
-  });
-  state.simulados.forEach(sim =>
-    (sim.breakdown || []).forEach(b => {
-      const id = entitySubjectId(b);
-      if (id) subjectIds.add(id);
-    })
-  );
-
-  const results = [];
-  subjectIds.forEach(subjectId => {
-    const records = getSubjectQuestionRecords(subjectId);
-    const total = records.reduce((s, r) => s + r.total, 0);
-    const correct = records.reduce((s, r) => s + r.correct, 0);
-    if (total === 0) return;
-    const acerto = calcAcertoPct(correct, total);
-
-    let trend = '→';
-    if (records.length >= 2) {
-      const mid = Math.ceil(records.length / 2);
-      const first = records.slice(0, mid);
-      const second = records.slice(mid);
-      const firstTotal = first.reduce((s, r) => s + r.total, 0);
-      const secondTotal = second.reduce((s, r) => s + r.total, 0);
-      if (firstTotal > 0 && secondTotal > 0) {
-        const firstPct = calcAcertoPct(
-          first.reduce((s, r) => s + r.correct, 0),
-          firstTotal
-        );
-        const secondPct = calcAcertoPct(
-          second.reduce((s, r) => s + r.correct, 0),
-          secondTotal
-        );
-        if (secondPct - firstPct >= 3) trend = '↑';
-        else if (firstPct - secondPct >= 3) trend = '↓';
-      }
-    }
-    results.push({ subjectId, subject: getSubjectName(subjectId), acerto, total, trend });
-  });
-
-  return results.sort((a, b) => a.acerto - b.acerto);
-}
-
-function renderDesempenhoDisciplina() {
-  const card = document.getElementById('desempenhoDisciplinaCard');
-  const container = document.getElementById('desempenhoDisciplinaBars');
-  if (!card || !container) return;
-  const perf = computeSubjectPerformance();
-
-  if (perf.length === 0) {
-    card.style.display = 'none';
-    return;
-  }
-  card.style.display = 'block';
-
-  const items = perf.map(performance => ({
-    performance,
-    trend: calculateWeightedTrend(getSubjectWeeklyTrend(performance.subjectId)),
-  }));
-  container.innerHTML = renderSubjectPerformanceRows({ items, escapeHtml });
-}
 
 /* ===== BUSCA GLOBAL ===== */
 function jumpToTopic(subjectId, topicId) {
@@ -3362,7 +3166,7 @@ function renderHeader() {
 
 /* ===== RENDER: DASHBOARD ===== */
 let upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-function changeUpcomingLimit(delta) {
+function changeUpcomingLimit(_delta) {
   upcomingVisible = Number.MAX_SAFE_INTEGER;
   renderDashboard();
 }
@@ -4278,7 +4082,7 @@ function calendarViewModel(item) {
     subjectIdOf: entitySubjectId,
   });
 }
-function changeCalendarLimit(delta) {
+function changeCalendarLimit(_delta) {
   calendarController.showMore();
 }
 function resetCalendarLimit() {
@@ -4648,18 +4452,6 @@ function completeAgendaReview(id) {
   overlay.removeAttribute('aria-hidden');
   overlay.querySelector<HTMLElement>('[data-review-rating="good"]')?.focus();
 }
-function adaptiveReviewType(days) {
-  return (
-    {
-      1: 'Revisão 24h',
-      3: 'Revisão 3 dias',
-      7: 'Revisão 7 dias',
-      14: 'Revisão 14 dias',
-      15: 'Revisão 15 dias',
-      30: 'Revisão 30 dias',
-    }[days] || 'Revisão livre'
-  );
-}
 function rateCompletedReview(rating) {
   if (!REVIEW_RATINGS[rating]) return closeReviewRating();
   const result = reviewService.rateReview(pendingReviewRatingId, rating, {
@@ -4804,7 +4596,7 @@ function setErrorAnalysisFilter(field, value) {
   if (field === 'topicId') errorAnalysisView.topicId = value || '';
   renderQuestionAnalytics();
 }
-function changePerformanceLimit(delta) {
+function changePerformanceLimit(_delta) {
   performanceVisible = Number.MAX_SAFE_INTEGER;
   renderQuestionAnalytics();
 }
@@ -4943,9 +4735,6 @@ function validQuestionRecords() {
 function accuracyFromCounts(correct, total) {
   return total > 0 ? Math.round((correct / total) * 1000) / 10 : null;
 }
-function questionTopicOptions(question) {
-  return topicsForSelection(entitySubjectId(question), question.topicId);
-}
 function toggleQuestionErrors(id) {
   if (openQuestionErrorIds.has(id)) openQuestionErrorIds.delete(id);
   else openQuestionErrorIds.add(id);
@@ -4954,18 +4743,6 @@ function toggleQuestionErrors(id) {
 }
 function questionCategorizedErrors(question) {
   return Object.values(normalizeErrorBreakdown(question)).reduce((sum, value) => sum + value, 0);
-}
-function renderQuestionErrorFields(question) {
-  const realErrors = Math.max(
-    0,
-    (Number(question.resolved) || 0) - (Number(question.correct) || 0)
-  );
-  return renderQuestionErrorFieldsView({
-    question,
-    categories: ERROR_CATEGORIES,
-    categorized: questionCategorizedErrors(question),
-    totalErrors: realErrors,
-  });
 }
 function questionViewModel(q) {
   return buildQuestionViewModel(q, {
@@ -5001,40 +4778,6 @@ function updateQuestionDraft(field, value) {
 }
 function saveQuestionEdit() {
   if (!questionEditController.save()) cancelQuestionEdit();
-}
-function renderQuestionReadRow(q) {
-  const vm = questionViewModel(q),
-    expanded = openQuestionErrorIds.has(q.id);
-  return renderQuestionRead({
-    item: q,
-    view: vm,
-    categorized: questionCategorizedErrors(q),
-    errorsHtml: expanded ? renderQuestionErrorFields(q) : '',
-    expanded,
-    mobile: isMobileHistoryLayout(),
-    escapeHtml,
-  });
-}
-function renderQuestionEditRow(q) {
-  const d = questionEditController.state.draft;
-  const subjectId = entitySubjectId(d);
-  const topics = topicsForSelection(subjectId, d.topicId);
-  return renderQuestionEdit({
-    item: q,
-    draft: d,
-    subjectOptions: subjectsForSelection(subjectId)
-      .map(
-        s =>
-          `<option value="${escapeAttr(s.id)}" ${s.id === subjectId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`
-      )
-      .join(''),
-    topicOptions: topics
-      .map(
-        t =>
-          `<option value="${escapeAttr(t.id)}" ${t.id === d.topicId ? 'selected' : ''}>${escapeHtml(t.name)}</option>`
-      )
-      .join(''),
-  });
 }
 function getQuestionsTabController() {
   return createQuestionsController({
@@ -5099,31 +4842,6 @@ function deleteQuestaoRow(id) {
     showToast('Registro excluído.');
   });
 }
-function updateQuestionSubject(id, subjectId) {
-  const question = state.questoes.find(q => q.id === id);
-  if (!question) return;
-  question.subjectId = subjectId || null;
-  if (
-    question.topicId &&
-    !questionTopicOptions(question).some(topic => topic.id === question.topicId)
-  )
-    question.topicId = null;
-  persistAndRender();
-}
-function updateQuestao(id, field, value) {
-  const question = state.questoes.find(q => q.id === id);
-  if (!question) return;
-  question[field] =
-    field === 'resolved' || field === 'correct'
-      ? Math.max(0, Math.floor(Number(value) || 0))
-      : value;
-  question.resolved = Math.max(0, Number(question.resolved) || 0);
-  if ((Number(question.correct) || 0) > question.resolved)
-    showToast('Os acertos foram limitados ao total de questões.');
-  question.correct = Math.max(0, Math.min(Number(question.correct) || 0, question.resolved));
-  normalizeErrorBreakdown(question);
-  persistAndRender();
-}
 function updateQuestionError(id, key, value) {
   const question = state.questoes.find(q => q.id === id);
   if (!question || !ERROR_CATEGORIES[key]) return;
@@ -5185,31 +4903,12 @@ function getSubjectTopicPerformance(subjectId) {
       return a.accuracy - b.accuracy;
     });
 }
-function getQuestionErrors(question) {
-  const breakdown = normalizeErrorBreakdown(question);
-  const totalErrors = Math.max(
-    0,
-    (Number(question.resolved) || 0) - (Number(question.correct) || 0)
-  );
-  const categorizedErrors = Object.values(breakdown).reduce((sum, value) => sum + value, 0);
-  return {
-    breakdown,
-    totalErrors,
-    categorizedErrors,
-    uncategorized: Math.max(0, totalErrors - categorizedErrors),
-  };
-}
 function buildErrorProfile(records) {
   records.forEach(normalizeErrorBreakdown);
   return analyzeErrors(records, {
     minimumErrors: MIN_ERROR_RECOMMENDATION_COUNT,
     minimumCoverage: MIN_ERROR_RECOMMENDATION_COVERAGE,
   });
-}
-function getSubjectErrorProfile(subjectId) {
-  return buildErrorProfile(
-    validQuestionRecords().filter(question => entitySubjectId(question) === subjectId)
-  );
 }
 function getTopicErrorProfile(topicId) {
   const cutoff = addDays(todayISO(), -29);
@@ -5365,7 +5064,7 @@ function dominantTopicError(profile) {
     recommendation: dominant.recommendation || ERROR_RECOMMENDATIONS[dominant.key],
   };
 }
-function topicMasteryIndex(subjectId, topicId) {
+function topicMasteryIndex(_subjectId, topicId) {
   const found = getTopicById(topicId);
   if (!found) return calculateTopicMastery();
   const today = todayISO(),
@@ -5677,33 +5376,6 @@ function updateSimulationDraft(field, value) {
 function saveSimulationEdit() {
   if (!simulationEditController.save()) cancelSimulationEdit();
 }
-function renderSimulationReadRow(sim) {
-  const expanded = openBreakdownIds.has(sim.id);
-  return renderSimulationRead({
-    item: sim,
-    view: simulationViewModel(sim),
-    mobile: isMobileHistoryLayout(),
-    expanded,
-    escapeHtml,
-    breakdownHtml: expanded ? renderSimulationBreakdown(sim) : '',
-  });
-}
-function renderSimulationBreakdown(sim) {
-  return renderSimulationBreakdownView({
-    item: sim,
-    subjectOptions: subjectsForSelection,
-    subjectIdOf: entitySubjectId,
-    escapeHtml,
-    escapeAttr,
-  });
-}
-function renderSimulationEditRow(sim) {
-  return renderSimulationEdit({
-    item: sim,
-    draft: simulationEditController.state.draft,
-    escapeAttr,
-  });
-}
 
 function renderSimulados() {
   const body = document.getElementById('simuladosBody');
@@ -5730,15 +5402,6 @@ function deleteSimuladoRow(id) {
     showToast('Simulado excluído.');
   });
 }
-function updateSimulado(id, field, value) {
-  const sim = state.simulados.find(x => x.id === id);
-  sim[field] = field === 'correct' || field === 'total' ? Number(value) || 0 : value;
-  sim.total = Math.max(0, Number(sim.total) || 0);
-  if ((Number(sim.correct) || 0) > sim.total)
-    showToast('Os acertos foram limitados ao total do simulado.');
-  sim.correct = Math.max(0, Math.min(Number(sim.correct) || 0, sim.total));
-  persistAndRender();
-}
 
 document.getElementById('addQuestaoRowBtn').addEventListener('click', addQuestaoRow);
 document.getElementById('addSimuladoRowBtn').addEventListener('click', addSimuladoRow);
@@ -5761,7 +5424,7 @@ const questionImportService = createQuestionImportService({
     }
   },
 });
-const questionImportController = createQuestionImportController({
+createQuestionImportController({
   document,
   window,
   service: questionImportService,
@@ -7173,9 +6836,6 @@ function taxaErroDisciplina(subjectId) {
   if (total === 0) return 0;
   return Math.round((1 - correct / total) * 1000) / 10;
 }
-function taxaAcertoDisciplina(subjectId) {
-  return Math.round((100 - taxaErroDisciplina(subjectId)) * 10) / 10;
-}
 function ultimaAtividadeDisciplina(subjectId) {
   let last = null;
   const bump = d => {
@@ -7213,10 +6873,6 @@ function proximidadeProvaScore() {
   const dias = diasParaRevisao(state.examDate);
   if (dias === null) return 0;
   return Math.max(0, Math.min(100, 100 - dias));
-}
-function trendPriorityRisk(trend) {
-  if (!trend || trend.key !== 'down' || trend.delta === null) return 0;
-  return Math.max(0, Math.min(100, 40 + Math.abs(trend.delta) * 6));
 }
 function collectStudyCandidates() {
   const today = todayISO();
@@ -7332,34 +6988,6 @@ function motivoPrioridade(priority) {
   return priority.tipo === 'revisão' ? 'Revisão de hoje' : 'Tópico novo';
 }
 
-function renderPrioridadeHoje() {
-  const container = document.getElementById('prioridadeHojeList');
-  if (!container) return;
-  const priorities = computeStudyPriorities().slice(0, 6);
-
-  if (priorities.length === 0) {
-    container.innerHTML = `<div class="upcoming-empty">Nenhuma atividade elegível para o tempo disponível. Confira os pré-requisitos e a meta de hoje.</div>`;
-    return;
-  }
-
-  const TIER_CLASS = { Alta: 'priority-alta', Média: 'priority-media', Baixa: 'priority-baixa' };
-  container.innerHTML = priorities
-    .map(
-      (p, idx) => `
-    <div class="priority-item">
-      <div class="priority-rank">${idx + 1}</div>
-      <div class="priority-info">
-        <div class="priority-subject">${escapeHtml(p.subjectName)}</div>
-        <div class="priority-topic">${escapeHtml(p.topicName)} <span style="opacity:0.6;">· ${p.tipo}</span></div>
-        <div class="priority-reason">${p.diagnosis?.statusIcon || '🟡'} ${escapeHtml(p.diagnosis?.status || 'Acompanhamento')} · ${escapeHtml(motivoPrioridade(p))}</div>
-        <div class="priority-reason">Ação: ${escapeHtml(p.recommendedAction)}</div>
-      </div>
-      <div class="priority-badge ${TIER_CLASS[p.tier]}">${PRIORITY_TIER_EMOJI[p.tier]} ${p.score}/100</div>
-    </div>`
-    )
-    .join('');
-}
-
 /* ===== RADAR DE DISCIPLINAS ===== */
 function subjectRadarModel(subject) {
   const topics = subject.topics.filter(topic => !topic.archived),
@@ -7404,7 +7032,6 @@ const performanceAnalyticsController = createPerformanceAnalyticsController({
   escapeHtml,
   escapeAttr,
 });
-const radarView = performanceAnalyticsController.getRadarViewState();
 
 function setRadarSubject(slot, value) {
   performanceAnalyticsController.setRadarSubject(slot, value);
@@ -7474,24 +7101,8 @@ function totalStudySeconds(filterFn) {
 function segundosEstudadosHoje() {
   return totalStudySeconds(s => s.date === todayISO());
 }
-function studyTimeBySubject() {
-  const map = {};
-  state.studySessions.forEach(session => {
-    const id = entitySubjectId(session);
-    if (id) map[id] = (map[id] || 0) + (Number(session.durationSeconds) || 0);
-  });
-  return map;
-}
 function studyTimeByTopic(topicId) {
   return totalStudySeconds(s => s.topicId === topicId);
-}
-function questionsPerHour() {
-  const sessions = state.studySessions.filter(
-    s => (Number(s.durationSeconds) || 0) >= 300 && (Number(s.questionsResolved) || 0) > 0
-  );
-  const seconds = sessions.reduce((sum, s) => sum + (Number(s.durationSeconds) || 0), 0);
-  const questions = sessions.reduce((sum, s) => sum + (Number(s.questionsResolved) || 0), 0);
-  return seconds > 0 ? Math.round(questions / (seconds / 3600)) : 0;
 }
 
 function studySecondsByDate(sessions = state.studySessions) {
@@ -7501,83 +7112,6 @@ function studySecondsByDate(sessions = state.studySessions) {
     map[s.date] = (map[s.date] || 0) + (Number(s.durationSeconds) || 0);
   });
   return map;
-}
-function renderStudyHoursDashboard() {
-  const container = document.getElementById('studyTimeStats');
-  if (!container) return;
-  const model = buildStudyTimeViewModel({
-    sessions: state.studySessions,
-    today: todayISO(),
-    weekStart: startOfWeek(todayISO()),
-    monthStart: todayISO().slice(0, 7) + '-01',
-    hoursForDate: metaHoursForDate,
-    addDays,
-  });
-  const {
-    todaySeconds: today,
-    weekSeconds: week,
-    monthSeconds: month,
-    totalSeconds: total,
-    targetSeconds: metaSeconds,
-    consistency,
-    pace,
-    dedication,
-    todayGoalPct,
-  } = model;
-  const remaining = Math.max(0, metaSeconds - today);
-  const metaLabel =
-    metaSeconds > 0
-      ? `${todayGoalPct}% · faltam ${formatDuration(remaining)}`
-      : 'meta não definida';
-  container.innerHTML = `
-    <div class="stat-cell" title="${escapeAttr(metaLabel)}"><div class="n">${formatDuration(today)}</div><div class="l">Estudo hoje</div></div>
-    <div class="stat-cell"><div class="n">${formatDuration(week)}</div><div class="l">Estudo na semana</div></div>
-    <div class="stat-cell"><div class="n">${formatDuration(month)}</div><div class="l">Estudo no mês</div></div>
-    <div class="stat-cell"><div class="n">${formatDuration(total)}</div><div class="l">Total acumulado</div></div>
-    <div class="stat-cell"><div class="n">${metaSeconds > 0 ? todayGoalPct + '%' : '—'}</div><div class="l">Meta de hoje</div></div>
-    <div class="stat-cell"><div class="n">${metaSeconds > 0 ? consistency.achieved + '/' + consistency.elapsed : '—'}</div><div class="l">Consistência semanal</div></div>
-    <div class="stat-cell"><div class="n">${formatDuration(pace.secondsPerDay)}</div><div class="l">Ritmo médio diário</div></div>
-    <div class="stat-cell" title="${dedication.days ? `Últimos ${dedication.days} dias observados` : ''}"><div class="n">${dedication.score}/100</div><div class="l">Score de dedicação</div></div>
-    <div class="stat-cell"><div class="n">${questionsPerHour()}</div><div class="l">Questões por hora</div></div>
-  `;
-  renderStudyHoursChart();
-  renderSubjectHoursBars();
-}
-function renderStudyHoursChart() {
-  const container = document.getElementById('studyHoursChart');
-  if (!container) return;
-  const byDate = studySecondsByDate();
-  const data = [];
-  for (let i = 13; i >= 0; i--) {
-    const date = addDays(todayISO(), -i);
-    data.push({ date, seconds: byDate[date] || 0 });
-  }
-  container.innerHTML = renderStudyHoursChartView({
-    data,
-    targetSeconds: metaHoursToday() * 3600,
-    formatDate: formatDatePt,
-    formatDuration,
-  });
-}
-function renderSubjectHoursBars() {
-  const container = document.getElementById('subjectHoursBars');
-  if (!container) return;
-  const map = {};
-  state.studySessions.forEach(session => {
-    const key = entitySubjectId(session) || '__none';
-    map[key] = (map[key] || 0) + (Number(session.durationSeconds) || 0);
-  });
-  const rows = Object.entries(map as Record<string, number>)
-    .filter(([, seconds]) => seconds > 0)
-    .sort((a, b) => b[1] - a[1])
-    .map(([subjectId, seconds]) => ({ subjectId, seconds }));
-  container.innerHTML = renderSubjectHoursBarsView({
-    rows,
-    getSubjectName,
-    formatDuration,
-    escapeHtml,
-    escapeAttr,
-  });
 }
 
 const SESSION_TYPES = {
@@ -7672,20 +7206,6 @@ function filteredStudySessions() {
     subjectIdOf: entitySubjectId,
   });
 }
-function sessionTopicOptions(session) {
-  const subject = getSubjectById(entitySubjectId(session));
-  return (
-    `<option value="">Sem tópico</option>` +
-    (subject
-      ? subject.topics
-          .map(
-            topic =>
-              `<option value="${escapeAttr(topic.id)}" ${topic.id === session.topicId ? 'selected' : ''}>${escapeHtml(topic.name || '(sem nome)')}</option>`
-          )
-          .join('')
-      : '')
-  );
-}
 function sessionStartTime(session) {
   if (!session.startedAt) return '—';
   const date = new Date(session.startedAt);
@@ -7695,26 +7215,6 @@ function sessionStartTime(session) {
 }
 function syncQuestionFromStudySession(session) {
   return sessionService.edit(session.id, session);
-}
-function updateStudySession(id, field, value) {
-  const session = state.studySessions.find(s => s.id === id);
-  if (!session) return;
-  if (field === 'durationMinutes') session.durationSeconds = Math.max(0, (Number(value) || 0) * 60);
-  else if (field === 'questionsResolved' || field === 'correctAnswers')
-    session[field] = Math.max(0, Number(value) || 0);
-  else session[field] = value;
-  syncQuestionFromStudySession(session);
-  if (session.planItemId) syncPlannedExecution(session.planItemId);
-  persistAndRender();
-}
-function updateStudySessionSubject(id, subjectId) {
-  const session = state.studySessions.find(s => s.id === id);
-  if (!session) return;
-  session.subjectId = subjectId || null;
-  const selectedTopic = session.topicId ? getTopicById(session.topicId) : null;
-  if (selectedTopic?.subject.id !== session.subjectId) session.topicId = null;
-  syncQuestionFromStudySession(session);
-  persistAndRender();
 }
 function deleteStudySession(id) {
   showConfirm('Excluir esta sessão e as questões vinculadas a ela?', () => {
@@ -8280,7 +7780,6 @@ function renderOverviewNextAction(availableMinutes) {
       action.evidence.mastery == null
         ? 'Domínio ainda sem evidência'
         : `Domínio ${Math.round(action.evidence.mastery)}/100`,
-    reasons = action.reasons.slice(0, 3).join(' · '),
     minutes =
       action.suggestedMinutes == null
         ? 'Tempo não estimado'
@@ -8707,7 +8206,7 @@ const recommendationController = createRecommendationController({
     showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);
     return blocker.topic;
   },
-  onStudy: (recommendation, kind, context: { source?: string } = {}) =>
+  onStudy: (recommendation, _kind, context: { source?: string } = {}) =>
     startStudyRecommendation(recommendation.id, context.source),
 });
 function executeStudyRecommendation(id, source = 'today') {
@@ -9465,28 +8964,6 @@ function approvalPrazoMetric() {
   };
 }
 
-function scoreSimulados(metrics) {
-  return (metrics || computeApprovalMetrics()).simulados.score;
-}
-function scoreAcertos(metrics) {
-  return (metrics || computeApprovalMetrics()).acertos.score;
-}
-function scoreEdital(metrics) {
-  return (metrics || computeApprovalMetrics()).edital.score;
-}
-function scoreDominio(metrics) {
-  return (metrics || computeApprovalMetrics()).dominio.score;
-}
-function scoreRevisoes(metrics) {
-  return (metrics || computeApprovalMetrics()).revisoes.score;
-}
-function scoreTendencia(metrics) {
-  return (metrics || computeApprovalMetrics()).tendencia.score;
-}
-function scorePrazo(metrics) {
-  return (metrics || computeApprovalMetrics()).prazo.score;
-}
-
 function readinessFactors(metrics) {
   const m = metrics || computeApprovalMetrics();
   return {
@@ -9502,10 +8979,6 @@ function readinessResult(metrics) {
 }
 function indiceProntidao(metrics) {
   return readinessResult(metrics).value ?? 0;
-}
-function confiancaAprovacao(metrics) {
-  const result = readinessResult(metrics);
-  return { value: result.confidence, nivel: result.confidenceLabel };
 }
 function projectPerformance() {
   const calibration = buildCalibratedScoreProjection({
@@ -9689,7 +9162,7 @@ function gerarDiagnosticoAprovacao(metrics) {
     item => `${icons[item.level]} ${item.text}`
   );
 }
-function topicRetentionScore(subjectId, topicId) {
+function topicRetentionScore(_subjectId, topicId) {
   const found = getTopicById(topicId);
   if (!found)
     return {
