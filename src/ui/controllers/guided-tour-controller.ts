@@ -57,17 +57,24 @@ export function createGuidedTourController({
     const rect = target.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const popoverWidth = Math.min(380, vw - 24);
+    const popoverWidth = Math.min(380, Math.max(280, vw - 24));
+    const bottomNavMargin = vw <= 760 ? 76 : 12;
 
     let left = rect.left + rect.width / 2 - popoverWidth / 2;
     if (left < 12) left = 12;
-    if (left + popoverWidth > vw - 12) left = vw - popoverWidth - 12;
+    if (left + popoverWidth > vw - 12) left = Math.max(12, vw - popoverWidth - 12);
 
+    const popoverHeight = 240;
     // Prefer positioning below the target, or above if there isn't enough space
     let top = rect.bottom + 12;
-    if (top + 220 > vh && rect.top > 240) {
-      top = Math.max(12, rect.top - 230);
+    if (top + popoverHeight > vh - bottomNavMargin) {
+      if (rect.top - popoverHeight - 12 >= 12) {
+        top = rect.top - popoverHeight - 12;
+      } else {
+        top = Math.max(12, vh - popoverHeight - bottomNavMargin);
+      }
     }
+    if (top < 12) top = 12;
 
     return {
       left: `${Math.round(left)}px`,

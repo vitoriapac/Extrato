@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=8ef8cdb462ca">
-<link rel="stylesheet" href="styles/app.css?v=8ef8cdb462ca">
+<link rel="stylesheet" href="styles/tailwind.css?v=9d6cc0f73882">
+<link rel="stylesheet" href="styles/app.css?v=9d6cc0f73882">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -28,7 +28,7 @@
   <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
     <div><strong>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
     <nav class="demo-tour" aria-label="Roteiro da demonstração"><span>Explore:</span><button data-demo-target="hoje">Prioridades</button><button data-demo-target="dashboard">Riscos e projeção</button><button data-demo-target="agenda">Revisões</button><button data-demo-target="metas">Planejamento</button><button id="demoReportShortcut">Relatório</button></nav>
-    <div class="demo-banner-actions"><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn small" id="exitDemoBtn">Sair da demonstração</button></div>
+    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo">🧭 Tour guiado</button><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn small" id="exitDemoBtn">Sair da demonstração</button></div>
   </aside>
 
   <dialog class="demo-intro-dialog" id="demoIntroDialog" aria-labelledby="demoIntroTitle" aria-describedby="demoIntroDescription">
@@ -874,7 +874,7 @@
   </div>
 </div>
 
-  <script src="src/app.bundle.js?v=8ef8cdb462ca"></script>
+  <script src="src/app.bundle.js?v=9d6cc0f73882"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

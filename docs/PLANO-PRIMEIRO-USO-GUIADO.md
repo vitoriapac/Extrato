@@ -246,7 +246,7 @@ export function buildFirstStepsMission({
 
 ## 5. Critérios de Aceite (Definition of Done)
 
-* [ ] O estudante consegue configurar data da prova (pré-edital) e disponibilidade semanal da rotina com **apenas 2 cliques** no Wizard Inicial.
-* [ ] Após confirmar o primeiro plano, a aba **Hoje** exibe o checklist de ativação prática até que a 1ª sessão e a 1ª bateria de questões sejam registradas (ou o guia seja dispensado).
-* [ ] O **Tour Guiado Interativo** percorre as 5 áreas principais sem gerar overflow horizontal em 320px/375px/1440px, sem violações de contraste no Axe (`wcag2a`, `wcag2aa`) e fecha com `Escape` restaurando o foco.
-* [ ] `npm run check:types`, `npx playwright test tests/e2e/onboarding.spec.js` e `npm run test:fast` passam sem regressões.
+* [x] O estudante consegue configurar data da prova (pré-edital) e disponibilidade semanal da rotina com **apenas 2 cliques** no Wizard Inicial.
+* [x] Após confirmar o primeiro plano, a aba **Hoje** exibe o checklist de ativação prática até que a 1ª sessão e a 1ª bateria de questões sejam registradas (ou o guia seja dispensado).
+* [x] O **Tour Guiado Interativo** percorre as 5 áreas principais sem gerar overflow horizontal em 320px/375px/1440px, sem violações de contraste no Axe (`wcag2a`, `wcag2aa`) e fecha com `Escape` restaurando o foco.
+* [x] `npm run check:types`, `npx playwright test tests/e2e/onboarding.spec.js` e `npm run test:fast` passam sem regressões.

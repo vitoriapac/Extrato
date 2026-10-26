@@ -438,8 +438,9 @@ test('missão do primeiro dia é exibida na aba hoje e orienta ativação pós-p
   await expect(missionCard).toBeHidden();
 });
 
-test('tour guiado interativo percorre paradas e fecha com Escape', async ({ page }) => {
-  // Inicia o tour a partir do botão
+test('tour guiado interativo percorre todas as 5 paradas e conclui com sucesso', async ({
+  page,
+}) => {
   await page.evaluate(() => {
     const api = window.__EXTRATO_TEST__,
       state = structuredClone(api.getState());
@@ -462,23 +463,130 @@ test('tour guiado interativo percorre paradas e fecha com Escape', async ({ page
   });
 
   await activateTab(page, 'hoje');
-  const tourStartBtn = page.locator('[data-guided-tour-start="true"]').first();
+  const tourStartBtn = page.locator('#firstStepsMissionCard [data-guided-tour-start]');
   await expect(tourStartBtn).toBeVisible();
   await tourStartBtn.click();
 
   const tourPopover = page.locator('#guidedTourPopover');
   await expect(tourPopover).toBeVisible();
-  await expect(tourPopover).toContainText('Sua única prioridade de agora');
 
-  // Próxima parada -> vai para aba Hoje
+  // Parada 1: Visão Geral
+  await expect(tourPopover).toContainText('Sua única prioridade de agora');
+  await expect(page.locator('#panel-dashboard')).toBeVisible();
+
+  // Avança para Parada 2: Hoje
   const nextBtn = tourPopover.locator('[data-guided-tour-next="true"]');
   await nextBtn.click();
-
   await expect(page.locator('#panel-hoje')).toBeVisible();
   await expect(tourPopover).toContainText('Execução guiada e cronômetro');
 
-  // Fecha com Escape
-  await page.keyboard.press('Escape');
+  // Avança para Parada 3: Questões
+  await nextBtn.click();
+  await expect(page.locator('#panel-questoes')).toBeVisible();
+  await expect(tourPopover).toContainText('Questões e Importador CSV');
+
+  // Avança para Parada 4: Desempenho
+  await nextBtn.click();
+  await expect(page.locator('#panel-desempenho')).toBeVisible();
+  await expect(tourPopover).toContainText('Inteligência da Prova × Você');
+
+  // Avança para Parada 5: Planejamento
+  await nextBtn.click();
+  await expect(page.locator('#panel-metas')).toBeVisible();
+  await expect(tourPopover).toContainText('Planejamento vivo e Fechamento');
+  await expect(nextBtn).toContainText('Concluir ✓');
+
+  // Concluir tour
+  await nextBtn.click();
   await expect(tourPopover).toBeHidden();
   await expect(page.locator('.is-tour-highlighted')).toHaveCount(0);
+});
+
+test('tour guiado atende critérios de acessibilidade e sem overflow em tela compacta', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__,
+      state = structuredClone(api.getState());
+    state.studyPlans = [
+      {
+        id: 'plan_1',
+        createdAt: '2026-10-26T10:00:00.000Z',
+        items: [{ id: 'item_1', subjectId: 's1', minutes: 60 }],
+      },
+    ];
+    state.dailyPlans = [
+      {
+        date: '2026-10-26',
+        items: [{ id: 'item_1', subjectId: 's1', minutes: 60 }],
+      },
+    ];
+    localStorage.removeItem('studytrack_first_steps_dismissed');
+    api.setState(state);
+    api.renderAll();
+  });
+
+  await activateTab(page, 'hoje');
+  const tourStartBtn = page.locator('#firstStepsMissionCard [data-guided-tour-start]');
+  await tourStartBtn.click();
+
+  const tourPopover = page.locator('#guidedTourPopover');
+  await expect(tourPopover).toBeVisible();
+
+  // Verifica que não há overflow horizontal em 375px
+  const box = await tourPopover.boundingBox();
+  expect(box).not.toBeNull();
+  if (box) {
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(375);
+  }
+
+  // Auditoria de Acessibilidade Axe no Popover
+  const result = await new AxeBuilder({ page })
+    .include('#guidedTourPopover')
+    .withRules(['color-contrast', 'button-name', 'aria-valid-attr-value'])
+    .analyze();
+  expect(result.violations).toEqual([]);
+
+  // Navegação para trás por teclado (ArrowLeft)
+  const nextBtn = tourPopover.locator('[data-guided-tour-next="true"]');
+  await nextBtn.click();
+  await expect(tourPopover).toContainText('Execução guiada e cronômetro');
+  await page.keyboard.press('ArrowLeft');
+  await expect(tourPopover).toContainText('Sua única prioridade de agora');
+
+  // Encerramento por Escape restaura foco
+  await page.keyboard.press('Escape');
+  await expect(tourPopover).toBeHidden();
+});
+
+test('gatilhos de entrada do tour iniciam o fluxo a partir de Instruções e Modo Demonstração', async ({
+  page,
+}) => {
+  // 1. Acionamento a partir da aba Instruções
+  await activateTab(page, 'instrucoes');
+  const helpTourBtn = page.locator('#panel-instrucoes [data-guided-tour-start="true"]');
+  await expect(helpTourBtn).toBeVisible();
+  await helpTourBtn.click();
+
+  const tourPopover = page.locator('#guidedTourPopover');
+  await expect(tourPopover).toBeVisible();
+  await expect(tourPopover).toContainText('Sua única prioridade de agora');
+  await page.keyboard.press('Escape');
+  await expect(tourPopover).toBeHidden();
+
+  // 2. Acionamento a partir do banner de demonstração
+  await page.evaluate(() => {
+    const banner = document.getElementById('demoBanner');
+    if (banner) banner.hidden = false;
+  });
+  const demoTourBtn = page.locator('#demoTourBtn');
+  await expect(demoTourBtn).toBeVisible();
+  await demoTourBtn.click();
+
+  await expect(tourPopover).toBeVisible();
+  await expect(tourPopover).toContainText('Sua única prioridade de agora');
+  await page.keyboard.press('Escape');
+  await expect(tourPopover).toBeHidden();
 });

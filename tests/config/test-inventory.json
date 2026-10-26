@@ -698,7 +698,7 @@
         "./helpers.js",
         "]"
       ],
-      "staticTestDeclarations": 12,
+      "staticTestDeclarations": 14,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 13,
       "observedCaseSeconds": 60.1,

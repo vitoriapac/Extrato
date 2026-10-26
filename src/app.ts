@@ -8491,6 +8491,29 @@ function renderTodayExecutionSummary(model: any) {
   });
   controller.mountExecutionSummary(container, model);
 }
+let demoFirstStepsDismissed = false;
+
+function isFirstStepsDismissed(): boolean {
+  if (IS_DEMO_MODE) {
+    return demoFirstStepsDismissed;
+  }
+  try {
+    return Boolean(localStorage.getItem('studytrack_first_steps_dismissed'));
+  } catch {
+    return false;
+  }
+}
+
+function dismissFirstSteps(): void {
+  if (IS_DEMO_MODE) {
+    demoFirstStepsDismissed = true;
+  } else {
+    try {
+      localStorage.setItem('studytrack_first_steps_dismissed', '1');
+    } catch {}
+  }
+}
+
 function renderFirstStepsMissionCard() {
   let slot = document.getElementById('firstStepsMissionSlot');
   if (!slot) {
@@ -8503,10 +8526,7 @@ function renderFirstStepsMissionCard() {
   }
   if (!slot) return;
 
-  let dismissed = false;
-  try {
-    dismissed = Boolean(localStorage.getItem('studytrack_first_steps_dismissed'));
-  } catch {}
+  const dismissed = isFirstStepsDismissed();
 
   const hasPlan =
     (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
@@ -8526,9 +8546,7 @@ function renderFirstStepsMissionCard() {
     formatPlanMinutes,
     formatDatePt,
     onDismissFirstSteps: () => {
-      try {
-        localStorage.setItem('studytrack_first_steps_dismissed', '1');
-      } catch {}
+      dismissFirstSteps();
       renderFirstStepsMissionCard();
     },
     onStartTour: () => {
@@ -10816,9 +10834,7 @@ document.addEventListener('click', event => {
     guidedTourController.start();
   }
   if ((event.target as HTMLElement).closest('[data-first-steps-dismiss]')) {
-    try {
-      localStorage.setItem('studytrack_first_steps_dismissed', '1');
-    } catch {}
+    dismissFirstSteps();
     renderFirstStepsMissionCard();
   }
 });

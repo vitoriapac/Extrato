@@ -30,13 +30,13 @@ export function GuidedTourPopover({
   return (
     <div
       id="guidedTourOverlay"
-      className="guided-tour-overlay fixed inset-0 z-50 pointer-events-none"
+      className="guided-tour-overlay fixed inset-0 z-[200] pointer-events-none"
       role="region"
       aria-label="Tour guiado pelo aplicativo"
     >
       <div
         id="guidedTourPopover"
-        className="guided-tour-popover pointer-events-auto absolute z-50 max-w-[380px] w-[calc(100vw-24px)] transition-all duration-200"
+        className="guided-tour-popover pointer-events-auto absolute z-[205] max-w-[380px] w-[calc(100vw-24px)] transition-all duration-200"
         style={positionStyle}
         role="dialog"
         aria-modal="true"
