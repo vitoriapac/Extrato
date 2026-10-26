@@ -11,6 +11,7 @@
     "check:syntax": "node scripts/check-syntax.mjs",
     "check:types": "tsc -p tsconfig.json --noEmit",
     "check:types:pure": "tsc -p tsconfig.pure.json --noEmit",
+    "check:types:tests": "tsc -p tsconfig.tests.json --noEmit",
     "serve": "node scripts/serve.mjs",
     "check:bundle": "node scripts/build.mjs --check",
     "test": "node --import ./scripts/ts-resolve-hook.mjs --test tests/unit/*.test.js",
@@ -32,6 +33,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/cli": "^4.3.3",
+    "@types/node": "^22.20.5",
     "esbuild": "^0.25.9",
     "prettier": "^3.9.10",
     "typescript": "~7.0.2"

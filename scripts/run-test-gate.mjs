@@ -60,6 +60,7 @@ if (gate !== 'visual' && !browserOnly) {
     ['Syntax', ['scripts/check-syntax.mjs'], 'UTC'],
     ['Typecheck', [tsc, '-p', 'tsconfig.json', '--noEmit'], 'UTC'],
     ['Typecheck (pure)', [tsc, '-p', 'tsconfig.pure.json', '--noEmit'], 'UTC'],
+    ['Typecheck (tests)', [tsc, '-p', 'tsconfig.tests.json', '--noEmit'], 'UTC'],
     ['Inventory', ['scripts/audit-test-suite.mjs', '--check'], 'UTC'],
     ['Tier contracts', ['scripts/check-test-tiers.mjs'], 'UTC'],
     ['Generated artifacts', ['scripts/build.mjs', '--check'], 'UTC']
