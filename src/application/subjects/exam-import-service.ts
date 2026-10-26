@@ -1,32 +1,37 @@
-const normalizeName = value =>
+type Row = Record<string, any>;
+const normalizeName = (value: unknown) =>
   String(value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .replace(/\s+/g, ' ')
     .toLocaleLowerCase('pt-BR');
-const selected = (id, set) => !set || set.has(id);
-const unique = (...values) => [...new Set(values.flat().filter(Boolean))];
-const canonical = value =>
+const selected = (id: string, set: Set<string> | null | undefined) => !set || set.has(id);
+const unique = (...values: any[]): any[] => [...new Set(values.flat().filter(Boolean))];
+const canonical = (value: any): any =>
   Array.isArray(value)
     ? value.map(canonical)
     : value && typeof value === 'object'
       ? Object.fromEntries(
           Object.keys(value)
             .sort()
-            .map(key => [key, canonical(value[key])])
+            .map((key): [string, any] => [key, canonical(value[key])])
         )
       : value;
-const stable = value => JSON.stringify(canonical(value));
-const clone = value => (value == null ? value : structuredClone(value));
+const stable = (value: unknown) => JSON.stringify(canonical(value));
+const clone = <T>(value: T): T => (value == null ? value : structuredClone(value));
 
-export const matchesCatalogItem = (local, source) => {
+export const matchesCatalogItem = (
+  local: Row | null | undefined,
+  source: Row | null | undefined
+) => {
   if (local?.catalogId && source?.catalogId && local.catalogId === source.catalogId) return true;
   const localNames = unique(local?.name, local?.aliases).map(normalizeName),
     sourceNames = unique(source?.name, source?.aliases).map(normalizeName);
   return localNames.some(name => sourceNames.includes(name));
 };
-const findMatch = (items, source) => (items || []).find(item => matchesCatalogItem(item, source));
+const findMatch = (items: Row[] | null | undefined, source: Row) =>
+  (items || []).find((item: any) => matchesCatalogItem(item, source));
 
 export function buildCatalogMetadata(current: any = {}, source: any = {}, options: any = {}) {
   const sourceDifficulty = source.catalogDifficulty || source.difficulty || null;
@@ -64,8 +69,8 @@ export function previewExamStructureImport({
   subjects = [],
 }: any = {}) {
   if (!preset || !Array.isArray(preset.subjects)) throw new TypeError('Preset de edital inválido.');
-  const subjectSet = selectedSubjectIds ? new Set(selectedSubjectIds) : null,
-    topicSet = selectedTopicIds ? new Set(selectedTopicIds) : null;
+  const subjectSet = selectedSubjectIds ? new Set<string>(selectedSubjectIds) : null,
+    topicSet = selectedTopicIds ? new Set<string>(selectedTopicIds) : null;
   const result = {
     addedSubjects: 0,
     existingSubjects: 0,
@@ -75,10 +80,10 @@ export function previewExamStructureImport({
     metadataUpdateSubjects: 0,
     metadataUpdateTopics: 0,
     preservedRecords: 0,
-    warnings: [],
+    warnings: [] as string[],
     catalogVersion: preset.version || null,
     sources: [...(preset.sources || [])],
-    selection: [],
+    selection: [] as any[],
   };
   for (const source of preset.subjects) {
     if (!selected(source.id, subjectSet)) continue;
@@ -89,10 +94,10 @@ export function previewExamStructureImport({
       result.metadataUpdates++;
       result.metadataUpdateSubjects++;
     }
-    const topics = (source.topics || []).filter(topic =>
+    const topics = (source.topics || []).filter((topic: any) =>
       selected(`${source.id}:${topic.id}`, topicSet)
     );
-    const topicEntries = topics.map(topic => {
+    const topicEntries = topics.map((topic: any) => {
       const existingTopic = findMatch(existing?.topics, topic),
         metadataUpdate = Boolean(existingTopic && needsMetadataUpdate(existingTopic, topic));
       if (existingTopic) {
@@ -115,8 +120,8 @@ export function createExamImportService({ subjectService, getSubjects }: any = {
   if (!subjectService || typeof getSubjects !== 'function')
     throw new TypeError('Importação requer serviço e estado de disciplinas.');
   return Object.freeze({
-    preview: input => previewExamStructureImport({ ...input, subjects: getSubjects() }),
-    importExamStructure(input: any = {}) {
+    preview: (input: Row) => previewExamStructureImport({ ...input, subjects: getSubjects() }),
+    importExamStructure(input: any = {}): any {
       if ((input.duplicateStrategy || 'merge') !== 'merge')
         throw new TypeError('Apenas a estratégia merge é suportada.');
       const preview = previewExamStructureImport({ ...input, subjects: getSubjects() }),

@@ -50,7 +50,7 @@ export function captureRecommendationBaseline({
 }
 
 export function captureRecommendationSnapshot(
-  recommendation,
+  recommendation: Record<string, any>,
   { baseline = null, createdAt = null }: any = {}
 ) {
   const before = baseline || captureRecommendationBaseline({ measuredAt: createdAt });
@@ -103,7 +103,7 @@ export function captureRecommendationSnapshot(
 }
 
 export function measureRecommendationOutcome(
-  feedback,
+  feedback: Record<string, any>,
   {
     masteryAfter = null,
     accuracyAfter = null,

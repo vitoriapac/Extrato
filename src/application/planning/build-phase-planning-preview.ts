@@ -1,6 +1,6 @@
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { buildPhaseStrategyProposal } from '../../domain/planning/phase-strategy.js';
-const scope = tags => [...new Set(tags || [])].sort();
+const scope = (tags: string[] | null | undefined) => [...new Set(tags || [])].sort();
 // Projection supplies context; existing phase strategy owns the activity split.
 export function buildPhasePlanningPreview({
   trajectory = null,
@@ -11,7 +11,7 @@ export function buildPhasePlanningPreview({
   ...input
 }: any = {}) {
   const active = scope(activeExamTags);
-  const unavailable = reason => ({
+  const unavailable = (reason: string) => ({
     state: 'insufficient',
     version: 1,
     phase: resolveExamPhase(input.daysToExam),
@@ -26,21 +26,23 @@ export function buildPhasePlanningPreview({
     );
   if (
     Array.isArray(eligibleTopicIds) &&
-    input.plan?.items?.some(item => !eligibleTopicIds.includes(item.topicId || item.id))
+    input.plan?.items?.some((item: any) => !eligibleTopicIds.includes(item.topicId || item.id))
   )
     return unavailable(
       'Há conteúdo fora do escopo ativo ou arquivado no plano. Revise-o antes de adaptar a fase.'
     );
   const proposal = buildPhaseStrategyProposal(input);
   const risks = (trajectory?.topicRisks || [])
-    .filter(risk => (input.plan?.items || []).some(item => item.topicId === risk.topicId))
-    .map(risk => ({
+    .filter((risk: any) =>
+      (input.plan?.items || []).some((item: any) => item.topicId === risk.topicId)
+    )
+    .map((risk: any) => ({
       subjectId: risk.subjectId,
       topicId: risk.topicId,
       name: risk.topicName || risk.topicId,
       impact: risk.examImpact ?? null,
     }))
-    .sort((a, b) => String(a.topicId).localeCompare(String(b.topicId)));
+    .sort((a: any, b: any) => String(a.topicId).localeCompare(String(b.topicId)));
   const decisionContext = {
     examDate: examDate ?? trajectory?.exam?.date ?? null,
     targetScore: targetScore ?? trajectory?.current?.targetScore ?? null,

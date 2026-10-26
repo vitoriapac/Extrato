@@ -9,8 +9,9 @@ export function createDailyPlanService({
   if (!repository || typeof repository.getDailyPlans !== 'function')
     throw new TypeError('Serviço diário requer repositório.');
   return Object.freeze({
-    calculate: input => buildProposal({ ...input, existingPlans: repository.getDailyPlans() }),
-    confirm: (proposal, studyPlan) => {
+    calculate: (input: Record<string, any>) =>
+      buildProposal({ ...input, existingPlans: repository.getDailyPlans() }),
+    confirm: (proposal: Record<string, any>, studyPlan: Record<string, any>) => {
       const operationId = idGenerator('daily-plan-operation'),
         createdAt = clock.nowISO(),
         result = applyProposal({
@@ -31,7 +32,7 @@ export function createDailyPlanService({
       });
       return result;
     },
-    undo: (operation, studyPlan) => {
+    undo: (operation: Record<string, any>, studyPlan: Record<string, any>) => {
       const result = undoGeneration({
         dailyPlans: repository.getDailyPlans(),
         operationId: operation.id,

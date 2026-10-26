@@ -1,11 +1,13 @@
 import { recommendationSignature } from './recommendation-history.js';
 import { buildRecommendationExplanation } from './build-recommendation-explanation.js';
-const asBoolean = value => value === true;
+type Row = Record<string, any>;
+const asBoolean = (value: unknown) => value === true;
 
+// Callers spread the presentation into new records; a Row spread would drop the index signature.
 export function createRecommendationPresentation(
-  recommendation,
+  recommendation: Row,
   { id, shownAt, algorithmVersion = 1 }: any = {}
-) {
+): any {
   if (!recommendation || !id || !shownAt)
     throw new Error('Recomendação, identidade e instante são obrigatórios.');
   return {
@@ -21,15 +23,15 @@ export function createRecommendationPresentation(
 }
 
 export function recordRecommendationDecision(
-  feedbackList,
-  recommendation,
+  feedbackList: Row[],
+  recommendation: Row,
   { accepted, reasonSkipped = null, baseline = null, snapshot = null, now, idGenerator }: any = {}
 ) {
   const existing = feedbackList.find(
-    item => item.recommendationId === recommendation.recommendationId
+    (item: any) => item.recommendationId === recommendation.recommendationId
   );
   if (existing) return existing;
-  const feedback = {
+  const feedback: Row = {
     id: idGenerator('recommendation-feedback'),
     recommendationId: recommendation.recommendationId,
     date: String(recommendation.shownAt).slice(0, 10),
@@ -60,12 +62,12 @@ export function recordRecommendationDecision(
 }
 
 export function completeRecommendationFeedback(
-  feedbackList,
-  recommendationId,
+  feedbackList: Row[],
+  recommendationId: string,
   { sessionId, completedAt }: any = {}
 ) {
   const feedback = feedbackList.find(
-    item => item.recommendationId === recommendationId && item.accepted
+    (item: any) => item.recommendationId === recommendationId && item.accepted
   );
   if (!feedback) return null;
   feedback.completed = true;
@@ -75,12 +77,12 @@ export function completeRecommendationFeedback(
 }
 
 export function rateRecommendationFeedback(
-  feedbackList,
-  recommendationId,
+  feedbackList: Row[],
+  recommendationId: string,
   { useful, ratedAt }: any = {}
 ) {
   const feedback = feedbackList.find(
-    item => item.recommendationId === recommendationId && item.completed
+    (item: any) => item.recommendationId === recommendationId && item.completed
   );
   if (!feedback) return null;
   feedback.useful = asBoolean(useful);
@@ -88,12 +90,12 @@ export function rateRecommendationFeedback(
   return feedback;
 }
 
-export function summarizeRecommendationFeedback(feedbackList = []) {
+export function summarizeRecommendationFeedback(feedbackList: Row[] = []) {
   const decisions = feedbackList.filter(item => typeof item.accepted === 'boolean');
   const accepted = decisions.filter(item => item.accepted);
   const completed = accepted.filter(item => item.completed);
   const rated = completed.filter(item => typeof item.useful === 'boolean');
-  const pct = (part, total) => (total ? Math.round((part / total) * 100) : null);
+  const pct = (part: number, total: number) => (total ? Math.round((part / total) * 100) : null);
   return {
     shown: decisions.length,
     accepted: accepted.length,
@@ -107,13 +109,13 @@ export function summarizeRecommendationFeedback(feedbackList = []) {
 
 // Keep ephemeral identities stable without registering hidden items as presented.
 export function canReuseRecommendationPresentation(
-  previous,
-  current,
+  previous: Row | null | undefined,
+  current: Row,
   { record = null, today, activeExamTags = [], toLocalDate }: any = {}
 ) {
   if (!previous || !today || typeof toLocalDate !== 'function') return false;
   const scope = record?.activeExamTags || previous.activeExamTags;
-  const key = tags => JSON.stringify([...new Set(tags)].sort());
+  const key = (tags: string[]) => JSON.stringify([...new Set(tags)].sort());
   return (
     Array.isArray(scope) &&
     key(scope) === key(activeExamTags) &&

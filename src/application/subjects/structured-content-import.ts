@@ -1,16 +1,17 @@
-const clean = value => String(value ?? '').trim();
-const key = value =>
+type Row = Record<string, any>;
+const clean = (value: unknown) => String(value ?? '').trim();
+const key = (value: unknown) =>
   clean(value)
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9]+/g, ' ')
     .trim()
     .toLocaleLowerCase('pt-BR');
-const finite = value =>
+const finite = (value: unknown) =>
   value === '' || value == null ? null : Number.isFinite(Number(value)) ? Number(value) : null;
 const DIFFICULTIES = new Set(['Fácil', 'Médio', 'Difícil']);
 const IMPORTABLE_FIELDS = ['difficulty', 'examImportance', 'estimatedStudyMinutes'];
-const headerAliases = {
+const headerAliases: Record<string, string> = {
   disciplina: 'subject',
   materia: 'subject',
   subject: 'subject',
@@ -31,14 +32,19 @@ const headerAliases = {
 
 export class StructuredImportError extends TypeError {
   issues: any;
-  constructor(issues = []) {
+  constructor(issues: any[] = []) {
     super('Não foi possível importar o arquivo.');
     this.name = 'StructuredImportError';
     this.issues = issues;
   }
 }
-const problem = (line, field, code, message) => ({ line, field, code, message });
-function parseCsvRows(text) {
+const problem = (line: number | null, field: string, code: string, message: string) => ({
+  line,
+  field,
+  code,
+  message,
+});
+function parseCsvRows(text: string) {
   const rows = [];
   let row = [],
     field = '',
@@ -82,7 +88,7 @@ function parseCsvRows(text) {
     ]);
   return rows;
 }
-function normalizedTopic(input: any = {}, line = null, issues = []) {
+function normalizedTopic(input: any = {}, line: number | null = null, issues: Row[] = []) {
   const name = clean(input.name ?? input.topic ?? input.topico ?? input.conteudo),
     rawDifficulty = clean(input.difficulty ?? input.dificuldade),
     importance = finite(input.importance ?? input.importancia ?? input.examImportance),
@@ -124,8 +130,8 @@ function normalizedTopic(input: any = {}, line = null, issues = []) {
     ...(tags.length ? { tags } : {}),
   };
 }
-function normalizeSubjects(subjects, lines = []) {
-  const issues = [];
+function normalizeSubjects(subjects: unknown, lines: number[] = []) {
+  const issues: Row[] = [];
   if (!Array.isArray(subjects) || !subjects.length)
     throw new StructuredImportError([
       problem(null, 'arquivo', 'empty', 'O arquivo não contém disciplinas.'),
@@ -140,7 +146,7 @@ function normalizeSubjects(subjects, lines = []) {
       name = clean(input?.name ?? input?.subject ?? input?.disciplina ?? input?.materia);
     if (!name)
       issues.push(problem(line, 'disciplina', 'required', 'O campo "disciplina" está vazio.'));
-    const topics = (input?.topics ?? input?.topicos ?? []).map(topic =>
+    const topics = (input?.topics ?? input?.topicos ?? []).map((topic: any) =>
       normalizedTopic(topic, topic.__line ?? line, issues)
     );
     topicCount += topics.length;
@@ -151,7 +157,7 @@ function normalizeSubjects(subjects, lines = []) {
   if (issues.length) throw new StructuredImportError(issues);
   return result;
 }
-export function parseStructuredStudyContent(text, { fileName = '' }: any = {}) {
+export function parseStructuredStudyContent(text: string, { fileName = '' }: any = {}) {
   if (typeof text !== 'string' || !text.trim())
     throw new StructuredImportError([problem(null, 'arquivo', 'empty', 'O arquivo está vazio.')]);
   const json = /\.json$/i.test(fileName) || /^[\s]*[\[{]/.test(text);
@@ -205,16 +211,18 @@ export function parseStructuredStudyContent(text, { fileName = '' }: any = {}) {
   );
 }
 
-const originOf = (topic, field) => topic?.fieldOrigins?.[field] || null;
-const manualValue = (topic, field) => topic?.[field] != null && originOf(topic, field) !== 'import';
-const fieldLabel = {
+const originOf = (topic: Row | null | undefined, field: string) =>
+  topic?.fieldOrigins?.[field] || null;
+const manualValue = (topic: Row | null | undefined, field: string) =>
+  topic?.[field] != null && originOf(topic, field) !== 'import';
+const fieldLabel: Record<string, string> = {
   difficulty: 'dificuldade',
   examImportance: 'importância',
   estimatedStudyMinutes: 'esforço',
 };
-function compareTopic(existing, imported) {
-  const updates = [],
-    preserved = [];
+function compareTopic(existing: Row, imported: Row) {
+  const updates: Row[] = [],
+    preserved: Row[] = [];
   for (const field of IMPORTABLE_FIELDS) {
     if (!(field in imported)) continue;
     if (manualValue(existing, field))
@@ -232,7 +240,9 @@ function compareTopic(existing, imported) {
         to: imported[field],
       });
   }
-  const importedTags = (imported.tags || []).filter(tag => !(existing.tags || []).includes(tag));
+  const importedTags = (imported.tags || []).filter(
+    (tag: any) => !(existing.tags || []).includes(tag)
+  );
   if (importedTags.length)
     updates.push({
       field: 'tags',
@@ -247,7 +257,7 @@ export function createStructuredContentImportService({ subjectService, getSubjec
     throw new TypeError('Importação estruturada requer serviço e estado de disciplinas.');
   }
 
-  const inspect = subjects => {
+  const inspect = (subjects: Row[]) => {
     const current = getSubjects();
     const summary = {
       addedSubjects: 0,
@@ -257,17 +267,22 @@ export function createStructuredContentImportService({ subjectService, getSubjec
       updatedTopics: 0,
       preservedTopics: 0,
       totalTopics: 0,
-      fieldUpdates: { difficulty: 0, examImportance: 0, estimatedStudyMinutes: 0, tags: 0 },
-      conflicts: [],
+      fieldUpdates: {
+        difficulty: 0,
+        examImportance: 0,
+        estimatedStudyMinutes: 0,
+        tags: 0,
+      } as Record<string, number>,
+      conflicts: [] as Row[],
     };
 
     for (const source of subjects) {
-      const subject = current.find(item => key(item.name) === key(source.name));
+      const subject = current.find((item: any) => key(item.name) === key(source.name));
       subject ? summary.existingSubjects++ : summary.addedSubjects++;
 
       for (const topic of source.topics) {
         summary.totalTopics++;
-        const existing = subject?.topics?.find(item => key(item.name) === key(topic.name));
+        const existing = subject?.topics?.find((item: any) => key(item.name) === key(topic.name));
         if (!existing) {
           summary.addedTopics++;
           continue;
@@ -293,18 +308,20 @@ export function createStructuredContentImportService({ subjectService, getSubjec
 
   return Object.freeze({
     preview: inspect,
-    import(subjects) {
+    import(subjects: Row[]) {
       const current = getSubjects();
       const snapshot = structuredClone(current);
       const summary = inspect(subjects);
 
       try {
         for (const source of subjects) {
-          let subject = current.find(item => key(item.name) === key(source.name));
+          let subject = current.find((item: any) => key(item.name) === key(source.name));
           if (!subject) subject = subjectService.create(source.name);
 
           for (const imported of source.topics) {
-            const existing = subject.topics.find(item => key(item.name) === key(imported.name));
+            const existing = subject.topics.find(
+              (item: any) => key(item.name) === key(imported.name)
+            );
             if (existing) {
               const comparison = compareTopic(existing, imported);
               const patch: Record<string, any> = {

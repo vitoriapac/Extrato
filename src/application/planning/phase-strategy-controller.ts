@@ -1,4 +1,4 @@
-const signature = proposal =>
+const signature = (proposal: Record<string, any>) =>
   JSON.stringify([
     proposal.basePlanId,
     proposal.budget,
@@ -19,7 +19,7 @@ export function createPhaseStrategyController({
   clock,
   onBeforeChange = () => {},
 }: any = {}) {
-  let draft = null;
+  let draft: Record<string, any> | null = null;
   const view = () => draft;
   const preview = () => {
     draft = getProposal();
@@ -62,7 +62,7 @@ export function createPhaseStrategyController({
       metadata = current?.phaseStrategy;
     if (metadata?.status !== 'applied')
       return { state: 'blocked', reason: 'Não há estratégia por fase aplicada para reverter.' };
-    const source = getPlans().find(item => item.id === metadata.sourcePlanId);
+    const source = getPlans().find((item: any) => item.id === metadata.sourcePlanId);
     if (!source) return { state: 'blocked', reason: 'A versão anterior não está disponível.' };
     const capacity = getCapacity();
     if (!Number.isFinite(capacity) || source.weeklyPlannedMinutes > capacity)

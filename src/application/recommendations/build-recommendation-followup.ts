@@ -1,6 +1,12 @@
 import { localDateFromTimestamp } from '../../domain/sessions/study-session.js';
 import { strategicRecordInScope } from '../analytics/build-strategic-timeline.js';
-const numeric = value =>
+const STATE_TITLES: Record<string, string> = {
+  positive: 'Evidência de melhora',
+  neutral: 'Sem melhora observável · estável',
+  negative: 'Sem melhora observável · piora',
+  insufficient: 'Ainda sem evidência suficiente',
+};
+const numeric = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
 const labels = {
   accuracy: 'Precisão',
@@ -17,8 +23,8 @@ export function buildRecommendationFollowup({
   today,
 }: any = {}) {
   const rows = feedback
-    .filter(item => item.accepted && strategicRecordInScope(item, activeExamTags, topics))
-    .map(item => {
+    .filter((item: any) => item.accepted && strategicRecordInScope(item, activeExamTags, topics))
+    .map((item: any) => {
       const snapshot = item.snapshot || {},
         outcome = item.outcome || {},
         before = snapshot.before || item.baseline || outcome.before || {},
@@ -29,7 +35,7 @@ export function buildRecommendationFollowup({
         before: numeric(before[key]),
         after: numeric(after[key] ?? outcome[key + 'After']),
       }));
-      const linked = sessions.filter(session => {
+      const linked = sessions.filter((session: any) => {
         const recordedAt = Date.parse(session.endedAt || session.createdAt),
           measuredAt = Date.parse(outcome.measuredAt),
           baselineAt = Date.parse(before.measuredAt);
@@ -71,7 +77,7 @@ export function buildRecommendationFollowup({
         date: item.date || localDateFromTimestamp(item.createdAt),
         topicName:
           snapshot.evidenceSnapshot?.topicName ||
-          topics.find(topic => topic.id === item.topicId)?.name ||
+          topics.find((topic: any) => topic.id === item.topicId)?.name ||
           'Tópico removido',
         action:
           snapshot.suggestedAction?.label ||
@@ -88,12 +94,7 @@ export function buildRecommendationFollowup({
         },
         metrics,
         state,
-        title: {
-          positive: 'Evidência de melhora',
-          neutral: 'Sem melhora observável · estável',
-          negative: 'Sem melhora observável · piora',
-          insufficient: 'Ainda sem evidência suficiente',
-        }[state],
+        title: STATE_TITLES[state],
         questionVolume: numeric(outcome.questionVolumeAfter ?? outcome.questionVolume),
         measuredAt: outcome.measuredAt || null,
         measuredDate: localDateFromTimestamp(outcome.measuredAt),
@@ -103,7 +104,7 @@ export function buildRecommendationFollowup({
       };
     })
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         String(b.date || '').localeCompare(String(a.date || '')) ||
         String(a.id).localeCompare(String(b.id))
     );

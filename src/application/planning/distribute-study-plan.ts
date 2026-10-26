@@ -1,18 +1,18 @@
 import { freezePlanExecution } from '../../domain/planning/plan-execution-snapshot.js';
 const ACTIVE_STATUSES = new Set(['planned', 'in_progress', 'partial', 'completed', 'deferred']);
-const clampMinutes = value => Math.max(0, Math.round(Number(value) || 0));
+const clampMinutes = (value: unknown) => Math.max(0, Math.round(Number(value) || 0));
 
-function existingSourceKeys(plans, studyPlanId) {
+function existingSourceKeys(plans: any[] | null | undefined, studyPlanId: string) {
   return new Set(
-    (plans || []).flatMap(plan =>
+    (plans || []).flatMap((plan: any) =>
       (plan.items || [])
         .filter(
-          item =>
+          (item: any) =>
             item.studyPlanId === studyPlanId &&
             item.studyPlanItemId &&
             ACTIVE_STATUSES.has(item.status)
         )
-        .map(item => item.studyPlanItemId)
+        .map((item: any) => item.studyPlanItemId)
     )
   );
 }
@@ -29,18 +29,18 @@ export function buildDailyPlanProposal({
     return {
       state: 'insufficient',
       reason: 'Plano semanal ausente.',
-      days: [],
+      days: [] as any[],
       plannedMinutes: 0,
       unallocatedMinutes: 0,
     };
   const existingKeys = existingSourceKeys(existingPlans, studyPlan.id),
     ratio = Math.max(0, Math.min(0.4, Number(reserveRatio) || 0));
-  const slots = (days || []).map(day => {
+  const slots = (days || []).map((day: any) => {
     const existing = existingPlans
-      .filter(plan => plan.date === day.date)
-      .flatMap(plan => plan.items || [])
-      .filter(item => !['skipped', 'replaced'].includes(item.status))
-      .reduce((sum, item) => sum + clampMinutes(item.plannedMinutes), 0);
+      .filter((plan: any) => plan.date === day.date)
+      .flatMap((plan: any) => plan.items || [])
+      .filter((item: any) => !['skipped', 'replaced'].includes(item.status))
+      .reduce((sum: any, item: any) => sum + clampMinutes(item.plannedMinutes), 0);
     const available = clampMinutes(day.availableMinutes),
       reserve = Math.round(available * ratio),
       capacity = Math.max(0, available - reserve - existing);
@@ -50,20 +50,21 @@ export function buildDailyPlanProposal({
       reserveMinutes: reserve,
       existingMinutes: existing,
       remaining: capacity,
-      items: [],
+      items: [] as any[],
     };
   });
-  const candidates = [];
-  const allowed = topicId => eligibleTopicIds === null || eligibleTopicIds.includes(topicId);
+  const candidates: any[] = [];
+  const allowed = (topicId: string) =>
+    eligibleTopicIds === null || eligibleTopicIds.includes(topicId);
   (dueReviews || [])
     .filter(
-      review =>
+      (review: any) =>
         review?.topicId &&
         review?.date &&
         allowed(review.topicId) &&
         !existingKeys.has(`review:${review.id}`)
     )
-    .forEach((review, index) =>
+    .forEach((review: any, index: any) =>
       candidates.push({
         studyPlanItemId: `review:${review.id || index}`,
         subjectId: review.subjectId || null,
@@ -77,8 +78,8 @@ export function buildDailyPlanProposal({
       })
     );
   studyPlan.items
-    .filter(item => allowed(item.topicId || item.id) && !existingKeys.has(item.id))
-    .forEach(item => {
+    .filter((item: any) => allowed(item.topicId || item.id) && !existingKeys.has(item.id))
+    .forEach((item: any) => {
       const mixes = [
         ['review', item.activityMix?.reviews],
         ['questions', item.activityMix?.questions],
@@ -123,13 +124,13 @@ export function buildDailyPlanProposal({
     unallocatedMinutes += remaining;
   }
   const proposalDays = slots
-    .filter(slot => slot.items.length)
-    .map(slot => ({
+    .filter((slot: any) => slot.items.length)
+    .map((slot: any) => ({
       ...slot,
-      plannedMinutes: slot.items.reduce((sum, item) => sum + item.minutes, 0),
+      plannedMinutes: slot.items.reduce((sum: any, item: any) => sum + item.minutes, 0),
       flexMinutes: slot.reserveMinutes + slot.remaining,
     }));
-  const plannedMinutes = proposalDays.reduce((sum, day) => sum + day.plannedMinutes, 0);
+  const plannedMinutes = proposalDays.reduce((sum: any, day: any) => sum + day.plannedMinutes, 0);
   return {
     state: plannedMinutes ? 'proposal' : 'insufficient',
     studyPlanId: studyPlan.id,
@@ -153,16 +154,16 @@ export function applyDailyPlanProposal({
   if (proposal?.state !== 'proposal' || !operationId || typeof idGenerator !== 'function')
     return { createdItems: 0, createdPlans: 0 };
   const existing = new Set(
-    dailyPlans.flatMap(plan =>
+    dailyPlans.flatMap((plan: any) =>
       (plan.items || [])
-        .filter(item => item.studyPlanId === proposal.studyPlanId && item.studyPlanItemId)
-        .map(item => `${item.studyPlanItemId}:${item.type}:${item.currentDate || plan.date}`)
+        .filter((item: any) => item.studyPlanId === proposal.studyPlanId && item.studyPlanItemId)
+        .map((item: any) => `${item.studyPlanItemId}:${item.type}:${item.currentDate || plan.date}`)
     )
   );
   let createdItems = 0,
     createdPlans = 0;
-  proposal.days.forEach(day => {
-    let plan = dailyPlans.find(item => item.date === day.date);
+  proposal.days.forEach((day: any) => {
+    let plan = dailyPlans.find((item: any) => item.date === day.date);
     if (!plan) {
       plan = {
         id: idGenerator('plan'),
@@ -179,7 +180,7 @@ export function applyDailyPlanProposal({
       dailyPlans.push(plan);
       createdPlans++;
     }
-    day.items.forEach((source, index) => {
+    day.items.forEach((source: any) => {
       const key = `${source.studyPlanItemId}:${source.type}:${day.date}`;
       if (existing.has(key)) return;
       existing.add(key);
@@ -228,8 +229,8 @@ export function applyDailyPlanProposal({
       createdItems++;
     });
     plan.plannedMinutes = (plan.items || [])
-      .filter(item => !['skipped', 'replaced'].includes(item.status))
-      .reduce((sum, item) => sum + clampMinutes(item.plannedMinutes), 0);
+      .filter((item: any) => !['skipped', 'replaced'].includes(item.status))
+      .reduce((sum: any, item: any) => sum + clampMinutes(item.plannedMinutes), 0);
     plan.flexMinutes = Math.max(0, plan.availableMinutes - plan.plannedMinutes);
     plan.updatedAt = now;
   });
@@ -238,10 +239,10 @@ export function applyDailyPlanProposal({
 
 export function undoDailyPlanGeneration({ dailyPlans = [], operationId }: any = {}) {
   let removedItems = 0;
-  const protectedItems = [];
+  const protectedItems: any[] = [];
   for (let index = dailyPlans.length - 1; index >= 0; index--) {
     const plan = dailyPlans[index];
-    plan.items = (plan.items || []).filter(item => {
+    plan.items = (plan.items || []).filter((item: any) => {
       if (item.generationOperationId !== operationId) return true;
       const executed =
         Number(item.executedSeconds) > 0 ||
@@ -255,8 +256,8 @@ export function undoDailyPlanGeneration({ dailyPlans = [], operationId }: any = 
       return false;
     });
     plan.plannedMinutes = plan.items
-      .filter(item => !['skipped', 'replaced'].includes(item.status))
-      .reduce((sum, item) => sum + clampMinutes(item.plannedMinutes), 0);
+      .filter((item: any) => !['skipped', 'replaced'].includes(item.status))
+      .reduce((sum: any, item: any) => sum + clampMinutes(item.plannedMinutes), 0);
     plan.flexMinutes = Math.max(0, (Number(plan.availableMinutes) || 0) - plan.plannedMinutes);
     if (!plan.items.length && plan.generationOperationId === operationId)
       dailyPlans.splice(index, 1);

@@ -31,7 +31,6 @@
     "src/application/analytics/build-recovery-timeline-detail.ts",
     "src/application/analytics/build-strategic-timeline.ts",
     "src/application/analytics/group-strategic-timeline.ts",
-    "src/application/planning/build-historical-planning-context.ts",
     "src/application/projection/**/*",
     "src/application/daily-execution/**/*",
     "src/application/sessions/**/*",
@@ -44,8 +43,8 @@
     "src/application/analytics/build-analytics-view-model.ts",
     "src/application/analytics/build-preparation-signals.ts",
     "src/application/analytics/build-topic-gap-inputs.ts",
-    "src/application/planning/study-plan-service.ts",
-    "src/application/recommendations/build-recommendation-explanation.ts",
-    "src/application/recommendations/recommendation-action.ts"
+    "src/application/recommendations/**/*",
+    "src/application/subjects/**/*",
+    "src/application/planning/**/*"
   ]
 }

@@ -12,7 +12,7 @@ export function createReplanController({
     throw new TypeError(
       'Controlador de replanejamento requer serviço, repositório, estado e relógio.'
     );
-  let preview = null;
+  let preview: Record<string, any> | null = null;
   const view = () => preview;
   const calculate = () => {
     const today = clock.today(),
@@ -22,19 +22,21 @@ export function createReplanController({
       futureDays = [];
     for (let date = clock.addDays(today, 1); date <= end; date = clock.addDays(date, 1)) {
       const planned = state.dailyPlans
-        .filter(plan => plan.date === date)
+        .filter((plan: any) => plan.date === date)
         .reduce(
-          (sum, plan) =>
+          (sum: any, plan: any) =>
             sum +
             (plan.items || [])
-              .filter(item => !['skipped', 'replaced', 'deferred'].includes(item.status))
-              .reduce((total, item) => total + (Number(item.plannedMinutes) || 0), 0),
+              .filter((item: any) => !['skipped', 'replaced', 'deferred'].includes(item.status))
+              .reduce((total: any, item: any) => total + (Number(item.plannedMinutes) || 0), 0),
           0
         );
       futureDays.push({ date, availableMinutes: Math.max(0, getDailyCapacity(date) - planned) });
     }
     preview = service.calculate({
-      plans: repository.getDailyPlans().filter(plan => plan.date >= start && plan.date < today),
+      plans: repository
+        .getDailyPlans()
+        .filter((plan: any) => plan.date >= start && plan.date < today),
       periodStart: start,
       periodEnd: end,
       futureDays,
@@ -53,7 +55,7 @@ export function createReplanController({
     onConfirmed(result);
     return result;
   };
-  const undo = id => {
+  const undo = (id: string) => {
     const result = service.undo(id);
     if (result) onUndone(result);
     return result;

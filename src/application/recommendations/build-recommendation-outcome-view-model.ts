@@ -1,11 +1,11 @@
-const LABELS = Object.freeze({
+const LABELS: Readonly<Record<string, string>> = Object.freeze({
   mastery: 'Domínio',
   retention: 'Retenção',
   reviewHealth: 'Saúde da revisão',
   accuracy: 'Acerto',
   risk: 'Risco',
 });
-const STATE_MAP = Object.freeze({
+const STATE_MAP: Readonly<Record<string, string>> = Object.freeze({
   positive: 'improved',
   negative: 'worsened',
   improved: 'improved',
@@ -14,16 +14,16 @@ const STATE_MAP = Object.freeze({
   pending: 'pending',
   insufficient: 'insufficient',
 });
-const STATE_LABELS = Object.freeze({
+const STATE_LABELS: Readonly<Record<string, string>> = Object.freeze({
   improved: 'Evidência de melhora posterior',
   worsened: 'Piora posterior observada',
   neutral: 'Resultado estável',
   pending: 'Resultado em acompanhamento',
   insufficient: 'Evidência insuficiente',
 });
-const numeric = value =>
+const numeric = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
-export function buildRecommendationOutcomeViewModel(feedbackList = []) {
+export function buildRecommendationOutcomeViewModel(feedbackList: Array<Record<string, any>> = []) {
   const measured = (Array.isArray(feedbackList) ? feedbackList : [])
     .filter(item => item?.completed && item?.outcome)
     .sort((a, b) =>
@@ -32,7 +32,7 @@ export function buildRecommendationOutcomeViewModel(feedbackList = []) {
       )
     );
   const feedback = measured[0];
-  if (!feedback) return { state: 'empty', available: false, metrics: [] };
+  if (!feedback) return { state: 'empty', available: false, metrics: [] as any[] };
   const outcome = feedback.outcome,
     before = outcome.before || feedback.snapshot?.before || feedback.baseline || {},
     after = outcome.after || {},

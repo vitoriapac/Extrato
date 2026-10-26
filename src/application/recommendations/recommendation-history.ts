@@ -8,7 +8,8 @@ export const RECOMMENDATION_HISTORY_STATUSES = Object.freeze([
   'dismissed',
   'expired',
 ]);
-export const recommendationSignature = item =>
+type Row = Record<string, any>;
+export const recommendationSignature = (item: Row) =>
   JSON.stringify([
     item.id,
     item.score,
@@ -20,23 +21,23 @@ export const recommendationSignature = item =>
     item.algorithmVersion || null,
     item.accuracyTarget ?? null,
   ]);
-const localDate = timestamp => {
+const localDate = (timestamp: string | number | Date) => {
   const date = new Date(timestamp);
   return Number.isNaN(date.getTime())
     ? null
     : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
-const recordDate = record => record.localDate || localDate(record.createdAt);
+const recordDate = (record: Row) => record.localDate || localDate(record.createdAt);
 
-export function migrateRecommendationHistory(feedback = []) {
-  const seen = new Set();
+export function migrateRecommendationHistory(feedback: Row[] = []) {
+  const seen = new Set<string>();
   return feedback
     .filter(item => {
       if (!item.recommendationId || seen.has(item.recommendationId)) return false;
       seen.add(item.recommendationId);
       return true;
     })
-    .map(item => ({
+    .map((item): Row => ({
       id: item.recommendationId,
       createdAt: item.shownAt || item.createdAt || new Date(`${item.date}T12:00:00Z`).toISOString(),
       localDate: item.date || localDate(item.shownAt || item.createdAt),
@@ -73,9 +74,15 @@ export function migrateRecommendationHistory(feedback = []) {
     }));
 }
 
-export function reusableRecommendationRecord(history, item, date, activeExamTags = null) {
+export function reusableRecommendationRecord(
+  history: Row[],
+  item: Row,
+  date: string,
+  activeExamTags: string[] | null = null
+) {
   const expected = recommendationSignature(item);
-  const scope = tags => (Array.isArray(tags) ? JSON.stringify([...new Set(tags)].sort()) : null);
+  const scope = (tags: unknown) =>
+    Array.isArray(tags) ? JSON.stringify([...new Set(tags)].sort()) : null;
   return (
     [...history]
       .reverse()
@@ -91,13 +98,13 @@ export function reusableRecommendationRecord(history, item, date, activeExamTags
 }
 
 export function ensureRecommendationRecord(
-  history,
-  item,
+  history: Row[],
+  item: Row,
   { now, idGenerator, activeExamTags = null }: any = {}
 ) {
-  const existing = history.find(record => record.id === item.recommendationId);
+  const existing = history.find((record: any) => record.id === item.recommendationId);
   if (existing) return existing;
-  const record = {
+  const record: Row = {
     activeExamTags: Array.isArray(activeExamTags) ? [...activeExamTags] : null,
     prioritySnapshot: captureTopicPriorityProfile(item, {
       capturedAt: item.shownAt || now,
@@ -132,12 +139,12 @@ export function ensureRecommendationRecord(
 }
 
 export function syncRecommendationHistory(
-  history,
-  recommendations,
+  history: Row[],
+  recommendations: Row[],
   { now, today = localDate(now), idGenerator, visibleCount = 3, activeExamTags = null }: any = {}
 ) {
   const visible = recommendations.slice(0, visibleCount),
-    ids = new Set(visible.map(item => item.recommendationId));
+    ids = new Set(visible.map((item: any) => item.recommendationId));
   let changed = false;
   for (const record of history) {
     if (record.status === 'pending' && (!ids.has(record.id) || recordDate(record) !== today)) {
@@ -147,7 +154,7 @@ export function syncRecommendationHistory(
     }
   }
   for (const item of visible) {
-    if (history.some(record => record.id === item.recommendationId)) continue;
+    if (history.some((record: any) => record.id === item.recommendationId)) continue;
     ensureRecommendationRecord(history, item, { now, idGenerator, activeExamTags });
     changed = true;
   }
@@ -155,11 +162,11 @@ export function syncRecommendationHistory(
 }
 
 export function decideRecommendationRecord(
-  history,
-  recommendationId,
+  history: Row[],
+  recommendationId: string,
   { accepted, source, feedbackId, now }: any = {}
 ) {
-  const record = history.find(item => item.id === recommendationId);
+  const record = history.find((item: any) => item.id === recommendationId);
   if (!record) return null;
   record.status = accepted ? 'executed' : 'dismissed';
   record.source = source || record.source;
@@ -169,18 +176,22 @@ export function decideRecommendationRecord(
   return record;
 }
 
-export function attachRecommendationSession(history, recommendationId, sessionId) {
-  const record = history.find(item => item.id === recommendationId);
+export function attachRecommendationSession(
+  history: Row[],
+  recommendationId: string,
+  sessionId: string
+) {
+  const record = history.find((item: any) => item.id === recommendationId);
   if (!record) return null;
   record.sessionId = sessionId;
   return record;
 }
 
-export function summarizeRecommendationHistory(history, { today, days = 30 }: any = {}) {
+export function summarizeRecommendationHistory(history: Row[], { today, days = 30 }: any = {}) {
   const cutoff = new Date(`${today}T00:00:00Z`);
   cutoff.setUTCDate(cutoff.getUTCDate() - (days - 1));
-  const rows = history.filter(item => Date.parse(item.createdAt) >= cutoff.getTime());
-  const count = status => rows.filter(item => item.status === status).length,
+  const rows = history.filter((item: any) => Date.parse(item.createdAt) >= cutoff.getTime());
+  const count = (status: string) => rows.filter((item: any) => item.status === status).length,
     executed = count('executed');
   return {
     days,

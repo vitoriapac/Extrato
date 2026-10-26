@@ -12,20 +12,23 @@ export function buildTodayViewModel({
   nextBestAction = null,
   activePlan = null,
 }: any = {}) {
-  const minutes = value => Math.max(0, Math.round(Number(value) || 0));
+  const minutes = (value: unknown) => Math.max(0, Math.round(Number(value) || 0));
   const items = plan?.items || [];
   const plannedMinutes = items
-    .filter(item => !['skipped', 'replaced', 'deferred'].includes(item.status))
-    .reduce((sum, item) => sum + minutes(item.plannedMinutes), 0);
+    .filter((item: any) => !['skipped', 'replaced', 'deferred'].includes(item.status))
+    .reduce((sum: any, item: any) => sum + minutes(item.plannedMinutes), 0);
   const executedMinutes = Math.round(
-    items.reduce((sum, item) => sum + Math.max(0, Number(item.executedSeconds) || 0) / 60, 0)
+    items.reduce(
+      (sum: any, item: any) => sum + Math.max(0, Number(item.executedSeconds) || 0) / 60,
+      0
+    )
   );
   const recoveryMinutes = pastPlans
-    .filter(row => row.date < date)
-    .flatMap(row => row.items || [])
-    .filter(item => !['completed', 'skipped', 'replaced', 'deferred'].includes(item.status))
+    .filter((row: any) => row.date < date)
+    .flatMap((row: any) => row.items || [])
+    .filter((item: any) => !['completed', 'skipped', 'replaced', 'deferred'].includes(item.status))
     .reduce(
-      (sum, item) =>
+      (sum: any, item: any) =>
         sum +
         Math.max(
           0,
@@ -67,7 +70,9 @@ export function buildTodayViewModel({
       ? Math.min(100, Math.round((executedMinutes / plannedMinutes) * 100))
       : null,
     nextActivity:
-      items.find(item => !['completed', 'skipped', 'replaced', 'deferred'].includes(item.status)) ||
+      items.find(
+        (item: any) => !['completed', 'skipped', 'replaced', 'deferred'].includes(item.status)
+      ) ||
       priorities[0] ||
       null,
   };

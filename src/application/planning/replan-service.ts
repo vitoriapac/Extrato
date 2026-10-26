@@ -5,14 +5,14 @@ export function createReplanService({
   undoProposal,
   clock,
   idGenerator,
-  getActiveExamTags = () => [],
+  getActiveExamTags = (): string[] => [],
 }: any = {}) {
   if (!repository || typeof repository.saveAdjustment !== 'function')
     throw new TypeError('Serviço de replanejamento requer repositório.');
   return Object.freeze({
-    calculate: input =>
+    calculate: (input: Record<string, any>) =>
       buildProposal({ ...input, plans: input.plans || repository.getDailyPlans() }),
-    confirm: proposal => {
+    confirm: (proposal: Record<string, any> | null | undefined) => {
       if (proposal?.state !== 'proposal' || !proposal.allocations?.length) return null;
       const operationId = idGenerator('replan-operation'),
         appliedAt = clock.nowISO();
@@ -23,7 +23,7 @@ export function createReplanService({
         now: appliedAt,
         idGenerator,
       });
-      const adjustment = {
+      const adjustment: Record<string, any> = {
         ...structuredClone(proposal),
         activeExamTags: [...getActiveExamTags()],
         id: idGenerator('plan-adjustment'),
@@ -37,7 +37,7 @@ export function createReplanService({
       repository.saveAdjustment(adjustment);
       return { result, adjustment };
     },
-    undo: id => {
+    undo: (id: string) => {
       const adjustment = repository.findAdjustment(id);
       if (!adjustment || adjustment.undoneAt) return null;
       const result = undoProposal({ dailyPlans: repository.getDailyPlans(), adjustment });

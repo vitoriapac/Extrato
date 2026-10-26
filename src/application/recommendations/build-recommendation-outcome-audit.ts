@@ -4,11 +4,12 @@ const TYPES = Object.freeze({
   questions: 'Questões',
   prerequisite: 'Pré-requisito',
 });
-const typeOf = item => {
+type Row = Record<string, any>;
+const typeOf = (item: Row) => {
   const value = item.actionKind || item.snapshot?.recommendationType || 'study';
   return Object.hasOwn(TYPES, value) ? value : 'study';
 };
-const resultOf = item => {
+const resultOf = (item: Row) => {
   const state = item.outcome?.state;
   if (state === 'positive' || state === 'improved') return 'improved';
   if (state === 'neutral' || state === 'stable') return 'stable';
@@ -16,7 +17,7 @@ const resultOf = item => {
   return 'insufficient';
 };
 
-export function buildRecommendationOutcomeAudit(feedback = []) {
+export function buildRecommendationOutcomeAudit(feedback: Row[] = []) {
   const executed = (Array.isArray(feedback) ? feedback : []).filter(item => item.accepted);
   const groups = Object.entries(TYPES)
     .map(([type, label]) => {
@@ -28,7 +29,8 @@ export function buildRecommendationOutcomeAudit(feedback = []) {
     .filter(group => group.executed > 0);
   const total = { executed: executed.length, improved: 0, stable: 0, declined: 0, insufficient: 0 };
   groups.forEach(group => {
-    for (const key of ['improved', 'stable', 'declined', 'insufficient']) total[key] += group[key];
+    for (const key of ['improved', 'stable', 'declined', 'insufficient'] as const)
+      total[key] += group[key];
   });
   return { groups, total, available: executed.length > 0 };
 }

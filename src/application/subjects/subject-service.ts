@@ -7,7 +7,7 @@ export const DEFAULT_SUBJECT_NAMES = Object.freeze([
   'Informática',
   'Vendas e Negociação',
 ]);
-const cleanName = value => String(value || '').trim() || 'Disciplina sem nome';
+const cleanName = (value: unknown) => String(value || '').trim() || 'Disciplina sem nome';
 export function createSubjectService({
   repository,
   clock,
@@ -16,7 +16,7 @@ export function createSubjectService({
 }: any = {}) {
   if (!repository || !clock || typeof idGenerator !== 'function')
     throw new TypeError('Serviço de disciplinas requer dependências.');
-  const newSubject = name => ({
+  const newSubject = (name: string): Record<string, any> => ({
     id: idGenerator('subject'),
     name: cleanName(name),
     collapsed: false,
@@ -25,7 +25,7 @@ export function createSubjectService({
     createdAt: clock.nowISO(),
     topics: [],
   });
-  const newTopic = input => ({
+  const newTopic = (input: Record<string, any>): Record<string, any> => ({
     id: idGenerator('topic'),
     name: '',
     link: '',
@@ -47,31 +47,31 @@ export function createSubjectService({
     ...input,
   });
   return Object.freeze({
-    create: name => repository.add(newSubject(name)),
-    rename: (id, name) => repository.update(id, { name: cleanName(name) }),
-    toggle: id => {
+    create: (name: string) => repository.add(newSubject(name)),
+    rename: (id: string, name: string) => repository.update(id, { name: cleanName(name) }),
+    toggle: (id: string) => {
       const item = repository.findById(id);
       return item ? repository.update(id, { collapsed: !item.collapsed }) : null;
     },
     addDefaults: (names = DEFAULT_SUBJECT_NAMES) =>
       names
-        .filter(name => !repository.all().some(item => item.name === name))
+        .filter(name => !repository.all().some((item: any) => item.name === name))
         .map(name => repository.add(newSubject(name))),
-    archive: id => {
+    archive: (id: string) => {
       const item = repository.update(id, { archived: true, archivedAt: clock.nowISO() });
       if (item) onEvent('subject_archived', id, null, { name: item.name });
       return item;
     },
-    restore: id => {
+    restore: (id: string) => {
       const item = repository.update(id, { archived: false, archivedAt: null });
       if (item) onEvent('subject_restored', id, null, { name: item.name });
       return item;
     },
-    remove: id => repository.remove(id),
-    addTopic: (subjectId, input = {}) => repository.addTopic(subjectId, newTopic(input)),
-    updateTopic: (subjectId, topicId, changes) =>
+    remove: (id: string) => repository.remove(id),
+    addTopic: (subjectId: string, input = {}) => repository.addTopic(subjectId, newTopic(input)),
+    updateTopic: (subjectId: string, topicId: string, changes: Record<string, any>) =>
       repository.updateTopic(subjectId, topicId, changes),
-    archiveTopic: (subjectId, topicId) => {
+    archiveTopic: (subjectId: string, topicId: string) => {
       const item = repository.updateTopic(subjectId, topicId, {
         archived: true,
         archivedAt: clock.nowISO(),
@@ -79,7 +79,7 @@ export function createSubjectService({
       if (item) onEvent('topic_archived', subjectId, topicId, { name: item.name });
       return item;
     },
-    restoreTopic: (subjectId, topicId) => {
+    restoreTopic: (subjectId: string, topicId: string) => {
       const item = repository.updateTopic(subjectId, topicId, {
         archived: false,
         archivedAt: null,
@@ -87,7 +87,7 @@ export function createSubjectService({
       if (item) onEvent('topic_restored', subjectId, topicId, { name: item.name });
       return item;
     },
-    removeTopic: (subjectId, topicId) => repository.removeTopic(subjectId, topicId),
+    removeTopic: (subjectId: string, topicId: string) => repository.removeTopic(subjectId, topicId),
     findTopic: repository.findTopic,
   });
 }
