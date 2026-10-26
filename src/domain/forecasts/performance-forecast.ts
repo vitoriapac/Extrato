@@ -3,19 +3,25 @@ import { describeScoreEvidence } from '../analytics/score-evidence.js';
 
 export const PERFORMANCE_FORECAST_VERSION = '1.0.0';
 
-const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, value));
+const clamp = (value: number, min = 0, max = 100) => Math.max(min, Math.min(max, value));
 
-function confidenceLabel(value) {
+function confidenceLabel(value: number) {
   return value >= 0.7 ? 'Alta' : value >= 0.35 ? 'Média' : 'Baixa';
 }
 
-function dayNumber(date) {
+function dayNumber(date: unknown) {
   const timestamp = Date.parse(`${date}T00:00:00Z`);
   return Number.isFinite(timestamp) ? timestamp / 86400000 : null;
 }
 
-function normalizeObservations(observations) {
-  return (Array.isArray(observations) ? observations : [])
+interface ForecastObservation {
+  date?: string;
+  value?: number | string;
+  sampleSize?: number | string;
+}
+
+function normalizeObservations(observations: unknown) {
+  return (Array.isArray(observations) ? (observations as ForecastObservation[]) : [])
     .map(item => ({
       date: item?.date,
       value: Number(item?.value),
@@ -38,6 +44,11 @@ export function buildPerformanceForecast({
   currentConfidence = 0,
   targetScore = 80,
   observations = [],
+}: {
+  currentValue?: number | string | null;
+  currentConfidence?: number;
+  targetScore?: number;
+  observations?: ForecastObservation[];
 } = {}) {
   const current = currentValue === null || currentValue === undefined ? NaN : Number(currentValue),
     confidence = clamp(Number(currentConfidence) || 0, 0, 1),
@@ -136,7 +147,7 @@ export function buildPerformanceForecast({
     confidence: forecastConfidence,
     confidenceLabel: confidenceLabel(forecastConfidence),
     slopePerWeek: Math.round(slopePerDay * 70) / 10,
-    reason: null,
+    reason: null as string | null,
     evidence: describeScoreEvidence({ completeness: 1, evidenceStrength: forecastConfidence }),
   };
   return {

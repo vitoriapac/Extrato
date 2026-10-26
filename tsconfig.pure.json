@@ -16,6 +16,7 @@
     "src/domain/reviews.ts",
     "src/domain/topic-bookmark.ts",
     "src/domain/recommendations/**/*",
-    "src/domain/study-eligibility.ts"
+    "src/domain/study-eligibility.ts",
+    "src/domain/forecasts/**/*"
   ]
 }

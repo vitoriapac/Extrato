@@ -1,12 +1,26 @@
 import { PROJECTION_EVIDENCE_POLICY as policy } from './projection-evidence-policy.js';
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
-const median = values => {
+interface ProjectionBreakdownRow {
+  subjectId?: string | null;
+  total?: number | string;
+}
+
+interface ProjectionSimulation {
+  id: string;
+  date: string;
+  total: number | string;
+  correct: number | string;
+  examTags?: string[];
+  breakdown?: ProjectionBreakdownRow[];
+}
+
+const median = (values: number[]) => {
   const ordered = [...values].sort((a, b) => a - b),
     middle = Math.floor(ordered.length / 2);
   return ordered.length % 2 ? ordered[middle] : (ordered[middle - 1] + ordered[middle]) / 2;
 };
-const clamp = value => Math.max(0, Math.min(100, Math.round(value)));
-const composition = item =>
+const clamp = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
+const composition = (item: ProjectionSimulation) =>
   JSON.stringify([...(item.examTags || [])].sort()) +
   '|' +
   JSON.stringify(
@@ -20,8 +34,8 @@ export function buildCalibratedScoreProjection({
   simulations = [],
   today,
   target = 80,
-}: Record<string, any> = {}) {
-  const seen = new Set(),
+}: { simulations?: ProjectionSimulation[]; today?: string; target?: number | string } = {}) {
+  const seen = new Set<string>(),
     cutoff = addLocalDays(today, 1 - policy.windowDays);
   const records = simulations
     .filter(item => {
@@ -43,7 +57,7 @@ export function buildCalibratedScoreProjection({
     .sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
   const latest = records.at(-1),
     key = latest ? composition(latest) : null;
-  const comparable: any[] = [
+  const comparable: ProjectionSimulation[] = [
       ...new Map(
         records.filter(item => composition(item) === key).map(item => [item.date, item])
       ).values(),
@@ -59,7 +73,7 @@ export function buildCalibratedScoreProjection({
     : 0;
   const detailed = Boolean(
     latest?.breakdown?.length &&
-    latest.breakdown.every((row: any) => row.subjectId && Number(row.total) > 0)
+    latest.breakdown.every(row => row.subjectId && Number(row.total) > 0)
   );
   const evidence = {
     observationCount: comparable.length,
