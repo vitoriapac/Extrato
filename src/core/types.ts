@@ -73,7 +73,7 @@ export interface QuestionRecord {
 
 export interface SimulationBreakdownItem {
   id: string;
-  subjectId: string;
+  subjectId: string | null;
   correct: number;
   total: number;
 }

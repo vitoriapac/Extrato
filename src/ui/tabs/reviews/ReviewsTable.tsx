@@ -7,9 +7,9 @@ export interface ReviewItem {
   topicId?: string | null;
   topicRef?: string | null;
   status: string;
-  tipo?: string;
-  completedAt?: string;
-  difficulty?: string;
+  tipo?: string | null;
+  completedAt?: string | null;
+  difficulty?: string | null;
 }
 
 export interface ReviewsTableProps {

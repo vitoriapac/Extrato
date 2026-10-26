@@ -147,9 +147,9 @@ export interface RecommendationHistorySummary {
   accepted: number;
   completed: number;
   rated: number;
-  acceptanceRate: number;
-  completionRate: number;
-  usefulnessRate: number;
+  acceptanceRate: number | null;
+  completionRate: number | null;
+  usefulnessRate: number | null;
 }
 
 export function formatRecommendationHistoryLabel(summary: RecommendationHistorySummary): string {

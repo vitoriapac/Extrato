@@ -311,6 +311,7 @@ import type {
   AppState,
   Metas,
   Subject,
+  StudySession,
   Topic,
   TopicStatus,
 } from './core/types.js';
@@ -502,7 +503,7 @@ const preferencesController = createPreferencesController({
 function toggleTheme() {
   return preferencesController.toggle();
 }
-document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+document.getElementById('themeToggleBtn')!.addEventListener('click', toggleTheme);
 preferencesController.sync();
 createReportController({
   document,
@@ -647,14 +648,14 @@ uiState.onboarding.presetId = EXAM_PRESETS[0]?.id || null;
 function getSubjectById(subjectId: string) {
   return state.subjects.find(s => s.id === subjectId) || null;
 }
-function getTopicById(topicId: string) {
+function getTopicById(topicId: string | null | undefined) {
   for (const subject of state.subjects) {
     const topic = subject.topics.find(t => t.id === topicId);
     if (topic) return { subject, topic };
   }
   return null;
 }
-function evidenceScopeForTopic(topicId: string) {
+function evidenceScopeForTopic(topicId: string | null) {
   const found = getTopicById(topicId);
   return found ? normalizeExamTags(found.topic.examTags) : null;
 }
@@ -953,7 +954,7 @@ function migrateV14toV15(data: Record<string, any>) {
     })
   );
   (data.reviewAgenda || []).forEach((review: any) => {
-    review.lastRating = (REVIEW_RATINGS as Record<string, any>)[review.lastRating]
+    review.lastRating = (REVIEW_RATINGS as Record<string, any>)[review.lastRating!]
       ? review.lastRating
       : null;
     review.adaptiveState = review.adaptiveState
@@ -1209,7 +1210,7 @@ function ensureStateDefaults() {
   state.activeTimer.strategyStep = Math.max(0, Number(state.activeTimer.strategyStep) || 0);
   state.activeTimer.recommendationId = state.activeTimer.recommendationId || null;
   state.activeTimer.recommendationSource = STUDY_ACTION_SOURCES.includes(
-    state.activeTimer.recommendationSource
+    state.activeTimer.recommendationSource!
   )
     ? state.activeTimer.recommendationSource
     : null;
@@ -1219,7 +1220,7 @@ function ensureStateDefaults() {
     'questions',
     'simulation',
     'prerequisite',
-  ].includes(state.activeTimer.recommendationType)
+  ].includes(state.activeTimer.recommendationType!)
     ? state.activeTimer.recommendationType
     : null;
   state.activeTimer.prioritySnapshot = Number.isFinite(Number(state.activeTimer.prioritySnapshot))
@@ -1279,7 +1280,7 @@ function ensureStateDefaults() {
     s.topics.forEach(t => {
       if (typeof t.notes !== 'string') t.notes = '';
       if (!Array.isArray(t.tags)) t.tags = [];
-      if (!DIFFICULTY_OPTIONS.includes(t.difficulty)) t.difficulty = 'Médio';
+      if (!DIFFICULTY_OPTIONS.includes(t.difficulty!)) t.difficulty = 'Médio';
       if (typeof t.createdAt !== 'string') t.createdAt = nowISO();
       if (typeof t.archived !== 'boolean') t.archived = false;
       if (!('archivedAt' in t)) t.archivedAt = null;
@@ -1302,7 +1303,7 @@ function ensureStateDefaults() {
   state.studySessions = state.studySessions.map(session => {
     const normalized = normalizeStudySession(session, { today: todayISO });
     if (!normalized.id) normalized.id = uid('session');
-    return normalized;
+    return normalized as StudySession;
   });
   state.reviewAgenda.forEach(review => {
     review.topicId = review.topicId || review.topicRef || null;
@@ -1311,7 +1312,7 @@ function ensureStateDefaults() {
     review.adaptive = review.adaptive !== false;
     review.adaptiveReason = review.adaptiveReason || null;
     review.suggestedDate = review.suggestedDate || null;
-    review.lastRating = (REVIEW_RATINGS as Record<string, any>)[review.lastRating]
+    review.lastRating = (REVIEW_RATINGS as Record<string, any>)[review.lastRating!]
       ? review.lastRating
       : null;
     review.adaptiveState = review.adaptiveState
@@ -1753,7 +1754,7 @@ function allTopics() {
 function activeSubjects() {
   return state.subjects.filter(subject => !subject.archived);
 }
-function topicsForSelection(subjectOrId: any, selectedTopicId: string) {
+function topicsForSelection(subjectOrId: any, selectedTopicId: string | null) {
   const subject =
     subjectOrId && typeof subjectOrId === 'object' ? subjectOrId : getSubjectById(subjectOrId);
   if (!subject || !Array.isArray(subject.topics)) return [];
@@ -1767,7 +1768,7 @@ function isActiveTopicId(topicId: string) {
   const found = getTopicById(topicId);
   return Boolean(found && !found.subject.archived && !found.topic.archived);
 }
-function isActiveStudyReference(subjectId: string, topicId: string = null) {
+function isActiveStudyReference(subjectId: string, topicId: string | null = null) {
   if (!isActiveSubjectId(subjectId)) return false;
   return !topicId || isActiveTopicId(topicId);
 }
@@ -1903,7 +1904,7 @@ function diasParaRevisaoPill(iso: string, status: string) {
 }
 
 document
-  .getElementById('examDateInput')
+  .getElementById('examDateInput')!
   .addEventListener('change', function (this: HTMLInputElement) {
     updateExamBlueprint('examDate', this.value);
   });
@@ -2070,13 +2071,13 @@ document.addEventListener('keydown', event => {
     last = focusable.at(-1) as HTMLElement;
   if (
     event.shiftKey &&
-    (document.activeElement === first || !focusSurface.contains(document.activeElement))
+    (document.activeElement === first || !focusSurface!.contains(document.activeElement))
   ) {
     event.preventDefault();
     last.focus();
   } else if (
     !event.shiftKey &&
-    (document.activeElement === last || !focusSurface.contains(document.activeElement))
+    (document.activeElement === last || !focusSurface!.contains(document.activeElement))
   ) {
     event.preventDefault();
     first.focus();
@@ -2099,7 +2100,7 @@ function recordProgressSnapshot(pct: number) {
 }
 function renderProgressChart() {
   const container = document.getElementById('progressChart');
-  container.innerHTML = renderProgressChartView({
+  container!.innerHTML = renderProgressChartView({
     data: state.progressHistory,
     formatDate: formatDatePt,
   });
@@ -2135,7 +2136,7 @@ const backupModalController = createBackupModalController({
     backupIndexKey: BACKUP_INDEX_KEY,
     automaticSlots: AUTOMATIC_BACKUP_SLOTS,
   },
-  sha256,
+  sha256: sha256 as (text: string) => Promise<string>,
   validate: validateBackupData,
   serialize: serializeBackup,
   fileName: backupFileName,
@@ -2164,7 +2165,7 @@ function applyImportedBackup(importedState: AppState) {
     persistAndRender();
     showToast('Backup importado com sucesso.');
     return true;
-  } catch (error) {
+  } catch (error: any) {
     state = previousState;
     restoreTimerFromState();
     render();
@@ -2231,7 +2232,7 @@ const pipTimer = createPipTimerController({
       targetMinutes: active.targetMinutes,
       subjectName: active.subjectId ? getSubjectName(active.subjectId) : '',
       topicName: active.topicId ? getTopicName(active.topicId) : '',
-      bookmarkLabel: topicResumeLabel(active.topicId),
+      bookmarkLabel: topicResumeLabel(active.topicId!),
       stepLabel: step
         ? `Etapa ${index + 1}/${steps.length}: ${step.label} · ${step.minutes} min`
         : '',
@@ -2279,7 +2280,7 @@ function findDailyPlanItem(itemId: string) {
   return null;
 }
 function releaseActivePlanItem() {
-  const found = findDailyPlanItem(state.activeTimer?.planItemId);
+  const found = findDailyPlanItem((state.activeTimer?.planItemId)!);
   if (found && found.item.status === 'in_progress') {
     found.item.status = found.item.executedSeconds > 0 ? 'partial' : 'planned';
     found.plan.updatedAt = nowISO();
@@ -2291,7 +2292,7 @@ function startPlannedActivity(itemId: string) {
     showToast('Esta atividade não está mais disponível no plano.');
     return;
   }
-  const execution = dailyExecutionController.build().items.find(item => item.id === itemId);
+  const execution = dailyExecutionController.build().items!.find(item => item.id === itemId);
   if (!execution || execution.remainingSeconds <= 0) {
     showToast('Esta atividade não está disponível para iniciar.');
     return;
@@ -2348,7 +2349,7 @@ function activeTimerMatchesRecommendation(recommendation: Record<string, any>) {
     recommendationActionKind
   );
 }
-function renderActiveStudyTimerNotice(recommendation: Record<string, any>) {
+function renderActiveStudyTimerNotice(recommendation: Record<string, any> | null) {
   const active = (state.activeTimer || {}) as Partial<ActiveTimerState>;
   return renderActiveStudyTimerNoticeHtml({
     active,
@@ -2372,7 +2373,7 @@ function updateTimerDisplay() {
     if (targetMinutes > 0) {
       const targetSeconds = targetMinutes * 60;
       const difference = targetSeconds - timerSeconds;
-      const planItem = findDailyPlanItem(state.activeTimer.planItemId)?.item;
+      const planItem = findDailyPlanItem(state.activeTimer.planItemId!)?.item;
       // Stored daily plan items keep only IDs; resolve names like the focus context does.
       const context = planItem
         ? `${[planItem.subjectId && getSubjectName(planItem.subjectId), planItem.topicId && getTopicName(planItem.topicId)].filter(Boolean).join(' — ') || 'Sessão livre'} · `
@@ -2426,13 +2427,13 @@ function renderTimerFocusContext() {
     simulation: 'Simulado',
   };
   const minutes = Math.max(0, Number(active.targetMinutes) || 0);
-  document.getElementById('timerFocusTitle').textContent = `${subject} — ${topic}`;
-  document.getElementById('timerFocusSubtitle').textContent =
-    `${activityLabels[active.type] || activityLabels.study} · ${minutes ? `Meta de ${formatPlanMinutes(minutes)}` : 'Sem meta de tempo'}`;
+  document.getElementById('timerFocusTitle')!.textContent = `${subject} — ${topic}`;
+  document.getElementById('timerFocusSubtitle')!.textContent =
+    `${activityLabels[active.type!] || activityLabels.study} · ${minutes ? `Meta de ${formatPlanMinutes(minutes)}` : 'Sem meta de tempo'}`;
   const resume = document.getElementById('timerFocusResume'),
-    resumeLabel = topicResumeLabel(active.topicId);
-  resume.textContent = resumeLabel ? `Continuar de: ${resumeLabel}` : '';
-  resume.hidden = !resumeLabel;
+    resumeLabel = topicResumeLabel(active.topicId!);
+  resume!.textContent = resumeLabel ? `Continuar de: ${resumeLabel}` : '';
+  resume!.hidden = !resumeLabel;
 }
 function renderGuidedStrategy() {
   const el = document.getElementById('guidedStrategy') as HTMLElement;
@@ -2458,8 +2459,8 @@ function advanceGuidedStrategy() {
 }
 function updateTimerControls() {
   const hasTime = timerSeconds > 0;
-  document.getElementById('timerStartBtn').style.display = timerRunning ? 'none' : 'inline-block';
-  document.getElementById('timerPauseBtn').style.display = timerRunning ? 'inline-block' : 'none';
+  document.getElementById('timerStartBtn')!.style.display = timerRunning ? 'none' : 'inline-block';
+  document.getElementById('timerPauseBtn')!.style.display = timerRunning ? 'inline-block' : 'none';
   ['timerResetBtn', 'timerFinishBtn'].forEach(id => {
     (document.getElementById(id) as HTMLButtonElement).disabled = !hasTime && !timerRunning;
   });
@@ -2471,7 +2472,7 @@ function updateTimerControls() {
 function refreshStudyActionViews() {
   if (document.getElementById('studyRecommendation')) renderStudyRecommendation();
 }
-function populateTimerTopicSelect(subjectId: string, selectedTopicId: string) {
+function populateTimerTopicSelect(subjectId: string, selectedTopicId: string | null) {
   const select = document.getElementById('timerTopicSelect') as HTMLSelectElement;
   if (!select) return;
   const subject = getSubjectById(subjectId);
@@ -2503,7 +2504,7 @@ function populateTimerContextControls() {
   subjectSelect.value = state.activeTimer.subjectId || '';
   if (subjectSelect.value !== (state.activeTimer.subjectId || ''))
     state.activeTimer.subjectId = null;
-  populateTimerTopicSelect(state.activeTimer.subjectId, state.activeTimer.topicId);
+  populateTimerTopicSelect(state.activeTimer.subjectId!, state.activeTimer.topicId!);
   typeSelect.value = state.activeTimer.type || 'study';
   renderTimerFocusContext();
   updateTimerControls();
@@ -2614,10 +2615,10 @@ function restoreTimerFromState() {
   populateTimerContextControls();
   updateTimerControls();
 }
-function populateSessionTopicSelect(subjectId: string, selectedTopicId: string = null) {
+function populateSessionTopicSelect(subjectId: string, selectedTopicId: string | null = null) {
   const select = document.getElementById('sessionModalTopic');
   const subject = getSubjectById(subjectId);
-  select.innerHTML =
+  select!.innerHTML =
     `<option value="">Sem tópico específico</option>` +
     (subject
       ? topicsForSelection(subject, selectedTopicId)
@@ -2630,7 +2631,7 @@ function populateSessionTopicSelect(subjectId: string, selectedTopicId: string =
 }
 function showSessionModal() {
   const overlay = document.getElementById('sessionModalOverlay');
-  document.getElementById('sessionModalDuration').textContent = formatTimer(timerSeconds);
+  document.getElementById('sessionModalDuration')!.textContent = formatTimer(timerSeconds);
   const sel = document.getElementById('sessionModalSubject') as HTMLSelectElement;
   sel.innerHTML =
     `<option value="">Sem disciplina específica</option>` +
@@ -2641,7 +2642,7 @@ function showSessionModal() {
       )
       .join('');
   sel.value = state.activeTimer.subjectId || '';
-  populateSessionTopicSelect(sel.value, state.activeTimer.topicId);
+  populateSessionTopicSelect(sel.value, state.activeTimer.topicId!);
   (document.getElementById('sessionModalTopic') as HTMLSelectElement).value =
     state.activeTimer.topicId || '';
   (document.getElementById('sessionModalType') as HTMLSelectElement).value =
@@ -2657,7 +2658,7 @@ function showSessionModal() {
   fillSessionBookmarkFields(
     (document.getElementById('sessionModalTopic') as HTMLSelectElement).value
   );
-  overlay.classList.add('show');
+  overlay!.classList.add('show');
 }
 function topicResumeLabel(topicId: string) {
   return topicId ? formatBookmarkLabel(getTopicById(topicId)?.topic.bookmark) : '';
@@ -2696,7 +2697,7 @@ function clearSessionBookmarkFields() {
 function saveSessionBookmark(topicId: string, endedAt: string) {
   const found = topicId ? getTopicById(topicId) : null;
   if (!found) return;
-  if (document.getElementById('sessionBookmarkSection').dataset.clear === '1') {
+  if (document.getElementById('sessionBookmarkSection')!.dataset.clear === '1') {
     if (found.topic.bookmark)
       subjectService.updateTopic(found.subject.id, topicId, { bookmark: null });
     return;
@@ -2730,59 +2731,59 @@ function syncSessionModalActivityFields(
     review: 'Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.',
     simulation: 'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.',
   };
-  document.getElementById('sessionModalActivityHint').textContent = labels[type] || labels.study;
+  document.getElementById('sessionModalActivityHint')!.textContent = labels[type] || labels.study;
   document.querySelectorAll<HTMLElement>('[data-session-fields]').forEach(section => {
-    section.hidden = !section.dataset.sessionFields.split(/\s+/).includes(type);
+    section.hidden = !section.dataset.sessionFields!.split(/\s+/).includes(type);
   });
 }
 function closeSessionModal() {
-  document.getElementById('sessionModalOverlay').classList.remove('show');
+  document.getElementById('sessionModalOverlay')!.classList.remove('show');
   resetTimer();
 }
 // Esc keeps the paused session; only an explicit, confirmed discard loses the time.
 function dismissSessionModal() {
-  document.getElementById('sessionModalOverlay').classList.remove('show');
+  document.getElementById('sessionModalOverlay')!.classList.remove('show');
   document.getElementById('timerFinishBtn')?.focus();
 }
 function discardSessionFromModal() {
   const overlay = document.getElementById('sessionModalOverlay');
-  overlay.classList.remove('show');
+  overlay!.classList.remove('show');
   showConfirm(
     `Descartar esta sessão de ${formatDuration(timerSeconds)}? O tempo não será registrado.`,
     closeSessionModal,
     () => {
-      overlay.classList.add('show');
+      overlay!.classList.add('show');
       document.getElementById('sessionModalSkipBtn')?.focus();
     },
     { confirmLabel: 'Descartar sessão' }
   );
 }
-document.getElementById('timerStartBtn').addEventListener('click', startTimer);
-document.getElementById('timerPauseBtn').addEventListener('click', () => pauseTimer());
+document.getElementById('timerStartBtn')!.addEventListener('click', startTimer);
+document.getElementById('timerPauseBtn')!.addEventListener('click', () => pauseTimer());
 document
-  .getElementById('timerSubjectSelect')
+  .getElementById('timerSubjectSelect')!
   .addEventListener('change', function (this: HTMLSelectElement) {
     state.activeTimer.subjectId = this.value || null;
     state.activeTimer.topicId = null;
-    populateTimerTopicSelect(state.activeTimer.subjectId, null);
+    populateTimerTopicSelect(state.activeTimer.subjectId!, null);
     renderTimerFocusContext();
     scheduleSave();
   });
 document
-  .getElementById('timerTopicSelect')
+  .getElementById('timerTopicSelect')!
   .addEventListener('change', function (this: HTMLSelectElement) {
     state.activeTimer.topicId = this.value || null;
     renderTimerFocusContext();
     scheduleSave();
   });
 document
-  .getElementById('timerTypeSelect')
+  .getElementById('timerTypeSelect')!
   .addEventListener('change', function (this: HTMLSelectElement) {
     state.activeTimer.type = this.value || 'study';
     renderTimerFocusContext();
     scheduleSave();
   });
-document.getElementById('timerResetBtn').addEventListener('click', () => {
+document.getElementById('timerResetBtn')!.addEventListener('click', () => {
   if (timerSeconds === 0) {
     return;
   }
@@ -2796,35 +2797,35 @@ function finishStudyTimer() {
   pauseTimer();
   showSessionModal();
 }
-document.getElementById('timerFinishBtn').addEventListener('click', finishStudyTimer);
+document.getElementById('timerFinishBtn')!.addEventListener('click', finishStudyTimer);
 const timerPipBtn = document.getElementById('timerPipBtn');
-timerPipBtn.hidden = !pipTimer.supported;
-timerPipBtn.addEventListener('click', () =>
+timerPipBtn!.hidden = !pipTimer.supported;
+timerPipBtn!.addEventListener('click', () =>
   pipTimer.open().catch(error => {
     console.warn('Janela flutuante indisponível', error);
     showToast('Não foi possível abrir a janela flutuante.');
   })
 );
-document.getElementById('sessionModalSkipBtn').addEventListener('click', discardSessionFromModal);
+document.getElementById('sessionModalSkipBtn')!.addEventListener('click', discardSessionFromModal);
 document
-  .getElementById('sessionModalOverlay')
+  .getElementById('sessionModalOverlay')!
   .addEventListener('session-modal-dismiss', dismissSessionModal);
 document
-  .getElementById('sessionModalSubject')
+  .getElementById('sessionModalSubject')!
   .addEventListener('change', function (this: HTMLSelectElement) {
     populateSessionTopicSelect(this.value);
     fillSessionBookmarkFields('');
   });
 document
-  .getElementById('sessionModalTopic')
+  .getElementById('sessionModalTopic')!
   .addEventListener('change', function (this: HTMLSelectElement) {
     fillSessionBookmarkFields(this.value);
   });
 document
-  .getElementById('sessionBookmarkClearBtn')
+  .getElementById('sessionBookmarkClearBtn')!
   .addEventListener('click', clearSessionBookmarkFields);
 document
-  .getElementById('sessionModalType')
+  .getElementById('sessionModalType')!
   .addEventListener('change', function (this: HTMLSelectElement) {
     syncSessionModalActivityFields(this.value);
   });
@@ -2869,7 +2870,7 @@ function openNextSessionAction() {
     .getElementById('overviewNextAction')
     ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
-document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
+document.getElementById('sessionModalSaveBtn')!.addEventListener('click', () => {
   const subjectId =
     (document.getElementById('sessionModalSubject') as HTMLSelectElement).value || null;
   const topicId = (document.getElementById('sessionModalTopic') as HTMLSelectElement).value || null;
@@ -2906,7 +2907,7 @@ document.getElementById('sessionModalSaveBtn').addEventListener('click', () => {
     recommendationType: state.activeTimer.recommendationType || null,
     prioritySnapshot: state.activeTimer.prioritySnapshot ?? null,
   };
-  saveSessionBookmark(topicId, session.endedAt);
+  saveSessionBookmark(topicId!, session.endedAt);
   const dayBefore = session.date === todayISO() ? dailyExecutionController.build() : null;
   if (guidedStudyService.current()) guidedStudyService.complete(session);
   else sessionService.complete(session);
@@ -3024,7 +3025,7 @@ function renderHeatmap() {
   const selectedSummary = streakView.selectedDate
     ? getDailyStudySummary(streakView.selectedDate, { subjectId: streakView.subjectId })
     : null;
-  document.getElementById('heatmapContainer').innerHTML = renderHeatmapView({
+  document.getElementById('heatmapContainer')!.innerHTML = renderHeatmapView({
     cells: heatmapModel.cells,
     hasActivity: heatmapModel.hasActivity,
     metric: streakView.metric,
@@ -3126,7 +3127,7 @@ const headerObserver = new IntersectionObserver(
   },
   { threshold: 0 }
 );
-headerObserver.observe(document.querySelector('.statement'));
+headerObserver.observe(document.querySelector('.statement')!);
 const stickyShell = document.querySelector('.sticky-shell');
 const overviewNav = document.querySelector('.overview-nav');
 document.querySelectorAll('.overview-nav-mobile select').forEach(select =>
@@ -3194,8 +3195,8 @@ function renderHeader() {
   const pct = total ? Math.round((done / total) * 100) : 0;
 
   const readiness = readinessResult(computeApprovalMetrics());
-  document.getElementById('statAndamento').textContent = String(andamento);
-  document.getElementById('statConcluido').textContent = String(done);
+  document.getElementById('statAndamento')!.textContent = String(andamento);
+  document.getElementById('statConcluido')!.textContent = String(done);
 
   const revisoesPrevistas =
     state.calendar.filter(c => c.date >= todayISO()).length +
@@ -3207,7 +3208,7 @@ function renderHeader() {
     upcomingReviews: revisoesPrevistas,
     streak: computeStreak(getActivityDates()),
     examDate: state.examDate,
-    planNumber: document.getElementById('planNumber').textContent,
+    planNumber: document.getElementById('planNumber')!.textContent,
     today: todayISO(),
   });
   renderHeroHeader(model, { document });
@@ -3466,9 +3467,9 @@ function renderTopicAnalyticsState(subject: Subject, topic: Topic) {
   );
   let label = 'Não iniciado';
   if (coverage > 0 && mastery === null) label = 'Em estudo · aguardando questões';
-  else if (coverage === 100 && mastery < 50) label = 'Coberto, não consolidado';
+  else if (coverage === 100 && mastery! < 50) label = 'Coberto, não consolidado';
   else if (coverage === 100 && retention !== null && retention < 60) label = 'Domínio em risco';
-  else if (coverage === 100 && mastery >= 75) label = 'Consolidado';
+  else if (coverage === 100 && mastery! >= 75) label = 'Consolidado';
   else if (coverage === 100) label = 'Em consolidação';
   else if (coverage > 0) label = 'Em estudo';
   if (blockers.length) label = 'Bloqueado por pré-requisito';
@@ -3500,7 +3501,7 @@ function renderTopicAnalyticsState(subject: Subject, topic: Topic) {
       ? '✓ Consolidado'
       : (reviewHealth as { level?: string }).level === 'critical'
         ? '↻ Revisão recomendada'
-        : masteryResult.evidence?.evidenceStrength < 0.35
+        : masteryResult.evidence?.evidenceStrength! < 0.35
           ? '⚠ Poucos dados'
           : '★ Elegível para priorização';
   return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>${escapeHtml(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric('Cobertura', coverage)}${pctMetric('Domínio', mastery, mastery === null ? 'Registre questões deste tópico' : 'Evidência ' + masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric('Retenção', retention, retention === null ? 'Conclua revisões vinculadas' : 'Evidência ' + (retentionResult as { evidence: { evidenceLabel: string } }).evidence.evidenceLabel.toLowerCase())}${pctMetric('Saúde da revisão', reviewHealth.value, reviewHealth.reasons[0] as string)}${textMetric('Último contato', lastContact === null ? 'Sem registro' : lastContact === 0 ? 'Hoje' : lastContact + ' dias')}${textMetric('Última revisão', lastReview === null ? 'Sem registro' : lastReview === 0 ? 'Hoje' : lastReview + ' dias')}${pctMetric('Desempenho recente', performance, diagnosis?.performance?.resolved ? diagnosis.performance.resolved + ' questões' : 'Sem questões')}${textMetric('Tendência', trendText, trend?.delta == null ? '' : (trend.delta >= 0 ? '+' : '') + trend.delta + ' p.p.')}</div></div>`;
@@ -3599,7 +3600,7 @@ function carregarDisciplinasPadrao() {
   openExamImport();
 }
 document
-  .getElementById('loadDefaultSubjectsBtn')
+  .getElementById('loadDefaultSubjectsBtn')!
   .addEventListener('click', carregarDisciplinasPadrao);
 
 const examImportService = createExamImportService({
@@ -3681,7 +3682,7 @@ function applyPresetBlueprintDefaults(preset: Record<string, any>) {
     state.examBlueprint.subjects.push({
       subjectId: subject.id,
       expectedQuestions: metric.expectedQuestions,
-      questionWeight: metric.questionWeight,
+      questionWeight: metric.questionWeight!,
       priority: 'normal',
       masteryTarget: null,
       sourceRef: source,
@@ -3710,13 +3711,13 @@ function renderExamImport() {
       topicLabel: topicExamScopeLabel,
       preview,
     });
-  back.hidden = model.step === 1;
+  back!.hidden = model.step === 1;
   next.textContent = model.step === 3 ? 'Importar' : 'Continuar';
   next.disabled =
     model.step === 3
       ? preview.addedSubjects + preview.addedTopics + preview.metadataUpdates === 0
       : !model.canContinue;
-  content.innerHTML = renderExamImportView(model, {
+  content!.innerHTML = renderExamImportView(model, {
     escapeHtml,
     escapeAttr,
     renderBadges: examBadges,
@@ -3726,7 +3727,7 @@ function renderExamImport() {
 }
 async function openExamImport(
   initialPreset: string | Record<string, any> | null = null,
-  origin: string = null
+  origin: string | null = null
 ) {
   try {
     await ensureExamCatalog();
@@ -3735,18 +3736,18 @@ async function openExamImport(
     examImportOrigin = origin;
     resetExamImportState(examImportState, preset, document.activeElement as HTMLElement | null);
     if (origin === 'onboarding') suspendGuidedOnboarding();
-    editalImportFacade.begin(examImportState.presetId);
-    document.getElementById('examImportOverlay').classList.add('show');
+    editalImportFacade.begin(examImportState.presetId!);
+    document.getElementById('examImportOverlay')!.classList.add('show');
     renderExamImport();
     document.querySelector<HTMLElement>('[name="examPreset"]')?.focus();
-  } catch (error) {
+  } catch (error: any) {
     showToast(error.message || 'Não foi possível abrir a importação de edital.');
   }
 }
 function closeExamImport({ completed = false }: any = {}) {
   const origin = examImportOrigin;
   editalImportFacade.cancel();
-  document.getElementById('examImportOverlay').classList.remove('show');
+  document.getElementById('examImportOverlay')!.classList.remove('show');
   if (origin === 'onboarding') resumeGuidedOnboarding(completed ? 'plan' : 'content');
   else examImportState.previousFocus?.focus();
   examImportOrigin = null;
@@ -3803,16 +3804,16 @@ function getSubjectDependencies(subjectId: string) {
   const topicIds = new Set((subject?.topics || []).map(t => t.id));
   return {
     questoes: state.questoes.filter(
-      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId)
+      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId!)
     ).length,
     sessions: state.studySessions.filter(
-      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId)
+      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId!)
     ).length,
     calendar: state.calendar.filter(
-      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId)
+      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId!)
     ).length,
     reviews: state.reviewAgenda.filter(
-      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId || item.topicRef)
+      item => entitySubjectId(item) === subjectId || topicIds.has((item.topicId || item.topicRef)!)
     ).length,
     goals: state.metasPorDisciplina.filter(item => entitySubjectId(item) === subjectId).length,
     history: topicHistoryService
@@ -3824,7 +3825,7 @@ function getSubjectDependencies(subjectId: string) {
       0
     ),
     activeTimer:
-      state.activeTimer.subjectId === subjectId || topicIds.has(state.activeTimer.topicId) ? 1 : 0,
+      state.activeTimer.subjectId === subjectId || topicIds.has(state.activeTimer.topicId!) ? 1 : 0,
   };
 }
 function dependencyTotal(dependencies: Record<string, any>) {
@@ -3904,7 +3905,7 @@ function updateTopic(subjectId: string, topicId: string, field: string, value: a
 function addHistoryEvent(
   type: string,
   subjectId: string,
-  topicId: string = null,
+  topicId: string | null = null,
   metadata: any = {}
 ) {
   return topicHistoryService.add(type, subjectId, topicId, metadata, {
@@ -4018,7 +4019,7 @@ function toggleOverdueDate(elId: string, date: string) {
 }
 
 function renderCalIndicadores() {
-  document.getElementById('calIndicadores').innerHTML = renderCalendarIndicators({
+  document.getElementById('calIndicadores')!.innerHTML = renderCalendarIndicators({
     items: getRevisoesUnificadas(),
     today: todayISO(),
     daysUntil: diasParaRevisao,
@@ -4052,17 +4053,17 @@ function renderMonthCalendar() {
     escapeAttr,
     maxEventsPerDay: MONTH_MAX_EVENTS_PER_DAY,
   });
-  document.getElementById('calendarMonthTitle').textContent = result.title;
+  document.getElementById('calendarMonthTitle')!.textContent = result.title;
   container.innerHTML = result.html;
 }
 
-document.getElementById('monthPrevBtn').addEventListener('click', () => {
+document.getElementById('monthPrevBtn')!.addEventListener('click', () => {
   calendarController.goToPreviousMonth();
 });
-document.getElementById('monthNextBtn').addEventListener('click', () => {
+document.getElementById('monthNextBtn')!.addEventListener('click', () => {
   calendarController.goToNextMonth();
 });
-document.getElementById('monthTodayBtn').addEventListener('click', () => {
+document.getElementById('monthTodayBtn')!.addEventListener('click', () => {
   calendarController.goToCurrentMonth();
 });
 
@@ -4120,7 +4121,7 @@ function setCalendarMobileView(view: string) {
 }
 document.querySelectorAll<HTMLElement>('.calendar-view-btn').forEach(button =>
   button.addEventListener('click', () => {
-    calendarController.setView(button.dataset.calendarView);
+    calendarController.setView(button.dataset.calendarView!);
     setCalendarMobileView(calendarUiState.view);
   })
 );
@@ -4189,7 +4190,7 @@ function renderCalendarReadRow(item: Record<string, any>) {
 }
 function renderCalendarEditRow(item: Record<string, any>) {
   const draft = calendarUiState.draft,
-    subjectId = entitySubjectId(draft);
+    subjectId = entitySubjectId(draft!);
   return renderCalendarEdit({
     item,
     draft,
@@ -4224,7 +4225,7 @@ function renderCalendar() {
     state,
     filters: { subjectId: filterSubject, status: filterStatus, month: filterMes, type: filterTipo },
     entitySubjectId,
-    monthKey,
+    monthKey: monthKey as (date?: string) => string,
     calendarUiState,
     renderCalendarReadRow,
     renderCalendarEditRow,
@@ -4258,27 +4259,27 @@ function updateCal(id: string, field: string, value: any) {
 }
 
 document
-  .getElementById('calFilterSubject')
+  .getElementById('calFilterSubject')!
   .addEventListener('change', event =>
     calendarController.setFilter('subjectId', (event.target as HTMLInputElement).value)
   );
 document
-  .getElementById('calFilterStatus')
+  .getElementById('calFilterStatus')!
   .addEventListener('change', event =>
     calendarController.setFilter('status', (event.target as HTMLInputElement).value)
   );
 document
-  .getElementById('calFilterMes')
+  .getElementById('calFilterMes')!
   .addEventListener('change', event =>
     calendarController.setFilter('month', (event.target as HTMLInputElement).value)
   );
 document
-  .getElementById('calFilterTipo')
+  .getElementById('calFilterTipo')!
   .addEventListener('change', event =>
     calendarController.setFilter('type', (event.target as HTMLInputElement).value)
   );
-document.getElementById('addSubjectBtn').addEventListener('click', addSubject);
-document.getElementById('addCalRowBtn').addEventListener('click', addCalRow);
+document.getElementById('addSubjectBtn')!.addEventListener('click', addSubject);
+document.getElementById('addCalRowBtn')!.addEventListener('click', addCalRow);
 
 /* ===== AGENDA DE REVISÕES ===== */
 function addDays(iso: string, days: number) {
@@ -4300,7 +4301,7 @@ function adaptiveReviewSuggestion(topicId: string, baseDays: number, baseDate: s
     baseDays,
     accuracy: diagnosis?.performance?.accuracy,
     volume: diagnosis?.performance?.resolved || 0,
-    target: subjectAccuracyTarget(found?.subject.id),
+    target: subjectAccuracyTarget((found?.subject.id)!),
     trendKey: diagnosis?.trend?.key,
     dominantErrorKey: diagnosis?.dominantError?.key,
     reviews: Number(found?.topic?.reviewCount) || 0,
@@ -4330,13 +4331,13 @@ function gerarAgendaAutomatica() {
   }
   let adicionados = 0;
   concluidos.forEach(t => {
-    const intervalos = DIFFICULTY_INTERVALS[t.difficulty] || AGENDA_INTERVALS;
+    const intervalos = DIFFICULTY_INTERVALS[t.difficulty!] || AGENDA_INTERVALS;
     intervalos.forEach(intervalo => {
       const jaExiste = state.reviewAgenda.some(
         a => (a.topicId || a.topicRef) === t.id && a.tipo === intervalo.tipo
       );
       if (!jaExiste) {
-        const suggestion = adaptiveReviewSuggestion(t.id, intervalo.dias, t.completedAt);
+        const suggestion = adaptiveReviewSuggestion(t.id, intervalo.dias, t.completedAt!);
         state.reviewAgenda.push({
           id: uid('review'),
           subjectId: t.subjectId,
@@ -4505,8 +4506,8 @@ let pendingReviewRatingId: any = null;
 function closeReviewRating() {
   pendingReviewRatingId = null;
   const overlay = document.getElementById('reviewRatingOverlay');
-  overlay.classList.remove('show');
-  overlay.setAttribute('aria-hidden', 'true');
+  overlay!.classList.remove('show');
+  overlay!.setAttribute('aria-hidden', 'true');
 }
 function completeAgendaReview(id: string) {
   const item = appContext.repositories.reviewAgenda.findById(id);
@@ -4519,9 +4520,9 @@ function completeAgendaReview(id: string) {
   }
   pendingReviewRatingId = id;
   const overlay = document.getElementById('reviewRatingOverlay');
-  overlay.classList.add('show');
-  overlay.removeAttribute('aria-hidden');
-  overlay.querySelector<HTMLElement>('[data-review-rating="good"]')?.focus();
+  overlay!.classList.add('show');
+  overlay!.removeAttribute('aria-hidden');
+  overlay!.querySelector<HTMLElement>('[data-review-rating="good"]')?.focus();
 }
 function rateCompletedReview(rating: number) {
   if (!(REVIEW_RATINGS as Record<string, any>)[rating]) return closeReviewRating();
@@ -4549,7 +4550,7 @@ function renderAgendaReadRow(item: Record<string, any>) {
 }
 function renderAgendaEditRow(item: Record<string, any>) {
   const draft = agendaUiState.draft,
-    subjectId = entitySubjectId(draft);
+    subjectId = entitySubjectId(draft!);
   if (!draft) return '';
   return renderReviewEdit({
     item,
@@ -4588,9 +4589,9 @@ function renderAgenda() {
     filters: { subjectId: filterSubject, status: filterStatus, month: filterMes, type: filterTipo },
     entitySubjectId,
     todayISO,
-    monthKey,
+    monthKey: monthKey as (date?: string) => string,
     DIFFICULTY_WEIGHT,
-    getTopicDifficulty,
+    getTopicDifficulty: getTopicDifficulty as (topicId?: string | null) => string,
     agendaUiState,
     renderAgendaReadRow,
     renderAgendaEditRow,
@@ -4874,7 +4875,7 @@ function getQuestionsTabController() {
         )
         .join(''),
     getTopicOptionsHtml: (subjectId, topicId) =>
-      topicsForSelection(subjectId, topicId)
+      topicsForSelection(subjectId, topicId!)
         .map(
           (t: any) =>
             `<option value="${escapeAttr(t.id)}" ${t.id === topicId ? 'selected' : ''}>${escapeHtml(t.name)}</option>`
@@ -4922,13 +4923,13 @@ function updateQuestionError(id: string, key: string, value: any) {
     0,
     (Number(question.resolved) || 0) - (Number(question.correct) || 0)
   );
-  const others = Object.entries(question.errorBreakdown).reduce(
+  const others = Object.entries(question.errorBreakdown!).reduce(
     (sum, [category, count]) => (category === key ? sum : sum + (count as number)),
     0
   );
   const requested = Math.max(0, Math.floor(Number(value) || 0));
   const allowed = Math.max(0, realErrors - others);
-  question.errorBreakdown[key] = Math.min(requested, allowed);
+  question.errorBreakdown![key] = Math.min(requested, allowed);
   if (requested > allowed) showToast('A categorização foi limitada ao total real de erros.');
   persistAndRender();
 }
@@ -5108,7 +5109,7 @@ function topicLastActivityDate(topicId: string) {
   };
   topicHistoryService
     .list({ topicId, includeLifecycle: false })
-    .forEach(event => bump(eventLocalDate(event)));
+    .forEach(event => bump(eventLocalDate(event)!));
   state.questoes
     .filter(question => question.topicId === topicId)
     .forEach(question => bump(question.date));
@@ -5185,13 +5186,13 @@ function diagnoseTopic(subjectId: string, topicId: string) {
   if (
     overdueDays >= 7 ||
     trend.state === 'strong_down' ||
-    (reliablePerformance && performance.accuracy < target - 15) ||
-    (trend.key === 'down' && reliablePerformance && performance.accuracy < target)
+    (reliablePerformance && performance.accuracy! < target - 15) ||
+    (trend.key === 'down' && reliablePerformance && performance.accuracy! < target)
   )
     status = 'Crítico';
   else if (
     overdueDays > 0 ||
-    (reliablePerformance && performance.accuracy < target) ||
+    (reliablePerformance && performance.accuracy! < target) ||
     trend.key === 'down' ||
     daysSinceStudy >= 7
   )
@@ -5213,7 +5214,7 @@ function diagnoseTopic(subjectId: string, topicId: string) {
       estimatedMinutes: 35,
       questions: 10,
     };
-  if (!recommendation && reliablePerformance && performance.accuracy < target)
+  if (!recommendation && reliablePerformance && performance.accuracy! < target)
     recommendation = {
       action: 'Resolver questões comentadas e revisar os erros',
       studyType: 'questions',
@@ -5233,7 +5234,7 @@ function diagnoseTopic(subjectId: string, topicId: string) {
 
   const reasons = [];
   if (overdueDays > 0) reasons.push('revisão atrasada ' + overdueDays + 'd');
-  if (reliablePerformance && performance.accuracy < target)
+  if (reliablePerformance && performance.accuracy! < target)
     reasons.push(performance.accuracy + '% de acerto');
   if (trend.key === 'down') reasons.push('tendência em queda');
   if (daysSinceStudy >= 7) reasons.push(daysSinceStudy + 'd sem atividade');
@@ -5293,12 +5294,12 @@ function renderQuestionAnalytics() {
   const profileEl = document.getElementById('subjectErrorProfile');
   const coverageEl = document.getElementById('questionDataCoverage');
   if (!performanceSubjectId) {
-    summary.innerHTML = '';
-    bars.innerHTML =
-      weeklyEl.innerHTML =
-      profileEl.innerHTML =
+    summary!.innerHTML = '';
+    bars!.innerHTML =
+      weeklyEl!.innerHTML =
+      profileEl!.innerHTML =
         '<div class="empty-state"><p>Cadastre uma disciplina para iniciar a análise.</p></div>';
-    coverageEl.textContent = '0% identificadas';
+    coverageEl!.textContent = '0% identificadas';
     return;
   }
   const records = validQuestionRecords().filter(
@@ -5313,8 +5314,8 @@ function renderQuestionAnalytics() {
   const accuracy = accuracyFromCounts(correct, resolved);
   const weekly = getSubjectWeeklyTrend(performanceSubjectId);
   const trend = calculateWeightedTrend(weekly);
-  coverageEl.textContent = `${coverage}% identificadas`;
-  summary.innerHTML = renderQuestionAnalyticsSummary({ resolved, accuracy, coverage, trend });
+  coverageEl!.textContent = `${coverage}% identificadas`;
+  summary!.innerHTML = renderQuestionAnalyticsSummary({ resolved, accuracy, coverage, trend });
 
   const topicPerformance = getSubjectTopicPerformance(performanceSubjectId);
   const mature = topicPerformance.filter(topic => topic.resolved >= 30),
@@ -5331,7 +5332,7 @@ function renderQuestionAnalytics() {
               ? topic.resolved > 0 && topic.resolved < 30
               : topic.resolved >= 30
         );
-  bars.innerHTML = renderTopicQuestionPerformance({
+  bars!.innerHTML = renderTopicQuestionPerformance({
     mode: performanceViewMode,
     topics: filteredPerformance,
     visible: performanceVisible,
@@ -5341,7 +5342,7 @@ function renderQuestionAnalytics() {
     escapeHtml,
   });
 
-  weeklyEl.innerHTML = renderWeeklyQuestionTrend({
+  weeklyEl!.innerHTML = renderWeeklyQuestionTrend({
     weeks: weekly,
     trend,
     formatDate: formatDatePt,
@@ -5379,7 +5380,7 @@ function renderQuestionAnalytics() {
     previous: previousProfile,
     periodLabel: formatDatePt(currentStart) + ' a ' + formatDatePt(todayISO()),
   });
-  profileEl.innerHTML = renderErrorAnalysis(errorModel, { toolbar: errorToolbar, escapeHtml });
+  profileEl!.innerHTML = renderErrorAnalysis(errorModel, { toolbar: errorToolbar, escapeHtml });
 }
 
 function simuladoEffectiveCounts(sim: Record<string, any>) {
@@ -5403,8 +5404,8 @@ function toggleBreakdown(simuladoId: string) {
 }
 function addBreakdownRow(simuladoId: string) {
   const sim = state.simulados.find(s => s.id === simuladoId);
-  if (!sim.breakdown) sim.breakdown = [];
-  sim.breakdown.push({
+  if (!sim!.breakdown) sim!.breakdown = [];
+  sim!.breakdown.push({
     id: uid('breakdown'),
     subjectId: activeSubjects()[0]?.id || null,
     correct: 0,
@@ -5414,18 +5415,18 @@ function addBreakdownRow(simuladoId: string) {
 }
 function updateBreakdownRow(simuladoId: string, breakdownId: string, field: string, value: any) {
   const sim = state.simulados.find(s => s.id === simuladoId);
-  const b = sim.breakdown.find(x => x.id === breakdownId);
+  const b = sim!.breakdown!.find(x => x.id === breakdownId);
   (b as Record<string, any>)[field] =
     field === 'correct' || field === 'total' ? Number(value) || 0 : value;
-  b.total = Math.max(0, Number(b.total) || 0);
-  if ((Number(b.correct) || 0) > b.total)
+  b!.total = Math.max(0, Number(b!.total) || 0);
+  if ((Number(b!.correct) || 0) > b!.total)
     showToast('Os acertos foram limitados ao total de questões.');
-  b.correct = Math.max(0, Math.min(Number(b.correct) || 0, b.total));
+  b!.correct = Math.max(0, Math.min(Number(b!.correct) || 0, b!.total));
   persistAndRender();
 }
 function deleteBreakdownRow(simuladoId: string, breakdownId: string) {
   const sim = state.simulados.find(s => s.id === simuladoId);
-  sim.breakdown = sim.breakdown.filter(x => x.id !== breakdownId);
+  sim!.breakdown = sim!.breakdown!.filter(x => x.id !== breakdownId);
   persistAndRender();
 }
 
@@ -5481,8 +5482,8 @@ function deleteSimuladoRow(id: string) {
   });
 }
 
-document.getElementById('addQuestaoRowBtn').addEventListener('click', addQuestaoRow);
-document.getElementById('addSimuladoRowBtn').addEventListener('click', addSimuladoRow);
+document.getElementById('addQuestaoRowBtn')!.addEventListener('click', addQuestaoRow);
+document.getElementById('addSimuladoRowBtn')!.addEventListener('click', addSimuladoRow);
 
 const questionImportService = createQuestionImportService({
   subjectService,
@@ -5496,7 +5497,7 @@ const questionImportService = createQuestionImportService({
     const snapshot = structuredClone(pickPersistentState(state));
     try {
       return task();
-    } catch (error) {
+    } catch (error: any) {
       Object.assign(state, snapshot);
       throw error;
     }
@@ -5545,7 +5546,7 @@ function updateMetaHoursDay(day: any, value: any, { refresh = true }: any = {}) 
     captureReadinessBeforeStrategy('Antes de alterar a disponibilidade semanal');
   studyPlanPreview = null;
   goalsService.updateDailyHours(day, value, {
-    isToday: Number(day) === parseLocalDate(todayISO()).getDay(),
+    isToday: Number(day) === parseLocalDate(todayISO())!.getDay(),
   });
   if (refresh) persistAndRender();
   else scheduleSave();
@@ -5636,11 +5637,11 @@ function renderMetas() {
       monthlyTopics: atingidoMensal,
       questions: atingidoQuestoes,
       simulations: atingidoSimulados,
-      accuracy: hasAccuracyEvidence ? recentPerformance().current.accuracy : null,
+      accuracy: hasAccuracyEvidence ? recentPerformance().current!.accuracy : null,
       studyDays: atingidoConsistencia,
     },
   });
-  document.getElementById('metasContainer').innerHTML = renderGoals(resultGoals, {
+  document.getElementById('metasContainer')!.innerHTML = renderGoals(resultGoals, {
     adherenceTarget: m.aderenciaSemanal,
     escapeHtml,
     initialSuggestions: initialGoalSuggestions(
@@ -5755,8 +5756,8 @@ function renderHistoricalExamMatrix() {
 }
 document.getElementById('examHistoricalMatrix')?.addEventListener('change', event => {
   const key = (event.target as HTMLElement)?.dataset?.examMatrixFilter;
-  if (!['scope', 'board', 'year', 'role', 'subject', 'sort'].includes(key)) return;
-  examMatrixFilters[key] = (event.target as HTMLInputElement).value;
+  if (!['scope', 'board', 'year', 'role', 'subject', 'sort'].includes(key!)) return;
+  examMatrixFilters[key!] = (event.target as HTMLInputElement).value;
   if (key === 'scope') {
     examMatrixFilters.board = 'all';
     examMatrixFilters.year = 'all';
@@ -5897,7 +5898,7 @@ document.getElementById('examDataQuality')?.addEventListener('click', event => {
   examClassificationFilter = 'all';
   examClassificationPage = 0;
   updateExamClassificationReview();
-  examClassificationOverlay.classList.add('show');
+  examClassificationOverlay!.classList.add('show');
   document.getElementById('examClassificationFilter')?.focus();
 });
 document
@@ -5936,7 +5937,7 @@ examClassificationOverlay?.addEventListener('click', event => {
     updateExamClassificationReview();
     document.getElementById('examClassificationFilter')?.focus();
     showToast('Classificação atualizada. Próximas recomendações usarão a evidência corrigida.');
-  } catch (error) {
+  } catch (error: any) {
     showToast(error.message || 'Não foi possível revisar a classificação.');
   }
 });
@@ -6089,19 +6090,19 @@ function recordAdaptiveDecision(
     sourceTopicId: sourceItem?.topicId || null,
     targetTopicId: targetItem?.topicId || null,
     sourceItemBefore: sourceItem
-      ? planBefore.items.find((item: any) => item.topicId === sourceItem.topicId)?.minutes
+      ? planBefore!.items.find((item: any) => item.topicId === sourceItem.topicId)?.minutes
       : null,
     targetItemBefore: targetItem
-      ? planBefore.items.find((item: any) => item.topicId === targetItem.topicId)?.minutes
+      ? planBefore!.items.find((item: any) => item.topicId === targetItem.topicId)?.minutes
       : null,
     sourceMixBefore: sourceItem
       ? structuredClone(
-          planBefore.items.find((item: any) => item.topicId === sourceItem.topicId)?.activityMix
+          planBefore!.items.find((item: any) => item.topicId === sourceItem.topicId)?.activityMix
         )
       : null,
     targetMixBefore: targetItem
       ? structuredClone(
-          planBefore.items.find((item: any) => item.topicId === targetItem.topicId)?.activityMix
+          planBefore!.items.find((item: any) => item.topicId === targetItem.topicId)?.activityMix
         )
       : null,
   };
@@ -6191,7 +6192,7 @@ function calculateDailyPlanPreview() {
       const date = addDays(todayISO(), index);
       return { date, availableMinutes: Math.round(metaHoursForDate(date) * 60) };
     }),
-    end = days.at(-1).date;
+    end = days.at(-1)!.date;
   const dueReviews = state.reviewAgenda
     .filter(
       review =>
@@ -6205,8 +6206,8 @@ function calculateDailyPlanPreview() {
       date: review.date,
       subjectId: review.subjectId,
       topicId: review.topicId,
-      subjectName: getSubjectName(review.subjectId),
-      topicName: getTopicName(review.topicId),
+      subjectName: getSubjectName(review.subjectId!),
+      topicName: getTopicName(review.topicId!),
       minutes: 25,
     }));
   dailyPlanPreview = dailyPlanService.calculate({
@@ -6392,7 +6393,7 @@ function renderAdaptivePlanningHistory() {
     rejected: 'Recusado',
     reverted: 'Revertido',
   };
-  container.innerHTML = `<details class="adaptive-history"><summary>Histórico de adaptações (${entries.length})</summary>${entries.length ? `<ol>${entries.map(item => `<li><div><strong>${escapeHtml(labels[item.status] || item.status)}</strong><small>${escapeHtml(new Date(item.createdAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))}</small></div><p>${escapeHtml(item.sourceName || getSubjectName(item.sourceSubjectId))} ${formatPlanMinutes(item.sourceBefore)} → ${formatPlanMinutes(item.sourceAfter)} · ${escapeHtml(item.targetName || getSubjectName(item.targetSubjectId))} ${formatPlanMinutes(item.targetBefore)} → ${formatPlanMinutes(item.targetAfter)}</p><small>${escapeHtml(item.reasons?.join(' ') || 'Redistribuição proposta pelos indicadores disponíveis.')}</small>${renderRecommendationExplanation(item.explanationSnapshot)}${item.status === 'applied' && latestStudyPlan()?.id === item.planId ? `<button class="btn ghost small" data-delegated-click="revertAdaptivePlanningDecision('${escapeAttr(item.id)}')">Reverter ajuste</button>` : ''}</li>`).join('')}</ol>` : '<p>Nenhuma decisão de adaptação registrada.</p>'}</details>`;
+  container.innerHTML = `<details class="adaptive-history"><summary>Histórico de adaptações (${entries.length})</summary>${entries.length ? `<ol>${entries.map(item => `<li><div><strong>${escapeHtml(labels[item.status] || item.status)}</strong><small>${escapeHtml(new Date(item.createdAt!).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))}</small></div><p>${escapeHtml(item.sourceName || getSubjectName(item.sourceSubjectId!))} ${formatPlanMinutes(item.sourceBefore!)} → ${formatPlanMinutes(item.sourceAfter!)} · ${escapeHtml(item.targetName || getSubjectName(item.targetSubjectId!))} ${formatPlanMinutes(item.targetBefore!)} → ${formatPlanMinutes(item.targetAfter!)}</p><small>${escapeHtml(item.reasons?.join(' ') || 'Redistribuição proposta pelos indicadores disponíveis.')}</small>${renderRecommendationExplanation(item.explanationSnapshot!)}${item.status === 'applied' && latestStudyPlan()?.id === item.planId ? `<button class="btn ghost small" data-delegated-click="revertAdaptivePlanningDecision('${escapeAttr(item.id)}')">Reverter ajuste</button>` : ''}</li>`).join('')}</ol>` : '<p>Nenhuma decisão de adaptação registrada.</p>'}</details>`;
 }
 function updateExamBlueprint(field: string, value: any, { refresh = true }: any = {}) {
   const nextValue =
@@ -6607,16 +6608,16 @@ document.getElementById('subjectTargetEditor')?.addEventListener('click', event 
   const save = (event.target as HTMLElement).closest<HTMLElement>('[data-accuracy-save]');
   if (save) {
     saveSubjectAccuracyTargets(
-      [save.dataset.accuracySave],
+      [save.dataset.accuracySave!],
       container.querySelector<HTMLInputElement>(
-        `[data-accuracy-value="${CSS.escape(save.dataset.accuracySave)}"]`
+        `[data-accuracy-value="${CSS.escape(save.dataset.accuracySave!)}"]`
       )?.value ?? ''
     );
     return;
   }
   const restore = (event.target as HTMLElement).closest<HTMLElement>('[data-accuracy-restore]');
   if (restore) {
-    saveSubjectAccuracyTargets([restore.dataset.accuracyRestore], '');
+    saveSubjectAccuracyTargets([restore.dataset.accuracyRestore!], '');
     return;
   }
   if ((event.target as HTMLElement).closest('[data-accuracy-apply]')) {
@@ -6656,10 +6657,10 @@ function renderMetasPorDisciplina() {
 
   const container = document.getElementById('metasPorDisciplinaContainer');
   if (state.metasPorDisciplina.length === 0) {
-    container.innerHTML = `<div class="upcoming-empty">Nenhuma meta por disciplina ainda. Escolha uma disciplina acima e adicione.</div>`;
+    container!.innerHTML = `<div class="upcoming-empty">Nenhuma meta por disciplina ainda. Escolha uma disciplina acima e adicione.</div>`;
     return;
   }
-  container.innerHTML = state.metasPorDisciplina
+  container!.innerHTML = state.metasPorDisciplina
     .map(md => {
       const subjectId = entitySubjectId(md);
       const atingido = somarQuestoesDisciplinaNaSemana(subjectId);
@@ -6713,7 +6714,7 @@ function deleteMetaDisciplina(id: string) {
   subjectGoalService.remove(id);
   persistAndRender();
 }
-document.getElementById('addMetaDisciplinaBtn').addEventListener('click', addMetaDisciplina);
+document.getElementById('addMetaDisciplinaBtn')!.addEventListener('click', addMetaDisciplina);
 
 /* ===== HISTÓRICO DE METAS (retroativo, últimas 8 semanas) ===== */
 function getWeekStartMinus(weeksAgo: number) {
@@ -6756,7 +6757,7 @@ function renderHistoricoMetas() {
         ? `<span class="wk-ok">✓ cumprida</span>`
         : `<span class="wk-fail">✗ não cumprida</span>`;
 
-  container.innerHTML = `
+  container!.innerHTML = `
     <div class="weekly-history-table-wrap">
     <table class="weekly-history-table">
       <thead>
@@ -6852,15 +6853,15 @@ function renderRitmo() {
   const container = document.getElementById('ritmoContainer');
 
   if (r.status === 'sem-topicos') {
-    container.innerHTML = `<div class="upcoming-empty">Adicione disciplinas e tópicos para ver a estimativa de ritmo aqui.</div>`;
+    container!.innerHTML = `<div class="upcoming-empty">Adicione disciplinas e tópicos para ver a estimativa de ritmo aqui.</div>`;
     return;
   }
   if (r.status === 'completo') {
-    container.innerHTML = `<div class="pace-block"><div class="pace-status ok">🎉 Todos os tópicos cadastrados já foram concluídos!</div></div>`;
+    container!.innerHTML = `<div class="pace-block"><div class="pace-status ok">🎉 Todos os tópicos cadastrados já foram concluídos!</div></div>`;
     return;
   }
   if (r.status === 'sem-dados') {
-    container.innerHTML = `<div class="pace-block">
+    container!.innerHTML = `<div class="pace-block">
       <div class="pace-line">Faltam <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} pra concluir o plano.</div>
       <div class="pace-status neutral">Ainda sem tópicos concluídos nos últimos 14 dias — sem dados suficientes pra estimar o ritmo ainda.</div>
     </div>`;
@@ -6868,25 +6869,25 @@ function renderRitmo() {
   }
 
   const ritmoTxt =
-    r.ratePerDay >= 1
-      ? `${r.ratePerDay.toFixed(1)} tópicos por dia`
-      : `${formatDecimal(r.ratePerDay * 7)} tópicos por semana`;
+    r.ratePerDay! >= 1
+      ? `${r.ratePerDay!.toFixed(1)} tópicos por dia`
+      : `${formatDecimal(r.ratePerDay! * 7)} tópicos por semana`;
 
   let statusHtml = '';
   if (r.comparativo === 'no-prazo') {
-    const folga = r.daysToExam - r.daysNeeded;
+    const folga = r.daysToExam! - r.daysNeeded;
     statusHtml = `<div class="pace-status ok">🟢 No ritmo atual, você termina com ${folga} dia${folga === 1 ? '' : 's'} de folga antes da prova.</div>`;
   } else if (r.comparativo === 'atrasado') {
-    const atraso = r.daysNeeded - r.daysToExam;
+    const atraso = r.daysNeeded - r.daysToExam!;
     statusHtml = `<div class="pace-status warn">🔴 No ritmo atual, você terminaria ${atraso} dia${atraso === 1 ? '' : 's'} depois da prova. Considere acelerar ou rever o plano.</div>`;
   } else {
     statusHtml = `<div class="pace-status neutral">Defina a data da prova na Visão Geral pra comparar com o prazo.</div>`;
   }
 
-  container.innerHTML = `
+  container!.innerHTML = `
     <div class="pace-block">
       <div class="pace-line">Nos últimos 14 dias você concluiu em média <strong>${ritmoTxt}</strong>.</div>
-      <div class="pace-line">Faltam <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} — no ritmo atual, você termina em <strong>${r.daysNeeded} dia${r.daysNeeded === 1 ? '' : 's'}</strong> (${formatDatePt(r.finishDate)}).</div>
+      <div class="pace-line">Faltam <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} — no ritmo atual, você termina em <strong>${r.daysNeeded} dia${r.daysNeeded === 1 ? '' : 's'}</strong> (${formatDatePt(r.finishDate!)}).</div>
       ${statusHtml}
     </div>
   `;
@@ -6986,8 +6987,8 @@ function collectStudyCandidates() {
         review.status !== 'Concluído' &&
         review.date &&
         review.date <= today &&
-        isActiveStudyReference(subjectId, topicId) &&
-        (!topicId || topicInActiveExamScope(getTopicById(topicId)?.topic))
+        isActiveStudyReference(subjectId, topicId!) &&
+        (!topicId || topicInActiveExamScope((getTopicById(topicId)?.topic)!))
       );
     })
     .forEach(review => {
@@ -7001,7 +7002,7 @@ function collectStudyCandidates() {
         subjectName: entitySubjectName(review),
         topicName: topicId ? getTopicName(topicId) : review.topic || review.tipo || 'Revisão',
         tipo: 'revisão',
-        dificuldade: getTopicDifficulty(topicId),
+        dificuldade: getTopicDifficulty(topicId!),
         diasAtrasado: Math.max(0, -(diasParaRevisao(review.date) ?? 0)),
         erroQuestoes: diagnosis?.effectiveErrorRate ?? taxaErroDisciplina(subjectId),
         diasSemEstudar: diagnosis?.daysSinceStudy ?? diasSemEstudarDisciplina(subjectId),
@@ -7441,8 +7442,8 @@ function renderStudySessionsHistory() {
     if (tableWrap) tableWrap.hidden = true;
     if (emptyState) {
       emptyState.hidden = false;
-      emptyState.querySelector('strong').textContent = presentation.emptyTitle;
-      emptyState.querySelector('p').textContent = presentation.emptyMessage;
+      emptyState.querySelector('strong')!.textContent = presentation.emptyTitle;
+      emptyState.querySelector('p')!.textContent = presentation.emptyMessage;
     }
     return;
   }
@@ -7537,7 +7538,7 @@ function computeAlertasInteligentes() {
     weeklyAvailableMinutes,
     weeksUntilExam: days === null ? 0 : Math.max(0, days / 7),
   });
-  const dayOfWeek = parseLocalDate(today).getDay(),
+  const dayOfWeek = parseLocalDate(today)!.getDay(),
     elapsed = dayOfWeek === 0 ? 7 : dayOfWeek,
     expectedFrac = elapsed / 7;
   const weekStart = startOfWeek(today),
@@ -7842,11 +7843,11 @@ function renderOverviewNextAction(availableMinutes: number) {
   const { priority } = dailyExecutionController.build();
   // When plan and recommendation agree, the recommendation card stays primary so the session keeps its recommendation link.
   if (
-    priority.nextItem &&
+    priority!.nextItem &&
     !(
       item &&
-      priority.nextItem.subjectId === item.subjectId &&
-      priority.nextItem.topicId === item.topicId
+      priority!.nextItem.subjectId === item.subjectId &&
+      priority!.nextItem.topicId === item.topicId
     )
   ) {
     const suggestion = item
@@ -7860,8 +7861,8 @@ function renderOverviewNextAction(availableMinutes: number) {
         }
       : null;
     const ownTimer =
-      hasStartedStudyTimer() && state.activeTimer?.planItemId === priority.nextItem.id;
-    container.innerHTML = `${ownTimer ? '' : renderActiveStudyTimerNotice(null)}${outcome}${renderPlannedAction(priority, { suggestion, escapeHtml, escapeAttr, formatMinutes: formatPlanMinutes, timer: { active: hasStartedStudyTimer(), planItemId: state.activeTimer?.planItemId }, resumeLabel: topicResumeLabel(priority.nextItem.topicId) })}`;
+      hasStartedStudyTimer() && state.activeTimer?.planItemId === priority!.nextItem.id;
+    container.innerHTML = `${ownTimer ? '' : renderActiveStudyTimerNotice(null)}${outcome}${renderPlannedAction(priority!, { suggestion, escapeHtml, escapeAttr, formatMinutes: formatPlanMinutes, timer: { active: hasStartedStudyTimer(), planItemId: state.activeTimer?.planItemId }, resumeLabel: topicResumeLabel(priority!.nextItem.topicId) })}`;
     return;
   }
   if (!item) {
@@ -7870,15 +7871,15 @@ function renderOverviewNextAction(availableMinutes: number) {
   }
   const action = buildStudyAction(item, { source: 'overview' }),
     model = buildPriorityViewModel(item, 1),
-    label = recommendationActionLabel(action),
+    label = recommendationActionLabel(action!),
     mastery =
-      action.evidence.mastery == null
+      action!.evidence.mastery == null
         ? 'Domínio ainda sem evidência'
-        : `Domínio ${Math.round(action.evidence.mastery)}/100`,
+        : `Domínio ${Math.round(action!.evidence.mastery)}/100`,
     minutes =
-      action.suggestedMinutes == null
+      action!.suggestedMinutes == null
         ? 'Tempo não estimado'
-        : formatPlanMinutes(action.suggestedMinutes);
+        : formatPlanMinutes(action!.suggestedMinutes);
   const inProgress = activeTimerMatchesRecommendation(item),
     blocked = hasStartedStudyTimer() && !inProgress,
     sessionLabel = state.activeTimer?.isRunning ? 'Cronômetro rodando' : 'Sessão pausada';
@@ -7886,8 +7887,8 @@ function renderOverviewNextAction(availableMinutes: number) {
     ? `<button class="btn" type="button" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`
     : blocked
       ? '<button class="btn" type="button" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
-      : `<button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${action.source}')">▶ ${escapeHtml(label)}</button>`;
-  container.innerHTML = `${renderActiveStudyTimerNotice(item)}${outcome}<article class="card card--action overview-action-card ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml(label)} · prioridade ${action.priority ?? '—'}/100</p>${topicResumeLabel(item.topicId) ? `<p class="overview-action-resume">Continuar de: ${escapeHtml(topicResumeLabel(item.topicId))}</p>` : ''}<p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(action.evidence.label || model.evidenceLabel).toLowerCase()}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}</div><div class="overview-action-buttons">${actionButton}</div>${renderRecommendationExplanation(item.explanation || buildRecommendationExplanation(item), { headingLevel: 4 })}</article>`;
+      : `<button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">▶ ${escapeHtml(label)}</button>`;
+  container.innerHTML = `${renderActiveStudyTimerNotice(item)}${outcome}<article class="card card--action overview-action-card ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml(label)} · prioridade ${action!.priority ?? '—'}/100</p>${topicResumeLabel(item.topicId) ? `<p class="overview-action-resume">Continuar de: ${escapeHtml(topicResumeLabel(item.topicId))}</p>` : ''}<p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(action!.evidence.label || model.evidenceLabel).toLowerCase()}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}</div><div class="overview-action-buttons">${actionButton}</div>${renderRecommendationExplanation(item.explanation || buildRecommendationExplanation(item), { headingLevel: 4 })}</article>`;
 }
 // Update the Continue button in place: re-rendering here would swap the node under a click that fired this change.
 function syncGuidedNext(model: Record<string, any>) {
@@ -7896,7 +7897,7 @@ function syncGuidedNext(model: Record<string, any>) {
   if (!next) return;
   const reason = onboardingBlockedReason(model);
   next.disabled = Boolean(reason);
-  let hint = actions.querySelector('#guidedActionHint');
+  let hint = actions!.querySelector('#guidedActionHint');
   if (!reason) {
     hint?.remove();
     next.removeAttribute('aria-describedby');
@@ -7906,7 +7907,7 @@ function syncGuidedNext(model: Record<string, any>) {
     hint = document.createElement('p');
     hint.className = 'guided-action-hint';
     hint.id = 'guidedActionHint';
-    actions.prepend(hint);
+    actions!.prepend(hint);
   }
   hint.textContent = reason;
   next.setAttribute('aria-describedby', 'guidedActionHint');
@@ -7961,11 +7962,11 @@ function renderStudyRecommendation() {
   const cards = visible.map((item, index) => {
     const action = buildStudyAction(item, { source: 'today' }),
       model = buildPriorityViewModel(item, index + 1),
-      label = recommendationActionLabel(action),
+      label = recommendationActionLabel(action!),
       minutes =
-        action.suggestedMinutes == null
+        action!.suggestedMinutes == null
           ? 'Tempo não estimado'
-          : formatPlanMinutes(action.suggestedMinutes);
+          : formatPlanMinutes(action!.suggestedMinutes);
     const inProgress = activeTimerMatchesRecommendation(item),
       blocked = hasStartedStudyTimer() && !inProgress,
       sessionLabel = state.activeTimer?.isRunning ? 'Cronômetro rodando' : 'Sessão pausada';
@@ -7979,24 +7980,24 @@ function renderStudyRecommendation() {
       { review: '↻', limited: '⚠', high: '★', calculated: '○', blocked: '🔒' }[model.state] || '○';
     const planChoice =
         index === 0
-          ? renderPlanRecommendationChoice(action, dailyPriority, {
+          ? renderPlanRecommendationChoice(action!, dailyPriority!, {
               escapeHtml,
               escapeAttr,
               withExtras: false,
             })
           : '',
-      planExtras = planChoice ? renderPlanRecommendationExtras(action, { escapeAttr }) : '';
+      planExtras = planChoice ? renderPlanRecommendationExtras(action!, { escapeAttr }) : '';
     const actionButton = inProgress
       ? `<button class="btn" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`
       : blocked
         ? '<button class="btn" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
-        : `<button class="btn ${planChoice ? 'ghost' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${action.source}')">▶ ${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
-    return `<article class="study-recommendation ${index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action.source}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${action.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'Fora do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · empata com #2 em ${Math.round(Number(item.score))}; ${Number(item.score) !== Number(visible[1].score) ? 'diferença menor que 1 ponto' : Number(item.estimatedMinutes) !== Number(visible[1].estimatedMinutes) ? 'vem primeiro a mais curta' : 'ordem de desempate fixa'}` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action.reasons
+        : `<button class="btn ${planChoice ? 'ghost' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">▶ ${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
+    return `<article class="study-recommendation ${index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'Fora do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · empata com #2 em ${Math.round(Number(item.score))}; ${Number(item.score) !== Number(visible[1].score) ? 'diferença menor que 1 ponto' : Number(item.estimatedMinutes) !== Number(visible[1].estimatedMinutes) ? 'vem primeiro a mais curta' : 'ordem de desempate fixa'}` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action!.reasons
       .slice(0, 4)
       .map(reason => `<span>+ ${escapeHtml(reason)}</span>`)
       .join(
         ''
-      )}</div>${renderRecommendationExplanation(item.explanation || buildRecommendationExplanation(item))}<details class="recommendation-explanation"><summary>Prova × Você · composição da prioridade</summary><p><strong>Prova:</strong> ${escapeHtml(model.examExplanation)}</p><p><strong>Você:</strong> ${escapeHtml(model.personalExplanation)}</p><p><strong>Ação:</strong> ${escapeHtml(label)}</p><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(action.evidence.label || model.evidenceLabel).toLowerCase()}. Algoritmo v${action.algorithmVersion || item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${action.priority ?? model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? '' : 'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ''}</details></div><div class="recommendation-actions">${planChoice}${actionButton}<details class="recommendation-more-options"><summary>Outras opções</summary><div class="recommendation-more-actions">${planExtras}<button class="btn ghost small" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost small" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></details></div></article>`;
+      )}</div>${renderRecommendationExplanation(item.explanation || buildRecommendationExplanation(item))}<details class="recommendation-explanation"><summary>Prova × Você · composição da prioridade</summary><p><strong>Prova:</strong> ${escapeHtml(model.examExplanation)}</p><p><strong>Você:</strong> ${escapeHtml(model.personalExplanation)}</p><p><strong>Ação:</strong> ${escapeHtml(label)}</p><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(action!.evidence.label || model.evidenceLabel).toLowerCase()}. Algoritmo v${action!.algorithmVersion || item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${action!.priority ?? model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? '' : 'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ''}</details></div><div class="recommendation-actions">${planChoice}${actionButton}<details class="recommendation-more-options"><summary>Outras opções</summary><div class="recommendation-more-actions">${planExtras}<button class="btn ghost small" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost small" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></details></div></article>`;
   });
   const moreCards = cards.slice(1).join(''),
     moreRecommendations = moreCards
@@ -8067,10 +8068,10 @@ function measureRecommendationResults(session: Record<string, any>) {
         item.completed &&
         item.topicId === session.topicId &&
         item.baseline &&
-        (!item.outcome || ['pending', 'insufficient'].includes(item.outcome.state))
+        (!item.outcome || ['pending', 'insufficient'].includes(item.outcome.state!))
     )
     .forEach(feedback => {
-      const since = Date.parse(feedback.baseline.measuredAt) || 0,
+      const since = Date.parse(feedback.baseline!.measuredAt!) || 0,
         records = validQuestionRecords().filter(
           item =>
             item.topicId === session.topicId &&
@@ -8289,10 +8290,10 @@ const recommendationController = createRecommendationController({
         tipo: 'Revisão livre',
       });
     feedback.actionKind = kind;
-    feedback.resultingReviewId = review.id;
+    feedback.resultingReviewId = review!.id;
     scheduleSave();
     activateTab('agenda');
-    completeAgendaReview(review.id);
+    completeAgendaReview(review!.id);
     return review;
   },
   onPrerequisite: (
@@ -8369,7 +8370,7 @@ function renderWeeklyReplan() {
   )[0];
   const preview = replanController.view();
   if (!preview) {
-    container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt ? 'desfeito' : 'aplicado'}</strong><span>${formatPlanMinutes(latest.redistributedMinutes)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes)} sem capacidade</span></div>` : ''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest && !latest.undoneAt && latest.status !== 'undone' && latest.changes?.length ? `<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>` : ''}</div>`;
+    container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt ? 'desfeito' : 'aplicado'}</strong><span>${formatPlanMinutes(latest.redistributedMinutes!)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes!)} sem capacidade</span></div>` : ''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest && !latest.undoneAt && latest.status !== 'undone' && latest.changes?.length ? `<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>` : ''}</div>`;
     return;
   }
   if (preview.state === 'balanced') {
@@ -8611,7 +8612,7 @@ function renderDailyExecutionCard() {
 document.addEventListener('click', event => {
   const start = (event.target as HTMLElement).closest?.<HTMLElement>('[data-daily-start]');
   if (start) {
-    const result = dailyExecutionController.start(start.dataset.dailyStart);
+    const result = dailyExecutionController.start(start.dataset.dailyStart!);
     if (result.state === 'unavailable') showToast('A atividade mudou. Confira o plano atual.');
     if (result.state === 'blocked') showToast('Finalize a sessão atual antes de iniciar outra.');
     renderDailyExecutionCard();
@@ -8727,7 +8728,7 @@ function renderPlanoHoje() {
   container.innerHTML = `
     ${todayModel.recoveryMinutes ? `<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} pendentes de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>` : ''}
     ${listaHtml}
-    ${plan.flexMinutes > 0 ? `<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">${formatPlanMinutes(plan.flexMinutes)} para pausas, correção ou continuidade</div></div>` : ''}
+    ${plan.flexMinutes! > 0 ? `<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">${formatPlanMinutes(plan.flexMinutes!)} para pausas, correção ou continuidade</div></div>` : ''}
     <div class="plano-meta">
       <div class="plano-depois-label">Planejamento:</div>
       <div class="plano-depois-item">${formatPlanMinutes(plan.plannedMinutes)} planejados · ${formatDuration(executedSeconds)} executado (${executionPct}%)</div>
@@ -8744,7 +8745,7 @@ function renderGuidedOnboarding() {
   const overview = document.querySelector('#panel-dashboard .overview-now');
   if (overview) overview.after(entry);
   entry.hidden = !visible;
-  document.getElementById('guidedOnboardingEntry').innerHTML = visible
+  document.getElementById('guidedOnboardingEntry')!.innerHTML = visible
     ? renderOnboardingEntry(model, { escapeHtml })
     : '';
   syncOnboardingPhase(document, { visible });
@@ -8754,20 +8755,20 @@ function renderGuidedOnboarding() {
     uiState.onboarding.open = false;
     return;
   }
-  document.getElementById('guidedOnboardingProgress').innerHTML = renderOnboardingProgress(model);
-  document.getElementById('guidedOnboardingContent').innerHTML = renderOnboardingContent(model, {
+  document.getElementById('guidedOnboardingProgress')!.innerHTML = renderOnboardingProgress(model);
+  document.getElementById('guidedOnboardingContent')!.innerHTML = renderOnboardingContent(model, {
     escapeHtml,
     escapeAttr,
     formatMinutes: formatPlanMinutes,
   });
-  document.getElementById('guidedOnboardingHelp').innerHTML = renderOnboardingHelp(model, {
+  document.getElementById('guidedOnboardingHelp')!.innerHTML = renderOnboardingHelp(model, {
     escapeHtml,
   });
-  document.getElementById('guidedOnboardingActions').innerHTML = renderOnboardingActions(model);
+  document.getElementById('guidedOnboardingActions')!.innerHTML = renderOnboardingActions(model);
   const manualBanner = document.getElementById('guidedManualReturn');
   if (manualBanner) {
     manualBanner.hidden = !uiState.onboarding.manualReturn;
-    manualBanner.querySelector<HTMLButtonElement>('[data-guided-manual-return]').disabled =
+    manualBanner.querySelector<HTMLButtonElement>('[data-guided-manual-return]')!.disabled =
       !model.hasContent;
   }
 }
@@ -8810,7 +8811,7 @@ async function openGuidedOnboarding({ step = null }: any = {}) {
     document.body.classList.add('onboarding-open');
     renderGuidedOnboarding();
     requestAnimationFrame(() => document.getElementById('guidedOnboardingClose')?.focus());
-  } catch (error) {
+  } catch (error: any) {
     showToast(error.message || 'Não foi possível abrir a configuração inicial.');
   }
 }
@@ -9144,7 +9145,7 @@ function approvalPrazoMetric() {
       detail: 'Ritmo recente insuficiente para estimar',
     };
   if (ritmo.comparativo === 'no-prazo') {
-    const slack = ritmo.daysToExam - ritmo.daysNeeded;
+    const slack = ritmo.daysToExam! - ritmo.daysNeeded;
     const raw = clampScore(70 + Math.min(30, Math.max(0, slack)));
     return {
       score: raw,
@@ -9154,7 +9155,7 @@ function approvalPrazoMetric() {
       detail: `Previsão com ${slack} dia${slack === 1 ? '' : 's'} de folga`,
     };
   }
-  const delay = ritmo.daysNeeded - ritmo.daysToExam;
+  const delay = ritmo.daysNeeded - ritmo.daysToExam!;
   const raw = clampScore(60 - Math.min(60, Math.max(0, delay) * 2));
   return {
     score: raw,
@@ -9216,8 +9217,8 @@ function projectPerformance() {
   if (future.available) {
     const margin = Math.max(
       future.central - future.low,
-      calibration.central - calibration.low,
-      calibration.high - calibration.central
+      calibration.central! - calibration.low!,
+      calibration.high! - calibration.central!
     );
     future.low = Math.max(0, future.central - margin);
     future.high = Math.min(100, future.central + margin);
@@ -9225,7 +9226,7 @@ function projectPerformance() {
     future.confidenceLabel = calibration.confidenceLabel;
   }
   const forecast30 =
-    calibration.calibration.state === 'retrospective'
+    calibration.calibration!.state === 'retrospective'
       ? future
       : {
           available: false,
@@ -9240,8 +9241,8 @@ function projectPerformance() {
     confidenceLabel: calibration.confidenceLabel,
     calibration,
     gap: {
-      minimum: Math.max(0, calibration.target - calibration.high),
-      maximum: Math.max(0, calibration.target - calibration.low),
+      minimum: Math.max(0, calibration.target! - calibration.high!),
+      maximum: Math.max(0, calibration.target! - calibration.low!),
       target: calibration.target,
     },
     movingAverage: forecast.movingAverage,
@@ -9299,7 +9300,7 @@ function recentPerformance(scope = examEvidenceContext(), today = todayISO()) {
 function currentAchievementProjection(
   metrics = computeApprovalMetrics(),
   readiness = readinessResult(metrics),
-  candidates: any[] = null
+  candidates: any[] | null = null
 ) {
   return projectionController.current(metrics, readiness, candidates);
 }
@@ -9508,7 +9509,7 @@ function approvalConsistenciaMetric() {
   const raw = result.value,
     confidence = Math.min(1, result.studiedDays / 14);
   return {
-    score: clampScore(50 + (raw - 50) * Math.max(0.2, confidence)),
+    score: clampScore(50 + (raw! - 50) * Math.max(0.2, confidence)),
     confidence,
     available: result.available,
     raw,
@@ -9916,7 +9917,7 @@ function saveCurrentReadinessSnapshot({
       activeExamTags: state.examBlueprint?.activeExamTags || [],
       metrics: readinessFactors(computeApprovalMetrics()),
     });
-  return upsertReadinessSnapshot(state.readinessSnapshots, snapshot);
+  return upsertReadinessSnapshot(state.readinessSnapshots, snapshot!);
 }
 function buildReadinessBeforeStrategySnapshot(reason: string, timestamp = nowISO()) {
   return createReadinessSnapshot({
@@ -9934,7 +9935,7 @@ function buildReadinessBeforeStrategySnapshot(reason: string, timestamp = nowISO
 function captureReadinessBeforeStrategy(reason: string) {
   return upsertReadinessSnapshot(
     state.readinessSnapshots,
-    buildReadinessBeforeStrategySnapshot(reason)
+    buildReadinessBeforeStrategySnapshot(reason)!
   );
 }
 weeklyCloseController = createWeeklyCloseController({
@@ -10067,16 +10068,16 @@ function renderExamCountdown() {
   const fig = document.getElementById('examCountdownFigure');
   renderExamProgress();
   if (!state.examDate) {
-    fig.textContent = 'defina a data ao lado';
-    fig.classList.remove('urgent');
+    fig!.textContent = 'defina a data ao lado';
+    fig!.classList.remove('urgent');
     return;
   }
   const dias = diasParaRevisao(state.examDate);
-  fig.classList.toggle('urgent', dias !== null && dias <= 7);
-  if (dias === null) fig.textContent = '';
-  else if (dias < 0) fig.textContent = 'prova foi há ' + pluralize(Math.abs(dias), 'dia');
-  else if (dias === 0) fig.textContent = 'a prova é hoje!';
-  else fig.textContent = 'faltam ' + pluralize(dias, 'dia') + ' para a prova';
+  fig!.classList.toggle('urgent', dias !== null && dias <= 7);
+  if (dias === null) fig!.textContent = '';
+  else if (dias < 0) fig!.textContent = 'prova foi há ' + pluralize(Math.abs(dias), 'dia');
+  else if (dias === 0) fig!.textContent = 'a prova é hoje!';
+  else fig!.textContent = 'faltam ' + pluralize(dias, 'dia') + ' para a prova';
 }
 function navigateKpi(tab: string, filter: string) {
   activateTab(tab);
@@ -10156,13 +10157,13 @@ function renderCalAtrasadas(elId: string) {
 }
 function renderKPIs() {
   const resolved = state.questoes.reduce((n, q) => n + (Number(q.resolved) || 0), 0),
-    accuracy = recentPerformance().current.accuracy,
+    accuracy = recentPerformance().current!.accuracy,
     simulations = projectPerformance().central,
     late = revisoesAtrasadas(),
     target = state.metas.metaAprovacao;
   const hasResults = accuracy != null,
     shown = (value: any) => (value == null ? '—' : `${formatDecimal(value)}%`);
-  document.getElementById('kpiGrid').innerHTML = `
+  document.getElementById('kpiGrid')!.innerHTML = `
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(resolved)}</div><div class="l">Questões resolvidas</div></button>
     <button type="button" class="kpi-cell kpi-link ${hasResults ? (accuracy >= target ? 'ok' : 'warn') : ''}" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(accuracy)}</div><div class="l">Precisão · 30 dias</div></button>
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(simulations)}</div><div class="l">Simulados comparáveis</div></button>
@@ -10174,7 +10175,13 @@ function renderKPIs() {
 function escapeHtml(str: string) {
   return String(str || '').replace(
     /[&<>"']/g,
-    m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+    (m: string) =>
+      (
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }) as Record<
+          string,
+          string
+        >
+      )[m]
   );
 }
 function escapeAttr(str: string) {
@@ -10334,7 +10341,7 @@ const DELEGATED_ACTION_HANDLERS = {
   cancelExamSubjectConfig,
 };
 const delegatedArgument = createDelegatedArgumentResolver({
-  getTodayDayOfWeek: () => parseLocalDate(todayISO()).getDay(),
+  getTodayDayOfWeek: () => parseLocalDate(todayISO())!.getDay(),
 });
 const resolveDelegatedSpecial = createSpecialActionResolver({
   onSetPerformanceSubject: value => {
@@ -10465,7 +10472,7 @@ function renderPerformance() {
       });
   const sectionHtml = examSection
     ? '<div id="examIntelligenceMount"></div>'
-    : renderPerformanceSection(pageModel, {
+    : renderPerformanceSection(pageModel!, {
         range,
         today,
         activeExamTags,
@@ -10483,7 +10490,7 @@ function renderPerformance() {
     escapeAttr,
   });
   if (examSection) {
-    target.querySelector('#examIntelligenceMount')?.append(examHub);
+    target.querySelector('#examIntelligenceMount')?.append(examHub!);
     renderExamIntelligenceSection();
   }
   // Announce only a short summary, and only when section or period changes; the panel itself is re-rendered silently.
@@ -10539,7 +10546,7 @@ document.addEventListener('click', event => {
   const destination = button.dataset.analysisNav,
     subjectId = button.dataset.subjectId || null,
     topicId = button.dataset.topicId || null;
-  if (!['hoje', 'desempenho', 'metas'].includes(destination)) return;
+  if (!['hoje', 'desempenho', 'metas'].includes(destination!)) return;
   analysisNavigationContext = createAnalysisContext({
     origin: activeTabName(),
     subjectId,
@@ -10556,7 +10563,7 @@ document.addEventListener('click', event => {
       topicId,
     });
   if (destination === 'metas') calculateStudyPlanPreview();
-  activateTab(destination);
+  activateTab(destination!);
   requestAnimationFrame(() => {
     if (destination === 'hoje')
       document.querySelector('.today-analysis-details')?.setAttribute('open', '');
@@ -10731,7 +10738,7 @@ const modalLayers = [
 ].filter(Boolean) as HTMLElement[];
 const syncModalShell = () => {
   const active = modalLayers.some(layer => layer.classList.contains('show') && !layer.hidden);
-  document.getElementById('mainContent').inert = active;
+  document.getElementById('mainContent')!.inert = active;
   document.body.classList.toggle('modal-open', active);
 };
 const modalObserver = new MutationObserver(syncModalShell);
@@ -10771,13 +10778,13 @@ document.getElementById('guidedOnboardingOverlay')?.addEventListener('change', e
     );
     const model = onboardingModel();
     syncGuidedNext(model);
-    document.querySelector('#guidedOnboardingContent .guided-capacity strong').textContent =
+    document.querySelector('#guidedOnboardingContent .guided-capacity strong')!.textContent =
       formatPlanMinutes(model.availableMinutes);
     return;
   }
   if ((event.target as HTMLElement).dataset.guidedLevel)
     setGuidedSubjectLevel(
-      (event.target as HTMLElement).dataset.guidedLevel,
+      (event.target as HTMLElement).dataset.guidedLevel!,
       (event.target as HTMLInputElement).value,
       { refresh: false }
     );
@@ -10786,7 +10793,9 @@ document.getElementById('guidedOnboarding')?.addEventListener('click', event => 
   if ((event.target as HTMLElement).closest('[data-guided-action="open"]')) openGuidedOnboarding();
 });
 document.getElementById('guidedOnboardingOverlay')?.addEventListener('click', event => {
-  const dateOffsetBtn = (event.target as HTMLElement).closest<HTMLElement>('[data-guided-date-offset]');
+  const dateOffsetBtn = (event.target as HTMLElement).closest<HTMLElement>(
+    '[data-guided-date-offset]'
+  );
   if (dateOffsetBtn) {
     const offset = Number(dateOffsetBtn.dataset.guidedDateOffset) || 0;
     const input = document.getElementById('guidedExamDate') as HTMLInputElement | null;

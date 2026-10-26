@@ -7,7 +7,7 @@ export interface CalendarItem {
   subjectId?: string | null;
   topicId?: string | null;
   status: string;
-  reviewType?: string;
+  reviewType?: string | null;
 }
 
 export interface CalendarTableProps {
