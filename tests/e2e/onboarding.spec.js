@@ -436,6 +436,13 @@ test('missão do primeiro dia é exibida na aba hoje e orienta ativação pós-p
   const dismissBtn = missionCard.locator('[data-first-steps-dismiss="true"]');
   await dismissBtn.click();
   await expect(missionCard).toBeHidden();
+
+  // Barra de restauração fica visível e permite reexibir o guia
+  const restoreBar = page.locator('#firstStepsRestoreBar');
+  await expect(restoreBar).toBeVisible();
+  const restoreBtn = restoreBar.locator('[data-first-steps-restore="true"]');
+  await restoreBtn.click();
+  await expect(missionCard).toBeVisible();
 });
 
 test('tour guiado interativo percorre todas as 5 paradas e conclui com sucesso', async ({

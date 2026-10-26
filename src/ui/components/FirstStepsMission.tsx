@@ -8,6 +8,7 @@ import { Badge } from '../primitives/badge.js';
 export interface FirstStepsMissionProps {
   model: FirstStepsMissionModel;
   onDismiss?: () => void;
+  onRestore?: () => void;
   onStartTour?: () => void;
   onExecuteMission?: (action: string) => void;
 }
@@ -15,9 +16,31 @@ export interface FirstStepsMissionProps {
 export function FirstStepsMission({
   model,
   onDismiss,
+  onRestore,
   onStartTour,
   onExecuteMission,
 }: FirstStepsMissionProps): JSX.Element | null {
+  if (model.canRestore) {
+    return (
+      <div
+        id="firstStepsRestoreBar"
+        className="first-steps-restore-bar flex flex-wrap items-center justify-between gap-2 p-2 mb-4 rounded bg-surface-subtle/50 border border-border-default text-xs text-secondary"
+      >
+        <span>Checklist de primeiros passos pausado</span>
+        <Button
+          variant="ghost"
+          size="small"
+          data-first-steps-restore="true"
+          onClick={onRestore}
+          aria-label="Reexibir checklist de primeiros passos"
+          className="text-xs font-medium text-navy hover:text-primary"
+        >
+          ↺ Reexibir guia de ativação
+        </Button>
+      </div>
+    );
+  }
+
   if (!model.visible) return null;
 
   return (

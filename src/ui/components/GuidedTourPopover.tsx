@@ -4,6 +4,13 @@ import { Card } from '../primitives/card.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
 
+export interface SpotlightRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
 export interface GuidedTourPopoverProps {
   step: GuidedTourStep;
   currentIndex: number;
@@ -11,6 +18,7 @@ export interface GuidedTourPopoverProps {
   isFirst: boolean;
   isLast: boolean;
   positionStyle?: Record<string, string>;
+  targetRect?: SpotlightRect | null;
   onNext?: () => void;
   onPrev?: () => void;
   onClose?: () => void;
@@ -23,6 +31,7 @@ export function GuidedTourPopover({
   isFirst,
   isLast,
   positionStyle = {},
+  targetRect = null,
   onNext,
   onPrev,
   onClose,
@@ -34,6 +43,40 @@ export function GuidedTourPopover({
       role="region"
       aria-label="Tour guiado pelo aplicativo"
     >
+      {/* Dimmed backdrop with spotlight cutout around the target element */}
+      <svg
+        className="guided-tour-backdrop absolute inset-0 w-full h-full pointer-events-auto"
+        width="100%"
+        height="100%"
+        onClick={onClose}
+        aria-hidden="true"
+      >
+        <defs>
+          <mask id="tour-spotlight-mask">
+            <rect x="0" y="0" width="100%" height="100%" fill="white" />
+            {targetRect && (
+              <rect
+                x={targetRect.left - 6}
+                y={targetRect.top - 6}
+                width={targetRect.width + 12}
+                height={targetRect.height + 12}
+                rx="6"
+                ry="6"
+                fill="black"
+              />
+            )}
+          </mask>
+        </defs>
+        <rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill="rgba(11, 20, 35, 0.55)"
+          mask="url(#tour-spotlight-mask)"
+        />
+      </svg>
+
       <div
         id="guidedTourPopover"
         className="guided-tour-popover pointer-events-auto absolute z-[205] max-w-[380px] w-[calc(100vw-24px)] transition-all duration-200"

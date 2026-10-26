@@ -78,11 +78,12 @@ test('buildFirstStepsMission exibe missões pós-plano e calcula progresso', () 
     dismissed: false,
   });
   assert.equal(allDone.visible, false);
+  assert.equal(allDone.canRestore, false);
   assert.equal(allDone.completedCount, 3);
   assert.equal(allDone.progressPercent, 100);
   assert.equal(allDone.activeMission, null);
 
-  // Cenário 5: Dispensado manualmente -> invisível
+  // Cenário 5: Dispensado manualmente -> invisível mas restaurável
   const dismissed = buildFirstStepsMission({
     hasPlan: true,
     sessionsCount: 0,
@@ -90,6 +91,7 @@ test('buildFirstStepsMission exibe missões pós-plano e calcula progresso', () 
     dismissed: true,
   });
   assert.equal(dismissed.visible, false);
+  assert.equal(dismissed.canRestore, true);
 });
 
 test('guided-tour-steps gerencia transição de paradas e limites de forma imutável', () => {

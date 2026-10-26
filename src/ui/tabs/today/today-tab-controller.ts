@@ -10,6 +10,7 @@ export interface TodayTabControllerContext {
   formatPlanMinutes: (mins: number) => string;
   formatDatePt: (date: string) => string;
   onDismissFirstSteps?: () => void;
+  onRestoreFirstSteps?: () => void;
   onStartTour?: () => void;
   onExecuteFirstStepsMission?: (action: string) => void;
 }
@@ -68,11 +69,12 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
   }
 
   function renderFirstStepsMissionHtml(model: FirstStepsMissionModel): string {
-    if (!model.visible) return '';
+    if (!model.visible && !model.canRestore) return '';
     return render(
       h(FirstStepsMission, {
         model,
         onDismiss: ctx.onDismissFirstSteps,
+        onRestore: ctx.onRestoreFirstSteps,
         onStartTour: ctx.onStartTour,
         onExecuteMission: ctx.onExecuteFirstStepsMission,
       })
@@ -80,7 +82,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
   }
 
   function mountFirstStepsMission(container: Element, model: FirstStepsMissionModel): void {
-    if (!model.visible) {
+    if (!model.visible && !model.canRestore) {
       container.innerHTML = '';
       return;
     }
@@ -88,6 +90,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       h(FirstStepsMission, {
         model,
         onDismiss: ctx.onDismissFirstSteps,
+        onRestore: ctx.onRestoreFirstSteps,
         onStartTour: ctx.onStartTour,
         onExecuteMission: ctx.onExecuteFirstStepsMission,
       }),

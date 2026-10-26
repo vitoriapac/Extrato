@@ -96,11 +96,19 @@ export function createGuidedTourController({
     setTimeout(() => {
       removeHighlight();
 
+      let targetRect: { left: number; top: number; width: number; height: number } | null = null;
       const target = document.querySelector<HTMLElement>(step.selector);
       if (target) {
         target.scrollIntoView({ block: 'center', behavior: 'instant' });
         target.classList.add('is-tour-highlighted');
         currentHighlightedElement = target;
+        const b = target.getBoundingClientRect();
+        targetRect = {
+          left: Math.round(b.left),
+          top: Math.round(b.top),
+          width: Math.round(b.width),
+          height: Math.round(b.height),
+        };
       }
 
       const positionStyle = target
@@ -120,6 +128,7 @@ export function createGuidedTourController({
         isFirst: tourState.isFirst,
         isLast: tourState.isLast,
         positionStyle,
+        targetRect,
         onNext: next,
         onPrev: prev,
         onClose: close,

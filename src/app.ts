@@ -8514,6 +8514,16 @@ function dismissFirstSteps(): void {
   }
 }
 
+function restoreFirstSteps(): void {
+  if (IS_DEMO_MODE) {
+    demoFirstStepsDismissed = false;
+  } else {
+    try {
+      localStorage.removeItem('studytrack_first_steps_dismissed');
+    } catch {}
+  }
+}
+
 function renderFirstStepsMissionCard() {
   let slot = document.getElementById('firstStepsMissionSlot');
   if (!slot) {
@@ -8547,6 +8557,10 @@ function renderFirstStepsMissionCard() {
     formatDatePt,
     onDismissFirstSteps: () => {
       dismissFirstSteps();
+      renderFirstStepsMissionCard();
+    },
+    onRestoreFirstSteps: () => {
+      restoreFirstSteps();
       renderFirstStepsMissionCard();
     },
     onStartTour: () => {
@@ -10836,6 +10850,12 @@ document.addEventListener('click', event => {
   if ((event.target as HTMLElement).closest('[data-first-steps-dismiss]')) {
     dismissFirstSteps();
     renderFirstStepsMissionCard();
+  }
+  if ((event.target as HTMLElement).closest('[data-first-steps-restore]')) {
+    restoreFirstSteps();
+    activateTab('hoje');
+    renderFirstStepsMissionCard();
+    showToast('Guia de primeiros passos reativado.');
   }
 });
 document.querySelector('[data-guided-manual-return]')?.addEventListener('click', () => {

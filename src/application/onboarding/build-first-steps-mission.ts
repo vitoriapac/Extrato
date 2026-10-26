@@ -9,6 +9,7 @@ export interface MissionItem {
 
 export interface FirstStepsMissionModel {
   visible: boolean;
+  canRestore: boolean;
   completedCount: number;
   totalCount: number;
   progressPercent: number;
@@ -63,6 +64,7 @@ export function buildFirstStepsMission({
 
   return Object.freeze({
     visible: hasPlan && !allComplete && !dismissed,
+    canRestore: hasPlan && !allComplete && dismissed,
     completedCount,
     totalCount: missions.length,
     progressPercent: Math.round((completedCount / missions.length) * 100),
