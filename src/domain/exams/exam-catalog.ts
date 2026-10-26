@@ -9,31 +9,36 @@ import {
 
 export { CATALOG_VERSION, EXAM_TAGS, INSTITUTIONS, EXAM_SOURCES, institutionForExamTag };
 
-const clone = value => structuredClone(value);
-const deepFreeze = value => {
+type Row = Record<string, any>;
+const clone = <T>(value: T): T => structuredClone(value);
+const deepFreeze = <T>(value: T): T => {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
     Object.freeze(value);
     Object.values(value).forEach(deepFreeze);
   }
   return value;
 };
-const slug = value =>
+const slug = (value: unknown) =>
   String(value)
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-function normalizeTopic(topic) {
-  const topicAliases = {
+function normalizeTopic(topic: Row) {
+  const topicAliases: Record<string, string[]> = {
     'estrutura-do-sistema-financeiro-nacional': ['Sistema Financeiro Nacional', 'SFN'],
     'prevencao-a-lavagem-de-dinheiro': ['PLD', 'PLD/FT'],
     'lei-geral-de-protecao-de-dados': ['LGPD'],
     'programacao-python': ['Python'],
     'programacao-java': ['Java'],
   };
-  const examTags = [
-    ...new Set((topic.examTags || []).filter(tag => Object.values(EXAM_TAGS).includes(tag))),
+  const examTags: string[] = [
+    ...new Set<string>(
+      (topic.examTags || []).filter((tag: string) =>
+        (Object.values(EXAM_TAGS) as string[]).includes(tag)
+      )
+    ),
   ];
   return {
     ...topic,
@@ -55,16 +60,18 @@ function normalizeTopic(topic) {
     examMetrics: clone(topic.examMetrics || {}),
   };
 }
-function normalizeSubject(subject) {
+function normalizeSubject(subject: Row) {
   const aliases =
-    {
-      'lingua-portuguesa': ['Português'],
-      'informatica-e-tic': ['Informática', 'TIC'],
-      'probabilidade-e-estatistica': ['Probabilidade e Estatística'],
-      'mercado-financeiro-e-transformacao-digital': ['Atualidades do Mercado Financeiro'],
-      'tecnologia-e-inteligencia-artificial': ['Tecnologia da Informação', 'TI'],
-      'compliance-etica-e-legislacao-bancaria': ['Compliance'],
-    }[subject.catalogId || subject.id] || [];
+    (
+      {
+        'lingua-portuguesa': ['Português'],
+        'informatica-e-tic': ['Informática', 'TIC'],
+        'probabilidade-e-estatistica': ['Probabilidade e Estatística'],
+        'mercado-financeiro-e-transformacao-digital': ['Atualidades do Mercado Financeiro'],
+        'tecnologia-e-inteligencia-artificial': ['Tecnologia da Informação', 'TI'],
+        'compliance-etica-e-legislacao-bancaria': ['Compliance'],
+      } as Record<string, string[]>
+    )[subject.catalogId || subject.id] || [];
   return {
     ...subject,
     id: subject.id || subject.catalogId || slug(subject.name),
@@ -123,11 +130,13 @@ export const CATALOG_METADATA = deepFreeze({
   metadataModel: clone(catalogData.metadataModel || {}),
 });
 
-export function catalogForExamTags(examTags = []) {
+export function catalogForExamTags(examTags: string[] = []) {
   const selected = new Set(examTags),
     result = EXAM_CATALOG.map(group => ({
       ...clone(group),
-      topics: group.topics.filter(item => item.examTags.some(tag => selected.has(tag))).map(clone),
+      topics: group.topics
+        .filter((item: Row) => item.examTags.some((tag: string) => selected.has(tag)))
+        .map(clone),
     })).filter(group => group.topics.length);
   if (selected.has(EXAM_TAGS.CAIXA_TI)) {
     const source = EXAM_CATALOG.find(
@@ -139,10 +148,10 @@ export function catalogForExamTags(examTags = []) {
   }
   return result;
 }
-export function validateExamCatalog(subjects = EXAM_CATALOG) {
-  const errors = [],
-    subjectIds = new Set(),
-    topicIds = new Set();
+export function validateExamCatalog(subjects: Row[] = EXAM_CATALOG) {
+  const errors: string[] = [],
+    subjectIds = new Set<string>(),
+    topicIds = new Set<string>();
   for (const subject of subjects) {
     if (!subject.catalogId || subjectIds.has(subject.catalogId))
       errors.push(`Disciplina duplicada ou sem catalogId: ${subject.name || 'sem nome'}`);
@@ -153,7 +162,11 @@ export function validateExamCatalog(subjects = EXAM_CATALOG) {
         errors.push(`Tópico duplicado ou sem catalogId: ${topic.name || 'sem nome'}`);
       topicIds.add(key);
       if (!(topic.examTags || []).length) errors.push(`Tópico sem examTags: ${topic.name}`);
-      if ((topic.examTags || []).some(tag => !Object.values(EXAM_TAGS).includes(tag)))
+      if (
+        (topic.examTags || []).some(
+          (tag: string) => !(Object.values(EXAM_TAGS) as string[]).includes(tag)
+        )
+      )
         errors.push(`Tag inválida em ${topic.name}`);
     }
   }
@@ -161,6 +174,6 @@ export function validateExamCatalog(subjects = EXAM_CATALOG) {
     valid: errors.length === 0,
     errors,
     subjects: subjects.length,
-    topics: subjects.reduce((sum, subject) => sum + (subject.topics || []).length, 0),
+    topics: subjects.reduce((sum: number, subject) => sum + (subject.topics || []).length, 0),
   });
 }

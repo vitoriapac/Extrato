@@ -1,10 +1,13 @@
 import { isTopicInExamScope, resolveExamScope } from './exam-scope.js';
 
-const topicIdOf = record => record?.topicId || record?.topicRef || null;
-const subjectIdOf = record => record?.subjectId || record?.disciplinaId || null;
-export function indexExamTopics(subjects = []) {
-  const topics = [],
-    byId = new Map();
+type Row = Record<string, any>;
+
+const topicIdOf = (record: Row | null | undefined) => record?.topicId || record?.topicRef || null;
+const subjectIdOf = (record: Row | null | undefined) =>
+  record?.subjectId || record?.disciplinaId || null;
+export function indexExamTopics(subjects: Row[] = []) {
+  const topics: Row[] = [],
+    byId = new Map<string, Row>();
   for (const subject of subjects || [])
     if (!subject?.archived)
       for (const topic of subject.topics || [])
@@ -17,9 +20,9 @@ export function indexExamTopics(subjects = []) {
 }
 // Callers classifying a list pass one prebuilt index; rebuilding it per record was O(records × topics).
 export function classifyEvidenceScope(
-  record,
-  subjects = [],
-  activeExamTags = [],
+  record: Row,
+  subjects: Row[] = [],
+  activeExamTags: string[] = [],
   index = indexExamTopics(subjects)
 ) {
   const { byId } = index,
@@ -63,21 +66,31 @@ export function classifyEvidenceScope(
     topicId: null,
   });
 }
-export function resolveExamEvidenceScope({
+export function resolveExamEvidenceScope<
+  Session extends Row = Row,
+  Question extends Row = Row,
+  Review extends Row = Row,
+>({
   subjects = [],
   activeExamTags = [],
   sessions = [],
   questions = [],
   reviews = [],
+}: {
+  subjects?: Row[];
+  activeExamTags?: string[];
+  sessions?: Session[];
+  questions?: Question[];
+  reviews?: Review[];
 } = {}) {
   const index = indexExamTopics(subjects),
     content = resolveExamScope(index.topics, activeExamTags);
-  const classify = list =>
+  const classify = <T extends Row>(list: T[]) =>
     (list || []).map(record => ({
       record,
       scope: classifyEvidenceScope(record, subjects, activeExamTags, index),
     }));
-  const partition = list => {
+  const partition = <T extends Row>(list: T[]) => {
     const classified = classify(list);
     return {
       classified,

@@ -21,6 +21,7 @@
     "src/domain/exam-intelligence/**/*",
     "src/domain/analytics/topic-strategy.ts",
     "src/domain/questions/**/*",
-    "src/domain/diagnostics/**/*"
+    "src/domain/diagnostics/**/*",
+    "src/domain/exams/**/*"
   ]
 }

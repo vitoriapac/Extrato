@@ -27,10 +27,10 @@ export const EXAM_SOURCES = Object.freeze({
     label: 'Catálogo curado StudyTrack',
   }),
 });
-export function institutionForExamTag(tag) {
+export function institutionForExamTag(tag: string) {
   return tag === EXAM_TAGS.BB
     ? INSTITUTIONS.BB
-    : [EXAM_TAGS.CAIXA, EXAM_TAGS.CAIXA_TI].includes(tag)
+    : [EXAM_TAGS.CAIXA, EXAM_TAGS.CAIXA_TI].includes(tag as typeof EXAM_TAGS.CAIXA)
       ? INSTITUTIONS.CAIXA
       : null;
 }

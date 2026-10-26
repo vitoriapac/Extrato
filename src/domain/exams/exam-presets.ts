@@ -1,6 +1,12 @@
 import { CATALOG_VERSION, EXAM_TAGS } from './exam-constants.js';
 import { catalogForExamTags } from './exam-catalog.js';
-const preset = (id, name, examTags, sources, description) =>
+const preset = (
+  id: string,
+  name: string,
+  examTags: string[],
+  sources: string[],
+  description: string
+) =>
   Object.freeze({
     id,
     name,
@@ -49,6 +55,6 @@ export const EXAM_PRESETS = Object.freeze([
     subjects: [],
   }),
 ]);
-export function getExamPreset(id) {
+export function getExamPreset(id: string) {
   return EXAM_PRESETS.find(item => item.id === id) || null;
 }
