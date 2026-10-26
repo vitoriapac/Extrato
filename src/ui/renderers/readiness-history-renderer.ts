@@ -96,7 +96,7 @@ export function renderReadinessHistory(
       title: 'Evolução do Índice de Prontidão',
       description:
         'Cada ponto preserva o valor registrado. As linhas ligam apenas registros com o mesmo algoritmo, pesos e fatores disponíveis.',
-      period: rows.length ? formatDate(rows[0].date) + ' a ' + formatDate(rows.at(-1).date) : '',
+      period: rows.length ? formatDate(rows[0].date) + ' a ' + formatDate(rows.at(-1)!.date) : '',
       evidence: rows.length
         ? rows.length +
           ' registros mais recentes em sequência · ' +

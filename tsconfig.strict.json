@@ -12,6 +12,8 @@
     "src/domain/**/*",
     "src/application/**/*",
     "src/features/**/*",
-    "src/reports/**/*"
+    "src/reports/**/*",
+    "src/ui/**/*",
+    "src/demo/**/*"
   ]
 }

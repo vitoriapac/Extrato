@@ -46,15 +46,15 @@ export function buildDemoRecommendations(
     const before = records[0],
       after = records.length > 1 ? records.at(-1) : null;
     const date = addLocalDays(before.date, 1),
-      createdAt = stamp(date),
+      createdAt = stamp(date!),
       id = `demo-recommendation-${index + 1}`;
     const accepted = index % 7 !== 6,
       session = after
         ? sessions.find((row: any) => row.id === after.studySessionId)
         : sessions
-            .filter((row: any) => row.topicId === item.topic.id && row.date > date)
+            .filter((row: any) => row.topicId === item.topic.id && row.date > date!)
             .sort((a: any, b: any) => a.date.localeCompare(b.date))[0],
-      completed = accepted && Boolean(session && session.date > date);
+      completed = accepted && Boolean(session && session.date > date!);
     const beforeScore = Math.round((before.correct / before.resolved) * 100),
       afterScore = after ? Math.round((after.correct / after.resolved) * 100) : null;
     const score = Math.round(100 * (item.topic.examImportance || 0) * (1 - beforeScore / 100));
@@ -86,7 +86,7 @@ export function buildDemoRecommendations(
       },
     };
     const snapshot = captureRecommendationSnapshot(recommendation, { baseline, createdAt });
-    const measured = completed && example?.after !== null && after && after.date > date;
+    const measured = completed && example?.after !== null && after && after.date > date!;
     const row = {
       id: `demo-feedback-${index + 1}`,
       recommendationId: id,
@@ -95,7 +95,7 @@ export function buildDemoRecommendations(
       topicId: item.topic.id,
       accepted,
       completed,
-      useful: measured ? afterScore > beforeScore : null,
+      useful: measured ? afterScore! > beforeScore : null,
       reasonSkipped: accepted ? null : 'Preferiu outra disciplina',
       resultingSessionId: completed ? session.id : null,
       score,
@@ -198,26 +198,28 @@ export function buildDemoWeeklyCloses(
     );
   const snapshots = [];
   for (let index = 0; index < weeks; index++) {
-    const monday = addLocalDays(today, -((parseLocalDate(today).getDay() + 6) % 7)),
+    const monday = addLocalDays(today, -((parseLocalDate(today)!.getDay() + 6) % 7)),
       start = addLocalDays(monday, -(weeks - index) * 7),
       end = addLocalDays(start, 6),
       previousStart = addLocalDays(start, -7),
       previousEnd = addLocalDays(start, -1);
-    const currentSessions = sessions.filter((row: any) => inRange(row, start, end)),
-      currentQuestions = questions.filter((row: any) => inRange(row, start, end));
+    const currentSessions = sessions.filter((row: any) => inRange(row, start!, end!)),
+      currentQuestions = questions.filter((row: any) => inRange(row, start!, end!));
     const previousSessions = sessions.filter((row: any) =>
-        inRange(row, previousStart, previousEnd)
+        inRange(row, previousStart!, previousEnd!)
       ),
-      previousQuestions = questions.filter((row: any) => inRange(row, previousStart, previousEnd));
+      previousQuestions = questions.filter((row: any) =>
+        inRange(row, previousStart!, previousEnd!)
+      );
     const plans = dailyPlans
-      .filter((plan: any) => plan.date >= start && plan.date <= end)
+      .filter((plan: any) => plan.date >= start! && plan.date <= end!)
       .flatMap((plan: any) => plan.items || []);
     const feedback = recommendations
-        .filter((item: any) => item.date <= end)
+        .filter((item: any) => item.date <= end!)
         .map((item: any) =>
-          item.outcome?.measuredAt?.slice(0, 10) > end ? { ...item, outcome: null } : item
+          item.outcome?.measuredAt?.slice(0, 10) > end! ? { ...item, outcome: null } : item
         ),
-      candidates = candidatesAt(end, { subjects, questions });
+      candidates = candidatesAt(end!, { subjects, questions });
     const previousResolved = sum(previousQuestions, 'resolved');
     const weeklyClose: any = buildWeeklyClose({
       period: { start, end },
@@ -290,7 +292,7 @@ export function buildDemoWeeklyCloses(
       : null;
     const snapshot = createWeeklyCloseSnapshot(model, {
       id: `demo-weekly-close-${index + 1}`,
-      savedAt: stamp(end),
+      savedAt: stamp(end!),
       examPhase: resolveExamPhase(daysToExam),
     });
     if (snapshot) snapshots.push(snapshot);

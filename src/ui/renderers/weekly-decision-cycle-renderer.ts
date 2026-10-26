@@ -21,14 +21,14 @@ export function renderWeeklyDecisionCycle(
   const execution = model.execution,
     comparison = model.readiness.comparison;
   const guidance = buildWeeklyDecisionSummary({ cycle: model, trajectory, adherence });
-  const priority = guidance.priorities;
+  const priority = guidance!.priorities;
   const statuses: Record<string, any> = {
     insufficient_data: 'Dados insuficientes',
     on_track: 'No caminho',
     attention: 'Atenção',
     at_risk: 'Em risco',
   };
-  const summary = `<section class="weekly-decision-summary" aria-label="Síntese para a próxima decisão"><div class="exam-matrix-detail-grid"><section><h5>Prioridades</h5><p>${priority?.planned != null && priority?.completed != null ? priority.completed + ' de ' + priority.planned + ' atividades prioritárias concluídas.' : 'Sem classificação histórica suficiente para contar prioridades.'}</p>${priority?.percent == null ? '' : `<p>${priority.percent}% do tempo prioritário recebeu crédito ao plano.</p>`}</section><section><h5>Trajetória</h5><p>${escape(statuses[guidance.trajectory.status] || 'Sem trajetória disponível')}</p><p>${guidance.trajectory.delta == null ? '' : `Simulados comparáveis: ${guidance.trajectory.delta > 0 ? '+' : ''}${guidance.trajectory.delta} p.p. · `}${escape(guidance.trajectory.comparisonNote)}</p></section></div><h5>Principal sinal da semana</h5><p>${escape(guidance.signal)}</p><p><strong>Principal avanço</strong> · ${escape(guidance.advance)}</p><h5>Decisão sugerida</h5><p class="weekly-action">${escape(guidance.decision)}</p>${renderActionGroup(
+  const summary = `<section class="weekly-decision-summary" aria-label="Síntese para a próxima decisão"><div class="exam-matrix-detail-grid"><section><h5>Prioridades</h5><p>${priority?.planned != null && priority?.completed != null ? priority.completed + ' de ' + priority.planned + ' atividades prioritárias concluídas.' : 'Sem classificação histórica suficiente para contar prioridades.'}</p>${priority?.percent == null ? '' : `<p>${priority.percent}% do tempo prioritário recebeu crédito ao plano.</p>`}</section><section><h5>Trajetória</h5><p>${escape(statuses[guidance!.trajectory.status] || 'Sem trajetória disponível')}</p><p>${guidance!.trajectory.delta == null ? '' : `Simulados comparáveis: ${guidance!.trajectory.delta > 0 ? '+' : ''}${guidance!.trajectory.delta} p.p. · `}${escape(guidance!.trajectory.comparisonNote)}</p></section></div><h5>Principal sinal da semana</h5><p>${escape(guidance!.signal)}</p><p><strong>Principal avanço</strong> · ${escape(guidance!.advance)}</p><h5>Decisão sugerida</h5><p class="weekly-action">${escape(guidance!.decision)}</p>${renderActionGroup(
     {
       label: 'Ajuda sobre a decisão semanal',
       actions: [

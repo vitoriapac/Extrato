@@ -14,7 +14,7 @@ export function renderChartTooltip(text: unknown) {
 
 export function renderChartLegend(items: Array<{ tone?: string; label?: unknown }> = []) {
   return items.length
-    ? `<ul class="chart-frame__legend" aria-label="Legenda">${items.map(item => `<li><span class="chart-frame__swatch chart-frame__swatch--${['primary', 'secondary', 'target'].includes(item.tone) ? item.tone : 'primary'}" aria-hidden="true"></span>${escape(item.label)}</li>`).join('')}</ul>`
+    ? `<ul class="chart-frame__legend" aria-label="Legenda">${items.map(item => `<li><span class="chart-frame__swatch chart-frame__swatch--${['primary', 'secondary', 'target'].includes(item.tone!) ? item.tone : 'primary'}" aria-hidden="true"></span>${escape(item.label)}</li>`).join('')}</ul>`
     : '';
 }
 

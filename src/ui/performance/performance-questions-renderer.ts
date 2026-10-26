@@ -30,7 +30,7 @@ export function renderPerformanceQuestions({
     <article class="performance-kpi"><span>Questões resolvidas</span><strong>${analysis.questionCount}</strong><small>Respostas pessoais no período</small></article>
     <article class="performance-kpi"><span>Precisão</span><strong>${percent(analysis.accuracy)}</strong><small>Acertos ÷ questões resolvidas</small></article>
     <article class="performance-kpi"><span>Erros</span><strong>${analysis.errors}</strong><small>Inclui erros sem categoria</small></article>
-    <article class="performance-kpi"><span>Evolução</span><strong>${delta(trend)}</strong><small>${range.comparePrevious ? 'Precisão × período anterior' : 'Comparação desativada'}</small></article>
+    <article class="performance-kpi"><span>Evolução</span><strong>${delta(trend!)}</strong><small>${range.comparePrevious ? 'Precisão × período anterior' : 'Comparação desativada'}</small></article>
   </section>`;
   const buckets = evolution.buckets
     .map(

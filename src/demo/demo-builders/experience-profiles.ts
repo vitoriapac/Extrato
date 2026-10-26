@@ -8,10 +8,10 @@ export function prepareDemoExperienceEvidence(state: Record<string, any>, { prof
   const definition = (DEMO_EXPERIENCE_PROFILES as Record<string, any>)[profile];
   if (!definition || profile === 'final_stretch') return;
   const start = addLocalDays(today, 1 - definition.historyDays);
-  state.studySessions = state.studySessions.filter((row: any) => row.date >= start);
+  state.studySessions = state.studySessions.filter((row: any) => row.date >= start!);
   const ids = new Set(state.studySessions.map((row: any) => row.id));
   state.questoes = state.questoes.filter((row: any) => ids.has(row.studySessionId));
-  state.simulados = state.simulados.filter((row: any) => row.date >= start);
+  state.simulados = state.simulados.filter((row: any) => row.date >= start!);
   if (profile === 'beginner') {
     state.studySessions = state.studySessions.slice(-3);
     const kept = new Set(state.studySessions.map((row: any) => row.id));
@@ -60,7 +60,7 @@ export function prepareDemoExperienceExecution(
   const definition = (DEMO_EXPERIENCE_PROFILES as Record<string, any>)[profile];
   if (!definition || profile === 'final_stretch') return;
   const start = addLocalDays(today, 1 - definition.historyDays);
-  state.dailyPlans = state.dailyPlans.filter((row: any) => row.date >= start);
+  state.dailyPlans = state.dailyPlans.filter((row: any) => row.date >= start!);
   // Ensure the current week is represented, rather than extrapolating old execution.
   const template = state.dailyPlans.find((row: any) => row.date === today);
   for (let offset = -6; offset < 0; offset++) {
@@ -134,7 +134,10 @@ export function prepareDemoExperienceExecution(
         0
       );
     for (const session of state.studySessions) {
-      const monday = addLocalDays(session.date, -((parseLocalDate(session.date).getDay() + 6) % 7));
+      const monday = addLocalDays(
+        session.date,
+        -((parseLocalDate(session.date)!.getDay() + 6) % 7)
+      );
       if (!weeks.has(monday)) weeks.set(monday, []);
       weeks.get(monday).push(session);
     }

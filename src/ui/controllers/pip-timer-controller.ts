@@ -160,7 +160,7 @@ export function createPipTimerController({
     nodes.progress.max = 100;
     nodes.notice.hidden = true;
     nodes.toggle.type = nodes.finish.type = 'button';
-    nodes.toggle.addEventListener('click', () => onToggle());
+    nodes.toggle.addEventListener('click', () => onToggle!());
     nodes.finish.addEventListener('click', finish);
     actions.append(nodes.toggle, nodes.finish);
     root.append(

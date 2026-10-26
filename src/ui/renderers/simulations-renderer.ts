@@ -134,7 +134,7 @@ export function renderSimulationTrendChart({
     title: 'Evolução dos simulados',
     description:
       'Nota registrada em cada prova. O histórico textual apresenta os mesmos resultados.',
-    period: items.length ? formatDate(items[0].date) + ' a ' + formatDate(items.at(-1).date) : '',
+    period: items.length ? formatDate(items[0].date) + ' a ' + formatDate(items.at(-1)!.date) : '',
     evidence:
       'Últimos ' +
       items.length +

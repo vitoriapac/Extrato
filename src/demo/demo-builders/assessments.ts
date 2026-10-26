@@ -39,7 +39,7 @@ export function buildDemoSimulations(scenario: Record<string, any>, { today, sub
       total: breakdown.reduce((sum: any, row: any) => sum + row.total, 0),
       correct: breakdown.reduce((sum: any, row: any) => sum + row.correct, 0),
       breakdown,
-      createdAt: stamp(date),
+      createdAt: stamp(date!),
     };
   });
 }
@@ -110,13 +110,13 @@ export function buildDemoReviews(scenario: Record<string, any>, { today, subject
         tipo: ['Revisão 24h', 'Revisão 7 dias', 'Revisão 30 dias'][number % 3],
         difficulty: entry.topic.difficulty,
         status: completed ? 'Concluído' : 'Não iniciado',
-        completedAt: completed ? stamp(date) : null,
+        completedAt: completed ? stamp(date!) : null,
         manualDate: false,
         adaptive: true,
         adaptiveReason: 'Intervalo ajustado pelo histórico demonstrativo.',
         suggestedDate: date,
         baseIntervalDays: [1, 7, 30][number % 3],
-        createdAt: stamp(addLocalDays(date, -7)),
+        createdAt: stamp(addLocalDays(date, -7)!),
       };
     })
   );

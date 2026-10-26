@@ -8,7 +8,7 @@ export function labelDynamicControls(root = document) {
     if (hasLabel) return;
     const cell = control.closest('td');
     const table = cell?.closest('table');
-    const index = cell ? [...cell.parentElement.children].indexOf(cell) : -1;
+    const index = cell ? [...cell.parentElement!.children].indexOf(cell) : -1;
     const heading =
       index >= 0 ? table?.querySelectorAll('thead th')?.[index]?.textContent?.trim() : '';
     const ctrl = control as HTMLInputElement;

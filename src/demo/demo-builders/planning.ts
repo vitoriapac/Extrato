@@ -46,8 +46,8 @@ export function buildDemoPlanning(
         availableMinutes: 120,
         plannedMinutes,
         flexMinutes: Math.max(0, 120 - plannedMinutes),
-        createdAt: stamp(date),
-        updatedAt: stamp(date),
+        createdAt: stamp(date!),
+        updatedAt: stamp(date!),
         items: [
           {
             id: `demo-historic-plan-item-${index + 1}-${day + 1}`,
@@ -94,8 +94,8 @@ export function buildDemoPlanning(
       availableMinutes: 120,
       plannedMinutes: 80,
       flexMinutes: 40,
-      createdAt: stamp(date),
-      updatedAt: stamp(date),
+      createdAt: stamp(date!),
+      updatedAt: stamp(date!),
       items,
     });
   }
@@ -167,7 +167,7 @@ export function buildDemoPlanning(
     {
       id: 'demo-study-plan-1',
       state: 'ready',
-      confirmedAt: stamp(addLocalDays(today, -9)),
+      confirmedAt: stamp(addLocalDays(today, -9)!),
       examDate,
       weeklyAvailableMinutes: scenario.adaptivePlanning.capacityMinutes,
       weeklyPlannedMinutes: planned,
@@ -202,19 +202,19 @@ export function buildDemoPlanning(
             createdAt: stamp(today),
             decidedAt: null as any,
             status: 'suggested',
-            sourceSubjectId: advice.from.subjectId,
-            targetSubjectId: advice.to.subjectId,
+            sourceSubjectId: advice.from!.subjectId,
+            targetSubjectId: advice.to!.subjectId,
             sourceTopicId: sourceItem?.topicId || null,
             targetTopicId: targetItem?.topicId || null,
-            sourceBefore: advice.from.beforeMinutes,
-            sourceAfter: advice.from.afterMinutes,
-            targetBefore: advice.to.beforeMinutes,
-            targetAfter: advice.to.afterMinutes,
+            sourceBefore: advice.from!.beforeMinutes,
+            sourceAfter: advice.from!.afterMinutes,
+            targetBefore: advice.to!.beforeMinutes,
+            targetAfter: advice.to!.afterMinutes,
             minutes: advice.transferMinutes,
-            reasons: [...advice.rationale],
+            reasons: [...advice.rationale!],
             evidenceSnapshot: {
               source: candidates
-                .filter((item: Record<string, any>) => item.subjectId === advice.from.subjectId)
+                .filter((item: Record<string, any>) => item.subjectId === advice.from!.subjectId)
                 .map((item: Record<string, any>) => ({
                   topicId: item.topicId,
                   mastery: item.mastery,
@@ -222,7 +222,7 @@ export function buildDemoPlanning(
                   evidenceStrength: item.evidenceStrength,
                 })),
               target: candidates
-                .filter((item: Record<string, any>) => item.subjectId === advice.to.subjectId)
+                .filter((item: Record<string, any>) => item.subjectId === advice.to!.subjectId)
                 .map((item: Record<string, any>) => ({
                   topicId: item.topicId,
                   mastery: item.mastery,

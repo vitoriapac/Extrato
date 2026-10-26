@@ -207,7 +207,7 @@ export function createRemoteSyncController({
 
   /** A nuvem só mudou "por fora" se o envelope remoto não for o da última sincronização deste navegador. */
   const remoteChangedSinceLastSync = (version: Row | null | undefined, serverUrl: string) =>
-    version.exists && !(version.valid && version.createdAt === lastSyncedEnvelopeAt(serverUrl));
+    version!.exists && !(version!.valid && version!.createdAt === lastSyncedEnvelopeAt(serverUrl));
 
   const requireCredentials = (config: Row) => {
     if (!config.serverUrl || !config.passphrase) {
@@ -228,7 +228,7 @@ export function createRemoteSyncController({
       const result = await provider.testConnection(config);
       if (result.ok) showStatus('Conexão estabelecida com sucesso! Servidor acessível.');
       else showStatus(`Falha de conexão: ${result.message}`, true);
-    } catch (error) {
+    } catch (error: any) {
       showStatus(`Erro ao conectar: ${error?.message}`, true);
     }
   };
@@ -253,7 +253,7 @@ export function createRemoteSyncController({
         showStatus(
           'A nuvem está igual à última sincronização deste navegador. Envie se você fez mudanças aqui.'
         );
-    } catch (error) {
+    } catch (error: any) {
       showStatus(`Falha ao verificar: ${error?.message}`, true);
     }
   };
@@ -269,7 +269,7 @@ export function createRemoteSyncController({
     let version;
     try {
       version = await provider.checkRemoteVersion(config);
-    } catch (error) {
+    } catch (error: any) {
       showStatus(`Erro ao consultar a nuvem: ${error?.message} Nada foi enviado.`, true);
       return;
     }
@@ -294,7 +294,7 @@ export function createRemoteSyncController({
       recordSync(config.serverUrl, result.envelopeAt);
       showStatus(`Upload concluído com sucesso (${result.sizeBytes} bytes criptografados).`);
       notify('Backup criptografado enviado para a nuvem.');
-    } catch (error) {
+    } catch (error: any) {
       const message = `Erro no envio: ${error?.message}`;
       showStatus(message, true);
       notify(message);
@@ -329,7 +329,7 @@ export function createRemoteSyncController({
     let result;
     try {
       result = await provider.downloadState(config);
-    } catch (error) {
+    } catch (error: any) {
       showStatus(`Erro na decriptografia/download: ${error?.message}`, true);
       return;
     }

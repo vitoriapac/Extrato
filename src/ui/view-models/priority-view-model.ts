@@ -22,7 +22,7 @@ export function buildPriorityViewModel(item: any = {}, position = 1) {
       ? 'review'
       : evidenceStrength < 0.35
         ? 'limited'
-        : score >= 70
+        : score! >= 70
           ? 'high'
           : 'calculated';
   const stateLabels = {

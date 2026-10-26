@@ -77,7 +77,7 @@ export function generateDemoData({
   const oldestAge = demoScenario.meta.historyDays - 1;
   const random = randomFactory(`${seed}:${today}`),
     state: any = createDefaultState(),
-    createdAt = timestamp(shiftDate(today, -oldestAge));
+    createdAt = timestamp(shiftDate(today, -oldestAge)!);
   state.subjects = buildDemoSubjects(demoScenario, { createdAt, random });
   const activeTopics = state.subjects.flatMap((subject: any) =>
     subject.topics.filter((topic: any) => !topic.archived).map((topic: any) => ({ subject, topic }))
@@ -102,7 +102,7 @@ export function generateDemoData({
       topic: entry.topic.name,
       status: index < 4 ? 'Concluído' : 'Não iniciado',
       reviewType: index % 2 ? 'Questões' : 'Revisão rápida',
-      createdAt: timestamp(shiftDate(date, -5)),
+      createdAt: timestamp(shiftDate(date!, -5)!),
     };
   });
   const completedDates = state.subjects.flatMap((subject: any) =>
@@ -113,7 +113,7 @@ export function generateDemoData({
     return {
       date,
       pct: Math.round(
-        (completedDates.filter((value: any) => value <= date).length / activeTopics.length) * 100
+        (completedDates.filter((value: any) => value <= date!).length / activeTopics.length) * 100
       ),
     };
   });
@@ -180,7 +180,7 @@ export function generateDemoData({
         { date: shiftDate(today, 1), minutes: 50 },
         { date: shiftDate(today, 2), minutes: 50 },
       ],
-      confirmedAt: timestamp(shiftDate(today, -1)),
+      confirmedAt: timestamp(shiftDate(today, -1)!),
       status: 'confirmed',
     },
   ];
@@ -205,9 +205,9 @@ export function generateDemoData({
   const experienceProfile = (DEMO_EXPERIENCE_PROFILES as Record<string, any>)[preparationProfile];
   if (experienceProfile && preparationProfile !== 'final_stretch') {
     const start = shiftDate(today, 1 - experienceProfile.historyDays);
-    state.progressHistory = state.progressHistory.filter((row: any) => row.date >= start);
+    state.progressHistory = state.progressHistory.filter((row: any) => row.date >= start!);
     state.weeklyCloseSnapshots = state.weeklyCloseSnapshots.filter(
-      (row: any) => row.period.start >= start
+      (row: any) => row.period.start >= start!
     );
   }
   state.readinessSnapshots = state.weeklyCloseSnapshots
@@ -255,8 +255,8 @@ export function generateDemoData({
   ]);
   state.alertStates = [];
   state.achievementsUnlocked = {
-    primeira_sessao: timestamp(shiftDate(today, -oldestAge + 1)),
-    cem_questoes: timestamp(shiftDate(today, -oldestAge + 20)),
+    primeira_sessao: timestamp(shiftDate(today, -oldestAge + 1)!),
+    cem_questoes: timestamp(shiftDate(today, -oldestAge + 20)!),
   };
   state.lastBackupAt = timestamp(today);
   state.updatedAt = timestamp(today);

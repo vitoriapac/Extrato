@@ -10,7 +10,7 @@ export const DEMO_SUSTAINABILITY_PATTERNS = Object.freeze([
   'capacity_mismatch',
 ]);
 export function demoSustainabilityPeriods(today: string) {
-  const monday = addLocalDays(today, -((parseLocalDate(today).getDay() + 6) % 7));
+  const monday = addLocalDays(today, -((parseLocalDate(today)!.getDay() + 6) % 7));
   return DEMO_SUSTAINABILITY_PATTERNS.map((status, index) => ({
     status,
     start: addLocalDays(monday, -112 + index * 28),
@@ -28,13 +28,15 @@ const allocate = (total: number, weights: number[]) => {
 export function buildDemoSustainability(state: Record<string, any>, { today }: any) {
   const periods = demoSustainabilityPeriods(today),
     first = periods[0].start,
-    last = periods.at(-1).end;
+    last = periods.at(-1)!.end;
   const removed = new Set(
     state.dailyPlans
-      .filter((plan: any) => plan.date >= first && plan.date <= last)
+      .filter((plan: any) => plan.date >= first! && plan.date <= last!)
       .flatMap((plan: any) => plan.items.map((item: any) => item.id))
   );
-  state.dailyPlans = state.dailyPlans.filter((plan: any) => plan.date < first || plan.date > last);
+  state.dailyPlans = state.dailyPlans.filter(
+    (plan: any) => plan.date < first! || plan.date > last!
+  );
   for (const session of state.studySessions)
     if (removed.has(session.planItemId)) delete session.planItemId;
   recordPlanningCapacity(state.planningCapacityHistory, {
@@ -50,8 +52,8 @@ export function buildDemoSustainability(state: Record<string, any>, { today }: a
       const sessions = state.studySessions
         .filter(
           (session: any) =>
-            session.date >= start &&
-            session.date <= end &&
+            session.date >= start! &&
+            session.date <= end! &&
             classifyEvidenceScope(session, state.subjects, state.examBlueprint.activeExamTags)
               .includedInExamMetrics
         )
