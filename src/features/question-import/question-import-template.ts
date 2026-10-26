@@ -2,7 +2,7 @@ export const QUESTION_IMPORT_TEMPLATE_FILE_NAME = 'modelo-questoes-studytrack.cs
 
 /**
  * Modelo CSV de exemplo para a importação de questões, datado com o dia informado.
- * @param {string} today data local AAAA-MM-DD
+ * @param today data local AAAA-MM-DD
  */
 export function buildQuestionImportTemplate(today) {
   const [year, month, day] = String(today).split('-');

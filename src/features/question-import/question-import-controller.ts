@@ -1,16 +1,5 @@
 import { buildQuestionImportViewModel } from './question-import-view-model.js';
 
-/**
- * @param {Object} [options]
- * @param {Document} [options.document]
- * @param {Window} [options.window]
- * @param {any} [options.service]
- * @param {(model: any) => string} [options.render]
- * @param {(msg: string) => void} [options.notify]
- * @param {(res: any) => void} [options.onImported]
- * @param {(status?: { completed?: boolean }) => void} [options.onCancel]
- * @param {number} [options.maxBytes]
- */
 export function createQuestionImportController({
   document,
   window,
@@ -21,8 +10,7 @@ export function createQuestionImportController({
   onCancel = _status => {},
   maxBytes = 5 * 1024 * 1024,
 }: any = {}) {
-  const input =
-    /** @type {HTMLInputElement | null} */ document.getElementById('questionsImportFile');
+  const input = document.getElementById('questionsImportFile') as HTMLInputElement | null;
   const open = document.getElementById('importQuestionsBtn');
   const overlay = document.getElementById('questionsImportOverlay');
   const content = document.getElementById('questionsImportContent');
@@ -62,7 +50,7 @@ export function createQuestionImportController({
       return;
     }
 
-    const FileReaderClass = /** @type {any} */ window.FileReader || globalThis.FileReader;
+    const FileReaderClass = window.FileReader || globalThis.FileReader;
     const reader = new FileReaderClass();
     reader.onerror = () => notify('Não foi possível ler o arquivo.');
     reader.onload = () => {

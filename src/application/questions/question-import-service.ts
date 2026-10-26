@@ -4,14 +4,9 @@ import {
 } from '../../domain/questions/question-import-normalizer.js';
 
 /**
- * @param {Object} [deps]
- * @param {any} [deps.subjectService]
- * @param {any} [deps.questionService]
- * @param {() => any[]} [deps.getSubjects]
- * @param {() => any[]} [deps.getQuestions]
- * @param {string[]} [deps.errorCategoryKeys] chaves de ERROR_CATEGORIES do app
- * @param {() => string} [deps.today] data local AAAA-MM-DD, usada quando a linha do CSV não traz data
- * @param {<T>(task: () => T) => T} [deps.atomic] executa a importação e desfaz todas as mudanças se ela lançar erro
+ * @param [deps.errorCategoryKeys] chaves de ERROR_CATEGORIES do app
+ * @param [deps.today] data local AAAA-MM-DD, usada quando a linha do CSV não traz data
+ * @param [deps.atomic] executa a importação e desfaz todas as mudanças se ela lançar erro
  */
 export function createQuestionImportService({
   subjectService,

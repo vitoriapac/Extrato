@@ -33,10 +33,6 @@ export function localDateFromTimestamp(value: unknown): string | null {
     day = String(parsed.getDate()).padStart(2, '0');
   return year + '-' + month + '-' + day;
 }
-/**
- * @param {Record<string, any>} [rawSession]
- * @param {Record<string, any>} [options]
- */
 export function normalizeStudySession(
   rawSession: Record<string, any> = {},
   options: Record<string, any> = {}

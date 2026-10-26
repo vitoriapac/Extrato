@@ -18,7 +18,6 @@ const sameServer = url => {
   return clean.endsWith('/') ? clean : `${clean}/`;
 };
 
-/** @param {any} value */
 const validLastSync = value =>
   value && typeof value.serverUrl === 'string' && typeof value.envelopeAt === 'string'
     ? { serverUrl: value.serverUrl, envelopeAt: value.envelopeAt }
@@ -26,8 +25,6 @@ const validLastSync = value =>
 
 /**
  * Lê as preferências persistidas, descartando qualquer senha gravada por versões anteriores.
- * @param {Storage | undefined | null} storage
- * @returns {{ serverUrl: string, username: string, lastSync?: { serverUrl: string, envelopeAt: string } }}
  */
 export function readRemoteSyncPreferences(storage): {
   serverUrl: string;
@@ -63,8 +60,6 @@ export function readRemoteSyncPreferences(storage): {
 
 /**
  * Persiste somente dados não secretos da conexão.
- * @param {Storage | undefined | null} storage
- * @param {{ serverUrl?: string, username?: string, lastSync?: { serverUrl: string, envelopeAt: string } | null }} config
  */
 export function writeRemoteSyncPreferences(
   storage,
@@ -84,18 +79,7 @@ export function writeRemoteSyncPreferences(
 }
 
 /**
- * @param {Object} [options]
- * @param {Document} [options.document]
- * @param {Window} [options.window]
- * @param {any} [options.provider]
- * @param {() => any} [options.getState]
- * @param {(data: any) => { valid: boolean, message?: string, normalized?: any, version?: number }} [options.validate]
- * @param {(validation: any) => string} [options.describe]
- * @param {(message: string, onConfirm: () => void) => void} [options.confirm]
- * @param {() => Promise<boolean>} [options.createSnapshot]
- * @param {(state: any) => (boolean | void)} [options.onImported] retorna false quando não conseguiu aplicar o estado
- * @param {(msg: string) => void} [options.notify]
- * @param {() => boolean} [options.isDisabled]
+ * @param [options.onImported] retorna false quando não conseguiu aplicar o estado
  */
 export function createRemoteSyncController({
   document = globalThis.document,
@@ -129,13 +113,10 @@ export function createRemoteSyncController({
   const pushBtn = document?.getElementById('pushRemoteSyncBtn');
   const pullBtn = document?.getElementById('pullRemoteSyncBtn');
 
-  const urlInput = /** @type {HTMLInputElement | null} */ document?.getElementById('remoteSyncUrl');
-  const userInput =
-    /** @type {HTMLInputElement | null} */ document?.getElementById('remoteSyncUsername');
-  const passInput =
-    /** @type {HTMLInputElement | null} */ document?.getElementById('remoteSyncPassword');
-  const phraseInput =
-    /** @type {HTMLInputElement | null} */ document?.getElementById('remoteSyncPassphrase');
+  const urlInput = document?.getElementById('remoteSyncUrl') as HTMLInputElement | null;
+  const userInput = document?.getElementById('remoteSyncUsername') as HTMLInputElement | null;
+  const passInput = document?.getElementById('remoteSyncPassword') as HTMLInputElement | null;
+  const phraseInput = document?.getElementById('remoteSyncPassphrase') as HTMLInputElement | null;
 
   const statusBox = document?.getElementById('remoteSyncStatusBox');
   const statusMsg = document?.getElementById('remoteSyncStatusMsg');
@@ -247,7 +228,7 @@ export function createRemoteSyncController({
       if (result.ok) showStatus('Conexão estabelecida com sucesso! Servidor acessível.');
       else showStatus(`Falha de conexão: ${result.message}`, true);
     } catch (error) {
-      showStatus(`Erro ao conectar: ${/** @type {any} */ error?.message}`, true);
+      showStatus(`Erro ao conectar: ${error?.message}`, true);
     }
   };
 
@@ -272,7 +253,7 @@ export function createRemoteSyncController({
           'A nuvem está igual à última sincronização deste navegador. Envie se você fez mudanças aqui.'
         );
     } catch (error) {
-      showStatus(`Falha ao verificar: ${/** @type {any} */ error?.message}`, true);
+      showStatus(`Falha ao verificar: ${error?.message}`, true);
     }
   };
 
@@ -288,10 +269,7 @@ export function createRemoteSyncController({
     try {
       version = await provider.checkRemoteVersion(config);
     } catch (error) {
-      showStatus(
-        `Erro ao consultar a nuvem: ${/** @type {any} */ error?.message} Nada foi enviado.`,
-        true
-      );
+      showStatus(`Erro ao consultar a nuvem: ${error?.message} Nada foi enviado.`, true);
       return;
     }
     if (!remoteChangedSinceLastSync(version, config.serverUrl)) {
@@ -316,7 +294,7 @@ export function createRemoteSyncController({
       showStatus(`Upload concluído com sucesso (${result.sizeBytes} bytes criptografados).`);
       notify('Backup criptografado enviado para a nuvem.');
     } catch (error) {
-      const message = `Erro no envio: ${/** @type {any} */ error?.message}`;
+      const message = `Erro no envio: ${error?.message}`;
       showStatus(message, true);
       notify(message);
     }
@@ -351,7 +329,7 @@ export function createRemoteSyncController({
     try {
       result = await provider.downloadState(config);
     } catch (error) {
-      showStatus(`Erro na decriptografia/download: ${/** @type {any} */ error?.message}`, true);
+      showStatus(`Erro na decriptografia/download: ${error?.message}`, true);
       return;
     }
     if (!result?.ok || !result.state) {
@@ -395,7 +373,7 @@ export function createRemoteSyncController({
     pullBtn?.addEventListener('click', pull);
 
     overlay?.addEventListener('keydown', event => {
-      if (/** @type {KeyboardEvent} */ event.key === 'Escape') {
+      if ((event as KeyboardEvent).key === 'Escape') {
         event.preventDefault();
         close();
       }

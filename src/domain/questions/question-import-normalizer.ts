@@ -200,8 +200,6 @@ export function parseDate(rawDate, defaultDate = '') {
 }
 
 /**
- * @param {string} text
- * @param {{ defaultDate?: string, aggregate?: boolean, errorCategoryKeys?: string[] }} [options]
  *   errorCategoryKeys: chaves de ERROR_CATEGORIES do app; obrigatório para que o domínio não tenha cópia da taxonomia.
  *   defaultDate: data local (AAAA-MM-DD) usada quando a linha não traz data; obrigatória, o domínio não lê o relógio.
  */

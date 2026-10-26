@@ -32,7 +32,6 @@ export interface PriorityCandidate {
 
 /**
  * Calcula a pontuação e justificativa de prioridade para um tópico ou candidato de estudo.
- * @param {PriorityCandidate} [candidate]
  */
 export function calculatePriorityScore(candidate: PriorityCandidate = {}) {
   const result = calculateFactorScore(
