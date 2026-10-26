@@ -1,6 +1,6 @@
 import { addLocalDays } from '../../core/date-utils.js';
 
-const genericErrors = {
+const genericErrors: Record<string, any> = {
   naoSabia: 24,
   esqueci: 17,
   interpretacao: 19,
@@ -8,39 +8,40 @@ const genericErrors = {
   desatencao: 17,
   chute: 8,
 };
-const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-const dateAt = (today, day, historyDays) => addLocalDays(today, day - historyDays);
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+const dateAt = (today: string, day: number, historyDays: number) =>
+  addLocalDays(today, day - historyDays);
 
-export function allocateErrors(errors, categories, profile) {
-  const weights = categories.map(key =>
+export function allocateErrors(errors: number, categories: string[], profile: Record<string, any>) {
+  const weights = categories.map((key: any) =>
     Math.max(0, Number(profile?.[key] ?? genericErrors[key] ?? 0))
   );
-  const total = weights.reduce((sum, value) => sum + value, 0) || 1;
-  const exact = weights.map(value => (errors * value) / total),
+  const total = weights.reduce((sum: any, value: any) => sum + value, 0) || 1;
+  const exact = weights.map((value: any) => (errors * value) / total),
     counts = exact.map(Math.floor);
-  let remainder = errors - counts.reduce((sum, value) => sum + value, 0);
+  let remainder = errors - counts.reduce((sum: any, value: any) => sum + value, 0);
   const order = exact
-    .map((value, index) => ({ index, fraction: value - counts[index] }))
-    .sort((a, b) => b.fraction - a.fraction || a.index - b.index);
+    .map((value: any, index: any) => ({ index, fraction: value - counts[index] }))
+    .sort((a: any, b: any) => b.fraction - a.fraction || a.index - b.index);
   for (let index = 0; index < remainder; index++) counts[order[index % order.length].index]++;
-  return Object.fromEntries(categories.map((key, index) => [key, counts[index]]));
+  return Object.fromEntries(categories.map((key: any, index: any) => [key, counts[index]]));
 }
 
-function phaseSlots(scenario) {
+function phaseSlots(scenario: Record<string, any>) {
   const phases = scenario.profile.phases;
   const weights = phases.map(
-    phase => ((phase.days[1] - phase.days[0] + 1) / 7) * phase.weeklyHours
+    (phase: any) => ((phase.days[1] - phase.days[0] + 1) / 7) * phase.weeklyHours
   );
-  const total = weights.reduce((sum, value) => sum + value, 0),
+  const total = weights.reduce((sum: any, value: any) => sum + value, 0),
     target = scenario.targets.studySessions;
-  const exact = weights.map(value => (target * value) / total),
+  const exact = weights.map((value: any) => (target * value) / total),
     counts = exact.map(Math.floor);
-  let left = target - counts.reduce((sum, value) => sum + value, 0);
+  let left = target - counts.reduce((sum: any, value: any) => sum + value, 0);
   const order = exact
-    .map((value, index) => ({ index, fraction: value - counts[index] }))
-    .sort((a, b) => b.fraction - a.fraction);
+    .map((value: any, index: any) => ({ index, fraction: value - counts[index] }))
+    .sort((a: any, b: any) => b.fraction - a.fraction);
   for (let index = 0; index < left; index++) counts[order[index].index]++;
-  return phases.flatMap((phase, phaseIndex) => {
+  return phases.flatMap((phase: any, phaseIndex: any) => {
     const days = Array.from(
       { length: phase.days[1] - phase.days[0] + 1 },
       (_, index) => phase.days[0] + index
@@ -52,10 +53,10 @@ function phaseSlots(scenario) {
   });
 }
 
-function narrativeQuestionSlots(questionSlots, entries, totalQuestions) {
-  const strategic = entries.filter(entry => entry.source?.narrativeRole),
+function narrativeQuestionSlots(questionSlots: number[], entries: any[], totalQuestions: number) {
+  const strategic = entries.filter((entry: any) => entry.source?.narrativeRole),
     assigned = new Map(),
-    used = new Set();
+    used = new Set<number>();
   for (const [roleIndex, entry] of strategic.entries()) {
     const count = entry.source.narrativeRole === 'insufficient_evidence' ? 1 : 3;
     for (let part = 0; part < count; part++) {
@@ -66,7 +67,10 @@ function narrativeQuestionSlots(questionSlots, entries, totalQuestions) {
       assigned.set(questionSlots[position], { entry, part, count });
     }
   }
-  const reserved = strategic.reduce((sum, entry) => sum + entry.source.targetQuestionVolume, 0);
+  const reserved = strategic.reduce(
+    (sum: any, entry: any) => sum + entry.source.targetQuestionVolume,
+    0
+  );
   if (reserved > totalQuestions)
     throw new RangeError('Volumes narrativos excedem as questões da demonstração.');
   const genericCount = questionSlots.length - assigned.size,
@@ -77,7 +81,7 @@ function narrativeQuestionSlots(questionSlots, entries, totalQuestions) {
     genericExtra = genericTotal % genericCount;
   let genericIndex = 0;
   return new Map(
-    questionSlots.map(index => {
+    questionSlots.map((index: any) => {
       const selected = assigned.get(index);
       if (selected) {
         const volume = selected.entry.source.targetQuestionVolume;
@@ -97,7 +101,7 @@ function narrativeQuestionSlots(questionSlots, entries, totalQuestions) {
   );
 }
 
-function narrativeAccuracy(source, day, historyDays) {
+function narrativeAccuracy(source: Record<string, any>, day: number, historyDays: number) {
   const target = source.targetMastery,
     progress = day / historyDays;
   if (source.narrativeRole === 'improving') return clamp(target - 16 + 16 * progress, 0, 100);
@@ -106,30 +110,35 @@ function narrativeAccuracy(source, day, historyDays) {
   return target;
 }
 
-export function buildDemoStudyHistory(scenario, { today, subjects, random }) {
+export function buildDemoStudyHistory(
+  scenario: Record<string, any>,
+  { today, subjects, random }: any
+) {
   const { historyDays } = scenario.meta,
     slots = phaseSlots(scenario),
     sourceTopics = new Map(
-      scenario.subjects.flatMap(subject => subject.topics.map(topic => [topic.id, topic]))
+      scenario.subjects.flatMap((subject: any) =>
+        subject.topics.map((topic: any) => [topic.id, topic])
+      )
     ),
-    entries = subjects.flatMap(subject =>
-      subject.topics.map(topic => ({ subject, topic, source: sourceTopics.get(topic.id) }))
+    entries = subjects.flatMap((subject: any) =>
+      subject.topics.map((topic: any) => ({ subject, topic, source: sourceTopics.get(topic.id) }))
     );
   const types = scenario.sessions.types,
     durations = scenario.sessions.durationsMinutes,
     questionSlots = slots
-      .map((_, index) => index)
-      .filter(index => types[index % types.length] === 'questions');
+      .map((_: any, index: any) => index)
+      .filter((index: any) => types[index % types.length] === 'questions');
   const questionAssignments = narrativeQuestionSlots(
       questionSlots,
       entries,
       scenario.targets.studyQuestions
     ),
-    genericEntries = entries.filter(entry => !entry.source?.narrativeRole),
-    narrativeEntries = entries.filter(entry => entry.source?.narrativeRole);
-  const studySessions = [],
-    questoes = [];
-  slots.forEach((day, index) => {
+    genericEntries = entries.filter((entry: any) => !entry.source?.narrativeRole),
+    narrativeEntries = entries.filter((entry: any) => entry.source?.narrativeRole);
+  const studySessions: any[] = [],
+    questoes: any[] = [];
+  slots.forEach((day: any, index: any) => {
     const type = types[index % types.length],
       assignment: any = questionAssignments.get(index),
       entry =
@@ -149,7 +158,7 @@ export function buildDemoStudyHistory(scenario, { today, subjects, random }) {
       durationSeconds: durationMinutes * 60,
       subjectId: entry.subject.id,
       topicId: entry.topic.id,
-      planItemId: null,
+      planItemId: null as any,
       type,
       questionsResolved: 0,
       correctAnswers: 0,
@@ -164,8 +173,9 @@ export function buildDemoStudyHistory(scenario, { today, subjects, random }) {
       );
       const phaseRate = scenario.questions.monthlyAccuracyPct[month],
         subjectRate =
-          Number(scenario.subjects.find(item => item.id === entry.subject.id)?.targetAccuracyPct) ||
-          70;
+          Number(
+            scenario.subjects.find((item: any) => item.id === entry.subject.id)?.targetAccuracyPct
+          ) || 70;
       const rate = entry.source?.narrativeRole
           ? narrativeAccuracy(entry.source, day, historyDays)
           : clamp(phaseRate + (subjectRate - 70) * 0.55 + (random() - 0.5) * 10, 30, 95),

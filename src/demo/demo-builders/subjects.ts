@@ -1,8 +1,8 @@
 import { EXAM_TAGS } from '../../domain/exams/exam-constants.js';
 import { addLocalDays } from '../../core/date-utils.js';
 
-export function demoExamTags(source = []) {
-  const mapped = source.flatMap(tag =>
+export function demoExamTags(source: Record<string, any> = []) {
+  const mapped = source.flatMap((tag: any) =>
     tag === 'COMUM'
       ? [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]
       : tag === 'BB'
@@ -14,15 +14,15 @@ export function demoExamTags(source = []) {
   return [...new Set(mapped)];
 }
 
-export function buildDemoSubjects(scenario, { createdAt, random }) {
-  return scenario.subjects.map((source, subjectIndex) => ({
+export function buildDemoSubjects(scenario: Record<string, any>, { createdAt, random }: any) {
+  return scenario.subjects.map((source: any, subjectIndex: any) => ({
     id: source.id,
     name: source.name,
     collapsed: false,
     archived: false,
-    archivedAt: null,
+    archivedAt: null as any,
     createdAt,
-    topics: source.topics.map((topic, topicIndex) => {
+    topics: source.topics.map((topic: any, topicIndex: any) => {
       const stage = topicIndex % 5,
         genericStatus =
           stage === 0
@@ -53,19 +53,19 @@ export function buildDemoSubjects(scenario, { createdAt, random }) {
         link: '',
         status,
         archived: false,
-        archivedAt: null,
+        archivedAt: null as any,
         notes: '',
-        tags: [],
+        tags: [] as any[],
         difficulty: topic.difficulty || 'Médio',
         createdAt,
         firstCompletedAt: completedAt,
         lastCompletedAt: completedAt,
         completionCount: completedAt ? 1 : 0,
-        lastReviewedAt: null,
+        lastReviewedAt: null as any,
         reviewCount: 0,
         examImportance: topic.examImportance ?? Math.round((0.4 + random() * 0.55) * 100) / 100,
         estimatedStudyMinutes: 120 + Math.floor(random() * 300),
-        prerequisites: [],
+        prerequisites: [] as any[],
       };
     }),
   }));

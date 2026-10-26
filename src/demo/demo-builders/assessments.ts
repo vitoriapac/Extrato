@@ -2,18 +2,18 @@ import { addLocalDays } from '../../core/date-utils.js';
 import { EXAM_TAGS } from '../../domain/exams/exam-constants.js';
 import { isTopicInExamScope } from '../../domain/exams/exam-scope.js';
 
-const stamp = date => `${date}T12:00:00.000Z`;
-const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const stamp = (date: string) => `${date}T12:00:00.000Z`;
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
-export function buildDemoSimulations(scenario, { today, subjects }) {
+export function buildDemoSimulations(scenario: Record<string, any>, { today, subjects }: any) {
   const comparison = scenario.simulationLatestComparison || {};
-  return scenario.simulations.map((source, index) => {
+  return scenario.simulations.map((source: any, index: any) => {
     const date = addLocalDays(today, source.dayOffset),
       lastPair = index >= scenario.simulations.length - 2,
       examTag = index % 2 ? EXAM_TAGS.CAIXA : EXAM_TAGS.BB;
     const breakdown = subjects
-      .map((subject, subjectIndex) => {
-        if (!subject.topics.some(topic => isTopicInExamScope(topic, [examTag]))) return null;
+      .map((subject: any, subjectIndex: any) => {
+        if (!subject.topics.some((topic: any) => isTopicInExamScope(topic, [examTag]))) return null;
         const target = comparison[subject.name];
         const rate =
           lastPair && Array.isArray(target)
@@ -36,21 +36,21 @@ export function buildDemoSimulations(scenario, { today, subjects }) {
       date,
       nome: `Simulado ${index + 1}`,
       examTags: [examTag],
-      total: breakdown.reduce((sum, row) => sum + row.total, 0),
-      correct: breakdown.reduce((sum, row) => sum + row.correct, 0),
+      total: breakdown.reduce((sum: any, row: any) => sum + row.total, 0),
+      correct: breakdown.reduce((sum: any, row: any) => sum + row.correct, 0),
       breakdown,
       createdAt: stamp(date),
     };
   });
 }
 
-export function addDemoEssays(scenario, { today, subjects, sessions }) {
-  const subject = subjects.find(item => item.name === 'Redação');
+export function addDemoEssays(scenario: Record<string, any>, { today, subjects, sessions }: any) {
+  const subject = subjects.find((item: any) => item.name === 'Redação');
   if (!subject) return;
   const eligible = sessions
-    .filter(item => item.type === 'study')
-    .sort((a, b) => a.date.localeCompare(b.date));
-  scenario.essays.dayOffsets.forEach((offset, index) => {
+    .filter((item: any) => item.type === 'study')
+    .sort((a: any, b: any) => a.date.localeCompare(b.date));
+  scenario.essays.dayOffsets.forEach((offset: any, index: any) => {
     const session = eligible[index];
     if (!session) return;
     const date = addLocalDays(today, offset),
@@ -67,8 +67,10 @@ export function addDemoEssays(scenario, { today, subjects, sessions }) {
   });
 }
 
-export function buildDemoReviews(scenario, { today, subjects }) {
-  const topics = subjects.flatMap(subject => subject.topics.map(topic => ({ subject, topic }))),
+export function buildDemoReviews(scenario: Record<string, any>, { today, subjects }: any) {
+  const topics = subjects.flatMap((subject: any) =>
+      subject.topics.map((topic: any) => ({ subject, topic }))
+    ),
     states = scenario.reviews.states;
   const groups = [
     [

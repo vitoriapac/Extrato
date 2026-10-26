@@ -7,9 +7,9 @@ const narrativeRoles = new Set([
   'stable',
   'insufficient_evidence',
 ]);
-const integer = value => Number.isInteger(value) && value >= 0;
+const integer = (value: unknown) => Number.isInteger(value) && (value as number) >= 0;
 
-export function validateDemoScenario(scenario) {
+export function validateDemoScenario(scenario: Record<string, any>) {
   const errors = [];
   if (scenario?.meta?.format !== 'studytrack-demo-blueprint' || scenario.meta.version !== 2)
     errors.push('Formato ou versão do cenário inválidos.');
@@ -34,7 +34,7 @@ export function validateDemoScenario(scenario) {
         !topic?.name ||
         !Array.isArray(topic.examTags) ||
         !topic.examTags.length ||
-        topic.examTags.some(tag => !tags.has(tag))
+        topic.examTags.some((tag: any) => !tags.has(tag))
       )
         errors.push(`Tópico com nome ou escopo inválido: ${topic?.id || 'vazio'}.`);
       if (
@@ -71,7 +71,8 @@ export function validateDemoScenario(scenario) {
   if (subjects.length !== target.subjects) errors.push('Total de disciplinas diferente da meta.');
   if (
     subjects.reduce(
-      (sum, subject) => sum + (Array.isArray(subject?.topics) ? subject.topics.length : 0),
+      (sum: any, subject: any) =>
+        sum + (Array.isArray(subject?.topics) ? subject.topics.length : 0),
       0
     ) !== target.topics
   )
@@ -144,7 +145,7 @@ export function validateDemoScenario(scenario) {
   if (
     !goals ||
     !Array.isArray(goals.history) ||
-    goals.history.some(row => !integer(row.plannedMinutes) || !integer(row.actualMinutes)) ||
+    goals.history.some((row: any) => !integer(row.plannedMinutes) || !integer(row.actualMinutes)) ||
     !Number.isFinite(goals.weeklyHours)
   )
     errors.push('Histórico de metas inválido.');
@@ -171,7 +172,7 @@ export function validateDemoScenario(scenario) {
   return { valid: errors.length === 0, errors };
 }
 
-export function assertDemoScenario(scenario) {
+export function assertDemoScenario(scenario: Record<string, any>) {
   const result = validateDemoScenario(scenario);
   if (!result.valid)
     throw new TypeError(`Cenário da demonstração inválido: ${result.errors.join(' ')}`);

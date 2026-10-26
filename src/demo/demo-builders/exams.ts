@@ -3,7 +3,7 @@ import { createExamQuestion } from '../../domain/exam-intelligence/exam-question
 import { EXAM_TAGS } from '../../domain/exams/exam-constants.js';
 import { isTopicInExamScope } from '../../domain/exams/exam-scope.js';
 
-export function buildDemoExams(scenario, { subjects }) {
+export function buildDemoExams(scenario: Record<string, any>, { subjects }: any) {
   const config = scenario.examIntelligence,
     exams = [],
     examQuestions = [];
@@ -38,10 +38,10 @@ export function buildDemoExams(scenario, { subjects }) {
       })),
     });
     exams.push(exam);
-    const eligible = subjects.flatMap(subject =>
+    const eligible = subjects.flatMap((subject: any) =>
       subject.topics
-        .filter(topic => isTopicInExamScope(topic, [tag]))
-        .map(topic => ({ subject, topic }))
+        .filter((topic: any) => isTopicInExamScope(topic, [tag]))
+        .map((topic: any) => ({ subject, topic }))
     );
     for (let questionIndex = 0; questionIndex < count; questionIndex++) {
       const item = eligible[(questionIndex * 17 + index * 23) % eligible.length];

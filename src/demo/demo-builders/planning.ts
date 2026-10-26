@@ -3,12 +3,13 @@ import { buildAdaptivePlanningAdvice } from '../../domain/planning/adaptive-plan
 import { freezePlanExecution } from '../../domain/planning/plan-execution-snapshot.js';
 import { EXAM_TAGS } from '../../domain/exams/exam-constants.js';
 
-const stamp = date => `${date}T12:00:00.000Z`;
-const subjectByName = (subjects, name) => subjects.find(item => item.name === name);
+const stamp = (date: string) => `${date}T12:00:00.000Z`;
+const subjectByName = (subjects: any[], name: string) =>
+  subjects.find((item: any) => item.name === name);
 
 export function buildDemoPlanning(
-  scenario,
-  { today, subjects, examDate, sessions = [], candidates = [] }
+  scenario: Record<string, any>,
+  { today, subjects, examDate, sessions = [], candidates = [] }: any
 ) {
   const goals = scenario.goals;
   const sessionsByDate = new Map();
@@ -25,7 +26,7 @@ export function buildDemoPlanning(
     horasDiarias: goals.weeklyHours / 7,
     horasPorDia: { 0: 1, 1: 2, 2: 2, 3: 2, 4: 2, 5: 2, 6: 1 },
   };
-  const dailyPlans = goals.history.flatMap((week, index) => {
+  const dailyPlans = goals.history.flatMap((week: any, index: any) => {
     const weekStart = addLocalDays(today, -(goals.history.length - index + 1) * 7),
       dailyBase = Math.floor(week.plannedMinutes / 6),
       remainder = week.plannedMinutes - dailyBase * 6;
@@ -33,10 +34,10 @@ export function buildDemoPlanning(
       const date = addLocalDays(weekStart, day),
         session = sessionsByDate.get(date),
         subject =
-          subjects.find(item => item.id === session?.subjectId) ||
+          subjects.find((item: any) => item.id === session?.subjectId) ||
           subjects[(index * 3 + day) % subjects.length],
         topic =
-          subject.topics.find(item => item.id === session?.topicId) ||
+          subject.topics.find((item: any) => item.id === session?.topicId) ||
           subject.topics[(index + day) % subject.topics.length],
         plannedMinutes = dailyBase + (day === 5 ? remainder : 0);
       return {
@@ -56,13 +57,13 @@ export function buildDemoPlanning(
             plannedMinutes,
             executedSeconds: 0,
             status: 'planned',
-            sessionIds: [],
+            sessionIds: [] as any[],
             originalDate: date,
             currentDate: date,
             rescheduleCount: 0,
-            skippedReason: null,
-            recommendationId: null,
-            lastExecutedAt: null,
+            skippedReason: null as any,
+            recommendationId: null as any,
+            lastExecutedAt: null as any,
           },
         ],
       };
@@ -83,9 +84,9 @@ export function buildDemoPlanning(
       originalDate: date,
       currentDate: date,
       rescheduleCount: 0,
-      skippedReason: null,
-      recommendationId: null,
-      lastExecutedAt: null,
+      skippedReason: null as any,
+      recommendationId: null as any,
+      lastExecutedAt: null as any,
     }));
     dailyPlans.push({
       id: `demo-daily-plan-${index + 1}`,
@@ -122,11 +123,12 @@ export function buildDemoPlanning(
       example.targetBeforeMinutes,
     otherBase = Math.floor(otherBudget / otherCount),
     otherExtra = otherBudget % otherCount;
-  const strategicTopicId = role =>
-    scenario.subjects.flatMap(subject => subject.topics).find(topic => topic.narrativeRole === role)
-      ?.id;
+  const strategicTopicId = (role: string) =>
+    scenario.subjects
+      .flatMap((subject: any) => subject.topics)
+      .find((topic: any) => topic.narrativeRole === role)?.id;
   let otherIndex = 0;
-  const planItems = subjects.map((subject, index) => {
+  const planItems = subjects.map((subject: any, index: any) => {
     const minutes =
         subject.id === source?.id
           ? example.sourceBeforeMinutes
@@ -135,7 +137,7 @@ export function buildDemoPlanning(
             : otherBase + (otherIndex++ < otherExtra ? 1 : 0),
       topic =
         subject.topics.find(
-          item =>
+          (item: any) =>
             item.id ===
             (subject.id === target?.id
               ? strategicTopicId('priority_gap')
@@ -160,7 +162,7 @@ export function buildDemoPlanning(
       },
     };
   });
-  const planned = planItems.reduce((sum, item) => sum + item.minutes, 0);
+  const planned = planItems.reduce((sum: any, item: any) => sum + item.minutes, 0);
   const studyPlans = [
     {
       id: 'demo-study-plan-1',
@@ -171,9 +173,9 @@ export function buildDemoPlanning(
       weeklyPlannedMinutes: planned,
       weeksUntilExam: 13,
       remainingMinutes: 6200,
-      missingEffort: [],
+      missingEffort: [] as any[],
       items: planItems,
-      subjects: planItems.map(item => ({
+      subjects: planItems.map((item: any) => ({
         subjectId: item.subjectId,
         subjectName: item.subjectName,
         minutes: item.minutes,
@@ -190,15 +192,15 @@ export function buildDemoPlanning(
     history: [],
     today,
   });
-  const sourceItem = planItems.find(item => item.subjectId === advice.from?.subjectId),
-    targetItem = planItems.find(item => item.subjectId === advice.to?.subjectId);
+  const sourceItem = planItems.find((item: any) => item.subjectId === advice.from?.subjectId),
+    targetItem = planItems.find((item: any) => item.subjectId === advice.to?.subjectId);
   const adaptivePlanningHistory =
     advice.state === 'proposal'
       ? [
           {
             id: 'demo-adaptive-1',
             createdAt: stamp(today),
-            decidedAt: null,
+            decidedAt: null as any,
             status: 'suggested',
             sourceSubjectId: advice.from.subjectId,
             targetSubjectId: advice.to.subjectId,
@@ -212,16 +214,16 @@ export function buildDemoPlanning(
             reasons: [...advice.rationale],
             evidenceSnapshot: {
               source: candidates
-                .filter(item => item.subjectId === advice.from.subjectId)
-                .map(item => ({
+                .filter((item: Record<string, any>) => item.subjectId === advice.from.subjectId)
+                .map((item: Record<string, any>) => ({
                   topicId: item.topicId,
                   mastery: item.mastery,
                   examImpact: item.examImpact,
                   evidenceStrength: item.evidenceStrength,
                 })),
               target: candidates
-                .filter(item => item.subjectId === advice.to.subjectId)
-                .map(item => ({
+                .filter((item: Record<string, any>) => item.subjectId === advice.to.subjectId)
+                .map((item: Record<string, any>) => ({
                   topicId: item.topicId,
                   mastery: item.mastery,
                   examImpact: item.examImpact,

@@ -16,7 +16,7 @@ export const DEMO_EXPERIENCE_PROFILES = Object.freeze({
 export function buildDemoPreparationScenario(profile = 'standard') {
   const scenario = structuredClone(blueprint);
   if (profile === 'standard') return scenario;
-  const profiles = {
+  const profiles: Record<string, any> = {
     beginner: { days: 90, scores: [] },
     regular: { days: 70, scores: [60, 62, 64, 66, 68, 70, 71, 72, 74] },
     irregular: { days: 60, scores: [77, 78, 79, 80, 80, 81, 80, 82, 82] },

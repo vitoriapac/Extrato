@@ -4,18 +4,18 @@ import { freezePlanExecution } from '../../domain/planning/plan-execution-snapsh
 import { reconcileDemoPlanExecution } from './plan-execution.js';
 
 // Fictitious evidence only. These hooks never run on real user records.
-export function prepareDemoExperienceEvidence(state, { profile, today }) {
-  const definition = DEMO_EXPERIENCE_PROFILES[profile];
+export function prepareDemoExperienceEvidence(state: Record<string, any>, { profile, today }: any) {
+  const definition = (DEMO_EXPERIENCE_PROFILES as Record<string, any>)[profile];
   if (!definition || profile === 'final_stretch') return;
   const start = addLocalDays(today, 1 - definition.historyDays);
-  state.studySessions = state.studySessions.filter(row => row.date >= start);
-  const ids = new Set(state.studySessions.map(row => row.id));
-  state.questoes = state.questoes.filter(row => ids.has(row.studySessionId));
-  state.simulados = state.simulados.filter(row => row.date >= start);
+  state.studySessions = state.studySessions.filter((row: any) => row.date >= start);
+  const ids = new Set(state.studySessions.map((row: any) => row.id));
+  state.questoes = state.questoes.filter((row: any) => ids.has(row.studySessionId));
+  state.simulados = state.simulados.filter((row: any) => row.date >= start);
   if (profile === 'beginner') {
     state.studySessions = state.studySessions.slice(-3);
-    const kept = new Set(state.studySessions.map(row => row.id));
-    state.questoes = state.questoes.filter(row => kept.has(row.studySessionId));
+    const kept = new Set(state.studySessions.map((row: any) => row.id));
+    state.questoes = state.questoes.filter((row: any) => kept.has(row.studySessionId));
     state.reviewAgenda = [];
     for (const subject of state.subjects)
       for (const topic of subject.topics) {
@@ -33,7 +33,7 @@ export function prepareDemoExperienceEvidence(state, { profile, today }) {
       row.errorBreakdown = Object.fromEntries(
         keys.map((key, index) => [key, index === 0 ? row.resolved - row.correct : 0])
       );
-      const session = state.studySessions.find(item => item.id === row.studySessionId);
+      const session = state.studySessions.find((item: any) => item.id === row.studySessionId);
       if (session) session.correctAnswers = row.correct;
     }
   }
@@ -53,22 +53,25 @@ export function prepareDemoExperienceEvidence(state, { profile, today }) {
   }
 }
 
-export function prepareDemoExperienceExecution(state, { profile, today }) {
-  const definition = DEMO_EXPERIENCE_PROFILES[profile];
+export function prepareDemoExperienceExecution(
+  state: Record<string, any>,
+  { profile, today }: any
+) {
+  const definition = (DEMO_EXPERIENCE_PROFILES as Record<string, any>)[profile];
   if (!definition || profile === 'final_stretch') return;
   const start = addLocalDays(today, 1 - definition.historyDays);
-  state.dailyPlans = state.dailyPlans.filter(row => row.date >= start);
+  state.dailyPlans = state.dailyPlans.filter((row: any) => row.date >= start);
   // Ensure the current week is represented, rather than extrapolating old execution.
-  const template = state.dailyPlans.find(row => row.date === today);
+  const template = state.dailyPlans.find((row: any) => row.date === today);
   for (let offset = -6; offset < 0; offset++) {
     const date = addLocalDays(today, offset);
-    if (state.dailyPlans.some(row => row.date === date)) continue;
+    if (state.dailyPlans.some((row: any) => row.date === date)) continue;
     const plan = structuredClone(template);
     plan.id = 'demo-profile-plan-' + date;
     plan.date = date;
     plan.createdAt = date + 'T06:00:00.000Z';
     plan.updatedAt = plan.createdAt;
-    plan.items = plan.items.map((item, index) => ({
+    plan.items = plan.items.map((item: any, index: any) => ({
       ...item,
       id: plan.id + '-' + index,
       originalDate: date,
@@ -93,7 +96,7 @@ export function prepareDemoExperienceExecution(state, { profile, today }) {
     state.dailyPlans.push(plan);
   }
   if (profile !== 'beginner')
-    for (const plan of state.dailyPlans.filter(row => row.date < today))
+    for (const plan of state.dailyPlans.filter((row: any) => row.date < today))
       for (const item of plan.items) {
         // Replace only fictional execution for this block; question results remain separate.
         for (const session of state.studySessions)
@@ -120,8 +123,10 @@ export function prepareDemoExperienceExecution(state, { profile, today }) {
         item.lastExecutedAt = state.studySessions.at(-1).endedAt;
         item.skippedReason = null;
       }
-  state.dailyPlans.sort((a, b) => a.date.localeCompare(b.date));
-  state.studySessions.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  state.dailyPlans.sort((a: any, b: any) => a.date.localeCompare(b.date));
+  state.studySessions.sort(
+    (a: any, b: any) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)
+  );
   if (profile === 'irregular') {
     const weeks = new Map(),
       capacity = Object.values(state.metas.horasPorDia as Record<string, number>).reduce(
@@ -134,7 +139,7 @@ export function prepareDemoExperienceExecution(state, { profile, today }) {
       weeks.get(monday).push(session);
     }
     for (const sessions of weeks.values()) {
-      const total = sessions.reduce((sum, row) => sum + row.durationSeconds, 0),
+      const total = sessions.reduce((sum: any, row: any) => sum + row.durationSeconds, 0),
         budget = Math.round(capacity * 60 * definition.executionRatio);
       // Keep question evidence and identities; constrain all fictional study, including unmatched sessions.
       for (const session of sessions) {

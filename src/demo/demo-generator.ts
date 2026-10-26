@@ -39,7 +39,7 @@ export const DEMO_SCENARIO = Object.freeze({
   seed: scenario.meta.seed,
 });
 
-function hashSeed(value) {
+function hashSeed(value: unknown) {
   let hash = 2166136261;
   for (const char of String(value)) {
     hash ^= char.charCodeAt(0);
@@ -47,7 +47,7 @@ function hashSeed(value) {
   }
   return hash >>> 0;
 }
-function randomFactory(seed) {
+function randomFactory(seed: unknown) {
   let value = hashSeed(seed) || 1;
   return () => {
     value += 0x6d2b79f5;
@@ -57,10 +57,10 @@ function randomFactory(seed) {
     return ((next ^ (next >>> 14)) >>> 0) / 4294967296;
   };
 }
-function shiftDate(iso, days) {
+function shiftDate(iso: string, days: number) {
   return addLocalDays(iso, days);
 }
-function timestamp(date, hour = 12) {
+function timestamp(date: string, hour = 12) {
   return `${date}T${String(hour).padStart(2, '0')}:00:00.000Z`;
 }
 export function generateDemoData({
@@ -79,8 +79,8 @@ export function generateDemoData({
     state: any = createDefaultState(),
     createdAt = timestamp(shiftDate(today, -oldestAge));
   state.subjects = buildDemoSubjects(demoScenario, { createdAt, random });
-  const activeTopics = state.subjects.flatMap(subject =>
-    subject.topics.filter(topic => !topic.archived).map(topic => ({ subject, topic }))
+  const activeTopics = state.subjects.flatMap((subject: any) =>
+    subject.topics.filter((topic: any) => !topic.archived).map((topic: any) => ({ subject, topic }))
   );
   const history = buildDemoStudyHistory(demoScenario, { today, subjects: state.subjects, random });
   state.studySessions = history.studySessions;
@@ -105,15 +105,15 @@ export function generateDemoData({
       createdAt: timestamp(shiftDate(date, -5)),
     };
   });
-  const completedDates = state.subjects.flatMap(subject =>
-    subject.topics.map(topic => topic.firstCompletedAt?.slice(0, 10)).filter(Boolean)
+  const completedDates = state.subjects.flatMap((subject: any) =>
+    subject.topics.map((topic: any) => topic.firstCompletedAt?.slice(0, 10)).filter(Boolean)
   );
   state.progressHistory = Array.from({ length: demoScenario.meta.historyDays }, (_, index) => {
     const date = shiftDate(today, index - oldestAge);
     return {
       date,
       pct: Math.round(
-        (completedDates.filter(value => value <= date).length / activeTopics.length) * 100
+        (completedDates.filter((value: any) => value <= date).length / activeTopics.length) * 100
       ),
     };
   });
@@ -128,14 +128,14 @@ export function generateDemoData({
     targetScore: demoScenario.goals.targetScorePct,
     activeExamTags: [EXAM_TAGS.BB, EXAM_TAGS.CAIXA],
     configuredAt: timestamp(today),
-    subjects: state.subjects.map((subject, index) => ({
+    subjects: state.subjects.map((subject: any, index: any) => ({
       subjectId: subject.id,
       expectedQuestions: index < 4 ? 18 : 14,
       questionWeight: index === 2 ? 1.5 : 1,
       priority: index < 2 ? 'high' : index === 5 ? 'low' : 'normal',
     })),
   };
-  state.metasPorDisciplina = state.subjects.map((subject, index) => ({
+  state.metasPorDisciplina = state.subjects.map((subject: any, index: any) => ({
     id: `demo-subject-goal-${index + 1}`,
     subjectId: subject.id,
     meta: 30 + index * 5,
@@ -202,16 +202,16 @@ export function generateDemoData({
     recommendations: state.recommendationFeedback,
     capacityHistory: state.planningCapacityHistory,
   });
-  const experienceProfile = DEMO_EXPERIENCE_PROFILES[preparationProfile];
+  const experienceProfile = (DEMO_EXPERIENCE_PROFILES as Record<string, any>)[preparationProfile];
   if (experienceProfile && preparationProfile !== 'final_stretch') {
     const start = shiftDate(today, 1 - experienceProfile.historyDays);
-    state.progressHistory = state.progressHistory.filter(row => row.date >= start);
+    state.progressHistory = state.progressHistory.filter((row: any) => row.date >= start);
     state.weeklyCloseSnapshots = state.weeklyCloseSnapshots.filter(
-      row => row.period.start >= start
+      (row: any) => row.period.start >= start
     );
   }
   state.readinessSnapshots = state.weeklyCloseSnapshots
-    .map((close, index) =>
+    .map((close: any, index: any) =>
       createReadinessSnapshot({
         id: `demo-readiness-${index + 1}`,
         date: close.period.end,
@@ -231,7 +231,7 @@ export function generateDemoData({
       })
     )
     .filter(Boolean);
-  state.topicHistory = activeTopics.flatMap((entry, index) => [
+  state.topicHistory = activeTopics.flatMap((entry: any, index: any) => [
     {
       id: `demo-history-start-${index + 1}`,
       type: 'topic_created',

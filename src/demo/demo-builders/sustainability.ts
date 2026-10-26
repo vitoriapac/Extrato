@@ -9,7 +9,7 @@ export const DEMO_SUSTAINABILITY_PATTERNS = Object.freeze([
   'unstable_execution',
   'capacity_mismatch',
 ]);
-export function demoSustainabilityPeriods(today) {
+export function demoSustainabilityPeriods(today: string) {
   const monday = addLocalDays(today, -((parseLocalDate(today).getDay() + 6) % 7));
   return DEMO_SUSTAINABILITY_PATTERNS.map((status, index) => ({
     status,
@@ -17,24 +17,24 @@ export function demoSustainabilityPeriods(today) {
     end: addLocalDays(monday, -85 + index * 28),
   }));
 }
-const allocate = (total, weights) => {
-  const sum = weights.reduce((a, b) => a + b, 0),
-    result = weights.map(weight => Math.floor((total * weight) / sum));
-  result[result.length - 1] += total - result.reduce((a, b) => a + b, 0);
+const allocate = (total: number, weights: number[]) => {
+  const sum = weights.reduce((a: any, b: any) => a + b, 0),
+    result = weights.map((weight: any) => Math.floor((total * weight) / sum));
+  result[result.length - 1] += total - result.reduce((a: any, b: any) => a + b, 0);
   return result;
 };
 // Scripted fictional history only: preserves session IDs, dates, questions and catalog.
 // Production data never passes through this builder.
-export function buildDemoSustainability(state, { today }) {
+export function buildDemoSustainability(state: Record<string, any>, { today }: any) {
   const periods = demoSustainabilityPeriods(today),
     first = periods[0].start,
     last = periods.at(-1).end;
   const removed = new Set(
     state.dailyPlans
-      .filter(plan => plan.date >= first && plan.date <= last)
-      .flatMap(plan => plan.items.map(item => item.id))
+      .filter((plan: any) => plan.date >= first && plan.date <= last)
+      .flatMap((plan: any) => plan.items.map((item: any) => item.id))
   );
-  state.dailyPlans = state.dailyPlans.filter(plan => plan.date < first || plan.date > last);
+  state.dailyPlans = state.dailyPlans.filter((plan: any) => plan.date < first || plan.date > last);
   for (const session of state.studySessions)
     if (removed.has(session.planItemId)) delete session.planItemId;
   recordPlanningCapacity(state.planningCapacityHistory, {
@@ -49,15 +49,15 @@ export function buildDemoSustainability(state, { today }) {
         end = addLocalDays(start, 6);
       const sessions = state.studySessions
         .filter(
-          session =>
+          (session: any) =>
             session.date >= start &&
             session.date <= end &&
             classifyEvidenceScope(session, state.subjects, state.examBlueprint.activeExamTags)
               .includedInExamMetrics
         )
-        .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+        .sort((a: any, b: any) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
       if (sessions.length < 2) continue; // Missing evidence stays a gap for custom demo blueprints.
-      const weights = sessions.slice(1).map(session => Math.max(1, session.durationSeconds));
+      const weights = sessions.slice(1).map((session: any) => Math.max(1, session.durationSeconds));
       const realMinutes =
         profile === 0
           ? 570
@@ -73,7 +73,7 @@ export function buildDemoSustainability(state, { today }) {
         ],
         planned = [120, ...allocate(480, weights)];
       const plans = new Map();
-      sessions.forEach((session, index) => {
+      sessions.forEach((session: any, index: any) => {
         const id = `demo-sustainability-item-${profile}-${week}-${index}`;
         session.durationSeconds = durations[index];
         session.planItemId = id;
@@ -93,7 +93,7 @@ export function buildDemoSustainability(state, { today }) {
           originalDate: session.date,
           currentDate: session.date,
           rescheduleCount: 0,
-          skippedReason: null,
+          skippedReason: null as any,
           prioritySnapshot: {
             priority: index === 0,
             source: 'demo-scripted',
@@ -120,6 +120,6 @@ export function buildDemoSustainability(state, { today }) {
       });
       state.dailyPlans.push(...plans.values());
     }
-  state.dailyPlans.sort((a, b) => a.date.localeCompare(b.date));
+  state.dailyPlans.sort((a: any, b: any) => a.date.localeCompare(b.date));
   return periods;
 }

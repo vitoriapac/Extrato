@@ -1,9 +1,10 @@
 const terminalStatuses = new Set(['deferred', 'replaced']);
-const timestamp = session => session.endedAt || session.startedAt || session.createdAt || null;
+const timestamp = (session: Record<string, any>) =>
+  session.endedAt || session.startedAt || session.createdAt || null;
 
 export function reconcileDemoPlanExecution(
-  dailyPlans = [],
-  studySessions = [],
+  dailyPlans: any[] = [],
+  studySessions: any[] = [],
   { today }: any = {}
 ) {
   const sessionsById = new Map(studySessions.map(session => [session.id, session]));
@@ -48,7 +49,7 @@ export function reconcileDemoPlanExecution(
       if (item.status === 'skipped' && !item.skippedReason)
         item.skippedReason = 'Sem sessão registrada neste dia.';
       if (item.status !== 'skipped') item.skippedReason = null;
-      item.sessionIds = item.sessionIds.filter(id => sessionsById.has(id));
+      item.sessionIds = item.sessionIds.filter((id: any) => sessionsById.has(id));
     }
   }
   return dailyPlans;

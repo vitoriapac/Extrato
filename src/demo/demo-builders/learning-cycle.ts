@@ -15,14 +15,19 @@ import { EXAM_TAGS } from '../../domain/exams/exam-constants.js';
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { buildWeeklyCloseAdherence } from '../../application/adherence/build-weekly-close-adherence.js';
 
-const stamp = date => `${date}T12:00:00.000Z`;
-const inRange = (item, start, end) => item.date >= start && item.date <= end;
-const sum = (rows, key) => rows.reduce((total, row) => total + (Number(row[key]) || 0), 0);
+const stamp = (date: string) => `${date}T12:00:00.000Z`;
+const inRange = (item: Record<string, any>, start: string, end: string) =>
+  item.date >= start && item.date <= end;
+const sum = (rows: any[], key: string) =>
+  rows.reduce((total: any, row: any) => total + (Number(row[key]) || 0), 0);
 
-export function buildDemoRecommendations(scenario, { today, subjects, sessions, questions }) {
+export function buildDemoRecommendations(
+  scenario: Record<string, any>,
+  { subjects, sessions, questions }: any
+) {
   const topics = subjects
-    .flatMap(subject => subject.topics.map(topic => ({ subject, topic })))
-    .filter(item => questions.some(row => row.topicId === item.topic.id));
+    .flatMap((subject: any) => subject.topics.map((topic: any) => ({ subject, topic })))
+    .filter((item: any) => questions.some((row: any) => row.topicId === item.topic.id));
   const examples = scenario.recommendations.examples;
   const feedback = [],
     history = [];
@@ -30,14 +35,14 @@ export function buildDemoRecommendations(scenario, { today, subjects, sessions, 
     const example = examples[index] || null,
       item = example
         ? topics.find(
-            row =>
+            (row: any) =>
               row.topic.name.toLocaleLowerCase('pt-BR') === example.topic.toLocaleLowerCase('pt-BR')
           )
         : topics[(index * 23 + 12) % topics.length];
     if (!item) continue;
     const records = questions
-      .filter(row => row.topicId === item.topic.id)
-      .sort((a, b) => a.date.localeCompare(b.date));
+      .filter((row: any) => row.topicId === item.topic.id)
+      .sort((a: any, b: any) => a.date.localeCompare(b.date));
     const before = records[0],
       after = records.length > 1 ? records.at(-1) : null;
     const date = addLocalDays(before.date, 1),
@@ -45,10 +50,10 @@ export function buildDemoRecommendations(scenario, { today, subjects, sessions, 
       id = `demo-recommendation-${index + 1}`;
     const accepted = index % 7 !== 6,
       session = after
-        ? sessions.find(row => row.id === after.studySessionId)
+        ? sessions.find((row: any) => row.id === after.studySessionId)
         : sessions
-            .filter(row => row.topicId === item.topic.id && row.date > date)
-            .sort((a, b) => a.date.localeCompare(b.date))[0],
+            .filter((row: any) => row.topicId === item.topic.id && row.date > date)
+            .sort((a: any, b: any) => a.date.localeCompare(b.date))[0],
       completed = accepted && Boolean(session && session.date > date);
     const beforeScore = Math.round((before.correct / before.resolved) * 100),
       afterScore = after ? Math.round((after.correct / after.resolved) * 100) : null;
@@ -97,11 +102,11 @@ export function buildDemoRecommendations(scenario, { today, subjects, sessions, 
       algorithmVersion: 1,
       baseline,
       snapshot,
-      outcome: null,
+      outcome: null as any,
       shownAt: createdAt,
       createdAt,
       completedAt: completed ? stamp(session.date) : null,
-      ratedAt: null,
+      ratedAt: null as any,
     };
     if (measured)
       measureRecommendationOutcome(row, {
@@ -121,7 +126,7 @@ export function buildDemoRecommendations(scenario, { today, subjects, sessions, 
       createdAt,
       localDate: date,
       candidateId: item.topic.id,
-      signature: null,
+      signature: null as any,
       source: 'generated',
       subjectId: item.subject.id,
       topicId: item.topic.id,
@@ -130,11 +135,11 @@ export function buildDemoRecommendations(scenario, { today, subjects, sessions, 
       priority: score,
       reasons,
       evidenceSnapshot: recommendation.evidence,
-      algorithmVersions: { priority: 1, examIntelligence: null },
+      algorithmVersions: { priority: 1, examIntelligence: null as any },
       status: accepted ? 'executed' : 'dismissed',
       executedAt: accepted ? createdAt : null,
       dismissedAt: accepted ? null : createdAt,
-      expiredAt: null,
+      expiredAt: null as any,
       sessionId: row.resultingSessionId,
       feedbackId: row.id,
     });
@@ -142,7 +147,7 @@ export function buildDemoRecommendations(scenario, { today, subjects, sessions, 
   return { recommendationFeedback: feedback, recommendationHistory: history };
 }
 
-function candidatesAt(end, { subjects, questions }) {
+function candidatesAt(end: string, { subjects, questions }: any) {
   const byTopic = new Map();
   for (const question of questions) {
     if (question.date > end) continue;
@@ -151,8 +156,8 @@ function candidatesAt(end, { subjects, questions }) {
     row.correct += question.correct;
     byTopic.set(question.topicId, row);
   }
-  return subjects.flatMap(subject =>
-    subject.topics.map(topic => {
+  return subjects.flatMap((subject: any) =>
+    subject.topics.map((topic: any) => {
       const performance = byTopic.get(topic.id);
       return {
         topicId: topic.id,
@@ -165,16 +170,16 @@ function candidatesAt(end, { subjects, questions }) {
             ? Math.round((performance.correct / performance.resolved) * 100)
             : null,
         evidenceStrength: Math.min(1, (performance?.resolved || 0) / 40),
-        retention: null,
+        retention: null as any,
         coverage: topic.firstCompletedAt?.slice(0, 10) <= end ? 100 : 0,
-        trendRisk: null,
+        trendRisk: null as any,
       };
     })
   );
 }
 
 export function buildDemoWeeklyCloses(
-  scenario,
+  scenario: Record<string, any>,
   {
     today,
     examDate,
@@ -184,12 +189,12 @@ export function buildDemoWeeklyCloses(
     dailyPlans,
     recommendations,
     capacityHistory = [],
-  }
+  }: any
 ) {
   const weeks = scenario.targets.weeklyCloses,
-    bySubject = new Map(subjects.map(item => [item.id, item.name])),
+    bySubject = new Map(subjects.map((item: any) => [item.id, item.name])),
     byTopic = new Map(
-      subjects.flatMap(subject => subject.topics.map(topic => [topic.id, topic.name]))
+      subjects.flatMap((subject: any) => subject.topics.map((topic: any) => [topic.id, topic.name]))
     );
   const snapshots = [];
   for (let index = 0; index < weeks; index++) {
@@ -198,16 +203,18 @@ export function buildDemoWeeklyCloses(
       end = addLocalDays(start, 6),
       previousStart = addLocalDays(start, -7),
       previousEnd = addLocalDays(start, -1);
-    const currentSessions = sessions.filter(row => inRange(row, start, end)),
-      currentQuestions = questions.filter(row => inRange(row, start, end));
-    const previousSessions = sessions.filter(row => inRange(row, previousStart, previousEnd)),
-      previousQuestions = questions.filter(row => inRange(row, previousStart, previousEnd));
+    const currentSessions = sessions.filter((row: any) => inRange(row, start, end)),
+      currentQuestions = questions.filter((row: any) => inRange(row, start, end));
+    const previousSessions = sessions.filter((row: any) =>
+        inRange(row, previousStart, previousEnd)
+      ),
+      previousQuestions = questions.filter((row: any) => inRange(row, previousStart, previousEnd));
     const plans = dailyPlans
-      .filter(plan => plan.date >= start && plan.date <= end)
-      .flatMap(plan => plan.items || []);
+      .filter((plan: any) => plan.date >= start && plan.date <= end)
+      .flatMap((plan: any) => plan.items || []);
     const feedback = recommendations
-        .filter(item => item.date <= end)
-        .map(item =>
+        .filter((item: any) => item.date <= end)
+        .map((item: any) =>
           item.outcome?.measuredAt?.slice(0, 10) > end ? { ...item, outcome: null } : item
         ),
       candidates = candidatesAt(end, { subjects, questions });
@@ -272,8 +279,8 @@ export function buildDemoWeeklyCloses(
       gapMap: buildGapMap(candidates),
       decisionHistory: buildDecisionHistory(feedback, {
         limit: 5,
-        resolveSubjectName: id => bySubject.get(id),
-        resolveTopicName: id => byTopic.get(id),
+        resolveSubjectName: (id: string) => bySubject.get(id),
+        resolveTopicName: (id: string) => byTopic.get(id),
       }),
     };
     const daysToExam = examDate

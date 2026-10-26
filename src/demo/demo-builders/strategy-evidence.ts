@@ -1,25 +1,25 @@
 import { buildStudyCandidates } from '../../application/build-study-candidates.js';
 
 export function buildDemoStrategyCandidates(
-  scenario,
+  scenario: Record<string, any>,
   { today, subjects, sessions, questions, exams, examQuestions, blueprint }: any = {}
 ) {
-  const strategic = scenario.subjects.flatMap(subject =>
+  const strategic = scenario.subjects.flatMap((subject: any) =>
     subject.topics
-      .filter(topic => ['consolidated', 'priority_gap'].includes(topic.narrativeRole))
-      .map(topic => ({ subjectId: subject.id, topicId: topic.id }))
+      .filter((topic: any) => ['consolidated', 'priority_gap'].includes(topic.narrativeRole))
+      .map((topic: any) => ({ subjectId: subject.id, topicId: topic.id }))
   );
-  const topics = subjects.flatMap(subject =>
-    subject.topics.map(topic => ({ ...topic, subjectId: subject.id }))
+  const topics = subjects.flatMap((subject: any) =>
+    subject.topics.map((topic: any) => ({ ...topic, subjectId: subject.id }))
   );
-  const priorities = strategic.flatMap(({ subjectId, topicId }) => {
-    const subject = subjects.find(item => item.id === subjectId),
-      topic = subject?.topics.find(item => item.id === topicId);
+  const priorities = strategic.flatMap(({ subjectId, topicId }: any) => {
+    const subject = subjects.find((item: any) => item.id === subjectId),
+      topic = subject?.topics.find((item: any) => item.id === topicId);
     const rows = questions
-      .filter(row => row.topicId === topicId && row.date <= today)
-      .sort((a, b) => a.date.localeCompare(b.date));
-    const resolved = rows.reduce((sum, row) => sum + row.resolved, 0),
-      correct = rows.reduce((sum, row) => sum + row.correct, 0);
+      .filter((row: any) => row.topicId === topicId && row.date <= today)
+      .sort((a: any, b: any) => a.date.localeCompare(b.date));
+    const resolved = rows.reduce((sum: any, row: any) => sum + row.resolved, 0),
+      correct = rows.reduce((sum: any, row: any) => sum + row.correct, 0);
     if (!topic || resolved < 20) return [];
     const first = rows[0],
       last = rows.at(-1),
