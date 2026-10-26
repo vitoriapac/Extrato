@@ -1,4 +1,4 @@
-const stepCopy = {
+const stepCopy: Record<string, any> = {
   goal: {
     title: 'Qual é o seu objetivo?',
     help: 'Defina a prova e a data para calcular o ritmo necessário.',
@@ -44,14 +44,17 @@ const stepCopy = {
     tip: 'Nada será salvo no calendário antes da confirmação.',
   },
 };
-const entryStepLabels = {
+const entryStepLabels: Record<string, any> = {
   goal: 'Objetivo e data',
   availability: 'Disponibilidade',
   content: 'Edital ou matérias',
   plan: 'Prévia e Hoje',
 };
 
-export function renderOnboardingEntry(model, { escapeHtml = String }: any = {}) {
+export function renderOnboardingEntry(
+  model: Record<string, any>,
+  { escapeHtml = String }: any = {}
+) {
   const steps = model.steps || [],
     next = model.next || steps[0],
     complete = model.completed || 0,
@@ -62,7 +65,7 @@ export function renderOnboardingEntry(model, { escapeHtml = String }: any = {}) 
     : `Comece por ${escapeHtml(next?.label || 'seu objetivo')} para montar um plano adequado à sua rotina.`;
   const progress = total ? Math.round((complete / total) * 100) : 0;
   const stepItems = steps
-    .map((step, index) => {
+    .map((step: any, index: any) => {
       const status =
         step.status ||
         (step.complete === true || (step.complete == null && index < complete)
@@ -76,9 +79,9 @@ export function renderOnboardingEntry(model, { escapeHtml = String }: any = {}) 
   return `<div class="onboarding-entry-copy"><div class="onboarding-entry-main"><span class="onboarding-kicker">CONFIGURAÇÃO INICIAL</span><div class="onboarding-entry-heading"><h3 id="guidedOnboardingEntryTitle">${title}</h3><span class="onboarding-entry-count">${complete} de ${total} etapas</span></div><p>${description}</p><div class="onboarding-entry-progress" role="progressbar" aria-label="Progresso da configuração inicial" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${complete}" aria-valuetext="${complete} de ${total} etapas concluídas"><span style="width:${progress}%"></span></div><ol class="onboarding-entry-steps" aria-label="Etapas da configuração">${stepItems}</ol></div></div><button class="btn ghost onboarding-entry-cta" type="button" data-guided-action="open">${complete ? 'Continuar configuração' : 'Montar meu plano'} <span aria-hidden="true">→</span></button>`;
 }
 
-export function renderOnboardingProgress(model) {
+export function renderOnboardingProgress(model: Record<string, any>) {
   return model.steps
-    .map((step, index) => {
+    .map((step: any, index: any) => {
       const current = step.id === model.current?.id,
         complete = step.complete && index < model.currentIndex,
         state = current ? 'step' : 'false';
@@ -87,31 +90,34 @@ export function renderOnboardingProgress(model) {
     .join('');
 }
 
-export function renderOnboardingHelp(model, { escapeHtml = String }: any = {}) {
+export function renderOnboardingHelp(
+  model: Record<string, any>,
+  { escapeHtml = String }: any = {}
+) {
   const step = model.current || model.next || model.steps?.[0],
     copy = stepCopy[step.id] || stepCopy.goal;
-  return `<span class="onboarding-kicker">POR QUE ISSO IMPORTA?</span><h3>${escapeHtml(copy.why)}</h3><ul>${copy.benefits.map(item => `<li><span aria-hidden="true">✓</span>${escapeHtml(item)}</li>`).join('')}</ul><div class="onboarding-tip"><strong>Dica</strong><p>${escapeHtml(copy.tip)}</p></div>`;
+  return `<span class="onboarding-kicker">POR QUE ISSO IMPORTA?</span><h3>${escapeHtml(copy.why)}</h3><ul>${copy.benefits.map((item: any) => `<li><span aria-hidden="true">✓</span>${escapeHtml(item)}</li>`).join('')}</ul><div class="onboarding-tip"><strong>Dica</strong><p>${escapeHtml(copy.tip)}</p></div>`;
 }
 
 export function renderOnboardingContent(
-  model,
+  model: Record<string, any>,
   {
     escapeHtml = String,
     escapeAttr = escapeHtml,
-    formatMinutes = value => `${value} min`,
+    formatMinutes = (value: unknown) => `${value} min`,
   }: any = {}
 ) {
   const step = model.current || model.next || model.steps?.[0],
     copy = stepCopy[step.id] || stepCopy.goal;
   if (step.id === 'goal')
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso">${model.presets.map(item => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}</select></label><label for="guidedExamDate">Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr(model.today)}" value="${escapeAttr(model.examDate || '')}"></label></div>`;
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><label for="guidedExamPreset">Concurso<select id="guidedExamPreset" aria-label="Concurso do primeiro acesso">${model.presets.map((item: any) => `<option value="${escapeAttr(item.id)}" ${item.id === model.presetId ? 'selected' : ''}>${escapeHtml(item.name.replace('Tecnologia da Informação', 'TI'))}</option>`).join('')}</select></label><label for="guidedExamDate">Data da prova<input id="guidedExamDate" type="date" min="${escapeAttr(model.today)}" value="${escapeAttr(model.examDate || '')}"></label></div>`;
   if (step.id === 'availability')
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="guided-availability">${model.weekdays.map(item => `<label for="guided-day-${item.day}"><span>${escapeHtml(item.label)}</span><input id="guided-day-${item.day}" type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr(item.label)}"><small>h</small></label>`).join('')}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div></div>`;
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="guided-availability">${model.weekdays.map((item: any) => `<label for="guided-day-${item.day}"><span>${escapeHtml(item.label)}</span><input id="guided-day-${item.day}" type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr(item.label)}"><small>h</small></label>`).join('')}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div></div>`;
   if (step.id === 'content')
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-actions">${(model.contentPaths || []).map(path => `<button class="btn${path.primary ? '' : ' ghost'}" data-guided-action="${escapeAttr(path.action)}">${escapeHtml(path.label)}</button>`).join('')}</div>${model.subjects.length ? `<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map(subject => `<label for="guided-level-${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)}</span><select id="guided-level-${escapeAttr(subject.id)}" data-guided-level="${escapeAttr(subject.id)}"><option value="Fácil" ${subject.level === 'Fácil' ? 'selected' : ''}>Tenho boa base</option><option value="Médio" ${subject.level === 'Médio' ? 'selected' : ''}>Base intermediária</option><option value="Difícil" ${subject.level === 'Difícil' ? 'selected' : ''}>Preciso começar pela base</option></select></label>`).join('')}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-actions">${(model.contentPaths || []).map((path: any) => `<button class="btn${path.primary ? '' : ' ghost'}" data-guided-action="${escapeAttr(path.action)}">${escapeHtml(path.label)}</button>`).join('')}</div>${model.subjects.length ? `<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject: any) => `<label for="guided-level-${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)}</span><select id="guided-level-${escapeAttr(subject.id)}" data-guided-level="${escapeAttr(subject.id)}"><option value="Fácil" ${subject.level === 'Fácil' ? 'selected' : ''}>Tenho boa base</option><option value="Médio" ${subject.level === 'Médio' ? 'selected' : ''}>Base intermediária</option><option value="Difícil" ${subject.level === 'Difícil' ? 'selected' : ''}>Preciso começar pela base</option></select></label>`).join('')}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
   const activities = (model.firstActivities || [])
     .map(
-      item =>
+      (item: any) =>
         `<li><span><strong>${escapeHtml(item.subject)}</strong><small>${escapeHtml(item.topic)}</small></span><b>${item.minutes} min</b></li>`
     )
     .join('');
@@ -120,7 +126,7 @@ export function renderOnboardingContent(
       ? '<p class="confidence-note">Esta prévia usa a mesma prioridade, elegibilidade e capacidade do plano que será criado.</p>'
       : model.canConfigurePlan
         ? `<div class="availability-warning"><p>Não há atividade elegível nesta proposta. ${model.planReasons
-            .map(reason =>
+            .map((reason: any) =>
               escapeHtml(
                 typeof reason === 'string' ? reason : reason.message || reason.reason || ''
               )
@@ -133,26 +139,26 @@ export function renderOnboardingContent(
   }</div>`;
 }
 
-const BLOCKED_REASONS = {
+const BLOCKED_REASONS: Record<string, any> = {
   goal: 'Informe a data da prova para continuar.',
   availability: 'Defina horas em pelo menos um dia para continuar.',
   content: 'Escolha um edital, importe um arquivo ou cadastre matérias para ver a prévia.',
   plan: 'Revise a prévia: ainda não há atividades elegíveis para criar o plano.',
 };
 // A disabled primary action always says why, next to the button and through aria-describedby.
-export function onboardingBlockedReason(model) {
+export function onboardingBlockedReason(model: Record<string, any>) {
   const id = model.current?.id || 'goal',
     ready =
       id === 'content' ? model.hasContent : id === 'plan' ? model.canCreatePlan : model.canAdvance;
   return ready ? '' : BLOCKED_REASONS[id] || '';
 }
-export function renderOnboardingActions(model) {
+export function renderOnboardingActions(model: Record<string, any>) {
   const reason = onboardingBlockedReason(model),
     hint = reason ? `<p class="guided-action-hint" id="guidedActionHint">${reason}</p>` : '',
     described = reason ? ' aria-describedby="guidedActionHint"' : '';
   return hint + renderOnboardingButtons(model).replace(/ disabled>/, ` disabled${described}>`);
 }
-function renderOnboardingButtons(model) {
+function renderOnboardingButtons(model: Record<string, any>) {
   const id = model.current?.id || 'goal',
     previous =
       model.currentIndex > 0

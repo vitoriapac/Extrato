@@ -9,7 +9,7 @@ export function buildQuestionImportViewModel({
   return Object.freeze({
     fileName,
     canConfirm,
-    issues: issues.map(issue => ({
+    issues: issues.map((issue: any) => ({
       line: issue.line || null,
       message: issue.message || 'Problema não especificado.',
     })),

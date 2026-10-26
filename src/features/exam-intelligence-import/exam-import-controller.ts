@@ -10,12 +10,17 @@ import {
 } from './exam-import-state.js';
 import { collectHistoricalExamImportDecisions } from './exam-import-view-model.js';
 
-export function createHistoricalExamImportController({ document, getState, onImported, notify }) {
+export function createHistoricalExamImportController({
+  document,
+  getState,
+  onImported,
+  notify,
+}: any) {
   const fileInput = document.getElementById('examJsonFile');
   const previewContainer = document.getElementById('examJsonPreview');
   const importState = createHistoricalExamImportState();
   if (!fileInput || !previewContainer) return { mount() {}, cancel() {} };
-  const showState = (kind, label, message) => {
+  const showState = (kind: string, label: string, message: string) => {
     const note = document.createElement('aside');
     note.className = `context-note context-note--${kind}`;
     note.setAttribute('role', 'status');
@@ -57,7 +62,7 @@ export function createHistoricalExamImportController({ document, getState, onImp
     }
     fileInput.value = '';
   };
-  const onPreviewClick = event => {
+  const onPreviewClick = (event: any) => {
     if (event.target.id === 'examJsonCancel') {
       cancel();
       return;

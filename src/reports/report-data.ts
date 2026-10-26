@@ -1,5 +1,5 @@
-const sum = (items, selector) =>
-  items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
+const sum = (items: any[], selector: (item: any) => unknown) =>
+  items.reduce((total: any, item: any) => total + (Number(selector(item)) || 0), 0);
 import { summarizeRecommendationHistory } from '../application/recommendations/recommendation-history.js';
 import { buildRecommendationOutcomeAudit } from '../application/recommendations/build-recommendation-outcome-audit.js';
 import { addLocalDays } from '../core/date-utils.js';
@@ -7,12 +7,12 @@ import { buildExamReportSummary } from './exam-report-summary.js';
 import { buildReportWeeklyFocus } from './weekly-focus-summary.js';
 import { readinessHistoryForScope } from '../application/analytics/readiness-history.js';
 import { buildWeeklyClose } from '../domain/analytics/weekly-close.js';
-const shiftDate = (iso, days) => addLocalDays(iso, days);
-const inPeriod = (item, start, end) => {
+const shiftDate = (iso: string, days: number) => addLocalDays(iso, days);
+const inPeriod = (item: Record<string, any>, start: string, end: string) => {
   const date = item.date || String(item.endedAt || item.createdAt || '').slice(0, 10);
   return Boolean(date && date >= start && date <= end);
 };
-const reportToday = generatedAt => {
+const reportToday = (generatedAt: string | null | undefined) => {
   const dateOnly = String(generatedAt || '');
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return dateOnly;
   const timestampDate = localDateFromTimestamp(generatedAt);
@@ -50,30 +50,34 @@ export function buildStrategicReport({
   const range = resolveReportPeriod({ ...period, generatedAt }),
     activeExamTags = state.examBlueprint?.activeExamTags || [],
     subjects = (state.subjects || []).filter(
-      item =>
+      (item: any) =>
         !item.archived &&
         (item.topics || []).some(
-          topic => !topic.archived && isTopicInExamScope(topic, activeExamTags)
+          (topic: any) => !topic.archived && isTopicInExamScope(topic, activeExamTags)
         )
     ),
-    topics = subjects.flatMap(subject =>
+    topics = subjects.flatMap((subject: any) =>
       (subject.topics || []).filter(
-        item => !item.archived && isTopicInExamScope(item, activeExamTags)
+        (item: any) => !item.archived && isTopicInExamScope(item, activeExamTags)
       )
     );
   const examDate = state.examDate || state.examBlueprint?.examDate || null,
     localToday = reportToday(generatedAt),
     daysToExam = examDate ? Math.max(0, localDateRange(localToday, examDate).length - 1) : null,
     examPhase = resolveExamPhase(daysToExam);
-  const allSessions = (state.studySessions || []).filter(item =>
+  const allSessions = (state.studySessions || []).filter((item: any) =>
       inPeriod(item, range.start, range.end)
     ),
-    allQuestions = (state.questoes || []).filter(item => inPeriod(item, range.start, range.end)),
+    allQuestions = (state.questoes || []).filter((item: any) =>
+      inPeriod(item, range.start, range.end)
+    ),
     simulations = (state.simulados || []).filter(
-      item =>
+      (item: any) =>
         inPeriod(item, range.start, range.end) && isSimulationInExamScope(item, activeExamTags)
     ),
-    allReviews = (state.reviewAgenda || []).filter(item => inPeriod(item, range.start, range.end)),
+    allReviews = (state.reviewAgenda || []).filter((item: any) =>
+      inPeriod(item, range.start, range.end)
+    ),
     evidenceScope = resolveExamEvidenceScope({
       subjects: state.subjects || [],
       activeExamTags,
@@ -85,14 +89,16 @@ export function buildStrategicReport({
     questions = evidenceScope.questions.included,
     reviews = evidenceScope.reviews.included;
   const completedReviewEvidence = (state.reviewAgenda || [])
-      .filter(item => item.status === 'Concluído' && item.completedAt)
-      .map(item => ({ ...item, date: localDateFromTimestamp(item.completedAt) })),
+      .filter((item: any) => item.status === 'Concluído' && item.completedAt)
+      .map((item: any) => ({ ...item, date: localDateFromTimestamp(item.completedAt) })),
     currentCompletedScope = resolveExamEvidenceScope({
       subjects: state.subjects || [],
       activeExamTags,
       sessions: [],
       questions: [],
-      reviews: completedReviewEvidence.filter(item => inPeriod(item, range.start, range.end)),
+      reviews: completedReviewEvidence.filter((item: any) =>
+        inPeriod(item, range.start, range.end)
+      ),
     });
   const periodLength = Math.max(1, localDateRange(range.start, range.end).length),
     previousStart = shiftDate(range.start, -periodLength),
@@ -100,33 +106,47 @@ export function buildStrategicReport({
     previousScope = resolveExamEvidenceScope({
       subjects: state.subjects || [],
       activeExamTags,
-      sessions: (state.studySessions || []).filter(item =>
+      sessions: (state.studySessions || []).filter((item: any) =>
         inPeriod(item, previousStart, previousEnd)
       ),
-      questions: (state.questoes || []).filter(item => inPeriod(item, previousStart, previousEnd)),
-      reviews: completedReviewEvidence.filter(item => inPeriod(item, previousStart, previousEnd)),
+      questions: (state.questoes || []).filter((item: any) =>
+        inPeriod(item, previousStart, previousEnd)
+      ),
+      reviews: completedReviewEvidence.filter((item: any) =>
+        inPeriod(item, previousStart, previousEnd)
+      ),
     }),
-    previousQuestionCount = sum(previousScope.questions.included, item => item.resolved),
-    currentQuestionCount = sum(questions, item => item.resolved);
+    previousQuestionCount = sum(
+      previousScope.questions.included,
+      (item: Record<string, any>) => item.resolved
+    ),
+    currentQuestionCount = sum(questions, (item: Record<string, any>) => item.resolved);
   const comparison = buildPeriodComparison({
     period: {
       current: { start: range.start, end: range.end, label: range.label },
       previous: { start: previousStart, end: previousEnd, label: 'Período anterior' },
     },
     current: {
-      minutes: Math.round(sum(sessions, item => item.durationSeconds) / 60),
+      minutes: Math.round(sum(sessions, (item: Record<string, any>) => item.durationSeconds) / 60),
       questions: currentQuestionCount,
       accuracy: currentQuestionCount
-        ? Math.round((sum(questions, item => item.correct) / currentQuestionCount) * 100)
+        ? Math.round(
+            (sum(questions, (item: Record<string, any>) => item.correct) / currentQuestionCount) *
+              100
+          )
         : null,
       reviews: currentCompletedScope.reviews.included.length,
     },
     previous: {
-      minutes: Math.round(sum(previousScope.sessions.included, item => item.durationSeconds) / 60),
+      minutes: Math.round(
+        sum(previousScope.sessions.included, (item: Record<string, any>) => item.durationSeconds) /
+          60
+      ),
       questions: previousQuestionCount,
       accuracy: previousQuestionCount
         ? Math.round(
-            (sum(previousScope.questions.included, item => item.correct) / previousQuestionCount) *
+            (sum(previousScope.questions.included, (item: Record<string, any>) => item.correct) /
+              previousQuestionCount) *
               100
           )
         : null,
@@ -137,26 +157,32 @@ export function buildStrategicReport({
     currentQuestionVolume: currentQuestionCount,
     previousQuestionVolume: previousQuestionCount,
   });
-  const resolved = sum(questions, item => item.resolved),
-    correct = sum(questions, item => item.correct),
-    studySeconds = sum(sessions, item => item.durationSeconds),
-    unscopedStudySeconds = sum(evidenceScope.sessions.excluded, item => item.durationSeconds),
-    unscopedResolved = sum(evidenceScope.questions.excluded, item => item.resolved),
-    simulationTotal = sum(simulations, item => item.total),
-    simulationCorrect = sum(simulations, item => item.correct),
+  const resolved = sum(questions, (item: Record<string, any>) => item.resolved),
+    correct = sum(questions, (item: Record<string, any>) => item.correct),
+    studySeconds = sum(sessions, (item: Record<string, any>) => item.durationSeconds),
+    unscopedStudySeconds = sum(
+      evidenceScope.sessions.excluded,
+      (item: Record<string, any>) => item.durationSeconds
+    ),
+    unscopedResolved = sum(
+      evidenceScope.questions.excluded,
+      (item: Record<string, any>) => item.resolved
+    ),
+    simulationTotal = sum(simulations, (item: Record<string, any>) => item.total),
+    simulationCorrect = sum(simulations, (item: Record<string, any>) => item.correct),
     activePlan = [...(state.studyPlans || [])].reverse().find(item => !item.undoneAt) || null,
-    adjustments = (state.planAdjustments || []).filter(item =>
+    adjustments = (state.planAdjustments || []).filter((item: any) =>
       inPeriod(item, range.start, range.end)
     ),
     feedback = (state.recommendationFeedback || []).filter(
-      item =>
+      (item: any) =>
         inPeriod(item, range.start, range.end) &&
-        (!item.topicId || topics.some(topic => topic.id === item.topicId))
+        (!item.topicId || topics.some((topic: any) => topic.id === item.topicId))
     );
   const bySubject = subjects
-      .map(subject => {
+      .map((subject: any) => {
         const scopedTopics = (subject.topics || []).filter(
-            item => !item.archived && isTopicInExamScope(item, activeExamTags)
+            (item: any) => !item.archived && isTopicInExamScope(item, activeExamTags)
           ),
           subjectSessions = sessions.filter(item => item.subjectId === subject.id),
           unscopedSubjectSessions = evidenceScope.sessions.excluded.filter(
@@ -166,35 +192,43 @@ export function buildStrategicReport({
           unscopedSubjectQuestions = evidenceScope.questions.excluded.filter(
             item => item.subjectId === subject.id
           ),
-          volume = sum(subjectQuestions, item => item.resolved),
-          hits = sum(subjectQuestions, item => item.correct);
+          volume = sum(subjectQuestions, (item: Record<string, any>) => item.resolved),
+          hits = sum(subjectQuestions, (item: Record<string, any>) => item.correct);
         return {
           id: subject.id,
           name: subject.name,
-          studySeconds: sum(subjectSessions, item => item.durationSeconds),
-          unscopedStudySeconds: sum(unscopedSubjectSessions, item => item.durationSeconds),
+          studySeconds: sum(subjectSessions, (item: Record<string, any>) => item.durationSeconds),
+          unscopedStudySeconds: sum(
+            unscopedSubjectSessions,
+            (item: Record<string, any>) => item.durationSeconds
+          ),
           questions: volume,
-          unscopedQuestions: sum(unscopedSubjectQuestions, item => item.resolved),
+          unscopedQuestions: sum(
+            unscopedSubjectQuestions,
+            (item: Record<string, any>) => item.resolved
+          ),
           accuracy: volume ? Math.round((hits / volume) * 100) : null,
-          completed: scopedTopics.filter(item => item.status === 'Concluído').length,
+          completed: scopedTopics.filter((item: any) => item.status === 'Concluído').length,
           total: scopedTopics.length,
         };
       })
-      .sort((a, b) => b.studySeconds - a.studySeconds),
+      .sort((a: any, b: any) => b.studySeconds - a.studySeconds),
     planned = sum(state.dailyPlans || [], plan =>
       inPeriod(plan, range.start, range.end)
         ? sum(
             (plan.items || []).filter(
-              item => !item.topicId || topics.some(topic => topic.id === item.topicId)
+              (item: any) => !item.topicId || topics.some((topic: any) => topic.id === item.topicId)
             ),
-            item => item.plannedMinutes
+            (item: Record<string, any>) => item.plannedMinutes
           )
         : 0
     ),
     executed = Math.round(studySeconds / 60),
-    subjectNames = Object.fromEntries(subjects.map(item => [item.id, item.name])),
+    subjectNames = Object.fromEntries(subjects.map((item: any) => [item.id, item.name])),
     topicNames = Object.fromEntries(
-      subjects.flatMap(subject => (subject.topics || []).map(topic => [topic.id, topic.name]))
+      subjects.flatMap((subject: any) =>
+        (subject.topics || []).map((topic: any) => [topic.id, topic.name])
+      )
     ),
     weeklyMinutes = (Object.values(state.metas?.horasPorDia || {}) as any[]).reduce(
       (total, value) => total + (Number(value) || 0) * 60,
@@ -208,7 +242,7 @@ export function buildStrategicReport({
         return totals;
       }, {})
     ).sort((a: any, b: any) => Number(b[1]) - Number(a[1])),
-    errorLabels = {
+    errorLabels: Record<string, string> = {
       didnt_know: 'Não sabia',
       forgot: 'Esqueci',
       interpretation: 'Interpretação',
@@ -227,7 +261,7 @@ export function buildStrategicReport({
     dominantError = errors[0] || null;
   const latestSimulation =
       [...simulations].sort((a, b) => String(b.date).localeCompare(String(a.date)))[0] || null,
-    latestBreakdown = (latestSimulation?.breakdown || []).map(item => ({
+    latestBreakdown = (latestSimulation?.breakdown || []).map((item: any) => ({
       subjectName: subjectNames[item.subjectId || item.disciplinaId] || 'Disciplina removida',
       correct: Number(item.correct) || 0,
       total: Number(item.total) || 0,
@@ -235,14 +269,14 @@ export function buildStrategicReport({
         ? Math.round((Number(item.correct || 0) / Number(item.total)) * 100)
         : null,
     })),
-    focus = (diagnosis?.weeklyFocus || []).map(item => ({
+    focus = (diagnosis?.weeklyFocus || []).map((item: any) => ({
       ...item,
       minutes: Math.round(((Number(weeklyMinutes) || 0) * (Number(item.percentage) || 0)) / 100),
     })),
     decisions = feedback
       .slice(-5)
       .reverse()
-      .map(item => {
+      .map((item: any) => {
         const snapshot = item.snapshot || {},
           subjectId = item.subjectId || snapshot.subjectId,
           topicId = item.topicId || snapshot.topicId;
@@ -251,22 +285,24 @@ export function buildStrategicReport({
           topicName: topicNames[topicId] || 'Tópico removido',
           action: snapshot.strategy?.label || item.recommendedAction || 'Recomendação de estudo',
           result:
-            {
-              positive: 'Resultado positivo',
-              neutral: 'Resultado neutro',
-              negative: 'Resultado negativo',
-              insufficient: 'Resultado ainda insuficiente',
-            }[item.outcome?.state] || 'Resultado em acompanhamento',
+            (
+              {
+                positive: 'Resultado positivo',
+                neutral: 'Resultado neutro',
+                negative: 'Resultado negativo',
+                insufficient: 'Resultado ainda insuficiente',
+              } as Record<string, any>
+            )[item.outcome?.state] || 'Resultado em acompanhamento',
         };
       });
-  const examLabels = {
+  const examLabels: Record<string, any> = {
     [EXAM_TAGS.BB]: 'Banco do Brasil — Escriturário',
     [EXAM_TAGS.CAIXA]: 'Caixa — TBN',
     [EXAM_TAGS.CAIXA_TI]: 'Caixa — TBN TI',
   };
-  const reportTopicIds = new Set(topics.map(item => item.id)),
+  const reportTopicIds = new Set(topics.map((item: any) => item.id)),
     topicCompletions = (state.topicHistory || []).filter(
-      item =>
+      (item: any) =>
         item.type === 'topic_completed' &&
         reportTopicIds.has(item.topicId) &&
         item.date >= range.start &&
@@ -285,33 +321,38 @@ export function buildStrategicReport({
       questions: currentQuestionCount,
       simulations: simulations.length,
       accuracy: currentQuestionCount
-        ? Math.round((sum(questions, item => item.correct) / currentQuestionCount) * 100)
+        ? Math.round(
+            (sum(questions, (item: Record<string, any>) => item.correct) / currentQuestionCount) *
+              100
+          )
         : null,
     },
     periodLabel: range.label,
   };
   const recommendationRecords = (state.recommendationHistory || []).filter(
-    item =>
+    (item: any) =>
       inPeriod(item, range.start, range.end) &&
-      (!item.topicId || topics.some(topic => topic.id === item.topicId))
+      (!item.topicId || topics.some((topic: any) => topic.id === item.topicId))
   );
   const adaptiveAdjustments = (state.adaptivePlanningHistory || [])
     .filter(
-      item =>
+      (item: any) =>
         inPeriod(item, range.start, range.end) && ['applied', 'reverted'].includes(item.status)
     )
-    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    .sort((a: any, b: any) => String(b.createdAt).localeCompare(String(a.createdAt)));
   const recommendationLifecycle = summarizeRecommendationHistory(recommendationRecords, {
     today: range.end,
     days: periodLength,
   });
   const recommendationOutcomes = buildRecommendationOutcomeAudit(feedback);
-  const scopedPlans = (state.dailyPlans || []).map(plan => ({
+  const scopedPlans = (state.dailyPlans || []).map((plan: any) => ({
     ...plan,
-    items: (plan.items || []).filter(item => !item.topicId || reportTopicIds.has(item.topicId)),
+    items: (plan.items || []).filter(
+      (item: any) => !item.topicId || reportTopicIds.has(item.topicId)
+    ),
   }));
   const scopedFeedback = (state.recommendationFeedback || []).filter(
-    item => !item.topicId || reportTopicIds.has(item.topicId)
+    (item: any) => !item.topicId || reportTopicIds.has(item.topicId)
   );
   const weekStart = addLocalDays(range.end, -6),
     previousWeekStart = addLocalDays(weekStart, -7),
@@ -320,45 +361,52 @@ export function buildStrategicReport({
     subjects: state.subjects || [],
     activeExamTags,
     sessions: (state.studySessions || []).filter(
-      item => item.date >= weekStart && item.date <= range.end
+      (item: any) => item.date >= weekStart && item.date <= range.end
     ),
     questions: (state.questoes || []).filter(
-      item => item.date >= weekStart && item.date <= range.end
+      (item: any) => item.date >= weekStart && item.date <= range.end
     ),
     reviews: [],
   });
   const weekSessions = weekScope.sessions.included,
     weekQuestions = weekScope.questions.included,
     weekPlans = scopedPlans
-      .filter(plan => plan.date >= weekStart && plan.date <= range.end)
-      .flatMap(plan => plan.items || []);
+      .filter((plan: any) => plan.date >= weekStart && plan.date <= range.end)
+      .flatMap((plan: any) => plan.items || []);
   const previousWeekScope = resolveExamEvidenceScope({
     subjects: state.subjects || [],
     activeExamTags,
     sessions: (state.studySessions || []).filter(
-      item => item.date >= previousWeekStart && item.date <= previousWeekEnd
+      (item: any) => item.date >= previousWeekStart && item.date <= previousWeekEnd
     ),
     questions: (state.questoes || []).filter(
-      item => item.date >= previousWeekStart && item.date <= previousWeekEnd
+      (item: any) => item.date >= previousWeekStart && item.date <= previousWeekEnd
     ),
     reviews: [],
   });
   const previousWeekQuestions = previousWeekScope.questions.included,
-    previousWeekResolved = sum(previousWeekQuestions, item => item.resolved);
+    previousWeekResolved = sum(previousWeekQuestions, (item: Record<string, any>) => item.resolved);
   const weeklyAudit = buildWeeklyClose({
     period: { start: weekStart, end: range.end },
     current: {
-      plannedMinutes: sum(weekPlans, item => item.plannedMinutes),
-      executedMinutes: Math.round(sum(weekSessions, item => item.durationSeconds) / 60),
+      plannedMinutes: sum(weekPlans, (item: Record<string, any>) => item.plannedMinutes),
+      executedMinutes: Math.round(
+        sum(weekSessions, (item: Record<string, any>) => item.durationSeconds) / 60
+      ),
     },
     previous: {
       executedMinutes: Math.round(
-        sum(previousWeekScope.sessions.included, item => item.durationSeconds) / 60
+        sum(
+          previousWeekScope.sessions.included,
+          (item: Record<string, any>) => item.durationSeconds
+        ) / 60
       ),
       resolved: previousWeekResolved,
       accuracy: previousWeekResolved
         ? Math.round(
-            (sum(previousWeekQuestions, item => item.correct) / previousWeekResolved) * 100
+            (sum(previousWeekQuestions, (item: Record<string, any>) => item.correct) /
+              previousWeekResolved) *
+              100
           )
         : null,
     },
@@ -386,10 +434,10 @@ export function buildStrategicReport({
     readinessHistory,
     examIntelligence: buildExamReportSummary({
       state,
-      topics: subjects.flatMap(subject =>
+      topics: subjects.flatMap((subject: any) =>
         (subject.topics || [])
-          .filter(item => !item.archived && isTopicInExamScope(item, activeExamTags))
-          .map(topic => ({ ...topic, subjectId: subject.id }))
+          .filter((item: any) => !item.archived && isTopicInExamScope(item, activeExamTags))
+          .map((topic: any) => ({ ...topic, subjectId: subject.id }))
       ),
       candidates,
     }),
@@ -410,7 +458,7 @@ export function buildStrategicReport({
       target: state.examBlueprint?.targetScore ?? state.metas?.metaAprovacao ?? null,
       activeTags: [...activeExamTags],
       activeLabels: activeExamTags.length
-        ? activeExamTags.map(tag => examLabels[tag] || tag)
+        ? activeExamTags.map((tag: any) => examLabels[tag] || tag)
         : ['Todo o conteúdo'],
       catalogVersion: CATALOG_VERSION,
     },
@@ -418,10 +466,10 @@ export function buildStrategicReport({
     overview: {
       subjects: subjects.length,
       topics: topics.length,
-      completedTopics: topics.filter(item => item.status === 'Concluído').length,
+      completedTopics: topics.filter((item: any) => item.status === 'Concluído').length,
       contentPercent: topics.length
         ? Math.round(
-            (topics.filter(item => item.status === 'Concluído').length / topics.length) * 100
+            (topics.filter((item: any) => item.status === 'Concluído').length / topics.length) * 100
           )
         : 0,
       studySeconds,
@@ -440,7 +488,7 @@ export function buildStrategicReport({
     forecast,
     activePlan,
     bySubject,
-    simulations: simulations.map(item => ({
+    simulations: simulations.map((item: any) => ({
       date: item.date,
       name: item.nome || 'Simulado',
       score: item.total ? Math.round((item.correct / item.total) * 100) : null,
@@ -456,9 +504,10 @@ export function buildStrategicReport({
       plannedMinutes: planned,
       executedMinutes: executed,
       adherence: planned ? Math.round((executed / planned) * 100) : null,
-      dailyPlans: scopedPlans.filter(item => inPeriod(item, range.start, range.end)).length,
-      replans: adjustments.filter(item => ['applied', 'confirmed'].includes(item.status)).length,
-      undoneReplans: adjustments.filter(item => item.status === 'undone').length,
+      dailyPlans: scopedPlans.filter((item: any) => inPeriod(item, range.start, range.end)).length,
+      replans: adjustments.filter((item: any) => ['applied', 'confirmed'].includes(item.status))
+        .length,
+      undoneReplans: adjustments.filter((item: any) => item.status === 'undone').length,
     },
     risks: (diagnosis?.bottlenecks || []).slice(0, 5),
     opportunities: (diagnosis?.opportunities || []).slice(0, 5),
@@ -470,10 +519,10 @@ export function buildStrategicReport({
     focus,
     recommendations: {
       decisions: feedback.length,
-      accepted: feedback.filter(item => item.accepted).length,
-      completed: feedback.filter(item => item.completed).length,
-      useful: feedback.filter(item => item.useful === true).length,
-      measured: feedback.filter(item => item.outcome).length,
+      accepted: feedback.filter((item: any) => item.accepted).length,
+      completed: feedback.filter((item: any) => item.completed).length,
+      useful: feedback.filter((item: any) => item.useful === true).length,
+      measured: feedback.filter((item: any) => item.outcome).length,
     },
     decisions,
     errors,

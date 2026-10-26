@@ -1,5 +1,5 @@
 import { pluralize } from '../../core/utils.js';
-const escapeHtml = value =>
+const escapeHtml = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
@@ -8,7 +8,7 @@ const escapeAttr = escapeHtml;
 
 export function renderTopicStrategyEditor(model: any = {}) {
   const choices = (model.candidates || [])
-    .map(candidate => {
+    .map((candidate: any) => {
       return `<label class="topic-prerequisite-choice"><input type="checkbox" ${candidate.checked ? 'checked' : ''} ${candidate.cyclic ? 'disabled' : ''} data-delegated-change="toggleTopicPrerequisite('${escapeAttr(model.subjectId)}','${escapeAttr(model.topicId)}','${escapeAttr(candidate.id)}',this.checked)"><span>${escapeHtml(candidate.label)}${candidate.cyclic ? ' · criaria ciclo' : ''}</span></label>`;
     })
     .join('');

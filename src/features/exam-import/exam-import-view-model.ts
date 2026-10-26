@@ -1,4 +1,4 @@
-export const normalizeExamImportSearch = value =>
+export const normalizeExamImportSearch = (value: unknown) =>
   String(value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -12,11 +12,11 @@ export function buildExamImportViewModel({
 }: any = {}) {
   const query = normalizeExamImportSearch(state?.query?.trim()),
     visibleSubjects = (preset?.subjects || [])
-      .map(subject => {
+      .map((subject: any) => {
         const allTopics = subject.topics || [],
           topics = allTopics
             .filter(
-              topic =>
+              (topic: any) =>
                 !query ||
                 normalizeExamImportSearch(
                   [
@@ -29,7 +29,7 @@ export function buildExamImportViewModel({
                   ].join(' ')
                 ).includes(query)
             )
-            .map(topic => {
+            .map((topic: any) => {
               const key = `${subject.id}:${topic.id}`;
               return {
                 ...topic,
@@ -38,7 +38,7 @@ export function buildExamImportViewModel({
                 scopeLabel: topicLabel(topic),
               };
             });
-        const selectedCount = allTopics.filter(topic =>
+        const selectedCount = allTopics.filter((topic: any) =>
           state.topicIds.has(`${subject.id}:${topic.id}`)
         ).length;
         return {
@@ -50,7 +50,7 @@ export function buildExamImportViewModel({
           totalCount: allTopics.length,
         };
       })
-      .filter(subject => subject.topics.length);
+      .filter((subject: any) => subject.topics.length);
   return {
     step: state.step,
     query: state.query || '',
@@ -60,7 +60,7 @@ export function buildExamImportViewModel({
     subjects: visibleSubjects,
     selectedTopics: state.topicIds.size,
     totalTopics: (preset?.subjects || []).reduce(
-      (sum, subject) => sum + (subject.topics || []).length,
+      (sum: any, subject: any) => sum + (subject.topics || []).length,
       0
     ),
     canContinue: state.step !== 2 || state.topicIds.size > 0,

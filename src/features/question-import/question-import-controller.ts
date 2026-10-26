@@ -6,8 +6,8 @@ export function createQuestionImportController({
   service,
   render,
   notify,
-  onImported = _res => {},
-  onCancel = _status => {},
+  onImported = (_res: Record<string, any>) => {},
+  onCancel = (_status: string) => {},
   maxBytes = 5 * 1024 * 1024,
 }: any = {}) {
   const input = document.getElementById('questionsImportFile') as HTMLInputElement | null;
@@ -25,8 +25,8 @@ export function createQuestionImportController({
     });
   }
 
-  let pending = null;
-  let previousFocus = null;
+  let pending: Record<string, any> | null = null;
+  let previousFocus: any = null;
 
   const close = ({ completed = false } = {}) => {
     overlay.classList.remove('show');
@@ -36,14 +36,14 @@ export function createQuestionImportController({
     previousFocus = null;
   };
 
-  const show = model => {
+  const show = (model: Record<string, any>) => {
     content.innerHTML = render(model);
     confirm.hidden = !model.canConfirm;
     overlay.classList.add('show');
     cancel.focus();
   };
 
-  const read = file => {
+  const read = (file: File) => {
     if (!file) return;
     if (file.size > maxBytes) {
       notify('O arquivo excede o limite de 5 MB.');
@@ -103,7 +103,7 @@ export function createQuestionImportController({
     }
   });
 
-  overlay.addEventListener('keydown', event => {
+  overlay.addEventListener('keydown', (event: any) => {
     if (event.key === 'Escape') {
       event.preventDefault();
       close();

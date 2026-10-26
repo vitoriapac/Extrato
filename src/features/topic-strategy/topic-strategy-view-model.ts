@@ -24,10 +24,10 @@ export function buildTopicStrategyViewModel({
   const prerequisites = new Set(topic?.prerequisites || []);
   const candidates = topics
     .filter(
-      candidate =>
+      (candidate: any) =>
         candidate.id !== topic?.id && !candidate.subjectArchived && !candidate.topicArchived
     )
-    .map(candidate => ({
+    .map((candidate: any) => ({
       id: candidate.id,
       label: `${candidate.subjectName} — ${candidate.name || 'Tópico sem nome'}`,
       checked: prerequisites.has(candidate.id),

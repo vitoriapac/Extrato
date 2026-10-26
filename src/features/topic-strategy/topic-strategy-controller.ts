@@ -12,7 +12,7 @@ export function createTopicStrategyController({
 }: any = {}) {
   if (typeof findTopic !== 'function' || typeof listTopics !== 'function' || !subjectService)
     throw new TypeError('Controller de estratégia requer tópicos e serviço de disciplinas.');
-  const update = (subjectId, topicId, field, value) => {
+  const update = (subjectId: string, topicId: string, field: string, value: unknown) => {
     const found = findTopic(topicId);
     if (!found || found.subject.id !== subjectId) return false;
     const changes: Record<string, any> = {
@@ -32,7 +32,12 @@ export function createTopicStrategyController({
     onChanged();
     return true;
   };
-  const togglePrerequisite = (subjectId, topicId, prerequisiteId, checked) => {
+  const togglePrerequisite = (
+    subjectId: string,
+    topicId: string,
+    prerequisiteId: string,
+    checked: boolean
+  ) => {
     const found = findTopic(topicId);
     if (!found || found.subject.id !== subjectId) return false;
     const topics = listTopics();

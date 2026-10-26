@@ -17,8 +17,8 @@ export function createStructuredImportController({
     content = document.getElementById('structuredImportContent'),
     confirm = document.getElementById('structuredImportConfirmBtn'),
     cancel = document.getElementById('structuredImportCancelBtn');
-  let pending = null,
-    previousFocus = null;
+  let pending: Record<string, any> | null = null,
+    previousFocus: any = null;
   const close = ({ completed = false } = {}) => {
     overlay.classList.remove('show');
     pending = null;
@@ -26,13 +26,13 @@ export function createStructuredImportController({
     previousFocus?.focus?.();
     previousFocus = null;
   };
-  const show = model => {
+  const show = (model: Record<string, any>) => {
     content.innerHTML = render(model);
     confirm.hidden = !model.canConfirm;
     overlay.classList.add('show');
     cancel.focus();
   };
-  const read = file => {
+  const read = (file: File) => {
     if (!file) return;
     if (file.size > maxBytes) {
       notify('O arquivo excede o limite de 2 MB.');
@@ -81,7 +81,7 @@ export function createStructuredImportController({
       notify(error?.message || 'A importação falhou. Nenhum dado foi alterado.');
     }
   });
-  overlay.addEventListener('keydown', event => {
+  overlay.addEventListener('keydown', (event: any) => {
     if (event.key === 'Escape') {
       event.preventDefault();
       close();

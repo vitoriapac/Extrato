@@ -1,33 +1,33 @@
 export function renderReplanProposal(
-  model,
+  model: Record<string, any>,
   {
     escapeHtml = String,
-    formatDate = value => value,
-    formatMinutes = value => `${value} min`,
+    formatDate = (value: unknown) => value,
+    formatMinutes = (value: unknown) => `${value} min`,
     subjectName = () => '',
     topicName = () => '',
   }: any = {}
 ) {
-  const name = item =>
+  const name = (item: Record<string, any>) =>
     [subjectName(item.subjectId), topicName(item.topicId)]
       .filter(Boolean)
       .map(escapeHtml)
       .join(' — ') || 'Atividade sem conteúdo identificado';
   const allocationRows = (model.allocations || [])
     .map(
-      item =>
+      (item: any) =>
         `<article class="replan-detail-row"><div><strong>${name(item)}</strong><small>${escapeHtml(item.reason || 'atividade pendente')}</small></div><span><b>${formatMinutes(item.minutes)}</b><small>${formatDate(item.date)}</small></span></article>`
     )
     .join('');
   const retainedRows = (model.retainedItems || [])
     .map(
-      item =>
+      (item: any) =>
         `<article class="replan-detail-row is-warning"><div><strong>${name(item)}</strong><small>${escapeHtml(item.reason || 'atividade pendente')}</small></div><span><b>${formatMinutes(item.unallocatedMinutes)}</b><small>sem nova data</small></span></article>`
     )
     .join('');
   const capacityRows = (model.capacityByDay || [])
     .map(
-      day =>
+      (day: any) =>
         `<div class="replan-capacity-row"><strong>${formatDate(day.date)}</strong><span>${formatMinutes(day.allocatedMinutes)} usados · ${formatMinutes(day.remainingMinutes)} livres de ${formatMinutes(day.availableMinutes)}</span></div>`
     )
     .join('');

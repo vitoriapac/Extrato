@@ -1,15 +1,15 @@
-const CACHE_NAME = 'studytrack-4576cb6f71c9';
+const CACHE_NAME = 'studytrack-2941ee383dde';
 const APP_SHELL = [
   './',
   './index.html',
   './styles/tokens.css',
-  './styles/tailwind.css?v=4576cb6f71c9',
-  './styles/app.css?v=4576cb6f71c9',
+  './styles/tailwind.css?v=2941ee383dde',
+  './styles/app.css?v=2941ee383dde',
   './styles/print.css',
   './src/theme-bootstrap.js',
-  './src/app.bundle.js?v=4576cb6f71c9',
-  './src/report.bundle.js?v=4576cb6f71c9',
-  './src/exam-catalog.bundle.js?v=4576cb6f71c9',
+  './src/app.bundle.js?v=2941ee383dde',
+  './src/report.bundle.js?v=2941ee383dde',
+  './src/exam-catalog.bundle.js?v=2941ee383dde',
   './src/pwa.js',
   './manifest.webmanifest',
   './icons/app-icon.svg',

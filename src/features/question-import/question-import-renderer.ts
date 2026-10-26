@@ -1,4 +1,4 @@
-const safe = value =>
+const safe = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char =>
@@ -11,14 +11,14 @@ const safe = value =>
       })[char]
   );
 
-export function renderQuestionImport(model) {
+export function renderQuestionImport(model: Record<string, any>) {
   if (model.issues && model.issues.length) {
     return `
       <div class="structured-import-error">
         <h4>Não foi possível importar as questões.</h4>
         <p>${model.issues.length} ${model.issues.length === 1 ? 'problema encontrado' : 'problemas encontrados'}:</p>
         <ol>
-          ${model.issues.map(item => `<li>${item.line ? `Linha ${item.line} — ` : ''}${safe(item.message)}</li>`).join('')}
+          ${model.issues.map((item: any) => `<li>${item.line ? `Linha ${item.line} — ` : ''}${safe(item.message)}</li>`).join('')}
         </ol>
       </div>
     `;
@@ -88,7 +88,7 @@ export function renderQuestionImport(model) {
         <details class="structured-conflicts">
           <summary>Novas disciplinas a criar (${p.newSubjects.length})</summary>
           <ul>
-            ${p.newSubjects.map(s => `<li>${safe(s)}</li>`).join('')}
+            ${p.newSubjects.map((s: any) => `<li>${safe(s)}</li>`).join('')}
           </ul>
         </details>
       `
@@ -103,7 +103,9 @@ export function renderQuestionImport(model) {
           <ul>
             ${p.newTopics
               .slice(0, 30)
-              .map(t => `<li><strong>${safe(t.subjectName)}:</strong> ${safe(t.topicName)}</li>`)
+              .map(
+                (t: any) => `<li><strong>${safe(t.subjectName)}:</strong> ${safe(t.topicName)}</li>`
+              )
               .join('')}
             ${p.newTopics.length > 30 ? `<li><em>...e mais ${p.newTopics.length - 30} tópicos</em></li>` : ''}
           </ul>
@@ -130,7 +132,7 @@ export function renderQuestionImport(model) {
             <tbody>
               ${p.recordsSample
                 .map(
-                  r => `
+                  (r: any) => `
                 <tr ${r.isDuplicate ? 'style="opacity:0.6;" title="Duplicata existente (será ignorada)"' : ''}>
                   <td>${safe(r.date)}</td>
                   <td>${safe(r.subjectName)}</td>

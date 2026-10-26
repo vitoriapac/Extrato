@@ -3868,7 +3868,7 @@ async function openExamImport(initialPreset = null, origin = null) {
     const requestedId = typeof initialPreset === 'string' ? initialPreset : initialPreset?.id,
       preset = EXAM_PRESETS.find(item => item.id === requestedId) || EXAM_PRESETS[0];
     examImportOrigin = origin;
-    resetExamImportState(examImportState, preset, document.activeElement);
+    resetExamImportState(examImportState, preset, document.activeElement as HTMLElement | null);
     if (origin === 'onboarding') suspendGuidedOnboarding();
     editalImportFacade.begin(examImportState.presetId);
     document.getElementById('examImportOverlay').classList.add('show');

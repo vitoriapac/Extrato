@@ -9,7 +9,7 @@ export function buildReportWeeklyFocus({
   end,
 }: any = {}) {
   const start = addLocalDays(end, -6);
-  const weeklySessions = sessions.filter(item => item.date >= start && item.date <= end);
+  const weeklySessions = sessions.filter((item: any) => item.date >= start && item.date <= end);
   const focus = buildWeeklyStrategicFocus({
     sessions: weeklySessions,
     candidates,
@@ -18,9 +18,9 @@ export function buildReportWeeklyFocus({
     end,
   });
   const plannedMinutes = dailyPlans
-    .filter(item => item.date >= start && item.date <= end)
-    .flatMap(item => item.items || [])
-    .reduce((sum, item) => sum + Math.max(0, Number(item.plannedMinutes) || 0), 0);
+    .filter((item: any) => item.date >= start && item.date <= end)
+    .flatMap((item: any) => item.items || [])
+    .reduce((sum: any, item: any) => sum + Math.max(0, Number(item.plannedMinutes) || 0), 0);
   const executedMinutes = focus.totalMinutes;
   return {
     period: { start, end },

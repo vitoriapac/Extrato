@@ -15,7 +15,7 @@ export function createExamImportController({
     back = document.getElementById('examImportBackBtn'),
     next = document.getElementById('examImportNextBtn'),
     overlay = document.getElementById('examImportOverlay');
-  const change = event => {
+  const change = (event: any) => {
     if (event.target.name === 'examPreset') {
       state.presetId = event.target.value;
       facade.begin(state.presetId);
@@ -32,20 +32,22 @@ export function createExamImportController({
       render();
     }
   };
-  const input = event => {
+  const input = (event: any) => {
     if (event.target.id === 'examImportSearch') {
       state.query = event.target.value;
       render();
       document.getElementById('examImportSearch')?.focus();
     }
   };
-  const click = event => {
+  const click = (event: any) => {
     const action = event.target.closest('[data-exam-select]')?.dataset.examSelect;
     if (!action) return;
-    selectExamTopics(state, getPreset(), topic => includeTopic(action, topic));
+    selectExamTopics(state, getPreset(), (topic: Record<string, any>) =>
+      includeTopic(action, topic)
+    );
     render();
   };
-  const keydown = event => {
+  const keydown = (event: any) => {
     if (event.key === 'Escape') {
       event.preventDefault();
       close();

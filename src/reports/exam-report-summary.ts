@@ -14,13 +14,13 @@ export function buildExamReportSummary({ state = {}, topics = [], candidates = [
       .filter(exam => exam.coverage === 'complete')
       .map(exam => exam.id)
   );
-  const analyzedQuestionCount = (state.examQuestions || []).filter(question =>
+  const analyzedQuestionCount = (state.examQuestions || []).filter((question: any) =>
     completeIds.has(question.examId)
   ).length;
-  const topicIds = new Set(topics.map(topic => topic.id));
+  const topicIds = new Set(topics.map((topic: any) => topic.id));
   const gaps = (candidates || [])
-    .filter(item => topicIds.has(item.topicId) && isStrategicGap(item))
-    .map(item => ({
+    .filter((item: any) => topicIds.has(item.topicId) && isStrategicGap(item))
+    .map((item: any) => ({
       topicId: item.topicId,
       subjectName: item.subjectName || '',
       topicName: item.topicName || '',
@@ -29,7 +29,7 @@ export function buildExamReportSummary({ state = {}, topics = [], candidates = [
       need: Math.round((item.examImpact * (100 - item.mastery)) / 100),
     }))
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         b.need - a.need || b.impact - a.impact || a.topicName.localeCompare(b.topicName, 'pt-BR')
     )
     .slice(0, 3);
