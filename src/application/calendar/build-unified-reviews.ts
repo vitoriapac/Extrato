@@ -1,11 +1,11 @@
 export function buildUnifiedReviews({
   calendar = [],
   reviewAgenda = [],
-  subjectIdOf = () => null,
+  subjectIdOf = (): string | null => null,
   subjectName = () => '',
   topicName = () => '',
 }: any = {}) {
-  const calendarItems = calendar.map(item => ({
+  const calendarItems = calendar.map((item: any) => ({
     id: item.id,
     date: item.date,
     subjectId: subjectIdOf(item),
@@ -14,7 +14,7 @@ export function buildUnifiedReviews({
     status: item.status || 'Não iniciado',
     origem: 'Calendário',
   }));
-  const agendaItems = reviewAgenda.map(item => ({
+  const agendaItems = reviewAgenda.map((item: any) => ({
     id: item.id,
     date: item.date,
     subjectId: subjectIdOf(item),
@@ -26,7 +26,9 @@ export function buildUnifiedReviews({
   return [...calendarItems, ...agendaItems];
 }
 
-export function unifiedReviewLabel(item) {
+export function unifiedReviewLabel(
+  item: { subject?: unknown; label?: unknown } | null | undefined
+) {
   const subject = String(item?.subject || '').trim(),
     label = String(item?.label || '').trim();
   if (!subject || !label) return label || 'Revisão';

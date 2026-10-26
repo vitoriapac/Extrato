@@ -11,7 +11,7 @@ test('mostra três alertas principais e mantém os demais acessíveis', () => {
     id: 'a' + i,
     severity: i < 2 ? 'high' : 'low',
   }));
-  const result = reconcileAlerts(alerts, [], '2026-09-01', addDays);
+  const result = reconcileAlerts(alerts, [], '2026-09-01');
   assert.equal(result.visible.length, 3);
   assert.equal(result.additional.length, 4);
   assert.equal(result.visible[0].severity, 'high');
@@ -24,8 +24,7 @@ test('não repete alertas sobre o mesmo tópico na mesma apresentação', () => 
       { id: 'other', severity: 'medium', topicId: 'u' },
     ],
     [],
-    '2026-09-01',
-    addDays
+    '2026-09-01'
   );
   assert.deepEqual(
     result.visible.map(item => item.id),
@@ -35,11 +34,11 @@ test('não repete alertas sobre o mesmo tópico na mesma apresentação', () => 
 test('dispensa temporariamente e volta a exibir após o prazo', () => {
   const states = dismissAlert([], 'a', '2026-09-01', addDays);
   assert.equal(
-    reconcileAlerts([{ id: 'a', severity: 'high' }], states, '2026-09-02', addDays).visible.length,
+    reconcileAlerts([{ id: 'a', severity: 'high' }], states, '2026-09-02').visible.length,
     0
   );
   assert.equal(
-    reconcileAlerts([{ id: 'a', severity: 'high' }], states, '2026-09-09', addDays).visible.length,
+    reconcileAlerts([{ id: 'a', severity: 'high' }], states, '2026-09-09').visible.length,
     1
   );
 });
@@ -47,8 +46,7 @@ test('marca como resolvido quando deixa de existir', () => {
   const result = reconcileAlerts(
     [],
     [{ alertId: 'a', dismissedUntil: null, resolvedAt: null }],
-    '2026-09-03',
-    addDays
+    '2026-09-03'
   );
   assert.equal(result.states[0].resolvedAt, '2026-09-03');
 });

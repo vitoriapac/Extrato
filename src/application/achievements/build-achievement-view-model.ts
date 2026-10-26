@@ -1,4 +1,7 @@
-export function buildAchievementViewModel(achievements = []) {
+// The default keeps untyped callers' items open through the spread below.
+export function buildAchievementViewModel<T extends Record<string, any> = any>(
+  achievements: T[] = []
+) {
   const rows = (Array.isArray(achievements) ? achievements : []).map(item => ({
     ...item,
     unlocked: Boolean(item?.unlocked),

@@ -10,6 +10,17 @@
     "src/state/**/*",
     "src/storage/**/*",
     "src/repositories/**/*",
-    "src/domain/**/*"
+    "src/domain/**/*",
+    "src/application/navigation/**/*",
+    "src/application/calendar/**/*",
+    "src/application/demo/**/*",
+    "src/application/achievements/**/*",
+    "src/application/records/**/*",
+    "src/application/simulations/**/*",
+    "src/application/recommend-study.ts",
+    "src/application/generate-diagnosis.ts",
+    "src/application/build-study-candidates.ts",
+    "src/application/alert-lifecycle.ts",
+    "src/application/build-study-plan.ts"
   ]
 }

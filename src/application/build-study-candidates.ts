@@ -20,12 +20,12 @@ export function buildStudyCandidates({
   examQuestions = [],
 }: any = {}) {
   const catalog = new Map<string, any>(topics.map((topic: any) => [topic.id, topic]));
-  const candidates = priorities.map(priority => {
+  const candidates = priorities.map((priority: any) => {
     const topic = catalog.get(priority.topicId),
       diagnosis = priority.diagnosis;
     const retention = retentions[priority.topicId];
     const reviewHealth = reviewHealths[priority.topicId];
-    const exam = blueprint.find(item => item.subjectId === priority.subjectId);
+    const exam = blueprint.find((item: any) => item.subjectId === priority.subjectId);
     const examProfile = buildTopicExamProfile({
       topic,
       subjectConfig: exam,
@@ -65,10 +65,13 @@ export function buildStudyCandidates({
     });
     const studiedMinutes = sessions
       .filter(
-        session =>
+        (session: any) =>
           session.topicId === priority.topicId && session.date <= today && session.type === 'study'
       )
-      .reduce((sum, session) => sum + Math.max(0, Number(session.durationSeconds) || 0) / 60, 0);
+      .reduce(
+        (sum: number, session: any) => sum + Math.max(0, Number(session.durationSeconds) || 0) / 60,
+        0
+      );
     const remainingMinutes =
       topic?.estimatedStudyMinutes == null
         ? null
@@ -91,7 +94,7 @@ export function buildStudyCandidates({
       archived: Boolean(topic?.topicArchived || topic?.subjectArchived || topic?.archived),
       covered,
       completed: sessions.some(
-        session =>
+        (session: any) =>
           session.date === today &&
           session.topicId === priority.topicId &&
           (!priority.topicId ? session.subjectId === priority.subjectId : true) &&
@@ -119,11 +122,11 @@ export function buildStudyCandidates({
     };
     return scoreStudyDecision(candidate);
   });
-  const prerequisites = topics.map(topic => ({
+  const prerequisites = topics.map((topic: any) => ({
     ...topic,
     covered: topic.status === 'Concluído',
     archived: topic.archived || topic.topicArchived || topic.subjectArchived,
-    mastery: candidates.find(item => item.topicId === topic.id)?.mastery ?? null,
+    mastery: candidates.find((item: any) => item.topicId === topic.id)?.mastery ?? null,
   }));
   return withPrerequisiteEligibility(candidates, prerequisites);
 }

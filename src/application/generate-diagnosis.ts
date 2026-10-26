@@ -1,4 +1,4 @@
-const clamp = value => Math.max(0, Math.min(100, Number(value) || 0));
+const clamp = (value: unknown) => Math.max(0, Math.min(100, Number(value) || 0));
 
 export function generateDiagnosis(candidates: any[] = []) {
   const valid = candidates.filter(item => item && !item.archived);
@@ -34,8 +34,8 @@ export function generateDiagnosis(candidates: any[] = []) {
     .map(item => {
       let weighted = 0,
         availableWeight = 0;
-      const factors = {},
-        missingFactors = [];
+      const factors: Record<string, number> = {},
+        missingFactors: string[] = [];
       Object.entries(opportunityWeights).forEach(([key, weight]) => {
         if (item[key] == null) {
           missingFactors.push(key);

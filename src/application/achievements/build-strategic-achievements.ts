@@ -11,7 +11,7 @@ export function buildStrategicAchievements({
   exams = [],
   activeExamTags = [],
 }: any = {}) {
-  const eligible = candidates.filter(item => item.topicId && !item.archived);
+  const eligible = candidates.filter((item: any) => item.topicId && !item.archived);
   const highImpact = new Map<string, any>(
     eligible
       .filter((item: any) => isHighImpact(item.examImpact))
@@ -19,10 +19,10 @@ export function buildStrategicAchievements({
   );
   const studied = new Set(
     sessions
-      .filter(item => Number(item.durationSeconds) > 0 && highImpact.has(item.topicId))
-      .map(item => item.topicId)
+      .filter((item: any) => Number(item.durationSeconds) > 0 && highImpact.has(item.topicId))
+      .map((item: any) => item.topicId)
   );
-  const bySubject = new Map();
+  const bySubject = new Map<string, any[]>();
   for (const item of highImpact.values()) {
     const rows = bySubject.get(item.subjectId) || [];
     rows.push(item);
@@ -38,10 +38,10 @@ export function buildStrategicAchievements({
     exam => exam.coverage === 'complete'
   ).length;
   const missing = best
-    .filter(item => !hasAdequateMastery(item))
+    .filter((item: any) => !hasAdequateMastery(item))
     .slice(0, 3)
     .map(
-      item =>
+      (item: any) =>
         `${item.topicName || item.name || 'Tópico'} — ${item.mastery == null ? 'domínio ainda sem medida' : item.mastery < STRATEGY_THRESHOLDS.adequateMastery ? `domínio ${Math.round(item.mastery)}/100` : 'evidência insuficiente'}`
     );
   return {

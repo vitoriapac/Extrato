@@ -4,7 +4,7 @@ import { canStudy, sessionMinutes, resolveStudyEligibility } from '../domain/stu
 
 export const RECOMMENDATION_WEIGHTS = PRIORITY_WEIGHTS;
 
-export function recommendStudy(candidates = [], options: any = {}) {
+export function recommendStudy(candidates: any[] = [], options: any = {}) {
   const availableMinutes = Math.max(0, Number(options.availableMinutes) || 0);
   const excluded = new Set(options.excludedIds || []);
   const eligible = resolveStudyEligibility(candidates, options.topics);

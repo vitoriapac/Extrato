@@ -1,4 +1,4 @@
-const scope = tags => JSON.stringify([...(tags || [])].sort());
+const scope = (tags: string[] | null | undefined) => JSON.stringify([...(tags || [])].sort());
 export function createAnalysisContext({
   origin,
   subjectId = null,
@@ -8,6 +8,9 @@ export function createAnalysisContext({
 }: any = {}) {
   return { origin, subjectId, topicId, period, activeExamTags: [...activeExamTags] };
 }
-export function analysisContextInScope(context, activeExamTags = []) {
+export function analysisContextInScope(
+  context: { activeExamTags?: string[] } | null | undefined,
+  activeExamTags: string[] = []
+) {
   return Boolean(context) && scope(context.activeExamTags) === scope(activeExamTags);
 }

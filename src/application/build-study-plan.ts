@@ -7,7 +7,7 @@ import {
   resolveStudyEligibility,
 } from '../domain/study-eligibility.js';
 
-const positive = value =>
+const positive = (value: unknown) =>
   Number.isFinite(Number(value)) && Number(value) > 0 ? Math.round(Number(value)) : 0;
 
 export function buildStudyPlan({
@@ -31,7 +31,7 @@ export function buildStudyPlan({
       topicName: item.topicName,
       prerequisites: item.blockedPrerequisites,
     }));
-  const effort = item =>
+  const effort = (item: any) =>
     item.covered
       ? sessionMinutes(item, 60)
       : positive(item.remainingMinutes ?? item.estimatedMinutes);
@@ -75,8 +75,8 @@ export function buildStudyPlan({
     return {
       ...base,
       state: 'insufficient',
-      items: [],
-      subjects: [],
+      items: [] as any[],
+      subjects: [] as any[],
       activityMix: { theory: 0, questions: 0, reviews: 0 },
       confidence: 0,
     };
@@ -123,7 +123,11 @@ export function buildStudyPlan({
       const questions = item.covered
         ? minutes - reviews
         : Math.min(minutes - reviews, Math.round(minutes * (item.masteryGap >= 60 ? 0.4 : 0.3)));
-      const activityMix = { theory: minutes - reviews - questions, questions, reviews };
+      const activityMix: Record<string, number> = {
+        theory: minutes - reviews - questions,
+        questions,
+        reviews,
+      };
       // Avoid creating fragments that the daily distributor cannot schedule.
       const largest = Object.keys(activityMix).sort((a, b) => activityMix[b] - activityMix[a])[0];
       for (const key of Object.keys(activityMix))

@@ -1,6 +1,7 @@
-const accuracy = (correct, total) => Math.round((correct / total) * 100);
-const breakdownBySubject = simulation => {
-  const rows = new Map();
+type Tally = { correct: number; total: number };
+const accuracy = (correct: number, total: number) => Math.round((correct / total) * 100);
+const breakdownBySubject = (simulation: Record<string, any>) => {
+  const rows = new Map<string, Tally>();
   for (const item of simulation.breakdown || []) {
     const total = Math.max(0, Number(item.total) || 0),
       correct = Math.min(total, Math.max(0, Number(item.correct) || 0));
@@ -16,17 +17,17 @@ const breakdownBySubject = simulation => {
 
 export function buildSimulationComparison({ simulations = [], subjects = [] }: any = {}) {
   const ordered = simulations
-    .filter(item => item.date)
+    .filter((item: any) => item.date)
     .slice()
     .sort(
-      (a, b) =>
+      (a: any, b: any) =>
         String(a.date).localeCompare(String(b.date)) || String(a.id).localeCompare(String(b.id))
     );
   if (ordered.length < 2)
     return {
       state: 'insufficient',
       message: 'Registre dois simulados para comparar as disciplinas.',
-      rows: [],
+      rows: [] as any[],
     };
   const [previous, current] = ordered.slice(-2);
   const before = breakdownBySubject(previous),

@@ -7982,8 +7982,7 @@ function renderAlertasInteligentes() {
   const reconciliation = reconcileAlerts(
     computeAlertasInteligentes(),
     state.alertStates,
-    todayISO(),
-    addDays
+    todayISO()
   );
   if (JSON.stringify(reconciliation.states) !== JSON.stringify(state.alertStates)) {
     state.alertStates = reconciliation.states;
