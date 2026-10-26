@@ -45,7 +45,10 @@ Origem: análise de 2026-10-25 (TypeScript, Preact e Tailwind). Decisões da aut
        - o `escapeHtml` de `renderPerformanceStory`, já que o resumo já escapa;
        - `simulatedScenario`;
        - opções de filtro do calendário que não eram lidas.
-   - Próximo: `demo/` (~312 erros), `features/` (~147) e `reports/` (~146).
+   - ✅ `reports/`, `features/`, `demo/` e `bootstrap/` (`bfd664b`, `21e39dc`, `5afc042`).
+     - O estado da importação de edital ganhou a interface `ExamImportState`.
+     - Os registros fictícios da demo deixam o `any` explícito no valor (`null as any`).
+   - O `tsconfig.pure.json` cobre todo o `src/` menos o `app.ts`, que tem ~924 erros com `noImplicitAny`. Esse arquivo é o próximo, e deve ser feito em fatias, pelo tamanho.
 4. **`strict` gradual:** mesma mecânica, depois do passo 3, num `tsconfig.strict.json` ou no próprio `tsconfig.pure.json`.
 5. **Preact montado, uma aba por commit:** trocar `render-to-string` + `innerHTML` e `dangerouslySetInnerHTML` por componentes montados com `mountPreact`. Ordem: questões e calendário (mostram texto digitado), depois revisões, disciplinas, metas, Hoje, Visão Geral, ajuda.
 6. **Tailwind junto do passo 5:** a aba convertida usa os utilitários do `@theme` (que já apontam para os tokens) e remove do `app.css` as regras que deixaram de ser usadas, no mesmo commit.
