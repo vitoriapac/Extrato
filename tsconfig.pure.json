@@ -14,6 +14,8 @@
     "src/domain/sessions/**/*",
     "src/domain/strategy/**/*",
     "src/domain/reviews.ts",
-    "src/domain/topic-bookmark.ts"
+    "src/domain/topic-bookmark.ts",
+    "src/domain/recommendations/**/*",
+    "src/domain/study-eligibility.ts"
   ]
 }

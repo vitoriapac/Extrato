@@ -1,17 +1,18 @@
 export const DECISION_HISTORY_VERSION = '1.0.0';
-const outcomeLabel = state =>
-  ({
-    positive: 'Resultado positivo',
-    neutral: 'Resultado neutro',
-    negative: 'Resultado negativo',
-    insufficient: 'Resultado ainda insuficiente',
-  })[state] || 'Resultado em acompanhamento';
+const OUTCOME_LABELS: Record<string, string> = {
+  positive: 'Resultado positivo',
+  neutral: 'Resultado neutro',
+  negative: 'Resultado negativo',
+  insufficient: 'Resultado ainda insuficiente',
+};
+const outcomeLabel = (state: string): string =>
+  OUTCOME_LABELS[state] || 'Resultado em acompanhamento';
 export function buildDecisionHistory(
   feedback: any[] = [],
   {
     limit = 50,
-    resolveSubjectName = (_id?: any) => null,
-    resolveTopicName = (_id?: any) => null,
+    resolveSubjectName = (_id?: string): string | null => null,
+    resolveTopicName = (_id?: string): string | null => null,
   }: Record<string, any> = {}
 ) {
   const items = (Array.isArray(feedback) ? feedback : [])

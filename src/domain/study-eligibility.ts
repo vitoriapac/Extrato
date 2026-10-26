@@ -1,6 +1,33 @@
 export const MIN_SESSION_MINUTES = 15;
 
-export function needsMaintenance(item) {
+export interface MaintenanceSignals {
+  masteryGap?: number | null;
+  retentionRisk?: number | null;
+  retentionNeed?: number | null;
+  reviewHealthRisk?: number | null;
+  reviewUrgency?: number | null;
+}
+
+export interface StudyCandidateState extends MaintenanceSignals {
+  archived?: boolean;
+  blockedPrerequisites?: string[];
+  completed?: boolean;
+  covered?: boolean;
+}
+
+// Candidates are open records built by several services; these functions read only the fields below.
+type Open<T> = T & Record<string, any>;
+
+export interface PrerequisiteNode {
+  id: string;
+  prerequisites?: string[];
+  archived?: boolean;
+  mastery?: number | null;
+  covered?: boolean;
+  status?: string;
+}
+
+export function needsMaintenance(item: Open<MaintenanceSignals>) {
   return (
     (item.masteryGap != null && item.masteryGap > 40) ||
     ((item.retentionRisk ?? item.retentionNeed) != null &&
@@ -10,7 +37,10 @@ export function needsMaintenance(item) {
   );
 }
 
-export function canStudy(item, { ignoreToday = false } = {}) {
+export function canStudy(
+  item: Open<StudyCandidateState> | null | undefined,
+  { ignoreToday = false }: { ignoreToday?: boolean } = {}
+) {
   return Boolean(
     item &&
     !item.archived &&
@@ -20,7 +50,10 @@ export function canStudy(item, { ignoreToday = false } = {}) {
   );
 }
 
-export function sessionMinutes(item, availableMinutes) {
+export function sessionMinutes(
+  item: Open<{ sessionMinutes?: number | null; estimatedMinutes?: number | null }>,
+  availableMinutes: unknown
+) {
   const available = Math.floor(Number(availableMinutes) || 0);
   if (available < MIN_SESSION_MINUTES) return 0;
   const desired = Number(item.sessionMinutes ?? item.estimatedMinutes) || 30;
@@ -28,10 +61,10 @@ export function sessionMinutes(item, availableMinutes) {
 }
 
 // Missing references, archived bases and transitive cycles remain blocked.
-export function prerequisiteBlockers(topic, topics = []) {
+export function prerequisiteBlockers(topic: PrerequisiteNode, topics: PrerequisiteNode[] = []) {
   const byId = new Map(topics.map(item => [item.id, item]));
-  const blockers = new Set();
-  const visit = (id, path) => {
+  const blockers = new Set<string>();
+  const visit = (id: string, path: Set<string>) => {
     if (path.has(id)) {
       blockers.add(id);
       return;
@@ -52,14 +85,22 @@ export function prerequisiteBlockers(topic, topics = []) {
   return [...blockers];
 }
 
-export function withPrerequisiteEligibility(candidates, topics = candidates) {
+export function withPrerequisiteEligibility(
+  candidates: Open<PrerequisiteNode>[],
+  topics: PrerequisiteNode[] = candidates
+): Open<PrerequisiteNode & { blockedPrerequisites: string[] }>[] {
   return candidates.map(item => ({
     ...item,
     blockedPrerequisites: prerequisiteBlockers(item, topics),
   }));
 }
 
-export function resolveStudyEligibility(candidates, topics) {
+export function resolveStudyEligibility(
+  candidates: Array<
+    Open<PrerequisiteNode & { blockedPrerequisites?: string[] }> | null | undefined
+  >,
+  topics?: PrerequisiteNode[]
+): Open<PrerequisiteNode & { blockedPrerequisites: string[] }>[] {
   return candidates.filter(Boolean).map(item => ({
     ...item,
     blockedPrerequisites: topics

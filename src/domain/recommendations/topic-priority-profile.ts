@@ -1,4 +1,14 @@
-const number = value =>
+interface PriorityProfileSignals {
+  algorithmVersion?: number | null;
+  score?: number | null;
+  confidence?: number | null;
+  mastery?: number | null;
+  retention?: number | null;
+  examImpact?: number | null;
+  incidence?: number | null;
+}
+
+const number = (value: unknown): number | null =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
 export function captureTopicPriorityProfile(
   candidate: Record<string, any> = {},
@@ -29,7 +39,7 @@ export function captureTopicPriorityProfile(
     subjectName: candidate.subjectName || null,
   };
 }
-export function classifyTopicPriority(profile) {
+export function classifyTopicPriority(profile: PriorityProfileSignals) {
   if (profile.score == null) return 'Sem prioridade registrada';
   if (profile.confidence == null || profile.confidence < 0.35) return 'Evidência limitada';
   if (profile.score < 40 && profile.mastery >= 70 && profile.retention >= 60) return 'Manutenção';
@@ -41,14 +51,17 @@ export function classifyTopicPriority(profile) {
         ? 'Moderada'
         : 'Baixa';
 }
-export function compareTopicPriority(previous, current) {
+export function compareTopicPriority(
+  previous: PriorityProfileSignals | null | undefined,
+  current: PriorityProfileSignals
+) {
   if (
     !previous ||
     previous.algorithmVersion == null ||
     previous.algorithmVersion !== current.algorithmVersion
   )
     return { state: 'insufficient', label: 'Sem comparação de método equivalente', reasons: [] };
-  const fields = [
+  const fields: Array<[keyof PriorityProfileSignals, string]> = [
     ['mastery', 'Domínio'],
     ['retention', 'Retenção'],
     ['examImpact', 'Impacto'],

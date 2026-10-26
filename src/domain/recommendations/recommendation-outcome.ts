@@ -3,13 +3,15 @@ import { describeScoreEvidence } from '../analytics/score-evidence.js';
 
 export const RECOMMENDATION_OUTCOME_VERSION = 1;
 const METRICS = ['mastery', 'retention', 'reviewHealth', 'accuracy', 'risk'];
-const numeric = value =>
+const numeric = (value: unknown): number | null =>
   value == null || value === '' || !Number.isFinite(Number(value))
     ? null
     : Math.max(0, Math.min(100, Number(value)));
-const round = value => Math.round(value * 10) / 10;
+const round = (value: number) => Math.round(value * 10) / 10;
 
-export function normalizeRecommendationMetrics(value = {}) {
+export function normalizeRecommendationMetrics(
+  value: Record<string, unknown> | null | undefined = {}
+): Record<string, number | null> {
   return Object.fromEntries(METRICS.map(key => [key, numeric(value?.[key])]));
 }
 
@@ -20,6 +22,13 @@ export function evaluateRecommendationOutcome({
   daysElapsed = 0,
   otherActivities = 0,
   measuredAt = null,
+}: {
+  before?: Record<string, unknown> | null;
+  after?: Record<string, unknown> | null;
+  questionVolume?: number;
+  daysElapsed?: number;
+  otherActivities?: number;
+  measuredAt?: string | null;
 } = {}) {
   const normalizedBefore = normalizeRecommendationMetrics(before),
     normalizedAfter = normalizeRecommendationMetrics(after);
