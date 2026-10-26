@@ -29,7 +29,11 @@ Origem: análise de 2026-10-25 (TypeScript, Preact e Tailwind). Decisões da aut
    **Mecânica de `noImplicitAny`:** cada pasta corrigida entra no `include` do `tsconfig.pure.json`. Ordem: `domain/`, `application/`, `ui/` (maior número de `any`), `demo/` por último.
    - ✅ `core/`, `state/`, `storage/`, `repositories/` e todo o `domain/` (`2dbe869`). Saíram parâmetros mortos: `aggregate` do importador de questões, `topics` do replanejamento pós-simulado, `topic` de `calculateTopicMastery` e `sessions` de `buildWeeklyClose`.
    - **Armadilha:** fazer spread de `Record<string, any>` perde a assinatura de índice, e quem chama perde os campos. Funções que devolvem o registro espalhado usam um genérico com padrão `any` (`<T extends Row = any>`) ou retorno `any` explícito.
-   - Próximo: `application/` (~1.476 erros), depois `ui/`, `demo/`, `features/` e `reports/`.
+   - ✅ Todo o `application/` (`17af591`, nove commits a partir de `d3aab19`).
+     - Callbacks de `filter`/`map`/`reduce` sobre arrays que já eram `any` (vindos de `}: any = {}`) ganharam `: any` explícito por codemod.
+     - Auxiliares e métodos de serviço receberam tipos de verdade, e tabelas de rótulos montadas inline viraram constantes tipadas.
+     - Parâmetros mortos removidos: `addDays` de `reconcileAlerts`, um `Map` sem leitura em `compareRecoveryPlan` e um índice de `forEach`.
+   - Próximo: `ui/` (~1.103 erros), `demo/` (~312), `features/` (~147) e `reports/` (~146).
 4. **`strict` gradual:** mesma mecânica, depois do passo 3, num `tsconfig.strict.json` ou no próprio `tsconfig.pure.json`.
 5. **Preact montado, uma aba por commit:** trocar `render-to-string` + `innerHTML` e `dangerouslySetInnerHTML` por componentes montados com `mountPreact`. Ordem: questões e calendário (mostram texto digitado), depois revisões, disciplinas, metas, Hoje, Visão Geral, ajuda.
 6. **Tailwind junto do passo 5:** a aba convertida usa os utilitários do `@theme` (que já apontam para os tokens) e remove do `app.css` as regras que deixaram de ser usadas, no mesmo commit.
