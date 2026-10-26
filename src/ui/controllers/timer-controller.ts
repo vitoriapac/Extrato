@@ -1,28 +1,10 @@
+import type { ActiveTimerState } from '../../core/types.ts';
 /**
  * Controller e utilitários puros para o Cronômetro de Estudos e Sessão Ativa.
  */
 
-export interface ActiveTimerData {
-  startedAt?: string | null;
-  runStartedAt?: string | null;
-  accumulatedSeconds?: number;
-  isRunning?: boolean;
-  subjectId?: string | null;
-  topicId?: string | null;
-  type?: string;
-  hiddenAt?: string | null;
-  planItemId?: string | null;
-  targetMinutes?: number | null;
-  strategy?: {
-    label: string;
-    steps: Array<{ label: string; minutes: number; status?: string }>;
-  } | null;
-  strategyStep?: number;
-  recommendationId?: string | null;
-  recommendationSource?: string | null;
-  recommendationType?: string | null;
-  prioritySnapshot?: number | null;
-}
+// The timer reads the same shape as the app state; every field is optional for defensive callers.
+export type ActiveTimerData = Partial<ActiveTimerState>;
 
 export function computeTimerSeconds(
   active: ActiveTimerData | null | undefined,

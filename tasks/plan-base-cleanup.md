@@ -17,12 +17,12 @@ Origem: análise de 2026-10-25 (TypeScript, Preact e Tailwind). Decisões da aut
 
 1. ✅ **Dependência** (`31803c3`): `preact-render-to-string` sai de `devDependencies` e vai para `dependencies` (entra no bundle). Sai de vez no passo 5, quando o último uso acabar.
 2. ✅ **`app.ts` tipado** (`8bd680a`): os 233 erros foram corrigidos e o `@ts-nocheck` saiu. O `check:types` passa a cobrir o boot, o carregamento e o salvamento. O JS gerado só mudou em pontos equivalentes.
-   - **Higiene rápida, um commit cada:**
+   - ✅ **Higiene rápida, um commit cada** (`ba47667`, `03a9ed7`, `2c19083`, `793ce70`):
      - `.gitattributes` com `* text=auto eol=lf`, para parar o vai e vem de CRLF/LF nos diffs.
      - Fixar `typescript` e `preact` com `~` ou na versão exata (majors recém-lançadas).
      - Alinhar o `lib` do `tsconfig` com o `target` do esbuild (`es2020`): o TypeScript aceita APIs que o build não traz.
      - Remover a tela de evolução de questões, que é código morto (`renderQuestionEvolution`, `setQuestionEvolutionFilter`, o renderer e o estado `questionEvolutionView`); os elementos dela saíram do HTML em `bec7d42`.
-   - **`state` com tipo real:** trocar `let state: any` por `AppState` e descrever as coleções que hoje são `unknown[]` (`calendar`, `reviewAgenda`, `exams`, `examQuestions`, `planningCapacityHistory`...). Medição: 307 erros, sobretudo `date`, `topicId`, `status` e `id`. As funções de normalização (`normalizeStudySession` e similares) definem o formato de cada coleção.
+   - ✅ **`state` com tipo real** (feito; o commit traz os números): trocar `let state: any` por `AppState` e descrever as coleções que hoje são `unknown[]` (`calendar`, `reviewAgenda`, `exams`, `examQuestions`, `planningCapacityHistory`...). Medição: 307 erros, sobretudo `date`, `topicId`, `status` e `id`. As funções de normalização (`normalizeStudySession` e similares) definem o formato de cada coleção.
    - **Testes checados:** `tsconfig.tests.json` com `checkJs` incluindo `tests/unit`, para pegar chamadas desatualizadas depois de mudanças de assinatura. Os testes continuam `.js`.
    - **JSDoc redundante:** remover as 52 anotações `@param {…}`/`@returns {…}` dentro de `.ts`; o tipo fica só no TypeScript.
 3. **`noImplicitAny` + `noUnusedLocals`/`noUnusedParameters` pasta a pasta:** os flags de código não usado entram junto, para achar código morto como o parâmetro `metrics` de `projectPerformance`.

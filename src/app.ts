@@ -334,6 +334,7 @@ import {
 import { createExamImportController } from './features/exam-import/exam-import-controller.js';
 import { createTabRouter } from './ui/navigation/tab-router.js';
 import { createAppStateStore } from './state/app-state-store.js';
+import type { ActiveTimerState, AppState, Metas, Subject } from './core/types.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createEditableCollectionController } from './ui/controllers/editable-collection-controller.js';
 import { createPreferencesController } from './ui/controllers/preferences-controller.js';
@@ -633,7 +634,7 @@ const DIAGNOSIS_STATUS_ICON = {
   'Em dia': '🟢',
 };
 
-let state: any = createDefaultState();
+let state: AppState = createDefaultState();
 const uiState = createUiState();
 const EXAM_PRESETS = EXAM_PRESET_OPTIONS.map(option => ({
   ...option,
@@ -1139,7 +1140,7 @@ function migrateState(data) {
 }
 
 function ensureStateDefaults() {
-  if (!state || typeof state !== 'object') state = {};
+  if (!state || typeof state !== 'object') state = {} as AppState;
   if (!Array.isArray(state.subjects)) state.subjects = [];
   if (!Array.isArray(state.calendar)) state.calendar = [];
   if (!Array.isArray(state.reviewAgenda)) state.reviewAgenda = [];
@@ -1159,7 +1160,7 @@ function ensureStateDefaults() {
     consistenciaSemanal: 5,
     horasDiarias: 2.5,
   };
-  if (!state.metas || typeof state.metas !== 'object') state.metas = {};
+  if (!state.metas || typeof state.metas !== 'object') state.metas = {} as Metas;
   const consistencyTarget = state.metas.consistenciaSemanal;
   state.metas.aderenciaSemanal = normalizeAdherenceTarget(state.metas.aderenciaSemanal);
   Object.entries(metaDefaults).forEach(([key, value]) => {
@@ -1219,7 +1220,8 @@ function ensureStateDefaults() {
     item.outcome = item.outcome || null;
   });
   if (!Array.isArray(state.alertStates)) state.alertStates = [];
-  if (!state.activeTimer || typeof state.activeTimer !== 'object') state.activeTimer = {};
+  if (!state.activeTimer || typeof state.activeTimer !== 'object')
+    state.activeTimer = {} as ActiveTimerState;
   state.activeTimer.startedAt = state.activeTimer.startedAt || null;
   state.activeTimer.runStartedAt = state.activeTimer.runStartedAt || null;
   state.activeTimer.accumulatedSeconds = Math.max(
@@ -1305,7 +1307,7 @@ function ensureStateDefaults() {
     if (!Array.isArray(s.topics)) s.topics = [];
     if (typeof s.collapsed !== 'boolean') s.collapsed = false;
     if (typeof s.archived !== 'boolean') s.archived = false;
-    if (!('archivedAt' in s)) s.archivedAt = null;
+    if (s.archivedAt === undefined) s.archivedAt = null;
     if (typeof s.createdAt !== 'string') s.createdAt = nowISO();
     s.topics.forEach(t => {
       if (typeof t.notes !== 'string') t.notes = '';
@@ -1710,7 +1712,7 @@ STATE_CHANNEL?.addEventListener('message', event => {
   const message = event.data;
   if (!message || message.source === INSTANCE_ID || typeof message.serialized !== 'string') return;
   const remoteTime = Date.parse(message.updatedAt || 0) || 0;
-  const localTime = Date.parse(state.updatedAt || 0) || 0;
+  const localTime = Date.parse(String(state.updatedAt || 0)) || 0;
   if (remoteTime <= localTime) return;
   try {
     applyingRemoteState = true;
@@ -2250,7 +2252,7 @@ let timerRunning = false;
 const BASE_DOCUMENT_TITLE = document.title;
 const pipTimer = createPipTimerController({
   getView: () => {
-    const active = state.activeTimer || {},
+    const active = (state.activeTimer || {}) as Partial<ActiveTimerState>,
       steps = active.strategy?.steps || [],
       index = Math.min(active.strategyStep || 0, Math.max(0, steps.length - 1)),
       step = steps[index];
@@ -2384,7 +2386,7 @@ function activeTimerMatchesRecommendation(recommendation) {
   );
 }
 function renderActiveStudyTimerNotice(recommendation) {
-  const active = state.activeTimer || {};
+  const active = (state.activeTimer || {}) as Partial<ActiveTimerState>;
   return renderActiveStudyTimerNoticeHtml({
     active,
     recommendation,
@@ -2451,7 +2453,7 @@ function renderTimerFocusContext() {
   if (!section) return;
   section.hidden = !document.body.classList.contains('timer-focus-active');
   if (section.hidden) return;
-  const active = state.activeTimer || {},
+  const active = (state.activeTimer || {}) as Partial<ActiveTimerState>,
     subject = active.subjectId ? getSubjectName(active.subjectId) : 'Disciplina não selecionada',
     topic = active.topicId ? getTopicName(active.topicId) : 'Tópico não selecionado';
   const activityLabels = {
@@ -3335,8 +3337,8 @@ function renderHeader() {
   const pct = total ? Math.round((done / total) * 100) : 0;
 
   const readiness = readinessResult(computeApprovalMetrics());
-  document.getElementById('statAndamento').textContent = andamento;
-  document.getElementById('statConcluido').textContent = done;
+  document.getElementById('statAndamento').textContent = String(andamento);
+  document.getElementById('statConcluido').textContent = String(done);
 
   const revisoesPrevistas =
     state.calendar.filter(c => c.date >= todayISO()).length +
@@ -3658,7 +3660,7 @@ function duplicateSubject(id) {
   const idx = state.subjects.findIndex(s => s.id === id);
   if (idx === -1) return;
   const original = state.subjects[idx];
-  const copy = {
+  const copy: Subject = {
     id: uid('subject'),
     name: original.name + ' (cópia)',
     collapsed: false,
@@ -6820,7 +6822,7 @@ function renderSubjectTargetEditor() {
     { escapeHtml, escapeAttr }
   );
 }
-function saveSubjectAccuracyTargets(subjectIds, rawValue) {
+function saveSubjectAccuracyTargets(subjectIds: string[], rawValue) {
   const eligible = new Set(examScopedSubjects().map(item => item.id)),
     ids = [...new Set(subjectIds)].filter(id => eligible.has(id));
   if (!ids.length) {
@@ -8487,7 +8489,7 @@ function measureRecommendationResults(session) {
           item =>
             item.topicId === session.topicId &&
             item.id !== session.id &&
-            Date.parse(item.createdAt || item.startedAt || 0) >= since
+            Date.parse(String(item.createdAt || item.startedAt || 0)) >= since
         ).length,
         candidate = intelligenceCandidates().find(item => item.topicId === session.topicId);
       measureRecommendationOutcome(feedback, {
@@ -10317,8 +10319,8 @@ function renderTopicRetentionDashboard() {
         confidenceMatch(row)
     )
     .sort((a, b) => {
-      const av = a.r.available ? a.r.value : null,
-        bv = b.r.available ? b.r.value : null;
+      const av = a.r.available ? (a.r as { value?: number }).value : null,
+        bv = b.r.available ? (b.r as { value?: number }).value : null;
       if (av == null || bv == null)
         return av == null && bv == null ? a.name.localeCompare(b.name) : av == null ? 1 : -1;
       const score = retentionView.order === 'desc' ? bv - av : av - bv;
