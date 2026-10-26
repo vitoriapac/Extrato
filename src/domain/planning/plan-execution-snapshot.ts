@@ -1,8 +1,18 @@
 import { normalizeExamTags } from '../exams/exam-scope.js';
 
+type Row = Record<string, any>;
+interface ExecutionContext {
+  date?: string | null;
+  activeExamTags?: string[];
+  capturedAt?: string | null;
+  studyPlanId?: string | null;
+  originItemId?: string | null;
+  historicalContextKnown?: boolean;
+}
+
 // Capture only at creation/confirmation. Legacy activities remain explicitly unknown.
 export function capturePlanExecution(
-  item,
+  item: Row,
   {
     date = null,
     activeExamTags = [],
@@ -10,7 +20,7 @@ export function capturePlanExecution(
     studyPlanId = item.studyPlanId || null,
     originItemId = null,
     historicalContextKnown = item.executionSnapshot?.historicalContextKnown ?? true,
-  } = {}
+  }: ExecutionContext = {}
 ) {
   return {
     version: 1,
@@ -29,11 +39,12 @@ export function capturePlanExecution(
     prioritySnapshot: item.prioritySnapshot ? structuredClone(item.prioritySnapshot) : null,
   };
 }
-export function freezePlanExecution(item, context) {
+export function freezePlanExecution(item: Row, context?: ExecutionContext) {
   if (!item.executionSnapshot) item.executionSnapshot = capturePlanExecution(item, context);
   return item;
 }
-export function historicalExecutionItem(item) {
+// Callers spread the result into new items; a Row spread would drop the index signature.
+export function historicalExecutionItem(item: Row): any {
   const snapshot = item.executionSnapshot;
   if (snapshot?.version !== 1) return item;
   return {

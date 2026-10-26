@@ -1,7 +1,7 @@
 import { captureTopicPriorityProfile } from '../recommendations/topic-priority-profile.js';
 export const PLAN_PRIORITY_POLICY_VERSION = 1;
 export const PLAN_PRIORITY_THRESHOLD = 70;
-const numeric = value =>
+const numeric = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
 
 // Captured at creation/confirmation. Legacy plans remain unclassified.

@@ -6,7 +6,8 @@ import { resolveExamPhase, ADAPTIVE_COOLDOWN_DAYS } from './adaptive-planning.js
 import { localDateFromTimestamp } from '../sessions/study-session.js';
 import { parseLocalDate, addLocalDays } from '../../core/date-utils.js';
 const excluded = new Set(['skipped', 'replaced', 'discarded', 'deferred']);
-const mix = (minutes, weights) => {
+const phaseRatios = ratios as Record<string, readonly number[]>;
+const mix = (minutes: number, weights: number[]) => {
   const values = weights.map(value => Math.floor(minutes * value));
   values[weights.indexOf(Math.max(...weights))] += minutes - values.reduce((a, b) => a + b, 0);
   return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
@@ -22,7 +23,7 @@ export function buildPhaseStrategyProposal({
   weeklyCapacityMinutes = null,
 }: Record<string, any> = {}) {
   const phase = resolveExamPhase(daysToExam);
-  const unavailable = reason => ({ state: 'insufficient', reason, phase, version: 1 });
+  const unavailable = (reason: string) => ({ state: 'insufficient', reason, phase, version: 1 });
   if (
     !parseLocalDate(today) ||
     daysToExam == null ||
@@ -31,7 +32,7 @@ export function buildPhaseStrategyProposal({
     Number(daysToExam) < 0
   )
     return unavailable('Defina uma data futura de prova para propor a estratégia.');
-  if (!plan?.id || !plan.items?.length || !ratios[phase.state])
+  if (!plan?.id || !plan.items?.length || !phaseRatios[phase.state])
     return unavailable('Confirme um plano semanal antes de ajustar sua estratégia.');
   const budget = Number(plan.weeklyPlannedMinutes),
     capacity = Number(weeklyCapacityMinutes ?? plan.weeklyAvailableMinutes);
@@ -41,23 +42,23 @@ export function buildPhaseStrategyProposal({
     !Number.isFinite(capacity) ||
     budget > capacity ||
     plan.items.some(
-      item =>
+      (item: any) =>
         !Number.isInteger(item.minutes) ||
         item.minutes < 0 ||
         excluded.has(item.status) ||
         !item.activityMix ||
         keys.some(key => !Number.isInteger(item.activityMix[key]) || item.activityMix[key] < 0) ||
-        keys.reduce((sum, key) => sum + item.activityMix[key], 0) !== item.minutes
+        keys.reduce((sum: number, key) => sum + item.activityMix[key], 0) !== item.minutes
     ) ||
-    plan.items.reduce((sum, item) => sum + item.minutes, 0) !== budget
+    plan.items.reduce((sum: number, item: any) => sum + item.minutes, 0) !== budget
   )
     return unavailable('O plano precisa ter carga consistente e capacidade válida.');
   const cutoff = addLocalDays(today, -ADAPTIVE_COOLDOWN_DAYS);
   const recent = [
     plan.phaseStrategy?.appliedAt,
     ...history
-      .filter(item => ['applied', 'reverted'].includes(item.status))
-      .map(item => item.decidedAt || item.createdAt),
+      .filter((item: any) => ['applied', 'reverted'].includes(item.status))
+      .map((item: any) => item.decidedAt || item.createdAt),
   ]
     .map(localDateFromTimestamp)
     .filter(date => date && date <= today)
@@ -88,13 +89,13 @@ export function buildPhaseStrategyProposal({
       'Registre evidências suficientes em pelo menos dois tópicos antes de adaptar a divisão das atividades.'
     );
   const byTopic = new Map<string, any>(candidates.map((item: any) => [item.topicId, item]));
-  const changes = [];
+  const changes: any[] = [];
   const items = plan.items.map((item: any) => {
     const candidate = byTopic.get(item.topicId || item.id);
     // Preserve the activity split of topics whose personal evidence is limited.
     if (!candidate || candidate.mastery == null || Number(candidate.evidenceStrength) < 0.35)
       return structuredClone(item);
-    let weights = [...ratios[phase.state]];
+    let weights = [...phaseRatios[phase.state]];
     const reasons = [phase.strategy];
     const critical = candidate.mastery < 50 && candidate.examImpact >= 70;
     const lowCoverage =

@@ -1,22 +1,28 @@
 export const POST_SIMULATION_REPLAN_VERSION = '2.0.0';
-const n = value => (Number.isFinite(Number(value)) ? Number(value) : null);
+type Row = Record<string, any>;
+const n = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : null);
 export function buildPostSimulationReplan({
   simulation = null,
   subjects = [],
-  topics = [],
   minimumQuestions = 5,
   availableMinutes = Infinity,
   existingSimulationIds = [],
+}: {
+  simulation?: Row | null;
+  subjects?: Row[];
+  minimumQuestions?: number;
+  availableMinutes?: number;
+  existingSimulationIds?: string[];
 } = {}) {
   const rows = Array.isArray(simulation?.breakdown)
-    ? simulation.breakdown.filter(row => n(row.total) >= minimumQuestions)
+    ? simulation.breakdown.filter((row: Row) => n(row.total) >= minimumQuestions)
     : [];
   if (!simulation || !rows.length)
     return {
       algorithmVersion: POST_SIMULATION_REPLAN_VERSION,
       state: 'insufficient',
       reason: 'É necessário um simulado com detalhamento suficiente por disciplina.',
-      adjustments: [],
+      adjustments: [] as never[],
       evidence: { rows: rows.length, minimumQuestions },
     };
   const subjectMap = new Map(subjects.map(item => [item.id, item]));
@@ -25,12 +31,12 @@ export function buildPostSimulationReplan({
       algorithmVersion: POST_SIMULATION_REPLAN_VERSION,
       state: 'duplicate',
       reason: 'Este simulado já possui uma proposta registrada.',
-      adjustments: [],
+      adjustments: [] as never[],
       simulationId: simulation.id,
     };
   let remaining = Math.max(0, Number(availableMinutes));
   const requested = rows
-      .map(row => {
+      .map((row: Row) => {
         const total = n(row.total) || 0,
           correct = n(row.correct) || 0,
           accuracy = Math.round((correct / total) * 100),

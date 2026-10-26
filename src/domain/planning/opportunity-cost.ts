@@ -1,4 +1,6 @@
-export function buildOpportunityCost(advice) {
+type Row = Record<string, any>;
+
+export function buildOpportunityCost(advice: Row | null | undefined) {
   if (advice?.state !== 'proposal') return null;
   const from = advice.from || {},
     to = advice.to || {},
@@ -23,11 +25,11 @@ export function buildOpportunityCost(advice) {
     Math.abs(to.afterMinutes - to.beforeMinutes - minutes) > 0.01
   )
     return null;
-  const metric = value =>
+  const metric = (value: unknown) =>
     typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100
       ? value
       : null;
-  const side = (item, state) => ({
+  const side = (item: Row, state: string) => ({
     ...item,
     mastery: metric(item.mastery),
     impact: metric(item.impact),
