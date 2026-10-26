@@ -26,13 +26,17 @@ test('Visão Geral e Hoje compartilham a mesma recomendação prioritária', asy
   const todayAction = page.locator('#studyRecommendation .study-recommendation').first();
   await expect(todayAction).toHaveAttribute('data-study-action-source', 'today');
   await expect(todayAction).toHaveAttribute('data-study-action-id', actionId);
+  // Hoje shows "Disciplina — Tópico" and the overview "Disciplina · Tópico"; subject names may
+  // contain " — " themselves (e.g. "Caixa Econômica Federal — Específicos"), so swap the last one.
+  const overviewLabel = title => {
+    const index = title.lastIndexOf(' — ');
+    return index < 0 ? title : `${title.slice(0, index)} · ${title.slice(index + 3)}`;
+  };
   await expect
     .poll(async () =>
       topic
         .toLocaleLowerCase()
-        .includes(
-          (await todayAction.locator('h4').innerText()).replace(' — ', ' · ').toLocaleLowerCase()
-        )
+        .includes(overviewLabel(await todayAction.locator('h4').innerText()).toLocaleLowerCase())
     )
     .toBe(true);
   await expect(
