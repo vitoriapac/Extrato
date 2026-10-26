@@ -1,16 +1,19 @@
 export const TREND_ALGORITHM_VERSION = 2;
-const clamp = value => Math.max(0, Math.min(100, value));
-const round = value => Math.round(value * 10) / 10;
-const pool = data =>
+type Row = Record<string, any>;
+const clamp = (value: number) => Math.max(0, Math.min(100, value));
+const round = (value: number) => Math.round(value * 10) / 10;
+type Tally = { resolved: number; correct: number };
+const pool = (data: Row[]) =>
   data.reduce(
-    (acc, week) => ({
+    (acc: Tally, week: Row) => ({
       resolved: acc.resolved + (Number(week.resolved) || 0),
       correct: acc.correct + (Number(week.correct) || 0),
     }),
     { resolved: 0, correct: 0 }
   );
-const accuracy = data => (data.resolved ? round((data.correct / data.resolved) * 100) : null);
-function classification(delta) {
+const accuracy = (data: Tally) =>
+  data.resolved ? round((data.correct / data.resolved) * 100) : null;
+function classification(delta: number) {
   if (delta >= 12)
     return { state: 'strong_up', key: 'up', direction: 'up', icon: '↗', label: 'Forte evolução' };
   if (delta >= 3)
@@ -27,7 +30,7 @@ function classification(delta) {
     return { state: 'down', key: 'down', direction: 'down', icon: '↘', label: 'Em queda' };
   return { state: 'stable', key: 'stable', direction: 'stable', icon: '→', label: 'Estável' };
 }
-export function calculateWindowTrend(weeklyData = [], minWindow = 30, windowWeeks = 4) {
+export function calculateWindowTrend(weeklyData: Row[] = [], minWindow = 30, windowWeeks = 4) {
   const weeks = Array.isArray(weeklyData) ? weeklyData : [],
     recent = pool(weeks.slice(-windowWeeks)),
     previous = pool(weeks.slice(-(windowWeeks * 2), -windowWeeks)),
@@ -45,13 +48,13 @@ export function calculateWindowTrend(weeklyData = [], minWindow = 30, windowWeek
     periods = { previous, recent, windowWeeks };
   if (recent.resolved < minWindow || previous.resolved < minWindow)
     return {
-      value: null,
+      value: null as number | null,
       state: 'insufficient',
       key: 'insufficient',
       direction: 'none',
       icon: '—',
       label: 'Amostra insuficiente',
-      delta: null,
+      delta: null as number | null,
       recent,
       previous,
       recentAccuracy,
@@ -81,20 +84,20 @@ export function calculateWindowTrend(weeklyData = [], minWindow = 30, windowWeek
     algorithmVersion: TREND_ALGORITHM_VERSION,
   };
 }
-export function aggregateTrendScores(trends = []) {
+export function aggregateTrendScores(trends: Row[] = []) {
   const usable = (Array.isArray(trends) ? trends : []).filter(
     item => item && item.state !== 'insufficient' && Number.isFinite(Number(item.delta))
   );
   if (!usable.length)
     return {
-      value: null,
+      value: null as number | null,
       state: 'insufficient',
       key: 'insufficient',
       direction: 'none',
-      delta: null,
-      evidence: { sampleSize: 0, confidence: 0, sources: [] },
+      delta: null as number | null,
+      evidence: { sampleSize: 0, confidence: 0, sources: [] as string[] },
       confidence: 0,
-      factors: [],
+      factors: [] as Row[],
       reasons: ['Nenhum tópico possui tendência suficiente'],
       algorithmVersion: TREND_ALGORITHM_VERSION,
     };
@@ -125,7 +128,7 @@ export function aggregateTrendScores(trends = []) {
   };
 }
 
-export function trendToRisk(trend) {
+export function trendToRisk(trend: Row | null | undefined) {
   if (
     !trend ||
     trend.state === 'insufficient' ||

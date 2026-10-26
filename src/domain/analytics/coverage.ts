@@ -1,4 +1,4 @@
-export function calculateTopicCoverage(topics = []) {
+export function calculateTopicCoverage(topics: Array<Record<string, any>> = []) {
   const active = topics.filter(topic => !topic.archived);
   if (!active.length) return { value: 0, completed: 0, total: 0, available: false };
   const completed = active.filter(topic => topic.status === 'Concluído').length;

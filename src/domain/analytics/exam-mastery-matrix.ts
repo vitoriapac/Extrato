@@ -1,21 +1,29 @@
 import { isTopicInExamScope } from '../exams/exam-scope.js';
 
+type Row = Record<string, any>;
+
 export function buildExamMasteryMatrix({
   subjects = [],
   blueprint = {},
   metricsByTopic = {},
   masteryTargets = {},
   activeExamTags = blueprint.activeExamTags || [],
+}: {
+  subjects?: Row[];
+  blueprint?: Row;
+  metricsByTopic?: Record<string, Row>;
+  masteryTargets?: Record<string, unknown>;
+  activeExamTags?: string[];
 } = {}) {
   const general = Number(blueprint.masteryTarget ?? 80);
   return subjects
     .filter(subject => !subject.archived)
     .map(subject => {
-      const config = (blueprint.subjects || []).find(item => item.subjectId === subject.id),
+      const config = (blueprint.subjects || []).find((item: Row) => item.subjectId === subject.id),
         target = Number(config?.masteryTarget ?? masteryTargets[subject.id] ?? general);
       const topics = (subject.topics || [])
-        .filter(topic => !topic.archived && isTopicInExamScope(topic, activeExamTags))
-        .map(topic => {
+        .filter((topic: Row) => !topic.archived && isTopicInExamScope(topic, activeExamTags))
+        .map((topic: Row) => {
           const metrics = metricsByTopic[topic.id] || {},
             mastery = metrics.mastery?.value ?? metrics.mastery?.score ?? null,
             coverage =
@@ -45,11 +53,13 @@ export function buildExamMasteryMatrix({
             incidence: topic.incidence || null,
           };
         });
-      const known = topics.filter(topic => topic.mastery != null),
-        average = key => {
-          const rows = topics.filter(topic => topic[key] != null);
+      const known = topics.filter((topic: Row) => topic.mastery != null),
+        average = (key: string) => {
+          const rows = topics.filter((topic: Row) => topic[key] != null);
           return rows.length
-            ? Math.round(rows.reduce((total, topic) => total + topic[key], 0) / rows.length)
+            ? Math.round(
+                rows.reduce((total: number, topic: Row) => total + topic[key], 0) / rows.length
+              )
             : null;
         };
       return {

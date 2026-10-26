@@ -1,4 +1,4 @@
-const clamp = value => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+const clamp = (value: unknown) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 
 export function calculateSubjectRadar(input: Record<string, any> = {}) {
   const axes = {
@@ -34,7 +34,7 @@ export function interpretRadar(axes: Record<string, number | null>) {
   const values = Object.entries(axes).filter(([, value]) => value !== null);
   if (values.length < 2) return 'Aguardando mais dados para interpretar o perfil.';
   const weakest = values.sort((a, b) => a[1] - b[1])[0];
-  const labels = {
+  const labels: Record<string, string> = {
     coverage: 'cobertura',
     mastery: 'domínio',
     retention: 'retenção',

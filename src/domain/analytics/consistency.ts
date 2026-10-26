@@ -1,4 +1,7 @@
-export function calculateActivityStreak(activityDates, { today, addDays }) {
+export function calculateActivityStreak(
+  activityDates: Set<string>,
+  { today, addDays }: { today: string; addDays: (date: string, days: number) => string }
+) {
   let cursor = today;
   if (!activityDates.has(cursor)) {
     cursor = addDays(cursor, -1);
@@ -12,7 +15,7 @@ export function calculateActivityStreak(activityDates, { today, addDays }) {
   return count;
 }
 
-export function calculateGoalConsistency(days = []) {
+export function calculateGoalConsistency(days: Array<Record<string, any>> = []) {
   const applicable = days.filter(day => Number(day.targetSeconds) > 0);
   const achieved = applicable.filter(
     day => Number(day.studiedSeconds) >= Number(day.targetSeconds)

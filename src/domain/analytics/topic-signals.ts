@@ -1,6 +1,6 @@
 import { trendToRisk } from './trends.js';
 
-const finite = value =>
+const finite = (value: unknown) =>
   value == null || value === '' || !Number.isFinite(Number(value))
     ? null
     : Math.max(0, Math.min(100, Number(value)));

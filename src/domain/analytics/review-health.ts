@@ -12,7 +12,7 @@ export const REVIEW_HEALTH_WEIGHTS = Object.freeze({
   recentPerformance: 0.15,
   examResilience: 0.05,
 });
-const clamp = value => Math.max(0, Math.min(100, Number(value) || 0));
+const clamp = (value: unknown) => Math.max(0, Math.min(100, Number(value) || 0));
 
 export function calculateReviewHealth({
   daysSinceReview = null,

@@ -1,8 +1,12 @@
 export const GAP_MAP_VERSION = '2.0.0';
-const finite = value =>
+const finite = (value: unknown) =>
   Number.isFinite(Number(value)) ? Math.max(0, Math.min(100, Number(value))) : null;
-export function buildGapMap(rows = [], { limit = 10 } = {}) {
-  const weights = {
+// The default keeps untyped callers' rows open through the spread below.
+export function buildGapMap<T extends Record<string, any> = any>(
+  rows: T[] = [],
+  { limit = 10 }: { limit?: number } = {}
+) {
+  const weights: Record<string, number> = {
       masteryGap: 0.3,
       examImpact: 0.3,
       retentionRisk: 0.2,
@@ -16,7 +20,7 @@ export function buildGapMap(rows = [], { limit = 10 } = {}) {
           retention = finite(row.retention),
           trendRisk = finite(row.trendRisk),
           coverage = finite(row.coverage),
-          factors = {
+          factors: Record<string, number | null> = {
             masteryGap: mastery == null ? null : 100 - mastery,
             examImpact: impact,
             retentionRisk: retention == null ? null : 100 - retention,

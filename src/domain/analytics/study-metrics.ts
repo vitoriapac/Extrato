@@ -1,4 +1,12 @@
-export function summarizeStudyRecords({ sessions = [], questions = [], simulations = [] }) {
+export function summarizeStudyRecords({
+  sessions = [],
+  questions = [],
+  simulations = [],
+}: {
+  sessions?: Array<Record<string, any>>;
+  questions?: Array<Record<string, any>>;
+  simulations?: Array<Record<string, any>>;
+}) {
   const seconds = sessions.reduce((sum, item) => sum + (Number(item.durationSeconds) || 0), 0);
   const sessionQuestions = sessions.reduce(
     (sum, item) => sum + (Number(item.questionsResolved) || 0),

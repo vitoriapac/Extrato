@@ -1,7 +1,7 @@
 import { pluralize } from '../../core/utils.js';
 import { describeScoreEvidence } from './score-evidence.js';
 
-export function clampMetric(value) {
+export function clampMetric(value: unknown) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 }
 
@@ -35,7 +35,10 @@ export const READINESS_WEIGHTS = Object.freeze({
   simulations: 0.1,
 });
 
-export function calculateReadinessScore(metrics, weights = READINESS_WEIGHTS) {
+export function calculateReadinessScore(
+  metrics: any,
+  weights: Record<string, number> = READINESS_WEIGHTS
+) {
   const entries = Object.entries(weights);
   const available = entries.filter(
     ([key]) => metrics?.[key]?.available && Number.isFinite(Number(metrics[key].score))
@@ -45,13 +48,13 @@ export function calculateReadinessScore(metrics, weights = READINESS_WEIGHTS) {
     .map(([key]) => key);
   if (!available.length)
     return {
-      value: null,
+      value: null as number | null,
       confidence: 0,
       confidenceLabel: 'Baixa',
       state: 'empty',
-      factors: Object.fromEntries(entries.map(([key]) => [key, null])),
+      factors: Object.fromEntries(entries.map(([key]): [string, null] => [key, null])),
       missingFactors,
-      availableFactors: [],
+      availableFactors: [] as string[],
       evidence: describeScoreEvidence(),
       reasons: ['sem fatores disponíveis'],
       algorithmVersion: 1,

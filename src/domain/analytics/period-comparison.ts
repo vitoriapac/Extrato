@@ -1,7 +1,7 @@
 export const PERIOD_COMPARISON_VERSION = '1.0.0';
-const number = value =>
+const number = (value: unknown) =>
   value == null || value === '' ? null : Number.isFinite(Number(value)) ? Number(value) : null;
-const compare = (current, previous) => {
+const compare = (current: unknown, previous: unknown) => {
   const a = number(current),
     b = number(previous);
   if (a == null || b == null)
@@ -14,7 +14,15 @@ const compare = (current, previous) => {
     direction: delta > 0 ? 'up' : delta < 0 ? 'down' : 'stable',
   };
 };
-export function buildPeriodComparison({ current = {}, previous = {}, period = {} } = {}) {
+export function buildPeriodComparison({
+  current = {},
+  previous = {},
+  period = {},
+}: {
+  current?: Record<string, unknown>;
+  previous?: Record<string, unknown>;
+  period?: Record<string, any>;
+} = {}) {
   const keys = [...new Set([...Object.keys(current), ...Object.keys(previous)])];
   const metrics = Object.fromEntries(keys.map(key => [key, compare(current[key], previous[key])]));
   return {

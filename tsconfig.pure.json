@@ -10,19 +10,6 @@
     "src/state/**/*",
     "src/storage/**/*",
     "src/repositories/**/*",
-    "src/domain/goals/**/*",
-    "src/domain/sessions/**/*",
-    "src/domain/strategy/**/*",
-    "src/domain/reviews.ts",
-    "src/domain/topic-bookmark.ts",
-    "src/domain/recommendations/**/*",
-    "src/domain/study-eligibility.ts",
-    "src/domain/forecasts/**/*",
-    "src/domain/exam-intelligence/**/*",
-    "src/domain/analytics/topic-strategy.ts",
-    "src/domain/questions/**/*",
-    "src/domain/diagnostics/**/*",
-    "src/domain/exams/**/*",
-    "src/domain/planning/**/*"
+    "src/domain/**/*"
   ]
 }

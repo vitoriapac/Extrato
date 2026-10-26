@@ -1,13 +1,13 @@
 export const HEATMAP_METRICS = Object.freeze(['hours', 'questions', 'reviews', 'simulations']);
 
-export function heatmapMetricValue(summary, metric) {
+export function heatmapMetricValue(summary: Record<string, any>, metric: string) {
   if (metric === 'questions') return Number(summary.questions) || 0;
   if (metric === 'reviews') return Number(summary.reviews) || 0;
   if (metric === 'simulations') return Number(summary.simulations) || 0;
   return Number(summary.seconds) || 0;
 }
 
-export function heatmapMetricLevel(summary, metric) {
+export function heatmapMetricLevel(summary: Record<string, any>, metric: string) {
   const value = heatmapMetricValue(summary, metric);
   if (value <= 0) return 0;
   if (metric === 'hours') {

@@ -1,7 +1,8 @@
 export const WEEKLY_CLOSE_VERSION = '2.2.0';
-const n = value => (Number.isFinite(Number(value)) ? Number(value) : 0);
-const pct = (a, b) => (b > 0 ? Math.round((a / b) * 100) : null);
-const comparison = (current, previous, unit) => {
+type Row = Record<string, any>;
+const n = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
+const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : null);
+const comparison = (current: number, previous: number | null, unit: string) => {
   if (previous == null)
     return { current, previous: null, delta: null, direction: 'insufficient', unit };
   const delta = Math.round((current - previous) * 10) / 10;
@@ -17,7 +18,6 @@ export function buildWeeklyClose({
   period,
   current = {},
   previous = {},
-  sessions = [],
   plans = [],
   questions = [],
   recommendations = [],
@@ -26,11 +26,11 @@ export function buildWeeklyClose({
   const planned = n(current.plannedMinutes),
     executed = n(current.executedMinutes),
     plannedCount = plans.length,
-    completedCount = plans.filter(x =>
+    completedCount = plans.filter((x: Row) =>
       ['completed', 'done', 'Concluído'].includes(x.status)
     ).length;
-  const resolved = questions.reduce((s, q) => s + n(q.resolved), 0),
-    correct = questions.reduce((s, q) => s + n(q.correct), 0);
+  const resolved = questions.reduce((s: number, q: Row) => s + n(q.resolved), 0),
+    correct = questions.reduce((s: number, q: Row) => s + n(q.correct), 0);
   const adherence = planned > 0 ? Math.round((executed / planned) * 100) : null;
   const state = planned || executed || resolved ? 'available' : 'insufficient';
   const accuracy = resolved ? pct(correct, resolved) : null,
@@ -87,7 +87,7 @@ export function buildWeeklyClose({
         ? 'Readequar a carga da próxima semana à capacidade disponível.'
         : 'Manter o plano e consolidar os tópicos com revisão espaçada.';
   const periodRecommendations = recommendations.filter(
-    item =>
+    (item: Row) =>
       item &&
       (!period?.start || item.date >= period.start) &&
       (!period?.end || item.date <= period.end)
@@ -96,9 +96,9 @@ export function buildWeeklyClose({
     state === 'insufficient'
       ? []
       : periodRecommendations
-          .filter(item => item.accepted !== false)
+          .filter((item: Row) => item.accepted !== false)
           .slice(0, 3)
-          .map((item, index) => ({
+          .map((item: Row, index: number) => ({
             priorityId: item.id || item.recommendationId || item.topicId || String(index),
             topicId: item.topicId || null,
             subjectId: item.subjectId || null,
@@ -127,12 +127,14 @@ export function buildWeeklyClose({
     questions: { resolved, correct, accuracy },
     recommendations: {
       total: periodRecommendations.length,
-      accepted: periodRecommendations.filter(x => x.accepted || x.status === 'accepted').length,
-      declined: periodRecommendations.filter(x => x.accepted === false || x.status === 'dismissed')
+      accepted: periodRecommendations.filter((x: Row) => x.accepted || x.status === 'accepted')
         .length,
-      completed: periodRecommendations.filter(x => x.completed).length,
+      declined: periodRecommendations.filter(
+        (x: Row) => x.accepted === false || x.status === 'dismissed'
+      ).length,
+      completed: periodRecommendations.filter((x: Row) => x.completed).length,
       measured: periodRecommendations.filter(
-        x =>
+        (x: Row) =>
           x.outcome?.measuredAt && (!period?.end || x.outcome.measuredAt.slice(0, 10) <= period.end)
       ).length,
     },

@@ -1,7 +1,8 @@
 export const RECOMMENDATION_CALIBRATION_VERSION = '1.0.0';
-const dateOf = item =>
+type Row = Record<string, any>;
+const dateOf = (item: Row) =>
   String(item?.outcome?.measuredAt || item?.completedAt || item?.date || '').slice(0, 10);
-const priorityBand = value =>
+const priorityBand = (value: number | null | undefined) =>
   value == null
     ? 'Não identificado'
     : value >= 80
@@ -11,10 +12,16 @@ const priorityBand = value =>
         : value >= 40
           ? '40–59'
           : '0–39';
-const label = value => (value == null || value === '' ? 'Não identificado' : String(value));
-const confidence = (eligible, total) =>
+const label = (value: unknown) =>
+  value == null || value === '' ? 'Não identificado' : String(value);
+const confidence = (eligible: number, total: number) =>
   eligible >= 20 ? 'Alta' : eligible >= 10 ? 'Média' : total >= 5 ? 'Baixa' : 'Insuficiente';
-function summarize(items, key, getLabel, minimumSample) {
+function summarize(
+  items: Row[],
+  key: (item: Row) => unknown,
+  getLabel: ((value: string, item: Row) => string) | null,
+  minimumSample: number
+) {
   const buckets = new Map();
   for (const item of items) {
     const value = label(key(item)),
@@ -50,13 +57,19 @@ function summarize(items, key, getLabel, minimumSample) {
     .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label));
 }
 export function buildRecommendationCalibration(
-  feedback = [],
+  feedback: Row[] = [],
   {
     periodStart = null,
     periodEnd = null,
     minimumSample = 5,
     subjectNames = {},
     topicNames = {},
+  }: {
+    periodStart?: string | null;
+    periodEnd?: string | null;
+    minimumSample?: number;
+    subjectNames?: Record<string, string>;
+    topicNames?: Record<string, string>;
   } = {}
 ) {
   const measured = (Array.isArray(feedback) ? feedback : [])

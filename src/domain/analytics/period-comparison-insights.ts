@@ -1,12 +1,13 @@
 export const PERIOD_COMPARISON_INSIGHTS_VERSION = '1.1.0';
 
-const safeCount = value => Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 0);
+const safeCount = (value: unknown) =>
+  Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 0);
 
 export function buildPeriodComparisonInsights(
   comparison: any,
   { currentQuestionVolume = 0, previousQuestionVolume = 0, minimumSample = 20 }: any = {}
 ) {
-  const entries = Array.isArray(comparison?.metrics)
+  const entries: any[] = Array.isArray(comparison?.metrics)
     ? comparison.metrics
     : Object.entries(comparison?.metrics || {}).map(([key, metric]: [string, any]) => ({
         key,

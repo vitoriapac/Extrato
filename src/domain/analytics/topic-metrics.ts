@@ -1,7 +1,8 @@
 import { confidenceLabel, createMetricEvidence } from './evidence.js';
 import { describeScoreEvidence } from './score-evidence.js';
 
-const clamp = value => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+type Row = Record<string, any>;
+const clamp = (value: unknown) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 export const MASTERY_ALGORITHM_VERSION = 2;
 export const MASTERY_BANDS = Object.freeze([
   { min: 90, label: 'Dominado' },
@@ -11,7 +12,10 @@ export const MASTERY_BANDS = Object.freeze([
   { min: 0, label: 'Crítico' },
 ]);
 
-export function classifyTopicMastery(value, bands = MASTERY_BANDS) {
+export function classifyTopicMastery(
+  value: number | null,
+  bands: ReadonlyArray<{ min: number; label: string }> = MASTERY_BANDS
+) {
   if (value == null) return 'Sem dados';
   return (
     [...bands].sort((a, b) => b.min - a.min).find(band => value >= band.min)?.label || 'Sem dados'
@@ -19,7 +23,6 @@ export function classifyTopicMastery(value, bands = MASTERY_BANDS) {
 }
 
 export function calculateTopicMastery({
-  topic = {},
   performance = { resolved: 0, accuracy: null },
   trend = { key: 'insufficient' },
   reviews = [],
@@ -40,20 +43,21 @@ export function calculateTopicMastery({
   else if (hasQuestions && trend.key === 'down')
     trendScore = Math.max(0, 40 - Math.abs(trend.delta || 0) * 2);
   else if (hasQuestions && trend.key === 'stable') trendScore = 60;
-  const completedReviews = reviews.filter(review => review.status === 'Concluído').length;
+  const completedReviews = reviews.filter((review: Row) => review.status === 'Concluído').length;
   const reviewScore = reviews.length
     ? 50 + ((completedReviews / reviews.length) * 100 - 50) * Math.min(1, reviews.length / 4)
     : null;
   const recentSeconds = recentSessions.reduce(
-    (sum, item) => sum + (Number(item.durationSeconds) || 0),
+    (sum: number, item: Row) => sum + (Number(item.durationSeconds) || 0),
     0
   );
   const studyScore = recentSeconds > 0 ? Math.min(100, (recentSeconds / 7200) * 100) : null;
-  const observed = [
+  const weightedScores: Array<[number | null, number, string]> = [
     [performanceScore, 0.65, 'questões'],
     [trendScore, 0.15, 'tendência'],
     [reviewScore, 0.2, 'revisões'],
-  ].filter(([value]) => value != null);
+  ];
+  const observed = weightedScores.filter(([value]) => value != null);
   const available = observed.length > 0;
   const confidence = Math.min(
     1,
@@ -123,6 +127,15 @@ export function calculateTopicRetention({
   onTime = 0,
   periodStart = null,
   periodEnd = null,
+}: {
+  due?: unknown[];
+  resolved?: number;
+  correct?: number;
+  lastReview?: string | null;
+  daysSince?: number | null;
+  onTime?: number;
+  periodStart?: string | null;
+  periodEnd?: string | null;
 } = {}) {
   const reviewRate = due.length ? (onTime / due.length) * 100 : 50;
   const accuracy = resolved ? (correct / resolved) * 100 : 50;
@@ -148,10 +161,10 @@ export function calculateTopicRetention({
   };
   if (!available)
     return {
-      value: null,
+      value: null as number | null,
       state: 'empty',
       score: 0,
-      raw: null,
+      raw: null as number | null,
       confidence: 0,
       confidenceLabel: 'Baixa',
       available: false,
