@@ -1,4 +1,4 @@
-function splitArguments(source) {
+function splitArguments(source: string) {
   const values = [];
   let current = '',
     quote = null,
@@ -45,7 +45,7 @@ function splitArguments(source) {
   if (current.trim()) values.push(current.trim());
   return values;
 }
-function defaultArgument(expression, element) {
+function defaultArgument(expression: string, element: any) {
   const value = expression.trim();
   if (value === 'this.value') return element.value;
   if (value === 'this.value||null') return element.value || null;
@@ -71,7 +71,7 @@ export function createDelegatedEventsController({
   eventTypes = ['click', 'change', 'input', 'blur'],
 }: any = {}) {
   if (!document) throw new TypeError('Controlador de eventos requer documento.');
-  const dispatch = (code, event, element) => {
+  const dispatch = (code: unknown, event: any, element: any): void => {
     const normalized = String(code || '').trim();
     if (!normalized) return;
     if (normalized.length > 500 || /[\u0000-\u001f]/.test(normalized))
@@ -95,10 +95,10 @@ export function createDelegatedEventsController({
         : [])
     );
   };
-  const listeners = [];
+  const listeners: Array<[string, (event: any) => void]> = [];
   const register = () => {
-    eventTypes.forEach(type => {
-      const listener = event => {
+    eventTypes.forEach((type: any) => {
+      const listener = (event: any) => {
         const key = `delegated${type[0].toUpperCase() + type.slice(1)}`,
           attribute = `data-${key.replace(/[A-Z]/g, char => '-' + char.toLowerCase())}`,
           element = event.target?.closest?.(`[${attribute}]`);

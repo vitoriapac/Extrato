@@ -4,11 +4,11 @@ export function createDailyExecutionController({
   getNextBestAction,
   onStart,
   onResume,
-  getTimer = () => null,
+  getTimer = (): Record<string, any> | null => null,
 }: any = {}) {
   const build = (nextBestAction = getNextBestAction()) =>
     buildDailyExecutionModel({ ...getContext(), nextBestAction });
-  const start = id => {
+  const start = (id: string) => {
     const item = build().items?.find(row => row.id === id && row.remainingSeconds > 0);
     if (!item) return { state: 'unavailable' };
     const timer = getTimer();

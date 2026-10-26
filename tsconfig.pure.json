@@ -18,6 +18,10 @@
     "src/ui/view-models/**/*",
     "src/ui/components/**/*",
     "src/ui/subjects/**/*",
-    "src/ui/calendar/**/*"
+    "src/ui/calendar/**/*",
+    "src/ui/help/**/*",
+    "src/ui/controllers/**/*",
+    "src/ui/renderers/achievement-renderer.ts",
+    "src/ui/renderers/global-search-renderer.ts"
   ]
 }

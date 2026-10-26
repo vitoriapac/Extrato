@@ -14,8 +14,8 @@ export function createDemoController({
 }: any = {}) {
   if (!document || !storage || typeof getState !== 'function')
     throw new TypeError('Controlador da demonstração requer documento, armazenamento e estado.');
-  const listeners = [];
-  const listen = (target, event, handler) => {
+  const listeners: Array<() => void> = [];
+  const listen = (target: any, event: string, handler: (event: any) => void) => {
     if (!target) return;
     target.addEventListener(event, handler);
     listeners.push(() => target.removeEventListener?.(event, handler));
@@ -56,7 +56,7 @@ export function createDemoController({
     if (enterButton) enterButton.hidden = isDemo;
     if (emptyCta)
       emptyCta.hidden = isDemo || state.subjects.length > 0 || state.studySessions.length > 0;
-    document.querySelectorAll('[data-demo-protected]').forEach(button => {
+    document.querySelectorAll('[data-demo-protected]').forEach((button: any) => {
       button.disabled = isDemo;
       button.title = isDemo ? 'Indisponível para proteger seus dados reais.' : '';
     });
@@ -72,7 +72,9 @@ export function createDemoController({
     listen(document.getElementById('exitDemoBtn'), 'click', exit);
     document
       .querySelectorAll('[data-demo-target]')
-      .forEach(button => listen(button, 'click', () => activateTab(button.dataset.demoTarget)));
+      .forEach((button: any) =>
+        listen(button, 'click', () => activateTab(button.dataset.demoTarget))
+      );
     listen(document.getElementById('demoReportShortcut'), 'click', () =>
       document.getElementById('exportReportBtn')?.click()
     );

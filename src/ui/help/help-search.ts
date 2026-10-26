@@ -1,10 +1,11 @@
 // Pure help indexing: no state, persistence or analytical calculations.
-export const normalizeHelpText = value =>
+type Row = Record<string, any>;
+export const normalizeHelpText = (value: unknown) =>
   String(value ?? '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLocaleLowerCase('pt-BR');
-export function buildHelpSearchIndex(entry) {
+export function buildHelpSearchIndex(entry: Row) {
   return normalizeHelpText(
     [
       entry.title,
@@ -14,7 +15,7 @@ export function buildHelpSearchIndex(entry) {
       ...(entry.paragraphs || []),
       ...(entry.bullets || []),
       ...(entry.flow || []),
-      ...(entry.steps || []).flatMap(step =>
+      ...(entry.steps || []).flatMap((step: any) =>
         typeof step === 'string' ? [step] : [step.title, step.detail]
       ),
       ...(entry.keywords || []),
@@ -25,29 +26,29 @@ export function buildHelpSearchIndex(entry) {
       .join(' ')
   );
 }
-export function matchesHelpSearch(index, query) {
+export function matchesHelpSearch(index: string, query: string) {
   const terms = normalizeHelpText(query).trim().split(/\s+/).filter(Boolean);
   const text = normalizeHelpText(index);
   return terms.every(term => text.includes(term));
 }
-export function searchHelpEntries(categories, query, { categoryId }: any = {}) {
+export function searchHelpEntries(categories: Row[], query: string, { categoryId }: any = {}) {
   return categories
-    .filter(category => !categoryId || category.id === categoryId)
-    .flatMap(category =>
+    .filter((category: any) => !categoryId || category.id === categoryId)
+    .flatMap((category: any) =>
       category.entries
-        .filter(entry =>
+        .filter((entry: any) =>
           matchesHelpSearch(category.title + ' ' + buildHelpSearchIndex(entry), query)
         )
-        .map(entry => ({
+        .map((entry: any) => ({
           categoryId: category.id,
           id: entry.id,
           score: rankHelpSearch(entry, query),
         }))
     )
-    .sort((a, b) => b.score - a.score);
+    .sort((a: any, b: any) => b.score - a.score);
 }
 
-export function rankHelpSearch(entry, query) {
+export function rankHelpSearch(entry: Row, query: string) {
   if (!normalizeHelpText(query).trim()) return 0;
   if (!matchesHelpSearch(buildHelpSearchIndex(entry), query)) return 0;
   const title = normalizeHelpText(entry.title),

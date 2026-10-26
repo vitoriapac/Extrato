@@ -1,15 +1,15 @@
-const escape = value =>
+const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]
   );
-const minutes = value => Math.max(0, Number(value) || 0);
-export function renderHelpVisual(visual) {
+const minutes = (value: unknown) => Math.max(0, Number(value) || 0);
+export function renderHelpVisual(visual: Record<string, any> | null | undefined) {
   if (!visual) return '';
-  const metric = (label, value) =>
+  const metric = (label: string, value: unknown) =>
     `<div class="instruction-metric"><strong>${minutes(value)} min</strong><span>${escape(label)}</span></div>`;
-  const steps = (items, className) =>
-    `<ol class="${className}">${(items || []).map((step, index) => `<li><span class="instruction-step-number" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span><strong>${escape(step.title)}</strong><small>${escape(step.detail)}</small></li>`).join('')}</ol>`;
+  const steps = (items: Array<Record<string, any>> | undefined, className: string) =>
+    `<ol class="${className}">${(items || []).map((step: any, index: any) => `<li><span class="instruction-step-number" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span><strong>${escape(step.title)}</strong><small>${escape(step.detail)}</small></li>`).join('')}</ol>`;
   let content = '';
   switch (visual.type) {
     case 'flow':
@@ -28,12 +28,12 @@ export function renderHelpVisual(visual) {
       content = `<strong>${escape(visual.subject)}</strong><p>${escape(visual.topic)}</p><p>${escape(visual.activity)} · ${minutes(visual.minutes)} min</p><span class="instruction-action">▶ Iniciar estudo</span><p class="instruction-legend">Representação de uma atividade; não inicia uma sessão.</p>`;
       break;
     case 'allocation':
-      content = `<div class="instruction-allocation"><div class="instruction-allocation-row instruction-legend"><span>Disciplina</span><span>Atual</span><span>Proposta</span></div>${visual.rows.map(row => `<div class="instruction-allocation-row"><strong>${escape(row.label)}</strong><span>${minutes(row.before)} min</span><span>${minutes(row.after)} min<small>${row.after > row.before ? 'Aumento de ' + minutes(row.after - row.before) + ' minutos' : row.after < row.before ? 'Redução de ' + minutes(row.before - row.after) + ' minutos' : 'Sem alteração'}</small></span></div>`).join('')}<div class="instruction-allocation-row"><strong>Total</strong><span>${minutes(visual.total)} min</span><span>${minutes(visual.total)} min</span></div></div>`;
+      content = `<div class="instruction-allocation"><div class="instruction-allocation-row instruction-legend"><span>Disciplina</span><span>Atual</span><span>Proposta</span></div>${visual.rows.map((row: any) => `<div class="instruction-allocation-row"><strong>${escape(row.label)}</strong><span>${minutes(row.before)} min</span><span>${minutes(row.after)} min<small>${row.after > row.before ? 'Aumento de ' + minutes(row.after - row.before) + ' minutos' : row.after < row.before ? 'Redução de ' + minutes(row.before - row.after) + ' minutos' : 'Sem alteração'}</small></span></div>`).join('')}<div class="instruction-allocation-row"><strong>Total</strong><span>${minutes(visual.total)} min</span><span>${minutes(visual.total)} min</span></div></div>`;
       break;
     case 'weekly-bars':
       content = visual.weeks
         .map(
-          week =>
+          (week: any) =>
             `<div class="instruction-week"><strong>${escape(week.label)}</strong><p>Planejado: ${minutes(week.planned)} min · Realizado: ${minutes(week.actual)} min</p><div class="instruction-example-bar" aria-hidden="true"><span style="width:100%"></span></div><div class="instruction-example-bar instruction-example-bar--actual" aria-hidden="true"><span style="width:${Math.min(100, week.planned > 0 ? (minutes(week.actual) / week.planned) * 100 : 0)}%"></span></div></div>`
         )
         .join('');
@@ -45,16 +45,16 @@ export function renderHelpVisual(visual) {
       content = `<p>Período anterior: ${minutes(visual.previous)} questões</p><p>Período recente: ${minutes(visual.recent)} questões</p><p class="instruction-legend">Amostra insuficiente não significa desempenho ruim. Os requisitos variam por análise.</p>`;
       break;
     case 'adherence':
-      content = `<ul class="instruction-steps">${visual.rows.map(row => `<li><strong>${escape(row.label)}</strong><span>Planejado: ${minutes(row.planned)} min · Realizado: ${minutes(row.actual)} min</span></li>`).join('')}</ul><div class="instruction-comparison"><div class="instruction-metric"><strong>${minutes(visual.load)}%</strong><span>Aderência de carga</span></div><div class="instruction-metric"><strong>${minutes(visual.priorities)}%</strong><span>Prioridades executadas</span></div></div>`;
+      content = `<ul class="instruction-steps">${visual.rows.map((row: any) => `<li><strong>${escape(row.label)}</strong><span>Planejado: ${minutes(row.planned)} min · Realizado: ${minutes(row.actual)} min</span></li>`).join('')}</ul><div class="instruction-comparison"><div class="instruction-metric"><strong>${minutes(visual.load)}%</strong><span>Aderência de carga</span></div><div class="instruction-metric"><strong>${minutes(visual.priorities)}%</strong><span>Prioridades executadas</span></div></div>`;
       break;
     case 'matrix':
-      content = `<ul class="instruction-matrix">${visual.cells.map(cell => `<li><strong>${escape(cell.title)}</strong><p>${escape(cell.detail)}</p></li>`).join('')}</ul>`;
+      content = `<ul class="instruction-matrix">${visual.cells.map((cell: any) => `<li><strong>${escape(cell.title)}</strong><p>${escape(cell.detail)}</p></li>`).join('')}</ul>`;
       break;
     case 'tree':
-      content = `<strong>${escape(visual.subject)}</strong><ul class="instruction-tree">${visual.topics.map(topic => `<li>${escape(topic)}</li>`).join('')}</ul>`;
+      content = `<strong>${escape(visual.subject)}</strong><ul class="instruction-tree">${visual.topics.map((topic: any) => `<li>${escape(topic)}</li>`).join('')}</ul>`;
       break;
     case 'reference':
-      content = `<ul class="instruction-reference">${visual.items.map(item => `<li><strong>${escape(item.title)}</strong><p>${escape(item.detail)}</p></li>`).join('')}</ul>`;
+      content = `<ul class="instruction-reference">${visual.items.map((item: any) => `<li><strong>${escape(item.title)}</strong><p>${escape(item.detail)}</p></li>`).join('')}</ul>`;
       break;
     default:
       return '';

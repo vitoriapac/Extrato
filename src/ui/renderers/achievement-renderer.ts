@@ -1,28 +1,30 @@
 import { formatDecimal } from '../../core/format-number.js';
+type Row = Record<string, any>;
+
 export function renderAchievementGroups(
-  model,
-  { escapeHtml = value => String(value ?? '') }: any = {}
+  model: Row,
+  { escapeHtml = (value: unknown) => String(value ?? '') }: any = {}
 ) {
-  const progress = item => {
+  const progress = (item: Row) => {
     if (item.unlocked || !item.progress || !(Number(item.progress.target) > 0)) return '';
     const current = Math.max(0, Number(item.progress.current) || 0),
       target = Number(item.progress.target),
       percent = Math.min(100, Math.round((current / target) * 100));
-    const format = value =>
+    const format = (value: number) =>
       item.progress.unit === 'horas' ? formatDecimal(value) : String(Math.floor(value));
     return `<div class="badge-progress" role="progressbar" aria-label="Progresso de ${escapeHtml(item.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-valuetext="${format(current)} de ${format(target)} ${escapeHtml(item.progress.unit)}"><span style="width:${percent}%"></span></div><small class="badge-progress-label">${format(current)} / ${format(target)} ${escapeHtml(item.progress.unit)}</small>`;
   };
-  const card = item =>
-    `<article class="badge-card${item.unlocked ? ' unlocked' : ''}" aria-label="${escapeHtml(item.name)}: ${item.unlocked ? 'desbloqueada' : 'bloqueada'}"><div class="badge-name">${escapeHtml(item.name)}</div><div class="badge-desc">${escapeHtml(item.desc)}</div>${progress(item)}${!item.unlocked && item.guidance ? `<p class="badge-guidance">${escapeHtml(item.guidance)}</p>` : ''}${!item.unlocked && item.missing?.length ? `<ul class="badge-missing">${item.missing.map(value => `<li>${escapeHtml(value)}</li>`).join('')}</ul>` : ''}<span class="badge-status">${item.unlocked ? 'Desbloqueada' : 'A conquistar'}</span></article>`;
+  const card = (item: Row) =>
+    `<article class="badge-card${item.unlocked ? ' unlocked' : ''}" aria-label="${escapeHtml(item.name)}: ${item.unlocked ? 'desbloqueada' : 'bloqueada'}"><div class="badge-name">${escapeHtml(item.name)}</div><div class="badge-desc">${escapeHtml(item.desc)}</div>${progress(item)}${!item.unlocked && item.guidance ? `<p class="badge-guidance">${escapeHtml(item.guidance)}</p>` : ''}${!item.unlocked && item.missing?.length ? `<ul class="badge-missing">${item.missing.map((value: any) => `<li>${escapeHtml(value)}</li>`).join('')}</ul>` : ''}<span class="badge-status">${item.unlocked ? 'Desbloqueada' : 'A conquistar'}</span></article>`;
   const categories = [
     ['consistency', 'Consistência'],
     ['learning', 'Aprendizado'],
     ['strategy', 'Estratégia'],
   ];
-  const groups = items =>
+  const groups = (items: Row[]) =>
     categories
       .map(([key, label]) => {
-        const rows = items.filter(item => (item.category || 'learning') === key);
+        const rows = items.filter((item: any) => (item.category || 'learning') === key);
         return rows.length
           ? `<section class="achievement-category" aria-label="${label}"><h4>${label}</h4><div class="badges-grid-list">${rows.map(card).join('')}</div></section>`
           : '';

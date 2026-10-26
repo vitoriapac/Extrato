@@ -13,12 +13,13 @@
 export const REMOTE_SYNC_CONFIG_KEY = 'studytrack_remote_sync_config';
 
 /** Mesma normalização do provider, para que "pasta" e "pasta/" sejam o mesmo servidor. */
-const sameServer = url => {
+type Row = Record<string, any>;
+const sameServer = (url: unknown) => {
   const clean = String(url || '').trim();
   return clean.endsWith('/') ? clean : `${clean}/`;
 };
 
-const validLastSync = value =>
+const validLastSync = (value: Row | null | undefined) =>
   value && typeof value.serverUrl === 'string' && typeof value.envelopeAt === 'string'
     ? { serverUrl: value.serverUrl, envelopeAt: value.envelopeAt }
     : null;
@@ -26,7 +27,7 @@ const validLastSync = value =>
 /**
  * Lê as preferências persistidas, descartando qualquer senha gravada por versões anteriores.
  */
-export function readRemoteSyncPreferences(storage): {
+export function readRemoteSyncPreferences(storage: Storage | null | undefined): {
   serverUrl: string;
   username: string;
   lastSync?: any;
@@ -62,7 +63,7 @@ export function readRemoteSyncPreferences(storage): {
  * Persiste somente dados não secretos da conexão.
  */
 export function writeRemoteSyncPreferences(
-  storage,
+  storage: Storage | null | undefined,
   { serverUrl = '', username = '', lastSync = null }: any = {}
 ) {
   if (!storage) return false;
@@ -85,13 +86,13 @@ export function createRemoteSyncController({
   document = globalThis.document,
   window = globalThis.window,
   provider,
-  getState = () => null,
+  getState = (): Row | null => null,
   validate,
   describe = () => 'Backup remoto válido.',
   confirm,
   createSnapshot,
-  onImported = _state => {},
-  notify = _msg => {},
+  onImported = (_state: Row): boolean | void => {},
+  notify = (_msg: string) => {},
   isDisabled = () => false,
 }: any = {}) {
   if (
@@ -129,9 +130,9 @@ export function createRemoteSyncController({
     }
   })();
 
-  let previousFocus = null;
+  let previousFocus: any = null;
 
-  const showStatus = (text, isError = false) => {
+  const showStatus = (text: string, isError = false) => {
     if (!statusBox || !statusMsg) return;
     statusBox.hidden = false;
     statusBox.style.color = isError ? 'var(--critical, #e63946)' : 'var(--text-primary)';
@@ -181,14 +182,14 @@ export function createRemoteSyncController({
     previousFocus = null;
   };
 
-  const lastSyncedEnvelopeAt = serverUrl => {
+  const lastSyncedEnvelopeAt = (serverUrl: string) => {
     const { lastSync } = readRemoteSyncPreferences(storage);
     return lastSync && sameServer(lastSync.serverUrl) === sameServer(serverUrl)
       ? lastSync.envelopeAt
       : null;
   };
 
-  const recordSync = (serverUrl, envelopeAt) => {
+  const recordSync = (serverUrl: string, envelopeAt: string) => {
     if (!envelopeAt) return;
     const preferences = readRemoteSyncPreferences(storage);
     writeRemoteSyncPreferences(storage, {
@@ -197,7 +198,7 @@ export function createRemoteSyncController({
     });
   };
 
-  const formatEnvelopeAt = iso => {
+  const formatEnvelopeAt = (iso: string) => {
     const date = new Date(iso);
     return Number.isNaN(date.getTime())
       ? iso
@@ -205,10 +206,10 @@ export function createRemoteSyncController({
   };
 
   /** A nuvem só mudou "por fora" se o envelope remoto não for o da última sincronização deste navegador. */
-  const remoteChangedSinceLastSync = (version, serverUrl) =>
+  const remoteChangedSinceLastSync = (version: Row | null | undefined, serverUrl: string) =>
     version.exists && !(version.valid && version.createdAt === lastSyncedEnvelopeAt(serverUrl));
 
-  const requireCredentials = config => {
+  const requireCredentials = (config: Row) => {
     if (!config.serverUrl || !config.passphrase) {
       showStatus('Informe a URL WebDAV e a Chave de Criptografia Mestre.', true);
       return false;
@@ -286,7 +287,7 @@ export function createRemoteSyncController({
   };
 
   /** Pode rodar depois da confirmação, com o modal fechado: por isso também avisa por notify. */
-  const upload = async config => {
+  const upload = async (config: Row) => {
     showStatus('Criptografando com AES-GCM e enviando para a nuvem...');
     try {
       const result = await provider.uploadState(getState(), config);
@@ -301,7 +302,7 @@ export function createRemoteSyncController({
   };
 
   /** Executado somente após a confirmação explícita do usuário. */
-  const applyConfirmed = async (normalized, syncMarker = null) => {
+  const applyConfirmed = async (normalized: Row, syncMarker: Row | null = null) => {
     let snapshotCreated = false;
     try {
       snapshotCreated = await createSnapshot();
@@ -372,7 +373,7 @@ export function createRemoteSyncController({
     pushBtn?.addEventListener('click', push);
     pullBtn?.addEventListener('click', pull);
 
-    overlay?.addEventListener('keydown', event => {
+    overlay?.addEventListener('keydown', (event: any) => {
       if ((event as KeyboardEvent).key === 'Escape') {
         event.preventDefault();
         close();

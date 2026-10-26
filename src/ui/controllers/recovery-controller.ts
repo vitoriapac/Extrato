@@ -29,7 +29,7 @@ export function createRecoveryController({
         : null,
     };
   };
-  const run = async (operation, { allowDemo = false } = {}) => {
+  const run = async (operation: () => Promise<any> | any, { allowDemo = false } = {}) => {
     if (isDisabled() && !allowDemo)
       return rejectRecovery(
         'demo_mode',
@@ -51,7 +51,7 @@ export function createRecoveryController({
   };
   return {
     preview,
-    apply: displayedSignature =>
+    apply: (displayedSignature: string) =>
       run(() =>
         applyRecoveryPlan({
           state: getState(),
@@ -62,7 +62,7 @@ export function createRecoveryController({
           services,
         })
       ),
-    revert: decisionId =>
+    revert: (decisionId: string) =>
       run(
         () =>
           revertRecoveryPlan({
@@ -74,7 +74,7 @@ export function createRecoveryController({
           }),
         {
           allowDemo:
-            getState().adaptivePlanningHistory.find(item => item.id === decisionId)
+            getState().adaptivePlanningHistory.find((item: any) => item.id === decisionId)
               ?.decisionType !== 'recovery',
         }
       ),

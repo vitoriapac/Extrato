@@ -1,5 +1,7 @@
 // Public URL names for tabs whose internal id predates their label; the old hash still works on load.
-export const TAB_HASHES = Object.freeze({ metas: 'planejamento' });
+export const TAB_HASHES: Readonly<Record<string, string>> = Object.freeze({
+  metas: 'planejamento',
+});
 export const MAIN_TABS = Object.freeze([
   'dashboard',
   'hoje',
@@ -10,7 +12,7 @@ export const MAIN_TABS = Object.freeze([
   'metas',
   'instrucoes',
 ]);
-export function nextNavigationIndex(current, length, key) {
+export function nextNavigationIndex(current: number, length: number, key: string) {
   if (!length) return -1;
   if (key === 'Home') return 0;
   if (key === 'End') return length - 1;
@@ -35,10 +37,10 @@ export function createNavigationController({
     throw new TypeError('Controlador de navegação requer documento e janela.');
   const moreButton = document.getElementById('moreTabButton'),
     moreMenu = document.getElementById('mobileMoreMenu');
-  const syncMore = tabName => {
+  const syncMore = (tabName: string) => {
     const secondary = ['desempenho', 'agenda', 'questoes', 'metas', 'instrucoes'].includes(tabName);
     moreButton?.classList.toggle('active', secondary);
-    moreMenu?.querySelectorAll('[data-more-tab]').forEach(item => {
+    moreMenu?.querySelectorAll('[data-more-tab]').forEach((item: any) => {
       const active = item.dataset.moreTab === tabName;
       item.classList.toggle('active', active);
       if (active) item.setAttribute('aria-current', 'page');
@@ -51,12 +53,12 @@ export function createNavigationController({
     moreButton?.setAttribute('aria-expanded', 'false');
     if (restoreFocus) moreButton?.focus();
   };
-  const activate = (tabName, updateHash = true) => {
+  const activate = (tabName: string, updateHash = true) => {
     const button = document.querySelector(`.tab-btn[data-tab="${tabName}"]`),
       panel = document.getElementById(`panel-${tabName}`);
     if (!button || !panel) return false;
     // Only real tabs carry tab state; "Mais" is a menu button, where aria-selected is invalid.
-    document.querySelectorAll('.tab-btn[data-tab]').forEach(item => {
+    document.querySelectorAll('.tab-btn[data-tab]').forEach((item: any) => {
       const active = item === button;
       item.classList.toggle('active', active);
       item.setAttribute('aria-selected', String(active));
@@ -66,7 +68,7 @@ export function createNavigationController({
     });
     document
       .querySelectorAll('.panel')
-      .forEach(item => item.classList.toggle('active', item === panel));
+      .forEach((item: any) => item.classList.toggle('active', item === panel));
     syncMore(tabName);
     if (document.body?.dataset) document.body.dataset.activeTab = tabName;
     button.scrollIntoView?.({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
@@ -82,14 +84,14 @@ export function createNavigationController({
     moreButton.setAttribute('aria-expanded', String(open));
     if (open) moreMenu.querySelector('[role="menuitem"]')?.focus();
   });
-  moreMenu?.addEventListener('click', event => {
+  moreMenu?.addEventListener('click', (event: any) => {
     const item = event.target.closest('[data-more-tab]');
     if (item) {
       activate(item.dataset.moreTab);
       closeMore();
     }
   });
-  moreMenu?.addEventListener('keydown', event => {
+  moreMenu?.addEventListener('keydown', (event: any) => {
     const items = [...moreMenu.querySelectorAll('[role="menuitem"]')],
       index = items.indexOf(document.activeElement);
     if (event.key === 'Escape') {
@@ -101,13 +103,13 @@ export function createNavigationController({
     event.preventDefault();
     items[nextNavigationIndex(index, items.length, event.key)]?.focus();
   });
-  document.addEventListener('click', event => {
+  document.addEventListener('click', (event: any) => {
     if (!moreMenu?.hidden && !moreMenu.contains(event.target) && event.target !== moreButton)
       closeMore();
   });
-  document.querySelectorAll('.tab-btn[data-tab]').forEach(button => {
+  document.querySelectorAll('.tab-btn[data-tab]').forEach((button: any) => {
     button.addEventListener('click', () => activate(button.dataset.tab));
-    button.addEventListener('keydown', event => {
+    button.addEventListener('keydown', (event: any) => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
       const tabs = [...document.querySelectorAll('.tab-btn[data-tab]')].filter(
@@ -119,7 +121,7 @@ export function createNavigationController({
     });
   });
   const registerShortcuts = () =>
-    document.addEventListener('keydown', event => {
+    document.addEventListener('keydown', (event: any) => {
       trapModalTab(event);
       const modifier = window.navigator.platform.toUpperCase().includes('MAC')
           ? event.metaKey

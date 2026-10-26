@@ -6,7 +6,7 @@ export function createErrorBoundaryController({ document, onRetry = () => {} }: 
     if (container) container.hidden = true;
     if (message) message.textContent = '';
   };
-  const report = (error, context = 'aplicação') => {
+  const report = (error: unknown, context = 'aplicação') => {
     console.error(`Falha em ${context}`, error);
     if (message)
       message.textContent = `Não foi possível atualizar ${context}. Seus dados permanecem salvos.`;

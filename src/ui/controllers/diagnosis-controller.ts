@@ -6,10 +6,10 @@ export function createDiagnosisController({
   openPreview,
   activateTab,
   requestFrame,
-}) {
+}: any) {
   return {
     register() {
-      document.addEventListener('click', event => {
+      document.addEventListener('click', (event: any) => {
         const dismiss = event.target.closest('[data-ignore-outside-suggestion]');
         if (dismiss) {
           const card = dismiss.closest('.study-recommendation,.next-best-action');
@@ -25,7 +25,7 @@ export function createDiagnosisController({
         if (!button) return;
         refreshRecommendations();
         const current = getRecommendations().find(
-          item => (item.recommendationId || item.id) === button.dataset.nextBestPreview
+          (item: any) => (item.recommendationId || item.id) === button.dataset.nextBestPreview
         );
         if (!current) {
           onStale();

@@ -9,11 +9,12 @@ export function createPerformanceController({
   simulateScenario,
   renderScenarioResult,
   applyRecovery = (_signature?: any) => {},
-}) {
-  const update = patch => setViewState(updatePerformanceViewState(getViewState(), patch));
+}: any) {
+  const update = (patch: Record<string, any>) =>
+    setViewState(updatePerformanceViewState(getViewState(), patch));
   return {
     register() {
-      document.addEventListener('click', event => {
+      document.addEventListener('click', (event: any) => {
         const jump = event.target.closest('[data-performance-jump]');
         if (!jump) return;
         update({ section: jump.dataset.performanceJump });
@@ -22,7 +23,7 @@ export function createPerformanceController({
         if (jump.dataset.performanceTopicId) update({ topicId: jump.dataset.performanceTopicId });
         activateTab('desempenho');
       });
-      document.getElementById('performancePage')?.addEventListener('click', event => {
+      document.getElementById('performancePage')?.addEventListener('click', (event: any) => {
         if (event.target.closest('[data-projection-scenario-open]')) {
           document.getElementById('projectionScenarioDialog')?.showModal();
           return;
@@ -84,7 +85,7 @@ export function createPerformanceController({
           activateTab(open.dataset.performanceOpen);
         }
       });
-      document.getElementById('performancePage')?.addEventListener('submit', event => {
+      document.getElementById('performancePage')?.addEventListener('submit', (event: any) => {
         if (!event.target.matches('[data-projection-scenario-form]')) return;
         event.preventDefault();
         const form = event.target,
@@ -97,7 +98,7 @@ export function createPerformanceController({
         const destination = document.getElementById('projectionScenarioResult');
         if (destination) destination.innerHTML = renderScenarioResult(result);
       });
-      document.getElementById('performancePage')?.addEventListener('change', event => {
+      document.getElementById('performancePage')?.addEventListener('change', (event: any) => {
         const field = event.target;
         if (field.matches('[data-performance-period]')) update({ period: field.value });
         else if (field.matches('[data-performance-compare]'))

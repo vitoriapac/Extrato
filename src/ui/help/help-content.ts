@@ -369,7 +369,7 @@ start.entries.unshift({
   paragraphs: ['O sistema analisa e propõe. Você decide e confirma alterações no planejamento.'],
   action: { label: 'Conhecer a aba Hoje', target: 'today' },
 });
-const first = start.entries.find(entry => entry.id === 'first-steps');
+const first = start.entries.find((entry: any) => entry.id === 'first-steps');
 first.steps = [
   { title: 'Configure sua prova', detail: 'Escolha o objetivo e informe a data.' },
   { title: 'Defina sua disponibilidade', detail: 'Reserve horas que realmente cabem na semana.' },
@@ -383,7 +383,7 @@ first.steps = [
 ];
 first.keywords = ['primeiro acesso', 'onboarding', 'começar', 'configurar'];
 const study = BASE_HELP_CATEGORIES.find(category => category.id === 'guide-areas');
-const today = study.entries.find(entry => entry.id === 'today-guide');
+const today = study.entries.find((entry: any) => entry.id === 'today-guide');
 today.visual = {
   type: 'daily',
   title: 'Execução do dia',
@@ -402,14 +402,14 @@ today.bullets = [
   'Registrar, editar ou excluir uma sessão atualiza o progresso.',
 ];
 today.keywords = ['execução diária', 'pendências', 'plano do dia'];
-const sessions = study.entries.find(entry => entry.id === 'sessions');
+const sessions = study.entries.find((entry: any) => entry.id === 'sessions');
 sessions.visual = { type: 'comparison', title: 'Planejado e realizado', planned: 35, actual: 32 };
 sessions.paragraphs = [
   'O planejado representa a intenção. O realizado vem das sessões registradas, com cronômetro ou lançamento manual. Informe disciplina, tópico e tipo de estudo.',
 ];
 sessions.note = 'Prefira informar o tópico para dar contexto ao domínio e às prioridades.';
 sessions.keywords = ['tempo de estudo', 'cronômetro', 'sessão manual'];
-const reviews = study.entries.find(entry => entry.id === 'reviews');
+const reviews = study.entries.find((entry: any) => entry.id === 'reviews');
 reviews.visual = {
   type: 'reviews',
   title: 'Manutenção do conhecimento',
@@ -423,7 +423,7 @@ reviews.paragraphs = [
   'A Agenda organiza revisões para acompanhar a manutenção do conhecimento. Uma revisão atrasada merece atenção; sua conclusão deve refletir o que você realizou.',
 ];
 reviews.keywords = ['revisão atrasada', 'agenda', 'retenção'];
-const recommendation = study.entries.find(entry => entry.id === 'recommendations');
+const recommendation = study.entries.find((entry: any) => entry.id === 'recommendations');
 recommendation.visual = {
   type: 'action',
   title: 'Próxima atividade',
@@ -444,7 +444,7 @@ recommendation.flow = null;
 
 const planningGuide = BASE_HELP_CATEGORIES.find(category => category.id === 'guide-workflows');
 Object.assign(
-  planningGuide.entries.find(entry => entry.id === 'planning'),
+  planningGuide.entries.find((entry: any) => entry.id === 'planning'),
   {
     visual: {
       type: 'allocation',
@@ -508,7 +508,7 @@ planningGuide.entries.push({
 });
 const analysisGuide = BASE_HELP_CATEGORIES.find(category => category.id === 'guide-data');
 Object.assign(
-  analysisGuide.entries.find(entry => entry.id === 'readiness'),
+  analysisGuide.entries.find((entry: any) => entry.id === 'readiness'),
   {
     kind: 'concept',
     visual: { type: 'readiness', title: 'Síntese da preparação', value: 72 },
@@ -519,7 +519,7 @@ Object.assign(
   }
 );
 Object.assign(
-  analysisGuide.entries.find(entry => entry.id === 'adherence'),
+  analysisGuide.entries.find((entry: any) => entry.id === 'adherence'),
   {
     visual: {
       type: 'adherence',
@@ -574,13 +574,13 @@ analysisGuide.entries.push({
     'Para comparar uma tendência, os períodos precisam ter evidência suficiente. Aqui, 30 e 8 representam quantidades de questões, não uma meta universal: cada análise tem suas próprias regras. Registre respostas no tópico e consulte os requisitos apresentados pela análise.',
   ],
 });
-analysisGuide.entries.find(e => e.id === 'insufficient-sample-guide').visual = {
+analysisGuide.entries.find((e: any) => e.id === 'insufficient-sample-guide').visual = {
   type: 'sample',
   title: 'Questões em períodos de comparação',
   previous: 30,
   recent: 8,
 };
-const weeklyGuide = planningGuide.entries.find(e => e.id === 'weekly');
+const weeklyGuide = planningGuide.entries.find((e: any) => e.id === 'weekly');
 weeklyGuide.visual = {
   type: 'flow',
   title: 'Da semana à próxima decisão',
@@ -592,11 +592,11 @@ weeklyGuide.visual = {
     { title: 'Decisão', detail: 'Manter ou revisar com confirmação' },
   ],
 };
-planningGuide.entries = planningGuide.entries.filter(e => e.id !== 'weekly');
+planningGuide.entries = planningGuide.entries.filter((e: any) => e.id !== 'weekly');
 analysisGuide.entries.push(weeklyGuide);
 const examGuide = BASE_HELP_CATEGORIES.find(c => c.id === 'guide-exam');
 Object.assign(
-  examGuide.entries.find(e => e.id === 'exam-matrix'),
+  examGuide.entries.find((e: any) => e.id === 'exam-matrix'),
   {
     wide: true,
     visual: {
@@ -646,7 +646,7 @@ examGuide.entries.push({
 const dataGuide = BASE_HELP_CATEGORIES.find(c => c.id === 'guide-safety');
 function getSubjectGuide() {
   return BASE_HELP_CATEGORIES.find(c => c.id === 'guide-areas').entries.find(
-    e => e.id === 'subjects'
+    (e: any) => e.id === 'subjects'
   );
 }
 Object.assign(getSubjectGuide(), {
@@ -679,7 +679,7 @@ dataGuide.entries.push({
   action: { label: 'Consultar provas históricas', target: 'exam' },
 });
 Object.assign(
-  dataGuide.entries.find(e => e.id === 'backup'),
+  dataGuide.entries.find((e: any) => e.id === 'backup'),
   {
     visual: {
       type: 'flow',
@@ -694,7 +694,7 @@ Object.assign(
   }
 );
 Object.assign(
-  dataGuide.entries.find(e => e.id === 'demo'),
+  dataGuide.entries.find((e: any) => e.id === 'demo'),
   {
     visual: {
       type: 'reference',
@@ -712,11 +712,11 @@ Object.assign(
 // Stable IDs preserve navigation and search across the editorial update.
 const subjectEntry = BASE_HELP_CATEGORIES.find(
   category => category.id === 'guide-areas'
-).entries.find(entry => entry.id === 'subjects');
+).entries.find((entry: any) => entry.id === 'subjects');
 export const HELP_CATEGORIES = BASE_HELP_CATEGORIES.flatMap(category => {
   const entries =
     category.id === 'guide-areas'
-      ? category.entries.filter(entry => entry.id !== 'subjects')
+      ? category.entries.filter((entry: any) => entry.id !== 'subjects')
       : category.id === 'guide-safety'
         ? [subjectEntry, ...category.entries]
         : category.entries;
@@ -753,7 +753,7 @@ export const HELP_CATEGORIES = BASE_HELP_CATEGORIES.flatMap(category => {
     : [result];
 }).map(category => ({
   ...category,
-  entries: category.entries.map(entry => ({
+  entries: category.entries.map((entry: any) => ({
     kind: 'feature',
     keywords: [],
     concepts: [],
@@ -781,8 +781,8 @@ Object.assign(goalsGuide, {
 });
 const planningCategory = HELP_CATEGORIES.find(c => c.id === 'guide-workflows');
 const studyCategory = HELP_CATEGORIES.find(c => c.id === 'guide-areas');
-const calendarEntry = studyCategory.entries.find(e => e.id === 'calendar-guide');
-studyCategory.entries = studyCategory.entries.filter(e => e.id !== 'calendar-guide');
+const calendarEntry = studyCategory.entries.find((e: any) => e.id === 'calendar-guide');
+studyCategory.entries = studyCategory.entries.filter((e: any) => e.id !== 'calendar-guide');
 planningCategory.entries.push(calendarEntry);
 Object.assign(calendarEntry, {
   keywords: ['calendário', 'agenda', 'datas', 'carga por dia'],
@@ -804,11 +804,11 @@ studyCategory.entries.push({
   ],
   action: { label: 'Revisar em Hoje', target: 'today' },
 });
-studyCategory.entries.find(e => e.id === 'sessions').paragraphs = [
+studyCategory.entries.find((e: any) => e.id === 'sessions').paragraphs = [
   'Escolha disciplina, tópico e tipo antes de iniciar. Retome o cronômetro de uma sessão ativa ou finalize essa sessão antes de começar outra atividade. Ao finalizar, confira a duração e salve o registro.',
   'Também é possível registrar uma sessão manual. O realizado vem dos registros salvos; quando houver vínculo compatível com o plano, ele alimenta o progresso da atividade, limitado ao previsto.',
 ];
-const searchHints = {
+const searchHints: Record<string, Record<string, string[]>> = {
   readiness: {
     concepts: ['índice de prontidão', 'aprovação'],
     questions: ['Por que minha Prontidão não mudou?'],
@@ -912,7 +912,7 @@ export const HELP_FAQ = [
 
 Object.assign(
   HELP_CATEGORIES.find(category => category.id === 'guide-data').entries.find(
-    entry => entry.id === 'projections'
+    (entry: any) => entry.id === 'projections'
   ),
   {
     title: 'Trajetória, faixa e confiança',

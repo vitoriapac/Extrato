@@ -1,8 +1,8 @@
 export function createEditableCollectionController({
   service,
-  clone = value => structuredClone(value),
+  clone = (value: unknown) => structuredClone(value),
   render = () => {},
-  normalize = value => value,
+  normalize = (value: unknown) => value,
   onSaved = () => {},
   initialState = {},
 }: any = {}) {
@@ -12,7 +12,7 @@ export function createEditableCollectionController({
   const reset = () => Object.assign(state, { editingId: null, editingIsNew: false, draft: null });
   return Object.freeze({
     state,
-    begin: (id, { isNew = false } = {}) => {
+    begin: (id: string, { isNew = false } = {}) => {
       if (state.editingIsNew && state.editingId !== id) service.remove(state.editingId);
       const item = service.find(id);
       if (!item) return null;
@@ -20,7 +20,7 @@ export function createEditableCollectionController({
       render();
       return state.draft;
     },
-    update: (field, value) => {
+    update: (field: string, value: unknown) => {
       if (!state.draft) return null;
       state.draft[field] = value;
       return state.draft;

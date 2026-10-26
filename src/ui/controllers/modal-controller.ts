@@ -56,10 +56,10 @@ export function createModalController({ document, window }: any = {}) {
       cleanup();
       if (typeof onCancel === 'function') onCancel();
     };
-    const outside = event => {
+    const outside = (event: Event) => {
       if (event.target === overlay) cancel();
     };
-    const enter = event => {
+    const enter = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         event.preventDefault();
         accept();
@@ -77,7 +77,12 @@ export function createModalController({ document, window }: any = {}) {
   };
   return Object.freeze({
     confirm,
-    prompt: (message, options, onConfirm, onCancel) =>
+    prompt: (
+      message: string,
+      options: Record<string, any>,
+      onConfirm: (value: string) => void,
+      onCancel?: () => void
+    ) =>
       confirm(message, onConfirm, onCancel, {
         confirmLabel: options.confirmLabel || 'Criar',
         prompt: options,

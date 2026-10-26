@@ -11,9 +11,9 @@ export function createProjectionController({
   getCandidates,
   getPlan,
   getCapacity,
-  getAdaptiveHistory = () => [],
-  getExecutionContext = () => null,
-}) {
+  getAdaptiveHistory = (): any[] => [],
+  getExecutionContext = (): any => null,
+}: any) {
   return {
     current(metrics: any = null, readiness: any = null, candidates: any = null) {
       const context = getContext(metrics, readiness);
@@ -39,7 +39,7 @@ export function createProjectionController({
         weeklyCapacityMinutes: getCapacity(),
       };
     },
-    recovery(trajectory = null, { weeklyCapacityMinutes = null } = {}) {
+    recovery(trajectory: Record<string, any> | null = null, { weeklyCapacityMinutes = null } = {}) {
       const context = getContext();
       const model = trajectory || this.current(context.metrics, context.readiness).model;
       const plan = getPlan();
@@ -59,7 +59,7 @@ export function createProjectionController({
         activeExamTags: context.activeExamTags || [],
       });
     },
-    simulate(scenario) {
+    simulate(scenario: Record<string, any>) {
       const context = getContext();
       const current = this.current(context.metrics, context.readiness);
       const result = simulateProjectionScenario({

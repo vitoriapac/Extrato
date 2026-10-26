@@ -5,30 +5,31 @@ import {
   rankHelpSearch,
 } from './help-search.js';
 
-const DESTINATIONS = Object.freeze({
-  projection: { tab: 'desempenho', section: 'overview', selector: '.achievement-projection' },
-  adherence: { tab: 'desempenho', section: 'consistency', selector: '.adherence-summary' },
-  subjects: { tab: 'disciplinas', selector: '#addSubjectBtn' },
-  overview: { tab: 'dashboard', selector: '#balanceFigure' },
-  timer: { tab: 'dashboard', selector: '#timerSubjectSelect' },
-  questions: { tab: 'questoes', selector: '#addQuestaoRowBtn' },
-  reviews: { tab: 'agenda', selector: '#addAgendaRowBtn' },
-  today: { tab: 'hoje', selector: '#panel-hoje' },
-  calendar: { tab: 'calendario', selector: '#panel-calendario' },
-  planning: { tab: 'metas', selector: '#examStudyPlan' },
-  weekly: { tab: 'dashboard', selector: '#weeklyCloseDashboard' },
-  diagnosis: { tab: 'hoje', selector: '#diagnosisCenter' },
-  achievements: { tab: 'dashboard', selector: '#badgesGrid' },
-  history: { tab: 'dashboard', selector: '#decisionHistoryDashboard' },
-  report: { tab: 'instrucoes', selector: '#exportReportBtn' },
-  exam: { tab: 'desempenho', section: 'exam', selector: '#examIntelligenceOverview' },
-  audit: { tab: 'desempenho', section: 'exam', selector: '#examConfigurationAudit' },
-  matrix: { tab: 'desempenho', section: 'exam', selector: '#examHistoricalMatrix' },
-  backup: { tab: 'instrucoes', selector: '#exportBackupBtn' },
-  demo: { tab: 'instrucoes', selector: '#enterDemoBtn' },
-});
+const DESTINATIONS: Readonly<Record<string, { tab: string; selector?: string; section?: string }>> =
+  Object.freeze({
+    projection: { tab: 'desempenho', section: 'overview', selector: '.achievement-projection' },
+    adherence: { tab: 'desempenho', section: 'consistency', selector: '.adherence-summary' },
+    subjects: { tab: 'disciplinas', selector: '#addSubjectBtn' },
+    overview: { tab: 'dashboard', selector: '#balanceFigure' },
+    timer: { tab: 'dashboard', selector: '#timerSubjectSelect' },
+    questions: { tab: 'questoes', selector: '#addQuestaoRowBtn' },
+    reviews: { tab: 'agenda', selector: '#addAgendaRowBtn' },
+    today: { tab: 'hoje', selector: '#panel-hoje' },
+    calendar: { tab: 'calendario', selector: '#panel-calendario' },
+    planning: { tab: 'metas', selector: '#examStudyPlan' },
+    weekly: { tab: 'dashboard', selector: '#weeklyCloseDashboard' },
+    diagnosis: { tab: 'hoje', selector: '#diagnosisCenter' },
+    achievements: { tab: 'dashboard', selector: '#badgesGrid' },
+    history: { tab: 'dashboard', selector: '#decisionHistoryDashboard' },
+    report: { tab: 'instrucoes', selector: '#exportReportBtn' },
+    exam: { tab: 'desempenho', section: 'exam', selector: '#examIntelligenceOverview' },
+    audit: { tab: 'desempenho', section: 'exam', selector: '#examConfigurationAudit' },
+    matrix: { tab: 'desempenho', section: 'exam', selector: '#examHistoricalMatrix' },
+    backup: { tab: 'instrucoes', selector: '#exportBackupBtn' },
+    demo: { tab: 'instrucoes', selector: '#enterDemoBtn' },
+  });
 
-function highlightMatches(scope, query, document, window) {
+function highlightMatches(scope: Node, query: string, document: any, window: any) {
   const walker = document.createTreeWalker(scope, window.NodeFilter.SHOW_TEXT);
   const nodes = [];
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -67,12 +68,20 @@ function highlightMatches(scope, query, document, window) {
   }
 }
 
-export function createHelpController({ document, window, activateTab }) {
+export function createHelpController({
+  document,
+  window,
+  activateTab,
+}: {
+  document: any;
+  window: any;
+  activateTab: (tab: string) => void;
+}) {
   const root = document.getElementById('helpCenter');
   if (!root) return { mount: () => false };
   let activeCategory = 'guide-start';
-  let returnContext = null;
-  let originalGroups = [],
+  let returnContext: Record<string, any> | null = null;
+  let originalGroups: any[] = [],
     originalTopics = new Map();
   const applySearch = () => {
     const parents = new Set();
@@ -117,7 +126,7 @@ export function createHelpController({ document, window, activateTab }) {
         query ? (scores.get(b) || 0) - (scores.get(a) || 0) : 0
       ))
         group.querySelector('.help-group-body').append(topic);
-      scores.set(group, Math.max(0, ...topics.map(topic => scores.get(topic) || 0)));
+      scores.set(group, Math.max(0, ...topics.map((topic: any) => scores.get(topic) || 0)));
     }
     for (const section of root.querySelectorAll('.help-reference')) {
       let sectionMatches = 0;
@@ -153,7 +162,7 @@ export function createHelpController({ document, window, activateTab }) {
         highlightMatches(section, query, document, window);
     }
   };
-  const openCategory = id => {
+  const openCategory = (id: string) => {
     const search = root.querySelector('#helpSearch');
     if (search.value) {
       search.value = '';
@@ -171,7 +180,7 @@ export function createHelpController({ document, window, activateTab }) {
     group.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
     group.focus({ preventScroll: true });
   };
-  const openTopic = id => {
+  const openTopic = (id: string) => {
     const topic = [...root.querySelectorAll('[data-help-topic]')].find(item => item.id === id);
     if (!topic) return false;
     const origin = document.querySelector('[role="tab"][aria-selected="true"]')?.dataset.tab;
@@ -198,7 +207,7 @@ export function createHelpController({ document, window, activateTab }) {
     });
     return true;
   };
-  const navigate = key => {
+  const navigate = (key: string) => {
     const destination = DESTINATIONS[key];
     if (!destination) return;
     activateTab(destination.tab);
@@ -237,21 +246,21 @@ export function createHelpController({ document, window, activateTab }) {
     activeCategory =
       root.querySelector('[data-help-category]')?.dataset.helpCategory || 'guide-start';
     applySearch();
-    document.addEventListener('click', event => {
+    document.addEventListener('click', (event: any) => {
       const link = event.target.closest('[data-help-topic-link]');
       if (link && openTopic(link.dataset.helpTopicLink)) event.preventDefault();
     });
-    root.addEventListener('input', event => {
+    root.addEventListener('input', (event: any) => {
       if (event.target.id === 'helpSearch') applySearch();
     });
-    root.addEventListener('keydown', event => {
+    root.addEventListener('keydown', (event: any) => {
       if (event.target.id === 'helpSearch' && event.key === 'Escape') {
         event.target.value = '';
         applySearch();
         event.preventDefault();
       }
     });
-    root.addEventListener('click', event => {
+    root.addEventListener('click', (event: any) => {
       if (event.target.closest('[data-help-return]') && returnContext) {
         const context = returnContext;
         returnContext = null;

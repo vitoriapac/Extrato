@@ -15,7 +15,7 @@ export function createPreferencesController({
       button.setAttribute('aria-label', dark ? 'Mudar para modo claro' : 'Mudar para modo escuro');
     return current();
   };
-  const set = theme => {
+  const set = (theme: string) => {
     const normalized = theme === 'dark' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', normalized);
     try {
