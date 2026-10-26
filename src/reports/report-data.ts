@@ -107,13 +107,13 @@ export function buildStrategicReport({
       subjects: state.subjects || [],
       activeExamTags,
       sessions: (state.studySessions || []).filter((item: any) =>
-        inPeriod(item, previousStart, previousEnd)
+        inPeriod(item, previousStart!, previousEnd!)
       ),
       questions: (state.questoes || []).filter((item: any) =>
-        inPeriod(item, previousStart, previousEnd)
+        inPeriod(item, previousStart!, previousEnd!)
       ),
       reviews: completedReviewEvidence.filter((item: any) =>
-        inPeriod(item, previousStart, previousEnd)
+        inPeriod(item, previousStart!, previousEnd!)
       ),
     }),
     previousQuestionCount = sum(
@@ -354,9 +354,9 @@ export function buildStrategicReport({
   const scopedFeedback = (state.recommendationFeedback || []).filter(
     (item: any) => !item.topicId || reportTopicIds.has(item.topicId)
   );
-  const weekStart = addLocalDays(range.end, -6),
-    previousWeekStart = addLocalDays(weekStart, -7),
-    previousWeekEnd = addLocalDays(weekStart, -1);
+  const weekStart = addLocalDays(range.end, -6)!,
+    previousWeekStart = addLocalDays(weekStart, -7)!,
+    previousWeekEnd = addLocalDays(weekStart, -1)!;
   const weekScope = resolveExamEvidenceScope({
     subjects: state.subjects || [],
     activeExamTags,

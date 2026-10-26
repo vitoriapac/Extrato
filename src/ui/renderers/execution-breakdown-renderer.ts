@@ -3,7 +3,13 @@ import { formatStudyMinutes as minutes } from '../format-study-time.js';
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
-    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
+    (char: string) =>
+      (
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }) as Record<
+          string,
+          string
+        >
+      )[char]
   );
 // Apresenta o resultado conciliado existente; não distribui crédito novamente.
 export function renderExecutionBreakdown(model: Record<string, any>) {

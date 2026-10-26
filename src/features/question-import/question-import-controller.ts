@@ -59,7 +59,7 @@ export function createQuestionImportController({
         const preview = service.preview(text, { fileName: file.name || 'questoes.csv' });
         pending = { preview, fileName: file.name || 'questoes.csv' };
         show(buildQuestionImportViewModel({ ...pending }));
-      } catch (error) {
+      } catch (error: any) {
         pending = null;
         show(
           buildQuestionImportViewModel({
@@ -98,7 +98,7 @@ export function createQuestionImportController({
       const result = service.import(pending.preview, { createMissing: true, skipDuplicates: true });
       close({ completed: true });
       onImported(result);
-    } catch (error) {
+    } catch (error: any) {
       notify(error?.message || 'A importação de questões falhou. Nenhum dado foi alterado.');
     }
   });

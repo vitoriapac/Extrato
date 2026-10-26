@@ -154,7 +154,7 @@ export function buildHistoricalReadinessMetrics({
       (item: any) => item.status === 'Concluído' && item.completedAt?.slice(0, 10) <= date
     ).length;
   const retention = factor(due ? (reviewed / due) * 100 : 50, Math.min(1, due / 10), due > 0);
-  const start = addLocalDays(date, -27),
+  const start = addLocalDays(date, -27)!,
     recent = eligibleSessions.filter((item: any) => item.date >= start);
   const byDay = new Map();
   for (const item of recent)

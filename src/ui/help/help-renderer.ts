@@ -6,7 +6,13 @@ type Row = Record<string, any>;
 const escapeHtml = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
-    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]
+    (char: string) =>
+      (
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }) as Record<
+          string,
+          string
+        >
+      )[char]
   );
 const paragraph = (value: unknown) => `<p>${escapeHtml(value)}</p>`;
 

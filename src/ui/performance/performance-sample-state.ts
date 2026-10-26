@@ -1,7 +1,13 @@
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
-    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]
+    (char: string) =>
+      (
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }) as Record<
+          string,
+          string
+        >
+      )[char]
   );
 
 export function renderPerformanceSampleState({

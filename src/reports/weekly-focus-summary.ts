@@ -8,7 +8,7 @@ export function buildReportWeeklyFocus({
   recommendations = [],
   end,
 }: any = {}) {
-  const start = addLocalDays(end, -6);
+  const start = addLocalDays(end, -6)!;
   const weeklySessions = sessions.filter((item: any) => item.date >= start && item.date <= end);
   const focus = buildWeeklyStrategicFocus({
     sessions: weeklySessions,

@@ -27,7 +27,8 @@ export function recommendationActionLabel(item: Row) {
 }
 export function sameStudyActionTarget(left: Row | null | undefined, right: Row | null | undefined) {
   return (
-    Boolean(left && right) &&
+    !!left &&
+    !!right &&
     left.subjectId === right.subjectId &&
     left.topicId === right.topicId &&
     recommendationActionKind(left) === recommendationActionKind(right)

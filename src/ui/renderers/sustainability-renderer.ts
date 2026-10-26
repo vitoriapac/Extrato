@@ -3,7 +3,13 @@ import { renderDisclosure, renderContextualHelp } from '../components/analytical
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
-    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
+    (char: string) =>
+      (
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }) as Record<
+          string,
+          string
+        >
+      )[char]
   );
 const minutes = (value: number | null | undefined) =>
   value == null

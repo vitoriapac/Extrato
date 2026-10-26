@@ -3,7 +3,13 @@ import { renderEvidenceQuality } from './evidence-quality-renderer.js';
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
-    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
+    (char: string) =>
+      (
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }) as Record<
+          string,
+          string
+        >
+      )[char]
   );
 const score = (value: unknown) => (value == null ? 'sem dados' : formatDecimal(value) + '%');
 export function renderPerformanceAnalysis(model: Record<string, any>) {

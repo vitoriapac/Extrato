@@ -5,7 +5,13 @@ import { renderDisclosure } from '../components/analytical-presentation.js';
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
-    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
+    (char: string) =>
+      (
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }) as Record<
+          string,
+          string
+        >
+      )[char]
   );
 export function renderWeeklyDecisionCycle(
   model: Record<string, any>,

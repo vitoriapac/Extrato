@@ -51,7 +51,7 @@ export function createHistoricalExamImportController({
       const preview = previewExamImport(parsed, state);
       importState.pending = { parsed, preview };
       previewContainer.innerHTML = renderExamJsonPreview(parsed, preview, state.subjects);
-    } catch (error) {
+    } catch (error: any) {
       showState(
         'attention',
         'Não foi possível importar',
@@ -82,7 +82,7 @@ export function createHistoricalExamImportController({
       notify(
         `Prova importada: ${result.summary.added} questões novas, ${result.summary.updated} atualizadas, ${result.summary.preserved} revisões preservadas, ${result.summary.ignored} ignoradas.`
       );
-    } catch (error) {
+    } catch (error: any) {
       notify(error.message || 'A importação falhou. Nenhum dado foi alterado.');
     }
   };

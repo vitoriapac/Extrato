@@ -46,7 +46,7 @@ export function createStructuredImportController({
           preview = service.preview(subjects);
         pending = { subjects, fileName: file.name || 'arquivo' };
         show(buildStructuredImportViewModel({ ...pending, preview }));
-      } catch (error) {
+      } catch (error: any) {
         pending = null;
         show(
           buildStructuredImportViewModel({
@@ -77,7 +77,7 @@ export function createStructuredImportController({
       const result = service.import(pending.subjects);
       close({ completed: true });
       onImported(result);
-    } catch (error) {
+    } catch (error: any) {
       notify(error?.message || 'A importação falhou. Nenhum dado foi alterado.');
     }
   });

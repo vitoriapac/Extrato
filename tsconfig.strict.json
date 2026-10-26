@@ -9,6 +9,8 @@
     "src/storage/**/*",
     "src/repositories/**/*",
     "src/bootstrap/**/*",
-    "src/domain/**/*"
+    "src/domain/**/*",
+    "src/features/**/*",
+    "src/reports/**/*"
   ]
 }

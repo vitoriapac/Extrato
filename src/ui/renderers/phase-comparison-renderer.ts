@@ -4,7 +4,13 @@ const display = (value: unknown, suffix = '') =>
 const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
-    char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
+    (char: string) =>
+      (
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }) as Record<
+          string,
+          string
+        >
+      )[char]
   );
 export function renderPhaseComparison(model: Record<string, any>) {
   if (model.state === 'empty')
