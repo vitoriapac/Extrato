@@ -1,10 +1,14 @@
 import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
-const label = (bucket, monthly, formatDate) =>
+type FormatDate = (date: string) => string;
+const label = (bucket: Record<string, any>, monthly: boolean, formatDate: FormatDate) =>
   monthly
     ? `${bucket.key.slice(5, 7)}/${bucket.key.slice(0, 4)}`
     : formatDate(bucket.key).slice(0, 5);
 
-export function renderQuestionEvolution(model, { formatDate }) {
+export function renderQuestionEvolution(
+  model: Record<string, any>,
+  { formatDate }: { formatDate: FormatDate }
+) {
   if (model.state === 'empty')
     return renderChartFrame({
       title: 'Precisão ao longo do tempo',
@@ -16,12 +20,12 @@ export function renderQuestionEvolution(model, { formatDate }) {
     right = 16,
     top = 12,
     bottom = 32;
-  const x = index =>
+  const x = (index: number) =>
     left +
     (model.buckets.length === 1
       ? 0
       : (index / (model.buckets.length - 1)) * (width - left - right));
-  const y = value => top + ((100 - value) / 100) * (height - top - bottom);
+  const y = (value: number) => top + ((100 - value) / 100) * (height - top - bottom);
   const segments = [];
   for (let index = 1; index < model.buckets.length; index++) {
     const previous = model.buckets[index - 1].movingAccuracy,
@@ -32,7 +36,7 @@ export function renderQuestionEvolution(model, { formatDate }) {
       );
   }
   const points = model.buckets
-    .map((item, index) =>
+    .map((item: any, index: any) =>
       item.movingAccuracy === null
         ? ''
         : `<circle class="question-evolution-point" cx="${x(index)}" cy="${y(item.movingAccuracy)}" r="4">${renderChartTooltip(label(item, model.monthly, formatDate) + ': média móvel ' + item.movingAccuracy + '% · ' + item.resolved + ' questões')}</circle>`
@@ -46,7 +50,7 @@ export function renderQuestionEvolution(model, { formatDate }) {
     .join('');
   const labels = model.buckets
     .map(
-      (item, index) =>
+      (item: any, index: any) =>
         `<text x="${x(index)}" y="${height - 6}" text-anchor="middle">${label(item, model.monthly, formatDate)}</text>`
     )
     .join('');
@@ -55,7 +59,7 @@ export function renderQuestionEvolution(model, { formatDate }) {
       ? `<div class="question-evolution-scroll"><svg aria-hidden="true" focusable="false" viewBox="0 0 ${width} ${height}" style="width:${width}px;max-width:none;height:auto">${axis}${segments.join('')}${points}${labels}</svg></div>`
       : '<p class="analytics-note">A linha aparece após dois períodos com média móvel sustentada por pelo menos 30 questões.</p>';
   const rows = model.buckets
-    .map(item => {
+    .map((item: any) => {
       const correctWidth = (item.correct / item.resolved) * 100;
       return `<li><span>${label(item, model.monthly, formatDate)}</span><div class="question-mix-track" aria-hidden="true"><span style="width:${correctWidth}%"></span></div><strong>${item.correct} acertos · ${item.errors} erros</strong><small>${item.accuracy === null ? 'Amostra pequena' : item.accuracy + '%'} · média móvel ${item.movingAccuracy === null ? 'sem amostra' : item.movingAccuracy + '%'}</small></li>`;
     })

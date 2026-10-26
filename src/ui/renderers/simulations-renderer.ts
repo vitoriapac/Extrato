@@ -1,5 +1,8 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { renderChartFrame } from '../chart-components.js';
+
+type Row = Record<string, any>;
+type Esc = (value: any) => string;
 export function renderSimulationRead({
   item,
   view,
@@ -7,6 +10,13 @@ export function renderSimulationRead({
   expanded,
   escapeHtml,
   breakdownHtml = '',
+}: {
+  item: Row;
+  view: Row;
+  mobile: boolean;
+  expanded: boolean;
+  escapeHtml: Esc;
+  breakdownHtml?: string;
 }) {
   const hasBreakdown = Boolean(item.breakdown?.length);
   const details = `<button class="btn ghost small ${hasBreakdown ? 'has-notes' : ''}" data-delegated-click="toggleBreakdown('${item.id}')">${expanded ? 'Ocultar detalhes' : 'Ver desempenho'}</button>`;
@@ -21,9 +31,15 @@ export function renderSimulationBreakdown({
   subjectIdOf,
   escapeHtml,
   escapeAttr,
+}: {
+  item: Row;
+  subjectOptions: (subjectId: string | null) => Row[];
+  subjectIdOf: (row: Row) => string | null;
+  escapeHtml: Esc;
+  escapeAttr: Esc;
 }) {
   const rows = (item.breakdown || [])
-    .map(row => {
+    .map((row: any) => {
       const total = Number(row.total) || 0,
         correct = Number(row.correct) || 0,
         subjectId = subjectIdOf(row),
@@ -32,7 +48,7 @@ export function renderSimulationBreakdown({
         subjectId
       )
         .map(
-          subject =>
+          (subject: any) =>
             `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? 'selected' : ''}>${escapeHtml(subject.name)}</option>`
         )
         .join(
@@ -43,7 +59,15 @@ export function renderSimulationBreakdown({
   return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><strong class="breakdown-title">Desempenho por disciplina</strong><div class="breakdown-list">${rows}</div><button class="btn ghost small breakdown-add-btn" data-delegated-click="addBreakdownRow('${item.id}')">+ Adicionar disciplina</button></div></td></tr>`;
 }
 
-export function renderSimulationEdit({ item, draft, escapeAttr }) {
+export function renderSimulationEdit({
+  item,
+  draft,
+  escapeAttr,
+}: {
+  item: Row;
+  draft: Row;
+  escapeAttr: Esc;
+}) {
   const hasBreakdown = Boolean(draft.breakdown?.length);
   return `<tr class="row-editing" data-id="${item.id}"><td colspan="7"><div class="inline-edit-form"><label>Data<input type="date" value="${draft.date || ''}" data-delegated-change="updateSimulationDraft('date',this.value)"></label><label>Nome<input type="text" value="${escapeAttr(draft.nome || '')}" data-delegated-input="updateSimulationDraft('nome',this.value)"></label><label>Acertos<input type="number" min="0" value="${Number(draft.correct) || 0}" ${hasBreakdown ? 'disabled' : ''} data-delegated-input="updateSimulationDraft('correct',this.value)"></label><label>Total<input type="number" min="0" value="${Number(draft.total) || 0}" ${hasBreakdown ? 'disabled' : ''} data-delegated-input="updateSimulationDraft('total',this.value)"></label><div class="inline-edit-actions"><button class="btn ghost small" data-delegated-click="cancelSimulationEdit()">Cancelar</button><button class="btn small" data-delegated-click="saveSimulationEdit()">Salvar alterações</button><button class="btn ghost small" data-delegated-click="deleteSimuladoRow('${item.id}')">Excluir</button></div></div></td></tr>`;
 }
@@ -54,6 +78,12 @@ export function renderSimulationTrendChart({
   formatDate,
   escapeHtml,
   targetScore = null,
+}: {
+  items?: Row[];
+  scoreFor: (item: Row) => number;
+  formatDate: (date: string) => string;
+  escapeHtml: Esc;
+  targetScore?: number | string | null;
 }) {
   const width = 640,
     height = 160,
@@ -64,8 +94,8 @@ export function renderSimulationTrendChart({
   const plotWidth = width - padLeft - padRight,
     plotHeight = height - padTop - padBottom,
     count = items.length;
-  const xFor = index => padLeft + (count === 1 ? 0 : (index / (count - 1)) * plotWidth);
-  const yFor = score => padTop + plotHeight - (score / 100) * plotHeight;
+  const xFor = (index: number) => padLeft + (count === 1 ? 0 : (index / (count - 1)) * plotWidth);
+  const yFor = (score: number) => padTop + plotHeight - (score / 100) * plotHeight;
   const scores = items.map(scoreFor),
     points = scores.map((score, index) => `${xFor(index)},${yFor(score)}`).join(' ');
   const grid = [0, 25, 50, 75, 100]
@@ -82,7 +112,7 @@ export function renderSimulationTrendChart({
     .join('');
   const labels = items
     .map(
-      (item, index) =>
+      (_item: Row, index: number) =>
         `<text x="${xFor(index)}" y="${height - 6}" text-anchor="middle">${index + 1}</text>`
     )
     .join('');
@@ -122,7 +152,13 @@ export function renderSimulationTrendChart({
   });
 }
 
-export function renderSubjectPerformanceRows({ items = [], escapeHtml }) {
+export function renderSubjectPerformanceRows({
+  items = [],
+  escapeHtml,
+}: {
+  items?: Row[];
+  escapeHtml: Esc;
+}) {
   const rows = items
     .map(({ performance, trend }) => {
       const color =
@@ -157,6 +193,13 @@ export function renderSimulationRows({
   renderReadRow,
   renderEditRow,
   renderFooter,
+}: {
+  items?: Row[];
+  visible?: number;
+  editingId?: string | null;
+  renderReadRow: (item: Row) => string;
+  renderEditRow: (item: Row) => string;
+  renderFooter: (...args: any[]) => string;
 }) {
   if (!items.length)
     return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum simulado registrado ainda.</p><button class="btn small" data-delegated-click="addSimuladoRow()">+ Registrar simulado</button></div></td></tr>`;

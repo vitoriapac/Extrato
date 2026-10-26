@@ -1,6 +1,6 @@
 import { normalizeAdherenceTarget } from '../../application/adherence/adherence-target.js';
 
-export function renderAdherenceTargetSetting(value) {
+export function renderAdherenceTargetSetting(value: unknown) {
   const target = normalizeAdherenceTarget(value);
   return `<div class="meta-card">
     <div class="meta-info"><div class="meta-name">Meta de Aderência</div><div class="meta-formula">Crédito compatível ao plano semanal, somente até hoje</div></div>
@@ -10,7 +10,7 @@ export function renderAdherenceTargetSetting(value) {
   </div>`;
 }
 
-export function renderAdherenceTarget(context, { escapeHtml }: any = {}) {
+export function renderAdherenceTarget(context: Record<string, any>, { escapeHtml }: any = {}) {
   if (!context || !context.enabled) return '';
   const actual =
     context.actual === null

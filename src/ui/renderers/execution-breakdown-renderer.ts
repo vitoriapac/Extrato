@@ -1,24 +1,24 @@
 import { formatPeriodBR } from '../../core/format-date.js';
 import { formatStudyMinutes as minutes } from '../format-study-time.js';
-const escape = value =>
+const escape = (value: unknown) =>
   String(value ?? '').replace(
     /[&<>"']/g,
     char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]
   );
 // Apresenta o resultado conciliado existente; não distribui crédito novamente.
-export function renderExecutionBreakdown(model) {
+export function renderExecutionBreakdown(model: Record<string, any>) {
   if (!model?.summary) return '';
   const s = model.summary,
     p = model.period;
   const rows = model.items || [];
-  const render = items =>
+  const render = (items: Array<Record<string, any>>) =>
     items
       .map(
-        item =>
+        (item: any) =>
           '<li>' +
           escape(
-            (model.subjects || []).find(subject => subject.subjectId === item.subjectId)?.name ||
-              'Atividade conciliada'
+            (model.subjects || []).find((subject: any) => subject.subjectId === item.subjectId)
+              ?.name || 'Atividade conciliada'
           ) +
           ': ' +
           minutes(item.creditedMinutes) +

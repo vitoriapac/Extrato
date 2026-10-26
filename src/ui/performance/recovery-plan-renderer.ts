@@ -1,22 +1,29 @@
-export function formatRecoveryMinutes(value) {
+type Row = Record<string, any>;
+type Esc = (value: any) => string;
+
+export function formatRecoveryMinutes(value: unknown) {
   const minutes = Math.abs(Math.round(Number(value) || 0)),
     hours = Math.floor(minutes / 60),
     remainder = minutes % 60;
   return hours ? `${hours} h${remainder ? ` ${remainder} min` : ''}` : `${minutes} min`;
 }
 
-const statusLabels = { limited: 'Opções limitadas', unavailable: 'Sem proposta segura' };
-export function renderRecoveryPlan(plan, escapeHtml, escapeAttr) {
+const statusLabels: Record<string, string> = {
+  limited: 'Opções limitadas',
+  unavailable: 'Sem proposta segura',
+};
+export function renderRecoveryPlan(plan: Row | null | undefined, escapeHtml: Esc, escapeAttr: Esc) {
   if (!plan || plan.status === 'not_needed') return '';
   if (plan.status !== 'recoverable')
     return `<section class="projection-recovery" aria-label="Plano de recuperação"><h4>O que você pode fazer?</h4><p>${statusLabels[plan.status] || statusLabels.unavailable}. ${escapeHtml(plan.reason || 'Ainda não há base suficiente para uma redistribuição segura.')}</p></section>`;
-  const changed = plan.changes.filter(item => item.deltaMinutes !== 0),
-    preserved = plan.changes.filter(item => item.deltaMinutes === 0);
+  const changed = plan.changes.filter((item: any) => item.deltaMinutes !== 0),
+    preserved = plan.changes.filter((item: any) => item.deltaMinutes === 0);
   const duration = formatRecoveryMinutes;
-  const row = item =>
+  const row = (item: Row) =>
     `<li class="recovery-allocation"><strong>${escapeHtml(item.subjectName)}</strong><span>${duration(item.beforeMinutes)} → ${duration(item.afterMinutes)}</span><span class="recovery-allocation__change">${item.deltaMinutes > 0 ? '↑ Aumento de' : item.deltaMinutes < 0 ? '↓ Redução de' : '— Sem alteração'}${item.deltaMinutes ? ` ${duration(item.deltaMinutes)}` : ''}</span></li>`;
   const reasons = plan.explanation || [];
-  const explanation = items => items.map(reason => `<li>${escapeHtml(reason)}</li>`).join('');
+  const explanation = (items: string[]) =>
+    items.map((reason: any) => `<li>${escapeHtml(reason)}</li>`).join('');
   const transfer = `<strong>${escapeHtml(plan.to?.name || 'Destino')} recebe ${duration(plan.transferMinutes)}.</strong> A origem é ${escapeHtml(plan.from?.name || 'Origem')}.`;
   const capacity = `A capacidade semanal será preservada em ${duration(plan.capacity.current)}.`;
   const total = `<p class="recovery-total"><strong>Total planejado</strong><span>${duration(plan.totalMinutes.current)} → ${duration(plan.totalMinutes.proposed)} · Sem alteração</span></p>`;

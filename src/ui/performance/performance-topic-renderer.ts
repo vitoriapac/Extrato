@@ -1,13 +1,16 @@
 import { renderQuestionEvolution } from '../renderers/question-evolution-renderer.js';
 
-const shown = (value, suffix = '') => (value == null ? '—' : `${value}${suffix}`);
+const shown = (value: unknown, suffix = '') => (value == null ? '—' : `${value}${suffix}`);
 
-export function renderPerformanceTopicDialog(model, { formatDate, escapeHtml }: any = {}) {
+export function renderPerformanceTopicDialog(
+  model: Record<string, any> | null | undefined,
+  { formatDate, escapeHtml }: any = {}
+) {
   if (!model) return '';
   const topic = model.topic,
     profile = model.examProfile;
   const events = model.events.length
-    ? `<ol class="performance-topic-events">${model.events.map(item => `<li><span>${escapeHtml(formatDate(item.date))}</span><strong>${escapeHtml(item.label)}</strong></li>`).join('')}</ol>`
+    ? `<ol class="performance-topic-events">${model.events.map((item: any) => `<li><span>${escapeHtml(formatDate(item.date))}</span><strong>${escapeHtml(item.label)}</strong></li>`).join('')}</ol>`
     : '<p class="analytics-note">Nenhuma mudança de estado registrada para este tópico.</p>';
   return `<dialog class="performance-topic-dialog" id="performanceTopicDialog" aria-labelledby="performanceTopicTitle"><div class="performance-topic-dialog-inner"><header class="performance-topic-dialog-head"><div><span class="section-eyebrow">DISCIPLINA · TÓPICO</span><h3 id="performanceTopicTitle">${escapeHtml(topic.name)}</h3></div><button type="button" class="btn ghost small" data-performance-close-topic aria-label="Fechar detalhes do tópico">Fechar</button></header>
     <p class="analytics-note">Precisão e volume referem-se ao período selecionado. Domínio, retenção e incidência mostram a leitura atual.</p>

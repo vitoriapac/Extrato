@@ -1,6 +1,8 @@
 import { formatDecimal } from '../../core/format-number.js';
-const value = (number, suffix = '') => (number == null ? '—' : `${formatDecimal(number)}${suffix}`);
-const signed = number =>
+type Row = Record<string, any>;
+const value = (number: number | null | undefined, suffix = '') =>
+  number == null ? '—' : `${formatDecimal(number)}${suffix}`;
+const signed = (number: number | null | undefined) =>
   number == null ? '—' : `${number > 0 ? '+' : ''}${formatDecimal(number)} p.p.`;
 const options = [
   ['gap', 'Distância da meta'],
@@ -10,26 +12,31 @@ const options = [
   ['priority', 'Prioridade existente'],
 ];
 
-export function renderPerformanceSubjectComparison(model, { escapeHtml, escapeAttr }: any = {}) {
+export function renderPerformanceSubjectComparison(
+  model: Row,
+  { escapeHtml, escapeAttr }: any = {}
+) {
   if (!model.rows.length) return '';
-  const renderRows = rows =>
+  const renderRows = (rows: Row[]) =>
     rows
       .map(
-        item =>
+        (item: any) =>
           `<tr><th scope="row"><button type="button" class="performance-topic-link" data-performance-compare-subject="${escapeAttr(item.subjectId)}">${escapeHtml(item.name)}</button></th><td>${item.state === 'insufficient' ? '<span class="performance-sample-note">Amostra insuficiente</span>' : value(item.accuracy, '%')}</td><td>${item.target}%</td><td>${signed(item.gap)}</td><td>${signed(item.evolution)}</td><td>${item.questions}</td><td>${value(item.priority)}</td></tr>`
       )
       .join('');
   const head =
     '<thead><tr><th scope="col">Disciplina</th><th scope="col">Precisão</th><th scope="col">Meta</th><th scope="col">Diferença</th><th scope="col">Evolução</th><th scope="col">Questões</th><th scope="col">Maior prioridade de tópico</th></tr></thead>';
-  const table = (rows, caption) =>
+  const table = (rows: Row[], caption: string) =>
     `<div class="performance-table-scroll"><table><caption>${caption}</caption>${head}<tbody>${renderRows(rows)}</tbody></table></div>`;
   const first = model.rows.slice(0, 5),
     rest = model.rows.slice(5);
-  const questionCount = model.rows.reduce((sum, item) => sum + item.questions, 0),
-    belowGoal = model.rows.filter(item => item.state !== 'insufficient' && item.gap < 0).length;
+  const questionCount = model.rows.reduce((sum: any, item: any) => sum + item.questions, 0),
+    belowGoal = model.rows.filter(
+      (item: any) => item.state !== 'insufficient' && item.gap < 0
+    ).length;
   const previews = first
     .map(
-      item =>
+      (item: any) =>
         `<li><button type="button" class="performance-topic-link" data-performance-compare-subject="${escapeAttr(item.subjectId)}">${escapeHtml(item.name)}</button><span>${item.state === 'insufficient' ? `Amostra ${item.questions}/10` : value(item.accuracy, '%') + ' · meta ' + item.target + '%'}</span><span class="ui-progress" role="progressbar" aria-label="${escapeAttr(item.name)} · ${item.state === 'insufficient' ? 'amostra de questões' : 'precisão'}" aria-valuemin="0" aria-valuemax="${item.state === 'insufficient' ? 10 : 100}" aria-valuenow="${item.state === 'insufficient' ? Math.min(10, item.questions) : Math.min(100, Math.max(0, item.accuracy ?? 0))}"><i style="width:${item.state === 'insufficient' ? Math.min(100, item.questions * 10) : Math.min(100, Math.max(0, item.accuracy ?? 0))}%"></i></span><small>${item.questions} questões${item.evolution == null ? ' · evolução sem base comparável' : ' · ' + signed(item.evolution) + ' frente ao período anterior'}</small></li>`
     )
     .join('');

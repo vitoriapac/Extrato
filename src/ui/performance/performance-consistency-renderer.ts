@@ -2,9 +2,12 @@ import { pluralize } from '../../core/utils.js';
 import { renderPerformanceDetails } from './performance-story.js';
 import { renderAdherenceAnalysis } from '../renderers/adherence-renderer.js';
 
-export function renderPerformanceConsistency(model, { range, formatDate, escapeHtml }: any = {}) {
+export function renderPerformanceConsistency(
+  model: Record<string, any>,
+  { formatDate, escapeHtml }: any = {}
+) {
   const cells = model.heatmap
-    .map(day => {
+    .map((day: any) => {
       const level = day.minutes === 0 ? 0 : day.minutes < 30 ? 1 : day.minutes < 90 ? 2 : 3;
       return `<span class="performance-heatmap-day level-${level}" role="img" title="${escapeHtml(formatDate(day.date))}: ${day.minutes} min" aria-label="${escapeHtml(formatDate(day.date))}: ${day.minutes} minutos estudados">${day.minutes > 0 ? '●' : '·'}</span>`;
     })

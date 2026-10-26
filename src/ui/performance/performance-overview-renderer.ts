@@ -12,14 +12,14 @@ import { renderReadinessChangeExplanation } from './readiness-change-explanation
 import { renderMetricCard, renderEmptyState } from '../components/presentation.js';
 import { renderAchievementProjection } from './achievement-projection-renderer.js';
 
-const shown = value => (value == null ? '—' : formatDecimal(value));
-const change = value =>
+const shown = (value: number | null | undefined) => (value == null ? '—' : formatDecimal(value));
+const change = (value: number | null | undefined) =>
   value == null ? 'Sem base comparável' : `${value > 0 ? '+' : ''}${shown(value)}`;
-const card = (label, value, unit, detail) =>
+const card = (label: string, value: unknown, unit: string, detail: string) =>
   renderMetricCard({ label, value: presentEvidence({ value, unit, format: shown }).text, detail });
 
 export function renderPerformanceOverview(
-  model,
+  model: Record<string, any>,
   {
     range,
     today,
@@ -56,14 +56,14 @@ export function renderPerformanceOverview(
     showComparisonDetails: false,
   });
   const weekRows = model.weekly
-    .map(row => {
+    .map((row: any) => {
       const maximum = Math.max(1, row.plannedMinutes, row.studiedMinutes);
       return `<tr><th scope="row">${escapeHtml(formatDate(row.start))}${row.inProgress ? ' · em andamento' : ''}</th><td><span class="performance-week-bar planned" style="width:${Math.round((row.plannedMinutes / maximum) * 100)}%"></span>${formatStudyMinutes(row.plannedMinutes)}</td><td><span class="performance-week-bar actual" style="width:${Math.round((row.studiedMinutes / maximum) * 100)}%"></span>${formatStudyMinutes(row.studiedMinutes)}</td><td>${row.plannedMinutes ? shown((row.studiedMinutes / row.plannedMinutes) * 100) + '%' : '—'}</td></tr>`;
     })
     .join('');
   const plan = `<section class="performance-block"><h3>Planejado × realizado</h3><p class="analytics-note">Volume de carga compara minutos estudados com minutos planejados. Pode superar 100%.</p>${weekRows ? `<div class="performance-table-scroll ui-data-table" tabindex="0" role="region" aria-label="Tabela semanal de planejado e realizado"><table><caption>Semanas com plano ou estudo no período</caption><thead><tr><th scope="col">Semana de</th><th scope="col">Planejado</th><th scope="col">Realizado</th><th scope="col">Volume</th></tr></thead><tbody>${weekRows}</tbody></table></div>` : renderEmptyState({ title: 'Sem plano ou estudo no período', message: 'Distribua um plano ou registre uma sessão para comparar planejado e realizado.' })}${model.strategic?.strategicAdherence != null ? `<p class="context-note context-note--info">Aderência estratégica: ${formatDecimal(model.strategic.strategicAdherence)}% do tempo prioritário planejado foi executado em sessões vinculadas.</p>` : ''}</section>`;
   const changes = model.changes.length
-    ? `<ul class="performance-changes">${model.changes.map(item => `<li><strong>${escapeHtml(item.label)}</strong><span>${item.delta > 0 ? '+' : ''}${shown(item.delta)} ${escapeHtml(item.unit)}</span></li>`).join('')}</ul>`
+    ? `<ul class="performance-changes">${model.changes.map((item: any) => `<li><strong>${escapeHtml(item.label)}</strong><span>${item.delta > 0 ? '+' : ''}${shown(item.delta)} ${escapeHtml(item.unit)}</span></li>`).join('')}</ul>`
     : '<p class="empty-state empty-state--compact">Ainda não há mudanças mensuráveis com base comparável neste período.</p>';
   const insights = (comparisonModel?.insights || []).slice(0, 3);
   const summary = model.changes[0]
@@ -71,5 +71,5 @@ export function renderPerformanceOverview(
     : 'Ainda não há mudança mensurável com base comparável. Continue registrando estudo e questões.';
   const method = `<p class="performance-method-note">${comparisonLabel}. Precisão usa apenas questões respondidas por você. O índice atual não é uma probabilidade de aprovação.</p>`;
   const investigate = `<section class="performance-block" aria-label="Investigar o resultado"><h3>Investigar o resultado</h3><p class="analytics-note">Compare disciplinas ou consulte as evidências no mesmo período e concurso selecionados.</p><nav class="ui-filter-bar" aria-label="Detalhes da preparação"><button type="button" class="btn ghost small" data-performance-investigate="subjects">Comparar disciplinas</button><button type="button" class="btn ghost small" data-performance-investigate="questions">Ver questões</button><button type="button" class="btn ghost small" data-performance-investigate="simulations">Ver simulados</button><button type="button" class="btn ghost small" data-performance-investigate="consistency">Ver consistência</button></nav></section>`;
-  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }, escapeHtml), kpis, method)}${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${investigate}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><span class="section-eyebrow">HISTÓRICO REGISTRADO</span><h3>Prontidão ao longo do tempo</h3>${history}</section>${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
+  return `${renderPerformanceSummary(renderPerformanceStory({ title: 'Como sua preparação evoluiu', summary, details: insights }), kpis, method)}${renderAchievementProjection(achievementProjection, { history: achievementHistory, escapeHtml, escapeAttr, weeklyCapacityMinutes: achievementCapacityMinutes, adherenceContext, recoveryPlan })}${investigate}${readinessChange ? renderReadinessChangeExplanation(readinessChange, { formatDate, escapeHtml }) : ''}<section class="performance-block"><span class="section-eyebrow">HISTÓRICO REGISTRADO</span><h3>Prontidão ao longo do tempo</h3>${history}</section>${renderPerformanceDetails('Comparação, plano e outras mudanças', `${renderPerformanceComparison(comparisonModel || { state: 'disabled' }, { escapeHtml })}${plan}<section class="performance-block"><h3>Principais mudanças</h3>${changes}</section>`)}`;
 }

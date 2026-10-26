@@ -10,9 +10,10 @@ import {
   ADHERENCE_STATUS_POLICY,
 } from '../../application/adherence/adherence-status.js';
 
-const shown = value => (value == null ? '—' : formatDecimal(value));
-const percent = value => (value == null ? '—' : `${shown(value)}%`);
-export function renderAdherenceMetrics(model, { escapeHtml }: any = {}) {
+type Row = Record<string, any>;
+const shown = (value: number | null | undefined) => (value == null ? '—' : formatDecimal(value));
+const percent = (value: number | null | undefined) => (value == null ? '—' : `${shown(value)}%`);
+export function renderAdherenceMetrics(model: Row, { escapeHtml }: any = {}) {
   if (!model?.summary) return '';
   const { summary, priority } = model,
     assessment = adherenceStatus(model);
@@ -29,7 +30,7 @@ export function renderAdherenceMetrics(model, { escapeHtml }: any = {}) {
 }
 
 export function renderAdherenceAnalysis(
-  { model, weekly, goal },
+  { model, weekly, goal }: { model: Row; weekly: Row; goal: Row },
   { formatDate, escapeHtml }: any = {}
 ) {
   if (!model?.summary || !weekly?.current)
@@ -50,7 +51,7 @@ export function renderAdherenceAnalysis(
     .join('');
   const subjects = model.subjects
     .map(
-      (row, index) =>
+      (row: any, index: any) =>
         `<tr${index >= 5 ? ' hidden' : ''}><th scope="row">${escapeHtml(row.name)}</th><td>${shown(row.plannedMinutes)} min</td><td>${shown(row.executedMinutes)} min</td><td>${percent(row.temporalAdherence)}</td><td>${row.classifiedCoverage >= 80 ? percent(row.priorityAdherence) : 'Sem evidência'}</td></tr>`
     )
     .join('');

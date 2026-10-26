@@ -8,7 +8,7 @@ const sections = [
   ['exam', 'Inteligência da prova'],
   ['consistency', 'Consistência'],
 ];
-const pending = {
+const pending: Record<string, Record<string, string>> = {
   questions: {
     title: 'Questões',
     description:

@@ -10,12 +10,13 @@ import {
 } from './performance-story.js';
 import { renderPerformanceSampleState } from './performance-sample-state.js';
 
-const percent = value => (value == null ? '—' : `${formatDecimal(value)}%`);
-const signed = value =>
+const percent = (value: number | null | undefined) =>
+  value == null ? '—' : `${formatDecimal(value)}%`;
+const signed = (value: number) =>
   value == null ? 'Sem comparação' : `${value > 0 ? '+' : ''}${formatDecimal(value)} p.p.`;
 
 export function renderPerformanceSimulations(
-  model,
+  model: Record<string, any>,
   { range, targetScore, formatDate, escapeHtml }: any = {}
 ) {
   if (!model.count)
@@ -28,25 +29,22 @@ export function renderPerformanceSimulations(
   </section>`;
   const chart = renderSimulationTrendChart({
     items: model.items.slice(-12),
-    scoreFor: item => Math.round((item.correct / item.total) * 1000) / 10,
+    scoreFor: (item: Record<string, any>) => Math.round((item.correct / item.total) * 1000) / 10,
     formatDate,
     escapeHtml,
     targetScore,
   });
   const comparison = renderSimulationComparison(model.comparison, { formatDate, escapeHtml });
   const calibration = renderProjectionCalibration(model.calibration);
-  const story = renderPerformanceStory(
-    {
-      title: 'Resultado dos simulados',
-      summary: `Último resultado: ${percent(model.latest)} em ${pluralize(model.count, 'simulado', 'simulados')} no período.`,
-      details: [
-        model.trend == null
-          ? 'Tendência recente sem base comparável.'
-          : `Variação recente: ${signed(model.trend)}.`,
-      ],
-    },
-    escapeHtml
-  );
+  const story = renderPerformanceStory({
+    title: 'Resultado dos simulados',
+    summary: `Último resultado: ${percent(model.latest)} em ${pluralize(model.count, 'simulado', 'simulados')} no período.`,
+    details: [
+      model.trend == null
+        ? 'Tendência recente sem base comparável.'
+        : `Variação recente: ${signed(model.trend)}.`,
+    ],
+  });
   const method =
     '<p class="performance-method-note">Resultados de provas com composição ou dificuldade diferentes não são diretamente equivalentes. A comparação por disciplina mostra somente áreas detalhadas em ambas as provas.</p>';
   return `${renderPerformanceSummary(story, kpis, method)}${model.count < 2 ? renderPerformanceSampleState({ name: 'A tendência recente', current: model.count, required: 2, message: 'comparar os dois resultados mais recentes', unit: 'simulados', singular: 'simulado', actionLabel: 'Registrar simulado' }) : ''}<section class="performance-block"><h3>Evolução dos simulados</h3>${chart}</section>${renderPerformanceDetails('Comparação por disciplina e projeção', `<section class="performance-block"><h3>Comparação por disciplina</h3>${comparison}</section><section class="performance-block"><h3>Projeção × resultado</h3>${calibration}</section>`)}`;

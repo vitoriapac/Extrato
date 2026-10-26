@@ -5,7 +5,10 @@ const cells = [
   ['intervene', 'Intervir', 'Abaixo da meta e sem melhora relevante'],
   ['evolving', 'Evoluindo', 'Abaixo da meta, com melhora'],
 ] as const;
-export function renderStabilityMap(model, { escapeHtml, escapeAttr }: any = {}) {
+export function renderStabilityMap(
+  model: Record<string, any>,
+  { escapeHtml, escapeAttr }: any = {}
+) {
   if (!model?.total) return '';
   const cell = ([key, label, description]: any) =>
     `<div class="stability-map-cell stability-map-cell--${key}"><h4>${label}</h4><p>${description}</p><ul>${model.groups[
@@ -13,7 +16,7 @@ export function renderStabilityMap(model, { escapeHtml, escapeAttr }: any = {}) 
     ]
       .slice(0, 5)
       .map(
-        row =>
+        (row: any) =>
           `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatDecimal(row.accuracy)}% · ${row.evolution > 0 ? '+' : ''}${formatDecimal(row.evolution)} p.p.</small></li>`
       )
       .join('')}</ul>${
@@ -23,7 +26,7 @@ export function renderStabilityMap(model, { escapeHtml, escapeAttr }: any = {}) 
           ]
             .slice(5)
             .map(
-              row =>
+              (row: any) =>
                 `<li><button type="button" data-stability-subject="${escapeAttr(row.subjectId)}">${escapeHtml(row.name)}</button><small>${formatDecimal(row.accuracy)}% · ${row.evolution > 0 ? '+' : ''}${formatDecimal(row.evolution)} p.p.</small></li>`
             )
             .join('')}</ul></details>`

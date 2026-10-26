@@ -6,12 +6,13 @@ import {
   compareReadinessSnapshots,
 } from '../../application/analytics/build-readiness-evolution.js';
 
-const signed = value => `${value > 0 ? '+' : ''}${formatDecimal(value)}`;
-const points = value => `${signed(value)} ${Math.abs(value) === 1 ? 'ponto' : 'pontos'}`;
-const value = item => (item ? `${item.score}/100` : '—');
+type Row = Record<string, any>;
+const signed = (value: number) => `${value > 0 ? '+' : ''}${formatDecimal(value)}`;
+const points = (value: number) => `${signed(value)} ${Math.abs(value) === 1 ? 'ponto' : 'pontos'}`;
+const value = (item: Row | null | undefined) => (item ? `${item.score}/100` : '—');
 
 export function renderReadinessHistory(
-  items = [],
+  items: Row[] = [],
   {
     formatDate,
     escapeHtml,
@@ -29,11 +30,11 @@ export function renderReadinessHistory(
     weekly.state !== 'comparable' && model.weeklyPeriod
       ? `<p class="context-note context-note--info">${escapeHtml(weekly.reason)}</p>`
       : '';
-  const factors = comparison => {
+  const factors = (comparison: Row) => {
     if (comparison.state !== 'comparable')
       return `<p class="analytics-note">${escapeHtml(comparison.reason)}</p>`;
-    const rows = comparison.factors.filter(item => item.delta !== 0).slice(0, 5);
-    return `<p class="analytics-note">${escapeHtml(comparison.reason)}</p>${rows.length ? `<ul class="readiness-factor-changes">${rows.map(item => `<li><strong>${escapeHtml(item.label)} · ${item.delta > 0 ? 'subiu' : 'caiu'}</strong><span>${item.before} → ${item.after}/100 · contribuição ${points(item.contribution)}</span></li>`).join('')}</ul>` : '<p class="analytics-note">Os fatores disponíveis permaneceram estáveis.</p>'}`;
+    const rows = comparison.factors.filter((item: any) => item.delta !== 0).slice(0, 5);
+    return `<p class="analytics-note">${escapeHtml(comparison.reason)}</p>${rows.length ? `<ul class="readiness-factor-changes">${rows.map((item: any) => `<li><strong>${escapeHtml(item.label)} · ${item.delta > 0 ? 'subiu' : 'caiu'}</strong><span>${item.before} → ${item.after}/100 · contribuição ${points(item.contribution)}</span></li>`).join('')}</ul>` : '<p class="analytics-note">Os fatores disponíveis permaneceram estáveis.</p>'}`;
   };
   const explanation =
     model.latest && model.current
@@ -51,9 +52,9 @@ export function renderReadinessHistory(
     bottom = 27,
     plotWidth = width - left - right,
     plotHeight = height - top - bottom;
-  const x = index =>
+  const x = (index: number) =>
     left + (rows.length === 1 ? plotWidth / 2 : (index * plotWidth) / (rows.length - 1));
-  const y = score =>
+  const y = (score: number) =>
     top + plotHeight - (Math.max(0, Math.min(100, Number(score))) / 100) * plotHeight;
   const grid = [0, 25, 50, 75, 100]
     .map(

@@ -8,21 +8,27 @@ import { renderAdherenceTarget } from '../renderers/adherence-target-renderer.js
 import { renderRecoveryPlan, formatRecoveryMinutes } from './recovery-plan-renderer.js';
 import { buildProjectionRequirements } from '../../application/projection/build-projection-requirements.js';
 
-const labels = {
+type Row = Record<string, any>;
+type Esc = (value: any) => string;
+const labels: Record<string, string> = {
   insufficient_data: 'Dados insuficientes',
   on_track: 'No caminho',
   attention: 'Atenção',
   at_risk: 'Em risco',
 };
-const confidenceLabels = { insufficient: 'Insuficiente', low: 'Baixa', moderate: 'Moderada' };
-const phaseLabels = {
+const confidenceLabels: Record<string, string> = {
+  insufficient: 'Insuficiente',
+  low: 'Baixa',
+  moderate: 'Moderada',
+};
+const phaseLabels: Record<string, string> = {
   undated: 'Sem data',
   construction: 'Construção',
   consolidation: 'Consolidação',
   final_stretch: 'Reta final',
   final_review: 'Revisão final',
 };
-const recoveryLabels = {
+const recoveryLabels: Record<string, string> = {
   not_needed: 'Não necessária',
   recoverable: 'Prévia disponível',
   limited: 'Opções limitadas',
@@ -32,15 +38,14 @@ const pct = formatEvidencePercent;
 const hours = formatRecoveryMinutes;
 
 function renderRecoveryScenarioComparison(
-  recovery,
-  currentScenario,
-  simulatedScenario,
-  escapeHtml
+  recovery: Row | null | undefined,
+  currentScenario: Row,
+  escapeHtml: Esc
 ) {
   if (!recovery) return '';
-  const currentPlanPanel = scenario =>
+  const currentPlanPanel = (scenario: Row) =>
     `<div><h4>Plano atual</h4><p>Trajetória: ${labels[scenario?.status] || labels.insufficient_data}</p><p>Capacidade semanal: ${hours(scenario?.weeklyCapacityMinutes ?? 0)}</p><p>Carga planejada: ${hours(scenario?.planFit?.plannedMinutes ?? 0)}</p><p>${scenario?.planFit?.shortfallMinutes > 0 ? `Faltam ${hours(scenario.planFit.shortfallMinutes)} para acomodar a carga.` : `A carga cabe; sobram ${hours(scenario?.planFit?.remainingMinutes ?? 0)}.`}</p></div>`;
-  const recoveryPlanPanel = (scenario, item) => {
+  const recoveryPlanPanel = (scenario: Row, item: Row) => {
     if (!item) return `<div><h4>Plano de recuperação</h4><p>Prévia indisponível.</p></div>`;
     const transfer =
       item.status === 'recoverable'
@@ -48,12 +53,12 @@ function renderRecoveryScenarioComparison(
         : escapeHtml(item.reason || recoveryLabels[item.status] || 'Sem transferência segura.');
     return `<div><h4>Plano de recuperação</h4><p>${recoveryLabels[item.status] || recoveryLabels.unavailable}</p><p>${transfer}</p><p>Capacidade ${hours(item.capacity?.current ?? scenario?.weeklyCapacityMinutes ?? 0)} → ${hours(item.capacity?.proposed ?? item.capacity?.current ?? scenario?.weeklyCapacityMinutes ?? 0)} · carga ${hours(item.totalMinutes?.current ?? 0)} → ${hours(item.totalMinutes?.proposed ?? item.totalMinutes?.current ?? 0)}</p></div>`;
   };
-  const alternative = (title, item) =>
+  const alternative = (title: string, item: Row | null | undefined) =>
     `<div><h4>${title}</h4><p>${recoveryLabels[item?.status] || recoveryLabels.unavailable}</p><p>${item?.status === 'recoverable' ? `${escapeHtml(item.from?.name || 'Origem')} → ${escapeHtml(item.to?.name || 'Destino')} · ${hours(item.transferMinutes)}` : escapeHtml(item?.reason || 'Sem transferência segura.')}</p></div>`;
   return `<section class="projection-recovery-comparison"><h4>Plano atual vs. plano de recuperação</h4><p>A simulação não prevê melhora de nota pela mudança de carga. Ela compara o encaixe e a redistribuição permitida pelas regras atuais.</p><div class="projection-scenario__comparison">${currentPlanPanel(currentScenario)}${recoveryPlanPanel(currentScenario, recovery.current)}</div><h4>Como meta e prazo alteram a proposta</h4><div class="projection-scenario__comparison">${alternative('Condições atuais', recovery.current)}${alternative('Condições simuladas', recovery.simulated)}</div></section>`;
 }
 
-function renderTrajectory(model, escapeHtml) {
+function renderTrajectory(model: Row, escapeHtml: Esc) {
   const points = (model.trajectory.observations || []).slice(-12);
   if (points.length < 2)
     return '<p class="analytics-note">A trajetória visual aparece após simulados comparáveis em datas diferentes.</p>';
@@ -63,10 +68,11 @@ function renderTrajectory(model, escapeHtml) {
     right = 18,
     top = 16,
     bottom = 30;
-  const x = index => left + (index / (Math.max(1, points.length - 1) + 1)) * (width - left - right);
-  const y = value => top + ((100 - value) / 100) * (height - top - bottom);
+  const x = (index: number) =>
+    left + (index / (Math.max(1, points.length - 1) + 1)) * (width - left - right);
+  const y = (value: number) => top + ((100 - value) / 100) * (height - top - bottom);
   const historical = points
-    .map((point, index) => `${x(index).toFixed(1)},${y(point.value).toFixed(1)}`)
+    .map((point: any, index: any) => `${x(index).toFixed(1)},${y(point.value).toFixed(1)}`)
     .join(' ');
   const last = points.at(-1),
     lastX = x(points.length - 1),
@@ -76,7 +82,7 @@ function renderTrajectory(model, escapeHtml) {
     : '';
   const values = points
     .map(
-      point =>
+      (point: any) =>
         `<tr><th scope="row"><time datetime="${escapeHtml(point.date)}">${escapeHtml(formatDateBR(point.date))}</time></th><td>${pct(point.value)}</td><td>${pct(model.current.targetScore)}</td></tr>`
     )
     .join('');
@@ -84,7 +90,7 @@ function renderTrajectory(model, escapeHtml) {
     <title>Trajetória de desempenho</title><desc>Resultados registrados em linha sólida, tendência calculada de 30 dias em linha tracejada e meta em linha horizontal. Valores disponíveis abaixo.</desc>
     <line x1="${left}" x2="${width - right}" y1="${y(model.current.targetScore)}" y2="${y(model.current.targetScore)}" class="achievement-trajectory__target"/>
     <polyline points="${historical}" class="achievement-trajectory__observed"/>${future}
-    ${points.map((point, index) => `<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot" tabindex="0" aria-label="${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}"><title>${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}</title></circle>`).join('')}
+    ${points.map((point: any, index: any) => `<circle cx="${x(index).toFixed(1)}" cy="${y(point.value).toFixed(1)}" r="3.5" class="achievement-trajectory__dot" tabindex="0" aria-label="${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}"><title>${escapeHtml(formatDateBR(point.date))}: simulado ${pct(point.value)}, meta ${pct(model.current.targetScore)}</title></circle>`).join('')}
     <text x="${left}" y="${height - 7}">${escapeHtml(formatDateBR(points[0].date))}</text><text x="${lastX}" y="${height - 7}" text-anchor="middle">${escapeHtml(formatDateBR(last.date))}</text>
     ${forecast.available ? `<text x="${width - right}" y="${height - 7}" text-anchor="end">30 dias</text>` : ''}
   </svg></div><div class="achievement-trajectory__legend"><span>━ Histórico registrado</span><span>┄ Tendência de 30 dias</span><span>─ Meta</span></div>
@@ -92,7 +98,7 @@ function renderTrajectory(model, escapeHtml) {
   <details class="achievement-projection__details"><summary>Ver valores do gráfico</summary><div class="performance-table-scroll" tabindex="0"><table><thead><tr><th scope="col">Data</th><th scope="col">Simulado</th><th scope="col">Meta</th></tr></thead><tbody>${values}</tbody></table></div></details>`;
 }
 
-function renderRequirements(model, escapeHtml) {
+function renderRequirements(model: Row, escapeHtml: Esc) {
   const { requirements, pending } = buildProjectionRequirements(model);
   const evidence = presentEvidence({
     state: requirements.slice(2).every(item => item.met)
@@ -107,13 +113,13 @@ function renderRequirements(model, escapeHtml) {
   return `<div class="achievement-projection__requirements" role="status"><strong>Projeção ainda indisponível</strong><p data-evidence-state="${evidence.state}">${escapeHtml(evidence.label)}. ${escapeHtml(evidence.message)}</p><ul>${requirements.map(item => `<li>${item.met ? '✓' : '○'} ${escapeHtml(item.label)}</li>`).join('')}</ul>${pending.length ? `<p>${escapeHtml(pending[0].guidance)}</p>` : ''}<button type="button" class="btn ghost small" ${pending[0]?.label === 'Data da prova' ? 'data-performance-open="metas"' : 'data-performance-section="simulations"'}>${pending[0]?.label === 'Data da prova' ? 'Configurar prova' : 'Registrar simulado'}</button></div>`;
 }
 
-function renderHistory(history, escapeHtml) {
+function renderHistory(history: Row[], escapeHtml: Esc) {
   if (!history.length) return '';
   const ordered = [...history].reverse(),
-    rows = items =>
+    rows = (items: Row[]) =>
       items
         .map(
-          item =>
+          (item: any) =>
             `<li><time datetime="${escapeHtml(item.date)}">${escapeHtml(formatDateBR(item.date))}</time> · ${labels[item.status] || labels.insufficient_data} · confiança ${confidenceLabels[item.confidence?.level] || confidenceLabels.insufficient}</li>`
         )
         .join('');
@@ -123,22 +129,22 @@ function renderHistory(history, escapeHtml) {
   return `<details class="achievement-projection__details"><summary>Histórico da trajetória</summary>${transitions.length > 1 ? `<p>Estados registrados: ${escapeHtml(transitions.join(' → '))}. A sequência não indica causalidade.</p>` : ''}<ul>${rows(ordered.slice(0, 5))}</ul>${ordered.length > 5 ? `<details class="achievement-projection__details"><summary>Mostrar mais</summary><ul>${rows(ordered.slice(5))}</ul></details>` : ''}</details>`;
 }
 
-export function renderProjectionScenarioResult(result, { escapeHtml }: any = {}) {
+export function renderProjectionScenarioResult(result: Row, { escapeHtml }: any = {}) {
   if (result?.state !== 'ready')
     return `<p role="alert">${escapeHtml(result?.reason || 'Não foi possível calcular este cenário.')}</p>`;
-  const fit = value =>
+  const fit = (value: Row | null | undefined) =>
     value == null
       ? 'Sem plano semanal para comparar'
       : value.shortfallMinutes > 0
         ? `Faltam ${hours(value.shortfallMinutes)} para a carga atual`
         : `A carga atual cabe; sobram ${hours(value.remainingMinutes)}`;
-  const column = (title, value) =>
+  const column = (title: string, value: Row) =>
     `<div><h4>${title}</h4><dl><dt>Trajetória</dt><dd>${labels[value.status] || labels.insufficient_data}</dd><dt>Meta</dt><dd>${pct(value.targetScore)}</dd><dt>Prazo</dt><dd>${pluralize(value.daysRemaining, 'dia', 'dias')}</dd><dt>Capacidade semanal</dt><dd>${hours(value.weeklyCapacityMinutes)}</dd><dt>Plano</dt><dd>${fit(value.planFit)}</dd></dl></div>`;
-  return `<section aria-label="Resultado da simulação"><strong>Resultado simulado</strong><div class="projection-scenario__comparison">${column('Atual', result.current)}${column('Simulação', result.simulated)}</div><p class="analytics-note">${escapeHtml(result.note)} Nenhum dado real foi alterado.</p>${renderRecoveryScenarioComparison(result.recovery, result.current, result.simulated, escapeHtml)}</section>`;
+  return `<section aria-label="Resultado da simulação"><strong>Resultado simulado</strong><div class="projection-scenario__comparison">${column('Atual', result.current)}${column('Simulação', result.simulated)}</div><p class="analytics-note">${escapeHtml(result.note)} Nenhum dado real foi alterado.</p>${renderRecoveryScenarioComparison(result.recovery, result.current, escapeHtml)}</section>`;
 }
 
 export function renderAchievementProjection(
-  model,
+  model: Row,
   {
     history = [],
     escapeHtml,
@@ -155,8 +161,8 @@ export function renderAchievementProjection(
   const evidenceExplanation = buildProjectionEvidenceExplanation(model);
   const forecast = model.trajectory.forecast30;
   const entries = [
-    ...model.drivers.map(text => ({ text, type: 'driver' })),
-    ...model.risks.map(text => ({ text, type: 'risk' })),
+    ...model.drivers.map((text: any) => ({ text, type: 'driver' })),
+    ...model.risks.map((text: any) => ({ text, type: 'risk' })),
   ].slice(0, 4);
   const context =
     model.exam.daysRemaining == null
@@ -171,7 +177,7 @@ export function renderAchievementProjection(
     ${renderAdherenceTarget(adherenceContext, { escapeHtml })}
     <div class="achievement-projection__story"><div><strong>Evidência</strong><p>${escapeHtml(model.risks[0] || model.drivers[0] || model.confidence.reasons[0] || model.summary)}</p></div><div><strong>Ação</strong><p>${escapeHtml(model.recovery?.steps?.[0] || 'Continue registrando simulados comparáveis.')}</p></div></div>
     ${renderDecisionExplanation({ title: 'Entender esta projeção', factors: entries.map(item => item.text), evidence: (model.evidence.observationCount || 0) + ' simulados comparáveis · ' + (model.evidence.sampleSize || 0) + ' questões na amostra.', confidence: model.confidence.reasons.join(' '), helpTopic: 'projections', method: '<dl>' + evidenceExplanation.facts.map(fact => '<dt>' + escapeHtml(fact.label) + '</dt><dd>' + escapeHtml(fact.value) + '</dd>').join('') + '</dl><p>' + [evidenceExplanation.bandMeaning, evidenceExplanation.method, evidenceExplanation.confidenceMeaning, evidenceExplanation.trendMeaning].map(escapeHtml).join('</p><p>') + '</p><p>Prontidão é um índice de preparação; não representa probabilidade de aprovação.</p>' }, { escapeHtml, escapeAttr })}
-    ${model.recovery ? `<details class="achievement-projection__details"><summary>O que seria necessário?</summary><p>${model.recovery.state === 'collect_evidence' ? 'Primeiro, reúna uma base comparável.' : `Déficit central medido: ${formatDecimal(model.recovery.gap)} p.p. · ${pluralize(formatDecimal(model.recovery.weeksRemaining ?? '—'), 'semana', 'semanas')} até a prova.`}</p><ol>${model.recovery.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}</ol><p class="analytics-note">Orientações para revisão do plano, sem previsão de ganho de nota ou alteração automática de horas.</p></details>` : ''}
+    ${model.recovery ? `<details class="achievement-projection__details"><summary>O que seria necessário?</summary><p>${model.recovery.state === 'collect_evidence' ? 'Primeiro, reúna uma base comparável.' : `Déficit central medido: ${formatDecimal(model.recovery.gap)} p.p. · ${pluralize(formatDecimal(model.recovery.weeksRemaining ?? '—'), 'semana', 'semanas')} até a prova.`}</p><ol>${model.recovery.steps.map((step: any) => `<li>${escapeHtml(step)}</li>`).join('')}</ol><p class="analytics-note">Orientações para revisão do plano, sem previsão de ganho de nota ou alteração automática de horas.</p></details>` : ''}
     ${['attention', 'at_risk'].includes(model.status) ? renderRecoveryPlan(recoveryPlan, escapeHtml, escapeAttr) : ''}
     ${renderHistory(history, escapeHtml)}
     <button type="button" class="btn ghost small" data-projection-scenario-open>Simular cenário</button>

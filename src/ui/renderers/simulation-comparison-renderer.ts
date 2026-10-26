@@ -1,9 +1,15 @@
-export function renderSimulationComparison(model, { escapeHtml, formatDate }) {
+export function renderSimulationComparison(
+  model: Record<string, any>,
+  {
+    escapeHtml,
+    formatDate,
+  }: { escapeHtml: (value: any) => string; formatDate: (date: string) => string }
+) {
   if (model.state !== 'ready')
     return `<div class="ui-state--empty">${escapeHtml(model.message)}</div>`;
   const rows = model.rows
     .map(
-      item =>
+      (item: any) =>
         `<li class="simulation-comparison-row"><strong>${escapeHtml(item.name)}</strong><div class="simulation-comparison-bars"><span>Anterior</span><span class="simulation-comparison-track" aria-hidden="true"><span style="width:${item.previousAccuracy}%"></span></span><b>${item.previousAccuracy}%</b><span>Atual</span><span class="simulation-comparison-track is-current" aria-hidden="true"><span style="width:${item.currentAccuracy}%"></span></span><b>${item.currentAccuracy}%</b></div><small>${item.delta > 0 ? '+' : ''}${item.delta} p.p. · ${item.previousTotal} questões antes, ${item.currentTotal} agora</small></li>`
     )
     .join('');

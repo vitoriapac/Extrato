@@ -11,19 +11,22 @@ import { renderPerformanceSubjectComparison } from './performance-subject-compar
 import { renderStabilityMap } from './stability-map-renderer.js';
 import { renderPerformanceSampleState } from './performance-sample-state.js';
 
-const value = (number, suffix = '') => (number == null ? '—' : `${formatDecimal(number)}${suffix}`);
-const signed = number =>
+type Row = Record<string, any>;
+type Esc = (value: any) => string;
+const value = (number: number | null | undefined, suffix = '') =>
+  number == null ? '—' : `${formatDecimal(number)}${suffix}`;
+const signed = (number: number | null | undefined) =>
   number == null ? 'Sem comparação' : `${number > 0 ? '+' : ''}${formatDecimal(number)} p.p.`;
-const topicRows = (items, escapeHtml, escapeAttr) =>
+const topicRows = (items: Row[], escapeHtml: Esc, escapeAttr: Esc) =>
   items
     .map(
-      row =>
+      (row: any) =>
         `<li><button type="button" class="performance-topic-link" data-performance-topic="${escapeAttr(row.id)}">${escapeHtml(row.name)}</button><span>${value(row.accuracy, '%')} · ${row.questions} questões · ${row.delta == null ? 'tendência indisponível' : signed(row.delta)} · ${escapeHtml(row.state)}</span></li>`
     )
     .join('');
 
 export function renderPerformanceSubjects(
-  model,
+  model: Row,
   {
     range,
     formatDate,
@@ -38,7 +41,7 @@ export function renderPerformanceSubjects(
     return '<div class="empty-state empty-state--compact" role="status"><strong>Nenhuma disciplina no concurso ativo</strong><p>Cadastre ou selecione disciplinas e tópicos para acompanhar a evolução.</p></div>';
   const options = model.subjects
     .map(
-      subject =>
+      (subject: any) =>
         `<option value="${escapeAttr(subject.id)}" ${subject.id === model.subject.id ? 'selected' : ''}>${escapeHtml(subject.name)}</option>`
     )
     .join('');
@@ -52,5 +55,5 @@ export function renderPerformanceSubjects(
     model.activity.questions < 10
       ? `Amostra insuficiente: ${model.activity.questions} questões no período.`
       : `Precisão de ${value(model.accuracy, '%')} frente à meta de ${model.goal.target}%.`;
-  return `${comparison ? renderPerformanceSubjectComparison(comparison, { escapeHtml, escapeAttr }) : ''}${stabilityMap ? renderStabilityMap(stabilityMap, { escapeHtml, escapeAttr }) : ''}${selection}${renderPerformanceSummary(renderPerformanceStory({ title: model.subject.name, summary, details: [model.trend == null ? 'Tendência sem base comparável.' : `Tendência: ${signed(model.trend)}.`] }, escapeHtml), kpis)}${model.activity.questions < 10 ? renderPerformanceSampleState({ name: model.subject.name, current: model.activity.questions, required: 10, message: 'comparar a precisão' }) : ''}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution, { formatDate })}</section>${renderPerformanceDetails('Atividade e tópicos', activity + topics)}${renderPerformanceTopicDialog(topicDetail, { formatDate, escapeHtml })}`;
+  return `${comparison ? renderPerformanceSubjectComparison(comparison, { escapeHtml, escapeAttr }) : ''}${stabilityMap ? renderStabilityMap(stabilityMap, { escapeHtml, escapeAttr }) : ''}${selection}${renderPerformanceSummary(renderPerformanceStory({ title: model.subject.name, summary, details: [model.trend == null ? 'Tendência sem base comparável.' : `Tendência: ${signed(model.trend)}.`] }), kpis)}${model.activity.questions < 10 ? renderPerformanceSampleState({ name: model.subject.name, current: model.activity.questions, required: 10, message: 'comparar a precisão' }) : ''}<section class="performance-block"><h3>Evolução da precisão</h3>${renderQuestionEvolution(model.evolution, { formatDate })}</section>${renderPerformanceDetails('Atividade e tópicos', activity + topics)}${renderPerformanceTopicDialog(topicDetail, { formatDate, escapeHtml })}`;
 }

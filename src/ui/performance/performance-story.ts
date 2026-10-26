@@ -1,12 +1,12 @@
 import { renderDecisionSummary, renderDisclosure } from '../components/analytical-presentation.js';
-export function renderPerformanceStory(model: any, escapeHtml?: any) {
+export function renderPerformanceStory(model: any) {
   return renderDecisionSummary(model);
 }
 
-export function renderPerformanceSummary(story, metrics, note = '') {
+export function renderPerformanceSummary(story: string, metrics: string, note = '') {
   return `<section class="performance-summary" aria-label="Resumo interpretativo">${story}${metrics}${note}</section>`;
 }
 
-export function renderPerformanceDetails(title, content) {
+export function renderPerformanceDetails(title: string, content: string) {
   return renderDisclosure({ title, contentHTML: content });
 }

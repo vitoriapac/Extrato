@@ -5,7 +5,7 @@ import { renderPerformanceSubjects } from './performance-subjects-renderer.js';
 import { renderPerformanceConsistency } from './performance-consistency-renderer.js';
 
 export function renderPerformanceSection(
-  pageModel,
+  pageModel: Record<string, any>,
   { range, today, activeExamTags, formatDate, escapeHtml, escapeAttr, targetScore }: any = {}
 ) {
   switch (pageModel.section) {
