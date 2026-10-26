@@ -1,10 +1,11 @@
 import { strategicScopeKey } from './build-strategic-timeline.js';
 
 const phaseOrder = ['construction', 'consolidation', 'final_stretch', 'final_review'];
-const rounded = value => Math.round(value * 10) / 10;
-const validPhase = record =>
+const rounded = (value: number) => Math.round(value * 10) / 10;
+const validPhase = (record: Record<string, any> | null | undefined) =>
   phaseOrder.includes(record?.examPhase?.state) ? record.examPhase : null;
-const finite = value => (value != null && Number.isFinite(Number(value)) ? Number(value) : null);
+const finite = (value: unknown) =>
+  value != null && Number.isFinite(Number(value)) ? Number(value) : null;
 
 // Only values persisted with their phase participate. Revisions of one close count once.
 export function buildPhaseComparison({
@@ -47,13 +48,13 @@ export function buildPhaseComparison({
       );
       const readiness = readinessSnapshots
         .filter(
-          item =>
+          (item: any) =>
             strategicScopeKey(item.activeExamTags) === scope &&
             validPhase(item)?.state === state &&
             finite(item.score) != null
         )
         .sort(
-          (a, b) =>
+          (a: any, b: any) =>
             String(a.date).localeCompare(String(b.date)) ||
             String(a.savedAt).localeCompare(String(b.savedAt))
         )

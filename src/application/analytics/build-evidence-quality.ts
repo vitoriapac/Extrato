@@ -27,7 +27,7 @@ export function buildEvidenceQuality({
       .filter(([, value]) => typeof value === 'number' && Number.isFinite(value) && value >= 0)
       .map(([label, value]) => ({ label, value })),
     reasons: [
-      ...reasons.filter(value => typeof value === 'string' && value.trim()),
+      ...reasons.filter((value: any) => typeof value === 'string' && value.trim()),
       ...(limited
         ? ['Evidência limitada: a base ainda não atende aos critérios deste indicador.']
         : []),

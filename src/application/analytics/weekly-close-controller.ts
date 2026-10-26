@@ -20,9 +20,13 @@ export function createWeeklyCloseController({
     typeof createSnapshot !== 'function'
   )
     throw new TypeError('Controlador de fechamento semanal requer dependências de aplicação.');
-  let draft = { selectedIds: [], proposal: null, proposalPeriodKey: null };
+  let draft: {
+    selectedIds: string[];
+    proposal: Record<string, any> | null;
+    proposalPeriodKey: string | null;
+  } = { selectedIds: [], proposal: null, proposalPeriodKey: null };
   const view = () => ({ selectedIds: [...draft.selectedIds], proposal: draft.proposal });
-  const toggle = (id, checked) => {
+  const toggle = (id: string, checked: boolean) => {
     draft.selectedIds = checked
       ? [...new Set([...draft.selectedIds, id])]
       : draft.selectedIds.filter(item => item !== id);
@@ -30,7 +34,7 @@ export function createWeeklyCloseController({
     onChanged(view());
     return view();
   };
-  const periodKey = model => {
+  const periodKey = (model: Record<string, any> | null | undefined) => {
     const period = model?.period || model?.weeklyClose?.period;
     if (!period?.start || !period?.end) return null;
     return JSON.stringify([period.start, period.end, [...(model.activeExamTags || [])].sort()]);
@@ -41,41 +45,45 @@ export function createWeeklyCloseController({
     if (!close) return null;
     const state = getState(),
       key = periodKey(model),
-      active = item => !['skipped', 'replaced', 'discarded', 'deferred'].includes(item.status);
+      active = (item: Record<string, any>) =>
+        !['skipped', 'replaced', 'discarded', 'deferred'].includes(item.status);
     if (!key) return null;
     const previousIds = new Set(
       (state.weeklyCloseSnapshots || [])
-        .filter(item => periodKey(item) === key)
-        .map(item => item.id)
+        .filter((item: any) => periodKey(item) === key)
+        .map((item: any) => item.id)
     );
     const applied = new Set(
       state.dailyPlans
-        .flatMap(plan => plan.items || [])
+        .flatMap((plan: any) => plan.items || [])
         .filter(
-          item =>
+          (item: any) =>
             active(item) &&
             (item.weeklyClosePeriodKey === key || previousIds.has(item.weeklyCloseSnapshotId))
         )
-        .map(item => item.priorityId)
+        .map((item: any) => item.priorityId)
     );
     const days = Array.from({ length: 7 }, (_, index) => {
       const date = clock.addDays(clock.today(), index + 1),
         used = state.dailyPlans
-          .filter(plan => plan.date === date)
+          .filter((plan: any) => plan.date === date)
           .reduce(
-            (sum, plan) =>
+            (sum: any, plan: any) =>
               sum +
               (plan.items?.length
                 ? plan.items
                     .filter(active)
-                    .reduce((n, item) => n + Math.max(0, Number(item.plannedMinutes) || 0), 0)
+                    .reduce(
+                      (n: any, item: any) => n + Math.max(0, Number(item.plannedMinutes) || 0),
+                      0
+                    )
                 : Math.max(0, Number(plan.plannedMinutes) || 0)),
             0
           );
       return { date, availableMinutes: Math.max(0, Math.round(getDailyCapacity(date)) - used) };
     });
     return buildProposal({
-      priorities: close.priorities.filter(item => !applied.has(item.priorityId)),
+      priorities: close.priorities.filter((item: any) => !applied.has(item.priorityId)),
       selectedIds: draft.selectedIds,
       futureDays: days,
     });
@@ -107,7 +115,7 @@ export function createWeeklyCloseController({
         id: idGenerator('weekly-close'),
       });
     if (!snapshot) return null;
-    snapshot.priorityDecisions = (model.weeklyClose.priorities || []).map(item => ({
+    snapshot.priorityDecisions = (model.weeklyClose.priorities || []).map((item: any) => ({
       priorityId: item.priorityId,
       accepted: draft.selectedIds.includes(item.priorityId),
     }));
@@ -115,7 +123,7 @@ export function createWeeklyCloseController({
     onBeforeApply();
     upsertSnapshot(state.weeklyCloseSnapshots, snapshot);
     for (const item of proposal.allocations) {
-      let plan = state.dailyPlans.find(candidate => candidate.date === item.date);
+      let plan = state.dailyPlans.find((candidate: any) => candidate.date === item.date);
       if (!plan) {
         plan = {
           id: idGenerator('plan'),
@@ -159,7 +167,7 @@ export function createWeeklyCloseController({
         capturedAt: clock.nowISO(),
       });
       plan.plannedMinutes = plan.items.reduce(
-        (sum, row) => sum + (Number(row.plannedMinutes) || 0),
+        (sum: any, row: any) => sum + (Number(row.plannedMinutes) || 0),
         0
       );
       plan.flexMinutes = Math.max(0, plan.availableMinutes - plan.plannedMinutes);

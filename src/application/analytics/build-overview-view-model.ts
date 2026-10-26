@@ -1,8 +1,9 @@
 import { parseLocalDate } from '../../core/date-utils.js';
 
-const sum = (items, selector) =>
-  items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
-const daySpan = (start, end) => {
+type Row = Record<string, any>;
+const sum = (items: Row[], selector: (item: Row) => unknown) =>
+  items.reduce((total: any, item: any) => total + (Number(selector(item)) || 0), 0);
+const daySpan = (start: string, end: string) => {
   const first = parseLocalDate(start),
     last = parseLocalDate(end);
   return first && last ? Math.floor((last.getTime() - first.getTime()) / 86400000) : 0;
@@ -15,28 +16,28 @@ export function buildStudyTimeViewModel({
   hoursForDate,
   addDays,
 }: any = {}) {
-  const dated = sessions.filter(item => item.date),
+  const dated = sessions.filter((item: any) => item.date),
     totalSeconds = sum(dated, item => item.durationSeconds),
     todaySeconds = sum(
-      dated.filter(item => item.date === today),
+      dated.filter((item: any) => item.date === today),
       item => item.durationSeconds
     ),
     weekSeconds = sum(
-      dated.filter(item => item.date >= weekStart && item.date <= today),
+      dated.filter((item: any) => item.date >= weekStart && item.date <= today),
       item => item.durationSeconds
     ),
     monthSeconds = sum(
-      dated.filter(item => item.date >= monthStart && item.date <= today),
+      dated.filter((item: any) => item.date >= monthStart && item.date <= today),
       item => item.durationSeconds
     );
   const firstRecent =
     dated
-      .filter(item => item.date >= addDays(today, -29) && item.date <= today)
-      .map(item => item.date)
+      .filter((item: any) => item.date >= addDays(today, -29) && item.date <= today)
+      .map((item: any) => item.date)
       .sort()[0] || null;
   const days = firstRecent ? daySpan(firstRecent, today) + 1 : 0,
     recent = firstRecent
-      ? dated.filter(item => item.date >= firstRecent && item.date <= today)
+      ? dated.filter((item: any) => item.date >= firstRecent && item.date <= today)
       : [],
     realized = sum(recent, item => item.durationSeconds);
   let planned = 0;
@@ -44,8 +45,8 @@ export function buildStudyTimeViewModel({
     planned += hoursForDate(addDays(firstRecent, index)) * 3600;
   const elapsed = daySpan(weekStart, today) + 1,
     byDate = dated
-      .filter(item => item.date >= weekStart && item.date <= today)
-      .reduce((map, item) => ((map[item.date] ??= []).push(item), map), {});
+      .filter((item: any) => item.date >= weekStart && item.date <= today)
+      .reduce((map: any, item: any) => ((map[item.date] ??= []).push(item), map), {});
   let achieved = 0;
   for (let index = 0; index < elapsed; index++) {
     const date = addDays(weekStart, index),

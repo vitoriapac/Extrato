@@ -1,6 +1,8 @@
 import { strategicScopeKey } from './build-strategic-timeline.js';
-const number = value => (value != null && Number.isFinite(Number(value)) ? Number(value) : null);
-export function captureCloseComparisonMetrics(model, projection = null) {
+type Row = Record<string, any>;
+const number = (value: unknown) =>
+  value != null && Number.isFinite(Number(value)) ? Number(value) : null;
+export function captureCloseComparisonMetrics(model: Row, projection: Row | null = null) {
   const current = model?.weeklyClose?.decisionCycle?.readiness?.current,
     frame = model?.weeklyClose?.adherence;
   const strategicAdherence = frame
@@ -37,7 +39,7 @@ export function buildCloseComparison({ current, snapshots = [], activeExamTags =
         String(b.savedAt || b.period.end).localeCompare(String(a.savedAt || a.period.end)) ||
         (Number(b.revision) || 1) - (Number(a.revision) || 1)
     )[0];
-  if (!previous) return { state: 'empty', rows: [], previous: null };
+  if (!previous) return { state: 'empty', rows: [] as Row[], previous: null as Row | null };
   const before = previous.comparisonMetrics || captureCloseComparisonMetrics(previous),
     after = current.comparisonMetrics || captureCloseComparisonMetrics(current);
   const sameReadiness =

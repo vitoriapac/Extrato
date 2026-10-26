@@ -1,4 +1,4 @@
-const LABELS = {
+const LABELS: Record<string, string> = {
   naoSabia: 'Não sabia',
   esqueci: 'Esqueci',
   interpretacao: 'Interpretação',
@@ -6,7 +6,7 @@ const LABELS = {
   desatencao: 'Desatenção',
   chute: 'Chute',
 };
-const ICONS = {
+const ICONS: Record<string, string> = {
   naoSabia: '📚',
   esqueci: '🧠',
   interpretacao: '📖',
@@ -23,7 +23,7 @@ export function buildErrorAnalysisViewModel({
     return {
       state: 'empty',
       totalErrors: 0,
-      items: [],
+      items: [] as any[],
       message: 'Nenhum erro registrado neste recorte.',
     };
   const items = [

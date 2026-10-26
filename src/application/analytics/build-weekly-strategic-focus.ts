@@ -1,7 +1,7 @@
 import { isHighImpact, isStrategicGap, hasAdequateMastery } from '../../domain/strategy/config.js';
 import { localDateFromTimestamp } from '../../domain/sessions/study-session.js';
-const seconds = items =>
-  items.reduce((sum, item) => sum + Math.max(0, Number(item.durationSeconds) || 0), 0);
+const seconds = (items: Array<Record<string, any>>) =>
+  items.reduce((sum: any, item: any) => sum + Math.max(0, Number(item.durationSeconds) || 0), 0);
 
 export function buildWeeklyStrategicFocus({
   sessions = [],
@@ -10,32 +10,34 @@ export function buildWeeklyStrategicFocus({
   start,
   end,
 }: any = {}) {
-  const relevantSessions = sessions.filter(item => item.date >= start && item.date <= end);
+  const relevantSessions = sessions.filter((item: any) => item.date >= start && item.date <= end);
   const candidatesByTopic = new Map<string, any>(
     candidates.filter((item: any) => item.topicId).map((item: any) => [item.topicId, item])
   );
   const totalSeconds = seconds(relevantSessions);
   const highImpactSeconds = seconds(
-    relevantSessions.filter(item => isHighImpact(candidatesByTopic.get(item.topicId)?.examImpact))
+    relevantSessions.filter((item: any) =>
+      isHighImpact(candidatesByTopic.get(item.topicId)?.examImpact)
+    )
   );
   const unknownSeconds = seconds(
     relevantSessions.filter(
-      item => !item.topicId || candidatesByTopic.get(item.topicId)?.examImpact == null
+      (item: any) => !item.topicId || candidatesByTopic.get(item.topicId)?.examImpact == null
     )
   );
   const prioritySeconds = seconds(
-    relevantSessions.filter(item => isStrategicGap(candidatesByTopic.get(item.topicId)))
+    relevantSessions.filter((item: any) => isStrategicGap(candidatesByTopic.get(item.topicId)))
   );
   const consolidatedSeconds = seconds(
-    relevantSessions.filter(item => hasAdequateMastery(candidatesByTopic.get(item.topicId)))
+    relevantSessions.filter((item: any) => hasAdequateMastery(candidatesByTopic.get(item.topicId)))
   );
   const workedIds = new Set(
     relevantSessions
-      .filter(item => {
+      .filter((item: any) => {
         const candidate = candidatesByTopic.get(item.topicId);
         return isStrategicGap(candidate);
       })
-      .map(item => item.topicId)
+      .map((item: any) => item.topicId)
   );
   const outcomes = new Map();
   for (const item of recommendations) {

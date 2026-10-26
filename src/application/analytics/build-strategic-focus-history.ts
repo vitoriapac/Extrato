@@ -1,15 +1,17 @@
-const validPeriod = period =>
+type Row = Record<string, any>;
+const validPeriod = (period: Row | null | undefined) =>
   /^\d{4}-\d{2}-\d{2}$/.test(period?.start || '') &&
   /^\d{4}-\d{2}-\d{2}$/.test(period?.end || '') &&
   period.start <= period.end;
-const scopeKey = tags => (Array.isArray(tags) ? JSON.stringify([...new Set(tags)].sort()) : null);
-const percent = value =>
+const scopeKey = (tags: unknown) =>
+  Array.isArray(tags) ? JSON.stringify([...new Set(tags)].sort()) : null;
+const percent = (value: unknown) =>
   value != null && Number.isFinite(Number(value))
     ? Math.max(0, Math.min(100, Math.round(Number(value))))
     : null;
-const minutes = value =>
+const minutes = (value: unknown) =>
   value != null && Number.isFinite(Number(value)) ? Math.max(0, Math.round(Number(value))) : null;
-const rowOf = (period, close, { current = false }: any = {}) => {
+const rowOf = (period: Row, close: Row, { current = false }: any = {}) => {
   const focus = close?.strategicFocus;
   if (
     !validPeriod(period) ||
@@ -58,7 +60,7 @@ export function buildStrategicFocusHistory({
     .map(item => ({ ...rowOf(item.period, item.weeklyClose), savedAt: item.savedAt || '' }))
     .filter(item => item.start && (!currentRow || item.end < currentRow.start))
     .sort((a, b) => b.end.localeCompare(a.end) || b.savedAt.localeCompare(a.savedAt));
-  const selected = [];
+  const selected: Row[] = [];
   for (const item of eligible) {
     if (selected.some(previous => item.end >= previous.start)) continue;
     selected.push(item);
@@ -75,8 +77,9 @@ export function buildStrategicFocusHistory({
           previousEnd: previous.end,
         }
       : null;
+  type FocusTotals = Record<'workedGaps' | 'measured' | 'improved' | 'stable' | 'declined', number>;
   const totals = rows.reduce(
-    (sum, item) => ({
+    (sum: FocusTotals, item) => ({
       workedGaps: sum.workedGaps + item.workedGaps,
       measured: sum.measured + item.improved + item.stable + item.declined,
       improved: sum.improved + item.improved,

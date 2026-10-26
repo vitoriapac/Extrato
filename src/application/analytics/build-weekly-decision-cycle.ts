@@ -34,12 +34,12 @@ export function buildWeeklyDecisionCycle({
   const readinessComparison = compareReadinessSnapshots(previous, current);
   const outcomes = recommendations
     .filter(
-      item =>
+      (item: any) =>
         item.outcome?.measuredAt &&
         item.outcome.measuredAt.slice(0, 10) >= start &&
         item.outcome.measuredAt.slice(0, 10) <= end
     )
-    .map(item => ({
+    .map((item: any) => ({
       topicId: item.topicId,
       subjectId: item.subjectId,
       action:
@@ -71,7 +71,7 @@ export function buildWeeklyDecisionCycle({
     );
   if (priority >= 80 && priority != null)
     worked.push(`Você executou ${priorityPercent}% do tempo prioritário registrado no plano.`);
-  if (outcomes.some(item => item.state === 'positive'))
+  if (outcomes.some((item: any) => item.state === 'positive'))
     worked.push('Há decisões com melhora posterior medida, sem atribuição de causalidade.');
   if (priority != null && priority < 80)
     attention.push(`Execução prioritária em ${priorityPercent}%; reveja os blocos não executados.`);
@@ -84,7 +84,7 @@ export function buildWeeklyDecisionCycle({
     version: 2,
     execution,
     readiness: { current, previous: previous || null, comparison: readinessComparison },
-    simulations: simulations.filter(item => item.date >= start && item.date <= end).length,
+    simulations: simulations.filter((item: any) => item.date >= start && item.date <= end).length,
     worked: worked.slice(0, 3),
     attention: attention.slice(0, 3),
     outcomes,

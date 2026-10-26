@@ -1,14 +1,16 @@
 import { addLocalDays, localDateRange } from '../../core/date-utils.js';
 import { buildPeriodComparisonInsights } from '../../domain/analytics/period-comparison-insights.js';
 
-const entryDate = item =>
+type Row = Record<string, any>;
+const entryDate = (item: Row) =>
   item?.date || String(item?.endedAt || item?.createdAt || item?.completedAt || '').slice(0, 10);
-const within = (item, start, end) => {
+const within = (item: Row, start: string, end: string) => {
   const date = entryDate(item);
   return date >= start && date <= end;
 };
-const sum = (items, key) => items.reduce((total, item) => total + (Number(item?.[key]) || 0), 0);
-const shiftRange = (start, days) => addLocalDays(start, days);
+const sum = (items: Row[], key: string) =>
+  items.reduce((total: any, item: any) => total + (Number(item?.[key]) || 0), 0);
+const shiftRange = (start: string, days: number) => addLocalDays(start, days);
 
 function resolveRange({ preset = '7', today, start, end }: any = {}) {
   if (preset === 'custom' && start && end && start <= end)
@@ -39,11 +41,14 @@ function resolveRange({ preset = '7', today, start, end }: any = {}) {
   };
 }
 
-function aggregate({ sessions, questions, reviews }, range) {
-  const selectedSessions = sessions.filter(item => within(item, range.start, range.end));
-  const selectedQuestions = questions.filter(item => within(item, range.start, range.end));
+function aggregate(
+  { sessions, questions, reviews }: { sessions: Row[]; questions: Row[]; reviews: Row[] },
+  range: { start: string; end: string }
+): Record<string, number | null> {
+  const selectedSessions = sessions.filter((item: any) => within(item, range.start, range.end));
+  const selectedQuestions = questions.filter((item: any) => within(item, range.start, range.end));
   const selectedReviews = reviews.filter(
-    item =>
+    (item: any) =>
       within(item, range.start, range.end) &&
       ['Concluído', 'completed', 'done'].includes(item.status)
   );

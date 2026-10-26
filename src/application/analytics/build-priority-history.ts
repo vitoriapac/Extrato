@@ -5,7 +5,8 @@ import {
 } from '../../domain/recommendations/topic-priority-profile.js';
 import { strategicRecordInScope } from './build-strategic-timeline.js';
 import { localDateFromTimestamp } from '../../domain/sessions/study-session.js';
-const number = value => (value != null && Number.isFinite(Number(value)) ? Number(value) : null);
+const number = (value: unknown) =>
+  value != null && Number.isFinite(Number(value)) ? Number(value) : null;
 export function buildPriorityHistory({
   topics = [],
   candidates = [],
@@ -17,8 +18,14 @@ export function buildPriorityHistory({
   today,
   subjectId = '',
 }: any = {}) {
-  const points = [];
-  const add = (topicId, profile, time, source, current = false) => {
+  const points: Array<Record<string, any>> = [];
+  const add = (
+    topicId: string,
+    profile: Record<string, any>,
+    time: string,
+    source: string,
+    current = false
+  ) => {
     const date = /^\d{4}-\d{2}-\d{2}$/.test(time || '') ? time : localDateFromTimestamp(time);
     if (
       !topicId ||
@@ -37,7 +44,7 @@ export function buildPriorityHistory({
       sequence: points.length,
     });
   };
-  recommendationHistory.forEach(item => {
+  recommendationHistory.forEach((item: any) => {
     const profile = item.prioritySnapshot || {
       version: 0,
       algorithmVersion: item.algorithmVersions?.priority ?? null,
@@ -52,7 +59,7 @@ export function buildPriorityHistory({
     };
     add(item.topicId, profile, profile.capturedAt || item.createdAt, 'Recomendação apresentada');
   });
-  recommendations.forEach(item => {
+  recommendations.forEach((item: any) => {
     const snapshot = item.snapshot || {},
       evidence = snapshot.explanationSnapshot?.evidenceSnapshot || {},
       profile = {
@@ -71,8 +78,8 @@ export function buildPriorityHistory({
       };
     add(item.topicId, profile, item.createdAt || item.date, 'Decisão registrada');
   });
-  studyPlans.forEach(plan =>
-    (plan.items || []).forEach(item => {
+  studyPlans.forEach((plan: any) =>
+    (plan.items || []).forEach((item: any) => {
       const snapshot = item.prioritySnapshot;
       if (!snapshot) return;
       const profile = snapshot.topicProfile || {
@@ -94,7 +101,7 @@ export function buildPriorityHistory({
       );
     })
   );
-  candidates.forEach(item =>
+  candidates.forEach((item: any) =>
     add(
       item.topicId,
       captureTopicPriorityProfile(item, { capturedAt: today, activeExamTags }),
@@ -103,8 +110,8 @@ export function buildPriorityHistory({
       true
     )
   );
-  weeklyCloseSnapshots.forEach(snapshot =>
-    (snapshot.topicPriorities || []).forEach(profile =>
+  weeklyCloseSnapshots.forEach((snapshot: any) =>
+    (snapshot.topicPriorities || []).forEach((profile: any) =>
       add(
         profile.topicId,
         { ...profile, activeExamTags: snapshot.activeExamTags },
@@ -115,7 +122,7 @@ export function buildPriorityHistory({
   );
   const rows = [];
   for (const topicId of [...new Set(points.map(item => item.topicId))]) {
-    const topic = topics.find(item => item.id === topicId),
+    const topic = topics.find((item: any) => item.id === topicId),
       selected = points
         .filter(item => item.topicId === topicId)
         .sort(
@@ -130,7 +137,7 @@ export function buildPriorityHistory({
     const observations = [...byDate.values()];
     if (
       subjectId &&
-      (topic?.subjectId || candidates.find(item => item.topicId === topicId)?.subjectId) !==
+      (topic?.subjectId || candidates.find((item: any) => item.topicId === topicId)?.subjectId) !==
         subjectId
     )
       continue;
@@ -157,8 +164,8 @@ export function buildPriorityHistory({
     subjects: [
       ...new Map(
         topics
-          .filter(item => item.subjectId)
-          .map(item => [
+          .filter((item: any) => item.subjectId)
+          .map((item: any) => [
             item.subjectId,
             { id: item.subjectId, name: item.subjectName || 'Disciplina' },
           ])

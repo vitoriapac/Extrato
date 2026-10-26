@@ -6,17 +6,19 @@ import { buildSubjectAccuracy } from './build-subject-accuracy.js';
 import { resolveSubjectAccuracyTarget } from '../../domain/analytics/subject-accuracy-target.js';
 import { buildWeeklyDecisionCycle } from './build-weekly-decision-cycle.js';
 import { captureTopicPriorityProfile } from '../../domain/recommendations/topic-priority-profile.js';
-const sum = (items, selector) =>
-  items.reduce((total, item) => total + (Number(selector(item)) || 0), 0);
+type Row = Record<string, any>;
+const sum = (items: Row[], selector: (item: Row) => unknown) =>
+  items.reduce((total: any, item: any) => total + (Number(selector(item)) || 0), 0);
 import { buildWeeklyStrategicFocus } from './build-weekly-strategic-focus.js';
-const inRange = (item, start, end) => Boolean(item?.date && item.date >= start && item.date <= end);
+const inRange = (item: Row | null | undefined, start: string, end: string) =>
+  Boolean(item?.date && item.date >= start && item.date <= end);
 
-export function selectWeeklyPlans(dailyPlans = [], start, end) {
+export function selectWeeklyPlans(dailyPlans: Row[] = [], start: string, end: string) {
   const plans = (Array.isArray(dailyPlans) ? dailyPlans : []).filter(plan =>
     inRange(plan, start, end)
   );
   const items = plans.flatMap(plan =>
-    (plan.items || []).map(item => ({ ...item, date: plan.date }))
+    (plan.items || []).map((item: any) => ({ ...item, date: plan.date }))
   );
   const eligible = items.filter(
     item => !['skipped', 'replaced', 'discarded'].includes(item.status)
@@ -55,13 +57,13 @@ export function buildStudyTrack32ViewModel({
   const start = addDays(today, -6),
     previousEnd = addDays(start, -1),
     previousStart = addDays(start, -7),
-    currentSessions = sessions.filter(item => inRange(item, start, today)),
-    currentQuestions = questions.filter(item => inRange(item, start, today)),
-    previousSessions = sessions.filter(item => inRange(item, previousStart, previousEnd)),
-    previousQuestions = questions.filter(item => inRange(item, previousStart, previousEnd)),
+    currentSessions = sessions.filter((item: any) => inRange(item, start, today)),
+    currentQuestions = questions.filter((item: any) => inRange(item, start, today)),
+    previousSessions = sessions.filter((item: any) => inRange(item, previousStart, previousEnd)),
+    previousQuestions = questions.filter((item: any) => inRange(item, previousStart, previousEnd)),
     currentPlan = selectWeeklyPlans(dailyPlans, start, today),
     previousPlan = selectWeeklyPlans(dailyPlans, previousStart, previousEnd);
-  const questionTotals = list => ({
+  const questionTotals = (list: Row[]) => ({
       resolved: sum(list, item => item.resolved),
       correct: sum(list, item => item.correct),
     }),
@@ -130,12 +132,12 @@ export function buildStudyTrack32ViewModel({
   weeklyClose.subjectAccuracy = buildSubjectAccuracy({
     subjects,
     questions: currentQuestions,
-    simulations: simulations.filter(item => inRange(item, start, today)),
+    simulations: simulations.filter((item: any) => inRange(item, start, today)),
     blueprint,
     globalTarget: targetAccuracy,
   });
   const subjectRisk = weeklyClose.subjectAccuracy.find(
-    row => row.personal.state === 'below_target' || row.simulation.state === 'below_target'
+    (row: any) => row.personal.state === 'below_target' || row.simulation.state === 'below_target'
   );
   if (subjectRisk) {
     weeklyClose.assessment = 'attention';
@@ -148,7 +150,8 @@ export function buildStudyTrack32ViewModel({
   }
   const candidates = buildCandidates(),
     gapRows = buildTopicGapInputs(candidates, {
-      resolveAccuracyTarget: id => resolveSubjectAccuracyTarget(id, blueprint, targetAccuracy),
+      resolveAccuracyTarget: (id: string) =>
+        resolveSubjectAccuracyTarget(id, blueprint, targetAccuracy),
       topicName: nameResolvers.topic,
       subjectName: nameResolvers.subject,
     }),
@@ -185,8 +188,10 @@ export function buildStudyTrack32ViewModel({
     )[0],
     plannedOpen = sum(
       dailyPlans
-        .flatMap(plan => plan.items || [])
-        .filter(item => !['completed', 'skipped', 'replaced', 'discarded'].includes(item.status)),
+        .flatMap((plan: any) => plan.items || [])
+        .filter(
+          (item: any) => !['completed', 'skipped', 'replaced', 'discarded'].includes(item.status)
+        ),
       item => item.plannedMinutes
     ),
     availableMinutes = Math.max(0, weeklyCapacityMinutes - plannedOpen),
@@ -194,12 +199,12 @@ export function buildStudyTrack32ViewModel({
       simulation: latestSimulation,
       subjects,
       availableMinutes,
-      existingSimulationIds: planAdjustments.map(item => item.simulationId).filter(Boolean),
+      existingSimulationIds: planAdjustments.map((item: any) => item.simulationId).filter(Boolean),
     });
   return {
     period: { start, end: today, previousStart, previousEnd },
     activeExamTags: [...activeExamTags],
-    topicPriorities: candidates.map(item =>
+    topicPriorities: candidates.map((item: any) =>
       captureTopicPriorityProfile(item, { capturedAt: today, activeExamTags })
     ),
     weeklyClose,
