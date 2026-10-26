@@ -37,7 +37,7 @@ export function createWeeklyCloseController({
   const periodKey = (model: Record<string, any> | null | undefined) => {
     const period = model?.period || model?.weeklyClose?.period;
     if (!period?.start || !period?.end) return null;
-    return JSON.stringify([period.start, period.end, [...(model.activeExamTags || [])].sort()]);
+    return JSON.stringify([period.start, period.end, [...(model!.activeExamTags || [])].sort()]);
   };
   const calculate = () => {
     const model = getModel(),

@@ -51,7 +51,7 @@ export function buildRecommendationFollowup({
           (!item.subjectId || session.subjectId === item.subjectId) &&
           (!item.date || session.date >= item.date) &&
           (!today || session.date <= today) &&
-          (!outcome.measuredAt || session.date <= localDateFromTimestamp(outcome.measuredAt))
+          (!outcome.measuredAt || session.date <= localDateFromTimestamp(outcome.measuredAt)!)
         );
       });
       const unique: any[] = [
@@ -63,7 +63,7 @@ export function buildRecommendationFollowup({
         );
       const planned = numeric(snapshot.recommendedMinutes),
         executed = unique.length ? Math.round((seconds / 60) * 10) / 10 : null,
-        credit = planned > 0 && executed != null ? Math.min(planned, executed) : null;
+        credit = planned! > 0 && executed != null ? Math.min(planned!, executed) : null;
       const measured =
         Boolean(outcome.measuredAt) &&
         metrics.filter(metric => metric.before != null && metric.after != null).length >= 2;
@@ -88,8 +88,8 @@ export function buildRecommendationFollowup({
         execution: {
           plannedMinutes: planned,
           executedMinutes: executed,
-          adherence: credit == null ? null : Math.round((credit / planned) * 100),
-          excessMinutes: credit == null ? null : Math.round((executed - credit) * 10) / 10,
+          adherence: credit == null ? null : Math.round((credit / planned!) * 100),
+          excessMinutes: credit == null ? null : Math.round((executed! - credit) * 10) / 10,
           linkedSessions: unique.length,
         },
         metrics,

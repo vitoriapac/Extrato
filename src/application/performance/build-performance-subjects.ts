@@ -85,7 +85,7 @@ export function buildPerformanceSubjects({
         state:
           sample < 10
             ? 'Amostra insuficiente'
-            : recent >= goal.target
+            : recent! >= goal.target
               ? 'Na meta'
               : 'Abaixo da meta',
       };

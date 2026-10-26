@@ -2,7 +2,7 @@ type Row = Record<string, any>;
 const validPeriod = (period: Row | null | undefined) =>
   /^\d{4}-\d{2}-\d{2}$/.test(period?.start || '') &&
   /^\d{4}-\d{2}-\d{2}$/.test(period?.end || '') &&
-  period.start <= period.end;
+  period!.start <= period!.end;
 const scopeKey = (tags: unknown) =>
   Array.isArray(tags) ? JSON.stringify([...new Set(tags)].sort()) : null;
 const percent = (value: unknown) =>
@@ -72,8 +72,8 @@ export function buildStrategicFocusHistory({
   const comparison =
     currentRow && previous
       ? {
-          focusDelta: currentRow.focusPercent - previous.focusPercent,
-          executionDelta: currentRow.executedMinutes - previous.executedMinutes,
+          focusDelta: currentRow.focusPercent! - previous.focusPercent,
+          executionDelta: currentRow.executedMinutes! - previous.executedMinutes,
           previousEnd: previous.end,
         }
       : null;

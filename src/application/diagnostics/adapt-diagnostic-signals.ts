@@ -69,14 +69,14 @@ export function adaptDiagnosticSignals(input: any = {}) {
       item.severity === 'critical' &&
       metrics.mastery != null &&
       metrics.mastery < 50 &&
-      metrics.impact >= 70
+      metrics.impact! >= 70
     )
       add(item, 'gap-map', 'critical-gap', { severity: 'critical', evidence, metrics });
     if (
       ['critical', 'high'].includes(item.severity) &&
       metrics.coverage != null &&
       metrics.coverage < 50 &&
-      metrics.impact >= 70
+      metrics.impact! >= 70
     )
       add(item, 'gap-map', 'critical-coverage', { severity: 'important', evidence, metrics });
   }
@@ -141,14 +141,14 @@ export function adaptDiagnosticSignals(input: any = {}) {
       add(item, 'priority-engine', 'maintenance', { severity: 'controlled' });
   }
   for (const item of rows(input.reviewSignals)) {
-    if (signalNumber(item.reviewUrgency) >= 70 && signalNumber(item.examImpact) >= 70)
+    if (signalNumber(item.reviewUrgency)! >= 70 && signalNumber(item.examImpact)! >= 70)
       add(item, 'review-signals', 'priority-review', {
         severity: 'important',
         metrics: { urgency: item.reviewUrgency, impact: item.examImpact },
       });
   }
   for (const item of rows(input.examIntelligence)) {
-    if (signalNumber(item.presencePercent) >= 70)
+    if (signalNumber(item.presencePercent)! >= 70)
       add(item, 'exam-intelligence', 'high-incidence', {
         evidence: {
           strength: null,

@@ -6,7 +6,7 @@ const trajectoryLabels: Record<string, string> = {
   insufficient_data: 'Dados insuficientes',
 };
 const minutes = (value: number | null | undefined) =>
-  Number.isFinite(value) && value >= 0 ? `${value} min` : 'Não registrado';
+  Number.isFinite(value) && value! >= 0 ? `${value} min` : 'Não registrado';
 
 // Audit fields come exclusively from the decision recorded at confirmation.
 export function buildRecoveryTimelineDetail(

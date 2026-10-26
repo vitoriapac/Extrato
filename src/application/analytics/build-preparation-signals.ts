@@ -38,7 +38,7 @@ export function buildPreparationSignals({
         end: last,
         ...totals(
           uniqueQuestions.filter(
-            (item: any) => item.subjectId === subject.id && inRange(item, first, last)
+            (item: any) => item.subjectId === subject.id && inRange(item, first!, last!)
           )
         ),
       };
@@ -47,7 +47,7 @@ export function buildPreparationSignals({
         item =>
           item.subjectId === subject.id &&
           count(item.durationSeconds) > 0 &&
-          inRange(item, start, end)
+          inRange(item, start!, end!)
       ),
       minutes = Math.round(study.reduce((sum, item) => sum + count(item.durationSeconds), 0) / 60);
     const enough =
@@ -56,10 +56,10 @@ export function buildPreparationSignals({
       new Set(study.map(item => item.date)).size >= 3;
     if (
       enough &&
-      Math.max(...weeks.map(week => week.accuracy)) -
-        Math.min(...weeks.map(week => week.accuracy)) <=
+      Math.max(...weeks.map(week => week.accuracy!)) -
+        Math.min(...weeks.map(week => week.accuracy!)) <=
         3 &&
-      weeks.at(-1).accuracy < target - 3
+      weeks.at(-1)!.accuracy! < target - 3
     ) {
       const before = weeks[0].total + weeks[1].total,
         after = weeks[2].total + weeks[3].total;
@@ -94,7 +94,7 @@ export function buildPreparationSignals({
           (question: any) =>
             question.topicId === item.topicId &&
             question.subjectId === item.subjectId &&
-            inRange(question, addLocalDays(today, -13), today)
+            inRange(question, addLocalDays(today, -13)!, today)
         )
       );
     const strength = item.evidenceStrength ?? item.evidence?.evidenceStrength;
@@ -109,7 +109,7 @@ export function buildPreparationSignals({
             (question: any) =>
               question.topicId === item.topicId &&
               question.subjectId === item.subjectId &&
-              inRange(question, first, last)
+              inRange(question, first!, last!)
           )
         ),
       };
@@ -118,9 +118,9 @@ export function buildPreparationSignals({
       strength >= 0.7 &&
       topicWeeks.every(week => week.total >= 15) &&
       topicWeeks.every(
-        (week, index) => index === 0 || week.accuracy - topicWeeks[index - 1].accuracy >= 3
+        (week, index) => index === 0 || week.accuracy! - topicWeeks[index - 1].accuracy! >= 3
       ) &&
-      topicWeeks.at(-1).accuracy - topicWeeks[0].accuracy >= 10
+      topicWeeks.at(-1)!.accuracy! - topicWeeks[0].accuracy! >= 10
     ) {
       rows.push({
         id: 'recovery-' + item.topicId,
@@ -149,7 +149,7 @@ export function buildPreparationSignals({
       item.retention < 60 &&
       strength >= 0.35 &&
       recent.total >= 30 &&
-      recent.accuracy < target - 10
+      recent.accuracy! < target - 10
     ) {
       rows.push({
         id: 'consolidation-' + item.topicId,
@@ -185,7 +185,7 @@ export function buildPreparationSignals({
           (item: any) =>
             item.subjectId === row.subjectId &&
             (!row.topicId || item.topicId === row.topicId) &&
-            inRange(item, row.period.start, row.period.end)
+            inRange(item, row.period.start!, row.period.end)
         )
         .map((item: any) => item.id),
     })),

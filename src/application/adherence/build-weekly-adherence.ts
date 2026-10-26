@@ -39,13 +39,13 @@ export function buildWeeklyAdherence({
   };
   const current = build(weekStart);
   const history = Array.from({ length: count }, (_, index) =>
-    build(addLocalDays(weekStart, -7 * (count - index)))
+    build(addLocalDays(weekStart, -7 * (count - index))!)
   );
   const previousStart = addLocalDays(weekStart, -7);
   const previous = current.evaluatedDays
     ? build(
-        previousStart,
-        current.period.complete ? today : addLocalDays(previousStart, current.evaluatedDays - 1)
+        previousStart!,
+        current.period!.complete ? today : addLocalDays(previousStart, current.evaluatedDays - 1)
       )
     : null;
   const comparable = Boolean(
@@ -55,14 +55,14 @@ export function buildWeeklyAdherence({
   );
   const comparison = {
     state: comparable ? 'comparable' : 'insufficient_data',
-    mode: current.period.complete ? 'complete_weeks' : 'equal_elapsed',
+    mode: current.period!.complete ? 'complete_weeks' : 'equal_elapsed',
     evaluatedDays: current.evaluatedDays,
     previous,
     temporalDelta: comparable
-      ? current.summary.temporalAdherence - previous.summary.temporalAdherence
+      ? current.summary!.temporalAdherence - previous!.summary!.temporalAdherence
       : null,
-    priorityDelta: comparable ? current.priority.adherence - previous.priority.adherence : null,
-    volumeDelta: comparable ? current.summary.volumeRatio - previous.summary.volumeRatio : null,
+    priorityDelta: comparable ? current.priority!.adherence - previous!.priority!.adherence : null,
+    volumeDelta: comparable ? current.summary!.volumeRatio - previous!.summary!.volumeRatio : null,
   };
   return {
     version: 1,

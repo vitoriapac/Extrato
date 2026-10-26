@@ -10,6 +10,7 @@
     "src/repositories/**/*",
     "src/bootstrap/**/*",
     "src/domain/**/*",
+    "src/application/**/*",
     "src/features/**/*",
     "src/reports/**/*"
   ]

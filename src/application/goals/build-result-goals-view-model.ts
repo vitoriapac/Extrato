@@ -44,8 +44,8 @@ export function buildResultGoalsViewModel({ goals = {}, achieved = {}, period = 
     const current = Math.max(0, number(achieved[item.id]));
     const measured = item.id !== 'accuracy' || achieved.accuracy != null;
     const value = item.id === 'accuracy' ? (measured ? number(achieved.accuracy) : null) : current;
-    const progress = measured && target > 0 ? Math.round((value / target) * 100) : null;
-    const remaining = measured && target != null ? Math.max(0, target - value) : null;
+    const progress = measured && target! > 0 ? Math.round((value! / target!) * 100) : null;
+    const remaining = measured && target != null ? Math.max(0, target - value!) : null;
     return {
       ...item,
       target,
@@ -57,7 +57,7 @@ export function buildResultGoalsViewModel({ goals = {}, achieved = {}, period = 
       state:
         !measured || target == null || target <= 0
           ? 'insufficient'
-          : value >= target
+          : value! >= target
             ? 'achieved'
             : 'in_progress',
     };

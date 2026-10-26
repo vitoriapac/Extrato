@@ -144,7 +144,7 @@ export function buildDiagnosisViewModel(
       evidence: [
         evidenceRow(
           'Cobertura dos dados',
-          Number.isFinite(completeness) ? `${Math.round(completeness * 100)}%` : null
+          Number.isFinite(completeness) ? `${Math.round(completeness! * 100)}%` : null
         ),
         evidenceRow(
           'Força da evidência',
@@ -239,10 +239,10 @@ export function buildDiagnosisViewModel(
       confidence: item.evidenceStrength,
       action: { label: 'Abrir Agenda', tab: 'agenda' },
       evidence: [
-        evidenceRow('Urgência da revisão', urgency > 0 ? `${Math.round(urgency)}/100` : null),
+        evidenceRow('Urgência da revisão', urgency! > 0 ? `${Math.round(urgency!)}/100` : null),
         evidenceRow(
           'Tempo sem contato',
-          Number.isFinite(days) ? `${Math.max(0, Math.round(days))} dias` : null
+          Number.isFinite(days) ? `${Math.max(0, Math.round(days!))} dias` : null
         ),
       ],
       explanation: [

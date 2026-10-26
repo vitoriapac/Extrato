@@ -49,7 +49,7 @@ export function buildPlanExecution({
       date,
       plannedMinutes: plan ? plan.minutes : null,
       studiedMinutes: minutes(studyByDate.get(date)),
-      future: date > today,
+      future: date! > today,
     };
   });
   const history = Array.from({ length: historyWeeks }, (_, index) => {

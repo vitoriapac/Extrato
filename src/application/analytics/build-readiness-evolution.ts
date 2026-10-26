@@ -129,7 +129,7 @@ export function buildReadinessEvolution({
   const comparableHistory = history.filter(
     item => reference && compareReadinessSnapshots(item, reference).state === 'comparable'
   );
-  const best = comparableHistory.reduce(
+  const best = comparableHistory.reduce<Record<string, any> | null>(
     (result, item) => (!result || item.score > result.score ? item : result),
     null
   );

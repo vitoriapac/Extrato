@@ -72,18 +72,18 @@ export function buildPerformanceComparison(
     );
   } else if (accuracy.state === 'worsened') {
     insights.push(
-      `A precisão caiu ${formatDecimal(Math.abs(accuracy.delta))} p.p. em relação ao período anterior. Confira os erros e a composição das questões antes de ajustar o plano.`
+      `A precisão caiu ${formatDecimal(Math.abs(accuracy.delta!))} p.p. em relação ao período anterior. Confira os erros e a composição das questões antes de ajustar o plano.`
     );
   }
   if (
-    load.after >= 90 &&
+    load.after! >= 90 &&
     load.state !== 'insufficient' &&
     overview.strategic?.strategicAdherence != null &&
     overview.strategic.classifiedCoverage >= 70 &&
     overview.strategic.strategicAdherence < 75
   ) {
     insights.push(
-      `Você estudou ${rounded(load.after)}% do tempo planejado, mas executou ${overview.strategic.strategicAdherence}% do tempo prioritário previsto em sessões vinculadas.`
+      `Você estudou ${rounded(load.after!)}% do tempo planejado, mas executou ${overview.strategic.strategicAdherence}% do tempo prioritário previsto em sessões vinculadas.`
     );
   }
   if (

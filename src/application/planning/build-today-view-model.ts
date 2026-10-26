@@ -53,11 +53,11 @@ export function buildTodayViewModel({
     return {
       date,
       availableMinutes: minutes(availableMinutes),
-      plannedMinutes: execution.progress.plannedMinutes,
-      executedMinutes: Math.round(execution.progress.studiedMinutes),
+      plannedMinutes: execution.progress!.plannedMinutes,
+      executedMinutes: Math.round(execution.progress!.studiedMinutes),
       recoveryMinutes,
-      progress: execution.progress.progress,
-      nextActivity: execution.priority.nextItem || execution.priority.unplannedAction || null,
+      progress: execution.progress!.progress,
+      nextActivity: execution.priority!.nextItem || execution.priority!.unplannedAction || null,
       execution,
     };
   return {

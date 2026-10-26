@@ -52,7 +52,7 @@ export function buildPerformanceConsistency({
       const end = addLocalDays(item.start, 6),
         strategic = buildStrategicExecution({
           start: item.start,
-          end: end > today ? today : end,
+          end: end! > today ? today : end,
           today,
           dailyPlans: plans,
           sessions: studied,
@@ -65,7 +65,7 @@ export function buildPerformanceConsistency({
           ? round((item.studiedMinutes / item.plannedMinutes) * 100)
           : null,
         strategicAdherence: strategic.strategicAdherence,
-        inProgress: end >= today,
+        inProgress: end! >= today,
       };
     });
   const studiedMinutes = round(
@@ -92,7 +92,7 @@ export function buildPerformanceConsistency({
       item.date,
       (byDate.get(item.date) || 0) + Math.max(0, Number(item.durationSeconds) || 0) / 60
     );
-  const heatmapStart = first > addLocalDays(today, -89) ? first : addLocalDays(today, -89);
+  const heatmapStart = first > addLocalDays(today, -89)! ? first : addLocalDays(today, -89)!;
   const heatmap = [];
   for (let date = heatmapStart; date && date <= today; date = addLocalDays(date, 1))
     heatmap.push({ date, minutes: round(byDate.get(date) || 0) });

@@ -93,7 +93,7 @@ export function buildPerformanceOverview({
       ...row,
       plannedMinutes: round(row.plannedMinutes),
       studiedMinutes: round(row.studiedMinutes),
-      inProgress: addLocalDays(row.start, 6) >= today,
+      inProgress: addLocalDays(row.start, 6)! >= today,
     }));
   const strategic = range?.start
     ? buildStrategicExecution({
@@ -114,16 +114,21 @@ export function buildPerformanceOverview({
         'Precisão em questões',
         'accuracy',
         'p.p.',
-        current.resolved >= 30 && previous.resolved >= 30,
+        current!.resolved >= 30 && previous.resolved >= 30,
       ],
-      ['Questões resolvidas', 'resolved', 'questões', current.resolved + previous.resolved > 0],
+      ['Questões resolvidas', 'resolved', 'questões', current!.resolved + previous.resolved > 0],
       [
         'Aderência de carga',
         'adherence',
         'p.p.',
-        current.plannedMinutes >= 60 && previous.plannedMinutes >= 60,
+        current!.plannedMinutes >= 60 && previous.plannedMinutes >= 60,
       ],
-      ['Tempo estudado', 'studiedMinutes', 'min', current.sessionCount + previous.sessionCount > 0],
+      [
+        'Tempo estudado',
+        'studiedMinutes',
+        'min',
+        current!.sessionCount + previous.sessionCount > 0,
+      ],
     ]) {
       if (!available) continue;
       const value = delta((current as any)?.[key as string], (previous as any)[key as string]);

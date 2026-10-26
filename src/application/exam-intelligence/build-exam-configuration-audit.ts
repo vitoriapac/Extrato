@@ -62,7 +62,7 @@ export function buildExamConfigurationAudit({
         subjectName: topic.subjectName,
         configuredImpact,
         configuredSource: profile.impactSourceType,
-        configuredSourceLabel: sourceLabels[profile.impactSourceType] || 'Sem configuração',
+        configuredSourceLabel: sourceLabels[profile.impactSourceType!] || 'Sem configuração',
         historicalEstimate,
         validatedImpact: effective.value,
         usedHistory: effective.usedHistory,

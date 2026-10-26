@@ -12,5 +12,5 @@ export function analysisContextInScope(
   context: { activeExamTags?: string[] } | null | undefined,
   activeExamTags: string[] = []
 ) {
-  return Boolean(context) && scope(context.activeExamTags) === scope(activeExamTags);
+  return Boolean(context) && scope(context!.activeExamTags) === scope(activeExamTags);
 }

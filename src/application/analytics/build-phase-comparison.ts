@@ -3,7 +3,7 @@ import { strategicScopeKey } from './build-strategic-timeline.js';
 const phaseOrder = ['construction', 'consolidation', 'final_stretch', 'final_review'];
 const rounded = (value: number) => Math.round(value * 10) / 10;
 const validPhase = (record: Record<string, any> | null | undefined) =>
-  phaseOrder.includes(record?.examPhase?.state) ? record.examPhase : null;
+  phaseOrder.includes(record?.examPhase?.state) ? record!.examPhase : null;
 const finite = (value: unknown) =>
   value != null && Number.isFinite(Number(value)) ? Number(value) : null;
 

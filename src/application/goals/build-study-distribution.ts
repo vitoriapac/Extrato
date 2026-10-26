@@ -27,14 +27,14 @@ export function buildStudyDistribution({
     return rowsById.get(subjectId);
   };
   for (const plan of dailyPlans) {
-    if (!plan.date || plan.date < start || plan.date > today) continue;
+    if (!plan.date || plan.date < start! || plan.date > today) continue;
     for (const item of plan.items || []) {
       if (excluded.has(item.status)) continue;
       rowFor(item.subjectId).plannedMinutes += minutes(item.plannedMinutes);
     }
   }
   for (const session of sessions) {
-    if (!session.date || session.date < start || session.date > today) continue;
+    if (!session.date || session.date < start! || session.date > today) continue;
     rowFor(session.subjectId).studiedMinutes += minutes(session.durationSeconds) / 60;
   }
   const rows = [...rowsById.values()]

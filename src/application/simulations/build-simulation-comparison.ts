@@ -37,14 +37,14 @@ export function buildSimulationComparison({ simulations = [], subjects = [] }: a
     .filter(([id]) => before.has(id))
     .map(([id, latest]) => {
       const earlier = before.get(id),
-        previousAccuracy = accuracy(earlier.correct, earlier.total),
+        previousAccuracy = accuracy(earlier!.correct, earlier!.total),
         currentAccuracy = accuracy(latest.correct, latest.total);
       return {
         subjectId: id,
         name: names.get(id) || 'Disciplina removida',
         previousAccuracy,
         currentAccuracy,
-        previousTotal: earlier.total,
+        previousTotal: earlier!.total,
         currentTotal: latest.total,
         delta: currentAccuracy - previousAccuracy,
       };

@@ -48,10 +48,10 @@ export function buildAchievementProjection({
     const weakExecution = normalizedAdherence != null && normalizedAdherence < 60;
     const highImpactGaps = Number(openHighImpactPriorities) > 0;
     const deteriorating = forecast.forecast30.available && forecast.forecast30.slopePerWeek < 0;
-    const measuredGap = target - calibrated.central;
+    const measuredGap = target - calibrated.central!;
     const nearExam =
       phase.state === 'final_review' || (phase.state === 'final_stretch' && daysRemaining <= 14);
-    const strongCurrent = calibrated.low >= target;
+    const strongCurrent = calibrated.low! >= target;
     const improvingTowardTarget =
       forecast.forecast30.available &&
       forecast.forecast30.slopePerWeek > 0 &&
@@ -61,8 +61,8 @@ export function buildAchievementProjection({
       status = PROJECTION_STATUS.atRisk;
     else if (
       confidence.level === 'moderate' &&
-      normalizedCoverage >= 50 &&
-      normalizedAdherence >= 60 &&
+      normalizedCoverage! >= 50 &&
+      normalizedAdherence! >= 60 &&
       !lowCoverage &&
       !weakExecution &&
       !highImpactGaps &&

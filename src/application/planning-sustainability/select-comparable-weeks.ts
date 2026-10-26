@@ -54,9 +54,9 @@ export function selectComparableWeeks({
       older = previous ? rank(previous) : null;
     if (
       !previous ||
-      newer[0] > older[0] ||
-      (newer[0] === older[0] &&
-        (newer[1] > older[1] || (newer[1] === older[1] && newer[2] > older[2])))
+      newer![0] > older![0] ||
+      (newer![0] === older![0] &&
+        (newer![1] > older![1] || (newer![1] === older![1] && newer![2] > older![2])))
     )
       revisions.set(snapshot.period.start, snapshot);
   }

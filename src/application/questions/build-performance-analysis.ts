@@ -62,7 +62,7 @@ export function buildPerformanceAnalysis({
       before: { total: 0, correct: 0 },
       after: { total: 0, correct: 0 },
     };
-    const bucket = item.date < midpoint ? row.before : row.after,
+    const bucket = item.date < midpoint! ? row.before : row.after,
       total = count(item.resolved);
     bucket.total += total;
     bucket.correct += Math.min(total, count(item.correct));
@@ -84,7 +84,7 @@ export function buildPerformanceAnalysis({
         afterTotal: sample.after.total,
         delta:
           sample.before.total >= 30 && sample.after.total >= 30
-            ? Math.round((after - before) * 10) / 10
+            ? Math.round((after! - before!) * 10) / 10
             : null,
       };
     })
@@ -112,7 +112,7 @@ export function buildPerformanceAnalysis({
     mean: scores.length
       ? Math.round((scores.reduce((a: any, b: any) => a + b, 0) / scores.length) * 10) / 10
       : null,
-    best: scores.length ? Math.max(...scores) : null,
+    best: scores.length ? Math.max(...(scores as number[])) : null,
     latestVolume: exams.at(-1)?.total ?? 0,
   };
 }

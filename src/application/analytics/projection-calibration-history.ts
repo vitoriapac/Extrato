@@ -40,7 +40,7 @@ export function captureProjection({
       (a: any, b: any) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id))
     );
   if (!training.length) return false;
-  const composition = projectionComposition(training.at(-1));
+  const composition = projectionComposition(training.at(-1)!);
   const inputs = [
     ...new Map(
       training
@@ -131,6 +131,6 @@ export function buildProjectionCalibration({
       };
     })
     .filter(Boolean)
-    .sort((a, b) => b.date.localeCompare(a.date));
-  return { rows, inside: rows.filter(row => row.inside).length, total: rows.length };
+    .sort((a, b) => b!.date.localeCompare(a!.date));
+  return { rows, inside: rows.filter(row => row!.inside).length, total: rows.length };
 }

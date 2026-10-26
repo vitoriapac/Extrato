@@ -91,34 +91,34 @@ export function reconcileDailyExecution({
       if (current) {
         if (id) {
           mismatchedSeconds += duration;
-          if (item) execution.get(id).mismatchedSeconds += duration;
+          if (item) execution.get(id)!.mismatchedSeconds += duration;
         } else additionalSeconds += duration;
       }
       continue;
     }
     const row = execution.get(id);
-    row[current ? 'todaySeconds' : 'previousSeconds'] += duration;
-    if (session.id) row.sessionIds.push(session.id);
+    row![current ? 'todaySeconds' : 'previousSeconds'] += duration;
+    if (session.id) row!.sessionIds.push(session.id);
   }
   const reconciled = eligible.map(item => {
     const row = execution.get(item.id),
       plannedSeconds = seconds(item.plannedMinutes) * 60,
-      credit = executionCredit(plannedSeconds, row.todaySeconds, row.previousSeconds),
+      credit = executionCredit(plannedSeconds, row!.todaySeconds, row!.previousSeconds),
       creditedToday = credit.creditedSeconds;
     const remainingSeconds = credit.remainingSeconds;
     return {
       ...item,
       plannedMinutes: plannedSeconds / 60,
-      executedSeconds: row.previousSeconds + row.todaySeconds,
-      executedTodaySeconds: row.todaySeconds,
+      executedSeconds: row!.previousSeconds + row!.todaySeconds,
+      executedTodaySeconds: row!.todaySeconds,
       creditedTodaySeconds: creditedToday,
       remainingSeconds,
-      mismatchedSeconds: row.mismatchedSeconds,
-      sessionIds: row.sessionIds,
+      mismatchedSeconds: row!.mismatchedSeconds,
+      sessionIds: row!.sessionIds,
       status:
         remainingSeconds === 0
           ? 'completed'
-          : row.previousSeconds + row.todaySeconds > 0
+          : row!.previousSeconds + row!.todaySeconds > 0
             ? 'partial'
             : 'planned',
     };

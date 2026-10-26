@@ -184,7 +184,7 @@ export function parseStructuredStudyContent(text: string, { fileName = '' }: any
     throw new StructuredImportError([
       problem(null, 'arquivo', 'empty_csv', 'O CSV precisa de cabeçalho e ao menos uma linha.'),
     ]);
-  const headers = rows.shift().values.map(value => headerAliases[key(value)] || null),
+  const headers = rows.shift()!.values.map(value => headerAliases[key(value)] || null),
     missing = [];
   if (!headers.includes('subject')) missing.push('disciplina');
   if (!headers.includes('topic')) missing.push('topico');

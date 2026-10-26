@@ -72,8 +72,8 @@ export function buildPeriodComparisonViewModel({
 }: any = {}) {
   const currentPeriod = resolveRange({ today, preset, start, end });
   const previousPeriod = {
-    start: shiftRange(currentPeriod.start, -currentPeriod.days),
-    end: shiftRange(currentPeriod.start, -1),
+    start: shiftRange(currentPeriod.start, -currentPeriod.days)!,
+    end: shiftRange(currentPeriod.start, -1)!,
     label: `Período anterior · ${currentPeriod.days} dias`,
   };
   const current = aggregate({ sessions, questions, reviews }, currentPeriod);

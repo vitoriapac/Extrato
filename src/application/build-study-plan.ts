@@ -80,7 +80,7 @@ export function buildStudyPlan({
       activityMix: { theory: 0, questions: 0, reviews: 0 },
       confidence: 0,
     };
-  const weeklyBudget = Math.min(availability, weeklyNeedMinutes);
+  const weeklyBudget = Math.min(availability, weeklyNeedMinutes!);
   const scored = configured
     .map(item => ({ ...scoreStudyDecision(item), capacityMinutes: effort(item) }))
     .sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));

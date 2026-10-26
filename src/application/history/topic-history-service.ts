@@ -70,7 +70,7 @@ export function createTopicHistoryService({
       if (topicId && event.topicId !== topicId) return false;
       if (!includeLifecycle && IGNORED_ACTIVITY_TYPES.has(event.type)) return false;
       const date = historyEventLocalDate(event, toLocalDate);
-      return (!start || date >= start) && (!end || date <= end);
+      return (!start || date! >= start) && (!end || date! <= end);
     });
   const lastActivity = (filter: Row) =>
     list({ ...filter, includeLifecycle: false }).reduce((latest: string | null, event) => {

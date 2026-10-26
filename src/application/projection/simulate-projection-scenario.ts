@@ -26,7 +26,7 @@ export function simulateProjectionScenario({ baseline, scenario }: any = {}) {
     targetScore < 1 ||
     targetScore > 100 ||
     daysBetweenCalendarDates(source.today, examDate) == null ||
-    daysBetweenCalendarDates(source.today, examDate) < 0 ||
+    daysBetweenCalendarDates(source.today, examDate)! < 0 ||
     !validNumber(weeklyCapacityMinutes) ||
     weeklyCapacityMinutes < 0 ||
     weeklyCapacityMinutes > 10080

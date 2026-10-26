@@ -57,7 +57,7 @@ export function buildStrategicExecution({
     otherPeriodSeconds = 0;
   for (const session of sessions) {
     const date = executionDate(session);
-    if (!inPeriod(date) || date > today || (session.id && seen.has(session.id))) continue;
+    if (!inPeriod(date) || date! > today || (session.id && seen.has(session.id))) continue;
     seen.add(session.id);
     const seconds = number(session.durationSeconds);
     subjectRow(session.subjectId).studiedSeconds += seconds;

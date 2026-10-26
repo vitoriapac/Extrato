@@ -89,7 +89,7 @@ export async function revertRecoveryPlan({
       confirmed: plan,
       activeExamTags,
     });
-    if (!confirmed.valid) return rejectRecovery(confirmed.reasonCode);
+    if (!confirmed.valid) return rejectRecovery(confirmed.reasonCode!);
     const record = draft.adaptivePlanningHistory.find((item: any) => item.id === decisionId);
     Object.assign(record, {
       status: 'reverted',

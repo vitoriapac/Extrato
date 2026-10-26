@@ -128,10 +128,10 @@ export interface ExamBlueprintSubject {
   questionWeight: number;
   priority: ExamPriority;
   masteryTarget: number | null;
-  accuracyTarget?: number;
-  sourceRef?: string;
+  accuracyTarget?: number | null;
+  sourceRef?: string | null;
   official?: boolean;
-  mappingType?: string;
+  mappingType?: string | null;
 }
 
 export interface ExamBlueprint {

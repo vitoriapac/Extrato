@@ -102,7 +102,7 @@ export function buildRecurringPriorities({
   })) {
     if (
       snapshot.period.end >= period.start ||
-      snapshot.period.start < earliest ||
+      snapshot.period.start < earliest! ||
       !supported(snapshot.weeklyClose.adherence)
     )
       continue;

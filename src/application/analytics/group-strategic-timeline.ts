@@ -1,7 +1,9 @@
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 
 const localLabel = (date: string) =>
-  new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(parseLocalDate(date));
+  new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(
+    parseLocalDate(date)!
+  );
 export function groupStrategicTimeline(
   rows: Array<Record<string, any>>,
   { groupBy = 'week' }: any = {}
@@ -13,7 +15,7 @@ export function groupStrategicTimeline(
     if (selected === 'month') {
       key = item.date.slice(0, 7);
       label = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(
-        parseLocalDate(`${key}-01`)
+        parseLocalDate(`${key}-01`)!
       );
     } else if (selected === 'phase') {
       key = item.phase || 'Fase não registrada';
@@ -21,7 +23,7 @@ export function groupStrategicTimeline(
     } else {
       const day = parseLocalDate(item.date)?.getDay() ?? 1;
       key = addLocalDays(item.date, -((day + 6) % 7));
-      label = `Semana ${localLabel(key)}–${localLabel(addLocalDays(key, 6))}`;
+      label = `Semana ${localLabel(key!)}–${localLabel(addLocalDays(key, 6)!)}`;
     }
     if (!groups.has(key)) groups.set(key, { key, label, rows: [] });
     groups.get(key).rows.push(item);

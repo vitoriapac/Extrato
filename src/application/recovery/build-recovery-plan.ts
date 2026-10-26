@@ -103,15 +103,15 @@ export function buildRecoveryPlan({
       advice.reasonCode || 'unknown',
       advice.reason
     );
-  if (!riskSubjects.has(advice.to.subjectId))
+  if (!riskSubjects.has(advice.to!.subjectId))
     return base(
       RECOVERY_STATUS.unavailable,
       'destination_mismatch',
       'A transferência sugerida não atende à lacuna identificada na trajetória.'
     );
   if (
-    constraints.archivedSubjectIds?.includes(advice.from.subjectId) ||
-    constraints.archivedSubjectIds?.includes(advice.to.subjectId)
+    constraints.archivedSubjectIds?.includes(advice.from!.subjectId) ||
+    constraints.archivedSubjectIds?.includes(advice.to!.subjectId)
   )
     return base(
       RECOVERY_STATUS.unavailable,
@@ -168,7 +168,7 @@ export function buildRecoveryPlan({
     to: structuredClone(advice.to),
     proposedPlan: comparison.proposedPlan,
     canApply: Boolean(currentPlan.id) && Array.isArray(activeExamTags),
-    explanation: [...advice.rationale],
+    explanation: [...advice.rationale!],
     basis,
     signature: JSON.stringify(basis),
     algorithmVersion: ADAPTIVE_PLANNING_VERSION,

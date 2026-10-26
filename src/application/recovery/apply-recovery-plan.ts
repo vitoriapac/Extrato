@@ -86,7 +86,7 @@ export async function applyRecoveryPlan({
       confirmed: plan,
       activeExamTags,
     });
-    if (!confirmed.valid) return rejectRecovery(confirmed.reasonCode);
+    if (!confirmed.valid) return rejectRecovery(confirmed.reasonCode!);
     decision.planId = plan.id;
     draft.adaptivePlanningHistory.push(decision);
     draft.readinessSnapshots.push(snapshot);
