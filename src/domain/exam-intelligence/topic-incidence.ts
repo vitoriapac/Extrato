@@ -1,7 +1,8 @@
 import { comparableExamEvidence } from './exam-evidence.js';
 import { classifyExamConfidence } from './exam-confidence.js';
 
-const percent = (part, total) => (total > 0 ? Math.round((part / total) * 100) : null);
+const percent = (part: number, total: number) =>
+  total > 0 ? Math.round((part / total) * 100) : null;
 
 export function calculateTopicIncidence({
   topicId,

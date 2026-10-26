@@ -1,4 +1,4 @@
-const finite = value => (Number.isFinite(Number(value)) ? Number(value) : null);
+const finite = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : null);
 export const TOPIC_IMPACT_SOURCES = Object.freeze({
   MANUAL: 'manual',
   CATALOG: 'catalog',
@@ -21,7 +21,8 @@ export function resolveTopicExamImpact({
   }
   const estimates = Object.entries(topic.examImportanceEstimates || {})
     .filter(
-      ([profile]) => !activeExamTags.length || activeExamTags.some(tag => profile.startsWith(tag))
+      ([profile]) =>
+        !activeExamTags.length || activeExamTags.some((tag: string) => profile.startsWith(tag))
     )
     .map(([, value]) => finite(value))
     .filter(value => value != null);
@@ -42,17 +43,21 @@ export function resolveTopicExamImpact({
     };
   }
   return {
-    value: null,
+    value: null as number | null,
     source: TOPIC_IMPACT_SOURCES.MISSING,
     sourceLabel: 'Sem impacto de prova configurado',
   };
 }
 
-export function wouldCreatePrerequisiteCycle(topicId, candidateId, topics = []) {
+export function wouldCreatePrerequisiteCycle(
+  topicId: string,
+  candidateId: string,
+  topics: Array<{ id: string; prerequisites?: string[] }> = []
+) {
   if (!topicId || !candidateId || topicId === candidateId) return true;
   const byId = new Map(topics.map(topic => [topic.id, topic]));
-  const visited = new Set();
-  const reachesTopic = id => {
+  const visited = new Set<string>();
+  const reachesTopic = (id: string): boolean => {
     if (id === topicId) return true;
     if (visited.has(id)) return false;
     visited.add(id);

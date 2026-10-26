@@ -11,7 +11,7 @@ export function classifyExamConfidence({
   examCount = 0,
   questionCount = 0,
   classificationConfidence = null,
-} = {}) {
+}: { examCount?: number; questionCount?: number; classificationConfidence?: number | null } = {}) {
   if (examCount < 2 || questionCount < 1) return 'insufficient';
   const sample =
     examCount >= 8

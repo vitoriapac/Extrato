@@ -1,7 +1,18 @@
 // Historical evidence adjusts only the existing exam-impact input. A small sample
 // or an explicit official/manual choice must never silently replace that choice.
 import { EXAM_INTELLIGENCE_CONFIG } from './config.js';
-export function historicalImpactEstimate(profile) {
+
+interface ExamImpactProfile {
+  presencePercent?: number | null;
+  participationPercent?: number | null;
+  confidence?: string;
+  analyzedExamCount?: number;
+  impactValue?: number | null;
+  impactSourceType?: string | null;
+  [key: string]: unknown;
+}
+
+export function historicalImpactEstimate(profile: ExamImpactProfile) {
   if (profile.presencePercent == null) return null;
   return Math.max(
     0,
@@ -12,7 +23,7 @@ export function historicalImpactEstimate(profile) {
   );
 }
 
-export function isHistoricalImpactUsable(profile) {
+export function isHistoricalImpactUsable(profile: ExamImpactProfile) {
   return (
     ['moderate', 'high'].includes(profile.confidence) &&
     profile.analyzedExamCount >= EXAM_INTELLIGENCE_CONFIG.minimumHistoricalExams &&
@@ -20,7 +31,7 @@ export function isHistoricalImpactUsable(profile) {
   );
 }
 
-export function resolveValidatedExamImpact(profile) {
+export function resolveValidatedExamImpact(profile: ExamImpactProfile) {
   const baseline = profile.impactValue;
   const usable = isHistoricalImpactUsable(profile);
   if (!usable || ['manual', 'official'].includes(profile.impactSourceType))

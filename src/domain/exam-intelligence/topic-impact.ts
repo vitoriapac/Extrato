@@ -3,9 +3,9 @@ import { EXAM_CONFIDENCE_LABELS } from './exam-confidence.js';
 import { comparableExamEvidence } from './exam-evidence.js';
 import { isHighImpact } from '../strategy/config.js';
 
-const level = value =>
+const level = (value: number | null | undefined) =>
   value == null ? 'Sem dados' : isHighImpact(value) ? 'Alta' : value >= 40 ? 'Moderada' : 'Baixa';
-const round = value => Math.round(value * 100) / 100;
+const round = (value: number) => Math.round(value * 100) / 100;
 
 export function buildTopicImpact({
   topic = {},
@@ -19,7 +19,8 @@ export function buildTopicImpact({
   const officialForScope = Boolean(
     subjectConfig?.official &&
     subjectConfig?.sourceRef &&
-    (!activeExamTags.length || activeExamTags.some(tag => subjectConfig.sourceRef.startsWith(tag)))
+    (!activeExamTags.length ||
+      activeExamTags.some((tag: string) => subjectConfig.sourceRef.startsWith(tag)))
   );
   const sourceType =
     current.source === 'manual'
@@ -35,12 +36,12 @@ export function buildTopicImpact({
   const examIds = new Set(evidence.completeExams.map(exam => exam.id));
   const weights = examQuestions
     .filter(
-      question =>
+      (question: Record<string, any>) =>
         examIds.has(question.examId) && question.topicId === topic.id && question.weight != null
     )
-    .map(question => question.weight);
+    .map((question: Record<string, any>): number => question.weight);
   const historicalWeight = weights.length
-    ? round(weights.reduce((sum, value) => sum + value, 0) / weights.length)
+    ? round(weights.reduce((sum: number, value: number) => sum + value, 0) / weights.length)
     : null;
   const officialWeight = officialForScope ? subjectConfig.questionWeight : null;
   return Object.freeze({
@@ -71,6 +72,7 @@ export function buildTopicImpact({
     analyzedQuestionCount: incidence?.analyzedQuestionCount ?? 0,
     confidence: incidence?.confidence ?? 'insufficient',
     confidenceLabel:
-      EXAM_CONFIDENCE_LABELS[incidence?.confidence] || EXAM_CONFIDENCE_LABELS.insufficient,
+      EXAM_CONFIDENCE_LABELS[incidence?.confidence as keyof typeof EXAM_CONFIDENCE_LABELS] ||
+      EXAM_CONFIDENCE_LABELS.insufficient,
   });
 }
