@@ -1,10 +1,14 @@
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
-const count = value => Math.max(0, Number(value) || 0);
-const accuracy = (correct, total) => (total ? Math.round((correct / total) * 1000) / 10 : null);
-export function performancePeriodRecords(records, { today, period = '90' }: any = {}) {
+const count = (value: unknown) => Math.max(0, Number(value) || 0);
+const accuracy = (correct: number, total: number) =>
+  total ? Math.round((correct / total) * 1000) / 10 : null;
+export function performancePeriodRecords(
+  records: Array<Record<string, any>>,
+  { today, period = '90' }: any = {}
+) {
   const start = period === 'all' ? null : addLocalDays(today, -(Number(period) - 1));
   return records.filter(
-    item => parseLocalDate(item.date) && item.date <= today && (!start || item.date >= start)
+    (item: any) => parseLocalDate(item.date) && item.date <= today && (!start || item.date >= start)
   );
 }
 export function buildPerformanceAnalysis({
@@ -16,7 +20,7 @@ export function buildPerformanceAnalysis({
 }: any = {}) {
   const selected = performancePeriodRecords(questions, { today, period });
   const totals = selected.reduce(
-    (sum, item) => {
+    (sum: any, item: any) => {
       const total = count(item.resolved);
       sum.total += total;
       sum.correct += Math.min(total, count(item.correct));
@@ -65,8 +69,8 @@ export function buildPerformanceAnalysis({
     topicMap.set(item.topicId, row);
   }
   const topics = candidates
-    .filter(item => topicMap.has(item.topicId))
-    .map(item => {
+    .filter((item: any) => topicMap.has(item.topicId))
+    .map((item: any) => {
       const sample = topicMap.get(item.topicId),
         before = accuracy(sample.before.correct, sample.before.total),
         after = accuracy(sample.after.correct, sample.after.total);
@@ -84,12 +88,14 @@ export function buildPerformanceAnalysis({
             : null,
       };
     })
-    .sort((a, b) => (a.delta ?? 101) - (b.delta ?? 101));
+    .sort((a: any, b: any) => (a.delta ?? 101) - (b.delta ?? 101));
   const exams = performancePeriodRecords(simulations, { today, period })
-    .filter(item => count(item.total) > 0)
+    .filter((item: any) => count(item.total) > 0)
     .slice()
-    .sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
-  const scores = exams.map(item =>
+    .sort(
+      (a: any, b: any) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id))
+    );
+  const scores = exams.map((item: any) =>
     accuracy(Math.min(count(item.correct), count(item.total)), count(item.total))
   );
   return {
@@ -104,7 +110,7 @@ export function buildPerformanceAnalysis({
     current: scores.at(-1) ?? null,
     previous: scores.at(-2) ?? null,
     mean: scores.length
-      ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
+      ? Math.round((scores.reduce((a: any, b: any) => a + b, 0) / scores.length) * 10) / 10
       : null,
     best: scores.length ? Math.max(...scores) : null,
     latestVolume: exams.at(-1)?.total ?? 0,

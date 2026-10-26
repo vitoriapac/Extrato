@@ -3,7 +3,7 @@ import {
   capturePlanExecution,
   historicalExecutionItem,
 } from '../domain/planning/plan-execution-snapshot.js';
-const recoveryReason = item =>
+const recoveryReason = (item: Record<string, any>) =>
   item.reviewUrgency >= 60
     ? 'revisão próxima do vencimento'
     : item.score >= 70
@@ -17,28 +17,33 @@ export function buildReplanProposal({
   periodEnd,
   futureDays = [],
 }: any = {}) {
-  const inPeriod = plans.filter(plan => plan.date >= periodStart && plan.date <= periodEnd);
+  const inPeriod = plans.filter((plan: any) => plan.date >= periodStart && plan.date <= periodEnd);
   const plannedMinutes = inPeriod.reduce(
-    (sum, plan) =>
+    (sum: any, plan: any) =>
       sum +
       (plan.items || [])
-        .filter(item => !['skipped', 'replaced'].includes(item.status))
-        .reduce((n, item) => n + (Number(item.plannedMinutes) || 0), 0),
+        .filter((item: any) => !['skipped', 'replaced'].includes(item.status))
+        .reduce((n: any, item: any) => n + (Number(item.plannedMinutes) || 0), 0),
     0
   );
   const executedMinutes = Math.round(
     inPeriod.reduce(
-      (sum, plan) =>
+      (sum: any, plan: any) =>
         sum +
-        (plan.items || []).reduce((n, item) => n + (Number(item.executedSeconds) || 0) / 60, 0),
+        (plan.items || []).reduce(
+          (n: any, item: any) => n + (Number(item.executedSeconds) || 0) / 60,
+          0
+        ),
       0
     )
   );
   const pendingItems = inPeriod
-    .flatMap(plan =>
+    .flatMap((plan: any) =>
       (plan.items || [])
-        .filter(item => !['completed', 'skipped', 'replaced', 'deferred'].includes(item.status))
-        .map(item => ({
+        .filter(
+          (item: any) => !['completed', 'skipped', 'replaced', 'deferred'].includes(item.status)
+        )
+        .map((item: any) => ({
           sourcePlanId: plan.id,
           sourceItemId: item.id,
           subjectId: item.subjectId || null,
@@ -53,19 +58,22 @@ export function buildReplanProposal({
           reason: recoveryReason(item),
         }))
     )
-    .filter(item => item.remainingMinutes > 0)
-    .sort((a, b) => b.priority - a.priority);
-  const deficitMinutes = pendingItems.reduce((sum, item) => sum + item.remainingMinutes, 0);
-  const capacities = (futureDays || []).map(day => ({
+    .filter((item: any) => item.remainingMinutes > 0)
+    .sort((a: any, b: any) => b.priority - a.priority);
+  const deficitMinutes = pendingItems.reduce(
+    (sum: any, item: any) => sum + item.remainingMinutes,
+    0
+  );
+  const capacities = (futureDays || []).map((day: any) => ({
     date: day.date,
     availableMinutes: Math.max(0, Math.round(Number(day.availableMinutes) || 0)),
     remaining: Math.max(0, Math.round(Number(day.availableMinutes) || 0)),
   }));
-  const allocations = [];
+  const allocations: any[] = [];
   let remaining = deficitMinutes;
-  pendingItems.forEach(item => {
+  pendingItems.forEach((item: any) => {
     let itemRemaining = item.remainingMinutes;
-    capacities.forEach(day => {
+    capacities.forEach((day: any) => {
       if (itemRemaining <= 0 || day.remaining <= 0) return;
       const minutes = Math.min(itemRemaining, day.remaining);
       allocations.push({ ...item, date: day.date, minutes });
@@ -83,12 +91,12 @@ export function buildReplanProposal({
     )
   );
   const retainedItems = pendingItems
-    .filter(item => (allocatedBySource.get(item.sourceItemId) || 0) < item.remainingMinutes)
-    .map(item => ({
+    .filter((item: any) => (allocatedBySource.get(item.sourceItemId) || 0) < item.remainingMinutes)
+    .map((item: any) => ({
       ...item,
       unallocatedMinutes: item.remainingMinutes - (allocatedBySource.get(item.sourceItemId) || 0),
     }));
-  const capacityByDay = capacities.map(day => ({
+  const capacityByDay = capacities.map((day: any) => ({
     date: day.date,
     availableMinutes: day.availableMinutes,
     allocatedMinutes: day.availableMinutes - day.remaining,
@@ -119,17 +127,17 @@ export function applyReplan({
   idGenerator,
 }: any = {}) {
   if (proposal?.state !== 'proposal' || !operationId || typeof idGenerator !== 'function')
-    return { changes: [], createdItems: 0 };
+    return { changes: [] as any[], createdItems: 0 };
   const changes = [],
     originalStatuses = new Map();
   for (const allocation of proposal.allocations) {
-    const sourcePlan = dailyPlans.find(plan => plan.id === allocation.sourcePlanId),
-      sourceItem = sourcePlan?.items?.find(item => item.id === allocation.sourceItemId);
+    const sourcePlan = dailyPlans.find((plan: any) => plan.id === allocation.sourcePlanId),
+      sourceItem = sourcePlan?.items?.find((item: any) => item.id === allocation.sourceItemId);
     if (!sourceItem) continue;
     if (
-      dailyPlans.some(plan =>
+      dailyPlans.some((plan: any) =>
         (plan.items || []).some(
-          item =>
+          (item: any) =>
             item.rescheduleOperationId === operationId &&
             item.rescheduledFromId === sourceItem.id &&
             item.currentDate === allocation.date
@@ -137,7 +145,7 @@ export function applyReplan({
       )
     )
       continue;
-    let destination = dailyPlans.find(plan => plan.date === allocation.date);
+    let destination = dailyPlans.find((plan: any) => plan.date === allocation.date);
     if (!destination) {
       destination = {
         id: idGenerator('plan'),
@@ -189,8 +197,8 @@ export function applyReplan({
     created.transferredMinutes = 0;
     destination.items.push(created);
     destination.plannedMinutes = (destination.items || [])
-      .filter(item => !['skipped', 'replaced'].includes(item.status))
-      .reduce((sum, item) => sum + (Number(item.plannedMinutes) || 0), 0);
+      .filter((item: any) => !['skipped', 'replaced'].includes(item.status))
+      .reduce((sum: any, item: any) => sum + (Number(item.plannedMinutes) || 0), 0);
     destination.flexMinutes = Math.max(
       0,
       (Number(destination.availableMinutes) || 0) - destination.plannedMinutes
@@ -213,10 +221,12 @@ export function undoReplan({ dailyPlans = [], adjustment }: any = {}) {
   const protectedItems = [],
     undoneChanges = [],
     protectedSources = new Set(),
-    sourceKey = change => `${change.sourcePlanId}:${change.sourceItemId}`;
+    sourceKey = (change: Record<string, any>) => `${change.sourcePlanId}:${change.sourceItemId}`;
   for (const change of adjustment?.changes || []) {
-    const destination = dailyPlans.find(plan => plan.id === change.destinationPlanId),
-      item = destination?.items?.find(candidate => candidate.id === change.destinationItemId);
+    const destination = dailyPlans.find((plan: any) => plan.id === change.destinationPlanId),
+      item = destination?.items?.find(
+        (candidate: any) => candidate.id === change.destinationItemId
+      );
     if (!item) continue;
     const executed =
       Number(item.executedSeconds) > 0 ||
@@ -227,10 +237,10 @@ export function undoReplan({ dailyPlans = [], adjustment }: any = {}) {
       protectedSources.add(sourceKey(change));
       continue;
     }
-    destination.items = destination.items.filter(candidate => candidate.id !== item.id);
+    destination.items = destination.items.filter((candidate: any) => candidate.id !== item.id);
     destination.plannedMinutes = destination.items
-      .filter(candidate => !['skipped', 'replaced'].includes(candidate.status))
-      .reduce((sum, candidate) => sum + (Number(candidate.plannedMinutes) || 0), 0);
+      .filter((candidate: any) => !['skipped', 'replaced'].includes(candidate.status))
+      .reduce((sum: any, candidate: any) => sum + (Number(candidate.plannedMinutes) || 0), 0);
     destination.flexMinutes = Math.max(
       0,
       (Number(destination.availableMinutes) || 0) - destination.plannedMinutes
@@ -239,8 +249,8 @@ export function undoReplan({ dailyPlans = [], adjustment }: any = {}) {
   }
   undoneChanges.forEach(change => {
     const source = dailyPlans
-      .find(plan => plan.id === change.sourcePlanId)
-      ?.items?.find(candidate => candidate.id === change.sourceItemId);
+      .find((plan: any) => plan.id === change.sourcePlanId)
+      ?.items?.find((candidate: any) => candidate.id === change.sourceItemId);
     if (source)
       source.transferredMinutes = Math.max(
         0,
@@ -251,8 +261,8 @@ export function undoReplan({ dailyPlans = [], adjustment }: any = {}) {
     .filter(change => !protectedSources.has(sourceKey(change)))
     .forEach(change => {
       const source = dailyPlans
-        .find(plan => plan.id === change.sourcePlanId)
-        ?.items?.find(candidate => candidate.id === change.sourceItemId);
+        .find((plan: any) => plan.id === change.sourcePlanId)
+        ?.items?.find((candidate: any) => candidate.id === change.sourceItemId);
       if (source) {
         source.status = change.sourcePreviousStatus || 'planned';
         source.skippedReason = null;

@@ -32,7 +32,7 @@ export function createQuestionImportService({
     );
   }
 
-  const preview = (rawText, { fileName = '' } = {}) => {
+  const preview = (rawText: string, { fileName = '' } = {}) => {
     const records = normalizeQuestionImportRows(rawText, {
       defaultDate: today(),
       errorCategoryKeys,
@@ -57,14 +57,16 @@ export function createQuestionImportService({
       unknownErrorCategoryCount += record.unknownErrorCategoryCount;
 
       const subjectKey = normalizeKey(record.subjectName);
-      const matchedSubject = subjects.find(s => normalizeKey(s.name) === subjectKey);
+      const matchedSubject = subjects.find((s: any) => normalizeKey(s.name) === subjectKey);
 
       let matchedTopic = null;
       if (matchedSubject) {
         matchedSubjectsCount++;
         if (record.topicName) {
           const topicKey = normalizeKey(record.topicName);
-          matchedTopic = (matchedSubject.topics || []).find(t => normalizeKey(t.name) === topicKey);
+          matchedTopic = (matchedSubject.topics || []).find(
+            (t: any) => normalizeKey(t.name) === topicKey
+          );
           if (matchedTopic) {
             matchedTopicsCount++;
           } else {
@@ -98,7 +100,7 @@ export function createQuestionImportService({
       const isDuplicate = Boolean(
         matchedSubject &&
         existingQuestions.some(
-          q =>
+          (q: any) =>
             q.date === record.date &&
             q.subjectId === matchedSubject.id &&
             (record.topicName ? matchedTopic && q.topicId === matchedTopic.id : !q.topicId) &&
@@ -149,7 +151,10 @@ export function createQuestionImportService({
     };
   };
 
-  const importQuestions = (previewData, { createMissing = true, skipDuplicates = true } = {}) => {
+  const importQuestions = (
+    previewData: Record<string, any>,
+    { createMissing = true, skipDuplicates = true } = {}
+  ) => {
     let subjects = getSubjects();
     const createdSubjects = [];
     const createdTopics = [];
@@ -157,7 +162,9 @@ export function createQuestionImportService({
     // 1. Create missing subjects if allowed
     if (createMissing && previewData.newSubjects?.length) {
       for (const subjectName of previewData.newSubjects) {
-        const existing = subjects.find(s => normalizeKey(s.name) === normalizeKey(subjectName));
+        const existing = subjects.find(
+          (s: any) => normalizeKey(s.name) === normalizeKey(subjectName)
+        );
         if (!existing) {
           const created = subjectService.create(subjectName);
           createdSubjects.push(created);
@@ -169,10 +176,12 @@ export function createQuestionImportService({
     // 2. Create missing topics if allowed
     if (createMissing && previewData.newTopics?.length) {
       for (const item of previewData.newTopics) {
-        const subject = subjects.find(s => normalizeKey(s.name) === normalizeKey(item.subjectName));
+        const subject = subjects.find(
+          (s: any) => normalizeKey(s.name) === normalizeKey(item.subjectName)
+        );
         if (subject) {
           const topicExists = (subject.topics || []).some(
-            t => normalizeKey(t.name) === normalizeKey(item.topicName)
+            (t: any) => normalizeKey(t.name) === normalizeKey(item.topicName)
           );
           if (!topicExists) {
             const created = subjectService.addTopic(subject.id, { name: item.topicName });
@@ -194,13 +203,15 @@ export function createQuestionImportService({
         continue;
       }
 
-      const subject = subjects.find(s => normalizeKey(s.name) === normalizeKey(record.subjectName));
+      const subject = subjects.find(
+        (s: any) => normalizeKey(s.name) === normalizeKey(record.subjectName)
+      );
       if (!subject) continue; // If missing subjects are not created, skip
 
       let topicId = null;
       if (record.topicName) {
         const topic = (subject.topics || []).find(
-          t => normalizeKey(t.name) === normalizeKey(record.topicName)
+          (t: any) => normalizeKey(t.name) === normalizeKey(record.topicName)
         );
         topicId = topic?.id || null;
       }
@@ -231,6 +242,7 @@ export function createQuestionImportService({
   return Object.freeze({
     preview,
     // Criação de disciplinas, tópicos e questões acontece toda dentro de atomic: ou entra tudo, ou nada.
-    import: (previewData, options) => atomic(() => importQuestions(previewData, options)),
+    import: (previewData: Record<string, any>, options?: Parameters<typeof importQuestions>[1]) =>
+      atomic(() => importQuestions(previewData, options)),
   });
 }

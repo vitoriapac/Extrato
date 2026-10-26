@@ -34,6 +34,9 @@
     "src/application/planning/build-historical-planning-context.ts",
     "src/application/projection/**/*",
     "src/application/daily-execution/**/*",
-    "src/application/sessions/**/*"
+    "src/application/sessions/**/*",
+    "src/application/questions/**/*",
+    "src/application/replan-study.ts",
+    "src/application/planning-sustainability/**/*"
   ]
 }

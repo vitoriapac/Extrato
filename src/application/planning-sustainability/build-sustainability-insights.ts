@@ -1,4 +1,4 @@
-const messages = {
+const messages: Record<string, string> = {
   sustainable: 'Seu planejamento recente está compatível com a execução observada.',
   capacity_mismatch:
     'As prioridades têm sido preservadas, mas o volume executado ficou abaixo do planejado de forma recorrente. Vale revisar a disponibilidade declarada; isso não comprova a causa do desvio.',
@@ -13,14 +13,14 @@ const messages = {
   insufficient_data:
     'Registre planejamento, prioridades e disponibilidade ao longo de mais semanas completas para comparar a execução.',
 };
-export function buildSustainabilityInsights(model) {
-  const excluded = model.weeks.filter(week => !week.comparable);
+export function buildSustainabilityInsights(model: Record<string, any>) {
+  const excluded = model.weeks.filter((week: any) => !week.comparable);
   return {
     version: 1,
     message: messages[model.assessment.status],
     preliminary: model.evidence.level === 'preliminary',
     comparableWeeks: model.evidence.comparableWeeks,
-    excludedWeeks: excluded.map(week => ({
+    excludedWeeks: excluded.map((week: any) => ({
       period: { ...week.period },
       reasonCodes: [...week.reasonCodes],
     })),

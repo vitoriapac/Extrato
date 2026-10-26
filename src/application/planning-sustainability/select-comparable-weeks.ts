@@ -2,10 +2,13 @@ import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 import { normalizeExamTags } from '../../domain/exams/exam-scope.js';
 import { SUSTAINABILITY_POLICY as policy } from '../../domain/planning/sustainability-policy.js';
 
-const scope = tags => (Array.isArray(tags) ? JSON.stringify(normalizeExamTags(tags).sort()) : null);
-const finite = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
-const percent = value => finite(value) && value <= 100;
-const completeWeek = (period, today) =>
+type Row = Record<string, any>;
+const scope = (tags: unknown) =>
+  Array.isArray(tags) ? JSON.stringify(normalizeExamTags(tags).sort()) : null;
+const finite = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0;
+const percent = (value: unknown) => finite(value) && value <= 100;
+const completeWeek = (period: Row | null | undefined, today: string) =>
   period &&
   parseLocalDate(period.start)?.getDay() === 1 &&
   addLocalDays(period.start, 6) === period.end &&
@@ -19,7 +22,7 @@ export function selectComparableWeeks({
 }: any = {}) {
   const date = parseLocalDate(today);
   if (typeof today !== 'string' || !date)
-    return { state: 'invalid_period', weeks: [], historyWeeks: 4 };
+    return { state: 'invalid_period', weeks: [] as Row[], historyWeeks: 4 };
   const count = policy.historyWindows.includes(historyWeeks)
     ? historyWeeks
     : policy.defaultHistoryWeeks;
@@ -42,7 +45,7 @@ export function selectComparableWeeks({
     )
       continue;
     const previous = revisions.get(snapshot.period.start);
-    const rank = row => [
+    const rank = (row: Row) => [
       Number(row.revision) || 1,
       Date.parse(row.savedAt) || 0,
       String(row.id || ''),

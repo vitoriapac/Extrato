@@ -1,10 +1,11 @@
 import { SUSTAINABILITY_POLICY as policy } from '../../domain/planning/sustainability-policy.js';
-const quantile = (sorted, p) => {
+type Row = Record<string, any>;
+const quantile = (sorted: number[], p: number) => {
   const index = (sorted.length - 1) * p,
     low = Math.floor(index);
   return sorted[low] + (sorted[Math.ceil(index)] - sorted[low]) * (index - low);
 };
-export function buildCapacityPattern(weeks = []) {
+export function buildCapacityPattern(weeks: Row[] = []) {
   const included = weeks.filter(week => week.comparable),
     values = included.map(week => week.model.summary.executedMinutes).sort((a, b) => a - b);
   if (!values.length)
@@ -15,7 +16,7 @@ export function buildCapacityPattern(weeks = []) {
       averagePlannedMinutes: null,
       averageExecutedMinutes: null,
     };
-  const average = selector =>
+  const average = (selector: (model: Row) => number) =>
     included.reduce((sum, week) => sum + selector(week.model), 0) / included.length;
   const step = policy.rangeRoundingMinutes;
   return {

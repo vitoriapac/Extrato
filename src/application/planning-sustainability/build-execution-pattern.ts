@@ -1,6 +1,9 @@
-export function buildExecutionPattern(weeks = []) {
+type Row = Record<string, any>;
+
+export function buildExecutionPattern(weeks: Row[] = []) {
   const included = weeks.filter(week => week.comparable),
-    sum = selector => included.reduce((total, week) => total + selector(week.model), 0);
+    sum = (selector: (model: Row) => number) =>
+      included.reduce((total, week) => total + selector(week.model), 0);
   const planned = sum(model => model.summary.plannedMinutes),
     priorityPlanned = sum(model => model.priority.plannedMinutes);
   return {

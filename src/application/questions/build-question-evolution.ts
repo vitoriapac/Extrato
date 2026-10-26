@@ -1,8 +1,9 @@
 import { addLocalDays, parseLocalDate } from '../../core/date-utils.js';
 
-const number = value => Math.max(0, Number(value) || 0);
-const percent = (correct, total) => (total ? Math.round((correct / total) * 100) : null);
-const bucketKey = (date, monthly) => {
+const number = (value: unknown) => Math.max(0, Number(value) || 0);
+const percent = (correct: number, total: number) =>
+  total ? Math.round((correct / total) * 100) : null;
+const bucketKey = (date: string, monthly: boolean) => {
   if (monthly) return date.slice(0, 7);
   const weekday = parseLocalDate(date)?.getDay();
   return weekday == null ? null : addLocalDays(date, -((weekday + 6) % 7));

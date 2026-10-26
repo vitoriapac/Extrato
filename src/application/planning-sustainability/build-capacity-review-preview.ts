@@ -1,4 +1,4 @@
-export function buildCapacityReviewPreview(model, currentMinutes) {
+export function buildCapacityReviewPreview(model: Record<string, any>, currentMinutes: number) {
   const range = model?.capacity?.observedRange;
   if (
     model?.assessment?.action !== 'review_capacity' ||
