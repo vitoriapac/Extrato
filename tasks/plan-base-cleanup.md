@@ -52,7 +52,14 @@ Origem: análise de 2026-10-25 (TypeScript, Preact e Tailwind). Decisões da aut
      - Primeiro saiu o código morto que o `noUnusedLocals` revelou: 44 funções sem chamador (helpers antigos de questões, simulados, horas de estudo e notas, já substituídos pelos renderers e view models extraídos) e os 41 imports que só elas usavam. A mensagem do `57b5eca` diz 37, mas a contagem certa é 41.
      - Depois veio a tipagem. Valores lidos do DOM ficam como `any` explícito, e lookups por texto em estado tipado usam cast no ponto do índice.
    - Possível simplificação antes do passo 4: com o pure cobrindo tudo, os três flags podem passar para o `tsconfig.json` e o `tsconfig.pure.json` deixa de existir.
-4. **`strict` gradual:** mesma mecânica, depois do passo 3, num `tsconfig.strict.json` ou no próprio `tsconfig.pure.json`.
+4. ✅ **`strict` gradual:** pasta a pasta num `tsconfig.strict.json` (`f25ea55` … `f1a2063`). Quando ele passou a cobrir tudo, o `strict: true` foi para o `tsconfig.json` e o arquivo à parte saiu. O `tsconfig.tests.json` desliga o `strict` nos testes em JS, que mantêm as checagens explícitas de antes.
+   - **Regra seguida:** comportamento igual. Em cada arquivo, o JS sem tipos foi comparado antes e depois. O "possivelmente `null`" foi resolvido de três formas:
+     - `!` onde a lógica já garante o valor; o `!` some no JS gerado;
+     - `?? 0`, `?? ''` ou `Number()` onde a comparação dependia da coerção de `null`, porque dão o mesmo resultado;
+     - tipo de verdade onde a interface era mais estreita que os dados: `SimulationBreakdownItem.subjectId`, as taxas do histórico de recomendações, os itens das tabelas de calendário e revisões, e os campos de `ExamBlueprintSubject` que recebem `null`.
+   - **Dívida registrada:** o passo deixou ~512 asserções `!` (eram 6), 222 delas no `app.ts`, a maioria em `document.getElementById(...)`. Cada uma é um `null` assumido, não provado. Próximo passo de qualidade:
+     - trocar as buscas no DOM por um helper que falhe com mensagem clara;
+     - substituir as demais `!` por guardas reais, arquivo a arquivo e com teste quando mudar comportamento.
 5. **Preact montado, uma aba por commit:** trocar `render-to-string` + `innerHTML` e `dangerouslySetInnerHTML` por componentes montados com `mountPreact`. Ordem: questões e calendário (mostram texto digitado), depois revisões, disciplinas, metas, Hoje, Visão Geral, ajuda.
 6. **Tailwind junto do passo 5:** a aba convertida usa os utilitários do `@theme` (que já apontam para os tokens) e remove do `app.css` as regras que deixaram de ser usadas, no mesmo commit.
 7. **Opcional, só se o hook der trabalho:** trocar os imports `.js` por `.ts` (o `allowImportingTsExtensions` já está ligado) e remover o `scripts/ts-resolve-hook.mjs`, já que o Node 24 executa TypeScript sem ajuda.
