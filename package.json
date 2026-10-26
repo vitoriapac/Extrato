@@ -10,7 +10,7 @@
     "check:format": "prettier --check src scripts tests",
     "check:syntax": "node scripts/check-syntax.mjs",
     "check:types": "tsc -p tsconfig.json --noEmit",
-    "check:types:pure": "tsc -p tsconfig.pure.json --noEmit",
+    "check:types:strict": "tsc -p tsconfig.strict.json --noEmit",
     "check:types:tests": "tsc -p tsconfig.tests.json --noEmit",
     "serve": "node scripts/serve.mjs",
     "check:bundle": "node scripts/build.mjs --check",

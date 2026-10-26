@@ -12,7 +12,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
     "strict": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitThis": true,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
@@ -22,7 +22,9 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "skipLibCheck": true,
-    "maxNodeModuleJsDepth": 0
+    "maxNodeModuleJsDepth": 0,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": ["src/**/*"],
   "exclude": [

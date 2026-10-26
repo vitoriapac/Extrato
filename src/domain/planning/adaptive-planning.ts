@@ -364,6 +364,7 @@ export function applyAdaptivePlanningAdvice(plan: any, advice: any) {
   const budget = minutesValue(plan.weeklyPlannedMinutes),
     requested = minutesValue(advice.transferMinutes);
   if (
+    budget == null ||
     requested == null ||
     requested < ADAPTIVE_TRANSFER_MINUTES ||
     requested > ADAPTIVE_TRANSFER_MAX_MINUTES ||
