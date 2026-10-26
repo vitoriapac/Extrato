@@ -1,8 +1,9 @@
 import { buildSubjectAccuracy } from '../analytics/build-subject-accuracy.js';
 
-const inRange = (date, range) =>
+type Row = Record<string, any>;
+const inRange = (date: string, range: { start: string; end: string }) =>
   Boolean(date && range?.end && date <= range.end && (!range.start || date >= range.start));
-const rounded = value => Math.round(value * 10) / 10;
+const rounded = (value: number) => Math.round(value * 10) / 10;
 export const PERFORMANCE_SUBJECT_SORTS = Object.freeze([
   'gap',
   'accuracy',
@@ -20,9 +21,9 @@ export function buildPerformanceSubjectComparison({
   candidates = [],
   sort = 'gap',
 }: any = {}) {
-  const current = questions.filter(item => inRange(item.date, range));
+  const current = questions.filter((item: any) => inRange(item.date, range));
   const previous = range?.previous
-    ? questions.filter(item => inRange(item.date, range.previous))
+    ? questions.filter((item: any) => inRange(item.date, range.previous))
     : [];
   const currentRows = buildSubjectAccuracy({
     subjects,
@@ -43,7 +44,7 @@ export function buildPerformanceSubjectComparison({
       Math.max(priorityBySubject.get(item.subjectId) ?? -Infinity, Number(item.score))
     );
   }
-  const rows = currentRows.map(item => {
+  const rows = currentRows.map((item: any) => {
     const earlier = previousRows.get(item.subjectId)?.personal;
     const enough = item.personal.total >= 10;
     return {
@@ -62,17 +63,19 @@ export function buildPerformanceSubjectComparison({
     };
   });
   const selected = PERFORMANCE_SUBJECT_SORTS.includes(sort) ? sort : 'gap';
-  const metric = {
-    gap: item => (item.gap == null ? Infinity : item.gap),
-    accuracy: item => (item.accuracy == null ? Infinity : item.accuracy),
-    evolution: item => (item.evolution == null ? Infinity : item.evolution),
-    questions: item => -item.questions,
-    priority: item => (item.priority == null ? Infinity : -item.priority),
-  }[selected];
-  rows.sort((a, b) => metric(a) - metric(b) || a.name.localeCompare(b.name, 'pt-BR'));
+  const metric = (
+    {
+      gap: (item: Row) => (item.gap == null ? Infinity : item.gap),
+      accuracy: (item: Row) => (item.accuracy == null ? Infinity : item.accuracy),
+      evolution: (item: Row) => (item.evolution == null ? Infinity : item.evolution),
+      questions: (item: Row) => -item.questions,
+      priority: (item: Row) => (item.priority == null ? Infinity : -item.priority),
+    } as Record<string, (item: Row) => number>
+  )[selected];
+  rows.sort((a: any, b: any) => metric(a) - metric(b) || a.name.localeCompare(b.name, 'pt-BR'));
   return {
     rows,
     sort: selected,
-    measured: rows.filter(item => item.state !== 'insufficient').length,
+    measured: rows.filter((item: any) => item.state !== 'insufficient').length,
   };
 }

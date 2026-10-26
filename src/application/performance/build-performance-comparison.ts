@@ -1,8 +1,15 @@
 import { formatDecimal } from '../../core/format-number.js';
-const rounded = value => Math.round(value * 10) / 10;
-const classify = (value, threshold) =>
+const rounded = (value: number) => Math.round(value * 10) / 10;
+const classify = (value: number, threshold: number) =>
   value > threshold ? 'improved' : value < -threshold ? 'worsened' : 'stable';
-const metric = (label, before, after, unit, threshold, available = true) => ({
+const metric = (
+  label: string,
+  before: number | null,
+  after: number | null,
+  unit: string,
+  threshold: number,
+  available = true
+) => ({
   label,
   before,
   after,
@@ -14,7 +21,10 @@ const metric = (label, before, after, unit, threshold, available = true) => ({
       : 'insufficient',
 });
 
-export function buildPerformanceComparison(overview, { comparePrevious = true }: any = {}) {
+export function buildPerformanceComparison(
+  overview: Record<string, any>,
+  { comparePrevious = true }: any = {}
+) {
   if (!comparePrevious || !overview?.previous) return { state: 'disabled', rows: [], insights: [] };
   const current = overview.current || {},
     previous = overview.previous;

@@ -16,17 +16,19 @@ export function buildPerformanceTopicDetail({
     topicId: topicRow.id,
     period,
   });
-  const labels = {
+  const labels: Record<string, string> = {
     topic_started: 'Estudo iniciado',
     topic_completed: 'Tópico concluído',
     topic_reopened: 'Tópico reaberto',
   };
   const events = history
-    .filter(item => labels[item.type])
+    .filter((item: any) => labels[item.type])
     .slice()
-    .sort((a, b) => String(a.localDate || a.date).localeCompare(String(b.localDate || b.date)))
+    .sort((a: any, b: any) =>
+      String(a.localDate || a.date).localeCompare(String(b.localDate || b.date))
+    )
     .slice(-8)
-    .map(item => ({
+    .map((item: any) => ({
       date: item.localDate || String(item.date || '').slice(0, 10),
       label: labels[item.type],
     }));

@@ -10,13 +10,14 @@ import {
 import { addLocalDays } from '../../core/date-utils.js';
 
 export const READINESS_SNAPSHOT_VERSION = 2;
-const clamp = value => Math.max(0, Math.min(100, Math.round(value)));
-const factor = (raw, confidence, available = true) => ({
+type Row = Record<string, any>;
+const clamp = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
+const factor = (raw: number, confidence: number, available = true) => ({
   available,
   score: available ? clamp(50 + (raw - 50) * confidence) : 50,
   confidence: available ? Math.min(1, confidence) : 0,
 });
-const scopeKey = tags => JSON.stringify(normalizeExamTags(tags));
+const scopeKey = (tags: unknown) => JSON.stringify(normalizeExamTags(tags));
 
 export function createReadinessSnapshot({
   id,
@@ -55,11 +56,11 @@ export function createReadinessSnapshot({
   };
 }
 
-export function upsertReadinessSnapshot(list, snapshot) {
+export function upsertReadinessSnapshot(list: Row[], snapshot: Row) {
   if (!snapshot) return false;
   const weekly = !snapshot.captureKind || snapshot.captureKind === 'weekly-close';
   const index = list.findIndex(
-    item =>
+    (item: any) =>
       scopeKey(item.activeExamTags) === scopeKey(snapshot.activeExamTags) &&
       (weekly
         ? item.date === snapshot.date && (!item.captureKind || item.captureKind === 'weekly-close')
@@ -70,17 +71,17 @@ export function upsertReadinessSnapshot(list, snapshot) {
   if (index >= 0) return false;
   list.push(structuredClone(snapshot));
   list.sort(
-    (a, b) =>
+    (a: any, b: any) =>
       a.date.localeCompare(b.date) || String(a.savedAt || '').localeCompare(String(b.savedAt || ''))
   );
   return true;
 }
 
 export function readinessHistoryForScope(
-  snapshots = [],
-  activeExamTags = [],
-  start = null,
-  end = null
+  snapshots: Row[] = [],
+  activeExamTags: string[] = [],
+  start: string | null = null,
+  end: string | null = null
 ) {
   const key = scopeKey(activeExamTags);
   return snapshots
@@ -108,29 +109,41 @@ export function buildHistoricalReadinessMetrics({
   date,
   activeExamTags = [],
 }: any = {}) {
-  const topics = subjects.flatMap(subject =>
+  const topics = subjects.flatMap((subject: any) =>
     (subject.topics || [])
-      .filter(topic => !topic.archived && isTopicInExamScope(topic, activeExamTags))
-      .map(topic => ({ ...topic, subjectId: subject.id }))
+      .filter((topic: any) => !topic.archived && isTopicInExamScope(topic, activeExamTags))
+      .map((topic: any) => ({ ...topic, subjectId: subject.id }))
   );
-  const topicIds = new Set(topics.map(topic => topic.id));
+  const topicIds = new Set(topics.map((topic: any) => topic.id));
   const eligibleQuestions = questions.filter(
-    item => item.date <= date && topicIds.has(item.topicId)
+    (item: any) => item.date <= date && topicIds.has(item.topicId)
   );
-  const eligibleSessions = sessions.filter(item => item.date <= date && topicIds.has(item.topicId));
-  const eligibleReviews = reviews.filter(item => item.date <= date && topicIds.has(item.topicId));
+  const eligibleSessions = sessions.filter(
+    (item: any) => item.date <= date && topicIds.has(item.topicId)
+  );
+  const eligibleReviews = reviews.filter(
+    (item: any) => item.date <= date && topicIds.has(item.topicId)
+  );
   const eligibleSimulations = simulations
-    .filter(item => item.date <= date && isSimulationInExamScope(item, activeExamTags))
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .filter((item: any) => item.date <= date && isSimulationInExamScope(item, activeExamTags))
+    .sort((a: any, b: any) => a.date.localeCompare(b.date))
     .slice(-5);
-  const completed = topics.filter(item => item.firstCompletedAt?.slice(0, 10) <= date).length;
+  const completed = topics.filter(
+    (item: any) => item.firstCompletedAt?.slice(0, 10) <= date
+  ).length;
   const coverage = factor(
     topics.length ? (completed / topics.length) * 100 : 50,
     Math.min(1, (topics.length / 40) * 0.55 + (subjects.length / 5) * 0.45),
     topics.length > 0
   );
-  const resolved = eligibleQuestions.reduce((sum, item) => sum + (Number(item.resolved) || 0), 0),
-    correct = eligibleQuestions.reduce((sum, item) => sum + (Number(item.correct) || 0), 0);
+  const resolved = eligibleQuestions.reduce(
+      (sum: any, item: any) => sum + (Number(item.resolved) || 0),
+      0
+    ),
+    correct = eligibleQuestions.reduce(
+      (sum: any, item: any) => sum + (Number(item.correct) || 0),
+      0
+    );
   const mastery = factor(
     resolved ? (correct / resolved) * 100 : 50,
     Math.min(1, resolved / 300),
@@ -138,11 +151,11 @@ export function buildHistoricalReadinessMetrics({
   );
   const due = eligibleReviews.length,
     reviewed = eligibleReviews.filter(
-      item => item.status === 'Concluído' && item.completedAt?.slice(0, 10) <= date
+      (item: any) => item.status === 'Concluído' && item.completedAt?.slice(0, 10) <= date
     ).length;
   const retention = factor(due ? (reviewed / due) * 100 : 50, Math.min(1, due / 10), due > 0);
   const start = addLocalDays(date, -27),
-    recent = eligibleSessions.filter(item => item.date >= start);
+    recent = eligibleSessions.filter((item: any) => item.date >= start);
   const byDay = new Map();
   for (const item of recent)
     byDay.set(item.date, (byDay.get(item.date) || 0) + (Number(item.durationSeconds) || 0));
@@ -163,11 +176,11 @@ export function buildHistoricalReadinessMetrics({
     scheduled > 0 && byDay.size > 0
   );
   const simulationTotal = eligibleSimulations.reduce(
-      (sum, item) => sum + (Number(item.total) || 0),
+      (sum: any, item: any) => sum + (Number(item.total) || 0),
       0
     ),
     simulationCorrect = eligibleSimulations.reduce(
-      (sum, item) => sum + (Number(item.correct) || 0),
+      (sum: any, item: any) => sum + (Number(item.correct) || 0),
       0
     );
   const simulationConfidence = Math.min(

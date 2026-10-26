@@ -67,7 +67,7 @@ export function buildPerformancePageModel({
     };
   }
   if (section === 'questions') {
-    const questions = scope.questions.included.map(item => ({
+    const questions = scope.questions.included.map((item: any) => ({
       ...item,
       subjectId: subjectIdFor(item),
     }));
@@ -75,7 +75,7 @@ export function buildPerformancePageModel({
     const analysis = buildPerformanceAnalysis({
       questions,
       simulations: [],
-      candidates: scope.content.eligibleTopics.map(item => ({
+      candidates: scope.content.eligibleTopics.map((item: any) => ({
         topicId: item.id,
         topicName: item.name,
       })),
@@ -89,10 +89,13 @@ export function buildPerformancePageModel({
     return { section, evolution, analysis, previousAccuracy };
   }
   if (section === 'simulations') {
-    const normalized = simulations.map(item => ({
+    const normalized = simulations.map((item: any) => ({
       ...item,
       ...simulationCountsFor(item),
-      breakdown: (item.breakdown || []).map(row => ({ ...row, subjectId: subjectIdFor(row) })),
+      breakdown: (item.breakdown || []).map((row: any) => ({
+        ...row,
+        subjectId: subjectIdFor(row),
+      })),
     }));
     return {
       section,
@@ -107,12 +110,12 @@ export function buildPerformancePageModel({
     };
   }
   if (section === 'subjects') {
-    const eligibleTopicIds = new Set(scope.content.eligibleTopics.map(item => item.id));
-    const eligibleSubjects = subjects.map(subject => ({
+    const eligibleTopicIds = new Set(scope.content.eligibleTopics.map((item: any) => item.id));
+    const eligibleSubjects = subjects.map((subject: any) => ({
       ...subject,
-      topics: (subject.topics || []).filter(topic => eligibleTopicIds.has(topic.id)),
+      topics: (subject.topics || []).filter((topic: any) => eligibleTopicIds.has(topic.id)),
     }));
-    const questions = scope.questions.included.map(item => ({
+    const questions = scope.questions.included.map((item: any) => ({
       ...item,
       subjectId: subjectIdFor(item),
     }));
@@ -126,9 +129,12 @@ export function buildPerformancePageModel({
       sort: viewState.subjectSort,
     });
     const selected =
-      eligibleSubjects.find(item => item.id === viewState.subjectId) || eligibleSubjects[0];
+      eligibleSubjects.find((item: any) => item.id === viewState.subjectId) || eligibleSubjects[0];
     const metricsByTopic = Object.fromEntries(
-      (selected?.topics || []).map(topic => [topic.id, topicMetricsFor(selected.id, topic.id)])
+      (selected?.topics || []).map((topic: any) => [
+        topic.id,
+        topicMetricsFor(selected.id, topic.id),
+      ])
     );
     const model = buildPerformanceSubjects({
       subjects: eligibleSubjects,
@@ -137,22 +143,28 @@ export function buildPerformancePageModel({
       today,
       period: viewState.period,
       questions,
-      sessions: scope.sessions.included.map(item => ({ ...item, subjectId: subjectIdFor(item) })),
-      reviews: scope.reviews.included.map(item => ({
+      sessions: scope.sessions.included.map((item: any) => ({
+        ...item,
+        subjectId: subjectIdFor(item),
+      })),
+      reviews: scope.reviews.included.map((item: any) => ({
         ...item,
         subjectId: subjectIdFor(item),
         completedDate: reviewCompletedDateFor(item),
       })),
-      simulations: simulations.map(item => ({
+      simulations: simulations.map((item: any) => ({
         ...item,
-        breakdown: (item.breakdown || []).map(row => ({ ...row, subjectId: subjectIdFor(row) })),
+        breakdown: (item.breakdown || []).map((row: any) => ({
+          ...row,
+          subjectId: subjectIdFor(row),
+        })),
       })),
       blueprint,
       globalTarget,
       metricsByTopic,
     });
-    const topicRow = model.topics.find(item => item.id === viewState.topicId);
-    const topic = selected?.topics.find(item => item.id === topicRow?.id);
+    const topicRow = model.topics.find((item: any) => item.id === viewState.topicId);
+    const topic = selected?.topics.find((item: any) => item.id === topicRow?.id);
     const detail = topic
       ? {
           ...buildPerformanceTopicDetail({
@@ -168,7 +180,7 @@ export function buildPerformancePageModel({
       : null;
     return { section, model, comparison, stabilityMap: buildStabilityMap(comparison), detail };
   }
-  const sessions = scope.sessions.included.map(item => ({
+  const sessions = scope.sessions.included.map((item: any) => ({
     ...item,
     subjectId: subjectIdFor(item),
   }));

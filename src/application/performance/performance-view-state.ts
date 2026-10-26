@@ -15,8 +15,8 @@ export function createPerformanceViewState() {
     section: 'overview',
     period: '30',
     comparePrevious: true,
-    subjectId: null,
-    topicId: null,
+    subjectId: null as string | null,
+    topicId: null as string | null,
     subjectSort: 'gap',
     adherenceWeeks: 8,
   };
@@ -56,7 +56,10 @@ export function resolvePerformanceRange({
   };
 }
 
-export function updatePerformanceViewState(state, patch: any = {}) {
+export function updatePerformanceViewState(
+  state: ReturnType<typeof createPerformanceViewState>,
+  patch: any = {}
+) {
   const next = { ...state };
   if (patch.section !== undefined && PERFORMANCE_SECTIONS.includes(patch.section))
     next.section = patch.section;

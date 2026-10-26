@@ -1,15 +1,17 @@
 import { READINESS_WEIGHTS } from '../../domain/analytics/readiness-score.js';
 import { readinessHistoryForScope } from './readiness-history.js';
 
-const labels = {
+type Row = Record<string, any>;
+const labels: Record<string, string> = {
   coverage: 'Cobertura',
   mastery: 'Domínio',
   retention: 'Retenção',
   consistency: 'Consistência',
   simulations: 'Simulados',
 };
-const finite = value => value !== null && value !== undefined && Number.isFinite(Number(value));
-const weightsFor = item => {
+const finite = (value: unknown) =>
+  value !== null && value !== undefined && Number.isFinite(Number(value));
+const weightsFor = (item: Row | null | undefined) => {
   const weights = item?.weights || (item?.algorithmVersion === 1 ? READINESS_WEIGHTS : null);
   if (
     !weights ||
@@ -21,17 +23,20 @@ const weightsFor = item => {
     return null;
   return Object.fromEntries(Object.entries(weights).map(([key, value]) => [key, Number(value)]));
 };
-const availableKeys = item =>
+const availableKeys = (item: Row | null | undefined) =>
   Object.keys(weightsFor(item) || {})
     .filter(key => finite(item?.factors?.[key]))
     .sort();
 
-export function compareReadinessSnapshots(previous, current) {
+export function compareReadinessSnapshots(
+  previous: Row | null | undefined,
+  current: Row | null | undefined
+) {
   if (!previous || !current || !finite(previous.score) || !finite(current.score))
     return {
       state: 'insufficient',
-      delta: null,
-      factors: [],
+      delta: null as number | null,
+      factors: [] as Row[],
       reason: 'Ainda não há dois valores disponíveis para comparar.',
     };
   if (

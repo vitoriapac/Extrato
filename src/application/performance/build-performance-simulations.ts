@@ -1,8 +1,9 @@
 import { buildSimulationComparison } from '../simulations/build-simulation-comparison.js';
 import { buildProjectionCalibration } from '../analytics/projection-calibration-history.js';
 
-const score = item => (item.total ? Math.round((item.correct / item.total) * 1000) / 10 : null);
-const inRange = (date, range) =>
+const score = (item: Record<string, any>) =>
+  item.total ? Math.round((item.correct / item.total) * 1000) / 10 : null;
+const inRange = (date: string, range: { start: string; end: string }) =>
   Boolean(date && range?.end && date <= range.end && (!range.start || date >= range.start));
 
 export function buildPerformanceSimulations({
@@ -14,19 +15,21 @@ export function buildPerformanceSimulations({
   today,
 }: any = {}) {
   const items = simulations
-    .filter(item => inRange(item.date, range) && Number(item.total) > 0)
+    .filter((item: any) => inRange(item.date, range) && Number(item.total) > 0)
     .slice()
-    .sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
-  const scores = items.map(score).filter(value => value != null);
+    .sort(
+      (a: any, b: any) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id))
+    );
+  const scores = items.map(score).filter((value: any) => value != null);
   const previous = range?.previous
     ? simulations
-        .filter(item => inRange(item.date, range.previous) && Number(item.total) > 0)
+        .filter((item: any) => inRange(item.date, range.previous) && Number(item.total) > 0)
         .map(score)
-        .filter(value => value != null)
+        .filter((value: any) => value != null)
     : [];
-  const mean = values =>
+  const mean = (values: number[]) =>
     values.length
-      ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
+      ? Math.round((values.reduce((a: any, b: any) => a + b, 0) / values.length) * 10) / 10
       : null;
   const calibration = buildProjectionCalibration({
     snapshots: projectionSnapshots,

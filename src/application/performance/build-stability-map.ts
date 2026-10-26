@@ -1,6 +1,12 @@
 // A classification of existing accuracy and trend, never a second priority score.
-export function buildStabilityMap(comparison) {
-  const groups = { attention: [], maintain: [], intervene: [], evolving: [], insufficient: [] };
+export function buildStabilityMap(comparison: Record<string, any> | null | undefined) {
+  const groups: Record<string, any[]> = {
+    attention: [],
+    maintain: [],
+    intervene: [],
+    evolving: [],
+    insufficient: [],
+  };
   for (const row of comparison?.rows || []) {
     let state = 'insufficient';
     if (row.state !== 'insufficient' && row.evolution != null) {

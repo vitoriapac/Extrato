@@ -6,13 +6,14 @@ import { countStudyDaysInRange } from './study-day-count.js';
 import { buildAdherenceModel } from '../adherence/build-adherence-model.js';
 import { buildWeeklyAdherence } from '../adherence/build-weekly-adherence.js';
 
-const inRange = (date, range) =>
+type Range = { start: string; end: string };
+const inRange = (date: string, range: Range) =>
   Boolean(date && range?.end && date <= range.end && (!range.start || date >= range.start));
-const weekStart = date => {
+const weekStart = (date: string) => {
   const weekday = parseLocalDate(date)?.getDay();
   return weekday == null ? null : addLocalDays(date, -((weekday + 6) % 7));
 };
-const round = value => Math.round(value * 10) / 10;
+const round = (value: number) => Math.round(value * 10) / 10;
 
 export function buildPerformanceConsistency({
   range,
@@ -25,16 +26,16 @@ export function buildPerformanceConsistency({
   historyWeeks = 8,
   executionSource = null,
 }: any = {}) {
-  const studied = sessions.filter(item => inRange(item.date, range)),
-    answered = questions.filter(item => inRange(item.date, range)),
-    plans = dailyPlans.filter(item => inRange(item.date, range));
+  const studied = sessions.filter((item: any) => inRange(item.date, range)),
+    answered = questions.filter((item: any) => inRange(item.date, range)),
+    plans = dailyPlans.filter((item: any) => inRange(item.date, range));
   const starts = [...studied, ...answered, ...plans]
     .map(item => item.date)
     .filter(Boolean)
     .sort();
   const first = range?.start || starts[0] || today;
   const weeks = new Map();
-  const row = date => {
+  const row = (date: string) => {
     const start = weekStart(date);
     if (!start) return null;
     if (!weeks.has(start))
@@ -68,9 +69,15 @@ export function buildPerformanceConsistency({
       };
     });
   const studiedMinutes = round(
-    studied.reduce((sum, item) => sum + Math.max(0, Number(item.durationSeconds) || 0) / 60, 0)
+    studied.reduce(
+      (sum: any, item: any) => sum + Math.max(0, Number(item.durationSeconds) || 0) / 60,
+      0
+    )
   );
-  const plannedMinutes = plans.reduce((sum, item) => sum + plannedMinutesForPlan(item), 0);
+  const plannedMinutes = plans.reduce(
+    (sum: any, item: any) => sum + plannedMinutesForPlan(item),
+    0
+  );
   const strategic = buildStrategicExecution({
     start: first,
     end: today,
@@ -91,8 +98,11 @@ export function buildPerformanceConsistency({
     heatmap.push({ date, minutes: round(byDate.get(date) || 0) });
   const previous = range?.previous
     ? sessions
-        .filter(item => inRange(item.date, range.previous))
-        .reduce((sum, item) => sum + Math.max(0, Number(item.durationSeconds) || 0) / 60, 0)
+        .filter((item: any) => inRange(item.date, range.previous))
+        .reduce(
+          (sum: any, item: any) => sum + Math.max(0, Number(item.durationSeconds) || 0) / 60,
+          0
+        )
     : null;
   const source = { dailyPlans, sessions, subjects, ...executionSource };
   const sourceDates = [...source.dailyPlans, ...source.sessions]
@@ -120,7 +130,10 @@ export function buildPerformanceConsistency({
     strategicAdherence: strategic.strategicAdherence,
     strategicCoverage: strategic.classifiedCoverage,
     activeDays: countStudyDaysInRange(studied, range),
-    questions: answered.reduce((sum, item) => sum + Math.max(0, Number(item.resolved) || 0), 0),
+    questions: answered.reduce(
+      (sum: any, item: any) => sum + Math.max(0, Number(item.resolved) || 0),
+      0
+    ),
     previousMinutes: previous == null ? null : round(previous),
     heatmapLimited: range?.start == null || range.start < heatmapStart,
   };

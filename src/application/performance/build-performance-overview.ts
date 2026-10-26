@@ -4,23 +4,28 @@ import { buildStrategicExecution } from '../goals/build-strategic-execution.js';
 import { compareReadinessSnapshots } from '../analytics/build-readiness-evolution.js';
 import { readinessHistoryForScope } from '../analytics/readiness-history.js';
 
-const inRange = (date, range) =>
+type Row = Record<string, any>;
+type Range = { start: string; end: string };
+const inRange = (date: string, range: Range) =>
   Boolean(date && range?.end && date <= range.end && (!range.start || date >= range.start));
-const sum = (items, field) =>
-  items.reduce((total, item) => total + Math.max(0, Number(item[field]) || 0), 0);
-const round = value => Math.round(value * 10) / 10;
-const weekStart = date => {
+const sum = (items: Row[], field: string) =>
+  items.reduce((total: any, item: any) => total + Math.max(0, Number(item[field]) || 0), 0);
+const round = (value: number) => Math.round(value * 10) / 10;
+const weekStart = (date: string) => {
   const day = parseLocalDate(date)?.getDay();
   return day == null ? null : addLocalDays(date, -((day + 6) % 7));
 };
-const period = (range, questions, sessions, plans) => {
+const period = (range: Range, questions: Row[], sessions: Row[], plans: Row[]) => {
   if (!range) return null;
-  const q = questions.filter(item => inRange(item.date, range));
-  const s = sessions.filter(item => inRange(item.date, range));
-  const p = plans.filter(item => inRange(item.date, range));
+  const q = questions.filter((item: any) => inRange(item.date, range));
+  const s = sessions.filter((item: any) => inRange(item.date, range));
+  const p = plans.filter((item: any) => inRange(item.date, range));
   const resolved = sum(q, 'resolved'),
     correct = sum(q, 'correct');
-  const plannedMinutes = p.reduce((total, item) => total + plannedMinutesForPlan(item), 0);
+  const plannedMinutes = p.reduce(
+    (total: any, item: any) => total + plannedMinutesForPlan(item),
+    0
+  );
   const studiedMinutes = round(sum(s, 'durationSeconds') / 60);
   return {
     resolved,
@@ -32,7 +37,7 @@ const period = (range, questions, sessions, plans) => {
     sessionCount: s.length,
   };
 };
-const delta = (current, previous) =>
+const delta = (current: number | null, previous: number | null) =>
   current == null || previous == null ? null : round(current - previous);
 
 export function buildPerformanceOverview({
@@ -70,13 +75,13 @@ export function buildPerformanceOverview({
       ? readinessComparison.delta
       : null;
   const weeks = new Map();
-  for (const item of dailyPlans.filter(record => inRange(record.date, range))) {
+  for (const item of dailyPlans.filter((record: any) => inRange(record.date, range))) {
     const start = weekStart(item.date),
       row = weeks.get(start) || { start, plannedMinutes: 0, studiedMinutes: 0 };
     row.plannedMinutes += plannedMinutesForPlan(item);
     weeks.set(start, row);
   }
-  for (const item of sessions.filter(record => inRange(record.date, range))) {
+  for (const item of sessions.filter((record: any) => inRange(record.date, range))) {
     const start = weekStart(item.date),
       row = weeks.get(start) || { start, plannedMinutes: 0, studiedMinutes: 0 };
     row.studiedMinutes += (Number(item.durationSeconds) || 0) / 60;

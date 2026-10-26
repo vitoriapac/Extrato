@@ -45,6 +45,11 @@
     "src/application/analytics/build-topic-gap-inputs.ts",
     "src/application/recommendations/**/*",
     "src/application/subjects/**/*",
-    "src/application/planning/**/*"
+    "src/application/planning/**/*",
+    "src/application/performance/**/*",
+    "src/application/analytics/build-readiness-evolution.ts",
+    "src/application/analytics/build-subject-accuracy.ts",
+    "src/application/analytics/projection-calibration-history.ts",
+    "src/application/analytics/readiness-history.ts"
   ]
 }
