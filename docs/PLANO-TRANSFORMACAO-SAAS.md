@@ -272,6 +272,9 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 
 ### 4.1. Fundações Concluídas no Cliente (Fases 1 a 4 do Plano Master)
 
+> [!NOTE]
+> `entitlements.ts` e `cloud-saas-provider.ts` são módulos preparatórios, cobertos por testes unitários, mas ainda sem consumidor na interface. Nenhum recurso é bloqueado por plano hoje.
+
 - [x] **Motor de Entitlements & Plan Tiers:** [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts) implementa regras puras para `free`, `pro` e `mentor` com limites de matérias ativas, simulados/mês e feature gates.
 - [x] **Conector de Nuvem SaaS Desacoplado:** [`src/storage/cloud-saas-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/cloud-saas-provider.ts) com contratos de push/pull com debounce, verificação de versão remota e fallback local seguro.
 - [x] **Recursos de Alto Valor do Plano Pro:** Simulador "E se?", Modo Reta Final, Edital Verticalizado com parser de PDF, Ciclo de Estudos flexível, Análise de Fadiga/Energia e Caderno de Erros com Repetição Espaçada.

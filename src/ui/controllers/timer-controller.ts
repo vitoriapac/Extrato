@@ -130,6 +130,7 @@ export interface TimerControllerOptions {
   onSave?: () => void;
   onControlsUpdate?: (isRunning: boolean, seconds: number) => void;
   onReset?: () => void;
+  onAnnounce?: (event: 'start' | 'pause' | 'reset') => void;
   showConfirmLongRun?: (seconds: number, onKeep: () => void, onDiscard: () => void) => void;
 }
 
@@ -161,6 +162,7 @@ export function createTimerController(opts: TimerControllerOptions) {
     tick();
 
     opts.onControlsUpdate?.(isRunning, currentSeconds);
+    opts.onAnnounce?.('start');
     opts.onSave?.();
   }
 
@@ -180,6 +182,7 @@ export function createTimerController(opts: TimerControllerOptions) {
 
     opts.onTick?.(currentSeconds);
     opts.onControlsUpdate?.(isRunning, currentSeconds);
+    opts.onAnnounce?.('pause');
     if (shouldSave) opts.onSave?.();
   }
 
@@ -205,6 +208,7 @@ export function createTimerController(opts: TimerControllerOptions) {
     opts.onReset?.();
     opts.onTick?.(0);
     opts.onControlsUpdate?.(false, 0);
+    opts.onAnnounce?.('reset');
     opts.onSave?.();
   }
 

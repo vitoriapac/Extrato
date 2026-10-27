@@ -4,6 +4,7 @@ As instruções explícitas do usuário prevalecem sobre esta política. Consult
 
 ## Pilha Tecnológica e Diretrizes Inegociáveis de Engenharia
 
+- **Modularização Obrigatória (Zero Novas Funções no `app.ts`):** É terminantemente proibido adicionar novas funções ou concentrar regras de negócio em `src/app.ts`. O projeto deve ser totalmente modularizado: regras e cálculos puros pertencem a `src/domain/`, orquestrações e casos de uso a `src/application/`, componentes e interfaces reativas a `src/ui/`, e persistência a `src/storage/` ou `src/repositories/`. O arquivo `src/app.ts` atua unicamente como raiz de composição (*composition root*) e conexão de ciclo de vida, devendo ser progressivamente reduzido e desmembrado, nunca inflado.
 - **Tipagem Estática Obrigatória:** Todo código novo de domínio (`src/domain/`) e aplicação (`src/application/`) deve ser escrito em TypeScript (`.ts`) e validado com `npm run check:types`.
 - **Interface Declarativa e Tokens:** Novas interfaces devem ser componentes Preact 11 (`.tsx`), consumindo as primitivas compartilhadas (`src/ui/primitives/*.tsx`) e estilizadas via Tailwind CSS v4 integrado a `styles/tokens.css`. É vedado o uso de `innerHTML` ou strings HTML interpoladas.
 - **Estratégia de Testes Proporcional:**
@@ -19,6 +20,7 @@ As instruções explícitas do usuário prevalecem sobre esta política. Consult
 4. Não execute automaticamente a suíte E2E completa nem a matriz visual após cada alteração.
 5. Execute a Demo browser densa quando alterar Demo, planejamento, análises históricas, trajetória ou seus contratos; mudanças isoladas de texto/ícone/espaçamento não exigem a auditoria completa da Demo.
 6. Se um teste falhar, corrija e reexecute primeiro o caso falho, depois os relacionados. Uma falha isolada não é motivo para iniciar Full.
+7. Nunca adicione novas funções em `src/app.ts`. Estruture novas funcionalidades em módulos dedicados (`src/domain/`, `src/application/`, `src/ui/`, etc.) para garantir a modularização contínua do projeto.
 
 ## Antes de concluir uma tarefa normal
 

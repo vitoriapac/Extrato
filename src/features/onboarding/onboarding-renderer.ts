@@ -111,10 +111,10 @@ export function renderOnboardingContent(
     copy = stepCopy[step.id] || stepCopy.goal;
   if (step.id === 'goal') {
     const shortcuts = (model.dateShortcuts || [])
-      .map(
-        (shortcut: any) =>
-          `<button type="button" class="btn ghost small guided-shortcut-btn" data-guided-date-offset="${shortcut.offsetDays}" aria-label="Definir data para ${escapeAttr(shortcut.label)} (${escapeAttr(shortcut.sublabel)})">${escapeHtml(shortcut.label)} <small>(${escapeHtml(shortcut.sublabel)})</small></button>`
-      )
+      .map((shortcut: any) => {
+        const isActive = shortcut.offsetDays === model.activeDateShortcut;
+        return `<button type="button" class="btn ghost small guided-shortcut-btn${isActive ? ' is-active' : ''}" data-guided-date-offset="${shortcut.offsetDays}" aria-pressed="${isActive}" aria-label="Definir data para ${escapeAttr(shortcut.label)} (${escapeAttr(shortcut.sublabel)})">${escapeHtml(shortcut.label)} <small>(${escapeHtml(shortcut.sublabel)})</small></button>`;
+      })
       .join('');
     const shortcutsGroup = shortcuts
       ? `<div class="guided-date-shortcuts" role="group" aria-label="Atalhos de data da prova"><span class="guided-shortcut-title">Estimativa rápida (pré-edital):</span><div class="guided-shortcut-chips">${shortcuts}</div></div>`
@@ -123,25 +123,32 @@ export function renderOnboardingContent(
   }
   if (step.id === 'availability') {
     const presets = (model.availabilityPresets || [])
-      .map(
-        (preset: any) =>
-          `<button type="button" class="btn ghost small guided-preset-btn" data-guided-availability-preset="${escapeAttr(preset.id)}" aria-label="Aplicar rotina ${escapeAttr(preset.label)}">${escapeHtml(preset.label)}</button>`
-      )
+      .map((preset: any) => {
+        const isActive = preset.id === model.activeAvailabilityPreset;
+        return `<button type="button" class="btn ghost small guided-preset-btn${isActive ? ' is-active' : ''}" data-guided-availability-preset="${escapeAttr(preset.id)}" aria-pressed="${isActive}" aria-label="Aplicar rotina ${escapeAttr(preset.label)}">${escapeHtml(preset.label)}</button>`;
+      })
       .join('');
     const presetsGroup = presets
       ? `<div class="guided-routine-presets" role="group" aria-label="Rotinas sugeridas"><span class="guided-shortcut-title">Rotinas sugeridas em 1 clique:</span><div class="guided-shortcut-chips">${presets}</div></div>`
       : '';
     return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p>${presetsGroup}<div class="guided-availability">${model.weekdays.map((item: any) => `<label for="guided-day-${item.day}"><span>${escapeHtml(item.label)}</span><input id="guided-day-${item.day}" type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr(item.label)}"><small>h</small></label>`).join('')}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div></div>`;
   }
-  if (step.id === 'content')
-    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-actions">${(model.contentPaths || []).map((path: any) => `<button class="btn${path.primary ? '' : ' ghost'}" data-guided-action="${escapeAttr(path.action)}">${escapeHtml(path.label)}</button>`).join('')}</div>${model.subjects.length ? `<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject: any) => `<label for="guided-level-${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)}</span><select id="guided-level-${escapeAttr(subject.id)}" data-guided-level="${escapeAttr(subject.id)}"><option value="Fácil" ${subject.level === 'Fácil' ? 'selected' : ''}>Tenho boa base</option><option value="Médio" ${subject.level === 'Médio' ? 'selected' : ''}>Base intermediária</option><option value="Difícil" ${subject.level === 'Difícil' ? 'selected' : ''}>Preciso começar pela base</option></select></label>`).join('')}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
+  if (step.id === 'content') {
+    const bulkLevels = model.subjects.length
+      ? `<div class="guided-bulk-levels" role="group" aria-label="Nivelamento rápido"><span>Aplicar a todas:</span><button type="button" class="btn ghost small" data-guided-bulk-level="Médio">Intermediária (Recomendado)</button><button type="button" class="btn ghost small" data-guided-bulk-level="Difícil">Começar da base</button><button type="button" class="btn ghost small" data-guided-bulk-level="Fácil">Tenho boa base</button></div>`
+      : '';
+    return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-actions">${(model.contentPaths || []).map((path: any) => `<button class="btn${path.primary ? '' : ' ghost'}" data-guided-action="${escapeAttr(path.action)}">${escapeHtml(path.label)}</button>`).join('')}</div>${model.subjects.length ? `${bulkLevels}<div class="guided-levels"><p><strong>Nível inicial por disciplina</strong></p>${model.subjects.map((subject: any) => `<label for="guided-level-${escapeAttr(subject.id)}"><span>${escapeHtml(subject.name)}</span><select id="guided-level-${escapeAttr(subject.id)}" data-guided-level="${escapeAttr(subject.id)}"><option value="Fácil" ${subject.level === 'Fácil' ? 'selected' : ''}>Tenho boa base</option><option value="Médio" ${subject.level === 'Médio' ? 'selected' : ''}>Base intermediária</option><option value="Difícil" ${subject.level === 'Difícil' ? 'selected' : ''}>Preciso começar pela base</option></select></label>`).join('')}</div>` : '<div class="upcoming-empty">Importe um edital ou cadastre ao menos uma disciplina com tópico.</div>'}</div>`;
+  }
   const activities = (model.firstActivities || [])
     .map(
       (item: any) =>
         `<li><span><strong>${escapeHtml(item.subject)}</strong><small>${escapeHtml(item.topic)}</small></span><b>${item.minutes} min</b></li>`
     )
     .join('');
-  return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ''}${
+  const feasibilityHtml = model.planFeasibility
+    ? `<div class="guided-feasibility-card" data-feasibility="${escapeAttr(model.planFeasibility.status)}"><div class="guided-feasibility-header"><span class="status-badge ${model.planFeasibility.status === 'comfortable' || model.planFeasibility.status === 'balanced' ? 'status-badge--success' : 'status-badge--warning'}">${escapeHtml(model.planFeasibility.badgeText)}</span><p class="guided-feasibility-message">${escapeHtml(model.planFeasibility.verdictMessage)}</p></div></div>`
+    : '';
+  return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p><div class="study-plan-summary"><div><strong>${formatMinutes(model.availableMinutes)}</strong><span>capacidade semanal</span></div><div><strong>${model.topicCount}</strong><span>tópicos ativos</span></div><div><strong>${formatMinutes(model.estimatedNeedMinutes)}</strong><span>carga estimada</span></div><div><strong>${model.weeksUntilExam == null ? '—' : model.weeksUntilExam}</strong><span>semanas até a prova</span></div></div>${feasibilityHtml}${activities ? `<section class="onboarding-first-activities" aria-labelledby="onboardingFirstActivitiesTitle"><h5 id="onboardingFirstActivitiesTitle">Primeiras atividades priorizadas</h5><ul>${activities}</ul></section>` : ''}${
     model.canCreatePlan
       ? '<p class="confidence-note">Esta prévia usa a mesma prioridade, elegibilidade e capacidade do plano que será criado.</p>'
       : model.canConfigurePlan

@@ -54,7 +54,7 @@ flowchart TD
     end
 
     subgraph Fase4 ["Fase 4: Caderno de Erros, A11y & Base SaaS (Semanas 8–9)"]
-        F4A["Caderno de Erros Ativo & Flashcards"] --> F4B["Auditoria Prática NVDA & Acessibilidade"]
+        F4A["Caderno de Erros Ativo & Flashcards"] --> F4B["Acessibilidade por Teclado (NVDA pendente)"]
         F4B --> F4C["Isolamento de Contratos de Storage / Nuvem"]
     end
 
@@ -197,7 +197,7 @@ _Duração estimada: 2 semanas | Prioridade: P2 (Maturidade, Inclusão e Escala)
 - **Objetivo:** Garantir usabilidade fluida e conformidade com leitores de tela reais conforme [docs/DECISION-EXPERIENCE-CLOSURE.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CLOSURE.md).
 - **Tarefas:**
   - Padronizar listas extensas (histórico, revisões pendentes, tópicos atrasados) com limite de 5 itens e botão `Mostrar mais (+N)`.
-  - Auditoria assistida com NVDA / VoiceOver garantindo que modais fechem com `Esc`, foquem o primeiro controle e anunciem status de timers e mensagens de alerta de forma clara via ARIA.
+  - Auditoria assistida com NVDA / VoiceOver garantindo que modais fechem com `Esc`, foquem o primeiro controle e anunciem status de timers e mensagens de alerta de forma clara via ARIA. **Status:** entregue apenas a verificação automatizada de teclado/Escape; a auditoria com leitor de tela real segue pendente.
 
 #### 4.3. Isolamento da Camada de Armazenamento para Transição SaaS
 
@@ -207,9 +207,11 @@ _Duração estimada: 2 semanas | Prioridade: P2 (Maturidade, Inclusão e Escala)
 
 #### Critérios de Aceite da Fase 4:
 
-- [x] Questões erradas podem ser revisadas em formato de flashcard integrado à agenda diária (`src/domain/notebook/error-notebook-engine.ts`, `src/ui/views/ErrorNotebookView.tsx`, `tests/unit/error-notebook-engine.test.js`).
+- [x] Flashcards de erro podem ser criados e revisados com repetição espaçada na visão do Caderno de Erros (`src/domain/notebook/error-notebook-engine.ts`, `src/ui/views/ErrorNotebookView.tsx`, `tests/unit/error-notebook-engine.test.js`).
+- [ ] Integração dos flashcards vencidos à Agenda de Revisões e criação automática a partir de questões erradas — **pendente**, ver Fase C de [PLANO-MELHORIAS-POS-FASE4.md](PLANO-MELHORIAS-POS-FASE4.md).
+- [ ] Auditoria manual com leitor de tela (NVDA/VoiceOver) — **não realizada**; ver Fase D do mesmo plano.
 - [x] 100% dos fluxos essenciais são operáveis exclusivamente por teclado sem armadilhas de foco (_keyboard traps_) e com fechamento seguro via Escape (`tests/e2e/error-notebook-and-a11y.spec.js`, `tests/e2e/accessibility.spec.js`).
-- [x] Camada de armazenamento e direitos de acesso SaaS padronizados modularmente (`src/storage/cloud-saas-provider.ts`, `src/domain/billing/entitlements.ts`, `tests/unit/cloud-saas-provider.test.js`, `tests/unit/entitlements.test.js`).
+- [x] Camada de armazenamento e direitos de acesso SaaS padronizados modularmente, **como módulos preparatórios ainda sem consumidor na UI** (`src/storage/cloud-saas-provider.ts`, `src/domain/billing/entitlements.ts`, `tests/unit/cloud-saas-provider.test.js`, `tests/unit/entitlements.test.js`).
 - [x] Homologação total do gate de qualidade com 927 testes unitários passando em < 30s e suíte E2E alinhada.
 
 ---

@@ -5,6 +5,7 @@ import {
   EXAM_DATE_SHORTCUTS,
   AVAILABILITY_PRESETS,
   applyOnboardingDateShortcut,
+  calculatePlanFeasibility,
 } from '../../src/application/onboarding/build-onboarding-view-model.js';
 import { buildFirstStepsMission } from '../../src/application/onboarding/build-first-steps-mission.js';
 import {
@@ -138,4 +139,73 @@ test('guided-tour-steps gerencia transição de paradas e limites de forma imut�
   // Fechar explicitamente
   const closed = closeTour(step2);
   assert.equal(closed.active, false);
+});
+
+test('calculatePlanFeasibility avalia viabilidade e ritmo pedagógico', () => {
+  // Cenário 1: Confortável (coverageRatio >= 1.25)
+  // 20h/sem (1200 min) * 20 semanas = 24.000 min / 12.000 min necessários = 2.0
+  const comfortable = calculatePlanFeasibility({
+    availableWeeklyMinutes: 1200,
+    estimatedNeedMinutes: 12000,
+    weeksUntilExam: 20,
+  });
+  assert.ok(comfortable);
+  assert.equal(comfortable.status, 'comfortable');
+  assert.equal(comfortable.badgeText, 'Excelente');
+  assert.equal(comfortable.coverageRatio, 2.0);
+
+  // Cenário 2: Equilibrado (1.0 <= coverageRatio < 1.25)
+  // 10h/sem (600 min) * 10 semanas = 6.000 min / 5.500 min = 1.09
+  const balanced = calculatePlanFeasibility({
+    availableWeeklyMinutes: 600,
+    estimatedNeedMinutes: 5500,
+    weeksUntilExam: 10,
+  });
+  assert.ok(balanced);
+  assert.equal(balanced.status, 'balanced');
+  assert.equal(balanced.badgeText, 'Equilibrado');
+
+  // Cenário 3: Apertado (0.75 <= coverageRatio < 1.0)
+  // 10h/sem (600 min) * 10 semanas = 6.000 min / 7.200 min = 0.83
+  const tight = calculatePlanFeasibility({
+    availableWeeklyMinutes: 600,
+    estimatedNeedMinutes: 7200,
+    weeksUntilExam: 10,
+  });
+  assert.ok(tight);
+  assert.equal(tight.status, 'tight');
+  assert.equal(tight.badgeText, 'Atenção');
+  assert.ok(tight.verdictMessage.includes('Ritmo apertado'));
+
+  // Cenário 4: Déficit (coverageRatio < 0.75)
+  // 5h/sem (300 min) * 10 semanas = 3.000 min / 10.000 min = 0.3
+  const deficit = calculatePlanFeasibility({
+    availableWeeklyMinutes: 300,
+    estimatedNeedMinutes: 10000,
+    weeksUntilExam: 10,
+  });
+  assert.ok(deficit);
+  assert.equal(deficit.status, 'deficit');
+  assert.equal(deficit.badgeText, 'Priorização Crítica');
+  assert.ok(deficit.verdictMessage.includes('Déficit de prazo'));
+});
+
+test('buildOnboardingViewModel detecta activeDateShortcut, activeAvailabilityPreset e planFeasibility', () => {
+  const model = buildOnboardingViewModel({
+    today: '2026-10-26',
+    examDate: '2027-01-24', // 90 dias
+    hoursByDay: { 0: 0, 1: 2, 2: 2, 3: 2, 4: 2, 5: 2, 6: 4 }, // work_study
+    subjects: [
+      {
+        id: 'sub1',
+        name: 'Direito Constitucional',
+        topics: [{ id: 'top1', name: 'Controle', estimatedStudyMinutes: 120 }],
+      },
+    ],
+  });
+
+  assert.equal(model.activeDateShortcut, 90);
+  assert.equal(model.activeAvailabilityPreset, 'work_study');
+  assert.ok(model.planFeasibility);
+  assert.equal(model.planFeasibility.status, 'comfortable');
 });

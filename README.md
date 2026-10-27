@@ -30,7 +30,7 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Ciclo de Estudos Flexível em Fila Rotativa com blocos intercalados proporcionais aos pesos das disciplinas, pausando sem gerar avalanche de atrasos falsos.
 - Análise Cronobiológica de Energia e Fadiga correlacionando foco/energia por turnos (manhã, tarde, noite) com alerta de esgotamento cognitivo no Diagnóstico.
 - Caderno de Erros Ativo & Flashcards de Bolso com repetição espaçada adaptativa (Again, Hard, Good, Easy), identificação de pegadinhas da banca e conceito correto.
-- Conector de Nuvem SaaS modular e controle puro de planos e entitlements (Free, Pro, Mentor).
+- Base preparatória para SaaS (ainda sem uso na interface): conector de nuvem modular e controle puro de planos e entitlements (Free, Pro, Mentor).
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
 - Tema claro/escuro, layout responsivo e navegação por teclado.
 
@@ -280,7 +280,7 @@ O roteiro de evolução ativa do StudyTrack foi formalizado no [Plano Unificado 
 1. **Fase 1 — Decisão Rápida, UX & Primeiro Uso (Concluída):** Card de Próxima Ação com 6 perguntas contratuais, Bookmarks de Ponto de Parada (PDF/vídeo/lei seca) em Preact e Onboarding 2.0 com Missão do 1º Dia ([PLANO-PRIMEIRO-USO-GUIADO.md](docs/PLANO-PRIMEIRO-USO-GUIADO.md)).
 2. **Fase 2 — Inteligência Preditiva & Reta Final (Concluída):** Simulador "E se?" (_What-If Simulator_) em memória, política de Modo Reta Final (< 15 dias) e detecção de Falsa Consolidação (ilusão de competência).
 3. **Fase 3 — Hub Completo de Estudos & Flexibilidade (Concluída):** Edital Verticalizado interativo com parser de PDF, Ciclo de Estudos em fila rotativa circular e análise cronobiológica de energia e foco.
-4. **Fase 4 — Caderno de Erros, Acessibilidade & Base SaaS (Concluída):** Flashcards com repetição espaçada SM-2 adaptada e pegadinhas da banca, acessibilidade por teclado sem armadilhas de foco e preparação de camada de nuvem e direitos de planos ([PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md)).
+4. **Fase 4 — Caderno de Erros, Acessibilidade & Base SaaS (Concluída):** Flashcards com repetição espaçada SM-2 adaptada e pegadinhas da banca, acessibilidade por teclado sem armadilhas de foco (auditoria com leitor de tela pendente) e módulos preparatórios de nuvem e direitos de planos; a integração dos flashcards à Agenda de Revisões está planejada em [PLANO-MELHORIAS-POS-FASE4.md](docs/PLANO-MELHORIAS-POS-FASE4.md) ([PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md)).
 
 As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.2.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente. A comparação do foco estratégico usa fechamentos salvos sem sobreposição, com dados completos e do mesmo concurso ativo; fechamentos antigos sem esse escopo não entram na comparação.
 

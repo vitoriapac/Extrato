@@ -402,6 +402,11 @@
       "rationale": "Interações centrais do Simulador E se e ativação do Modo Reta Final."
     },
     {
+      "file": "tests/unit/a11y-announcements.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
       "file": "tests/unit/achievement-projection-history.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -652,7 +657,22 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/error-flashcards-persistence.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/error-notebook-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
       "file": "tests/unit/error-notebook-engine.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/error-notebook-integration.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },

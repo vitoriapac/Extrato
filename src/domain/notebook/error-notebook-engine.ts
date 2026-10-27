@@ -9,7 +9,12 @@
  * Utiliza algoritmo de repetição espaçada adaptativo para agendamento automático.
  */
 
-import type { ErrorFlashcard, ErrorFlashcardStatus, FlashcardRating } from '../../core/types.js';
+import type {
+  ErrorFlashcard,
+  ErrorFlashcardStatus,
+  FlashcardRating,
+  QuestionRecord,
+} from '../../core/types.js';
 
 export interface CreateFlashcardInput {
   id?: string;
@@ -225,4 +230,97 @@ export function filterFlashcards(
 
     return true;
   });
+}
+
+/**
+ * Registro de questões com erros que ainda não originou nenhum flashcard.
+ * O registro de questões é um agregado (resolvidas/acertos), sem enunciado nem conceito: por isso
+ * o app apenas SUGERE o card e pré-preenche o contexto; o conteúdo é sempre escrito pelo estudante.
+ */
+export interface FlashcardDraft {
+  questionId: string;
+  subjectId: string;
+  topicId: string | null;
+  date: string;
+  errorCount: number;
+  errorCategory?: string;
+}
+
+function dominantErrorCategory(question: QuestionRecord): string | undefined {
+  let best: string | undefined;
+  let bestCount = 0;
+  for (const [key, value] of Object.entries(question.errorBreakdown || {})) {
+    const count = Number(value);
+    if (Number.isFinite(count) && count > bestCount) {
+      best = key;
+      bestCount = count;
+    }
+  }
+  return best || question.errorCategory || undefined;
+}
+
+/**
+ * Lista, do mais recente para o mais antigo, os registros de questões com erro (resolvidas maior
+ * que acertos) sem nenhum flashcard vinculado. Função pura: não altera as entradas.
+ */
+export function findQuestionsAwaitingFlashcard(
+  questions: QuestionRecord[] = [],
+  cards: ErrorFlashcard[] = []
+): FlashcardDraft[] {
+  const linked = new Set(cards.map(card => card.questionId).filter(Boolean));
+  return questions
+    .filter(question => {
+      const resolved = Number(question.resolved);
+      const correct = Number(question.correct);
+      return (
+        Number.isFinite(resolved) &&
+        Number.isFinite(correct) &&
+        resolved > correct &&
+        !linked.has(question.id)
+      );
+    })
+    .map(question => ({
+      questionId: question.id,
+      subjectId: question.subjectId,
+      topicId: question.topicId ?? null,
+      date: question.date,
+      errorCount: Number(question.resolved) - Number(question.correct),
+      errorCategory: dominantErrorCategory(question),
+    }))
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+}
+
+function flashcardKey(card: {
+  questionId?: string | null;
+  subjectId: string;
+  topicId: string;
+  statementSummary: string;
+}): string {
+  const statement = String(card.statementSummary || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+  return [card.questionId || '', card.subjectId, card.topicId, statement].join('|');
+}
+
+export interface AddFlashcardResult {
+  cards: ErrorFlashcard[];
+  card: ErrorFlashcard;
+  created: boolean;
+}
+
+/**
+ * Inclui um flashcard de forma idempotente, sem alterar a lista recebida. O mesmo enunciado para
+ * o mesmo contexto (registro de questões, disciplina e tópico) ou o mesmo identificador não gera
+ * um segundo cartão, o que também protege contra duplo clique ao salvar.
+ */
+export function addErrorFlashcard(
+  cards: ErrorFlashcard[] = [],
+  input: CreateFlashcardInput
+): AddFlashcardResult {
+  const candidate = createErrorFlashcard(input);
+  const key = flashcardKey(candidate);
+  const existing = cards.find(card => card.id === candidate.id || flashcardKey(card) === key);
+  if (existing) return { cards, card: existing, created: false };
+  return { cards: [...cards, candidate], card: candidate, created: true };
 }

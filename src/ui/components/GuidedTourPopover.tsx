@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { useEffect, useRef } from 'preact/hooks';
 import type { GuidedTourStep } from '../../domain/onboarding/guided-tour-steps.js';
 import { Card } from '../primitives/card.js';
 import { Button } from '../primitives/button.js';
@@ -36,6 +37,59 @@ export function GuidedTourPopover({
   onPrev,
   onClose,
 }: GuidedTourPopoverProps): JSX.Element {
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (document.activeElement && document.activeElement !== document.body) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+    }
+
+    // Auto-focus no botão de próxima ação do tour
+    const timer = setTimeout(() => {
+      const nextBtn = popoverRef.current?.querySelector<HTMLElement>(
+        '[data-guided-tour-next="true"]'
+      );
+      nextBtn?.focus();
+    }, 50);
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose?.();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const popover = popoverRef.current;
+        if (!popover) return;
+        const focusable = popover.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('keydown', handleKeyDown);
+      if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [currentIndex, onClose]);
+
   return (
     <div
       id="guidedTourOverlay"
@@ -78,6 +132,7 @@ export function GuidedTourPopover({
       </svg>
 
       <div
+        ref={popoverRef}
         id="guidedTourPopover"
         className="guided-tour-popover pointer-events-auto absolute z-[205] max-w-[380px] w-[calc(100vw-24px)] transition-all duration-200"
         style={positionStyle}

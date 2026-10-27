@@ -86,7 +86,7 @@ flowchart TD
 - `src/storage/local-storage-provider.ts`: fallback contido para armazenamento local.
 - `src/storage/real-storage-provider.ts`: adaptação compatível da persistência real existente.
 - `src/storage/demo-storage-provider.ts`: persistência temporária e isolada em `sessionStorage`.
-- `src/storage/cloud-saas-provider.ts`: conector desacoplado para nuvem/SaaS com verificação de versão remota, health check e fallback local seguro.
+- `src/storage/cloud-saas-provider.ts`: (preparatório, sem consumidor na UI) conector desacoplado para nuvem/SaaS com verificação de versão remota, health check e fallback local seguro.
 - `src/storage/migration-service.ts`: execução ordenada e verificável das migrações de schema.
 - `src/storage/backup-service.ts`: serialização, leitura segura e nomes dos arquivos de backup.
 - `src/repositories/collection-repository.ts`: contrato uniforme de consulta e mutação das coleções do estado.
@@ -115,7 +115,7 @@ flowchart TD
 - `src/application/subjects/raw-syllabus-parser.ts`: parser de edital bruto e texto de PDF (Cebraspe, FCC, FGV) com árvore estruturada e prévia.
 - `src/domain/planning/study-cycle-engine.ts`: motor do ciclo de estudos com fila rotativa circular intercalada e avanço sem acúmulo de falsos atrasos.
 - `src/domain/notebook/error-notebook-engine.ts`: motor puro de repetição espaçada (SM-2 adaptado) para flashcards de erro com pegadinha da banca e conceito correto.
-- `src/domain/billing/entitlements.ts`: resolução pura de direitos e limites por plano (`free`, `pro`, `mentor`) preparando a transição SaaS.
+- `src/domain/billing/entitlements.ts`: (preparatório, sem consumidor na UI) resolução pura de direitos e limites por plano (`free`, `pro`, `mentor`) preparando a transição SaaS.
 - `src/domain/analytics/focus-energy-analytics.ts`: análise cronobiológica por turnos (manhã, tarde, noite) e detecção de fadiga cognitiva.
 - `src/application/build-executive-summary.ts`: modelo de apresentação do resumo executivo sem acesso ao DOM.
 - `src/application/generate-diagnosis.ts`: classificação explicável de gargalos, oportunidades, riscos e foco semanal.

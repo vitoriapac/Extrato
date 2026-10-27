@@ -33,7 +33,7 @@ export const GUIDED_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     id: 'today-execution',
     order: 2,
     tab: 'hoje',
-    selector: '#studyRecommendation',
+    selector: '.plano-hoje-card',
     title: 'Execução guiada e cronômetro',
     message:
       'Ao iniciar uma atividade, o cronômetro divide a sessão em etapas e credita os minutos diretamente no plano do dia.',
@@ -53,7 +53,7 @@ export const GUIDED_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     id: 'exam-intelligence',
     order: 4,
     tab: 'desempenho',
-    selector: '#panel-desempenho',
+    selector: '#performancePage, #panel-desempenho',
     title: 'Inteligência da Prova × Você',
     message:
       'Veja sua evolução de Prontidão, compare períodos e descubra onde você ganha mais pontos por hora investida.',

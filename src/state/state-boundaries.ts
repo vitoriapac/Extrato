@@ -21,6 +21,7 @@ export const PERSISTENT_COLLECTIONS = Object.freeze([
   'alertStates',
   'topicHistory',
   'metasPorDisciplina',
+  'errorFlashcards',
 ] as const);
 
 export const PERSISTENT_OBJECTS = Object.freeze([

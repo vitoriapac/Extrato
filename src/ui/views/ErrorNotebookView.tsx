@@ -5,6 +5,7 @@ import {
   calculateFlashcardDeckStats,
   filterFlashcards,
   type CreateFlashcardInput,
+  type FlashcardDraft,
 } from '../../domain/notebook/error-notebook-engine.js';
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
@@ -22,8 +23,12 @@ export interface ErrorNotebookViewProps {
   onSaveFlashcard?: (input: CreateFlashcardInput) => void;
   onReviewFlashcard?: (cardId: string, rating: FlashcardRating) => void;
   onDeleteFlashcard?: (cardId: string) => void;
+  /** Registros de questões com erros que ainda não geraram flashcard (sugestões, nunca criação automática). */
+  questionDrafts?: FlashcardDraft[];
   todayDate?: string;
 }
+
+const MAX_VISIBLE_DRAFTS = 5;
 
 const ERROR_CATEGORY_LABELS: Record<string, string> = {
   naoSabia: 'Não sabia a teoria',
@@ -40,6 +45,7 @@ export function ErrorNotebookView({
   onSaveFlashcard,
   onReviewFlashcard,
   onDeleteFlashcard,
+  questionDrafts = [],
   todayDate,
 }: ErrorNotebookViewProps) {
   const [viewMode, setViewMode] = useState<'deck' | 'catalog'>('deck');
@@ -59,6 +65,8 @@ export function ErrorNotebookView({
   const [newBancaTrap, setNewBancaTrap] = useState<string>('');
   const [newCorrectConcept, setNewCorrectConcept] = useState<string>('');
   const [newErrorCategory, setNewErrorCategory] = useState<string>('desatencao');
+  const [newQuestionId, setNewQuestionId] = useState<string | null>(null);
+  const [ariaAnnouncement, setAriaAnnouncement] = useState<string>('');
 
   const stats = calculateFlashcardDeckStats(flashcards, todayDate);
   const dueCards = getDueFlashcards(flashcards, todayDate);
@@ -77,6 +85,26 @@ export function ErrorNotebookView({
     }
   }
 
+  function closeModal() {
+    setModalOpen(false);
+    setNewQuestionId(null);
+  }
+
+  function openDraft(draft: FlashcardDraft) {
+    const subject = subjects.find(s => s.id === draft.subjectId) || subjects[0];
+    if (!subject) return;
+    const topic = subject.topics.find(t => t.id === draft.topicId) || subject.topics[0];
+    setNewSubjectId(subject.id);
+    setNewTopicId(topic?.id || '');
+    setNewErrorCategory(
+      draft.errorCategory && ERROR_CATEGORY_LABELS[draft.errorCategory]
+        ? draft.errorCategory
+        : 'desatencao'
+    );
+    setNewQuestionId(draft.questionId);
+    setModalOpen(true);
+  }
+
   function handleCreateCard() {
     if (!newStatement.trim() || !newCorrectConcept.trim()) return;
 
@@ -84,6 +112,7 @@ export function ErrorNotebookView({
       onSaveFlashcard({
         subjectId: newSubjectId,
         topicId: newTopicId,
+        questionId: newQuestionId,
         statementSummary: newStatement,
         bancaTrap: newBancaTrap.trim() || undefined,
         correctConcept: newCorrectConcept,
@@ -95,7 +124,7 @@ export function ErrorNotebookView({
     setNewStatement('');
     setNewBancaTrap('');
     setNewCorrectConcept('');
-    setModalOpen(false);
+    closeModal();
   }
 
   function handleAnswerRating(rating: FlashcardRating) {
@@ -104,6 +133,14 @@ export function ErrorNotebookView({
     if (onReviewFlashcard) {
       onReviewFlashcard(activeCard.id, rating);
     }
+
+    const ratingLabels: Record<FlashcardRating, string> = {
+      again: 'Errei, agendado para amanhã',
+      hard: 'Difícil, agendado para 2 dias',
+      good: 'Bom, agendado para 4 dias',
+      easy: 'Fácil, agendado para 7 dias ou mais',
+    };
+    setAriaAnnouncement(`Card avaliado: ${ratingLabels[rating]}.`);
 
     setIsRevealed(false);
     if (currentDeckIndex < dueCards.length - 1) {
@@ -130,6 +167,11 @@ export function ErrorNotebookView({
 
   return (
     <div class="space-y-6">
+      {/* Anúncio acessível para leitores de tela */}
+      <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {ariaAnnouncement}
+      </div>
+
       {/* Cabeçalho do Caderno de Erros */}
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border-default pb-4">
         <div>
@@ -185,6 +227,39 @@ export function ErrorNotebookView({
           </Button>
         </div>
       </div>
+
+      {/* Sugestões: registros de questões com erros ainda sem flashcard */}
+      {questionDrafts.length > 0 && (
+        <section
+          class="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs space-y-2"
+          aria-label="Erros registrados sem flashcard"
+          data-testid="error-notebook-drafts"
+        >
+          <p class="m-0 font-semibold text-primary">
+            {questionDrafts.length === 1
+              ? '1 registro de questões com erros ainda não virou flashcard'
+              : `${questionDrafts.length} registros de questões com erros ainda não viraram flashcard`}
+          </p>
+          <ul class="m-0 p-0 list-none space-y-1.5">
+            {questionDrafts.slice(0, MAX_VISIBLE_DRAFTS).map(draft => (
+              <li key={draft.questionId} class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-secondary">
+                  {draft.date} · {resolveSubjectName(draft.subjectId)}
+                  {draft.topicId
+                    ? ` · ${resolveTopicName(draft.subjectId, draft.topicId)}`
+                    : ''} · {draft.errorCount === 1 ? '1 erro' : `${draft.errorCount} erros`}
+                </span>
+                <Button variant="secondary" size="small" onClick={() => openDraft(draft)}>
+                  Criar flashcard
+                </Button>
+              </li>
+            ))}
+          </ul>
+          {questionDrafts.length > MAX_VISIBLE_DRAFTS && (
+            <p class="m-0 text-muted">+{questionDrafts.length - MAX_VISIBLE_DRAFTS} registros</p>
+          )}
+        </section>
+      )}
 
       {/* Resumo de Métricas do Deck */}
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
@@ -451,11 +526,7 @@ export function ErrorNotebookView({
       )}
 
       {/* MODAL: CRIAR NOVO CARD DE ERRO */}
-      <Dialog
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Novo Card de Erro & Flashcard"
-      >
+      <Dialog open={modalOpen} onClose={closeModal} title="Novo Card de Erro & Flashcard">
         <div class="space-y-4 text-xs">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -542,7 +613,7 @@ export function ErrorNotebookView({
           </div>
 
           <div class="flex justify-end gap-2 pt-2 border-t border-border-default">
-            <Button variant="ghost" onClick={() => setModalOpen(false)}>
+            <Button variant="ghost" onClick={closeModal}>
               Cancelar
             </Button>
             <Button

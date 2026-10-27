@@ -51,6 +51,82 @@ export function applyOnboardingDateShortcut(todayStr: string, offsetDays: number
   return `${year}-${month}-${day}`;
 }
 
+export interface PlanFeasibilityResult {
+  status: 'comfortable' | 'balanced' | 'tight' | 'deficit';
+  totalAvailableHours: number;
+  totalNeededHours: number;
+  coverageRatio: number;
+  badgeText: string;
+  verdictMessage: string;
+}
+
+export function calculatePlanFeasibility({
+  availableWeeklyMinutes = 0,
+  estimatedNeedMinutes = 0,
+  weeksUntilExam = null,
+}: {
+  availableWeeklyMinutes?: number;
+  estimatedNeedMinutes?: number;
+  weeksUntilExam?: number | null;
+}): PlanFeasibilityResult | null {
+  if (
+    !weeksUntilExam ||
+    weeksUntilExam <= 0 ||
+    availableWeeklyMinutes <= 0 ||
+    estimatedNeedMinutes <= 0
+  ) {
+    return null;
+  }
+  const totalAvailableMinutes = availableWeeklyMinutes * weeksUntilExam;
+  const coverageRatio = totalAvailableMinutes / estimatedNeedMinutes;
+  const totalAvailableHours = Math.round((totalAvailableMinutes / 60) * 10) / 10;
+  const totalNeededHours = Math.round((estimatedNeedMinutes / 60) * 10) / 10;
+
+  if (coverageRatio >= 1.25) {
+    return {
+      status: 'comfortable',
+      totalAvailableHours,
+      totalNeededHours,
+      coverageRatio: Math.round(coverageRatio * 100) / 100,
+      badgeText: 'Excelente',
+      verdictMessage: 'Ritmo sustentável com margem folgada para revisões e imprevistos.',
+    };
+  }
+  if (coverageRatio >= 1.0) {
+    return {
+      status: 'balanced',
+      totalAvailableHours,
+      totalNeededHours,
+      coverageRatio: Math.round(coverageRatio * 100) / 100,
+      badgeText: 'Equilibrado',
+      verdictMessage: 'Ritmo equilibrado. A carga cobre o edital até a data prevista.',
+    };
+  }
+  if (coverageRatio >= 0.75) {
+    const missingHours = Math.max(
+      1,
+      Math.round((estimatedNeedMinutes - totalAvailableMinutes) / 60)
+    );
+    return {
+      status: 'tight',
+      totalAvailableHours,
+      totalNeededHours,
+      coverageRatio: Math.round(coverageRatio * 100) / 100,
+      badgeText: 'Atenção',
+      verdictMessage: `Ritmo apertado. Recomenda-se reservar ~${missingHours}h a mais para não acumular revisões.`,
+    };
+  }
+  const coveredPercent = Math.min(99, Math.max(10, Math.round(coverageRatio * 100)));
+  return {
+    status: 'deficit',
+    totalAvailableHours,
+    totalNeededHours,
+    coverageRatio: Math.round(coverageRatio * 100) / 100,
+    badgeText: 'Priorização Crítica',
+    verdictMessage: `Déficit de prazo. Com a disponibilidade atual, cerca de ${coveredPercent}% do edital será coberto. O StudyTrack priorizará as matérias de maior peso.`,
+  };
+}
+
 const CONTENT_PATHS = Object.freeze([
   { action: 'import', label: 'Carregar edital do catálogo', primary: true },
   { action: 'structured', label: 'Importar JSON ou CSV' },
@@ -163,6 +239,37 @@ export function buildOnboardingViewModel({
     if (!planReasons.length)
       planReasons.push('Revise esforço, pré-requisitos e disponibilidade para liberar atividades.');
   }
+
+  let activeDateShortcut: number | null = null;
+  if (examDate && today) {
+    for (const shortcut of EXAM_DATE_SHORTCUTS) {
+      if (applyOnboardingDateShortcut(today, shortcut.offsetDays) === examDate) {
+        activeDateShortcut = shortcut.offsetDays;
+        break;
+      }
+    }
+  }
+
+  let activeAvailabilityPreset: string | null = null;
+  if (hoursByDay && typeof hoursByDay === 'object') {
+    for (const preset of AVAILABILITY_PRESETS) {
+      const matches = Object.entries(preset.hoursByDay).every(([d, h]) => {
+        return (Number(hoursByDay[d]) || 0) === h;
+      });
+      if (matches) {
+        activeAvailabilityPreset = preset.id;
+        break;
+      }
+    }
+  }
+
+  const weeksUntilExam = days == null ? null : Math.ceil(days / 7);
+  const planFeasibility = calculatePlanFeasibility({
+    availableWeeklyMinutes: availableMinutes,
+    estimatedNeedMinutes,
+    weeksUntilExam,
+  });
+
   return {
     visible: !hasHistory && !hasPlan && Boolean(next),
     steps,
@@ -181,13 +288,16 @@ export function buildOnboardingViewModel({
     canCreatePlan: canConfigurePlan && hasEligibleActivities,
     topicCount,
     estimatedNeedMinutes,
-    weeksUntilExam: days == null ? null : Math.ceil(days / 7),
+    weeksUntilExam,
     examDate,
     today,
     presets,
     presetId,
     dateShortcuts: EXAM_DATE_SHORTCUTS,
     availabilityPresets: AVAILABILITY_PRESETS,
+    activeDateShortcut,
+    activeAvailabilityPreset,
+    planFeasibility,
     subjects: subjectModels,
     contentPaths: CONTENT_PATHS,
     firstActivities,

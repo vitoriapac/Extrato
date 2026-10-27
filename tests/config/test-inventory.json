@@ -365,7 +365,7 @@
         "../../src/demo/demo-generator.js",
         "./helpers.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -1766,6 +1766,37 @@
       "currentGates": [
         "test:e2e",
         "test:full UTC"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/a11y-announcements.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/ui/primitives/a11y.ts",
+        "../../src/ui/controllers/timer-controller.ts"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
       ],
       "stability": "not_assessed",
       "removalDecision": "retain_pending_contract_review"
@@ -3358,6 +3389,69 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/error-flashcards-persistence.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/state/defaults.js",
+        "../../src/state/state-boundaries.js",
+        "../../src/storage/backup-validator.js",
+        "../../src/storage/backup-service.js"
+      ],
+      "staticTestDeclarations": 8,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/error-notebook-controller.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/ui/controllers/error-notebook-controller.js"
+      ],
+      "staticTestDeclarations": 2,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/error-notebook-engine.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -3372,6 +3466,41 @@
         "../../src/domain/notebook/error-notebook-engine.js"
       ],
       "staticTestDeclarations": 4,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/error-notebook-integration.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract",
+        "integration"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "preact",
+        "preact-render-to-string",
+        "../../src/domain/notebook/error-notebook-engine.js",
+        "../../src/ui/components/ErrorNotebookDueNotice.js",
+        "../../src/ui/views/ErrorNotebookView.js"
+      ],
+      "staticTestDeclarations": 8,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -4200,7 +4329,7 @@
         "../../src/application/onboarding/build-first-steps-mission.js",
         "../../src/domain/onboarding/guided-tour-steps.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 6,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

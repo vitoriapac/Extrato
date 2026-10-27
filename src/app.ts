@@ -36,13 +36,7 @@ import {
   peekUpcomingCycleBlocks,
 } from './domain/planning/study-cycle-engine.js';
 import { analyzeFocusAndEnergy } from './domain/analytics/focus-energy-analytics.js';
-import { ErrorNotebookView } from './ui/views/ErrorNotebookView.js';
-import {
-  createErrorFlashcard,
-  reviewErrorFlashcard,
-  getDueFlashcards,
-  calculateFlashcardDeckStats,
-} from './domain/notebook/error-notebook-engine.js';
+import { createErrorNotebookController } from './ui/controllers/error-notebook-controller.js';
 import { resolveEntitlements } from './domain/billing/entitlements.js';
 import { createCloudSaaSProvider } from './storage/cloud-saas-provider.js';
 import {
@@ -53,6 +47,7 @@ import {
   renderGuidedStrategyHtml,
   advanceGuidedStrategyStep,
 } from './ui/controllers/timer-controller.js';
+import { announceTimerEvent } from './ui/primitives/a11y.js';
 import {
   buildExcludedCandidates,
   renderExcludedCandidatesHtml,
@@ -2565,6 +2560,7 @@ function startTimer() {
   timerIntervalId = setInterval(timerTick, 1000);
   timerTick();
   updateTimerControls();
+  announceTimerEvent('start');
   scheduleSave();
   refreshStudyActionViews();
 }
@@ -2580,6 +2576,7 @@ function pauseTimer(shouldSave = true) {
   timerIntervalId = null;
   updateTimerDisplay();
   updateTimerControls();
+  announceTimerEvent('pause');
   if (shouldSave) {
     scheduleSave();
     refreshStudyActionViews();
@@ -2609,6 +2606,7 @@ function resetTimer() {
   pipTimer.close();
   updateTimerDisplay();
   updateTimerControls();
+  announceTimerEvent('reset');
   scheduleSave();
   refreshStudyActionViews();
 }
@@ -2826,6 +2824,7 @@ function finishStudyTimer() {
     return;
   }
   pauseTimer();
+  announceTimerEvent('finish');
   showSessionModal();
 }
 document.getElementById('timerFinishBtn')!.addEventListener('click', finishStudyTimer);
@@ -5032,88 +5031,26 @@ function getQuestionsTabController() {
   });
 }
 
-let errorNotebookActive = false;
-
-function renderErrorNotebook() {
-  const mount = document.getElementById('errorNotebookMount');
-  if (!mount) return;
-
-  const subjectsData = state.subjects.map(s => ({
-    id: s.id,
-    name: s.name,
-    topics: (s.topics || []).map(t => ({
-      id: t.id,
-      name: t.name,
-    })),
-  }));
-
-  mountPreact(
-    h(ErrorNotebookView, {
-      flashcards: state.errorFlashcards || [],
-      subjects: subjectsData,
-      todayDate: todayISO(),
-      onSaveFlashcard: input => {
-        const newCard = createErrorFlashcard({
-          ...input,
-          todayDate: todayISO(),
-        });
-        if (!Array.isArray(state.errorFlashcards)) state.errorFlashcards = [];
-        state.errorFlashcards.push(newCard);
-        persistAndRender();
-        showToast('Card de erro salvo no caderno.');
-      },
-      onReviewFlashcard: (cardId, rating) => {
-        if (!Array.isArray(state.errorFlashcards)) return;
-        const index = state.errorFlashcards.findIndex(c => c.id === cardId);
-        if (index >= 0) {
-          state.errorFlashcards[index] = reviewErrorFlashcard(
-            state.errorFlashcards[index],
-            rating,
-            { todayDate: todayISO(), nowISO: nowISO() }
-          );
-          persistAndRender();
-        }
-      },
-      onDeleteFlashcard: cardId => {
-        if (!Array.isArray(state.errorFlashcards)) return;
-        const index = state.errorFlashcards.findIndex(c => c.id === cardId);
-        if (index >= 0) {
-          state.errorFlashcards.splice(index, 1);
-          persistAndRender();
-          showToast('Card de erro removido.');
-        }
-      },
-    }),
-    mount
-  );
-}
+const errorNotebookController = createErrorNotebookController({
+  getState: () => state,
+  getMount: () => document.getElementById('errorNotebookMount'),
+  getMainContainer: () => document.getElementById('questionsMainContainer'),
+  getToggleBtn: () => document.getElementById('errorNotebookToggleBtn'),
+  getDueAgendaMount: () => document.getElementById('errorNotebookDueAgenda'),
+  getDueTodayMount: () => document.getElementById('errorNotebookDueToday'),
+  todayISO,
+  nowISO,
+  persistAndRender,
+  showToast,
+  activateTab,
+});
 
 function renderQuestoes() {
   const body = document.getElementById('questoesBody');
-  const mount = document.getElementById('errorNotebookMount');
-  const mainContainer = document.getElementById('questionsMainContainer');
-  const toggleBtn = document.getElementById('errorNotebookToggleBtn');
   if (!body) return;
 
-  if (errorNotebookActive && mount) {
-    if (mainContainer) mainContainer.hidden = true;
-    mount.hidden = false;
-    if (toggleBtn) {
-      toggleBtn.textContent = 'Visão de questões';
-      toggleBtn.classList.add('btn-primary');
-    }
-    renderErrorNotebook();
+  if (errorNotebookController.syncView()) {
     return;
-  }
-
-  if (mount) {
-    unmountPreact(mount);
-    mount.hidden = true;
-  }
-  if (mainContainer) mainContainer.hidden = false;
-  if (toggleBtn) {
-    toggleBtn.textContent = 'Caderno de Erros (Flashcards)';
-    toggleBtn.classList.remove('btn-primary');
   }
 
   body.innerHTML = getQuestionsTabController().renderQuestionsHtml();
@@ -5713,7 +5650,7 @@ function deleteSimuladoRow(id: string) {
 
 document.getElementById('addQuestaoRowBtn')!.addEventListener('click', addQuestaoRow);
 document.getElementById('errorNotebookToggleBtn')?.addEventListener('click', () => {
-  errorNotebookActive = !errorNotebookActive;
+  errorNotebookController.toggle();
   renderQuestoes();
 });
 document.getElementById('addSimuladoRowBtn')!.addEventListener('click', addSimuladoRow);
@@ -8888,9 +8825,25 @@ function renderFirstStepsMissionCard() {
       if (action === 'open-onboarding') {
         openGuidedOnboarding();
       } else if (action === 'start-first-session') {
-        openStudyTimerFocus();
+        const todayPlan = Array.isArray(state.dailyPlans)
+          ? state.dailyPlans.find((p: any) => p.date === todayISO())
+          : null;
+        const pendingItem = todayPlan?.items?.find(
+          (item: any) =>
+            !['completed', 'deferred', 'replaced', 'skipped', 'discarded'].includes(item.status)
+        );
+        if (pendingItem) {
+          startPlannedActivity(pendingItem.id);
+        } else {
+          openStudyTimerFocus();
+        }
       } else if (action === 'open-questions') {
         activateTab('questoes');
+        const addBtn = document.getElementById('addQuestaoRowBtn');
+        if (addBtn) {
+          addBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          addBtn.focus();
+        }
       }
     },
   });
@@ -10973,7 +10926,7 @@ const RENDER_SCOPE_SECTIONS = {
     'calendário',
     'calendário mensal',
   ]),
-  agenda: new Set(['filtros da agenda', 'agenda']),
+  agenda: new Set(['filtros da agenda', 'agenda', 'avisos do caderno de erros']),
   questoes: new Set(['questões', 'análise de questões', 'simulados']),
   metas: new Set([
     'metas',
@@ -10997,6 +10950,7 @@ const RENDER_SCOPE_SECTIONS = {
     'metas de hoje',
     'alertas',
     'plano de hoje',
+    'avisos do caderno de erros',
   ]),
 };
 function activeTabName() {
@@ -11027,6 +10981,7 @@ applicationRenderer = createApplicationRenderer({
     ['calendário mensal', renderMonthCalendar],
     ['filtros da agenda', renderAgendaFilters],
     ['agenda', renderAgenda],
+    ['avisos do caderno de erros', () => errorNotebookController.renderDueNotices()],
     ['questões', renderQuestoes],
     ['análise de questões', renderQuestionAnalytics],
     ['simulados', renderSimulados],
@@ -11162,6 +11117,12 @@ document.getElementById('guidedOnboardingOverlay')?.addEventListener('click', ev
       const today = input.min || todayISO();
       input.value = applyOnboardingDateShortcut(today, offset);
       updateExamBlueprint('examDate', input.value, { refresh: false });
+      const buttons = document.querySelectorAll('[data-guided-date-offset]');
+      buttons.forEach(b => {
+        const active = (b as HTMLElement).dataset.guidedDateOffset === String(offset);
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-pressed', String(active));
+      });
       syncGuidedNext(onboardingModel());
     }
     return;
@@ -11179,10 +11140,34 @@ document.getElementById('guidedOnboardingOverlay')?.addEventListener('click', ev
         const input = document.querySelector<HTMLInputElement>(`[data-guided-day="${day}"]`);
         if (input) input.value = String(hours);
       }
+      const buttons = document.querySelectorAll('[data-guided-availability-preset]');
+      buttons.forEach(b => {
+        const active = (b as HTMLElement).dataset.guidedAvailabilityPreset === presetId;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-pressed', String(active));
+      });
       const model = onboardingModel();
       syncGuidedNext(model);
       const cap = document.querySelector('#guidedOnboardingContent .guided-capacity strong');
       if (cap) cap.textContent = formatPlanMinutes(model.availableMinutes);
+    }
+    return;
+  }
+  const bulkLevelBtn = (event.target as HTMLElement).closest<HTMLElement>(
+    '[data-guided-bulk-level]'
+  );
+  if (bulkLevelBtn) {
+    const level = bulkLevelBtn.dataset.guidedBulkLevel;
+    if (level) {
+      const selects = document.querySelectorAll<HTMLSelectElement>('[data-guided-level]');
+      selects.forEach(select => {
+        select.value = level;
+        const subjectId = select.dataset.guidedLevel;
+        if (subjectId) {
+          setGuidedSubjectLevel(subjectId, level, { refresh: false });
+        }
+      });
+      showToast(`Todas as disciplinas definidas como ${level}.`);
     }
     return;
   }
@@ -11349,10 +11334,7 @@ if (TEST_MODE) {
     peekUpcomingCycleBlocks,
     analyzeFocusAndEnergy,
     renderVerticalizedSyllabus,
-    createErrorFlashcard,
-    reviewErrorFlashcard,
-    getDueFlashcards,
-    calculateFlashcardDeckStats,
+    errorNotebookController,
     resolveEntitlements,
     createCloudSaaSProvider,
   };

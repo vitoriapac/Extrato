@@ -594,7 +594,65 @@ export function validateNormalizedBackup(data: any): { valid: true } | BackupVal
     )
   )
     return fail('O backup contém metadados de prontidão inválidos.');
+  const flashcardError = validateErrorFlashcards(data.errorFlashcards);
+  if (flashcardError) return fail(flashcardError);
   return { valid: true };
+}
+
+const FLASHCARD_STATUSES = ['pending', 'reviewing', 'mastered'];
+
+/**
+ * Valida o Caderno de Erros. O campo é opcional (backups anteriores não o possuem) e referências
+ * a disciplina/tópico removidos são preservadas: o cartão é histórico do estudante e a exclusão
+ * de um tópico não deve tornar o próprio backup irrestaurável.
+ */
+function validateErrorFlashcards(cards: unknown): string {
+  if (cards === undefined) return '';
+  if (!Array.isArray(cards)) return 'O campo "errorFlashcards" deve ser uma lista.';
+  if (cards.length > 50000)
+    return 'O campo "errorFlashcards" excede o limite seguro de 50.000 registros.';
+  const seen = new Set<string>();
+  const text = (value: unknown, max: number, required = false) =>
+    typeof value === 'string' && value.length <= max && (!required || value.trim().length > 0);
+  const count = (value: unknown) => Number.isInteger(value) && (value as number) >= 0;
+  for (const card of cards) {
+    if (!isPlainObject(card)) return 'Um flashcard de erro não é um objeto válido.';
+    if (!isSafeId(card.id)) return 'Um flashcard de erro possui um identificador inválido.';
+    if (seen.has(card.id))
+      return `O identificador "${card.id}" aparece mais de uma vez nos flashcards de erro.`;
+    seen.add(card.id);
+    if (!isSafeId(card.topicId) || !isSafeId(card.subjectId))
+      return `O flashcard "${card.id}" possui um identificador de tópico ou disciplina inválido.`;
+    if (card.questionId != null && !isSafeId(card.questionId))
+      return `O flashcard "${card.id}" possui um identificador de questão inválido.`;
+    if (!FLASHCARD_STATUSES.includes(card.status))
+      return `O flashcard "${card.id}" possui status inválido.`;
+    if (!text(card.statementSummary, 5000) || !text(card.correctConcept, 5000, true))
+      return `O flashcard "${card.id}" possui texto ou conceito correto inválido.`;
+    if (
+      (card.bancaTrap != null && !text(card.bancaTrap, 5000)) ||
+      (card.errorCategory != null && !text(card.errorCategory, 200))
+    )
+      return `O flashcard "${card.id}" possui texto de pegadinha ou categoria inválido.`;
+    if (!count(card.reviewCount) || !count(card.consecutiveSuccesses))
+      return `O flashcard "${card.id}" possui contagem de revisões inválida.`;
+    if (!isFiniteNonNegative(card.intervalDays))
+      return `O flashcard "${card.id}" possui intervalo de revisão inválido.`;
+    if (
+      typeof card.easeFactor !== 'number' ||
+      !Number.isFinite(card.easeFactor) ||
+      card.easeFactor < 1.3 ||
+      card.easeFactor > 3.5
+    )
+      return `O flashcard "${card.id}" possui fator de facilidade inválido.`;
+    if (!(card.nextReviewDate == null || isISODate(card.nextReviewDate)))
+      return `O flashcard "${card.id}" possui data da próxima revisão inválida.`;
+    if (!Number.isFinite(Date.parse(card.createdAt)))
+      return `O flashcard "${card.id}" possui data de criação inválida.`;
+    if (!isOptionalTimestamp(card.lastReviewedAt))
+      return `O flashcard "${card.id}" possui data da última revisão inválida.`;
+  }
+  return '';
 }
 
 export interface ValidateBackupDataOptions {
@@ -636,6 +694,7 @@ export function validateBackupData(
     'alertStates',
     'topicHistory',
     'metasPorDisciplina',
+    'errorFlashcards',
   ];
   const envelope = validateBackupEnvelope(data, {
     currentVersion: options.currentSchemaVersion ?? CURRENT_SCHEMA_VERSION,

@@ -110,4 +110,69 @@ test('Acessibilidade por teclado fecha modais com Escape sem keyboard traps', as
   // Pressiona Escape para fechar
   await page.keyboard.press('Escape');
   await expect(modal).not.toBeVisible();
+
+  // Verifica foco restaurado no botão gatilho
+  const triggerBtn = mount.getByRole('button', { name: /\+ Novo Card/i });
+  await expect(triggerBtn).toBeFocused();
+});
+
+test('Cronômetro anuncia alterações de estado em região aria-live', async ({ page }) => {
+  await prepare(page);
+  await activateTab(page, 'dashboard');
+
+  const timerLive = page.locator('#timerAriaLive');
+  await expect(timerLive).toBeAttached();
+
+  const startBtn = page.locator('#timerStartBtn');
+  await startBtn.click();
+  await expect(timerLive).toHaveText('Cronômetro iniciado.');
+
+  const pauseBtn = page.locator('#timerPauseBtn');
+  await pauseBtn.click();
+  await expect(timerLive).toHaveText('Cronômetro pausado.');
+});
+
+test('Aviso de flashcards pendentes na Agenda de Revisões abre o Caderno de Erros', async ({
+  page,
+}) => {
+  await prepare(page);
+
+  // Injeta um flashcard pendente no estado
+  await page.evaluate(() => {
+    const api = /** @type {any} */ (window).__EXTRATO_TEST__;
+    const state = api.getState();
+    const sub = state.subjects[0];
+    const top = sub?.topics?.[0];
+    state.errorFlashcards = [
+      {
+        id: 'efc_e2e_1',
+        subjectId: sub.id,
+        topicId: top.id,
+        statementSummary: 'Conceito de ato discricionário vs vinculado',
+        correctConcept: 'Ato discricionário possui margem de conveniência e oportunidade.',
+        status: 'pending',
+        reviewCount: 0,
+        consecutiveSuccesses: 0,
+        intervalDays: 1,
+        easeFactor: 2.5,
+        nextReviewDate: '2026-10-01',
+        createdAt: '2026-10-01T10:00:00.000Z',
+      },
+    ];
+    api.renderAll();
+  });
+
+  // Vai para a aba Agenda de Revisões
+  await activateTab(page, 'agenda');
+  const notice = page.locator('#errorNotebookDueAgenda [data-testid="error-notebook-due"]');
+  await expect(notice).toBeVisible();
+  await expect(notice).toContainText('1 flashcard para revisar');
+
+  // Clica em "Revisar agora"
+  await notice.getByRole('button', { name: /Revisar agora/i }).click();
+
+  // Deve ter navegado para a aba questões e ativado o Caderno de Erros
+  const mount = page.locator('#errorNotebookMount');
+  await expect(mount).toBeVisible();
+  await expect(mount).toContainText('Conceito de ato discricionário vs vinculado');
 });

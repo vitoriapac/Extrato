@@ -21,22 +21,31 @@ export function Dialog({
   ...rest
 }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
-    if (open && !dialog.open) {
-      if (typeof dialog.showModal === 'function') {
-        dialog.showModal();
-      } else {
-        dialog.setAttribute('open', '');
+    if (open) {
+      if (document.activeElement && document.activeElement !== document.body) {
+        previousFocusRef.current = document.activeElement as HTMLElement;
+      }
+      if (!dialog.open) {
+        if (typeof dialog.showModal === 'function') {
+          dialog.showModal();
+        } else {
+          dialog.setAttribute('open', '');
+        }
       }
     } else if (!open && dialog.open) {
       if (typeof dialog.close === 'function') {
         dialog.close();
       } else {
         dialog.removeAttribute('open');
+      }
+      if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
+        previousFocusRef.current.focus();
       }
     }
   }, [open]);

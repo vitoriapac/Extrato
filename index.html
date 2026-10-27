@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=2206be506471">
-<link rel="stylesheet" href="styles/app.css?v=2206be506471">
+<link rel="stylesheet" href="styles/tailwind.css?v=05c8cf5f4b3f">
+<link rel="stylesheet" href="styles/app.css?v=05c8cf5f4b3f">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -170,6 +170,7 @@
           <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()">⛶ Modo foco</button>
           <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden>⧉ Janela flutuante</button>
         </div>
+        <div id="timerAriaLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
       </div>
       <section id="sessionResult" class="session-result" role="status" aria-live="polite" tabindex="-1" hidden></section>
     </div>
@@ -338,6 +339,8 @@
       </div>
     </div>
 
+    <div id="errorNotebookDueToday"></div>
+
     <details class="chart-card today-analysis-details">
       <summary>Ver resumo, diagnóstico e replanejamento</summary>
       <div class="today-analysis-grid">
@@ -457,6 +460,7 @@
     <p class="helper-text">
       Toda vez que um tópico é marcado como <strong>Concluído</strong> na aba Disciplinas, ele fica disponível aqui para gerar revisões automáticas em 24h, 7 dias e 30 dias.
     </p>
+    <div id="errorNotebookDueAgenda"></div>
     <button class="btn ghost small mobile-filter-toggle" type="button" aria-expanded="false" aria-controls="agendaFilters" data-delegated-click="toggleFilterPanel('agenda')">Filtros</button>
     <div class="cal-filters responsive-filters" id="agendaFilters">
                 <select class="select-control" id="agendaFilterSubject" aria-label="Filtrar agenda por disciplina"><option value="">Todas as disciplinas</option></select>
@@ -903,7 +907,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=2206be506471"></script>
+  <script src="src/app.bundle.js?v=05c8cf5f4b3f"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

@@ -5,3 +5,4 @@ export * from './progress-bar.js';
 export * from './dialog.js';
 export * from './empty-state.js';
 export * from './metric-card.js';
+export * from './a11y.js';

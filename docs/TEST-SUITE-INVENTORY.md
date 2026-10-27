@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-201 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+205 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -83,6 +83,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/weekly-adherence.spec.js | browser | Aderência | critical | 21.9 | journey, demo, viewport | none |
 | tests/e2e/weekly-focus-visual.spec.js | browser | Visual | visual | 8.3 | journey, viewport | none |
 | tests/e2e/what-if-and-final-stretch.spec.js | browser | Aplicação | functional | — | journey, demo | none |
+| tests/unit/a11y-announcements.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/achievement-projection-history.test.js | node | Trajetória | critical | — | contract | none |
 | tests/unit/achievement-projection.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/achievement-renderer.test.js | node | Aplicação | functional | — | contract | none |
@@ -133,7 +134,10 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/entitlements.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/error-analysis.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/error-boundary-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/error-flashcards-persistence.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/error-notebook-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/error-notebook-engine.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/error-notebook-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
 | tests/unit/error-notebook-view.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/evidence-quality.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/evidence-scope-migration.test.js | node | Aplicação | critical | — | contract | none |

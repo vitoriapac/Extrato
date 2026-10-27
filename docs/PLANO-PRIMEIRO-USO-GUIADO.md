@@ -204,11 +204,11 @@ quadrantChart
 - [x] O **Tour Guiado Interativo** percorre as 5 áreas principais sem gerar overflow horizontal em 320px/375px/1440px, sem violações de contraste no Axe (`wcag2a`, `wcag2aa`) e fecha com `Escape` restaurando o foco.
 - [x] `npm run check:types`, `npx playwright test tests/e2e/onboarding.spec.js` e `npm run test:fast` passam sem regressões.
 
-### Próxima Fase de Evolução
+### Próxima Fase de Evolução (Entregue)
 
-- [ ] Ao clicar em _"Iniciar 1ª atividade"_, a primeira matéria planejada de hoje entra em execução imediatamente no painel Hoje, sem redirecionamento confuso para o timer da Visão Geral.
-- [ ] A Parada 2 do Tour foca no card de execução diária (`.plano-hoje-card`) e a Parada 4 no hub de inteligência analítica (`#performancePage`).
-- [ ] A Etapa 4 da Prévia exibe o parecer analítico de viabilidade (sustentável, equilibrado ou déficit com recomendação de ajuste).
-- [ ] A Etapa 3 permite nivelar todas as disciplinas importadas com um único clique.
-- [ ] Atalhos de data e presets de rotina exibem estado ativo (`aria-pressed="true"` e feedback visual).
-- [ ] Todos os testes unitários (`FAST gate < 120s`) e E2E permanecem 100% verdes.
+- [x] Ao clicar em _"Iniciar 1ª atividade"_, a primeira matéria planejada de hoje entra em execução imediatamente no painel Hoje, sem redirecionamento confuso para o timer da Visão Geral.
+- [x] A Parada 2 do Tour foca no card de execução diária (`.plano-hoje-card`) e a Parada 4 no hub de inteligência analítica (`#performancePage`).
+- [x] A Etapa 4 da Prévia exibe o parecer analítico de viabilidade (sustentável, equilibrado ou déficit com recomendação de ajuste).
+- [x] A Etapa 3 permite nivelar todas as disciplinas importadas com um único clique.
+- [x] Atalhos de data e presets de rotina exibem estado ativo (`aria-pressed="true"` e feedback visual).
+- [x] Todos os testes unitários (`FAST gate < 120s`) e E2E permanecem 100% verdes.
