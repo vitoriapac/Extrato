@@ -22,6 +22,13 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Sincronização remota opcional via WebDAV com criptografia de ponta a ponta (E2EE AES-GCM 256 bits) antes do envio.
 - Mini-timer flutuante em Picture-in-Picture (Document PiP API) com sincronização em tempo real e fallback dinâmico no título da aba.
 - Relatório estratégico em PDF e backup completo em JSON.
+- Card de Próxima Ação (NextActionCard) com resposta estruturada às 6 perguntas contratuais do estudante e indicador de Ponto de Parada (Bookmark) de material (página, aula ou artigo).
+- Simulador de Cenários "E se?" puramente em memória (zero mutação de dados persistidos) para testar impactos de horas adicionais, multiplicadores de foco e antecipação de prova.
+- Modo Reta Final automático para provas a menos de 15 dias, priorizando 85% questões/revisão e 15% teoria.
+- Detecção de Ilusão de Competência para tópicos dominados com retenção volátil após 14 dias sem revisão prática.
+- Edital Verticalizado Interativo com tabela de 4 etapas de estudo (Teoria, Resumo, Lei Seca, Questões) e parser de texto bruto/PDF do edital.
+- Ciclo de Estudos Flexível em Fila Rotativa com blocos intercalados proporcionais aos pesos das disciplinas, pausando sem gerar avalanche de atrasos falsos.
+- Análise Cronobiológica de Energia e Fadiga correlacionando foco/energia por turnos (manhã, tarde, noite) com alerta de esgotamento cognitivo no Diagnóstico.
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
 - Tema claro/escuro, layout responsivo e navegação por teclado.
 
@@ -166,6 +173,22 @@ O **planejamento adaptativo** usa o impacto validado em conjunto com a lacuna de
 
 As três conquistas estratégicas celebram aprendizagem e qualidade da base: **Estrategista** exige estudo registrado em dez tópicos distintos de alto impacto; **Cobertura crítica** exige domínio 70+ com evidência suficiente em todos os tópicos de alto impacto de uma disciplina com ao menos dois; **Prova mapeada** exige quatro provas históricas completas no concurso ativo. Os critérios usam o concurso selecionado e são recalculados quando o escopo ou os dados mudam.
 
+### Simulação "E se?", Reta Final e Ilusão de Competência
+
+O **Simulador de Cenários "E se?"** (`src/domain/forecasts/what-if-simulator.ts`) permite projetar o impacto de alterações de rotina (ex.: adicionar 30 ou 60 minutos/dia, aplicar multiplicadores de foco em disciplinas-chave ou antecipar a data da prova) na prontidão e na cobertura de conteúdo. A simulação ocorre puramente em memória (`structuredCloneSafe`) sem alterar o histórico real ou o plano salvo.
+
+Quando a data da prova está a menos de 15 dias, o **Modo Reta Final** (`src/domain/planning/final-stretch-policy.ts`) é ativado automaticamente, exibindo um banner de urgência contextual e rebalanceando a sugestão de estudos para 85% questões/revisão e 15% teoria.
+
+O **Detector de Ilusão de Competência** (`src/domain/analytics/volatile-mastery.ts`) sinaliza tópicos cujo domínio aparente (> 75%) sofre queda acentuada após 14 dias sem resolução prática de questões, alertando o concurseiro contra falsas sensações de retenção.
+
+### Edital Verticalizado, Ciclo Flexível e Análise Cronobiológica
+
+Na aba **Disciplinas**, o botão **Edital verticalizado** alterna para uma visão tabular com checklist interativo de 4 etapas por tópico: _Teoria_, _Resumo_, _Lei Seca_ e _Questões_. A opção **Colar Edital (PDF)** permite copiar o texto bruto do edital (padrão Cebraspe, FCC, FGV) e importá-lo estruturadamente após prévia.
+
+O **Ciclo de Estudos em Fila Rotativa** (`src/domain/planning/study-cycle-engine.ts`) organiza as matérias em blocos intercalados de acordo com os pesos configurados, avançando conforme a execução real sem acumular atrasos falsos por imprevistos diários.
+
+No encerramento de cada sessão, é possível registrar o nível subjetivo de **Foco** (_Profundo_, _Normal_, _Distraído_) e **Energia** (_Alta_, _Normal_, _Cansado_). O motor [`focus-energy-analytics.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/focus-energy-analytics.ts) cruza esses dados com os turnos do dia (_Manhã_, _Tarde_, _Noite_) e emite alertas de fadiga cognitiva no Centro de Diagnóstico quando detecta quedas significativas de rendimento associadas a esgotamento.
+
 ## Instalação como PWA
 
 No Chrome ou Edge, abra a versão publicada e use a opção **Instalar StudyTrack** do navegador. O manifest inclui ícones de 192 px, 512 px, maskable e Apple Touch. Depois do primeiro carregamento completo, a aplicação abre offline com o shell armazenado pelo Service Worker.
@@ -242,11 +265,12 @@ O histórico do **Foco Estratégico** mostra uma linha simples para comparar per
 
 Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. A fase seguinte reuniu análises na aba Desempenho, consolidou sinais no Diagnóstico e ligou a próxima ação à prévia do planejamento, à execução e ao fechamento. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.
 
-A modernização estrutural para TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4 foi concluída (Ondas M1 e M2), assim como a integração de WebDAV E2EE e Mini-timer PiP. 
+A modernização estrutural para TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4 foi concluída (Ondas M1 e M2), assim como a integração de WebDAV E2EE e Mini-timer PiP.
 
 O roteiro de evolução ativa do StudyTrack foi formalizado no [Plano Unificado de Implementação e Evolução](docs/PLANO-EVOLUCAO-UNIFICADO.md) e mapeado detalhadamente em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md), organizado em 4 fases estratégicas:
+
 1. **Fase 1 — Decisão Rápida, UX & Primeiro Uso:** Card de Próxima Ação com 6 perguntas contratuais, Bookmarks de Ponto de Parada (PDF/vídeo/lei seca) em Preact e Onboarding 2.0 com Missão do 1º Dia ([PLANO-PRIMEIRO-USO-GUIADO.md](docs/PLANO-PRIMEIRO-USO-GUIADO.md)).
-2. **Fase 2 — Inteligência Preditiva & Reta Final:** Simulador "E se?" (*What-If Simulator*) em memória, política de Modo Reta Final (< 15 dias) e detecção de Falsa Consolidação.
+2. **Fase 2 — Inteligência Preditiva & Reta Final:** Simulador "E se?" (_What-If Simulator_) em memória, política de Modo Reta Final (< 15 dias) e detecção de Falsa Consolidação.
 3. **Fase 3 — Hub Completo de Estudos & Flexibilidade:** Edital Verticalizado interativo com parser de PDF, Ciclo de Estudos em fila rotativa e análise cronobiológica de energia e foco.
 4. **Fase 4 — Caderno de Erros, Acessibilidade & Base SaaS:** Flashcards das armadilhas da banca, auditoria assistida de leitores de tela (NVDA/VoiceOver) e preparação de camada de nuvem ([PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md)).
 
