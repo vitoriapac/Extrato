@@ -23,7 +23,7 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 |  **Master Fase 1**  | Decisão Rápida, UX & Primeiro Uso               | Concluída | `NextActionCard.tsx` (6 perguntas contratuais), `SubjectTopicRow.tsx` com Bookmarks de Ponto de Parada, Onboarding 2.0 (`FirstStepsMission.tsx`).                                                       |
 |  **Master Fase 2**  | Inteligência Preditiva & Reta Final             | Concluída | `what-if-simulator.ts` (simulação em memória via `structuredCloneSafe`), `final-stretch-policy.ts` (< 15 dias, 85% questões/revisão), `volatile-mastery.ts` (ilusão de competência).                    |
 |  **Master Fase 3**  | Hub Completo de Estudos & Flexibilidade         | Concluída | `VerticalizedSyllabusView.tsx` com checklist de 4 etapas e parser de PDF (`raw-syllabus-parser.ts`), `study-cycle-engine.ts` (ciclo rotativo circular) e `focus-energy-analytics.ts` (fadiga/energia).  |
-|  **Master Fase 4**  | Caderno de Erros, A11y & Base SaaS              | Concluída | `error-notebook-engine.ts` (repetição espaçada SM-2 adaptada), `ErrorNotebookView.tsx` (deck interativo e catálogo), auditoria de teclado sem armadilhas, `cloud-saas-provider.ts` e `entitlements.ts`. |
+| **Master Fase 4 & Melhorias Pós-Fase 4** | Caderno de Erros, A11y, Onboarding 2.0 & Base SaaS | Concluída | `error-notebook-engine.ts` (SM-2 adaptado), `ErrorNotebookView.tsx`, avisos de revisão na Agenda e Hoje (`ErrorNotebookDueNotice.tsx`), persistência e integridade de `errorFlashcards`, focus traps em modais/tour, anúncios `aria-live` no cronômetro (`timerAriaLive`), roteiro NVDA (`ROTEIRO-AUDITORIA-NVDA.md`), Onboarding 2.0 com viabilidade pedagógica (`calculatePlanFeasibility`), nivelamento em lote e disparo direto do plano em Hoje. |
 
 ---
 
@@ -66,17 +66,26 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
   - Registro de foco e energia no encerramento de cada sessão.
   - Motor [`focus-energy-analytics.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/focus-energy-analytics.ts) que identifica turnos de rendimento cognitivo máximo e alerta riscos de fadiga mental.
 
-### 2.4. Fase 4: Caderno de Erros, Acessibilidade Real & Base SaaS
+### 2.4. Fase 4 & Melhorias Pós-Fase 4: Caderno de Erros, Acessibilidade Real, Onboarding 2.0 & Base SaaS
 
-- **Caderno de Erros Ativo & Flashcards de Bolso:**
-  - Motor de repetição espaçada SM-2 adaptada em [`src/domain/notebook/error-notebook-engine.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/notebook/error-notebook-engine.ts).
-  - Classificações determinísticas (`again` 1d, `hard` 2d, `good` 4d, `easy` 7d+), ajuste progressivo de `easeFactor` e status (`pending`, `reviewing`, `mastered`).
-  - Visão Preact [`ErrorNotebookView.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/views/ErrorNotebookView.tsx) com modo estudo (revelação de armadilha da banca e conceito correto), criação rápida e filtros.
-- **Acessibilidade Real (A11y):**
-  - Todos os modais e diálogos fecham confiavelmente com `Escape`, sem aprisionamento de foco (_no keyboard traps_).
-  - Marcação semântica ARIA (`role="dialog"`, `aria-label`, contraste WCAG AA).
+- **Caderno de Erros Integrado & Flashcards de Bolso:**
+  - Motor de repetição espaçada SM-2 adaptada em [`src/domain/notebook/error-notebook-engine.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/notebook/error-notebook-engine.ts) com especificação matemática e matriz de transição documentada em [`docs/CADERNO-ERROS-SM2-CONTRATO.md`](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md).
+  - Sugestões e rascunhos de cartões automáticos a partir de questões erradas (`findQuestionsAwaitingFlashcard` e `addErrorFlashcard`).
+  - Avisos em tempo real na Agenda de Revisões e no painel Hoje via componente Preact [`ErrorNotebookDueNotice.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/ErrorNotebookDueNotice.tsx).
+  - Persistência e integridade protegida no schema (`PERSISTENT_COLLECTIONS`), backup e restauração (`backup-validator.ts`), com tolerância a disciplinas/tópicos órfãos.
+  - Controlador dedicado [`error-notebook-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/error-notebook-controller.ts), mantendo o `app.ts` estritamente como *composition root*.
+- **Acessibilidade Verificável e Leitores de Tela:**
+  - *Focus trap* em modais e diálogos de tour com retorno seguro ao elemento disparador via `Escape`.
+  - Anúncios dinâmicos para tecnologias assistivas via `aria-live` em [`src/ui/primitives/a11y.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/primitives/a11y.ts) cobrindo início, pausa, zeramento e finalização do cronômetro (`#timerAriaLive`) e classificação de flashcards.
+  - Protocolo de auditoria com leitor de telas NVDA formalizado em [`docs/ROTEIRO-AUDITORIA-NVDA.md`](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md), com separação rigorosa entre testes automatizados aprovados e sessões com operador humano pendentes.
+- **Onboarding 2.0 e Redução de Atrito:**
+  - Feedback visual ativo com `aria-pressed="true"` e classe `.is-active` para atalhos de data pré-edital e rotinas de estudo.
+  - Veredito pedagógico de viabilidade do planejamento via [`calculatePlanFeasibility`](file:///c:/Users/vitor/Documents/Extrato/src/application/onboarding/build-onboarding-view-model.ts), calculando ritmo sustentável versus déficit de horas.
+  - Ações em lote no assistente para nivelar o grau de dificuldade inicial de todas as disciplinas importadas com 1 clique (`guided-bulk-levels`).
+  - CTA "Iniciar 1ª atividade" na aba Hoje disparando imediatamente o primeiro item pendente do plano via `startPlannedActivity`.
+  - Seletores semânticos precisos para todas as etapas do Tour Guiado Contextual (`.plano-hoje-card` e `#performancePage`).
 - **Isolamento de Armazenamento & Entitlements SaaS:**
-  - Módulo puro de direitos e planos em [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts) (`free`, `pro`, `mentor`).
+  - Módulo puro de direitos e planos em [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts) (`free`, `pro`, `mentor`), mantido como preparatório.
   - Conector desacoplado [`src/storage/cloud-saas-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/cloud-saas-provider.ts) com sincronização em background, verificação de versão e fallback local seguro.
 
 ---
@@ -138,4 +147,4 @@ Todas as alterações preservam os seguintes critérios inegociáveis:
 
 1. **Tipagem Estática:** 100% TypeScript com `strict: true` validado via `npm run check:types` e `npm run check:types:tests`.
 2. **Design System:** Interfaces declarativas Preact (`.tsx`) e utilitários Tailwind CSS v4 integrados aos tokens de cores.
-3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 927 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em menos de 50 segundos (meta < 120s).
+3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 957 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 31 segundos (meta < 120s).

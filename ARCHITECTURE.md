@@ -54,6 +54,7 @@ flowchart TD
 - `styles/tokens.css`: cores, temas e tokens visuais.
 - `styles/tailwind.input.css` e `styles/tailwind.css`: estilos utilitários gerados sob demanda via Tailwind CSS v4, conectados aos tokens sem Preflight global.
 - `src/ui/primitives/*.tsx`: catálogo de componentes base em Preact (`Button`, `Badge`, `Card`, `SectionHeader`, `ProgressBar`, `Dialog`, `EmptyState`, `MetricCard`, `Tabs`).
+- `src/ui/primitives/a11y.ts`: utilitários de acessibilidade e gerenciamento de anúncios `aria-live` para leitores de tela em tempo real (cronômetro e cards).
 - `src/ui/components/NextActionCard.tsx`: card de Próxima Ação com as 6 perguntas contratuais, microcopy guiada e ponto de parada.
 - `src/ui/components/FirstStepsMission.tsx`: checklist de onboarding para o primeiro uso sem reload.
 - `src/ui/components/SubjectTopicRow.tsx`: linha de tópico com bookmark contextual e ações rápidas.
@@ -61,6 +62,8 @@ flowchart TD
 - `src/ui/components/FinalStretchBanner.tsx`: banner de urgência contextual do Modo Reta Final com atalho para o simulador.
 - `src/ui/views/VerticalizedSyllabusView.tsx`: visão declarativa de edital verticalizado com checklist de 4 etapas de estudo, filtros e importação por texto colado.
 - `src/ui/views/ErrorNotebookView.tsx`: visão declarativa do Caderno de Erros e Flashcards com repetição espaçada, pegadinha da banca e conceito correto.
+- `src/ui/components/ErrorNotebookDueNotice.tsx`: componente Preact de aviso e contagem de flashcards pendentes com navegação direta para revisão na Agenda e Hoje.
+- `src/ui/controllers/error-notebook-controller.ts`: controlador desacoplado para a visão do Caderno de Erros, gestão de rascunhos, criação e avisos de cartões pendentes.
 - `src/ui/tabs/**/*.tsx`: componentes funcionais das abas em Preact (`SubjectTopicManager.tsx`, `QuestionsTable.tsx`, `SimulationsTable.tsx`, `ReviewsSchedule.tsx`, `CalendarView.tsx`, `WeeklyGoals.tsx`, `TodaySchedule.tsx`, `DashboardOverview.tsx`).
 - `src/ui/components/presentation.ts` e `docs/UI-FOUNDATIONS.md`: renderização compartilhada de cabeçalhos, métricas e estados vazios, com o contrato de superfícies e espaçamento usado na migração gradual das telas.
 - `styles/app.css`: layout e componentes.
@@ -114,7 +117,7 @@ flowchart TD
 - `src/domain/analytics/volatile-mastery.ts`: diagnóstico de ilusão de competência para tópicos com queda de retenção após 14 dias sem revisão.
 - `src/application/subjects/raw-syllabus-parser.ts`: parser de edital bruto e texto de PDF (Cebraspe, FCC, FGV) com árvore estruturada e prévia.
 - `src/domain/planning/study-cycle-engine.ts`: motor do ciclo de estudos com fila rotativa circular intercalada e avanço sem acúmulo de falsos atrasos.
-- `src/domain/notebook/error-notebook-engine.ts`: motor puro de repetição espaçada (SM-2 adaptado) para flashcards de erro com pegadinha da banca e conceito correto.
+- `src/domain/notebook/error-notebook-engine.ts`: motor puro de repetição espaçada (SM-2 adaptado) para flashcards de erro com pegadinha da banca e conceito correto (especificação e contratos em `docs/CADERNO-ERROS-SM2-CONTRATO.md`).
 - `src/domain/billing/entitlements.ts`: (preparatório, sem consumidor na UI) resolução pura de direitos e limites por plano (`free`, `pro`, `mentor`) preparando a transição SaaS.
 - `src/domain/analytics/focus-energy-analytics.ts`: análise cronobiológica por turnos (manhã, tarde, noite) e detecção de fadiga cognitiva.
 - `src/application/build-executive-summary.ts`: modelo de apresentação do resumo executivo sem acesso ao DOM.

@@ -29,10 +29,10 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Edital Verticalizado Interativo com tabela de 4 etapas de estudo (Teoria, Resumo, Lei Seca, Questões) e parser de texto bruto/PDF do edital.
 - Ciclo de Estudos Flexível em Fila Rotativa com blocos intercalados proporcionais aos pesos das disciplinas, pausando sem gerar avalanche de atrasos falsos.
 - Análise Cronobiológica de Energia e Fadiga correlacionando foco/energia por turnos (manhã, tarde, noite) com alerta de esgotamento cognitivo no Diagnóstico.
-- Caderno de Erros Ativo & Flashcards de Bolso com repetição espaçada adaptativa (Again, Hard, Good, Easy), identificação de pegadinhas da banca e conceito correto.
-- Base preparatória para SaaS (ainda sem uso na interface): conector de nuvem modular e controle puro de planos e entitlements (Free, Pro, Mentor).
+- Caderno de Erros Ativo & Flashcards de Bolso com repetição espaçada adaptativa (Again, Hard, Good, Easy), identificação de pegadinhas da banca e conceito correto, integrado à Agenda de Revisões e ao painel Hoje com avisos em tempo real e sugestões automáticas para questões erradas.
+- Base preparatória para SaaS (sem consumidor na interface): conector de nuvem modular e controle puro de planos e entitlements (Free, Pro, Mentor).
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
-- Tema claro/escuro, layout responsivo e navegação por teclado.
+- Tema claro/escuro, layout responsivo, focus traps com retorno seguro de foco (`Escape`), navegação acessível por teclado e anúncios `aria-live` para leitores de tela.
 
 ## Como o StudyTrack funciona
 
@@ -275,12 +275,16 @@ Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós
 
 A modernização estrutural para TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4 foi concluída (Ondas M1 e M2), assim como a integração de WebDAV E2EE e Mini-timer PiP.
 
-O roteiro de evolução ativa do StudyTrack foi formalizado no [Plano Unificado de Implementação e Evolução](docs/PLANO-EVOLUCAO-UNIFICADO.md) e mapeado detalhadamente em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md), organizado em 4 fases estratégicas (todas 100% concluídas, testadas e integradas):
+O roteiro de evolução ativa do StudyTrack foi formalizado no [Plano Unificado de Implementação e Evolução](docs/PLANO-EVOLUCAO-UNIFICADO.md) e no plano de fechamento [Melhorias Pós-Fase 4](docs/PLANO-MELHORIAS-POS-FASE4.md), mapeados detalhadamente em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md), com todas as fases estratégicas 100% concluídas, testadas e integradas:
 
 1. **Fase 1 — Decisão Rápida, UX & Primeiro Uso (Concluída):** Card de Próxima Ação com 6 perguntas contratuais, Bookmarks de Ponto de Parada (PDF/vídeo/lei seca) em Preact e Onboarding 2.0 com Missão do 1º Dia ([PLANO-PRIMEIRO-USO-GUIADO.md](docs/PLANO-PRIMEIRO-USO-GUIADO.md)).
 2. **Fase 2 — Inteligência Preditiva & Reta Final (Concluída):** Simulador "E se?" (_What-If Simulator_) em memória, política de Modo Reta Final (< 15 dias) e detecção de Falsa Consolidação (ilusão de competência).
 3. **Fase 3 — Hub Completo de Estudos & Flexibilidade (Concluída):** Edital Verticalizado interativo com parser de PDF, Ciclo de Estudos em fila rotativa circular e análise cronobiológica de energia e foco.
-4. **Fase 4 — Caderno de Erros, Acessibilidade & Base SaaS (Concluída):** Flashcards com repetição espaçada SM-2 adaptada e pegadinhas da banca, acessibilidade por teclado sem armadilhas de foco (auditoria com leitor de tela pendente) e módulos preparatórios de nuvem e direitos de planos; a integração dos flashcards à Agenda de Revisões está planejada em [PLANO-MELHORIAS-POS-FASE4.md](docs/PLANO-MELHORIAS-POS-FASE4.md) ([PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md)).
+4. **Fase 4 & Melhorias Pós-Fase 4 (Concluídas):**
+   - **Caderno de Erros Integrado:** Flashcards com repetição espaçada SM-2 adaptada ([CADERNO-ERROS-SM2-CONTRATO.md](docs/CADERNO-ERROS-SM2-CONTRATO.md)), persistência protegida de `errorFlashcards`, rascunhos automáticos de questões erradas e avisos dedicados na Agenda e em Hoje (`ErrorNotebookDueNotice.tsx`).
+   - **Acessibilidade e Leitores de Tela:** Focus traps em modais e tour, retorno de foco via `Escape`, anúncios `aria-live` em cronômetro e cards, e roteiro formal de testes manuais em [ROTEIRO-AUDITORIA-NVDA.md](docs/ROTEIRO-AUDITORIA-NVDA.md).
+   - **Onboarding 2.0 Refinado:** Feedback visual ativo nos atalhos, nivelamento em lote no Wizard, diagnóstico pedagógico de viabilidade do plano (`calculatePlanFeasibility`) e CTA "Iniciar 1ª atividade" com disparo direto da matéria no plano diário.
+   - **Arquitetura Modular:** `error-notebook-controller.ts` isolado sem inflar o `app.ts` e base preparatória SaaS documentada ([PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md)).
 
 As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.2.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente. A comparação do foco estratégico usa fechamentos salvos sem sobreposição, com dados completos e do mesmo concurso ativo; fechamentos antigos sem esse escopo não entram na comparação.
 

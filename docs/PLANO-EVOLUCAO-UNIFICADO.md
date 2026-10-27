@@ -205,14 +205,14 @@ _Duração estimada: 2 semanas | Prioridade: P2 (Maturidade, Inclusão e Escala)
 - **Implementação:**
   - Padronizar os contratos de interface em `src/storage/` para permitir que o repositório local (IndexedDB + WebDAV) possa receber um conector de nuvem (API REST / Supabase / WebSocket) de forma modular.
 
-#### Critérios de Aceite da Fase 4:
+#### Critérios de Aceite da Fase 4 & Plano Pós-Fase 4:
 
 - [x] Flashcards de erro podem ser criados e revisados com repetição espaçada na visão do Caderno de Erros (`src/domain/notebook/error-notebook-engine.ts`, `src/ui/views/ErrorNotebookView.tsx`, `tests/unit/error-notebook-engine.test.js`).
-- [ ] Integração dos flashcards vencidos à Agenda de Revisões e criação automática a partir de questões erradas — **pendente**, ver Fase C de [PLANO-MELHORIAS-POS-FASE4.md](PLANO-MELHORIAS-POS-FASE4.md).
-- [ ] Auditoria manual com leitor de tela (NVDA/VoiceOver) — **não realizada**; ver Fase D do mesmo plano.
+- [x] Integração dos flashcards vencidos à Agenda de Revisões e criação automática a partir de questões erradas (concluído na Fase C de [PLANO-MELHORIAS-POS-FASE4.md](PLANO-MELHORIAS-POS-FASE4.md) com componente `ErrorNotebookDueNotice.tsx`, rascunhos automáticos e testes `error-notebook-integration.test.js`).
+- [ ] Auditoria manual com leitor de tela (NVDA/VoiceOver) — **roteiro e conformidade técnica de anúncios e focus traps implementados** ([docs/ROTEIRO-AUDITORIA-NVDA.md](ROTEIRO-AUDITORIA-NVDA.md)), validados via E2E (`error-notebook-and-a11y.spec.js`), com sessão manual com sintetizador físico registrada como pendente de operador.
 - [x] 100% dos fluxos essenciais são operáveis exclusivamente por teclado sem armadilhas de foco (_keyboard traps_) e com fechamento seguro via Escape (`tests/e2e/error-notebook-and-a11y.spec.js`, `tests/e2e/accessibility.spec.js`).
 - [x] Camada de armazenamento e direitos de acesso SaaS padronizados modularmente, **como módulos preparatórios ainda sem consumidor na UI** (`src/storage/cloud-saas-provider.ts`, `src/domain/billing/entitlements.ts`, `tests/unit/cloud-saas-provider.test.js`, `tests/unit/entitlements.test.js`).
-- [x] Homologação total do gate de qualidade com 927 testes unitários passando em < 30s e suíte E2E alinhada.
+- [x] Homologação total do gate de qualidade com 957 testes unitários passando em ~31s e suíte E2E alinhada.
 
 ---
 
