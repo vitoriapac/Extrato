@@ -159,31 +159,31 @@ Questões/Simulado → Resultado → Replanejamento**
 
 ## 🔵 Funcionalidades futuras de alto potencial
 
-89. Projeção de nota/probabilidade de atingir a meta.
-90. Simulador **"E se?"**.
-91. Reta final automática.
+89. Projeção de nota/probabilidade de atingir a meta. [Concluído]
+90. Simulador **"E se?"**. [Concluído — Fase 2]
+91. Reta final automática. [Concluído — Fase 2]
 92. Modo pós-simulado com plano de correção.
 93. Análise aprofundada por tópico.
 94. Detecção de platô.
-95. Detecção de falsa consolidação.
+95. Detecção de falsa consolidação (ilusão de competência). [Concluído — Fase 2]
 96. Custo de oportunidade do estudo.
 97. Previsão de cobertura do edital.
-98. Planejamento automático da reta final.
+98. Planejamento automático da reta final. [Concluído — Fase 2]
 99. Resumo mensal permanente.
-100. Linha do tempo da preparação.
+100.  Linha do tempo da preparação.
 
 # Top 10 --- Roadmap recomendado
 
-1.  Listas progressivas globais.
-2.  Snapshots + gráfico do Índice de Prontidão.
-3.  Planejado × realizado × prioridade executada.
-4.  Explicabilidade completa das recomendações.
-5.  Matriz Incidência × Domínio.
-6.  Evolução e comparação visual de Questões/Simulados.
-7.  Fechamento semanal orientado a decisões.
-8.  Centralização e padronização do sistema de componentes.
-9.  Projeção de nota/atingimento da meta.
-10. Reta final automática conforme a proximidade da prova.
+1.  Listas progressivas globais. [Concluído — Fase 4]
+2.  Snapshots + gráfico do Índice de Prontidão. [Concluído]
+3.  Planejado × realizado × prioridade executada. [Concluído]
+4.  Explicabilidade completa das recomendações. [Concluído — Fase 1]
+5.  Matriz Incidência × Domínio. [Concluído]
+6.  Evolução e comparação visual de Questões/Simulados. [Concluído]
+7.  Fechamento semanal orientado a decisões. [Concluído]
+8.  Centralização e padronização do sistema de componentes. [Concluído — Preact 11 + Tailwind CSS v4]
+9.  Projeção de nota/atingimento da meta. [Concluído]
+10. Reta final automática conforme a proximidade da prova. [Concluído — Fase 2]
 
 # Direção estratégica
 

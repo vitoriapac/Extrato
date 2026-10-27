@@ -1,247 +1,141 @@
 # Mapeamento do que Falta ser Implementado — StudyTrack
 
-Este documento consolida tudo o que ainda resta implementar no **StudyTrack**, organizando as pendências do plano recente de engenharia (Fases 5 e 6), os fechamentos de cobertura das fases já entregues, as novas especificações para transformar o app em um **Hub Completo de Estudos**, e o backlog estratégico mapeado em [docs/recomendacoes-futuras.md](file:///c:/Users/vitor/Documents/Extrato/docs/recomendacoes-futuras.md).
+Este documento consolida o histórico de entregas e os próximos horizontes de evolução do **StudyTrack**, registrando a conclusão das 4 Fases do Plano Master de Evolução, os fechamentos de cobertura, as especificações estruturantes para a transição **SaaS Local-First** e o backlog futuro mapeado em [docs/recomendacoes-futuras.md](file:///c:/Users/vitor/Documents/Extrato/docs/recomendacoes-futuras.md).
 
 > [!IMPORTANT]
-> **Roteiro Master de Execução:** O cronograma unificado, prioridades de sprint (9 semanas) e matriz de entregas estão consolidados em **[docs/PLANO-EVOLUCAO-UNIFICADO.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-EVOLUCAO-UNIFICADO.md)**. Utilize este documento (`O-QUE-FALTA-IMPLEMENTAR.md`) como especificação técnica detalhada dos componentes.
+> **Roteiro Master Consolidado:** O cronograma executivo e os critérios de aceite das 4 Fases do Plano de Evolução estão documentados em **[docs/PLANO-EVOLUCAO-UNIFICADO.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-EVOLUCAO-UNIFICADO.md)**. Todas as 4 fases foram **100% implementadas, testadas e integradas**.
 
 ---
 
 ## 1. Resumo do Status Atual das Fases e Marcos Técnicos
 
-O plano de evolução e robustez do StudyTrack já concluiu a maioria de suas fases estruturais, incluindo a **migração completa para TypeScript e Preact com Tailwind CSS**:
+O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4** sem runtime desnecessário no cliente. A tabela abaixo resume o status de todos os marcos:
 
-|              Fase / Marco              | Título                                        |  Status   | Entregas Principais                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| :------------------------------------: | --------------------------------------------- | :-------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|               **Fase 1**               | Higiene do Repositório & Build                | Concluída | `.gitignore` ajustado, limpeza de transitórios, script de build reproduzível (`npm run build`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-|               **Fase 2**               | Importador de Questões (QConcursos/Tec)       | Concluída | [`question-import-normalizer.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/questions/question-import-normalizer.ts), [`question-import-service.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/questions/question-import-service.ts), UI de importação CSV e preview com resolução de conflitos.                                                                                                                                                                                                                                                                   |
-|               **Fase 3**               | Tipagem Estática & Migração TypeScript        | Concluída | `tsconfig.json` (`strict: true`), 437 módulos `.ts`, contratos estritos em [`src/core/types.ts`](file:///c:/Users/vitor/Documents/Extrato/src/core/types.ts) e checagem contínua via `npm run check:types`.                                                                                                                                                                                                                                                                                                                                                                                 |
-|               **Fase 4**               | Sincronização WebDAV com Criptografia E2EE    | Concluída | [`crypto-utils.ts`](file:///c:/Users/vitor/Documents/Extrato/src/core/crypto-utils.ts) (PBKDF2 + AES-GCM 256-bit), [`remote-sync-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/remote-sync-provider.ts), [`remote-sync-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/remote-sync-controller.ts).                                                                                                                                                                                                                                         |
-|               **Fase 6**               | Otimização de CI/CD (Sharding & Typecheck)    | Concluída | Matriz paralela do Playwright (`1/4` a `4/4` no Full, `--browser-only` nos shards secundários) e `Typecheck` (`tsc --noEmit`) integrado em [`ci.yml`](file:///c:/Users/vitor/Documents/Extrato/.github/workflows/ci.yml) e [`run-test-gate.mjs`](file:///c:/Users/vitor/Documents/Extrato/scripts/run-test-gate.mjs).                                                                                                                                                                                                                                                                       |
-|        **Modernização M1 & M2**        | Preact, Tailwind CSS & Fatiamento de `app.ts` | Concluída | Preact 11 (`jsx: 'automatic'`), 22 componentes `.tsx` (`src/ui/primitives/*.tsx` e abas), Tailwind CSS v4 conectado a `styles/tokens.css`, extração de `TabRouter`, `AppStateStore`, `delegated-actions` e controllers de aba.                                                                                                                                                                                                                                                                                                                                                              |
-|             **PiP Timer**              | Cronômetro Flutuante em Janela PiP            | Concluída | [`pip-timer-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/pip-timer-controller.ts) com suporte a Document Picture-in-Picture e fallback por título dinâmico da aba.                                                                                                                                                                                                                                                                                                                                                                                           |
-| **Fase 5 (Roadmap) / Fase 2 (Master)** | Simulador "E se?" & Modo Reta Final           | Concluída | [`what-if-simulator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/forecasts/what-if-simulator.ts) (simulação em memória via `structuredClone`), [`final-stretch-policy.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/planning/final-stretch-policy.ts) (gatilho < 15 dias, 85% questões/revisão), [`volatile-mastery.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/volatile-mastery.ts) (ilusão de competência) e modal Preact [`WhatIfSimulatorModal.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/forecasts/WhatIfSimulatorModal.tsx). |
-
----
-
-## 2. Pendências Imediatas (Próximas Fases do Roadmap)
-
-### 2.1. Fase 5: Simulador "E se?" e Modo Reta Final
-
-- **Prioridade:** Alta (P3 do plano de engenharia / Top 10 de produto).
-- **Objetivo:** Dar poder preditivo ao estudante sem poluir o histórico ou persistir alterações experimentais antes de sua confirmação.
-- **Pilha Tecnológica:** TypeScript (`.ts`) para os algoritmos de domínio e Preact (`.tsx`) + Tailwind CSS para a interface reativa.
-- **Componentes a criar/alterar:**
-  1. **Simulador "E se?" (`what-if-simulator.ts`):**
-     - Localização: `src/domain/forecasts/what-if-simulator.ts` (ou extensão de [`performance-scenarios.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/forecasts/performance-scenarios.ts)).
-     - Executar projeções em memória clonando o estado via `structuredClone`.
-     - Simular: acréscimo de minutos diários, realocação de esforço entre disciplinas de pesos distintos e impacto direto no Índice de Prontidão ([`readiness-score.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/readiness-score.ts)) e Projeção Calibrada ([`calibrated-score-projection.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/forecasts/calibrated-score-projection.ts)).
-  2. **Modo Reta Final (`final-stretch-policy.ts`):**
-     - Localização: `src/domain/planning/final-stretch-policy.ts`.
-     - Regra: quando a prova estiver a menos de 15 dias (ou limiar configurável), o planejador adapta automaticamente as metas:
-       - 80%+ da capacidade diária dedicada à resolução de questões e simulados.
-       - Congelamento de introdução de novos tópicos teóricos extensos ainda não iniciados.
-       - Foco agressivo nas lacunas críticas de alto peso de edital.
-  3. **UI / Controles (Preact + Tailwind):**
-     - Modal declarativo `WhatIfSimulatorModal.tsx` utilizando as primitivas de `src/ui/primitives/*.tsx` (`Dialog`, `Button`, `ProgressBar`, `Card`).
-     - Controlador `src/ui/controllers/what-if-controller.ts` para orquestrar simulações em tempo real sem renderização síncrona bloqueante.
-     - Indicador visual ativo de "Modo Reta Final Ativado" com contagem regressiva destacada no cabeçalho ou aba Hoje.
-  4. **Testes:**
-     - Testes unitários puros no Node (`tests/unit/what-if-simulator.test.js`) rodando com `ts-resolve-hook.mjs`, confirmando que cenários simulados não mutam o estado persistido e não alteram snapshots históricos.
-
-### 2.2. Fase 6: Otimização de CI/CD & Pipeline
-
-- **Prioridade:** Média-Alta (DevOps e estabilidade de releases).
-- **Objetivo:** Reduzir a latência do pipeline no GitHub Actions e garantir barreira estática para contratos de tipos.
-- **Componentes a alterar:**
-  1. **Playwright Sharding no Workflow (`.github/workflows/ci.yml`):**
-     - Configurar matriz de paralelização para a suíte browser Full:
-       ```yaml
-       strategy:
-         fail-fast: false
-         matrix:
-           shardIndex: [1, 2, 3, 4]
-           shardTotal: [4]
-       ```
-     - Passar argumentos `--shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}` no Playwright.
-     - Reduzir o tempo de execução do gate Full de ~40 minutos para ~10-12 minutos.
-  2. **Step de Checagem Estática de Tipos no CI:**
-     - Adicionar `npm run check:types` como etapa obrigatória e bloqueante no job de lint/testes rápidos no [`.github/workflows/ci.yml`](file:///c:/Users/vitor/Documents/Extrato/.github/workflows/ci.yml).
+|    Fase / Marco     | Título                                          |  Status   | Entregas Principais                                                                                                                                                                                     |
+| :-----------------: | ----------------------------------------------- | :-------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|     **Infra 1**     | Higiene do Repositório & Build                  | Concluída | `.gitignore` limpo, build reproduzível (`npm run build`), bundles minificados via esbuild.                                                                                                              |
+|     **Infra 2**     | Importador de Questões (QConcursos/Tec)         | Concluída | Normalização de CSV/TSV, preview de importação, desduplicação e vínculo automático de disciplinas.                                                                                                      |
+|     **Infra 3**     | Migração Estrita para TypeScript                | Concluída | `tsconfig.json` (`strict: true`), 440+ módulos `.ts`, contratos em `src/core/types.ts` e gate `npm run check:types`.                                                                                    |
+|     **Infra 4**     | WebDAV com Criptografia E2EE                    | Concluída | PBKDF2-SHA256 e AES-GCM 256 bits (`crypto-utils.ts`), backup seguro em nuvem privada.                                                                                                                   |
+|     **Infra 5**     | Otimização de CI/CD (Sharding & Typecheck)      | Concluída | Sharding no Playwright (`1/4` a `4/4`), checagem estática no GitHub Actions e orçamentos rigorosos de gate.                                                                                             |
+| **Modernização UI** | Preact 11, Tailwind v4 & Fatiamento de `app.ts` | Concluída | Catálogo de primitivas (`src/ui/primitives/*.tsx`), Tailwind v4 sem preflight destrutivo, `AppStateStore` desacoplado.                                                                                  |
+|    **PiP Timer**    | Cronômetro Flutuante Picture-in-Picture         | Concluída | `pip-timer-controller.ts` via Document PiP API com fallback dinâmico no título da aba.                                                                                                                  |
+|  **Master Fase 1**  | Decisão Rápida, UX & Primeiro Uso               | Concluída | `NextActionCard.tsx` (6 perguntas contratuais), `SubjectTopicRow.tsx` com Bookmarks de Ponto de Parada, Onboarding 2.0 (`FirstStepsMission.tsx`).                                                       |
+|  **Master Fase 2**  | Inteligência Preditiva & Reta Final             | Concluída | `what-if-simulator.ts` (simulação em memória via `structuredCloneSafe`), `final-stretch-policy.ts` (< 15 dias, 85% questões/revisão), `volatile-mastery.ts` (ilusão de competência).                    |
+|  **Master Fase 3**  | Hub Completo de Estudos & Flexibilidade         | Concluída | `VerticalizedSyllabusView.tsx` com checklist de 4 etapas e parser de PDF (`raw-syllabus-parser.ts`), `study-cycle-engine.ts` (ciclo rotativo circular) e `focus-energy-analytics.ts` (fadiga/energia).  |
+|  **Master Fase 4**  | Caderno de Erros, A11y & Base SaaS              | Concluída | `error-notebook-engine.ts` (repetição espaçada SM-2 adaptada), `ErrorNotebookView.tsx` (deck interativo e catálogo), auditoria de teclado sem armadilhas, `cloud-saas-provider.ts` e `entitlements.ts`. |
 
 ---
 
-## 3. Fechamentos e Reforço das Fases Concluídas (Robustez)
+## 2. Detalhamento dos Componentes Entregues nas 4 Fases Master
 
-Status de fechamento das entregas das Fases 2, 3, 4 e 6:
+### 2.1. Fase 1: Decisão Rápida, UX do Painel & Primeiro Uso
 
-1. **Testes E2E (Playwright) para Novos Modais (Concluído):**
-   - Adicionados casos E2E em [`tests/e2e/recent-flows.spec.js`](file:///c:/Users/vitor/Documents/Extrato/tests/e2e/recent-flows.spec.js) cobrindo:
-     - O fluxo de abertura, upload de CSV, prévia, confirmação e prevenção de duplicatas do modal de Importação de Questões (`#questionsImportOverlay`).
-     - O fluxo de configuração (sem persistir senhas no `localStorage`), teste de conexão, envio criptografado (`AES-GCM-256`) e restauração confirmada do modal de WebDAV (`#remoteSyncOverlay`).
-2. **Atualização da Documentação Central de Arquitetura (Concluído):**
-   - Atualizado [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md) documentando a camada de armazenamento remoto ([`remote-sync-provider.js`](file:///c:/Users/vitor/Documents/Extrato/src/storage/remote-sync-provider.js), [`crypto-utils.js`](file:///c:/Users/vitor/Documents/Extrato/src/core/crypto-utils.js), [`remote-sync-controller.js`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/remote-sync-controller.js)), o módulo de importação de questões ([`question-import-normalizer.js`](file:///c:/Users/vitor/Documents/Extrato/src/domain/questions/question-import-normalizer.js), [`question-import-service.js`](file:///c:/Users/vitor/Documents/Extrato/src/application/questions/question-import-service.js)) e a checagem estática de tipos (`check:types`).
-   - Atualizado [README.md](file:///c:/Users/vitor/Documents/Extrato/README.md) documentando o script `npm run check:types`, a importação de questões CSV e o modelo de privacidade do WebDAV E2EE.
-3. **Execução de Homologação com Gate Completo (`npm run test:full`) (Concluído):**
-   - Executada e validada localmente em Windows/Chromium com 100% de aprovação: sintaxe, checagem de tipos (`Typecheck`), inventário, contratos de tiers, artefatos reproduzíveis, **791 testes Node em UTC**, **791 testes Node em `America/Sao_Paulo`**, **252 casos E2E browser em UTC** (incluindo os snapshots visuais Windows) e os **48 casos do recorte E2E em `America/Sao_Paulo`**.
+- **Card de Próxima Ação (`NextActionCard.tsx`):**
+  - Responde de imediato às 6 perguntas contratuais: _O que estudar_, _Por que estudar_, _Quanto tempo reservar_, _Importância para a prova_, _Evidência que indica a necessidade_ e _O que fazer a seguir_.
+  - Ação de 1 clique `[Iniciar agora]` conectada ao cronômetro sem fricção.
+- **Rastreador de Ponto de Parada (Bookmarks de Estudo):**
+  - Mapeado em [`src/domain/topic-bookmark.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/topic-bookmark.ts) e integrado aos cards e linhas de tópicos (`SubjectTopicRow.tsx`).
+  - Permite retomar leituras de PDF, videoaulas e lei seca exatamente do ponto em que parou (ex.: `📄 Pág. 42 de 110 (38%)`).
+- **Primeiro Uso Guiado & Missão do 1º Dia:**
+  - Pílulas de data pré-edital (90, 180, 365 dias) e 3 presets de disponibilidade semanal (Leve, Padrão, Fim de Semana).
+  - Componente [`FirstStepsMission.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/FirstStepsMission.tsx) reativo na aba Hoje orientando os primeiros passos práticos.
 
----
+### 2.2. Fase 2: Inteligência Preditiva, Modo Reta Final & Explicabilidade
 
-## 4. Evolução para Hub Completo de Estudos (Especificação Técnica Detalhada)
+- **Simulador "E se?" (`what-if-simulator.ts` & `WhatIfSimulatorModal.tsx`):**
+  - Execução 100% em memória clonando o estado via `structuredCloneSafe`, sem poluir o banco ou exportações.
+  - Projeta o impacto de minutos adicionais, multiplicadores de foco por disciplina e antecipação de data no Índice de Prontidão e na Projeção de Desempenho.
+- **Modo Reta Final (`final-stretch-policy.ts` & `FinalStretchBanner.tsx`):**
+  - Gatilho automático para provas a menos de 15 dias:
+    - Realocação de 85% da capacidade semanal para questões e simulados.
+    - Congelamento da abertura de novos tópicos teóricos densos ainda não iniciados.
+    - Multiplicador de urgência (até 3.0x) para lacunas críticas de alto peso.
+- **Detecção de Ilusão de Competência (`volatile-mastery.ts`):**
+  - Identifica tópicos dominados inicialmente (> 75-80%) que sofrem queda abrupta após 14 dias sem revisão, sinalizando a necessidade de checagens cegas.
 
-Esta seção detalha a arquitetura e o passo a passo de implementação das funcionalidades estruturantes para transformar o StudyTrack em um **Hub Completo de Estudos**, respeitando a stack modernizada (**TypeScript + Preact + Tailwind CSS**) e a separação de camadas (`State → Domain → Application → UI`) definida em [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md).
+### 2.3. Fase 3: Hub Completo de Estudos & Flexibilidade
 
-> [!IMPORTANT]
-> **Diretrizes para Novas Implementações:**
->
-> 1. Todo código de domínio (`src/domain/`) e aplicação (`src/application/`) deve ser escrito em **TypeScript (`.ts`)** com checagem estrita (`npm run check:types`).
-> 2. Todas as interfaces de usuário devem ser componentes declarativos **Preact (`.tsx`)**, consumindo o UI kit de primitivas (`src/ui/primitives/*.tsx`) e utilizando Tailwind CSS v4 vinculado às variáveis de `styles/tokens.css`.
-> 3. É vedado o uso de `innerHTML` ou interpolação de strings para novas telas; deve-se usar renderização nativa de componentes JSX.
-> 4. Testes unitários no Node devem ser executados com o hook de resolução nativo (`node --import ./scripts/ts-resolve-hook.mjs --test`).
+- **Edital Verticalizado Interativo & Parser de PDF:**
+  - Módulo [`raw-syllabus-parser.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/subjects/raw-syllabus-parser.ts) que processa texto copiado diretamente de editais em PDF (Cebraspe, FCC, FGV) gerando estrutura de matérias e tópicos.
+  - Tabela Preact [`VerticalizedSyllabusView.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/views/VerticalizedSyllabusView.tsx) com checklist de 4 etapas (Teoria, Resumo, Lei Seca, Questões), filtros e atalho direto para o cronômetro.
+- **Ciclo de Estudos Flexível em Fila Rotativa:**
+  - Motor [`study-cycle-engine.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/planning/study-cycle-engine.ts) com fila circular contínua de blocos intercalados proporcionais aos pesos das matérias.
+  - Dias não estudados pausam a fila sem gerar falsos atrasos acumulados ou estresse de calendário.
+- **Análise Cronobiológica de Energia e Fadiga:**
+  - Registro de foco e energia no encerramento de cada sessão.
+  - Motor [`focus-energy-analytics.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/focus-energy-analytics.ts) que identifica turnos de rendimento cognitivo máximo e alerta riscos de fadiga mental.
 
----
+### 2.4. Fase 4: Caderno de Erros, Acessibilidade Real & Base SaaS
 
-### 4.1. Rastreador de Ponto de Parada (Bookmarks de Estudo em PDFs, Videoaulas e Lei Seca)
-
-- **Status:** Domínio Concluído ([`src/domain/topic-bookmark.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/topic-bookmark.ts)); Integração de UI em Preact Pendente.
-- **Objetivo:** Eliminar o atrito de o estudante esquecer exatamente em qual página de PDF, minuto de videoaula ou artigo da lei parou na última sessão, apresentando esse ponto de retomada diretamente no card de "Próxima Ação" e no início do cronômetro.
-
-#### O que já foi entregue:
-
-1. **Contrato de Tipos:** [`TopicBookmark`](file:///c:/Users/vitor/Documents/Extrato/src/core/types.ts) e `BookmarkResourceType` tipados em `src/core/types.ts`.
-2. **Normalização e Regras de Domínio:** [`normalizeTopicBookmark`](file:///c:/Users/vitor/Documents/Extrato/src/domain/topic-bookmark.ts), `bookmarkProgress` e testes em `tests/unit/topic-bookmark.test.js`.
-
-#### O que falta implementar (UI Preact):
-
-1. **Componente Preact `BookmarkBadge.tsx` (`src/ui/components/BookmarkBadge.tsx`):**
-   - Exibir badge contextual no card de "Próxima Ação" (Visão Geral) e no cronômetro da aba Hoje (ex.: `📄 Pág. 42 de 110 (38%) · Continuar de onde parou`).
-2. **Formulário de Checkout de Sessão em Preact:**
-   - Adicionar ao modal de conclusão de sessão campos opcionais: _"Onde você parou?"_ (Tipo: PDF/Vídeo/Lei, Página/Posição atual, Total de páginas/unidades).
-3. **Edição Inline na Aba Disciplinas:**
-   - Permitir ajuste rápido do marcador direto na lista de tópicos em `src/ui/subjects/SubjectsTab.tsx`.
-
----
-
-### 4.2. Edital Verticalizado Interativo & Parser de Conteúdo Programático [CONCLUÍDO]
-
-#### Implementação Realizada
-
-1. **Contrato de Tipos:** Campo `stageChecklist: { theoryDone, summaryDone, lawOrNotesDone, questionsDone }` em [`src/core/types.ts`](file:///c:/Users/vitor/Documents/Extrato/src/core/types.ts).
-2. **Parser de Edital Bruto:** [`src/application/subjects/raw-syllabus-parser.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/subjects/raw-syllabus-parser.ts) processa editais em PDF e texto contínuo no formato Cebraspe/FCC, separando disciplinas e tópicos hierárquicos.
-3. **Interface Preact:** [`src/ui/views/VerticalizedSyllabusView.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/views/VerticalizedSyllabusView.tsx) com tabela interativa, filtros, checkboxes para 4 etapas de estudo, visualização de bookmark e modal de importação com prévia ao vivo.
-4. **Testes:** Unitários em [`tests/unit/raw-syllabus-parser.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/raw-syllabus-parser.test.js) e [`tests/unit/verticalized-syllabus-view.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/verticalized-syllabus-view.test.js), e ponta-a-ponta em [`tests/e2e/verticalized-syllabus-and-cycle.spec.js`](file:///c:/Users/vitor/Documents/Extrato/tests/e2e/verticalized-syllabus-and-cycle.spec.js).
-
----
-
-### 4.3. Ciclo de Estudos Flexível (Modo Ciclo / Fila Rotativa) [CONCLUÍDO]
-
-#### Implementação Realizada
-
-1. **Motor do Ciclo:** [`src/domain/planning/study-cycle-engine.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/planning/study-cycle-engine.ts) implementa `buildStudyCycleQueue`, `getCurrentCycleBlock`, `peekUpcomingCycleBlocks` e `advanceStudyCycleQueue`, organizando disciplinas em blocos intercalados proporcionais a seus pesos e avançando a fila sem gerar atrasos cascata.
-2. **Testes:** Unitários em [`tests/unit/study-cycle-engine.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/study-cycle-engine.test.js) e validação de ciclo no E2E.
-
----
-
-### 4.4. Análise Cronobiológica de Energia, Foco e Fadiga [CONCLUÍDO]
-
-#### Implementação Realizada
-
-1. **Campos no Registro:** `focusLevel` e `energyLevel` normalizados e capturados no encerramento da sessão em [`src/app.ts`](file:///c:/Users/vitor/Documents/Extrato/src/app.ts) e [`index.html`](file:///c:/Users/vitor/Documents/Extrato/index.html).
-2. **Motor de Análise:** [`src/domain/analytics/focus-energy-analytics.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/focus-energy-analytics.ts) correlaciona rendimento por turnos (manhã, tarde, noite), com validação de amostra mínima de 5 sessões e detecção de fadiga cognitiva integrada ao Centro de Diagnóstico.
-3. **Testes:** Unitários em [`tests/unit/focus-energy-analytics.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/focus-energy-analytics.test.js) e [`tests/unit/study-session.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/study-session.test.js).
-   ```
-
-   ```
-4. **Motor de Domínio (`src/domain/planning/study-cycle-engine.ts`):**
-   - `generateStudyCycleFromPriorities(...)`: calcula blocos de 45–90 min intercalando matérias distintas.
-   - `advanceStudyCycle(...)`: avança o ponteiro `activeIndex` e incrementa `completedLoops`.
-
-5. **Interface Preact (`src/ui/goals/StudyCycleView.tsx`):**
-   - Alternador em `GoalsPlanningTab.tsx`: `📅 Agenda por Dia` vs. `🔄 Ciclo de Estudos`.
-   - Trilha visual de blocos numerados e card de progresso da volta ativa.
-
----
-
-### 4.4. Mini-Timer em Picture-in-Picture (Document PiP API) — Concluído
-
-- **Status:** **Concluído** (Entregue em [`src/ui/controllers/pip-timer-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/pip-timer-controller.ts)).
-- **Entregas:**
-  - Janela flutuante (`Always on Top`) compacta com suporte à **Document Picture-in-Picture API**.
-  - Sincronização em tempo real com o relógio do cronômetro (`state.activeTimer`).
-  - Fallback por título dinâmico da aba (`document.title`) para navegadores sem Document PiP.
-  - Testes unitários em `tests/unit/pip-timer-controller.test.js`.
-
----
-
-### 4.5. Registro de Energia, Fadiga e Qualidade do Foco (Análise Cronobiológica)
-
-#### Objetivo
-
-Capturar a qualidade subjetiva do foco e o nível de energia em cada sessão e cruzá-los com dados objetivos (precisão em questões, taxa de retenção e horário do dia) para identificar janelas de pico cognitivo e prevenir esgotamento (burnout).
-
-#### Como Implementar
-
-1. **Contrato de Estado ([`src/core/types.ts`](file:///c:/Users/vitor/Documents/Extrato/src/core/types.ts) e [`src/state/schema.ts`](file:///c:/Users/vitor/Documents/Extrato/src/state/schema.ts)):**
-   - Adicionar a `StudySession`:
-     ```ts
-     focusQuality?: 'deep' | 'normal' | 'fragmented' | null;
-     energyLevel?: 'high' | 'medium' | 'low' | null;
-     interruptionCount?: number;
-     timeOfDayBucket?: 'morning' | 'afternoon' | 'evening' | 'night';
-     ```
-
-2. **Motor Analítico (`src/domain/analytics/focus-energy-analytics.ts`):**
-   - `analyzePerformanceByTimeOfDay(...)`: agrupa dados em janelas de 6 horas e gera correlações por turno com salvaguarda de evidência mínima.
-   - `detectFatigueRisk(...)`: alerta proativo em `generate-diagnosis.ts` quando houver fadiga contínua.
-
-3. **Interface Preact (`src/ui/sessions/SessionEnergySelector.tsx`):**
-   - Pílulas de 1 clique no encerramento da sessão: Foco (`[🔥 Profundo]`, `[⚡ Normal]`, `[💭 Distraído]`) e Energia (`[🔋 Alta]`, `[⚖️ Normal]`, `[🪫 Cansado]`).
-   - Painel de produtividade cronobiológica integrado à aba Desempenho.
-
----
-
-## 5. Backlog Adicional de Produto e Algoritmos (de `docs/recomendacoes-futuras.md`)
-
-Consolidado em ordem de valor estratégico e impacto no aprendizado do estudante:
-
-### 5.1. Curto a Médio Prazo (Inteligência & Diagnóstico)
-
-- **Detecção de "Falsa Consolidação" (Ilusão de Competência):**
-  - Identificar tópicos que atingem alto acerto (> 90%) logo após o estudo teórico, mas sofrem queda abrupta em revisões com intervalos > 14 dias.
-  - Gerar marcação diagnóstica de _"Domínio Volátil"_, sugerindo baterias de checagem cega.
 - **Caderno de Erros Ativo & Flashcards de Bolso:**
-  - Transformar erros registrados em cards revisáveis (Enunciado resumido, Armadilha da banca, Regra de bolso) acionados diretamente na Agenda de Revisões.
-- **Matriz Incidência × Domínio:**
-  - Visualização em quadrantes:
-    1. _Crítica:_ alta incidência na prova + baixo domínio do estudante.
-    2. _Oportunidade:_ alta incidência + médio domínio (maior ganho marginal por hora).
-    3. _Manutenção:_ alta incidência + alto domínio (revisão espaçada).
-    4. _Secundária:_ baixa incidência na prova.
-- **Rastreabilidade e Explicabilidade das Recomendações:**
-  - Explicar o porquê de cada recomendação no painel:
-    `Edital (Peso 3) → Lacuna Detectada (42% acerto) → Ação: 15 questões de Fixação`.
-- **Listas Progressivas Globais com Limite de 5 Itens:**
-  - Padronizar listas de histórico, tópicos atrasados e revisões para renderizar até 5 itens inicialmente com botão expansor `Mostrar mais (+N)`.
-- **Histórico e Snapshots Reais do Índice de Prontidão:**
-  - Registrar snapshots semanais imutáveis do índice de prontidão e seus fatores para exibir gráfico de tendência histórica confiável.
-
-### 5.2. Médio a Longo Prazo (UX, Operação e Métricas Avançadas)
-
-- **Detecção de Platô e Custo de Oportunidade:**
-  - Identificar quando o estudante gasta muitas horas em uma matéria sem ganho percentual perceptível, alertando que o retorno marginal decresceu e sugerindo redirecionamento para outra matéria.
-- **Consolidação do Design System & Tokens Semânticos:**
-  - Padronizar tokens CSS para `critical`, `warning`, `success`, `info`, `surface` e consolidar microcomponentes (chips, badges, tooltips e skeletons de carregamento).
-- **Caderno de Erros Ativo & Flashcards de Bolso (Fase 4):** [CONCLUÍDO]
-  - Motor em [`src/domain/notebook/error-notebook-engine.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/notebook/error-notebook-engine.ts), interface em [`src/ui/views/ErrorNotebookView.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/views/ErrorNotebookView.tsx) com repetição espaçada adaptativa (Again, Hard, Good, Easy), filtros e deck interativo.
-- **Transição SaaS e Isolamento de Armazenamento (Fase 4):** [CONCLUÍDO]
-  - Conector de nuvem em [`src/storage/cloud-saas-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/cloud-saas-provider.ts) e resolução de direitos em [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts).
-- **Auditoria de Acessibilidade por Teclado e Modais (Fase 4):** [CONCLUÍDO]
-  - Fechamento com Escape, ausência de armadilhas de foco e testes em [`tests/e2e/error-notebook-and-a11y.spec.js`](file:///c:/Users/vitor/Documents/Extrato/tests/e2e/error-notebook-and-a11y.spec.js).
+  - Motor de repetição espaçada SM-2 adaptada em [`src/domain/notebook/error-notebook-engine.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/notebook/error-notebook-engine.ts).
+  - Classificações determinísticas (`again` 1d, `hard` 2d, `good` 4d, `easy` 7d+), ajuste progressivo de `easeFactor` e status (`pending`, `reviewing`, `mastered`).
+  - Visão Preact [`ErrorNotebookView.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/views/ErrorNotebookView.tsx) com modo estudo (revelação de armadilha da banca e conceito correto), criação rápida e filtros.
+- **Acessibilidade Real (A11y):**
+  - Todos os modais e diálogos fecham confiavelmente com `Escape`, sem aprisionamento de foco (_no keyboard traps_).
+  - Marcação semântica ARIA (`role="dialog"`, `aria-label`, contraste WCAG AA).
+- **Isolamento de Armazenamento & Entitlements SaaS:**
+  - Módulo puro de direitos e planos em [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts) (`free`, `pro`, `mentor`).
+  - Conector desacoplado [`src/storage/cloud-saas-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/cloud-saas-provider.ts) com sincronização em background, verificação de versão e fallback local seguro.
 
 ---
 
-## 6. Status das 4 Fases do Plano de Evolução
+## 3. Próximo Horizonte: Transição para SaaS Operacional (Backlog Futuro)
 
-1. **Fase 1 — Decisão Rápida, UX & Primeiro Uso:** [CONCLUÍDA] NextActionCard com 6 perguntas contratuais, Bookmarks de Ponto de Parada e Onboarding sem reload.
-2. **Fase 2 — Inteligência Preditiva & Reta Final:** [CONCLUÍDA] Simulador "E se?" em memória (`what-if-simulator.ts`), Modo Reta Final (< 15 dias) e detecção de ilusão de competência (`volatile-mastery.ts`).
-3. **Fase 3 — Hub Completo de Estudos & Flexibilidade:** [CONCLUÍDA] Edital Verticalizado interativo com parser de PDF, Ciclo de Estudos flexível em fila rotativa e análise cronobiológica de energia e fadiga.
-4. **Fase 4 — Caderno de Erros, Acessibilidade & Base SaaS:** [CONCLUÍDA] Flashcards de fixação imediata com repetição espaçada, auditoria de teclado sem armadilhas e contratos de armazenamento e entitlements SaaS.
+Com todos os motores de domínio, contratos de dados e interfaces locais concluídos, os próximos passos do projeto concentram-se na infraestrutura de nuvem descrita em **[docs/PLANO-TRANSFORMACAO-SAAS.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-TRANSFORMACAO-SAAS.md)**:
+
+```mermaid
+flowchart TD
+    subgraph LocalReady ["Camada Cliente Concluída (100% Entregue)"]
+        ENG["Motores Analíticos & Algoritmos"]
+        ENT["src/domain/billing/entitlements.ts"]
+        CSP["src/storage/cloud-saas-provider.ts"]
+        PWA["PWA Offline + IndexedDB + UI Preact"]
+    end
+
+    subgraph FutureSaaS ["Backlog Futuro: Infraestrutura de Nuvem"]
+        SUPA["Projeto Supabase (Auth + PostgreSQL + RLS)"]
+        EDGE["Edge Functions (Sync + Webhooks de Pagamento)"]
+        GATEWAY["Gateway de Pagamento (PIX e Cartão via Asaas / Stripe)"]
+        CATALOG["Catálogo Centralizado de Editais na Nuvem"]
+        MOBILE["Empacotamento Mobile (Capacitor para Google Play e App Store)"]
+    end
+
+    CSP -.->|"Conectar API REST"| EDGE
+    ENT -.->|"Validar JWT de Assinatura"| SUPA
+    EDGE --> SUPA
+    GATEWAY --> EDGE
+    CATALOG --> EDGE
+    PWA -.-> MOBILE
+```
+
+### 3.1. Setup do Backend Supabase (Auth & PostgreSQL RLS)
+
+- Provisionar banco PostgreSQL no Supabase com as tabelas `profiles`, `user_study_states` e `user_state_snapshots`.
+- Configurar políticas de segurança em nível de linha (**Row Level Security - RLS**) garantindo que cada usuário só acesse e modifique seu próprio estado.
+- Autenticação por Magic Link (e-mail sem senha) e Login Social (Google OAuth).
+
+### 3.2. Integração do Gateway de Pagamento (PIX e Cartão)
+
+- Edge Function `create-checkout` para geração de cobrança PIX imediata ou assinatura por cartão de crédito.
+- Edge Function `webhook` para recepção de eventos de pagamento confirmando o plano `pro` e atualizando os entitlements em tempo real.
+
+### 3.3. Catálogo Dinâmico de Editais na Nuvem
+
+- API remota de editais verticalizados pré-estruturados (carreiras fiscais, tribunais, policiais, bancárias e ENEM/OAB).
+- Download e merge de editais com 1 clique para assinantes Pro diretamente via `exam-import-service.ts`.
+
+### 3.4. Empacotamento Mobile (Capacitor / TWA)
+
+- Publicação de aplicativo nativo Android (Google Play) e iOS (App Store) empacotando os artefatos estáticos gerados por `npm run build`.
+
+---
+
+## 4. Governança e Garantia de Qualidade
+
+Todas as alterações preservam os seguintes critérios inegociáveis:
+
+1. **Tipagem Estática:** 100% TypeScript com `strict: true` validado via `npm run check:types` e `npm run check:types:tests`.
+2. **Design System:** Interfaces declarativas Preact (`.tsx`) e utilitários Tailwind CSS v4 integrados aos tokens de cores.
+3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 927 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em menos de 50 segundos (meta < 120s).

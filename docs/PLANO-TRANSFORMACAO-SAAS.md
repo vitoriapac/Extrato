@@ -11,7 +11,7 @@ Diferente de um SaaS tradicional (onde toda interação depende de round-trips H
 1. **Processamento 100% no Cliente (Custo Marginal R$ 0 de CPU):**
    - Todos os motores analíticos ([`priority-score.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/priority-score.ts), [`readiness-score.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/readiness-score.ts), [`cognitive-profile.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/diagnostics/cognitive-profile.ts), [`performance-forecast.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/forecasts/performance-forecast.ts)) continuam rodando no navegador do usuário compilados em TypeScript.
 2. **Persistência Primária Instantânea (`IndexedDB`):**
-   - A interface sempre lê e grava primeiro no [`indexed-db-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/indexed-db-provider.ts) e [`local-storage-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/local-storage-provider.ts). O usuário nunca vê telas de *loading* ao registrar uma sessão ou questão.
+   - A interface sempre lê e grava primeiro no [`indexed-db-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/indexed-db-provider.ts) e [`local-storage-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/local-storage-provider.ts). O usuário nunca vê telas de _loading_ ao registrar uma sessão ou questão.
 3. **Nuvem Assíncrona para Assinantes (`CloudSaaSProvider`):**
    - O backend atua como **camada de identidade, faturamento, sincronização multi-dispositivo, backup contínuo e distribuição de catálogos de editais**.
 
@@ -116,8 +116,9 @@ CREATE TABLE public.mentor_students (
 ```
 
 ### 2.2. Políticas de Segurança (RLS)
-* **`user_study_states`:** `auth.uid() = user_id` para `SELECT`, `INSERT`, `UPDATE`. (E leitura permitida ao `mentor_id` caso exista vínculo `'active'` em `mentor_students`).
-* **`profiles`:** O usuário pode ler seu próprio perfil, mas **apenas a Service Role (Webhook de Pagamento)** pode alterar `plan_tier`, `subscription_status` e `subscription_period_end`.
+
+- **`user_study_states`:** `auth.uid() = user_id` para `SELECT`, `INSERT`, `UPDATE`. (E leitura permitida ao `mentor_id` caso exista vínculo `'active'` em `mentor_students`).
+- **`profiles`:** O usuário pode ler seu próprio perfil, mas **apenas a Service Role (Webhook de Pagamento)** pode alterar `plan_tier`, `subscription_status` e `subscription_period_end`.
 
 ---
 
@@ -129,8 +130,8 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 
 ### Fase 1: Camada de Autenticação e Sessão (`src/auth/`)
 
-* **Objetivo:** Permitir que o estudante use o app anonimamente (modo Free Local) ou crie/entre em uma conta para ativar recursos na nuvem, sem perder nenhum dado já registrado localmente.
-* **Arquivos a Criar/Modificar:**
+- **Objetivo:** Permitir que o estudante use o app anonimamente (modo Free Local) ou crie/entre em uma conta para ativar recursos na nuvem, sem perder nenhum dado já registrado localmente.
+- **Arquivos a Criar/Modificar:**
   1. `src/auth/auth-client.ts`:
      - Cliente leve REST/Fetch em TypeScript para autenticação (Magic Link por e-mail, Login com Google e Refresh Token JWT), sem adicionar SDKs pesados ao bundle.
   2. `src/auth/session-manager.ts`:
@@ -139,14 +140,14 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
   3. **Fusão de Conta no Primeiro Login (Onboarding Merge):**
      - Se o usuário já estudou por 10 dias no modo anônimo local e resolve criar conta:
        - Caso a nuvem esteja vazia, o estado local é enviado imediatamente (`initial upload`).
-       - Caso a nuvem já tenha dados de outro aparelho, exibe modal de resolução em Preact: *"Manter dados da nuvem"*, *"Substituir pelos dados deste dispositivo"* ou *"Baixar backup antes de sincronizar"*.
+       - Caso a nuvem já tenha dados de outro aparelho, exibe modal de resolução em Preact: _"Manter dados da nuvem"_, _"Substituir pelos dados deste dispositivo"_ ou _"Baixar backup antes de sincronizar"_.
 
 ---
 
 ### Fase 2: Controle de Planos e Feature Gates (`src/domain/billing/entitlements.ts`)
 
-* **Objetivo:** Centralizar em funções puras de domínio o que cada plano (`free`, `pro`, `mentor`) pode acessar, evitando `if (user.isPro)` espalhados pela UI.
-* **Arquivos a Criar:**
+- **Objetivo:** Centralizar em funções puras de domínio o que cada plano (`free`, `pro`, `mentor`) pode acessar, evitando `if (user.isPro)` espalhados pela UI.
+- **Arquivos a Criar:**
   1. `src/domain/billing/entitlements.ts`:
      ```ts
      export interface UserProfile {
@@ -167,7 +168,10 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
        isMentor: boolean;
      }
 
-     export function resolveEntitlements(profile?: UserProfile | null, nowMs = Date.now()): FeatureEntitlements {
+     export function resolveEntitlements(
+       profile?: UserProfile | null,
+       nowMs = Date.now()
+     ): FeatureEntitlements {
        const isPaidActive =
          (profile?.planTier === 'pro' || profile?.planTier === 'mentor') &&
          (profile?.subscriptionStatus === 'active' || profile?.subscriptionStatus === 'trialing') &&
@@ -182,7 +186,7 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
          canUseAutoStudyCycle: isPaidActive,
          canUseFocusEnergyAnalytics: isPaidActive,
          maxActiveSubjects: isPaidActive ? Infinity : 5,
-         isMentor: isPaidActive && profile?.planTier === 'mentor'
+         isMentor: isPaidActive && profile?.planTier === 'mentor',
        });
      }
      ```
@@ -193,8 +197,8 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 
 ### Fase 3: Sincronização Automática Local-Nuvem (`src/storage/cloud-saas-provider.ts`)
 
-* **Objetivo:** Sincronizar o estado de forma transparente, resiliente a quedas de conexão e com controle de concorrência entre PC e celular.
-* **Arquivos a Criar/Modificar:**
+- **Objetivo:** Sincronizar o estado de forma transparente, resiliente a quedas de conexão e com controle de concorrência entre PC e celular.
+- **Arquivos a Criar/Modificar:**
   1. `src/storage/cloud-saas-provider.ts`:
      - Implementa a sincronização contínua acoplada ao [`real-storage-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/real-storage-provider.ts):
        - **Gravação (Push com Debounce + Fila Offline):**
@@ -212,8 +216,8 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 
 ### Fase 4: Integração de Pagamentos (PIX e Cartão) e Webhooks
 
-* **Objetivo:** Permitir assinatura autosserviço com liberação instantânea (especialmente via PIX).
-* **Fluxo de Implementação:**
+- **Objetivo:** Permitir assinatura autosserviço com liberação instantânea (especialmente via PIX).
+- **Fluxo de Implementação:**
   1. **Edge Function `POST /api/billing/create-checkout`:**
      - Recebe o `user_id` do JWT autenticado e o plano escolhido (`pro_monthly`, `pro_annual_pix`, `mentor_monthly`).
      - Gera sessão de checkout no **Stripe** ou cobrança PIX/Assinatura no **Asaas / AbacatePay**.
@@ -224,26 +228,26 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
        - `invoice.payment_failed` / `PAYMENT_OVERDUE`: muda para `past_due` (mantém 3 dias de tolerância antes de bloquear o Cloud Sync).
        - `customer.subscription.deleted`: retorna para `free` (o usuário **nunca perde os dados locais**, apenas pausa a sincronização na nuvem e os recursos preditivos exclusivos).
   3. **Portal do Assinante:**
-     - Botão em Configurações: *"Gerenciar Assinatura / Baixar Nota Fiscal / Alterar Cartão"*.
+     - Botão em Configurações: _"Gerenciar Assinatura / Baixar Nota Fiscal / Alterar Cartão"_.
 
 ---
 
 ### Fase 5: Catálogo Dinâmico de Editais na Nuvem (`src/application/subjects/cloud-catalog-service.ts`)
 
-* **Objetivo:** Transformar a dor de "cadastrar edital" no maior ímã de conversão para o plano Pro.
-* **Como Implementar:**
+- **Objetivo:** Transformar a dor de "cadastrar edital" no maior ímã de conversão para o plano Pro.
+- **Como Implementar:**
   1. Hoje [`exam-catalog-runtime.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/exams/exam-catalog-runtime.ts) carrega BB e Caixa de um bundle estático.
   2. Criar `src/application/subjects/cloud-catalog-service.ts` que consulta `GET /api/v1/exam-catalog`:
-     - Lista todos os concursos disponíveis na nuvem com filtros por área (*Bancária, Fiscal, Tribunais, Policial, Administrativa, ENEM/Vestibulares, OAB*).
-     - Cada item mostra: *Quantidade de disciplinas, Total de tópicos mapeados, Banca organizadora e Pesos calibrados*.
+     - Lista todos os concursos disponíveis na nuvem com filtros por área (_Bancária, Fiscal, Tribunais, Policial, Administrativa, ENEM/Vestibulares, OAB_).
+     - Cada item mostra: _Quantidade de disciplinas, Total de tópicos mapeados, Banca organizadora e Pesos calibrados_.
      - Ao selecionar um edital no plano Pro, o JSON do edital é baixado e passado diretamente para o [`exam-import-service.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/subjects/exam-import-service.ts) já existente, que faz o merge idempotente com o estado do aluno.
 
 ---
 
 ### Fase 6: Módulo B2B para Mentorias (`Painel do Mentor`)
 
-* **Objetivo:** Criar uma segunda fonte de receita de ticket alto (R$ 149 a R$ 399/mês) vendendo para mentores e pequenos cursos preparatórios.
-* **Como Implementar:**
+- **Objetivo:** Criar uma segunda fonte de receita de ticket alto (R$ 149 a R$ 399/mês) vendendo para mentores e pequenos cursos preparatórios.
+- **Como Implementar:**
   1. **Convite por Link:** O mentor gera um link de vínculo. O aluno aceita compartilhar a leitura do seu extrato com o mentor.
   2. **Visão Consolidada da Turma:**
      - O mentor vê uma tabela com seus alunos ordenada por **Risco de Abandono / Queda de Aderência** ([`risk-score.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/diagnostics/risk-score.ts)):
@@ -256,7 +260,7 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 
 1. **Landing Page com "Live Demo de 1 clique":**
    - A maior arma de vendas do StudyTrack já está pronta: o [`demo-generator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-generator.ts) que cria 130 dias de histórico realista.
-   - Na página inicial de vendas, em vez de apenas prints estáticos, colocar o botão: **"Testar Plataforma Ao Vivo (Com 130 dias de dados simulados)"**. O visitante entra imediatamente no Modo Demo, interage com o Índice de Prontidão, vê a Matriz do Edital e o Simulador, e tem um CTA no topo: *"Criar minha conta e começar meu plano real"*.
+   - Na página inicial de vendas, em vez de apenas prints estáticos, colocar o botão: **"Testar Plataforma Ao Vivo (Com 130 dias de dados simulados)"**. O visitante entra imediatamente no Modo Demo, interage com o Índice de Prontidão, vê a Matriz do Edital e o Simulador, e tem um CTA no topo: _"Criar minha conta e começar meu plano real"_.
 2. **Publicação nas Lojas (Google Play & App Store):**
    - Empacotar o bundle gerado por [`scripts/build-app-bundle.mjs`](file:///c:/Users/vitor/Documents/Extrato/scripts/build-app-bundle.mjs) via **Capacitor** ou **Bubblewrap (TWA)** para presença nas lojas oficiais.
 3. **Conformidade LGPD Nativa:**
@@ -264,23 +268,31 @@ A implementação é dividida em **7 Fases Incrementais**, garantindo que os tes
 
 ---
 
-## 4. Cronograma Executivo de Lançamento (8 Semanas)
+## 4. Status de Implementação e Cronograma de Lançamento
 
-| Semana | Entrega Principal | Critério de Pronto (DoD) |
-|:---:|---|---|
-| **Semanas 1–2** | **Hub Completo Core** (Ponto de Parada, Edital Verticalizado e Ciclo de Estudos da Seção 4 de [O-QUE-FALTA-IMPLEMENTAR.md](file:///c:/Users/vitor/Documents/Extrato/docs/O-QUE-FALTA-IMPLEMENTAR.md)) | Funcionalidades testadas em `npm run test:fast` e integradas à UI em Preact. |
-| **Semana 3** | **Fase 5 do Roadmap** (Simulador *"E se?"* e Modo Reta Final) | Motor preditivo completo em TS com modal Preact pronto para ser o carro-chefe do plano Pro. |
-| **Semana 4** | **Setup Supabase + Auth + `entitlements.ts`** | Login por Magic Link/Google funcionando + fusão segura do estado local anônimo. |
-| **Semana 5** | **`CloudSaaSProvider` (Sync Automático PC ↔ Celular)** | Sincronização com debounce, fila offline e validação de checksum SHA-256. |
-| **Semana 6** | **Checkout PIX/Cartão + Webhooks + Catálogo de 15 Editais na Nuvem** | Fluxo completo de assinatura ativando o plano `pro` em menos de 5 segundos após o PIX. |
-| **Semana 7** | **Landing Page + Integração da Demo de 130 dias + Termos LGPD** | Página pública no ar com conversão para criação de conta gratuita ou Pro. |
-| **Semana 8** | **Testes E2E Completos (`npm run test:full`) + Lançamento Beta** | Pipeline de CI com Sharding verde e abertura para os primeiros assinantes. |
+### 4.1. Fundações Concluídas no Cliente (Fases 1 a 4 do Plano Master)
+
+- [x] **Motor de Entitlements & Plan Tiers:** [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts) implementa regras puras para `free`, `pro` e `mentor` com limites de matérias ativas, simulados/mês e feature gates.
+- [x] **Conector de Nuvem SaaS Desacoplado:** [`src/storage/cloud-saas-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/cloud-saas-provider.ts) com contratos de push/pull com debounce, verificação de versão remota e fallback local seguro.
+- [x] **Recursos de Alto Valor do Plano Pro:** Simulador "E se?", Modo Reta Final, Edital Verticalizado com parser de PDF, Ciclo de Estudos flexível, Análise de Fadiga/Energia e Caderno de Erros com Repetição Espaçada.
+
+### 4.2. Cronograma Executivo de Lançamento na Nuvem (Infraestrutura)
+
+|    Etapa    | Entrega Principal                                   | Critério de Pronto (DoD)                                                                           |
+| :---------: | --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Etapa 1** | **Setup Supabase + Auth (Magic Link & Google)**     | Projeto Supabase provisionado, RLS configurado e fusão segura do estado anônimo local com a conta. |
+| **Etapa 2** | **Deploy das Edge Functions de Sync**               | Endpoints de push e pull sincronizando o estado validado entre múltiplos navegadores e celulares.  |
+| **Etapa 3** | **Checkout PIX/Cartão + Webhooks (Asaas / Stripe)** | Fluxo de assinatura ativando o plano `pro` em menos de 5 segundos após confirmação do PIX.         |
+| **Etapa 4** | **Catálogo de 15 Editais na Nuvem**                 | Catálogo dinâmico com download e merge automático de concursos via `exam-import-service.ts`.       |
+| **Etapa 5** | **Landing Page + Modo Demo de 130 Dias**            | Página de conversão com botão para experimentar o StudyTrack ao vivo com dados simulados.          |
+| **Etapa 6** | **Empacotamento Mobile (Capacitor)**                | Build Android/iOS publicado nas lojas oficiais com shell nativo.                                   |
 
 ---
 
 ## 5. Unit Economics Estimado (Viabilidade Financeira)
 
 Graças à arquitetura **Local-First**:
-* **Custo fixo inicial de infraestrutura:** ~R$ 0 a R$ 150/mês (Cloudflare Pages Grátis + Supabase Free/Pro).
-* **Tamanho médio do estado de 1 ano de estudos por aluno:** ~150 KB a 400 KB em JSON comprimido (1 GB de banco armazena mais de **2.500 assinantes ativos**).
-* **Margem Bruta estimada:** **> 90%** (descontadas apenas as taxas do gateway de pagamento de ~1% no PIX a ~3,9% no cartão).
+
+- **Custo fixo inicial de infraestrutura:** ~R$ 0 a R$ 150/mês (Cloudflare Pages Grátis + Supabase Free/Pro).
+- **Tamanho médio do estado de 1 ano de estudos por aluno:** ~150 KB a 400 KB em JSON comprimido (1 GB de banco armazena mais de **2.500 assinantes ativos**).
+- **Margem Bruta estimada:** **> 90%** (descontadas apenas as taxas do gateway de pagamento de ~1% no PIX a ~3,9% no cartão).

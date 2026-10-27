@@ -275,12 +275,12 @@ Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós
 
 A modernização estrutural para TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4 foi concluída (Ondas M1 e M2), assim como a integração de WebDAV E2EE e Mini-timer PiP.
 
-O roteiro de evolução ativa do StudyTrack foi formalizado no [Plano Unificado de Implementação e Evolução](docs/PLANO-EVOLUCAO-UNIFICADO.md) e mapeado detalhadamente em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md), organizado em 4 fases estratégicas:
+O roteiro de evolução ativa do StudyTrack foi formalizado no [Plano Unificado de Implementação e Evolução](docs/PLANO-EVOLUCAO-UNIFICADO.md) e mapeado detalhadamente em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md), organizado em 4 fases estratégicas (todas 100% concluídas, testadas e integradas):
 
-1. **Fase 1 — Decisão Rápida, UX & Primeiro Uso:** Card de Próxima Ação com 6 perguntas contratuais, Bookmarks de Ponto de Parada (PDF/vídeo/lei seca) em Preact e Onboarding 2.0 com Missão do 1º Dia ([PLANO-PRIMEIRO-USO-GUIADO.md](docs/PLANO-PRIMEIRO-USO-GUIADO.md)).
-2. **Fase 2 — Inteligência Preditiva & Reta Final:** Simulador "E se?" (_What-If Simulator_) em memória, política de Modo Reta Final (< 15 dias) e detecção de Falsa Consolidação.
-3. **Fase 3 — Hub Completo de Estudos & Flexibilidade:** Edital Verticalizado interativo com parser de PDF, Ciclo de Estudos em fila rotativa e análise cronobiológica de energia e foco.
-4. **Fase 4 — Caderno de Erros, Acessibilidade & Base SaaS:** Flashcards das armadilhas da banca, auditoria assistida de leitores de tela (NVDA/VoiceOver) e preparação de camada de nuvem ([PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md)).
+1. **Fase 1 — Decisão Rápida, UX & Primeiro Uso (Concluída):** Card de Próxima Ação com 6 perguntas contratuais, Bookmarks de Ponto de Parada (PDF/vídeo/lei seca) em Preact e Onboarding 2.0 com Missão do 1º Dia ([PLANO-PRIMEIRO-USO-GUIADO.md](docs/PLANO-PRIMEIRO-USO-GUIADO.md)).
+2. **Fase 2 — Inteligência Preditiva & Reta Final (Concluída):** Simulador "E se?" (_What-If Simulator_) em memória, política de Modo Reta Final (< 15 dias) e detecção de Falsa Consolidação (ilusão de competência).
+3. **Fase 3 — Hub Completo de Estudos & Flexibilidade (Concluída):** Edital Verticalizado interativo com parser de PDF, Ciclo de Estudos em fila rotativa circular e análise cronobiológica de energia e foco.
+4. **Fase 4 — Caderno de Erros, Acessibilidade & Base SaaS (Concluída):** Flashcards com repetição espaçada SM-2 adaptada e pegadinhas da banca, acessibilidade por teclado sem armadilhas de foco e preparação de camada de nuvem e direitos de planos ([PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md)).
 
 As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.2.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente. A comparação do foco estratégico usa fechamentos salvos sem sobreposição, com dados completos e do mesmo concurso ativo; fechamentos antigos sem esse escopo não entram na comparação.
 
