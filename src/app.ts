@@ -27,6 +27,15 @@ import { buildFinalStretchBanner } from './domain/planning/final-stretch-policy.
 import { FinalStretchBanner } from './ui/components/FinalStretchBanner.js';
 import { simulateWhatIfScenario } from './domain/forecasts/what-if-simulator.js';
 import { identifyVolatileTopics } from './domain/analytics/volatile-mastery.js';
+import { VerticalizedSyllabusView } from './ui/views/VerticalizedSyllabusView.js';
+import { parseRawSyllabusText } from './application/subjects/raw-syllabus-parser.js';
+import {
+  buildStudyCycleQueue,
+  getCurrentCycleBlock,
+  advanceStudyCycleQueue,
+  peekUpcomingCycleBlocks,
+} from './domain/planning/study-cycle-engine.js';
+import { analyzeFocusAndEnergy } from './domain/analytics/focus-energy-analytics.js';
 import {
   computeTimerSeconds,
   hasActiveTimer,
@@ -321,6 +330,7 @@ import type {
   StudySession,
   Topic,
   TopicStatus,
+  TopicStageChecklist,
 } from './core/types.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createEditableCollectionController } from './ui/controllers/editable-collection-controller.js';
@@ -2658,6 +2668,10 @@ function showSessionModal() {
   (document.getElementById('sessionModalCorrect') as HTMLInputElement).value = '';
   (document.getElementById('sessionModalRetention') as HTMLSelectElement).value = '';
   (document.getElementById('sessionModalDifficulty') as HTMLSelectElement).value = '';
+  const focusSel = document.getElementById('sessionModalFocus') as HTMLSelectElement | null;
+  if (focusSel) focusSel.value = '';
+  const energySel = document.getElementById('sessionModalEnergy') as HTMLSelectElement | null;
+  if (energySel) energySel.value = '';
   (document.getElementById('sessionModalNotes') as HTMLTextAreaElement).value = '';
   syncSessionModalActivityFields(
     (document.getElementById('sessionModalType') as HTMLSelectElement).value || 'study'
@@ -2890,6 +2904,12 @@ document.getElementById('sessionModalSaveBtn')!.addEventListener('click', () => 
     (document.getElementById('sessionModalRetention') as HTMLSelectElement).value || null;
   const perceivedDifficulty =
     (document.getElementById('sessionModalDifficulty') as HTMLSelectElement).value || null;
+  const focusLevel =
+    ((document.getElementById('sessionModalFocus') as HTMLSelectElement | null)?.value as any) ||
+    null;
+  const energyLevel =
+    ((document.getElementById('sessionModalEnergy') as HTMLSelectElement | null)?.value as any) ||
+    null;
   const notes = (document.getElementById('sessionModalNotes') as HTMLTextAreaElement).value.trim();
   const previousPriority = currentStudyRecommendations[0]
     ? { ...currentStudyRecommendations[0] }
@@ -2907,6 +2927,8 @@ document.getElementById('sessionModalSaveBtn')!.addEventListener('click', () => 
     correctAnswers: Math.min(correct, resolved),
     perceivedRetention,
     perceivedDifficulty,
+    focusLevel,
+    energyLevel,
     notes,
     planItemId: state.activeTimer.planItemId || null,
     recommendationId: state.activeTimer.recommendationId || null,
@@ -3328,9 +3350,114 @@ function renderDashboard() {
 }
 
 /* ===== RENDER: DISCIPLINAS ===== */
+let verticalizedSyllabusActive = false;
+
+function renderVerticalizedSyllabus() {
+  const mount = document.getElementById('verticalizedSyllabusMount');
+  if (!mount) return;
+
+  const subjectsData = state.subjects.map(s => ({
+    id: s.id,
+    name: s.name,
+    topics: (s.topics || []).map(t => ({
+      id: t.id,
+      name: t.name,
+      status: t.status,
+      stageChecklist: t.stageChecklist || null,
+      bookmark: t.bookmark || null,
+    })),
+  }));
+
+  mountPreact(
+    h(VerticalizedSyllabusView, {
+      subjects: subjectsData,
+      onToggleStage: (topicId: string, stage: keyof TopicStageChecklist, done: boolean) => {
+        const found = getTopicById(topicId);
+        if (found) {
+          const currentChecklist = found.topic.stageChecklist || {
+            theoryDone: false,
+            summaryDone: false,
+            lawOrNotesDone: false,
+            questionsDone: false,
+          };
+          subjectService.updateTopic(found.subject.id, topicId, {
+            stageChecklist: {
+              ...currentChecklist,
+              [stage]: done,
+            },
+          });
+          persistAndRender();
+        }
+      },
+      onStartStudy: (subjectId: string, topicId: string) => {
+        Object.assign(state.activeTimer, {
+          subjectId,
+          topicId,
+          type: 'study',
+        });
+        populateTimerContextControls();
+        startTimer();
+        if (activeTabName() !== 'dashboard') openStudyTimerFocus();
+      },
+      onImportParsedSyllabus: result => {
+        let addedSubjects = 0;
+        let addedTopics = 0;
+        for (const item of result.subjects) {
+          let targetSubject = state.subjects.find(
+            s => s.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+          );
+          if (!targetSubject) {
+            targetSubject = subjectService.create(item.name);
+            addedSubjects++;
+          }
+          if (targetSubject) {
+            for (const t of item.topics) {
+              const topicExists = (targetSubject.topics || []).some(
+                existing => existing.name.trim().toLowerCase() === t.name.trim().toLowerCase()
+              );
+              if (!topicExists) {
+                subjectService.addTopic(targetSubject.id, { name: t.name });
+                addedTopics++;
+              }
+            }
+          }
+        }
+        persistAndRender();
+        showToast(
+          `Edital importado: ${addedSubjects} disciplinas e ${addedTopics} tópicos adicionados.`
+        );
+      },
+    }),
+    mount
+  );
+}
+
 function renderSubjects() {
   const container = document.getElementById('subjectsContainer');
+  const mount = document.getElementById('verticalizedSyllabusMount');
+  const toggleBtn = document.getElementById('verticalizedSyllabusToggleBtn');
   if (!container) return;
+
+  if (verticalizedSyllabusActive && mount) {
+    container.hidden = true;
+    mount.hidden = false;
+    if (toggleBtn) {
+      toggleBtn.textContent = 'Visão padrão';
+      toggleBtn.classList.add('btn-primary');
+    }
+    renderVerticalizedSyllabus();
+    return;
+  }
+
+  if (mount) {
+    unmountPreact(mount);
+    mount.hidden = true;
+  }
+  container.hidden = false;
+  if (toggleBtn) {
+    toggleBtn.textContent = 'Edital verticalizado';
+    toggleBtn.classList.remove('btn-primary');
+  }
 
   const controller = createSubjectsController({
     state,
@@ -3609,6 +3736,10 @@ function carregarDisciplinasPadrao() {
 document
   .getElementById('loadDefaultSubjectsBtn')!
   .addEventListener('click', carregarDisciplinasPadrao);
+document.getElementById('verticalizedSyllabusToggleBtn')?.addEventListener('click', () => {
+  verticalizedSyllabusActive = !verticalizedSyllabusActive;
+  renderSubjects();
+});
 
 const examImportService = createExamImportService({
   subjectService,
@@ -7736,6 +7867,13 @@ function renderDiagnosisCenter() {
     { recoveries: preparationSignals.rows.filter(item => item.type === 'recovery'), debt },
     { escapeHtml }
   );
+  const energyAnalysis = analyzeFocusAndEnergy(state.studySessions || []);
+  let energyAlertHtml = '';
+  if (energyAnalysis.fatigueAlert) {
+    energyAlertHtml = `<div class="banner banner--warning" style="margin-top: 1rem; border-left: 4px solid #f59e0b; padding: 0.75rem 1rem; background: var(--bg-surface-elevated, #fff); border-radius: 6px;">
+      <strong>⚠️ Alerta Cronobiológico:</strong> ${escapeHtml(energyAnalysis.fatigueAlert)}
+    </div>`;
+  }
   container.innerHTML =
     analysisContextBanner('hoje') +
     renderNextBestAction(nextAction, {
@@ -7743,6 +7881,7 @@ function renderDiagnosisCenter() {
       escapeAttr,
       dailyPriority: dailyExecutionController.build(nextAction).priority,
     }) +
+    energyAlertHtml +
     diagnosisHtml +
     `<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${pluralize(debt.count, 'vencida')}</summary>${secondaryHtml}</details>`;
   container.innerHTML += `<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
@@ -11108,6 +11247,13 @@ if (TEST_MODE) {
     simulateWhatIfScenario,
     buildFinalStretchBanner,
     identifyVolatileTopics,
+    parseRawSyllabusText,
+    buildStudyCycleQueue,
+    getCurrentCycleBlock,
+    advanceStudyCycleQueue,
+    peekUpcomingCycleBlocks,
+    analyzeFocusAndEnergy,
+    renderVerticalizedSyllabus,
   };
   activateInitialTab();
   ensureStateDefaults();

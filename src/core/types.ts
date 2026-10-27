@@ -18,6 +18,13 @@ export interface TopicBookmark {
   readonly updatedAt: string;
 }
 
+export interface TopicStageChecklist {
+  theoryDone?: boolean;
+  summaryDone?: boolean;
+  lawOrNotesDone?: boolean;
+  questionsDone?: boolean;
+}
+
 export interface Topic {
   id: string;
   name: string;
@@ -39,6 +46,7 @@ export interface Topic {
   prerequisites?: string[];
   fieldOrigins?: Record<string, string>;
   bookmark?: TopicBookmark | null;
+  stageChecklist?: TopicStageChecklist | null;
   examTags?: string[];
   examMetrics?: Record<string, ExamMetric>;
   examImportanceEstimates?: Record<string, number>;
@@ -103,6 +111,8 @@ export interface StudySession {
   createdAt?: string;
   startedAt?: string | null;
   questionsResolved?: number;
+  focusLevel?: 'deep' | 'normal' | 'distracted';
+  energyLevel?: 'high' | 'normal' | 'low';
 }
 
 export interface ReadinessSnapshot {

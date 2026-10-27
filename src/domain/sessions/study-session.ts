@@ -16,6 +16,8 @@ export const RECOMMENDATION_SESSION_TYPES = Object.freeze([
 ]);
 export const PERCEIVED_RETENTION_VALUES = Object.freeze(['easy', 'effortful', 'unable']);
 export const PERCEIVED_DIFFICULTY_VALUES = Object.freeze(['easy', 'medium', 'hard']);
+export const FOCUS_LEVEL_VALUES = Object.freeze(['deep', 'normal', 'distracted']);
+export const ENERGY_LEVEL_VALUES = Object.freeze(['high', 'normal', 'low']);
 const nullable = (value: unknown): string | null =>
   value == null || value === '' ? null : String(value);
 const nonNegative = (value: unknown): number => Math.max(0, Number(value) || 0);
@@ -83,6 +85,8 @@ export function normalizeStudySession(
     perceivedDifficulty: PERCEIVED_DIFFICULTY_VALUES.includes(input.perceivedDifficulty)
       ? input.perceivedDifficulty
       : null,
+    focusLevel: FOCUS_LEVEL_VALUES.includes(input.focusLevel) ? input.focusLevel : null,
+    energyLevel: ENERGY_LEVEL_VALUES.includes(input.energyLevel) ? input.energyLevel : null,
     notes: typeof input.notes === 'string' ? input.notes : '',
   };
 }

@@ -46,19 +46,27 @@ test('preserva origem, tipo e dificuldade percebida somente quando válidos', ()
     recommendationType: 'study',
     perceivedRetention: 'effortful',
     perceivedDifficulty: 'hard',
+    focusLevel: 'deep',
+    energyLevel: 'high',
   });
   assert.equal(result.recommendationSource, 'today');
   assert.equal(result.recommendationType, 'study');
   assert.equal(result.perceivedRetention, 'effortful');
   assert.equal(result.perceivedDifficulty, 'hard');
+  assert.equal(result.focusLevel, 'deep');
+  assert.equal(result.energyLevel, 'high');
   const legacy = normalizeStudySession({
     recommendationSource: 'invalid',
     recommendationType: 'invalid',
     perceivedRetention: 'unknown',
     perceivedDifficulty: 'extreme',
+    focusLevel: 'hyper',
+    energyLevel: 'overload',
   });
   assert.equal(legacy.recommendationSource, null);
   assert.equal(legacy.recommendationType, null);
   assert.equal(legacy.perceivedRetention, null);
   assert.equal(legacy.perceivedDifficulty, null);
+  assert.equal(legacy.focusLevel, null);
+  assert.equal(legacy.energyLevel, null);
 });

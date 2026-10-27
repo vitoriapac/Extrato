@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=480adace0d46">
-<link rel="stylesheet" href="styles/app.css?v=480adace0d46">
+<link rel="stylesheet" href="styles/tailwind.css?v=9b443ee3b0ac">
+<link rel="stylesheet" href="styles/app.css?v=9b443ee3b0ac">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -356,6 +356,7 @@
       <div class="section-title">Disciplinas &amp; tópicos</div>
       <div class="subjects-header-actions">
         <button class="btn ghost small" type="button" data-performance-jump="subjects">Ver evolução</button>
+        <button class="btn ghost small" type="button" id="verticalizedSyllabusToggleBtn" data-testid="verticalized-syllabus-toggle">Edital verticalizado</button>
         <details class="action-menu subjects-import-menu"><summary class="btn ghost" aria-label="Opções de importação de disciplinas">Importar ▾</summary><div class="action-menu__items">
           <button type="button" id="loadDefaultSubjectsBtn" data-testid="open-exam-import">Carregar disciplinas do edital</button>
           <button type="button" id="structuredContentImportBtn">Importar JSON ou CSV</button>
@@ -366,6 +367,7 @@
       </div>
     </div>
     <div id="subjectsContainer"></div>
+    <div id="verticalizedSyllabusMount" hidden></div>
   </div>
 
   <!-- CALENDARIO -->
@@ -832,6 +834,27 @@
           </select>
         </label>
       </section>
+      <section class="session-activity-fields" data-session-fields="study questions review simulation" aria-labelledby="sessionEnergyTitle">
+        <h4 id="sessionEnergyTitle">Energia e foco</h4>
+        <div class="session-question-fields">
+          <label>Nível de foco
+            <select class="select-control" id="sessionModalFocus" aria-label="Nível de foco na sessão">
+              <option value="">Não informado</option>
+              <option value="deep">Profundo</option>
+              <option value="normal">Normal</option>
+              <option value="distracted">Distraído</option>
+            </select>
+          </label>
+          <label>Nível de energia
+            <select class="select-control" id="sessionModalEnergy" aria-label="Nível de energia na sessão">
+              <option value="">Não informado</option>
+              <option value="high">Alta</option>
+              <option value="normal">Normal</option>
+              <option value="low">Cansado</option>
+            </select>
+          </label>
+        </div>
+      </section>
       <details class="session-activity-fields session-bookmark-fields" id="sessionBookmarkSection" hidden>
         <summary>Onde você parou?</summary>
         <label>Material
@@ -876,7 +899,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=480adace0d46"></script>
+  <script src="src/app.bundle.js?v=9b443ee3b0ac"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

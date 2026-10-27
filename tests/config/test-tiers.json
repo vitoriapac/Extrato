@@ -350,6 +350,11 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
+      "file": "tests/e2e/verticalized-syllabus-and-cycle.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
       "file": "tests/e2e/visual-consolidation.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
@@ -727,6 +732,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/focus-energy-analytics.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
       "file": "tests/unit/format-number.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -945,6 +955,11 @@
       "file": "tests/unit/questions-components.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; componentes Preact e controller da aba de questões e simulados."
+    },
+    {
+      "file": "tests/unit/raw-syllabus-parser.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
       "file": "tests/unit/recommend-study.test.js",
@@ -1167,6 +1182,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/study-cycle-engine.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
       "file": "tests/unit/study-day-count.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1307,12 +1327,17 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/volatile-mastery.test.js",
+      "file": "tests/unit/verticalized-syllabus-view.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
       "file": "tests/unit/visual-consistency-renderers.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/volatile-mastery.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },

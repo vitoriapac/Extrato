@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-193 arquivos Node e 60 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+197 arquivos Node e 61 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -74,6 +74,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/subject-accuracy-target.spec.js | browser | Aplicação | functional | 6.4 | journey, viewport | none |
 | tests/e2e/topic-strategy.spec.js | browser | Aplicação | functional | 18.1 | journey, demo | none |
 | tests/e2e/ux-baseline.spec.js | browser | Aplicação | visual | 70.6 | journey, visual-comparison, demo, viewport | windows-only |
+| tests/e2e/verticalized-syllabus-and-cycle.spec.js | browser | Aplicação | functional | — | journey, demo | none |
 | tests/e2e/visual-consolidation.spec.js | browser | Visual | visual | 125.4 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/visual-density.spec.js | browser | Visual | visual | 183.6 | journey, viewport | none |
 | tests/e2e/visual-language.spec.js | browser | Visual | visual | 24.2 | journey, viewport | none |
@@ -148,6 +149,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/executive-summary.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/filter-panel.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/final-stretch-policy.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/focus-energy-analytics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-number.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/goal-service.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/goals-components.test.js | node | Metas | functional | — | contract | none |
@@ -192,6 +194,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/question-import-normalizer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/question-import-service.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/questions-components.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/raw-syllabus-parser.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/recommend-study.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-action.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-calibration.test.js | node | Recomendações | functional | — | contract | none |
@@ -236,6 +239,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/strategic-timeline.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/strategy-config.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/structured-content-import.test.js | node | Aplicação | critical | — | contract | none |
+| tests/unit/study-cycle-engine.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/study-day-count.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/study-plan.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/study-session.test.js | node | Sessões | functional | — | contract | none |
@@ -264,6 +268,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/ui-primitives.test.js | node | Aplicação | functional | — | contract, viewport | none |
 | tests/unit/utils.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/validated-exam-impact.test.js | node | Inteligência da prova | critical | — | contract | none |
+| tests/unit/verticalized-syllabus-view.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/visual-consistency-renderers.test.js | node | Visual | visual | — | contract | none |
 | tests/unit/volatile-mastery.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/weekly-adherence.test.js | node | Aderência | critical | — | contract | none |

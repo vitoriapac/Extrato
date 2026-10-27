@@ -1508,6 +1508,34 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/e2e/verticalized-syllabus-and-cycle.spec.js",
+      "layer": "browser",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "journey",
+        "demo"
+      ],
+      "imports": [
+        "@playwright/test",
+        "../../src/demo/demo-generator.js",
+        "./helpers.js"
+      ],
+      "staticTestDeclarations": 3,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "test:e2e",
+        "test:full UTC"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/e2e/visual-consolidation.spec.js",
       "layer": "browser",
       "area": "Visual",
@@ -3850,6 +3878,36 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/focus-energy-analytics.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/analytics/focus-energy-analytics.js"
+      ],
+      "staticTestDeclarations": 3,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/format-number.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -5250,6 +5308,36 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/raw-syllabus-parser.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/application/subjects/raw-syllabus-parser.js"
+      ],
+      "staticTestDeclarations": 4,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/recommend-study.test.js",
       "layer": "node",
       "area": "Recomendações",
@@ -6616,6 +6704,36 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/study-cycle-engine.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/planning/study-cycle-engine.js"
+      ],
+      "staticTestDeclarations": 3,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/study-day-count.test.js",
       "layer": "node",
       "area": "Aplicação",
@@ -7479,6 +7597,38 @@
         "../../src/application/build-study-candidates.js"
       ],
       "staticTestDeclarations": 5,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/verticalized-syllabus-view.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "preact",
+        "preact-render-to-string",
+        "../../src/ui/views/VerticalizedSyllabusView.js"
+      ],
+      "staticTestDeclarations": 2,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
