@@ -36,6 +36,15 @@ import {
   peekUpcomingCycleBlocks,
 } from './domain/planning/study-cycle-engine.js';
 import { analyzeFocusAndEnergy } from './domain/analytics/focus-energy-analytics.js';
+import { ErrorNotebookView } from './ui/views/ErrorNotebookView.js';
+import {
+  createErrorFlashcard,
+  reviewErrorFlashcard,
+  getDueFlashcards,
+  calculateFlashcardDeckStats,
+} from './domain/notebook/error-notebook-engine.js';
+import { resolveEntitlements } from './domain/billing/entitlements.js';
+import { createCloudSaaSProvider } from './storage/cloud-saas-provider.js';
 import {
   computeTimerSeconds,
   hasActiveTimer,
@@ -1133,6 +1142,7 @@ function ensureStateDefaults() {
   if (!Array.isArray(state.examQuestions)) state.examQuestions = [];
   if (!Array.isArray(state.weeklyCloseSnapshots)) state.weeklyCloseSnapshots = [];
   if (!Array.isArray(state.planningCapacityHistory)) state.planningCapacityHistory = [];
+  if (!Array.isArray(state.errorFlashcards)) state.errorFlashcards = [];
   if (!['agenda', 'sequence'].includes(state.executionMode)) state.executionMode = 'agenda';
   const metaDefaults = {
     semanal: 5,
@@ -5022,9 +5032,90 @@ function getQuestionsTabController() {
   });
 }
 
+let errorNotebookActive = false;
+
+function renderErrorNotebook() {
+  const mount = document.getElementById('errorNotebookMount');
+  if (!mount) return;
+
+  const subjectsData = state.subjects.map(s => ({
+    id: s.id,
+    name: s.name,
+    topics: (s.topics || []).map(t => ({
+      id: t.id,
+      name: t.name,
+    })),
+  }));
+
+  mountPreact(
+    h(ErrorNotebookView, {
+      flashcards: state.errorFlashcards || [],
+      subjects: subjectsData,
+      todayDate: todayISO(),
+      onSaveFlashcard: input => {
+        const newCard = createErrorFlashcard({
+          ...input,
+          todayDate: todayISO(),
+        });
+        if (!Array.isArray(state.errorFlashcards)) state.errorFlashcards = [];
+        state.errorFlashcards.push(newCard);
+        persistAndRender();
+        showToast('Card de erro salvo no caderno.');
+      },
+      onReviewFlashcard: (cardId, rating) => {
+        if (!Array.isArray(state.errorFlashcards)) return;
+        const index = state.errorFlashcards.findIndex(c => c.id === cardId);
+        if (index >= 0) {
+          state.errorFlashcards[index] = reviewErrorFlashcard(
+            state.errorFlashcards[index],
+            rating,
+            { todayDate: todayISO(), nowISO: nowISO() }
+          );
+          persistAndRender();
+        }
+      },
+      onDeleteFlashcard: cardId => {
+        if (!Array.isArray(state.errorFlashcards)) return;
+        const index = state.errorFlashcards.findIndex(c => c.id === cardId);
+        if (index >= 0) {
+          state.errorFlashcards.splice(index, 1);
+          persistAndRender();
+          showToast('Card de erro removido.');
+        }
+      },
+    }),
+    mount
+  );
+}
+
 function renderQuestoes() {
   const body = document.getElementById('questoesBody');
+  const mount = document.getElementById('errorNotebookMount');
+  const mainContainer = document.getElementById('questionsMainContainer');
+  const toggleBtn = document.getElementById('errorNotebookToggleBtn');
   if (!body) return;
+
+  if (errorNotebookActive && mount) {
+    if (mainContainer) mainContainer.hidden = true;
+    mount.hidden = false;
+    if (toggleBtn) {
+      toggleBtn.textContent = 'Visão de questões';
+      toggleBtn.classList.add('btn-primary');
+    }
+    renderErrorNotebook();
+    return;
+  }
+
+  if (mount) {
+    unmountPreact(mount);
+    mount.hidden = true;
+  }
+  if (mainContainer) mainContainer.hidden = false;
+  if (toggleBtn) {
+    toggleBtn.textContent = 'Caderno de Erros (Flashcards)';
+    toggleBtn.classList.remove('btn-primary');
+  }
+
   body.innerHTML = getQuestionsTabController().renderQuestionsHtml();
 }
 function addQuestaoRow(initial: any = {}) {
@@ -5621,6 +5712,10 @@ function deleteSimuladoRow(id: string) {
 }
 
 document.getElementById('addQuestaoRowBtn')!.addEventListener('click', addQuestaoRow);
+document.getElementById('errorNotebookToggleBtn')?.addEventListener('click', () => {
+  errorNotebookActive = !errorNotebookActive;
+  renderQuestoes();
+});
 document.getElementById('addSimuladoRowBtn')!.addEventListener('click', addSimuladoRow);
 
 const questionImportService = createQuestionImportService({
@@ -11254,6 +11349,12 @@ if (TEST_MODE) {
     peekUpcomingCycleBlocks,
     analyzeFocusAndEnergy,
     renderVerticalizedSyllabus,
+    createErrorFlashcard,
+    reviewErrorFlashcard,
+    getDueFlashcards,
+    calculateFlashcardDeckStats,
+    resolveEntitlements,
+    createCloudSaaSProvider,
   };
   activateInitialTab();
   ensureStateDefaults();

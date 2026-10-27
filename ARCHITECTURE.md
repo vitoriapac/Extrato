@@ -60,6 +60,7 @@ flowchart TD
 - `src/ui/components/WhatIfSimulatorModal.tsx` e `src/ui/controllers/what-if-controller.ts`: modal e controlador de simulação de cenários em memória.
 - `src/ui/components/FinalStretchBanner.tsx`: banner de urgência contextual do Modo Reta Final com atalho para o simulador.
 - `src/ui/views/VerticalizedSyllabusView.tsx`: visão declarativa de edital verticalizado com checklist de 4 etapas de estudo, filtros e importação por texto colado.
+- `src/ui/views/ErrorNotebookView.tsx`: visão declarativa do Caderno de Erros e Flashcards com repetição espaçada, pegadinha da banca e conceito correto.
 - `src/ui/tabs/**/*.tsx`: componentes funcionais das abas em Preact (`SubjectTopicManager.tsx`, `QuestionsTable.tsx`, `SimulationsTable.tsx`, `ReviewsSchedule.tsx`, `CalendarView.tsx`, `WeeklyGoals.tsx`, `TodaySchedule.tsx`, `DashboardOverview.tsx`).
 - `src/ui/components/presentation.ts` e `docs/UI-FOUNDATIONS.md`: renderização compartilhada de cabeçalhos, métricas e estados vazios, com o contrato de superfícies e espaçamento usado na migração gradual das telas.
 - `styles/app.css`: layout e componentes.
@@ -85,6 +86,7 @@ flowchart TD
 - `src/storage/local-storage-provider.ts`: fallback contido para armazenamento local.
 - `src/storage/real-storage-provider.ts`: adaptação compatível da persistência real existente.
 - `src/storage/demo-storage-provider.ts`: persistência temporária e isolada em `sessionStorage`.
+- `src/storage/cloud-saas-provider.ts`: conector desacoplado para nuvem/SaaS com verificação de versão remota, health check e fallback local seguro.
 - `src/storage/migration-service.ts`: execução ordenada e verificável das migrações de schema.
 - `src/storage/backup-service.ts`: serialização, leitura segura e nomes dos arquivos de backup.
 - `src/repositories/collection-repository.ts`: contrato uniforme de consulta e mutação das coleções do estado.
@@ -112,6 +114,8 @@ flowchart TD
 - `src/domain/analytics/volatile-mastery.ts`: diagnóstico de ilusão de competência para tópicos com queda de retenção após 14 dias sem revisão.
 - `src/application/subjects/raw-syllabus-parser.ts`: parser de edital bruto e texto de PDF (Cebraspe, FCC, FGV) com árvore estruturada e prévia.
 - `src/domain/planning/study-cycle-engine.ts`: motor do ciclo de estudos com fila rotativa circular intercalada e avanço sem acúmulo de falsos atrasos.
+- `src/domain/notebook/error-notebook-engine.ts`: motor puro de repetição espaçada (SM-2 adaptado) para flashcards de erro com pegadinha da banca e conceito correto.
+- `src/domain/billing/entitlements.ts`: resolução pura de direitos e limites por plano (`free`, `pro`, `mentor`) preparando a transição SaaS.
 - `src/domain/analytics/focus-energy-analytics.ts`: análise cronobiológica por turnos (manhã, tarde, noite) e detecção de fadiga cognitiva.
 - `src/application/build-executive-summary.ts`: modelo de apresentação do resumo executivo sem acesso ao DOM.
 - `src/application/generate-diagnosis.ts`: classificação explicável de gargalos, oportunidades, riscos e foco semanal.

@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-197 arquivos Node e 61 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+201 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -33,6 +33,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/daily-execution.spec.js | browser | Aplicação | critical | 106.6 | journey, visual-comparison, demo, viewport | windows-only |
 | tests/e2e/demo.spec.js | browser | Demo | functional | 150 | journey, demo, viewport | none |
 | tests/e2e/error-analysis.spec.js | browser | Aplicação | functional | 11.6 | journey, demo | none |
+| tests/e2e/error-notebook-and-a11y.spec.js | browser | Aplicação | functional | — | journey, demo | none |
 | tests/e2e/evidence-calibration.spec.js | browser | Aplicação | functional | 7.8 | journey, viewport | none |
 | tests/e2e/exam-import.spec.js | browser | Inteligência da prova | critical | 45.2 | journey | none |
 | tests/e2e/exam-intelligence-hierarchy.spec.js | browser | Inteligência da prova | functional | 7.9 | journey, viewport | none |
@@ -106,6 +107,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/capacity-review-preview.test.js | node | Capacidade | critical | — | contract | none |
 | tests/unit/clock-timezone.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/close-comparison.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/cloud-saas-provider.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/cognitive-profile.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/consolidated-signal-contract.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/consolidated-signals.test.js | node | Datas | critical | — | contract | none |
@@ -128,8 +130,11 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/demo-sustainability.test.js | node | Sustentabilidade | functional | — | contract, demo | none |
 | tests/unit/diagnosis-center.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/editable-collection-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/entitlements.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/error-analysis.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/error-boundary-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/error-notebook-engine.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/error-notebook-view.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/evidence-quality.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/evidence-scope-migration.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/exam-evidence-scope.test.js | node | Inteligência da prova | critical | — | contract | none |

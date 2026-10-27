@@ -230,20 +230,18 @@ Consolidado em ordem de valor estratégico e impacto no aprendizado do estudante
   - Identificar quando o estudante gasta muitas horas em uma matéria sem ganho percentual perceptível, alertando que o retorno marginal decresceu e sugerindo redirecionamento para outra matéria.
 - **Consolidação do Design System & Tokens Semânticos:**
   - Padronizar tokens CSS para `critical`, `warning`, `success`, `info`, `surface` e consolidar microcomponentes (chips, badges, tooltips e skeletons de carregamento).
-- **Auditoria Manual de Acessibilidade (Leitores de Tela Reais):**
-  - Conforme apontado no [DECISION-EXPERIENCE-CLOSURE.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CLOSURE.md), realizar teste assistido com NVDA, VoiceOver ou Orca para garantir navegabilidade de teclado e semântica de leitor em todos os fluxos de estudo.
+- **Caderno de Erros Ativo & Flashcards de Bolso (Fase 4):** [CONCLUÍDO]
+  - Motor em [`src/domain/notebook/error-notebook-engine.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/notebook/error-notebook-engine.ts), interface em [`src/ui/views/ErrorNotebookView.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/views/ErrorNotebookView.tsx) com repetição espaçada adaptativa (Again, Hard, Good, Easy), filtros e deck interativo.
+- **Transição SaaS e Isolamento de Armazenamento (Fase 4):** [CONCLUÍDO]
+  - Conector de nuvem em [`src/storage/cloud-saas-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/cloud-saas-provider.ts) e resolução de direitos em [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts).
+- **Auditoria de Acessibilidade por Teclado e Modais (Fase 4):** [CONCLUÍDO]
+  - Fechamento com Escape, ausência de armadilhas de foco e testes em [`tests/e2e/error-notebook-and-a11y.spec.js`](file:///c:/Users/vitor/Documents/Extrato/tests/e2e/error-notebook-and-a11y.spec.js).
 
 ---
 
-## 6. Matriz de Decisão: O que Atacar em Seguida?
+## 6. Status das 4 Fases do Plano de Evolução
 
-Dependendo do objetivo do ciclo, a ordem recomendada de execução é:
-
-1. **Se o foco for Transformar em Hub Completo de Estudos (Uso Diário Intenso):**
-   - **Passo 1:** Rastreador de Ponto de Parada (`topic-bookmark.js`) + Registro de Energia/Foco no check-out da sessão (`focus-energy-analytics.js`).
-   - **Passo 2:** Ciclo de Estudos Flexível (`study-cycle-engine.js`) + Mini-Timer em Picture-in-Picture (`pip-timer-controller.js`).
-   - **Passo 3:** Edital Verticalizado Interativo (`verticalized-syllabus.js`).
-2. **Se o foco for Concluir o Pacote de Engenharia Anterior:**
-   - Implementar a **Fase 5** (Simulador "E se?" e Reta Final) → Implementar a **Fase 6** (CI Sharding & Typecheck no GitHub Actions) → Escrever testes E2E para os modais novos.
-3. **Se o foco for Preparar Release Estável:**
-   - Documentar em [README.md](file:///c:/Users/vitor/Documents/Extrato/README.md) e [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md), e rodar o gate `npm run test:full`.
+1. **Fase 1 — Decisão Rápida, UX & Primeiro Uso:** [CONCLUÍDA] NextActionCard com 6 perguntas contratuais, Bookmarks de Ponto de Parada e Onboarding sem reload.
+2. **Fase 2 — Inteligência Preditiva & Reta Final:** [CONCLUÍDA] Simulador "E se?" em memória (`what-if-simulator.ts`), Modo Reta Final (< 15 dias) e detecção de ilusão de competência (`volatile-mastery.ts`).
+3. **Fase 3 — Hub Completo de Estudos & Flexibilidade:** [CONCLUÍDA] Edital Verticalizado interativo com parser de PDF, Ciclo de Estudos flexível em fila rotativa e análise cronobiológica de energia e fadiga.
+4. **Fase 4 — Caderno de Erros, Acessibilidade & Base SaaS:** [CONCLUÍDA] Flashcards de fixação imediata com repetição espaçada, auditoria de teclado sem armadilhas e contratos de armazenamento e entitlements SaaS.

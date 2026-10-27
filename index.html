@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=9b443ee3b0ac">
-<link rel="stylesheet" href="styles/app.css?v=9b443ee3b0ac">
+<link rel="stylesheet" href="styles/tailwind.css?v=2206be506471">
+<link rel="stylesheet" href="styles/app.css?v=2206be506471">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -494,6 +494,7 @@
   <div class="panel" id="panel-questoes" role="tabpanel" aria-labelledby="tab-questoes">
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Questões resolvidas</h2>
+      <button class="btn ghost small" type="button" id="errorNotebookToggleBtn" data-testid="error-notebook-toggle">Caderno de Erros (Flashcards)</button>
       <button class="btn" id="addQuestaoRowBtn">+ Registrar sessão</button>
       <details class="action-menu questions-import-menu"><summary class="btn ghost" aria-label="Opções de importação de questões">Importar ▾</summary><div class="action-menu__items">
         <button type="button" id="importQuestionsBtn">Importar CSV (QConcursos / Tec / Padrão)</button>
@@ -502,6 +503,8 @@
       <input type="file" id="questionsImportFile" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
       <button class="btn ghost small" type="button" data-performance-jump="questions">Ver análise completa →</button>
     </div>
+    <div id="errorNotebookMount" hidden></div>
+    <div id="questionsMainContainer">
     <div class="log-table-wrap">
       <table class="log responsive-history-table">
         <thead>
@@ -565,6 +568,7 @@
       <details class="limits-disclosure"><summary>Limites</summary><p class="analytics-note">Resultados medidos por fator dominante. Os dados servem para auditoria e não alteram os pesos automaticamente.</p></details>
       <div id="recommendationCalibration"></div>
       <section aria-label="Auditoria de resultados posteriores"><h4>Resultados posteriores por tipo</h4><div id="recommendationOutcomeAudit"></div></section>
+    </div>
     </div>
   </div>
 
@@ -899,7 +903,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=9b443ee3b0ac"></script>
+  <script src="src/app.bundle.js?v=2206be506471"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

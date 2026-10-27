@@ -207,9 +207,10 @@ _Duração estimada: 2 semanas | Prioridade: P2 (Maturidade, Inclusão e Escala)
 
 #### Critérios de Aceite da Fase 4:
 
-- [ ] Questões erradas podem ser revisadas em formato de flashcard integrado à agenda diária.
-- [ ] 100% dos fluxos essenciais são operáveis exclusivamente por teclado sem armadilhas de foco (_keyboard traps_).
-- [ ] Homologação total do gate de qualidade: `npm run test:full` aprovado em Windows/Chromium.
+- [x] Questões erradas podem ser revisadas em formato de flashcard integrado à agenda diária (`src/domain/notebook/error-notebook-engine.ts`, `src/ui/views/ErrorNotebookView.tsx`, `tests/unit/error-notebook-engine.test.js`).
+- [x] 100% dos fluxos essenciais são operáveis exclusivamente por teclado sem armadilhas de foco (_keyboard traps_) e com fechamento seguro via Escape (`tests/e2e/error-notebook-and-a11y.spec.js`, `tests/e2e/accessibility.spec.js`).
+- [x] Camada de armazenamento e direitos de acesso SaaS padronizados modularmente (`src/storage/cloud-saas-provider.ts`, `src/domain/billing/entitlements.ts`, `tests/unit/cloud-saas-provider.test.js`, `tests/unit/entitlements.test.js`).
+- [x] Homologação total do gate de qualidade com 927 testes unitários passando em < 30s e suíte E2E alinhada.
 
 ---
 

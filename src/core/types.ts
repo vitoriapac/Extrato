@@ -79,6 +79,28 @@ export interface QuestionRecord {
   studySessionId?: string | null;
 }
 
+export type ErrorFlashcardStatus = 'pending' | 'reviewing' | 'mastered';
+export type FlashcardRating = 'again' | 'hard' | 'good' | 'easy';
+
+export interface ErrorFlashcard {
+  id: string;
+  topicId: string;
+  subjectId: string;
+  questionId?: string | null;
+  statementSummary: string;
+  bancaTrap?: string;
+  correctConcept: string;
+  errorCategory?: string;
+  status: ErrorFlashcardStatus;
+  reviewCount: number;
+  consecutiveSuccesses: number;
+  lastReviewedAt?: string | null;
+  nextReviewDate?: string | null;
+  intervalDays: number;
+  easeFactor: number;
+  createdAt: string;
+}
+
 export interface SimulationBreakdownItem {
   id: string;
   subjectId: string | null;
@@ -407,6 +429,7 @@ export interface AppState {
   topicHistory: TopicHistoryEvent[];
   achievementsUnlocked: Record<string, unknown>;
   metasPorDisciplina: SubjectGoal[];
+  errorFlashcards?: ErrorFlashcard[];
   lastBackupAt: string | null;
   updatedAt: string | null;
 }

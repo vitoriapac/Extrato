@@ -98,6 +98,11 @@
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
     },
     {
+      "file": "tests/e2e/error-notebook-and-a11y.spec.js",
+      "tier": "FULL",
+      "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
+    },
+    {
       "file": "tests/e2e/evidence-calibration.spec.js",
       "tier": "FULL",
       "rationale": "Preservar cobertura completa; matrizes e cenários complementares ficam no Full."
@@ -517,6 +522,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/cloud-saas-provider.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
       "file": "tests/unit/cognitive-profile.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -627,12 +637,27 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/entitlements.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
       "file": "tests/unit/error-analysis.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
       "file": "tests/unit/error-boundary-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/error-notebook-engine.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/error-notebook-view.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },

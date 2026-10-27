@@ -29,6 +29,8 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Edital Verticalizado Interativo com tabela de 4 etapas de estudo (Teoria, Resumo, Lei Seca, Questões) e parser de texto bruto/PDF do edital.
 - Ciclo de Estudos Flexível em Fila Rotativa com blocos intercalados proporcionais aos pesos das disciplinas, pausando sem gerar avalanche de atrasos falsos.
 - Análise Cronobiológica de Energia e Fadiga correlacionando foco/energia por turnos (manhã, tarde, noite) com alerta de esgotamento cognitivo no Diagnóstico.
+- Caderno de Erros Ativo & Flashcards de Bolso com repetição espaçada adaptativa (Again, Hard, Good, Easy), identificação de pegadinhas da banca e conceito correto.
+- Conector de Nuvem SaaS modular e controle puro de planos e entitlements (Free, Pro, Mentor).
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
 - Tema claro/escuro, layout responsivo e navegação por teclado.
 
@@ -188,6 +190,12 @@ Na aba **Disciplinas**, o botão **Edital verticalizado** alterna para uma visã
 O **Ciclo de Estudos em Fila Rotativa** (`src/domain/planning/study-cycle-engine.ts`) organiza as matérias em blocos intercalados de acordo com os pesos configurados, avançando conforme a execução real sem acumular atrasos falsos por imprevistos diários.
 
 No encerramento de cada sessão, é possível registrar o nível subjetivo de **Foco** (_Profundo_, _Normal_, _Distraído_) e **Energia** (_Alta_, _Normal_, _Cansado_). O motor [`focus-energy-analytics.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/focus-energy-analytics.ts) cruza esses dados com os turnos do dia (_Manhã_, _Tarde_, _Noite_) e emite alertas de fadiga cognitiva no Centro de Diagnóstico quando detecta quedas significativas de rendimento associadas a esgotamento.
+
+### Caderno de Erros Ativo & Flashcards de Bolso
+
+Na aba **Questões & Simulados**, o botão **Caderno de Erros (Flashcards)** ativa a interface dedicada de fixação (`src/ui/views/ErrorNotebookView.tsx`). Cada card reúne o enunciado da questão, a **Pegadinha da Banca** (distrator comum) e o **Conceito Correto** associado ao tópico e à disciplina.
+
+O motor de repetição espaçada (`src/domain/notebook/error-notebook-engine.ts`) agenda automaticamente as revisões de acordo com a recuperação informada (_Errei_ = 1 dia, _Difícil_ = 2 dias, _Bom_ = 4 dias, _Fácil_ = 7+ dias), promovendo o card ao status de **Dominado** após 3 recuperações consecutivas bem-sucedidas. Todos os modais contam com fechamento via teclado (`Escape`), foco assistido e conformidade para leitores de tela sem armadilhas de navegação.
 
 ## Instalação como PWA
 

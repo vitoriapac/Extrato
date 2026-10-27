@@ -95,6 +95,7 @@ export function createDefaultState(): AppState {
     topicHistory: [],
     achievementsUnlocked: {},
     metasPorDisciplina: [],
+    errorFlashcards: [],
     lastBackupAt: null,
     updatedAt: null,
   };
