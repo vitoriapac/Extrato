@@ -2,6 +2,9 @@
 
 Este documento consolida tudo o que ainda resta implementar no **StudyTrack**, organizando as pendências do plano recente de engenharia (Fases 5 e 6), os fechamentos de cobertura das fases já entregues, as novas especificações para transformar o app em um **Hub Completo de Estudos**, e o backlog estratégico mapeado em [docs/recomendacoes-futuras.md](file:///c:/Users/vitor/Documents/Extrato/docs/recomendacoes-futuras.md).
 
+> [!IMPORTANT]
+> **Roteiro Master de Execução:** O cronograma unificado, prioridades de sprint (9 semanas) e matriz de entregas estão consolidados em **[docs/PLANO-EVOLUCAO-UNIFICADO.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-EVOLUCAO-UNIFICADO.md)**. Utilize este documento (`O-QUE-FALTA-IMPLEMENTAR.md`) como especificação técnica detalhada dos componentes.
+
 ---
 
 ## 1. Resumo do Status Atual das Fases e Marcos Técnicos

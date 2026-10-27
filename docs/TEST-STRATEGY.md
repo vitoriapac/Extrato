@@ -16,9 +16,9 @@ Os níveis são cumulativos: Regression inclui Fast; Full inclui Regression. A c
 
 | Gate | Conteúdo contratado | Meta | Máximo |
 |---|---|---:|---:|
-| FAST_GATE | Sintaxe, artefatos reproduzíveis, todos os Node em UTC/SP e um smoke de navegação sem Demo | 120 s | 180 s |
+| FAST_GATE | Sintaxe, checagem estática de tipos (`tsc` app e testes), artefatos reproduzíveis, todos os Node em UTC/SP e um smoke de navegação sem Demo | 120 s | 180 s |
 | REGRESSION | Fast + oito jornadas principais + dois casos responsivos (375 claro / 1440 escuro), browser em UTC | 420 s | 600 s |
-| FULL | Sintaxe, artefatos, todos os Node em UTC/SP, todos os E2E em UTC e recorte E2E SP | Monitorar | Sem limite rígido |
+| FULL | Sintaxe, checagem de tipos, artefatos, todos os Node em UTC/SP, todos os E2E em UTC (com sharding paralelo no CI) e recorte E2E SP | Monitorar | Sem limite rígido |
 
 Esses valores são orçamentos, não tempos já comprovados para os novos comandos. Instalação de dependências/browser e filas do CI devem ser medidas separadamente. Os unitários levaram 11,5 s em UTC e 16,7 s em SP na última execução; não há motivo medido para reduzir esse conjunto agora.
 

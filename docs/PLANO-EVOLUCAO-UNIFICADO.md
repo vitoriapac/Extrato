@@ -91,10 +91,10 @@ flowchart TD
   2. **Missão do 1º Dia:** Widget reativo na aba Hoje orientando o novo usuário a realizar sua 1ª sessão no cronômetro e importar seu primeiro CSV de questões após a criação do plano.
 
 #### Critérios de Aceite da Fase 1:
-- [ ] A tela inicial responde em < 3 segundos qual a próxima melhor ação do dia.
-- [ ] O ponto de parada preenchido no encerramento de uma sessão reaparece automaticamente na próxima recomendação do mesmo tópico.
-- [ ] Novos usuários passam pelo wizard inicial em menos de 60 segundos usando os atalhos de rotina.
-- [ ] Todos os testes unitários (`npm run test:fast`) e suíte de onboarding (`tests/e2e/onboarding.spec.js`) passam 100%.
+- [x] A tela inicial responde em < 3 segundos qual a próxima melhor ação do dia (`NextActionCard.tsx` com as 6 perguntas contratuais montado via Preact na Visão Geral).
+- [x] O ponto de parada preenchido no encerramento de uma sessão reaparece automaticamente na próxima recomendação do mesmo tópico (integrado ao `NextActionCard` e na listagem de disciplinas via `BookmarkBadge.tsx` e `SubjectTopicRow.tsx`).
+- [x] Novos usuários passam pelo wizard inicial em menos de 60 segundos usando os atalhos de rotina (`FirstStepsMission.tsx` e presets do wizard).
+- [x] Todos os testes unitários (`npm run test:fast`) e suíte de onboarding (`tests/e2e/onboarding.spec.js`) passam 100% (incluindo testes de bookmark e execução diária).
 
 ---
 

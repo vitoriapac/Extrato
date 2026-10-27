@@ -29,3 +29,5 @@ graphify-out/*
 /CLAUDE.md
 .claude/*
 !.claude/launch.json
+.impeccable/*
+!.impeccable/design.json

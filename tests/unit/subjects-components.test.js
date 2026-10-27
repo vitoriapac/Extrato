@@ -126,3 +126,35 @@ test('SubjectTopicRow Preact Component — renderiza campos de input, seletores 
   assert.ok(html.includes('revisar'));
   assert.ok(html.includes('Atenção aos requisitos de validade'));
 });
+
+test('SubjectTopicRow Preact Component — renderiza BookmarkBadge quando houver ponto de parada', () => {
+  const topic = {
+    id: 'top-11',
+    name: 'Contratos Administrativos',
+    status: 'Em andamento',
+    difficulty: 'Médio',
+    tags: [],
+    archived: false,
+    bookmark: {
+      resourceType: 'pdf',
+      currentUnit: 25,
+      totalUnits: 80,
+      updatedAt: '2026-10-25T12:00:00.000Z',
+    },
+  };
+
+  const html = render(
+    h(SubjectTopicRow, {
+      subjectId: 'sub-1',
+      topic,
+      isOpenNotes: false,
+      statusOptions: mockStatusOptions,
+      statusClasses: mockStatusClasses,
+      difficultyOptions: mockDiffOptions,
+      difficultyClasses: mockDiffClasses,
+    })
+  );
+
+  assert.ok(html.includes('bookmark-badge'));
+  assert.ok(html.includes('pág. 25 de 80'));
+});

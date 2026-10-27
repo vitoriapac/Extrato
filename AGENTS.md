@@ -1,6 +1,15 @@
-# StudyTrack — estratégia de testes
+# StudyTrack — Governança, Engenharia e Estratégia de Testes
 
 As instruções explícitas do usuário prevalecem sobre esta política. Consulte [a estratégia de testes](docs/TEST-STRATEGY.md), [o inventário](docs/TEST-SUITE-INVENTORY.md) e [a política visual](docs/VISUAL-TEST-POLICY.md).
+
+## Pilha Tecnológica e Diretrizes Inegociáveis de Engenharia
+
+- **Tipagem Estática Obrigatória:** Todo código novo de domínio (`src/domain/`) e aplicação (`src/application/`) deve ser escrito em TypeScript (`.ts`) e validado com `npm run check:types`.
+- **Interface Declarativa e Tokens:** Novas interfaces devem ser componentes Preact 11 (`.tsx`), consumindo as primitivas compartilhadas (`src/ui/primitives/*.tsx`) e estilizadas via Tailwind CSS v4 integrado a `styles/tokens.css`. É vedado o uso de `innerHTML` ou strings HTML interpoladas.
+- **Estratégia de Testes Proporcional:**
+  - **Regras de negócio e algoritmos:** Testes unitários no Node rodando com hook nativo (`npm run test:fast`). Meta: < 120s.
+  - **Jornadas centrais de UI:** Testes E2E dirigidos no Playwright para fluxos críticos, sem inflar a matriz browser desnecessariamente.
+  - **Execuções completas (`npm run test:full`):** Reservadas para releases e mudanças estruturais de esquema/persistência.
 
 ## Durante a implementação
 

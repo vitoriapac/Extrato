@@ -20,6 +20,7 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Recovery com capacidade preservada, confirmação, reversão segura e detalhes congelados na Timeline.
 - Importação de histórico de questões via CSV/TSV (QConcursos, Tec Concursos ou modelo padrão) com prévia, criação controlada de tópicos e prevenção de duplicatas.
 - Sincronização remota opcional via WebDAV com criptografia de ponta a ponta (E2EE AES-GCM 256 bits) antes do envio.
+- Mini-timer flutuante em Picture-in-Picture (Document PiP API) com sincronização em tempo real e fallback dinâmico no título da aba.
 - Relatório estratégico em PDF e backup completo em JSON.
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
 - Tema claro/escuro, layout responsivo e navegação por teclado.
@@ -241,11 +242,15 @@ O histórico do **Foco Estratégico** mostra uma linha simples para comparar per
 
 Os pacotes 3.2 a 3.7, a fase de inteligência histórica e a consolidação pós-3.0 estão entregues: primeiro uso guiado, importadores modulares, qualidade e revisão das provas, auditoria de impacto, matriz Prova × Você, validação com 16 provas, PDF estratégico, fechamento semanal, histórico do foco e conquistas ligadas ao aprendizado. A fase seguinte reuniu análises na aba Desempenho, consolidou sinais no Diagnóstico e ligou a próxima ação à prévia do planejamento, à execução e ao fechamento. A massa de teste e as decisões da calibração V4 estão em [Validação da inteligência da prova](docs/EXAM-INTELLIGENCE-VALIDATION.md); o [ciclo estratégico](docs/STRATEGIC-CYCLE.md) registra as condições de comparação e o gate final.
 
-As visualizações de questões, simulados e metas seguem as definições de período, amostra e capacidade em [Gráficos de desempenho e planejamento](docs/ANALYTICS-CHARTS.md).
+A modernização estrutural para TypeScript (`strict: true`), Preact 11 (`.tsx`) e Tailwind CSS v4 foi concluída (Ondas M1 e M2), assim como a integração de WebDAV E2EE e Mini-timer PiP. 
+
+O roteiro de evolução ativa do StudyTrack foi formalizado no [Plano Unificado de Implementação e Evolução](docs/PLANO-EVOLUCAO-UNIFICADO.md) e mapeado detalhadamente em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md), organizado em 4 fases estratégicas:
+1. **Fase 1 — Decisão Rápida, UX & Primeiro Uso:** Card de Próxima Ação com 6 perguntas contratuais, Bookmarks de Ponto de Parada (PDF/vídeo/lei seca) em Preact e Onboarding 2.0 com Missão do 1º Dia ([PLANO-PRIMEIRO-USO-GUIADO.md](docs/PLANO-PRIMEIRO-USO-GUIADO.md)).
+2. **Fase 2 — Inteligência Preditiva & Reta Final:** Simulador "E se?" (*What-If Simulator*) em memória, política de Modo Reta Final (< 15 dias) e detecção de Falsa Consolidação.
+3. **Fase 3 — Hub Completo de Estudos & Flexibilidade:** Edital Verticalizado interativo com parser de PDF, Ciclo de Estudos em fila rotativa e análise cronobiológica de energia e foco.
+4. **Fase 4 — Caderno de Erros, Acessibilidade & Base SaaS:** Flashcards das armadilhas da banca, auditoria assistida de leitores de tela (NVDA/VoiceOver) e preparação de camada de nuvem ([PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md)).
 
 As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.2.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente. A comparação do foco estratégico usa fechamentos salvos sem sobreposição, com dados completos e do mesmo concurso ativo; fechamentos antigos sem esse escopo não entram na comparação.
-
-Outras evoluções e seus critérios estão organizados em [pacotes de implementação](docs/implementation-packages.md). Interpretação automática de PDF e classificação por IA permanecem fora desta rodada; qualquer integração futura depende de decisões sobre privacidade, confiabilidade e gestão de chaves.
 
 ## Licença
 

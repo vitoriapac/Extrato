@@ -139,7 +139,9 @@ export function FirstStepsMission({
                   <div className="flex flex-col">
                     <span
                       className={`text-sm ${
-                        isDone ? 'line-through text-secondary font-medium' : 'font-semibold text-primary'
+                        isDone
+                          ? 'line-through text-secondary font-medium'
+                          : 'font-semibold text-primary'
                       }`}
                     >
                       {mission.label}

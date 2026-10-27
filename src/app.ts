@@ -20,6 +20,7 @@ import { createCalendarTabController } from './ui/tabs/calendar/calendar-tab-con
 import { createGoalsTabController } from './ui/tabs/goals/goals-tab-controller.js';
 import { createTodayTabController } from './ui/tabs/today/today-tab-controller.js';
 import { createDashboardTabController } from './ui/tabs/dashboard/dashboard-tab-controller.js';
+import { unmountPreact } from './ui/preact-mount.js';
 import {
   computeTimerSeconds,
   hasActiveTimer,
@@ -7862,11 +7863,25 @@ function renderOverviewNextAction(availableMinutes: number) {
       : null;
     const ownTimer =
       hasStartedStudyTimer() && state.activeTimer?.planItemId === priority!.nextItem.id;
+    unmountPreact(container);
     container.innerHTML = `${ownTimer ? '' : renderActiveStudyTimerNotice(null)}${outcome}${renderPlannedAction(priority!, { suggestion, escapeHtml, escapeAttr, formatMinutes: formatPlanMinutes, timer: { active: hasStartedStudyTimer(), planItemId: state.activeTimer?.planItemId }, resumeLabel: topicResumeLabel(priority!.nextItem.topicId) })}`;
     return;
   }
+  unmountPreact(container);
+  container.replaceChildren();
+  const dashboardController = createDashboardTabController();
   if (!item) {
-    container.innerHTML = `${renderActiveStudyTimerNotice(null)}${outcome}<p class="overview-alert-empty">${availableMinutes < 15 ? 'Defina pelo menos 15 minutos para hoje para receber uma sugestão.' : 'Ainda não há uma atividade elegível com os dados atuais.'}</p><a class="btn ghost small" href="#overview-timer">Ver cronômetro e registrar estudo</a>`;
+    dashboardController.mountNextActionCard(container, {
+      model: null,
+      emptyState: {
+        message:
+          availableMinutes < 15
+            ? 'Defina pelo menos 15 minutos para hoje para receber uma sugestão.'
+            : 'Ainda não há uma atividade elegível com os dados atuais.',
+        timerHref: '#overview-timer',
+      },
+      activeTimerNoticeHtml: renderActiveStudyTimerNotice(null),
+    });
     return;
   }
   const action = buildStudyAction(item, { source: 'overview' }),
@@ -7881,14 +7896,75 @@ function renderOverviewNextAction(availableMinutes: number) {
         ? 'Tempo não estimado'
         : formatPlanMinutes(action!.suggestedMinutes);
   const inProgress = activeTimerMatchesRecommendation(item),
-    blocked = hasStartedStudyTimer() && !inProgress,
-    sessionLabel = state.activeTimer?.isRunning ? 'Cronômetro rodando' : 'Sessão pausada';
-  const actionButton = inProgress
-    ? `<button class="btn" type="button" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`
+    blocked = hasStartedStudyTimer() && !inProgress;
+
+  const buttonAction = inProgress
+    ? { type: 'timer-focus' }
     : blocked
-      ? '<button class="btn" type="button" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
-      : `<button class="btn" type="button" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">▶ ${escapeHtml(label)}</button>`;
-  container.innerHTML = `${renderActiveStudyTimerNotice(item)}${outcome}<article class="card card--action overview-action-card ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div><h3>${escapeHtml(item.subjectName)} · ${escapeHtml(item.topicName)}</h3><p><strong>${minutes}</strong> · ${escapeHtml(label)} · prioridade ${action!.priority ?? '—'}/100</p>${topicResumeLabel(item.topicId) ? `<p class="overview-action-resume">Continuar de: ${escapeHtml(topicResumeLabel(item.topicId))}</p>` : ''}<p class="overview-action-reason">${escapeHtml(mastery)} · ${escapeHtml(action!.evidence.label || model.evidenceLabel).toLowerCase()}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}</div><div class="overview-action-buttons">${actionButton}</div>${renderRecommendationExplanation(item.explanation || buildRecommendationExplanation(item), { headingLevel: 4 })}</article>`;
+      ? {
+          type: 'blocked',
+          reason: 'Retome ou finalize a sessão em andamento antes de iniciar outra.',
+        }
+      : { type: 'recommendation', actionId: action!.id, source: action!.source };
+
+  const buttonText = inProgress
+    ? '▶ Retomar sessão'
+    : blocked
+      ? 'Finalize a sessão atual'
+      : `▶ ${label}`;
+
+  dashboardController.mountNextActionCard(container, {
+    model: {
+      what: {
+        subjectName: item.subjectName,
+        topicName: item.topicName,
+      },
+      why: {
+        primaryReason:
+          action!.evidence.label ||
+          model.evidenceLabel ||
+          'Recomendação baseada em prioridade de edital',
+        additionalReasons: (item.reasons || []).slice(0, 3),
+      },
+      duration: {
+        minutesFormatted: minutes,
+        minutesNumeric: action!.suggestedMinutes ?? undefined,
+      },
+      importance: {
+        priorityScore: action!.priority ?? null,
+        impactLabel:
+          item.examImpact != null ? `impacto ${Math.round(item.examImpact)}/100` : undefined,
+      },
+      evidence: {
+        masteryLabel: mastery,
+        accuracyLabel:
+          item.accuracy != null ? `precisão recente ${Math.round(item.accuracy)}%` : undefined,
+        historicalPresenceLabel:
+          item.examIntelligence?.presencePercent != null
+            ? `${Math.round(item.examIntelligence.presencePercent)}% das provas`
+            : undefined,
+      },
+      nextStep: {
+        activityType: action!.activityType,
+        actionLabel: label,
+        buttonText,
+        buttonAction,
+      },
+      bookmark: getTopicById(item.topicId)?.topic.bookmark,
+      resumeLabel: topicResumeLabel(item.topicId),
+    },
+    isInProgress: inProgress,
+    activeTimerNoticeHtml: renderActiveStudyTimerNotice(item),
+    explanationHtml: renderRecommendationExplanation(
+      item.explanation || buildRecommendationExplanation(item),
+      { headingLevel: 4 }
+    ),
+    dataAttributes: {
+      'data-study-action-source': action!.source,
+      'data-study-action-id': escapeAttr(action!.id),
+      'data-activity-type': action!.activityType,
+    },
+  });
 }
 // Update the Continue button in place: re-rendering here would swap the node under a click that fired this change.
 function syncGuidedNext(model: Record<string, any>) {

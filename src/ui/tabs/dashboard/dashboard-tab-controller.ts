@@ -4,8 +4,17 @@ import { mountPreact } from '../../preact-mount.js';
 import { QuickStatsGrid, type QuickStatsData } from './QuickStatsGrid.js';
 import { SubjectProgressList, type SubjectProgressItem } from './SubjectProgressList.js';
 import { UpcomingReviewsList, type UpcomingReviewItem } from './UpcomingReviewsList.js';
+import { NextActionCard, type NextActionCardProps } from './NextActionCard.js';
 
 export function createDashboardTabController() {
+  function renderNextActionCardHtml(props: NextActionCardProps): string {
+    return render(h(NextActionCard, props));
+  }
+
+  function mountNextActionCard(container: Element, props: NextActionCardProps): void {
+    mountPreact(h(NextActionCard, props), container);
+  }
+
   function renderQuickStatsHtml(data: QuickStatsData): string {
     return render(h(QuickStatsGrid, data));
   }
@@ -31,6 +40,8 @@ export function createDashboardTabController() {
   }
 
   return {
+    renderNextActionCardHtml,
+    mountNextActionCard,
     renderQuickStatsHtml,
     mountQuickStats,
     renderProgressBarsHtml,

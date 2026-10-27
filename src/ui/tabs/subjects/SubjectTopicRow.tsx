@@ -1,3 +1,5 @@
+import { BookmarkBadge } from '../../components/BookmarkBadge.js';
+
 export interface SubjectTopicRowProps {
   subjectId: string;
   topic: any;
@@ -49,8 +51,11 @@ export function SubjectTopicRow({
               onUpdateTopic?.(subjectId, topic.id, 'name', (e.target as HTMLInputElement).value)
             }
           />
-          {((topic.examTags || []).length > 0 || (topic.tags || []).length > 0) && (
+          {((topic.examTags || []).length > 0 ||
+            (topic.tags || []).length > 0 ||
+            topic.bookmark) && (
             <div class="tag-chips">
+              {topic.bookmark && <BookmarkBadge bookmark={topic.bookmark} />}
               {examBadgesHtml && <span dangerouslySetInnerHTML={{ __html: examBadgesHtml }} />}
               {(topic.tags || []).map((tag: string, idx: number) => (
                 <span key={idx} class="tag-chip">
