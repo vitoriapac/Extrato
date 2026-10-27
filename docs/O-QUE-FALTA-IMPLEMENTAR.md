@@ -90,9 +90,33 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 
 ---
 
-## 3. Próximo Horizonte: Transição para SaaS Operacional (Backlog Futuro)
+## 3. Próximos Horizontes de Evolução (Backlog Ativo & Futuro)
 
-Com todos os motores de domínio, contratos de dados e interfaces locais concluídos, os próximos passos do projeto concentram-se na infraestrutura de nuvem descrita em **[docs/PLANO-TRANSFORMACAO-SAAS.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-TRANSFORMACAO-SAAS.md)**:
+O desenvolvimento futuro do StudyTrack desdobra-se em duas trilhas complementares: o avanço analítico e de experiência da aplicação local (*Local-First*) e a infraestrutura de nuvem multi-dispositivo (*SaaS*).
+
+### 3.1. Trilha Local-First: Inteligência, Experiência e Engenharia
+
+Detalhadas formalmente em **[docs/PLANO-PROXIMAS-EVOLUCOES.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-PROXIMAS-EVOLUCOES.md)**:
+
+1. **Inteligência Analítica Pura:**
+   - **Detecção de Platô de Desempenho (`plateau-detector.ts`):** diagnóstico de estagnação de precisão em alto volume com prescrição de mudança metodológica.
+   - **Custo de Oportunidade do Estudo (`opportunity-cost.ts`):** taxa de Pontos por Hora Investida (PPH) orientando onde cada hora adicional traz mais retorno líquido na prova.
+   - **Raio-X Pós-Simulado e Plano de Remediação (`simulated-remediation.ts`):** geração em 1 clique de micro-plano de 7 dias e rascunhos para o Caderno de Erros dos pontos fracos revelados em simulados.
+2. **Evolução do Caderno de Erros:**
+   - Filtros rápidos por organizadora/banca examinadora (Cebraspe, FGV, FCC, Vunesp) e classificação do motivo cognitivo da armadilha.
+   - Métricas do algoritmo SM-2 e gráfico da curva de retenção / esquecimento revertida.
+3. **Engenharia e Redução Progressiva do `app.ts`:**
+   - Extração de `onboarding-modal-controller.ts` (~350 linhas).
+   - Extração de `timer-ui-controller.ts` (~400 linhas).
+   - Testes de estresse automatizados com histórico simulado de 1 a 3 anos (5.000+ sessões).
+4. **Engajamento e PWA:**
+   - Lembretes locais diários de revisão via `Notification API` e Service Worker, com privacidade total e sem servidores.
+
+---
+
+### 3.2. Trilha SaaS: Infraestrutura de Nuvem e Assinaturas (Backlog de Escala)
+
+Com todos os motores de domínio, contratos de dados e interfaces locais concluídos, os passos de infraestrutura de nuvem estão descritos em **[docs/PLANO-TRANSFORMACAO-SAAS.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-TRANSFORMACAO-SAAS.md)**:
 
 ```mermaid
 flowchart TD
@@ -119,23 +143,23 @@ flowchart TD
     PWA -.-> MOBILE
 ```
 
-### 3.1. Setup do Backend Supabase (Auth & PostgreSQL RLS)
+#### A. Setup do Backend Supabase (Auth & PostgreSQL RLS)
 
 - Provisionar banco PostgreSQL no Supabase com as tabelas `profiles`, `user_study_states` e `user_state_snapshots`.
 - Configurar políticas de segurança em nível de linha (**Row Level Security - RLS**) garantindo que cada usuário só acesse e modifique seu próprio estado.
 - Autenticação por Magic Link (e-mail sem senha) e Login Social (Google OAuth).
 
-### 3.2. Integração do Gateway de Pagamento (PIX e Cartão)
+#### B. Integração do Gateway de Pagamento (PIX e Cartão)
 
 - Edge Function `create-checkout` para geração de cobrança PIX imediata ou assinatura por cartão de crédito.
 - Edge Function `webhook` para recepção de eventos de pagamento confirmando o plano `pro` e atualizando os entitlements em tempo real.
 
-### 3.3. Catálogo Dinâmico de Editais na Nuvem
+#### C. Catálogo Dinâmico de Editais na Nuvem
 
 - API remota de editais verticalizados pré-estruturados (carreiras fiscais, tribunais, policiais, bancárias e ENEM/OAB).
 - Download e merge de editais com 1 clique para assinantes Pro diretamente via `exam-import-service.ts`.
 
-### 3.4. Empacotamento Mobile (Capacitor / TWA)
+#### D. Empacotamento Mobile (Capacitor / TWA)
 
 - Publicação de aplicativo nativo Android (Google Play) e iOS (App Store) empacotando os artefatos estáticos gerados por `npm run build`.
 

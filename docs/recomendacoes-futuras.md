@@ -162,15 +162,15 @@ Questões/Simulado → Resultado → Replanejamento**
 89. Projeção de nota/probabilidade de atingir a meta. [Concluído]
 90. Simulador **"E se?"**. [Concluído — Fase 2]
 91. Reta final automática. [Concluído — Fase 2]
-92. Modo pós-simulado com plano de correção.
+92. Modo pós-simulado com plano de correção. [Especificado em docs/PLANO-PROXIMAS-EVOLUCOES.md]
 93. Análise aprofundada por tópico.
-94. Detecção de platô.
+94. Detecção de platô. [Especificado em docs/PLANO-PROXIMAS-EVOLUCOES.md]
 95. Detecção de falsa consolidação (ilusão de competência). [Concluído — Fase 2]
-96. Custo de oportunidade do estudo.
-97. Previsão de cobertura do edital.
+96. Custo de oportunidade do estudo. [Especificado em docs/PLANO-PROXIMAS-EVOLUCOES.md]
+97. Previsão de cobertura do edital. [Especificado em docs/PLANO-PROXIMAS-EVOLUCOES.md]
 98. Planejamento automático da reta final. [Concluído — Fase 2]
 99. Resumo mensal permanente.
-100.  Linha do tempo da preparação.
+100. Linha do tempo da preparação.
 
 # Top 10 --- Roadmap recomendado
 
