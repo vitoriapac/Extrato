@@ -20,7 +20,13 @@ import { createCalendarTabController } from './ui/tabs/calendar/calendar-tab-con
 import { createGoalsTabController } from './ui/tabs/goals/goals-tab-controller.js';
 import { createTodayTabController } from './ui/tabs/today/today-tab-controller.js';
 import { createDashboardTabController } from './ui/tabs/dashboard/dashboard-tab-controller.js';
-import { unmountPreact } from './ui/preact-mount.js';
+import { h } from 'preact';
+import { mountPreact, unmountPreact } from './ui/preact-mount.js';
+import { createWhatIfController } from './ui/controllers/what-if-controller.js';
+import { buildFinalStretchBanner } from './domain/planning/final-stretch-policy.js';
+import { FinalStretchBanner } from './ui/components/FinalStretchBanner.js';
+import { simulateWhatIfScenario } from './domain/forecasts/what-if-simulator.js';
+import { identifyVolatileTopics } from './domain/analytics/volatile-mastery.js';
 import {
   computeTimerSeconds,
   hasActiveTimer,
@@ -7990,6 +7996,7 @@ function syncGuidedNext(model: Record<string, any>) {
 }
 function renderOverviewDecisionArea() {
   const { availableMinutes } = refreshStudyRecommendationItems();
+  renderFinalStretchBanner();
   renderOverviewNextAction(availableMinutes);
   renderAlertasInteligentes();
 }
@@ -8656,6 +8663,47 @@ function renderFirstStepsMissionCard() {
 
   controller.mountFirstStepsMission(slot, missionModel);
 }
+
+const whatIfController = createWhatIfController({
+  getContainer: () => document.getElementById('whatIfSimulatorMount'),
+  getState: () => state,
+  getCurrentMetrics: () => {
+    const metrics = computeApprovalMetrics();
+    const allTopics = activeTopics();
+    const covered = allTopics.filter(
+      t => t.status === 'Concluído' || t.status === 'Em andamento' || (t.completionCount ?? 0) > 0
+    );
+    return {
+      readinessScore: readinessResult(metrics).value,
+      weeklyStudyMinutes: weeklyStrategyCapacity(),
+      totalTopicsCount: allTopics.length,
+      coveredTopicsCount: covered.length,
+    };
+  },
+});
+
+function renderFinalStretchBanner() {
+  const slot = document.getElementById('finalStretchBannerSlot');
+  if (!slot) return;
+  const days = state.examDate ? diasParaRevisao(state.examDate) : null;
+  const bannerModel = buildFinalStretchBanner(
+    days,
+    state.examBlueprint?.activeExamTags?.[0] || 'sua prova'
+  );
+  if (!bannerModel.active) {
+    unmountPreact(slot);
+    slot.replaceChildren();
+    return;
+  }
+  mountPreact(
+    h(FinalStretchBanner, {
+      banner: bannerModel,
+      onOpenWhatIf: () => whatIfController.open(),
+    }),
+    slot
+  );
+}
+
 const dailyExecutionController = createDailyExecutionController({
   getContext: () => ({
     today: todayISO(),
@@ -8695,6 +8743,7 @@ document.addEventListener('click', event => {
     renderOverviewDecisionArea();
   }
   if ((event.target as HTMLElement).closest?.('[data-daily-resume]')) openStudyTimerFocus();
+  if ((event.target as HTMLElement).closest?.('[data-open-what-if]')) whatIfController.open();
 });
 function renderPlanoHoje() {
   const container = document.getElementById('planoHojeContent');
@@ -11055,6 +11104,10 @@ if (TEST_MODE) {
     rotateAutomaticBackup,
     StorageManager,
     structuredCloneSafe,
+    whatIfController,
+    simulateWhatIfScenario,
+    buildFinalStretchBanner,
+    identifyVolatileTopics,
   };
   activateInitialTab();
   ensureStateDefaults();

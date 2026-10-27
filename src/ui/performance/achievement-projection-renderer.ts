@@ -181,6 +181,7 @@ export function renderAchievementProjection(
     ${['attention', 'at_risk'].includes(model.status) ? renderRecoveryPlan(recoveryPlan, escapeHtml, escapeAttr) : ''}
     ${renderHistory(history, escapeHtml)}
     <button type="button" class="btn ghost small" data-projection-scenario-open>Simular cenário</button>
+    <button type="button" class="btn ghost small" data-open-what-if="true">🔮 Simular "E se?"</button>
     <dialog id="projectionScenarioDialog" class="projection-scenario" aria-labelledby="projectionScenarioTitle"><form method="dialog"><div class="projection-scenario__heading"><h3 id="projectionScenarioTitle">Simular cenário</h3><button type="submit" class="btn ghost small" aria-label="Fechar simulação">Fechar</button></div></form><p>Explore como meta, prazo e capacidade mudam a leitura e o encaixe do plano atual. Esta simulação não salva dados.</p>
       <form data-projection-scenario-form><label>Capacidade semanal (horas)<input type="number" name="capacityHours" min="0" max="168" step="0.5" required value="${Math.round((weeklyCapacityMinutes / 60) * 10) / 10}"></label><label>Data da prova<input type="date" name="examDate" required value="${model.exam.date || ''}"></label><label>Meta de nota (%)<input type="number" name="targetScore" min="1" max="100" step="1" required value="${model.current.targetScore}"></label><button type="submit" class="btn primary">Executar simulação</button></form><div id="projectionScenarioResult" aria-live="polite"></div></dialog>
   </section>`;

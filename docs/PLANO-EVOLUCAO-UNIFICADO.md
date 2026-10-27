@@ -126,9 +126,9 @@ flowchart TD
 * **Entrega:** Marcação diagnóstica de *"Domínio Volátil"* no relatório analítico, sugerindo baterias cegas de questões sem consulta.
 
 #### Critérios de Aceite da Fase 2:
-- [ ] Nenhuma alteração realizada dentro do modal do simulador *What-If* é persistida em IndexedDB ou exportada no backup JSON.
-- [ ] O gerador de cronograma inverte as proporções de teoria/questões ao cruzar o limiar de 15 dias da prova.
-- [ ] Testes unitários puros no Node validam o isolamento de mutação e a coerência matemática das projeções.
+- [x] Nenhuma alteração realizada dentro do modal do simulador *What-If* é persistida em IndexedDB ou exportada no backup JSON (garantia de isolamento com `structuredClone` e verificação no teste unitário).
+- [x] O gerador de cronograma inverte as proporções de teoria/questões ao cruzar o limiar de 15 dias da prova (85% em questões/revisões, congelamento de novos tópicos teóricos densos e boost de até 3.0x para lacunas críticas).
+- [x] Testes unitários puros no Node validam o isolamento de mutação e a coerência matemática das projeções (`what-if-simulator.test.js`, `final-stretch-policy.test.js`, `volatile-mastery.test.js`, `what-if-modal-components.test.js` e E2E `what-if-and-final-stretch.spec.js`).
 
 ---
 

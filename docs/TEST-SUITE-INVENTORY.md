@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-189 arquivos Node e 59 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+193 arquivos Node e 60 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -80,6 +80,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/e2e/visual-regression.spec.js | browser | Visual | visual | 66.9 | journey, visual-comparison, demo, viewport | inspect-platform-baselines |
 | tests/e2e/weekly-adherence.spec.js | browser | Aderência | critical | 21.9 | journey, demo, viewport | none |
 | tests/e2e/weekly-focus-visual.spec.js | browser | Visual | visual | 8.3 | journey, viewport | none |
+| tests/e2e/what-if-and-final-stretch.spec.js | browser | Aplicação | functional | — | journey, demo | none |
 | tests/unit/achievement-projection-history.test.js | node | Trajetória | critical | — | contract | none |
 | tests/unit/achievement-projection.test.js | node | Trajetória | functional | — | contract | none |
 | tests/unit/achievement-renderer.test.js | node | Aplicação | functional | — | contract | none |
@@ -146,6 +147,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/execution-contract.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/executive-summary.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/filter-panel.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/final-stretch-policy.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-number.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/goal-service.test.js | node | Metas | functional | — | contract | none |
 | tests/unit/goals-components.test.js | node | Metas | functional | — | contract | none |
@@ -263,12 +265,15 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/utils.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/validated-exam-impact.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/visual-consistency-renderers.test.js | node | Visual | visual | — | contract | none |
+| tests/unit/volatile-mastery.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/weekly-adherence.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/weekly-availability.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/weekly-close-actions.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-adherence.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/weekly-close-controller.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-snapshot.test.js | node | Fechamento | critical | — | contract | none |
+| tests/unit/what-if-modal-components.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/what-if-simulator.test.js | node | Aplicação | functional | — | contract | none |
 
 ## Sobreposições a investigar
 

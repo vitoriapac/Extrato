@@ -1,0 +1,44 @@
+import type { FinalStretchBanner as FinalStretchBannerModel } from '../../domain/planning/final-stretch-policy.js';
+
+export interface FinalStretchBannerProps {
+  banner: FinalStretchBannerModel;
+  onOpenWhatIf?: () => void;
+}
+
+export function FinalStretchBanner({ banner, onOpenWhatIf }: FinalStretchBannerProps) {
+  if (!banner.active) return null;
+
+  const isCritical = banner.urgency === 'critical';
+
+  return (
+    <aside
+      class={`mb-4 p-4 rounded-lg border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm ${
+        isCritical
+          ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50 text-red-900 dark:text-red-200'
+          : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-200'
+      }`}
+      role="region"
+      aria-label="Aviso de Modo Reta Final"
+    >
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-sm tracking-wide">{banner.badge}</span>
+          <span class="text-xs px-2 py-0.5 rounded-full font-semibold bg-white/70 dark:bg-black/30">
+            {banner.daysToExam === 0 ? 'Prova Hoje!' : `Faltam ${banner.daysToExam} dias`}
+          </span>
+        </div>
+        <p class="text-xs leading-relaxed opacity-90 max-w-2xl">{banner.message}</p>
+      </div>
+
+      {onOpenWhatIf && (
+        <button
+          type="button"
+          class="shrink-0 px-3 py-1.5 rounded text-xs font-semibold bg-white dark:bg-zinc-800 text-primary border border-border-default hover:border-primary shadow-xs transition-colors"
+          onClick={onOpenWhatIf}
+        >
+          🔮 Simular "E se?"
+        </button>
+      )}
+    </aside>
+  );
+}
