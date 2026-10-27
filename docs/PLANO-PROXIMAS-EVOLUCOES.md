@@ -6,7 +6,7 @@ Este plano detalha as especificações técnicas, os contratos de domínio, as i
 
 ## 1. Contexto e Objetivos
 
-Com as 4 Fases Master do [Plano Unificado](PLANO-EVOLUCAO-UNIFICADO.md) e o fechamento do [Plano de Melhorias Pós-Fase 4](PLANO-MELHORIAS-POS-FASE4.md) concluídos, o StudyTrack possui sua base metodológica, algoritmos de repetição espaçada (SM-2 adaptado), acessibilidade essencial e estabilidade de testes (957 unitários em < 32s) plenamente homologados.
+Com as 4 Fases Master do plano de evolução e o fechamento de melhorias pós-Fase 4 concluídos e consolidados em [Planos Concluídos](PLANOS-CONCLUIDOS.md), o StudyTrack possui sua base metodológica, algoritmos de repetição espaçada (SM-2 adaptado), acessibilidade essencial e estabilidade de testes (957 unitários em < 32s) plenamente homologados.
 
 O objetivo deste plano é **transformar dados brutos em decisões de alto retorno pedagógico**, enriquecer o ecossistema do Caderno de Erros, dar continuidade ao fatiamento de [`src/app.ts`](../src/app.ts) e habilitar engajamento *local-first* sem servidores externos.
 

@@ -3,7 +3,7 @@
 Este documento consolida o histórico de entregas e os próximos horizontes de evolução do **StudyTrack**, registrando a conclusão das 4 Fases do Plano Master de Evolução, os fechamentos de cobertura, as especificações estruturantes para a transição **SaaS Local-First** e o backlog futuro mapeado em [docs/recomendacoes-futuras.md](file:///c:/Users/vitor/Documents/Extrato/docs/recomendacoes-futuras.md).
 
 > [!IMPORTANT]
-> **Roteiro Master Consolidado:** O cronograma executivo e os critérios de aceite das 4 Fases do Plano de Evolução estão documentados em **[docs/PLANO-EVOLUCAO-UNIFICADO.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-EVOLUCAO-UNIFICADO.md)**. Todas as 4 fases foram **100% implementadas, testadas e integradas**.
+> **Roteiro Histórico Consolidado:** O cronograma executivo, histórico e critérios de aceite de todos os planos de desenvolvimento implementados estão unificados e preservados em **[docs/PLANOS-CONCLUIDOS.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANOS-CONCLUIDOS.md)**. Todas as 4 fases do plano de evolução e as melhorias subsequentes foram **100% implementadas, testadas e integradas**.
 
 ---
 

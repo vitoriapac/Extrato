@@ -406,13 +406,13 @@ A interface do StudyTrack adota uma abordagem de migração progressiva e coexis
 
 ## Checagem estática de tipos e compilação (TypeScript + JSDoc)
 
-`tsconfig.json` e `src/core/types.ts` definem contratos estáticos verificados por `npm run check:types` (`tsc -p tsconfig.json --noEmit`), integrado ao runner de gates (`scripts/run-test-gate.mjs`) e ao workflow de CI. O projeto suporta convivência incremental entre módulos `.ts` e `.js`: o `esbuild` (`scripts/build.mjs`) empacota ambos diretamente para o navegador, e o Node.js executa os testes unitários nativamente com suporte ao hook de resolução `scripts/ts-resolve-hook.mjs`. O roteiro completo da modernização está em [PLANO-MODERNIZACAO-TS-PREACT-TAILWIND.md](docs/PLANO-MODERNIZACAO-TS-PREACT-TAILWIND.md).
+`tsconfig.json` e `src/core/types.ts` definem contratos estáticos verificados por `npm run check:types` (`tsc -p tsconfig.json --noEmit`), integrado ao runner de gates (`scripts/run-test-gate.mjs`) e ao workflow de CI. O projeto suporta convivência incremental entre módulos `.ts` e `.js`: o `esbuild` (`scripts/build.mjs`) empacota ambos diretamente para o navegador, e o Node.js executa os testes unitários nativamente com suporte ao hook de resolução `scripts/ts-resolve-hook.mjs`. O roteiro completo da modernização está registrado na Seção 1 de [PLANOS-CONCLUIDOS.md](docs/PLANOS-CONCLUIDOS.md#1-plano-de-modernização-tecnológica-typescript-preact-e-tailwind-css).
 
 ## Roteiro de evolução arquitetural
 
-A evolução contínua da arquitetura do StudyTrack está estruturada em quatro documentos centrais de engenharia e produto:
+A evolução contínua da arquitetura do StudyTrack está estruturada nos seguintes documentos centrais de engenharia e produto:
 
-- **Plano Mestre Unificado:** [PLANO-EVOLUCAO-UNIFICADO.md](docs/PLANO-EVOLUCAO-UNIFICADO.md), organizando as 4 fases em 9 semanas (Decisão e Bookmarks, Inteligência Preditiva em Memória, Hub de Estudos e Base SaaS).
-- **Mapeamento de Pendências:** [O-QUE-FALTA-IMPLEMENTAR.md](docs/O-QUE-FALTA-IMPLEMENTAR.md), detalhando componentes a criar/alterar para o simulador What-If, Modo Reta Final, Edital Verticalizado e Análise Cronobiológica.
-- **Primeiro Uso Guiado:** [PLANO-PRIMEIRO-USO-GUIADO.md](docs/PLANO-PRIMEIRO-USO-GUIADO.md), especificando o Wizard com presets em 1 clique e a Missão do 1º Dia na aba Hoje.
+- **Histórico de Planos Concluídos:** [PLANOS-CONCLUIDOS.md](docs/PLANOS-CONCLUIDOS.md), consolidando a modernização tecnológica (TypeScript/Preact/Tailwind), primeiro uso guiado (Onboarding 2.0), as 4 fases do plano de evolução (Decisão, Bookmarks, Inteligência Preditiva, Caderno de Erros SM-2) e melhorias pós-Fase 4.
+- **Mapeamento de Status e Pendências:** [O-QUE-FALTA-IMPLEMENTAR.md](docs/O-QUE-FALTA-IMPLEMENTAR.md), detalhando o status atual da aplicação local e os horizontes de evolução.
+- **Próximas Evoluções (Backlog Ativo):** [PLANO-PROXIMAS-EVOLUCOES.md](docs/PLANO-PROXIMAS-EVOLUCOES.md), orientando platô de rendimento, custo de oportunidade, pós-simulado e fatiamento contínuo do `app.ts`.
 - **Preparação SaaS / Cloud:** [PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md), orientando o isolamento da camada de repositório para desacoplamento de storage local e suporte a nuvem híbrida.

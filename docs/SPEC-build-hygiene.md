@@ -59,7 +59,7 @@ node scripts/audit-test-suite.mjs --check
 src/graphify-out/             → apagada (R1)
 .claude/launch.json           → versionada (R3)
 docs/SPEC-build-hygiene.md    → esta spec
-tasks/                        → plano e tarefas do módulo
+docs/PLANOS-CONCLUIDOS.md    → plano e histórico do módulo consolidado
 ```
 
 ## Estilo

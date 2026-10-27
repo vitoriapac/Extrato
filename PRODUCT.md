@@ -38,7 +38,7 @@ A combinação de três coisas, juntas:
 - Regras de produto que a interface deve preservar: prévia antes de salvar; capacidade semanal nunca aumenta por adaptação (15–40 min, cooldown de 14 dias); retratos históricos congelados não são recalculados; evidência insuficiente é declarada, nunca escondida; recomendações não prometem aprovação nem atribuem causalidade.
 - Copy: texto permanente de uma a duas frases; explicações em disclosures fechados, operáveis por teclado ([docs/MICROCOPY-CONTRACT.md](docs/MICROCOPY-CONTRACT.md)).
 - Técnica: TypeScript strict (`strict: true`), componentes declarativos Preact (`.tsx`), utilitários sob demanda com Tailwind CSS v4, bundle via esbuild, Service Worker gerado; não editar bundles nem o service worker à mão.
-- Roteiro de evolução: estruturado no [Plano Unificado de Implementação](docs/PLANO-EVOLUCAO-UNIFICADO.md) e detalhado em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md).
+- Roteiro de evolução: histórico consolidado em [Planos Concluídos](docs/PLANOS-CONCLUIDOS.md), backlog ativo em [Próximas Evoluções](docs/PLANO-PROXIMAS-EVOLUCOES.md) e detalhado em [O que falta implementar](docs/O-QUE-FALTA-IMPLEMENTAR.md).
 
 ## Brand Commitments
 
