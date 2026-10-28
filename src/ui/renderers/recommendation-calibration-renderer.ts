@@ -1,6 +1,7 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 export function renderRecommendationCalibrationModel(
   model: Record<string, any>,
-  { escapeHtml = (value: unknown) => String(value) }: any = {}
+  { escapeHtml = defaultEscapeHtml }: any = {}
 ) {
   const factorRows = model?.groups?.factor || [],
     strategyRows = model?.groups?.strategy || [];

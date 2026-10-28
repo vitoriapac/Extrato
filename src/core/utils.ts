@@ -46,3 +46,17 @@ export function pluralize(
 ): string {
   return `${count} ${Number(count) === 1 ? singular : pluralForm}`;
 }
+
+const HTML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+export function escapeHtml(value: unknown): string {
+  return String(value ?? '').replace(/[&<>"']/g, char => HTML_ESCAPES[char]);
+}
+
+export const escapeAttr = escapeHtml;

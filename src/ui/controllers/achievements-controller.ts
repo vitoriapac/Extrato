@@ -1,6 +1,7 @@
 import { buildStrategicAchievements } from '../../application/achievements/build-strategic-achievements.js';
 import { buildAchievementViewModel } from '../../application/achievements/build-achievement-view-model.js';
 import { renderAchievementGroups } from '../renderers/achievement-renderer.js';
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 
 export interface AchievementsControllerOptions {
   document: Document;
@@ -58,20 +59,7 @@ export function createAchievementsController(options: AchievementsControllerOpti
     intelligenceCandidates = () => [],
   } = options;
 
-  const escapeHtml =
-    options.escapeHtml ||
-    ((str: string) =>
-      String(str || '').replace(
-        /[&<>"']/g,
-        m =>
-          ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-          })[m] || ''
-      ));
+  const escapeHtml = options.escapeHtml || defaultEscapeHtml;
 
   function getBadgesDefinitions() {
     const state = getState();

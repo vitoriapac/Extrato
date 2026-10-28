@@ -150,7 +150,14 @@ import {
   DIFFICULTY_CLASS,
   DEMO_STORAGE_KEY,
 } from './state/schema.js';
-import { uid, isPlainObject, structuredCloneSafe, pluralize } from './core/utils.js';
+import {
+  uid,
+  isPlainObject,
+  structuredCloneSafe,
+  pluralize,
+  escapeHtml,
+  escapeAttr,
+} from './core/utils.js';
 import {
   createStorageManager,
   repositoryReadLocalState,
@@ -10036,23 +10043,6 @@ function renderKPIs() {
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(simulations)}</div><div class="l">Simulados comparáveis</div></button>
     <button type="button" class="kpi-cell kpi-link ${late > 0 ? 'warn' : ''}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
     <button type="button" class="kpi-cell kpi-link ${hasResults ? (accuracy >= target ? 'ok' : 'warn') : ''}" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de aprovação</div></button>`;
-}
-
-/* ===== ESCAPE HELPERS ===== */
-function escapeHtml(str: string) {
-  return String(str || '').replace(
-    /[&<>"']/g,
-    (m: string) =>
-      (
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }) as Record<
-          string,
-          string
-        >
-      )[m]
-  );
-}
-function escapeAttr(str: string) {
-  return escapeHtml(str);
 }
 
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */

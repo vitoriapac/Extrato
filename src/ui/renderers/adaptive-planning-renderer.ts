@@ -1,3 +1,4 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 import { renderOpportunityCost } from './opportunity-cost-renderer.js';
 import { buildRecommendationExplanation } from '../../application/recommendations/build-recommendation-explanation.js';
 import { renderRecommendationExplanation } from './recommendation-explanation-renderer.js';
@@ -10,7 +11,7 @@ const PHASES = [
 
 export function renderExamPhase(
   phase: Record<string, any>,
-  { escapeHtml = (value: unknown) => String(value ?? '') }: any = {}
+  { escapeHtml = defaultEscapeHtml }: any = {}
 ) {
   const current = phase?.state;
   const undated = current === 'undated' || !current;
@@ -27,7 +28,7 @@ export function renderExamPhase(
 
 export function renderExamPhaseCompact(
   phase: Record<string, any>,
-  { escapeHtml = (value: unknown) => String(value ?? '') }: any = {}
+  { escapeHtml = defaultEscapeHtml }: any = {}
 ) {
   const label = phase?.label || 'Prova sem data',
     days =
@@ -43,7 +44,7 @@ export function renderAdaptiveAllocationAdvice(
     weeklyPlannedMinutes = 0,
     weeklyAvailableMinutes = null,
     formatMinutes = (value: unknown) => `${value} min`,
-    escapeHtml = (value: unknown) => String(value ?? ''),
+    escapeHtml = defaultEscapeHtml,
   }: any = {}
 ) {
   if (advice?.state !== 'proposal') {

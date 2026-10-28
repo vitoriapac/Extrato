@@ -1,16 +1,4 @@
-import { pluralize } from '../../core/utils.js';
-const escapeHtml = (value: unknown) =>
-  String(value ?? '').replace(
-    /[&<>"']/g,
-    (char: string) =>
-      (
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }) as Record<
-          string,
-          string
-        >
-      )[char]
-  );
-const escapeAttr = escapeHtml;
+import { pluralize, escapeHtml, escapeAttr } from '../../core/utils.js';
 
 export function renderTopicStrategyEditor(model: any = {}) {
   const choices = (model.candidates || [])

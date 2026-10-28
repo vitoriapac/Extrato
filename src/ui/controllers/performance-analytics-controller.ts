@@ -1,3 +1,4 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 /**
  * Controller e renderizador do Radar Multidimensional de Disciplinas e Análise de Desempenho.
  */
@@ -34,7 +35,7 @@ export function renderRadarSvg({
   width = 560,
   height = 430,
   maxR = 125,
-  escapeHtml = s => s,
+  escapeHtml = defaultEscapeHtml,
 }: RadarSvgOptions): string {
   const N = axisMeta.length;
   const cx = width / 2;
@@ -118,8 +119,8 @@ export function renderRadarSvg({
 export function renderRadarToolbarHtml(
   subjects: Array<{ id: string; name: string }>,
   selectedIds: string[],
-  escapeHtml: (s: string) => string = s => s,
-  escapeAttr: (s: string) => string = s => s
+  escapeHtml: (s: string) => string = defaultEscapeHtml,
+  escapeAttr: (s: string) => string = defaultEscapeHtml
 ): string {
   const options = (selectedId = '') =>
     `<option value="">Nenhuma</option>` +
@@ -142,7 +143,7 @@ export function renderRadarToolbarHtml(
 export function renderRadarAnalysisHtml(
   selected: SubjectRadarDataModel[],
   axisMeta = RADAR_AXIS_META,
-  escapeHtml: (s: string) => string = s => s
+  escapeHtml: (s: string) => string = defaultEscapeHtml
 ): string {
   return `<div class="radar-analysis">${selected
     .map(
@@ -166,8 +167,8 @@ export function renderRadarDisciplinasHtml({
   selectedModels,
   selectedIds,
   axisMeta = RADAR_AXIS_META,
-  escapeHtml = s => s,
-  escapeAttr = s => s,
+  escapeHtml = defaultEscapeHtml,
+  escapeAttr = defaultEscapeHtml,
 }: {
   subjects: Array<{ id: string; name: string }>;
   selectedModels: SubjectRadarDataModel[];
@@ -197,8 +198,8 @@ export interface PerformanceAnalyticsControllerContext {
 
 export function createPerformanceAnalyticsController(ctx: PerformanceAnalyticsControllerContext) {
   const radarView: { subjectIds: string[] } = { subjectIds: [] };
-  const escapeHtml = ctx.escapeHtml || (s => s);
-  const escapeAttr = ctx.escapeAttr || (s => s);
+  const escapeHtml = ctx.escapeHtml || defaultEscapeHtml;
+  const escapeAttr = ctx.escapeAttr || defaultEscapeHtml;
 
   function getRadarViewState() {
     return radarView;

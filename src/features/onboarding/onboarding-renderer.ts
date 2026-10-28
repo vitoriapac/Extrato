@@ -1,3 +1,4 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 const stepCopy: Record<string, any> = {
   goal: {
     title: 'Qual é o seu objetivo?',
@@ -53,7 +54,7 @@ const entryStepLabels: Record<string, any> = {
 
 export function renderOnboardingEntry(
   model: Record<string, any>,
-  { escapeHtml = String }: any = {}
+  { escapeHtml = defaultEscapeHtml }: any = {}
 ) {
   const steps = model.steps || [],
     next = model.next || steps[0],
@@ -92,7 +93,7 @@ export function renderOnboardingProgress(model: Record<string, any>) {
 
 export function renderOnboardingHelp(
   model: Record<string, any>,
-  { escapeHtml = String }: any = {}
+  { escapeHtml = defaultEscapeHtml }: any = {}
 ) {
   const step = model.current || model.next || model.steps?.[0],
     copy = stepCopy[step.id] || stepCopy.goal;
@@ -102,7 +103,7 @@ export function renderOnboardingHelp(
 export function renderOnboardingContent(
   model: Record<string, any>,
   {
-    escapeHtml = String,
+    escapeHtml = defaultEscapeHtml,
     escapeAttr = escapeHtml,
     formatMinutes = (value: unknown) => `${value} min`,
   }: any = {}

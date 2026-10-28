@@ -31,3 +31,21 @@ test('clona dados serializaveis sem compartilhar referencias', () => {
   assert.equal(source.nested.value, 1);
   assert.equal(isPlainObject(copy), true);
 });
+
+test('escapeHtml — escapa os cinco caracteres e mantém zero', async () => {
+  const { escapeHtml, escapeAttr } = await import('../../src/core/utils.js');
+  assert.equal(
+    escapeHtml(`<a href="x">'&'</a>`),
+    '&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;'
+  );
+  assert.equal(escapeHtml(0), '0');
+  assert.equal(escapeHtml(null), '');
+  assert.equal(escapeAttr, escapeHtml);
+});
+
+test('renderers sem escapeHtml injetado escapam texto do usuário', async () => {
+  const { renderErrorAnalysis } = await import('../../src/ui/renderers/error-analysis-renderer.js');
+  const html = renderErrorAnalysis({ state: 'empty', message: '<img src=x onerror=alert(1)>' });
+  assert.ok(!html.includes('<img'));
+  assert.ok(html.includes('&lt;img'));
+});

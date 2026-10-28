@@ -1,6 +1,7 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 export function renderRecommendationOutcomeAudit(
   model: Record<string, any>,
-  { escapeHtml = (value: unknown) => String(value ?? '') }: any = {}
+  { escapeHtml = defaultEscapeHtml }: any = {}
 ) {
   if (!model.available)
     return '<p class="diagnosis-empty">Execute recomendações para acompanhar os resultados posteriores.</p>';

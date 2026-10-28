@@ -1,13 +1,14 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 export function renderPresetStep(
   model: Record<string, any>,
-  { escapeHtml = String, escapeAttr = escapeHtml }: any = {}
+  { escapeHtml = defaultEscapeHtml, escapeAttr = escapeHtml }: any = {}
 ) {
   return `<p>Escolha o concurso. Os presets usam o catálogo mestre versão ${escapeHtml(model.preset?.version || '')}.</p><div class="exam-preset-list">${(model.presets || []).map((item: any) => `<label class="exam-choice"><input type="radio" name="examPreset" value="${escapeAttr(item.id)}" ${item.id === model.preset?.id ? 'checked' : ''}><span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description || '')}${item.subjects?.length ? ` · ${item.subjects.length} disciplinas · ${item.subjects.reduce((sum: any, subject: any) => sum + (subject.topics || []).length, 0)} tópicos · versão ${escapeHtml(item.version || '')}` : ''}</small></span></label>`).join('')}</div>`;
 }
 export function renderSelectionStep(
   model: Record<string, any>,
   {
-    escapeHtml = String,
+    escapeHtml = defaultEscapeHtml,
     escapeAttr = escapeHtml,
     renderBadges = (topic: Record<string, any>) => escapeHtml(topic.scopeLabel || ''),
   }: any = {}
@@ -18,7 +19,7 @@ export function renderSelectionStep(
 }
 export function renderPreviewStep(
   model: Record<string, any>,
-  { escapeHtml = String, sourceLabel = (value: unknown) => value }: any = {}
+  { escapeHtml = defaultEscapeHtml, sourceLabel = (value: unknown) => value }: any = {}
 ) {
   const preview = model.preview || {},
     total = (preview.addedTopics || 0) + (preview.existingTopics || 0);

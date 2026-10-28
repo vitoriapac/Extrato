@@ -1,7 +1,8 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 export function renderReplanProposal(
   model: Record<string, any>,
   {
-    escapeHtml = String,
+    escapeHtml = defaultEscapeHtml,
     formatDate = (value: unknown) => value,
     formatMinutes = (value: unknown) => `${value} min`,
     subjectName = () => '',

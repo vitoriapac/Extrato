@@ -1,15 +1,5 @@
 import { renderEvidenceQuality } from './evidence-quality-renderer.js';
-const escapeHtml = (value: unknown) =>
-  String(value ?? '').replace(
-    /[&<>"']/g,
-    (char: string) =>
-      (
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }) as Record<
-          string,
-          string
-        >
-      )[char]
-  );
+import { escapeHtml } from '../../core/utils.js';
 
 export function renderExamIntelligence(
   model: Record<string, any>,

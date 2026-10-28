@@ -1,10 +1,8 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 import { formatDecimal } from '../../core/format-number.js';
 type Row = Record<string, any>;
 
-export function renderAchievementGroups(
-  model: Row,
-  { escapeHtml = (value: unknown) => String(value ?? '') }: any = {}
-) {
+export function renderAchievementGroups(model: Row, { escapeHtml = defaultEscapeHtml }: any = {}) {
   const progress = (item: Row) => {
     if (item.unlocked || !item.progress || !(Number(item.progress.target) > 0)) return '';
     const current = Math.max(0, Number(item.progress.current) || 0),

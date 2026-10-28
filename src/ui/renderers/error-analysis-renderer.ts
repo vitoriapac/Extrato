@@ -1,7 +1,8 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 import { formatDecimal } from '../../core/format-number.js';
 export function renderErrorAnalysis(
   model: Record<string, any>,
-  { toolbar = '', escapeHtml = (value: unknown) => String(value) }: any = {}
+  { toolbar = '', escapeHtml = defaultEscapeHtml }: any = {}
 ) {
   if (model.state === 'empty')
     return toolbar + '<div class="empty-state"><p>' + escapeHtml(model.message) + '</p></div>';

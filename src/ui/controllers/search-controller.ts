@@ -1,4 +1,5 @@
 import { renderGlobalSearchPanel } from '../renderers/global-search-renderer.js';
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 
 export interface SearchCommand {
   label: string;
@@ -110,20 +111,7 @@ export interface SearchControllerOptions {
 
 export function createSearchController(options: SearchControllerOptions) {
   const { document, window, getState, activateTab, showToast, jumpToTopic } = options;
-  const escapeHtml =
-    options.escapeHtml ||
-    ((str: string) =>
-      String(str || '').replace(
-        /[&<>"']/g,
-        m =>
-          ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-          })[m] || ''
-      ));
+  const escapeHtml = options.escapeHtml || defaultEscapeHtml;
   const escapeAttr = options.escapeAttr || escapeHtml;
 
   function renderResults(): void {

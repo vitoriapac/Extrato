@@ -1,19 +1,9 @@
 import { buildHelpSearchIndex } from './help-search.js';
 import { renderHelpVisual } from './help-visuals.js';
 import { HELP_CATEGORIES, HELP_GLOSSARY, HELP_FAQ } from './help-content.js';
+import { escapeHtml } from '../../core/utils.js';
 
 type Row = Record<string, any>;
-const escapeHtml = (value: unknown) =>
-  String(value ?? '').replace(
-    /[&<>"']/g,
-    (char: string) =>
-      (
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }) as Record<
-          string,
-          string
-        >
-      )[char]
-  );
 const paragraph = (value: unknown) => `<p>${escapeHtml(value)}</p>`;
 
 function renderEntry(entry: Row) {

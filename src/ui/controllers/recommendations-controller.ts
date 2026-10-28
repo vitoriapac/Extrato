@@ -1,3 +1,4 @@
+import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 /**
  * Controller e utilitários puros para Apresentação e Gestão de Recomendações de Estudo.
  */
@@ -107,7 +108,7 @@ export function buildExcludedCandidates(
 
 export function renderExcludedCandidatesHtml(
   excluded: ExcludedCandidateState[],
-  escapeHtml: (s: string) => string = s => s
+  escapeHtml: (s: string) => string = defaultEscapeHtml
 ): string {
   if (!excluded || !excluded.length) return '';
   return `<details class="recommendation-exclusions"><summary>Por que outros tópicos não aparecem?</summary>${excluded
@@ -123,8 +124,8 @@ export function renderExcludedCandidatesHtml(
 export function renderPendingOutcomeHtml(
   feedbackList: RecommendationFeedbackItem[],
   getTopicName: (id: string) => string,
-  escapeHtml: (s: string) => string = s => s,
-  escapeAttr: (s: string) => string = s => s
+  escapeHtml: (s: string) => string = defaultEscapeHtml,
+  escapeAttr: (s: string) => string = defaultEscapeHtml
 ): string {
   const pending = (feedbackList || []).find(
     feedback => feedback.completed && feedback.useful === null
@@ -168,8 +169,8 @@ export interface RecommendationsControllerContext {
 }
 
 export function createRecommendationsController(ctx: RecommendationsControllerContext) {
-  const escapeHtml = ctx.escapeHtml || (s => s);
-  const escapeAttr = ctx.escapeAttr || (s => s);
+  const escapeHtml = ctx.escapeHtml || defaultEscapeHtml;
+  const escapeAttr = ctx.escapeAttr || defaultEscapeHtml;
 
   function getPendingOutcome(): string {
     const state = ctx.getState();
