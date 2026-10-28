@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { EbbinghausSimulator } from './EbbinghausSimulator.js';
 
 export interface HelpVisualData {
   type: string;
@@ -40,6 +41,10 @@ const num = (value: unknown): number => Math.max(0, Number(value) || 0);
 
 export function HelpVisualRenderer({ visual }: HelpVisualProps): JSX.Element | null {
   if (!visual || !visual.type) return null;
+
+  if (visual.type === 'simulator-ebbinghaus') {
+    return <EbbinghausSimulator />;
+  }
 
   const renderSteps = (items: Array<any> | undefined, className: string) => (
     <ol class={className}>

@@ -115,8 +115,9 @@ const BASE_HELP_CATEGORIES: any[] = [
       },
       {
         id: 'reviews',
-        title: 'Revisões',
-        summary: 'Acompanhe o que está próximo e o que já atrasou.',
+        title: 'Revisões espaçadas e Curva de Esquecimento',
+        summary: 'Acompanhe o que está próximo, atrasado e simule o ganho da retenção.',
+        visual: { type: 'simulator-ebbinghaus' },
         paragraphs: [
           'A Agenda separa revisões atrasadas, de hoje e próximas. A saúde das revisões ajuda a sinalizar manutenção do conhecimento; concluir uma revisão registra a execução real. Uma revisão crítica merece atenção, mas não deve ser tratada apenas como checklist.',
         ],

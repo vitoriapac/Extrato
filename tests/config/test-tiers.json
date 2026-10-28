@@ -827,6 +827,21 @@
       "rationale": "Contrato barato de conteúdo e renderização da Central de Ajuda."
     },
     {
+      "file": "tests/unit/help-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato barato de ciclo de vida e lazy loading da Central de Ajuda."
+    },
+    {
+      "file": "tests/unit/help-feedback.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato puro de persistência local e gestão de feedback da Central de Ajuda."
+    },
+    {
+      "file": "tests/unit/help-retention-simulator.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo puro da Curva de Ebbinghaus e repetição espaçada."
+    },
+    {
       "file": "tests/unit/historical-adherence-integrity.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."

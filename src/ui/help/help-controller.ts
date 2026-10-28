@@ -1,9 +1,49 @@
-import { renderHelpCenter } from './help-renderer.js';
 import {
   normalizeHelpText as normalize,
   matchesHelpSearch,
   rankHelpSearch,
 } from './help-search.js';
+
+declare const __STUDYTRACK_BUILD_VERSION__: string;
+
+let helpBundleLoadPromise: Promise<any> | null = null;
+
+export function loadHelpBundle(doc: any): Promise<any> {
+  if (typeof globalThis !== 'undefined' && (globalThis as any).StudyTrackHelp) {
+    return Promise.resolve((globalThis as any).StudyTrackHelp);
+  }
+  if (!helpBundleLoadPromise) {
+    helpBundleLoadPromise = new Promise((resolve, reject) => {
+      if (!doc || !doc.createElement || !doc.head) {
+        if (typeof globalThis !== 'undefined' && (globalThis as any).StudyTrackHelp) {
+          return resolve((globalThis as any).StudyTrackHelp);
+        }
+        return resolve(null);
+      }
+      const script = doc.createElement('script');
+      const version =
+        typeof __STUDYTRACK_BUILD_VERSION__ !== 'undefined' ? __STUDYTRACK_BUILD_VERSION__ : 'dev';
+      script.src = new URL(
+        `src/help.bundle.js?v=${version}`,
+        doc.baseURI || 'http://localhost/'
+      ).href;
+      script.async = true;
+      script.onload = () => {
+        if ((globalThis as any).StudyTrackHelp) {
+          resolve((globalThis as any).StudyTrackHelp);
+        } else {
+          reject(new Error('Módulo de Ajuda não inicializado.'));
+        }
+      };
+      script.onerror = () => {
+        helpBundleLoadPromise = null;
+        reject(new Error('Não foi possível carregar a Central de Ajuda.'));
+      };
+      doc.head.appendChild(script);
+    });
+  }
+  return helpBundleLoadPromise;
+}
 
 const DESTINATIONS: Readonly<Record<string, { tab: string; selector?: string; section?: string }>> =
   Object.freeze({
@@ -72,10 +112,12 @@ export function createHelpController({
   document,
   window,
   activateTab,
+  renderHelpCenter,
 }: {
   document: any;
   window: any;
   activateTab: (tab: string) => void;
+  renderHelpCenter?: (options?: any) => string;
 }) {
   const root = document.getElementById('helpCenter');
   if (!root) return { mount: () => false };
@@ -83,6 +125,51 @@ export function createHelpController({
   let returnContext: Record<string, any> | null = null;
   let originalGroups: any[] = [],
     originalTopics = new Map();
+  let isMounted = false;
+  let isMounting = false;
+
+  const initFromDOM = () => {
+    originalGroups = [...(root.querySelector('#helpGroups')?.children || [])];
+    originalTopics = new Map(
+      [...root.querySelectorAll('[data-help-group]')].map(group => [
+        group,
+        [...group.querySelectorAll('[data-help-topic]')],
+      ])
+    );
+    activeCategory =
+      root.querySelector('[data-help-category]')?.dataset.helpCategory || 'guide-start';
+    applySearch();
+    isMounted = true;
+    isMounting = false;
+  };
+
+  const ensureMounted = async () => {
+    if (isMounted) return true;
+    if (isMounting) return false;
+    isMounting = true;
+
+    const renderer = renderHelpCenter || (globalThis as any).StudyTrackHelp?.renderHelpCenter;
+    if (renderer) {
+      root.innerHTML = renderer();
+      initFromDOM();
+      return true;
+    }
+
+    try {
+      const runtime = await loadHelpBundle(document);
+      const lazyRenderer =
+        runtime?.renderHelpCenter || (globalThis as any).StudyTrackHelp?.renderHelpCenter;
+      if (lazyRenderer) {
+        root.innerHTML = lazyRenderer();
+        initFromDOM();
+        return true;
+      }
+    } catch {
+      // Fallback gracioso em caso de falha de rede
+    }
+    isMounting = false;
+    return false;
+  };
   const applySearch = () => {
     const parents = new Set();
     for (const mark of root.querySelectorAll('[data-help-match]')) {
@@ -146,15 +233,22 @@ export function createHelpController({
     ))
       root.querySelector('#helpGroups').append(node);
     const principle = root.querySelector('[data-help-principle]');
-    principle.hidden = query
-      ? Boolean(!normalize(principle.textContent).includes(query))
-      : activeCategory !== 'guide-workflows';
-    if (query && !principle.hidden) matches++;
-    root.querySelector('#helpNoResults').hidden = !query || matches > 0;
-    root.querySelector('#helpSearchStatus').textContent = query
-      ? `${matches} ${matches === 1 ? 'assunto encontrado' : 'assuntos encontrados'}.`
-      : '';
-    root.querySelector('#helpSearchClear').hidden = !query;
+    if (principle) {
+      principle.hidden = query
+        ? Boolean(!normalize(principle.textContent).includes(query))
+        : activeCategory !== 'guide-workflows';
+      if (query && !principle.hidden) matches++;
+    }
+    const noResults = root.querySelector('#helpNoResults');
+    if (noResults) noResults.hidden = !query || matches > 0;
+    const searchStatus = root.querySelector('#helpSearchStatus');
+    if (searchStatus) {
+      searchStatus.textContent = query
+        ? `${matches} ${matches === 1 ? 'assunto encontrado' : 'assuntos encontrados'}.`
+        : '';
+    }
+    const searchClear = root.querySelector('#helpSearchClear');
+    if (searchClear) searchClear.hidden = !query;
     if (query) {
       for (const section of root.querySelectorAll(
         '[data-help-group]:not([hidden]),[data-help-principle]:not([hidden]),.help-reference:not([hidden])'
@@ -180,7 +274,8 @@ export function createHelpController({
     group.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
     group.focus({ preventScroll: true });
   };
-  const openTopic = (id: string) => {
+  const openTopic = async (id: string) => {
+    await ensureMounted();
     const topic = [...root.querySelectorAll('[data-help-topic]')].find(item => item.id === id);
     if (!topic) return false;
     const origin = document.querySelector('[role="tab"][aria-selected="true"]')?.dataset.tab;
@@ -192,7 +287,7 @@ export function createHelpController({
       back.className = 'btn ghost small';
       back.dataset.helpReturn = '';
       back.textContent = 'Voltar à análise de origem';
-      root.querySelector('.help-hero').append(back);
+      root.querySelector('.help-hero')?.append(back);
     }
     openCategory(topic.closest('[data-help-group]').id);
     window.requestAnimationFrame(() => {
@@ -235,20 +330,25 @@ export function createHelpController({
     });
   };
   const mount = () => {
-    root.innerHTML = renderHelpCenter();
-    originalGroups = [...root.querySelector('#helpGroups').children];
-    originalTopics = new Map(
-      [...root.querySelectorAll('[data-help-group]')].map(group => [
-        group,
-        [...group.querySelectorAll('[data-help-topic]')],
-      ])
-    );
-    activeCategory =
-      root.querySelector('[data-help-category]')?.dataset.helpCategory || 'guide-start';
-    applySearch();
-    document.addEventListener('click', (event: any) => {
+    const renderer = renderHelpCenter || (globalThis as any).StudyTrackHelp?.renderHelpCenter;
+    if (renderer) {
+      root.innerHTML = renderer();
+      initFromDOM();
+    } else {
+      document.addEventListener('click', (event: any) => {
+        if (event.target.closest('[data-tab="instrucoes"], #tab-instrucoes')) {
+          ensureMounted();
+        }
+      });
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(() => ensureMounted(), { timeout: 3500 });
+      } else if (typeof window.setTimeout === 'function') {
+        window.setTimeout(() => ensureMounted(), 2000);
+      }
+    }
+    document.addEventListener('click', async (event: any) => {
       const link = event.target.closest('[data-help-topic-link]');
-      if (link && openTopic(link.dataset.helpTopicLink)) event.preventDefault();
+      if (link && (await openTopic(link.dataset.helpTopicLink))) event.preventDefault();
     });
     root.addEventListener('input', (event: any) => {
       if (event.target.id === 'helpSearch') applySearch();
@@ -261,6 +361,20 @@ export function createHelpController({
       }
     });
     root.addEventListener('click', (event: any) => {
+      const voteBtn = event.target.closest('[data-help-vote]');
+      if (voteBtn) {
+        const topicId = voteBtn.dataset.helpTopic;
+        const isHelpful = voteBtn.dataset.helpVote === 'yes';
+        const mountEl = voteBtn.closest('[data-help-feedback]');
+        const helpRuntime = (globalThis as any).StudyTrackHelp;
+        if (topicId && mountEl) {
+          if (helpRuntime?.saveTopicFeedback && window.localStorage) {
+            helpRuntime.saveTopicFeedback(window.localStorage, topicId, isHelpful);
+          }
+          mountEl.innerHTML = `<span class="help-feedback-thanks">✓ Obrigado! ${isHelpful ? 'Ficamos felizes que ajudou.' : 'Vamos aprimorar esta explicação.'}</span>`;
+        }
+        return;
+      }
       if (event.target.closest('[data-help-return]') && returnContext) {
         const context = returnContext;
         returnContext = null;

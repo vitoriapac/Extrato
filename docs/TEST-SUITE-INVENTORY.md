@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-207 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+210 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -168,6 +168,9 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/header-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/heatmap.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/help-center.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/help-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/help-feedback.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/help-retention-simulator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/historical-adherence-integrity.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/import-exam-json.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/intelligence-integration.test.js | node | Aplicação | functional | — | contract, integration | none |

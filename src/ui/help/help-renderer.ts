@@ -25,6 +25,7 @@ function renderEntry(entry: Row) {
     entry.action
       ? `<button type="button" class="help-text-link" data-help-action="${escapeHtml(entry.action.target)}">${escapeHtml(entry.action.label)} <span aria-hidden="true">→</span></button>`
       : '',
+    `<div class="help-feedback-mount" data-help-feedback="${escapeHtml(entry.id)}" data-help-title="${escapeHtml(entry.title)}"><span class="help-feedback-label">Esta explicação foi útil?</span> <span class="help-feedback-actions"><button type="button" class="btn ghost small" data-help-vote="yes" data-help-topic="${escapeHtml(entry.id)}" aria-label="Sim, foi útil">👍 Sim</button><button type="button" class="btn ghost small" data-help-vote="no" data-help-topic="${escapeHtml(entry.id)}" aria-label="Não, precisa melhorar">👎 Não</button></span></div>`,
   ].join('');
   return `<article class="help-topic${entry.wide ? ' instruction-card--wide' : ''} instruction-card instruction-card--${['feature', 'concept', 'reference'].includes(entry.kind) ? entry.kind : 'feature'}${entry.steps?.length ? ' help-topic--steps' : ''}" id="${escapeHtml(entry.id)}" data-help-topic data-help-title="${escapeHtml(entry.title)}" data-help-keywords="${escapeHtml([...(entry.keywords || []), ...(entry.concepts || []), ...(entry.questions || [])].join(' '))}" data-help-search="${escapeHtml(buildHelpSearchIndex(entry))}"><h4>${escapeHtml(entry.title)}</h4><p class="help-topic-summary">${escapeHtml(entry.summary)}</p><div class="help-topic-body">${content}</div></article>`;
 }

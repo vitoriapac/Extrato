@@ -24,6 +24,9 @@ export function renderHelpVisual(visual: Record<string, any> | null | undefined)
     case 'reviews':
       content = steps(visual.steps, 'instruction-steps');
       break;
+    case 'simulator-ebbinghaus':
+      content = `<div class="instruction-comparison" data-testid="ebbinghaus-simulator"><div class="instruction-metric"><strong>100% → ~15%</strong><span>Sem revisões</span></div><div class="instruction-metric"><strong>100% → ~88%</strong><span>Com revisões (24h, 7d, 21d)</span></div></div><p class="instruction-legend">Simulação interativa da retenção e repetição espaçada.</p>`;
+      break;
     case 'comparison':
       content = `<div class="instruction-comparison">${metric('Planejado', visual.planned)}${metric('Realizado', visual.actual)}</div><p class="instruction-legend">O tempo registrado pode ser diferente do previsto.</p>`;
       break;

@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { HelpVisualRenderer } from './HelpVisualRenderer.js';
+import { HelpFeedbackWidget } from './HelpFeedbackWidget.js';
 import { buildHelpSearchIndex } from './help-search.js';
 
 export interface HelpTopicEntry {
@@ -103,6 +104,7 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
             {entry.action.label} <span aria-hidden="true">→</span>
           </button>
         )}
+        <HelpFeedbackWidget topicId={entry.id} topicTitle={entry.title} />
       </div>
     </article>
   );
