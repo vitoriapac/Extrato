@@ -49,9 +49,18 @@ export function createSubjectService({
   return Object.freeze({
     create: (name: string) => repository.add(newSubject(name)),
     rename: (id: string, name: string) => repository.update(id, { name: cleanName(name) }),
-    toggle: (id: string) => {
+    toggle: (id: string, options?: { exclusive?: boolean }) => {
       const item = repository.findById(id);
-      return item ? repository.update(id, { collapsed: !item.collapsed }) : null;
+      if (!item) return null;
+      const willOpen = !!item.collapsed;
+      if (options?.exclusive && willOpen) {
+        repository.all().forEach((s: any) => {
+          if (s.id !== id && !s.collapsed) {
+            repository.update(s.id, { collapsed: true });
+          }
+        });
+      }
+      return repository.update(id, { collapsed: !item.collapsed });
     },
     addDefaults: (names = DEFAULT_SUBJECT_NAMES) =>
       names

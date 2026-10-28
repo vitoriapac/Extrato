@@ -3266,7 +3266,10 @@ function duplicateSubject(id: string) {
 }
 
 function toggleSubject(id: string) {
-  subjectService.toggle(id);
+  const isMobile =
+    typeof window !== 'undefined' &&
+    (window.innerWidth <= 768 || window.matchMedia?.('(max-width: 768px)').matches);
+  subjectService.toggle(id, { exclusive: isMobile });
   renderSubjects();
 }
 function renameSubject(id: string, name: string) {

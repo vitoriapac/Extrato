@@ -18,7 +18,7 @@ export function buildDemoSubjects(scenario: Record<string, any>, { createdAt, ra
   return scenario.subjects.map((source: any, subjectIndex: any) => ({
     id: source.id,
     name: source.name,
-    collapsed: false,
+    collapsed: subjectIndex > 0,
     archived: false,
     archivedAt: null as any,
     createdAt,

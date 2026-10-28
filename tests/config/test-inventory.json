@@ -4201,7 +4201,7 @@
         "node:assert/strict",
         "../../src/core/format-number.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -7463,7 +7463,7 @@
         "../../src/repositories/subjects-repository.js",
         "../../src/application/subjects/subject-service.js"
       ],
-      "staticTestDeclarations": 4,
+      "staticTestDeclarations": 5,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -8028,7 +8028,7 @@
         "preact-render-to-string",
         "../../src/ui/primitives/index.js"
       ],
-      "staticTestDeclarations": 7,
+      "staticTestDeclarations": 8,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

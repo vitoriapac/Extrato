@@ -25,6 +25,7 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 |  **Master Fase 3**  | Hub Completo de Estudos & Flexibilidade         | Concluída | `VerticalizedSyllabusView.tsx` com checklist de 4 etapas e parser de PDF (`raw-syllabus-parser.ts`), `study-cycle-engine.ts` (ciclo rotativo circular) e `focus-energy-analytics.ts` (fadiga/energia).  |
 | **Master Fase 4 & Melhorias Pós-Fase 4** | Caderno de Erros, A11y, Onboarding 2.0 & Base SaaS | Concluída | `error-notebook-engine.ts` (SM-2 adaptado), `ErrorNotebookView.tsx`, avisos de revisão na Agenda e Hoje (`ErrorNotebookDueNotice.tsx`), persistência e integridade de `errorFlashcards`, focus traps em modais/tour, anúncios `aria-live` no cronômetro (`timerAriaLive`), roteiro NVDA (`ROTEIRO-AUDITORIA-NVDA.md`), Onboarding 2.0 com viabilidade pedagógica (`calculatePlanFeasibility`), nivelamento em lote e disparo direto do plano em Hoje. |
 | **Central de Ajuda 2.0** | Instruções Reativas, Micro-Simuladores & Code-Splitting | Concluída | Code-splitting assíncrono em `src/help.bundle.js` (~80 KB), Preact 11 unificado via `preact-render-to-string`, simulador de retenção Ebbinghaus (`EbbinghausSimulator.tsx`), simulador de amostragem/evidência com 95% CI (`EvidenceConfidenceSimulator.tsx`), hash routing (`#instrucoes?topic=<id>`), cópia de atalho direto no clipboard, chips interativos, metadados automáticos e conformidade estrita WCAG AA. |
+| **Auditoria UX/UI & A11y** | Contraste WCAG 2.1 AA, Pilha Sticky, Modal de Dados & Tipografia | Concluída | Token `--border-control` (> 3:1), raios 2px, formatDelta(), sticky sem gap, colapso na demo, modal `#dataManagementOverlay`, ícones SVG nativos e piso 12px. |
 
 ---
 
@@ -189,4 +190,4 @@ Todas as alterações preservam os seguintes critérios inegociáveis:
 
 1. **Tipagem Estática:** 100% TypeScript com `strict: true` validado via `npm run check:types` e `npm run check:types:tests`.
 2. **Design System:** Interfaces declarativas Preact (`.tsx`) e utilitários Tailwind CSS v4 integrados aos tokens de cores.
-3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 957 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 31 segundos (meta < 120s).
+3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 992 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 31 segundos (meta < 120s).

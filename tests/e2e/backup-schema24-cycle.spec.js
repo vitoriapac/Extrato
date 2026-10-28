@@ -14,6 +14,14 @@ const pick = state => ({
   algorithmVersions: state.algorithmVersions,
   consistencyTarget: state.metas.consistenciaSemanal,
 });
+async function openDataManagement(page) {
+  const overlay = page.locator('#dataManagementOverlay, #dataManagementDialog');
+  const isVisible = await overlay.isVisible().catch(() => false);
+  if (!isVisible) {
+    await page.locator('#openDataManagementBtn').click();
+    await expect(overlay).toBeVisible();
+  }
+}
 async function importBackup(page, backup, name = 'backup.json') {
   await page.locator('#importBackupFile').setInputFiles({
     name,
@@ -24,12 +32,14 @@ async function importBackup(page, backup, name = 'backup.json') {
   await page.locator('#modalConfirmBtn').click();
 }
 async function exportBackup(page) {
+  await openDataManagement(page);
   const downloadPromise = page.waitForEvent('download');
   await page.locator('#exportBackupBtn').click();
   const download = await downloadPromise;
   return JSON.parse(await readFile(await download.path(), 'utf8'));
 }
 async function clearAndReload(page) {
+  await openDataManagement(page);
   await page.locator('#clearAllDataBtn').click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await page.locator('#modalPromptInput').fill('LIMPAR');

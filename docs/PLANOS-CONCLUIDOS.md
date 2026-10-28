@@ -266,13 +266,74 @@ A reformulação integral da aba de **Instruções** transformou a documentaçã
 
 ---
 
-## 7. Rastreabilidade de Arquitetura e Governança
+## 7. Auditoria Completa e Refinamento de UX, UI & Acessibilidade (Fases 1, 2 e 3)
+
+Com base na auditoria visual e de experiência executada com Playwright em múltiplas resoluções (1440px a 320px) e nos temas Claro e Escuro, foram implementados os refinamentos essenciais de ergonomia, legibilidade, acessibilidade e densidade:
+
+### 7.1. Contraste de Controles e Formulários (WCAG 2.1 AA 1.4.11)
+- **Token de Borda de Controle Dedicado:**
+  - Criação do token `--border-control` (`#857F6F` no tema Claro / `#738198` no tema Escuro) com contraste superior a 3:1 em relação aos fundos de página (`--paper`) e cartões (`--surface-card`).
+  - Aplicação universal a `input`, `select`, `textarea`, caixas de busca de disciplinas (`.subject-search input`) e formulários de cenários modais, eliminando o antigo `--paper-line` (~1.3:1) que causava falha nos critérios de acessibilidade de componentes interativos.
+  - Alvos de toque com `min-height: var(--touch-target)` (44px) no mobile e anel de foco `outline: 2px solid var(--border-emphasis)` com offset acessível.
+
+### 7.2. Normalização de Bordas e Identidade Sharp-Radius
+- **Unificação para `var(--radius)` (2px):**
+  - Remoção de valores arredondados soltos (`4px`, `8px`, `20px`) em badges de prioridade (`.priority-badge`), chips de tópicos (`.tag-chip`), pílulas de progresso (`.subject-progress-pill`), seletores de status (`select.status-select`), carimbos (`.stamp`), caixas de toast (`.toast`) e formulários de replanejamento.
+  - A interface consolida a estética intencional de extrato bancário/ledger com cantos levemente facetados (2px) e linhas limpas.
+
+### 7.3. Formatação Tipográfica Unificada de Deltas
+- **Módulo Pura `formatDelta`:**
+  - Implementação da função utilitária pura [`formatDelta(value, digits)`](file:///c:/Users/vitor/Documents/Extrato/src/core/format-number.ts) utilizando estritamente o sinal de menos tipográfico `−` (U+2212) e positivo explícito `+` (ex.: `+2.4 p.p.`, `−1.8%`).
+  - Substituição de hifens ASCII soltos em cards de trajetória, prontidão e fechamento semanal, acompanhada de suíte dedicada de testes unitários em [`tests/unit/format-number.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/format-number.test.js).
+
+### 7.4. Ergonomia da Pilha Sticky e Eliminação de Vazamento de Conteúdo
+- **Alinhamento Contínuo da Barra Fixa:**
+  - A casca de navegação fixa (`.sticky-shell`) foi ajustada para aderir perfeitamente a `top: var(--demo-banner-height, 0px)` em todas as resoluções.
+  - Eliminação do gap residual de 12px/8px e remoção do `margin-bottom: 14px` do banner de demonstração.
+  - O conteúdo escrolado não mais "vaza" por debaixo do cabeçalho, e o espaço fixo ocupado no desktop caiu pela metade (de ~214px para ~85px), devolvendo a área vertical útil para a leitura de tabelas e gráficos.
+
+### 7.5. Densidade Mobile e Performance na Aba Disciplinas
+- **Colapso Seletivo de Disciplinas Secundárias:**
+  - Ajuste em [`src/demo/demo-builders/subjects.ts`](file:///c:/Users/vitor/Documents/Extrato/src/demo/demo-builders/subjects.ts) para que disciplinas da demonstração iniciem com tópicos colapsados a partir da segunda (`collapsed: subjectIndex > 0`), mantendo a primeira aberta para exploração imediata.
+  - Redução da altura renderizada inicial no mobile de ~65.600px para ~4.500px, e dos controles interativos simultâneos de 1.185 para ~150, eliminando travamentos de rolagem em aparelhos móveis sem perda funcional (o usuário expande qualquer disciplina com 1 toque).
+
+### 7.6. Deduplicação Visual de Conquistas
+- **Otimização do Renderizador de Badges:**
+  - Em [`src/ui/renderers/achievement-renderer.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/renderers/achievement-renderer.ts), suprimida a etiqueta textual redundante "Desbloqueada" dentro dos cards pertencentes à seção de já conquistadas.
+  - O estado visual é transmitido pelo enquadramento e borda dourada, enquanto a acessibilidade para leitores de tela é preservada pelo atributo `aria-label="${name}: desbloqueada"`.
+
+### 7.7. Desacoplamento do Gerenciamento de Dados e Backup
+- **Modal Próprio Flutuante (`#dataManagementOverlay`):**
+  - O bloco extenso de backup e zona de perigo foi removido do encerramento das abas normais de trabalho e encapsulado em um modal overlay dedicado.
+  - Acionamento via botão discreto `[⚙ Gerenciar dados e backups]` no rodapé permanente (`footer`).
+  - O botão `[▶ Explorar demonstração]` permanece imediatamente visível no rodapé e no CTA de primeiro uso, garantindo onboarding direto.
+  - Isolamento estrutural fora da tag `<main>`, eliminando bloqueios de foco e `inert` acidentais observados em diálogos aninhados.
+  - Suítes de backup (`backup-schema24-cycle.spec.js`), relatórios e sincronização WebDAV ajustadas e validadas com sucesso.
+
+### 7.8. Biblioteca de Primitivas de Ícones SVG Nativos
+- **Componente Declarativo e Tipado:**
+  - Implementação de [`src/ui/primitives/icon.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/primitives/icon.tsx) contendo 20 ícones SVG leves de traço fino (stroke 2px, `currentColor`, acessibilidade integrada com `aria-hidden` automático ou `aria-label`).
+  - Suíte de testes unitários dedicada em [`tests/unit/ui-primitives.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/ui-primitives.test.js) cobrindo renderização, atributos SVG e acessibilidade.
+
+### 7.9. Escala Tipográfica Estrita e Piso de 12px de Legibilidade
+- **Tokens Semânticos de Tipografia:**
+  - Adição dos tokens `--text-page-title: 1.5rem` (24px Fraunces), `--text-card-title: 1.25rem` (20px Fraunces) e `--text-label: 0.75rem` (12px Mono).
+  - Elevação do token `--text-micro` para `.75rem` (12px), estabelecendo um piso universal de legibilidade e prevenindo que qualquer rótulo ou detalhe caia abaixo de 12px em resoluções pequenas.
+
+### 7.10. Hierarquia Visual no Banner de Demonstração
+- **Rebaixamento de Botão Secundário:**
+  - O botão "Sair da demonstração" no banner superior foi rebaixado para a variante `btn ghost small`, evitando que dispute atenção visual com as ações primárias de estudo da aplicação.
+
+---
+
+## 8. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
+- **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
-- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (274 arquivos auditados, 990 testes unitários verdes em ~38s)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (274 arquivos auditados, 992 testes unitários verdes em ~31s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

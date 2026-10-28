@@ -13,7 +13,16 @@ O StudyTrack usa a linguagem visual de um extrato: navy para estrutura, dourado 
 
 A escala oficial é 4, 8, 12, 16, 20, 24 e 32 px, exposta nos tokens `--space-1` a `--space-8`.
 
-As superfícies, textos, divisores e estados semânticos também têm aliases (`--surface-*`, `--text-*`, `--border-subtle` e `--status-*`). Use esses papéis em componentes novos ou revisados; os aliases continuam ligados às cores do tema ativo. `--surface-card`, `--surface-card-muted`, `--surface-interactive`, `--text-inverse` e `--status-insufficient` completam os papéis de superfície, texto e evidência insuficiente nos dois temas.
+As superfícies, textos, divisores e estados semânticos também têm aliases (`--surface-*`, `--text-*`, `--border-subtle`, `--border-control` e `--status-*`). Use esses papéis em componentes novos ou revisados; os aliases continuam ligados às cores do tema ativo. `--surface-card`, `--surface-card-muted`, `--surface-interactive`, `--text-inverse` e `--status-insufficient` completam os papéis de superfície, texto e evidência insuficiente nos dois temas.
+
+### Controles de Formulário e Acessibilidade (WCAG 2.1 AA 1.4.11)
+
+- **Token `--border-control`:** `#857F6F` (tema Claro) e `#738198` (tema Escuro), garantindo contraste mínimo estrito de 3:1 contra `--paper` e `--surface-card` para limites de campos interativos (`input`, `select`, `textarea`, `.subject-search`).
+- **Dimensões e Alvos de Toque:** `--control-height` (36px) e `--touch-target` (44px) no mobile, com anel de foco `outline: 2px solid var(--border-emphasis)` e offset de 1–2px.
+- **Normalização de Radii (`--radius`):** Todas as bordas utilizam `var(--radius)` (2px estrito), conferindo identidade visual técnica uniforme (estilo extrato/ledger) a badges, tags (`.tag-chip`), pills (`.subject-progress-pill`), seletores e modais.
+- **Formatação de Deltas Numéricos:** Todos os indicadores de variação utilizam [`formatDelta()`](src/core/format-number.ts) com o caractere tipográfico de subtração `−` (U+2212) e positivo explícito `+` (ex.: `+2.4 p.p.`, `−1.8%`), evitando hifens ASCII soltos `-`.
+- **Pilha Sticky Unificada:** A casca de navegação fixa (`.sticky-shell`) adere estritamente a `top: var(--demo-banner-height, 0px)` sem gaps residuais, prevenindo vazamentos visuais durante a rolagem.
+- **Densidade Mobile:** Na aba de Disciplinas da demonstração, tópicos de disciplinas secundárias iniciam colapsados por padrão (`collapsed: subjectIndex > 0`), mantendo a primeira disciplina expandida para descoberta e preservando a performance em telas pequenas.
 
 ## Componentes
 
@@ -114,3 +123,18 @@ Capturas ocorrem no fechamento e antes de mudanças na data/meta da prova, concu
 ## Explicações de recomendações
 
 renderRecommendationExplanation usa quatro perguntas: o que fazer, por que, evidências e o que muda ao aceitar. As consequências são operacionais e não garantem desempenho. A Visão Geral, Hoje, diagnóstico com ação vinculada e adaptações reutilizam o contrato. Histórico mostra explanationSnapshot; registros antigos mantêm apenas as razões que de fato foram salvas. Detalhamento da composição matemática continua disponível na recomendação de Hoje.
+
+## Escala Tipográfica e Piso de Legibilidade
+
+- `--text-page-title: 1.5rem` (24px, Fraunces serif semibold) — Títulos de página/aba.
+- `--text-card-title: 1.25rem` (20px, Fraunces serif semibold) — Títulos de cards de primeiro nível.
+- `--text-label: 0.75rem` (12px, IBM Plex Mono uppercase) — Rótulos, metadados e tags.
+- `--text-micro: 0.75rem` (12px) — Piso absoluto de legibilidade. Todo texto do sistema respeita o limite mínimo de 12px sem quebras indesejadas em 320px.
+
+## Gerenciamento de Dados e Backups
+
+O bloco de backup e zona de perigo foi desacoplado da visualização padrão de todas as abas e isolado em um modal flutuante (`#dataManagementOverlay`), acionado pelo botão discreto `#openDataManagementBtn` no rodapé. O botão `[▶ Explorar demonstração]` permanece imediatamente acessível no rodapé para descoberta rápida e onboarding. O overlay vive fora da raiz `<main>`, prevenindo traps de foco e atributos `inert` indevidos.
+
+## Conjunto Nativo de Ícones SVG
+
+A biblioteca de primitivas [`src/ui/primitives/icon.tsx`](src/ui/primitives/icon.tsx) fornece mais de 20 ícones SVG leves de traço fino (2px stroke, `currentColor`, escaláveis via prop `size`), eliminando dependências pesadas de fontes de ícones externas ou variações imprevisíveis de renderização de emojis entre plataformas.

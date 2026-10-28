@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=75d23128d2f3">
-<link rel="stylesheet" href="styles/app.css?v=75d23128d2f3">
+<link rel="stylesheet" href="styles/tailwind.css?v=bbf6ad48192f">
+<link rel="stylesheet" href="styles/app.css?v=bbf6ad48192f">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -28,7 +28,7 @@
   <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
     <div><strong>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
     <nav class="demo-tour" aria-label="Roteiro da demonstração"><span>Explore:</span><button data-demo-target="hoje">Prioridades</button><button data-demo-target="dashboard">Riscos e projeção</button><button data-demo-target="agenda">Revisões</button><button data-demo-target="metas">Planejamento</button><button id="demoReportShortcut">Relatório</button></nav>
-    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo">🧭 Tour guiado</button><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn small" id="exitDemoBtn">Sair da demonstração</button></div>
+    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo">🧭 Tour guiado</button><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn">Sair da demonstração</button></div>
   </aside>
 
   <dialog class="demo-intro-dialog" id="demoIntroDialog" aria-labelledby="demoIntroTitle" aria-describedby="demoIntroDescription">
@@ -646,26 +646,14 @@
     <div id="helpCenter"></div>
   </div>
 
-  <div class="backup-block">
-    <div>
-      <div class="backup-title">Backup dos dados</div>
-      <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando para não perder nada — e importe pra restaurar em outro dispositivo.</div>
+  <footer>
+    <div class="footer-primary-row">
+      <span>Salvo automaticamente no seu navegador — extrato.gerado localmente</span>
+      <div class="footer-actions">
+        <button class="btn small" id="enterDemoBtn">▶ Explorar demonstração</button>
+        <button type="button" class="btn ghost small" id="openDataManagementBtn" aria-haspopup="dialog" aria-expanded="false">⚙ Gerenciar dados e backups</button>
+      </div>
     </div>
-    <div class="backup-actions">
-      <label class="backup-period"><span>Período do relatório</span><select class="select-control select-control--compact" id="reportPeriodSelect" aria-label="Período do relatório"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option><option value="custom">Período personalizado</option></select></label>
-      <input type="date" id="reportPeriodStart" aria-label="Início do período do relatório" hidden><input type="date" id="reportPeriodEnd" aria-label="Fim do período do relatório" hidden>
-      <button class="btn small" id="enterDemoBtn">▶ Explorar demonstração</button>
-      <button class="btn ghost small" id="exportReportBtn">▣ Exportar relatório PDF</button>
-      <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>⬇ Exportar backup</button>
-      <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected>Baixar recuperação</button>
-      <button class="btn ghost small" id="importBackupBtn" data-demo-protected>⬆ Importar backup</button>
-      <button class="btn ghost small" id="openRemoteSyncBtn" data-demo-protected>☁ Sincronização WebDAV (E2EE)</button>
-      <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
-    </div>
-    <section class="backup-danger-zone" aria-labelledby="dangerZoneTitle"><div><strong id="dangerZoneTitle">Zona de perigo</strong><span>Apaga permanentemente os dados deste navegador. A demonstração permanece isolada.</span></div><button class="btn danger small" id="clearAllDataBtn" data-demo-protected>Limpar todos os dados</button></section>
-  </div>
-
-  <footer>Salvo automaticamente no seu navegador — extrato.gerado localmente<br>
     <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>Ctrl/⌘+Shift+1–8</strong> troca de área · <strong>Esc</strong> fecha</span>
   </footer>
 </main>
@@ -679,6 +667,32 @@
   <button class="btn ghost small" id="appErrorRetryBtn" type="button">Tentar novamente</button>
 </aside>
 <article id="strategicPrintReport" class="strategic-print-report" aria-label="Relatório estratégico"></article>
+
+<div class="modal-overlay" id="dataManagementOverlay" role="dialog" aria-modal="true" aria-labelledby="dataManagementTitle">
+  <div class="modal-box data-management-box">
+    <div class="data-management-header">
+      <h3 id="dataManagementTitle">Gerenciamento de dados e backup</h3>
+      <button type="button" class="btn ghost small" id="closeDataManagementBtn" aria-label="Fechar gerenciamento de dados">✕</button>
+    </div>
+    <div class="backup-block">
+      <div>
+        <div class="backup-title">Backup dos dados</div>
+        <div class="backup-desc">Tudo fica salvo só neste navegador. Exporte de vez em quando para não perder nada — e importe pra restaurar em outro dispositivo.</div>
+      </div>
+      <div class="backup-actions">
+        <label class="backup-period"><span>Período do relatório</span><select class="select-control select-control--compact" id="reportPeriodSelect" aria-label="Período do relatório"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option><option value="custom">Período personalizado</option></select></label>
+        <input type="date" id="reportPeriodStart" aria-label="Início do período do relatório" hidden><input type="date" id="reportPeriodEnd" aria-label="Fim do período do relatório" hidden>
+        <button class="btn ghost small" id="exportReportBtn">▣ Exportar relatório PDF</button>
+        <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>⬇ Exportar backup</button>
+        <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected>Baixar recuperação</button>
+        <button class="btn ghost small" id="importBackupBtn" data-demo-protected>⬆ Importar backup</button>
+        <button class="btn ghost small" id="openRemoteSyncBtn" data-demo-protected>☁ Sincronização WebDAV (E2EE)</button>
+        <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
+      </div>
+      <section class="backup-danger-zone" aria-labelledby="dangerZoneTitle"><div><strong id="dangerZoneTitle">Zona de perigo</strong><span>Apaga permanentemente os dados deste navegador. A demonstração permanece isolada.</span></div><button class="btn danger small" id="clearAllDataBtn" data-demo-protected>Limpar todos os dados</button></section>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="examClassificationOverlay" role="dialog" aria-modal="true" aria-labelledby="examClassificationTitle">
   <div class="modal-box exam-classification-box">
     <h3 id="examClassificationTitle">Revisar classificações históricas</h3>
@@ -907,7 +921,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=75d23128d2f3"></script>
+  <script src="src/app.bundle.js?v=bbf6ad48192f"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

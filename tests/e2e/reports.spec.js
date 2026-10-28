@@ -3,6 +3,8 @@ import { openDemo, activateTab } from './helpers.js';
 
 test('gera relatório estratégico identificado como demonstração', async ({ page }) => {
   await openDemo(page);
+  await page.locator('#openDataManagementBtn').click();
+  await expect(page.locator('#dataManagementOverlay, #dataManagementDialog')).toBeVisible();
   await page.locator('#reportPeriodSelect').selectOption('90');
   await page.getByRole('button', { name: /Exportar relatório PDF/i }).click();
   const report = page.locator('.strategic-print-report');

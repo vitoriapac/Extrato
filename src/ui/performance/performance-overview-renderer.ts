@@ -1,4 +1,4 @@
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDecimal, formatDelta } from '../../core/format-number.js';
 import { presentEvidence } from '../evidence-state.js';
 import { formatStudyMinutes, formatStudyMinuteDelta } from '../format-study-time.js';
 import { renderReadinessHistory } from '../renderers/readiness-history-renderer.js';
@@ -14,7 +14,7 @@ import { renderAchievementProjection } from './achievement-projection-renderer.j
 
 const shown = (value: number | null | undefined) => (value == null ? '—' : formatDecimal(value));
 const change = (value: number | null | undefined) =>
-  value == null ? 'Sem base comparável' : `${value > 0 ? '+' : ''}${shown(value)}`;
+  value == null ? 'Sem base comparável' : formatDelta(value);
 const card = (label: string, value: unknown, unit: string, detail: string) =>
   renderMetricCard({ label, value: presentEvidence({ value, unit, format: shown }).text, detail });
 

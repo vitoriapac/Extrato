@@ -1,5 +1,5 @@
 import { pluralize } from '../../core/utils.js';
-import { formatDecimal } from '../../core/format-number.js';
+import { formatDelta } from '../../core/format-number.js';
 import { renderChartFrame, renderChartTooltip } from '../chart-components.js';
 import {
   buildReadinessEvolution,
@@ -7,8 +7,7 @@ import {
 } from '../../application/analytics/build-readiness-evolution.js';
 
 type Row = Record<string, any>;
-const signed = (value: number) => `${value > 0 ? '+' : ''}${formatDecimal(value)}`;
-const points = (value: number) => `${signed(value)} ${Math.abs(value) === 1 ? 'ponto' : 'pontos'}`;
+const points = (value: number) => `${formatDelta(value)} ${Math.abs(value) === 1 ? 'ponto' : 'pontos'}`;
 const value = (item: Row | null | undefined) => (item ? `${item.score}/100` : '—');
 
 export function renderReadinessHistory(

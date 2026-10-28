@@ -34,7 +34,7 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Micro-simuladores didáticos interativos integrados à documentação: Simulador da Curva de Ebbinghaus (retenção com e sem revisões programadas) e Simulador de Força da Evidência e Amostragem (Lei dos Grandes Números e intervalos de confiança de 95%).
 - Base preparatória para SaaS (sem consumidor na interface): conector de nuvem modular e controle puro de planos e entitlements (Free, Pro, Mentor).
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
-- Tema claro/escuro, layout responsivo, conformidade WCAG AA completa, focus traps com retorno seguro de foco (`Escape`), navegação acessível por teclado e anúncios `aria-live` para leitores de tela.
+- Tema claro/escuro, layout responsivo, conformidade WCAG AA completa (token `--border-control` com contraste > 3:1 em inputs/selects), barra fixa contínua sem vazamento (zero gap), normalização de raios para `var(--radius)` (2px), focus traps com retorno seguro de foco (`Escape`), navegação acessível por teclado e anúncios `aria-live` para leitores de tela.
 
 ## Como o StudyTrack funciona
 
@@ -292,6 +292,11 @@ O histórico de evolução e entregas do StudyTrack foi consolidado em [Planos C
    - **Didática Interativa:** Simulador interativo da Curva de Ebbinghaus (`EbbinghausSimulator.tsx`), simulador de amostragem e força da evidência com intervalos de confiança de 95% (`EvidenceConfidenceSimulator.tsx`) e widget de avaliação local de utilidade (`HelpFeedbackWidget.tsx`).
    - **Novos Guias & Navegabilidade:** Inclusão de guias do PiP Timer, Caderno de Erros e Simulador What-If, com metadados de tempo de leitura/nível (`topic-metadata.ts`), cópia de atalho direto para clipboard e conformidade rigorosa WCAG AA em modo claro e escuro.
    - **Qualidade & Homologação:** 990 testes unitários no Node passando em ~38s e 100% verde em todos os 7 jobs do GitHub Actions.
+6. **Auditoria Visual, UX/UI & Acessibilidade (Concluída):**
+   - **Contraste & Identidade:** Token semântico `--border-control` (> 3:1 WCAG AA), normalização de raios `var(--radius: 2px)`, e utilitário `formatDelta()` com sinal de menos tipográfico `−` (U+2212) e positivo explícito.
+   - **Ergonomia & Pilha Sticky:** Eliminação do vão de 12px da barra fixa, alinhamento fluido de cabeçalho e colapso seletivo de matérias secundárias na demo (queda de 65.600px para 4.500px na altura mobile).
+   - **Gerenciamento de Dados Modular:** Bloco de backup e zona de perigo desacoplado e migrado para modal flutuante (`#dataManagementOverlay`), com acesso discreto pelo rodapé (`#openDataManagementBtn`) e CTA da demonstração preservado.
+   - **Design System & Tipografia:** Escala tipográfica formal com piso universal de 12px (`--text-micro: .75rem`), biblioteca de primitivas de ícones SVG nativos leves (`src/ui/primitives/icon.tsx`) e 992 testes unitários 100% verdes em ~31s.
 
 As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.2.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente. A comparação do foco estratégico usa fechamentos salvos sem sobreposição, com dados completos e do mesmo concurso ativo; fechamentos antigos sem esse escopo não entram na comparação.
 

@@ -384,6 +384,8 @@ test.describe('validação dos fluxos recentes', () => {
     await page.goto('/?test=1');
     await expect(page.locator('#testReport')).toBeVisible();
     await page.locator('#testReport').evaluate(element => element.remove());
+    await page.locator('#openDataManagementBtn').click();
+    await expect(page.locator('#dataManagementOverlay, #dataManagementDialog')).toBeVisible();
     await page.locator('#openRemoteSyncBtn').click();
     await expect(page.locator('#remoteSyncOverlay')).toHaveClass(/show/);
     await page.locator('#remoteSyncUrl').fill('http://localhost:9999/webdav/');

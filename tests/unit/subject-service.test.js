@@ -55,3 +55,25 @@ test('repositório remove tópico somente da disciplina correta', () => {
   assert.equal(repository.removeTopic('outra', topic.id), null);
   assert.equal(repository.removeTopic(subject.id, topic.id).id, topic.id);
 });
+test('toggle alterna recolhimento e suporta modo exclusivo de acordeão', () => {
+  const { service } = fixture();
+  const sub1 = service.create('Direito');
+  const sub2 = service.create('Matemática');
+  assert.equal(sub1.collapsed, false);
+  assert.equal(sub2.collapsed, false);
+
+  // Recolher sub1
+  service.toggle(sub1.id);
+  assert.equal(sub1.collapsed, true);
+  assert.equal(sub2.collapsed, false);
+
+  // Expandir sub1 no modo exclusivo (deve recolher sub2)
+  service.toggle(sub1.id, { exclusive: true });
+  assert.equal(sub1.collapsed, false);
+  assert.equal(sub2.collapsed, true);
+
+  // Expandir sub2 no modo exclusivo (deve recolher sub1)
+  service.toggle(sub2.id, { exclusive: true });
+  assert.equal(sub1.collapsed, true);
+  assert.equal(sub2.collapsed, false);
+});

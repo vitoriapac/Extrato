@@ -12,6 +12,7 @@ import {
   Dialog,
   EmptyState,
   MetricCard,
+  Icon,
 } from '../../src/ui/primitives/index.js';
 
 test('UI Primitives — Button renderiza variantes e tamanhos acessíveis', () => {
@@ -125,3 +126,20 @@ test('UI Primitives — Dialog renderiza título e ponto de montagem', () => {
   assert.ok(dialogHtml.includes('Formulário de importação'));
   assert.ok(dialogHtml.includes('aria-label="Fechar"'));
 });
+
+test('UI Primitives — Icon renderiza SVG acessível ou decorativo com traço fino', () => {
+  const decorativeHtml = render(h(Icon, { name: 'search', size: 18 }));
+  assert.ok(decorativeHtml.includes('<svg'));
+  assert.ok(decorativeHtml.includes('viewBox="0 0 24 24"'));
+  assert.ok(decorativeHtml.includes('width="18"'));
+  assert.ok(decorativeHtml.includes('aria-hidden="true"'));
+  assert.ok(decorativeHtml.includes('stroke="currentColor"'));
+
+  const accessibleHtml = render(
+    h(Icon, { name: 'download', size: 20, 'aria-label': 'Baixar backup' })
+  );
+  assert.ok(accessibleHtml.includes('role="img"'));
+  assert.ok(accessibleHtml.includes('aria-label="Baixar backup"'));
+  assert.ok(!accessibleHtml.includes('aria-hidden="true"'));
+});
+

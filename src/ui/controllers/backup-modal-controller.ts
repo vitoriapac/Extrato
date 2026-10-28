@@ -232,6 +232,50 @@ export function createBackupModalController(ctx: BackupModalControllerContext) {
 
   const mount = () => {
     const fileInput = ctx.document.getElementById('importBackupFile');
+    const overlay =
+      ctx.document.getElementById('dataManagementOverlay') ||
+      ctx.document.getElementById('dataManagementDialog');
+    const openBtn = ctx.document.getElementById('openDataManagementBtn');
+    const closeBtn = ctx.document.getElementById('closeDataManagementBtn');
+
+    const openModal = () => {
+      if (!overlay) return;
+      overlay.classList.add('show');
+      if (typeof (overlay as any).showModal === 'function' && overlay.tagName === 'DIALOG') {
+        try {
+          (overlay as any).show();
+        } catch {
+          overlay.setAttribute('open', '');
+        }
+      }
+      openBtn?.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeModal = () => {
+      if (!overlay) return;
+      overlay.classList.remove('show');
+      if (typeof (overlay as any).close === 'function' && overlay.tagName === 'DIALOG') {
+        try {
+          (overlay as any).close();
+        } catch {
+          overlay.removeAttribute('open');
+        }
+      }
+      openBtn?.setAttribute('aria-expanded', 'false');
+    };
+
+    if (overlay && openBtn) {
+      listen(openBtn, 'click', openModal);
+    }
+    if (overlay && closeBtn) {
+      listen(closeBtn, 'click', closeModal);
+    }
+    if (overlay) {
+      listen(overlay, 'click', (e: any) => {
+        if (e.target === overlay) closeModal();
+      });
+    }
+
     listen(ctx.document.getElementById('exportBackupBtn'), 'click', () =>
       exportState(ctx.getState(), ctx.getDate())
     );

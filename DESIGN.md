@@ -22,7 +22,18 @@ colors:
   info-bg: "#E3E9F3"
   highlight-bg: "#FFF8E6"
   tab-hover-bg: "#E1DCCB"
+  border-control: "#857F6F"
 typography:
+  page-title:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "1.5rem"
+    fontWeight: 600
+    letterSpacing: "-0.01em"
+  card-title:
+    fontFamily: "Fraunces, Georgia, serif"
+    fontSize: "1.25rem"
+    fontWeight: 600
+    lineHeight: 1.3
   display:
     fontFamily: "Fraunces, Georgia, serif"
     fontSize: "28px"
@@ -53,9 +64,9 @@ typography:
     letterSpacing: "0.08em"
   caption:
     fontFamily: "IBM Plex Mono, Consolas, Courier New, monospace"
-    fontSize: "11px"
+    fontSize: "12px"
     fontWeight: 400
-    letterSpacing: "0.1em"
+    letterSpacing: "0.05em"
 rounded:
   sharp: "2px"
 spacing:
