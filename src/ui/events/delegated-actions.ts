@@ -64,3 +64,23 @@ export function createSpecialActionResolver(options: DelegatedSpecialOptions) {
     return false;
   };
 }
+
+/**
+ * Combina múltiplos mapas de ações delegadas em um único dicionário seguro (sem protótipo).
+ * Filtra propriedades que não sejam funções para evitar injeções.
+ */
+export function composeDelegatedActionHandlers(
+  ...handlerGroups: Array<Record<string, any>>
+): Record<string, Function> {
+  const result: Record<string, Function> = Object.create(null);
+  for (const group of handlerGroups) {
+    if (!group || typeof group !== 'object') continue;
+    for (const [key, fn] of Object.entries(group)) {
+      if (typeof fn === 'function') {
+        result[key] = fn;
+      }
+    }
+  }
+  return result;
+}
+

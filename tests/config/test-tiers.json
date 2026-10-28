@@ -497,6 +497,16 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/approval-metrics.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui cálculos matemáticos de prontidão e aprovação."
+    },
+    {
+      "file": "tests/unit/approval-tab-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
+    },
+    {
       "file": "tests/unit/backup-modal-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -637,6 +647,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/diagnostics-tab-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
+    },
+    {
       "file": "tests/unit/editable-collection-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -732,6 +747,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/exam-matrix-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
+    },
+    {
       "file": "tests/unit/exam-matrix.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -780,6 +800,11 @@
       "file": "tests/unit/focus-energy-analytics.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/format-duration.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
       "file": "tests/unit/format-number.test.js",
@@ -872,6 +897,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/keyboard-shortcuts.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
+    },
+    {
       "file": "tests/unit/list-components.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -880,6 +910,16 @@
       "file": "tests/unit/load-persisted-state.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/master-renderer.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
+    },
+    {
+      "file": "tests/unit/modal-dialogs.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
       "file": "tests/unit/multidimensional-radar.test.js",
@@ -1015,6 +1055,11 @@
       "file": "tests/unit/projection-ux-simulator.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/question-analytics-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
       "file": "tests/unit/question-import-normalizer.test.js",
@@ -1172,6 +1217,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/rhythm-estimator.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui estimativas de ritmo de cobertura do edital e revisões em atraso."
+    },
+    {
       "file": "tests/unit/risk-score.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1185,6 +1235,11 @@
       "file": "tests/unit/session-history.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/session-modal-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui modal de conclusão de sessão, formulário e campos de bookmark."
     },
     {
       "file": "tests/unit/session-result.test.js",
@@ -1202,12 +1257,12 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/state-migrations.test.js",
+      "file": "tests/unit/state-boundaries.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
-      "file": "tests/unit/state-boundaries.test.js",
+      "file": "tests/unit/state-migrations.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
@@ -1287,6 +1342,16 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/study-streak.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui sumarização diária e cálculo de sequência ininterrupta."
+    },
+    {
+      "file": "tests/unit/study-timer-view-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
+    },
+    {
       "file": "tests/unit/studytrack-3-2-analytics.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1302,9 +1367,19 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/subject-error-metrics.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui taxa de erro e inatividade agregadas por disciplina."
+    },
+    {
       "file": "tests/unit/subject-service.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/subject-target-editor-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
       "file": "tests/unit/subjects-components.test.js",
@@ -1332,6 +1407,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/timer-coordinator.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; inclui coordenação do cronômetro de estudo, bookmarks e sessões."
+    },
+    {
       "file": "tests/unit/today-components.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; componentes Preact e controller da aba Hoje."
@@ -1340,6 +1420,11 @@
       "file": "tests/unit/today-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/topic-analytics-view.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
       "file": "tests/unit/topic-bookmark.test.js",
@@ -1367,6 +1452,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/topic-performance.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
+    },
+    {
       "file": "tests/unit/topic-signals.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1375,6 +1465,11 @@
       "file": "tests/unit/topic-strategy-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/topic-strategy-editor-view.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
       "file": "tests/unit/topic-strategy-renderer.test.js",
@@ -1460,6 +1555,11 @@
       "file": "tests/unit/what-if-simulator.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/wire-dependencies.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     }
   ]
 }

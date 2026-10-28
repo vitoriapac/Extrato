@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   createDelegatedArgumentResolver,
   createSpecialActionResolver,
+  composeDelegatedActionHandlers,
 } from '../../src/ui/events/delegated-actions.js';
 
 test('createDelegatedArgumentResolver — resolve valores de contexto e literais', () => {
@@ -72,4 +73,16 @@ test('createSpecialActionResolver — intercepta e despacha casos especiais', ()
   // Caso 3: não reconhecido
   const handled3 = resolver('outroComando()', null, {});
   assert.equal(handled3, false);
+});
+
+test('composeDelegatedActionHandlers — combina múltiplos grupos de ações com segurança', () => {
+  const groupA = { action1: () => 'a1', action2: () => 'a2' };
+  const groupB = { action3: () => 'b3', notAFunction: 'invalid' };
+
+  const combined = composeDelegatedActionHandlers(groupA, groupB);
+  assert.equal(typeof combined.action1, 'function');
+  assert.equal(typeof combined.action2, 'function');
+  assert.equal(typeof combined.action3, 'function');
+  assert.equal(combined.notAFunction, undefined);
+  assert.equal(Object.getPrototypeOf(combined), null);
 });

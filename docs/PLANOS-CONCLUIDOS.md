@@ -326,14 +326,58 @@ Com base na auditoria visual e de experiência executada com Playwright em múlt
 
 ---
 
-## 8. Rastreabilidade de Arquitetura e Governança
+## 8. Plano Diretor de Modularização do `app.ts` (Fases 1 a 5 Concluídas)
+
+Em atendimento estrito à política inegociável de governança de `AGENTS.md` (*Modularização Obrigatória: Zero Novas Funções no `app.ts`*), foi executado e concluído o [Plano Diretor de Modularização](PLANO-MODULARIZACAO-APP.md), reduzindo o monolito de **10.921 linhas** para **9.254 linhas** (-1.667 linhas líquidas / -15.3%):
+
+### 8.1. Fase 1: Extração do Domínio Puro
+- Isolamento de motores determinísticos sob `src/domain/`, sem dependências de DOM, Preact ou storage:
+  - [`src/domain/analytics/approval-metrics.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/approval-metrics.ts) (11 testes).
+  - [`src/domain/analytics/study-streak.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/study-streak.ts) (3 testes).
+  - [`src/domain/planning/rhythm-estimator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/planning/rhythm-estimator.ts) (6 testes).
+  - [`src/domain/analytics/subject-error-metrics.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/subject-error-metrics.ts) (3 testes).
+
+### 8.2. Fase 2: Extração de Eventos Globais, Atalhos e Diálogos
+- Unificação de feedback e controle de teclado em `src/ui/`:
+  - [`src/ui/primitives/modal-dialogs.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/primitives/modal-dialogs.ts) (`showToast`, `flashSaved`, `showConfirm`, `showPrompt` - 3 testes).
+  - [`src/ui/events/keyboard-shortcuts.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/events/keyboard-shortcuts.ts) (atalhos globais, trap de Escape - 3 testes).
+  - [`src/ui/events/delegated-actions.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/events/delegated-actions.ts) (`composeDelegatedActionHandlers` - 3 testes).
+
+### 8.3. Fase 3: Desacoplamento do Cronômetro de Estudos (Timer)
+- Isolamento completo do subsistema do timer em aplicação e interface:
+  - [`src/application/sessions/timer-coordinator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/sessions/timer-coordinator.ts) (orquestração do timer, bookmarks e sessões - 6 testes).
+  - [`src/core/format-duration.ts`](file:///c:/Users/vitor/Documents/Extrato/src/core/format-duration.ts) (`formatDuration`, `formatPlanMinutes` - 2 testes).
+  - [`src/ui/controllers/session-modal-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/session-modal-controller.ts) (4 testes).
+  - [`src/ui/controllers/study-timer-view-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/study-timer-view-controller.ts) (3 testes).
+
+### 8.4. Fase 4: Telas Pesadas, Matrizes e Editores de UI
+- Desacoplamento procedural para controladores dedicados sob `src/ui/tabs/`:
+  - [`src/ui/tabs/approval/approval-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/approval/approval-tab-controller.ts) (1 teste).
+  - [`src/domain/analytics/topic-performance.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/analytics/topic-performance.ts) & [`src/ui/tabs/questions/question-analytics-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/questions/question-analytics-controller.ts) (8 + 1 testes).
+  - [`src/ui/tabs/diagnostics/diagnostics-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/diagnostics/diagnostics-tab-controller.ts) (1 teste).
+  - [`src/ui/tabs/goals/goals-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/goals/goals-tab-controller.ts) (5 testes).
+  - [`src/ui/tabs/subjects/topic-analytics-view.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/subjects/topic-analytics-view.ts) (1 teste).
+  - [`src/ui/tabs/goals/exam-matrix-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/goals/exam-matrix-controller.ts) (Matriz Histórica, Matriz de Domínio, Inteligência, Blueprint Config e Revisão de Classificação - 4 testes).
+  - [`src/ui/tabs/goals/subject-target-editor-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/goals/subject-target-editor-controller.ts) (Editor de Metas de Acerto por Disciplina - 4 testes).
+  - [`src/ui/tabs/subjects/topic-strategy-editor-view.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/subjects/topic-strategy-editor-view.ts) (1 teste).
+
+### 8.5. Fase 5: Refatoração do Bootstrap e Master Renderer
+- Composição e ciclo de renderização desacoplados do ponto de entrada:
+  - [`src/bootstrap/wire-dependencies.ts`](file:///c:/Users/vitor/Documents/Extrato/src/bootstrap/wire-dependencies.ts) (instanciação unificada de providers, repositórios e serviços de aplicação - 4 testes).
+  - [`src/bootstrap/master-renderer.ts`](file:///c:/Users/vitor/Documents/Extrato/src/bootstrap/master-renderer.ts) (loop de renderização, profundidade aninhada, cache de candidatos e captura de erros - 6 testes).
+- Conclusão homologada com **1070 testes unitários verdes em 34.96s** no Fast Gate.
+
+---
+
+## 9. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
+- **Plano Diretor de Modularização:** [docs/PLANO-MODULARIZACAO-APP.md](file:///c:/Users/vitor/Documents/Extrato/docs/PLANO-MODULARIZACAO-APP.md)
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
-- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (274 arquivos auditados, 992 testes unitários verdes em ~31s)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (294 arquivos auditados, 1070 testes unitários verdes em ~35s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

@@ -14,12 +14,27 @@ import {
   createSubjectSearchController,
 } from './ui/subjects/subject-navigation.js';
 import { createSubjectsController } from './ui/tabs/subjects/subjects-controller.js';
+import { renderTopicAnalyticsState as renderTopicAnalyticsStateView } from './ui/tabs/subjects/topic-analytics-view.js';
 import { createQuestionsController } from './ui/tabs/questions/questions-controller.js';
 import { createReviewsTabController } from './ui/tabs/reviews/reviews-tab-controller.js';
 import { createCalendarTabController } from './ui/tabs/calendar/calendar-tab-controller.js';
 import { createGoalsTabController } from './ui/tabs/goals/goals-tab-controller.js';
 import { createTodayTabController } from './ui/tabs/today/today-tab-controller.js';
 import { createDashboardTabController } from './ui/tabs/dashboard/dashboard-tab-controller.js';
+import { createApprovalTabController } from './ui/tabs/approval/approval-tab-controller.js';
+import { createQuestionAnalyticsController } from './ui/tabs/questions/question-analytics-controller.js';
+import { createDiagnosticsTabController } from './ui/tabs/diagnostics/diagnostics-tab-controller.js';
+import {
+  performanceConfidence,
+  classifyAccuracy as classifyAccuracyTarget,
+  calculateTopicPerformance,
+  calculateSubjectPerformanceCounts,
+  calculateTopicErrorRate,
+  calculateSubjectWeeklyTrend,
+  calculateTopicWeeklyTrend,
+  calculateWeightedTrend,
+  calculateDominantTopicError,
+} from './domain/analytics/topic-performance.js';
 import { h } from 'preact';
 import { mountPreact, unmountPreact } from './ui/preact-mount.js';
 import { createWhatIfController } from './ui/controllers/what-if-controller.js';
@@ -45,10 +60,21 @@ import {
   hasActiveTimer,
   activeTimerMatchesRecommendation as activeTimerMatchesRecommendationModule,
   renderActiveStudyTimerNoticeHtml,
-  renderGuidedStrategyHtml,
   advanceGuidedStrategyStep,
 } from './ui/controllers/timer-controller.js';
+import {
+  formatTimer,
+  findDailyPlanItem as findDailyPlanItemCoordinator,
+  releaseActivePlanItem as releaseActivePlanItemCoordinator,
+  topicResumeLabel as topicResumeLabelCoordinator,
+  buildCompletedSessionRecord,
+  resolveSessionBookmark,
+  SESSION_BOOKMARK_FIELDS,
+} from './application/sessions/timer-coordinator.js';
 import { announceTimerEvent } from './ui/primitives/a11y.js';
+import { createSessionModalController } from './ui/controllers/session-modal-controller.js';
+import { createStudyTimerViewController } from './ui/controllers/study-timer-view-controller.js';
+import { formatDuration, formatPlanMinutes } from './core/format-duration.js';
 import {
   buildExcludedCandidates,
   renderExcludedCandidatesHtml,
@@ -60,7 +86,6 @@ import { buildAdherenceCloseHistory } from './application/adherence/build-weekly
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
 import { renderAdherenceCloseHistory } from './ui/renderers/weekly-adherence-renderer.js';
 import { freezePlanExecution } from './domain/planning/plan-execution-snapshot.js';
-import { recordPlanningCapacity } from './domain/planning/capacity-history.js';
 import { buildDiagnosisPageModel } from './application/diagnostics/build-diagnosis-page-model.js';
 import { buildDecisionCoherenceReport } from './application/diagnostics/build-decision-coherence-report.js';
 import { renderDecisionCoherenceDebug } from './ui/renderers/decision-coherence-debug-renderer.js';
@@ -115,7 +140,6 @@ import { normalizeAdherenceTarget } from './application/adherence/adherence-targ
 import { renderGoals } from './ui/renderers/goals-renderer.js';
 import { createRecoveryController } from './ui/controllers/recovery-controller.js';
 import { createRecoveryStateCommitter } from './application/recovery/recovery-state-committer.js';
-import { buildPerformanceSubjectComparison } from './application/performance/build-performance-subject-comparison.js';
 import {
   renderNextBestAction,
   renderPlanRecommendationChoice,
@@ -125,8 +149,9 @@ import {
   createAnalysisContext,
   analysisContextInScope,
 } from './application/navigation/analysis-context.js';
-import { updateSubjectAccuracyTargets } from './application/goals/update-subject-accuracy-targets.js';
-import { renderSubjectTargetEditor as renderSubjectTargetEditorView } from './ui/renderers/subject-target-editor-renderer.js';
+import { createExamMatrixController } from './ui/tabs/goals/exam-matrix-controller.js';
+import { createSubjectTargetEditorController } from './ui/tabs/goals/subject-target-editor-controller.js';
+import { renderTopicStrategyEditor as renderTopicStrategyEditorComponent } from './ui/tabs/subjects/topic-strategy-editor-view.js';
 import { renderRecoveryReviewDebt } from './ui/renderers/recovery-review-debt-renderer.js';
 import { buildRecommendationExplanation } from './application/recommendations/build-recommendation-explanation.js';
 import { renderRecommendationExplanation } from './ui/renderers/recommendation-explanation-renderer.js';
@@ -159,19 +184,17 @@ import {
   escapeAttr,
 } from './core/utils.js';
 import {
-  createStorageManager,
   repositoryReadLocalState,
   repositoryWriteLocalState,
 } from './storage/repository.js';
-import { createRealStorageProvider } from './storage/real-storage-provider.js';
-import { createDemoStorageProvider } from './storage/demo-storage-provider.js';
 import { createClock } from './core/clock.js';
 import { formatDateBR } from './core/format-date.js';
 import { formatDecimal } from './core/format-number.js';
 import { parseLocalDate } from './core/date-utils.js';
-import { createAppContext } from './application/create-app-context.js';
 import { bootstrapApplication } from './bootstrap/bootstrap-application.js';
 import { registerApplicationLifecycle } from './bootstrap/register-lifecycle.js';
+import { wireAppDependencies } from './bootstrap/wire-dependencies.js';
+import { createMasterRenderer } from './bootstrap/master-renderer.js';
 import { registerMobileInputVisibility } from './ui/mobile-input-visibility.js';
 import {
   AGENDA_INTERVALS,
@@ -191,21 +214,43 @@ import { countActiveFilters, filterPanelLabel } from './ui/filter-panel.js';
 import { filterStudySessions, groupStudySessionsByDate } from './ui/session-history.js';
 import { calculateReadinessScore, READINESS_WEIGHTS } from './domain/analytics/readiness-score.js';
 import { calculateTopicCoverage } from './domain/analytics/coverage.js';
+import { calculateGoalConsistency } from './domain/analytics/consistency.js';
 import {
-  calculateActivityStreak,
-  calculateGoalConsistency,
-} from './domain/analytics/consistency.js';
-import { calculateWindowTrend } from './domain/analytics/trends.js';
-import { summarizeStudyRecords } from './domain/analytics/study-metrics.js';
+  calculateCoverageRhythm,
+  calculateOverdueReviewsCount,
+} from './domain/planning/rhythm-estimator.js';
+import {
+  classifyApprovalScore,
+  calculateApprovalSimuladosMetric,
+  calculateApprovalAcertosMetric,
+  calculateApprovalEditalMetric,
+  calculateApprovalDominioMetric,
+  calculateApprovalRevisoesMetric,
+  calculateApprovalTendenciaMetric,
+  calculateApprovalPrazoMetric,
+  calculateApprovalConhecimentoMetric,
+  calculateApprovalRetencaoMetric,
+  calculateApprovalConsistenciaMetric,
+  extractReadinessFactors,
+} from './domain/analytics/approval-metrics.js';
+import {
+  calculateDailyStudySummary,
+  collectActivityDates,
+  collectGoalDates,
+  computeActivityStreak,
+} from './domain/analytics/study-streak.js';
+import {
+  calculateSubjectErrorRate,
+  findSubjectLatestActivityDate,
+  calculateDaysSinceSubjectStudy,
+} from './domain/analytics/subject-error-metrics.js';
 import {
   normalizeTopicStrategy,
   normalizeExamBlueprint,
   normalizeAlgorithmVersions,
   EXAM_PRIORITIES,
 } from './state/strategic.js';
-import { normalizeTopicBookmark, formatBookmarkLabel } from './domain/topic-bookmark.js';
 import {
-  formatTimerTitle,
   buildTimerMiniView,
   createPipTimerController,
   shouldMarkHidden,
@@ -270,9 +315,6 @@ import {
   applyDailyPlanProposal,
   undoDailyPlanGeneration,
 } from './application/planning/distribute-study-plan.js';
-import { createStudyPlanService } from './application/planning/study-plan-service.js';
-import { createDailyPlanService } from './application/planning/daily-plan-service.js';
-import { createReplanService } from './application/planning/replan-service.js';
 import { createReplanController } from './application/planning/replan-controller.js';
 import { buildTodayViewModel } from './application/planning/build-today-view-model.js';
 import { buildNextBestAction } from './application/diagnostics/build-next-best-action.js';
@@ -295,14 +337,10 @@ import {
   renderExamPhase,
   renderExamPhaseCompact,
 } from './ui/renderers/adaptive-planning-renderer.js';
-import { renderExamBlueprintConfigView } from './ui/renderers/exam-blueprint-config-renderer.js';
 import { createAchievementsController } from './ui/controllers/achievements-controller.js';
-import { createSessionService } from './application/sessions/session-service.js';
 import { buildSessionResultViewModel } from './application/sessions/build-session-result-view-model.js';
 import { renderSessionResult } from './ui/renderers/session-result-renderer.js';
 import { normalizeStudySession } from './domain/sessions/study-session.js';
-import { createRecordService } from './application/records/record-service.js';
-import { createSubjectService } from './application/subjects/subject-service.js';
 import { createExamImportService } from './application/subjects/exam-import-service.js';
 import { EXAM_TAGS, CATALOG_VERSION, EXAM_SOURCES } from './domain/exams/exam-constants.js';
 import { EXAM_PRESET_OPTIONS } from './domain/exams/exam-preset-options.js';
@@ -319,7 +357,6 @@ import {
   resolveExamEvidenceScope,
 } from './domain/exams/exam-evidence-scope.js';
 import { setActiveExamTags } from './application/exams/exam-scope-transition.js';
-import { buildSavedSubjectConfig } from './application/exams/save-subject-config.js';
 import { createUiState, pickPersistentState } from './state/state-boundaries.js';
 import {
   createExamImportState,
@@ -344,6 +381,8 @@ import type {
   TopicStageChecklist,
 } from './core/types.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
+import { createDialogFeedback } from './ui/primitives/modal-dialogs.js';
+import { createKeyboardShortcutsController } from './ui/events/keyboard-shortcuts.js';
 import { createEditableCollectionController } from './ui/controllers/editable-collection-controller.js';
 import { createPreferencesController } from './ui/controllers/preferences-controller.js';
 import {
@@ -358,6 +397,7 @@ import { createDelegatedEventsController } from './ui/controllers/delegated-even
 import {
   createDelegatedArgumentResolver,
   createSpecialActionResolver,
+  composeDelegatedActionHandlers,
 } from './ui/events/delegated-actions.js';
 import { createErrorBoundaryController } from './ui/controllers/error-boundary-controller.js';
 import { createDemoController } from './ui/controllers/demo-controller.js';
@@ -375,7 +415,6 @@ import {
   QUESTION_IMPORT_TEMPLATE_FILE_NAME,
 } from './features/question-import/question-import-template.js';
 import { createApplicationRenderer } from './ui/renderers/application-renderer.js';
-import { createGoalService } from './application/goals/goal-service.js';
 import { buildResultGoalsViewModel } from './application/goals/build-result-goals-view-model.js';
 import { buildPeriodComparisonViewModel } from './application/analytics/build-period-comparison-view-model.js';
 import { renderPeriodComparisonDetail } from './ui/renderers/period-comparison-detail-renderer.js';
@@ -415,8 +454,6 @@ import {
 import { generateDemoData } from './demo/demo-generator.js';
 import { createStateMigrator } from './state/migrations.js';
 import { serializeBackup, backupFileName } from './storage/backup-service.js';
-import { createAppRepositories } from './repositories/collection-repository.js';
-import { createReviewService } from './application/reviews/review-service.js';
 import { createReviewsController } from './ui/controllers/reviews-controller.js';
 import { createReviewViewModel } from './ui/view-models/review-view-model.js';
 import { renderReviewRead, renderReviewEdit } from './ui/renderers/reviews-renderer.js';
@@ -436,7 +473,6 @@ import {
 } from './application/calendar/build-unified-reviews.js';
 import { createQuestionController } from './application/questions/question-controller.js';
 import { createEditalImportFacade } from './application/subjects/edital-import-facade.js';
-import { createGuidedStudyService } from './application/guided-study/guided-study-service.js';
 import {
   buildOnboardingViewModel,
   applyOnboardingDateShortcut,
@@ -453,19 +489,6 @@ import {
   renderOnboardingActions,
   onboardingBlockedReason,
 } from './features/onboarding/onboarding-renderer.js';
-import { renderTopicStrategyEditor as renderTopicStrategyEditorView } from './features/topic-strategy/topic-strategy-renderer.js';
-import { buildTopicStrategyViewModel } from './features/topic-strategy/topic-strategy-view-model.js';
-import { buildExamIntelligenceViewModel } from './application/exam-intelligence/build-exam-intelligence-view-model.js';
-import { renderExamIntelligence } from './ui/renderers/exam-intelligence-renderer.js';
-import { buildExamDataQuality } from './application/exam-intelligence/build-exam-data-quality.js';
-import { renderExamDataQuality } from './ui/renderers/exam-data-quality-renderer.js';
-import { reviewExamClassification } from './application/exam-intelligence/review-exam-classification.js';
-import { renderExamClassificationReview } from './ui/renderers/exam-classification-review-renderer.js';
-import { buildExamConfigurationAudit } from './application/exam-intelligence/build-exam-configuration-audit.js';
-import { renderExamConfigurationAudit } from './ui/renderers/exam-configuration-audit-renderer.js';
-import { buildExamMatrix } from './application/exam-intelligence/build-exam-matrix.js';
-import { renderExamMatrix, renderExamOpportunity } from './ui/renderers/exam-matrix-renderer.js';
-import { createTopicStrategyController } from './features/topic-strategy/topic-strategy-controller.js';
 import { renderReplanProposal } from './features/replan/replan-renderer.js';
 import { buildQuestionViewModel } from './ui/view-models/question-view-model.js';
 import {
@@ -497,7 +520,6 @@ import {
 } from './ui/renderers/overview-renderer.js';
 import { renderDiagnosisCenter as renderDiagnosisCenterView } from './ui/renderers/diagnosis-renderer.js';
 import { renderTopicRetentionDashboard as renderTopicRetentionDashboardView } from './ui/renderers/retention-renderer.js';
-import { buildExamMasteryMatrix } from './domain/analytics/exam-mastery-matrix.js';
 import { buildStudyStrategy } from './domain/recommendations/study-strategy.js';
 import { buildWeeklyClose } from './domain/analytics/weekly-close.js';
 import {
@@ -506,7 +528,6 @@ import {
 } from './application/analytics/weekly-close-snapshot.js';
 import { buildWeeklyCloseActionProposal } from './application/analytics/weekly-close-actions.js';
 import { createWeeklyCloseController } from './application/analytics/weekly-close-controller.js';
-import { createTopicHistoryService } from './application/history/topic-history-service.js';
 import { buildGapMap } from './domain/analytics/gap-map.js';
 import { buildDecisionHistory } from './domain/recommendations/decision-history.js';
 import { buildPostSimulationReplan } from './domain/planning/post-simulation-replan.js';
@@ -562,8 +583,6 @@ const ERROR_CATEGORIES: Record<string, any> = {
   desatencao: { label: 'Desatenção', icon: '⚠️' },
   chute: { label: 'Chute', icon: '🎲' },
 };
-const MIN_WEEKLY_QUESTIONS = 10;
-const MIN_TREND_WINDOW_QUESTIONS = 30;
 const MIN_TOPIC_TREND_WINDOW_QUESTIONS = 20;
 const MIN_ERROR_RECOMMENDATION_COUNT = 10;
 const MIN_ERROR_RECOMMENDATION_COVERAGE = 60;
@@ -927,13 +946,35 @@ function ensureStateDefaults() {
   refreshAllTopicReviewStats();
 }
 
-const persistentStorageManager = createStorageManager({
+const {
+  appContext,
+  planningRepository,
+  reviewService,
+  studyPlanService,
+  dailyPlanService,
+  replanService,
+  sessionService,
+  guidedStudyService,
+  calendarService,
+  questionService,
+  simulationService,
+  subjectGoalService,
+  goalsService,
+  subjectService,
+  topicStrategyController,
+  topicHistoryService,
+  observePlanningCapacity,
+  storageManager: StorageManager,
+} = wireAppDependencies({
   dbName: DB_NAME,
   dbVersion: DB_VERSION,
   storeName: STORE_NAME,
-});
-const realStorageProvider = createRealStorageProvider({
-  manager: persistentStorageManager,
+  storageKey: STORAGE_KEY,
+  demoStorageKey: DEMO_STORAGE_KEY,
+  isDemoMode: IS_DEMO_MODE,
+  getState: () => state,
+  clock: appClock,
+  idGenerator: uid,
   readLocal: repositoryReadLocalState,
   writeLocal: repositoryWriteLocalState,
   removeLocal: key => {
@@ -941,164 +982,38 @@ const realStorageProvider = createRealStorageProvider({
       localStorage.removeItem(key);
     } catch (error) {}
   },
-});
-const demoStorageProvider = IS_DEMO_MODE
-  ? createDemoStorageProvider({
-      storage: sessionStorage,
-      stateKey: STORAGE_KEY,
-      demoKey: DEMO_STORAGE_KEY,
-      generate: () => generateDemoData({ today: appClock.today() }),
-    })
-  : null;
-const appContext = createAppContext({
-  storage: demoStorageProvider || realStorageProvider,
-  clock: appClock,
-  idGenerator: uid,
-  repositories: createAppRepositories(() => state),
-});
-const reviewService = createReviewService({
-  repository: appContext.repositories.reviewAgenda,
-  clock: appClock,
-  idGenerator: uid,
-  findTopic: (topicId: string) => getTopicById(topicId)?.topic || null,
-  resolveEvidenceScope: evidenceScopeForTopic,
-  calculateAdaptiveState: (current: any, rating: any, options: Record<string, any>) =>
+  sessionStorage: typeof sessionStorage !== 'undefined' ? sessionStorage : undefined,
+  generateDemoData: () => generateDemoData({ today: appClock.today() }),
+  getTopicById,
+  evidenceScopeForTopic,
+  applyAdaptiveReviewRating: (current: any, rating: any, options: Record<string, any>) =>
     applyAdaptiveReviewRating(current, rating, options),
-  algorithmVersion: () => state.algorithmVersions.adaptiveReview,
-  onEvent: (type: string, review: Record<string, any>, details: Record<string, any>) =>
-    addHistoryEvent(
-      type,
-      entitySubjectId(review),
-      review.topicId || review.topicRef || null,
-      details
-    ),
-  onTopicChanged: (topicId: string) => refreshTopicReviewStats(topicId),
-});
-const planningRepository = appContext.repositories.planning;
-const studyPlanService = createStudyPlanService({
-  repository: planningRepository,
-  calculate: buildStudyPlan,
-  clock: appClock,
-  idGenerator: uid,
-  algorithmVersion: () => state.algorithmVersions.recommendations,
-  getActiveExamTags: () => state.examBlueprint?.activeExamTags || [],
-});
-const dailyPlanService = createDailyPlanService({
-  repository: planningRepository,
-  buildProposal: buildDailyPlanProposal,
-  applyProposal: applyDailyPlanProposal,
-  undoGeneration: undoDailyPlanGeneration,
-  clock: appClock,
-  idGenerator: uid,
-});
-const replanService = createReplanService({
-  repository: planningRepository,
-  buildProposal: buildReplanProposal,
-  applyProposal: applyReplan,
-  undoProposal: undoReplan,
-  clock: appClock,
-  idGenerator: uid,
-  getActiveExamTags: () => state.examBlueprint?.activeExamTags || [],
-});
-const sessionService = createSessionService({
-  repository: appContext.repositories.studySessions,
-  questionsRepository: appContext.repositories.questoes,
-  historyRepository: appContext.repositories.topicHistory,
-  planningRepository,
-  recommendationsRepository: appContext.repositories.recommendationFeedback,
-  clock: appClock,
-  idGenerator: uid,
-  normalizeQuestion: normalizeErrorBreakdown,
-  resolveEvidenceScope: evidenceScopeForTopic,
-  completeRecommendation: completeRecommendationFeedback,
-  onCompleted: measureRecommendationResults,
-});
-const guidedStudyService = createGuidedStudyService({
-  recommend: ({ id }: { id?: string } = {}) =>
-    currentStudyRecommendations.filter(item => !id || item.id === id),
-  sessionService,
-  clock: appClock,
-});
-const calendarService = createRecordService({
-    repository: appContext.repositories.calendar,
-    clock: appClock,
-    idGenerator: uid,
-    prefix: 'calendar',
-  }),
-  questionService = createRecordService({
-    repository: appContext.repositories.questoes,
-    clock: appClock,
-    idGenerator: uid,
-    prefix: 'question',
-    normalize: (item: Record<string, any>) => {
-      item.resolved = Math.max(0, Math.floor(Number(item.resolved) || 0));
-      item.correct = Math.min(item.resolved, Math.max(0, Math.floor(Number(item.correct) || 0)));
-      normalizeErrorBreakdown(item);
-      return item;
-    },
-  }),
-  simulationService = createRecordService({
-    repository: appContext.repositories.simulados,
-    clock: appClock,
-    idGenerator: uid,
-    prefix: 'simulado',
-    normalize: (item: Record<string, any>) => {
-      item.total = Math.max(0, Math.floor(Number(item.total) || 0));
-      item.correct = Math.min(item.total, Math.max(0, Math.floor(Number(item.correct) || 0)));
-      return item;
-    },
-  }),
-  subjectGoalService = createRecordService({
-    repository: appContext.repositories.metasPorDisciplina,
-    clock: appClock,
-    idGenerator: uid,
-    prefix: 'goal',
-  });
-function observePlanningCapacity(source = 'observed') {
-  recordPlanningCapacity(state.planningCapacityHistory, {
-    hoursByDay: state.metas.horasPorDia,
-    today: todayISO(),
-    capturedAt: nowISO(),
-    id: uid('capacity'),
-    source,
-  });
-}
-const goalsService = createGoalService({
-  repository: appContext.repositories.settings,
-  getDayOfWeek: (date: string) => parseLocalDate(date)?.getDay() ?? new Date().getDay(),
-  onCapacityObserved: observePlanningCapacity,
-});
-const subjectService = createSubjectService({
-  repository: appContext.repositories.subjects,
-  clock: appClock,
-  idGenerator: uid,
-  onEvent: addHistoryEvent,
-});
-const topicStrategyController = createTopicStrategyController({
-  findTopic: getTopicById,
-  listTopics: allTopics,
-  subjectService,
-  normalizeTopic: normalizeTopicStrategy,
-  beforeChange: () =>
-    captureReadinessBeforeStrategy(
-      'Antes de alterar impacto, esforço ou pré-requisitos de um tópico'
-    ),
-  invalidatePlan: () => {
+  addHistoryEvent,
+  entitySubjectId,
+  refreshTopicReviewStats,
+  buildStudyPlan,
+  buildDailyPlanProposal,
+  applyDailyPlanProposal,
+  undoDailyPlanGeneration,
+  buildReplanProposal,
+  applyReplan,
+  undoReplan,
+  normalizeErrorBreakdown,
+  completeRecommendationFeedback,
+  measureRecommendationResults,
+  currentStudyRecommendations: () => currentStudyRecommendations,
+  parseLocalDate,
+  allTopics,
+  normalizeTopicStrategy,
+  captureReadinessBeforeStrategy: (reason: string) => captureReadinessBeforeStrategy(reason),
+  invalidatePlanPreview: () => {
     studyPlanPreview = null;
   },
-  onChanged: persistAndRender,
-  onCycle: () => {
-    showToast('Esse vínculo criaria um ciclo entre pré-requisitos.');
-    renderSubjects();
-  },
+  persistAndRender: () => persistAndRender(),
+  renderSubjects: () => renderSubjects(),
+  showToast: (message: string) => showToast(message),
+  timestampToLocalDateISO,
 });
-const topicHistoryService = createTopicHistoryService({
-  getState: () => state,
-  clock: appClock,
-  idGenerator: uid,
-  toLocalDate: timestampToLocalDateISO,
-});
-const StorageManager = appContext.storage;
 const INSTANCE_ID = uid('instance');
 const STATE_CHANNEL =
   !IS_DEMO_MODE && typeof BroadcastChannel === 'function'
@@ -1155,21 +1070,30 @@ async function loadState() {
   else if (modeMessage) showToast(modeMessage);
 }
 
-function flashSaved() {
-  const el = document.getElementById('saveIndicator');
-  el?.classList.add('show');
-  clearTimeout((flashSaved as any)._t);
-  (flashSaved as any)._t = setTimeout(() => el?.classList.remove('show'), 1200);
+/* ===== DIÁLOGOS, AVISOS E NOTIFICAÇÕES ===== */
+const modalController = createModalController({ document, window });
+const dialogFeedback = createDialogFeedback({ document, modalController });
+function flashSaved(durationMs?: number) {
+  dialogFeedback.flashSaved(durationMs);
 }
-
-/* ===== TOAST (substitui alert()) ===== */
-function showToast(message: string) {
-  const el = document.getElementById('toast');
-  if (!el) return;
-  el.textContent = message;
-  el.classList.add('show');
-  clearTimeout((showToast as any)._t);
-  (showToast as any)._t = setTimeout(() => el.classList.remove('show'), 2600);
+function showToast(message: string, durationMs?: number) {
+  dialogFeedback.showToast(message, durationMs);
+}
+function showConfirm(
+  message: string,
+  onConfirm: (value?: any) => void,
+  onCancel?: () => void,
+  options: any = {}
+) {
+  dialogFeedback.showConfirm(message, onConfirm, onCancel, options);
+}
+function showPrompt(
+  message: string,
+  options: Record<string, any>,
+  onConfirm: (value?: any) => void,
+  onCancel?: () => void
+) {
+  dialogFeedback.showPrompt(message, options, onConfirm, onCancel);
 }
 
 async function sha256(value: any) {
@@ -1281,25 +1205,6 @@ STATE_CHANNEL?.addEventListener('message', event => {
     applyingRemoteState = false;
   }
 });
-
-/* ===== MODAL DE CONFIRMAÇÃO (substitui confirm()) ===== */
-const modalController = createModalController({ document, window });
-function showConfirm(
-  message: string,
-  onConfirm: (value?: any) => void,
-  onCancel?: () => void,
-  options: any = {}
-) {
-  return modalController.confirm(message, onConfirm, onCancel, options);
-}
-function showPrompt(
-  message: string,
-  options: Record<string, any>,
-  onConfirm: (value?: any) => void,
-  onCancel?: () => void
-) {
-  return modalController.prompt(message, options, onConfirm, onCancel);
-}
 
 /* ===== TABS & ROUTER ===== */
 const tabRouter = createTabRouter({
@@ -1496,86 +1401,35 @@ document
 
 /* ===== SEQUÊNCIA DE DIAS ESTUDANDO (STREAK) ===== */
 function getDailyStudySummary(date: string, options: any = {}) {
-  const subjectId = options.subjectId || '';
-  const matchesSubject = (item: Record<string, any>) =>
-    !subjectId || entitySubjectId(item) === subjectId;
-  const sessions = state.studySessions.filter(s => s.date === date && matchesSubject(s));
-  const allSessionIds = new Set(state.studySessions.map(s => s.id));
-  const independentQuestions = state.questoes.filter(
-    q =>
-      q.date === date &&
-      matchesSubject(q) &&
-      (!q.studySessionId || !allSessionIds.has(q.studySessionId))
-  );
-  const simulations = state.simulados.filter(
-    sim =>
-      sim.date === date &&
-      (!subjectId || (sim.breakdown || []).some(row => entitySubjectId(row) === subjectId))
-  );
-  const reviews = state.reviewAgenda.filter(
-    review =>
-      review.status === 'Concluído' &&
-      localDateFromTimestamp(review.completedAt) === date &&
-      matchesSubject(review)
-  );
-  const metrics = summarizeStudyRecords({ sessions, questions: independentQuestions, simulations });
-  const { seconds, questions, correct, accuracy } = metrics;
-  const subjectNames = new Set();
-  sessions.forEach(s => {
-    const id = entitySubjectId(s);
-    if (id) subjectNames.add(getSubjectName(id));
-  });
-  independentQuestions.forEach(q => {
-    const id = entitySubjectId(q);
-    if (id) subjectNames.add(getSubjectName(id));
-  });
-  const targetSeconds = metaHoursForDate(date) * 3600;
-  const goalPct = targetSeconds > 0 ? Math.round((seconds / targetSeconds) * 100) : 0;
-  return {
+  return calculateDailyStudySummary({
     date,
-    sessions,
-    seconds,
-    questions,
-    correct,
-    reviews: reviews.length,
-    simulations: metrics.simulations,
-    targetSeconds,
-    goalPct,
-    accuracy,
-    subjectNames: [...subjectNames],
-    meaningful:
-      seconds >= 300 ||
-      independentQuestions.some(q => (Number(q.resolved) || 0) > 0) ||
-      metrics.simulations > 0,
-    goalAchieved: targetSeconds > 0 && seconds >= targetSeconds,
-  };
+    studySessions: state.studySessions,
+    questoes: state.questoes,
+    simulados: state.simulados,
+    reviewAgenda: state.reviewAgenda,
+    targetHours: metaHoursForDate(date),
+    subjectId: options.subjectId,
+    entitySubjectId,
+    getSubjectName,
+    localDateFromTimestamp,
+  });
 }
 function getActivityDates() {
-  const set = new Set<string>();
-  const sessionIds = new Set(state.studySessions.map(s => s.id));
-  const dates = new Set(
-    [
-      ...state.studySessions.map(s => s.date),
-      ...state.questoes
-        .filter(q => !q.studySessionId || !sessionIds.has(q.studySessionId))
-        .map(q => q.date),
-      ...state.simulados.map(s => s.date),
-    ].filter(Boolean)
-  );
-  dates.forEach(date => {
-    if (getDailyStudySummary(date).meaningful) set.add(date);
+  return collectActivityDates({
+    studySessions: state.studySessions,
+    questoes: state.questoes,
+    simulados: state.simulados,
+    isDateMeaningful: date => getDailyStudySummary(date).meaningful,
   });
-  return set;
 }
 function getGoalDates() {
-  const set = new Set<string>();
-  new Set(state.studySessions.map(s => s.date).filter(Boolean)).forEach(date => {
-    if (getDailyStudySummary(date).goalAchieved) set.add(date);
+  return collectGoalDates({
+    studySessions: state.studySessions,
+    isGoalAchievedForDate: date => getDailyStudySummary(date).goalAchieved,
   });
-  return set;
 }
 function computeStreak(activityDates: Set<string>) {
-  return calculateActivityStreak(activityDates, { today: todayISO(), addDays });
+  return computeActivityStreak(activityDates, { today: todayISO(), addDays });
 }
 
 function toggleStreakExpanded() {
@@ -1629,45 +1483,11 @@ function toggleTimerFocus(force: boolean | null = null) {
   } else requestAnimationFrame(() => toggle?.focus());
   return active;
 }
-document.addEventListener('keydown', event => {
-  if (!document.body.classList.contains('timer-focus-active')) return;
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    toggleTimerFocus(false);
-    return;
-  }
-  if (event.key !== 'Tab') return;
-  const focusSurface = document.querySelector(
-    'body.timer-focus-active #panel-dashboard .chart-card:has(.timer-block)'
-  );
-  const focusable = [
-    ...(focusSurface?.querySelectorAll(
-      'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
-    ) || []),
-  ].filter(
-    element =>
-      element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden'
-  );
-  if (!focusable.length) {
-    event.preventDefault();
-    return;
-  }
-  const first = focusable[0] as HTMLElement,
-    last = focusable.at(-1) as HTMLElement;
-  if (
-    event.shiftKey &&
-    (document.activeElement === first || !focusSurface!.contains(document.activeElement))
-  ) {
-    event.preventDefault();
-    last.focus();
-  } else if (
-    !event.shiftKey &&
-    (document.activeElement === last || !focusSurface!.contains(document.activeElement))
-  ) {
-    event.preventDefault();
-    first.focus();
-  }
+const keyboardShortcuts = createKeyboardShortcutsController({
+  document,
+  onExitTimerFocus: () => toggleTimerFocus(false),
 });
+keyboardShortcuts.register();
 
 /* ===== GRÁFICO DE EVOLUÇÃO DO PROGRESSO ===== */
 function recordProgressSnapshot(pct: number) {
@@ -1807,7 +1627,6 @@ demoController.mount();
 /* ===== CRONÔMETRO DE SESSÃO DE ESTUDO ===== */
 let timerSeconds = 0;
 let timerRunning = false;
-const BASE_DOCUMENT_TITLE = document.title;
 const pipTimer = createPipTimerController({
   getView: () => {
     const active = (state.activeTimer || {}) as Partial<ActiveTimerState>,
@@ -1850,29 +1669,11 @@ const pipTimer = createPipTimerController({
 let timerIntervalId: any = null;
 let timerStartedAt: any = null;
 
-function formatTimer(totalSeconds: number) {
-  const total = Math.max(0, Math.floor(Number(totalSeconds) || 0));
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60)
-    .toString()
-    .padStart(2, '0');
-  const s = (total % 60).toString().padStart(2, '0');
-  return h > 0 ? `${String(h).padStart(2, '0')}:${m}:${s}` : `${m}:${s}`;
-}
 function findDailyPlanItem(itemId: string) {
-  if (!itemId) return null;
-  for (const plan of state.dailyPlans) {
-    const item = plan.items.find(candidate => candidate.id === itemId);
-    if (item) return { plan, item };
-  }
-  return null;
+  return findDailyPlanItemCoordinator(state.dailyPlans, itemId);
 }
 function releaseActivePlanItem() {
-  const found = findDailyPlanItem((state.activeTimer?.planItemId)!);
-  if (found && found.item.status === 'in_progress') {
-    found.item.status = found.item.executedSeconds > 0 ? 'partial' : 'planned';
-    found.plan.updatedAt = nowISO();
-  }
+  return releaseActivePlanItemCoordinator(state.dailyPlans, state.activeTimer?.planItemId, nowISO);
 }
 function startPlannedActivity(itemId: string) {
   const found = findDailyPlanItem(itemId);
@@ -1951,92 +1752,30 @@ function renderActiveStudyTimerNotice(recommendation: Record<string, any> | null
     getActionKind: recommendationActionKind,
   });
 }
+const studyTimerViewController = createStudyTimerViewController({
+  document,
+  formatTimer,
+  escapeHtml,
+  escapeAttr,
+  getSubjectName,
+  getTopicName,
+  getSubjectById,
+  subjectsForSelection,
+  topicsForSelection,
+  topicResumeLabel,
+  findDailyPlanItem,
+  getActiveTimer: () => (state.activeTimer || {}) as Partial<ActiveTimerState>,
+  onPipRender: () => pipTimer.render(),
+});
+
 function updateTimerDisplay() {
-  const el = document.getElementById('studyTimerDisplay');
-  if (el) el.textContent = formatTimer(timerSeconds);
-  const targetEl = document.getElementById('studyTimerTarget');
-  const progressEl = document.getElementById('studyTimerProgress') as HTMLProgressElement;
-  if (targetEl) {
-    const targetMinutes = Math.max(0, Number(state.activeTimer?.targetMinutes) || 0);
-    if (targetMinutes > 0) {
-      const targetSeconds = targetMinutes * 60;
-      const difference = targetSeconds - timerSeconds;
-      const planItem = findDailyPlanItem(state.activeTimer.planItemId!)?.item;
-      // Stored daily plan items keep only IDs; resolve names like the focus context does.
-      const context = planItem
-        ? `${[planItem.subjectId && getSubjectName(planItem.subjectId), planItem.topicId && getTopicName(planItem.topicId)].filter(Boolean).join(' — ') || 'Sessão livre'} · `
-        : '';
-      targetEl.textContent =
-        context +
-        `meta ${formatPlanMinutes(targetMinutes)} · ${difference >= 0 ? formatDuration(difference) + ' restantes' : formatDuration(Math.abs(difference)) + ' além da meta'}`;
-      targetEl.hidden = false;
-      if (progressEl) {
-        progressEl.value = Math.min(100, Math.round((timerSeconds / targetSeconds) * 100));
-        progressEl.setAttribute(
-          'aria-valuetext',
-          `${formatDuration(timerSeconds)} de ${formatPlanMinutes(targetMinutes)}`
-        );
-        progressEl.hidden = false;
-      }
-    } else {
-      targetEl.textContent = '';
-      targetEl.hidden = true;
-      if (progressEl) {
-        progressEl.value = 0;
-        progressEl.removeAttribute('aria-valuetext');
-        progressEl.hidden = true;
-      }
-    }
-  }
-  const title = formatTimerTitle({
-    started: hasStartedStudyTimer(),
-    running: timerRunning,
-    time: formatTimer(timerSeconds),
-    subjectName: state.activeTimer?.subjectId ? getSubjectName(state.activeTimer.subjectId) : '',
-    baseTitle: BASE_DOCUMENT_TITLE,
-  });
-  if (document.title !== title) document.title = title;
-  pipTimer.render();
-  renderTimerFocusContext();
-  renderGuidedStrategy();
+  studyTimerViewController.updateTimerDisplay(timerSeconds, timerRunning);
 }
 function renderTimerFocusContext() {
-  const section = document.getElementById('timerFocusContext');
-  if (!section) return;
-  section.hidden = !document.body.classList.contains('timer-focus-active');
-  if (section.hidden) return;
-  const active = (state.activeTimer || {}) as Partial<ActiveTimerState>,
-    subject = active.subjectId ? getSubjectName(active.subjectId) : 'Disciplina não selecionada',
-    topic = active.topicId ? getTopicName(active.topicId) : 'Tópico não selecionado';
-  const activityLabels: Record<string, any> = {
-    study: 'Estudo teórico',
-    review: 'Revisão',
-    questions: 'Questões',
-    simulation: 'Simulado',
-  };
-  const minutes = Math.max(0, Number(active.targetMinutes) || 0);
-  document.getElementById('timerFocusTitle')!.textContent = `${subject} — ${topic}`;
-  document.getElementById('timerFocusSubtitle')!.textContent =
-    `${activityLabels[active.type!] || activityLabels.study} · ${minutes ? `Meta de ${formatPlanMinutes(minutes)}` : 'Sem meta de tempo'}`;
-  const resume = document.getElementById('timerFocusResume'),
-    resumeLabel = topicResumeLabel(active.topicId!);
-  resume!.textContent = resumeLabel ? `Continuar de: ${resumeLabel}` : '';
-  resume!.hidden = !resumeLabel;
+  studyTimerViewController.renderTimerFocusContext();
 }
 function renderGuidedStrategy() {
-  const el = document.getElementById('guidedStrategy') as HTMLElement;
-  if (!el) return;
-  const strategy = state.activeTimer?.strategy;
-  el.hidden = !strategy;
-  if (!strategy) {
-    el.innerHTML = '';
-    return;
-  }
-  el.innerHTML = renderGuidedStrategyHtml(
-    strategy,
-    state.activeTimer?.strategyStep || 0,
-    escapeHtml
-  );
+  studyTimerViewController.renderGuidedStrategy();
 }
 function advanceGuidedStrategy() {
   if (state.activeTimer?.strategy) {
@@ -2046,55 +1785,16 @@ function advanceGuidedStrategy() {
   }
 }
 function updateTimerControls() {
-  const hasTime = timerSeconds > 0;
-  document.getElementById('timerStartBtn')!.style.display = timerRunning ? 'none' : 'inline-block';
-  document.getElementById('timerPauseBtn')!.style.display = timerRunning ? 'inline-block' : 'none';
-  ['timerResetBtn', 'timerFinishBtn'].forEach(id => {
-    (document.getElementById(id) as HTMLButtonElement).disabled = !hasTime && !timerRunning;
-  });
-  ['timerSubjectSelect', 'timerTopicSelect', 'timerTypeSelect'].forEach(id => {
-    const el = document.getElementById(id) as HTMLSelectElement;
-    if (el) el.disabled = hasTime;
-  });
+  studyTimerViewController.updateTimerControls(timerSeconds, timerRunning);
 }
 function refreshStudyActionViews() {
   if (document.getElementById('studyRecommendation')) renderStudyRecommendation();
 }
 function populateTimerTopicSelect(subjectId: string, selectedTopicId: string | null) {
-  const select = document.getElementById('timerTopicSelect') as HTMLSelectElement;
-  if (!select) return;
-  const subject = getSubjectById(subjectId);
-  select.innerHTML =
-    `<option value="">Sem tópico específico</option>` +
-    (subject
-      ? topicsForSelection(subject, selectedTopicId)
-          .map(
-            (topic: any) =>
-              `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || '(tópico sem nome)')}</option>`
-          )
-          .join('')
-      : '');
-  select.value = selectedTopicId || '';
-  if (select.value !== (selectedTopicId || '')) state.activeTimer.topicId = null;
+  studyTimerViewController.populateTimerTopicSelect(subjectId, selectedTopicId);
 }
 function populateTimerContextControls() {
-  const subjectSelect = document.getElementById('timerSubjectSelect') as HTMLSelectElement;
-  const typeSelect = document.getElementById('timerTypeSelect') as HTMLSelectElement;
-  if (!subjectSelect || !typeSelect) return;
-  subjectSelect.innerHTML =
-    `<option value="">Sem disciplina específica</option>` +
-    subjectsForSelection(state.activeTimer.subjectId)
-      .map(
-        subject =>
-          `<option value="${escapeAttr(subject.id)}">${escapeHtml(subject.name)}${subject.archived ? ' (arquivada)' : ''}</option>`
-      )
-      .join('');
-  subjectSelect.value = state.activeTimer.subjectId || '';
-  if (subjectSelect.value !== (state.activeTimer.subjectId || ''))
-    state.activeTimer.subjectId = null;
-  populateTimerTopicSelect(state.activeTimer.subjectId!, state.activeTimer.topicId!);
-  typeSelect.value = state.activeTimer.type || 'study';
-  renderTimerFocusContext();
+  studyTimerViewController.populateTimerContextControls();
   updateTimerControls();
 }
 function timerTick() {
@@ -2206,138 +1906,51 @@ function restoreTimerFromState() {
   populateTimerContextControls();
   updateTimerControls();
 }
-function populateSessionTopicSelect(subjectId: string, selectedTopicId: string | null = null) {
-  const select = document.getElementById('sessionModalTopic');
-  const subject = getSubjectById(subjectId);
-  select!.innerHTML =
-    `<option value="">Sem tópico específico</option>` +
-    (subject
-      ? topicsForSelection(subject, selectedTopicId)
-          .map(
-            (topic: any) =>
-              `<option value="${escapeAttr(topic.id)}">${escapeHtml(topic.name || '(tópico sem nome)')}</option>`
-          )
-          .join('')
-      : '');
-}
+const sessionModalController = createSessionModalController({
+  document,
+  formatTimer,
+  escapeHtml,
+  escapeAttr,
+  getSubjectById,
+  getTopicById,
+  subjectsForSelection,
+  topicsForSelection,
+});
 function showSessionModal() {
-  const overlay = document.getElementById('sessionModalOverlay');
-  document.getElementById('sessionModalDuration')!.textContent = formatTimer(timerSeconds);
-  const sel = document.getElementById('sessionModalSubject') as HTMLSelectElement;
-  sel.innerHTML =
-    `<option value="">Sem disciplina específica</option>` +
-    subjectsForSelection(state.activeTimer.subjectId)
-      .map(
-        s =>
-          `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}${s.archived ? ' (arquivada)' : ''}</option>`
-      )
-      .join('');
-  sel.value = state.activeTimer.subjectId || '';
-  populateSessionTopicSelect(sel.value, state.activeTimer.topicId!);
-  (document.getElementById('sessionModalTopic') as HTMLSelectElement).value =
-    state.activeTimer.topicId || '';
-  (document.getElementById('sessionModalType') as HTMLSelectElement).value =
-    state.activeTimer.type || 'study';
-  (document.getElementById('sessionModalResolved') as HTMLInputElement).value = '';
-  (document.getElementById('sessionModalCorrect') as HTMLInputElement).value = '';
-  (document.getElementById('sessionModalRetention') as HTMLSelectElement).value = '';
-  (document.getElementById('sessionModalDifficulty') as HTMLSelectElement).value = '';
-  const focusSel = document.getElementById('sessionModalFocus') as HTMLSelectElement | null;
-  if (focusSel) focusSel.value = '';
-  const energySel = document.getElementById('sessionModalEnergy') as HTMLSelectElement | null;
-  if (energySel) energySel.value = '';
-  (document.getElementById('sessionModalNotes') as HTMLTextAreaElement).value = '';
-  syncSessionModalActivityFields(
-    (document.getElementById('sessionModalType') as HTMLSelectElement).value || 'study'
-  );
-  fillSessionBookmarkFields(
-    (document.getElementById('sessionModalTopic') as HTMLSelectElement).value
-  );
-  overlay!.classList.add('show');
+  sessionModalController.show(timerSeconds, state.activeTimer);
 }
 function topicResumeLabel(topicId: string) {
-  return topicId ? formatBookmarkLabel(getTopicById(topicId)?.topic.bookmark) : '';
-}
-const SESSION_BOOKMARK_FIELDS = {
-  resourceType: 'sessionBookmarkType',
-  label: 'sessionBookmarkLabel',
-  currentUnit: 'sessionBookmarkCurrent',
-  totalUnits: 'sessionBookmarkTotal',
-  positionText: 'sessionBookmarkPosition',
-};
-function fillSessionBookmarkFields(topicId: string) {
-  const section = document.getElementById('sessionBookmarkSection') as HTMLDetailsElement,
-    bookmark = topicId ? getTopicById(topicId)?.topic.bookmark : null;
-  section.hidden = !topicId;
-  section.open = Boolean(bookmark);
-  delete section.dataset.clear;
-  for (const [field, id] of Object.entries(SESSION_BOOKMARK_FIELDS))
-    (document.getElementById(id) as HTMLInputElement).value =
-      (bookmark as Record<string, any> | null)?.[field] ?? (field === 'resourceType' ? 'pdf' : '');
-  const clear = document.getElementById('sessionBookmarkClearBtn') as HTMLButtonElement;
-  clear.hidden = !bookmark;
-  clear.disabled = false;
-  clear.textContent = 'Limpar ponto de parada';
-}
-function clearSessionBookmarkFields() {
-  const section = document.getElementById('sessionBookmarkSection') as HTMLDetailsElement,
-    clear = document.getElementById('sessionBookmarkClearBtn') as HTMLButtonElement;
-  section.dataset.clear = '1';
-  for (const [field, id] of Object.entries(SESSION_BOOKMARK_FIELDS))
-    if (field !== 'resourceType') (document.getElementById(id) as HTMLInputElement).value = '';
-  clear.disabled = true;
-  clear.textContent = 'Será removido ao salvar';
+  return topicResumeLabelCoordinator(topicId, getTopicById);
 }
 // Empty fields keep the saved bookmark; only the explicit clear removes it.
 function saveSessionBookmark(topicId: string, endedAt: string) {
   const found = topicId ? getTopicById(topicId) : null;
   if (!found) return;
-  if (document.getElementById('sessionBookmarkSection')!.dataset.clear === '1') {
-    if (found.topic.bookmark)
-      subjectService.updateTopic(found.subject.id, topicId, { bookmark: null });
-    return;
+  const isCleared = document.getElementById('sessionBookmarkSection')!.dataset.clear === '1';
+  const fieldValues = Object.fromEntries(
+    Object.entries(SESSION_BOOKMARK_FIELDS).map(([field, id]) => [
+      field,
+      (document.getElementById(id) as HTMLInputElement).value,
+    ])
+  );
+  const { shouldUpdate, nextBookmark } = resolveSessionBookmark({
+    topicId,
+    endedAt,
+    isCleared,
+    fieldValues,
+    currentBookmark: found.topic.bookmark,
+  });
+  if (shouldUpdate) {
+    subjectService.updateTopic(found.subject.id, topicId, { bookmark: nextBookmark });
   }
-  const next = normalizeTopicBookmark({
-    ...Object.fromEntries(
-      Object.entries(SESSION_BOOKMARK_FIELDS).map(([field, id]) => [
-        field,
-        (document.getElementById(id) as HTMLInputElement).value,
-      ])
-    ),
-    updatedAt: endedAt,
-  });
-  const current = found.topic.bookmark;
-  if (
-    !next ||
-    (current &&
-      Object.keys(SESSION_BOOKMARK_FIELDS).every(
-        field => (current as Record<string, any>)[field] === (next as Record<string, any>)[field]
-      ))
-  )
-    return;
-  subjectService.updateTopic(found.subject.id, topicId, { bookmark: next });
-}
-function syncSessionModalActivityFields(
-  type = (document.getElementById('sessionModalType') as HTMLSelectElement).value || 'study'
-) {
-  const labels: Record<string, any> = {
-    study: 'Registre o que você estudou e atualize seus indicadores.',
-    questions: 'Informe volume e acertos para atualizar seu desempenho.',
-    review: 'Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.',
-    simulation: 'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.',
-  };
-  document.getElementById('sessionModalActivityHint')!.textContent = labels[type] || labels.study;
-  document.querySelectorAll<HTMLElement>('[data-session-fields]').forEach(section => {
-    section.hidden = !section.dataset.sessionFields!.split(/\s+/).includes(type);
-  });
 }
 function closeSessionModal() {
-  document.getElementById('sessionModalOverlay')!.classList.remove('show');
+  sessionModalController.hide();
   resetTimer();
 }
 // Esc keeps the paused session; only an explicit, confirmed discard loses the time.
 function dismissSessionModal() {
-  document.getElementById('sessionModalOverlay')!.classList.remove('show');
+  sessionModalController.hide();
   document.getElementById('timerFinishBtn')?.focus();
 }
 function discardSessionFromModal() {
@@ -2402,29 +2015,6 @@ timerPipBtn!.addEventListener('click', () =>
     showToast('Não foi possível abrir a janela flutuante.');
   })
 );
-document.getElementById('sessionModalSkipBtn')!.addEventListener('click', discardSessionFromModal);
-document
-  .getElementById('sessionModalOverlay')!
-  .addEventListener('session-modal-dismiss', dismissSessionModal);
-document
-  .getElementById('sessionModalSubject')!
-  .addEventListener('change', function (this: HTMLSelectElement) {
-    populateSessionTopicSelect(this.value);
-    fillSessionBookmarkFields('');
-  });
-document
-  .getElementById('sessionModalTopic')!
-  .addEventListener('change', function (this: HTMLSelectElement) {
-    fillSessionBookmarkFields(this.value);
-  });
-document
-  .getElementById('sessionBookmarkClearBtn')!
-  .addEventListener('click', clearSessionBookmarkFields);
-document
-  .getElementById('sessionModalType')!
-  .addEventListener('change', function (this: HTMLSelectElement) {
-    syncSessionModalActivityFields(this.value);
-  });
 function showSessionResult(
   session: Record<string, any>,
   nextPriority: Record<string, any> | null,
@@ -2466,78 +2056,51 @@ function openNextSessionAction() {
     .getElementById('overviewNextAction')
     ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
-document.getElementById('sessionModalSaveBtn')!.addEventListener('click', () => {
-  const subjectId =
-    (document.getElementById('sessionModalSubject') as HTMLSelectElement).value || null;
-  const topicId = (document.getElementById('sessionModalTopic') as HTMLSelectElement).value || null;
-  const type = (document.getElementById('sessionModalType') as HTMLSelectElement).value || 'study';
-  const resolved =
-    Number((document.getElementById('sessionModalResolved') as HTMLInputElement).value) || 0;
-  const correct =
-    Number((document.getElementById('sessionModalCorrect') as HTMLInputElement).value) || 0;
-  const perceivedRetention =
-    (document.getElementById('sessionModalRetention') as HTMLSelectElement).value || null;
-  const perceivedDifficulty =
-    (document.getElementById('sessionModalDifficulty') as HTMLSelectElement).value || null;
-  const focusLevel =
-    ((document.getElementById('sessionModalFocus') as HTMLSelectElement | null)?.value as any) ||
-    null;
-  const energyLevel =
-    ((document.getElementById('sessionModalEnergy') as HTMLSelectElement | null)?.value as any) ||
-    null;
-  const notes = (document.getElementById('sessionModalNotes') as HTMLTextAreaElement).value.trim();
-  const previousPriority = currentStudyRecommendations[0]
-    ? { ...currentStudyRecommendations[0] }
-    : null;
-  const session = {
-    id: uid('session'),
-    startedAt: timerStartedAt || nowISO(),
-    endedAt: nowISO(),
-    date: localDateFromTimestamp(timerStartedAt || nowISO()),
-    durationSeconds: timerSeconds,
-    subjectId,
-    topicId,
-    type,
-    questionsResolved: resolved,
-    correctAnswers: Math.min(correct, resolved),
-    perceivedRetention,
-    perceivedDifficulty,
-    focusLevel,
-    energyLevel,
-    notes,
-    planItemId: state.activeTimer.planItemId || null,
-    recommendationId: state.activeTimer.recommendationId || null,
-    recommendationSource: state.activeTimer.recommendationSource || null,
-    recommendationType: state.activeTimer.recommendationType || null,
-    prioritySnapshot: state.activeTimer.prioritySnapshot ?? null,
-  };
-  saveSessionBookmark(topicId!, session.endedAt);
-  const dayBefore = session.date === todayISO() ? dailyExecutionController.build() : null;
-  if (guidedStudyService.current()) guidedStudyService.complete(session);
-  else sessionService.complete(session);
-  persistAndRender();
-  const dayAfter = dayBefore ? dailyExecutionController.build() : null;
-  renderStudyRecommendation();
-  renderDiagnosisCenter();
-  const nextPriority = currentStudyRecommendations[0] || null;
-  const priorityChanged =
-    previousPriority && nextPriority && !sameStudyActionTarget(previousPriority, nextPriority);
-  const openSimulationFlow = type === 'simulation';
-  closeSessionModal();
-  showSessionResult(
-    session,
-    nextPriority,
-    priorityChanged,
-    dayBefore?.progress && dayAfter?.progress
-      ? { before: dayBefore.progress, after: dayAfter.progress, total: dayAfter.items.length }
-      : null,
-    (dayAfter || dailyExecutionController.build()).priority?.nextItem || null
-  );
-  if (openSimulationFlow) {
-    activateTab('questoes');
-    addSimuladoRow();
-    showToast('Complete agora os resultados do simulado.');
-  }
+
+sessionModalController.bindEvents({
+  onSkip: discardSessionFromModal,
+  onDismiss: dismissSessionModal,
+  onSave: formValues => {
+    const previousPriority = currentStudyRecommendations[0]
+      ? { ...currentStudyRecommendations[0] }
+      : null;
+    const session = buildCompletedSessionRecord({
+      timerSeconds,
+      timerStartedAt,
+      activeTimer: state.activeTimer,
+      formValues,
+      nowISO,
+      localDateFromTimestamp,
+      uid,
+    });
+    saveSessionBookmark(formValues.topicId!, session.endedAt);
+    const dayBefore = session.date === todayISO() ? dailyExecutionController.build() : null;
+    if (guidedStudyService.current()) guidedStudyService.complete(session);
+    else sessionService.complete(session);
+    persistAndRender();
+    const dayAfter = dayBefore ? dailyExecutionController.build() : null;
+    renderStudyRecommendation();
+    renderDiagnosisCenter();
+    const nextPriority = currentStudyRecommendations[0] || null;
+    const priorityChanged =
+      previousPriority && nextPriority && !sameStudyActionTarget(previousPriority, nextPriority);
+    const openSimulationFlow = formValues.type === 'simulation';
+    closeSessionModal();
+    showSessionResult(
+      session,
+      nextPriority,
+      priorityChanged,
+      dayBefore?.progress && dayAfter?.progress
+        ? { before: dayBefore.progress, after: dayAfter.progress, total: dayAfter.items.length }
+        : null,
+      (dayAfter || dailyExecutionController.build()).priority?.nextItem || null
+    );
+    if (openSimulationFlow) {
+      activateTab('questoes');
+      addSimuladoRow();
+      showToast('Complete agora os resultados do simulado.');
+    }
+  },
 });
 
 document.addEventListener('visibilitychange', () => {
@@ -2748,21 +2311,6 @@ document.querySelectorAll('.overview-nav-mobile select').forEach(select =>
 document
   .getElementById('overviewAttentionViewAll')
   ?.addEventListener('click', () => activateTab('hoje'));
-document.addEventListener('click', event => {
-  const current = (event.target as HTMLElement).closest('.action-menu');
-  document.querySelectorAll<HTMLDetailsElement>('.action-menu[open]').forEach(menu => {
-    if (menu !== current || (event.target as HTMLElement).closest('.action-menu__items button'))
-      menu.open = false;
-  });
-});
-document.addEventListener('keydown', event => {
-  if (event.key !== 'Escape') return;
-  const menus = [...document.querySelectorAll<HTMLDetailsElement>('.action-menu[open]')];
-  if (!menus.length) return;
-  event.preventDefault();
-  menus.forEach(menu => (menu.open = false));
-  menus.at(-1)?.querySelector('summary')?.focus();
-});
 const syncStickyMetrics = () => {
   // A sticky demo banner sits above the shell, so the shell and everything stacked under it shift down by its height.
   const banner = document.getElementById('demoBanner'),
@@ -3131,89 +2679,32 @@ function toggleTopicPrerequisite(
 function renderTopicStrategyEditor(subject: Record<string, any>, topic: Record<string, any>) {
   const subjectConfig =
     state.examBlueprint.subjects.find(item => item.subjectId === subject.id) || null;
-  return renderTopicStrategyEditorView(
-    buildTopicStrategyViewModel({
-      subject,
-      topic,
-      subjectConfig,
-      activeExamTags: state.examBlueprint.activeExamTags || [],
-      topics: allTopics(),
-      exams: state.exams,
-      examQuestions: state.examQuestions,
-    })
-  );
+  return renderTopicStrategyEditorComponent({
+    subject,
+    topic,
+    subjectConfig,
+    activeExamTags: state.examBlueprint.activeExamTags || [],
+    topics: allTopics(),
+    exams: state.exams,
+    examQuestions: state.examQuestions,
+  });
 }
 function renderTopicAnalyticsState(subject: Subject, topic: Topic) {
-  const coverage =
-    topic.status === 'Concluído'
-      ? 100
-      : topic.status === 'Em andamento' || topic.status === 'Revisão'
-        ? 50
-        : 0;
-  const masteryResult = topicMasteryIndex(subject.id, topic.id),
-    retentionResult = topicRetentionScore(subject.id, topic.id);
-  const mastery = masteryResult.confidence > 0 ? masteryResult.score : null,
-    retention = retentionResult.available ? retentionResult.score : null;
-  const diagnosis = diagnoseTopic(subject.id, topic.id),
-    reviewHealth = topicReviewHealthScore(topic, masteryResult, retentionResult, diagnosis);
-  const lastContact = diagnosis?.lastActivity
-    ? Math.max(0, -(diasParaRevisao(diagnosis.lastActivity) ?? 0))
-    : null;
-  const lastReviewDate = localDateFromTimestamp(topic.lastReviewedAt);
-  const lastReview = lastReviewDate ? Math.max(0, -(diasParaRevisao(lastReviewDate) ?? 0)) : null;
-  const performance = diagnosis?.performance?.accuracy ?? null,
-    trend = diagnosis?.trend;
-  const blockers = prerequisiteBlockers(
-    { ...topic, mastery, covered: coverage === 100 },
-    allTopics().map(item => ({
-      ...item,
-      covered: item.status === 'Concluído',
-      mastery:
-        topicMasteryIndex(item.subjectId, item.id).confidence > 0
-          ? topicMasteryIndex(item.subjectId, item.id).score
-          : null,
-    }))
-  );
-  let label = 'Não iniciado';
-  if (coverage > 0 && mastery === null) label = 'Em estudo · aguardando questões';
-  else if (coverage === 100 && mastery! < 50) label = 'Coberto, não consolidado';
-  else if (coverage === 100 && retention !== null && retention < 60) label = 'Domínio em risco';
-  else if (coverage === 100 && mastery! >= 75) label = 'Consolidado';
-  else if (coverage === 100) label = 'Em consolidação';
-  else if (coverage > 0) label = 'Em estudo';
-  if (blockers.length) label = 'Bloqueado por pré-requisito';
-  else if (
-    coverage === 100 &&
-    needsMaintenance({
-      covered: true,
-      masteryGap: mastery === null ? null : 100 - mastery,
-      retentionRisk: retention === null ? null : 100 - retention,
-      reviewHealthRisk: reviewHealth.value === null ? null : 100 - reviewHealth.value,
-    })
-  )
-    label = 'Estudado, mas precisa consolidação';
-  const pctMetric = (name: string, value: any, detail = '') =>
-    `<div class="topic-metric"><span>${name}</span><strong>${value === null ? 'Aguardando dados' : Math.round(value) + '%'}</strong><div class="topic-metric-track"><i style="width:${value === null ? 0 : Math.round(value)}%"></i></div>${detail ? `<small>${escapeHtml(detail)}</small>` : ''}</div>`;
-  const textMetric = (name: string, value: any, detail = '') =>
-    `<div class="topic-metric"><span>${name}</span><strong>${escapeHtml(value)}</strong>${detail ? `<small>${escapeHtml(detail)}</small>` : ''}</div>`;
-  const trendText =
-    !trend || trend.key === 'insufficient' ? 'Aguardando dados' : `${trend.icon} ${trend.label}`;
-  const eligibility = blockers.length
-    ? `🔒 Aguarda ${blockers.map(id => getTopicName(id) || id).join(', ')}`
-    : coverage === 100 &&
-        !needsMaintenance({
-          covered: true,
-          masteryGap: mastery === null ? null : 100 - mastery,
-          retentionRisk: retention === null ? null : 100 - retention,
-          reviewHealthRisk: reviewHealth.value === null ? null : 100 - reviewHealth.value,
-        })
-      ? '✓ Consolidado'
-      : (reviewHealth as { level?: string }).level === 'critical'
-        ? '↻ Revisão recomendada'
-        : masteryResult.evidence?.evidenceStrength! < 0.35
-          ? '⚠ Poucos dados'
-          : '★ Elegível para priorização';
-  return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>${escapeHtml(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric('Cobertura', coverage)}${pctMetric('Domínio', mastery, mastery === null ? 'Registre questões deste tópico' : 'Evidência ' + masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric('Retenção', retention, retention === null ? 'Conclua revisões vinculadas' : 'Evidência ' + (retentionResult as { evidence: { evidenceLabel: string } }).evidence.evidenceLabel.toLowerCase())}${pctMetric('Saúde da revisão', reviewHealth.value, reviewHealth.reasons[0] as string)}${textMetric('Último contato', lastContact === null ? 'Sem registro' : lastContact === 0 ? 'Hoje' : lastContact + ' dias')}${textMetric('Última revisão', lastReview === null ? 'Sem registro' : lastReview === 0 ? 'Hoje' : lastReview + ' dias')}${pctMetric('Desempenho recente', performance, diagnosis?.performance?.resolved ? diagnosis.performance.resolved + ' questões' : 'Sem questões')}${textMetric('Tendência', trendText, trend?.delta == null ? '' : (trend.delta >= 0 ? '+' : '') + trend.delta + ' p.p.')}</div></div>`;
+  return renderTopicAnalyticsStateView({
+    subject,
+    topic,
+    topicMasteryIndex,
+    topicRetentionScore,
+    diagnoseTopic,
+    topicReviewHealthScore,
+    diasParaRevisao,
+    localDateFromTimestamp,
+    prerequisiteBlockers,
+    allTopics,
+    needsMaintenance,
+    getTopicName,
+    escapeHtml,
+  });
 }
 function moveSubject(id: string, direction: number) {
   const active = activeSubjects();
@@ -4516,9 +4007,6 @@ function normalizeErrorBreakdown(question: Record<string, any>) {
 function validQuestionRecords() {
   return state.questoes.filter(q => q.date && (Number(q.resolved) || 0) > 0);
 }
-function accuracyFromCounts(correct: number, total: number) {
-  return total > 0 ? Math.round((correct / total) * 1000) / 10 : null;
-}
 function toggleQuestionErrors(id: string) {
   if (openQuestionErrorIds.has(id)) openQuestionErrorIds.delete(id);
   else openQuestionErrorIds.add(id);
@@ -4664,27 +4152,14 @@ function updateQuestionError(id: string, key: string, value: any) {
   persistAndRender();
 }
 
-function performanceConfidence(total: number) {
-  if (total < MIN_WEEKLY_QUESTIONS) return { key: 'insufficient', label: 'Amostra insuficiente' };
-  if (total < 20) return { key: 'low', label: 'Confiança da amostra: baixa' };
-  if (total < 50) return { key: 'medium', label: 'Confiança da amostra: média' };
-  return { key: 'high', label: 'Confiança da amostra: alta' };
-}
 function subjectAccuracyTarget(subjectId: string) {
   return resolveSubjectAccuracyTarget(subjectId, state.examBlueprint, state.metas.metaAprovacao);
 }
 function classifyAccuracy(accuracy: number | null, subjectId: string) {
-  if (accuracy === null) return { key: 'none', icon: '⚪', label: 'Sem dados' };
-  const target = subjectAccuracyTarget(subjectId);
-  if (accuracy >= target) return { key: 'strong', icon: '🟢', label: 'Na meta' };
-  if (accuracy >= target - 10) return { key: 'attention', icon: '🟡', label: 'Atenção' };
-  return { key: 'weak', icon: '🔴', label: 'Prioritário' };
+  return classifyAccuracyTarget(accuracy, subjectAccuracyTarget(subjectId));
 }
 function getTopicPerformance(topicId: string) {
-  const records = validQuestionRecords().filter(q => q.topicId === topicId);
-  const resolved = records.reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
-  const correct = records.reduce((sum, q) => sum + (Number(q.correct) || 0), 0);
-  return { resolved, correct, accuracy: accuracyFromCounts(correct, resolved) };
+  return calculateTopicPerformance(validQuestionRecords(), topicId);
 }
 function getSubjectTopicPerformance(subjectId: string) {
   const subject = state.subjects.find(item => item.id === subjectId);
@@ -4723,114 +4198,39 @@ function getTopicErrorProfile(topicId: string) {
   );
 }
 function getSubjectPerformanceCounts(subjectId: string) {
-  let resolved = 0,
-    correct = 0;
-  state.questoes
-    .filter(question => entitySubjectId(question) === subjectId)
-    .forEach(question => {
-      resolved += Number(question.resolved) || 0;
-      correct += Number(question.correct) || 0;
-    });
-  state.simulados.forEach(simulado =>
-    (simulado.breakdown || [])
-      .filter(item => entitySubjectId(item) === subjectId)
-      .forEach(item => {
-        resolved += Number(item.total) || 0;
-        correct += Number(item.correct) || 0;
-      })
+  return calculateSubjectPerformanceCounts(
+    state.questoes,
+    state.simulados,
+    subjectId,
+    entitySubjectId
   );
-  return { resolved, correct, accuracy: accuracyFromCounts(correct, resolved) };
 }
 function topicErrorRate(topicId: string, subjectId: string) {
-  const topicPerformance = getTopicPerformance(topicId);
-  const subjectPerformance = getSubjectPerformanceCounts(subjectId);
-  const topicRate = topicPerformance.accuracy === null ? null : 100 - topicPerformance.accuracy;
-  const subjectRate =
-    subjectPerformance.accuracy === null ? null : 100 - subjectPerformance.accuracy;
-  if (topicRate === null || topicPerformance.resolved < 10) {
-    return {
-      rate: subjectRate,
-      source: subjectRate === null ? 'none' : 'subject',
-      topicWeight: 0,
-      topicPerformance,
-      subjectPerformance,
-    };
-  }
-  if (subjectRate === null) {
-    return {
-      rate: Math.round(topicRate * 10) / 10,
-      source: 'topic',
-      topicWeight: 1,
-      topicPerformance,
-      subjectPerformance,
-    };
-  }
-  const topicWeight =
-    topicPerformance.resolved >= 50 ? 1 : 0.2 + ((topicPerformance.resolved - 10) / 40) * 0.8;
-  const rate = Math.round((topicRate * topicWeight + subjectRate * (1 - topicWeight)) * 10) / 10;
-  return {
-    rate,
-    source: topicWeight === 1 ? 'topic' : 'blended',
-    topicWeight,
-    topicPerformance,
-    subjectPerformance,
-  };
-}
-function getWeekRange(weeksAgo: number) {
-  const currentStart = startOfWeek(todayISO());
-  const start = addDays(currentStart, -7 * weeksAgo);
-  return { start, end: addDays(start, 6) };
-}
-function getSubjectPerformanceBetween(
-  subjectId: string,
-  start: string,
-  end: string,
-  records = validQuestionRecords()
-) {
-  records = records.filter(
-    question =>
-      entitySubjectId(question) === subjectId && question.date >= start && question.date <= end
+  return calculateTopicErrorRate(
+    getTopicPerformance(topicId),
+    getSubjectPerformanceCounts(subjectId)
   );
-  const resolved = records.reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
-  const correct = records.reduce((sum, q) => sum + (Number(q.correct) || 0), 0);
-  return {
-    start,
-    end,
-    resolved,
-    correct,
-    accuracy: accuracyFromCounts(correct, resolved),
-    insufficientData: resolved < MIN_WEEKLY_QUESTIONS,
-  };
 }
 function getSubjectWeeklyTrend(subjectId: string, weeks = 8, records = validQuestionRecords()) {
-  return Array.from({ length: weeks }, (_, index) => {
-    const range = getWeekRange(weeks - 1 - index);
-    return getSubjectPerformanceBetween(subjectId, range.start, range.end, records);
+  return calculateSubjectWeeklyTrend({
+    records,
+    subjectId,
+    weeks,
+    startOfWeekFn: startOfWeek,
+    addDaysFn: addDays,
+    today: todayISO(),
+    entitySubjectId,
   });
-}
-function getTopicPerformanceBetween(topicId: string, start: string, end: string) {
-  const records = validQuestionRecords().filter(
-    question => question.topicId === topicId && question.date >= start && question.date <= end
-  );
-  const resolved = records.reduce((sum, question) => sum + (Number(question.resolved) || 0), 0);
-  const correct = records.reduce((sum, question) => sum + (Number(question.correct) || 0), 0);
-  return {
-    start,
-    end,
-    resolved,
-    correct,
-    accuracy: accuracyFromCounts(correct, resolved),
-    insufficientData: resolved < MIN_WEEKLY_QUESTIONS,
-  };
 }
 function getTopicWeeklyTrend(topicId: string, weeks = 8) {
-  return Array.from({ length: weeks }, (_, index) => {
-    const range = getWeekRange(weeks - 1 - index);
-    return getTopicPerformanceBetween(topicId, range.start, range.end);
+  return calculateTopicWeeklyTrend({
+    records: validQuestionRecords(),
+    topicId,
+    weeks,
+    startOfWeekFn: startOfWeek,
+    addDaysFn: addDays,
+    today: todayISO(),
   });
-}
-function calculateWeightedTrend(weeklyData: any[], minWindow = MIN_TREND_WINDOW_QUESTIONS) {
-  return calculateWindowTrend(weeklyData, minWindow);
 }
 function topicLastActivityDate(topicId: string) {
   let last: any = null;
@@ -4864,13 +4264,7 @@ function pendingReviewForTopic(topicId: string) {
   );
 }
 function dominantTopicError(profile: Record<string, any>) {
-  const dominant = profile?.dominant;
-  if (!dominant) return null;
-  return {
-    ...dominant,
-    meta: ERROR_CATEGORIES[dominant.key],
-    recommendation: dominant.recommendation || ERROR_RECOMMENDATIONS[dominant.key],
-  };
+  return calculateDominantTopicError(profile, ERROR_CATEGORIES, ERROR_RECOMMENDATIONS);
 }
 function topicMasteryIndex(_subjectId: string, topicId: string) {
   const found = getTopicById(topicId);
@@ -5000,117 +4394,43 @@ function diagnoseTopic(subjectId: string, topicId: string) {
     summary: reasons.join(' · '),
   };
 }
+const questionAnalyticsController = createQuestionAnalyticsController({
+  document,
+  getPerformanceSubjectId: () => performanceSubjectId,
+  setPerformanceSubjectId: id => {
+    performanceSubjectId = id;
+  },
+  getPerformanceViewMode: () => performanceViewMode,
+  setPerformanceViewMode: mode => {
+    performanceViewMode = mode;
+  },
+  getPerformanceVisible: () => performanceVisible,
+  getErrorAnalysisView: () => errorAnalysisView,
+  validQuestionRecords,
+  entitySubjectId,
+  activeSubjects,
+  activeTopics,
+  getSubjectWeeklyTrend,
+  calculateWeightedTrend,
+  getSubjectTopicPerformance,
+  topicMasteryIndex,
+  renderQuestionAnalyticsSummary,
+  renderTopicQuestionPerformance,
+  renderWeeklyQuestionTrend,
+  buildErrorProfile,
+  renderQuestionErrorToolbar,
+  buildErrorAnalysisViewModel,
+  renderErrorAnalysis,
+  renderCollectionFooter,
+  formatDatePt,
+  escapeHtml,
+  escapeAttr,
+  addDays,
+  todayISO,
+});
+
 function renderQuestionAnalytics() {
-  const select = document.getElementById('performanceSubjectSelect');
-  if (!select) return;
-  const subjects = activeSubjects();
-  if (!subjects.some(subject => subject.id === performanceSubjectId)) {
-    performanceSubjectId =
-      subjects.find(subject =>
-        validQuestionRecords().some(question => entitySubjectId(question) === subject.id)
-      )?.id ||
-      subjects[0]?.id ||
-      null;
-  }
-  select.innerHTML = subjects
-    .map(
-      subject =>
-        `<option value="${escapeAttr(subject.id)}" ${subject.id === performanceSubjectId ? 'selected' : ''}>${escapeHtml(subject.name)}</option>`
-    )
-    .join('');
-  const summary = document.getElementById('questionAnalyticsSummary');
-  const bars = document.getElementById('topicPerformanceBars');
-  const weeklyEl = document.getElementById('subjectWeeklyTrend');
-  const profileEl = document.getElementById('subjectErrorProfile');
-  const coverageEl = document.getElementById('questionDataCoverage');
-  if (!performanceSubjectId) {
-    summary!.innerHTML = '';
-    bars!.innerHTML =
-      weeklyEl!.innerHTML =
-      profileEl!.innerHTML =
-        '<div class="empty-state"><p>Cadastre uma disciplina para iniciar a análise.</p></div>';
-    coverageEl!.textContent = '0% identificadas';
-    return;
-  }
-  const records = validQuestionRecords().filter(
-    question => entitySubjectId(question) === performanceSubjectId
-  );
-  const resolved = records.reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
-  const correct = records.reduce((sum, q) => sum + (Number(q.correct) || 0), 0);
-  const identified = records
-    .filter(q => q.topicId)
-    .reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
-  const coverage = resolved ? Math.round((identified / resolved) * 100) : 0;
-  const accuracy = accuracyFromCounts(correct, resolved);
-  const weekly = getSubjectWeeklyTrend(performanceSubjectId);
-  const trend = calculateWeightedTrend(weekly);
-  coverageEl!.textContent = `${coverage}% identificadas`;
-  summary!.innerHTML = renderQuestionAnalyticsSummary({ resolved, accuracy, coverage, trend });
-
-  const topicPerformance = getSubjectTopicPerformance(performanceSubjectId);
-  const mature = topicPerformance.filter(topic => topic.resolved >= 30),
-    insufficient = topicPerformance.filter(topic => topic.resolved > 0 && topic.resolved < 30);
-  if (performanceViewMode === 'with-data' && !mature.length && insufficient.length)
-    performanceViewMode = 'insufficient';
-  const filteredPerformance =
-    performanceViewMode === 'all'
-      ? topicPerformance
-      : topicPerformance.filter(topic =>
-          performanceViewMode === 'without-data'
-            ? topic.resolved === 0
-            : performanceViewMode === 'insufficient'
-              ? topic.resolved > 0 && topic.resolved < 30
-              : topic.resolved >= 30
-        );
-  bars!.innerHTML = renderTopicQuestionPerformance({
-    mode: performanceViewMode,
-    topics: filteredPerformance,
-    visible: performanceVisible,
-    masteryForTopic: (id: string) => topicMasteryIndex(performanceSubjectId, id),
-    renderFooter: renderCollectionFooter,
-    visibleLimit: performanceVisible,
-    escapeHtml,
-  });
-
-  weeklyEl!.innerHTML = renderWeeklyQuestionTrend({
-    weeks: weekly,
-    trend,
-    formatDate: formatDatePt,
-  });
-
-  const subjectTopics = activeTopics().filter(topic => topic.subjectId === performanceSubjectId);
-  if (
-    errorAnalysisView.topicId &&
-    !subjectTopics.some(topic => topic.id === errorAnalysisView.topicId)
-  )
-    errorAnalysisView.topicId = '';
-  const currentStart = addDays(todayISO(), -(errorAnalysisView.days - 1)),
-    previousEnd = addDays(currentStart, -1),
-    previousStart = addDays(previousEnd, -(errorAnalysisView.days - 1));
-  const scopedRecords = validQuestionRecords().filter(
-    question =>
-      entitySubjectId(question) === performanceSubjectId &&
-      (!errorAnalysisView.topicId || question.topicId === errorAnalysisView.topicId)
-  );
-  const profile = buildErrorProfile(
-    scopedRecords.filter(question => question.date >= currentStart && question.date <= todayISO())
-  );
-  const previousProfile = buildErrorProfile(
-    scopedRecords.filter(question => question.date >= previousStart && question.date <= previousEnd)
-  );
-  const errorToolbar = renderQuestionErrorToolbar({
-    days: errorAnalysisView.days,
-    topicId: errorAnalysisView.topicId,
-    topics: subjectTopics,
-    escapeHtml,
-    escapeAttr,
-  });
-  const errorModel = buildErrorAnalysisViewModel({
-    current: profile,
-    previous: previousProfile,
-    periodLabel: formatDatePt(currentStart) + ' a ' + formatDatePt(todayISO()),
-  });
-  profileEl!.innerHTML = renderErrorAnalysis(errorModel, { toolbar: errorToolbar, escapeHtml });
+  questionAnalyticsController.renderQuestionAnalytics();
 }
 
 function simuladoEffectiveCounts(sim: Record<string, any>) {
@@ -5327,7 +4647,19 @@ function getGoalsTabController() {
     renderPlanImpactAlignment,
     formatDatePt,
     escapeHtml,
+    escapeAttr,
     entitySubjectId,
+    buildResultGoalsViewModel,
+    renderGoals,
+    initialGoalSuggestions,
+    weeklyStrategyCapacity,
+    activeSubjects,
+    getSubjectName,
+    buildPeriodComparisonViewModel,
+    renderPeriodComparisonDetail,
+    localDateFromTimestamp,
+    somarQuestoesDisciplinaNaSemana: (subjectId: string | null) =>
+      subjectId ? somarQuestoesDisciplinaNaSemana(subjectId) : 0,
   });
 }
 
@@ -5355,39 +4687,20 @@ function contarSimuladosNaSemana() {
 }
 
 function renderMetas() {
-  const m = state.metas;
-  const atingidoSemanal = contarTopicosConcluidosNoPeriodo(isSameWeek);
-  const atingidoMensal = contarTopicosConcluidosNoPeriodo(isSameMonth);
-  const atingidoQuestoes = somarQuestoesNaSemana();
-  const atingidoSimulados = contarSimuladosNaSemana();
-  const atingidoConsistencia = countStudyDaysThisWeek(state.studySessions, todayISO());
-  const hasAccuracyEvidence =
-    state.questoes.some(item => Number(item.resolved) > 0) ||
-    state.simulados.some(item => Number(item.total) > 0);
-  const resultGoals = buildResultGoalsViewModel({
-    goals: m,
-    achieved: {
-      weeklyTopics: atingidoSemanal,
-      monthlyTopics: atingidoMensal,
-      questions: atingidoQuestoes,
-      simulations: atingidoSimulados,
+  const container = document.getElementById('metasContainer');
+  if (container) {
+    const hasAccuracyEvidence =
+      state.questoes.some(item => Number(item.resolved) > 0) ||
+      state.simulados.some(item => Number(item.total) > 0);
+    getGoalsTabController().renderMetas(container, {
+      weeklyTopics: contarTopicosConcluidosNoPeriodo(isSameWeek),
+      monthlyTopics: contarTopicosConcluidosNoPeriodo(isSameMonth),
+      questions: somarQuestoesNaSemana(),
+      simulations: contarSimuladosNaSemana(),
       accuracy: hasAccuracyEvidence ? recentPerformance().current!.accuracy : null,
-      studyDays: atingidoConsistencia,
-    },
-  });
-  document.getElementById('metasContainer')!.innerHTML = renderGoals(resultGoals, {
-    adherenceTarget: m.aderenciaSemanal,
-    escapeHtml,
-    initialSuggestions: initialGoalSuggestions(
-      m,
-      state.studySessions.length > 0 ||
-        state.questoes.length > 0 ||
-        state.simulados.length > 0 ||
-        atingidoSemanal > 0 ||
-        atingidoMensal > 0
-    ),
-    weeklyCapacityMinutes: weeklyStrategyCapacity(),
-  });
+      studyDays: countStudyDaysThisWeek(state.studySessions, todayISO()),
+    });
+  }
   renderSelectedPeriodComparison();
 }
 
@@ -5410,334 +4723,39 @@ function updateMeta(key: string, value: any) {
   persistAndRender();
 }
 
-const examMatrixFilters: Record<string, any> = {
-  scope: 'active',
-  board: 'all',
-  year: 'all',
-  role: 'all',
-  subject: 'all',
-  search: '',
-  sort: 'incidence',
-  mode: 'quadrants',
-};
-let selectedExamMatrixTopicId: any = null;
-function renderHistoricalExamMatrix() {
-  const container = document.getElementById('examHistoricalMatrix');
-  if (!container) return;
-  const advancedWasOpen = container.querySelector<HTMLDetailsElement>(
-    '.exam-matrix-more-filters'
-  )?.open;
-  const personal = new Map();
-  for (const record of examEvidenceContext().questions.included) {
-    const entry = personal.get(record.topicId) || { total: 0, correct: 0 };
-    entry.total += Math.max(0, Number(record.resolved) || 0);
-    entry.correct += Math.max(
-      0,
-      Math.min(Number(record.resolved) || 0, Number(record.correct) || 0)
-    );
-    personal.set(record.topicId, entry);
-  }
-  const metricsByTopic = Object.fromEntries(
-    intelligenceCandidates().map((item: any) => {
-      const data = personal.get(item.topicId);
-      return [
-        item.topicId,
-        {
-          mastery: item.mastery,
-          retention: item.retention,
-          trend: item.trend,
-          priority: item.score,
-          personalQuestionCount: data?.total || 0,
-          personalAccuracy: data?.total ? Math.round((data.correct / data.total) * 100) : null,
-        },
-      ];
-    })
-  );
-  const auditMatchesScope =
-    examMatrixFilters.scope === 'active' &&
-    ['board', 'year', 'role'].every(key => examMatrixFilters[key] === 'all');
-  const auditByTopic = auditMatchesScope
-    ? Object.fromEntries(
-        buildExamConfigurationAudit({
-          topics: examScopedTopics(),
-          blueprint: state.examBlueprint,
-          exams: state.exams,
-          examQuestions: state.examQuestions,
-        }).rows.map((row: any) => [row.topicId, row])
-      )
-    : {};
-  const model = buildExamMatrix({
-    topics: activeTopics(),
-    exams: state.exams,
-    examQuestions: state.examQuestions,
-    activeExamTags: state.examBlueprint.activeExamTags || [],
-    filters: examMatrixFilters,
-    metricsByTopic,
-    auditByTopic,
-  });
-  if (!model.rows.some((row: any) => row.topicId === selectedExamMatrixTopicId))
-    selectedExamMatrixTopicId = null;
-  container.innerHTML = renderExamMatrix(model, { selectedTopicId: selectedExamMatrixTopicId });
-  const opportunity = document.getElementById('examOpportunity');
-  if (opportunity) opportunity.innerHTML = renderExamOpportunity(model);
-  const advanced = container.querySelector<HTMLDetailsElement>('.exam-matrix-more-filters');
-  if (advanced) advanced.open = advancedWasOpen ?? !window.matchMedia('(max-width:600px)').matches;
-  for (const [key, value] of Object.entries(examMatrixFilters)) {
-    const select = container.querySelector<HTMLSelectElement>(`[data-exam-matrix-filter="${key}"]`);
-    if (select && [...select.options].some(option => option.value === String(value)))
-      select.value = String(value);
-  }
-}
-document.getElementById('examHistoricalMatrix')?.addEventListener('change', event => {
-  const key = (event.target as HTMLElement)?.dataset?.examMatrixFilter;
-  if (!['scope', 'board', 'year', 'role', 'subject', 'sort'].includes(key!)) return;
-  examMatrixFilters[key!] = (event.target as HTMLInputElement).value;
-  if (key === 'scope') {
-    examMatrixFilters.board = 'all';
-    examMatrixFilters.year = 'all';
-    examMatrixFilters.role = 'all';
-  }
-  selectedExamMatrixTopicId = null;
-  renderHistoricalExamMatrix();
-});
-document.getElementById('examHistoricalMatrix')?.addEventListener('input', event => {
-  if (!(event.target as HTMLElement).matches('[data-exam-matrix-search]')) return;
-  examMatrixFilters.search = (event.target as HTMLInputElement).value;
-  const start = (event.target as HTMLInputElement).selectionStart;
-  renderHistoricalExamMatrix();
-  const search = document.querySelector<HTMLInputElement>(
-    '#examHistoricalMatrix [data-exam-matrix-search]'
-  );
-  search?.focus();
-  search?.setSelectionRange(start, start);
-});
-document.getElementById('examHistoricalMatrix')?.addEventListener('click', event => {
-  const mode = (event.target as HTMLElement)?.closest?.<HTMLElement>('[data-exam-matrix-mode]');
-  if (mode) {
-    examMatrixFilters.mode = mode.dataset.examMatrixMode;
-    examMatrixFilters.sort = examMatrixFilters.mode === 'priorities' ? 'gap' : 'incidence';
-    renderHistoricalExamMatrix();
-    document
-      .querySelector<HTMLElement>(
-        `#examHistoricalMatrix [data-exam-matrix-mode="${examMatrixFilters.mode}"]`
-      )
-      ?.focus();
-    return;
-  }
-  const button = (event.target as HTMLElement)?.closest?.<HTMLElement>('[data-exam-matrix-topic]');
-  if (!button) return;
-  selectedExamMatrixTopicId = button.dataset.examMatrixTopic;
-  renderHistoricalExamMatrix();
-  document
-    .querySelector('#examHistoricalMatrix .exam-matrix-detail')
-    ?.scrollIntoView?.({ block: 'nearest' });
-});
-function renderExamBlueprintConfig() {
-  const container = document.getElementById('examBlueprintConfig');
-  if (!container) return;
-  renderExamBlueprintConfigView({
-    container,
-    blueprint: state.examBlueprint,
-    subjects: activeSubjects(),
-    escapeHtml,
-    escapeAttr,
-    formatDatePt,
-    EXAM_TAGS,
-    EXAM_SOURCES,
-    globalAccuracyTarget: state.metas.metaAprovacao,
-    document,
-  });
-  renderExamIntelligenceSection();
-  renderExamMasteryMatrix();
-}
-function renderExamIntelligenceSection() {
-  const quality = document.getElementById('examDataQuality');
-  const qualityModel = buildExamDataQuality({
-    exams: state.exams,
-    examQuestions: state.examQuestions,
-    topics: examScopedTopics(),
-    blueprint: state.examBlueprint,
-  });
-  if (quality) quality.innerHTML = renderExamDataQuality(qualityModel);
-  const overview = document.getElementById('examIntelligenceOverview');
-  if (overview) {
-    overview.hidden = !qualityModel.examCount;
-    overview.innerHTML = qualityModel.examCount
-      ? `<strong>${qualityModel.examCount} ${qualityModel.examCount === 1 ? 'prova' : 'provas'} · ${qualityModel.questionCount} questões</strong><span>${qualityModel.completeExamCount} completas · ${qualityModel.mappedTopics} tópicos mapeados · confiança ${qualityModel.confidence === 'high' ? 'alta' : qualityModel.confidence === 'moderate' ? 'moderada' : qualityModel.confidence === 'low' ? 'baixa' : 'limitada'}</span>`
-      : '';
-  }
-  const audit = document.getElementById('examConfigurationAudit');
-  if (audit)
-    audit.innerHTML = renderExamConfigurationAudit(
-      buildExamConfigurationAudit({
-        topics: examScopedTopics(),
-        blueprint: state.examBlueprint,
-        exams: state.exams,
-        examQuestions: state.examQuestions,
-      })
-    );
-  const evidence = document.getElementById('examIntelligenceSummary');
-  if (evidence)
-    evidence.innerHTML = renderExamIntelligence(
-      buildExamIntelligenceViewModel({
-        topics: examScopedTopics(),
-        blueprint: state.examBlueprint,
-        exams: state.exams,
-        examQuestions: state.examQuestions,
-      }),
-      { projection: currentAchievementProjection().model }
-    );
-  renderHistoricalExamMatrix();
-}
-document.getElementById('examConfigurationAudit')?.addEventListener('click', event => {
-  const topic = (event.target as HTMLElement).closest<HTMLElement>('[data-audit-topic]');
-  if (!topic) return;
-  selectedExamMatrixTopicId = topic.dataset.auditTopic;
-  examMatrixFilters.scope = 'active';
-  examMatrixFilters.board = 'all';
-  examMatrixFilters.year = 'all';
-  examMatrixFilters.role = 'all';
-  renderHistoricalExamMatrix();
-  document
-    .querySelector('#examHistoricalMatrix .exam-matrix-detail')
-    ?.scrollIntoView?.({ block: 'nearest' });
-});
-let examClassificationFilter = 'all',
-  examClassificationPage = 0,
-  examClassificationPreviousFocus: any = null;
-const examClassificationOverlay = document.getElementById('examClassificationOverlay');
-function updateExamClassificationReview() {
-  const content = document.getElementById('examClassificationContent');
-  if (!content) return;
-  content.innerHTML = renderExamClassificationReview({
-    exams: state.exams,
-    examQuestions: state.examQuestions,
-    subjects: state.subjects,
-    activeExamTags: state.examBlueprint.activeExamTags || [],
-    filter: examClassificationFilter,
-    page: examClassificationPage,
-  });
-}
-function closeExamClassificationReview() {
-  examClassificationOverlay?.classList.remove('show');
-  (examClassificationPreviousFocus?.isConnected
-    ? examClassificationPreviousFocus
-    : document.getElementById('openExamClassificationReview')
-  )?.focus();
-  examClassificationPreviousFocus = null;
-}
-document.getElementById('examDataQuality')?.addEventListener('click', event => {
-  if (!(event.target as HTMLElement).closest('#openExamClassificationReview')) return;
-  examClassificationPreviousFocus = document.activeElement;
-  examClassificationFilter = 'all';
-  examClassificationPage = 0;
-  updateExamClassificationReview();
-  examClassificationOverlay!.classList.add('show');
-  document.getElementById('examClassificationFilter')?.focus();
-});
-document
-  .getElementById('examClassificationClose')
-  ?.addEventListener('click', closeExamClassificationReview);
-examClassificationOverlay?.addEventListener('click', event => {
-  if (event.target === examClassificationOverlay) {
-    closeExamClassificationReview();
-    return;
-  }
-  const pageButton = (event.target as HTMLElement).closest<HTMLElement>('[data-review-page]');
-  if (pageButton) {
-    examClassificationPage = Number(pageButton.dataset.reviewPage) || 0;
-    updateExamClassificationReview();
-    document.getElementById('examClassificationFilter')?.focus();
-    return;
-  }
-  const button = (event.target as HTMLElement).closest('[data-review-save]');
-  if (!button) return;
-  const row = button.closest<HTMLElement>('[data-review-exam]'),
-    topicId = row?.querySelector<HTMLInputElement>('[data-review-topic]')?.value,
-    confidence = Number(row?.querySelector<HTMLInputElement>('[data-review-confidence]')?.value);
-  try {
-    const result = reviewExamClassification(state, {
-      examId: row?.dataset.reviewExam,
-      questionNumber: Number(row?.dataset.reviewNumber),
-      topicId,
-      confidence,
-      now: nowISO(),
-      idGenerator: uid,
-    });
-    state.exams = result.exams;
-    state.examQuestions = result.examQuestions;
+const examMatrixController = createExamMatrixController({
+  document,
+  window,
+  getState: () => state,
+  examEvidenceContext,
+  intelligenceCandidates,
+  examScopedTopics,
+  activeTopics,
+  activeSubjects,
+  currentAchievementProjection: () => currentAchievementProjection(),
+  nowISO,
+  idGenerator: uid,
+  escapeHtml,
+  escapeAttr,
+  formatDatePt,
+  showToast,
+  persistAndRender,
+  captureReadinessBeforeStrategy,
+  invalidatePlanPreview: () => {
     studyPlanPreview = null;
-    persistAndRender();
-    updateExamClassificationReview();
-    document.getElementById('examClassificationFilter')?.focus();
-    showToast('Classificação atualizada. Próximas recomendações usarão a evidência corrigida.');
-  } catch (error: any) {
-    showToast(error.message || 'Não foi possível revisar a classificação.');
-  }
+  },
+  resetRecordListLimits,
+  getProgressiveLists: () => (globalThis as Record<string, any>).studytrackProgressiveLists,
+  EXAM_TAGS,
+  EXAM_SOURCES,
 });
-examClassificationOverlay?.addEventListener('change', event => {
-  if ((event.target as HTMLElement).id === 'examClassificationFilter') {
-    examClassificationFilter = (event.target as HTMLInputElement).value;
-    examClassificationPage = 0;
-    updateExamClassificationReview();
-    document.getElementById('examClassificationFilter')?.focus();
-  }
-});
-examClassificationOverlay?.addEventListener('keydown', event => {
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    closeExamClassificationReview();
-  }
-});
-function topicExamMetricForActiveScope(topic: Record<string, any>) {
-  const active = state.examBlueprint.activeExamTags || [],
-    entries = Object.entries(topic.examMetrics || {}).filter(
-      ([profile]) => !active.length || active.some(tag => profile.startsWith(tag))
-    );
-  return (entries[0]?.[1] as Record<string, any>) || null;
+examMatrixController.bindEvents();
+
+function renderExamIntelligenceSection() {
+  examMatrixController.renderExamIntelligenceSection();
 }
-function renderExamMasteryMatrix() {
-  const el = document.getElementById('examMasteryMatrix');
-  if (!el) return;
-  const candidates = intelligenceCandidates(),
-    metrics = Object.fromEntries(
-      candidates.map((c: any) => [
-        c.topicId,
-        {
-          coverage: c.coverage,
-          mastery: { value: c.mastery, confidence: c.evidenceStrength },
-          retention: { value: c.retention },
-          trend: c.trend,
-          priority: { value: c.score },
-        },
-      ])
-    ),
-    rows = buildExamMasteryMatrix({
-      subjects: state.subjects,
-      blueprint: state.examBlueprint,
-      metricsByTopic: metrics,
-      activeExamTags: state.examBlueprint.activeExamTags || [],
-    });
-  el.innerHTML = rows.length
-    ? `<div class="mastery-matrix"><div class="mastery-matrix-head"><span>Disciplina</span><span>Cobertura</span><span>Domínio</span><span>Retenção</span><span>Gap</span></div>${rows
-        .sort((a, b) => (b.gap ?? -999) - (a.gap ?? -999))
-        .map(
-          row =>
-            `<details><summary><strong>${escapeHtml(row.name)}</strong><span data-label="Cobertura">${row.coverage ?? '—'}%</span><span data-label="Domínio">${row.mastery ?? '—'}%</span><span data-label="Retenção">${row.retention ?? '—'}%</span><span data-label="Gap">${row.gap == null ? '—' : (row.gap > 0 ? '-' : '') + Math.abs(row.gap) + ' pts'}</span></summary>${row.topics
-              .map((t: any) => {
-                const metric = topicExamMetricForActiveScope(t),
-                  meta = [
-                    metric?.questionWeight != null ? metric.questionWeight + ' pt/questão' : null,
-                    t.incidence?.level ? 'incidência ' + t.incidence.level.toLowerCase() : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ');
-                return `<div class="mastery-topic"><span>${escapeHtml(t.name)}${meta ? `<small>${escapeHtml(meta)} · estimativa por tópico</small>` : ''}</span><span data-label="Cobertura">${t.coverage}%</span><span data-label="Domínio">${t.mastery ?? '—'}%</span><span data-label="Retenção">${t.retention ?? '—'}%</span><span data-label="Estado">${escapeHtml(t.state)}</span></div>`;
-              })
-              .join('')}</details>`
-        )
-        .join('')}</div>`
-    : '<div class="upcoming-empty">Cadastre disciplinas e tópicos para montar a matriz.</div>';
+function renderExamBlueprintConfig() {
+  examMatrixController.renderExamBlueprintConfig();
 }
 let studyPlanPreview: any = null,
   dailyPlanPreview: any = null;
@@ -6221,208 +5239,48 @@ function updateExamSubject(subjectId: string, field: string, value: any) {
   persistAndRender();
 }
 function saveExamSubjectConfig(subjectId: string) {
-  const details = [
-    ...document.querySelectorAll<HTMLElement>('#examBlueprintConfig .exam-subject-config'),
-  ].find(item => item.dataset.subjectId === subjectId);
-  if (!details) return;
-  const read = (name: string) =>
-    details.querySelector<HTMLInputElement>(`[name="${name}"]`)?.value ?? '';
-  const existing = state.examBlueprint.subjects.find(item => item.subjectId === subjectId);
-  const config = buildSavedSubjectConfig(subjectId, existing, {
-    priority: read('priority'),
-    masteryTarget: read('masteryTarget'),
-    expectedQuestions: read('expectedQuestions'),
-    questionWeight: read('questionWeight'),
-    accuracyTarget: read('accuracyTarget'),
-  });
-  if (!config) {
-    showToast('Revise a meta, a quantidade de questões e o peso antes de salvar.');
-    return;
-  }
-  if (
-    !existing ||
-    [
-      'priority',
-      'masteryTarget',
-      'accuracyTarget',
-      'expectedQuestions',
-      'questionWeight',
-      'official',
-      'sourceRef',
-    ].some(
-      key =>
-        JSON.stringify((existing as Record<string, any>)[key]) !==
-        JSON.stringify((config as Record<string, any>)[key])
-    )
-  )
-    captureReadinessBeforeStrategy('Antes de alterar a configuração estratégica da disciplina');
-  if (existing) Object.assign(existing, config);
-  else state.examBlueprint.subjects.push(config);
-  state.examBlueprint.configuredAt = nowISO();
-  studyPlanPreview = null;
-  persistAndRender();
-  showToast('Configuração da disciplina salva.');
+  examMatrixController.saveExamSubjectConfig(subjectId);
 }
 function cancelExamSubjectConfig() {
-  renderExamBlueprintConfig();
+  examMatrixController.cancelExamSubjectConfig();
 }
 function toggleActiveExamTag(tag: string, checked: boolean) {
-  (globalThis as Record<string, any>).studytrackProgressiveLists?.reset();
-  resetRecordListLimits();
-  const valid = ['bb-escriturario', 'caixa-tbn', 'caixa-tbn-ti'];
-  if (!valid.includes(tag)) return;
-  const values = new Set(state.examBlueprint.activeExamTags || []);
-  checked ? values.add(tag) : values.delete(tag);
-  if (
-    JSON.stringify([...values].sort()) !==
-    JSON.stringify([...(state.examBlueprint.activeExamTags || [])].sort())
-  )
-    captureReadinessBeforeStrategy('Antes de alterar o concurso ativo');
-  if (setActiveExamTags(state, [...values], { configuredAt: nowISO() })) {
-    studyPlanPreview = null;
-    persistAndRender();
-  }
+  examMatrixController.toggleActiveExamTag(tag, checked);
 }
 
 /* ===== METAS POR DISCIPLINA ===== */
+const subjectTargetEditorController = createSubjectTargetEditorController({
+  document,
+  getState: () => state,
+  examEvidenceContext,
+  examScopedSubjects,
+  entitySubjectId,
+  todayISO,
+  nowISO,
+  escapeHtml,
+  escapeAttr,
+  showToast,
+  persistAndRender,
+  captureReadinessBeforeStrategy,
+  invalidatePlanPreview: () => {
+    studyPlanPreview = null;
+  },
+});
+subjectTargetEditorController.bindEvents();
+
 function renderSubjectTargetEditor() {
-  const container = document.getElementById('subjectTargetEditor') as HTMLElement;
-  if (!container) return;
-  const scope = examEvidenceContext(),
-    subjects = examScopedSubjects(),
-    questions = scope.questions.included.map(item => ({
-      ...item,
-      subjectId: entitySubjectId(item),
-    }));
-  const comparison = buildPerformanceSubjectComparison({
-    subjects,
-    questions,
-    range: resolvePerformanceRange({ today: todayISO(), period: '30', comparePrevious: true }),
-    blueprint: state.examBlueprint,
-    globalTarget: state.metas.metaAprovacao,
-  });
-  container.innerHTML = renderSubjectTargetEditorView(
-    {
-      rows: comparison.rows,
-      globalTarget: state.metas.metaAprovacao,
-      blueprint: state.examBlueprint,
-    },
-    { escapeHtml, escapeAttr }
-  );
+  subjectTargetEditorController.renderSubjectTargetEditor();
 }
-function saveSubjectAccuracyTargets(subjectIds: string[], rawValue: any) {
-  const eligible = new Set(examScopedSubjects().map(item => item.id)),
-    ids = [...new Set(subjectIds)].filter(id => eligible.has(id));
-  if (!ids.length) {
-    showToast('Selecione ao menos uma disciplina do concurso ativo.');
-    return;
-  }
-  const value = rawValue === '' ? null : Number(rawValue);
-  const updated = updateSubjectAccuracyTargets(state.examBlueprint, ids, value);
-  if (!updated) {
-    showToast('Informe uma meta entre 0% e 100%.');
-    return;
-  }
-  if (JSON.stringify(updated.subjects) === JSON.stringify(state.examBlueprint.subjects)) {
-    showToast('As metas selecionadas já estão atualizadas.');
-    return;
-  }
-  captureReadinessBeforeStrategy('Antes de alterar metas de acerto por disciplina');
-  Object.assign(state.examBlueprint, updated, { configuredAt: nowISO() });
-  studyPlanPreview = null;
-  persistAndRender();
-  showToast('Metas de acerto atualizadas.');
-}
-document.getElementById('subjectTargetEditor')?.addEventListener('click', event => {
-  const container = event.currentTarget as HTMLElement;
-  const selected = () =>
-    [...container.querySelectorAll<HTMLInputElement>('[data-accuracy-select]:checked')].map(
-      item => item.value
-    );
-  const save = (event.target as HTMLElement).closest<HTMLElement>('[data-accuracy-save]');
-  if (save) {
-    saveSubjectAccuracyTargets(
-      [save.dataset.accuracySave!],
-      container.querySelector<HTMLInputElement>(
-        `[data-accuracy-value="${CSS.escape(save.dataset.accuracySave!)}"]`
-      )?.value ?? ''
-    );
-    return;
-  }
-  const restore = (event.target as HTMLElement).closest<HTMLElement>('[data-accuracy-restore]');
-  if (restore) {
-    saveSubjectAccuracyTargets([restore.dataset.accuracyRestore!], '');
-    return;
-  }
-  if ((event.target as HTMLElement).closest('[data-accuracy-apply]')) {
-    const value =
-      container.querySelector<HTMLInputElement>('[data-accuracy-bulk-value]')?.value ?? '';
-    if (value === '') {
-      showToast('Informe o valor a aplicar.');
-      return;
-    }
-    saveSubjectAccuracyTargets(selected(), value);
-    return;
-  }
-  if ((event.target as HTMLElement).closest('[data-accuracy-restore-selected]'))
-    saveSubjectAccuracyTargets(selected(), '');
-});
-document.getElementById('subjectTargetEditor')?.addEventListener('change', event => {
-  if ((event.target as HTMLElement).matches('[data-accuracy-select-all]'))
-    (event.currentTarget as HTMLElement)
-      .querySelectorAll<HTMLInputElement>('[data-accuracy-select]')
-      .forEach(input => {
-        input.checked = (event.target as HTMLInputElement).checked;
-      });
-});
 function somarQuestoesDisciplinaNaSemana(subjectId: string) {
   return state.questoes
     .filter(q => entitySubjectId(q) === subjectId && isSameWeek(q.date))
     .reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
 }
 function renderMetasPorDisciplina() {
-  const sel = document.getElementById('novaMetaDisciplinaSelect') as HTMLSelectElement;
-  const current = sel.value;
-  sel.innerHTML =
-    activeSubjects()
-      .map(s => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`)
-      .join('') || `<option value="">Nenhuma disciplina cadastrada</option>`;
-  if (current) sel.value = current;
-
   const container = document.getElementById('metasPorDisciplinaContainer');
-  if (state.metasPorDisciplina.length === 0) {
-    container!.innerHTML = `<div class="upcoming-empty">Nenhuma meta por disciplina ainda. Escolha uma disciplina acima e adicione.</div>`;
-    return;
-  }
-  container!.innerHTML = state.metasPorDisciplina
-    .map(md => {
-      const subjectId = entitySubjectId(md);
-      const atingido = somarQuestoesDisciplinaNaSemana(subjectId);
-      const pct = md.meta > 0 ? Math.round((atingido / md.meta) * 100) : 0;
-      const pctDisplay = Math.min(pct, 100);
-      return `
-    <div class="meta-card">
-      <div class="meta-info">
-        <div class="meta-name">${escapeHtml(subjectId ? getSubjectName(subjectId) : '(sem disciplina)')}</div>
-        <div class="meta-formula">Questões resolvidas nesta semana</div>
-      </div>
-      <div class="meta-progress-block">
-        <div class="meta-progress-track">
-          <div class="meta-progress-fill ${pct >= 100 ? 'over' : ''}" style="width:${pctDisplay}%"></div>
-        </div>
-        <div class="meta-progress-label">
-          <span>${atingido} / ${md.meta}</span>
-          <span>${pct}% da meta</span>
-        </div>
-      </div>
-      <div class="meta-inputs">
-        Meta:
-        <input type="number" min="1" value="${md.meta}" data-delegated-blur="updateMetaDisciplina('${md.id}', this.value)">
-        <button class="icon-btn" data-delegated-click="deleteMetaDisciplina('${md.id}')" title="Remover meta" aria-label="Remover meta de questões">✕</button>
-      </div>
-    </div>`;
-    })
-    .join('');
+  if (!container) return;
+  const sel = document.getElementById('novaMetaDisciplinaSelect') as HTMLSelectElement | null;
+  getGoalsTabController().renderMetasPorDisciplina(container, sel);
 }
 function addMetaDisciplina() {
   const subjectId = (document.getElementById('novaMetaDisciplinaSelect') as HTMLSelectElement)
@@ -6482,76 +5340,27 @@ function computeWeeklyHistory(numWeeks: number) {
   return weeks;
 }
 function renderHistoricoMetas() {
-  const weeks = computeWeeklyHistory(8);
   const container = document.getElementById('historicoMetasContainer');
-  const badge = (ok: boolean, current: any) =>
-    current
-      ? `<span class="wk-current">em andamento</span>`
-      : ok
-        ? `<span class="wk-ok">✓ cumprida</span>`
-        : `<span class="wk-fail">✗ não cumprida</span>`;
-
-  container!.innerHTML = `
-    <div class="weekly-history-table-wrap">
-    <table class="weekly-history-table">
-      <thead>
-        <tr>
-          <th>Semana</th>
-          <th>Tópicos</th>
-          <th>Questões</th>
-          <th>Simulados</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${weeks
-          .map(
-            w => `
-          <tr>
-            <td>${formatDatePt(w.weekStart)} – ${formatDatePt(w.weekEnd)}</td>
-            <td>${w.topicsConcl}/${state.metas.semanal} ${badge(w.semanalOk, w.current)}</td>
-            <td>${w.questoesResolved}/${state.metas.questoesSemanal} ${badge(w.questoesOk, w.current)}</td>
-            <td>${w.simuladosCount}/${state.metas.simuladosSemanal} ${badge(w.simuladosOk, w.current)}</td>
-          </tr>
-        `
-          )
-          .join('')}
-      </tbody>
-    </table>
-    </div>
-  `;
+  if (!container) return;
+  getGoalsTabController().renderHistoricoMetas(container, computeWeeklyHistory(8));
 }
 
 function renderSelectedPeriodComparison() {
-  const container = document.getElementById('periodComparisonResults'),
-    preset = document.getElementById('periodComparisonPreset') as HTMLSelectElement;
+  const container = document.getElementById('periodComparisonResults');
+  const preset = document.getElementById('periodComparisonPreset') as HTMLSelectElement | null;
   if (!container || !preset) return;
-  const startWrap = document.getElementById('periodComparisonStartWrap'),
-    endWrap = document.getElementById('periodComparisonEndWrap'),
-    custom = preset.value === 'custom';
-  if (startWrap) startWrap.hidden = !custom;
-  if (endWrap) endWrap.hidden = !custom;
-  const start =
-      (document.getElementById('periodComparisonStart') as HTMLInputElement)?.value || null,
-    end = (document.getElementById('periodComparisonEnd') as HTMLInputElement)?.value || null;
-  if (custom && (!start || !end || start > end)) {
-    container.innerHTML =
-      '<p class="diagnosis-empty">Escolha um intervalo válido para comparar os períodos.</p>';
-    return;
-  }
-  const reviews = state.reviewAgenda.map(item => ({
-    ...item,
-    date: item.completedAt ? localDateFromTimestamp(item.completedAt) : item.date,
-  }));
-  const model = buildPeriodComparisonViewModel({
-    sessions: state.studySessions,
-    questions: state.questoes,
-    reviews,
-    today: todayISO(),
-    preset: preset.value,
-    start,
-    end,
-  });
-  container.innerHTML = renderPeriodComparisonDetail(model, { escapeHtml });
+  const startWrap = document.getElementById('periodComparisonStartWrap');
+  const endWrap = document.getElementById('periodComparisonEndWrap');
+  const startInput = document.getElementById('periodComparisonStart') as HTMLInputElement | null;
+  const endInput = document.getElementById('periodComparisonEnd') as HTMLInputElement | null;
+  getGoalsTabController().renderSelectedPeriodComparison(
+    container,
+    preset,
+    startInput,
+    endInput,
+    startWrap,
+    endWrap
+  );
 }
 
 /* ===== ESTIMATIVA DE RITMO ===== */
@@ -6559,28 +5368,21 @@ function computeRitmo() {
   const allT = activeTopics();
   const total = allT.length;
   const done = allT.filter(t => t.status === 'Concluído').length;
-  const remaining = total - done;
-
-  if (total === 0) return { status: 'sem-topicos' };
-  if (remaining <= 0) return { status: 'completo' };
-
   const cutoff = addDays(todayISO(), -13);
   const recentDone = uniqueTopicsCompletedBetween(cutoff, todayISO());
-  const ratePerDay = recentDone / 14;
-
-  if (ratePerDay <= 0) return { status: 'sem-dados', remaining };
-
-  const daysNeeded = Math.ceil(remaining / ratePerDay);
-  const finishDate = addDays(todayISO(), daysNeeded);
-  let comparativo = null,
-    daysToExam = null;
+  let daysToExam = null;
   if (state.examDate) {
     daysToExam = diasParaRevisao(state.examDate);
-    if (daysToExam !== null) {
-      comparativo = daysNeeded <= daysToExam ? 'no-prazo' : 'atrasado';
-    }
   }
-  return { status: 'ok', remaining, ratePerDay, daysNeeded, finishDate, comparativo, daysToExam };
+  return calculateCoverageRhythm({
+    totalTopics: total,
+    completedTopics: done,
+    recentCompletedTopicsCount: recentDone,
+    today: todayISO(),
+    examDate: state.examDate,
+    daysToExam,
+    addDays,
+  });
 }
 function renderRitmo() {
   const r = computeRitmo();
@@ -6609,10 +5411,10 @@ function renderRitmo() {
 
   let statusHtml = '';
   if (r.comparativo === 'no-prazo') {
-    const folga = r.daysToExam! - r.daysNeeded;
+    const folga = r.daysToExam! - r.daysNeeded!;
     statusHtml = `<div class="pace-status ok">🟢 No ritmo atual, você termina com ${folga} dia${folga === 1 ? '' : 's'} de folga antes da prova.</div>`;
   } else if (r.comparativo === 'atrasado') {
-    const atraso = r.daysNeeded - r.daysToExam!;
+    const atraso = r.daysNeeded! - r.daysToExam!;
     statusHtml = `<div class="pace-status warn">🔴 No ritmo atual, você terminaria ${atraso} dia${atraso === 1 ? '' : 's'} depois da prova. Considere acelerar ou rever o plano.</div>`;
   } else {
     statusHtml = `<div class="pace-status neutral">Defina a data da prova na Visão Geral pra comparar com o prazo.</div>`;
@@ -6628,64 +5430,42 @@ function renderRitmo() {
 }
 
 function revisoesAtrasadas() {
-  const today = todayISO();
   const isCurrent = (item: Record<string, any>) =>
     isActiveStudyReference(entitySubjectId(item), item.topicId || item.topicRef || null);
-  const doCalendario = state.calendar.filter(
-    c => c.date && c.date < today && c.status !== 'Concluído' && isCurrent(c)
-  ).length;
-  const daAgenda = state.reviewAgenda.filter(
-    a => a.date && a.date < today && a.status !== 'Concluído' && isCurrent(a)
-  ).length;
-  return doCalendario + daAgenda;
+  return calculateOverdueReviewsCount({
+    calendarItems: state.calendar,
+    reviewAgendaItems: state.reviewAgenda,
+    today: todayISO(),
+    isCurrentReference: isCurrent,
+  });
 }
 
 /* ===== TAXA DE ERRO / ÚLTIMA ATIVIDADE POR DISCIPLINA ===== */
 function taxaErroDisciplina(subjectId: string) {
-  let correct = 0,
-    total = 0;
-  state.questoes
-    .filter(q => entitySubjectId(q) === subjectId)
-    .forEach(q => {
-      total += Number(q.resolved) || 0;
-      correct += Number(q.correct) || 0;
-    });
-  state.simulados.forEach(sim => {
-    (sim.breakdown || [])
-      .filter(b => entitySubjectId(b) === subjectId)
-      .forEach(b => {
-        total += Number(b.total) || 0;
-        correct += Number(b.correct) || 0;
-      });
-  });
-  if (total === 0) return 0;
-  return Math.round((1 - correct / total) * 1000) / 10;
+  return calculateSubjectErrorRate(subjectId, state.questoes, state.simulados, entitySubjectId);
 }
 function ultimaAtividadeDisciplina(subjectId: string) {
-  let last: any = null;
-  const bump = (d: any) => {
-    if (d && (!last || d > last)) last = d;
-  };
-  topicHistoryService
-    .list({ subjectId, includeLifecycle: false })
-    .forEach(event => bump(eventLocalDate(event)));
-  state.questoes.filter(q => entitySubjectId(q) === subjectId).forEach(q => bump(q.date));
-  state.calendar
-    .filter(c => entitySubjectId(c) === subjectId && c.status === 'Concluído')
-    .forEach(c => bump(c.date));
-  state.reviewAgenda
-    .filter(a => entitySubjectId(a) === subjectId && a.status === 'Concluído')
-    .forEach(a => bump(a.date));
-  state.studySessions
-    .filter(session => entitySubjectId(session) === subjectId)
-    .forEach(session => bump(session.date));
-  return last;
+  return findSubjectLatestActivityDate({
+    subjectId,
+    topicHistoryDates: topicHistoryService
+      .list({ subjectId, includeLifecycle: false })
+      .map(event => eventLocalDate(event)),
+    questionDates: state.questoes
+      .filter(q => entitySubjectId(q) === subjectId)
+      .map(q => q.date),
+    calendarDates: state.calendar
+      .filter(c => entitySubjectId(c) === subjectId && c.status === 'Concluído')
+      .map(c => c.date),
+    reviewDates: state.reviewAgenda
+      .filter(a => entitySubjectId(a) === subjectId && a.status === 'Concluído')
+      .map(a => a.date),
+    sessionDates: state.studySessions
+      .filter(session => entitySubjectId(session) === subjectId)
+      .map(session => session.date),
+  });
 }
 function diasSemEstudarDisciplina(subjectId: string) {
-  const last = ultimaAtividadeDisciplina(subjectId);
-  if (!last) return 0;
-  const d = diasParaRevisao(last);
-  return d !== null ? Math.max(0, -d) : 21;
+  return calculateDaysSinceSubjectStudy(ultimaAtividadeDisciplina(subjectId), diasParaRevisao);
 }
 
 /* ===== PRIORIDADE INTELIGENTE DE ESTUDOS (Score 0-100) ===== */
@@ -6906,16 +5686,6 @@ function formatHoras(decimalHoras: number) {
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
   return m > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${h}h`;
-}
-function formatDuration(seconds: number) {
-  // Under a minute, show seconds so a short session never reads as "0min".
-  if (Number(seconds) > 0 && Number(seconds) < 60)
-    return Math.max(1, Math.floor(Number(seconds))) + ' s';
-  const minutes = Math.floor((Number(seconds) || 0) / 60);
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hours <= 0) return `${mins}min`;
-  return mins === 0 ? `${hours}h` : `${hours}h${String(mins).padStart(2, '0')}`;
 }
 function totalStudySeconds(filterFn: (session: any) => boolean) {
   const fn = filterFn || (() => true);
@@ -7305,86 +6075,80 @@ function computeAlertasInteligentes() {
   });
 }
 
+const dismissedRecommendationIds = new Set<string>();
+let currentStudyRecommendations: any[] = [];
+let currentConsolidatedDiagnosis: any = null;
+
+const diagnosticsTabController = createDiagnosticsTabController({
+  document,
+  getState: () => state,
+  scheduleSave,
+  todayISO,
+  addDays,
+  startOfWeek,
+  formatPlanMinutes,
+  escapeHtml,
+  escapeAttr,
+  pluralize,
+  diasParaRevisao,
+  computeAlertasInteligentes,
+  computeApprovalMetrics,
+  readinessResult,
+  computeRitmo,
+  computeStudyPriorities,
+  motivoPrioridade,
+  examScopedTopics,
+  examScopedSubjects,
+  uniqueTopicsCompletedBetween,
+  buildExecutiveSummary,
+  renderExecutiveSummaryView,
+  reconcileAlerts,
+  renderIntelligentAlerts,
+  dismissAlert,
+  refreshStudyRecommendationItems,
+  examEvidenceContext,
+  getStudyPlanPreview: () => studyPlanPreview,
+  currentAchievementProjection,
+  buildDiagnosisPageModel,
+  renderDiagnosisCenterView,
+  renderRecoveryReviewDebt,
+  analyzeFocusAndEnergy,
+  analysisContextBanner,
+  renderNextBestAction,
+  getDailyPriority: (action: any) => dailyExecutionController.build(action)?.priority,
+  renderPreparationSignals,
+  buildDecisionCoherenceReport,
+  renderDecisionCoherenceDebug,
+  buildStudyAction,
+  recommendationActionLabel,
+  getCurrentStudyRecommendations: () => currentStudyRecommendations,
+  setCurrentConsolidatedDiagnosis: diag => {
+    currentConsolidatedDiagnosis = diag;
+  },
+  latestStudyPlan,
+  weeklyStrategyCapacity,
+  locationSearch: () => location.search,
+});
+
 function renderAlertasInteligentes() {
-  const container = document.getElementById('alertasInteligentesList');
-  const overview = document.getElementById('overviewAttention');
-  if (!container && !overview) return;
-  const reconciliation = reconcileAlerts(
-    computeAlertasInteligentes(),
-    state.alertStates,
-    todayISO()
-  );
-  if (JSON.stringify(reconciliation.states) !== JSON.stringify(state.alertStates)) {
-    state.alertStates = reconciliation.states;
-    scheduleSave();
-  }
-  const alertas = reconciliation.visible;
-  const presentation = renderIntelligentAlerts({
-    alerts: alertas,
-    additional: reconciliation.additional,
-    currentAction: currentStudyRecommendations[0],
-    escapeHtml,
-    escapeAttr,
-  });
-  if (container) container.innerHTML = presentation.list;
-  if (overview) overview.innerHTML = presentation.overview;
+  diagnosticsTabController.renderAlertasInteligentes();
 }
 function dismissIntelligentAlert(id: string) {
-  state.alertStates = dismissAlert(state.alertStates, id, todayISO(), addDays, 7);
-  scheduleSave();
-  renderAlertasInteligentes();
+  diagnosticsTabController.dismissIntelligentAlert(id);
 }
 
 function renderExecutiveSummary() {
-  const container = document.getElementById('executiveSummary');
-  if (!container) return;
-  const metrics = computeApprovalMetrics(),
-    readiness = readinessResult(metrics),
-    pace = computeRitmo(),
-    priorities = computeStudyPriorities();
-  const topPriority = priorities[0]
-    ? { ...priorities[0], reason: motivoPrioridade(priorities[0]) }
-    : null;
-  const risks = computeAlertasInteligentes();
-  const configuredTopics = examScopedTopics().filter(
-    topic =>
-      (topic.examImportance !== null || Object.keys(topic.examImportanceEstimates || {}).length) &&
-      topic.estimatedStudyMinutes !== null
-  );
-  const opportunityCount = configuredTopics.filter(topic =>
-    priorities.some(priority => priority.topicId === topic.id)
-  ).length;
-  const weekStart = startOfWeek(todayISO()),
-    weeklyGoal = {
-      achieved: uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6)),
-      target: state.metas.semanal,
-    };
-  const summary = buildExecutiveSummary({
-    readiness,
-    daysToExam: state.examDate ? (diasParaRevisao(state.examDate) ?? null) : null,
-    pace,
-    topPriority,
-    riskCount: risks.length,
-    weeklyGoal,
-    opportunityCount,
-  });
-  container.innerHTML = renderExecutiveSummaryView({
-    summary,
-    formatMinutes: formatPlanMinutes,
-    escapeHtml,
-  });
+  diagnosticsTabController.renderExecutiveSummary();
 }
 
-const dismissedRecommendationIds = new Set<string>();
-let currentStudyRecommendations: any[] = [];
 // One render pass asks for the candidates in ~28 places; computing them once per pass saves
 // seconds on long histories. Outside a render every call recomputes, so edits are never stale.
-let renderDepth = 0,
-  renderCandidates: any = null;
+let masterRenderer: ReturnType<typeof createMasterRenderer>;
+let renderCandidates: any = null;
 function intelligenceCandidates() {
   if (renderCandidates) return renderCandidates;
   const candidates = computeIntelligenceCandidates();
-  if (renderDepth > 0) renderCandidates = candidates;
+  if (masterRenderer?.isRendering()) renderCandidates = candidates;
   return candidates;
 }
 function computeIntelligenceCandidates() {
@@ -7417,80 +6181,8 @@ function computeIntelligenceCandidates() {
     examQuestions: state.examQuestions,
   }).map(item => ({ ...item, accuracyTarget: subjectAccuracyTarget(item.subjectId) }));
 }
-let currentConsolidatedDiagnosis: any = null;
 function renderDiagnosisCenter() {
-  const container = document.getElementById('diagnosisCenter');
-  if (!container) return;
-  const { candidates } = refreshStudyRecommendationItems(),
-    scoped = examEvidenceContext();
-  const opportunityCosts =
-    studyPlanPreview?.adaptiveAdvice?.state === 'proposal' &&
-    !studyPlanPreview.adaptiveAdvice.applied
-      ? [studyPlanPreview.adaptiveAdvice]
-      : [];
-  const projection = currentAchievementProjection(undefined, undefined, candidates).model;
-  const { diagnosis, consolidated, preparationSignals, nextAction, debt } = buildDiagnosisPageModel(
-    {
-      candidates,
-      subjects: examScopedSubjects(),
-      scope: scoped,
-      blueprint: state.examBlueprint,
-      globalTarget: state.metas.metaAprovacao,
-      today: todayISO(),
-      activeExamTags: state.examBlueprint.activeExamTags || [],
-      recommendations: currentStudyRecommendations,
-      opportunityCosts,
-      activePlan: latestStudyPlan(),
-      weeklyCapacityMinutes: weeklyStrategyCapacity(),
-      hoursByDay: state.metas.horasPorDia || {},
-      projection,
-    }
-  );
-  currentConsolidatedDiagnosis = consolidated;
-  const diagnosisHtml = renderDiagnosisCenterView({
-    model: diagnosis,
-    studyActionForItem: (item: Record<string, any>) => {
-      const recommendation = currentStudyRecommendations.find(
-          candidate => candidate.subjectId === item.subjectId && candidate.topicId === item.topicId
-        ),
-        action = buildStudyAction(recommendation, { source: 'diagnosis' });
-      return action ? { ...action, label: recommendationActionLabel(action) } : null;
-    },
-    escapeHtml,
-    escapeAttr,
-  });
-  const secondaryHtml = renderRecoveryReviewDebt(
-    { recoveries: preparationSignals.rows.filter(item => item.type === 'recovery'), debt },
-    { escapeHtml }
-  );
-  const energyAnalysis = analyzeFocusAndEnergy(state.studySessions || []);
-  let energyAlertHtml = '';
-  if (energyAnalysis.fatigueAlert) {
-    energyAlertHtml = `<div class="banner banner--warning" style="margin-top: 1rem; border-left: 4px solid #f59e0b; padding: 0.75rem 1rem; background: var(--bg-surface-elevated, #fff); border-radius: 6px;">
-      <strong>⚠️ Alerta Cronobiológico:</strong> ${escapeHtml(energyAnalysis.fatigueAlert)}
-    </div>`;
-  }
-  container.innerHTML =
-    analysisContextBanner('hoje') +
-    renderNextBestAction(nextAction, {
-      escapeHtml,
-      escapeAttr,
-      dailyPriority: dailyExecutionController.build(nextAction).priority,
-    }) +
-    energyAlertHtml +
-    diagnosisHtml +
-    `<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${pluralize(debt.count, 'vencida')}</summary>${secondaryHtml}</details>`;
-  container.innerHTML += `<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
-  if (new URLSearchParams(location.search).get('debug') === 'decisions')
-    container.innerHTML += renderDecisionCoherenceDebug(
-      buildDecisionCoherenceReport({
-        trajectory: projection,
-        nextBestAction: nextAction,
-        examIntelligence: candidates,
-        adaptivePlan: latestStudyPlan(),
-      }),
-      { escapeHtml }
-    );
+  diagnosticsTabController.renderDiagnosisCenter();
 }
 createDiagnosisController({
   document,
@@ -8201,13 +6893,6 @@ function renderWeeklyReplan() {
 
 /* ===== PLANO DE HOJE ===== */
 
-function formatPlanMinutes(minutes: number | null) {
-  const value = Math.max(0, Math.round(Number(minutes) || 0));
-  if (value < 60) return value + 'min';
-  const hours = Math.floor(value / 60);
-  const rest = value % 60;
-  return hours + 'h' + (rest ? String(rest).padStart(2, '0') : '');
-}
 function buildDailyStudyPlan(priorities: any[], availableMinutes: number) {
   let remaining = Math.max(0, Math.round(Number(availableMinutes) || 0));
   const items = [];
@@ -8822,235 +7507,69 @@ function renderMetasHoje() {
 }
 
 /* ===== DASHBOARD DE APROVAÇÃO ===== */
-function clampScore(value: any) {
-  return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-}
-function average(values: number[]) {
-  return values.length ? values.reduce((sum: any, n: any) => sum + n, 0) / values.length : 0;
-}
-
 function approvalSimuladosMetric() {
   const completed = examScopedSimulations()
     .filter(sim => simuladoEffectiveCounts(sim).total > 0)
     .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
-    .slice(-5);
-  if (completed.length === 0)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'Sem simulados concluídos',
-    };
-  let weighted = 0,
-    weights = 0,
-    totalQuestions = 0;
-  completed.forEach((sim, index) => {
-    const weight = index + 1;
-    weighted += simuladoNota(sim) * weight;
-    weights += weight;
-    totalQuestions += simuladoEffectiveCounts(sim).total;
-  });
-  const raw = weighted / weights;
-  const confidence = Math.min(1, (completed.length / 4) * 0.7 + (totalQuestions / 300) * 0.3);
-  return {
-    score: clampScore(50 + (raw - 50) * confidence),
-    confidence,
-    available: true,
-    raw,
-    detail: `${completed.length} simulado${completed.length === 1 ? '' : 's'} · média recente ${Math.round(raw)}%`,
-  };
+    .map(sim => ({
+      nota: simuladoNota(sim),
+      totalQuestions: simuladoEffectiveCounts(sim).total,
+    }));
+  return calculateApprovalSimuladosMetric(completed);
 }
 
 function approvalAcertosMetric() {
-  const questions = examEvidenceContext().questions.included,
-    total = questions.reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
-  const correct = questions.reduce((sum, q) => sum + (Number(q.correct) || 0), 0);
-  if (total === 0)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'Sem questões registradas',
-    };
-  const raw = (correct / total) * 100;
-  const confidence = Math.min(1, total / 300);
-  return {
-    score: clampScore(50 + (raw - 50) * confidence),
-    confidence,
-    available: true,
-    raw,
-    detail: `${total} questões · acerto bruto ${Math.round(raw)}%`,
-  };
+  return calculateApprovalAcertosMetric(examEvidenceContext().questions.included);
 }
 
 function approvalEditalMetric() {
   const topics = examScopedTopics();
-  if (topics.length === 0)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'Sem tópicos cadastrados',
-    };
   const concluded = topics.filter(t => t.status === 'Concluído').length;
-  const raw = (concluded / topics.length) * 100;
   const subjectsWithTopics = activeSubjects().filter(s => s.topics.some(t => !t.archived)).length;
-  const confidence = Math.min(1, (topics.length / 40) * 0.55 + (subjectsWithTopics / 5) * 0.45);
-  return {
-    score: clampScore(50 + (raw - 50) * confidence),
-    confidence,
-    available: true,
-    raw,
-    detail: `${concluded} de ${topics.length} tópicos concluídos`,
-  };
+  return calculateApprovalEditalMetric({
+    totalTopicsCount: topics.length,
+    concludedTopicsCount: concluded,
+    subjectsWithTopicsCount: subjectsWithTopics,
+  });
 }
 
 function approvalDominioMetric() {
   const topics = examScopedTopics();
-  if (topics.length === 0)
-    return { score: 50, confidence: 0, available: false, raw: null, detail: 'Sem tópicos ativos' };
   const values = topics.map(topic => topicMasteryIndex(topic.subjectId, topic.id));
-  const evidenced = values.filter(item => item.confidence > 0);
-  if (evidenced.length === 0)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'Ainda não há evidências de domínio',
-    };
-  const weightTotal = evidenced.reduce((sum, item) => sum + Math.max(0.15, item.confidence), 0);
-  const raw =
-    evidenced.reduce((sum, item) => sum + item.score * Math.max(0.15, item.confidence), 0) /
-    weightTotal;
-  const coverage = evidenced.length / topics.length;
-  const evidence = evidenced.reduce((sum, item) => sum + item.confidence, 0) / evidenced.length;
-  const confidence = Math.min(1, coverage * 0.55 + evidence * 0.45);
-  return {
-    score: clampScore(50 + (raw - 50) * confidence),
-    confidence,
-    available: true,
-    raw,
-    detail: Math.round(raw) + '/100 em ' + evidenced.length + ' de ' + topics.length + ' tópicos',
-  };
+  return calculateApprovalDominioMetric({
+    topicMasteries: values,
+    totalTopicsCount: topics.length,
+  });
 }
 
 function approvalRevisoesMetric() {
   const today = todayISO();
   const due = examScopedRecords(getRevisoesUnificadas()).filter(r => r.date && r.date <= today);
-  if (due.length === 0)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'Sem revisões vencidas até hoje',
-    };
-  const completed = due.filter(r => r.status === 'Concluído').length;
-  const pending = due.filter(r => r.status !== 'Concluído');
-  const severity = pending.reduce((sum, r) => {
-    const daysLate = Math.max(0, -(diasParaRevisao(r.date) || 0));
-    return sum + Math.min(1, daysLate / 14);
-  }, 0);
-  const raw = Math.max(0, (completed / due.length) * 100 - (severity / due.length) * 20);
-  const confidence = Math.min(1, due.length / 10);
-  const evidence = Math.max(0.4, confidence);
-  return {
-    score: clampScore(50 + (raw - 50) * evidence),
-    confidence,
-    available: true,
-    raw,
-    detail: `${completed} de ${due.length} revisões em dia`,
-  };
+  const items = due.map(r => ({
+    status: r.status,
+    daysLate: Math.max(0, -(diasParaRevisao(r.date) || 0)),
+  }));
+  return calculateApprovalRevisoesMetric(items);
 }
 
 function approvalTendenciaMetric() {
   const simulations = examScopedSimulations()
     .filter(sim => simuladoEffectiveCounts(sim).total > 0)
-    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-  if (simulations.length < 2)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'São necessários pelo menos 2 simulados',
-    };
-  const windowSize = Math.min(3, Math.floor(simulations.length / 2));
-  const previous = simulations.slice(-(windowSize * 2), -windowSize).map(simuladoNota);
-  const recent = simulations.slice(-windowSize).map(simuladoNota);
-  const variation = average(recent) - average(previous);
-  const raw = clampScore(50 + variation * 2);
-  const confidence = Math.min(1, (simulations.length - 1) / 5);
-  return {
-    score: clampScore(50 + (raw - 50) * confidence),
-    confidence,
-    available: true,
-    raw,
-    detail: `Variação recente ${variation >= 0 ? '+' : ''}${Math.round(variation * 10) / 10} p.p.`,
-  };
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+    .map(simuladoNota);
+  return calculateApprovalTendenciaMetric(simulations);
 }
 
 function approvalPrazoMetric() {
-  const ritmo = computeRitmo();
-  if (!state.examDate)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'Data da prova não definida',
-    };
-  if (ritmo.status === 'completo')
-    return {
-      score: 100,
-      confidence: 1,
-      available: true,
-      raw: 100,
-      detail: 'Cobertura cadastrada concluída',
-    };
-  if (ritmo.status !== 'ok' || !ritmo.comparativo)
-    return {
-      score: 50,
-      confidence: 0.2,
-      available: false,
-      raw: null,
-      detail: 'Ritmo recente insuficiente para estimar',
-    };
-  if (ritmo.comparativo === 'no-prazo') {
-    const slack = ritmo.daysToExam! - ritmo.daysNeeded;
-    const raw = clampScore(70 + Math.min(30, Math.max(0, slack)));
-    return {
-      score: raw,
-      confidence: 1,
-      available: true,
-      raw,
-      detail: `Previsão com ${slack} dia${slack === 1 ? '' : 's'} de folga`,
-    };
-  }
-  const delay = ritmo.daysNeeded - ritmo.daysToExam!;
-  const raw = clampScore(60 - Math.min(60, Math.max(0, delay) * 2));
-  return {
-    score: raw,
-    confidence: 1,
-    available: true,
-    raw,
-    detail: `Previsão ${delay} dia${delay === 1 ? '' : 's'} após a prova`,
-  };
+  return calculateApprovalPrazoMetric({
+    ritmo: computeRitmo(),
+    hasExamDate: Boolean(state.examDate),
+  });
 }
 
 function readinessFactors(metrics: Record<string, any>) {
   const m = metrics || computeApprovalMetrics();
-  return {
-    coverage: m.edital,
-    mastery: m.dominio,
-    retention: m.retencao,
-    consistency: m.consistencia,
-    simulations: m.simulados,
-  };
+  return extractReadinessFactors(m as any);
 }
 function readinessResult(metrics: Record<string, any>) {
   return calculateReadinessScore(readinessFactors(metrics), READINESS_WEIGHTS);
@@ -9316,55 +7835,15 @@ function topicReviewHealthScore(
 }
 
 function approvalRetencaoMetric() {
-  const topics = examScopedTopics(),
-    values = topics.map(t => topicRetentionScore(t.subjectId, t.id)).filter(x => x.available);
-  if (!values.length)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'Sem evidências de retenção por tópico',
-    };
-  const weight = values.reduce((n, x) => n + Math.max(0.15, x.confidence), 0),
-    raw = values.reduce((n, x) => n + x.score * Math.max(0.15, x.confidence), 0) / weight;
-  const confidence = Math.min(
-    1,
-    (values.reduce((n, x) => n + x.confidence, 0) / values.length) * 0.65 +
-      (values.length / topics.length) * 0.35
-  );
-  return {
-    score: clampScore(50 + (raw - 50) * Math.max(0.35, confidence)),
-    confidence,
-    available: true,
-    raw,
-    detail: Math.round(raw) + '% em ' + values.length + ' de ' + topics.length + ' tópicos',
-  };
+  const topics = examScopedTopics();
+  const values = topics.map(t => topicRetentionScore(t.subjectId, t.id));
+  return calculateApprovalRetencaoMetric({
+    topicRetentions: values,
+    totalTopicsCount: topics.length,
+  });
 }
 function approvalConhecimentoMetric(base: Record<string, any>) {
-  const parts = [];
-  if (base.dominio.available)
-    parts.push({ v: base.dominio.raw ?? base.dominio.score, c: base.dominio.confidence, w: 0.65 });
-  if (base.edital.available)
-    parts.push({ v: base.edital.raw ?? base.edital.score, c: base.edital.confidence, w: 0.35 });
-  if (!parts.length)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'Sem evidências suficientes de conhecimento',
-    };
-  const w = parts.reduce((n, x) => n + x.w, 0),
-    raw = parts.reduce((n, x) => n + x.v * x.w, 0) / w,
-    confidence = parts.reduce((n, x) => n + x.c * x.w, 0) / w;
-  return {
-    score: clampScore(50 + (raw - 50) * Math.max(0.25, confidence)),
-    confidence,
-    available: true,
-    raw,
-    detail: 'Domínio dos tópicos (65%) + cobertura do edital (35%)',
-  };
+  return calculateApprovalConhecimentoMetric(base as any);
 }
 function approvalConsistenciaMetric() {
   const today = todayISO(),
@@ -9375,24 +7854,7 @@ function approvalConsistenciaMetric() {
     days.push({ targetSeconds: metaHoursForDate(date) * 3600, studiedSeconds: byDate[date] || 0 });
   }
   const result = calculateGoalConsistency(days);
-  if (!result.applicable)
-    return {
-      score: 50,
-      confidence: 0,
-      available: false,
-      raw: null,
-      detail: 'Defina metas de horas para medir consistência',
-    };
-  const raw = result.value,
-    confidence = Math.min(1, result.studiedDays / 14);
-  return {
-    score: clampScore(50 + (raw! - 50) * Math.max(0.2, confidence)),
-    confidence,
-    available: result.available,
-    raw,
-    detail:
-      result.achieved + ' de ' + result.applicable + ' metas diárias atingidas nos últimos 28 dias',
-  };
+  return calculateApprovalConsistenciaMetric({ consistencyResult: result });
 }
 function computeApprovalMetrics() {
   const base = {
@@ -9412,141 +7874,60 @@ function computeApprovalMetrics() {
     consistencia: approvalConsistenciaMetric(),
   };
 }
-function classificacaoAprovacao(score: number) {
-  if (score >= 85) return { nivel: 'Excelente preparação', cor: 'ok', faixa: '85–100' };
-  if (score >= 70) return { nivel: 'Preparação avançada', cor: 'ok', faixa: '70–84' };
-  if (score >= 50) return { nivel: 'Em desenvolvimento', cor: 'warn', faixa: '50–69' };
-  return { nivel: 'Preparação inicial', cor: 'danger', faixa: '0–49' };
-}
+const approvalTabController = createApprovalTabController({
+  document,
+  getState: () => state,
+  todayISO,
+  nowISO,
+  uid,
+  escapeHtml,
+  escapeAttr,
+  formatDatePt,
+  formatPlanMinutes,
+  scheduleSave,
+  computeApprovalMetrics,
+  readinessResult,
+  classifyApprovalScore,
+  projectPerformance,
+  examScopedSimulations,
+  simuladoEffectiveCounts,
+  entitySubjectId,
+  currentAchievementProjection,
+  intelligenceCandidates,
+  activeTopics,
+  activeSubjects,
+  allTopics,
+  renderCollectionFooter,
+  renderReadinessOverview,
+  renderReadinessHistory,
+  renderTopicRetentionDashboardView,
+  captureProjection,
+  captureAchievementProjection,
+  buildProjectionCalibration,
+  getMetricDataState,
+  metricStateLabel,
+  gerarDiagnosticoAprovacao,
+  buildRecommendationCalibration,
+  renderRecommendationCalibrationModel,
+  buildRecommendationOutcomeAudit,
+  renderRecommendationOutcomeAudit,
+  buildRecommendationFollowup,
+  renderRecommendationFollowup,
+  summarizeRecommendationHistory,
+  renderRecommendationHistory,
+  topicRetentionScore,
+  topicReviewHealthScore,
+  topicMasteryIndex,
+  onRenderStudyTrack32Insights: () => renderStudyTrack32Insights(),
+  getRetentionView: () => retentionView,
+  isRetentionShowAll: () => retentionShowAll,
+});
+
 function renderApprovalDashboard() {
-  const el = document.getElementById('approvalDashboard');
-  if (!el) return;
-  const m = computeApprovalMetrics(),
-    readiness = readinessResult(m),
-    score = readiness.value ?? 0,
-    level = classificacaoAprovacao(score),
-    confidence = { value: readiness.confidence, nivel: readiness.confidenceLabel },
-    projection = projectPerformance();
-  const projectionInputs = examScopedSimulations().map(item => ({
-    ...item,
-    ...simuladoEffectiveCounts(item),
-    breakdown: (item.breakdown || []).map(row => ({ ...row, subjectId: entitySubjectId(row) })),
-  }));
-  if (
-    captureProjection({
-      snapshots: state.projectionSnapshots,
-      model: projection.calibration,
-      simulations: projectionInputs,
-      date: todayISO(),
-      issuedAt: nowISO(),
-      id: uid('projection'),
-      activeExamTags: state.examBlueprint.activeExamTags || [],
-    })
-  )
-    scheduleSave();
-  const achievement = currentAchievementProjection(m, readiness);
-  if (
-    captureAchievementProjection({
-      snapshots: state.projectionSnapshots,
-      ...achievement,
-      date: todayISO(),
-      issuedAt: nowISO(),
-      id: uid('achievement-projection'),
-      activeExamTags: state.examBlueprint.activeExamTags || [],
-    })
-  )
-    scheduleSave();
-  const projectionHistory = buildProjectionCalibration({
-    snapshots: state.projectionSnapshots,
-    simulations: projectionInputs,
-    activeExamTags: state.examBlueprint.activeExamTags || [],
-    today: todayISO(),
-  });
-  const factors = [
-    ['Cobertura · 30%', m.edital, 'coverage'],
-    ['Domínio · 25%', m.dominio, 'mastery'],
-    ['Retenção · 20%', m.retencao, 'retention'],
-    ['Consistência · 15%', m.consistencia, 'consistency'],
-    ['Simulados · 10%', m.simulados, 'simulations'],
-  ];
-  const approvalState =
-    readiness.state === 'empty'
-      ? 'empty'
-      : readiness.state === 'insufficient' || confidence.value < 0.35
-        ? 'insufficient'
-        : 'ready';
-  const approvalLabel =
-    approvalState === 'empty'
-      ? 'Aguardando dados'
-      : approvalState === 'insufficient'
-        ? 'Estimativa inicial'
-        : 'Estimativa calculada';
-  el.innerHTML = renderReadinessOverview(
-    {
-      m,
-      score,
-      level,
-      confidence,
-      projection,
-      projectionHistory,
-      factors,
-      approvalState,
-      approvalLabel,
-      diagnostics: gerarDiagnosticoAprovacao(m),
-      candidates: intelligenceCandidates(),
-    },
-    { escapeHtml, escapeAttr, getMetricDataState, metricStateLabel }
-  );
-  renderTopicRetentionDashboard();
-  const readinessHistory = document.getElementById('readinessHistoryDashboard');
-  if (readinessHistory)
-    readinessHistory.innerHTML = renderReadinessHistory(state.readinessSnapshots, {
-      formatDate: formatDatePt,
-      escapeHtml,
-      current: readiness,
-      today: todayISO(),
-      activeExamTags: state.examBlueprint?.activeExamTags || [],
-    });
-  renderRecommendationCalibration();
-  renderStudyTrack32Insights();
-}
-function renderRecommendationCalibration() {
-  const el = document.getElementById('recommendationCalibration');
-  if (!el) return;
-  const subjectNames = Object.fromEntries(state.subjects.map(item => [item.id, item.name])),
-    topicNames = Object.fromEntries(
-      state.subjects.flatMap(subject => (subject.topics || []).map(topic => [topic.id, topic.name]))
-    ),
-    model = buildRecommendationCalibration(state.recommendationFeedback, {
-      minimumSample: 5,
-      subjectNames,
-      topicNames,
-    });
-  el.innerHTML = renderRecommendationCalibrationModel(model, { escapeHtml });
-  const audit = document.getElementById('recommendationOutcomeAudit');
-  if (audit)
-    audit.innerHTML =
-      renderRecommendationOutcomeAudit(
-        buildRecommendationOutcomeAudit(state.recommendationFeedback),
-        { escapeHtml }
-      ) +
-      renderRecommendationFollowup(
-        buildRecommendationFollowup({
-          feedback: state.recommendationFeedback,
-          sessions: state.studySessions,
-          topics: allTopics(),
-          activeExamTags: state.examBlueprint.activeExamTags || [],
-          today: todayISO(),
-        })
-      );
-  renderRecommendationHistorySummary();
+  approvalTabController.renderApprovalDashboard();
 }
 function renderRecommendationHistorySummary() {
-  const history = document.getElementById('recommendationHistorySummary');
-  if (history)
-    history.innerHTML = renderRecommendationHistory(
-      summarizeRecommendationHistory(state.recommendationHistory, { today: todayISO() })
-    );
+  approvalTabController.renderRecommendationHistorySummary();
 }
 let priorityHistorySubject = '';
 function setPriorityHistorySubject(value: any) {
@@ -9857,43 +8238,7 @@ function saveWeeklyCloseSnapshot() {
   showToast('Fechamento semanal salvo como retrato deste período.');
 }
 function renderTopicRetentionDashboard() {
-  const el = document.getElementById('topicRetentionDashboard');
-  if (!el) return;
-  const baseRows = activeTopics().map(t => {
-    const r = topicRetentionScore(t.subjectId, t.id);
-    return { ...t, r, h: topicReviewHealthScore(t, topicMasteryIndex(t.subjectId, t.id), r) };
-  });
-  const confidenceMatch = (row: Record<string, any>) =>
-    retentionView.confidence === 'all' ||
-    row.r.confidenceLabel.toLowerCase() === retentionView.confidence;
-  const rows = baseRows
-    .filter(
-      row =>
-        (!retentionView.subjectId || row.subjectId === retentionView.subjectId) &&
-        confidenceMatch(row)
-    )
-    .sort((a, b) => {
-      const av = a.r.available ? (a.r as { value?: number }).value : null,
-        bv = b.r.available ? (b.r as { value?: number }).value : null;
-      if (av == null || bv == null)
-        return av == null && bv == null ? a.name.localeCompare(b.name) : av == null ? 1 : -1;
-      const score = retentionView.order === 'desc' ? bv - av : av - bv;
-      return (
-        score ||
-        a.r.confidence - b.r.confidence ||
-        a.subjectName.localeCompare(b.subjectName) ||
-        a.name.localeCompare(b.name)
-      );
-    });
-  el.innerHTML = renderTopicRetentionDashboardView({
-    rows,
-    subjects: activeSubjects(),
-    filters: retentionView,
-    showAll: retentionShowAll,
-    renderFooter: renderCollectionFooter,
-    escapeHtml,
-    escapeAttr,
-  });
+  approvalTabController.renderTopicRetentionDashboard();
 }
 
 function planStartDate() {
@@ -10049,7 +8394,7 @@ function renderKPIs() {
 }
 
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
-const DELEGATED_ACTION_HANDLERS = {
+const DELEGATED_ACTION_HANDLERS = composeDelegatedActionHandlers({
   openWeeklyAdherencePlanning: () => activateTab('metas'),
   openWeeklyClose,
   reviewPlanningCapacity: () => sustainabilityController.review(),
@@ -10199,7 +8544,7 @@ const DELEGATED_ACTION_HANDLERS = {
   updateExamSubject,
   saveExamSubjectConfig,
   cancelExamSubjectConfig,
-};
+});
 const delegatedArgument = createDelegatedArgumentResolver({
   getTodayDayOfWeek: () => parseLocalDate(todayISO())!.getDay(),
 });
@@ -10560,35 +8905,24 @@ applicationRenderer = createApplicationRenderer({
   afterRender: labelDynamicControls,
   onError: (error: unknown, name: string) => errorBoundary.report(error, name),
 });
+masterRenderer = createMasterRenderer({
+  applicationRenderer,
+  getActiveTabName: activeTabName,
+  renderStudyTrack32Insights,
+  errorBoundary,
+  scheduleSave,
+  onRenderFinish: () => {
+    renderCandidates = null;
+  },
+});
 function render(scope = 'all') {
-  renderDepth++;
-  try {
-    return renderScope(scope);
-  } finally {
-    if (--renderDepth === 0) renderCandidates = null;
-  }
-}
-function renderScope(scope: any) {
-  const result = applicationRenderer.render(scope);
-  if (
-    scope === 'all' ||
-    scope === 'dashboard' ||
-    scope === 'metas' ||
-    (scope === 'active' && ['dashboard', 'metas'].includes(activeTabName()))
-  )
-    try {
-      renderStudyTrack32Insights();
-    } catch (error) {
-      errorBoundary.report(error, 'análises estratégicas');
-    }
-  return result;
+  return masterRenderer.render(scope);
 }
 function persistAndRender() {
-  render('active');
-  scheduleSave();
+  masterRenderer.persistAndRender();
 }
 function renderAll() {
-  render();
+  return masterRenderer.renderAll();
 }
 watchDailyExecutionDate({ document, window, getToday: todayISO, onChange: () => render('active') });
 

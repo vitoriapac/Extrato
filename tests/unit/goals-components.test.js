@@ -96,3 +96,66 @@ test('createGoalsTabController — renderiza disponibilidade e plano de execuç�
   const execHtml = controller.renderPlanExecutionHtml();
   assert.match(execHtml, /Vista de Execução/);
 });
+
+test('createGoalsTabController — renderMetas e metas por disciplina montam HTML', () => {
+  const container = { innerHTML: '' };
+  const state = {
+    metas: { semanal: 5, aderenciaSemanal: 80 },
+    metasPorDisciplina: [{ id: 'md1', subjectId: 's1', meta: 20 }],
+    questoes: [],
+    simulados: [],
+    studySessions: [],
+  };
+
+  const controller = createGoalsTabController({
+    state,
+    parseLocalDate: () => ({ getDay: () => 1 }),
+    todayISO: () => '2026-10-28',
+    buildWeeklyAvailability: () => ({ totalMinutes: 600, activeDays: 5, averageHours: 2 }),
+    formatPlanMinutes: m => `${m}min`,
+    metaHoursToday: () => 2,
+    metaHoursForDate: () => 2,
+    addDays: (iso, days) => iso,
+    startOfWeek: iso => iso,
+    WEEKDAY_LABELS: ['Dom', 'Seg'],
+    buildResultGoalsViewModel: ({ goals }) => ({ target: goals.semanal }),
+    renderGoals: model => `<div class="metas-view">Meta ${model.target}</div>`,
+    activeSubjects: () => [{ id: 's1', name: 'Direito' }],
+    getSubjectName: () => 'Direito',
+    somarQuestoesDisciplinaNaSemana: () => 10,
+    buildPeriodComparisonViewModel: () => ({ ok: true }),
+    renderPeriodComparisonDetail: () => '<div class="comparison">Comparacao</div>',
+  });
+
+  controller.renderMetas(container, {
+    weeklyTopics: 2,
+    monthlyTopics: 8,
+    questions: 50,
+    simulations: 1,
+    accuracy: 80,
+    studyDays: 4,
+  });
+  assert.match(container.innerHTML, /Meta 5/);
+
+  controller.renderMetasPorDisciplina(container);
+  assert.match(container.innerHTML, /Direito/);
+  assert.match(container.innerHTML, /10 \/ 20/);
+  assert.match(container.innerHTML, /50% da meta/);
+
+  const weeks = [
+    {
+      weekStart: '2026-10-20',
+      weekEnd: '2026-10-26',
+      current: false,
+      topicsConcl: 5,
+      semanalOk: true,
+      questoesResolved: 100,
+      questoesOk: true,
+      simuladosCount: 1,
+      simuladosOk: true,
+    },
+  ];
+  controller.renderHistoricoMetas(container, weeks);
+  assert.match(container.innerHTML, /2026-10-20 – 2026-10-26/);
+  assert.match(container.innerHTML, /cumprida/);
+});
