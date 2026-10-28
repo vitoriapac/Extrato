@@ -185,9 +185,7 @@ Paleta de documento financeiro: um navy profundo e um dourado envelhecido sobre 
 - **Tinta** (`ink`) e **Tinta Suave** (`ink-soft`): texto principal e secundário.
 - **Destaque** (`highlight-bg`): fundo de `card--attention`.
 
-Tema escuro (`[data-theme="dark"]`, `styles/tokens.css`): navy `#0B1E38`, papel `#10161F`, card `#171F2E`, tinta `#E9E5D8`, ouro `#C89A3E`, semânticos clareados (verde `#4FAE81`, âmbar `#E0A94A`, vermelho `#E2897E`). Componentes usam apenas os aliases de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`, `--action-*`).
-
-Ação primária (`--action-primary-bg` / `--action-primary-text` / `--action-primary-hover`): navy com texto papel no claro; no escuro, ouro claro `#E8B94A` com texto navy `#0B1E38` (hover `#EFC463`), o mesmo par do assistente de primeiro uso, porque um botão navy some sobre card navy (1,1:1). Vale para `.btn`, `.month-nav-btn`, botões alternáveis pressionados e o seletor ativo de Desempenho. O navy continua sendo a superfície estrutural do extrato (cabeçalho, KPIs, aba ativa). Contorno de `.btn.ghost`: `--action-outline` (título no claro, `ink-soft` no escuro).
+Tema escuro (`[data-theme="dark"]`, `styles/tokens.css`): navy `#0B1E38`, papel `#10161F`, card `#171F2E`, tinta `#E9E5D8`, ouro `#C89A3E`, semânticos clareados (verde `#4FAE81`, âmbar `#E0A94A`, vermelho `#E2897E`). Componentes usam apenas os aliases de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`).
 
 ### Named Rules
 **A Regra do Ouro sobre Navy.** `gold-bright` aparece apenas sobre navy. Sobre papel, o dourado é `gold` e serve como linha ou foco, não como preenchimento.
