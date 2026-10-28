@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-205 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+206 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -173,6 +173,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/intelligence-integration.test.js | node | Aplicação | functional | — | contract, integration | none |
 | tests/unit/intelligent-alerts.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/list-components.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/load-persisted-state.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/multidimensional-radar.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/navigation-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/next-action-card.test.js | node | Aplicação | functional | — | contract | none |

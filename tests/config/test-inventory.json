@@ -4633,6 +4633,37 @@
       "removalDecision": "retain_pending_contract_review"
     },
     {
+      "file": "tests/unit/load-persisted-state.test.js",
+      "layer": "node",
+      "area": "Estado",
+      "areaBasis": "filename_hint",
+      "criticality": "critical",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/state/load-persisted-state.js",
+        "../../src/state/app-state-store.js"
+      ],
+      "staticTestDeclarations": 5,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
       "file": "tests/unit/multidimensional-radar.test.js",
       "layer": "node",
       "area": "Aplicação",
