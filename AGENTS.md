@@ -5,12 +5,26 @@ As instruções explícitas do usuário prevalecem sobre esta política. Consult
 ## Pilha Tecnológica e Diretrizes Inegociáveis de Engenharia
 
 - **Modularização Obrigatória (Zero Novas Funções no `app.ts`):** É terminantemente proibido adicionar novas funções ou concentrar regras de negócio em `src/app.ts`. O projeto deve ser totalmente modularizado: regras e cálculos puros pertencem a `src/domain/`, orquestrações e casos de uso a `src/application/`, componentes e interfaces reativas a `src/ui/`, e persistência a `src/storage/` ou `src/repositories/`. O arquivo `src/app.ts` atua unicamente como raiz de composição (*composition root*) e conexão de ciclo de vida, devendo ser progressivamente reduzido e desmembrado, nunca inflado.
+- **Fronteiras e Isolamento de Camadas:**
+  - `src/domain/`: puramente algorítmico e determinístico em TypeScript (`.ts`), sem dependências de DOM, Preact, `window`, IndexedDB ou storage.
+  - `src/application/`: orquestra casos de uso, fluxo de dados e persistência através de repositórios, sem manipular diretamente elementos de UI.
+  - `src/ui/`: consome view-models e controllers de aplicação; é proibido acessar storage/repositórios diretamente ou recalcular métricas/regras de negócio nos componentes.
 - **Tipagem Estática Obrigatória:** Todo código novo de domínio (`src/domain/`) e aplicação (`src/application/`) deve ser escrito em TypeScript (`.ts`) e validado com `npm run check:types`.
 - **Interface Declarativa e Tokens:** Novas interfaces devem ser componentes Preact 11 (`.tsx`), consumindo as primitivas compartilhadas (`src/ui/primitives/*.tsx`) e estilizadas via Tailwind CSS v4 integrado a `styles/tokens.css`. É vedado o uso de `innerHTML` ou strings HTML interpoladas.
+- **Design System, Dark Mode e Acessibilidade (WCAG AA):**
+  - Proibido o uso de cores ou valores hexadecimais soltos no JSX/CSS. Utilize estritamente os design tokens semânticos de `styles/tokens.css` via classes utilitárias (ex: `bg-surface-elevated`, `text-content-primary`), garantindo contraste adequado e suporte total aos temas Claro e Escuro.
+  - Todo elemento interativo ou campo de formulário deve conter identificação acessível (`aria-label`, texto visível ou `aria-labelledby`) e suporte à navegação por teclado.
 - **Estratégia de Testes Proporcional:**
   - **Regras de negócio e algoritmos:** Testes unitários no Node rodando com hook nativo (`npm run test:fast`). Meta: < 120s.
   - **Jornadas centrais de UI:** Testes E2E dirigidos no Playwright para fluxos críticos, sem inflar a matriz browser desnecessariamente.
   - **Execuções completas (`npm run test:full`):** Reservadas para releases e mudanças estruturais de esquema/persistência.
+
+## Integridade de Dados, Contratos e Fusos Horários
+
+- **Simulações Sem Efeitos Colaterais:** Modais de prévia, simuladores (*What-If*, *Modo Reta Final*), prévias de importação e diagnósticos operam em memória e jamais persistem ou alteram o estado real (`studyPlans`, histórico ou sessões) sem uma confirmação explícita do usuário.
+- **Imutabilidade Histórica:** Fechamentos semanais/mensais passados, backups e snapshots históricos consolidados são imutáveis; mudanças em metas ou algoritmos atuais não devem recalcular ou reescrever dados de períodos encerrados.
+- **Evolução Segura de Schema e Migrações:** Toda alteração no formato do estado exige migração sequencial pura e determinística em `src/state/migrations/` (ou `src/storage/`), acompanhada de testes unitários cobrindo a evolução a partir de schemas legados (v1 em diante).
+- **Tratamento Rigoroso de Datas (Dual Timezone UTC / SP):** É proibido utilizar `new Date().toISOString()` cru para lógica de calendário civil. Sempre utilize as utilidades centralizadas em `src/core/dates.ts` e `src/core/clock.ts`, separando instantes UTC de datas civis locais (`YYYY-MM-DD`) para garantir que os cálculos funcionem identicamente em `UTC` e `America/Sao_Paulo`.
 
 ## Durante a implementação
 
@@ -26,7 +40,8 @@ As instruções explícitas do usuário prevalecem sobre esta política. Consult
 
 - Execute `npm run test:fast` e os testes da área afetada. Use a seleção por impacto quando disponível, mas confira o conjunto escolhido.
 - Não considere uma seleção vazia ou arquivo desconhecido como autorização para pular testes.
-- Reproduza artefatos com `npm run build` quando necessário; não edite bundles, HTML versionado ou service worker gerados manualmente.
+- Ao criar novos arquivos de teste, classifique-os obrigatoriamente em `tests/config/test-tiers.json` e audite com `node scripts/check-test-tiers.mjs`.
+- Reproduza artefatos com `npm run build` quando necessário; não edite bundles (`src/app.bundle.js`, `report.bundle.js`, etc.), HTML versionado ou service worker gerados manualmente.
 - Relate quais comandos passaram, o tempo medido quando disponível e o que não foi executado. Um gate local não confirma o GitHub Actions.
 - Documentação apenas em Markdown pode ser validada com revisão de referências, sem testes da aplicação, salvo instrução do usuário.
 

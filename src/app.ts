@@ -1480,9 +1480,9 @@ function diasParaRevisaoPill(iso: string, status: string) {
   const dias = diasParaRevisao(iso);
   if (dias === null) return `<span class="dias-pill dias-futura">—</span>`;
   if (status === 'Concluído') {
-    return `<span class="dias-pill dias-proxima">✓ feita</span>`;
+    return `<span class="dias-pill dias-futura">—</span>`;
   }
-  if (dias < 0) return `<span class="dias-pill dias-atrasada">${dias}d · atrasada</span>`;
+  if (dias < 0) return `<span class="dias-pill dias-atrasada">${dias}d</span>`;
   if (dias === 0) return `<span class="dias-pill dias-hoje">hoje</span>`;
   if (dias <= 7) return `<span class="dias-pill dias-proxima">em ${dias}d</span>`;
   return `<span class="dias-pill dias-futura">em ${dias}d</span>`;
