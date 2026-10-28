@@ -187,15 +187,15 @@
   .status-badge--insufficient{background:var(--surface-insufficient);color:var(--status-insufficient)}
   .btn{
     font-family:'IBM Plex Mono',monospace;font-size:12px;
-    background:var(--navy);color:var(--on-navy);border:none;
+    background:var(--action-primary-bg);color:var(--action-primary-text);border:none;
     padding:9px 16px;border-radius:var(--radius);cursor:pointer;
     letter-spacing:0.03em;
   }
-  .btn:hover{background:var(--blue);}
-  .btn.ghost{background:transparent;color:var(--heading);border:1px solid var(--heading);}
-  .btn.ghost:hover{background:var(--navy);color:var(--on-navy);}
+  .btn:hover{background:var(--action-primary-hover);}
+  .btn.ghost{background:transparent;color:var(--heading);border:1px solid var(--action-outline);}
+  .btn.ghost:hover{background:var(--action-primary-bg);color:var(--action-primary-text);}
   .btn.danger{background:transparent;color:var(--red);border:1px solid var(--red);padding:6px 10px;font-size:11px;}
-  .btn.danger:hover{background:var(--red);color:white;}
+  .btn.danger:hover{background:var(--red);color:var(--action-danger-hover-text);}
   .btn.small{padding:6px 10px;font-size:11px;}
 
   /* ===== VISUAL SYSTEM ===== */
@@ -284,7 +284,7 @@
   .alerta-ok{background:var(--green-bg);color:var(--green);}
 
   /* ===== PLANO DE HOJE ===== */
-  .plano-hoje-card{border-top:3px solid var(--gold);}.today-title{margin:0 0 var(--space-4)}.today-plan-heading .study-plan-actions{display:flex;flex-wrap:wrap;gap:var(--space-2)}.study-plan-actions .btn.ghost[aria-pressed="true"]{background:var(--navy);color:var(--on-navy)}
+  .plano-hoje-card{border-top:3px solid var(--gold);}.today-title{margin:0 0 var(--space-4)}.today-plan-heading .study-plan-actions{display:flex;flex-wrap:wrap;gap:var(--space-2)}.study-plan-actions .btn.ghost[aria-pressed="true"]{background:var(--action-primary-bg);color:var(--action-primary-text)}
   .plano-item{padding:12px 0;border-bottom:1px solid var(--paper-line);}
   .plano-item:last-of-type{border-bottom:none;}
   .plano-item-head{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);}
@@ -772,10 +772,10 @@
     min-width:170px;text-align:center;text-transform:none;letter-spacing:normal;
   }
   .month-nav-btn{
-    background:var(--navy);color:var(--on-navy);border:none;border-radius:2px;
+    background:var(--action-primary-bg);color:var(--action-primary-text);border:none;border-radius:2px;
     padding:6px 12px;font-size:13px;cursor:pointer;
   }
-  .month-nav-btn:hover{background:var(--blue);}
+  .month-nav-btn:hover{background:var(--action-primary-hover);}
   .month-grid-wrap{overflow-x:auto;}
   .month-grid{
     display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;
@@ -2050,7 +2050,7 @@ body.pip-timer-window{margin:0;min-height:100vh;background:var(--paper);color:va
 .performance-page{display:grid;gap:var(--space-4);min-width:0}
 .performance-section-nav{display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:var(--space-2);scrollbar-width:thin}
 .performance-section-button{flex:none;border:1px solid var(--paper-line);background:var(--paper);color:var(--ink);padding:9px 13px;font:inherit;cursor:pointer}
-.performance-section-button.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.performance-section-button.active{background:var(--action-primary-bg);border-color:var(--action-primary-bg);color:var(--action-primary-text)}
 .performance-section-button:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
 .performance-toolbar{display:flex;align-items:end;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-3);background:var(--paper);border:1px solid var(--paper-line)}
 .performance-page>.performance-toolbar{background:var(--surface-card);border-color:var(--border-default);padding:var(--space-4);gap:var(--space-4)}

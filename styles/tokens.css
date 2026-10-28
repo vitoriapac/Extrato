@@ -21,6 +21,7 @@
   --surface-page:var(--paper);--surface-card:var(--white);--surface-card-muted:var(--slate-bg);--surface-raised:var(--white);--surface-subtle:var(--slate-bg);--surface-highlight:var(--highlight-bg);--surface-primary:var(--navy);--surface-interactive:var(--tab-hover-bg);--surface-insufficient:var(--slate-bg);
   --text-primary:var(--ink);--text-secondary:var(--ink-soft);--text-muted:var(--ink-soft);--text-inverse:var(--on-navy);--text-on-primary:var(--on-navy);--border-default:var(--paper-line);--border-subtle:var(--paper-line);--border-emphasis:var(--gold);
   --accent-primary:var(--blue);--accent-warning:var(--amber);
+  --action-primary-bg:var(--navy);--action-primary-text:var(--on-navy);--action-primary-hover:var(--blue);--action-outline:var(--heading);--action-danger-hover-text:#FFFDF9;
   --status-positive:var(--green);--status-warning:var(--amber);--status-negative:var(--red);--status-info:var(--blue);--status-insufficient:var(--ink-soft);
   --wizard-bg:#FFFDF9;--wizard-surface:#FFFEFB;--wizard-surface-muted:#EEE9DE;
   --wizard-border:#B9B19F;--wizard-text:#0B2545;--wizard-text-muted:#475569;
@@ -40,6 +41,8 @@
   --alerta-baixa-bg:#332B14;--alerta-baixa-text:#D9BE6B;--heat-1:#4A4020;
   --info-bg:#1E2E4A;--green-bright:#6FCB9F;--zebra-bg:#161D2A;
   --month-outside-bg:#0C1119;--month-outside-text:#9CA6B6;--shadow-color:rgba(0,0,0,.55);
+  /* Navy fill vanishes on navy cards (1.1:1): actions take the gold the wizard already uses. */
+  --action-primary-bg:#E8B94A;--action-primary-text:#0B1E38;--action-primary-hover:#EFC463;--action-outline:var(--ink-soft);--action-danger-hover-text:#0B1E38;
   --wizard-bg:#171F2E;--wizard-surface:#121A27;--wizard-surface-muted:#222D3E;
   --wizard-border:#526077;--wizard-text:#F2ECDD;--wizard-text-muted:#B5BFCE;
   --wizard-accent:#E8B94A;--wizard-primary:#E8B94A;--wizard-primary-text:#0B1E38;
