@@ -39,6 +39,7 @@ import { analyzeFocusAndEnergy } from './domain/analytics/focus-energy-analytics
 import { createErrorNotebookController } from './ui/controllers/error-notebook-controller.js';
 import { resolveEntitlements } from './domain/billing/entitlements.js';
 import { createCloudSaaSProvider } from './storage/cloud-saas-provider.js';
+import { loadPersistedState } from './state/load-persisted-state.js';
 import {
   computeTimerSeconds,
   hasActiveTimer,
@@ -1522,6 +1523,8 @@ const STATE_CHANNEL =
     ? new BroadcastChannel('extrato-estudos-state')
     : null;
 let applyingRemoteState = false;
+// Ligado quando os dados salvos não puderam ser lidos: gravar agora os substituiria.
+let persistenceBlocked = false;
 function readLocalState(key = STORAGE_KEY) {
   return appContext.storage.readLocal(key);
 }
@@ -1536,46 +1539,22 @@ function normalizeAndValidateState(raw: any) {
   return validation.normalized;
 }
 
-async function readLatestValidSnapshot() {
-  const rawIndex = await StorageManager.get(BACKUP_INDEX_KEY);
-  if (!rawIndex) return null;
-  const index = JSON.parse(rawIndex);
-  const snapshots = Array.isArray(index.snapshots)
-    ? index.snapshots
-        .slice()
-        .sort((a: any, b: any) => String(b.createdAt).localeCompare(String(a.createdAt)))
-    : [];
-  for (const snapshot of snapshots) {
-    try {
-      const raw = await StorageManager.get(snapshot.key);
-      if (!raw) continue;
-      if (snapshot.checksum && (await sha256(raw)) !== snapshot.checksum) continue;
-      return { raw, state: normalizeAndValidateState(raw) };
-    } catch (error) {
-      console.warn('Snapshot de recuperacao ignorado', error);
-    }
-  }
-  return null;
-}
-
 async function loadState() {
   let loadWarning = '';
   try {
-    const raw = await StorageManager.get(STORAGE_KEY);
-    appStateStore.markPersisted(raw);
-    if (raw) {
-      try {
-        state = normalizeAndValidateState(raw);
-      } catch (error) {
-        const recovered = await readLatestValidSnapshot();
-        if (recovered) {
-          state = recovered.state;
-          await StorageManager.set(STORAGE_KEY, JSON.stringify(pickPersistentState(state)));
-          loadWarning =
-            'Os dados principais estavam inválidos e foram recuperados do backup automático mais recente.';
-        } else throw error;
-      }
-    }
+    const result = await loadPersistedState({
+      storage: StorageManager,
+      storageKey: STORAGE_KEY,
+      backupIndexKey: BACKUP_INDEX_KEY,
+      currentSchemaVersion: CURRENT_SCHEMA_VERSION,
+      normalize: normalizeAndValidateState,
+      serialize: value => JSON.stringify(pickPersistentState(value)),
+      sha256,
+    });
+    appStateStore.markPersisted(result.persisted);
+    if (result.state) state = result.state;
+    persistenceBlocked = result.blocked;
+    loadWarning = result.warning;
   } catch (e) {
     console.error('Erro ao carregar estado salvo', e);
     loadWarning =
@@ -1677,6 +1656,7 @@ const appStateStore = createAppStateStore({
   STORAGE_KEY,
   nowISO,
   isDemoMode: () => IS_DEMO_MODE,
+  isPersistenceBlocked: () => persistenceBlocked,
   rotateAutomaticBackup,
   writePersistentState: serialized => StorageManager.set(STORAGE_KEY, serialized),
   notifyRemoteState: serialized => {
@@ -1710,6 +1690,7 @@ STATE_CHANNEL?.addEventListener('message', event => {
     state = normalizeAndValidateState(message.serialized);
     writeLocalState(message.serialized);
     appStateStore.markPersisted(message.serialized);
+    persistenceBlocked = false;
     render();
     showToast('Dados atualizados por outra aba.');
   } catch (error) {
@@ -2180,15 +2161,18 @@ const backupModalController = createBackupModalController({
 
 function applyImportedBackup(importedState: AppState) {
   const previousState = state;
+  const previousBlocked = persistenceBlocked;
   try {
     state = importedState;
     ensureStateDefaults();
     restoreTimerFromState();
+    persistenceBlocked = false;
     persistAndRender();
     showToast('Backup importado com sucesso.');
     return true;
   } catch (error: any) {
     state = previousState;
+    persistenceBlocked = previousBlocked;
     restoreTimerFromState();
     render();
     console.error('Erro ao importar backup', error);
@@ -9633,7 +9617,8 @@ const recoveryController = createRecoveryController({
       publish: (value: any) => {
         Object.assign(state, value);
       },
-      persist: (serialized: string) => StorageManager.set(STORAGE_KEY, serialized),
+      persist: async (serialized: string) =>
+        !persistenceBlocked && StorageManager.set(STORAGE_KEY, serialized),
       runExclusive: enqueueStateTransaction,
       clock: appClock,
       onCommitted: (value: any) => {
@@ -11249,7 +11234,12 @@ if (backToTopBtn) {
 registerApplicationLifecycle({
   window,
   onBeforeUnload: () => {
-    if (!TEST_MODE && !suppressBeforeUnloadSave && !appStateStore.isTransactionActive())
+    if (
+      !TEST_MODE &&
+      !suppressBeforeUnloadSave &&
+      !persistenceBlocked &&
+      !appStateStore.isTransactionActive()
+    )
       writeLocalState(JSON.stringify(pickPersistentState(state)));
   },
   onResponsiveChange: () => {

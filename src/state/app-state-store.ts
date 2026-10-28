@@ -6,6 +6,8 @@ export interface AppStateStoreOptions {
   STORAGE_KEY: string;
   nowISO: () => string;
   isDemoMode: () => boolean;
+  /** true enquanto os dados salvos não puderam ser lidos: nenhuma gravação os substitui. */
+  isPersistenceBlocked?: () => boolean;
   rotateAutomaticBackup: (previousRaw: string) => Promise<boolean>;
   appContext?: any;
   writePersistentState?: (serialized: string) => Promise<boolean>;
@@ -25,6 +27,13 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
   // updating silently, and reading it back would back up the same old copy every day.
   let lastSerialized: string | null = null;
   const previousSnapshot = () => lastSerialized ?? opts.readLocalState(opts.STORAGE_KEY);
+  const blocked = () => {
+    if (!opts.isPersistenceBlocked?.()) return false;
+    opts.showToast(
+      'Alteração não salva: os dados anteriores não puderam ser lidos. Importe um backup para voltar a salvar.'
+    );
+    return true;
+  };
 
   async function enqueueSave(serialized: string, previousRaw: string | null = null): Promise<any> {
     pendingSave = { serialized, previousRaw };
@@ -52,6 +61,7 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
       transactionDeferredSave = true;
       return;
     }
+    if (blocked()) return;
     const previousRaw = previousSnapshot();
     state.updatedAt = opts.nowISO();
     const serialized = JSON.stringify(opts.pickPersistentState(state));
@@ -95,6 +105,7 @@ export function createAppStateStore(opts: AppStateStoreOptions) {
     serialized: string = JSON.stringify(opts.pickPersistentState(opts.getState())),
     previousRaw: string | null = null
   ): Promise<void> {
+    if (blocked()) return;
     const state = opts.getState();
     try {
       let backupWarning = false;
