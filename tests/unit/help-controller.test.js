@@ -94,7 +94,8 @@ test('createHelpController — monta com renderizador injetado sem atraso', () =
     activateTab: tab => {
       activated = tab;
     },
-    renderHelpCenter: () => '<section id="guide-start" data-help-group><div id="helpGroups"></div></section>',
+    renderHelpCenter: () =>
+      '<section id="guide-start" data-help-group><div id="helpGroups"></div></section>',
   });
 
   const mounted = controller.mount();
@@ -138,4 +139,83 @@ test('loadHelpBundle — retorna StudyTrackHelp existente se já inicializado', 
 
   const result = await loadHelpBundle(null);
   assert.equal(result, mockHelp);
+});
+
+test('createHelpController — clique em chip atualiza busca', () => {
+  const helpCenter = createMockElement('helpCenter');
+  const searchInput = createMockElement('helpSearch', 'input');
+  searchInput.value = '';
+
+  helpCenter.querySelector = sel => {
+    if (sel === '#helpSearch') return searchInput;
+    return null;
+  };
+
+  const controller = createHelpController({
+    document: {
+      getElementById: id => (id === 'helpCenter' ? helpCenter : null),
+      addEventListener: () => {},
+    },
+    window: { matchMedia: () => ({ matches: false }), requestAnimationFrame: fn => fn() },
+    activateTab: () => {},
+    renderHelpCenter: () => '<div id="helpGroups"></div>',
+  });
+  controller.mount();
+
+  const chipEl = {
+    dataset: { helpChip: 'revisão' },
+    closest: sel => (sel === '[data-help-chip]' ? chipEl : null),
+  };
+
+  helpCenter.dispatchEvent({
+    type: 'click',
+    target: chipEl,
+  });
+
+  assert.equal(searchInput.value, 'revisão');
+});
+
+test('createHelpController — clique em copiar atalho copia url para clipboard e dá feedback', () => {
+  const helpCenter = createMockElement('helpCenter');
+  let writtenText = '';
+  const win = {
+    location: { origin: 'http://localhost:3000', pathname: '/app' },
+    navigator: {
+      clipboard: {
+        writeText: async text => {
+          writtenText = text;
+        },
+      },
+    },
+    matchMedia: () => ({ matches: false }),
+    requestAnimationFrame: fn => fn(),
+  };
+
+  const controller = createHelpController({
+    document: {
+      getElementById: id => (id === 'helpCenter' ? helpCenter : null),
+      addEventListener: () => {},
+    },
+    window: win,
+    activateTab: () => {},
+    renderHelpCenter: () => '<div id="helpGroups"></div>',
+  });
+  controller.mount();
+
+  const attributes = new Map();
+  const copyBtn = {
+    dataset: { helpCopyLink: 'error-notebook-guide' },
+    textContent: '🔗 Copiar link',
+    setAttribute: (k, v) => attributes.set(k, v),
+    getAttribute: k => attributes.get(k),
+    closest: sel => (sel === '[data-help-copy-link]' ? copyBtn : null),
+  };
+
+  helpCenter.dispatchEvent({
+    type: 'click',
+    target: copyBtn,
+  });
+
+  assert.equal(writtenText, 'http://localhost:3000/app#instrucoes?topic=error-notebook-guide');
+  assert.equal(copyBtn.textContent, '✓ Copiado');
 });

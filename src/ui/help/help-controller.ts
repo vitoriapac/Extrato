@@ -361,6 +361,33 @@ export function createHelpController({
       }
     });
     root.addEventListener('click', (event: any) => {
+      const chip = event.target.closest('[data-help-chip]');
+      if (chip) {
+        const query = chip.dataset.helpChip;
+        const search = root.querySelector('#helpSearch');
+        if (search) {
+          search.value = query;
+          applySearch();
+          search.focus();
+        }
+        return;
+      }
+      const copyBtn = event.target.closest('[data-help-copy-link]');
+      if (copyBtn) {
+        const topicId = copyBtn.dataset.helpCopyLink;
+        const url = `${window.location?.origin || ''}${window.location?.pathname || ''}#instrucoes?topic=${topicId}`;
+        if (window.navigator?.clipboard?.writeText) {
+          window.navigator.clipboard.writeText(url).catch(() => {});
+        }
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✓ Copiado';
+        copyBtn.setAttribute('aria-label', 'Atalho copiado para a área de transferência');
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+          copyBtn.setAttribute('aria-label', `Copiar link direto para ${topicId}`);
+        }, 2000);
+        return;
+      }
       const voteBtn = event.target.closest('[data-help-vote]');
       if (voteBtn) {
         const topicId = voteBtn.dataset.helpTopic;
@@ -412,6 +439,24 @@ export function createHelpController({
       const action = event.target.closest('[data-help-action]');
       if (action) navigate(action.dataset.helpAction);
     });
+
+    const handleHashRoute = () => {
+      const hash = window.location?.hash;
+      if (!hash || !hash.startsWith('#instrucoes')) return;
+      let topicId = null;
+      if (hash.includes('?topic=')) {
+        topicId = hash.split('?topic=')[1]?.split('&')[0];
+      } else if (hash.includes('/')) {
+        topicId = hash.split('/')[1]?.split('?')[0];
+      }
+      if (topicId) {
+        openTopic(topicId);
+      }
+    };
+    if (typeof window.addEventListener === 'function') {
+      window.addEventListener('hashchange', handleHashRoute);
+      handleHashRoute();
+    }
     return true;
   };
   return { mount, applySearch, openCategory, navigate, openTopic };

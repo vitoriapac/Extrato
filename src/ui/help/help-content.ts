@@ -103,6 +103,30 @@ const BASE_HELP_CATEGORIES: any[] = [
         action: { label: 'Abrir cronômetro', target: 'timer' },
       },
       {
+        id: 'pip-timer-guide',
+        title: 'Cronômetro Flutuante (Picture-in-Picture)',
+        kind: 'feature',
+        summary:
+          'Acompanhe seu cronômetro ou Pomodoro em uma mini janela sempre visível sobre PDFs ou videoaulas.',
+        keywords: [
+          'pip',
+          'picture-in-picture',
+          'cronômetro flutuante',
+          'janela flutuante',
+          'mini timer',
+        ],
+        paragraphs: [
+          'Com a API Document Picture-in-Picture, o StudyTrack permite destacar o cronômetro para uma pequena janela flutuante no canto da tela enquanto você lê PDFs, assiste a videoaulas ou resolve listas de questões em outros programas.',
+          'A janela flutuante mantém os controles de pausar, retomar, avançar blocos de Pomodoro e registrar pausas sem que você precise alternar de aba no navegador.',
+        ],
+        bullets: [
+          'Clique no ícone de tela flutuante (PiP) ao lado dos controles do cronômetro.',
+          'Funciona tanto no modo cronômetro livre quanto no modo Pomodoro com intervalos programados.',
+          'Ao fechar a janela flutuante, a contagem retorna perfeitamente para a interface principal.',
+        ],
+        action: { label: 'Abrir Cronômetro', target: 'timer' },
+      },
+      {
         id: 'questions',
         title: 'Questões e Simulados',
         summary: 'Desempenho e análise de erros têm registro próprio.',
@@ -112,6 +136,32 @@ const BASE_HELP_CATEGORIES: any[] = [
         bullets: ['Não sabia · Esqueci', 'Interpretação · Cálculo', 'Desatenção · Chute'],
         note: 'Categorizar erros ajuda a distinguir falta de conhecimento de problemas de execução.',
         action: { label: 'Registrar questões', target: 'questions' },
+      },
+      {
+        id: 'error-notebook-guide',
+        title: 'Caderno de Erros e Flashcards Ativos',
+        kind: 'feature',
+        summary:
+          'Transforme questões erradas em aprendizado ativo com categorização cognitiva e repetição.',
+        keywords: [
+          'caderno de erros',
+          'flashcards',
+          'questões erradas',
+          'pegadinha',
+          'bancas',
+          'revisão ativa',
+        ],
+        paragraphs: [
+          'O Caderno de Erros permite registrar questões erradas ou marcadas com dúvida durante seus simulados e baterias de estudo.',
+          'Cada erro pode ser classificado pela sua causa raiz: lacuna de conteúdo, pegadinha de banca, erro de interpretação ou falta de atenção. Isso evita que você gaste tempo relendo teorias quando o problema era apenas velocidade ou desatenção.',
+          'O modo de revisão ativa em flashcards permite ocultar o gabarito e a justificativa para forçar a recuperação ativa da memória (Active Recall) antes de conferir a resposta.',
+        ],
+        bullets: [
+          'Filtre erros por disciplina, banca examinadora ou motivo do erro.',
+          'Marque erros como superados assim que acertá-los em revisões subsequentes.',
+          'Exporte ou revise em blocos diários de alta densidade.',
+        ],
+        action: { label: 'Abrir Questões e Erros', target: 'questions' },
       },
       {
         id: 'reviews',
@@ -162,6 +212,24 @@ const BASE_HELP_CATEGORIES: any[] = [
           'Quando uma disciplina está consolidada e outra apresenta necessidade estratégica maior, o StudyTrack pode propor uma transferência limitada de minutos. A capacidade semanal é preservada. A prévia explica o motivo e exige confirmação; um intervalo de proteção evita ajustes repetidos em pouco tempo.',
         ],
         action: { label: 'Ver planejamento adaptativo', target: 'planning' },
+      },
+      {
+        id: 'what-if-simulator-guide',
+        title: 'Simulador "E se?" e Reta Final',
+        kind: 'feature',
+        summary:
+          'Explore o impacto de horas extras ou foco em tópicos críticos sem alterar seu plano oficial.',
+        keywords: ['simulador', 'what-if', 'e se', 'reta final', 'cenários', 'projeção de horas'],
+        paragraphs: [
+          'O simulador "E se?" permite testar hipóteses na reta final: "E se eu aumentar 5 horas semanais?", "E se eu focar 70% do tempo nas disciplinas com maior peso?", ou "E se eu mantiver meu ritmo atual até o dia da prova?".',
+          'O simulador projeta a curva esperada de cobertura do edital e o tempo estimado para atingir a meta, sem alterar o seu planejamento semanal oficial. É um ambiente seguro para tomada de decisões estratégicas.',
+        ],
+        bullets: [
+          'Simulações são isoladas e descartáveis: você só aplica mudanças ao plano se decidir confirmá-las.',
+          'Leva em conta a data cadastrada da prova e as semanas restantes.',
+          'Ajuda a dimensionar se metas ambiciosas cabem na sua disponibilidade real sem risco de sobrecarga.',
+        ],
+        action: { label: 'Abrir Planejamento', target: 'planning' },
       },
       {
         id: 'weekly',
@@ -544,19 +612,22 @@ analysisGuide.entries.push({
   id: 'evidence-guide',
   title: 'Evidência e confiança',
   kind: 'concept',
-  summary: 'Dados suficientes precisam também ser comparáveis.',
-  keywords: ['evidência', 'confiança', 'amostra insuficiente', 'poucos dados'],
+  summary: 'Dados suficientes precisam também ser comparáveis e estatisticamente significativos.',
+  keywords: [
+    'evidência',
+    'confiança',
+    'amostra insuficiente',
+    'poucos dados',
+    'amostragem',
+    'margem de erro',
+  ],
   visual: {
-    type: 'flow',
-    title: 'Qualidade da análise',
-    steps: [
-      { title: 'Poucos registros', detail: 'Conclusões conservadoras' },
-      { title: 'Dados comparáveis', detail: 'Mesmo escopo e períodos adequados' },
-      { title: 'Evidência consistente', detail: 'Maior sustentação para interpretar' },
-    ],
+    type: 'simulator-evidence',
+    title: 'Simulador de Força da Evidência e Amostragem',
   },
   paragraphs: [
-    'A confiança depende do volume, da qualidade e da comparabilidade dos registros. Mais dados não garantem uma conclusão mais forte quando pertencem a contextos diferentes.',
+    'A confiança nas análises do StudyTrack obedece ao princípio estatístico da amostragem (Lei dos Grandes Números): volumes muito pequenos de questões geram margens de erro excessivamente amplas, tornando qualquer conclusão precoce sobre maestria ou deficiência altamente volátil.',
+    'O algoritmo adota uma postura prudente: com menos de 10 questões, ele evita rotular tópicos como dominados ou condenados e prioriza a coleta de evidências. A partir de 30 questões, a tendência se estabiliza, e acima de 80 questões atinge robustez estatística com margem de erro reduzida.',
   ],
 });
 analysisGuide.entries.push({

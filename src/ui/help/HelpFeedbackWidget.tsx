@@ -17,7 +17,8 @@ export function HelpFeedbackWidget({
   topicTitle,
   storage,
 }: HelpFeedbackWidgetProps): JSX.Element {
-  const effectiveStorage = storage ?? (typeof window !== 'undefined' ? window.localStorage : undefined);
+  const effectiveStorage =
+    storage ?? (typeof window !== 'undefined' ? window.localStorage : undefined);
   const [feedback, setFeedback] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -73,7 +74,11 @@ export function HelpFeedbackWidget({
       data-testid={`help-feedback-${topicId}`}
     >
       <span class="font-medium text-text-muted">Esta explicação foi útil?</span>
-      <div class="inline-flex items-center gap-1.5" role="group" aria-label="Avaliar utilidade da instrução">
+      <div
+        class="inline-flex items-center gap-1.5"
+        role="group"
+        aria-label="Avaliar utilidade da instrução"
+      >
         <button
           type="button"
           onClick={() => handleVote(true)}

@@ -29,9 +29,10 @@ export function calculateEbbinghausRetention(
 ): EbbinghausSimulationResult {
   const boundedDays = Math.max(0, Math.min(30, Math.round(Number(days) || 0)));
 
-  const noReviewRetention = boundedDays === 0
-    ? 100
-    : Math.max(8, Math.round(100 / (1 + 0.32 * Math.pow(boundedDays, 0.9))));
+  const noReviewRetention =
+    boundedDays === 0
+      ? 100
+      : Math.max(8, Math.round(100 / (1 + 0.32 * Math.pow(boundedDays, 0.9))));
 
   let retentionPct = noReviewRetention;
 
@@ -61,8 +62,7 @@ export function calculateEbbinghausRetention(
   if (retentionPct >= 80) {
     decayStage = 'consolidated';
     stageLabel = 'Excelente — memória de longo prazo';
-    stageDescription =
-      'Conceitos e detalhes consolidados. Reativação rápida ao resolver questões.';
+    stageDescription = 'Conceitos e detalhes consolidados. Reativação rápida ao resolver questões.';
   } else if (retentionPct >= 50) {
     decayStage = 'declining';
     stageLabel = 'Atenção — declínio da retenção';

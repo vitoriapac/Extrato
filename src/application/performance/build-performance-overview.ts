@@ -108,7 +108,7 @@ export function buildPerformanceOverview({
   const changes = [];
   if (readinessDelta != null && readinessDelta !== 0)
     changes.push({
-      label: 'Prontidão no último fechamento × período anterior',
+      label: 'Prontidão no último fechamento',
       delta: readinessDelta,
       unit: Math.abs(readinessDelta) === 1 ? 'ponto' : 'pontos',
     });

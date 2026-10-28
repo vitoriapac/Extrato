@@ -1,4 +1,4 @@
-import type { JSX } from 'preact';
+import { Fragment, type JSX } from 'preact';
 import { HelpSearchHero } from './HelpSearchHero.js';
 import { HelpCategoryNav } from './HelpCategoryNav.js';
 import { HelpTopicCard, type HelpTopicEntry } from './HelpTopicCard.js';
@@ -31,7 +31,7 @@ export function HelpTab({
 
       <div id="helpGroups" class="help-groups">
         {categories.map((category, index) => (
-          <div key={category.id} class="help-group-wrapper">
+          <Fragment key={category.id}>
             <section
               class="help-group instruction-section"
               id={category.id}
@@ -82,7 +82,7 @@ export function HelpTab({
                 </p>
               </aside>
             )}
-          </div>
+          </Fragment>
         ))}
       </div>
 

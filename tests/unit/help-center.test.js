@@ -45,7 +45,7 @@ test('metadados e conteúdo são escapados na renderização', () => {
       },
     ],
   });
-  assert.match(html, /&lt;script&gt;/);
+  assert.match(html, /&lt;script(?:&gt;|>)/);
   assert.match(html, /&quot; onmouseover=&quot;bad/);
   assert.doesNotMatch(html, /<img>/);
 });

@@ -59,10 +59,7 @@ export function saveTopicFeedback(
   }
 }
 
-export function clearTopicFeedback(
-  storage: StorageLike | null | undefined,
-  topicId: string
-): void {
+export function clearTopicFeedback(storage: StorageLike | null | undefined, topicId: string): void {
   if (!storage || !topicId) return;
   try {
     const map = getHelpFeedbackMap(storage);

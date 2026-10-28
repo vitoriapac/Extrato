@@ -91,9 +91,7 @@ export function EbbinghausSimulator(): JSX.Element {
         <div class="rounded-lg border border-border bg-surface p-3">
           <div class="flex items-center justify-between">
             <span class="text-xs font-medium text-text-muted">Retenção estimada na memória:</span>
-            <span class="text-base font-bold text-text">
-              {simulation.retentionPct}%
-            </span>
+            <span class="text-base font-bold text-text">{simulation.retentionPct}%</span>
           </div>
 
           <div class="mt-1.5 h-3 w-full overflow-hidden rounded-full bg-surface-muted">
@@ -123,7 +121,9 @@ export function EbbinghausSimulator(): JSX.Element {
         </div>
 
         <p class="text-[11px] leading-relaxed text-text-muted">
-          💡 <strong>Por que isso importa?</strong> Sem revisões programadas, você precisará reaprender a matéria do zero perto da prova. O StudyTrack calcula automaticamente esses ciclos para você na aba <em>Agenda</em>.
+          💡 <strong>Por que isso importa?</strong> Sem revisões programadas, você precisará
+          reaprender a matéria do zero perto da prova. O StudyTrack calcula automaticamente esses
+          ciclos para você na aba <em>Agenda</em>.
         </p>
       </div>
     </div>

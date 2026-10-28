@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { EbbinghausSimulator } from './EbbinghausSimulator.js';
+import { EvidenceConfidenceSimulator } from './EvidenceConfidenceSimulator.js';
 
 export interface HelpVisualData {
   type: string;
@@ -44,6 +45,10 @@ export function HelpVisualRenderer({ visual }: HelpVisualProps): JSX.Element | n
 
   if (visual.type === 'simulator-ebbinghaus') {
     return <EbbinghausSimulator />;
+  }
+
+  if (visual.type === 'simulator-evidence') {
+    return <EvidenceConfidenceSimulator />;
   }
 
   const renderSteps = (items: Array<any> | undefined, className: string) => (

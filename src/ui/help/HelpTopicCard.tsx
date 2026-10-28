@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { HelpVisualRenderer } from './HelpVisualRenderer.js';
 import { HelpFeedbackWidget } from './HelpFeedbackWidget.js';
 import { buildHelpSearchIndex } from './help-search.js';
+import { computeTopicMetadata } from '../../domain/help/topic-metadata.js';
 
 export interface HelpTopicEntry {
   id: string;
@@ -41,6 +42,7 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
   ].join(' ');
 
   const searchIndex = buildHelpSearchIndex(entry);
+  const metadata = computeTopicMetadata(entry);
 
   return (
     <article
@@ -51,6 +53,25 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
       data-help-keywords={allKeywords}
       data-help-search={searchIndex}
     >
+      <div class="mb-2 flex items-center justify-between gap-2 border-b border-border/40 pb-1.5 text-xs">
+        <div class="flex items-center gap-2">
+          <span
+            class={`inline-flex items-center rounded-sm border px-1.5 py-0.2 text-[10px] font-semibold ${metadata.levelBadgeClass}`}
+          >
+            {metadata.level}
+          </span>
+          <span class="text-[11px] text-text-muted">⏱ {metadata.readingTimeLabel}</span>
+        </div>
+        <button
+          type="button"
+          class="btn ghost small !p-1 text-[11px] text-text-muted hover:text-text"
+          data-help-copy-link={entry.id}
+          title="Copiar atalho direto para este tópico"
+          aria-label={`Copiar atalho direto para ${entry.title}`}
+        >
+          🔗 Copiar link
+        </button>
+      </div>
       <h4>{entry.title}</h4>
       <p class="help-topic-summary">{entry.summary}</p>
       <div class="help-topic-body">

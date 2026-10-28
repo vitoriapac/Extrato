@@ -4297,7 +4297,7 @@
         "../../src/application/goals/build-result-goals-view-model.js",
         "../../src/domain/goals/initial-goal-guidance.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -4389,7 +4389,7 @@
         "node:assert/strict",
         "../../src/application/analytics/build-header-view-model.js"
       ],
-      "staticTestDeclarations": 2,
+      "staticTestDeclarations": 3,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -4487,7 +4487,37 @@
         "../../src/ui/help/help-content.js",
         "../../src/domain/help/help-feedback.js"
       ],
-      "staticTestDeclarations": 3,
+      "staticTestDeclarations": 5,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/help-evidence-simulator.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/help/evidence-simulator.js"
+      ],
+      "staticTestDeclarations": 6,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,
@@ -4548,6 +4578,36 @@
         "../../src/domain/help/retention-simulator.js"
       ],
       "staticTestDeclarations": 5,
+      "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
+      "measuredCases": 0,
+      "observedCaseSeconds": null,
+      "durationBasis": "not_measured_per_file",
+      "snapshotPlatform": "none",
+      "currentGates": [
+        "npm test",
+        "check",
+        "test:fast UTC/SP",
+        "test:regression UTC/SP",
+        "test:full UTC/SP"
+      ],
+      "stability": "not_assessed",
+      "removalDecision": "retain_pending_contract_review"
+    },
+    {
+      "file": "tests/unit/help-topic-metadata.test.js",
+      "layer": "node",
+      "area": "Aplicação",
+      "areaBasis": "filename_hint",
+      "criticality": "functional",
+      "roles": [
+        "contract"
+      ],
+      "imports": [
+        "node:test",
+        "node:assert/strict",
+        "../../src/domain/help/topic-metadata.js"
+      ],
+      "staticTestDeclarations": 4,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

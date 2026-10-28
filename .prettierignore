@@ -2,6 +2,7 @@ node_modules/
 src/app.bundle.js
 src/exam-catalog.bundle.js
 src/report.bundle.js
+src/help.bundle.js
 service-worker.js
 src/domain/exams/exam-catalog-data.json
 src/demo/demo-scenario.json

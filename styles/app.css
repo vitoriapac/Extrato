@@ -2363,7 +2363,7 @@ body.timer-focus-active .study-distribution-heading{display:none}
   .primary-nav-shell{position:fixed;z-index:110;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--paper-line);background:var(--paper);box-shadow:0 -4px 12px rgba(11,37,69,.08)}
   .primary-nav-shell .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0;overflow:visible;border-bottom:0}
   .primary-nav-shell .tabs .tab-secondary{display:none}
-  .primary-nav-shell .tab-btn,.primary-nav-shell .more-tab-btn{min-height:56px;padding:6px 4px;letter-spacing:.02em;white-space:normal;overflow-wrap:normal;line-height:1.25;text-align:center;border-radius:0}
+  .primary-nav-shell .tab-btn,.primary-nav-shell .more-tab-btn{min-height:56px;padding:6px 2px;font-size:clamp(9px,2.6vw,11px);letter-spacing:0;white-space:normal;overflow-wrap:normal;line-height:1.25;text-align:center;border-radius:0}
   .primary-nav-shell .more-tab-btn{min-width:64px;border-bottom:0}
   .primary-nav-shell .mobile-more-menu{top:auto;right:8px;bottom:calc(100% + 6px)}
   .back-to-top{bottom:calc(72px + env(safe-area-inset-bottom))}

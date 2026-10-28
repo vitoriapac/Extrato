@@ -42,7 +42,7 @@ export function renderPerformanceOverview(
     ? 'Comparação com período anterior'
     : 'Sem comparação';
   const kpis = `<section class="performance-kpis ui-metric-group" aria-label="Estado atual no período selecionado">
-    ${card('Índice de Prontidão', model.readiness?.value, '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : `${change(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} entre registros salvos`)}
+    ${card('Índice de Prontidão', model.readiness?.value, '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : `${change(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} entre os dois últimos fechamentos`)}
     ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${previous && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`)}
     ${renderMetricCard({ label: 'Tempo estudado', value: formatStudyMinutes(current.studiedMinutes), detail: `${current.sessionCount || 0} sessões${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
     ${card('Volume de carga', current.adherence, '%', current.adherence == null ? 'Sem plano no período' : `${formatStudyMinutes(current.studiedMinutes)} de ${formatStudyMinutes(current.plannedMinutes)} planejados`)}

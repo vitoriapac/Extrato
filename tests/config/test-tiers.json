@@ -832,6 +832,11 @@
       "rationale": "Contrato barato de ciclo de vida e lazy loading da Central de Ajuda."
     },
     {
+      "file": "tests/unit/help-evidence-simulator.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo didático puro de força da evidência e margem de erro estatística."
+    },
+    {
       "file": "tests/unit/help-feedback.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato puro de persistência local e gestão de feedback da Central de Ajuda."
@@ -840,6 +845,11 @@
       "file": "tests/unit/help-retention-simulator.test.js",
       "tier": "FAST_GATE",
       "rationale": "Cálculo puro da Curva de Ebbinghaus e repetição espaçada."
+    },
+    {
+      "file": "tests/unit/help-topic-metadata.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo didático de tempo de leitura e nível pedagógico de tópicos da Central de Ajuda."
     },
     {
       "file": "tests/unit/historical-adherence-integrity.test.js",
