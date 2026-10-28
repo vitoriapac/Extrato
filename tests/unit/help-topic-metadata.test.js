@@ -18,7 +18,7 @@ test('computeTopicMetadata — atribui nível Avançado para tópicos de evidên
     paragraphs: ['Texto sobre confiabilidade estatística e amostragem.'],
   });
   assert.equal(meta.level, 'Avançado');
-  assert.match(meta.levelBadgeClass, /purple/);
+  assert.match(meta.levelBadgeClass, /text-text/);
 });
 
 test('computeTopicMetadata — atribui nível Estratégico para conceitos e prontidão', () => {
@@ -28,7 +28,7 @@ test('computeTopicMetadata — atribui nível Estratégico para conceitos e pron
     paragraphs: ['Explicação sobre a métrica de prontidão.'],
   });
   assert.equal(meta.level, 'Estratégico');
-  assert.match(meta.levelBadgeClass, /blue/);
+  assert.match(meta.levelBadgeClass, /text-text/);
 });
 
 test('computeTopicMetadata — calcula tempo proporcional ao volume de palavras e visual', () => {

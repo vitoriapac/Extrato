@@ -37,7 +37,7 @@ export function computeTopicMetadata(topic: {
   // Determinação do nível didático
   let level: 'Iniciante' | 'Estratégico' | 'Avançado' = 'Iniciante';
   let levelBadgeClass =
-    'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20';
+    'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-[11px] font-semibold text-text';
 
   const id = topic.id || '';
   const isAdvanced =
@@ -57,10 +57,16 @@ export function computeTopicMetadata(topic: {
 
   if (isAdvanced) {
     level = 'Avançado';
-    levelBadgeClass = 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20';
+    levelBadgeClass =
+      'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-[11px] font-semibold text-text';
   } else if (isStrategic) {
     level = 'Estratégico';
-    levelBadgeClass = 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20';
+    levelBadgeClass =
+      'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-[11px] font-semibold text-text';
+  } else {
+    level = 'Iniciante';
+    levelBadgeClass =
+      'inline-flex items-center gap-1 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-[11px] font-semibold text-text';
   }
 
   return {

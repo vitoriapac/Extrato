@@ -55,11 +55,7 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
     >
       <div class="mb-2 flex items-center justify-between gap-2 border-b border-border/40 pb-1.5 text-xs">
         <div class="flex items-center gap-2">
-          <span
-            class={`inline-flex items-center rounded-sm border px-1.5 py-0.2 text-[10px] font-semibold ${metadata.levelBadgeClass}`}
-          >
-            {metadata.level}
-          </span>
+          <span class={metadata.levelBadgeClass}>{metadata.level}</span>
           <span class="text-[11px] text-text-muted">⏱ {metadata.readingTimeLabel}</span>
         </div>
         <button
