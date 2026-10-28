@@ -173,3 +173,9 @@ export function applyAdaptiveReviewRating(
     algorithmVersion,
   };
 }
+
+export function reviewBaseDaysFromType(type: string): number {
+  if (type === 'Revisão 24h') return 1;
+  const match = String(type || '').match(/(\d+)/);
+  return match ? Math.max(1, Number(match[1])) : 7;
+}
