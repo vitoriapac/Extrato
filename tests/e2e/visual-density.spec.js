@@ -71,7 +71,9 @@ test('cabeçalhos analíticos com dados densos em desktop', async ({ page }) => 
   await activateTab(page, 'agenda');
   await expect(page.locator('#panel-agenda > .module-heading')).toBeVisible();
   await activateTab(page, 'questoes');
-  await expect(page.locator('#panel-questoes > .module-heading')).toHaveCount(2);
+  await expect(
+    page.locator('#panel-questoes > .module-heading, #questionsMainContainer > .module-heading')
+  ).toHaveCount(2);
   await activateTab(page, 'metas');
   await expect(page.locator('#metasCapacity > .module-heading')).toBeVisible();
   await expect(page.locator('#metasPlanning > .module-heading')).toBeVisible();
