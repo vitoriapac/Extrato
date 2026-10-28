@@ -24,6 +24,7 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 |  **Master Fase 2**  | Inteligência Preditiva & Reta Final             | Concluída | `what-if-simulator.ts` (simulação em memória via `structuredCloneSafe`), `final-stretch-policy.ts` (< 15 dias, 85% questões/revisão), `volatile-mastery.ts` (ilusão de competência).                    |
 |  **Master Fase 3**  | Hub Completo de Estudos & Flexibilidade         | Concluída | `VerticalizedSyllabusView.tsx` com checklist de 4 etapas e parser de PDF (`raw-syllabus-parser.ts`), `study-cycle-engine.ts` (ciclo rotativo circular) e `focus-energy-analytics.ts` (fadiga/energia).  |
 | **Master Fase 4 & Melhorias Pós-Fase 4** | Caderno de Erros, A11y, Onboarding 2.0 & Base SaaS | Concluída | `error-notebook-engine.ts` (SM-2 adaptado), `ErrorNotebookView.tsx`, avisos de revisão na Agenda e Hoje (`ErrorNotebookDueNotice.tsx`), persistência e integridade de `errorFlashcards`, focus traps em modais/tour, anúncios `aria-live` no cronômetro (`timerAriaLive`), roteiro NVDA (`ROTEIRO-AUDITORIA-NVDA.md`), Onboarding 2.0 com viabilidade pedagógica (`calculatePlanFeasibility`), nivelamento em lote e disparo direto do plano em Hoje. |
+| **Central de Ajuda 2.0** | Instruções Reativas, Micro-Simuladores & Code-Splitting | Concluída | Code-splitting assíncrono em `src/help.bundle.js` (~80 KB), Preact 11 unificado via `preact-render-to-string`, simulador de retenção Ebbinghaus (`EbbinghausSimulator.tsx`), simulador de amostragem/evidência com 95% CI (`EvidenceConfidenceSimulator.tsx`), hash routing (`#instrucoes?topic=<id>`), cópia de atalho direto no clipboard, chips interativos, metadados automáticos e conformidade estrita WCAG AA. |
 
 ---
 
@@ -87,6 +88,23 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 - **Isolamento de Armazenamento & Entitlements SaaS:**
   - Módulo puro de direitos e planos em [`src/domain/billing/entitlements.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/billing/entitlements.ts) (`free`, `pro`, `mentor`), mantido como preparatório.
   - Conector desacoplado [`src/storage/cloud-saas-provider.ts`](file:///c:/Users/vitor/Documents/Extrato/src/storage/cloud-saas-provider.ts) com sincronização em background, verificação de versão e fallback local seguro.
+
+### 2.5. Central de Ajuda & Instruções 2.0 (Micro-Simuladores & Code-Splitting)
+
+- **Performance sob Demanda & Code-Splitting:**
+  - Carregamento assíncrono via `loadHelpBundle()` do arquivo [`src/help.bundle.js`](file:///c:/Users/vitor/Documents/Extrato/src/help.bundle.js) (~80 KB), desacoplando o catálogo didático do carregamento inicial do aplicativo.
+  - Disponibilidade offline garantida no PWA através do cache no Service Worker (`APP_SHELL`).
+  - Renderização unificada em Preact 11 (`preact-render-to-string`), extinguindo strings HTML manuais.
+- **Didática Visual Interativa:**
+  - **Simulador da Curva de Ebbinghaus:** [`retention-simulator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/help/retention-simulator.ts) e [`EbbinghausSimulator.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/help/EbbinghausSimulator.tsx) demonstrando os saltos de consolidação mnemônica em D+1, D+7 e D+21.
+  - **Simulador de Amostragem & Força da Evidência:** [`evidence-simulator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/help/evidence-simulator.ts) e [`EvidenceConfidenceSimulator.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/help/EvidenceConfidenceSimulator.tsx), modelando a Lei dos Grandes Números, intervalos de confiança de 95% e margem de erro por amostra.
+  - **Widget Local de Utilidade:** Feedback binário ("Esta explicação ajudou?") persistido em `localStorage` via [`help-feedback.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/help/help-feedback.ts).
+- **Navegabilidade & Metadados Didáticos:**
+  - Suporte a links diretos e deep-linking (`#instrucoes?topic=<id>`) com botão `🔗 Copiar link` no card.
+  - Chips de busca rápida interativos conectados ao controller.
+  - Estimativa dinâmica de tempo de leitura (`⏱ X min`) e nível pedagógico (`Iniciante`, `Estratégico`, `Avançado`) via [`topic-metadata.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/help/topic-metadata.ts).
+  - 3 novos guias: PiP Timer, Caderno de Erros e Simulador What-If.
+  - Conformidade estrita com WCAG AA (ratios > 4.5:1) em modo claro e escuro.
 
 ---
 

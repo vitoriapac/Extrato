@@ -43,10 +43,17 @@ flowchart TD
         P5D["Higiene de Build e Test-Gates"]
     end
 
+    subgraph P6 ["6. Central de Ajuda & Didática Interativa"]
+        P6A["Code-Splitting help.bundle.js"] --> P6B["Preact 11 + preact-render-to-string"]
+        P6B --> P6C["Micro-Simuladores: Ebbinghaus & Evidência 95% CI"]
+        P6C --> P6D["Deep-linking, Chips & Feedback Local"]
+    end
+
     P1 --> P3
     P2 --> P3
     P3 --> P4
     P5 --> P1
+    P4 --> P6
 ```
 
 | Plano | Foco Principal | Status | Entregáveis Centrais |
@@ -220,12 +227,52 @@ Consolidação dos planos de tarefas fundacionais que estabeleceram os alicerces
 
 ---
 
-## 6. Rastreabilidade de Arquitetura e Governança
+## 6. Modernização e Didática Interativa da Central de Ajuda (Instruções 2.0)
+
+A reformulação integral da aba de **Instruções** transformou a documentação estática em uma **Central de Ajuda Reativa, PWA-ready e Pedagogicamente Interativa**, executada em duas frentes complementares (Fases 1–4 e Sprints A & B):
+
+### 6.1. Engenharia, Performance & Code-Splitting
+- **Code-Splitting Assíncrono sob Demanda:**
+  - Extração do catálogo e runtime de ajuda para um bundle independente ([`src/help.bundle.js`](file:///c:/Users/vitor/Documents/Extrato/src/help.bundle.js) ~80 KB), carregado via `loadHelpBundle()` exclusivamente quando o usuário acessa a aba de Instruções.
+  - Alívio expressivo do bundle principal (`app.bundle.js`), preservando o carregamento inicial instantâneo da aplicação.
+  - Inclusão no manifesto do Service Worker (`APP_SHELL`) para garantir funcionamento offline total no PWA.
+- **Renderização Unificada em Preact 11 Declarativo:**
+  - Criação da árvore de componentes reativos em [`src/ui/help/`](file:///c:/Users/vitor/Documents/Extrato/src/ui/help/): `HelpTab.tsx`, `HelpHero.tsx`, `HelpSearchHero.tsx`, `HelpCategoryNav.tsx`, `HelpTopicCard.tsx`, `HelpVisualRenderer.tsx` e `HelpReferenceSection.tsx`.
+  - Unificação do [`help-renderer.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/help/help-renderer.ts) utilizando `preact-render-to-string`, eliminando completamente mais de 100 linhas de templates de strings HTML manuais duplicados.
+- **Conectividade, Roteamento Direto e Busca:**
+  - Suporte a deep-linking e hash routing: URLs diretas no formato `#instrucoes?topic=<id>` ou `#instrucoes/<id>` abrem imediatamente a categoria e realizam rolagem com foco acessível no tópico correspondente.
+  - Botão discreto `🔗 Copiar link` no [`HelpTopicCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/help/HelpTopicCard.tsx) com cópia imediata da URL para a área de transferência e feedback visual temporário (`✓ Copiado`).
+  - Chips de atalho rápido interativos (`#revisão`, `#prontidão`, `#planejamento`, etc.) no cabeçalho de busca que preenchem e filtram os tópicos automaticamente com 1 clique.
+
+### 6.2. Didática Interativa e Micro-Simuladores
+- **Simulador da Curva de Ebbinghaus e Repetição Espaçada:**
+  - Motor puro de cálculo exponencial em [`retention-simulator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/help/retention-simulator.ts) modelando o decaimento mnemônico ao longo de 30 dias.
+  - Componente interativo [`EbbinghausSimulator.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/help/EbbinghausSimulator.tsx) permitindo comparar visualmente a retenção com e sem revisões programadas (D+1, D+7, D+21) com barra de progresso dinâmica e estágios de consolidação.
+- **Simulador de Confiabilidade da Evidência e Amostragem (Lei dos Grandes Números):**
+  - Motor estatístico em [`evidence-simulator.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/help/evidence-simulator.ts) calculando erro-padrão e intervalos de confiança de 95% para amostras de questões de 1 a 250.
+  - Componente [`EvidenceConfidenceSimulator.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/help/EvidenceConfidenceSimulator.tsx) conectado ao tópico `evidence-guide` com controles dinâmicos de amostra e precisão, barra de incerteza estatística e justificativa pedagógica do algoritmo do StudyTrack (<10 questões volátil, 10–29 em observação, 30–79 sólido, 80+ robusto).
+- **Widget de Avaliação Local de Utilidade:**
+  - Componente [`HelpFeedbackWidget.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/help/HelpFeedbackWidget.tsx) e motor [`help-feedback.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/help/help-feedback.ts) gravando avaliações binárias ("Esta explicação ajudou? 👍 / 👎") no `localStorage` sob a chave `studytrack_help_feedback`.
+
+### 6.3. Enriquecimento de Conteúdo e Metadados
+- **3 Novos Guias Abrangentes:**
+  - `pip-timer-guide`: Operação do Cronômetro Flutuante em Picture-in-Picture.
+  - `error-notebook-guide`: Metodologia de classificação de erros, repetição espaçada e Active Recall em flashcards.
+  - `what-if-simulator-guide`: Simulação de cenários de capacidade na reta final sem poluir o planejamento real.
+- **Metadados Didáticos Dinâmicos:**
+  - Módulo [`topic-metadata.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/help/topic-metadata.ts) calculando tempo estimado de leitura (`⏱ X min`) com base na densidade de palavras e nível pedagógico (`Iniciante`, `Estratégico`, `Avançado`).
+- **Acessibilidade e Contraste WCAG AA:**
+  - Estilização com tokens nativos do design system (`status-badge status-badge--success / warning / info / danger` e `text-text` sobre `bg-surface-muted`), assegurando contraste estrito > 4.5:1 tanto no tema claro quanto no escuro (`[data-theme="dark"]`).
+
+---
+
+## 7. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (274 arquivos auditados, 990 testes unitários verdes em ~38s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

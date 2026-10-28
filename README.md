@@ -30,9 +30,11 @@ StudyTrack é uma aplicação web para planejar estudos, registrar sessões, org
 - Ciclo de Estudos Flexível em Fila Rotativa com blocos intercalados proporcionais aos pesos das disciplinas, pausando sem gerar avalanche de atrasos falsos.
 - Análise Cronobiológica de Energia e Fadiga correlacionando foco/energia por turnos (manhã, tarde, noite) com alerta de esgotamento cognitivo no Diagnóstico.
 - Caderno de Erros Ativo & Flashcards de Bolso com repetição espaçada adaptativa (Again, Hard, Good, Easy), identificação de pegadinhas da banca e conceito correto, integrado à Agenda de Revisões e ao painel Hoje com avisos em tempo real e sugestões automáticas para questões erradas.
+- Central de Ajuda & Instruções 2.0 modularizada em Preact 11 (`.tsx`) com carregamento sob demanda (*code-splitting* em `help.bundle.js`), busca instantânea, chips de atalho rápido e deep-linking com cópia de URL direta (`#instrucoes?topic=<id>`).
+- Micro-simuladores didáticos interativos integrados à documentação: Simulador da Curva de Ebbinghaus (retenção com e sem revisões programadas) e Simulador de Força da Evidência e Amostragem (Lei dos Grandes Números e intervalos de confiança de 95%).
 - Base preparatória para SaaS (sem consumidor na interface): conector de nuvem modular e controle puro de planos e entitlements (Free, Pro, Mentor).
 - Modo demonstração isolado com 140 dias de dados fictícios, 17 disciplinas e 305 tópicos.
-- Tema claro/escuro, layout responsivo, focus traps com retorno seguro de foco (`Escape`), navegação acessível por teclado e anúncios `aria-live` para leitores de tela.
+- Tema claro/escuro, layout responsivo, conformidade WCAG AA completa, focus traps com retorno seguro de foco (`Escape`), navegação acessível por teclado e anúncios `aria-live` para leitores de tela.
 
 ## Como o StudyTrack funciona
 
@@ -265,7 +267,7 @@ A demonstração usa `sessionStorage` e um cenário fictício separado. Reinicia
 - `Ctrl+Shift+1` a `Ctrl+Shift+8` ou `Cmd+Shift+1` a `Cmd+Shift+8`: alternar entre as oito áreas.
 - `Esc`: fechar busca, menu ou modal ativo.
 
-A aba **Instruções** funciona como Central de Ajuda: seis cards fixos em duas colunas no desktop selecionam um capítulo de cada vez. A busca local encontra assuntos em todos os capítulos e no glossário; links discretos abrem os recursos correspondentes. O guia explica o ciclo da prova ao fechamento semanal e pode ser consultado depois do primeiro uso.
+A aba **Instruções** atua como Central de Ajuda interativa: carregada sob demanda (`help.bundle.js`), organiza os artigos em sete categorias com estimativa de tempo de leitura (`⏱ X min`) e nível pedagógico (`Iniciante`, `Estratégico`, `Avançado`). Oferece busca instantânea com suporte a chips de atalhos rápidos (`#revisão`, `#prontidão`, `#planejamento`, etc.), links diretos compartilháveis por hash (`#instrucoes?topic=<id>`), micro-simuladores visuais interativos (Curva de Ebbinghaus e Força da Evidência/Lei dos Grandes Números) e widget local de utilidade da explicação.
 
 O histórico do **Foco Estratégico** mostra uma linha simples para comparar períodos completos do mesmo concurso. A lista logo abaixo mantém datas, percentuais e minutos explícitos; o gráfico é apenas um apoio visual.
 
@@ -285,6 +287,11 @@ O histórico de evolução e entregas do StudyTrack foi consolidado em [Planos C
    - **Acessibilidade e Leitores de Tela:** Focus traps em modais e tour, retorno de foco via `Escape`, anúncios `aria-live` em cronômetro e cards, e roteiro formal de testes manuais em [ROTEIRO-AUDITORIA-NVDA.md](docs/ROTEIRO-AUDITORIA-NVDA.md).
    - **Onboarding 2.0 Refinado:** Feedback visual ativo nos atalhos, nivelamento em lote no Wizard, diagnóstico pedagógico de viabilidade do plano (`calculatePlanFeasibility`) e CTA "Iniciar 1ª atividade" com disparo direto da matéria no plano diário.
    - **Arquitetura Modular:** `error-notebook-controller.ts` isolado sem inflar o `app.ts` e base preparatória SaaS documentada ([PLANO-TRANSFORMACAO-SAAS.md](docs/PLANO-TRANSFORMACAO-SAAS.md)).
+5. **Central de Ajuda & Instruções 2.0 (Concluída):**
+   - **Arquitetura Reativa & Code-Splitting:** Módulo Preact isolado em `help.bundle.js` (~80 KB) carregado sob demanda via `loadHelpBundle()`, aliviando o carregamento inicial e disponível offline (PWA).
+   - **Didática Interativa:** Simulador interativo da Curva de Ebbinghaus (`EbbinghausSimulator.tsx`), simulador de amostragem e força da evidência com intervalos de confiança de 95% (`EvidenceConfidenceSimulator.tsx`) e widget de avaliação local de utilidade (`HelpFeedbackWidget.tsx`).
+   - **Novos Guias & Navegabilidade:** Inclusão de guias do PiP Timer, Caderno de Erros e Simulador What-If, com metadados de tempo de leitura/nível (`topic-metadata.ts`), cópia de atalho direto para clipboard e conformidade rigorosa WCAG AA em modo claro e escuro.
+   - **Qualidade & Homologação:** 990 testes unitários no Node passando em ~38s e 100% verde em todos os 7 jobs do GitHub Actions.
 
 As versões atuais são **Exam Intelligence V1**, **Priority Engine V5**, **Adaptive Planning V4** e **Weekly Close 2.2.0**. Registros históricos preservam as versões conhecidas no momento da decisão; valores de versões ausentes em dados antigos não são inventados retroativamente. A comparação do foco estratégico usa fechamentos salvos sem sobreposição, com dados completos e do mesmo concurso ativo; fechamentos antigos sem esse escopo não entram na comparação.
 

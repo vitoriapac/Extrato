@@ -171,7 +171,9 @@ flowchart TD
 - `src/reports/report-template.ts`: template seguro do relatório A4.
 - `src/reports/print-report.ts`: coordenação isolada da impressão/“Salvar como PDF”.
 - `src/ui/controllers/report-controller.ts`: eventos e composição do relatório, com estado e cálculos recebidos da raiz.
-- `src/ui/help/`: Central de Ajuda em sete categorias, com conteúdo estático (`help-content.ts`), exemplos semânticos (`help-visuals.ts`), renderer e controlador de navegação (`help-controller.ts`).
+- `src/domain/help/`: motores puros de cálculo didático para a Central de Ajuda: `retention-simulator.ts` (Curva de Ebbinghaus e repetição espaçada), `evidence-simulator.ts` (Lei dos Grandes Números, 95% CI e margem de erro por amostra), `topic-metadata.ts` (tempo estimado de leitura e nível) e `help-feedback.ts` (gestão de avaliações de utilidade).
+- `src/ui/help/`: componentes reativos em Preact 11 (`HelpTab.tsx`, `HelpTopicCard.tsx`, `EbbinghausSimulator.tsx`, `EvidenceConfidenceSimulator.tsx`, `HelpFeedbackWidget.tsx`), catálogo (`help-content.ts`), controlador (`help-controller.ts`) e runtime isolado sob demanda (`help-runtime.ts`).
+- `src/help.bundle.js`: artefato compilado de code-splitting carregado sob demanda via `loadHelpBundle()` e cacheado pelo Service Worker.
 - `docs/VISUAL-HIERARCHY.md`: mapa de decisão, análise e evidência para orientar mudanças visuais sem alterar os cálculos.
 - `src/app.ts`: composition root, compatibilidade dos fluxos e registro explícito das dependências.
 - `src/app.bundle.js`: artefato gerado para permitir abertura direta por `file://`.
@@ -194,7 +196,7 @@ npm run build
 npm run check
 ```
 
-`src/app.bundle.js`, `src/exam-catalog.bundle.js`, `index.html` e `service-worker.js` são artefatos gerados e não devem ser editados para alterar suas versões manualmente. O build calcula um fingerprint determinístico dos fontes e assets, aplica o mesmo valor às URLs versionadas e ao nome do cache PWA, e injeta essa versão no carregamento sob demanda do catálogo. A implantação no GitHub Pages executa `npm ci` e `npm run build` antes de preparar o site. `npm run check:bundle` verifica a reprodução dos bundles e dos arquivos versionados. O bundle principal não incorpora os dados completos do catálogo; o segundo bundle é carregado ao abrir o assistente ou o importador.
+`src/app.bundle.js`, `src/exam-catalog.bundle.js`, `src/report.bundle.js`, `src/help.bundle.js`, `index.html` e `service-worker.js` são artefatos gerados e não devem ser editados para alterar suas versões manualmente. O build calcula um fingerprint determinístico dos fontes e assets, aplica o mesmo valor às URLs versionadas e ao nome do cache PWA, e injeta essa versão no carregamento sob demanda dos módulos desacoplados (catálogo de editais e Central de Ajuda). A implantação no GitHub Pages executa `npm ci` e `npm run build` antes de preparar o site. `npm run check:bundle` verifica a reprodução dos bundles e dos arquivos versionados. O bundle principal não incorpora os dados completos do catálogo nem os guias da Central de Ajuda; ambos são carregados sob demanda via *code-splitting*.
 
 ## Persistência
 
