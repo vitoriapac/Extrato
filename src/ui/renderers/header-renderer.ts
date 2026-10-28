@@ -4,7 +4,9 @@ export function renderHeroHeader(model: Record<string, any>, { document }: any) 
   document.getElementById('balanceFigure').innerHTML = `${readiness.value ?? '—'}<span>/100</span>`;
   document.getElementById('balanceSub').textContent =
     readiness.value == null
-      ? 'Aguardando evidências'
+      ? readiness.availableFactors
+        ? `Ainda sem evidência suficiente · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`
+        : 'Aguardando evidências'
       : `Confiança do índice: ${readiness.confidence.toLowerCase()} · ${readiness.availableFactors} de ${readiness.totalFactors} fatores disponíveis`;
   document.getElementById('statSubjects').textContent = stats.subjects;
   document.getElementById('statContent').textContent = stats.contentPercent + '%';

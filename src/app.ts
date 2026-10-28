@@ -6409,7 +6409,7 @@ function renderMetasPorDisciplina() {
         </div>
         <div class="meta-progress-label">
           <span>${atingido} / ${md.meta}</span>
-          <span>${pct}%</span>
+          <span>${pct}% da meta</span>
         </div>
       </div>
       <div class="meta-inputs">

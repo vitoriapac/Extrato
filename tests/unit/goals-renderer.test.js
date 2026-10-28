@@ -68,3 +68,27 @@ test('metas padrão sem atividade são sugestões e não pendências pessoais', 
   assert.deepEqual(initialGoalSuggestions(INITIAL_GOAL_VALUES, true), []);
   assert.ok(!initialGoalSuggestions({ ...INITIAL_GOAL_VALUES, semanal: 8 }).includes('semanal'));
 });
+test('rótulos de meta concordam no plural e dizem que a porcentagem é da meta', () => {
+  const model = buildResultGoalsViewModel({
+    goals: {
+      semanal: 5,
+      mensal: 20,
+      questoesSemanal: 100,
+      simuladosSemanal: 1,
+      consistenciaSemanal: 5,
+      metaAprovacao: 80,
+    },
+    achieved: {
+      weeklyTopics: 2,
+      monthlyTopics: 7,
+      questions: 50,
+      simulations: 1,
+      studyDays: 1,
+      accuracy: null,
+    },
+  });
+  const html = renderGoals(model, { adherenceTarget: 80, escapeHtml });
+  assert.match(html, /1 dia \/ 5 dias/);
+  assert.match(html, /\d+% da meta/);
+  assert.doesNotMatch(html, /=>/);
+});

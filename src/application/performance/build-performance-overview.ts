@@ -107,7 +107,11 @@ export function buildPerformanceOverview({
     : null;
   const changes = [];
   if (readinessDelta != null && readinessDelta !== 0)
-    changes.push({ label: 'Prontidão salva', delta: readinessDelta, unit: 'pontos' });
+    changes.push({
+      label: 'Prontidão no último fechamento × período anterior',
+      delta: readinessDelta,
+      unit: Math.abs(readinessDelta) === 1 ? 'ponto' : 'pontos',
+    });
   if (previous) {
     for (const [label, key, unit, available] of [
       [

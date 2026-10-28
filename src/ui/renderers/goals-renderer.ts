@@ -7,9 +7,16 @@ export function renderGoals(
 ) {
   const card = (item: Record<string, any>) => {
     const suggested = initialSuggestions.includes(item.key);
-    const unit = item.id === 'accuracy' ? '%' : item.id === 'studyDays' ? ' dias' : '';
+    const unit = (value: number) =>
+      item.id === 'accuracy'
+        ? '%'
+        : item.id === 'studyDays'
+          ? value === 1
+            ? ' dia'
+            : ' dias'
+          : '';
     const remaining = Math.round((item.remaining ?? 0) * 10) / 10;
-    return `<article class="meta-card"><div class="meta-info"><div class="meta-name">${escapeHtml(item.label)}</div><div class="meta-formula">${escapeHtml(item.description)}</div>${suggested ? '<small class="context-note">Sugestão inicial editável</small>' : ''}</div><div class="meta-progress-block"><div class="meta-progress-track"><div class="meta-progress-fill ${item.state === 'achieved' ? 'over' : ''}" style="width:${item.progressClamped}%"></div></div><div class="meta-progress-label"><span>${item.measured ? formatDecimal(item.current) + unit : 'Sem dados'} / ${item.target ?? '—'}${unit}</span><span>${item.progress == null ? 'Aguardando registros' : item.progress + '%'}</span></div></div><label class="meta-inputs">Meta: <input type="number" min="${item.id === 'studyDays' ? 1 : 0}" ${item.id === 'accuracy' ? 'max="100"' : item.id === 'studyDays' ? 'max="7"' : ''} step="1" value="${item.target ?? 0}" aria-label="${escapeHtml(item.label)}" data-delegated-blur="updateMeta('${item.key}', this.value)">${unit}</label><small class="result-goal-status">${suggested ? 'Escolha um objetivo compatível com sua rotina' : item.state === 'achieved' ? 'Meta atingida' : item.remaining == null ? 'Aguardando registros' : `${remaining === 1 ? 'Falta' : 'Faltam'} ${formatDecimal(remaining)}${item.id === 'accuracy' ? ' p.p.' : unit} para atingir a meta`}</small></article>`;
+    return `<article class="meta-card"><div class="meta-info"><div class="meta-name">${escapeHtml(item.label)}</div><div class="meta-formula">${escapeHtml(item.description)}</div>${suggested ? '<small class="context-note">Sugestão inicial editável</small>' : ''}</div><div class="meta-progress-block"><div class="meta-progress-track"><div class="meta-progress-fill ${item.state === 'achieved' ? 'over' : ''}" style="width:${item.progressClamped}%"></div></div><div class="meta-progress-label"><span>${item.measured ? formatDecimal(item.current) + unit(item.current) : 'Sem dados'} / ${item.target ?? '—'}${item.target == null ? '' : unit(item.target)}</span><span>${item.progress == null ? 'Aguardando registros' : item.progress + '% da meta'}</span></div></div><label class="meta-inputs">Meta: <input type="number" min="${item.id === 'studyDays' ? 1 : 0}" ${item.id === 'accuracy' ? 'max="100"' : item.id === 'studyDays' ? 'max="7"' : ''} step="1" value="${item.target ?? 0}" aria-label="${escapeHtml(item.label)}" data-delegated-blur="updateMeta('${item.key}', this.value)">${unit(Number(item.target))}</label><small class="result-goal-status">${suggested ? 'Escolha um objetivo compatível com sua rotina' : item.state === 'achieved' ? 'Meta atingida' : item.remaining == null ? 'Aguardando registros' : `${remaining === 1 ? 'Falta' : 'Faltam'} ${formatDecimal(remaining)}${item.id === 'accuracy' ? ' p.p.' : unit(remaining)} para atingir a meta`}</small></article>`;
   };
   const group = (key: string, title: string, description: string, ids: any[], extra = '') =>
     `<section class="goal-group goal-group--${key}" aria-labelledby="goalGroup-${key}"><header class="module-heading module-heading--compact"><h4 class="module-heading__title" id="goalGroup-${key}">${title}</h4><p class="module-heading__description">${description}</p></header>${ids

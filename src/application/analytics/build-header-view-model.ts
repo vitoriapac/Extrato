@@ -1,3 +1,6 @@
+// One factor is not a balance: an empty account would open at ~45/100.
+export const MIN_READINESS_FACTORS = 2;
+
 export function buildHeaderViewModel({
   readiness = {},
   subjects = [],
@@ -25,7 +28,7 @@ export function buildHeaderViewModel({
           )
         : null,
     flat = {
-      readinessValue: readiness.value ?? null,
+      readinessValue: availableFactors >= MIN_READINESS_FACTORS ? (readiness.value ?? null) : null,
       readinessConfidence: readiness.confidenceLabel || 'Baixa',
       availableFactors,
       totalFactors,

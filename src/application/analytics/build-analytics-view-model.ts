@@ -1,3 +1,4 @@
+import { pluralize } from '../../core/utils.js';
 import { HEATMAP_METRICS, heatmapMetricLevel } from '../../domain/analytics/heatmap.js';
 
 export function buildHeatmapViewModel({
@@ -166,7 +167,7 @@ export function buildDiagnosisViewModel(
           'Tempo sem contato',
           item.daysSinceContact == null
             ? null
-            : `${Math.max(0, Math.round(item.daysSinceContact))} dias`
+            : pluralize(Math.max(0, Math.round(item.daysSinceContact)), 'dia')
         ),
       ],
       secondaryReasons: [
@@ -242,7 +243,7 @@ export function buildDiagnosisViewModel(
         evidenceRow('Urgência da revisão', urgency! > 0 ? `${Math.round(urgency!)}/100` : null),
         evidenceRow(
           'Tempo sem contato',
-          Number.isFinite(days) ? `${Math.max(0, Math.round(days!))} dias` : null
+          Number.isFinite(days) ? pluralize(Math.max(0, Math.round(days!)), 'dia') : null
         ),
       ],
       explanation: [

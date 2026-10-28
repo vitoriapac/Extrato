@@ -23,7 +23,12 @@ test('separa prontidão composta de conteúdo concluído', () => {
 });
 test('expõe a mesma prontidão para os dois renderizadores', () => {
   const model = buildHeaderViewModel({
-    readiness: { value: 45, confidenceLabel: 'Alta', availableFactors: ['a'], missingFactors: [] },
+    readiness: {
+      value: 45,
+      confidenceLabel: 'Alta',
+      availableFactors: ['a', 'b'],
+      missingFactors: [],
+    },
     examDate: '2026-09-26',
     today: '2026-09-09',
     planNumber: '2026-001',
@@ -31,4 +36,18 @@ test('expõe a mesma prontidão para os dois renderizadores', () => {
   assert.equal(model.readiness.value, 45);
   assert.equal(model.exam.daysRemaining, 17);
   assert.equal(model.plan.number, '2026-001');
+});
+test('não mostra saldo com um único fator disponível', () => {
+  const model = buildHeaderViewModel({
+    readiness: {
+      value: 45,
+      confidenceLabel: 'Baixa',
+      availableFactors: ['a'],
+      missingFactors: ['b', 'c', 'd', 'e'],
+    },
+  });
+  assert.equal(model.readiness.value, null);
+  assert.equal(model.readinessValue, null);
+  assert.equal(model.readiness.availableFactors, 1);
+  assert.equal(model.readiness.totalFactors, 5);
 });
