@@ -266,13 +266,23 @@ export function SimulationLogTable({
                         );
                       })}
                     </div>
-                    <button
-                      type="button"
-                      class="btn ghost small breakdown-add-btn"
-                      data-delegated-click={`addBreakdownRow('${sim.id}')`}
-                    >
-                      + Adicionar disciplina
-                    </button>
+                    <div class="flex items-center gap-2 mt-2">
+                      <button
+                        type="button"
+                        class="btn ghost small breakdown-add-btn"
+                        data-delegated-click={`addBreakdownRow('${sim.id}')`}
+                      >
+                        + Adicionar disciplina
+                      </button>
+                      <button
+                        type="button"
+                        class="btn small breakdown-remediation-btn"
+                        data-delegated-click={`openSimulatedRemediation('${sim.id}')`}
+                        aria-label={`Abrir Raio-X e Plano de Remediação para ${vm.name}`}
+                      >
+                        ⚡ Raio-X &amp; Remediação
+                      </button>
+                    </div>
                   </div>
                 </td>
               </tr>

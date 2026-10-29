@@ -131,6 +131,35 @@ flowchart TD
   3. `src/app.ts`: purificação de mais de 130 linhas de fiação imperativa inline e renderização, com redução para 9.688 linhas (-1.233 linhas líquidas acumuladas).
 - **Status:** 100% concluída e validada no Fast Gate (1061 testes passando, tempo 34.34s, dual timezone UTC/SP e Playwright smoke passing).
 
+### Fase 6: Gestão de Conteúdo (Disciplinas, Editais, Questões e Simulados) — CONCLUÍDA ✅
+- **Objetivo:** Modularizar a gestão de disciplinas, tópicos, editais, questões e simulados.
+- **Módulos Entregues e Integrados:**
+  1. `src/ui/tabs/subjects/subjects-tab-controller.ts`: controller unificado da aba de disciplinas (`renderVerticalizedSyllabus`, `renderSubjects`, limites, notas, filtros de edital, reordenação, duplicação, toggle mobile, renomeação, adição, arquivamento/restauração, deleção permanente protegida por dependências em sessões/questões/calendário/metas, status de tópicos e refresh de estatísticas). (4 testes unitários em `tests/unit/subjects-tab-controller.test.js`).
+  2. `src/features/exam-import/exam-import-modal-controller.ts`: orquestração encapsulada do modal de importação de editais (`openExamImport`, `closeExamImport`, `renderExamImport`, `applyPresetBlueprintDefaults`, `syncExamSubjectCheckboxes`). (2 testes unitários em `tests/unit/exam-import-modal-controller.test.js`).
+  3. `src/ui/tabs/questions/questions-tab-controller.ts`: controller unificado da tabela de questões (`renderQuestoes`, `addQuestaoRow`, `editQuestion`, `updateQuestionDraft`, `saveQuestionEdit`, `deleteQuestaoRow`, `updateQuestionError`, normalização e trava de quebra de erros por categoria, `calcAcertoPct`). (3 testes unitários em `tests/unit/questions-tab-controller.test.js`).
+  4. `src/ui/tabs/questions/simulations-tab-controller.ts`: controller unificado da tabela de simulados (`renderSimulados`, `addSimuladoRow`, `editSimulation`, `updateSimulationDraft`, `saveSimulationEdit`, `deleteSimuladoRow`, `toggleBreakdown`, breakdowns por disciplina com trava de acertos, `simuladoEffectiveCounts`, `simuladoNota`). (3 testes unitários em `tests/unit/simulations-tab-controller.test.js`).
+- **Redução Obtida:** `src/app.ts` reduzido de 9.254 para 8.651 linhas (-603 linhas).
+- **Status:** 100% concluída e validada no Fast Gate (1103 testes passando, tempo 33.38s, dual timezone UTC/SP).
+
+### Fase 7: Desacoplamento do Fluxo Temporal (Calendário, Agenda de Revisões e Foco do Cronômetro) — CONCLUÍDA ✅
+- **Objetivo:** Desacoplar a gestão temporal de estudos: grade mensal, eventos unificados, revisões atrasadas agrupadas, agenda adaptativa SM-2 e controles de foco do cronômetro com sincronização de bookmarks.
+- **Módulos Entregues e Integrados:**
+  1. `src/ui/tabs/calendar/calendar-tab-controller.ts`: controller completo da aba de Calendário (`getRevisoesUnificadas`, `renderCalendar`, `renderMonthCalendar`, `renderCalIndicadores`, `renderCalendarFilters`, `setCalendarMobileView`, CRUD completo de itens do calendário, gestão de atrasadas agrupadas `renderCalAtrasadas`, paginação, expansão de datas `toggleOverdueDate`, `renderCalTarefasHoje` e `completeUnifiedReview`). (3 testes unitários em `tests/unit/calendar-tab-controller.test.js`).
+  2. `src/ui/tabs/reviews/reviews-tab-controller.ts`: controller completo da aba de Agenda de Revisões (`getFilteredAndSortedReviews`, `getGroupedReviews`, `renderAgenda`, `renderAgendaFilters`, `addAgendaRow`, `editAgenda`, `cancelAgendaEdit`, `updateAgendaDraft`, `saveAgendaEdit`, `deleteAgendaRow`, `adaptiveReviewSuggestion`, `resetAdaptiveReviewDate`, `gerarAgendaAutomatica`, avaliação adaptativa SM-2 `completeAgendaReview`, `rateCompletedReview`, `closeReviewRating` e binds de eventos). (3 testes unitários em `tests/unit/reviews-tab-controller.test.js`).
+  3. `src/ui/controllers/timer-ui-controller.ts`: controlador de interface para o modo foco do cronômetro (`focusStudyTimer`, `openStudyTimerFocus`, `toggleTimerFocus` com restauração da aba de origem), confinamento e atalhos de teclado (Esc para sair do foco), e sincronização do ponto de parada (`saveSessionBookmark`, `topicResumeLabel`). (2 testes unitários em `tests/unit/timer-ui-controller.test.js`).
+- **Redução Obtida:** `src/app.ts` reduzido de 8.651 para 8.079 linhas (-572 linhas líquidas eliminadas; -2.842 linhas acumuladas desde o início do plano).
+- **Status:** 100% concluída e validada no Fast Gate (1111 testes passando, tempo 50.1s, dual timezone UTC/SP, Playwright smoke passing).
+
+### Fase 8: Desacoplamento do Hub de Execução Diária & Onboarding — CONCLUÍDA ✅
+- **Objetivo:** Desacoplar o núcleo de execução diária (histórico de sessões de estudo com filtros e edição, wizard de onboarding 2.0 com presets de rotina e nivelamento de matérias, motor de recomendações e replanejamento com cálculo de baseline, e a aba "Hoje" com materialização do plano e métricas de execução diária).
+- **Módulos Entregues e Integrados:**
+  1. `src/ui/tabs/today/session-history-controller.ts`: controller completo para histórico de sessões (`renderHistoricoSessoes`, `renderSessionHistoryFilters`, agrupamento por data, paginação/limite, edição de sessão `editStudySession`, `saveStudySessionEdit`, `cancelStudySessionEdit` e exclusão com diálogo confirmatório). (3 testes unitários em `tests/unit/session-history-controller.test.js`).
+  2. `src/features/onboarding/onboarding-modal-controller.ts`: controller unificado do wizard de onboarding 2.0 (`openOnboardingModal`, `closeOnboardingModal`, `renderOnboardingStep`, `renderStep1Concurso`, `renderStep2Rotina`, `renderStep3Nivelamento`, `renderStep4Plano`, atalhos de data da prova, presets de rotina semanal, nivelamento em massa por disciplina e geração inicial de plano). (3 testes unitários em `tests/unit/onboarding-modal-controller.test.js`).
+  3. `src/ui/tabs/today/study-recommendation-controller.ts`: controller desacoplado de recomendações e replanejamento (`renderStudyRecommendations`, `renderReplanPreview`, `renderReplanResultSummary`, `applyRecommendedAdjustment`, `dismissRecommendation`, `confirmReplan`, `clearReplanPreview`, medição de baseline e impacto no plano semanal). (3 testes unitários em `tests/unit/study-recommendation-controller.test.js`).
+  4. `src/ui/tabs/today/today-tab-controller.ts`: controller completo da aba Hoje (`renderPlanoHoje`, `renderExecutionSummary`, `renderDailyGoalStats`, `renderFirstStepsChecklist`, `renderPlannedActionList`, `renderPlannedCard`, `renderTopicProgressPill`, binds de execução e completude). (4 testes unitários em `tests/unit/today-tab-controller.test.js`).
+- **Redução Obtida:** `src/app.ts` reduzido de 8.079 para **6.736 linhas** (-1.343 linhas líquidas eliminadas na Fase 8; -4.185 linhas acumuladas desde o início do plano).
+- **Status:** 100% concluída e validada no Fast Gate (1124 testes passando, tempo 35.14s, dual timezone UTC/SP, Playwright smoke passing, bundles reproduzíveis).
+
 ---
 
 ## 5. Governança e Validação Contínua

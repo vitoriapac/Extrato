@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-232 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+247 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -107,6 +107,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/backup-modal-controller.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/backup-validator.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/calendar-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/calendar-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/capacity-review-preview.test.js | node | Capacidade | critical | — | contract | none |
 | tests/unit/clock-timezone.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/close-comparison.test.js | node | Aplicação | functional | — | contract | none |
@@ -146,6 +147,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/evidence-scope-migration.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/exam-evidence-scope.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/exam-import-feature.test.js | node | Inteligência da prova | critical | — | contract | none |
+| tests/unit/exam-import-modal-controller.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/exam-import-renderer.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/exam-import-service.test.js | node | Inteligência da prova | critical | — | contract | none |
 | tests/unit/exam-intelligence-model.test.js | node | Inteligência da prova | functional | — | contract | none |
@@ -190,8 +192,10 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/multidimensional-radar.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/navigation-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/next-action-card.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/onboarding-modal-controller.test.js | node | Onboarding | functional | — | contract, viewport | none |
 | tests/unit/onboarding-renderer.test.js | node | Onboarding | functional | — | contract | none |
 | tests/unit/onboarding-view-model.test.js | node | Onboarding | functional | — | contract | none |
+| tests/unit/opportunity-cost-analytics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/overview-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/packages-3-5.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/performance-analytics-controller.test.js | node | Desempenho | functional | — | contract | none |
@@ -203,6 +207,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/planning-repository.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-services.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/planning-sustainability.test.js | node | Sustentabilidade | critical | — | contract | none |
+| tests/unit/plateau-detector.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/post-simulation-replan.test.js | node | Planejamento | critical | — | contract | none |
 | tests/unit/preact-mount.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/preparation-signals.test.js | node | Aplicação | functional | — | contract | none |
@@ -218,6 +223,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/question-import-normalizer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/question-import-service.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/questions-components.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/questions-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/raw-syllabus-parser.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/recommend-study.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/recommendation-action.test.js | node | Recomendações | functional | — | contract | none |
@@ -245,14 +251,19 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/review-service.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/review-view-model.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/reviews-calendar-components.test.js | node | Revisões | functional | — | contract | none |
+| tests/unit/reviews-tab-controller.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/reviews.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/rhythm-estimator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/risk-score.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/search-controller.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/session-history-controller.test.js | node | Sessões | critical | — | contract | none |
 | tests/unit/session-history.test.js | node | Sessões | critical | — | contract | none |
 | tests/unit/session-modal-controller.test.js | node | Sessões | functional | — | contract | none |
 | tests/unit/session-result.test.js | node | Sessões | functional | — | contract | none |
 | tests/unit/session-service.test.js | node | Sessões | functional | — | contract | none |
+| tests/unit/simulated-remediation-modal.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/simulated-remediation.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/simulations-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/stability-phase-comparison.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/state-boundaries.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/state-migrations.test.js | node | Estado | critical | — | contract | none |
@@ -269,6 +280,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/study-cycle-engine.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/study-day-count.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/study-plan.test.js | node | Planejamento | functional | — | contract | none |
+| tests/unit/study-recommendation-controller.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/study-session.test.js | node | Sessões | functional | — | contract | none |
 | tests/unit/study-strategy.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/study-streak.test.js | node | Aplicação | functional | — | contract | none |
@@ -280,12 +292,15 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/subject-service.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/subject-target-editor-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/subjects-components.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/subjects-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/sustainability-insights.test.js | node | Sustentabilidade | functional | — | contract | none |
 | tests/unit/tab-router.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/test-impact-selection.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/timer-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/timer-coordinator.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/timer-ui-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/today-components.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/today-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/today-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-analytics-view.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/topic-bookmark.test.js | node | Aplicação | functional | — | contract | none |

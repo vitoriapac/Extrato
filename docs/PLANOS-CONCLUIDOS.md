@@ -365,7 +365,31 @@ Em atendimento estrito à política inegociável de governança de `AGENTS.md` (
 - Composição e ciclo de renderização desacoplados do ponto de entrada:
   - [`src/bootstrap/wire-dependencies.ts`](file:///c:/Users/vitor/Documents/Extrato/src/bootstrap/wire-dependencies.ts) (instanciação unificada de providers, repositórios e serviços de aplicação - 4 testes).
   - [`src/bootstrap/master-renderer.ts`](file:///c:/Users/vitor/Documents/Extrato/src/bootstrap/master-renderer.ts) (loop de renderização, profundidade aninhada, cache de candidatos e captura de erros - 6 testes).
-- Conclusão homologada com **1070 testes unitários verdes em 34.96s** no Fast Gate.
+
+### 8.6. Fase 6: Gestão de Conteúdo (Disciplinas, Editais, Questões e Simulados)
+- Modularização completa das operações de conteúdo sob `src/ui/tabs/` e `src/features/`:
+  - [`src/ui/tabs/subjects/subjects-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/subjects/subjects-tab-controller.ts) (CRUD de disciplinas, edital verticalizado, notas, limites, ordenação, duplicação, exclusão segura e ciclo de vida de tópicos - 4 testes).
+  - [`src/features/exam-import/exam-import-modal-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/features/exam-import/exam-import-modal-controller.ts) (modal de importação de editais com catalog, preview, blueprints e sincronização - 2 testes).
+  - [`src/ui/tabs/questions/questions-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/questions/questions-tab-controller.ts) (CRUD de questões, categorização de erros e travas de excesso - 3 testes).
+  - [`src/ui/tabs/questions/simulations-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/questions/simulations-tab-controller.ts) (CRUD de simulados, breakdowns por disciplina e cálculo de notas - 3 testes).
+- Conclusão homologada com **1103 testes unitários verdes em 33.38s** no Fast Gate.
+
+### 8.7. Fase 7: Desacoplamento do Fluxo Temporal (Calendário, Agenda de Revisões e Foco do Cronômetro)
+- Modularização completa das operações temporais sob `src/ui/tabs/` e `src/ui/controllers/`:
+  - [`src/ui/tabs/calendar/calendar-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/calendar/calendar-tab-controller.ts) (grade mensal, unificação de eventos com revisões, indicadores de prazo, atrasadas agrupadas, renderização, paginação e CRUD de eventos de calendário - 3 testes).
+  - [`src/ui/tabs/reviews/reviews-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/reviews/reviews-tab-controller.ts) (agenda de revisões, notas adaptativas SM-2, agendamento manual, unificação de pendências e geração automática - 3 testes).
+  - [`src/ui/controllers/timer-ui-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/timer-ui-controller.ts) (modo foco do cronômetro com restauração da aba de origem, atalhos de teclado Esc e sincronização do ponto de parada/bookmarks - 2 testes).
+- `src/app.ts` reduzido de 8.651 para **8.079 linhas** (-572 linhas líquidas eliminadas; -2.842 linhas acumuladas).
+- Conclusão homologada com **1111 testes unitários verdes em 50.1s** no Fast Gate (dual timezone UTC e America/Sao_Paulo).
+
+### 8.8. Fase 8: Desacoplamento do Hub de Execução Diária & Onboarding
+- Modularização completa do hub da Aba Hoje, Histórico de Sessões, Recomendações/Replanejamento e Onboarding 2.0 sob `src/ui/tabs/today/` e `src/features/onboarding/`:
+  - [`src/ui/tabs/today/session-history-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/today/session-history-controller.ts) (histórico de sessões, filtros por período/tipo/disciplina, agrupamento diário, paginação, edição segura e exclusão com diálogo - 3 testes em `tests/unit/session-history-controller.test.js`).
+  - [`src/features/onboarding/onboarding-modal-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/features/onboarding/onboarding-modal-controller.ts) (wizard em 4 etapas, atalhos de data, presets de rotina semanal, nivelamento em lote por disciplina e geração de plano inicial - 3 testes em `tests/unit/onboarding-modal-controller.test.js`).
+  - [`src/ui/tabs/today/study-recommendation-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/today/study-recommendation-controller.ts) (cards de recomendação, replanejamento adaptativo, baseline de estudo semanal, aceitação/descarte e confirmação de prévias - 3 testes em `tests/unit/study-recommendation-controller.test.js`).
+  - [`src/ui/tabs/today/today-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/today/today-tab-controller.ts) (materialização de plano de hoje, cards de execução, resumo diário, metas de hoje e checklist da primeira semana - 4 testes em `tests/unit/today-tab-controller.test.js`).
+- `src/app.ts` reduzido de 8.079 para **6.736 linhas** (-1.343 linhas líquidas na fase; **-4.185 linhas acumuladas** desde o início do plano).
+- Conclusão homologada com **1124 testes unitários verdes em 35.14s** no Fast Gate (dual timezone UTC e America/Sao_Paulo, Playwright smoke passing e bundles reproduzíveis).
 
 ---
 
@@ -377,7 +401,7 @@ Todas as decisões e entregas registradas neste histórico respeitam os contrato
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
-- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (294 arquivos auditados, 1070 testes unitários verdes em ~35s)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (309 arquivos auditados, 1124 testes unitários verdes em ~35s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

@@ -522,6 +522,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/calendar-tab-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o controller da aba de calendário."
+    },
+    {
       "file": "tests/unit/capacity-review-preview.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -715,6 +720,11 @@
       "file": "tests/unit/exam-import-feature.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/exam-import-modal-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
       "file": "tests/unit/exam-import-renderer.test.js",
@@ -937,6 +947,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/onboarding-modal-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o controller do modal de onboarding guiado 2.0."
+    },
+    {
       "file": "tests/unit/onboarding-renderer.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -945,6 +960,11 @@
       "file": "tests/unit/onboarding-view-model.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/opportunity-cost-analytics.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Cálculo analítico puro de custo de oportunidade, pontos por hora (PPH) e priorização marginal."
     },
     {
       "file": "tests/unit/overview-view-model.test.js",
@@ -1000,6 +1020,11 @@
       "file": "tests/unit/planning-sustainability.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/plateau-detector.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Detecção algorítmica pura de platô de desempenho, estabilidade de acerto e prescrição pedagógica."
     },
     {
       "file": "tests/unit/post-simulation-replan.test.js",
@@ -1075,6 +1100,11 @@
       "file": "tests/unit/questions-components.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; componentes Preact e controller da aba de questões e simulados."
+    },
+    {
+      "file": "tests/unit/questions-tab-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
       "file": "tests/unit/raw-syllabus-parser.test.js",
@@ -1212,6 +1242,11 @@
       "rationale": "Contrato Node barato; componentes Preact e controllers de revisões e calendário."
     },
     {
+      "file": "tests/unit/reviews-tab-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o controller da aba de revisões."
+    },
+    {
       "file": "tests/unit/reviews.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1237,6 +1272,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/session-history-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o controller do histórico de sessões."
+    },
+    {
       "file": "tests/unit/session-modal-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui modal de conclusão de sessão, formulário e campos de bookmark."
@@ -1250,6 +1290,21 @@
       "file": "tests/unit/session-service.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/simulated-remediation-modal.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Renderização declarativa Preact do modal de Raio-X pós-simulado e plano de 7 dias."
+    },
+    {
+      "file": "tests/unit/simulated-remediation.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Diagnóstico determinístico de sangria pós-simulado, plano diário de 7 dias e rascunhos de erro."
+    },
+    {
+      "file": "tests/unit/simulations-tab-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
     },
     {
       "file": "tests/unit/stability-phase-comparison.test.js",
@@ -1332,6 +1387,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/study-recommendation-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o controller de recomendações e replanejamento."
+    },
+    {
       "file": "tests/unit/study-session.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1387,6 +1447,11 @@
       "rationale": "Contrato de renderização e interatividade dos componentes Preact da aba Disciplinas."
     },
     {
+      "file": "tests/unit/subjects-tab-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s)."
+    },
+    {
       "file": "tests/unit/sustainability-insights.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1412,9 +1477,19 @@
       "rationale": "Contrato Node barato; inclui coordenação do cronômetro de estudo, bookmarks e sessões."
     },
     {
+      "file": "tests/unit/timer-ui-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o controller do modo foco do cronômetro e bookmarks."
+    },
+    {
       "file": "tests/unit/today-components.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; componentes Preact e controller da aba Hoje."
+    },
+    {
+      "file": "tests/unit/today-tab-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o controller da aba Hoje e plano de estudo diário."
     },
     {
       "file": "tests/unit/today-view-model.test.js",

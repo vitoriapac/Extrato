@@ -13,17 +13,21 @@ import {
   matchesSubjectSearch,
   createSubjectSearchController,
 } from './ui/subjects/subject-navigation.js';
-import { createSubjectsController } from './ui/tabs/subjects/subjects-controller.js';
-import { renderTopicAnalyticsState as renderTopicAnalyticsStateView } from './ui/tabs/subjects/topic-analytics-view.js';
-import { createQuestionsController } from './ui/tabs/questions/questions-controller.js';
 import { createReviewsTabController } from './ui/tabs/reviews/reviews-tab-controller.js';
 import { createCalendarTabController } from './ui/tabs/calendar/calendar-tab-controller.js';
 import { createGoalsTabController } from './ui/tabs/goals/goals-tab-controller.js';
 import { createTodayTabController } from './ui/tabs/today/today-tab-controller.js';
+import { createSessionHistoryController } from './ui/tabs/today/session-history-controller.js';
+import { createStudyRecommendationController } from './ui/tabs/today/study-recommendation-controller.js';
+import { createOnboardingModalController } from './features/onboarding/onboarding-modal-controller.js';
 import { createDashboardTabController } from './ui/tabs/dashboard/dashboard-tab-controller.js';
 import { createApprovalTabController } from './ui/tabs/approval/approval-tab-controller.js';
 import { createQuestionAnalyticsController } from './ui/tabs/questions/question-analytics-controller.js';
 import { createDiagnosticsTabController } from './ui/tabs/diagnostics/diagnostics-tab-controller.js';
+import { createSubjectsTabController } from './ui/tabs/subjects/subjects-tab-controller.js';
+import { createExamImportModalController } from './features/exam-import/exam-import-modal-controller.js';
+import { createQuestionsTabController } from './ui/tabs/questions/questions-tab-controller.js';
+import { createSimulationsTabController } from './ui/tabs/questions/simulations-tab-controller.js';
 import {
   performanceConfidence,
   classifyAccuracy as classifyAccuracyTarget,
@@ -35,14 +39,10 @@ import {
   calculateWeightedTrend,
   calculateDominantTopicError,
 } from './domain/analytics/topic-performance.js';
-import { h } from 'preact';
-import { mountPreact, unmountPreact } from './ui/preact-mount.js';
 import { createWhatIfController } from './ui/controllers/what-if-controller.js';
 import { buildFinalStretchBanner } from './domain/planning/final-stretch-policy.js';
-import { FinalStretchBanner } from './ui/components/FinalStretchBanner.js';
 import { simulateWhatIfScenario } from './domain/forecasts/what-if-simulator.js';
 import { identifyVolatileTopics } from './domain/analytics/volatile-mastery.js';
-import { VerticalizedSyllabusView } from './ui/views/VerticalizedSyllabusView.js';
 import { parseRawSyllabusText } from './application/subjects/raw-syllabus-parser.js';
 import {
   buildStudyCycleQueue,
@@ -66,21 +66,13 @@ import {
   formatTimer,
   findDailyPlanItem as findDailyPlanItemCoordinator,
   releaseActivePlanItem as releaseActivePlanItemCoordinator,
-  topicResumeLabel as topicResumeLabelCoordinator,
   buildCompletedSessionRecord,
-  resolveSessionBookmark,
-  SESSION_BOOKMARK_FIELDS,
 } from './application/sessions/timer-coordinator.js';
+import { createTimerUiController } from './ui/controllers/timer-ui-controller.js';
 import { announceTimerEvent } from './ui/primitives/a11y.js';
 import { createSessionModalController } from './ui/controllers/session-modal-controller.js';
 import { createStudyTimerViewController } from './ui/controllers/study-timer-view-controller.js';
 import { formatDuration, formatPlanMinutes } from './core/format-duration.js';
-import {
-  buildExcludedCandidates,
-  renderExcludedCandidatesHtml,
-  renderPendingOutcomeHtml,
-  formatRecommendationHistoryLabel,
-} from './ui/controllers/recommendations-controller.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
 import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
 import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
@@ -140,22 +132,16 @@ import { normalizeAdherenceTarget } from './application/adherence/adherence-targ
 import { renderGoals } from './ui/renderers/goals-renderer.js';
 import { createRecoveryController } from './ui/controllers/recovery-controller.js';
 import { createRecoveryStateCommitter } from './application/recovery/recovery-state-committer.js';
-import {
-  renderNextBestAction,
-  renderPlanRecommendationChoice,
-  renderPlanRecommendationExtras,
-} from './ui/renderers/next-best-action-renderer.js';
+import { renderNextBestAction } from './ui/renderers/next-best-action-renderer.js';
 import {
   createAnalysisContext,
   analysisContextInScope,
 } from './application/navigation/analysis-context.js';
 import { createExamMatrixController } from './ui/tabs/goals/exam-matrix-controller.js';
 import { createSubjectTargetEditorController } from './ui/tabs/goals/subject-target-editor-controller.js';
-import { renderTopicStrategyEditor as renderTopicStrategyEditorComponent } from './ui/tabs/subjects/topic-strategy-editor-view.js';
 import { renderRecoveryReviewDebt } from './ui/renderers/recovery-review-debt-renderer.js';
 import { buildRecommendationExplanation } from './application/recommendations/build-recommendation-explanation.js';
 import { renderRecommendationExplanation } from './ui/renderers/recommendation-explanation-renderer.js';
-import { capturePlanPriority } from './domain/planning/plan-priority-snapshot.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS, mountProgressiveLists } from './ui/progressive-list.js';
 import {
   STORAGE_KEY,
@@ -167,11 +153,8 @@ import {
   DB_VERSION,
   STORE_NAME,
   STATUS_OPTIONS,
-  REVIEW_OPTIONS,
   STATUS_CLASS,
-  TIPO_AGENDA_OPTIONS,
   DIFFICULTY_OPTIONS,
-  DIFFICULTY_WEIGHT,
   DIFFICULTY_CLASS,
   DEMO_STORAGE_KEY,
 } from './state/schema.js';
@@ -197,21 +180,16 @@ import { wireAppDependencies } from './bootstrap/wire-dependencies.js';
 import { createMasterRenderer } from './bootstrap/master-renderer.js';
 import { registerMobileInputVisibility } from './ui/mobile-input-visibility.js';
 import {
-  AGENDA_INTERVALS,
-  DIFFICULTY_INTERVALS,
   REVIEW_RATINGS,
   calculateAdaptiveInterval,
   createAdaptiveReviewState,
   applyAdaptiveReviewRating,
-  reviewBaseDaysFromType,
 } from './domain/reviews.js';
 import { createDefaultState } from './state/defaults.js';
 import { EXAM_INTELLIGENCE_VERSION } from './domain/exam-intelligence/config.js';
 import { createHistoricalExamImportController } from './features/exam-intelligence-import/exam-import-controller.js';
 import { labelDynamicControls, trapModalTab } from './ui/accessibility.js';
 import { renderCollectionFooter, renderGroupHeader } from './ui/list-components.js';
-import { countActiveFilters, filterPanelLabel } from './ui/filter-panel.js';
-import { filterStudySessions, groupStudySessionsByDate } from './ui/session-history.js';
 import { calculateReadinessScore, READINESS_WEIGHTS } from './domain/analytics/readiness-score.js';
 import { calculateTopicCoverage } from './domain/analytics/coverage.js';
 import { calculateGoalConsistency } from './domain/analytics/consistency.js';
@@ -271,29 +249,9 @@ import {
 import { PRIORITY_ALGORITHM_VERSION } from './domain/analytics/priority-score.js';
 import { calculateReviewHealth } from './domain/analytics/review-health.js';
 import { needsMaintenance, prerequisiteBlockers } from './domain/study-eligibility.js';
-import {
-  canReuseRecommendationPresentation,
-  createRecommendationPresentation,
-  recordRecommendationDecision,
-  completeRecommendationFeedback,
-  rateRecommendationFeedback,
-  summarizeRecommendationFeedback,
-} from './application/recommendations/recommendation-feedback.js';
-import {
-  reusableRecommendationRecord,
-  ensureRecommendationRecord,
-  syncRecommendationHistory,
-  decideRecommendationRecord,
-  attachRecommendationSession,
-  summarizeRecommendationHistory,
-} from './application/recommendations/recommendation-history.js';
+import { completeRecommendationFeedback } from './application/recommendations/recommendation-feedback.js';
+import { summarizeRecommendationHistory } from './application/recommendations/recommendation-history.js';
 import { renderRecommendationHistory } from './ui/renderers/recommendation-history-renderer.js';
-import {
-  captureRecommendationBaseline,
-  captureRecommendationSnapshot,
-  measureRecommendationOutcome,
-} from './application/recommendations/outcome-service.js';
-import { buildRecommendationOutcomeViewModel } from './application/recommendations/build-recommendation-outcome-view-model.js';
 import { buildRecommendationOutcomeAudit } from './application/recommendations/build-recommendation-outcome-audit.js';
 import { renderRecommendationOutcomeAudit } from './ui/renderers/recommendation-outcome-audit-renderer.js';
 import {
@@ -303,7 +261,6 @@ import {
   sameStudyActionTarget,
   STUDY_ACTION_SOURCES,
 } from './application/recommendations/recommendation-action.js';
-import { createRecommendationController } from './application/recommendations/recommendation-controller.js';
 import {
   buildHeatmapViewModel,
   buildApprovalSignals,
@@ -315,17 +272,7 @@ import {
   applyDailyPlanProposal,
   undoDailyPlanGeneration,
 } from './application/planning/distribute-study-plan.js';
-import { createReplanController } from './application/planning/replan-controller.js';
-import { buildTodayViewModel } from './application/planning/build-today-view-model.js';
-import { buildNextBestAction } from './application/diagnostics/build-next-best-action.js';
-import {
-  createDailyExecutionController,
-  watchDailyExecutionDate,
-} from './ui/controllers/daily-execution-controller.js';
-import {
-  renderDailyExecution,
-  renderPlannedAction,
-} from './ui/renderers/daily-execution-renderer.js';
+import { watchDailyExecutionDate } from './ui/controllers/daily-execution-controller.js';
 import {
   ADAPTIVE_PLANNING_VERSION,
   applyAdaptivePlanningAdvice,
@@ -358,32 +305,16 @@ import {
 } from './domain/exams/exam-evidence-scope.js';
 import { setActiveExamTags } from './application/exams/exam-scope-transition.js';
 import { createUiState, pickPersistentState } from './state/state-boundaries.js';
-import {
-  createExamImportState,
-  resetExamImportState,
-} from './features/exam-import/exam-import-state.js';
-import { buildExamImportViewModel } from './features/exam-import/exam-import-view-model.js';
-import {
-  renderExamImport as renderExamImportView,
-  syncExamSubjectCheckboxes as syncExamSubjectCheckboxesView,
-} from './features/exam-import/exam-import-renderer.js';
-import { createExamImportController } from './features/exam-import/exam-import-controller.js';
 import { createTabRouter } from './ui/navigation/tab-router.js';
 import { createAppStateStore } from './state/app-state-store.js';
 import type {
   ActiveTimerState,
   AppState,
   Metas,
-  Subject,
   StudySession,
-  Topic,
-  TopicStatus,
-  TopicStageChecklist,
 } from './core/types.js';
 import { createModalController } from './ui/controllers/modal-controller.js';
 import { createDialogFeedback } from './ui/primitives/modal-dialogs.js';
-import { createKeyboardShortcutsController } from './ui/events/keyboard-shortcuts.js';
-import { createEditableCollectionController } from './ui/controllers/editable-collection-controller.js';
 import { createPreferencesController } from './ui/controllers/preferences-controller.js';
 import {
   validateBackupData as validateBackupDataValidator,
@@ -419,7 +350,6 @@ import { buildResultGoalsViewModel } from './application/goals/build-result-goal
 import { buildPeriodComparisonViewModel } from './application/analytics/build-period-comparison-view-model.js';
 import { renderPeriodComparisonDetail } from './ui/renderers/period-comparison-detail-renderer.js';
 import { buildWeeklyAvailability } from './application/goals/weekly-availability.js';
-import { buildPriorityViewModel } from './ui/view-models/priority-view-model.js';
 import { buildHeaderViewModel } from './application/analytics/build-header-view-model.js';
 import { renderHeroHeader, renderCompactHeader } from './ui/renderers/header-renderer.js';
 import { buildStudyTrack32ViewModel } from './application/analytics/build-studytrack32-view-model.js';
@@ -454,43 +384,11 @@ import {
 import { generateDemoData } from './demo/demo-generator.js';
 import { createStateMigrator } from './state/migrations.js';
 import { serializeBackup, backupFileName } from './storage/backup-service.js';
-import { createReviewsController } from './ui/controllers/reviews-controller.js';
-import { createReviewViewModel } from './ui/view-models/review-view-model.js';
-import { renderReviewRead, renderReviewEdit } from './ui/renderers/reviews-renderer.js';
-import { buildCalendarItemViewModel } from './ui/view-models/calendar-view-model.js';
 import {
-  renderCalendarRead,
-  renderCalendarEdit,
-  renderCalendarIndicators,
-  renderCalendarMonth as renderCalendarMonthView,
-  renderCalendarFilterOptions,
-} from './ui/renderers/calendar-renderer.js';
-import { createCalendarState } from './ui/calendar/calendar-state.js';
-import { createCalendarController } from './ui/calendar/calendar-controller.js';
-import {
-  buildUnifiedReviews,
-  unifiedReviewLabel as unifiedItemLabel,
-} from './application/calendar/build-unified-reviews.js';
-import { createQuestionController } from './application/questions/question-controller.js';
-import { createEditalImportFacade } from './application/subjects/edital-import-facade.js';
-import {
-  buildOnboardingViewModel,
   applyOnboardingDateShortcut,
   AVAILABILITY_PRESETS,
 } from './application/onboarding/build-onboarding-view-model.js';
-import { buildFirstStepsMission } from './application/onboarding/build-first-steps-mission.js';
 import { createGuidedTourController } from './ui/controllers/guided-tour-controller.js';
-import { syncOnboardingPhase } from './ui/controllers/onboarding-phase-controller.js';
-import {
-  renderOnboardingEntry,
-  renderOnboardingProgress,
-  renderOnboardingContent,
-  renderOnboardingHelp,
-  renderOnboardingActions,
-  onboardingBlockedReason,
-} from './features/onboarding/onboarding-renderer.js';
-import { renderReplanProposal } from './features/replan/replan-renderer.js';
-import { buildQuestionViewModel } from './ui/view-models/question-view-model.js';
 import {
   renderQuestionAnalyticsSummary,
   renderTopicQuestionPerformance,
@@ -507,12 +405,6 @@ import { buildTopicExamProfile } from './application/exam-intelligence/build-top
 import { resolveValidatedExamImpact } from './domain/exam-intelligence/validated-impact.js';
 import { createSearchController } from './ui/controllers/search-controller.js';
 import { renderHeatmap as renderHeatmapView } from './ui/renderers/heatmap-renderer.js';
-import {
-  buildSessionHistoryPresentation,
-  renderStudySessionRead,
-  renderStudySessionEdit,
-  renderStudySessionDayHeader,
-} from './ui/renderers/study-sessions-renderer.js';
 import { renderProgressChart as renderProgressChartView } from './ui/renderers/study-charts-renderer.js';
 import {
   renderIntelligentAlerts,
@@ -520,7 +412,6 @@ import {
 } from './ui/renderers/overview-renderer.js';
 import { renderDiagnosisCenter as renderDiagnosisCenterView } from './ui/renderers/diagnosis-renderer.js';
 import { renderTopicRetentionDashboard as renderTopicRetentionDashboardView } from './ui/renderers/retention-renderer.js';
-import { buildStudyStrategy } from './domain/recommendations/study-strategy.js';
 import { buildWeeklyClose } from './domain/analytics/weekly-close.js';
 import {
   createWeeklyCloseSnapshot,
@@ -1320,6 +1211,12 @@ function timestampToLocalDateISO(value: any) {
 function todayISO() {
   return appContext.clock.today();
 }
+function addDays(iso: string, days: number) {
+  const d = parseLocalDate(iso);
+  if (!d) return '';
+  d.setDate(d.getDate() + Number(days || 0));
+  return localDateISO(d);
+}
 // Empty dates read as "—" here; the DD/MM/AAAA rule lives in core/format-date (handles timestamps too).
 function formatDatePt(iso: string) {
   return iso ? formatDateBR(iso) : '—';
@@ -1440,54 +1337,26 @@ function toggleStreakActiveDays() {
   streakView.onlyActiveDays = !streakView.onlyActiveDays;
   renderHeatmap();
 }
+const timerUiController = createTimerUiController({
+  document,
+  activeTabName,
+  activateTab,
+  renderTimerFocusContext,
+  isTimerRunning: () => timerRunning,
+  getTopicById,
+  subjectService,
+});
+timerUiController.bindKeyboardShortcuts();
+
 function focusStudyTimer() {
-  activateTab('dashboard');
-  document.getElementById('timerStartBtn')?.focus();
+  timerUiController.focusStudyTimer();
 }
-// Leaving focus mode returns to the tab the session was started from, so Hoje keeps its place.
-let timerFocusReturnTab: any = null;
 function openStudyTimerFocus() {
-  const origin = activeTabName();
-  timerFocusReturnTab = origin === 'dashboard' ? null : origin;
-  activateTab('dashboard');
-  toggleTimerFocus(true);
+  timerUiController.openStudyTimerFocus();
 }
 function toggleTimerFocus(force: boolean | null = null) {
-  const active =
-    force == null ? !document.body.classList.contains('timer-focus-active') : Boolean(force);
-  document.body.classList.toggle('timer-focus-active', active);
-  renderTimerFocusContext();
-  const toggle = document.getElementById('timerFocusToggle');
-  if (toggle) {
-    toggle.setAttribute('aria-pressed', String(active));
-    toggle.textContent = active ? 'Sair do modo foco' : '⛶ Modo foco';
-  }
-  if (active) {
-    document
-      .querySelector('#panel-dashboard .timer-block')
-      ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    requestAnimationFrame(() =>
-      document.getElementById(timerRunning ? 'timerPauseBtn' : 'timerStartBtn')?.focus()
-    );
-  } else if (timerFocusReturnTab) {
-    const tab = timerFocusReturnTab;
-    timerFocusReturnTab = null;
-    activateTab(tab);
-    requestAnimationFrame(() =>
-      (
-        document.querySelector<HTMLElement>(
-          `#panel-${tab} [data-delegated-click="openStudyTimerFocus()"]`
-        ) || document.getElementById(`tab-${tab}`)
-      )?.focus()
-    );
-  } else requestAnimationFrame(() => toggle?.focus());
-  return active;
+  return timerUiController.toggleTimerFocus(force);
 }
-const keyboardShortcuts = createKeyboardShortcutsController({
-  document,
-  onExitTimerFocus: () => toggleTimerFocus(false),
-});
-keyboardShortcuts.register();
 
 /* ===== GRÁFICO DE EVOLUÇÃO DO PROGRESSO ===== */
 function recordProgressSnapshot(pct: number) {
@@ -1920,29 +1789,10 @@ function showSessionModal() {
   sessionModalController.show(timerSeconds, state.activeTimer);
 }
 function topicResumeLabel(topicId: string) {
-  return topicResumeLabelCoordinator(topicId, getTopicById);
+  return timerUiController.topicResumeLabel(topicId);
 }
-// Empty fields keep the saved bookmark; only the explicit clear removes it.
 function saveSessionBookmark(topicId: string, endedAt: string) {
-  const found = topicId ? getTopicById(topicId) : null;
-  if (!found) return;
-  const isCleared = document.getElementById('sessionBookmarkSection')!.dataset.clear === '1';
-  const fieldValues = Object.fromEntries(
-    Object.entries(SESSION_BOOKMARK_FIELDS).map(([field, id]) => [
-      field,
-      (document.getElementById(id) as HTMLInputElement).value,
-    ])
-  );
-  const { shouldUpdate, nextBookmark } = resolveSessionBookmark({
-    topicId,
-    endedAt,
-    isCleared,
-    fieldValues,
-    currentBookmark: found.topic.bookmark,
-  });
-  if (shouldUpdate) {
-    subjectService.updateTopic(found.subject.id, topicId, { bookmark: nextBookmark });
-  }
+  timerUiController.saveSessionBookmark(topicId, endedAt);
 }
 function closeSessionModal() {
   sessionModalController.hide();
@@ -2035,7 +1885,7 @@ function showSessionResult(
     { escapeHtml }
   );
   if (document.body.classList.contains('timer-focus-active')) {
-    timerFocusReturnTab = null;
+    timerUiController.clearTimerFocusReturnTab();
     toggleTimerFocus(false);
   }
   result.hidden = false;
@@ -2473,200 +2323,98 @@ function renderDashboard() {
 }
 
 /* ===== RENDER: DISCIPLINAS ===== */
-let verticalizedSyllabusActive = false;
-
-function renderVerticalizedSyllabus() {
-  const mount = document.getElementById('verticalizedSyllabusMount');
-  if (!mount) return;
-
-  const subjectsData = state.subjects.map(s => ({
-    id: s.id,
-    name: s.name,
-    topics: (s.topics || []).map(t => ({
-      id: t.id,
-      name: t.name,
-      status: t.status,
-      stageChecklist: t.stageChecklist || null,
-      bookmark: t.bookmark || null,
-    })),
-  }));
-
-  mountPreact(
-    h(VerticalizedSyllabusView, {
-      subjects: subjectsData,
-      onToggleStage: (topicId: string, stage: keyof TopicStageChecklist, done: boolean) => {
-        const found = getTopicById(topicId);
-        if (found) {
-          const currentChecklist = found.topic.stageChecklist || {
-            theoryDone: false,
-            summaryDone: false,
-            lawOrNotesDone: false,
-            questionsDone: false,
-          };
-          subjectService.updateTopic(found.subject.id, topicId, {
-            stageChecklist: {
-              ...currentChecklist,
-              [stage]: done,
-            },
-          });
-          persistAndRender();
-        }
-      },
-      onStartStudy: (subjectId: string, topicId: string) => {
-        Object.assign(state.activeTimer, {
-          subjectId,
-          topicId,
-          type: 'study',
-        });
-        populateTimerContextControls();
-        startTimer();
-        if (activeTabName() !== 'dashboard') openStudyTimerFocus();
-      },
-      onImportParsedSyllabus: result => {
-        let addedSubjects = 0;
-        let addedTopics = 0;
-        for (const item of result.subjects) {
-          let targetSubject = state.subjects.find(
-            s => s.name.trim().toLowerCase() === item.name.trim().toLowerCase()
-          );
-          if (!targetSubject) {
-            targetSubject = subjectService.create(item.name);
-            addedSubjects++;
-          }
-          if (targetSubject) {
-            for (const t of item.topics) {
-              const topicExists = (targetSubject.topics || []).some(
-                existing => existing.name.trim().toLowerCase() === t.name.trim().toLowerCase()
-              );
-              if (!topicExists) {
-                subjectService.addTopic(targetSubject.id, { name: t.name });
-                addedTopics++;
-              }
-            }
-          }
-        }
-        persistAndRender();
-        showToast(
-          `Edital importado: ${addedSubjects} disciplinas e ${addedTopics} tópicos adicionados.`
-        );
-      },
-    }),
-    mount
-  );
-}
-
-function renderSubjects() {
-  const container = document.getElementById('subjectsContainer');
-  const mount = document.getElementById('verticalizedSyllabusMount');
-  const toggleBtn = document.getElementById('verticalizedSyllabusToggleBtn');
-  if (!container) return;
-
-  if (verticalizedSyllabusActive && mount) {
-    container.hidden = true;
-    mount.hidden = false;
-    if (toggleBtn) {
-      toggleBtn.textContent = 'Visão padrão';
-      toggleBtn.classList.add('btn-primary');
-    }
-    renderVerticalizedSyllabus();
-    return;
-  }
-
-  if (mount) {
-    unmountPreact(mount);
-    mount.hidden = true;
-  }
-  container.hidden = false;
-  if (toggleBtn) {
-    toggleBtn.textContent = 'Edital verticalizado';
-    toggleBtn.classList.remove('btn-primary');
-  }
-
-  const controller = createSubjectsController({
-    state,
-    subjectSearchController,
-    subjectExamFilter,
-    subjectTopicFilters,
-    subjectTopicLimits,
-    openNotesIds,
-    isCommonTopic,
-    EXAM_TAGS,
-    STATUS_OPTIONS,
-    STATUS_CLASS,
-    DIFFICULTY_OPTIONS,
-    DIFFICULTY_CLASS,
-    subjectProgress,
-    matchesSubjectSearch,
-    pluralize,
-    renderCollectionFooter,
-    examBadges,
-    renderTopicAnalyticsState,
-    renderTopicStrategyEditor,
-  });
-
-  container.innerHTML = controller.renderHtml();
-}
-
-let openNotesIds = new Set<string>();
 const subjectSearchController = createSubjectSearchController({
   document,
   onChange: () => {
-    subjectTopicLimits.clear();
-    renderSubjects();
+    subjectsTabController.subjectTopicLimits.clear();
+    subjectsTabController.renderSubjects();
   },
 });
-let subjectExamFilter = 'all';
-const subjectTopicLimits = new Map();
-const subjectTopicFilters = new Map();
+
+const subjectsTabController = createSubjectsTabController({
+  document,
+  window,
+  state,
+  appContext,
+  subjectService,
+  topicHistoryService,
+  topicStrategyController,
+  subjectSearchController,
+  persistAndRender,
+  renderAll,
+  showToast,
+  showPrompt,
+  showConfirm,
+  activeSubjects,
+  allTopics,
+  getTopicById,
+  getSubjectById,
+  getTopicName,
+  isCommonTopic,
+  matchesSubjectSearch,
+  subjectProgress,
+  pluralize,
+  renderCollectionFooter,
+  topicMasteryIndex,
+  topicRetentionScore,
+  diagnoseTopic,
+  topicReviewHealthScore,
+  diasParaRevisao,
+  localDateFromTimestamp,
+  prerequisiteBlockers,
+  needsMaintenance,
+  evidenceScopeForTopic,
+  entitySubjectId,
+  startTimer,
+  populateTimerContextControls,
+  openStudyTimerFocus,
+  activeTabName,
+  uid,
+  nowISO,
+  todayISO,
+  escapeHtml,
+  escapeAttr,
+  EXAM_TAGS,
+  STATUS_OPTIONS,
+  STATUS_CLASS,
+  DIFFICULTY_OPTIONS,
+  DIFFICULTY_CLASS,
+});
+
+function renderVerticalizedSyllabus() {
+  subjectsTabController.renderVerticalizedSyllabus();
+}
+
+function renderSubjects() {
+  subjectsTabController.renderSubjects();
+}
+
 function toggleNotes(topicId: string) {
-  if (openNotesIds.has(topicId)) openNotesIds.clear();
-  else {
-    openNotesIds.clear();
-    openNotesIds.add(topicId);
-  }
-  renderSubjects();
+  subjectsTabController.toggleNotes(topicId);
 }
 function changeSubjectTopicLimit(subjectId: string, delta: number) {
-  subjectTopicLimits.set(subjectId, (subjectTopicLimits.get(subjectId) || 10) + Number(delta || 0));
-  renderSubjects();
+  subjectsTabController.changeSubjectTopicLimit(subjectId, delta);
 }
 function showAllSubjectTopics(subjectId: string) {
-  subjectTopicLimits.set(subjectId, Number.MAX_SAFE_INTEGER);
-  renderSubjects();
+  subjectsTabController.showAllSubjectTopics(subjectId);
 }
 function resetSubjectTopicLimit(subjectId: string) {
-  subjectTopicLimits.set(subjectId, 10);
-  renderSubjects();
+  subjectsTabController.resetSubjectTopicLimit(subjectId);
 }
 function setSubjectTopicFilter(subjectId: string, field: string, value: any) {
-  const current = subjectTopicFilters.get(subjectId) || { status: '', difficulty: '' };
-  if (field === 'status' || field === 'difficulty') current[field] = value;
-  subjectTopicFilters.set(subjectId, current);
-  subjectTopicLimits.set(subjectId, 10);
-  renderSubjects();
+  subjectsTabController.setSubjectTopicFilter(subjectId, field, value);
 }
 function setSubjectExamFilter(value: any) {
-  if (['all', 'bb', 'caixa', 'caixa-ti', 'common'].includes(value)) subjectExamFilter = value;
-  renderSubjects();
+  subjectsTabController.setSubjectExamFilter(value);
 }
 function examBadges(topic: Record<string, any>) {
-  const tags = topic.examTags || [];
-  return `${tags.includes(EXAM_TAGS.BB) ? '<span class="exam-tag exam-tag--bb">BB</span>' : ''}${tags.includes(EXAM_TAGS.CAIXA) ? '<span class="exam-tag exam-tag--caixa">CAIXA</span>' : ''}${tags.includes(EXAM_TAGS.CAIXA_TI) ? '<span class="exam-tag exam-tag--caixa">CAIXA TI</span>' : ''}`;
+  return subjectsTabController.examBadges(topic);
 }
 function updateTopicTags(subjectId: string, topicId: string, value: any) {
-  const found = getTopicById(topicId),
-    fieldOrigins = { ...(found?.topic?.fieldOrigins || {}), tags: 'manual' };
-  subjectService.updateTopic(subjectId, topicId, {
-    tags: value
-      .split(',')
-      .map((tag: any) => tag.trim())
-      .filter(Boolean),
-    fieldOrigins,
-  });
-  persistAndRender();
+  subjectsTabController.updateTopicTags(subjectId, topicId, value);
 }
 function updateTopicStrategy(subjectId: string, topicId: string, field: string, value: any) {
-  topicStrategyController.update(subjectId, topicId, field, value);
+  subjectsTabController.updateTopicStrategy(subjectId, topicId, field, value);
 }
 function toggleTopicPrerequisite(
   subjectId: string,
@@ -2674,130 +2422,22 @@ function toggleTopicPrerequisite(
   prerequisiteId: string,
   checked: boolean
 ) {
-  topicStrategyController.togglePrerequisite(subjectId, topicId, prerequisiteId, checked);
-}
-function renderTopicStrategyEditor(subject: Record<string, any>, topic: Record<string, any>) {
-  const subjectConfig =
-    state.examBlueprint.subjects.find(item => item.subjectId === subject.id) || null;
-  return renderTopicStrategyEditorComponent({
-    subject,
-    topic,
-    subjectConfig,
-    activeExamTags: state.examBlueprint.activeExamTags || [],
-    topics: allTopics(),
-    exams: state.exams,
-    examQuestions: state.examQuestions,
-  });
-}
-function renderTopicAnalyticsState(subject: Subject, topic: Topic) {
-  return renderTopicAnalyticsStateView({
-    subject,
-    topic,
-    topicMasteryIndex,
-    topicRetentionScore,
-    diagnoseTopic,
-    topicReviewHealthScore,
-    diasParaRevisao,
-    localDateFromTimestamp,
-    prerequisiteBlockers,
-    allTopics,
-    needsMaintenance,
-    getTopicName,
-    escapeHtml,
-  });
+  subjectsTabController.toggleTopicPrerequisite(subjectId, topicId, prerequisiteId, checked);
 }
 function moveSubject(id: string, direction: number) {
-  const active = activeSubjects();
-  const activeIdx = active.findIndex(s => s.id === id);
-  const target = active[activeIdx + direction];
-  if (activeIdx === -1 || !target) return;
-  const idx = state.subjects.findIndex(s => s.id === id);
-  const targetIdx = state.subjects.findIndex(s => s.id === target.id);
-  [state.subjects[idx], state.subjects[targetIdx]] = [
-    state.subjects[targetIdx],
-    state.subjects[idx],
-  ];
-  persistAndRender();
+  subjectsTabController.moveSubject(id, direction);
 }
 function duplicateSubject(id: string) {
-  const idx = state.subjects.findIndex(s => s.id === id);
-  if (idx === -1) return;
-  const original = state.subjects[idx];
-  const copy: Subject = {
-    id: uid('subject'),
-    name: original.name + ' (cópia)',
-    collapsed: false,
-    archived: false,
-    archivedAt: null,
-    createdAt: nowISO(),
-    topics: original.topics.map(t => ({
-      id: uid('topic'),
-      name: t.name,
-      link: t.link || '',
-      status: 'Não iniciado',
-      archived: false,
-      archivedAt: null as any,
-      notes: '',
-      tags: [...(t.tags || [])],
-      difficulty: t.difficulty || 'Médio',
-      createdAt: nowISO(),
-      firstCompletedAt: null as any,
-      lastCompletedAt: null as any,
-      completionCount: 0,
-      lastReviewedAt: null as any,
-      reviewCount: 0,
-      examImportance: t.examImportance ?? null,
-      estimatedStudyMinutes: t.estimatedStudyMinutes ?? null,
-      prerequisites: [] as any[],
-    })),
-  };
-  state.subjects.splice(idx + 1, 0, copy);
-  persistAndRender();
-  showToast(`"${copy.name}" criada com os mesmos tópicos (progresso zerado).`);
+  subjectsTabController.duplicateSubject(id);
 }
-
 function toggleSubject(id: string) {
-  const isMobile =
-    typeof window !== 'undefined' &&
-    (window.innerWidth <= 768 || window.matchMedia?.('(max-width: 768px)').matches);
-  subjectService.toggle(id, { exclusive: isMobile });
-  renderSubjects();
+  subjectsTabController.toggleSubject(id);
 }
 function renameSubject(id: string, name: string) {
-  const clean = name.trim() || 'Disciplina sem nome';
-  const s = appContext.repositories.subjects.findById(id);
-  if (s?.name !== clean) {
-    subjectService.rename(id, clean);
-    persistAndRender();
-  } else {
-    renderAll();
-  }
+  subjectsTabController.renameSubject(id, name);
 }
 function addSubject() {
-  showPrompt(
-    'Criar uma nova disciplina',
-    {
-      label: 'Nome da disciplina',
-      placeholder: 'Ex.: Conhecimentos Bancários',
-      confirmLabel: 'Criar',
-      validate: (name: string) => {
-        if (!name) return 'Informe o nome da disciplina.';
-        if (
-          state.subjects.some(
-            subject =>
-              subject.name.trim().toLocaleLowerCase('pt-BR') === name.toLocaleLowerCase('pt-BR')
-          )
-        )
-          return 'Já existe uma disciplina com esse nome.';
-        return '';
-      },
-    },
-    (name: string) => {
-      subjectService.create(name);
-      persistAndRender();
-      showToast(`Disciplina "${name}" criada.`);
-    }
-  );
+  subjectsTabController.addSubject();
 }
 function carregarDisciplinasPadrao() {
   openExamImport();
@@ -2806,8 +2446,8 @@ document
   .getElementById('loadDefaultSubjectsBtn')!
   .addEventListener('click', carregarDisciplinasPadrao);
 document.getElementById('verticalizedSyllabusToggleBtn')?.addEventListener('click', () => {
-  verticalizedSyllabusActive = !verticalizedSyllabusActive;
-  renderSubjects();
+  subjectsTabController.setVerticalizedSyllabusActive(!subjectsTabController.isVerticalizedSyllabusActive());
+  subjectsTabController.renderSubjects();
 });
 
 const examImportService = createExamImportService({
@@ -2870,244 +2510,68 @@ document.getElementById('downloadStructuredCsvBtn')?.addEventListener('click', (
   link.click();
   URL.revokeObjectURL(url);
 });
-const editalImportFacade = createEditalImportFacade({
-  catalog: EXAM_PRESETS,
-  importService: examImportService,
+const examImportModalController = createExamImportModalController({
+  document,
+  state,
+  uiState,
+  examImportService,
+  EXAM_PRESETS,
+  EXAM_SOURCES,
+  EXAM_TAGS,
+  ensureExamCatalog,
+  topicExamScopeLabel,
+  isCommonTopic,
+  normalizeExamTags,
+  setActiveExamTags,
+  suspendGuidedOnboarding,
+  resumeGuidedOnboarding,
+  activateTab,
+  persistAndRender,
+  showToast,
+  pluralize,
+  nowISO,
+  escapeHtml,
+  escapeAttr,
+  examBadges,
 });
-const examImportState = createExamImportState(EXAM_PRESETS[0]);
-let examImportOrigin: any = null;
-function selectedExamPreset() {
-  return EXAM_PRESETS.find(item => item.id === examImportState.presetId) || EXAM_PRESETS[0];
-}
-function applyPresetBlueprintDefaults(preset: Record<string, any>) {
-  const source = (preset.sources || []).length === 1 ? preset.sources[0] : null;
-  if (!source || !(EXAM_SOURCES as Record<string, any>)[source]?.official) return;
-  for (const subject of state.subjects) {
-    if (state.examBlueprint.subjects.some(item => item.subjectId === subject.id)) continue;
-    const metric = subject.examMetrics?.[source];
-    if (!metric || metric.mappingType !== 'direct' || metric.expectedQuestions == null) continue;
-    state.examBlueprint.subjects.push({
-      subjectId: subject.id,
-      expectedQuestions: metric.expectedQuestions,
-      questionWeight: metric.questionWeight!,
-      priority: 'normal',
-      masteryTarget: null,
-      sourceRef: source,
-      official: Boolean(metric.official),
-      mappingType: metric.mappingType,
-    });
-  }
-  setActiveExamTags(state, normalizeExamTags(preset.examTags || []), { configuredAt: nowISO() });
-}
-function syncExamSubjectCheckboxes() {
-  syncExamSubjectCheckboxesView(document, examImportState, selectedExamPreset());
-}
-function renderExamImport() {
-  const content = document.getElementById('examImportContent'),
-    back = document.getElementById('examImportBackBtn'),
-    next = document.getElementById('examImportNextBtn') as HTMLButtonElement,
-    preset = selectedExamPreset(),
-    preview =
-      examImportState.step === 3
-        ? editalImportFacade.preview(examImportState.subjectIds, examImportState.topicIds)
-        : null,
-    model = buildExamImportViewModel({
-      state: examImportState,
-      preset,
-      presets: EXAM_PRESETS,
-      topicLabel: topicExamScopeLabel,
-      preview,
-    });
-  back!.hidden = model.step === 1;
-  next.textContent = model.step === 3 ? 'Importar' : 'Continuar';
-  next.disabled =
-    model.step === 3
-      ? preview.addedSubjects + preview.addedTopics + preview.metadataUpdates === 0
-      : !model.canContinue;
-  content!.innerHTML = renderExamImportView(model, {
-    escapeHtml,
-    escapeAttr,
-    renderBadges: examBadges,
-    sourceLabel: (source: string) => (EXAM_SOURCES as Record<string, any>)[source]?.label || source,
-  });
-  if (model.step === 2) syncExamSubjectCheckboxes();
-}
+examImportModalController.mount();
+
 async function openExamImport(
   initialPreset: string | Record<string, any> | null = null,
   origin: string | null = null
 ) {
-  try {
-    await ensureExamCatalog();
-    const requestedId = typeof initialPreset === 'string' ? initialPreset : initialPreset?.id,
-      preset = EXAM_PRESETS.find(item => item.id === requestedId) || EXAM_PRESETS[0];
-    examImportOrigin = origin;
-    resetExamImportState(examImportState, preset, document.activeElement as HTMLElement | null);
-    if (origin === 'onboarding') suspendGuidedOnboarding();
-    editalImportFacade.begin(examImportState.presetId!);
-    document.getElementById('examImportOverlay')!.classList.add('show');
-    renderExamImport();
-    document.querySelector<HTMLElement>('[name="examPreset"]')?.focus();
-  } catch (error: any) {
-    showToast(error.message || 'Não foi possível abrir a importação de edital.');
-  }
+  return examImportModalController.openExamImport(initialPreset, origin);
 }
-function closeExamImport({ completed = false }: any = {}) {
-  const origin = examImportOrigin;
-  editalImportFacade.cancel();
-  document.getElementById('examImportOverlay')!.classList.remove('show');
-  if (origin === 'onboarding') resumeGuidedOnboarding(completed ? 'plan' : 'content');
-  else examImportState.previousFocus?.focus();
-  examImportOrigin = null;
-}
-const examImportController = createExamImportController({
-  document,
-  state: examImportState,
-  getPreset: selectedExamPreset,
-  facade: editalImportFacade,
-  render: renderExamImport,
-  close: () => closeExamImport(),
-  includeTopic: (action: string, topic: Record<string, any>) => {
-    const tags = topic.examTags || [];
-    return (
-      action === 'all' ||
-      (action === 'bb' && tags.includes(EXAM_TAGS.BB)) ||
-      (action === 'caixa' && tags.includes(EXAM_TAGS.CAIXA)) ||
-      (action === 'caixa-ti' && tags.includes(EXAM_TAGS.CAIXA_TI)) ||
-      (action === 'common' && isCommonTopic(topic, [EXAM_TAGS.BB, EXAM_TAGS.CAIXA]))
-    );
-  },
-  confirm: () => {
-    const inOnboarding = examImportOrigin === 'onboarding',
-      preset = selectedExamPreset(),
-      result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
-    applyPresetBlueprintDefaults(preset);
-    uiState.onboarding.presetId = preset.id;
-    persistAndRender();
-    closeExamImport({ completed: true });
-    if (inOnboarding) activateTab('dashboard');
-    showToast(
-      `${pluralize(result.addedSubjects, 'disciplina')}, ${pluralize(result.addedTopics, 'tópico')} e ${pluralize(result.metadataUpdates, 'vínculo')} atualizados.`
-    );
-  },
-});
-examImportController.mount();
 
 function archiveSubject(id: string) {
-  const subject = getSubjectById(id);
-  if (!subject) return showToast('Disciplina não encontrada.');
-  subjectService.archive(id);
-  persistAndRender();
-  showToast(`"${subject.name}" foi arquivada.`);
+  subjectsTabController.archiveSubject(id);
 }
 function restoreSubject(id: string) {
-  const subject = getSubjectById(id);
-  if (!subject) return;
-  subjectService.restore(id);
-  persistAndRender();
-  showToast(`"${subject.name}" foi restaurada.`);
+  subjectsTabController.restoreSubject(id);
 }
 function getSubjectDependencies(subjectId: string) {
-  const subject = getSubjectById(subjectId);
-  const topicIds = new Set((subject?.topics || []).map(t => t.id));
-  return {
-    questoes: state.questoes.filter(
-      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId!)
-    ).length,
-    sessions: state.studySessions.filter(
-      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId!)
-    ).length,
-    calendar: state.calendar.filter(
-      item => entitySubjectId(item) === subjectId || topicIds.has(item.topicId!)
-    ).length,
-    reviews: state.reviewAgenda.filter(
-      item => entitySubjectId(item) === subjectId || topicIds.has((item.topicId || item.topicRef)!)
-    ).length,
-    goals: state.metasPorDisciplina.filter(item => entitySubjectId(item) === subjectId).length,
-    history: topicHistoryService
-      .list({ includeLifecycle: false })
-      .filter(item => item.subjectId === subjectId || topicIds.has(item.topicId)).length,
-    simulatedBreakdowns: state.simulados.reduce(
-      (sum, sim) =>
-        sum + (sim.breakdown || []).filter(item => entitySubjectId(item) === subjectId).length,
-      0
-    ),
-    activeTimer:
-      state.activeTimer.subjectId === subjectId || topicIds.has(state.activeTimer.topicId!) ? 1 : 0,
-  };
-}
-function dependencyTotal(dependencies: Record<string, any>) {
-  return Object.values(dependencies).reduce<number>((sum, value) => sum + (Number(value) || 0), 0);
+  return subjectsTabController.getSubjectDependencies(subjectId);
 }
 function requestPermanentSubjectDelete(id: string) {
-  const subject = getSubjectById(id);
-  if (!subject) return;
-  if (!subject.archived)
-    return showToast('Arquive a disciplina antes de solicitar a exclusão definitiva.');
-  const total = dependencyTotal(getSubjectDependencies(id));
-  if (total > 0)
-    return showToast(
-      `A disciplina possui ${pluralize(total, 'registro')} ${total === 1 ? 'vinculado' : 'vinculados'} e não pode ser excluída.`
-    );
-  showConfirm(`Excluir definitivamente "${subject.name}"? Esta ação não pode ser desfeita.`, () => {
-    subjectService.remove(id);
-    persistAndRender();
-    showToast('Disciplina excluída definitivamente.');
-  });
+  subjectsTabController.requestPermanentSubjectDelete(id);
 }
 function addTopic(subjectId: string) {
-  subjectService.addTopic(subjectId);
-  persistAndRender();
+  subjectsTabController.addTopic(subjectId);
 }
 function archiveTopic(subjectId: string, topicId: string) {
-  const found = getTopicById(topicId);
-  if (!found || found.subject.id !== subjectId) return;
-  subjectService.archiveTopic(subjectId, topicId);
-  persistAndRender();
-  showToast('Tópico arquivado.');
+  subjectsTabController.archiveTopic(subjectId, topicId);
 }
 function restoreTopic(subjectId: string, topicId: string) {
-  const found = getTopicById(topicId);
-  if (!found || found.subject.id !== subjectId) return;
-  subjectService.restoreTopic(subjectId, topicId);
-  persistAndRender();
-  showToast('Tópico restaurado.');
+  subjectsTabController.restoreTopic(subjectId, topicId);
 }
 function getTopicDependencies(topicId: string) {
-  return {
-    questions: state.questoes.filter(item => item.topicId === topicId).length,
-    sessions: state.studySessions.filter(item => item.topicId === topicId).length,
-    reviews: state.reviewAgenda.filter(
-      item => item.topicId === topicId || item.topicRef === topicId
-    ).length,
-    calendar: state.calendar.filter(item => item.topicId === topicId).length,
-    history: topicHistoryService.list({ topicId, includeLifecycle: false }).length,
-    activeTimer: state.activeTimer.topicId === topicId ? 1 : 0,
-  };
+  return subjectsTabController.getTopicDependencies(topicId);
 }
 function requestPermanentTopicDelete(subjectId: string, topicId: string) {
-  const found = getTopicById(topicId);
-  if (!found || found.subject.id !== subjectId) return;
-  if (!found.topic.archived)
-    return showToast('Arquive o tópico antes de solicitar a exclusão definitiva.');
-  const total = dependencyTotal(getTopicDependencies(topicId));
-  if (total > 0)
-    return showToast(
-      `O tópico possui ${pluralize(total, 'registro')} ${total === 1 ? 'vinculado' : 'vinculados'} e não pode ser excluído.`
-    );
-  showConfirm(`Excluir definitivamente "${found.topic.name || 'este tópico'}"?`, () => {
-    subjectService.removeTopic(subjectId, topicId);
-    persistAndRender();
-    showToast('Tópico excluído definitivamente.');
-  });
+  subjectsTabController.requestPermanentTopicDelete(subjectId, topicId);
 }
 function updateTopic(subjectId: string, topicId: string, field: string, value: any) {
-  const found = getTopicById(topicId),
-    patch: Record<string, any> = { [field]: value };
-  if (found && ['difficulty', 'examImportance', 'estimatedStudyMinutes'].includes(field)) {
-    patch.fieldOrigins = { ...(found.topic.fieldOrigins || {}), [field]: 'manual' };
-  }
-  subjectService.updateTopic(subjectId, topicId, patch);
-  persistAndRender();
+  subjectsTabController.updateTopic(subjectId, topicId, field, value);
 }
 function addHistoryEvent(
   type: string,
@@ -3136,170 +2600,17 @@ function uniqueTopicsCompletedBetween(startDate: string, endDate: string) {
   });
   return ids.size;
 }
-function completedReviewsForTopic(topicId: string) {
-  return state.reviewAgenda.filter(
-    review => (review.topicId || review.topicRef) === topicId && review.status === 'Concluído'
-  );
-}
 function refreshTopicReviewStats(topicId: string) {
-  const found = getTopicById(topicId);
-  if (!found) return;
-  const completed = completedReviewsForTopic(topicId);
-  const dates = completed
-    .map(review => review.completedAt)
-    .filter(Boolean)
-    .sort();
-  found.topic.reviewCount = completed.length;
-  found.topic.lastReviewedAt = dates.length ? dates[dates.length - 1] : null;
+  subjectsTabController.refreshTopicReviewStats(topicId);
 }
 function refreshAllTopicReviewStats() {
-  state.subjects.forEach(subject =>
-    subject.topics.forEach(topic => refreshTopicReviewStats(topic.id))
-  );
-}
-
-function markTopicCompleted(topic: Record<string, any>) {
-  const now = nowISO();
-  if (!topic.firstCompletedAt) topic.firstCompletedAt = now;
-  topic.lastCompletedAt = now;
-  topic.completedAt = todayISO();
-  topic.completionCount = (Number(topic.completionCount) || 0) + 1;
+  subjectsTabController.refreshAllTopicReviewStats();
 }
 function updateTopicStatus(subjectId: string, topicId: string, selectEl: HTMLSelectElement) {
-  const s = getSubjectById(subjectId);
-  const t = s?.topics.find(x => x.id === topicId);
-  if (!t) return;
-  const oldStatus = t.status;
-  const newStatus = selectEl.value;
-  if (oldStatus === newStatus) return;
-  t.status = newStatus as TopicStatus;
-  if (newStatus === 'Concluído') {
-    markTopicCompleted(t);
-    addHistoryEvent('topic_completed', subjectId, topicId);
-  } else if (oldStatus === 'Concluído') {
-    t.completedAt = null;
-    addHistoryEvent('topic_reopened', subjectId, topicId, { newStatus });
-  } else if (newStatus === 'Em andamento' && oldStatus === 'Não iniciado') {
-    addHistoryEvent('topic_started', subjectId, topicId);
-  }
-  persistAndRender();
+  subjectsTabController.updateTopicStatus(subjectId, topicId, selectEl);
 }
 
-/* ===== RENDER: CALENDARIO ===== */
-/* ===== INTEGRAÇÃO CALENDÁRIO + AGENDA_REVISOES ===== */
-function getRevisoesUnificadas() {
-  return buildUnifiedReviews({
-    calendar: state.calendar,
-    reviewAgenda: state.reviewAgenda,
-    subjectIdOf: entitySubjectId,
-    subjectName: entitySubjectName,
-    topicName: getTopicName,
-  });
-}
-const overdueGroupLimits: Record<string, any> = {
-  calAtrasadas: DEFAULT_LIST_VISIBLE_ITEMS,
-  hojeAtrasadas: DEFAULT_LIST_VISIBLE_ITEMS,
-};
-const overdueExpandedDates: Record<string, any> = {
-  calAtrasadas: new Set(),
-  hojeAtrasadas: new Set(),
-};
-const overdueExpansionInitialized = new Set();
-function changeOverdueGroupLimit(elId: string, delta: number) {
-  overdueGroupLimits[elId] =
-    (overdueGroupLimits[elId] || DEFAULT_LIST_VISIBLE_ITEMS) + Number(delta || 0);
-  renderCalAtrasadas(elId);
-}
-function showAllOverdueGroups(elId: string) {
-  overdueGroupLimits[elId] = Number.MAX_SAFE_INTEGER;
-  renderCalAtrasadas(elId);
-}
-function resetOverdueGroupLimit(elId: string) {
-  overdueGroupLimits[elId] = DEFAULT_LIST_VISIBLE_ITEMS;
-  renderCalAtrasadas(elId);
-}
-function toggleOverdueDate(elId: string, date: string) {
-  const dates = overdueExpandedDates[elId] || (overdueExpandedDates[elId] = new Set());
-  if (dates.has(date)) dates.delete(date);
-  else dates.add(date);
-  renderCalAtrasadas(elId);
-}
-
-function renderCalIndicadores() {
-  document.getElementById('calIndicadores')!.innerHTML = renderCalendarIndicators({
-    items: getRevisoesUnificadas(),
-    today: todayISO(),
-    daysUntil: diasParaRevisao,
-  });
-}
-
-/* ===== VISÃO MENSAL DO CALENDÁRIO ===== */
-const calendarUiState = createCalendarState(),
-  calendarController = createCalendarController({
-    service: calendarService,
-    state: calendarUiState,
-    clock: appClock,
-    onChange: () => {
-      renderCalendar();
-      renderMonthCalendar();
-    },
-  });
-const MONTH_MAX_EVENTS_PER_DAY = 3;
-
-function renderMonthCalendar() {
-  const container = document.getElementById('monthCalendar');
-  if (!container) return;
-  const result = renderCalendarMonthView({
-    month: calendarUiState.month,
-    events: getRevisoesUnificadas(),
-    filterSubject: (document.getElementById('calFilterSubject') as HTMLSelectElement).value,
-    filterStatus: (document.getElementById('calFilterStatus') as HTMLSelectElement).value,
-    today: todayISO(),
-    daysUntil: diasParaRevisao,
-    escapeHtml,
-    escapeAttr,
-    maxEventsPerDay: MONTH_MAX_EVENTS_PER_DAY,
-  });
-  document.getElementById('calendarMonthTitle')!.textContent = result.title;
-  container.innerHTML = result.html;
-}
-
-document.getElementById('monthPrevBtn')!.addEventListener('click', () => {
-  calendarController.goToPreviousMonth();
-});
-document.getElementById('monthNextBtn')!.addEventListener('click', () => {
-  calendarController.goToNextMonth();
-});
-document.getElementById('monthTodayBtn')!.addEventListener('click', () => {
-  calendarController.goToCurrentMonth();
-});
-
-function renderCalendarFilters() {
-  const sel = document.getElementById('calFilterSubject') as HTMLSelectElement;
-  const current = sel.value;
-  const selMes = document.getElementById('calFilterMes') as HTMLSelectElement,
-    currentMes = selMes.value;
-  const selTipo = document.getElementById('calFilterTipo') as HTMLSelectElement,
-    currentTipo = selTipo.value;
-  const options = renderCalendarFilterOptions({
-    subjects: state.subjects,
-    monthKeys: collectMonthKeys(state.calendar),
-    reviewTypes: REVIEW_OPTIONS,
-    selectedSubject: current,
-    selectedMonth: currentMes,
-    selectedType: currentTipo,
-    escapeHtml,
-    escapeAttr,
-    monthLabel,
-  });
-  sel.innerHTML = options.subjects;
-  sel.value = current;
-  selMes.innerHTML = options.months;
-  selMes.value = currentMes;
-  selTipo.innerHTML = options.types;
-  selTipo.value = currentTipo;
-}
-
+/* ===== RENDER: CALENDÁRIO & REVISÕES UNIFICADAS ===== */
 function toggleFilterPanel(scope: any) {
   const id =
     scope === 'agenda'
@@ -3315,542 +2626,200 @@ function toggleFilterPanel(scope: any) {
   button?.setAttribute('aria-expanded', String(expanded));
   if (scope === 'sessions') renderSessionHistoryFilterControls();
 }
+
+const calendarTabController = createCalendarTabController({
+  state,
+  calendarService,
+  clock: appClock,
+  formatDatePt,
+  entitySubjectId,
+  entitySubjectName,
+  getSubjectName,
+  getTopicName,
+  diasParaRevisao,
+  diasParaRevisaoPill,
+  activeSubjects,
+  subjectsForSelection,
+  collectMonthKeys: collectMonthKeys as (items: any[]) => string[],
+  monthLabel,
+  monthKey: monthKey as (date?: string) => string,
+  showToast,
+  showConfirm,
+  persistAndRender,
+  onCompleteAgendaReview: (id: string) => completeAgendaReview(id),
+  isMobileHistoryLayout,
+  renderCollectionFooter,
+  escapeHtml,
+  escapeAttr,
+  pluralize,
+  document,
+});
+calendarTabController.bindEvents();
+
+const calendarUiState = calendarTabController.calendarUiState;
+
+function getRevisoesUnificadas() {
+  return calendarTabController.getRevisoesUnificadas();
+}
+function changeOverdueGroupLimit(elId: string, delta: number) {
+  calendarTabController.changeOverdueGroupLimit(elId, delta);
+}
+function showAllOverdueGroups(elId: string) {
+  calendarTabController.showAllOverdueGroups(elId);
+}
+function resetOverdueGroupLimit(elId: string) {
+  calendarTabController.resetOverdueGroupLimit(elId);
+}
+function toggleOverdueDate(elId: string, date: string) {
+  calendarTabController.toggleOverdueDate(elId, date);
+}
+function renderCalIndicadores() {
+  calendarTabController.renderCalIndicadores();
+}
+function renderMonthCalendar() {
+  calendarTabController.renderMonthCalendar();
+}
+function renderCalendarFilters() {
+  calendarTabController.renderCalendarFilters();
+}
 function setCalendarMobileView(view: string) {
-  const normalized = view === 'agenda' ? 'agenda' : 'month';
-  calendarUiState.view = normalized;
-  document.getElementById('panel-calendario')?.setAttribute('data-calendar-view', normalized);
-  document.querySelectorAll<HTMLElement>('.calendar-view-btn').forEach(button => {
-    const active = button.dataset.calendarView === normalized;
-    button.classList.toggle('active', active);
-    button.classList.toggle('ghost', !active);
-    button.setAttribute('aria-pressed', String(active));
-  });
+  calendarTabController.setCalendarMobileView(view);
 }
-document.querySelectorAll<HTMLElement>('.calendar-view-btn').forEach(button =>
-  button.addEventListener('click', () => {
-    calendarController.setView(button.dataset.calendarView!);
-    setCalendarMobileView(calendarUiState.view);
-  })
-);
-const calendarEditController = {
-  state: calendarUiState,
-  begin: (id: string, options: { isNew?: boolean } = {}) =>
-    options.isNew ? calendarController.beginEdit(id) : calendarController.beginEdit(id),
-  update: calendarController.update,
-  cancel: calendarController.cancelEdit,
-  save: () => {
-    const result = calendarController.save();
-    if (result) {
-      persistAndRender();
-      showToast('Item do calendário atualizado.');
-    }
-    return result;
-  },
-  reset: () => {
-    calendarUiState.editingId = null;
-    calendarUiState.draft = null;
-    calendarUiState.isNew = false;
-  },
-};
-function calendarViewModel(item: Record<string, any>) {
-  return buildCalendarItemViewModel(item, {
-    formatDate: formatDatePt,
-    getSubjectName,
-    subjectIdOf: entitySubjectId,
-  });
-}
-function changeCalendarLimit(_delta: number) {
-  calendarController.showMore();
+function changeCalendarLimit(delta: number) {
+  calendarTabController.changeCalendarLimit(delta);
 }
 function resetCalendarLimit() {
-  calendarController.showLess();
+  calendarTabController.resetCalendarLimit();
 }
 function editCalendarItem(id: string) {
-  calendarEditController.begin(id);
+  calendarTabController.editCalendarItem(id);
 }
 function cancelCalendarEdit() {
-  calendarEditController.cancel();
+  calendarTabController.cancelCalendarEdit();
 }
 function updateCalendarDraft(field: string, value: any) {
-  calendarEditController.update(field, value);
+  calendarTabController.updateCalendarDraft(field, value);
 }
 function saveCalendarEdit() {
-  if (!calendarEditController.save()) cancelCalendarEdit();
+  calendarTabController.saveCalendarEdit();
 }
 function completeCalendarItem(id: string) {
-  const item = calendarController.complete(id);
-  if (item) {
-    persistAndRender();
-    showToast('Item concluído.');
-  }
-}
-function renderCalendarReadRow(item: Record<string, any>) {
-  return renderCalendarRead({
-    item,
-    view: calendarViewModel(item),
-    mobile: isMobileHistoryLayout(),
-    escapeHtml,
-    daysPill: diasParaRevisaoPill(item.date, item.status),
-    statusClass: STATUS_CLASS,
-    today: todayISO(),
-  });
-}
-function renderCalendarEditRow(item: Record<string, any>) {
-  const draft = calendarUiState.draft,
-    subjectId = entitySubjectId(draft!);
-  return renderCalendarEdit({
-    item,
-    draft,
-    subjectOptions: subjectsForSelection(subjectId)
-      .map(
-        subject =>
-          `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? 'selected' : ''}>${escapeHtml(subject.name)}</option>`
-      )
-      .join(''),
-    statusOptions: STATUS_OPTIONS.map(
-      option =>
-        `<option value="${option}" ${option === draft?.status ? 'selected' : ''}>${option}</option>`
-    ).join(''),
-    reviewOptions: REVIEW_OPTIONS.map(
-      option =>
-        `<option value="${option}" ${option === draft?.reviewType ? 'selected' : ''}>${option}</option>`
-    ).join(''),
-    escapeAttr,
-  });
+  calendarTabController.completeCalendarItem(id);
 }
 function renderCalendar() {
-  const body = document.getElementById('calBody');
-  if (!body) return;
-  const filterSubject =
-    (document.getElementById('calFilterSubject') as HTMLSelectElement)?.value || '';
-  const filterStatus =
-    (document.getElementById('calFilterStatus') as HTMLSelectElement)?.value || '';
-  const filterMes = (document.getElementById('calFilterMes') as HTMLSelectElement)?.value || '';
-  const filterTipo = (document.getElementById('calFilterTipo') as HTMLSelectElement)?.value || '';
-
-  const controller = createCalendarTabController({
-    state,
-    filters: { subjectId: filterSubject, status: filterStatus, month: filterMes, type: filterTipo },
-    entitySubjectId,
-    monthKey: monthKey as (date?: string) => string,
-    calendarUiState,
-    renderCalendarReadRow,
-    renderCalendarEditRow,
-    renderCollectionFooter,
-  });
-
-  body.innerHTML = controller.renderHtml();
+  calendarTabController.renderCalendar();
 }
-
 function addCalRow() {
-  calendarController.create({
-    date: todayISO(),
-    week: '',
-    subjectId: activeSubjects()[0]?.id || null,
-    topicId: null,
-    status: 'Não iniciado',
-    reviewType: '—',
-  });
+  calendarTabController.addCalRow();
 }
 function deleteCalRow(id: string) {
-  showConfirm('Excluir este item do calendário?', () => {
-    calendarController.remove(id);
-    persistAndRender();
-    showToast('Item excluído.');
-  });
+  calendarTabController.deleteCalRow(id);
 }
 function updateCal(id: string, field: string, value: any) {
-  const c = state.calendar.find(x => x.id === id);
-  (c as Record<string, any>)[field] = value;
-  persistAndRender();
+  calendarTabController.updateCal(id, field, value);
 }
 
-document
-  .getElementById('calFilterSubject')!
-  .addEventListener('change', event =>
-    calendarController.setFilter('subjectId', (event.target as HTMLInputElement).value)
-  );
-document
-  .getElementById('calFilterStatus')!
-  .addEventListener('change', event =>
-    calendarController.setFilter('status', (event.target as HTMLInputElement).value)
-  );
-document
-  .getElementById('calFilterMes')!
-  .addEventListener('change', event =>
-    calendarController.setFilter('month', (event.target as HTMLInputElement).value)
-  );
-document
-  .getElementById('calFilterTipo')!
-  .addEventListener('change', event =>
-    calendarController.setFilter('type', (event.target as HTMLInputElement).value)
-  );
 document.getElementById('addSubjectBtn')!.addEventListener('click', addSubject);
-document.getElementById('addCalRowBtn')!.addEventListener('click', addCalRow);
 
 /* ===== AGENDA DE REVISÕES ===== */
-function addDays(iso: string, days: number) {
-  const d = parseLocalDate(iso);
-  if (!d) return '';
-  d.setDate(d.getDate() + Number(days || 0));
-  return localDateISO(d);
-}
+const reviewsTabController = createReviewsTabController({
+  state,
+  reviewAgendaRepo: appContext.repositories.reviewAgenda,
+  reviewService,
+  diagnoseTopic,
+  subjectAccuracyTarget,
+  getTopicById,
+  activeTopics,
+  activeSubjects,
+  subjectsForSelection,
+  topicsForSelection,
+  entitySubjectId,
+  getSubjectName,
+  getTopicName,
+  formatDatePt,
+  todayISO,
+  nowISO,
+  uid,
+  addHistoryEvent,
+  refreshTopicReviewStats,
+  showToast,
+  showConfirm,
+  persistAndRender,
+  monthKey: monthKey as (date?: string) => string,
+  monthLabel,
+  collectMonthKeys: collectMonthKeys as (items: any[]) => string[],
+  diasParaRevisaoPill,
+  renderGroupHeader,
+  renderCollectionFooter,
+  isMobileHistoryLayout,
+  escapeHtml,
+  escapeAttr,
+  pluralize,
+  document,
+});
+reviewsTabController.bindEvents();
 
-function adaptiveReviewSuggestion(topicId: string, baseDays: number, baseDate: string) {
-  const found = getTopicById(topicId);
-  const diagnosis = found ? diagnoseTopic(found.subject.id, topicId) : null;
-  const result = calculateAdaptiveInterval({
-    baseDays,
-    accuracy: diagnosis?.performance?.accuracy,
-    volume: diagnosis?.performance?.resolved || 0,
-    target: subjectAccuracyTarget((found?.subject.id)!),
-    trendKey: diagnosis?.trend?.key,
-    dominantErrorKey: diagnosis?.dominantError?.key,
-    reviews: Number(found?.topic?.reviewCount) || 0,
-  });
-  return { ...result, date: addDays(baseDate, result.days) };
-}
+const agendaUiState = reviewsTabController.agendaUiState;
+
 function resetAdaptiveReviewDate(id: string) {
-  const review = appContext.repositories.reviewAgenda.findById(id);
-  if (!review || !review.topicId) return;
-  const found = getTopicById(review.topicId);
-  const baseDate = found?.topic?.completedAt || todayISO();
-  const suggestion = adaptiveReviewSuggestion(
-    review.topicId,
-    review.baseIntervalDays || reviewBaseDaysFromType(review.tipo),
-    baseDate
-  );
-  reviewService.restoreAdaptiveSchedule(id, suggestion);
-  persistAndRender();
+  reviewsTabController.resetAdaptiveReviewDate(id);
 }
 function gerarAgendaAutomatica() {
-  const concluidos = activeTopics().filter(t => t.status === 'Concluído' && t.completedAt);
-  if (concluidos.length === 0) {
-    showToast(
-      'Nenhum tópico concluído com data registrada ainda. Marque tópicos como "Concluído" na aba Disciplinas primeiro.'
-    );
-    return;
-  }
-  let adicionados = 0;
-  concluidos.forEach(t => {
-    const intervalos = DIFFICULTY_INTERVALS[t.difficulty!] || AGENDA_INTERVALS;
-    intervalos.forEach(intervalo => {
-      const jaExiste = state.reviewAgenda.some(
-        a => (a.topicId || a.topicRef) === t.id && a.tipo === intervalo.tipo
-      );
-      if (!jaExiste) {
-        const suggestion = adaptiveReviewSuggestion(t.id, intervalo.dias, t.completedAt!);
-        state.reviewAgenda.push({
-          id: uid('review'),
-          subjectId: t.subjectId,
-          topicId: t.id,
-          date: suggestion.date,
-          suggestedDate: suggestion.date,
-          baseIntervalDays: intervalo.dias,
-          adaptive: true,
-          manualDate: false,
-          adaptiveReason: suggestion.reason,
-          tipo: intervalo.tipo,
-          status: 'Não iniciado',
-          createdAt: nowISO(),
-          completedAt: null,
-        });
-        adicionados++;
-      }
-    });
-  });
-  persistAndRender();
-  if (adicionados > 0) {
-    showToast(
-      `${pluralize(adicionados, 'revisão', 'revisões')} ${adicionados === 1 ? 'adicionada' : 'adicionadas'} à agenda — tópicos difíceis ganham revisões mais próximas.`
-    );
-  } else {
-    showToast('A agenda já está atualizada — nenhuma revisão nova para gerar.');
-  }
-}
-function getTopicDifficulty(topicId: string) {
-  if (!topicId) return 'Médio';
-  for (const s of state.subjects) {
-    const t = s.topics.find(x => x.id === topicId);
-    if (t) return t.difficulty || 'Médio';
-  }
-  return 'Médio';
-}
-
-function renderAgendaFilters() {
-  const sel = document.getElementById('agendaFilterSubject') as HTMLSelectElement;
-  const current = sel.value;
-  sel.innerHTML =
-    `<option value="">Todas as disciplinas</option>` +
-    state.subjects
-      .map(s => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`)
-      .join('');
-  sel.value = current;
-
-  const selMes = document.getElementById('agendaFilterMes') as HTMLSelectElement;
-  const currentMes = selMes.value;
-  const meses = collectMonthKeys(state.reviewAgenda);
-  selMes.innerHTML =
-    `<option value="">Todos os meses</option>` +
-    meses.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join('');
-  selMes.value = currentMes;
-
-  const selTipo = document.getElementById('agendaFilterTipo') as HTMLSelectElement;
-  const currentTipo = selTipo.value;
-  selTipo.innerHTML =
-    `<option value="">Todos os tipos</option>` +
-    TIPO_AGENDA_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
-  selTipo.value = currentTipo;
-}
-
-const agendaUiState = {
-  upcomingVisible: DEFAULT_LIST_VISIBLE_ITEMS,
-  completedVisible: DEFAULT_LIST_VISIBLE_ITEMS,
-  completedExpanded: false,
-  editingId: null as string | null,
-  editingIsNew: false,
-  draft: null as Record<string, any> | null,
-};
-function agendaViewModel(item: Record<string, any>) {
-  const topicId = item.topicId || item.topicRef;
-  return createReviewViewModel(item, {
-    subjectName: getSubjectName(entitySubjectId(item)),
-    topicName: topicId ? getTopicName(topicId) : '',
-    difficulty: getTopicDifficulty(topicId),
-    formatDate: formatDatePt,
-  });
+  reviewsTabController.gerarAgendaAutomatica();
 }
 function toggleCompletedReviews() {
-  agendaUiState.completedExpanded = !agendaUiState.completedExpanded;
-  renderAgenda();
+  reviewsTabController.toggleCompletedReviews();
 }
 function changeAgendaLimit(group: string, delta: number) {
-  const key = `${group}Visible`,
-    minimum = DEFAULT_LIST_VISIBLE_ITEMS;
-  (agendaUiState as Record<string, any>)[key] =
-    Number(delta) > 0 ? Number.MAX_SAFE_INTEGER : minimum;
-  renderAgenda();
+  reviewsTabController.changeAgendaLimit(group, delta);
 }
 function resetAgendaLimit(group: string) {
-  (agendaUiState as Record<string, any>)[`${group}Visible`] = DEFAULT_LIST_VISIBLE_ITEMS;
-  renderAgenda();
+  reviewsTabController.resetAgendaLimit(group);
 }
 function editAgenda(id: string) {
-  if (agendaUiState.editingIsNew && agendaUiState.editingId !== id)
-    state.reviewAgenda = state.reviewAgenda.filter(item => item.id !== agendaUiState.editingId);
-  const item = state.reviewAgenda.find(entry => entry.id === id);
-  if (!item) return;
-  agendaUiState.editingId = id;
-  agendaUiState.editingIsNew = false;
-  agendaUiState.draft = cloneRecord(item);
-  renderAgenda();
+  reviewsTabController.editAgenda(id);
 }
 function cancelAgendaEdit() {
-  if (agendaUiState.editingIsNew)
-    state.reviewAgenda = state.reviewAgenda.filter(item => item.id !== agendaUiState.editingId);
-  agendaUiState.editingId = null;
-  agendaUiState.editingIsNew = false;
-  agendaUiState.draft = null;
-  renderAgenda();
+  reviewsTabController.cancelAgendaEdit();
 }
 function updateAgendaDraft(field: string, value: any) {
-  const draft = agendaUiState.draft;
-  if (!draft) return;
-  draft[field] = value;
-  if (
-    field === 'subjectId' &&
-    draft.topicId &&
-    !topicsForSelection(value, draft.topicId).some((topic: any) => topic.id === draft.topicId)
-  )
-    draft.topicId = null;
-}
-function applyAgendaField(item: Record<string, any>, field: string, value: any) {
-  const oldStatus = item.status,
-    oldValue = item[field];
-  item[field] = value;
-  if (field === 'date' && value !== oldValue) {
-    item.manualDate = true;
-    item.adaptive = false;
-  }
-  if (field === 'status' && value === 'Concluído' && oldStatus !== 'Concluído') {
-    item.completedAt = nowISO();
-    const topicId = item.topicId || item.topicRef || null;
-    addHistoryEvent('review_completed', entitySubjectId(item), topicId, {
-      reviewId: item.id,
-      reviewType: item.tipo,
-    });
-    if (topicId) refreshTopicReviewStats(topicId);
-  } else if (field === 'status' && value !== 'Concluído' && oldStatus === 'Concluído') {
-    const topicId = item.topicId || item.topicRef || null;
-    item.completedAt = null;
-    addHistoryEvent('review_reopened', entitySubjectId(item), topicId, {
-      reviewId: item.id,
-      newStatus: value,
-    });
-    if (topicId) refreshTopicReviewStats(topicId);
-  }
+  reviewsTabController.updateAgendaDraft(field, value);
 }
 function saveAgendaEdit() {
-  const draft = agendaUiState.draft,
-    item = state.reviewAgenda.find(entry => entry.id === agendaUiState.editingId);
-  if (!draft || !item) return cancelAgendaEdit();
-  ['date', 'subjectId', 'topic', 'tipo', 'status'].forEach(field => {
-    if ((item as Record<string, any>)[field] !== draft[field])
-      applyAgendaField(item, field, draft[field]);
-  });
-  agendaUiState.editingId = null;
-  agendaUiState.editingIsNew = false;
-  agendaUiState.draft = null;
-  persistAndRender();
-  showToast('Revisão atualizada.');
+  reviewsTabController.saveAgendaEdit();
 }
-let pendingReviewRatingId: any = null;
 function closeReviewRating() {
-  pendingReviewRatingId = null;
-  const overlay = document.getElementById('reviewRatingOverlay');
-  overlay!.classList.remove('show');
-  overlay!.setAttribute('aria-hidden', 'true');
+  reviewsTabController.closeReviewRating();
 }
 function completeAgendaReview(id: string) {
-  const item = appContext.repositories.reviewAgenda.findById(id);
-  if (!item || item.status === 'Concluído') return;
-  if (!(item.topicId || item.topicRef)) {
-    reviewService.completeReview(id);
-    persistAndRender();
-    showToast('Revisão concluída.');
-    return;
-  }
-  pendingReviewRatingId = id;
-  const overlay = document.getElementById('reviewRatingOverlay');
-  overlay!.classList.add('show');
-  overlay!.removeAttribute('aria-hidden');
-  overlay!.querySelector<HTMLElement>('[data-review-rating="good"]')?.focus();
+  reviewsTabController.completeAgendaReview(id);
 }
-function rateCompletedReview(rating: number) {
-  if (!(REVIEW_RATINGS as Record<string, any>)[rating]) return closeReviewRating();
-  const result = reviewService.rateReview(pendingReviewRatingId, rating, {
-    label: (REVIEW_RATINGS as Record<string, any>)[rating].label,
-  });
-  if (!result) return closeReviewRating();
-  closeReviewRating();
-  persistAndRender();
-  showToast(`Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState.nextReviewDate)}.`);
+function rateCompletedReview(rating: any) {
+  reviewsTabController.rateCompletedReview(rating);
 }
-function renderAgendaReadRow(item: Record<string, any>) {
-  return renderReviewRead({
-    item,
-    view: agendaViewModel(item),
-    mobile: isMobileHistoryLayout(),
-    escapeHtml,
-    escapeAttr,
-    daysPill: diasParaRevisaoPill(item.date, item.status),
-    difficultyClass: DIFFICULTY_CLASS,
-    statusClass: STATUS_CLASS,
-    ratingLabel: (key: string) => (REVIEW_RATINGS as Record<string, any>)[key]?.label || key,
-    today: todayISO(),
-  });
+function getTopicDifficulty(topicId?: string | null) {
+  return reviewsTabController.getTopicDifficulty(topicId);
 }
-function renderAgendaEditRow(item: Record<string, any>) {
-  const draft = agendaUiState.draft,
-    subjectId = entitySubjectId(draft!);
-  if (!draft) return '';
-  return renderReviewEdit({
-    item,
-    draft,
-    subjectOptions: subjectsForSelection(subjectId)
-      .map(
-        subject =>
-          `<option value="${escapeAttr(subject.id)}" ${subject.id === subjectId ? 'selected' : ''}>${escapeHtml(subject.name)}</option>`
-      )
-      .join(''),
-    topicName: draft.topicId ? getTopicName(draft.topicId) : draft.topic || '',
-    typeOptions: TIPO_AGENDA_OPTIONS.map(
-      option =>
-        `<option value="${option}" ${option === draft.tipo ? 'selected' : ''}>${option}</option>`
-    ).join(''),
-    statusOptions: STATUS_OPTIONS.map(
-      option =>
-        `<option value="${option}" ${option === draft.status ? 'selected' : ''}>${option}</option>`
-    ).join(''),
-    escapeAttr,
-  });
+function adaptiveReviewSuggestion(topicId: string, baseDays: number, baseDate: string) {
+  return reviewsTabController.adaptiveReviewSuggestion(topicId, baseDays, baseDate);
 }
 function renderAgenda() {
-  const body = document.getElementById('agendaBody');
-  if (!body) return;
-  const filterSubject =
-    (document.getElementById('agendaFilterSubject') as HTMLSelectElement)?.value || '';
-  const filterStatus =
-    (document.getElementById('agendaFilterStatus') as HTMLSelectElement)?.value || '';
-  const filterMes = (document.getElementById('agendaFilterMes') as HTMLSelectElement)?.value || '';
-  const filterTipo =
-    (document.getElementById('agendaFilterTipo') as HTMLSelectElement)?.value || '';
-
-  const controller = createReviewsTabController({
-    state,
-    filters: { subjectId: filterSubject, status: filterStatus, month: filterMes, type: filterTipo },
-    entitySubjectId,
-    todayISO,
-    monthKey: monthKey as (date?: string) => string,
-    DIFFICULTY_WEIGHT,
-    getTopicDifficulty: getTopicDifficulty as (topicId?: string | null) => string,
-    agendaUiState,
-    renderAgendaReadRow,
-    renderAgendaEditRow,
-    renderGroupHeader,
-    renderCollectionFooter,
-  });
-
-  body.innerHTML = controller.renderHtml();
+  reviewsTabController.renderAgenda();
 }
-
+function renderAgendaFilters() {
+  reviewsTabController.renderAgendaFilters();
+}
 function addAgendaRow() {
-  const item = reviewService.createManualReview({ subjectId: activeSubjects()[0]?.id || null });
-  agendaUiState.editingId = item.id;
-  agendaUiState.editingIsNew = true;
-  agendaUiState.draft = cloneRecord(item);
-  renderAgenda();
+  reviewsTabController.addAgendaRow();
 }
 function deleteAgendaRow(id: string) {
-  showConfirm('Excluir esta revisão?', () => {
-    reviewService.removeReview(id);
-    agendaUiState.editingId = null;
-    agendaUiState.editingIsNew = false;
-    agendaUiState.draft = null;
-    persistAndRender();
-    showToast('Revisão excluída.');
-  });
+  reviewsTabController.deleteAgendaRow(id);
 }
 function updateAgenda(id: string, field: string, value: any) {
-  const a = state.reviewAgenda.find(x => x.id === id);
-  if (!a) return;
-  applyAgendaField(a, field, value);
-  persistAndRender();
+  reviewsTabController.updateAgenda(id, field, value);
 }
-
-createReviewsController({
-  actions: {
-    rate: rateCompletedReview,
-    cancelRating: closeReviewRating,
-    filtersChanged: () => {
-      agendaUiState.upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-      agendaUiState.completedVisible = DEFAULT_LIST_VISIBLE_ITEMS;
-      renderAgenda();
-    },
-    createManual: addAgendaRow,
-    generateAutomatic: gerarAgendaAutomatica,
-  },
-}).register();
 
 /* ===== QUESTÕES & SIMULADOS ===== */
-function calcAcertoPct(correct: number, resolved: number) {
-  const r = Number(resolved) || 0;
-  const c = Number(correct) || 0;
-  if (r <= 0) return 0;
-  return Math.round((c / r) * 1000) / 10;
-}
-
-let openQuestionErrorIds = new Set<string>();
 let performanceSubjectId: any = null;
 let performanceViewMode = 'with-data';
 const errorAnalysisView = { days: 30, topicId: '' };
@@ -3905,44 +2874,6 @@ const LIST_VIEW_STEPS = {
   simulations: DEFAULT_LIST_VISIBLE_ITEMS,
   sessionDays: DEFAULT_LIST_VISIBLE_ITEMS,
 };
-const historyEditState = { sessionId: null as any };
-const historyEditDraft = { session: null as any };
-const questionCrudController = createQuestionController({
-  service: questionService,
-  onChange: () => {},
-});
-const questionEditController = createEditableCollectionController({
-    service: questionService,
-    clone: cloneRecord,
-    render: renderQuestoes,
-    normalize: (draft: Record<string, any>) => {
-      draft.resolved = Math.max(0, Math.floor(Number(draft.resolved) || 0));
-      draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.resolved));
-      normalizeErrorBreakdown(draft);
-      return draft;
-    },
-    onSaved: () => {
-      persistAndRender();
-      showToast('Registro atualizado.');
-    },
-  }),
-  simulationEditController = createEditableCollectionController({
-    service: simulationService,
-    clone: cloneRecord,
-    render: renderSimulados,
-    normalize: (draft: Record<string, any>) => {
-      draft.total = Math.max(0, Math.floor(Number(draft.total) || 0));
-      draft.correct = Math.max(0, Math.min(Math.floor(Number(draft.correct) || 0), draft.total));
-      return draft;
-    },
-    onSaved: () => {
-      persistAndRender();
-      showToast('Simulado atualizado.');
-    },
-  });
-function cloneRecord(record: Record<string, any>) {
-  return record ? JSON.parse(JSON.stringify(record)) : null;
-}
 function isMobileHistoryLayout() {
   return window.matchMedia('(max-width:850px)').matches;
 }
@@ -3982,106 +2913,11 @@ function resetRecordListLimits() {
   retentionShowAll = false;
 }
 
-function emptyErrorBreakdown() {
-  return Object.fromEntries(Object.keys(ERROR_CATEGORIES).map(key => [key, 0]));
-}
-function normalizeErrorBreakdown(question: Record<string, any>) {
-  const normalized = emptyErrorBreakdown();
-  Object.keys(normalized).forEach(key => {
-    normalized[key] = Math.max(0, Math.floor(Number(question?.errorBreakdown?.[key]) || 0));
-  });
-  const realErrors = Math.max(
-    0,
-    (Number(question?.resolved) || 0) - (Number(question?.correct) || 0)
-  );
-  let excess = Object.values(normalized).reduce((sum, value) => sum + value, 0) - realErrors;
-  [...Object.keys(normalized)].reverse().forEach(key => {
-    if (excess <= 0) return;
-    const cut = Math.min(normalized[key], excess);
-    normalized[key] -= cut;
-    excess -= cut;
-  });
-  question.errorBreakdown = normalized;
-  return normalized;
-}
 function validQuestionRecords() {
   return state.questoes.filter(q => q.date && (Number(q.resolved) || 0) > 0);
 }
-function toggleQuestionErrors(id: string) {
-  if (openQuestionErrorIds.has(id)) openQuestionErrorIds.delete(id);
-  else openQuestionErrorIds.add(id);
-  renderQuestoes();
-  renderQuestionAnalytics();
-}
-function questionCategorizedErrors(question: Record<string, any>) {
-  return Object.values(normalizeErrorBreakdown(question)).reduce((sum, value) => sum + value, 0);
-}
-function questionViewModel(q: Record<string, any>) {
-  return buildQuestionViewModel(q, {
-    formatDate: formatDatePt,
-    getSubjectName,
-    getTopicName,
-    subjectIdOf: entitySubjectId,
-    accuracy: calcAcertoPct,
-  });
-}
-function editQuestion(id: string) {
-  questionEditController.begin(id);
-}
-function cancelQuestionEdit() {
-  questionEditController.cancel();
-}
-function updateQuestionDraft(field: string, value: any) {
-  const draft = questionEditController.state.draft;
-  if (!draft) return;
-  questionEditController.update(
-    field,
-    field === 'resolved' || field === 'correct'
-      ? Math.max(0, Math.floor(Number(value) || 0))
-      : value
-  );
-  if (
-    field === 'subjectId' &&
-    draft.topicId &&
-    !topicsForSelection(value, draft.topicId).some((t: any) => t.id === draft.topicId)
-  )
-    draft.topicId = null;
-  if (field === 'subjectId') renderQuestoes();
-}
-function saveQuestionEdit() {
-  if (!questionEditController.save()) cancelQuestionEdit();
-}
-function getQuestionsTabController() {
-  return createQuestionsController({
-    state,
-    listViewState,
-    questionEditController,
-    simulationEditController,
-    openQuestionErrorIds,
-    openBreakdownIds,
-    errorCategories: ERROR_CATEGORIES,
-    isMobileLayout: isMobileHistoryLayout,
-    questionViewModel,
-    simulationViewModel,
-    questionCategorizedErrors,
-    renderListViewFooter,
-    LIST_VIEW_STEPS,
-    getSubjectOptionsHtml: subjectId =>
-      subjectsForSelection(subjectId)
-        .map(
-          s =>
-            `<option value="${escapeAttr(s.id)}" ${s.id === subjectId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`
-        )
-        .join(''),
-    getTopicOptionsHtml: (subjectId, topicId) =>
-      topicsForSelection(subjectId, topicId!)
-        .map(
-          (t: any) =>
-            `<option value="${escapeAttr(t.id)}" ${t.id === topicId ? 'selected' : ''}>${escapeHtml(t.name)}</option>`
-        )
-        .join(''),
-  });
-}
+
+let simulationsTabController: any = null;
 
 const errorNotebookController = createErrorNotebookController({
   getState: () => state,
@@ -4097,59 +2933,70 @@ const errorNotebookController = createErrorNotebookController({
   activateTab,
 });
 
+const questionsTabController = createQuestionsTabController({
+  document,
+  window,
+  state,
+  listViewState,
+  LIST_VIEW_STEPS,
+  questionService,
+  errorCategories: ERROR_CATEGORIES,
+  errorNotebookController,
+  renderQuestionAnalytics,
+  simulationEditController: {
+    get state() {
+      return simulationsTabController?.simulationEditController?.state || { editingId: null, draft: null };
+    },
+  },
+  openBreakdownIds: new Set<string>(),
+  persistAndRender,
+  showToast,
+  showConfirm,
+  formatDatePt,
+  getSubjectName,
+  getTopicName,
+  entitySubjectId,
+  activeSubjects,
+  subjectsForSelection,
+  topicsForSelection: (sId, tId) => topicsForSelection(sId, tId || null),
+  renderListViewFooter,
+  isMobileLayout: isMobileHistoryLayout,
+  uid,
+  todayISO,
+  nowISO,
+  escapeHtml,
+  escapeAttr,
+});
+
+function normalizeErrorBreakdown(question: Record<string, any>) {
+  return questionsTabController.normalizeErrorBreakdown(question);
+}
+function toggleQuestionErrors(id: string) {
+  questionsTabController.toggleQuestionErrors(id);
+}
+function editQuestion(id: string) {
+  questionsTabController.editQuestion(id);
+}
+function cancelQuestionEdit() {
+  questionsTabController.cancelQuestionEdit();
+}
+function updateQuestionDraft(field: string, value: any) {
+  questionsTabController.updateQuestionDraft(field, value);
+}
+function saveQuestionEdit() {
+  questionsTabController.saveQuestionEdit();
+}
 function renderQuestoes() {
-  const body = document.getElementById('questoesBody');
-  if (!body) return;
-
-  if (errorNotebookController.syncView()) {
-    return;
-  }
-
-  body.innerHTML = getQuestionsTabController().renderQuestionsHtml();
+  questionsTabController.renderQuestoes();
 }
 function addQuestaoRow(initial: any = {}) {
-  listViewState.questionsVisible = LIST_VIEW_STEPS.questions;
-  const question = {
-    id: uid('question'),
-    date: todayISO(),
-    subjectId: initial.subjectId || activeSubjects()[0]?.id || null,
-    topicId: initial.topicId || null,
-    resolved: 0,
-    correct: 0,
-    errorBreakdown: emptyErrorBreakdown(),
-    recommendationId: initial.recommendationId || null,
-    createdAt: nowISO(),
-  };
-  questionCrudController.create(question);
-  questionEditController.begin(question.id, { isNew: true });
-  return question;
+  return questionsTabController.addQuestaoRow(initial);
 }
 function deleteQuestaoRow(id: string) {
-  showConfirm('Excluir este registro de questões?', () => {
-    questionCrudController.remove(id);
-    openQuestionErrorIds.delete(id);
-    questionEditController.reset();
-    persistAndRender();
-    showToast('Registro excluído.');
-  });
+  questionsTabController.deleteQuestaoRow(id);
 }
 function updateQuestionError(id: string, key: string, value: any) {
-  const question = state.questoes.find(q => q.id === id);
-  if (!question || !ERROR_CATEGORIES[key]) return;
-  normalizeErrorBreakdown(question);
-  const realErrors = Math.max(
-    0,
-    (Number(question.resolved) || 0) - (Number(question.correct) || 0)
-  );
-  const others = Object.entries(question.errorBreakdown!).reduce(
-    (sum, [category, count]) => (category === key ? sum : sum + (count as number)),
-    0
-  );
-  const requested = Math.max(0, Math.floor(Number(value) || 0));
-  const allowed = Math.max(0, realErrors - others);
-  question.errorBreakdown![key] = Math.min(requested, allowed);
-  if (requested > allowed) showToast('A categorização foi limitada ao total real de erros.');
-  persistAndRender();
+  questionsTabController.updateQuestionError(id, key, value);
 }
 
 function subjectAccuracyTarget(subjectId: string) {
@@ -4433,103 +3280,69 @@ function renderQuestionAnalytics() {
   questionAnalyticsController.renderQuestionAnalytics();
 }
 
+simulationsTabController = createSimulationsTabController({
+  document,
+  window,
+  state,
+  listViewState,
+  LIST_VIEW_STEPS,
+  simulationService,
+  questionEditController: questionsTabController.questionEditController,
+  openQuestionErrorIds: questionsTabController.openQuestionErrorIds,
+  errorCategories: ERROR_CATEGORIES,
+  persistAndRender,
+  showToast,
+  showConfirm,
+  formatDatePt,
+  activeSubjects,
+  subjectsForSelection,
+  topicsForSelection: (sId, tId) => topicsForSelection(sId, tId || null),
+  renderListViewFooter,
+  isMobileLayout: isMobileHistoryLayout,
+  uid,
+  todayISO,
+  escapeHtml,
+  escapeAttr,
+});
+
 function simuladoEffectiveCounts(sim: Record<string, any>) {
-  if (sim.breakdown && sim.breakdown.length > 0) {
-    const correct = sim.breakdown.reduce((s: any, b: any) => s + (Number(b.correct) || 0), 0);
-    const total = sim.breakdown.reduce((s: any, b: any) => s + (Number(b.total) || 0), 0);
-    return { correct, total };
-  }
-  return { correct: Number(sim.correct) || 0, total: Number(sim.total) || 0 };
+  return simulationsTabController.simuladoEffectiveCounts(sim);
 }
 function simuladoNota(sim: Record<string, any>) {
-  const { correct, total } = simuladoEffectiveCounts(sim);
-  return calcAcertoPct(correct, total);
+  return simulationsTabController.simuladoNota(sim);
 }
-
-let openBreakdownIds = new Set<string>();
 function toggleBreakdown(simuladoId: string) {
-  if (openBreakdownIds.has(simuladoId)) openBreakdownIds.delete(simuladoId);
-  else openBreakdownIds.add(simuladoId);
-  renderSimulados();
+  simulationsTabController.toggleBreakdown(simuladoId);
 }
 function addBreakdownRow(simuladoId: string) {
-  const sim = state.simulados.find(s => s.id === simuladoId);
-  if (!sim!.breakdown) sim!.breakdown = [];
-  sim!.breakdown.push({
-    id: uid('breakdown'),
-    subjectId: activeSubjects()[0]?.id || null,
-    correct: 0,
-    total: 0,
-  });
-  persistAndRender();
+  simulationsTabController.addBreakdownRow(simuladoId);
 }
 function updateBreakdownRow(simuladoId: string, breakdownId: string, field: string, value: any) {
-  const sim = state.simulados.find(s => s.id === simuladoId);
-  const b = sim!.breakdown!.find(x => x.id === breakdownId);
-  (b as Record<string, any>)[field] =
-    field === 'correct' || field === 'total' ? Number(value) || 0 : value;
-  b!.total = Math.max(0, Number(b!.total) || 0);
-  if ((Number(b!.correct) || 0) > b!.total)
-    showToast('Os acertos foram limitados ao total de questões.');
-  b!.correct = Math.max(0, Math.min(Number(b!.correct) || 0, b!.total));
-  persistAndRender();
+  simulationsTabController.updateBreakdownRow(simuladoId, breakdownId, field, value);
 }
 function deleteBreakdownRow(simuladoId: string, breakdownId: string) {
-  const sim = state.simulados.find(s => s.id === simuladoId);
-  sim!.breakdown = sim!.breakdown!.filter(x => x.id !== breakdownId);
-  persistAndRender();
-}
-
-function simulationViewModel(sim: Record<string, any>) {
-  const counts = simuladoEffectiveCounts(sim);
-  return {
-    date: sim.date ? formatDatePt(sim.date) : 'Sem data',
-    name: sim.nome || 'Simulado sem nome',
-    correct: counts.correct,
-    total: counts.total,
-    score: simuladoNota(sim),
-  };
+  simulationsTabController.deleteBreakdownRow(simuladoId, breakdownId);
 }
 function editSimulation(id: string) {
-  simulationEditController.begin(id);
+  simulationsTabController.editSimulation(id);
 }
 function cancelSimulationEdit() {
-  simulationEditController.cancel();
+  simulationsTabController.cancelSimulationEdit();
 }
 function updateSimulationDraft(field: string, value: any) {
-  simulationEditController.update(
-    field,
-    field === 'correct' || field === 'total' ? Math.max(0, Math.floor(Number(value) || 0)) : value
-  );
+  simulationsTabController.updateSimulationDraft(field, value);
 }
 function saveSimulationEdit() {
-  if (!simulationEditController.save()) cancelSimulationEdit();
+  simulationsTabController.saveSimulationEdit();
 }
-
 function renderSimulados() {
-  const body = document.getElementById('simuladosBody');
-  if (!body) return;
-  body.innerHTML = getQuestionsTabController().renderSimulationsHtml();
+  simulationsTabController.renderSimulados();
 }
 function addSimuladoRow() {
-  listViewState.simulationsVisible = LIST_VIEW_STEPS.simulations;
-  const sim = simulationService.create({
-    date: todayISO(),
-    nome: '',
-    correct: 0,
-    total: 0,
-    breakdown: [],
-  });
-  simulationEditController.begin(sim.id, { isNew: true });
+  return simulationsTabController.addSimuladoRow();
 }
 function deleteSimuladoRow(id: string) {
-  showConfirm('Excluir este simulado?', () => {
-    simulationService.remove(id);
-    openBreakdownIds.delete(id);
-    simulationEditController.reset();
-    persistAndRender();
-    showToast('Simulado excluído.');
-  });
+  simulationsTabController.deleteSimuladoRow(id);
 }
 
 document.getElementById('addQuestaoRowBtn')!.addEventListener('click', addQuestaoRow);
@@ -5471,8 +4284,6 @@ function diasSemEstudarDisciplina(subjectId: string) {
 /* ===== PRIORIDADE INTELIGENTE DE ESTUDOS (Score 0-100) ===== */
 /* Prioridade compartilhada com recomendações e planejamento semanal. */
 
-const PRIORITY_TIER_EMOJI: Record<string, any> = { Alta: '🔴', Média: '🟠', Baixa: '🟡' };
-
 function proximidadeProvaScore() {
   if (!state.examDate) return 0;
   const dias = diasParaRevisao(state.examDate);
@@ -5709,290 +4520,67 @@ function studySecondsByDate(sessions = state.studySessions) {
   return map;
 }
 
-const SESSION_TYPES: Record<string, any> = {
-  study: 'Estudo teórico',
-  review: 'Revisão',
-  questions: 'Questões',
-  simulation: 'Simulado',
-};
-let sessionHistoryFilters: Record<string, any> = {
-  period: '30',
-  subjectId: '',
-  type: '',
-  date: '',
-};
-let expandedSessionDays = new Set();
-let expandedSessionDetails = new Set();
-let sessionHistoryExpansionInitialized = false;
-function sessionTypeLabel(type: string) {
-  return SESSION_TYPES[type] || SESSION_TYPES.study;
-}
-function sessionTypeOptions(selected: string) {
-  return Object.entries(SESSION_TYPES)
-    .map(
-      ([value, label]) =>
-        `<option value="${value}" ${value === selected ? 'selected' : ''}>${label}</option>`
-    )
-    .join('');
-}
-function updateSessionHistoryFilter(field: string, value: any) {
-  sessionHistoryFilters[field] = value;
-  if (field === 'period') sessionHistoryFilters.date = '';
-  listViewState.sessionDaysVisible = LIST_VIEW_STEPS.sessionDays;
-  expandedSessionDays.clear();
-  sessionHistoryExpansionInitialized = false;
-  renderStudySessionsHistory();
-  renderHeatmap();
-}
-function clearSessionHistoryFilters() {
-  sessionHistoryFilters = { period: '30', subjectId: '', type: '', date: '' };
-  listViewState.sessionDaysVisible = LIST_VIEW_STEPS.sessionDays;
-  expandedSessionDays.clear();
-  sessionHistoryExpansionInitialized = false;
-  renderStudySessionsHistory();
-  renderHeatmap();
-}
-function selectSessionHistoryDate(date: string) {
-  sessionHistoryFilters.date = date;
-  sessionHistoryFilters.period = 'all';
-  listViewState.sessionDaysVisible = LIST_VIEW_STEPS.sessionDays;
-  expandedSessionDays = new Set([date]);
-  sessionHistoryExpansionInitialized = true;
-  renderStudySessionsHistory();
-  renderHeatmap();
-  document
-    .getElementById('studySessionsCard')
-    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-function toggleSessionDay(date: string) {
-  sessionHistoryExpansionInitialized = true;
-  if (expandedSessionDays.has(date)) expandedSessionDays.delete(date);
-  else expandedSessionDays.add(date);
-  renderStudySessionsHistory();
-}
-function toggleSessionDetails(id: string) {
-  if (expandedSessionDetails.has(id)) expandedSessionDetails.delete(id);
-  else expandedSessionDetails = new Set([id]);
-  renderStudySessionsHistory();
-}
+const sessionHistoryController = createSessionHistoryController({
+  state,
+  sessionService,
+  todayISO,
+  addDays,
+  formatDatePt: (iso?: string | null) => (iso ? formatDatePt(iso) : ''),
+  formatDuration,
+  entitySubjectId,
+  getSubjectName: (id?: string | null) => (id ? getSubjectName(id) : ''),
+  getTopicName: (id?: string | null) => (id ? getTopicName(id) : ''),
+  getSubjectById,
+  subjectsForSelection,
+  isMobileHistoryLayout,
+  showToast,
+  showConfirm,
+  persistAndRender,
+  renderHeatmap,
+  escapeHtml,
+  escapeAttr,
+  pluralize,
+  document,
+});
+
 function renderSessionHistoryFilterControls() {
-  const period = document.getElementById('studySessionsPeriod') as HTMLSelectElement;
-  const subject = document.getElementById('studySessionsSubjectFilter') as HTMLSelectElement;
-  const type = document.getElementById('studySessionsTypeFilter') as HTMLSelectElement;
-  if (!period || !subject || !type) return;
-  period.value = sessionHistoryFilters.period;
-  subject.innerHTML =
-    `<option value="">Todas as disciplinas</option>` +
-    state.subjects
-      .map(s => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`)
-      .join('');
-  subject.value = sessionHistoryFilters.subjectId;
-  type.value = sessionHistoryFilters.type;
-  const active = countActiveFilters(sessionHistoryFilters, {
-    period: '30',
-    subjectId: '',
-    type: '',
-    date: '',
-  });
-  const toggle = document.getElementById('studySessionsFilterToggle');
-  if (toggle)
-    toggle.textContent =
-      filterPanelLabel(active) + (toggle.getAttribute('aria-expanded') === 'true' ? ' ▴' : ' ▾');
-}
-function filteredStudySessions() {
-  return filterStudySessions(state.studySessions, sessionHistoryFilters, {
-    today: todayISO(),
-    addDays,
-    subjectIdOf: entitySubjectId,
-  });
-}
-function sessionStartTime(session: Record<string, any>) {
-  if (!session.startedAt) return '—';
-  const date = new Date(session.startedAt);
-  return Number.isNaN(date.getTime())
-    ? '—'
-    : date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-}
-function syncQuestionFromStudySession(session: Record<string, any>) {
-  return sessionService.edit(session.id, session);
-}
-function deleteStudySession(id: string) {
-  showConfirm('Excluir esta sessão e as questões vinculadas a ela?', () => {
-    sessionService.remove(id);
-    persistAndRender();
-    showToast('Sessão excluída.');
-  });
-}
-function sessionViewModel(session: Record<string, any>) {
-  const resolved = Number(session.questionsResolved) || 0,
-    correct = Number(session.correctAnswers) || 0;
-  return {
-    date: session.date ? formatDatePt(session.date) : 'Sem data',
-    time: sessionStartTime(session),
-    subject: getSubjectName(entitySubjectId(session)) || 'Sem disciplina',
-    topic: session.topicId ? getTopicName(session.topicId) : 'Sem tópico',
-    type: sessionTypeLabel(session.type || 'study'),
-    duration: formatDuration(Number(session.durationSeconds) || 0),
-    questions: resolved,
-    correct,
-    accuracy: resolved ? Math.round((correct / resolved) * 100) : null,
-    notes: session.notes || '',
-  };
-}
-function editStudySession(id: string) {
-  const session = state.studySessions.find(s => s.id === id);
-  if (!session) return;
-  historyEditState.sessionId = id;
-  historyEditDraft.session = cloneRecord(session);
-  renderStudySessionsHistory();
-}
-function cancelStudySessionEdit() {
-  historyEditState.sessionId = null;
-  historyEditDraft.session = null;
-  renderStudySessionsHistory();
+  sessionHistoryController.renderSessionHistoryFilterControls();
 }
 function updateStudySessionDraft(field: string, value: any) {
-  const d = historyEditDraft.session;
-  if (!d) return;
-  if (field === 'durationMinutes') d.durationSeconds = Math.max(0, Number(value) || 0) * 60;
-  else if (field === 'questionsResolved' || field === 'correctAnswers')
-    d[field] = Math.max(0, Math.floor(Number(value) || 0));
-  else d[field] = value;
-  if (field === 'subjectId') {
-    const selected = d.topicId ? getTopicById(d.topicId) : null;
-    if (selected?.subject.id !== d.subjectId) d.topicId = null;
-    renderStudySessionsHistory();
-  }
+  sessionHistoryController.updateStudySessionDraft(field, value);
 }
-function saveStudySessionEdit() {
-  const d = historyEditDraft.session;
-  if (!d) return;
-  d.durationSeconds = Math.max(0, Number(d.durationSeconds) || 0);
-  d.questionsResolved = Math.max(0, Math.floor(Number(d.questionsResolved) || 0));
-  d.correctAnswers = Math.max(
-    0,
-    Math.min(Math.floor(Number(d.correctAnswers) || 0), d.questionsResolved)
-  );
-  const index = state.studySessions.findIndex(s => s.id === d.id);
-  if (index < 0) return cancelStudySessionEdit();
-  sessionService.edit(d.id, d);
-  historyEditState.sessionId = null;
-  historyEditDraft.session = null;
-  persistAndRender();
-  showToast('Sessão atualizada.');
+function syncQuestionFromStudySession(session: Record<string, any>) {
+  return sessionHistoryController.syncQuestionFromStudySession(session);
 }
-function renderStudySessionReadRow(session: Record<string, any>) {
-  const vm = sessionViewModel(session);
-  const detailsId = `session-details-${session.id}`,
-    expanded = expandedSessionDetails.has(session.id);
-  return renderStudySessionRead({
-    session,
-    view: vm,
-    detailsId,
-    expanded,
-    mobile: isMobileHistoryLayout(),
-    escapeHtml,
-    escapeAttr,
-    pluralize,
-  });
+function updateSessionHistoryFilter(field: string, value: any) {
+  sessionHistoryController.updateSessionHistoryFilter(field, value);
 }
-function renderStudySessionEditRow(session: Record<string, any>) {
-  const draft = historyEditDraft.session,
-    subjectId = entitySubjectId(draft),
-    subject = getSubjectById(subjectId),
-    topics = subject ? subject.topics : [];
-  const subjectOptions = subjectsForSelection(subjectId)
-    .map(
-      item =>
-        `<option value="${escapeAttr(item.id)}" ${item.id === subjectId ? 'selected' : ''}>${escapeHtml(item.name)}</option>`
-    )
-    .join('');
-  const topicOptions = topics
-    .map(
-      topic =>
-        `<option value="${escapeAttr(topic.id)}" ${topic.id === draft.topicId ? 'selected' : ''}>${escapeHtml(topic.name)}</option>`
-    )
-    .join('');
-  return renderStudySessionEdit({
-    session,
-    draft,
-    typeOptions: sessionTypeOptions(draft.type || 'study'),
-    subjectOptions,
-    topicOptions,
-    escapeHtml,
-  });
+function clearSessionHistoryFilters() {
+  sessionHistoryController.clearSessionHistoryFilters();
+}
+function selectSessionHistoryDate(date: string) {
+  sessionHistoryController.selectSessionHistoryDate(date);
+}
+function toggleSessionDay(date: string) {
+  sessionHistoryController.toggleSessionDay(date);
+}
+function toggleSessionDetails(id: string) {
+  sessionHistoryController.toggleSessionDetails(id);
 }
 function renderStudySessionsHistory() {
-  const body = document.getElementById('studySessionsBody');
-  const count = document.getElementById('studySessionsCount');
-  const summary = document.getElementById('studySessionsFilterSummary');
-  const tableWrap = document.getElementById('studySessionsTableWrap');
-  const emptyState = document.getElementById('studySessionsEmpty');
-  if (!body || !count) return;
-  renderSessionHistoryFilterControls();
-  const rows = filteredStudySessions();
-  const presentation = buildSessionHistoryPresentation({
-    total: state.studySessions.length,
-    filtered: rows.length,
-    dateLabel: sessionHistoryFilters.date ? formatDatePt(sessionHistoryFilters.date) : '',
-  });
-  count.textContent = presentation.count;
-  if (summary) {
-    summary.textContent = presentation.summary;
-    summary.hidden = !presentation.summary;
-  }
-  if (rows.length === 0) {
-    body.innerHTML = '';
-    if (tableWrap) tableWrap.hidden = true;
-    if (emptyState) {
-      emptyState.hidden = false;
-      emptyState.querySelector('strong')!.textContent = presentation.emptyTitle;
-      emptyState.querySelector('p')!.textContent = presentation.emptyMessage;
-    }
-    return;
-  }
-  if (tableWrap) tableWrap.hidden = false;
-  if (emptyState) emptyState.hidden = true;
-  const visibleGroups = groupStudySessionsByDate(rows.slice(0, listViewState.sessionDaysVisible));
-  if (!sessionHistoryExpansionInitialized && visibleGroups.length) {
-    expandedSessionDays.add(visibleGroups[0][0]);
-    sessionHistoryExpansionInitialized = true;
-  }
-  const html = [];
-  visibleGroups.forEach(([date, sessions]) => {
-    const expanded = expandedSessionDays.has(date);
-    html.push(
-      renderStudySessionDayHeader({
-        date,
-        sessions,
-        expanded,
-        formatDate: formatDatePt,
-        formatDuration,
-        pluralize,
-        escapeAttr,
-      })
-    );
-    if (!expanded) return;
-    sessions.forEach((session: any) =>
-      html.push(
-        historyEditState.sessionId === session.id
-          ? renderStudySessionEditRow(session)
-          : renderStudySessionReadRow(session)
-      )
-    );
-  });
-  html.push(
-    renderListViewFooter(
-      rows.length,
-      listViewState.sessionDaysVisible,
-      LIST_VIEW_STEPS.sessionDays,
-      "changeListLimit('sessionDays',LIST_VIEW_STEPS.sessionDays,renderStudySessionsHistory)",
-      "changeListLimit('sessionDays',-listViewState.sessionDaysVisible,renderStudySessionsHistory)",
-      10,
-      'sessões'
-    )
-  );
-  body.innerHTML = html.join('');
+  sessionHistoryController.renderStudySessionsHistory();
+}
+function editStudySession(id: string) {
+  sessionHistoryController.editStudySession(id);
+}
+function saveStudySessionEdit() {
+  sessionHistoryController.saveStudySessionEdit();
+}
+function deleteStudySession(id: string) {
+  sessionHistoryController.deleteStudySession(id);
+}
+function cancelStudySessionEdit() {
+  sessionHistoryController.cancelStudySessionEdit();
 }
 
 /* ===== ALERTAS INTELIGENTES ===== */
@@ -6075,7 +4663,6 @@ function computeAlertasInteligentes() {
   });
 }
 
-const dismissedRecommendationIds = new Set<string>();
 let currentStudyRecommendations: any[] = [];
 let currentConsolidatedDiagnosis: any = null;
 
@@ -6196,910 +4783,6 @@ createDiagnosisController({
   activateTab,
   requestFrame: requestAnimationFrame,
 }).register();
-function renderRecommendationImpact(model: Record<string, any>) {
-  if (!model.available) return '';
-  const metrics = model.metrics
-    .map(
-      (metric: any) =>
-        `<div><span>${escapeHtml(metric.label)}</span><strong>${metric.before} → ${metric.after}</strong><small class="${metric.delta >= 0 ? 'positive' : 'negative'}">${metric.delta >= 0 ? '+' : ''}${metric.delta} ${metric.key === 'risk' ? 'de melhora' : 'p.p.'}</small></div>`
-    )
-    .join('');
-  const reasons = model.reasons.length
-    ? `<small class="recommendation-impact-reasons">${escapeHtml(model.reasons.join(' · '))}</small>`
-    : '';
-  return `<section class="recommendation-impact ${escapeAttr(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml(model.title)}</strong><small>Confiança da medição: ${escapeHtml((model.confidenceLabel || 'não calculada').toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics || '<p>Indicadores comparáveis ainda indisponíveis.</p>'}</div>${reasons}</section>`;
-}
-function refreshStudyRecommendationItems({ recordHistory = true }: any = {}) {
-  const availableMinutes = Math.max(0, Math.round(metaHoursToday() * 60));
-  const candidates = intelligenceCandidates();
-  const previous = new Map(currentStudyRecommendations.map(item => [item.id, item]));
-  currentStudyRecommendations = recommendStudy(candidates, {
-    availableMinutes,
-    excludedIds: [...dismissedRecommendationIds],
-  }).map(item => {
-    const old = previous.get(item.id);
-    const record = state.recommendationHistory.find(entry => entry.id === old?.recommendationId);
-    const reusablePresentation = canReuseRecommendationPresentation(old, item, {
-      record,
-      today: todayISO(),
-      activeExamTags: state.examBlueprint.activeExamTags || [],
-      toLocalDate: localDateISO,
-    });
-    const presentation = reusablePresentation
-      ? createRecommendationPresentation(item, {
-          id: old.recommendationId,
-          shownAt: old.shownAt,
-          algorithmVersion: PRIORITY_ALGORITHM_VERSION,
-        })
-      : (() => {
-          const reusable = reusableRecommendationRecord(
-            state.recommendationHistory,
-            item,
-            todayISO(),
-            state.examBlueprint.activeExamTags || []
-          );
-          return createRecommendationPresentation(item, {
-            id: reusable?.id || uid('recommendation'),
-            shownAt: reusable?.createdAt || nowISO(),
-            algorithmVersion: PRIORITY_ALGORITHM_VERSION,
-          });
-        })();
-    return { ...presentation, activeExamTags: [...(state.examBlueprint.activeExamTags || [])] };
-  });
-  if (
-    recordHistory &&
-    syncRecommendationHistory(state.recommendationHistory, currentStudyRecommendations, {
-      now: nowISO(),
-      today: todayISO(),
-      idGenerator: uid,
-      activeExamTags: state.examBlueprint.activeExamTags || [],
-    })
-  ) {
-    scheduleSave();
-    renderRecommendationHistorySummary();
-  }
-  return { availableMinutes, candidates };
-}
-function renderPendingRecommendationOutcome() {
-  return renderPendingOutcomeHtml(
-    state.recommendationFeedback,
-    getTopicName,
-    escapeHtml,
-    escapeAttr
-  );
-}
-function renderOverviewNextAction(availableMinutes: number) {
-  const container = document.getElementById('overviewNextAction');
-  if (!container) return;
-  // The usefulness question lives on Hoje, next to the measured result it refers to; here it read as a question about the action not yet taken.
-  const outcome = '';
-  const item = currentStudyRecommendations[0];
-  const { priority } = dailyExecutionController.build();
-  // When plan and recommendation agree, the recommendation card stays primary so the session keeps its recommendation link.
-  if (
-    priority!.nextItem &&
-    !(
-      item &&
-      priority!.nextItem.subjectId === item.subjectId &&
-      priority!.nextItem.topicId === item.topicId
-    )
-  ) {
-    const suggestion = item
-      ? {
-          subjectId: item.subjectId,
-          topicId: item.topicId,
-          subjectName: item.subjectName,
-          topicName: item.topicName,
-          score: item.score,
-          actionId: buildStudyAction(item, { source: 'overview' })?.id,
-        }
-      : null;
-    const ownTimer =
-      hasStartedStudyTimer() && state.activeTimer?.planItemId === priority!.nextItem.id;
-    unmountPreact(container);
-    container.innerHTML = `${ownTimer ? '' : renderActiveStudyTimerNotice(null)}${outcome}${renderPlannedAction(priority!, { suggestion, escapeHtml, escapeAttr, formatMinutes: formatPlanMinutes, timer: { active: hasStartedStudyTimer(), planItemId: state.activeTimer?.planItemId }, resumeLabel: topicResumeLabel(priority!.nextItem.topicId) })}`;
-    return;
-  }
-  unmountPreact(container);
-  container.replaceChildren();
-  const dashboardController = createDashboardTabController();
-  if (!item) {
-    dashboardController.mountNextActionCard(container, {
-      model: null,
-      emptyState: {
-        message:
-          availableMinutes < 15
-            ? 'Defina pelo menos 15 minutos para hoje para receber uma sugestão.'
-            : 'Ainda não há uma atividade elegível com os dados atuais.',
-        timerHref: '#overview-timer',
-      },
-      activeTimerNoticeHtml: renderActiveStudyTimerNotice(null),
-    });
-    return;
-  }
-  const action = buildStudyAction(item, { source: 'overview' }),
-    model = buildPriorityViewModel(item, 1),
-    label = recommendationActionLabel(action!),
-    mastery =
-      action!.evidence.mastery == null
-        ? 'Domínio ainda sem evidência'
-        : `Domínio ${Math.round(action!.evidence.mastery)}/100`,
-    minutes =
-      action!.suggestedMinutes == null
-        ? 'Tempo não estimado'
-        : formatPlanMinutes(action!.suggestedMinutes);
-  const inProgress = activeTimerMatchesRecommendation(item),
-    blocked = hasStartedStudyTimer() && !inProgress;
-
-  const buttonAction = inProgress
-    ? { type: 'timer-focus' }
-    : blocked
-      ? {
-          type: 'blocked',
-          reason: 'Retome ou finalize a sessão em andamento antes de iniciar outra.',
-        }
-      : { type: 'recommendation', actionId: action!.id, source: action!.source };
-
-  const buttonText = inProgress
-    ? '▶ Retomar sessão'
-    : blocked
-      ? 'Finalize a sessão atual'
-      : `▶ ${label}`;
-
-  dashboardController.mountNextActionCard(container, {
-    model: {
-      what: {
-        subjectName: item.subjectName,
-        topicName: item.topicName,
-      },
-      why: {
-        primaryReason:
-          action!.evidence.label ||
-          model.evidenceLabel ||
-          'Recomendação baseada em prioridade de edital',
-        additionalReasons: (item.reasons || []).slice(0, 3),
-      },
-      duration: {
-        minutesFormatted: minutes,
-        minutesNumeric: action!.suggestedMinutes ?? undefined,
-      },
-      importance: {
-        priorityScore: action!.priority ?? null,
-        impactLabel:
-          item.examImpact != null ? `impacto ${Math.round(item.examImpact)}/100` : undefined,
-      },
-      evidence: {
-        masteryLabel: mastery,
-        accuracyLabel:
-          item.accuracy != null ? `precisão recente ${Math.round(item.accuracy)}%` : undefined,
-        historicalPresenceLabel:
-          item.examIntelligence?.presencePercent != null
-            ? `${Math.round(item.examIntelligence.presencePercent)}% das provas`
-            : undefined,
-      },
-      nextStep: {
-        activityType: action!.activityType,
-        actionLabel: label,
-        buttonText,
-        buttonAction,
-      },
-      bookmark: getTopicById(item.topicId)?.topic.bookmark,
-      resumeLabel: topicResumeLabel(item.topicId),
-    },
-    isInProgress: inProgress,
-    activeTimerNoticeHtml: renderActiveStudyTimerNotice(item),
-    explanationHtml: renderRecommendationExplanation(
-      item.explanation || buildRecommendationExplanation(item),
-      { headingLevel: 4 }
-    ),
-    dataAttributes: {
-      'data-study-action-source': action!.source,
-      'data-study-action-id': escapeAttr(action!.id),
-      'data-activity-type': action!.activityType,
-    },
-  });
-}
-// Update the Continue button in place: re-rendering here would swap the node under a click that fired this change.
-function syncGuidedNext(model: Record<string, any>) {
-  const actions = document.getElementById('guidedOnboardingActions'),
-    next = actions?.querySelector<HTMLButtonElement>('[data-guided-action="next"]');
-  if (!next) return;
-  const reason = onboardingBlockedReason(model);
-  next.disabled = Boolean(reason);
-  let hint = actions!.querySelector('#guidedActionHint');
-  if (!reason) {
-    hint?.remove();
-    next.removeAttribute('aria-describedby');
-    return;
-  }
-  if (!hint) {
-    hint = document.createElement('p');
-    hint.className = 'guided-action-hint';
-    hint.id = 'guidedActionHint';
-    actions!.prepend(hint);
-  }
-  hint.textContent = reason;
-  next.setAttribute('aria-describedby', 'guidedActionHint');
-}
-function renderOverviewDecisionArea() {
-  const { availableMinutes } = refreshStudyRecommendationItems();
-  renderFinalStretchBanner();
-  renderOverviewNextAction(availableMinutes);
-  renderAlertasInteligentes();
-}
-function renderStudyRecommendation() {
-  const container = document.getElementById('studyRecommendation');
-  if (!container) return;
-  const { availableMinutes, candidates } = refreshStudyRecommendationItems();
-  renderOverviewNextAction(availableMinutes);
-  const visible = currentStudyRecommendations.slice(0, 3);
-  const summary = summarizeRecommendationFeedback(state.recommendationFeedback),
-    impact = renderRecommendationImpact(
-      buildRecommendationOutcomeViewModel(state.recommendationFeedback)
-    );
-  const outcome = impact + renderPendingRecommendationOutcome();
-  const history = summary.shown
-    ? `<small class="recommendation-history">${formatRecommendationHistoryLabel(summary)}</small>`
-    : '';
-  const visibleIds = new Set(visible.map(item => item.id));
-  const excluded = buildExcludedCandidates(
-    candidates,
-    visibleIds,
-    dismissedRecommendationIds,
-    getTopicName,
-    needsMaintenance
-  );
-  const excludedHtml = renderExcludedCandidatesHtml(excluded, escapeHtml);
-  if (!visible.length) {
-    const hasContent = activeTopics().length > 0,
-      tab = availableMinutes < 15 || !hasContent ? 'metas' : 'disciplinas',
-      label =
-        availableMinutes < 15
-          ? 'Ajustar disponibilidade'
-          : !hasContent
-            ? 'Configurar disciplinas e tópicos'
-            : 'Revisar elegibilidade e pré-requisitos';
-    const message =
-      availableMinutes < 15
-        ? 'Defina pelo menos 15 minutos disponíveis para hoje.'
-        : !hasContent
-          ? 'Cadastre ou importe disciplinas e tópicos para gerar uma recomendação.'
-          : 'Não há atividade elegível agora. Confira pré-requisitos, esforço e itens já concluídos.';
-    container.innerHTML = `${renderActiveStudyTimerNotice(null)}${outcome}<div class="empty-state empty-state--compact recommendation-empty-state" role="status"><strong>Nenhuma recomendação disponível</strong><p>${escapeHtml(message)}</p><button class="btn ghost small" data-delegated-click="navigateKpi('${tab}')">${escapeHtml(label)}</button></div>${excludedHtml}${history}`;
-    return;
-  }
-  const dailyPriority = dailyExecutionController.build().priority;
-  const cards = visible.map((item, index) => {
-    const action = buildStudyAction(item, { source: 'today' }),
-      model = buildPriorityViewModel(item, index + 1),
-      label = recommendationActionLabel(action!),
-      minutes =
-        action!.suggestedMinutes == null
-          ? 'Tempo não estimado'
-          : formatPlanMinutes(action!.suggestedMinutes);
-    const inProgress = activeTimerMatchesRecommendation(item),
-      blocked = hasStartedStudyTimer() && !inProgress,
-      sessionLabel = state.activeTimer?.isRunning ? 'Cronômetro rodando' : 'Sessão pausada';
-    const contributionRows = model.contributionRows
-      .map(
-        row =>
-          `<div><span>${escapeHtml(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100, row.value * 4)}%"></i></span><strong>+${row.value}</strong></div>`
-      )
-      .join('');
-    const stateIcon =
-      { review: '↻', limited: '⚠', high: '★', calculated: '○', blocked: '🔒' }[model.state] || '○';
-    const planChoice =
-        index === 0
-          ? renderPlanRecommendationChoice(action!, dailyPriority!, {
-              escapeHtml,
-              escapeAttr,
-              withExtras: false,
-            })
-          : '',
-      planExtras = planChoice ? renderPlanRecommendationExtras(action!, { escapeAttr }) : '';
-    const actionButton = inProgress
-      ? `<button class="btn" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`
-      : blocked
-        ? '<button class="btn" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
-        : `<button class="btn ${planChoice ? 'ghost' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">▶ ${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
-    return `<article class="study-recommendation ${index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'Fora do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · empata com #2 em ${Math.round(Number(item.score))}; ${Number(item.score) !== Number(visible[1].score) ? 'diferença menor que 1 ponto' : Number(item.estimatedMinutes) !== Number(visible[1].estimatedMinutes) ? 'vem primeiro a mais curta' : 'ordem de desempate fixa'}` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action!.reasons
-      .slice(0, 4)
-      .map(reason => `<span>+ ${escapeHtml(reason)}</span>`)
-      .join(
-        ''
-      )}</div>${renderRecommendationExplanation(item.explanation || buildRecommendationExplanation(item))}<details class="recommendation-explanation"><summary>Prova × Você · composição da prioridade</summary><p><strong>Prova:</strong> ${escapeHtml(model.examExplanation)}</p><p><strong>Você:</strong> ${escapeHtml(model.personalExplanation)}</p><p><strong>Ação:</strong> ${escapeHtml(label)}</p><p>Dados disponíveis: ${model.completeness}% · força da evidência: ${escapeHtml(action!.evidence.label || model.evidenceLabel).toLowerCase()}. Algoritmo v${action!.algorithmVersion || item.algorithmVersion}.</p><div class="recommendation-contributions">${contributionRows}<div class="recommendation-total"><span>Prioridade final</span><strong>${action!.priority ?? model.score}/100</strong></div></div>${item.missingFactors.length ? `<small>${item.missingFactors.length} fator${item.missingFactors.length === 1 ? '' : 'es'} sem dados; os pesos disponíveis foram redistribuídos.</small>` : ''}</details></div><div class="recommendation-actions">${planChoice}${actionButton}<details class="recommendation-more-options"><summary>Outras opções</summary><div class="recommendation-more-actions">${planExtras}<button class="btn ghost small" data-delegated-click="dismissStudyRecommendation('${escapeAttr(item.id)}')">Trocar</button><button class="btn ghost small" data-delegated-click="markRecommendationNotUseful('${escapeAttr(item.id)}')">Não foi útil</button></div></details></div></article>`;
-  });
-  const moreCards = cards.slice(1).join(''),
-    moreRecommendations = moreCards
-      ? `<details class="study-recommendation-more"><summary>Ver outras ${cards.length - 1} prioridades</summary><div class="study-recommendation-list">${moreCards}</div></details>`
-      : '';
-  container.innerHTML = `${renderActiveStudyTimerNotice(visible[0])}${cards[0]}${moreRecommendations}${outcome}<div class="recommendation-capacity"><strong>${formatPlanMinutes(availableMinutes)}</strong><span> disponíveis hoje · ${visible.length} ${visible.length === 1 ? 'prioridade elegível' : 'prioridades elegíveis'}</span></div>${excludedHtml}${history}`;
-}
-function recommendationBaseline(recommendation: Record<string, any>) {
-  const topicId = recommendation.topicId,
-    performance = getTopicPerformance(topicId),
-    found = getTopicById(topicId),
-    last = found?.topic?.lastReviewedAt || found?.topic?.lastCompletedAt || null;
-  return captureRecommendationBaseline({
-    mastery: recommendation.mastery,
-    accuracy: performance.accuracy,
-    questionVolume: performance.resolved,
-    retention: recommendation.retention,
-    reviewHealth: recommendation.reviewHealth?.value,
-    risk: recommendation.risk?.value,
-    trend: recommendation.diagnosis?.trend || null,
-    evidence: recommendation.evidence || null,
-    daysSinceContact: last
-      ? Math.max(0, -(diasParaRevisao(localDateFromTimestamp(last)) ?? 0))
-      : null,
-    measuredAt: nowISO(),
-  });
-}
-function recordRecommendationFeedback(
-  recommendation: Record<string, any>,
-  { accepted, reasonSkipped = null, source = null }: any = {}
-) {
-  const baseline = recommendationBaseline(recommendation),
-    createdAt = nowISO(),
-    feedback = recordRecommendationDecision(state.recommendationFeedback, recommendation, {
-      accepted,
-      reasonSkipped,
-      baseline,
-      snapshot: captureRecommendationSnapshot(recommendation, { baseline, createdAt }),
-      now: createdAt,
-      idGenerator: uid,
-    });
-  feedback.activeExamTags ??= [...(state.examBlueprint.activeExamTags || [])];
-  if (source) feedback.presentationSource = source;
-  ensureRecommendationRecord(state.recommendationHistory, recommendation, {
-    now: createdAt,
-    idGenerator: uid,
-    activeExamTags: state.examBlueprint.activeExamTags || [],
-  });
-  decideRecommendationRecord(state.recommendationHistory, recommendation.recommendationId, {
-    accepted,
-    source,
-    feedbackId: feedback.id,
-    now: createdAt,
-  });
-  scheduleSave();
-  renderRecommendationHistorySummary();
-  return feedback;
-}
-function measureRecommendationResults(session: Record<string, any>) {
-  if (session?.recommendationId)
-    attachRecommendationSession(state.recommendationHistory, session.recommendationId, session.id);
-  if (!session?.topicId) return;
-  const measuredAt = nowISO();
-  state.recommendationFeedback
-    .filter(
-      item =>
-        item.accepted &&
-        item.completed &&
-        item.topicId === session.topicId &&
-        item.baseline &&
-        (!item.outcome || ['pending', 'insufficient'].includes(item.outcome.state!))
-    )
-    .forEach(feedback => {
-      const since = Date.parse(feedback.baseline!.measuredAt!) || 0,
-        records = validQuestionRecords().filter(
-          item =>
-            item.topicId === session.topicId &&
-            Date.parse(item.createdAt || `${item.date}T23:59:59Z`) >= since
-        ),
-        volume = records.reduce((sum, item) => sum + (Number(item.resolved) || 0), 0),
-        correct = records.reduce((sum, item) => sum + (Number(item.correct) || 0), 0),
-        activities = state.studySessions.filter(
-          item =>
-            item.topicId === session.topicId &&
-            item.id !== session.id &&
-            Date.parse(String(item.createdAt || item.startedAt || 0)) >= since
-        ).length,
-        candidate = intelligenceCandidates().find((item: any) => item.topicId === session.topicId);
-      measureRecommendationOutcome(feedback, {
-        masteryAfter: candidate?.mastery,
-        accuracyAfter: volume ? Math.round((correct / volume) * 1000) / 10 : null,
-        questionVolumeAfter: volume,
-        retentionAfter: candidate?.retention,
-        reviewHealthAfter: candidate?.reviewHealth?.value,
-        riskAfter: candidate?.risk?.value,
-        measuredAt,
-        daysElapsed: Math.max(0, (Date.parse(measuredAt) - since) / 86400000),
-        otherActivities: activities,
-      });
-    });
-}
-function dismissStudyRecommendation(id: string) {
-  const recommendation = currentStudyRecommendations.find(item => item.id === id);
-  if (!recommendation) return;
-  showPrompt(
-    'Por que trocar esta recomendação?',
-    {
-      label: 'Motivo opcional',
-      placeholder: 'Ex.: não tenho tempo hoje',
-      confirmLabel: 'Trocar',
-      required: false,
-    },
-    (reason: string) => {
-      recordRecommendationFeedback(recommendation, {
-        accepted: false,
-        reasonSkipped: reason?.trim() || 'swapped',
-      });
-      dismissedRecommendationIds.add(id);
-      scheduleSave();
-      renderStudyRecommendation();
-    }
-  );
-}
-function markRecommendationNotUseful(id: string) {
-  const recommendation = currentStudyRecommendations.find(item => item.id === id);
-  if (recommendation) {
-    const feedback = recordRecommendationFeedback(recommendation, {
-      accepted: false,
-      reasonSkipped: 'not_useful',
-    });
-    feedback.useful = false;
-    scheduleSave();
-  }
-  dismissedRecommendationIds.add(id);
-  renderStudyRecommendation();
-}
-function rateRecommendationOutcome(recommendationId: string, useful: boolean) {
-  if (
-    rateRecommendationFeedback(state.recommendationFeedback, recommendationId, {
-      useful,
-      ratedAt: nowISO(),
-    })
-  ) {
-    scheduleSave();
-    renderStudyRecommendation();
-    showToast('Obrigado. Esse retorno melhora a avaliação das recomendações.');
-  }
-}
-function startStudyRecommendation(id: string, source = 'today') {
-  const recommendation = currentStudyRecommendations.find(item => item.id === id);
-  if (!recommendation) return;
-  const fresh = recommendStudy(intelligenceCandidates(), {
-    availableMinutes: Math.round(metaHoursToday() * 60),
-  }).find(item => item.id === id);
-  if (!fresh) {
-    renderStudyRecommendation();
-    showToast('As condições mudaram. Confira a recomendação atual.');
-    return;
-  }
-  Object.assign(recommendation, fresh);
-  const recommendedType = recommendationActionKind(recommendation);
-  guidedStudyService.next({ id, source, type: recommendedType });
-  guidedStudyService.start();
-  recommendation.strategy = buildStudyStrategy(recommendation, {
-    availableMinutes: recommendation.estimatedMinutes,
-  });
-  recordRecommendationFeedback(recommendation, { accepted: true, source });
-  let plan = todayDailyStudyPlan();
-  if (!plan) {
-    plan = {
-      id: uid('plan'),
-      date: todayISO(),
-      availableMinutes: Math.round(metaHoursToday() * 60),
-      plannedMinutes: 0,
-      flexMinutes: 0,
-      createdAt: nowISO(),
-      updatedAt: nowISO(),
-      items: [],
-    };
-    state.dailyPlans.push(plan);
-  }
-  let item = plan.items.find(
-    candidate =>
-      candidate.topicId === recommendation.topicId &&
-      !['completed', 'skipped'].includes(candidate.status)
-  );
-  if (item) {
-    item.recommendationId = recommendation.recommendationId;
-    item.type = recommendation.studyType || item.type || 'study';
-  }
-  if (!item) {
-    item = {
-      id: uid('plan-item'),
-      subjectId: recommendation.subjectId,
-      topicId: recommendation.topicId,
-      subjectName: recommendation.subjectName,
-      topicName: recommendation.topicName,
-      type: recommendation.studyType || 'study',
-      plannedMinutes: recommendation.estimatedMinutes,
-      executedSeconds: 0,
-      status: 'planned',
-      sessionIds: [],
-      score: recommendation.score,
-      tier: recommendation.score >= 70 ? 'Alta' : recommendation.score >= 40 ? 'Média' : 'Baixa',
-      position: plan.items.length + 1,
-      statusIcon: '🎯',
-      statusLabel: 'Recomendação inteligente',
-      prioritySnapshot: capturePlanPriority(recommendation, {
-        capturedAt: nowISO(),
-        algorithmVersion: state.algorithmVersions.recommendations,
-      }),
-      reason: recommendation.reasons.join(' · '),
-      action: recommendation.action,
-      recommendedQuestions: 0,
-      originalDate: todayISO(),
-      currentDate: todayISO(),
-      rescheduleCount: 0,
-      skippedReason: null,
-      recommendationId: recommendation.recommendationId,
-      createdAt: nowISO(),
-    };
-    freezePlanExecution(item, {
-      date: todayISO(),
-      activeExamTags: state.examBlueprint?.activeExamTags || [],
-      capturedAt: nowISO(),
-    });
-    plan.items.push(item);
-    plan.plannedMinutes += item.plannedMinutes;
-    plan.updatedAt = nowISO();
-    scheduleSave();
-  }
-  Object.assign(state.activeTimer, {
-    recommendationId: recommendation.recommendationId || recommendation.id,
-    recommendationSource: source,
-    recommendationType: recommendedType,
-    prioritySnapshot: Number.isFinite(Number(recommendation.score))
-      ? Number(recommendation.score)
-      : null,
-    strategy: structuredClone(recommendation.strategy),
-    strategyStep: 0,
-  });
-  startPlannedActivity(item.id);
-}
-const recommendationController = createRecommendationController({
-  getRecommendations: () => currentStudyRecommendations,
-  actionKind: recommendationActionKind,
-  onQuestions: (
-    recommendation: Record<string, any>,
-    kind: string,
-    context: { source?: string } = {}
-  ) => {
-    const feedback = recordRecommendationFeedback(recommendation, {
-        accepted: true,
-        source: context.source,
-      }),
-      question = addQuestaoRow({
-        subjectId: recommendation.subjectId,
-        topicId: recommendation.topicId,
-        recommendationId: recommendation.recommendationId,
-      });
-    feedback.actionKind = kind;
-    feedback.resultingQuestionId = question.id;
-    scheduleSave();
-    activateTab('questoes');
-    showToast('Registro de questões aberto e vinculado à recomendação.');
-    return question;
-  },
-  onReview: (
-    recommendation: Record<string, any>,
-    kind: string,
-    context: { source?: string } = {}
-  ) => {
-    const feedback = recordRecommendationFeedback(recommendation, {
-      accepted: true,
-      source: context.source,
-    });
-    let review = state.reviewAgenda.find(
-      item =>
-        (item.topicId || item.topicRef) === recommendation.topicId && item.status !== 'Concluído'
-    );
-    if (!review)
-      review = reviewService.createManualReview({
-        subjectId: recommendation.subjectId,
-        topicId: recommendation.topicId,
-        date: todayISO(),
-        suggestedDate: todayISO(),
-        baseIntervalDays: 1,
-        adaptive: true,
-        manualDate: false,
-        tipo: 'Revisão livre',
-      });
-    feedback.actionKind = kind;
-    feedback.resultingReviewId = review!.id;
-    scheduleSave();
-    activateTab('agenda');
-    completeAgendaReview(review!.id);
-    return review;
-  },
-  onPrerequisite: (
-    recommendation: Record<string, any>,
-    kind: string,
-    context: { source?: string } = {}
-  ) => {
-    const blocker = getTopicById(recommendation.blockedPrerequisites?.[0]);
-    if (!blocker) return null;
-    const feedback = recordRecommendationFeedback(recommendation, {
-      accepted: true,
-      source: context.source,
-    });
-    feedback.actionKind = kind;
-    feedback.targetTopicId = blocker.topic.id;
-    scheduleSave();
-    activateTab('disciplinas');
-    showToast(`Pré-requisito selecionado: ${blocker.subject.name} — ${blocker.topic.name}.`);
-    return blocker.topic;
-  },
-  onStudy: (
-    recommendation: Record<string, any>,
-    _kind: string,
-    context: { source?: string } = {}
-  ) => startStudyRecommendation(recommendation.id, context.source),
-});
-function executeStudyRecommendation(id: string, source = 'today') {
-  return recommendationController.execute(id, { source });
-}
-
-const replanController = createReplanController({
-  service: replanService,
-  repository: planningRepository,
-  getState: () => state,
-  clock: { today: todayISO, startOfWeek, addDays },
-  getDailyCapacity: (date: string) => metaHoursForDate(date) * 60,
-  onChanged: renderWeeklyReplan,
-  onConfirmed: ({ result }: any) => {
-    scheduleSave();
-    renderWeeklyReplan();
-    renderPlanoHoje();
-    showToast(
-      `${pluralize(result.createdItems, 'atividade')} redistribuída${result.createdItems === 1 ? '' : 's'} para os próximos dias.`
-    );
-  },
-  onUndone: (result: Record<string, any>) => {
-    scheduleSave();
-    renderWeeklyReplan();
-    renderPlanoHoje();
-    showToast(
-      result.protectedItems.length
-        ? 'Itens já executados foram preservados; os demais retornaram à origem.'
-        : 'Redistribuição desfeita com segurança.'
-    );
-  },
-});
-function calculateReplanPreview() {
-  return replanController.calculate();
-}
-function clearReplanPreview() {
-  return replanController.clear();
-}
-function confirmReplan() {
-  return replanController.confirm();
-}
-function undoPlanAdjustment(id: string) {
-  return replanController.undo(id);
-}
-function renderWeeklyReplan() {
-  const container = document.getElementById('weeklyReplan');
-  if (!container) return;
-  const latest = [...state.planAdjustments].sort((a, b) =>
-    (b.confirmedAt || '').localeCompare(a.confirmedAt || '')
-  )[0];
-  const preview = replanController.view();
-  if (!preview) {
-    container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt ? 'desfeito' : 'aplicado'}</strong><span>${formatPlanMinutes(latest.redistributedMinutes!)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes!)} sem capacidade</span></div>` : ''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest && !latest.undoneAt && latest.status !== 'undone' && latest.changes?.length ? `<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>` : ''}</div>`;
-    return;
-  }
-  if (preview.state === 'balanced') {
-    container.innerHTML =
-      '<div class="upcoming-empty">Não há déficit de execução nos planos registrados nesta semana.</div><button class="btn ghost small" data-delegated-click="clearReplanPreview()">Fechar</button>';
-    return;
-  }
-  container.innerHTML = `${renderReplanProposal(preview, { escapeHtml, formatDate: formatDatePt, formatMinutes: formatPlanMinutes, subjectName: getSubjectName, topicName: getTopicName })}<div class="study-plan-actions">${preview.allocations.length ? '<button class="btn" data-delegated-click="confirmReplan()">Confirmar redistribuição</button>' : ''}<button class="btn ghost" data-delegated-click="clearReplanPreview()">${preview.allocations.length ? 'Cancelar' : 'Fechar'}</button></div>`;
-}
-
-/* ===== PLANO DE HOJE ===== */
-
-function buildDailyStudyPlan(priorities: any[], availableMinutes: number) {
-  let remaining = Math.max(0, Math.round(Number(availableMinutes) || 0));
-  const items = [];
-  for (const priority of priorities.slice(0, 5)) {
-    if (remaining < 15) break;
-    const desired = Math.max(15, Math.min(60, Math.round(Number(priority.estimatedMinutes) || 30)));
-    let minutes = Math.min(desired, remaining);
-    if (remaining - minutes > 0 && remaining - minutes < 15) minutes = remaining;
-    items.push({ ...priority, minutes });
-    remaining -= minutes;
-    if (remaining <= 0) break;
-  }
-  return {
-    items,
-    plannedMinutes: items.reduce((sum, item) => sum + item.minutes, 0),
-    flexMinutes: remaining,
-  };
-}
-function materializeDailyStudyPlan(priorities: any[], availableMinutes: number) {
-  const calculated = buildDailyStudyPlan(priorities, availableMinutes);
-  if (!calculated.items.length) return null;
-  const createdAt = nowISO();
-  const plan = {
-    id: uid('plan'),
-    date: todayISO(),
-    availableMinutes,
-    plannedMinutes: calculated.plannedMinutes,
-    flexMinutes: calculated.flexMinutes,
-    createdAt,
-    updatedAt: createdAt,
-    items: calculated.items.map((item, index) => ({
-      id: uid('plan-item'),
-      subjectId: item.subjectId || null,
-      topicId: item.topicId || null,
-      subjectName: item.subjectName || getSubjectName(item.subjectId),
-      topicName: item.topicName || getTopicName(item.topicId),
-      type: item.studyType || 'study',
-      prioritySnapshot: capturePlanPriority(item, {
-        capturedAt: createdAt,
-        algorithmVersion: state.algorithmVersions.recommendations,
-      }),
-      plannedMinutes: item.minutes,
-      executedSeconds: 0,
-      status: 'planned',
-      sessionIds: [] as any[],
-      score: Number(item.score) || 0,
-      tier: item.tier || 'Baixa',
-      position: index + 1,
-      statusIcon: item.diagnosis?.statusIcon || PRIORITY_TIER_EMOJI[item.tier] || '📌',
-      statusLabel: item.diagnosis?.status || 'Prioridade ' + (index + 1),
-      reason: motivoPrioridade(item),
-      action: item.recommendedAction || 'Estudar o tópico',
-      recommendedQuestions: Number(item.recommendedQuestions) || 0,
-      originalDate: todayISO(),
-      currentDate: todayISO(),
-      rescheduleCount: 0,
-      skippedReason: null as any,
-      recommendationId: null as any,
-      createdAt,
-    })),
-  };
-  plan.items.forEach(item =>
-    freezePlanExecution(item, {
-      date: plan.date,
-      activeExamTags: state.examBlueprint?.activeExamTags || [],
-      capturedAt: createdAt,
-    })
-  );
-  state.dailyPlans.push(plan);
-  scheduleSave();
-  return plan;
-}
-function todayDailyStudyPlan() {
-  return state.dailyPlans.find(plan => plan.date === todayISO()) || null;
-}
-function ensureTodayDailyStudyPlan(priorities: any[], availableMinutes: number) {
-  return todayDailyStudyPlan() || materializeDailyStudyPlan(priorities, availableMinutes);
-}
-function planItemStatusLabel(status: string) {
-  return (
-    (
-      {
-        planned: 'Planejada',
-        in_progress: 'Em andamento',
-        partial: 'Parcial',
-        completed: 'Concluída',
-        deferred: 'Adiada',
-        replaced: 'Substituída',
-        skipped: 'Ignorada',
-      } as Record<string, any>
-    )[status] || 'Planejada'
-  );
-}
-function renderTodayExecutionSummary(model: any) {
-  const container = document.getElementById('todayExecutionSummary');
-  if (!container) return;
-  const controller = createTodayTabController({
-    formatPlanMinutes,
-    formatDatePt,
-  });
-  controller.mountExecutionSummary(container, model);
-}
-let demoFirstStepsDismissed = false;
-
-function isFirstStepsDismissed(): boolean {
-  if (IS_DEMO_MODE) {
-    return demoFirstStepsDismissed;
-  }
-  try {
-    return Boolean(localStorage.getItem('studytrack_first_steps_dismissed'));
-  } catch {
-    return false;
-  }
-}
-
-function dismissFirstSteps(): void {
-  if (IS_DEMO_MODE) {
-    demoFirstStepsDismissed = true;
-  } else {
-    try {
-      localStorage.setItem('studytrack_first_steps_dismissed', '1');
-    } catch {}
-  }
-}
-
-function restoreFirstSteps(): void {
-  if (IS_DEMO_MODE) {
-    demoFirstStepsDismissed = false;
-  } else {
-    try {
-      localStorage.removeItem('studytrack_first_steps_dismissed');
-    } catch {}
-  }
-}
-
-function renderFirstStepsMissionCard() {
-  let slot = document.getElementById('firstStepsMissionSlot');
-  if (!slot) {
-    const summary = document.getElementById('todayExecutionSummary');
-    if (summary) {
-      slot = document.createElement('div');
-      slot.id = 'firstStepsMissionSlot';
-      summary.parentNode?.insertBefore(slot, summary);
-    }
-  }
-  if (!slot) return;
-
-  const dismissed = isFirstStepsDismissed();
-
-  const hasPlan =
-    (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
-    (Array.isArray(state.dailyPlans) &&
-      state.dailyPlans.some(p => Array.isArray(p.items) && p.items.length > 0));
-  const sessionsCount = Array.isArray(state.studySessions) ? state.studySessions.length : 0;
-  const questionsCount = Array.isArray(state.questoes) ? state.questoes.length : 0;
-
-  const missionModel = buildFirstStepsMission({
-    hasPlan,
-    sessionsCount,
-    questionsCount,
-    dismissed,
-  });
-
-  const controller = createTodayTabController({
-    formatPlanMinutes,
-    formatDatePt,
-    onDismissFirstSteps: () => {
-      dismissFirstSteps();
-      renderFirstStepsMissionCard();
-    },
-    onRestoreFirstSteps: () => {
-      restoreFirstSteps();
-      renderFirstStepsMissionCard();
-    },
-    onStartTour: () => {
-      guidedTourController.start();
-    },
-    onExecuteFirstStepsMission: (action: string) => {
-      if (action === 'open-onboarding') {
-        openGuidedOnboarding();
-      } else if (action === 'start-first-session') {
-        const todayPlan = Array.isArray(state.dailyPlans)
-          ? state.dailyPlans.find((p: any) => p.date === todayISO())
-          : null;
-        const pendingItem = todayPlan?.items?.find(
-          (item: any) =>
-            !['completed', 'deferred', 'replaced', 'skipped', 'discarded'].includes(item.status)
-        );
-        if (pendingItem) {
-          startPlannedActivity(pendingItem.id);
-        } else {
-          openStudyTimerFocus();
-        }
-      } else if (action === 'open-questions') {
-        activateTab('questoes');
-        const addBtn = document.getElementById('addQuestaoRowBtn');
-        if (addBtn) {
-          addBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          addBtn.focus();
-        }
-      }
-    },
-  });
-
-  controller.mountFirstStepsMission(slot, missionModel);
-}
-
 const whatIfController = createWhatIfController({
   getContainer: () => document.getElementById('whatIfSimulatorMount'),
   getState: () => state,
@@ -7118,56 +4801,198 @@ const whatIfController = createWhatIfController({
   },
 });
 
-function renderFinalStretchBanner() {
-  const slot = document.getElementById('finalStretchBannerSlot');
-  if (!slot) return;
-  const days = state.examDate ? diasParaRevisao(state.examDate) : null;
-  const bannerModel = buildFinalStretchBanner(
-    days,
-    state.examBlueprint?.activeExamTags?.[0] || 'sua prova'
-  );
-  if (!bannerModel.active) {
-    unmountPreact(slot);
-    slot.replaceChildren();
-    return;
-  }
-  mountPreact(
-    h(FinalStretchBanner, {
-      banner: bannerModel,
-      onOpenWhatIf: () => whatIfController.open(),
-    }),
-    slot
-  );
+let todayTabController: ReturnType<typeof createTodayTabController>;
+let studyRecommendationController: ReturnType<typeof createStudyRecommendationController>;
+let onboardingModalController: ReturnType<typeof createOnboardingModalController>;
+
+todayTabController = createTodayTabController({
+  formatPlanMinutes,
+  formatDatePt,
+  formatDuration,
+  formatHoras,
+  document,
+  getState: () => state,
+  getUiState: () => uiState,
+  isDemoMode: () => IS_DEMO_MODE,
+  todayISO,
+  nowISO,
+  uid,
+  escapeHtml,
+  escapeAttr,
+  scheduleSave,
+  showToast,
+  activateTab,
+  getSubjectName,
+  getTopicName,
+  motivoPrioridade,
+  freezePlanExecution,
+  metaHoursToday,
+  hasStartedStudyTimer,
+  openStudyTimerFocus,
+  startPlannedActivity,
+  openGuidedOnboarding: (opts?: any) => onboardingModalController.openGuidedOnboarding(opts),
+  guidedTourController,
+  whatIfController,
+  latestStudyPlan,
+  weeklyStrategyCapacity,
+  computeStudyPriorities,
+  getCurrentStudyRecommendations: () => studyRecommendationController.getCurrentRecommendations(),
+  refreshStudyRecommendationItems: (opts?: any) => studyRecommendationController.refreshStudyRecommendationItems(opts),
+  renderOverviewDecisionArea: () => studyRecommendationController.renderOverviewDecisionArea(),
+  uniqueTopicsCompletedBetween,
+  getRevisoesUnificadas,
+  segundosEstudadosHoje,
+  diasParaRevisao,
+  startOfWeek,
+});
+
+studyRecommendationController = createStudyRecommendationController({
+  document,
+  getState: () => state,
+  metaHoursToday,
+  intelligenceCandidates,
+  todayISO,
+  nowISO,
+  uid,
+  localDateISO,
+  formatPlanMinutes,
+  formatDatePt,
+  escapeHtml,
+  escapeAttr,
+  pluralize,
+  showToast,
+  showPrompt,
+  scheduleSave,
+  renderRecommendationHistorySummary,
+  getTopicName,
+  getSubjectName,
+  getTopicById,
+  getTopicPerformance,
+  needsMaintenance,
+  activeTopics,
+  dailyExecutionController: { build: (action?: any) => todayTabController.dailyExecutionController.build(action) },
+  hasStartedStudyTimer,
+  activeTimerMatchesRecommendation,
+  renderActiveStudyTimerNotice,
+  openStudyTimerFocus,
+  topicResumeLabel,
+  guidedStudyService,
+  todayDailyStudyPlan: () => todayTabController.todayDailyStudyPlan(),
+  freezePlanExecution,
+  startPlannedActivity,
+  addQuestaoRow,
+  activateTab,
+  reviewService,
+  completeAgendaReview,
+  validQuestionRecords,
+  renderFinalStretchBanner: () => todayTabController.renderFinalStretchBanner(),
+  renderAlertasInteligentes,
+  renderPlanoHoje: () => todayTabController.renderPlanoHoje(),
+  replanService,
+  planningRepository,
+  metaHoursForDate,
+  startOfWeek,
+  addDays,
+  diasParaRevisao,
+  localDateFromTimestamp,
+});
+
+onboardingModalController = createOnboardingModalController({
+  document,
+  getState: () => state,
+  getUiState: () => uiState,
+  isDemoMode: () => IS_DEMO_MODE,
+  ensureExamCatalog,
+  showToast,
+  escapeHtml,
+  escapeAttr,
+  formatPlanMinutes,
+  todayISO,
+  examPresets: EXAM_PRESETS,
+  difficultyOptions: DIFFICULTY_OPTIONS,
+  subjectService,
+  getSubjectById,
+  activeSubjects,
+  scheduleSave,
+  persistAndRender,
+  buildStudyPlanProposal: (opts?: any) => buildCurrentStudyPlanProposal(opts),
+  calculateStudyPlanPreview,
+  getStudyPlanPreview: () => studyPlanPreview,
+  confirmStudyPlan,
+  calculateDailyPlanPreview,
+  getDailyPlanPreview: () => dailyPlanPreview,
+  confirmDailyPlanPreview,
+  render,
+  activateTab,
+  syncModalShell: () => syncModalShell(),
+  openExamImport: (presetId: string, source: string) => openExamImport(presetId, source),
+  onStructuredImport: () => {
+    structuredImportOrigin = 'onboarding';
+    structuredImportController.choose();
+  },
+  updateExamBlueprint: (field: string, val: any, opts?: any) => updateExamBlueprint(field as any, val, opts),
+  updateMetaHoursDay: (day: string, hours: string, opts?: any) => updateMetaHoursDay(day, hours, opts),
+});
+
+/* ===== RECOMENDAÇÕES E REPLANEJAMENTO ===== */
+function refreshStudyRecommendationItems(opts?: any) {
+  const result = studyRecommendationController.refreshStudyRecommendationItems(opts);
+  currentStudyRecommendations = studyRecommendationController.getCurrentRecommendations();
+  return result;
+}
+function renderOverviewDecisionArea() {
+  studyRecommendationController.renderOverviewDecisionArea();
+}
+function renderStudyRecommendation() {
+  studyRecommendationController.renderStudyRecommendation();
+}
+function dismissStudyRecommendation(id: string) {
+  studyRecommendationController.dismissStudyRecommendation(id);
+}
+function markRecommendationNotUseful(id: string) {
+  studyRecommendationController.markRecommendationNotUseful(id);
+}
+function rateRecommendationOutcome(recommendationId: string, useful: boolean) {
+  studyRecommendationController.rateRecommendationOutcome(recommendationId, useful);
+}
+function startStudyRecommendation(id: string, source = 'today') {
+  studyRecommendationController.startStudyRecommendation(id, source);
+}
+function executeStudyRecommendation(id: string, source = 'today') {
+  return studyRecommendationController.executeStudyRecommendation(id, source);
+}
+function calculateReplanPreview() {
+  return studyRecommendationController.calculateReplanPreview();
+}
+function clearReplanPreview() {
+  return studyRecommendationController.clearReplanPreview();
+}
+function confirmReplan() {
+  return studyRecommendationController.confirmReplan();
+}
+function undoPlanAdjustment(id: string) {
+  return studyRecommendationController.undoPlanAdjustment(id);
+}
+function renderWeeklyReplan() {
+  studyRecommendationController.renderWeeklyReplan();
+}
+function measureRecommendationResults(session: Record<string, any>) {
+  studyRecommendationController.measureRecommendationResults(session);
 }
 
-const dailyExecutionController = createDailyExecutionController({
-  getContext: () => ({
-    today: todayISO(),
-    dailyPlans: state.dailyPlans,
-    sessions: state.studySessions,
-    subjects: state.subjects,
-    activeExamTags: state.examBlueprint.activeExamTags || [],
-    activePlan: latestStudyPlan(),
-    availableMinutes: Math.round(metaHoursToday() * 60),
-  }),
-  getNextBestAction: () =>
-    buildNextBestAction({
-      recommendations: currentStudyRecommendations,
-      activePlan: latestStudyPlan(),
-      weeklyCapacityMinutes: weeklyStrategyCapacity(),
-    }),
-  onStart: startPlannedActivity,
-  onResume: openStudyTimerFocus,
-  getTimer: () => ({ active: hasStartedStudyTimer(), planItemId: state.activeTimer?.planItemId }),
-});
+/* ===== PLANO DE HOJE & EXECUÇÃO DIÁRIA ===== */
+const dailyExecutionController = todayTabController.dailyExecutionController;
+function dismissFirstSteps() {
+  todayTabController.dismissFirstSteps();
+}
+function restoreFirstSteps() {
+  todayTabController.restoreFirstSteps();
+}
+function renderFirstStepsMissionCard() {
+  todayTabController.renderFirstStepsMissionCard();
+}
 function renderDailyExecutionCard() {
-  const container = document.getElementById('dailyExecutionDashboard');
-  if (!container) return;
-  refreshStudyRecommendationItems({ recordHistory: false });
-  container.innerHTML = renderDailyExecution(dailyExecutionController.build(), {
-    escapeHtml,
-    formatMinutes: formatPlanMinutes,
-  });
+  todayTabController.renderDailyExecutionCard();
 }
 document.addEventListener('click', event => {
   const start = (event.target as HTMLElement).closest?.<HTMLElement>('[data-daily-start]');
@@ -7182,328 +5007,42 @@ document.addEventListener('click', event => {
   if ((event.target as HTMLElement).closest?.('[data-open-what-if]')) whatIfController.open();
 });
 function renderPlanoHoje() {
-  const container = document.getElementById('planoHojeContent');
-  if (!container) return;
-  const agendaBtn = document.getElementById('executionAgendaBtn'),
-    sequenceBtn = document.getElementById('executionSequenceBtn');
-  if (agendaBtn && sequenceBtn) {
-    agendaBtn.setAttribute('aria-pressed', String(state.executionMode === 'agenda'));
-    sequenceBtn.setAttribute('aria-pressed', String(state.executionMode === 'sequence'));
-  }
-  const priorities = computeStudyPriorities();
-  const availableMinutes = Math.max(0, Math.round(metaHoursToday() * 60));
-  const plan = ensureTodayDailyStudyPlan(priorities, availableMinutes);
-  const todayModel = buildTodayViewModel({
-    date: todayISO(),
-    availableMinutes,
-    plan,
-    priorities,
-    pastPlans: state.dailyPlans.filter(row => row.date >= startOfWeek(todayISO())),
-    sessions: state.studySessions,
-    subjects: state.subjects,
-    activeExamTags: state.examBlueprint.activeExamTags || [],
-    activePlan: latestStudyPlan(),
-    nextBestAction: buildNextBestAction({
-      recommendations: currentStudyRecommendations,
-      activePlan: latestStudyPlan(),
-      weeklyCapacityMinutes: weeklyStrategyCapacity(),
-    }),
-  });
-  renderTodayExecutionSummary(todayModel);
-  renderFirstStepsMissionCard();
-
-  if (!plan && priorities.length === 0) {
-    container.innerHTML =
-      '<div class="upcoming-empty">Nenhuma atividade elegível para o tempo disponível. Confira os pré-requisitos e a meta de hoje.</div>';
-    return;
-  }
-  if (!plan) {
-    container.innerHTML =
-      '<div class="upcoming-empty">Defina uma meta diária de pelo menos 15 minutos para montar o plano.</div>';
-    return;
-  }
-
-  const reconciled = new Map((todayModel.execution?.items || []).map(item => [item.id, item]));
-  const eligibleItems = plan.items
-    .filter(item => !['discarded'].includes(item.status))
-    .map(item =>
-      reconciled.has(item.id)
-        ? {
-            ...item,
-            ...reconciled.get(item.id),
-            status:
-              state.activeTimer?.planItemId === item.id && hasStartedStudyTimer()
-                ? 'in_progress'
-                : reconciled.get(item.id).status,
-          }
-        : item
-    );
-  const items =
-    state.executionMode === 'sequence'
-      ? [...eligibleItems].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0))
-      : eligibleItems;
-  const listaHtml = items
-    .map(item => {
-      const progress =
-        item.plannedMinutes > 0
-          ? Math.min(100, Math.round((item.executedSeconds / (item.plannedMinutes * 60)) * 100))
-          : 0;
-      const hasTimer = hasStartedStudyTimer(),
-        active = hasTimer && state.activeTimer.planItemId === item.id,
-        running = active && state.activeTimer.isRunning;
-      const canStart =
-          !['completed', 'deferred', 'replaced', 'skipped'].includes(item.status) && !active,
-        blocked = hasTimer && !active;
-      const actionButton = active
-        ? '<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>'
-        : canStart && !blocked
-          ? `<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds > 0 ? '▶ Continuar' : '▶ Iniciar'}</button>`
-          : canStart && blocked
-            ? '<button type="button" class="btn small" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
-            : '';
-      return `
-    <div class="plano-item ${active ? 'is-active' : ''} ${item.status === 'completed' ? 'is-completed' : ''}">
-      <div class="plano-item-head">${escapeHtml(item.statusLabel || planItemStatusLabel(item.status))}${Number.isFinite(Number(item.score)) ? ' · ' + Math.round(Number(item.score)) + '/100' : ''}</div>
-      <div class="plano-item-title">${escapeHtml(item.subjectName || getSubjectName(item.subjectId) || 'Disciplina')} — ${escapeHtml(item.topicName || getTopicName(item.topicId) || 'Tópico')}</div>
-      <div class="plano-item-reason">${escapeHtml(item.reason)}</div>
-      <div class="plano-item-reason">${[formatPlanMinutes(item.plannedMinutes), item.action && escapeHtml(item.action), item.recommendedQuestions && item.recommendedQuestions + ' questões'].filter(Boolean).join(' · ')}</div>
-      <div class="plano-item-progress" title="${progress}% executado"><span style="width:${progress}%"></span></div>
-      <div class="plano-item-actions">
-        ${actionButton}
-        <span class="plano-item-status">${active ? (running ? 'Sessão em andamento · cronômetro rodando' : 'Sessão em andamento · pausada') : escapeHtml(planItemStatusLabel(item.status))} · ${formatDuration(item.executedSeconds)} executado</span>
-      </div>
-    </div>
-  `;
-    })
-    .join('');
-
-  const executedSeconds = plan.items.reduce(
-    (sum, item) => sum + (Number(item.executedSeconds) || 0),
-    0
-  );
-  const executionPct =
-    plan.plannedMinutes > 0
-      ? Math.min(100, Math.round((executedSeconds / (plan.plannedMinutes * 60)) * 100))
-      : 0;
-
-  container.innerHTML = `
-    ${todayModel.recoveryMinutes ? `<div class="replan-group is-warning"><strong>${formatPlanMinutes(todayModel.recoveryMinutes)} pendentes de dias anteriores</strong><span>Revise a redistribuição abaixo antes de aplicar qualquer ajuste.</span></div>` : ''}
-    ${listaHtml}
-    ${plan.flexMinutes! > 0 ? `<div class="plano-depois"><div class="plano-depois-label">Tempo flexível:</div><div class="plano-depois-item">${formatPlanMinutes(plan.flexMinutes!)} para pausas, correção ou continuidade</div></div>` : ''}
-    <div class="plano-meta">
-      <div class="plano-depois-label">Planejamento:</div>
-      <div class="plano-depois-item">${formatPlanMinutes(plan.plannedMinutes)} planejados · ${formatDuration(executedSeconds)} executado (${executionPct}%)</div>
-    </div>
-  `;
+  todayTabController.renderPlanoHoje();
 }
+function renderMetasHoje() {
+  todayTabController.renderMetasHoje();
+}
+
+/* ===== ONBOARDING 2.0 ===== */
 function renderGuidedOnboarding() {
-  const entry = document.getElementById('guidedOnboarding'),
-    overlay = document.getElementById('guidedOnboardingOverlay');
-  if (!entry || !overlay) return;
-  const model = onboardingModel();
-  if (!uiState.onboarding.currentStep) uiState.onboarding.currentStep = model.current.id;
-  const visible = model.visible && !IS_DEMO_MODE;
-  const overview = document.querySelector('#panel-dashboard .overview-now');
-  if (overview) overview.after(entry);
-  entry.hidden = !visible;
-  document.getElementById('guidedOnboardingEntry')!.innerHTML = visible
-    ? renderOnboardingEntry(model, { escapeHtml })
-    : '';
-  syncOnboardingPhase(document, { visible });
-  overlay.hidden = !visible || !uiState.onboarding.open;
-  overlay.classList.toggle('show', visible && uiState.onboarding.open);
-  if (!visible) {
-    uiState.onboarding.open = false;
-    return;
-  }
-  document.getElementById('guidedOnboardingProgress')!.innerHTML = renderOnboardingProgress(model);
-  document.getElementById('guidedOnboardingContent')!.innerHTML = renderOnboardingContent(model, {
-    escapeHtml,
-    escapeAttr,
-    formatMinutes: formatPlanMinutes,
-  });
-  document.getElementById('guidedOnboardingHelp')!.innerHTML = renderOnboardingHelp(model, {
-    escapeHtml,
-  });
-  document.getElementById('guidedOnboardingActions')!.innerHTML = renderOnboardingActions(model);
-  const manualBanner = document.getElementById('guidedManualReturn');
-  if (manualBanner) {
-    manualBanner.hidden = !uiState.onboarding.manualReturn;
-    manualBanner.querySelector<HTMLButtonElement>('[data-guided-manual-return]')!.disabled =
-      !model.hasContent;
-  }
+  onboardingModalController.renderGuidedOnboarding();
 }
 function onboardingModel() {
-  const canPreview =
-    Boolean(state.examDate) &&
-    Object.values(state.metas.horasPorDia).some(value => Number(value) > 0) &&
-    state.subjects.some(
-      subject => !subject.archived && subject.topics?.some(topic => !topic.archived)
-    );
-  return buildOnboardingViewModel({
-    examDate: state.examDate,
-    hoursByDay: state.metas.horasPorDia,
-    subjects: state.subjects,
-    sessions: state.studySessions,
-    questions: state.questoes,
-    dailyPlans: state.dailyPlans,
-    studyPlans: state.studyPlans,
-    planPreview: canPreview ? buildCurrentStudyPlanProposal({ guidedDefaults: true }) : null,
-    currentStep: uiState.onboarding.currentStep,
-    today: todayISO(),
-    presets: EXAM_PRESETS,
-    presetId: uiState.onboarding.presetId,
-  });
+  return onboardingModalController.onboardingModel();
 }
 function moveOnboarding(direction: number) {
-  const model = onboardingModel(),
-    index = Math.max(0, Math.min(model.steps.length - 1, model.currentIndex + direction));
-  uiState.onboarding.currentStep = model.steps[index].id;
-  renderGuidedOnboarding();
+  onboardingModalController.moveOnboarding(direction);
 }
-async function openGuidedOnboarding({ step = null }: any = {}) {
-  try {
-    await ensureExamCatalog();
-    const model = onboardingModel();
-    uiState.onboarding.previousFocus = document.activeElement as HTMLElement;
-    uiState.onboarding.open = true;
-    uiState.onboarding.manualReturn = false;
-    uiState.onboarding.currentStep = step || model.next?.id || model.current.id;
-    document.body.classList.add('onboarding-open');
-    renderGuidedOnboarding();
-    requestAnimationFrame(() => document.getElementById('guidedOnboardingClose')?.focus());
-  } catch (error: any) {
-    showToast(error.message || 'Não foi possível abrir a configuração inicial.');
-  }
+function openGuidedOnboarding(opts?: any) {
+  return onboardingModalController.openGuidedOnboarding(opts);
 }
 function suspendGuidedOnboarding() {
-  uiState.onboarding.open = false;
-  renderGuidedOnboarding();
+  onboardingModalController.suspendGuidedOnboarding();
 }
 function resumeGuidedOnboarding(step = 'content') {
-  const model = onboardingModel();
-  uiState.onboarding.currentStep = step === 'plan' && !model.hasContent ? 'content' : step;
-  uiState.onboarding.open = true;
-  document.body.classList.add('onboarding-open');
-  renderGuidedOnboarding();
-  requestAnimationFrame(() => document.getElementById('guidedOnboardingClose')?.focus());
+  onboardingModalController.resumeGuidedOnboarding(step);
 }
-function closeGuidedOnboarding({ manual = false }: any = {}) {
-  const previousFocus = uiState.onboarding.previousFocus;
-  uiState.onboarding.open = false;
-  uiState.onboarding.dismissedForSession = !manual;
-  uiState.onboarding.manualReturn = manual;
-  document.body.classList.remove('onboarding-open');
-  renderGuidedOnboarding();
-  syncModalShell();
-  const focusTarget = previousFocus?.isConnected
-    ? previousFocus
-    : document.querySelector<HTMLElement>('#guidedOnboarding [data-guided-action="open"]');
-  (focusTarget?.getClientRects().length
-    ? focusTarget
-    : document.getElementById('tab-dashboard')
-  )?.focus();
-  uiState.onboarding.previousFocus = null;
+function closeGuidedOnboarding(opts?: any) {
+  onboardingModalController.closeGuidedOnboarding(opts);
 }
-function setGuidedSubjectLevel(subjectId: string, level: string, { refresh = true }: any = {}) {
-  if (!(DIFFICULTY_OPTIONS as readonly string[]).includes(level)) return;
-  const subject = getSubjectById(subjectId);
-  if (!subject) return;
-  for (const topic of subject.topics.filter(item => !item.archived)) {
-    subjectService.updateTopic(subjectId, topic.id, {
-      ...topic,
-      difficulty: level,
-      estimatedStudyMinutes:
-        topic.estimatedStudyMinutes ?? (level === 'Difícil' ? 120 : level === 'Fácil' ? 45 : 75),
-      fieldOrigins: { ...(topic.fieldOrigins || {}), difficulty: 'manual' },
-    });
-  }
-  if (refresh) persistAndRender();
-  else scheduleSave();
-}
-function applyGuidedEffortDefaults() {
-  for (const subject of activeSubjects())
-    for (const topic of subject.topics.filter(item => !item.archived))
-      if (topic.estimatedStudyMinutes == null)
-        topic.estimatedStudyMinutes =
-          topic.difficulty === 'Difícil' ? 120 : topic.difficulty === 'Fácil' ? 45 : 75;
+function setGuidedSubjectLevel(subjectId: string, level: string, opts?: any) {
+  onboardingModalController.setGuidedSubjectLevel(subjectId, level, opts);
 }
 function createGuidedInitialPlan() {
-  if (!onboardingModel().canCreatePlan) return;
-  applyGuidedEffortDefaults();
-  calculateStudyPlanPreview();
-  if (
-    !studyPlanPreview ||
-    studyPlanPreview.state === 'insufficient' ||
-    !studyPlanPreview.items.length
-  ) {
-    uiState.onboarding.currentStep = 'plan';
-    renderGuidedOnboarding();
-    showToast('Confira os dados indicados antes de confirmar o plano.');
-    return;
-  }
-  confirmStudyPlan();
-  calculateDailyPlanPreview();
-  if (dailyPlanPreview?.state === 'proposal') confirmDailyPlanPreview();
-  uiState.onboarding.currentStep = 'plan';
-  uiState.onboarding.open = false;
-  document.body.classList.remove('onboarding-open');
-  render();
-  activateTab('hoje');
-  requestAnimationFrame(() =>
-    document.querySelector<HTMLElement>('#planoHojeContent .btn')?.focus()
-  );
+  onboardingModalController.createGuidedInitialPlan();
 }
-
-function renderMetasHoje() {
-  const container = document.getElementById('hojeMetas');
-  if (!container) return;
-  const today = todayISO();
-
-  const topicosHoje = uniqueTopicsCompletedBetween(today, today);
-  const metaTopicosHoje = Math.max(1, Math.round(state.metas.semanal / 7));
-
-  const questoesHoje = state.questoes
-    .filter(q => q.date === today)
-    .reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
-  const metaQuestoesHoje = Math.max(1, Math.round(state.metas.questoesSemanal / 7));
-
-  const revisoesHoje = getRevisoesUnificadas().filter(r => r.date === today);
-  const revisoesConcluidasHoje = revisoesHoje.filter(r => r.status === 'Concluído').length;
-  const tempoHoje = segundosEstudadosHoje();
-  const metaTempo = metaHoursToday() * 3600;
-  const pctTempo = metaTempo > 0 ? Math.round((tempoHoje / metaTempo) * 100) : 0;
-
-  container.innerHTML = `
-    <div class="metas-hoje-grid">
-      <div class="meta-hoje-card">
-        <div class="meta-hoje-label">Tópicos concluídos hoje</div>
-        <div class="meta-hoje-value">${topicosHoje} <span>/ ${metaTopicosHoje}</span></div>
-      </div>
-      <div class="meta-hoje-card">
-        <div class="meta-hoje-label">Questões resolvidas hoje</div>
-        <div class="meta-hoje-value">${questoesHoje} <span>/ ${metaQuestoesHoje}</span></div>
-      </div>
-      <div class="meta-hoje-card">
-        <div class="meta-hoje-label">Revisões de hoje concluídas</div>
-        <div class="meta-hoje-value">${revisoesConcluidasHoje} <span>/ ${revisoesHoje.length}</span></div>
-      </div>
-      <div class="meta-hoje-card">
-        <div class="meta-hoje-label">Tempo estudado hoje</div>
-        <div class="meta-hoje-time">
-          <div class="meta-hoje-time-main">
-            <div class="meta-hoje-time-value">${formatDuration(tempoHoje)}</div>
-            <div class="meta-hoje-time-target">de ${formatHoras(metaHoursToday())} · ${pctTempo}%</div>
-          </div>
-          <label class="meta-hoje-time-goal">
-            <span>Meta diária</span>
-            <input type="number" min="0" step="0.25" value="${metaHoursToday()}"
-              data-delegated-blur="updateMetaHoursDay(parseLocalDate(todayISO()).getDay(),this.value)" title="Editar a meta de hoje" aria-label="Meta de horas de hoje">
-          </label>
-        </div>
-      </div>
-    </div>
-  `;
+function syncGuidedNext(model: Record<string, any>) {
+  onboardingModalController.syncGuidedNext(model);
 }
 
 /* ===== DASHBOARD DE APROVAÇÃO ===== */
@@ -8311,71 +5850,13 @@ function navigateKpi(tab: string, filter: string) {
   document.getElementById('panel-' + tab)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function completeUnifiedReview(id: string, origin: string) {
-  if (origin === 'Agenda de Revisões') {
-    completeAgendaReview(id);
-  } else {
-    const item = state.calendar.find(x => x.id === id);
-    if (!item || item.status === 'Concluído') return;
-    updateCal(id, 'status', 'Concluído');
-  }
-  showToast('Revisão concluída e indicadores atualizados.');
+  calendarTabController.completeUnifiedReview(id, origin);
 }
-function quickReviewButton(item: Record<string, any>, elId: string) {
-  if (!String(elId || '').startsWith('hoje') || item.status === 'Concluído') return '';
-  return `<button type="button" class="btn small quick-review-btn" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">✓ Revisar</button>`;
+function renderCalTarefasHoje(elId = 'calTarefasHoje') {
+  calendarTabController.renderCalTarefasHoje(elId);
 }
-function renderCalTarefasHoje(elId: string) {
-  elId = elId || 'calTarefasHoje';
-  const today = todayISO(),
-    items = getRevisoesUnificadas()
-      .filter(r => r.date === today)
-      .sort((a, b) => (a.subject || '').localeCompare(b.subject || ''));
-  const ul = document.getElementById(elId);
-  if (!ul) return;
-  if (!items.length) {
-    ul.innerHTML = '<li class="upcoming-empty">Nenhuma tarefa para hoje. 🎉</li>';
-    return;
-  }
-  ul.innerHTML = items
-    .map(
-      x =>
-        `<li><span class="dias-pill dias-hoje" style="margin-right:6px">hoje</span><span style="flex:1">${escapeHtml(x.subject || '—')} · ${escapeHtml(unifiedItemLabel(x))} <span class="item-origin">(${x.origem})</span></span><span class="subject-progress-pill">${escapeHtml(x.status)}</span>${quickReviewButton(x, elId)}</li>`
-    )
-    .join('');
-}
-function renderCalAtrasadas(elId: string) {
-  elId = elId || 'calAtrasadas';
-  const today = todayISO(),
-    items = getRevisoesUnificadas()
-      .filter(r => r.date && r.date < today && r.status !== 'Concluído')
-      .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-  const ul = document.getElementById(elId);
-  if (!ul) return;
-  if (!items.length) {
-    ul.innerHTML = '<li class="upcoming-empty">Nenhuma revisão atrasada. Tudo em dia!</li>';
-    return;
-  }
-  const groups = new Map();
-  items.forEach(item => {
-    if (!groups.has(item.date)) groups.set(item.date, []);
-    groups.get(item.date).push(item);
-  });
-  const entries = [...groups.entries()],
-    limit = overdueGroupLimits[elId] || 3,
-    visible = entries.slice(0, limit);
-  if (!overdueExpansionInitialized.has(elId)) {
-    overdueExpandedDates[elId].add(entries[0][0]);
-    overdueExpansionInitialized.add(elId);
-  }
-  ul.innerHTML =
-    `<li class="overdue-summary"><strong>${items.length} revisões atrasadas</strong><span>${entries.length} datas · mais antiga em ${formatDatePt(entries[0][0])}</span></li>` +
-    visible
-      .map(([date, dateItems]) => {
-        const expanded = overdueExpandedDates[elId].has(date);
-        return `<li class="overdue-group"><button type="button" class="overdue-group-title" aria-expanded="${expanded}" data-delegated-click="toggleOverdueDate('${elId}','${date}')"><span><strong>${formatDatePt(date)}</strong><small>${pluralize(dateItems.length, 'revisão', 'revisões')} · ${Math.abs(diasParaRevisao(date) || 0)} dias de atraso</small></span><span class="overdue-chevron" aria-hidden="true">›</span></button><ul ${expanded ? '' : 'hidden'}>${dateItems.map((x: any) => `<li><span style="flex:1">${escapeHtml(x.subject || '—')} — ${escapeHtml(unifiedItemLabel(x))}<span class="item-origin">${x.origem}</span></span>${quickReviewButton(x, elId)}</li>`).join('')}</ul></li>`;
-      })
-      .join('') +
-    `<li class="overdue-list-footer">${renderCollectionFooter({ variant: 'block', total: entries.length, visible: visible.length, step: DEFAULT_LIST_VISIBLE_ITEMS, label: 'datas', showMoreAction: `changeOverdueGroupLimit('${elId}',3)`, showAllAction: `showAllOverdueGroups('${elId}')`, showLessAction: limit > DEFAULT_LIST_VISIBLE_ITEMS ? `resetOverdueGroupLimit('${elId}')` : '' })}</li>`;
+function renderCalAtrasadas(elId = 'calAtrasadas') {
+  calendarTabController.renderCalAtrasadas(elId);
 }
 function renderKPIs() {
   const resolved = state.questoes.reduce((n, q) => n + (Number(q.resolved) || 0), 0),
@@ -8451,6 +5932,7 @@ const DELEGATED_ACTION_HANDLERS = composeDelegatedActionHandlers({
   completeAgendaReview,
   completeCalendarItem,
   completeUnifiedReview,
+  rateCompletedReview,
   deleteAgendaRow,
   deleteBreakdownRow,
   deleteCalRow,
