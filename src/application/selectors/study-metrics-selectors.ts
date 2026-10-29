@@ -15,6 +15,7 @@ import {
   isTopicInExamScope,
   normalizeExamTags,
 } from '../../domain/exams/exam-scope.js';
+import { buildUnifiedReviews } from '../calendar/build-unified-reviews.js';
 import type { AppState } from '../../core/types.js';
 
 export interface StudyMetricsSelectorsDependencies {
@@ -27,7 +28,9 @@ export interface StudyMetricsSelectorsDependencies {
   localDateFromTimestamp: (value: any) => string;
   getTopicById: (topicId: string | null | undefined) => { subject: any; topic: any } | null;
   getSubjectName: (subjectId: string) => string;
+  getTopicName?: (topicId: string | null | undefined) => string;
   entitySubjectId: (item: Record<string, any>) => string | null;
+  entitySubjectName?: (item: Record<string, any>) => string;
   activeTopics: () => any[];
   activeSubjects: () => any[];
   metaHoursForDate: (date?: string) => number;
@@ -54,7 +57,12 @@ export function createStudyMetricsSelectors(deps: StudyMetricsSelectorsDependenc
     localDateFromTimestamp,
     getTopicById,
     getSubjectName,
+    getTopicName = (_id?: string | null) => '',
     entitySubjectId,
+    entitySubjectName = (item: Record<string, any>) => {
+      const id = entitySubjectId(item);
+      return id ? getSubjectName(id) : '—';
+    },
     activeTopics,
     activeSubjects,
     metaHoursForDate,
@@ -312,6 +320,72 @@ export function createStudyMetricsSelectors(deps: StudyMetricsSelectorsDependenc
     return valid[0] || todayISO();
   }
 
+  function refreshTopicReviewStats(topicId: string): void {
+    const found = getTopicById(topicId);
+    if (!found) return;
+    const state = getState();
+    const completed = (state.reviewAgenda || []).filter(
+      (review: any) =>
+        (review.topicId || review.topicRef) === topicId && review.status === 'Concluído'
+    );
+    const dates = completed
+      .map((review: any) => review.completedAt)
+      .filter(Boolean)
+      .sort();
+    found.topic.reviewCount = completed.length;
+    found.topic.lastReviewedAt = dates.length ? dates[dates.length - 1] : null;
+  }
+
+  function refreshAllTopicReviewStats(): void {
+    const state = getState();
+    (state.subjects || []).forEach((subject: any) =>
+      (subject.topics || []).forEach((topic: any) => refreshTopicReviewStats(topic.id))
+    );
+  }
+
+  function getTopicDifficulty(topicId?: string | null): string {
+    if (!topicId) return 'Médio';
+    const found = getTopicById(topicId);
+    return found?.topic?.difficulty || 'Médio';
+  }
+
+  function getRevisoesUnificadas() {
+    const state = getState();
+    return buildUnifiedReviews({
+      calendar: state.calendar || [],
+      reviewAgenda: state.reviewAgenda || [],
+      subjectIdOf: entitySubjectId,
+      subjectName: entitySubjectName,
+      topicName: getTopicName,
+    });
+  }
+
+  function simuladoEffectiveCounts(sim: Record<string, any>) {
+    if (sim.breakdown && sim.breakdown.length > 0) {
+      const correct = sim.breakdown.reduce((s: number, b: any) => s + (Number(b.correct) || 0), 0);
+      const total = sim.breakdown.reduce((s: number, b: any) => s + (Number(b.total) || 0), 0);
+      return { correct, total };
+    }
+    return { correct: Number(sim.correct) || 0, total: Number(sim.total) || 0 };
+  }
+
+  function simuladoNota(sim: Record<string, any>): number {
+    const { correct, total } = simuladoEffectiveCounts(sim);
+    return total > 0 ? Math.round((correct / total) * 100) : 0;
+  }
+
+  function performanceScopedPlans(scope: any = examEvidenceContext()) {
+    const state = getState();
+    if (!(state.examBlueprint?.activeExamTags || []).length) return state.dailyPlans || [];
+    const eligible = new Set(scope.content.eligibleTopics.map((item: any) => item.id));
+    return (state.dailyPlans || [])
+      .map((plan: any) => ({
+        ...plan,
+        items: (plan.items || []).filter((item: any) => item.topicId && eligible.has(item.topicId)),
+      }))
+      .filter((plan: any) => plan.items.length);
+  }
+
   return {
     evidenceScopeForTopic,
     topicInActiveExamScope,
@@ -344,5 +418,12 @@ export function createStudyMetricsSelectors(deps: StudyMetricsSelectorsDependenc
     validQuestionRecords,
     weeklyStrategyCapacity,
     planStartDate,
+    refreshTopicReviewStats,
+    refreshAllTopicReviewStats,
+    getTopicDifficulty,
+    getRevisoesUnificadas,
+    simuladoEffectiveCounts,
+    simuladoNota,
+    performanceScopedPlans,
   };
 }

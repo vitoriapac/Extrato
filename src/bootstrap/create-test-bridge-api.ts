@@ -33,38 +33,16 @@ export interface CreateTestBridgeConfigOptions {
   setState: (next: any) => void;
   migrateState: (raw: any) => any;
   ensureStateDefaults: () => void;
-  restoreTimerFromState: () => void;
-  refreshTimerDisplay: () => void;
-  getConsolidatedDiagnosis: () => any;
-  settleSaves: () => Promise<any>;
-  validateBackupData: (raw: any) => any;
-  startOfWeek: (iso: any) => string;
-  isSameWeek: (iso: any) => boolean;
-  addDays: (iso: any, days: number) => string;
-  diasParaRevisao: (iso: any) => number | null;
   todayISO: () => string;
   localDateFromTimestamp: (value: any) => string;
-  adaptiveReviewSuggestion: (topicId: string, baseDays: number, baseDate: string) => any;
-  syncQuestionFromStudySession: (session: any) => any;
-  getSubjectDependencies: (subjectId: string) => any;
-  getTopicDependencies: (topicId: string) => any;
-  computeApprovalMetrics: () => any;
-  indiceProntidao: (metrics?: any) => number;
-  readinessResult: (metrics?: any) => any;
-  computeStudyPriorities: () => any[];
-  topicRetentionScore: (subjectId: string, topicId: string) => any;
-  topicMasteryIndex: (subjectId: string, topicId: string) => any;
-  intelligenceCandidates: () => any[];
-  studyPlanCandidates: (options?: any) => any[];
   renderAll: () => any;
   render: (scope?: string) => any;
   activateInitialTab: () => void;
-  sha256: (value: any) => Promise<string | null>;
-  rotateAutomaticBackup: (previousRaw: string | null, options?: any) => any;
-  StorageManager: any;
-  whatIfController: any;
-  renderVerticalizedSyllabus: () => void;
-  errorNotebookController: any;
+  appSelectors: any;
+  coreServices: any;
+  storageAndSync: any;
+  domainAnalytics: any;
+  uiControllers: any;
 }
 
 export function createTestBridgeConfig(options: CreateTestBridgeConfigOptions) {
@@ -78,38 +56,16 @@ export function createTestBridgeConfig(options: CreateTestBridgeConfigOptions) {
     setState,
     migrateState,
     ensureStateDefaults,
-    restoreTimerFromState,
-    refreshTimerDisplay,
-    getConsolidatedDiagnosis,
-    settleSaves,
-    validateBackupData,
-    startOfWeek,
-    isSameWeek,
-    addDays,
-    diasParaRevisao,
     todayISO,
     localDateFromTimestamp,
-    adaptiveReviewSuggestion,
-    syncQuestionFromStudySession,
-    getSubjectDependencies,
-    getTopicDependencies,
-    computeApprovalMetrics,
-    indiceProntidao,
-    readinessResult,
-    computeStudyPriorities,
-    topicRetentionScore,
-    topicMasteryIndex,
-    intelligenceCandidates,
-    studyPlanCandidates,
     renderAll,
     render,
     activateInitialTab,
-    sha256,
-    rotateAutomaticBackup,
-    StorageManager,
-    whatIfController,
-    renderVerticalizedSyllabus,
-    errorNotebookController,
+    appSelectors,
+    coreServices,
+    storageAndSync,
+    domainAnalytics,
+    uiControllers,
   } = options;
 
   return {
@@ -122,15 +78,16 @@ export function createTestBridgeConfig(options: CreateTestBridgeConfigOptions) {
       APP_MODE: appMode,
       IS_DEMO_MODE: isDemoMode,
       getState,
-      getConsolidatedDiagnosis: () => structuredCloneSafe(getConsolidatedDiagnosis()),
-      settleSaves,
+      getConsolidatedDiagnosis: () =>
+        structuredCloneSafe(uiControllers.diagnosticsTabController.getConsolidatedDiagnosis()),
+      settleSaves: () => storageAndSync.appStateStore.settleSaves(),
       setState: (value: any) => {
         const next = migrateState(structuredCloneSafe(value));
         setState(next);
         ensureStateDefaults();
         return getState();
       },
-      refreshTimerDisplay,
+      refreshTimerDisplay: () => uiControllers.studyTimerRuntime.refreshTimerDisplay(),
       resetState: () => {
         const next = structuredCloneSafe(pristineTestState);
         setState(next);
@@ -138,36 +95,41 @@ export function createTestBridgeConfig(options: CreateTestBridgeConfigOptions) {
         return getState();
       },
       migrateState: (value: any) => migrateState(structuredCloneSafe(value)),
-      validateBackupData,
+      validateBackupData: storageAndSync.validateBackupData,
       validateNormalizedBackup,
-      startOfWeek,
-      isSameWeek,
-      addDays,
-      diasParaRevisao,
+      startOfWeek: appSelectors.startOfWeek,
+      isSameWeek: appSelectors.isSameWeek,
+      addDays: appSelectors.addDays,
+      diasParaRevisao: appSelectors.diasParaRevisao,
       parseLocalDate,
       todayISO,
       localDateFromTimestamp,
       calculateAdaptiveInterval,
-      adaptiveReviewSuggestion,
-      syncQuestionFromStudySession,
-      getSubjectDependencies,
-      getTopicDependencies,
-      computeApprovalMetrics,
-      indiceProntidao,
-      readinessResult,
+      adaptiveReviewSuggestion: (topicId: string, baseDays: number, baseDate: string) =>
+        uiControllers.reviewsTabController.adaptiveReviewSuggestion(topicId, baseDays, baseDate),
+      syncQuestionFromStudySession: (session: any) =>
+        uiControllers.sessionHistoryController.syncQuestionFromStudySession(session),
+      getSubjectDependencies: (sId: string) =>
+        uiControllers.subjectsTabController.getSubjectDependencies(sId),
+      getTopicDependencies: (tId: string) =>
+        uiControllers.subjectsTabController.getTopicDependencies(tId),
+      computeApprovalMetrics: domainAnalytics.approvalReadinessService.computeApprovalMetrics,
+      indiceProntidao: domainAnalytics.approvalReadinessService.indiceProntidao,
+      readinessResult: domainAnalytics.approvalReadinessService.readinessResult,
       calculateReadinessScore,
-      computeStudyPriorities,
-      topicRetentionScore,
-      topicMasteryIndex,
-      intelligenceCandidates,
-      studyPlanCandidates,
+      computeStudyPriorities: domainAnalytics.studyCandidateService.computeStudyPriorities,
+      topicRetentionScore: domainAnalytics.topicDiagnosisService.topicRetentionScore,
+      topicMasteryIndex: domainAnalytics.topicDiagnosisService.topicMasteryIndex,
+      intelligenceCandidates: domainAnalytics.studyCandidateService.intelligenceCandidates,
+      studyPlanCandidates: (opts?: any) =>
+        domainAnalytics.studyCandidateService.studyPlanCandidates(opts),
       buildStudyPlan,
       renderAll,
-      sha256,
-      rotateAutomaticBackup,
-      StorageManager,
+      sha256: storageAndSync.sha256,
+      rotateAutomaticBackup: storageAndSync.rotateAutomaticBackup,
+      StorageManager: coreServices.storageManager,
       structuredCloneSafe,
-      whatIfController,
+      whatIfController: uiControllers.whatIfController,
       simulateWhatIfScenario,
       buildFinalStretchBanner,
       identifyVolatileTopics,
@@ -177,14 +139,15 @@ export function createTestBridgeConfig(options: CreateTestBridgeConfigOptions) {
       advanceStudyCycleQueue,
       peekUpcomingCycleBlocks,
       analyzeFocusAndEnergy,
-      renderVerticalizedSyllabus,
-      errorNotebookController,
+      renderVerticalizedSyllabus: () =>
+        uiControllers.subjectsTabController.renderVerticalizedSyllabus(),
+      errorNotebookController: uiControllers.errorNotebookController,
       resolveEntitlements,
       createCloudSaaSProvider,
     },
     activateInitialTab,
     ensureStateDefaults,
-    restoreTimerFromState,
+    restoreTimerFromState: () => uiControllers.studyTimerRuntime.restoreTimerFromState(),
     render,
   };
 }

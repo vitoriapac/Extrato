@@ -3,6 +3,23 @@ import { render } from 'preact-render-to-string';
 import { mountPreact } from '../../preact-mount.js';
 import { WeeklyAvailabilityGrid } from './WeeklyAvailabilityGrid.js';
 import { PlanExecutionCard } from './PlanExecutionCard.js';
+import { buildWeeklyAvailability as defaultBuildWeeklyAvailability } from '../../../application/goals/weekly-availability.js';
+import { buildPlanExecution as defaultBuildPlanExecution } from '../../../application/goals/build-plan-execution.js';
+import { renderPlanExecution as defaultRenderPlanExecutionView } from '../../renderers/plan-execution-renderer.js';
+import { buildStudyDistribution as defaultBuildStudyDistribution } from '../../../application/goals/build-study-distribution.js';
+import { renderStudyDistribution as defaultRenderStudyDistribution } from '../../renderers/study-distribution-renderer.js';
+import { buildPlanImpactAlignment as defaultBuildPlanImpactAlignment } from '../../../application/goals/build-plan-impact-alignment.js';
+import { renderPlanImpactAlignment as defaultRenderPlanImpactAlignment } from '../../renderers/plan-impact-alignment-renderer.js';
+import { buildTopicExamProfile as defaultBuildTopicExamProfile } from '../../../application/exam-intelligence/build-topic-exam-profile.js';
+import { resolveValidatedExamImpact as defaultResolveValidatedExamImpact } from '../../../domain/exam-intelligence/validated-impact.js';
+import { buildResultGoalsViewModel as defaultBuildResultGoalsViewModel } from '../../../application/goals/build-result-goals-view-model.js';
+import { renderGoals as defaultRenderGoals } from '../../renderers/goals-renderer.js';
+import { initialGoalSuggestions as defaultInitialGoalSuggestions } from '../../../domain/goals/initial-goal-guidance.js';
+import { buildPeriodComparisonViewModel as defaultBuildPeriodComparisonViewModel } from '../../../application/analytics/build-period-comparison-view-model.js';
+import { renderPeriodComparisonDetail as defaultRenderPeriodComparisonDetail } from '../../renderers/period-comparison-detail-renderer.js';
+import { countStudyDaysThisWeek } from '../../../application/performance/study-day-count.js';
+
+const DEFAULT_WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
 
 export interface GoalsTabControllerContext {
   state?: any;
@@ -10,14 +27,16 @@ export interface GoalsTabControllerContext {
   document?: Document | any;
   parseLocalDate: (iso: string) => any;
   todayISO: () => string;
-  buildWeeklyAvailability: (hoursByDay: any) => any;
+  buildWeeklyAvailability?: (hoursByDay: any) => any;
   formatPlanMinutes: (mins: number) => string;
   formatDecimal?: (val: number) => string;
   metaHoursToday: () => number;
   metaHoursForDate: (date: string) => number | string;
   addDays: (iso: string, days: number) => string;
   startOfWeek: (iso: string) => string;
-  WEEKDAY_LABELS: readonly string[];
+  isSameWeek?: (dateStr: string, refDateStr?: string) => boolean;
+  isSameMonth?: (dateStr: string, refDateStr?: string) => boolean;
+  WEEKDAY_LABELS?: readonly string[];
   buildPlanExecution?: (opts: any) => any;
   buildStudyDistribution?: (opts: any) => any;
   buildPlanImpactAlignment?: (opts: any) => any;
@@ -41,24 +60,47 @@ export interface GoalsTabControllerContext {
   renderPeriodComparisonDetail?: (model: any, opts: any) => string;
   localDateFromTimestamp?: (ts: string) => string;
   somarQuestoesDisciplinaNaSemana?: (subjectId: string | null) => number;
+  contarTopicosConcluidosNoPeriodo?: (predicate: (d: string) => boolean) => number;
+  somarQuestoesNaSemana?: () => number;
+  contarSimuladosNaSemana?: () => number;
+  recentPerformance?: () => any;
+  computeWeeklyHistory?: (weeksCount?: number) => any[];
+  addMetaDisciplina?: (subjectId: string, rawMeta: string) => void;
   computeRitmo?: () => any;
 }
 
 export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   const resolveState = () => (ctx.getState ? ctx.getState() : ctx.state);
+  const buildWeeklyAvailability = ctx.buildWeeklyAvailability || defaultBuildWeeklyAvailability;
+  const WEEKDAY_LABELS = ctx.WEEKDAY_LABELS || DEFAULT_WEEKDAY_LABELS;
+  const buildPlanExecution = ctx.buildPlanExecution || defaultBuildPlanExecution;
+  const renderPlanExecutionView = ctx.renderPlanExecutionView || defaultRenderPlanExecutionView;
+  const buildStudyDistribution = ctx.buildStudyDistribution || defaultBuildStudyDistribution;
+  const renderStudyDistribution = ctx.renderStudyDistribution || defaultRenderStudyDistribution;
+  const buildPlanImpactAlignment = ctx.buildPlanImpactAlignment || defaultBuildPlanImpactAlignment;
+  const renderPlanImpactAlignment = ctx.renderPlanImpactAlignment || defaultRenderPlanImpactAlignment;
+  const buildTopicExamProfile = ctx.buildTopicExamProfile || defaultBuildTopicExamProfile;
+  const resolveValidatedExamImpact = ctx.resolveValidatedExamImpact || defaultResolveValidatedExamImpact;
+  const buildResultGoalsViewModel = ctx.buildResultGoalsViewModel || defaultBuildResultGoalsViewModel;
+  const renderGoals = ctx.renderGoals || defaultRenderGoals;
+  const initialGoalSuggestions = ctx.initialGoalSuggestions || defaultInitialGoalSuggestions;
+  const buildPeriodComparisonViewModel =
+    ctx.buildPeriodComparisonViewModel || defaultBuildPeriodComparisonViewModel;
+  const renderPeriodComparisonDetail =
+    ctx.renderPeriodComparisonDetail || defaultRenderPeriodComparisonDetail;
 
   function createWeeklyAvailabilityVNode() {
     const state = resolveState();
     const today = ctx.todayISO();
     const todayDay = ctx.parseLocalDate(today).getDay();
-    const availability = ctx.buildWeeklyAvailability(state.metas?.horasPorDia);
+    const availability = buildWeeklyAvailability(state.metas?.horasPorDia);
 
     const formattedTotal = ctx.formatPlanMinutes(availability.totalMinutes);
     const formattedAverage = ctx.formatPlanMinutes(Math.round(availability.averageHours * 60));
     const formattedToday = ctx.formatPlanMinutes(Math.round(ctx.metaHoursToday() * 60));
 
     const weekStart = ctx.startOfWeek(today);
-    const days = ctx.WEEKDAY_LABELS.map((label, dayIndex) => {
+    const days = WEEKDAY_LABELS.map((label, dayIndex) => {
       const dateForDay = ctx.addDays(weekStart, dayIndex === 0 ? 6 : dayIndex - 1);
       return {
         dayIndex,
@@ -86,11 +128,11 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   }
 
   function createPlanExecutionVNode() {
-    if (!ctx.buildPlanExecution || !ctx.renderPlanExecutionView) return null;
+    if (!buildPlanExecution || !renderPlanExecutionView) return null;
 
     const state = resolveState();
     const today = ctx.todayISO();
-    const model = ctx.buildPlanExecution({
+    const model = buildPlanExecution({
       today,
       dailyPlans: state.dailyPlans,
       sessions: (state.studySessions || []).map((item: any) => ({
@@ -102,51 +144,45 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       activeExamTags: state.examBlueprint?.activeExamTags || [],
     });
 
-    const distribution = ctx.buildStudyDistribution
-      ? ctx.buildStudyDistribution({
-          today,
-          dailyPlans: state.dailyPlans,
-          sessions: (state.studySessions || []).map((item: any) => ({
-            ...item,
-            subjectId: ctx.entitySubjectId ? ctx.entitySubjectId(item) : item.subjectId,
-          })),
-          subjects: state.subjects,
-        })
-      : null;
+    const distribution = buildStudyDistribution({
+      today,
+      dailyPlans: state.dailyPlans,
+      sessions: (state.studySessions || []).map((item: any) => ({
+        ...item,
+        subjectId: ctx.entitySubjectId ? ctx.entitySubjectId(item) : item.subjectId,
+      })),
+      subjects: state.subjects,
+    });
 
     const alignment =
-      ctx.buildPlanImpactAlignment && distribution && ctx.examScopedTopics
-        ? ctx.buildPlanImpactAlignment({
+      distribution && ctx.examScopedTopics
+        ? buildPlanImpactAlignment({
             distribution,
             topics: ctx.examScopedTopics(),
             impactForTopic: (topic: any) =>
-              ctx.resolveValidatedExamImpact && ctx.buildTopicExamProfile
-                ? ctx.resolveValidatedExamImpact(
-                    ctx.buildTopicExamProfile({
-                      topic,
-                      subjectConfig: (state.examBlueprint?.subjects || []).find(
-                        (item: any) => item.subjectId === topic.subjectId
-                      ),
-                      activeExamTags: state.examBlueprint?.activeExamTags || [],
-                      exams: state.exams,
-                      examQuestions: state.examQuestions,
-                    })
-                  ).value
-                : 1,
+              resolveValidatedExamImpact(
+                buildTopicExamProfile({
+                  topic,
+                  subjectConfig: (state.examBlueprint?.subjects || []).find(
+                    (item: any) => item.subjectId === topic.subjectId
+                  ),
+                  activeExamTags: state.examBlueprint?.activeExamTags || [],
+                  exams: state.exams,
+                  examQuestions: state.examQuestions,
+                })
+              ).value,
           })
         : null;
 
-    const executionViewHtml = ctx.renderPlanExecutionView(model, {
+    const executionViewHtml = renderPlanExecutionView(model, {
       formatDate: ctx.formatDatePt,
     });
-    const distributionHtml =
-      distribution && ctx.renderStudyDistribution
-        ? ctx.renderStudyDistribution(distribution, { escapeHtml: ctx.escapeHtml })
-        : '';
-    const alignmentHtml =
-      alignment && ctx.renderPlanImpactAlignment
-        ? ctx.renderPlanImpactAlignment(alignment, { escapeHtml: ctx.escapeHtml })
-        : '';
+    const distributionHtml = distribution
+      ? renderStudyDistribution(distribution, { escapeHtml: ctx.escapeHtml })
+      : '';
+    const alignmentHtml = alignment
+      ? renderPlanImpactAlignment(alignment, { escapeHtml: ctx.escapeHtml })
+      : '';
 
     return h(PlanExecutionCard, {
       executionViewHtml,
@@ -180,11 +216,11 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       studyDays: number;
     }
   ): void {
-    if (!ctx.buildResultGoalsViewModel || !ctx.renderGoals) return;
+    if (!buildResultGoalsViewModel || !renderGoals) return;
 
     const state = resolveState();
     const m = state.metas;
-    const resultGoals = ctx.buildResultGoalsViewModel({
+    const resultGoals = buildResultGoalsViewModel({
       goals: m,
       achieved,
     });
@@ -196,13 +232,13 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       achieved.weeklyTopics > 0 ||
       achieved.monthlyTopics > 0;
 
-    const initialSuggestions = ctx.initialGoalSuggestions
-      ? ctx.initialGoalSuggestions(m, hasActivity)
+    const initialSuggestions = initialGoalSuggestions
+      ? initialGoalSuggestions(m, hasActivity)
       : null;
 
     const weeklyCapacityMinutes = ctx.weeklyStrategyCapacity ? ctx.weeklyStrategyCapacity() : 0;
 
-    container.innerHTML = ctx.renderGoals(resultGoals, {
+    container.innerHTML = renderGoals(resultGoals, {
       adherenceTarget: m?.aderenciaSemanal,
       escapeHtml: ctx.escapeHtml,
       initialSuggestions,
@@ -309,25 +345,35 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   }
 
   function renderSelectedPeriodComparison(
-    container: any,
-    presetEl: any,
+    container?: any,
+    presetEl?: any,
     startInput?: any,
     endInput?: any,
     startWrap?: any,
     endWrap?: any
   ): void {
-    if (!ctx.buildPeriodComparisonViewModel || !ctx.renderPeriodComparisonDetail) return;
+    if (!buildPeriodComparisonViewModel || !renderPeriodComparisonDetail) return;
+
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    const resolvedContainer = container || doc?.getElementById('periodComparisonResults');
+    const resolvedPreset = presetEl || doc?.getElementById('periodComparisonPreset');
+    if (!resolvedContainer || !resolvedPreset) return;
+
+    const resolvedStartInput = startInput !== undefined ? startInput : doc?.getElementById('periodComparisonStart');
+    const resolvedEndInput = endInput !== undefined ? endInput : doc?.getElementById('periodComparisonEnd');
+    const resolvedStartWrap = startWrap !== undefined ? startWrap : doc?.getElementById('periodComparisonStartWrap');
+    const resolvedEndWrap = endWrap !== undefined ? endWrap : doc?.getElementById('periodComparisonEndWrap');
 
     const state = resolveState();
-    const custom = presetEl.value === 'custom';
-    if (startWrap) startWrap.hidden = !custom;
-    if (endWrap) endWrap.hidden = !custom;
+    const custom = resolvedPreset.value === 'custom';
+    if (resolvedStartWrap) resolvedStartWrap.hidden = !custom;
+    if (resolvedEndWrap) resolvedEndWrap.hidden = !custom;
 
-    const start = startInput?.value || null;
-    const end = endInput?.value || null;
+    const start = resolvedStartInput?.value || null;
+    const end = resolvedEndInput?.value || null;
 
     if (custom && (!start || !end || start > end)) {
-      container.innerHTML =
+      resolvedContainer.innerHTML =
         '<p class="diagnosis-empty">Escolha um intervalo válido para comparar os períodos.</p>';
       return;
     }
@@ -339,18 +385,85 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
         : item.date,
     }));
 
-    const model = ctx.buildPeriodComparisonViewModel({
+    const model = buildPeriodComparisonViewModel({
       sessions: state.studySessions || [],
       questions: state.questoes || [],
       reviews,
       today: ctx.todayISO(),
-      preset: presetEl.value,
+      preset: resolvedPreset.value,
       start,
       end,
     });
 
-    container.innerHTML = ctx.renderPeriodComparisonDetail(model, {
+    resolvedContainer.innerHTML = renderPeriodComparisonDetail(model, {
       escapeHtml: ctx.escapeHtml,
+    });
+  }
+
+  function renderMetasSection(): void {
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    const container = doc?.getElementById('metasContainer');
+    if (container && ctx.contarTopicosConcluidosNoPeriodo && ctx.isSameWeek && ctx.isSameMonth && ctx.somarQuestoesNaSemana && ctx.contarSimuladosNaSemana && ctx.recentPerformance) {
+      const state = resolveState();
+      const hasAccuracyEvidence =
+        (state.questoes || []).some((item: any) => Number(item.resolved) > 0) ||
+        (state.simulados || []).some((item: any) => Number(item.total) > 0);
+      renderMetas(container, {
+        weeklyTopics: ctx.contarTopicosConcluidosNoPeriodo(ctx.isSameWeek),
+        monthlyTopics: ctx.contarTopicosConcluidosNoPeriodo(ctx.isSameMonth),
+        questions: ctx.somarQuestoesNaSemana(),
+        simulations: ctx.contarSimuladosNaSemana(),
+        accuracy: hasAccuracyEvidence ? ctx.recentPerformance().current!.accuracy : null,
+        studyDays: countStudyDaysThisWeek(state.studySessions, ctx.todayISO()),
+      });
+    }
+    renderSelectedPeriodComparison();
+  }
+
+  function renderPlanExecutionSection(): void {
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    const container = doc?.getElementById('planExecutionResults');
+    if (container) mountPlanExecution(container);
+  }
+
+  function renderWeeklyHoursGoalsSection(): void {
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    const container = doc?.getElementById('weeklyHoursGoals');
+    if (container) mountWeeklyAvailability(container);
+  }
+
+  function renderMetasPorDisciplinaSection(): void {
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    const container = doc?.getElementById('metasPorDisciplinaContainer');
+    if (!container) return;
+    const sel = doc?.getElementById('novaMetaDisciplinaSelect');
+    renderMetasPorDisciplina(container, sel);
+  }
+
+  function renderHistoricoMetasSection(): void {
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    const container = doc?.getElementById('historicoMetasContainer');
+    if (container && ctx.computeWeeklyHistory) {
+      renderHistoricoMetas(container, ctx.computeWeeklyHistory(8));
+    }
+  }
+
+  function bindEvents(): void {
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    if (!doc) return;
+    doc.getElementById('periodComparisonPreset')?.addEventListener('change', () =>
+      renderSelectedPeriodComparison()
+    );
+    doc.getElementById('periodComparisonStart')?.addEventListener('change', () =>
+      renderSelectedPeriodComparison()
+    );
+    doc.getElementById('periodComparisonEnd')?.addEventListener('change', () =>
+      renderSelectedPeriodComparison()
+    );
+    doc.getElementById('addMetaDisciplinaBtn')?.addEventListener('click', () => {
+      const subjectId = (doc.getElementById('novaMetaDisciplinaSelect') as HTMLSelectElement)?.value || '';
+      const rawMeta = (doc.getElementById('novaMetaDisciplinaValor') as HTMLInputElement)?.value || '';
+      ctx.addMetaDisciplina?.(subjectId, rawMeta);
     });
   }
 
@@ -413,6 +526,12 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     renderMetasPorDisciplina,
     renderHistoricoMetas,
     renderSelectedPeriodComparison,
+    renderMetasSection,
+    renderPlanExecutionSection,
+    renderWeeklyHoursGoalsSection,
+    renderMetasPorDisciplinaSection,
+    renderHistoricoMetasSection,
     renderRitmo,
+    bindEvents,
   };
 }

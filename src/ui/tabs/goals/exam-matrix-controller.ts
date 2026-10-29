@@ -33,6 +33,7 @@ export interface ExamMatrixControllerContext {
   captureReadinessBeforeStrategy: (reason: string) => void;
   invalidatePlanPreview: () => void;
   resetRecordListLimits: () => void;
+  updateExamBlueprint?: (field: string, value: any) => void;
   getProgressiveLists?: () => any;
   EXAM_TAGS: any;
   EXAM_SOURCES: any;
@@ -501,6 +502,12 @@ export function createExamMatrixController(ctx: ExamMatrixControllerContext) {
         closeExamClassificationReview();
       }
     });
+
+    ctx.document
+      .getElementById('examDateInput')
+      ?.addEventListener('change', function (this: HTMLInputElement) {
+        ctx.updateExamBlueprint?.('examDate', this.value);
+      });
   }
 
   return {

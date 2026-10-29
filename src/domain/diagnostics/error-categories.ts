@@ -68,3 +68,34 @@ export const DIAGNOSIS_STATUS_ICON: Record<string, string> = {
   Acompanhamento: '🟡',
   'Em dia': '🟢',
 };
+
+export function emptyErrorBreakdown(
+  categories: Record<string, unknown> = ERROR_CATEGORIES
+): Record<string, number> {
+  return Object.fromEntries(Object.keys(categories).map(key => [key, 0]));
+}
+
+export function normalizeErrorBreakdown(
+  question: Record<string, any>,
+  categories: Record<string, unknown> = ERROR_CATEGORIES
+): Record<string, number> {
+  const normalized = emptyErrorBreakdown(categories);
+  Object.keys(normalized).forEach(key => {
+    normalized[key] = Math.max(0, Math.floor(Number(question?.errorBreakdown?.[key]) || 0));
+  });
+  const realErrors = Math.max(
+    0,
+    (Number(question?.resolved) || 0) - (Number(question?.correct) || 0)
+  );
+  let excess = Object.values(normalized).reduce((sum, value) => sum + value, 0) - realErrors;
+  [...Object.keys(normalized)].reverse().forEach(key => {
+    if (excess <= 0) return;
+    const cut = Math.min(normalized[key], excess);
+    normalized[key] -= cut;
+    excess -= cut;
+  });
+  if (question && typeof question === 'object') {
+    question.errorBreakdown = normalized;
+  }
+  return normalized;
+}

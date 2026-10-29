@@ -223,7 +223,12 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
     });
   }
 
+  function bindEvents(): void {
+    ctx.document.getElementById('addSimuladoRowBtn')?.addEventListener('click', () => addSimuladoRow());
+  }
+
   return {
+    bindEvents,
     openBreakdownIds,
     simulationEditController,
     simuladoEffectiveCounts,

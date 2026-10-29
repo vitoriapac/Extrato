@@ -48,6 +48,7 @@ export interface SubjectsTabControllerContext {
   startTimer?: () => void;
   populateTimerContextControls?: () => void;
   openStudyTimerFocus?: () => void;
+  openExamImport?: () => void;
   activeTabName?: () => string;
   uid?: (prefix: string) => string;
   nowISO?: () => string;
@@ -637,7 +638,19 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     ctx.persistAndRender();
   }
 
+  function bindEvents(): void {
+    ctx.document.getElementById('addSubjectBtn')?.addEventListener('click', () => addSubject());
+    ctx.document.getElementById('loadDefaultSubjectsBtn')?.addEventListener('click', () =>
+      ctx.openExamImport?.()
+    );
+    ctx.document.getElementById('verticalizedSyllabusToggleBtn')?.addEventListener('click', () => {
+      setVerticalizedSyllabusActive(!isVerticalizedSyllabusActive());
+      renderSubjects();
+    });
+  }
+
   return {
+    bindEvents,
     isVerticalizedSyllabusActive,
     setVerticalizedSyllabusActive,
     renderVerticalizedSyllabus,

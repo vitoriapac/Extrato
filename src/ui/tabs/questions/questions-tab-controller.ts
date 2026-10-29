@@ -263,7 +263,16 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
     ctx.persistAndRender();
   }
 
+  function bindEvents(): void {
+    ctx.document.getElementById('addQuestaoRowBtn')?.addEventListener('click', () => addQuestaoRow());
+    ctx.document.getElementById('errorNotebookToggleBtn')?.addEventListener('click', () => {
+      ctx.errorNotebookController?.toggle();
+      renderQuestoes();
+    });
+  }
+
   return {
+    bindEvents,
     openQuestionErrorIds,
     questionEditController,
     questionCrudController,

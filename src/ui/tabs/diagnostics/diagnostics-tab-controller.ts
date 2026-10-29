@@ -1,3 +1,25 @@
+import { buildExecutiveSummary as defaultBuildExecutiveSummary } from '../../../application/build-executive-summary.js';
+import {
+  renderExecutiveSummary as defaultRenderExecutiveSummaryView,
+  renderIntelligentAlerts as defaultRenderIntelligentAlerts,
+} from '../../renderers/overview-renderer.js';
+import {
+  reconcileAlerts as defaultReconcileAlerts,
+  dismissAlert as defaultDismissAlert,
+} from '../../../application/alert-lifecycle.js';
+import { buildDiagnosisPageModel as defaultBuildDiagnosisPageModel } from '../../../application/diagnostics/build-diagnosis-page-model.js';
+import { renderDiagnosisCenter as defaultRenderDiagnosisCenterView } from '../../renderers/diagnosis-renderer.js';
+import { renderRecoveryReviewDebt as defaultRenderRecoveryReviewDebt } from '../../renderers/recovery-review-debt-renderer.js';
+import { analyzeFocusAndEnergy as defaultAnalyzeFocusAndEnergy } from '../../../domain/analytics/focus-energy-analytics.js';
+import { renderNextBestAction as defaultRenderNextBestAction } from '../../renderers/next-best-action-renderer.js';
+import { renderPreparationSignals as defaultRenderPreparationSignals } from '../../renderers/preparation-signals-renderer.js';
+import { buildDecisionCoherenceReport as defaultBuildDecisionCoherenceReport } from '../../../application/diagnostics/build-decision-coherence-report.js';
+import { renderDecisionCoherenceDebug as defaultRenderDecisionCoherenceDebug } from '../../renderers/decision-coherence-debug-renderer.js';
+import {
+  buildStudyAction as defaultBuildStudyAction,
+  recommendationActionLabel as defaultRecommendationActionLabel,
+} from '../../../application/recommendations/recommendation-action.js';
+
 export interface DiagnosticsTabControllerOptions {
   document: any;
   getState: () => any;
@@ -19,42 +41,66 @@ export interface DiagnosticsTabControllerOptions {
   examScopedTopics: () => Array<any>;
   examScopedSubjects: () => Array<any>;
   uniqueTopicsCompletedBetween: (start: string, end: string) => number;
-  buildExecutiveSummary: (opts: any) => any;
-  renderExecutiveSummaryView: (opts: any) => string;
-  reconcileAlerts: (alerts: any[], states: any, today: string) => any;
-  renderIntelligentAlerts: (opts: any) => { list: string; overview: string };
-  dismissAlert: (states: any, id: string, today: string, addDays: any, days: number) => any;
+  buildExecutiveSummary?: (opts: any) => any;
+  renderExecutiveSummaryView?: (opts: any) => string;
+  reconcileAlerts?: (alerts: any[], states: any, today: string) => any;
+  renderIntelligentAlerts?: (opts: any) => { list: string; overview: string };
+  dismissAlert?: (states: any, id: string, today: string, addDays: any, days: number) => any;
   refreshStudyRecommendationItems: () => { candidates: any[] };
   examEvidenceContext: () => any;
   getStudyPlanPreview: () => any;
   currentAchievementProjection: (target?: any, date?: any, candidates?: any) => { model: any };
-  buildDiagnosisPageModel: (opts: any) => any;
-  renderDiagnosisCenterView: (opts: any) => string;
-  renderRecoveryReviewDebt: (opts: any, viewOpts: any) => string;
-  analyzeFocusAndEnergy: (sessions: any[]) => any;
+  buildDiagnosisPageModel?: (opts: any) => any;
+  renderDiagnosisCenterView?: (opts: any) => string;
+  renderRecoveryReviewDebt?: (opts: any, viewOpts: any) => string;
+  analyzeFocusAndEnergy?: (sessions: any[]) => any;
   analysisContextBanner: (context: string) => string;
-  renderNextBestAction: (action: any, opts: any) => string;
+  renderNextBestAction?: (action: any, opts: any) => string;
   getDailyPriority: (action: any) => any;
-  renderPreparationSignals: (signals: any) => string;
-  buildDecisionCoherenceReport: (opts: any) => any;
-  renderDecisionCoherenceDebug: (report: any, opts: any) => string;
-  buildStudyAction: (recommendation: any, opts: any) => any;
-  recommendationActionLabel: (action: any) => string;
+  renderPreparationSignals?: (signals: any) => string;
+  buildDecisionCoherenceReport?: (opts: any) => any;
+  renderDecisionCoherenceDebug?: (report: any, opts: any) => string;
+  buildStudyAction?: (recommendation: any, opts: any) => any;
+  recommendationActionLabel?: (action: any) => string;
   getCurrentStudyRecommendations: () => any[];
-  setCurrentConsolidatedDiagnosis: (diag: any) => void;
+  setCurrentConsolidatedDiagnosis?: (diag: any) => void;
   latestStudyPlan: () => any;
   weeklyStrategyCapacity: () => number;
   locationSearch?: () => string;
 }
 
 export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOptions) {
+  let currentConsolidatedDiagnosis: any = null;
+  const reconcileAlerts = opts.reconcileAlerts || defaultReconcileAlerts;
+  const renderIntelligentAlerts = opts.renderIntelligentAlerts || defaultRenderIntelligentAlerts;
+  const dismissAlert = opts.dismissAlert || defaultDismissAlert;
+  const buildExecutiveSummary = opts.buildExecutiveSummary || defaultBuildExecutiveSummary;
+  const renderExecutiveSummaryView =
+    opts.renderExecutiveSummaryView || defaultRenderExecutiveSummaryView;
+  const buildDiagnosisPageModel = opts.buildDiagnosisPageModel || defaultBuildDiagnosisPageModel;
+  const renderDiagnosisCenterView =
+    opts.renderDiagnosisCenterView || defaultRenderDiagnosisCenterView;
+  const renderRecoveryReviewDebt =
+    opts.renderRecoveryReviewDebt || defaultRenderRecoveryReviewDebt;
+  const analyzeFocusAndEnergy = opts.analyzeFocusAndEnergy || defaultAnalyzeFocusAndEnergy;
+  const renderNextBestAction = opts.renderNextBestAction || defaultRenderNextBestAction;
+  const renderPreparationSignals =
+    opts.renderPreparationSignals || defaultRenderPreparationSignals;
+  const buildDecisionCoherenceReport =
+    opts.buildDecisionCoherenceReport || defaultBuildDecisionCoherenceReport;
+  const renderDecisionCoherenceDebug =
+    opts.renderDecisionCoherenceDebug || defaultRenderDecisionCoherenceDebug;
+  const buildStudyAction = opts.buildStudyAction || defaultBuildStudyAction;
+  const recommendationActionLabel =
+    opts.recommendationActionLabel || defaultRecommendationActionLabel;
+
   function renderAlertasInteligentes(): void {
     const container = opts.document.getElementById('alertasInteligentesList');
     const overview = opts.document.getElementById('overviewAttention');
     if (!container && !overview) return;
 
     const state = opts.getState();
-    const reconciliation = opts.reconcileAlerts(
+    const reconciliation = reconcileAlerts(
       opts.computeAlertasInteligentes(),
       state.alertStates,
       opts.todayISO()
@@ -67,7 +113,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
 
     const alertas = reconciliation.visible;
     const recommendations = opts.getCurrentStudyRecommendations();
-    const presentation = opts.renderIntelligentAlerts({
+    const presentation = renderIntelligentAlerts({
       alerts: alertas,
       additional: reconciliation.additional,
       currentAction: recommendations[0],
@@ -81,7 +127,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
 
   function dismissIntelligentAlert(id: string): void {
     const state = opts.getState();
-    state.alertStates = opts.dismissAlert(state.alertStates, id, opts.todayISO(), opts.addDays, 7);
+    state.alertStates = dismissAlert(state.alertStates, id, opts.todayISO(), opts.addDays, 7);
     opts.scheduleSave();
     renderAlertasInteligentes();
   }
@@ -114,7 +160,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       target: state.metas?.semanal ?? 0,
     };
 
-    const summary = opts.buildExecutiveSummary({
+    const summary = buildExecutiveSummary({
       readiness,
       daysToExam: state.examDate ? (opts.diasParaRevisao(state.examDate) ?? null) : null,
       pace,
@@ -124,7 +170,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       opportunityCount,
     });
 
-    container.innerHTML = opts.renderExecutiveSummaryView({
+    container.innerHTML = renderExecutiveSummaryView({
       summary,
       formatMinutes: opts.formatPlanMinutes,
       escapeHtml: opts.escapeHtml,
@@ -150,7 +196,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     const currentStudyRecommendations = opts.getCurrentStudyRecommendations();
 
     const { diagnosis, consolidated, preparationSignals, nextAction, debt } =
-      opts.buildDiagnosisPageModel({
+      buildDiagnosisPageModel({
         candidates,
         subjects: opts.examScopedSubjects(),
         scope: scoped,
@@ -166,27 +212,28 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
         projection,
       });
 
-    opts.setCurrentConsolidatedDiagnosis(consolidated);
+    currentConsolidatedDiagnosis = consolidated;
+    opts.setCurrentConsolidatedDiagnosis?.(consolidated);
 
-    const diagnosisHtml = opts.renderDiagnosisCenterView({
+    const diagnosisHtml = renderDiagnosisCenterView({
       model: diagnosis,
       studyActionForItem: (item: Record<string, any>) => {
         const recommendation = currentStudyRecommendations.find(
           candidate => candidate.subjectId === item.subjectId && candidate.topicId === item.topicId
         );
-        const action = opts.buildStudyAction(recommendation, { source: 'diagnosis' });
-        return action ? { ...action, label: opts.recommendationActionLabel(action) } : null;
+        const action = buildStudyAction(recommendation, { source: 'diagnosis' });
+        return action ? { ...action, label: recommendationActionLabel(action) } : null;
       },
       escapeHtml: opts.escapeHtml,
       escapeAttr: opts.escapeAttr,
     });
 
-    const secondaryHtml = opts.renderRecoveryReviewDebt(
+    const secondaryHtml = renderRecoveryReviewDebt(
       { recoveries: preparationSignals.rows.filter((item: any) => item.type === 'recovery'), debt },
       { escapeHtml: opts.escapeHtml }
     );
 
-    const energyAnalysis = opts.analyzeFocusAndEnergy(state.studySessions || []);
+    const energyAnalysis = analyzeFocusAndEnergy(state.studySessions || []);
     let energyAlertHtml = '';
     if (energyAnalysis.fatigueAlert) {
       energyAlertHtml = `<div class="banner banner--warning" style="margin-top: 1rem; border-left: 4px solid #f59e0b; padding: 0.75rem 1rem; background: var(--bg-surface-elevated, #fff); border-radius: 6px;">
@@ -196,7 +243,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
 
     container.innerHTML =
       opts.analysisContextBanner('hoje') +
-      opts.renderNextBestAction(nextAction, {
+      renderNextBestAction(nextAction, {
         escapeHtml: opts.escapeHtml,
         escapeAttr: opts.escapeAttr,
         dailyPriority: opts.getDailyPriority(nextAction),
@@ -205,12 +252,12 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       diagnosisHtml +
       `<details class="diagnosis-secondary"><summary>Recuperação e revisões · ${opts.pluralize(debt.count, 'vencida')}</summary>${secondaryHtml}</details>`;
 
-    container.innerHTML += `<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${opts.renderPreparationSignals(preparationSignals)}</details>`;
+    container.innerHTML += `<details class="diagnosis-method-details"><summary>Examinar sinais de preparação e critérios</summary>${renderPreparationSignals(preparationSignals)}</details>`;
 
     const search = opts.locationSearch ? opts.locationSearch() : '';
     if (search.includes('debug=decisions')) {
-      container.innerHTML += opts.renderDecisionCoherenceDebug(
-        opts.buildDecisionCoherenceReport({
+      container.innerHTML += renderDecisionCoherenceDebug(
+        buildDecisionCoherenceReport({
           trajectory: projection,
           nextBestAction: nextAction,
           examIntelligence: candidates,
@@ -226,5 +273,6 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     dismissIntelligentAlert,
     renderExecutiveSummary,
     renderDiagnosisCenter,
+    getConsolidatedDiagnosis: () => currentConsolidatedDiagnosis,
   };
 }

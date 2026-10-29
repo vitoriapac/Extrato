@@ -45,7 +45,7 @@ export interface StudyCandidateServiceDependencies {
   metaHoursToday: () => number;
   uniqueTopicsCompletedBetween: (startDate: string, endDate: string) => number;
   getRevisoesUnificadas: () => any[];
-  getStudyPlanCandidates: () => any[];
+  getStudyPlanCandidates?: () => any[];
   isRendering: () => boolean;
 }
 
@@ -224,6 +224,21 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
     return candidates;
   }
 
+  function studyPlanCandidates({ guidedDefaults = false }: { guidedDefaults?: boolean } = {}) {
+    return intelligenceCandidates()
+      .filter((item: any) => item.topicId)
+      .map((item: any) => {
+        let estimatedMinutes = item.remainingMinutes;
+        if (guidedDefaults && estimatedMinutes == null) {
+          const topic = getTopicById(item.topicId)?.topic;
+          estimatedMinutes =
+            topic?.difficulty === 'Difícil' ? 120 : topic?.difficulty === 'Fácil' ? 45 : 75;
+        }
+        return { ...item, completed: false, estimatedMinutes, remainingMinutes: estimatedMinutes };
+      });
+  }
+  const resolveStudyPlanCandidates = getStudyPlanCandidates || (() => studyPlanCandidates());
+
   function computeStudyPriorities() {
     return recommendStudy(intelligenceCandidates(), {
       availableMinutes: Math.round(metaHoursToday() * 60),
@@ -333,7 +348,7 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
       0
     );
     const plan = buildStudyPlan({
-      topics: getStudyPlanCandidates(),
+      topics: resolveStudyPlanCandidates(),
       weeklyAvailableMinutes,
       weeksUntilExam: days === null ? 0 : Math.max(0, days / 7),
     });
@@ -376,6 +391,7 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
     collectStudyCandidates,
     computeIntelligenceCandidates,
     intelligenceCandidates,
+    studyPlanCandidates,
     computeStudyPriorities,
     motivoPrioridade,
     computeRitmo,

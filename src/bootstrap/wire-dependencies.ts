@@ -3,6 +3,13 @@ import {
   repositoryReadLocalState,
   repositoryWriteLocalState,
 } from '../storage/repository.js';
+import {
+  DB_NAME,
+  DB_VERSION,
+  STORE_NAME,
+  STORAGE_KEY,
+  DEMO_STORAGE_KEY,
+} from '../state/schema.js';
 import { createRealStorageProvider } from '../storage/real-storage-provider.js';
 import { createDemoStorageProvider } from '../storage/demo-storage-provider.js';
 import { createAppContext } from '../application/create-app-context.js';
@@ -19,13 +26,30 @@ import { createGoalService } from '../application/goals/goal-service.js';
 import { createSubjectService } from '../application/subjects/subject-service.js';
 import { createTopicStrategyController } from '../features/topic-strategy/topic-strategy-controller.js';
 import { createTopicHistoryService } from '../application/history/topic-history-service.js';
+import { generateDemoData as defaultGenerateDemoData } from '../demo/demo-generator.js';
+import { applyAdaptiveReviewRating as defaultApplyAdaptiveReviewRating } from '../domain/reviews.js';
+import { buildStudyPlan as defaultBuildStudyPlan } from '../application/build-study-plan.js';
+import {
+  buildDailyPlanProposal as defaultBuildDailyPlanProposal,
+  applyDailyPlanProposal as defaultApplyDailyPlanProposal,
+  undoDailyPlanGeneration as defaultUndoDailyPlanGeneration,
+} from '../application/planning/distribute-study-plan.js';
+import {
+  buildReplanProposal as defaultBuildReplanProposal,
+  applyReplan as defaultApplyReplan,
+  undoReplan as defaultUndoReplan,
+} from '../application/replan-study.js';
+import { normalizeErrorBreakdown as defaultNormalizeErrorBreakdown } from '../domain/diagnostics/error-categories.js';
+import { completeRecommendationFeedback as defaultCompleteRecommendationFeedback } from '../application/recommendations/recommendation-feedback.js';
+import { parseLocalDate as defaultParseLocalDate } from '../core/date-utils.js';
+import { normalizeTopicStrategy as defaultNormalizeTopicStrategy } from '../state/strategic.js';
 
 export interface WireAppDependenciesOptions {
-  dbName: string;
-  dbVersion: number;
-  storeName: string;
-  storageKey: string;
-  demoStorageKey: string;
+  dbName?: string;
+  dbVersion?: number;
+  storeName?: string;
+  storageKey?: string;
+  demoStorageKey?: string;
   isDemoMode: boolean;
   getState: () => Record<string, any>;
   clock: {
@@ -41,7 +65,7 @@ export interface WireAppDependenciesOptions {
   generateDemoData?: (options: { today: string }) => Record<string, any>;
   getTopicById: (topicId: string) => { topic?: any; subject?: any } | null;
   evidenceScopeForTopic: (topicId: string) => any;
-  applyAdaptiveReviewRating: (current: any, rating: any, options: Record<string, any>) => any;
+  applyAdaptiveReviewRating?: (current: any, rating: any, options: Record<string, any>) => any;
   addHistoryEvent: (
     type: string,
     subjectId: any,
@@ -50,24 +74,24 @@ export interface WireAppDependenciesOptions {
   ) => any;
   entitySubjectId: (entity: any) => string | null;
   refreshTopicReviewStats: (topicId: string) => void;
-  buildStudyPlan: (options: any) => any;
-  buildDailyPlanProposal: (options: any) => any;
-  applyDailyPlanProposal: (proposal: any) => any;
-  undoDailyPlanGeneration: (options: any) => any;
-  buildReplanProposal: (options: any) => any;
-  applyReplan: (proposal: any) => any;
-  undoReplan: (options: any) => any;
-  normalizeErrorBreakdown: (item: any) => any;
-  completeRecommendationFeedback: (
+  buildStudyPlan?: (options: any) => any;
+  buildDailyPlanProposal?: (options: any) => any;
+  applyDailyPlanProposal?: (proposal: any) => any;
+  undoDailyPlanGeneration?: (options: any) => any;
+  buildReplanProposal?: (options: any) => any;
+  applyReplan?: (proposal: any) => any;
+  undoReplan?: (options: any) => any;
+  normalizeErrorBreakdown?: (item: any) => any;
+  completeRecommendationFeedback?: (
     feedbackList: any[],
     recommendationId: string,
     options?: any
   ) => any;
   measureRecommendationResults: (options: any) => any;
   currentStudyRecommendations: () => any[];
-  parseLocalDate: (dateStr: string) => Date | null;
+  parseLocalDate?: (dateStr: string) => Date | null;
   allTopics: () => any[];
-  normalizeTopicStrategy: (topic: any) => any;
+  normalizeTopicStrategy?: (topic: any) => any;
   captureReadinessBeforeStrategy: (reason: string) => void;
   invalidatePlanPreview: () => void;
   persistAndRender: () => void;
@@ -78,11 +102,11 @@ export interface WireAppDependenciesOptions {
 
 export function wireAppDependencies(options: WireAppDependenciesOptions) {
   const {
-    dbName,
-    dbVersion,
-    storeName,
-    storageKey,
-    demoStorageKey,
+    dbName = DB_NAME,
+    dbVersion = DB_VERSION,
+    storeName = STORE_NAME,
+    storageKey = STORAGE_KEY,
+    demoStorageKey = DEMO_STORAGE_KEY,
     isDemoMode,
     getState,
     clock,
@@ -97,27 +121,27 @@ export function wireAppDependencies(options: WireAppDependenciesOptions) {
     sessionStorage: demoSessionStorage = typeof sessionStorage !== 'undefined'
       ? sessionStorage
       : undefined,
-    generateDemoData,
+    generateDemoData = defaultGenerateDemoData,
     getTopicById,
     evidenceScopeForTopic,
-    applyAdaptiveReviewRating,
+    applyAdaptiveReviewRating = defaultApplyAdaptiveReviewRating,
     addHistoryEvent,
     entitySubjectId,
     refreshTopicReviewStats,
-    buildStudyPlan,
-    buildDailyPlanProposal,
-    applyDailyPlanProposal,
-    undoDailyPlanGeneration,
-    buildReplanProposal,
-    applyReplan,
-    undoReplan,
-    normalizeErrorBreakdown,
-    completeRecommendationFeedback,
+    buildStudyPlan = defaultBuildStudyPlan,
+    buildDailyPlanProposal = defaultBuildDailyPlanProposal,
+    applyDailyPlanProposal = defaultApplyDailyPlanProposal,
+    undoDailyPlanGeneration = defaultUndoDailyPlanGeneration,
+    buildReplanProposal = defaultBuildReplanProposal,
+    applyReplan = defaultApplyReplan,
+    undoReplan = defaultUndoReplan,
+    normalizeErrorBreakdown = defaultNormalizeErrorBreakdown,
+    completeRecommendationFeedback = defaultCompleteRecommendationFeedback,
     measureRecommendationResults,
     currentStudyRecommendations,
-    parseLocalDate,
+    parseLocalDate = defaultParseLocalDate,
     allTopics,
-    normalizeTopicStrategy,
+    normalizeTopicStrategy = defaultNormalizeTopicStrategy,
     captureReadinessBeforeStrategy,
     invalidatePlanPreview,
     persistAndRender,
