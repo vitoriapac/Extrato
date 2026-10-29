@@ -15,7 +15,7 @@ export function ErrorNotebookDueNotice({ dueCount, onOpen }: ErrorNotebookDueNot
   const label = dueCount === 1 ? '1 flashcard para revisar' : `${dueCount} flashcards para revisar`;
   return (
     <div
-      class="error-notebook-due flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border-default bg-surface-card px-3 py-2 text-xs"
+      class="error-notebook-due flex flex-wrap items-center justify-between gap-2 rounded-default border border-border-default bg-surface-card px-3 py-2 text-xs"
       role="status"
       data-testid="error-notebook-due"
     >

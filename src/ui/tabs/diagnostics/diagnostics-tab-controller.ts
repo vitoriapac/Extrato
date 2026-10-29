@@ -236,8 +236,8 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     const energyAnalysis = analyzeFocusAndEnergy(state.studySessions || []);
     let energyAlertHtml = '';
     if (energyAnalysis.fatigueAlert) {
-      energyAlertHtml = `<div class="banner banner--warning" style="margin-top: 1rem; border-left: 4px solid #f59e0b; padding: 0.75rem 1rem; background: var(--bg-surface-elevated, #fff); border-radius: 6px;">
-        <strong>⚠️ Alerta Cronobiológico:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}
+      energyAlertHtml = `<div class="alerta-item alerta-media mt-4">
+        <span class="alerta-icon">⚠️</span><span><strong>Alerta Cronobiológico:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}</span>
       </div>`;
     }
 

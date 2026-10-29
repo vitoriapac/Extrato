@@ -56,7 +56,7 @@ export function WhatIfSimulatorModal({
         </p>
 
         {/* Controles de Simulação */}
-        <div class="space-y-4 rounded-lg bg-surface-subtle p-4 border border-border-subtle">
+        <div class="space-y-4 rounded-default bg-surface-subtle p-4 border border-border-subtle">
           {/* Ajuste de Minutos Diários */}
           <div>
             <label class="block font-medium text-primary mb-2">
@@ -133,7 +133,7 @@ export function WhatIfSimulatorModal({
         {/* Quadro Comparativo: Atual vs. Simulado */}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           {/* Card Prontidão */}
-          <div class="rounded-lg border border-border-default bg-surface-card p-3 shadow-xs">
+          <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
             <span class="text-xs text-muted block mb-1">Prontidão Geral</span>
             <div class="text-xl font-bold text-primary">{simulated.readinessScore}%</div>
             <div class="text-xs text-secondary mt-1">Atual: {baseline.readinessScore}%</div>
@@ -150,7 +150,7 @@ export function WhatIfSimulatorModal({
           </div>
 
           {/* Card Carga Semanal */}
-          <div class="rounded-lg border border-border-default bg-surface-card p-3 shadow-xs">
+          <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
             <span class="text-xs text-muted block mb-1">Carga Semanal</span>
             <div class="text-xl font-bold text-primary">{simulated.weeklyStudyHours}h</div>
             <div class="text-xs text-secondary mt-1">Atual: {baseline.weeklyStudyHours}h</div>
@@ -167,7 +167,7 @@ export function WhatIfSimulatorModal({
           </div>
 
           {/* Card Cobertura do Edital */}
-          <div class="rounded-lg border border-border-default bg-surface-card p-3 shadow-xs">
+          <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
             <span class="text-xs text-muted block mb-1">Cobertura do Edital</span>
             <div class="text-xl font-bold text-primary">{simulated.coveragePercent}%</div>
             <div class="text-xs text-secondary mt-1">Atual: {baseline.coveragePercent}%</div>
@@ -184,7 +184,7 @@ export function WhatIfSimulatorModal({
           </div>
 
           {/* Card Dias até a Meta */}
-          <div class="rounded-lg border border-border-default bg-surface-card p-3 shadow-xs">
+          <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
             <span class="text-xs text-muted block mb-1">Prazo para a Meta</span>
             <div class="text-xl font-bold text-primary">
               {simulated.estimatedDaysToTarget != null
@@ -206,7 +206,7 @@ export function WhatIfSimulatorModal({
 
         {/* Lista de Insights da Simulação */}
         {insights.length > 0 && (
-          <div class="rounded-lg bg-navy/5 dark:bg-navy/20 p-4 border border-navy/10 dark:border-navy/30">
+          <div class="rounded-default bg-navy/5 dark:bg-navy/20 p-4 border border-navy/10 dark:border-navy/30">
             <h4 class="font-semibold text-primary mb-2 flex items-center gap-1.5">
               <span>💡</span> Conclusões da Simulação:
             </h4>
