@@ -6,9 +6,9 @@ Este plano detalha as especificações técnicas, os contratos de domínio, as i
 
 ## 1. Contexto e Objetivos
 
-Com as 4 Fases Master do plano de evolução, o fechamento de melhorias pós-Fase 4, a Central de Ajuda 2.0 (com micro-simuladores didáticos e code-splitting), a Auditoria de UX/UI & Acessibilidade e a conclusão das 5 Fases do Plano Diretor de Modularização do `app.ts` consolidados em [Planos Concluídos](PLANOS-CONCLUIDOS.md), o StudyTrack possui sua base metodológica, algoritmos de repetição espaçada (SM-2 adaptado), acessibilidade essencial WCAG AA, documentação interativa e estabilidade de testes (1070 unitários em ~35s) plenamente homologados.
+Com as 4 Fases Master do plano de evolução, o fechamento de melhorias pós-Fase 4, a Central de Ajuda 2.0 (com micro-simuladores didáticos e code-splitting), a Auditoria de UX/UI & Acessibilidade e a conclusão integral das 10 Fases do Plano Diretor de Modularização do `app.ts` (reduzido de 10.921 para **146 linhas**, -98,7%) consolidados em [Planos Concluídos](PLANOS-CONCLUIDOS.md), o StudyTrack possui sua base metodológica, algoritmos de repetição espaçada (SM-2 adaptado), acessibilidade essencial WCAG AA, documentação interativa e estabilidade de testes (1.154 unitários em ~43s) plenamente homologados.
 
-O objetivo deste plano é **transformar dados brutos em decisões de alto retorno pedagógico**, enriquecer o ecossistema do Caderno de Erros, dar continuidade ao fatiamento de [`src/app.ts`](../src/app.ts) e habilitar engajamento *local-first* sem servidores externos.
+O objetivo deste plano é **transformar dados brutos em decisões de alto retorno pedagógico**, enriquecer o ecossistema do Caderno de Erros, validar performance de longo prazo (1 a 3 anos de histórico) e habilitar engajamento *local-first* sem servidores externos.
 
 ---
 
@@ -129,19 +129,17 @@ flowchart TD
 
 ---
 
-### Frente 3: Engenharia, Modularização e Descentralização de `app.ts`
+### Frente 3: Engenharia, Modularização de `app.ts` (Concluída ✅) e Testes de Estresse
 
-Seguindo a diretriz inegociável de **Zero Novas Funções no `src/app.ts`** estabelecida no [AGENTS.md](../AGENTS.md), esta frente atua proativamente na **redução contínua do arquivo raiz**, extraindo controladores coesos:
+Seguindo a diretriz inegociável de **Zero Novas Funções no `src/app.ts`** estabelecida no [AGENTS.md](../AGENTS.md), o desacoplamento do arquivo raiz foi **100% concluído** (reduzido de 10.921 para **146 linhas** ao longo das 10 Fases documentadas em [PLANO-MODULARIZACAO-APP.md](PLANO-MODULARIZACAO-APP.md)):
 
-#### 3.1. Extração de `src/ui/controllers/onboarding-modal-controller.ts`
-- **Responsabilidade:** Isolar o ciclo de vida do assistente inicial (abertura, avanço de etapas, atalhos de data, presets de disponibilidade, nivelamento em lote e criação do plano).
-- **Redução estimada:** ~350 linhas extraídas de `src/app.ts`.
+#### 3.1. Extração de `src/features/onboarding/onboarding-modal-controller.ts` — CONCLUÍDA ✅
+- **Responsabilidade:** Isolou o ciclo de vida do assistente inicial (abertura, avanço de etapas, atalhos de data, presets de disponibilidade, nivelamento em lote e criação do plano).
 
-#### 3.2. Extração de `src/ui/controllers/timer-ui-controller.ts`
-- **Responsabilidade:** Centralizar os seletores DOM, botões (iniciar, pausar, zerar, finalizar, modo foco), formatação do display e anúncios `aria-live`.
-- **Redução estimada:** ~400 linhas extraídas de `src/app.ts`.
+#### 3.2. Extração de `src/ui/controllers/timer-ui-controller.ts` e `src/ui/tabs/today/study-timer-runtime.ts` — CONCLUÍDA ✅
+- **Responsabilidade:** Centralizou os seletores DOM, botões (iniciar, pausar, zerar, finalizar, modo foco), restauração pós-reload, integração PiP, formatação do display e anúncios `aria-live`.
 
-#### 3.3. Testes de Estresse com Históricos Longos (1 a 3 anos)
+#### 3.3. Testes de Estresse com Históricos Longos (1 a 3 anos) — PRÓXIMO PASSO
 - Criação de gerador de carga sintética em `tests/fixtures/long-history-generator.js` (5.000+ sessões, 15.000+ questões).
 - Medição objetiva de:
   - Tempo de inicialização (`DOMContentLoaded` até o primeiro render).
