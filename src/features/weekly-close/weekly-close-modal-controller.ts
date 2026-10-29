@@ -41,6 +41,7 @@ import { renderPhaseComparison } from '../../ui/renderers/phase-comparison-rende
 import { buildProjectionCloseContext } from '../../application/projection/index.js';
 import { renderProjectionCloseContext } from '../../ui/renderers/projection-close-context-renderer.js';
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
+import { scrollBehavior } from '../../ui/accessibility.js';
 
 export interface WeeklyCloseModalControllerDeps {
   document?: any;
@@ -395,7 +396,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     if (doc) {
       doc.getElementById('metasCloseSection')?.scrollIntoView({
         block: 'start',
-        behavior: 'smooth',
+        behavior: scrollBehavior(),
       });
     }
   }

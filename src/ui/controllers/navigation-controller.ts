@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../accessibility.js';
 // Public URL names for tabs whose internal id predates their label; the old hash still works on load.
 export const TAB_HASHES: Readonly<Record<string, string>> = Object.freeze({
   metas: 'planejamento',
@@ -71,7 +72,7 @@ export function createNavigationController({
       .forEach((item: any) => item.classList.toggle('active', item === panel));
     syncMore(tabName);
     if (document.body?.dataset) document.body.dataset.activeTab = tabName;
-    button.scrollIntoView?.({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+    button.scrollIntoView?.({ block: 'nearest', inline: 'nearest', behavior: scrollBehavior() });
     document.dispatchEvent(new window.Event('studytrack:navigate'));
     render(tabName);
     if (updateHash) window.history.replaceState(null, '', `#${TAB_HASHES[tabName] || tabName}`);

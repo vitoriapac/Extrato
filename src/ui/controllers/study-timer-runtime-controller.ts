@@ -24,6 +24,7 @@ import {
   hasActiveTimer,
   renderActiveStudyTimerNoticeHtml,
 } from './timer-controller.js';
+import { scrollBehavior } from '../accessibility.js';
 
 export interface StudyTimerRuntimeControllerOptions {
   document: Document;
@@ -441,7 +442,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     else {
       document
         .querySelector('#panel-dashboard .timer-block')
-        ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
       requestAnimationFrame(() => document.getElementById('timerPauseBtn')?.focus());
     }
   }
@@ -520,7 +521,7 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
     }
     result.hidden = false;
     activateTab('dashboard');
-    result.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    result.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
     result.focus({ preventScroll: true });
   }
 

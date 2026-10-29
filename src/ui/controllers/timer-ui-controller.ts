@@ -11,6 +11,7 @@ import {
   SESSION_BOOKMARK_FIELDS,
 } from '../../application/sessions/timer-coordinator.js';
 import { createKeyboardShortcutsController } from '../events/keyboard-shortcuts.js';
+import { scrollBehavior } from '../accessibility.js';
 
 export interface TimerUiControllerOptions {
   document: any;
@@ -70,7 +71,7 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
     if (active) {
       document
         .querySelector?.('#panel-dashboard .timer-block')
-        ?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+        ?.scrollIntoView?.({ block: 'center', behavior: scrollBehavior() });
       rAF(() =>
         document
           .getElementById(isTimerRunning() ? 'timerPauseBtn' : 'timerStartBtn')
