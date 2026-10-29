@@ -4,6 +4,7 @@ import {
   createSpecialActionResolver,
 } from '../events/delegated-actions.js';
 import { createDelegatedEventsController } from '../controllers/delegated-events-controller.js';
+import { scrollBehavior } from '../accessibility.js';
 
 export interface DelegatedActionsRegistryDeps {
   document: Document | any;
@@ -211,7 +212,7 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     showAllUpcoming: (...args: any[]) => c.dashboard?.showAllUpcoming?.(...args),
     openNextSessionAction: () => {
       deps.activateTab('dashboard');
-      deps.document?.getElementById('overviewNextAction')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      deps.document?.getElementById('overviewNextAction')?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
     },
 
     // Diagnostics & Approval

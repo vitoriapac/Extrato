@@ -5,6 +5,8 @@
  * com grandes lacunas recuperáveis antes do teto de 85% de domínio.
  */
 
+import { formatDecimal } from '../../core/format-number.js';
+
 export interface SubjectOpportunityInput {
   subjectId: string;
   subjectName: string;
@@ -82,13 +84,13 @@ export function calculateSubjectOpportunity(input: SubjectOpportunityInput): Opp
         : 'Baixo peso relativo no concurso com retorno marginal insignificante.';
   } else if (pointsPerHourRatio >= 0.35) {
     tier = 'top_priority';
-    rationale = `Alto retorno pedagógico: potencial de recuperar +${potentialScoreGain.toFixed(1)} pontos com ${effortHours}h de estudo focado (${pointsPerHourRatio.toFixed(2)} pts/h).`;
+    rationale = `Alto retorno pedagógico: potencial de recuperar +${formatDecimal(potentialScoreGain)} pontos com ${formatDecimal(effortHours)}h de estudo focado (${formatDecimal(pointsPerHourRatio, 2)} pts/h).`;
   } else if (pointsPerHourRatio < 0.12) {
     tier = 'marginal';
-    rationale = `Retorno marginal baixo (${pointsPerHourRatio.toFixed(2)} pts/h) devido ao peso modesto ou esforço elevado.`;
+    rationale = `Retorno marginal baixo (${formatDecimal(pointsPerHourRatio, 2)} pts/h) devido ao peso modesto ou esforço elevado.`;
   } else {
     tier = 'secondary';
-    rationale = `Retorno intermediário (+${potentialScoreGain.toFixed(1)} pontos recuperáveis). Alinhar com o cronograma regular.`;
+    rationale = `Retorno intermediário (+${formatDecimal(potentialScoreGain)} pontos recuperáveis). Alinhar com o cronograma regular.`;
   }
 
   return {

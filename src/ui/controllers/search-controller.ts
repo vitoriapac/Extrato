@@ -1,5 +1,6 @@
 import { renderGlobalSearchPanel } from '../renderers/global-search-renderer.js';
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
+import { scrollBehavior } from '../accessibility.js';
 
 export interface SearchCommand {
   label: string;
@@ -188,7 +189,7 @@ export function createSearchController(options: SearchControllerOptions) {
       activateTab('dashboard');
       document
         .getElementById('diagnosisCenter')
-        ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
     } else if (action === 'recommendation') {
       const recommendations = options.getRecommendations ? options.getRecommendations() : [];
       const recommendation = recommendations[0];

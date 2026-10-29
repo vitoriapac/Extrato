@@ -66,7 +66,7 @@ export function renderCalendarMonth({
   cursor.setDate(cursor.getDate() - cursor.getDay());
   const title = month.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   let html =
-    '<div class="month-grid-wrap"><div class="month-grid">' +
+    `<div class="month-grid-wrap" tabindex="0" role="region" aria-label="Calendário de ${title}"><div class="month-grid">` +
     ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
       .map(day => `<div class="month-header">${day}</div>`)
       .join('');

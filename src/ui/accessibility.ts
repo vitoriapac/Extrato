@@ -1,3 +1,8 @@
+// scrollIntoView ignora o CSS; quem pede menos movimento salta direto ao alvo.
+export function scrollBehavior(): ScrollBehavior {
+  return globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
 export function labelDynamicControls(root = document) {
   root.querySelectorAll('input:not([type="hidden"]),select,textarea').forEach(control => {
     const hasLabel =

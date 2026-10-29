@@ -47,7 +47,7 @@ export function FirstStepsMission({
     <Card
       as="section"
       variant="insight"
-      className="first-steps-mission mb-4 border-l-4 border-l-navy"
+      className="first-steps-mission mb-4"
       id="firstStepsMissionCard"
       aria-labelledby="firstStepsMissionTitle"
     >

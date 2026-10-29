@@ -184,7 +184,7 @@ export function ErrorNotebookView({
         </div>
 
         <div class="flex items-center gap-2">
-          <div class="inline-flex rounded-md shadow-xs" role="group">
+          <div class="inline-flex rounded-default shadow-xs" role="group">
             <button
               type="button"
               class={`px-3 py-1.5 text-xs font-semibold rounded-l-md border border-border-default ${
@@ -231,7 +231,7 @@ export function ErrorNotebookView({
       {/* Sugestões: registros de questões com erros ainda sem flashcard */}
       {questionDrafts.length > 0 && (
         <section
-          class="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs space-y-2"
+          class="rounded-default border border-amber/30 bg-amber/5 p-3 text-xs space-y-2"
           aria-label="Erros registrados sem flashcard"
           data-testid="error-notebook-drafts"
         >
@@ -263,27 +263,27 @@ export function ErrorNotebookView({
 
       {/* Resumo de Métricas do Deck */}
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div class="p-3 rounded-lg border border-border-default bg-surface-card">
+        <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Revisões Hoje</span>
-          <span class="text-lg font-bold text-amber-500 font-display mt-0.5 block">
+          <span class="text-lg font-bold text-amber font-display mt-0.5 block">
             {stats.dueCount} cards
           </span>
         </div>
-        <div class="p-3 rounded-lg border border-border-default bg-surface-card">
+        <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Novos / Pendentes</span>
-          <span class="text-lg font-bold text-sky-500 font-display mt-0.5 block">
+          <span class="text-lg font-bold text-blue font-display mt-0.5 block">
             {stats.pendingCount}
           </span>
         </div>
-        <div class="p-3 rounded-lg border border-border-default bg-surface-card">
+        <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Em Fixação</span>
           <span class="text-lg font-bold text-primary font-display mt-0.5 block">
             {stats.reviewingCount}
           </span>
         </div>
-        <div class="p-3 rounded-lg border border-border-default bg-surface-card">
+        <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Dominados</span>
-          <span class="text-lg font-bold text-emerald-500 font-display mt-0.5 block">
+          <span class="text-lg font-bold text-green font-display mt-0.5 block">
             {stats.masteredCount}
           </span>
         </div>
@@ -293,7 +293,7 @@ export function ErrorNotebookView({
       {viewMode === 'deck' && (
         <div class="space-y-4">
           {dueCards.length === 0 ? (
-            <div class="text-center py-12 px-4 rounded-xl border border-dashed border-border-default bg-surface-card">
+            <div class="text-center py-12 px-4 rounded-default border border-dashed border-border-default bg-surface-card">
               <span class="text-4xl block mb-2">🎉</span>
               <h3 class="text-base font-semibold text-primary">Tudo revisado por hoje!</h3>
               <p class="text-xs text-secondary max-w-md mx-auto mt-1">
@@ -321,7 +321,7 @@ export function ErrorNotebookView({
               </div>
 
               {/* CARD PRINCIPAL */}
-              <div class="rounded-xl border border-border-default bg-surface-card shadow-sm overflow-hidden">
+              <div class="rounded-default border border-border-default bg-surface-card shadow-sm overflow-hidden">
                 {/* Frente: Enunciado / Pergunta */}
                 <div class="p-6 space-y-3">
                   <div class="flex items-center justify-between">
@@ -344,16 +344,16 @@ export function ErrorNotebookView({
                 {isRevealed ? (
                   <div class="border-t border-border-default p-6 space-y-4 bg-surface-subtle">
                     {activeCard.bancaTrap && (
-                      <div class="rounded-lg p-3 bg-amber-500/10 border border-amber-500/20 text-xs">
-                        <span class="font-bold text-amber-600 block mb-1">
+                      <div class="rounded-default p-3 bg-amber/10 border border-amber/20 text-xs">
+                        <span class="font-bold text-amber block mb-1">
                           ⚠️ Pegadinha da Banca / Armadilha:
                         </span>
                         <p class="text-primary leading-relaxed">{activeCard.bancaTrap}</p>
                       </div>
                     )}
 
-                    <div class="rounded-lg p-3 bg-emerald-500/10 border border-emerald-500/20 text-xs">
-                      <span class="font-bold text-emerald-600 block mb-1">
+                    <div class="rounded-default p-3 bg-green/10 border border-green/20 text-xs">
+                      <span class="font-bold text-green block mb-1">
                         ✅ Conceito Correto / Fundamento:
                       </span>
                       <p class="text-primary leading-relaxed whitespace-pre-wrap">
@@ -369,7 +369,7 @@ export function ErrorNotebookView({
                       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-lg border border-red-500/30 bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-colors"
+                          class="px-3 py-2 text-xs font-medium rounded-default border border-red/30 bg-red/10 text-red hover:bg-red/20 transition-colors"
                           onClick={() => handleAnswerRating('again')}
                         >
                           ❌ Errei
@@ -377,7 +377,7 @@ export function ErrorNotebookView({
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 transition-colors"
+                          class="px-3 py-2 text-xs font-medium rounded-default border border-amber/30 bg-amber/10 text-amber hover:bg-amber/20 transition-colors"
                           onClick={() => handleAnswerRating('hard')}
                         >
                           ⚠️ Difícil
@@ -385,7 +385,7 @@ export function ErrorNotebookView({
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition-colors"
+                          class="px-3 py-2 text-xs font-medium rounded-default border border-blue/30 bg-blue/10 text-blue hover:bg-blue/20 transition-colors"
                           onClick={() => handleAnswerRating('good')}
                         >
                           👍 Bom
@@ -393,7 +393,7 @@ export function ErrorNotebookView({
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-colors"
+                          class="px-3 py-2 text-xs font-medium rounded-default border border-green/30 bg-green/10 text-green hover:bg-green/20 transition-colors"
                           onClick={() => handleAnswerRating('easy')}
                         >
                           ⭐ Fácil
@@ -458,7 +458,7 @@ export function ErrorNotebookView({
           </div>
 
           {catalogFiltered.length === 0 ? (
-            <div class="text-center py-8 border border-dashed border-border-default rounded-lg text-secondary text-xs">
+            <div class="text-center py-8 border border-dashed border-border-default rounded-default text-secondary text-xs">
               Nenhum flashcard encontrado com os filtros selecionados.
             </div>
           ) : (
@@ -466,7 +466,7 @@ export function ErrorNotebookView({
               {catalogFiltered.map(card => (
                 <div
                   key={card.id}
-                  class="p-4 rounded-lg border border-border-default bg-surface-card space-y-2 relative group text-xs"
+                  class="p-4 rounded-default border border-border-default bg-surface-card space-y-2 relative group text-xs"
                 >
                   <div class="flex justify-between items-start gap-2">
                     <span class="font-semibold text-primary">
@@ -477,10 +477,10 @@ export function ErrorNotebookView({
                       <span
                         class={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                           card.status === 'mastered'
-                            ? 'bg-emerald-500/20 text-emerald-600'
+                            ? 'bg-green/20 text-green'
                             : card.status === 'pending'
-                              ? 'bg-sky-500/20 text-sky-600'
-                              : 'bg-amber-500/20 text-amber-600'
+                              ? 'bg-blue/20 text-blue'
+                              : 'bg-amber/20 text-amber'
                         }`}
                       >
                         {card.status === 'mastered'
@@ -492,7 +492,7 @@ export function ErrorNotebookView({
                       {onDeleteFlashcard && (
                         <button
                           type="button"
-                          class="text-muted hover:text-red-500 p-1"
+                          class="text-muted hover:text-red p-1"
                           onClick={() => onDeleteFlashcard(card.id)}
                           aria-label="Excluir flashcard"
                         >
@@ -505,12 +505,12 @@ export function ErrorNotebookView({
                   <p class="text-primary font-medium">{card.statementSummary}</p>
 
                   {card.bancaTrap && (
-                    <div class="p-2 rounded bg-amber-500/10 text-amber-700 text-[11px]">
+                    <div class="p-2 rounded bg-amber/10 text-amber text-[11px]">
                       <strong>Pegadinha:</strong> {card.bancaTrap}
                     </div>
                   )}
 
-                  <div class="p-2 rounded bg-emerald-500/10 text-emerald-700 text-[11px]">
+                  <div class="p-2 rounded bg-green/10 text-green text-[11px]">
                     <strong>Fundamento:</strong> {card.correctConcept}
                   </div>
 
@@ -589,11 +589,11 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label class="block font-medium text-amber-600 mb-1">
+            <label class="block font-medium text-amber mb-1">
               Pegadinha da Banca / Distrator (Opcional):
             </label>
             <textarea
-              class="w-full h-16 p-2.5 rounded border border-amber-500/30 bg-amber-500/5 text-primary text-xs focus:ring-amber-500 focus:border-amber-500"
+              class="w-full h-16 p-2.5 rounded border border-amber/30 bg-amber/5 text-primary text-xs focus:ring-amber focus:border-amber"
               placeholder="Ex.: Confundir reforma de edifício (até 50%) com compras comuns de bens e serviços (limite de 25%)."
               value={newBancaTrap}
               onInput={e => setNewBancaTrap((e.target as HTMLTextAreaElement).value)}
@@ -601,11 +601,11 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label class="block font-medium text-emerald-600 mb-1">
+            <label class="block font-medium text-green mb-1">
               Conceito Correto / Fundamento:*
             </label>
             <textarea
-              class="w-full h-20 p-2.5 rounded border border-emerald-500/30 bg-emerald-500/5 text-primary text-xs focus:ring-emerald-500 focus:border-emerald-500"
+              class="w-full h-20 p-2.5 rounded border border-green/30 bg-green/5 text-primary text-xs focus:ring-green focus:border-green"
               placeholder="Ex.: Não, para compras comuns o limite é estrito em 25%. Apenas reformas admitem até 50% (Lei 14.133/21)."
               value={newCorrectConcept}
               onInput={e => setNewCorrectConcept((e.target as HTMLTextAreaElement).value)}

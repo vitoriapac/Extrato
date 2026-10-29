@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../accessibility.js';
 /**
  * Shell UI Controller
  *
@@ -165,7 +166,7 @@ export function createShellUiController(options: ShellUiControllerOptions) {
     setTimeout(() => {
       const row = document.getElementById('topic-row-' + topicId);
       if (row) {
-        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        row.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
         row.classList.add('highlight-flash');
         setTimeout(() => row.classList.remove('highlight-flash'), 1700);
       }

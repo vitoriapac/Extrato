@@ -62,7 +62,7 @@ export function VerticalizedSyllabusView({
   return (
     <div class="verticalized-syllabus space-y-6">
       {/* Header e Filtros */}
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-card p-4 rounded-lg border border-border-default shadow-xs">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-card p-4 rounded-default border border-border-default shadow-xs">
         <div>
           <h3 class="text-base font-bold text-primary flex items-center gap-2">
             <span>📑</span> Edital Verticalizado Interativo
@@ -105,7 +105,7 @@ export function VerticalizedSyllabusView({
 
       {/* Tabela de Tópicos e Checklists */}
       {filteredSubjects.length === 0 || totalTopics === 0 ? (
-        <div class="p-8 text-center rounded-lg border border-border-subtle bg-surface-subtle text-secondary">
+        <div class="p-8 text-center rounded-default border border-border-subtle bg-surface-subtle text-secondary">
           <p class="font-medium">Nenhum tópico encontrado no edital.</p>
           <p class="text-xs text-muted mt-1">
             Cadastre disciplinas ou use o botão <strong>Colar Edital (PDF)</strong> para importar o
@@ -116,7 +116,7 @@ export function VerticalizedSyllabusView({
         filteredSubjects.map(subject => (
           <div
             key={subject.id}
-            class="rounded-lg border border-border-default bg-surface-card shadow-xs overflow-hidden"
+            class="rounded-default border border-border-default bg-surface-card shadow-xs overflow-hidden"
           >
             {/* Cabeçalho da Disciplina */}
             <div class="bg-surface-subtle px-4 py-3 border-b border-border-subtle flex justify-between items-center">
@@ -294,7 +294,7 @@ export function VerticalizedSyllabusView({
 
           {/* Prévia dos Dados Analisados */}
           {parsedPreview && (
-            <div class="rounded-lg bg-surface-subtle p-3 border border-border-subtle max-h-52 overflow-y-auto space-y-2 text-xs">
+            <div class="rounded-default bg-surface-subtle p-3 border border-border-subtle max-h-52 overflow-y-auto space-y-2 text-xs">
               <h5 class="font-bold text-primary">Prévia da Estrutura:</h5>
               {parsedPreview.subjects.map((sub, i) => (
                 <div key={i} class="space-y-1">

@@ -12,10 +12,10 @@ export function FinalStretchBanner({ banner, onOpenWhatIf }: FinalStretchBannerP
 
   return (
     <aside
-      class={`mb-4 p-4 rounded-lg border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm ${
+      class={`mb-4 p-4 rounded-default border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm ${
         isCritical
-          ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50 text-red-900 dark:text-red-200'
-          : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-200'
+          ? 'bg-red-bg border-red/40 text-red'
+          : 'bg-amber-bg border-amber/40 text-amber'
       }`}
       role="region"
       aria-label="Aviso de Modo Reta Final"
@@ -23,7 +23,7 @@ export function FinalStretchBanner({ banner, onOpenWhatIf }: FinalStretchBannerP
       <div class="space-y-1">
         <div class="flex items-center gap-2">
           <span class="font-bold text-sm tracking-wide">{banner.badge}</span>
-          <span class="text-xs px-2 py-0.5 rounded-full font-semibold bg-white/70 dark:bg-black/30">
+          <span class="text-xs px-2 py-0.5 rounded-full font-semibold bg-surface-card/70">
             {banner.daysToExam === 0 ? 'Prova Hoje!' : `Faltam ${banner.daysToExam} dias`}
           </span>
         </div>
@@ -33,7 +33,7 @@ export function FinalStretchBanner({ banner, onOpenWhatIf }: FinalStretchBannerP
       {onOpenWhatIf && (
         <button
           type="button"
-          class="shrink-0 px-3 py-1.5 rounded text-xs font-semibold bg-white dark:bg-zinc-800 text-primary border border-border-default hover:border-primary shadow-xs transition-colors"
+          class="shrink-0 px-3 py-1.5 rounded text-xs font-semibold bg-surface-card text-primary border border-border-default hover:border-primary shadow-xs transition-colors"
           onClick={onOpenWhatIf}
         >
           🔮 Simular "E se?"

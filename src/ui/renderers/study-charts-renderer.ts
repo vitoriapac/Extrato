@@ -1,3 +1,5 @@
+import { formatDecimal } from '../../core/format-number.js';
+
 export function renderProgressChart({ data, formatDate }: any) {
   if (data.length < 2)
     return `<div class="progress-chart-empty">Continue estudando — o gráfico aparece a partir do segundo dia com dados.</div>`;
@@ -61,7 +63,7 @@ export function renderStudyHoursChart({ data, targetSeconds, formatDate, formatD
   const grid = gridValues
     .map(
       seconds =>
-        `<line class="chart-grid" x1="${padL}" y1="${yFor(seconds)}" x2="${W - padR}" y2="${yFor(seconds)}"></line><text x="2" y="${yFor(seconds) + 3}">${(seconds / 3600).toFixed(seconds % 3600 ? 1 : 0)}h</text>`
+        `<line class="chart-grid" x1="${padL}" y1="${yFor(seconds)}" x2="${W - padR}" y2="${yFor(seconds)}"></line><text x="2" y="${yFor(seconds) + 3}">${formatDecimal(seconds / 3600)}h</text>`
     )
     .join('');
   const labels = [0, 4, 9, 13]

@@ -10,14 +10,14 @@ export function EbbinghausSimulator(): JSX.Element {
 
   const barColor =
     simulation.decayStage === 'consolidated'
-      ? 'bg-emerald-500 text-emerald-950'
+      ? 'bg-green text-white'
       : simulation.decayStage === 'declining'
-        ? 'bg-amber-500 text-amber-950'
-        : 'bg-rose-500 text-rose-50';
+        ? 'bg-amber text-white'
+        : 'bg-red text-white';
 
   return (
     <div
-      class="mt-4 rounded-xl border border-border bg-surface-subtle p-4 shadow-xs"
+      class="mt-4 rounded-default border border-border bg-surface-subtle p-4 shadow-xs"
       role="region"
       aria-label="Simulador interativo da Curva de Ebbinghaus"
       data-testid="ebbinghaus-simulator"
@@ -31,10 +31,10 @@ export function EbbinghausSimulator(): JSX.Element {
             Simulador de Retenção e Curva de Ebbinghaus
           </h5>
         </div>
-        <div class="inline-flex rounded-lg border border-border bg-surface p-0.5 text-xs">
+        <div class="inline-flex rounded-default border border-border bg-surface p-0.5 text-xs">
           <button
             type="button"
-            class={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+            class={`rounded-default px-2.5 py-1 font-medium transition-colors ${
               withReviews
                 ? 'bg-primary text-primary-contrast shadow-xs'
                 : 'text-text-muted hover:text-text'
@@ -46,7 +46,7 @@ export function EbbinghausSimulator(): JSX.Element {
           </button>
           <button
             type="button"
-            class={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+            class={`rounded-default px-2.5 py-1 font-medium transition-colors ${
               !withReviews
                 ? 'bg-danger text-danger-contrast shadow-xs'
                 : 'text-text-muted hover:text-text'
@@ -76,7 +76,7 @@ export function EbbinghausSimulator(): JSX.Element {
             max="30"
             value={days}
             onInput={(e: any) => setDays(Number(e.target.value))}
-            class="mt-1 h-2 w-full cursor-pointer appearance-none rounded-lg bg-surface-muted accent-primary"
+            class="mt-1 h-2 w-full cursor-pointer appearance-none rounded-default bg-surface-muted accent-primary"
             aria-label="Dias decorridos"
           />
           <div class="mt-1 flex justify-between text-[10px] text-text-muted">
@@ -88,7 +88,7 @@ export function EbbinghausSimulator(): JSX.Element {
           </div>
         </div>
 
-        <div class="rounded-lg border border-border bg-surface p-3">
+        <div class="rounded-default border border-border bg-surface p-3">
           <div class="flex items-center justify-between">
             <span class="text-xs font-medium text-text-muted">Retenção estimada na memória:</span>
             <span class="text-base font-bold text-text">{simulation.retentionPct}%</span>

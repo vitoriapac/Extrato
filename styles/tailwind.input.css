@@ -4,6 +4,9 @@
 @source "../src";
 @source "../index.html";
 
+/* O tema vem do botão do app (data-theme), não da preferência do sistema. */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 @theme {
   --color-surface-page: var(--surface-page);
   --color-surface-card: var(--surface-card);
@@ -41,6 +44,22 @@
   --color-red-bg: var(--red-bg);
   --color-slate-bg: var(--slate-bg);
   --color-white: var(--white);
+
+  /* Aliases usados pelas views Preact; apontam para os tokens existentes. */
+  --color-surface: var(--surface-card);
+  --color-surface-muted: var(--surface-card-muted);
+  --color-surface-elevated: var(--surface-raised);
+  --color-border: var(--border-default);
+  --color-text: var(--text-primary);
+  --color-on-navy: var(--on-navy);
+  --color-primary: var(--action-primary-bg);
+  --color-primary-contrast: var(--action-primary-text);
+  --color-danger: var(--status-negative);
+  --color-danger-contrast: var(--action-danger-hover-text);
+  --color-status-danger: var(--status-negative);
+  --color-status-success: var(--status-positive);
+  --color-status-warning: var(--status-warning);
+  --color-status-info: var(--status-info);
 
   --font-body: var(--font-body);
   --font-display: var(--font-display);

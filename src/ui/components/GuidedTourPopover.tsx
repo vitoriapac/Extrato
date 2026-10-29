@@ -143,7 +143,7 @@ export function GuidedTourPopover({
       >
         <Card
           variant="primary"
-          className="shadow-xl border-2 border-gold rounded-lg p-4 bg-navy text-on-navy"
+          className="shadow-xl border-2 border-gold rounded-default p-4 bg-navy text-on-navy"
         >
           <div className="flex flex-col gap-2.5">
             {/* Cabeçalho */}

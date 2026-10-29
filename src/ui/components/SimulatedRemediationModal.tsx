@@ -54,7 +54,7 @@ export function SimulatedRemediationModal({
     >
       <div class="space-y-6 text-sm text-content-primary">
         {/* Banner de Contexto e Desempenho */}
-        <div class="rounded-lg bg-surface-subtle p-4 border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="rounded-default bg-surface-subtle p-4 border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h3 class="text-base font-semibold text-content-primary">
               {diagnostic.simulationName}
@@ -119,7 +119,7 @@ export function SimulatedRemediationModal({
               {diagnostic.topBleedingTopics.map((topic, index) => (
                 <div
                   key={topic.id}
-                  class="rounded-lg border border-border-subtle bg-surface-elevated p-3 relative flex flex-col justify-between"
+                  class="rounded-default border border-border-subtle bg-surface-elevated p-3 relative flex flex-col justify-between"
                 >
                   <div class="space-y-1">
                     <div class="flex items-center justify-between">

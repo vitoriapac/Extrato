@@ -25,7 +25,7 @@ export function renderGoals(
       .map(card)
       .join('')}${extra}</section>`;
   const guidance = initialSuggestions.length
-    ? `<p class="context-note" role="note">Os valores identificados como sugestões são padrões de partida, não metas calculadas para sua capacidade. Revise-os antes de interpretar pendências.${weeklyCapacityMinutes == null ? '' : ` Sua disponibilidade declarada é de ${Math.round((weeklyCapacityMinutes / 60) * 10) / 10} h por semana.`} Editar metas de tópicos ou questões não modifica essa disponibilidade.</p>`
+    ? `<p class="context-note" role="note">Os valores identificados como sugestões são padrões de partida, não metas calculadas para sua capacidade. Revise-os antes de interpretar pendências.${weeklyCapacityMinutes == null ? '' : ` Sua disponibilidade declarada é de ${formatDecimal(weeklyCapacityMinutes / 60)} h por semana.`} Editar metas de tópicos ou questões não modifica essa disponibilidade.</p>`
     : '';
   return (
     guidance +

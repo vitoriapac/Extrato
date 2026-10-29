@@ -19,7 +19,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
 
   return (
     <div
-      class="mt-4 rounded-xl border border-border bg-surface-subtle p-4 shadow-xs"
+      class="mt-4 rounded-default border border-border bg-surface-subtle p-4 shadow-xs"
       role="region"
       aria-label="Simulador interativo de Confiabilidade da Evidência"
       data-testid="evidence-confidence-simulator"
@@ -55,7 +55,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
               max="150"
               value={sampleSize}
               onInput={(e: any) => setSampleSize(Number(e.target.value))}
-              class="mt-1 h-2 w-full cursor-pointer appearance-none rounded-lg bg-surface-muted accent-primary"
+              class="mt-1 h-2 w-full cursor-pointer appearance-none rounded-default bg-surface-muted accent-primary"
               aria-label="Volume de questões resolvidas"
             />
             <div class="mt-1 flex justify-between text-[10px] text-text-muted">
@@ -82,7 +82,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
               step="5"
               value={accuracy}
               onInput={(e: any) => setAccuracy(Number(e.target.value))}
-              class="mt-1 h-2 w-full cursor-pointer appearance-none rounded-lg bg-surface-muted accent-primary"
+              class="mt-1 h-2 w-full cursor-pointer appearance-none rounded-default bg-surface-muted accent-primary"
               aria-label="Taxa de acerto observada"
             />
             <div class="mt-1 flex justify-between text-[10px] text-text-muted">
@@ -95,7 +95,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
         </div>
 
         {/* Painel de Resultados */}
-        <div class="rounded-lg border border-border bg-surface p-3 space-y-2.5">
+        <div class="rounded-default border border-border bg-surface p-3 space-y-2.5">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
               <span class="text-xs font-medium text-text-muted">
@@ -137,7 +137,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
             <span class="text-text-muted">{simulation.explanation}</span>
           </div>
 
-          <div class="rounded-md bg-surface-subtle p-2 text-xs leading-relaxed text-text-muted">
+          <div class="rounded-default bg-surface-subtle p-2 text-xs leading-relaxed text-text-muted">
             ⚖️ <strong>Como o algoritmo age: </strong>
             {simulation.recommendationDecision}
           </div>
