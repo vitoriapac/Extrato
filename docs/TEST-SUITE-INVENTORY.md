@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-250 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+255 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -99,12 +99,15 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/analytics-view-model.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/analytics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/app-foundation.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/app-selectors.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/app-state-store.test.js | node | Estado | critical | — | contract | none |
+| tests/unit/application-bootstrap.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/application-lifecycle.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/application-renderer.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/approval-metrics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/approval-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/backup-modal-controller.test.js | node | Backup | critical | — | contract | none |
+| tests/unit/backup-restore-controller.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/backup-validator.test.js | node | Backup | critical | — | contract | none |
 | tests/unit/calendar-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/calendar-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
@@ -124,6 +127,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/decision-coherence-debug-renderer.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/decision-coherence-report.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/decision-coherence-scenarios.test.js | node | Aplicação | critical | — | contract | none |
+| tests/unit/delegated-actions-registry.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/delegated-actions.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/delegated-events-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/demo-adherence.test.js | node | Aderência | critical | — | contract, demo | none |
@@ -262,6 +266,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/session-modal-controller.test.js | node | Sessões | functional | — | contract | none |
 | tests/unit/session-result.test.js | node | Sessões | functional | — | contract | none |
 | tests/unit/session-service.test.js | node | Sessões | functional | — | contract | none |
+| tests/unit/shell-ui-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation-modal.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulated-remediation.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulations-tab-controller.test.js | node | Aplicação | functional | — | contract | none |

@@ -5,11 +5,14 @@ import { WeeklyAvailabilityGrid } from './WeeklyAvailabilityGrid.js';
 import { PlanExecutionCard } from './PlanExecutionCard.js';
 
 export interface GoalsTabControllerContext {
-  state: any;
+  state?: any;
+  getState?: () => any;
+  document?: Document | any;
   parseLocalDate: (iso: string) => any;
   todayISO: () => string;
   buildWeeklyAvailability: (hoursByDay: any) => any;
   formatPlanMinutes: (mins: number) => string;
+  formatDecimal?: (val: number) => string;
   metaHoursToday: () => number;
   metaHoursForDate: (date: string) => number | string;
   addDays: (iso: string, days: number) => string;
@@ -38,13 +41,17 @@ export interface GoalsTabControllerContext {
   renderPeriodComparisonDetail?: (model: any, opts: any) => string;
   localDateFromTimestamp?: (ts: string) => string;
   somarQuestoesDisciplinaNaSemana?: (subjectId: string | null) => number;
+  computeRitmo?: () => any;
 }
 
 export function createGoalsTabController(ctx: GoalsTabControllerContext) {
+  const resolveState = () => (ctx.getState ? ctx.getState() : ctx.state);
+
   function createWeeklyAvailabilityVNode() {
+    const state = resolveState();
     const today = ctx.todayISO();
     const todayDay = ctx.parseLocalDate(today).getDay();
-    const availability = ctx.buildWeeklyAvailability(ctx.state.metas?.horasPorDia);
+    const availability = ctx.buildWeeklyAvailability(state.metas?.horasPorDia);
 
     const formattedTotal = ctx.formatPlanMinutes(availability.totalMinutes);
     const formattedAverage = ctx.formatPlanMinutes(Math.round(availability.averageHours * 60));
@@ -81,28 +88,29 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   function createPlanExecutionVNode() {
     if (!ctx.buildPlanExecution || !ctx.renderPlanExecutionView) return null;
 
+    const state = resolveState();
     const today = ctx.todayISO();
     const model = ctx.buildPlanExecution({
       today,
-      dailyPlans: ctx.state.dailyPlans,
-      sessions: (ctx.state.studySessions || []).map((item: any) => ({
+      dailyPlans: state.dailyPlans,
+      sessions: (state.studySessions || []).map((item: any) => ({
         ...item,
         subjectId: ctx.entitySubjectId ? ctx.entitySubjectId(item) : item.subjectId,
       })),
-      hoursByDay: ctx.state.metas?.horasPorDia,
-      subjects: ctx.state.subjects,
-      activeExamTags: ctx.state.examBlueprint?.activeExamTags || [],
+      hoursByDay: state.metas?.horasPorDia,
+      subjects: state.subjects,
+      activeExamTags: state.examBlueprint?.activeExamTags || [],
     });
 
     const distribution = ctx.buildStudyDistribution
       ? ctx.buildStudyDistribution({
           today,
-          dailyPlans: ctx.state.dailyPlans,
-          sessions: (ctx.state.studySessions || []).map((item: any) => ({
+          dailyPlans: state.dailyPlans,
+          sessions: (state.studySessions || []).map((item: any) => ({
             ...item,
             subjectId: ctx.entitySubjectId ? ctx.entitySubjectId(item) : item.subjectId,
           })),
-          subjects: ctx.state.subjects,
+          subjects: state.subjects,
         })
       : null;
 
@@ -116,12 +124,12 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
                 ? ctx.resolveValidatedExamImpact(
                     ctx.buildTopicExamProfile({
                       topic,
-                      subjectConfig: (ctx.state.examBlueprint?.subjects || []).find(
+                      subjectConfig: (state.examBlueprint?.subjects || []).find(
                         (item: any) => item.subjectId === topic.subjectId
                       ),
-                      activeExamTags: ctx.state.examBlueprint?.activeExamTags || [],
-                      exams: ctx.state.exams,
-                      examQuestions: ctx.state.examQuestions,
+                      activeExamTags: state.examBlueprint?.activeExamTags || [],
+                      exams: state.exams,
+                      examQuestions: state.examQuestions,
                     })
                   ).value
                 : 1,
@@ -174,16 +182,17 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   ): void {
     if (!ctx.buildResultGoalsViewModel || !ctx.renderGoals) return;
 
-    const m = ctx.state.metas;
+    const state = resolveState();
+    const m = state.metas;
     const resultGoals = ctx.buildResultGoalsViewModel({
       goals: m,
       achieved,
     });
 
     const hasActivity =
-      (ctx.state.studySessions || []).length > 0 ||
-      (ctx.state.questoes || []).length > 0 ||
-      (ctx.state.simulados || []).length > 0 ||
+      (state.studySessions || []).length > 0 ||
+      (state.questoes || []).length > 0 ||
+      (state.simulados || []).length > 0 ||
       achieved.weeklyTopics > 0 ||
       achieved.monthlyTopics > 0;
 
@@ -205,6 +214,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     container: any,
     selectEl?: any
   ): void {
+    const state = resolveState();
     const escapeHtml = ctx.escapeHtml || (s => s);
     const escapeAttr = ctx.escapeAttr || (s => s);
 
@@ -218,7 +228,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       if (current) selectEl.value = current;
     }
 
-    const metas = ctx.state.metasPorDisciplina || [];
+    const metas = state.metasPorDisciplina || [];
     if (metas.length === 0) {
       container.innerHTML = `<div class="upcoming-empty">Nenhuma meta por disciplina ainda. Escolha uma disciplina acima e adicione.</div>`;
       return;
@@ -259,6 +269,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   }
 
   function renderHistoricoMetas(container: any, weeks: any[]): void {
+    const state = resolveState();
     const formatDate = ctx.formatDatePt || (d => d);
     const badge = (ok: boolean, current: any) =>
       current
@@ -284,9 +295,9 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
             w => `
           <tr>
             <td>${formatDate(w.weekStart)} – ${formatDate(w.weekEnd)}</td>
-            <td>${w.topicsConcl}/${ctx.state.metas?.semanal ?? 0} ${badge(w.semanalOk, w.current)}</td>
-            <td>${w.questoesResolved}/${ctx.state.metas?.questoesSemanal ?? 0} ${badge(w.questoesOk, w.current)}</td>
-            <td>${w.simuladosCount}/${ctx.state.metas?.simuladosSemanal ?? 0} ${badge(w.simuladosOk, w.current)}</td>
+            <td>${w.topicsConcl}/${state.metas?.semanal ?? 0} ${badge(w.semanalOk, w.current)}</td>
+            <td>${w.questoesResolved}/${state.metas?.questoesSemanal ?? 0} ${badge(w.questoesOk, w.current)}</td>
+            <td>${w.simuladosCount}/${state.metas?.simuladosSemanal ?? 0} ${badge(w.simuladosOk, w.current)}</td>
           </tr>
         `
           )
@@ -307,6 +318,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   ): void {
     if (!ctx.buildPeriodComparisonViewModel || !ctx.renderPeriodComparisonDetail) return;
 
+    const state = resolveState();
     const custom = presetEl.value === 'custom';
     if (startWrap) startWrap.hidden = !custom;
     if (endWrap) endWrap.hidden = !custom;
@@ -320,7 +332,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       return;
     }
 
-    const reviews = (ctx.state.reviewAgenda || []).map((item: any) => ({
+    const reviews = (state.reviewAgenda || []).map((item: any) => ({
       ...item,
       date: item.completedAt && ctx.localDateFromTimestamp
         ? ctx.localDateFromTimestamp(item.completedAt)
@@ -328,8 +340,8 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     }));
 
     const model = ctx.buildPeriodComparisonViewModel({
-      sessions: ctx.state.studySessions || [],
-      questions: ctx.state.questoes || [],
+      sessions: state.studySessions || [],
+      questions: state.questoes || [],
       reviews,
       today: ctx.todayISO(),
       preset: presetEl.value,
@@ -342,6 +354,56 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     });
   }
 
+  function renderRitmo(containerEl?: any): void {
+    const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
+    const container = containerEl || doc?.getElementById('ritmoContainer');
+    if (!container || !ctx.computeRitmo) return;
+
+    const r = ctx.computeRitmo();
+    const formatDecimal = ctx.formatDecimal || ((v: number) => String(v));
+    const formatDatePt = ctx.formatDatePt || ((d: string) => d);
+
+    if (r.status === 'sem-topicos') {
+      container.innerHTML = `<div class="upcoming-empty">Adicione disciplinas e tópicos para ver a estimativa de ritmo aqui.</div>`;
+      return;
+    }
+    if (r.status === 'completo') {
+      container.innerHTML = `<div class="pace-block"><div class="pace-status ok">🎉 Todos os tópicos cadastrados já foram concluídos!</div></div>`;
+      return;
+    }
+    if (r.status === 'sem-dados') {
+      container.innerHTML = `<div class="pace-block">
+      <div class="pace-line">Faltam <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} pra concluir o plano.</div>
+      <div class="pace-status neutral">Ainda sem tópicos concluídos nos últimos 14 dias — sem dados suficientes pra estimar o ritmo ainda.</div>
+    </div>`;
+      return;
+    }
+
+    const ritmoTxt =
+      r.ratePerDay! >= 1
+        ? `${r.ratePerDay!.toFixed(1)} tópicos por dia`
+        : `${formatDecimal(r.ratePerDay! * 7)} tópicos por semana`;
+
+    let statusHtml = '';
+    if (r.comparativo === 'no-prazo') {
+      const folga = r.daysToExam! - r.daysNeeded!;
+      statusHtml = `<div class="pace-status ok">🟢 No ritmo atual, você termina com ${folga} dia${folga === 1 ? '' : 's'} de folga antes da prova.</div>`;
+    } else if (r.comparativo === 'atrasado') {
+      const atraso = r.daysNeeded! - r.daysToExam!;
+      statusHtml = `<div class="pace-status warn">🔴 No ritmo atual, você terminaria ${atraso} dia${atraso === 1 ? '' : 's'} depois da prova. Considere acelerar ou rever o plano.</div>`;
+    } else {
+      statusHtml = `<div class="pace-status neutral">Defina a data da prova na Visão Geral pra comparar com o prazo.</div>`;
+    }
+
+    container.innerHTML = `
+    <div class="pace-block">
+      <div class="pace-line">Nos últimos 14 dias você concluiu em média <strong>${ritmoTxt}</strong>.</div>
+      <div class="pace-line">Faltam <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} — no ritmo atual, você termina em <strong>${r.daysNeeded} dia${r.daysNeeded === 1 ? '' : 's'}</strong> (${formatDatePt(r.finishDate!)}).</div>
+      ${statusHtml}
+    </div>
+  `;
+  }
+
   return {
     renderWeeklyAvailabilityHtml,
     mountWeeklyAvailability,
@@ -351,5 +413,6 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     renderMetasPorDisciplina,
     renderHistoricoMetas,
     renderSelectedPeriodComparison,
+    renderRitmo,
   };
 }

@@ -7,7 +7,13 @@ import { UpcomingReviewsList, type UpcomingReviewItem } from './UpcomingReviewsL
 import { NextActionCard, type NextActionCardProps } from './NextActionCard.js';
 import { buildHeatmapViewModel } from '../../../application/analytics/build-analytics-view-model.js';
 import { renderHeatmap as renderHeatmapView } from '../../renderers/heatmap-renderer.js';
+import { buildHeaderViewModel } from '../../../application/analytics/build-header-view-model.js';
 import { HEATMAP_METRICS, heatmapMetricLevel as defaultHeatmapMetricLevel } from '../../../domain/analytics/heatmap.js';
+import { resolveExamPhase } from '../../../domain/planning/adaptive-planning.js';
+import { renderCollectionFooter } from '../../list-components.js';
+import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
+import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-renderer.js';
+import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
 
 export interface DashboardTabControllerDeps {
   document?: any;
@@ -34,6 +40,13 @@ export interface DashboardTabControllerDeps {
   heatmapMetricLevel?: (summary: any, metric: string) => number;
   computeStreak?: (dates: any) => number;
   activeSubjects?: () => any[];
+  activeTopics?: () => any[];
+  subjectProgress?: (subject: any) => number;
+  entitySubjectName?: (item: any) => string;
+  getTopicName?: (id: string) => string;
+  readinessResult?: (metrics?: any) => any;
+  computeApprovalMetrics?: () => any;
+  recordProgressSnapshot?: (pct: number) => void;
   selectSessionHistoryDate?: (dateStr: string) => void;
   planStartDate?: () => string;
 }
@@ -292,6 +305,164 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     return streakView;
   }
 
+  let upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
+
+  function changeUpcomingLimit(_delta: number): void {
+    upcomingVisible = Number.MAX_SAFE_INTEGER;
+    renderDashboard();
+  }
+
+  function showAllUpcoming(): void {
+    upcomingVisible = Number.MAX_SAFE_INTEGER;
+    renderDashboard();
+  }
+
+  function resetUpcomingLimit(): void {
+    upcomingVisible = 5;
+    renderDashboard();
+  }
+
+  function resetUpcomingListDefault(): void {
+    upcomingVisible = DEFAULT_LIST_VISIBLE_ITEMS;
+  }
+
+  function renderHeader(): void {
+    if (!doc) return;
+    const state = deps.getState ? deps.getState() : {};
+    const topics = deps.activeTopics ? deps.activeTopics() : [];
+    const total = topics.length;
+    const done = topics.filter((t: any) => t.status === 'Concluído').length;
+    const andamento = topics.filter((t: any) => t.status === 'Em andamento').length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+
+    const readiness =
+      deps.readinessResult && deps.computeApprovalMetrics
+        ? deps.readinessResult(deps.computeApprovalMetrics())
+        : { value: null, statusLabel: '', summary: '' };
+    const statAndamentoEl = doc.getElementById('statAndamento');
+    const statConcluidoEl = doc.getElementById('statConcluido');
+    if (statAndamentoEl) statAndamentoEl.textContent = String(andamento);
+    if (statConcluidoEl) statConcluidoEl.textContent = String(done);
+
+    const today = todayISO();
+    const revisoesPrevistas =
+      (state.calendar || []).filter((c: any) => c.date >= today).length +
+      (state.reviewAgenda || []).filter((a: any) => a.date >= today && a.status !== 'Concluído')
+        .length;
+    const activityDates = deps.getActivityDates ? deps.getActivityDates() : new Set<string>();
+    const model = buildHeaderViewModel({
+      readiness,
+      subjects: state.subjects || [],
+      topics,
+      upcomingReviews: revisoesPrevistas,
+      streak: deps.computeStreak ? deps.computeStreak(activityDates) : 0,
+      examDate: state.examDate || '',
+      planNumber: doc.getElementById('planNumber')?.textContent || '',
+      today,
+    });
+    renderHeroHeader(model, { document: doc });
+    renderCompactHeader(model, { document: doc, formatDate: formatDatePt });
+
+    if (deps.recordProgressSnapshot) deps.recordProgressSnapshot(pct);
+    renderExamCountdown();
+  }
+
+  function renderDashboard(): void {
+    if (!doc) return;
+    const state = deps.getState ? deps.getState() : {};
+    const phaseDays =
+      state.examDate && deps.diasParaRevisao ? deps.diasParaRevisao(state.examDate) : null;
+    const phaseContainer = doc.getElementById('overviewExamPhase');
+    if (phaseContainer) {
+      phaseContainer.innerHTML = renderExamPhaseCompact(resolveExamPhase(phaseDays), {
+        escapeHtml,
+      });
+    }
+    const topics = deps.activeTopics ? deps.activeTopics() : [];
+    const total = topics.length;
+    const done = topics.filter((t: any) => t.status === 'Concluído').length;
+    const andamento = topics.filter((t: any) => t.status === 'Em andamento').length;
+    const naoIniciado = topics.filter((t: any) => t.status === 'Não iniciado').length;
+
+    const qs = doc.getElementById('quickStats');
+    if (qs) {
+      mountQuickStats(qs, {
+        total,
+        naoIniciado,
+        emAndamento: andamento,
+        concluido: done,
+      });
+    }
+
+    const bars = doc.getElementById('progressBars');
+    if (bars && deps.activeSubjects) {
+      mountProgressBars(
+        bars,
+        deps.activeSubjects().map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          percentage: deps.subjectProgress ? deps.subjectProgress(s) : 0,
+        }))
+      );
+    }
+
+    const today = todayISO();
+    const entitySubjectName = deps.entitySubjectName || ((item: any) => item?.subject || '—');
+    const getTopicName = deps.getTopicName || (() => 'Tópico');
+
+    const calItems = (state.calendar || [])
+      .filter((c: any) => c.date >= today)
+      .map((c: any) => ({
+        id: c.id,
+        date: c.date,
+        dateFormatted: formatDatePt(c.date),
+        subject: entitySubjectName(c),
+        label: c.reviewType && c.reviewType !== '—' ? c.reviewType : 'Revisão',
+        status: c.status,
+        origem: 'Calendário',
+      }));
+    const agendaItems = (state.reviewAgenda || [])
+      .filter((a: any) => a.date >= today)
+      .map((a: any) => ({
+        id: a.id,
+        date: a.date,
+        dateFormatted: formatDatePt(a.date),
+        subject: entitySubjectName(a),
+        label: `${a.topicId ? getTopicName(a.topicId) : a.topic || 'Tópico'} · ${a.tipo}`,
+        status: a.status,
+        origem: 'Agenda de Revisões',
+      }));
+
+    const allUpcoming = [...calItems, ...agendaItems].sort((a, b) => a.date.localeCompare(b.date));
+    const upcoming = allUpcoming.slice(0, upcomingVisible);
+
+    const ul = doc.getElementById('upcomingList');
+    const title = doc.getElementById('upcomingTitle');
+    const footer = doc.getElementById('upcomingFooter');
+    if (title) title.textContent = `Próximas revisões · ${allUpcoming.length}`;
+    if (ul) {
+      mountUpcomingList(ul, upcoming);
+    }
+    if (footer) {
+      if (upcoming.length === 0) {
+        footer.innerHTML = '';
+      } else {
+        footer.innerHTML =
+          renderCollectionFooter({
+            variant: 'block',
+            total: allUpcoming.length,
+            visible: upcoming.length,
+            step: 5,
+            label: 'revisões',
+            showMoreAction: 'changeUpcomingLimit(5)',
+            showAllAction: 'showAllUpcoming()',
+            showLessAction: upcomingVisible > 5 ? 'resetUpcomingLimit()' : '',
+          }) +
+          `<button class="btn ghost small upcoming-calendar-link" data-delegated-click="navigateKpi('calendario')">Ver todas no calendário</button>`;
+      }
+    }
+  }
+
   return {
     renderNextActionCardHtml,
     mountNextActionCard,
@@ -313,5 +484,11 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     toggleStreakExpanded,
     toggleStreakActiveDays,
     getStreakView,
+    changeUpcomingLimit,
+    showAllUpcoming,
+    resetUpcomingLimit,
+    resetUpcomingListDefault,
+    renderHeader,
+    renderDashboard,
   };
 }

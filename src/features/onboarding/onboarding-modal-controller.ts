@@ -402,6 +402,42 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     }
   }
 
+  function bindEvents() {
+    const overlay = document.getElementById('guidedOnboardingOverlay');
+    if (overlay) {
+      overlay.addEventListener('click', handleOverlayClick);
+      overlay.addEventListener('keydown', handleOverlayKeydown);
+      overlay.addEventListener('change', (event: any) => {
+        const target = event.target as HTMLElement;
+        if (target?.id === 'guidedExamPreset') {
+          const ui = getUiState();
+          if (ui.onboarding) ui.onboarding.presetId = (target as HTMLInputElement).value;
+          return;
+        }
+        if (target?.id === 'guidedExamDate') {
+          deps.updateExamBlueprint?.('examDate', (target as HTMLInputElement).value, { refresh: false });
+          syncGuidedNext(onboardingModel());
+          return;
+        }
+        if (target?.dataset?.guidedDay !== undefined) {
+          deps.updateMetaHoursDay?.(target.dataset.guidedDay, (target as HTMLInputElement).value, { refresh: false });
+          const model = onboardingModel();
+          syncGuidedNext(model);
+          const cap = document.querySelector('#guidedOnboardingContent .guided-capacity strong');
+          if (cap) cap.textContent = formatPlanMinutes(model.availableMinutes);
+          return;
+        }
+        if (target?.dataset?.guidedLevel) {
+          setGuidedSubjectLevel(target.dataset.guidedLevel, (target as HTMLInputElement).value, { refresh: false });
+        }
+      });
+    }
+    document.getElementById('guidedOnboardingClose')?.addEventListener('click', () => closeGuidedOnboarding());
+    document.getElementById('guidedOnboarding')?.addEventListener('click', (event: any) => {
+      if ((event.target as HTMLElement)?.closest('[data-guided-action="open"]')) openGuidedOnboarding();
+    });
+  }
+
   return {
     onboardingModel,
     syncGuidedNext,
@@ -416,5 +452,6 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     createGuidedInitialPlan,
     handleOverlayClick,
     handleOverlayKeydown,
+    bindEvents,
   };
 }

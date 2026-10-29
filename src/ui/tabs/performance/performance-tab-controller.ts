@@ -28,7 +28,7 @@ export interface PerformanceTabControllerDeps {
   readinessResult?: (metrics: any) => any;
   computeApprovalMetrics?: () => any;
   intelligenceCandidates?: () => any[];
-  entitySubjectId?: (item: any) => string;
+  entitySubjectId?: (item: any) => string | null;
   simuladoEffectiveCounts?: (simulado: any) => any;
   localDateFromTimestamp?: (timestamp: any) => string;
   topicMasteryIndex?: (subjectId: string, topicId: string) => any;

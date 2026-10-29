@@ -590,6 +590,57 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     `;
   }
 
+  function renderSimuladosPlanejados() {
+    if (!doc) return;
+    const ul = doc.getElementById('hojeSimuladosPlanejados');
+    if (!ul) return;
+    const state = getState();
+    const today = todayISO();
+    const planejados = (state.simulados || [])
+      .filter(
+        (s: any) =>
+          s.date >= today &&
+          (Number(s.correct) || 0) === 0 &&
+          (Number(s.total) || 0) === 0 &&
+          (!s.breakdown || s.breakdown.length === 0)
+      )
+      .sort((a: any, b: any) => (a.date || '').localeCompare(b.date || ''));
+
+    if (planejados.length === 0) {
+      ul.innerHTML = `<li class="upcoming-empty">Nenhum simulado planejado. Registre um com data futura na aba Questões &amp; Simulados pra ele aparecer aqui.</li>`;
+    } else {
+      ul.innerHTML = planejados
+        .map(
+          (s: any) => `
+      <li>
+        <span class="upcoming-date">${formatDatePt(s.date)}</span>
+        <span style="flex:1;">${escapeHtml(s.nome || 'Simulado sem nome')}</span>
+        <span class="subject-progress-pill">${s.date === today ? 'hoje' : 'planejado'}</span>
+      </li>
+    `
+        )
+        .join('');
+    }
+  }
+
+  function bindEvents() {
+    if (!doc) return;
+    doc.addEventListener('click', (event: any) => {
+      const start = (event.target as HTMLElement)?.closest?.<HTMLElement>('[data-daily-start]');
+      if (start) {
+        const result = dailyExecutionController.start(start.dataset.dailyStart!);
+        if (result.state === 'unavailable') _showToast('A atividade mudou. Confira o plano atual.');
+        if (result.state === 'blocked')
+          _showToast('Finalize a sessão atual antes de iniciar outra.');
+        renderDailyExecutionCard();
+        _renderOverviewDecisionArea();
+      }
+      if ((event.target as HTMLElement)?.closest?.('[data-daily-resume]')) openStudyTimerFocus();
+      if ((event.target as HTMLElement)?.closest?.('[data-open-what-if]'))
+        whatIfController?.open();
+    });
+  }
+
   return {
     renderExecutionSummaryHtml,
     mountExecutionSummary,
@@ -612,5 +663,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     renderDailyExecutionCard,
     renderPlanoHoje,
     renderMetasHoje,
+    renderSimuladosPlanejados,
+    bindEvents,
   };
 }
