@@ -966,6 +966,20 @@
 :where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 :root{caret-color:var(--gold);scrollbar-color:var(--border-control) transparent}
 ::selection{background:var(--gold-bright);color:var(--navy)}
+/* Piso de alvo (WCAG 2.5.8, 24px) para mouse; toque e tela estreita sobem para 44px abaixo. */
+:where(summary){min-height:24px;align-content:center}
+:where(.icon-btn,.icon-btn-nav){min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center}
+:where(.panel input:not([type=checkbox]):not([type=radio])){min-height:24px}
+@media (pointer:coarse),(max-width:760px){summary{min-height:var(--touch-target)}}
+/* Toque em tela larga (tablet, celular deitado): só tamanhos de alvo, sem o layout estreito. */
+@media (pointer:coarse){
+  .btn,.icon-btn,.icon-btn-nav,.month-nav-btn,.theme-toggle-btn,.tab-btn{min-height:var(--touch-target)}
+  .icon-btn,.icon-btn-nav,.month-nav-btn{min-width:var(--touch-target);display:inline-flex;align-items:center;justify-content:center}
+  .panel input:not([type=checkbox]):not([type=radio]),.panel select,.panel textarea{min-height:var(--touch-target)}
+  .help-text-link{min-height:var(--touch-target)}
+}
+/* Área de toque da marca cobre a altura do cabeçalho compacto sem alterá-lo. */
+.compact-brand{position:relative}.compact-brand::after{content:"";position:absolute;inset:-10px 0}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}

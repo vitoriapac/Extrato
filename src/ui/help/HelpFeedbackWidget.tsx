@@ -82,7 +82,7 @@ export function HelpFeedbackWidget({
         <button
           type="button"
           onClick={() => handleVote(true)}
-          class="inline-flex items-center gap-1 rounded-default border border-border bg-surface px-2 py-1 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-primary/40 cursor-pointer"
+          class="inline-flex items-center gap-1 rounded-default border border-border bg-surface px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-primary/40 cursor-pointer"
           aria-label={`Sim, a explicação sobre ${topicTitle || topicId} foi útil`}
         >
           <span>👍</span>
@@ -91,7 +91,7 @@ export function HelpFeedbackWidget({
         <button
           type="button"
           onClick={() => handleVote(false)}
-          class="inline-flex items-center gap-1 rounded-default border border-border bg-surface px-2 py-1 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-danger/40 cursor-pointer"
+          class="inline-flex items-center gap-1 rounded-default border border-border bg-surface px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-danger/40 cursor-pointer"
           aria-label={`Não, a explicação sobre ${topicTitle || topicId} precisa melhorar`}
         >
           <span>👎</span>
