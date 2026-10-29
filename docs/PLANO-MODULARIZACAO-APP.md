@@ -160,6 +160,16 @@ flowchart TD
 - **Redução Obtida:** `src/app.ts` reduzido de 8.079 para **6.736 linhas** (-1.343 linhas líquidas eliminadas na Fase 8; -4.185 linhas acumuladas desde o início do plano).
 - **Status:** 100% concluída e validada no Fast Gate (1124 testes passando, tempo 35.14s, dual timezone UTC/SP, Playwright smoke passing, bundles reproduzíveis).
 
+### Fase 9: Desacoplamento Analítico, Planejamento & Fechamento Semanal — CONCLUÍDA ✅
+- **Objetivo:** Desacoplar a inteligência analítica do Dashboard (KPIs, contagem regressiva, progresso do edital, heatmap de constância), o construtor de plano semanal e diário de 7 dias com conselhos adaptativos e estratégias de fases, o fechamento semanal com ciclo de decisão, sustentabilidade e snapshots imutáveis, e a página completa de desempenho com radar e gráfico de progresso histórico de 180 dias.
+- **Módulos Entregues e Integrados:**
+  1. `src/ui/tabs/dashboard/dashboard-tab-controller.ts`: controller expandido com `renderKPIs`, `renderExamProgress`, `renderExamCountdown`, `navigateKpi`, `renderHeatmap`, `setHeatmapFilter`, `selectHeatmapDay`, `viewSelectedHeatmapSessions`, `heatmapTooltip`, `toggleStreakExpanded`, `toggleStreakActiveDays` e `getStreakView`. (7 testes unitários em `tests/unit/dashboard-components.test.js`).
+  2. `src/ui/tabs/goals/study-plan-builder-controller.ts`: controller completo do construtor de plano de estudo (`studyPlanCandidates`, `buildCurrentStudyPlanProposal`, `calculateStudyPlanPreview`, `confirmStudyPlan`, `clearStudyPlanPreview`), conselhos adaptativos (`useAdaptivePlanAdvice`, `rejectAdaptivePlanAdvice`, `revertAdaptivePlanningDecision`), distribuição diária em 7 dias (`calculateDailyPlanPreview`, `confirmDailyPlanPreview`, `undoLatestDailyPlanGeneration`) e estratégias de fases da prova (`phaseStrategyController`). (3 testes unitários em `tests/unit/study-plan-builder-controller.test.js`).
+  3. `src/features/weekly-close/weekly-close-modal-controller.ts`: controller completo para fechamento semanal, sustentabilidade (`sustainabilityController`, `weeklyCloseController`), `renderStudyTrack32Insights`, `renderWeeklyCloseActions`, `previewWeeklyCloseActions`, `toggleWeeklyPriority`, `confirmWeeklyCloseActions`, `saveWeeklyCloseSnapshot`, filtros/grupos de timeline estratégica e `openWeeklyClose`. (3 testes unitários em `tests/unit/weekly-close-modal-controller.test.js`).
+  4. `src/ui/tabs/performance/performance-tab-controller.ts`: controller unificado da aba de desempenho com gráfico de evolução de progresso de 180 dias (`recordProgressSnapshot`, `renderProgressChart`), radar de disciplinas (`renderRadarDisciplinas`, `setRadarSubject`), página completa de desempenho `renderPerformance` (visão geral, matérias, simulados e inteligência de exame) e registro encapsulado via `registerController()`. (3 testes unitários em `tests/unit/performance-tab-controller.test.js`).
+- **Redução Obtida:** `src/app.ts` reduzido de 6.736 para **5.966 linhas** (-770 linhas líquidas eliminadas na Fase 9; -4.955 linhas acumuladas desde o início do plano).
+- **Status:** 100% concluída e validada no Fast Gate (1136 testes passando, tempo 36.78s, dual timezone UTC/SP, Playwright smoke passing, bundles 100% reproduzíveis).
+
 ---
 
 ## 5. Governança e Validação Contínua

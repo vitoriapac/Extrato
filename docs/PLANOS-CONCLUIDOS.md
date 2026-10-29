@@ -391,6 +391,15 @@ Em atendimento estrito à política inegociável de governança de `AGENTS.md` (
 - `src/app.ts` reduzido de 8.079 para **6.736 linhas** (-1.343 linhas líquidas na fase; **-4.185 linhas acumuladas** desde o início do plano).
 - Conclusão homologada com **1124 testes unitários verdes em 35.14s** no Fast Gate (dual timezone UTC e America/Sao_Paulo, Playwright smoke passing e bundles reproduzíveis).
 
+### 8.9. Fase 9: Desacoplamento Analítico, Planejamento & Fechamento Semanal
+- Modularização e isolamento completo sob `src/ui/tabs/` e `src/features/`:
+  - [`src/ui/tabs/dashboard/dashboard-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/dashboard-tab-controller.ts) (indicadores KPIs, contagem regressiva, progresso do edital, heatmap de horas e consistência, filtros e navegação acessível - 7 testes em `tests/unit/dashboard-components.test.js`).
+  - [`src/ui/tabs/goals/study-plan-builder-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/goals/study-plan-builder-controller.ts) (construtor de planos de estudo semanais e diários de 7 dias, conselhos adaptativos e estratégias de fases de prova - 3 testes em `tests/unit/study-plan-builder-controller.test.js`).
+  - [`src/features/weekly-close/weekly-close-modal-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/features/weekly-close/weekly-close-modal-controller.ts) (fechamento semanal, ciclo de decisão do StudyTrack 32, propostas e confirmação de prioridades, sustentabilidade e snapshots imutáveis - 3 testes em `tests/unit/weekly-close-modal-controller.test.js`).
+  - [`src/ui/tabs/performance/performance-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/performance/performance-tab-controller.ts) (evolução de progresso histórico de 180 dias, radar de disciplinas, página completa de desempenho e registro de eventos - 3 testes em `tests/unit/performance-tab-controller.test.js`).
+- `src/app.ts` reduzido de 6.736 para **5.966 linhas** (-770 linhas líquidas na fase; **-4.955 linhas acumuladas** desde o início do plano).
+- Conclusão homologada com **1136 testes unitários verdes em 36.78s** no Fast Gate (dual timezone UTC e America/Sao_Paulo, Playwright smoke passing e bundles 100% reproduzíveis).
+
 ---
 
 ## 9. Rastreabilidade de Arquitetura e Governança
@@ -401,7 +410,7 @@ Todas as decisões e entregas registradas neste histórico respeitam os contrato
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
-- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (309 arquivos auditados, 1124 testes unitários verdes em ~35s)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (312 arquivos auditados, 1136 testes unitários verdes em ~36s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

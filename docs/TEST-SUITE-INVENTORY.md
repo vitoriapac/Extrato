@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-247 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+250 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -200,6 +200,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/packages-3-5.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/performance-analytics-controller.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/performance-forecast.test.js | node | Desempenho | functional | — | contract | none |
+| tests/unit/performance-tab-controller.test.js | node | Desempenho | functional | — | contract | none |
 | tests/unit/period-comparison-insights.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/phase-strategy.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/pip-timer-controller.test.js | node | Aplicação | functional | — | contract, viewport | none |
@@ -279,6 +280,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/structured-content-import.test.js | node | Aplicação | critical | — | contract | none |
 | tests/unit/study-cycle-engine.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/study-day-count.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/study-plan-builder-controller.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/study-plan.test.js | node | Planejamento | functional | — | contract | none |
 | tests/unit/study-recommendation-controller.test.js | node | Recomendações | functional | — | contract | none |
 | tests/unit/study-session.test.js | node | Sessões | functional | — | contract | none |
@@ -326,6 +328,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/weekly-close-actions.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-adherence.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/weekly-close-controller.test.js | node | Fechamento | functional | — | contract | none |
+| tests/unit/weekly-close-modal-controller.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-snapshot.test.js | node | Fechamento | critical | — | contract | none |
 | tests/unit/what-if-modal-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/what-if-simulator.test.js | node | Aplicação | functional | — | contract | none |

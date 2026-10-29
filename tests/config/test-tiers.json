@@ -987,6 +987,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/performance-tab-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o controller da aba Desempenho e gráficos de progresso/radar."
+    },
+    {
       "file": "tests/unit/period-comparison-insights.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1382,6 +1387,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/study-plan-builder-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o construtor do plano de estudo, prévias semanais e diárias."
+    },
+    {
       "file": "tests/unit/study-plan.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1615,6 +1625,11 @@
       "file": "tests/unit/weekly-close-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/weekly-close-modal-controller.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Teste unitário determinístico Node (< 1s) para o fechamento semanal, prioridades e snapshots."
     },
     {
       "file": "tests/unit/weekly-close-snapshot.test.js",

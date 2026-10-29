@@ -7,7 +7,6 @@ declare global {
   }
 }
 
-import { renderDisclosure as renderAnalyticalDisclosure } from './ui/components/analytical-presentation.js';
 import { renderReadinessOverview } from './ui/renderers/readiness-overview-renderer.js';
 import {
   matchesSubjectSearch,
@@ -21,6 +20,9 @@ import { createSessionHistoryController } from './ui/tabs/today/session-history-
 import { createStudyRecommendationController } from './ui/tabs/today/study-recommendation-controller.js';
 import { createOnboardingModalController } from './features/onboarding/onboarding-modal-controller.js';
 import { createDashboardTabController } from './ui/tabs/dashboard/dashboard-tab-controller.js';
+import { createStudyPlanBuilderController } from './ui/tabs/goals/study-plan-builder-controller.js';
+import { createWeeklyCloseModalController } from './features/weekly-close/weekly-close-modal-controller.js';
+import { createPerformanceTabController } from './ui/tabs/performance/performance-tab-controller.js';
 import { createApprovalTabController } from './ui/tabs/approval/approval-tab-controller.js';
 import { createQuestionAnalyticsController } from './ui/tabs/questions/question-analytics-controller.js';
 import { createDiagnosticsTabController } from './ui/tabs/diagnostics/diagnostics-tab-controller.js';
@@ -74,9 +76,6 @@ import { createSessionModalController } from './ui/controllers/session-modal-con
 import { createStudyTimerViewController } from './ui/controllers/study-timer-view-controller.js';
 import { formatDuration, formatPlanMinutes } from './core/format-duration.js';
 import { initialGoalSuggestions } from './domain/goals/initial-goal-guidance.js';
-import { buildAdherenceCloseHistory } from './application/adherence/build-weekly-close-adherence.js';
-import { createSustainabilityController } from './ui/controllers/sustainability-controller.js';
-import { renderAdherenceCloseHistory } from './ui/renderers/weekly-adherence-renderer.js';
 import { freezePlanExecution } from './domain/planning/plan-execution-snapshot.js';
 import { buildDiagnosisPageModel } from './application/diagnostics/build-diagnosis-page-model.js';
 import { buildDecisionCoherenceReport } from './application/diagnostics/build-decision-coherence-report.js';
@@ -90,42 +89,17 @@ import {
 import {
   captureAchievementProjection,
   achievementProjectionHistory,
-  buildProjectionCloseContext,
 } from './application/projection/index.js';
-import { renderProjectionCloseContext } from './ui/renderers/projection-close-context-renderer.js';
 import { buildRecommendationFollowup } from './application/recommendations/build-recommendation-followup.js';
 import { renderRecommendationFollowup } from './ui/renderers/recommendation-followup-renderer.js';
-import { buildPriorityHistory } from './application/analytics/build-priority-history.js';
-import {
-  captureCloseComparisonMetrics,
-  buildCloseComparison,
-} from './application/analytics/build-close-comparison.js';
-import { buildStrategicTimeline } from './application/analytics/build-strategic-timeline.js';
-import { buildPhaseComparison } from './application/analytics/build-phase-comparison.js';
-import { renderPhaseComparison } from './ui/renderers/phase-comparison-renderer.js';
-import {
-  renderPriorityHistory,
-  renderCloseComparison,
-  renderStrategicTimeline,
-} from './ui/renderers/strategic-history-renderer.js';
-import { createPhaseStrategyController } from './application/planning/phase-strategy-controller.js';
-import { buildPhasePlanningPreview } from './application/planning/build-phase-planning-preview.js';
-import { renderPhaseStrategy } from './ui/renderers/phase-strategy-renderer.js';
 import { buildCalibratedScoreProjection } from './domain/forecasts/calibrated-score-projection.js';
-import { renderWeeklyDecisionCycle } from './ui/renderers/weekly-decision-cycle-renderer.js';
 import {
-  createPerformanceViewState,
   resolvePerformanceRange,
   updatePerformanceViewState,
 } from './application/performance/performance-view-state.js';
-import { buildPerformancePageModel } from './application/performance/build-performance-page-model.js';
 import { buildPerformanceOverview } from './application/performance/build-performance-overview.js';
 import { countStudyDaysThisWeek } from './application/performance/study-day-count.js';
-import { renderPerformancePage } from './ui/performance/performance-page.js';
-import { renderPerformanceSection } from './ui/performance/render-performance-section.js';
 import { renderProjectionScenarioResult } from './ui/performance/achievement-projection-renderer.js';
-import { createPerformanceController } from './ui/controllers/performance-controller.js';
-import { createPerformanceAnalyticsController } from './ui/controllers/performance-analytics-controller.js';
 import { createDiagnosisController } from './ui/controllers/diagnosis-controller.js';
 import { createProjectionController } from './ui/controllers/projection-controller.js';
 import { normalizeAdherenceTarget } from './application/adherence/adherence-target.js';
@@ -140,8 +114,6 @@ import {
 import { createExamMatrixController } from './ui/tabs/goals/exam-matrix-controller.js';
 import { createSubjectTargetEditorController } from './ui/tabs/goals/subject-target-editor-controller.js';
 import { renderRecoveryReviewDebt } from './ui/renderers/recovery-review-debt-renderer.js';
-import { buildRecommendationExplanation } from './application/recommendations/build-recommendation-explanation.js';
-import { renderRecommendationExplanation } from './ui/renderers/recommendation-explanation-renderer.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS, mountProgressiveLists } from './ui/progressive-list.js';
 import {
   STORAGE_KEY,
@@ -237,7 +209,7 @@ import { buildExecutiveSummary } from './application/build-executive-summary.js'
 import { analyzeErrors } from './domain/diagnostics/error-analysis.js';
 import { buildErrorAnalysisViewModel } from './application/analytics/build-error-analysis-view-model.js';
 import { renderErrorAnalysis } from './ui/renderers/error-analysis-renderer.js';
-import { HEATMAP_METRICS, heatmapMetricLevel } from './domain/analytics/heatmap.js';
+import { heatmapMetricLevel } from './domain/analytics/heatmap.js';
 import { calculateSubjectRadar } from './domain/analytics/multidimensional-radar.js';
 import { generateDiagnosis } from './application/generate-diagnosis.js';
 import { recommendStudy } from './application/recommend-study.js';
@@ -262,7 +234,6 @@ import {
   STUDY_ACTION_SOURCES,
 } from './application/recommendations/recommendation-action.js';
 import {
-  buildHeatmapViewModel,
   buildApprovalSignals,
 } from './application/analytics/build-analytics-view-model.js';
 import { buildStudyPlan } from './application/build-study-plan.js';
@@ -275,13 +246,9 @@ import {
 import { watchDailyExecutionDate } from './ui/controllers/daily-execution-controller.js';
 import {
   ADAPTIVE_PLANNING_VERSION,
-  applyAdaptivePlanningAdvice,
-  buildAdaptivePlanningAdvice,
   resolveExamPhase,
 } from './domain/planning/adaptive-planning.js';
 import {
-  renderAdaptiveAllocationAdvice,
-  renderExamPhase,
   renderExamPhaseCompact,
 } from './ui/renderers/adaptive-planning-renderer.js';
 import { createAchievementsController } from './ui/controllers/achievements-controller.js';
@@ -352,23 +319,11 @@ import { renderPeriodComparisonDetail } from './ui/renderers/period-comparison-d
 import { buildWeeklyAvailability } from './application/goals/weekly-availability.js';
 import { buildHeaderViewModel } from './application/analytics/build-header-view-model.js';
 import { renderHeroHeader, renderCompactHeader } from './ui/renderers/header-renderer.js';
-import { buildStudyTrack32ViewModel } from './application/analytics/build-studytrack32-view-model.js';
-import { buildStrategicFocusHistory } from './application/analytics/build-strategic-focus-history.js';
 import {
   createReadinessSnapshot,
   upsertReadinessSnapshot,
 } from './application/analytics/readiness-history.js';
 import { renderReadinessHistory } from './ui/renderers/readiness-history-renderer.js';
-import {
-  renderWeeklyClose,
-  renderWeeklyCloseNext,
-  renderWeeklyStrategicFocus,
-  renderStrategicFocusHistory,
-  renderPeriodComparison,
-  renderGapMap,
-  renderDecisionHistory,
-  renderPostSimulationReplan,
-} from './ui/renderers/studytrack32-renderer.js';
 import { dismissAlert, reconcileAlerts } from './application/alert-lifecycle.js';
 import { buildIntelligentAlerts } from './domain/diagnostics/alerts.js';
 import { buildPerformanceForecast } from './domain/forecasts/performance-forecast.js';
@@ -404,24 +359,12 @@ import { renderPlanImpactAlignment } from './ui/renderers/plan-impact-alignment-
 import { buildTopicExamProfile } from './application/exam-intelligence/build-topic-exam-profile.js';
 import { resolveValidatedExamImpact } from './domain/exam-intelligence/validated-impact.js';
 import { createSearchController } from './ui/controllers/search-controller.js';
-import { renderHeatmap as renderHeatmapView } from './ui/renderers/heatmap-renderer.js';
-import { renderProgressChart as renderProgressChartView } from './ui/renderers/study-charts-renderer.js';
 import {
   renderIntelligentAlerts,
   renderExecutiveSummary as renderExecutiveSummaryView,
 } from './ui/renderers/overview-renderer.js';
 import { renderDiagnosisCenter as renderDiagnosisCenterView } from './ui/renderers/diagnosis-renderer.js';
 import { renderTopicRetentionDashboard as renderTopicRetentionDashboardView } from './ui/renderers/retention-renderer.js';
-import { buildWeeklyClose } from './domain/analytics/weekly-close.js';
-import {
-  createWeeklyCloseSnapshot,
-  upsertWeeklyCloseSnapshot,
-} from './application/analytics/weekly-close-snapshot.js';
-import { buildWeeklyCloseActionProposal } from './application/analytics/weekly-close-actions.js';
-import { createWeeklyCloseController } from './application/analytics/weekly-close-controller.js';
-import { buildGapMap } from './domain/analytics/gap-map.js';
-import { buildDecisionHistory } from './domain/recommendations/decision-history.js';
-import { buildPostSimulationReplan } from './domain/planning/post-simulation-replan.js';
 import { createReportController } from './ui/controllers/report-controller.js';
 import { createHelpController } from './ui/help/help-controller.js';
 
@@ -477,14 +420,6 @@ const ERROR_CATEGORIES: Record<string, any> = {
 const MIN_TOPIC_TREND_WINDOW_QUESTIONS = 20;
 const MIN_ERROR_RECOMMENDATION_COUNT = 10;
 const MIN_ERROR_RECOMMENDATION_COVERAGE = 60;
-const DEFAULT_STREAK_WEEKS = 12;
-const streakView = {
-  expanded: false,
-  onlyActiveDays: false,
-  metric: 'hours',
-  subjectId: '',
-  selectedDate: null as any,
-};
 const ERROR_RECOMMENDATIONS: Record<string, any> = {
   naoSabia: {
     action: 'Revisar a teoria e os conceitos-base',
@@ -1330,12 +1265,10 @@ function computeStreak(activityDates: Set<string>) {
 }
 
 function toggleStreakExpanded() {
-  streakView.expanded = !streakView.expanded;
-  renderHeatmap();
+  dashboardTabController.toggleStreakExpanded();
 }
 function toggleStreakActiveDays() {
-  streakView.onlyActiveDays = !streakView.onlyActiveDays;
-  renderHeatmap();
+  dashboardTabController.toggleStreakActiveDays();
 }
 const timerUiController = createTimerUiController({
   document,
@@ -1360,24 +1293,10 @@ function toggleTimerFocus(force: boolean | null = null) {
 
 /* ===== GRÁFICO DE EVOLUÇÃO DO PROGRESSO ===== */
 function recordProgressSnapshot(pct: number) {
-  const today = todayISO();
-  const existing = state.progressHistory.find(p => p.date === today);
-  if (existing) {
-    existing.pct = pct;
-  } else {
-    state.progressHistory.push({ date: today, pct });
-  }
-  state.progressHistory.sort((a, b) => a.date.localeCompare(b.date));
-  if (state.progressHistory.length > 180) {
-    state.progressHistory = state.progressHistory.slice(-180);
-  }
+  performanceTabController.recordProgressSnapshot(pct);
 }
 function renderProgressChart() {
-  const container = document.getElementById('progressChart');
-  container!.innerHTML = renderProgressChartView({
-    data: state.progressHistory,
-    formatDate: formatDatePt,
-  });
+  performanceTabController.renderProgressChart();
 }
 
 /* ===== BACKUP: EXPORTAR / IMPORTAR / ZONA DE PERIGO ===== */
@@ -1894,11 +1813,7 @@ function showSessionResult(
   result.focus({ preventScroll: true });
 }
 function openWeeklyClose() {
-  activateTab('metas');
-  document.getElementById('metasCloseSection')?.scrollIntoView({
-    block: 'start',
-    behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-  });
+  weeklyCloseModalController.openWeeklyClose();
 }
 function openNextSessionAction() {
   activateTab('dashboard');
@@ -1997,83 +1912,17 @@ function renderBadges() {
 }
 
 /* ===== HEATMAP DE HORAS E META DIÁRIA ===== */
-function heatmapTooltip(summary: Record<string, any>) {
-  const parts = [
-    formatDatePt(summary.date),
-    formatDuration(summary.seconds),
-    pluralize(summary.sessions.length, 'sessão', 'sessões'),
-  ];
-  if (summary.targetSeconds > 0) parts.push(`${summary.goalPct}% da meta`);
-  if (summary.questions > 0)
-    parts.push(`${summary.questions} questões · ${summary.accuracy}% de acerto`);
-  if (summary.reviews > 0) parts.push(pluralize(summary.reviews, 'revisão', 'revisões'));
-  if (summary.simulations > 0) parts.push(pluralize(summary.simulations, 'simulado'));
-  if (summary.subjectNames.length) parts.push(summary.subjectNames.join(', '));
-  return parts.join(' · ');
-}
 function renderHeatmap() {
-  if (!document.getElementById('heatmapContainer')) return;
-  const activityDates = getActivityDates();
-  const earliest = [...activityDates].sort()[0];
-  const historyDays = earliest
-    ? Math.max(
-        1,
-        Math.round(
-          (Number(parseLocalDate(todayISO())) - Number(parseLocalDate(earliest))) / 86400000
-        ) + 1
-      )
-    : DEFAULT_STREAK_WEEKS * 7;
-  const days = streakView.expanded ? historyDays : DEFAULT_STREAK_WEEKS * 7;
-  const today = todayISO();
-  const cells = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const d = addDays(today, -i);
-    const summary = getDailyStudySummary(d, { subjectId: streakView.subjectId });
-    const active = heatmapMetricLevel(summary, streakView.metric) > 0;
-    if (!streakView.onlyActiveDays || active) cells.push(summary);
-  }
-  const heatmapModel = buildHeatmapViewModel({
-    summaries: cells,
-    metric: streakView.metric,
-    selectedDate: streakView.selectedDate,
-  });
-  const activityStreak = computeStreak(activityDates);
-  const goalStreak = computeStreak(getGoalDates());
-  const selectedSummary = streakView.selectedDate
-    ? getDailyStudySummary(streakView.selectedDate, { subjectId: streakView.subjectId })
-    : null;
-  document.getElementById('heatmapContainer')!.innerHTML = renderHeatmapView({
-    cells: heatmapModel.cells,
-    hasActivity: heatmapModel.hasActivity,
-    metric: streakView.metric,
-    subjectId: streakView.subjectId,
-    subjects: activeSubjects(),
-    expanded: streakView.expanded,
-    onlyActiveDays: streakView.onlyActiveDays,
-    defaultWeeks: DEFAULT_STREAK_WEEKS,
-    activityStreak,
-    goalStreak,
-    selectedDate: streakView.selectedDate,
-    selectedTooltip: selectedSummary ? heatmapTooltip(selectedSummary) : '',
-    tooltipForSummary: heatmapTooltip,
-    escapeHtml,
-    escapeAttr,
-    pluralize,
-  });
+  dashboardTabController.renderHeatmap();
 }
-
 function setHeatmapFilter(field: string, value: any) {
-  if (field === 'metric' && HEATMAP_METRICS.includes(value)) streakView.metric = value;
-  if (field === 'subjectId') streakView.subjectId = value;
-  streakView.selectedDate = null;
-  renderHeatmap();
+  dashboardTabController.setHeatmapFilter(field, value);
 }
 function selectHeatmapDay(date: string) {
-  streakView.selectedDate = date;
-  renderHeatmap();
+  dashboardTabController.selectHeatmapDay(date);
 }
 function viewSelectedHeatmapSessions() {
-  if (streakView.selectedDate) selectSessionHistoryDate(streakView.selectedDate);
+  dashboardTabController.viewSelectedHeatmapSessions();
 }
 
 function getMetricDataState(metric: Record<string, any>, minimumConfidence = 0.35) {
@@ -3572,248 +3421,53 @@ function renderExamBlueprintConfig() {
 }
 let studyPlanPreview: any = null,
   dailyPlanPreview: any = null;
-function studyPlanCandidates({ guidedDefaults = false }: any = {}) {
-  return intelligenceCandidates()
-    .filter((item: any) => item.topicId)
-    .map((item: any) => {
-      let estimatedMinutes = item.remainingMinutes;
-      if (guidedDefaults && estimatedMinutes == null) {
-        const topic = getTopicById(item.topicId)?.topic;
-        estimatedMinutes =
-          topic?.difficulty === 'Difícil' ? 120 : topic?.difficulty === 'Fácil' ? 45 : 75;
-      }
-      return { ...item, completed: false, estimatedMinutes, remainingMinutes: estimatedMinutes };
-    });
+function studyPlanCandidates(options?: any) {
+  return studyPlanBuilderController.studyPlanCandidates(options);
 }
-function buildCurrentStudyPlanProposal({ guidedDefaults = false }: any = {}) {
-  const days = state.examDate ? diasParaRevisao(state.examDate) : null;
-  const weeklyAvailableMinutes = Object.values(state.metas.horasPorDia).reduce<number>(
-    (sum, hours) => sum + Math.max(0, Number(hours) || 0) * 60,
-    0
-  );
-  const candidates = studyPlanCandidates({ guidedDefaults });
-  const plan = studyPlanService.calculate({
-    topics: candidates,
-    weeklyAvailableMinutes,
-    weeksUntilExam: days === null ? 0 : Math.max(0, days / 7),
-  });
-  return {
-    ...plan,
-    examPhase: resolveExamPhase(days),
-    adaptiveAdvice: buildAdaptivePlanningAdvice({
-      plan,
-      candidates,
-      history: state.adaptivePlanningHistory,
-      today: todayISO(),
-    }),
-  };
+function buildCurrentStudyPlanProposal(options?: any) {
+  return studyPlanBuilderController.buildCurrentStudyPlanProposal(options);
 }
 function calculateStudyPlanPreview() {
-  phaseStrategyController.cancel();
-  studyPlanPreview = buildCurrentStudyPlanProposal();
-  renderStudyPlanBuilder();
-}
-function recordAdaptiveDecision(
-  advice: Record<string, any>,
-  status: string,
-  planBefore: Record<string, any> | null = null,
-  planAfter: Record<string, any> | null = null
-) {
-  const from = advice?.from || {},
-    to = advice?.to || {};
-  if (advice?.state !== 'proposal') return null;
-  const changed =
-    planAfter?.items?.filter(
-      (item: any) =>
-        item.minutes !==
-        planBefore?.items?.find((previous: any) => previous.topicId === item.topicId)?.minutes
-    ) || [];
-  const sourceItem = changed.find((item: any) => item.subjectId === from.subjectId),
-    targetItem = changed.find((item: any) => item.subjectId === to.subjectId);
-  const entry = {
-    id: uid('adaptive-plan'),
-    activeExamTags: [...(state.examBlueprint.activeExamTags || [])],
-    createdAt: nowISO(),
-    explanationSnapshot: buildRecommendationExplanation(advice, {
-      createdAt: nowISO(),
-      weeklyPlannedMinutes: (planBefore || studyPlanPreview)?.weeklyPlannedMinutes,
-      weeklyAvailableMinutes: (planBefore || studyPlanPreview)?.weeklyAvailableMinutes,
-    }),
-    sourceSubjectId: from.subjectId,
-    targetSubjectId: to.subjectId,
-    sourceName: from.name,
-    targetName: to.name,
-    minutes: advice.transferMinutes,
-    sourceBefore: from.beforeMinutes,
-    sourceAfter: from.afterMinutes,
-    targetBefore: to.beforeMinutes,
-    targetAfter: to.afterMinutes,
-    reasons: [...(advice.rationale || [])],
-    algorithmVersion: advice.algorithmVersion,
-    status,
-    planId: null as any,
-    sourceTopicId: sourceItem?.topicId || null,
-    targetTopicId: targetItem?.topicId || null,
-    sourceItemBefore: sourceItem
-      ? planBefore!.items.find((item: any) => item.topicId === sourceItem.topicId)?.minutes
-      : null,
-    targetItemBefore: targetItem
-      ? planBefore!.items.find((item: any) => item.topicId === targetItem.topicId)?.minutes
-      : null,
-    sourceMixBefore: sourceItem
-      ? structuredClone(
-          planBefore!.items.find((item: any) => item.topicId === sourceItem.topicId)?.activityMix
-        )
-      : null,
-    targetMixBefore: targetItem
-      ? structuredClone(
-          planBefore!.items.find((item: any) => item.topicId === targetItem.topicId)?.activityMix
-        )
-      : null,
-  };
-  state.adaptivePlanningHistory.push(entry);
-  scheduleSave();
-  return entry;
+  studyPlanBuilderController.calculateStudyPlanPreview();
+  studyPlanPreview = studyPlanBuilderController.getStudyPlanPreview();
 }
 function useAdaptivePlanAdvice() {
-  const adjusted = applyAdaptivePlanningAdvice(studyPlanPreview, studyPlanPreview?.adaptiveAdvice);
-  if (!adjusted) {
-    showToast(
-      'Não há capacidade livre suficiente nos tópicos indicados para aplicar esta sugestão.'
-    );
-    return;
-  }
-  const entry = recordAdaptiveDecision(
-    studyPlanPreview.adaptiveAdvice,
-    'suggested',
-    studyPlanPreview,
-    adjusted
-  );
-  adjusted.adaptiveHistoryId = entry?.id || null;
-  studyPlanPreview = adjusted;
-  renderStudyPlanBuilder();
+  studyPlanBuilderController.useAdaptivePlanAdvice();
+  studyPlanPreview = studyPlanBuilderController.getStudyPlanPreview();
 }
 function rejectAdaptivePlanAdvice() {
-  if (
-    studyPlanPreview?.adaptiveAdvice?.state !== 'proposal' ||
-    studyPlanPreview.adaptiveAdvice.applied
-  )
-    return;
-  recordAdaptiveDecision(studyPlanPreview.adaptiveAdvice, 'rejected');
-  studyPlanPreview.adaptiveAdvice = {
-    state: 'rejected',
-    reason: 'Sugestão recusada. O plano calculado continua disponível para confirmação.',
-  };
-  renderStudyPlanBuilder();
+  studyPlanBuilderController.rejectAdaptivePlanAdvice();
+  studyPlanPreview = studyPlanBuilderController.getStudyPlanPreview();
 }
 function clearStudyPlanPreview() {
-  const entry = state.adaptivePlanningHistory.find(
-    item => item.id === studyPlanPreview?.adaptiveHistoryId && item.status === 'suggested'
-  );
-  if (entry) {
-    entry.status = 'rejected';
-    entry.decidedAt = nowISO();
-    scheduleSave();
-  }
+  studyPlanBuilderController.clearStudyPlanPreview();
   studyPlanPreview = null;
-  renderStudyPlanBuilder();
 }
 function confirmStudyPlan() {
-  if (
-    !studyPlanPreview ||
-    studyPlanPreview.state === 'insufficient' ||
-    !studyPlanPreview.items.length
-  )
-    return;
-  captureReadinessBeforeStrategy('Antes de confirmar o plano semanal');
-  const confirmed = studyPlanService.confirm({
-    ...studyPlanPreview,
-    examDate: state.examDate || null,
-  });
-  const entry = state.adaptivePlanningHistory.find(
-    item => item.id === studyPlanPreview.adaptiveHistoryId && item.status === 'suggested'
-  );
-  if (entry && confirmed) {
-    entry.status = 'applied';
-    entry.planId = confirmed.id;
-    entry.decidedAt = nowISO();
-  }
+  studyPlanBuilderController.confirmStudyPlan();
   studyPlanPreview = null;
   dailyPlanPreview = null;
-  scheduleSave();
-  renderStudyPlanBuilder();
-  showToast('Plano semanal confirmado e salvo.');
 }
 async function revertAdaptivePlanningDecision(id: string) {
-  return feedbackRecoveryResult(await recoveryController.revert(id));
+  return studyPlanBuilderController.revertAdaptivePlanningDecision(id);
 }
 function latestStudyPlan() {
-  return studyPlanService.getActive();
+  return studyPlanBuilderController.latestStudyPlan();
 }
 function calculateDailyPlanPreview() {
-  const studyPlan = latestStudyPlan();
-  if (!studyPlan) return;
-  const days = Array.from({ length: 7 }, (_, index) => {
-      const date = addDays(todayISO(), index);
-      return { date, availableMinutes: Math.round(metaHoursForDate(date) * 60) };
-    }),
-    end = days.at(-1)!.date;
-  const dueReviews = state.reviewAgenda
-    .filter(
-      review =>
-        review.status !== 'Concluído' &&
-        review.topicId &&
-        review.date >= todayISO() &&
-        review.date <= end
-    )
-    .map(review => ({
-      id: review.id,
-      date: review.date,
-      subjectId: review.subjectId,
-      topicId: review.topicId,
-      subjectName: getSubjectName(review.subjectId!),
-      topicName: getTopicName(review.topicId!),
-      minutes: 25,
-    }));
-  dailyPlanPreview = dailyPlanService.calculate({
-    studyPlan,
-    days,
-    dueReviews,
-    reserveRatio: 0.1,
-    eligibleTopicIds: intelligenceCandidates()
-      .filter((item: any) => !item.archived && !item.blockedPrerequisites.length)
-      .map((item: any) => item.topicId),
-  });
-  renderStudyPlanBuilder();
+  studyPlanBuilderController.calculateDailyPlanPreview();
+  dailyPlanPreview = studyPlanBuilderController.getDailyPlanPreview();
 }
 function clearDailyPlanPreview() {
+  studyPlanBuilderController.clearDailyPlanPreview();
   dailyPlanPreview = null;
-  renderStudyPlanBuilder();
 }
 function confirmDailyPlanPreview() {
-  if (dailyPlanPreview?.state !== 'proposal') return;
-  const studyPlan = latestStudyPlan(),
-    result = dailyPlanService.confirm(dailyPlanPreview, studyPlan);
+  studyPlanBuilderController.confirmDailyPlanPreview();
   dailyPlanPreview = null;
-  scheduleSave();
-  renderStudyPlanBuilder();
-  showToast(
-    `${pluralize(result.createdItems, 'atividade')} criada${result.createdItems === 1 ? '' : 's'} no plano diário.`
-  );
 }
 function undoLatestDailyPlanGeneration() {
-  const studyPlan = latestStudyPlan(),
-    operation = [...(studyPlan?.dailyPlanOperations || [])].reverse().find(item => !item.undoneAt);
-  if (!operation) return;
-  const result = dailyPlanService.undo(operation, studyPlan);
-  scheduleSave();
-  renderStudyPlanBuilder();
-  renderPlanoHoje();
-  showToast(
-    result.protectedItems.length
-      ? `${pluralize(result.removedItems, 'atividade')} removida${result.removedItems === 1 ? '' : 's'}; itens executados foram preservados.`
-      : 'Criação dos planos diários desfeita.'
-  );
+  studyPlanBuilderController.undoLatestDailyPlanGeneration();
 }
 function weeklyStrategyCapacity() {
   return Object.values(state.metas.horasPorDia || {}).reduce<number>(
@@ -3821,144 +3475,20 @@ function weeklyStrategyCapacity() {
     0
   );
 }
-function currentPhaseStrategy() {
-  const candidates = intelligenceCandidates();
-  return buildPhasePlanningPreview({
-    plan: latestStudyPlan(),
-    weeklyCapacityMinutes: weeklyStrategyCapacity(),
-    candidates,
-    daysToExam: state.examDate ? diasParaRevisao(state.examDate) : null,
-    today: todayISO(),
-    history: state.adaptivePlanningHistory,
-    readiness: readinessResult(computeApprovalMetrics()),
-    trajectory: currentAchievementProjection(undefined, undefined, candidates).model,
-    examDate: state.examDate,
-    activeExamTags: state.examBlueprint.activeExamTags || [],
-    eligibleTopicIds: examEvidenceContext().content.eligibleTopics.map(topic => topic.id),
-  });
-}
-const phaseStrategyController = createPhaseStrategyController({
-  getProposal: currentPhaseStrategy,
-  getLatestPlan: latestStudyPlan,
-  getPlans: () => state.studyPlans,
-  confirmPlan: (proposal: Record<string, any>) => studyPlanService.confirm(proposal),
-  getCapacity: weeklyStrategyCapacity,
-  getExamDate: () => state.examDate,
-  clock: { nowISO },
-  onBeforeChange: captureReadinessBeforeStrategy,
-});
 function previewPhaseStrategy() {
-  phaseStrategyController.preview();
-  renderStudyPlanBuilder();
+  studyPlanBuilderController.previewPhaseStrategy();
 }
 function cancelPhaseStrategy() {
-  phaseStrategyController.cancel();
-  renderStudyPlanBuilder();
-}
-function savePhaseStrategyResult(result: Record<string, any>) {
-  if (!['applied', 'reverted'].includes(result.state)) {
-    renderStudyPlanBuilder();
-    showToast(result.reason || 'A proposta mudou. Confira os dados e confirme novamente.');
-    return;
-  }
-  studyPlanPreview = null;
-  dailyPlanPreview = null;
-  scheduleSave();
-  renderStudyPlanBuilder();
-  showToast(
-    result.state === 'applied'
-      ? 'Estratégia confirmada em uma nova versão. Distribua o plano nos próximos dias.'
-      : 'Divisão anterior restaurada em uma nova versão. Planos diários existentes foram preservados.'
-  );
+  studyPlanBuilderController.cancelPhaseStrategy();
 }
 function confirmPhaseStrategy() {
-  savePhaseStrategyResult(phaseStrategyController.confirm());
+  studyPlanBuilderController.confirmPhaseStrategy();
 }
 function revertPhaseStrategy() {
-  savePhaseStrategyResult(phaseStrategyController.revert());
+  studyPlanBuilderController.revertPhaseStrategy();
 }
 function renderStudyPlanBuilder() {
-  const container = document.getElementById('examStudyPlan');
-  if (!container) return;
-  const contextContainer = document.getElementById('analysisPlanningContext');
-  if (contextContainer) contextContainer.innerHTML = analysisContextBanner('metas');
-  renderAdaptivePlanningHistory();
-  const latest = latestStudyPlan();
-  if (!studyPlanPreview) {
-    if (dailyPlanPreview) {
-      const proposal = dailyPlanPreview,
-        rows = proposal.days
-          .map(
-            (day: any) =>
-              `<div><strong>${formatDatePt(day.date)}</strong><span>${formatPlanMinutes(day.plannedMinutes)} planejados · ${formatPlanMinutes(day.flexMinutes)} livres · ${day.items.length} atividades</span></div>`
-          )
-          .join('');
-      container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(proposal.plannedMinutes)}</strong><span>Distribuição proposta</span></div><div><strong>${proposal.days.length}</strong><span>Dias utilizados</span></div><div><strong>${formatPlanMinutes(proposal.unallocatedMinutes)}</strong><span>Não alocados</span></div><div><strong>10%</strong><span>Reserva mínima</span></div></div>${proposal.state === 'proposal' ? `<div class="replan-allocations">${rows}</div><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmDailyPlanPreview()">Confirmar planos diários</button><button class="btn ghost" data-delegated-click="clearDailyPlanPreview()">Cancelar</button></div>` : `<div class="upcoming-empty">${escapeHtml(proposal.reason)}</div><button class="btn ghost small" data-delegated-click="clearDailyPlanPreview()">Fechar</button>`}`;
-      return;
-    }
-    const activeOperation = [...(latest?.dailyPlanOperations || [])]
-      .reverse()
-      .find(item => !item.undoneAt);
-    container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Plano confirmado</strong><span>${new Date(latest.confirmedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} · ${formatPlanMinutes(latest.weeklyPlannedMinutes)} por semana · prova em ${latest.examDate ? formatDatePt(latest.examDate) : 'data não definida'}</span></div>` : ''}${renderPhaseStrategy(phaseStrategyController.view() || currentPhaseStrategy(), { preview: phaseStrategyController.view()?.state === 'proposal', canRevert: latest?.phaseStrategy?.status === 'applied' })}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateStudyPlanPreview()">Calcular proposta semanal</button>${latest ? '<button class="btn ghost" data-delegated-click="calculateDailyPlanPreview()">Distribuir nos próximos 7 dias</button>' : ''}${activeOperation ? '<button class="btn ghost" data-delegated-click="undoLatestDailyPlanGeneration()">Desfazer última distribuição</button>' : ''}</div>`;
-    return;
-  }
-  const plan = studyPlanPreview;
-  const blockedNote = plan.blockedTopics?.length
-    ? `<details class="blocked-topics-note"><summary>${plan.blockedTopics.length} tópico${plan.blockedTopics.length === 1 ? ' aguarda' : 's aguardam'} pré-requisitos</summary><p>${plan.blockedTopics
-        .slice(0, 5)
-        .map(
-          (item: any) =>
-            escapeHtml(item.topicName || item.id) +
-            ' — requer ' +
-            item.prerequisites.map((id: any) => escapeHtml(getTopicName(id) || id)).join(', ')
-        )
-        .join(
-          '; '
-        )}${plan.blockedTopics.length > 5 ? ` · e mais ${plan.blockedTopics.length - 5}` : ''}.</p><small>Conclua a base ou reforce o domínio e recalcule a proposta.</small></details>`
-    : '';
-  if (plan.state === 'insufficient') {
-    container.innerHTML = `<div class="upcoming-empty">Não foi possível montar o plano. Confira a data da prova, disponibilidade e carga restante dos tópicos elegíveis.</div>${blockedNote}<button class="btn ghost small" data-delegated-click="clearStudyPlanPreview()">Fechar</button>`;
-    return;
-  }
-  const subjectRows = plan.subjects
-    .map(
-      (item: any) =>
-        `<div><strong>${escapeHtml(item.subjectName)}</strong><span>${formatPlanMinutes(item.minutes)} por semana</span></div>`
-    )
-    .join('');
-  const topicRows = plan.items
-    .map(
-      (item: any) =>
-        `<div class="study-plan-topic" tabindex="-1" data-plan-topic-id="${escapeAttr(item.topicId)}"><span><strong>${escapeHtml(item.subjectName)}</strong> — ${escapeHtml(item.topicName)}<small>${escapeHtml(item.reasonSummary || 'Prioridade calculada pelos fatores disponíveis')}</small>${item.examIntelligence?.usedHistory ? `<small>Histórico validado: ${item.examIntelligence.presentExamCount} de ${item.examIntelligence.analyzedExamCount} provas · confiança ${escapeHtml(item.examIntelligence.confidenceLabel.toLowerCase())}. Impacto estimado ${Math.round(item.examImpact)}/100.</small>` : ''}</span><span>${formatPlanMinutes(item.minutes)} · prioridade ${item.score}/100${item.covered ? ' · manutenção' : ''} · teoria ${formatPlanMinutes(item.activityMix.theory)} · questões ${formatPlanMinutes(item.activityMix.questions)} · revisões ${formatPlanMinutes(item.activityMix.reviews)}</span><button type="button" class="btn ghost small" data-analysis-nav="hoje" data-subject-id="${escapeAttr(item.subjectId)}" data-topic-id="${escapeAttr(item.topicId)}">Por que é prioridade?</button></div>`
-    )
-    .join('');
-  container.innerHTML = `<div class="study-plan-summary"><div><strong>${formatPlanMinutes(plan.weeklyAvailableMinutes)}</strong><span>Capacidade semanal</span></div><div><strong>${formatPlanMinutes(plan.weeklyNeedMinutes)}</strong><span>Necessidade semanal</span></div><div><strong>${plan.weeklyBalanceMinutes < 0 ? '-' : '+'}${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))}</strong><span>Saldo · ${plan.paceState === 'deficit' ? 'ritmo insuficiente' : plan.paceState === 'surplus' ? 'capacidade disponível' : 'ritmo equilibrado'}</span></div><div><strong>${formatPlanMinutes(plan.weeklyPlannedMinutes)}</strong><span>Proposta semanal</span></div></div>${plan.paceState === 'deficit' ? `<p class="context-note context-note--attention">A necessidade estimada até a prova passa a sua capacidade em ${formatPlanMinutes(Math.abs(plan.weeklyBalanceMinutes))} por semana. A proposta distribui só o que cabe na disponibilidade atual. <a class="btn ghost small" href="#metasCapacity">Revisar disponibilidade</a></p>` : ''}<div class="study-plan-confidence">Dados disponíveis: ${Math.round(plan.confidence * 100)}% · força da evidência: ${plan.evidence?.evidenceLabel?.toLowerCase() || 'não avaliada'}${plan.missingEffort.length ? ` · ${plan.missingEffort.length} tópico${plan.missingEffort.length === 1 ? '' : 's'} sem esforço estimado` : ''}</div>${blockedNote}<p class="confidence-note">Manutenção prevista: ${formatPlanMinutes(plan.maintenanceMinutes || 0)} nesta semana. Tópicos cobertos recebem questões e revisões. A prioridade usa os mesmos fatores da recomendação de estudo.</p><div class="study-plan-subjects">${subjectRows}</div><details class="study-plan-details"><summary>Ver divisão por tópico e atividade</summary>${topicRows}</details><div class="study-plan-actions"><button class="btn" data-delegated-click="confirmStudyPlan()">Confirmar e salvar plano</button><button class="btn ghost" data-delegated-click="clearStudyPlanPreview()">Descartar proposta</button></div>`;
-  const phase = plan.examPhase;
-  const advice = plan.adaptiveAdvice;
-  const adaptiveHtml = renderAdaptiveAllocationAdvice(advice, {
-    weeklyPlannedMinutes: plan.weeklyPlannedMinutes,
-    weeklyAvailableMinutes: plan.weeklyAvailableMinutes,
-    formatMinutes: formatPlanMinutes,
-    escapeHtml,
-  });
-  container.insertAdjacentHTML(
-    'afterbegin',
-    `${renderExamPhase(phase, { escapeHtml })}${adaptiveHtml}`
-  );
-}
-function renderAdaptivePlanningHistory() {
-  const container = document.getElementById('adaptivePlanningHistory');
-  if (!container) return;
-  const entries = [...state.adaptivePlanningHistory].sort((a, b) =>
-    String(b.createdAt).localeCompare(String(a.createdAt))
-  );
-  const labels: Record<string, any> = {
-    suggested: 'Sugestão na prévia',
-    applied: 'Aplicado',
-    rejected: 'Recusado',
-    reverted: 'Revertido',
-  };
-  container.innerHTML = `<details class="adaptive-history"><summary>Histórico de adaptações (${entries.length})</summary>${entries.length ? `<ol>${entries.map(item => `<li><div><strong>${escapeHtml(labels[item.status] || item.status)}</strong><small>${escapeHtml(new Date(item.createdAt!).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))}</small></div><p>${escapeHtml(item.sourceName || getSubjectName(item.sourceSubjectId!))} ${formatPlanMinutes(item.sourceBefore!)} → ${formatPlanMinutes(item.sourceAfter!)} · ${escapeHtml(item.targetName || getSubjectName(item.targetSubjectId!))} ${formatPlanMinutes(item.targetBefore!)} → ${formatPlanMinutes(item.targetAfter!)}</p><small>${escapeHtml(item.reasons?.join(' ') || 'Redistribuição proposta pelos indicadores disponíveis.')}</small>${renderRecommendationExplanation(item.explanationSnapshot!)}${item.status === 'applied' && latestStudyPlan()?.id === item.planId ? `<button class="btn ghost small" data-delegated-click="revertAdaptivePlanningDecision('${escapeAttr(item.id)}')">Reverter ajuste</button>` : ''}</li>`).join('')}</ol>` : '<p>Nenhuma decisão de adaptação registrada.</p>'}</details>`;
+  studyPlanBuilderController.renderStudyPlanBuilder();
 }
 function updateExamBlueprint(field: string, value: any, { refresh = true }: any = {}) {
   const nextValue =
@@ -4441,22 +3971,12 @@ function subjectRadarModel(subject: Record<string, any>) {
   return { ...result, id: subject.id, name: subject.name };
 }
 
-const performanceAnalyticsController = createPerformanceAnalyticsController({
-  getSubjects: () => activeSubjects(),
-  getSubjectRadarModel: subjectRadarModel,
-  onRender: renderRadarDisciplinas,
-  escapeHtml,
-  escapeAttr,
-});
-
 function setRadarSubject(slot: string, value: any) {
-  performanceAnalyticsController.setRadarSubject(slot, value);
+  performanceTabController.setRadarSubject(slot, value);
 }
 
 function renderRadarDisciplinas() {
-  const container = document.getElementById('radarChart');
-  if (!container) return;
-  container.innerHTML = performanceAnalyticsController.renderRadarHtml();
+  performanceTabController.renderRadarDisciplinas();
 }
 
 /* ===== SIMULADOS PLANEJADOS ===== */
@@ -4804,6 +4324,10 @@ const whatIfController = createWhatIfController({
 let todayTabController: ReturnType<typeof createTodayTabController>;
 let studyRecommendationController: ReturnType<typeof createStudyRecommendationController>;
 let onboardingModalController: ReturnType<typeof createOnboardingModalController>;
+let dashboardTabController: ReturnType<typeof createDashboardTabController>;
+let studyPlanBuilderController: ReturnType<typeof createStudyPlanBuilderController>;
+let weeklyCloseModalController: ReturnType<typeof createWeeklyCloseModalController>;
+let performanceTabController: ReturnType<typeof createPerformanceTabController>;
 
 todayTabController = createTodayTabController({
   formatPlanMinutes,
@@ -5468,230 +4992,26 @@ function renderApprovalDashboard() {
 function renderRecommendationHistorySummary() {
   approvalTabController.renderRecommendationHistorySummary();
 }
-let priorityHistorySubject = '';
-function setPriorityHistorySubject(value: any) {
-  priorityHistorySubject = value;
-  renderStudyTrack32Insights();
-}
-let strategicTimelineFilter = 'all';
-let strategicTimelineGroup = 'week';
 function setStrategicTimelineFilter(value: any) {
-  strategicTimelineFilter = ['all', 'decisions', 'performance', 'planning', 'assessments'].includes(
-    value
-  )
-    ? value
-    : 'all';
-  renderStudyTrack32Insights();
+  weeklyCloseModalController.setStrategicTimelineFilter(value);
 }
 function setStrategicTimelineGroup(value: any) {
-  strategicTimelineGroup = ['week', 'month', 'phase'].includes(value) ? value : 'week';
-  renderStudyTrack32Insights();
+  weeklyCloseModalController.setStrategicTimelineGroup(value);
 }
-let currentStudyTrackModel: any = null;
-let weeklyCloseController: any = null;
-const sustainabilityController = createSustainabilityController({
-  getModel: () => currentStudyTrackModel?.weeklyClose?.adherence?.sustainability,
-  getCapacity: () =>
-    Object.values(state.metas.horasPorDia || {}).reduce<number>(
-      (sum, value) => sum + (Number(value) || 0) * 60,
-      0
-    ),
-  formatMinutes: formatPlanMinutes,
-  showPreview: (text: string, accept: () => void, options: Record<string, any>) =>
-    showConfirm(text, accept, undefined, options),
-  navigate: () => {
-    activateTab('metas');
-    const target = document.getElementById('metasCapacityTitle');
-    target?.setAttribute('tabindex', '-1');
-    target?.focus();
-    target?.scrollIntoView({ block: 'start' });
-  },
-});
+function setPriorityHistorySubject(value: any) {
+  weeklyCloseModalController.setPriorityHistorySubject(value);
+}
 function renderStudyTrack32Insights() {
-  const close = document.getElementById('weeklyCloseDashboard'),
-    comparison = document.getElementById('periodComparisonDashboard'),
-    gaps = document.getElementById('gapMapDashboard'),
-    history = document.getElementById('decisionHistoryDashboard'),
-    simReplan = document.getElementById('postSimulationReplanDashboard');
-  const scope = examEvidenceContext(),
-    scopedTopicIds = new Set(scope.content.eligibleTopics.map(item => item.id)),
-    scopedSubjectIds = new Set(scope.content.eligibleTopics.map(item => item.subjectId)),
-    scopedPlans = (planningRepository.getDailyPlans?.() || []).map((plan: any) => ({
-      ...plan,
-      items: (plan.items || []).filter(
-        (item: any) => !item.topicId || scopedTopicIds.has(item.topicId)
-      ),
-    })),
-    scopedRecommendations = state.recommendationFeedback.filter(
-      item => !item.topicId || scopedTopicIds.has(item.topicId)
-    ),
-    model = buildStudyTrack32ViewModel({
-      readinessSnapshots: state.readinessSnapshots,
-      readiness: readinessResult(computeApprovalMetrics()),
-      today: todayISO(),
-      sessions: scope.sessions.included,
-      questions: scope.questions.included,
-      dailyPlans: scopedPlans,
-      weeklyCloseSnapshots: state.weeklyCloseSnapshots,
-      executionSource: {
-        dailyPlans: state.dailyPlans,
-        sessions: state.studySessions,
-        subjects: state.subjects,
-        capacityHistory: state.planningCapacityHistory,
-        adherenceTarget: state.metas.aderenciaSemanal,
-      },
-      planAdjustments: state.planAdjustments,
-      recommendations: scopedRecommendations,
-      simulations: examScopedSimulations(),
-      subjects: state.subjects.filter(subject => scopedSubjectIds.has(subject.id)),
-      activeExamTags: state.examBlueprint?.activeExamTags || [],
-      weeklyCapacityMinutes: Object.values(state.metas.horasPorDia || {}).reduce<number>(
-        (sum, hours) => sum + (Number(hours) || 0) * 60,
-        0
-      ),
-      targetAccuracy: state.metas.metaAprovacao,
-      blueprint: state.examBlueprint,
-      algorithmServices: {
-        addDays,
-        buildWeeklyClose,
-        buildGapMap,
-        buildDecisionHistory,
-        buildPostSimulationReplan,
-        buildCandidates: intelligenceCandidates,
-      },
-      nameResolvers: { subject: getSubjectName, topic: getTopicName },
-    }),
-    options = { escapeHtml, formatMinutes: formatPlanMinutes };
-  currentStudyTrackModel = model;
-  (model as { comparisonMetrics?: unknown }).comparisonMetrics = captureCloseComparisonMetrics(
-    model,
-    projectPerformance()
-  );
-  if (close) {
-    const trajectory = currentAchievementProjection().model;
-    const trajectoryClose = buildProjectionCloseContext({
-      current: trajectory,
-      snapshots: state.projectionSnapshots,
-      activeExamTags: model.activeExamTags,
-      periodStart: model.period.start,
-      today: todayISO(),
-    });
-    close.innerHTML =
-      renderWeeklyClose(model.weeklyClose, { ...options, includeNext: false }) +
-      renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle, {
-        adherence: model.weeklyClose.adherence,
-        trajectory: trajectoryClose,
-      }) +
-      renderAnalyticalDisclosure({
-        title: 'Comparar a semana e a trajetória',
-        className: 'weekly-comparison-detail',
-        contentHTML:
-          renderCloseComparison(
-            buildCloseComparison({
-              current: model,
-              snapshots: state.weeklyCloseSnapshots,
-              activeExamTags: model.activeExamTags,
-            })
-          ) + renderProjectionCloseContext(trajectoryClose, { escapeHtml }),
-      }) +
-      renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus) +
-      renderWeeklySnapshotHistory() +
-      renderWeeklyCloseNext(model.weeklyClose, options) +
-      (model.weeklyClose.state === 'insufficient'
-        ? ''
-        : renderWeeklyCloseActions(model.weeklyClose));
-  }
-  const timeline = document.getElementById('strategicTimelineDashboard');
-  if (timeline)
-    timeline.innerHTML =
-      renderPhaseComparison(
-        buildPhaseComparison({
-          weeklyCloseSnapshots: state.weeklyCloseSnapshots,
-          readinessSnapshots: state.readinessSnapshots,
-          activeExamTags: state.examBlueprint.activeExamTags || [],
-        })
-      ) +
-      renderStrategicTimeline(
-        buildStrategicTimeline({
-          readinessSnapshots: state.readinessSnapshots,
-          weeklyCloseSnapshots: state.weeklyCloseSnapshots,
-          recommendations: state.recommendationFeedback,
-          recommendationHistory: state.recommendationHistory,
-          studyPlans: state.studyPlans,
-          adaptiveHistory: state.adaptivePlanningHistory,
-          planAdjustments: state.planAdjustments,
-          simulations: state.simulados,
-          topics: allTopics(),
-          activeExamTags: state.examBlueprint.activeExamTags || [],
-          filter: strategicTimelineFilter,
-          groupBy: strategicTimelineGroup,
-          today: todayISO(),
-        })
-      );
-  const priorities = document.getElementById('priorityHistoryDashboard');
-  if (priorities)
-    priorities.innerHTML = renderPriorityHistory(
-      buildPriorityHistory({
-        weeklyCloseSnapshots: state.weeklyCloseSnapshots,
-        topics: allTopics(),
-        candidates: intelligenceCandidates(),
-        recommendationHistory: state.recommendationHistory,
-        recommendations: state.recommendationFeedback,
-        studyPlans: state.studyPlans,
-        activeExamTags: state.examBlueprint.activeExamTags || [],
-        today: todayISO(),
-        subjectId: priorityHistorySubject,
-      })
-    );
-  if (comparison) comparison.innerHTML = renderPeriodComparison(model.weeklyClose, options);
-  if (gaps) gaps.innerHTML = renderGapMap(model.gapMap, options);
-  if (history) history.innerHTML = renderDecisionHistory(model.decisionHistory, options);
-  if (simReplan) simReplan.innerHTML = renderPostSimulationReplan(model.postSimulation, options);
-}
-function renderWeeklySnapshotHistory() {
-  const activeExamTags = currentStudyTrackModel?.activeExamTags || [];
-  return (
-    renderStrategicFocusHistory(
-      buildStrategicFocusHistory({
-        snapshots: state.weeklyCloseSnapshots,
-        current: currentStudyTrackModel,
-        activeExamTags,
-      })
-    ) +
-    renderAdherenceCloseHistory(
-      buildAdherenceCloseHistory({
-        snapshots: state.weeklyCloseSnapshots,
-        activeExamTags,
-        today: todayISO(),
-      })
-    )
-  );
-}
-function renderWeeklyCloseActions(close: Record<string, any>) {
-  const priorities = close.priorities || [];
-  if (!priorities.length)
-    return `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`;
-  const draft = weeklyCloseController.view(),
-    checks = priorities
-      .map((item: any, index: any) => {
-        const id = item.priorityId || item.topicId || String(index);
-        return `<label class="weekly-priority-choice"><input type="checkbox" data-delegated-change="toggleWeeklyPriority('${escapeAttr(id)}',this.checked)" ${draft.selectedIds.includes(id) ? 'checked' : ''}><span>${escapeHtml(item.action)} · ${formatPlanMinutes(item.estimatedMinutes)}</span></label>`;
-      })
-      .join('');
-  const proposal = draft.proposal;
-  return `<section class="weekly-close-actions"><h4>Decida as prioridades</h4>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()">Conferir impacto</button>${proposal ? `<div class="weekly-action-preview"><strong>${proposal.allocations.length} alocações · ${formatPlanMinutes(proposal.unallocatedMinutes)} sem capacidade</strong><button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button></div>` : ''}<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button></section>`;
+  weeklyCloseModalController.renderStudyTrack32Insights();
 }
 function previewWeeklyCloseActions() {
-  weeklyCloseController.preview();
+  weeklyCloseModalController.previewWeeklyCloseActions();
 }
 function toggleWeeklyPriority(id: string, checked: boolean) {
-  weeklyCloseController.toggle(id, checked);
+  weeklyCloseModalController.toggleWeeklyPriority(id, checked);
 }
 function confirmWeeklyCloseActions() {
-  if (!weeklyCloseController.apply())
-    showToast(
-      'A capacidade ou as prioridades mudaram. Confira a prévia atualizada antes de confirmar.'
-    );
+  weeklyCloseModalController.confirmWeeklyCloseActions();
 }
 function recordedExamPhase() {
   return resolveExamPhase(state.examDate ? diasParaRevisao(state.examDate) : null);
@@ -5735,46 +5055,8 @@ function captureReadinessBeforeStrategy(reason: string) {
     buildReadinessBeforeStrategySnapshot(reason)!
   );
 }
-weeklyCloseController = createWeeklyCloseController({
-  getModel: () => currentStudyTrackModel,
-  getState: () => state,
-  buildProposal: buildWeeklyCloseActionProposal,
-  createSnapshot: (model: Record<string, any>, options: Record<string, any>) =>
-    createWeeklyCloseSnapshot(model, { ...options, examPhase: recordedExamPhase() }),
-  upsertSnapshot: upsertWeeklyCloseSnapshot,
-  clock: { today: todayISO, nowISO, addDays },
-  idGenerator: uid,
-  getDailyCapacity: (date: string) => metaHoursForDate(date) * 60,
-  onChanged: renderStudyTrack32Insights,
-  onBeforeApply: () => {
-    saveCurrentReadinessSnapshot();
-    captureReadinessBeforeStrategy('Antes de aplicar as prioridades do fechamento');
-  },
-  onApplied: () => {
-    scheduleSave();
-    renderApprovalDashboard();
-    renderPlanoHoje();
-    showToast('Prioridades aceitas aplicadas ao plano diário.');
-  },
-});
 function saveWeeklyCloseSnapshot() {
-  const snapshot = createWeeklyCloseSnapshot(currentStudyTrackModel, {
-    savedAt: nowISO(),
-    id: uid('weekly-close'),
-    examPhase: recordedExamPhase(),
-  });
-  if (!snapshot) return showToast('Ainda não há dados suficientes para salvar o fechamento.');
-  if (!upsertWeeklyCloseSnapshot(state.weeklyCloseSnapshots, snapshot))
-    return showToast('Fechamento já salvo com os mesmos dados.');
-  saveCurrentReadinessSnapshot();
-  scheduleSave();
-  renderApprovalDashboard();
-  document
-    .querySelector<HTMLElement>(
-      '#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]'
-    )
-    ?.focus();
-  showToast('Fechamento semanal salvo como retrato deste período.');
+  weeklyCloseModalController.saveWeeklyCloseSnapshot();
 }
 function renderTopicRetentionDashboard() {
   approvalTabController.renderTopicRetentionDashboard();
@@ -5804,50 +5086,143 @@ function planStartDate() {
     .sort();
   return valid[0] || todayISO();
 }
-function renderExamProgress() {
-  const el = document.getElementById('examProgress');
-  if (!el) return;
-  if (!state.examDate) {
-    el.style.display = 'none';
-    return;
-  }
-  el.style.display = 'grid';
-  const today = todayISO(),
-    start = planStartDate(),
-    exam = state.examDate;
-  const diff = (a: any, b: any) =>
-    Math.max(0, Math.round((Number(parseLocalDate(b)) - Number(parseLocalDate(a))) / 86400000));
-  const total = Math.max(1, diff(start, exam)),
-    elapsed = Math.min(total, diff(start, today)),
-    remaining = Math.max(0, diasParaRevisao(exam) ?? 0),
-    pct = Math.max(0, Math.min(100, Math.round((elapsed / total) * 100)));
-  el.innerHTML = `<span class="exam-progress-label">Hoje</span><div class="exam-progress-track" role="progressbar" aria-label="Progresso até a prova" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div class="exam-progress-fill" style="width:${pct}%"></div></div><strong>${pct}%</strong><span class="exam-progress-days">${total} dias totais · ${elapsed} passaram · ${remaining} faltam</span>`;
-}
+
+dashboardTabController = createDashboardTabController({
+  document,
+  window,
+  getState: () => state,
+  todayISO,
+  parseLocalDate,
+  addDays,
+  formatDecimal,
+  formatDatePt,
+  formatDuration,
+  pluralize,
+  escapeHtml,
+  escapeAttr,
+  recentPerformance,
+  projectPerformance,
+  revisoesAtrasadas,
+  diasParaRevisao,
+  activateTab,
+  renderAgenda,
+  getActivityDates,
+  getGoalDates,
+  getDailyStudySummary,
+  heatmapMetricLevel,
+  computeStreak,
+  activeSubjects,
+  selectSessionHistoryDate,
+  planStartDate,
+});
+
+studyPlanBuilderController = createStudyPlanBuilderController({
+  document,
+  window,
+  getState: () => state,
+  studyPlanService,
+  dailyPlanService,
+  recoveryController,
+  intelligenceCandidates,
+  getTopicById,
+  getTopicName,
+  getSubjectName,
+  todayISO,
+  nowISO,
+  addDays,
+  diasParaRevisao,
+  formatDatePt,
+  formatPlanMinutes,
+  pluralize,
+  escapeHtml,
+  escapeAttr,
+  metaHoursForDate,
+  uid,
+  showToast,
+  scheduleSave,
+  renderPlanoHoje: () => todayTabController?.renderPlanoHoje(),
+  captureReadinessBeforeStrategy,
+  readinessResult,
+  computeApprovalMetrics,
+  currentAchievementProjection,
+  examEvidenceContext,
+  analysisContextBanner,
+  feedbackRecoveryResult,
+});
+
+weeklyCloseModalController = createWeeklyCloseModalController({
+  document,
+  window,
+  getState: () => state,
+  planningRepository,
+  examEvidenceContext,
+  intelligenceCandidates,
+  getSubjectName,
+  getTopicName,
+  todayISO,
+  nowISO,
+  addDays,
+  diasParaRevisao,
+  formatPlanMinutes,
+  escapeHtml,
+  escapeAttr,
+  uid,
+  showToast,
+  showConfirm,
+  scheduleSave,
+  renderApprovalDashboard: () => approvalTabController?.renderApprovalDashboard(),
+  renderPlanoHoje: () => todayTabController?.renderPlanoHoje(),
+  saveCurrentReadinessSnapshot,
+  captureReadinessBeforeStrategy,
+  readinessResult,
+  computeApprovalMetrics,
+  currentAchievementProjection,
+  examScopedSimulations,
+  allTopics,
+});
+
+performanceTabController = createPerformanceTabController({
+  document,
+  window,
+  getState: () => state,
+  todayISO,
+  formatDatePt,
+  formatDecimal,
+  escapeHtml,
+  escapeAttr,
+  examEvidenceContext,
+  examScopedSubjects,
+  examScopedSimulations,
+  currentAchievementProjection,
+  achievementProjectionHistory,
+  recoveryController,
+  readinessResult,
+  computeApprovalMetrics,
+  intelligenceCandidates,
+  entitySubjectId,
+  simuladoEffectiveCounts,
+  localDateFromTimestamp,
+  topicMasteryIndex,
+  topicRetentionScore,
+  buildTopicExamProfile,
+  topicHistoryService,
+  analysisContextBanner,
+  renderExamIntelligenceSection,
+  projectionController,
+  renderProjectionScenarioResult,
+  applyConfirmedRecoveryPlan,
+  render: tab => render(tab),
+  activateTab,
+  activeSubjects,
+  subjectRadarModel,
+});
+performanceTabController.registerController();
+
 function renderExamCountdown() {
-  const input = document.getElementById('examDateInput') as HTMLInputElement;
-  if (document.activeElement !== input) input.value = state.examDate || '';
-  const fig = document.getElementById('examCountdownFigure');
-  renderExamProgress();
-  if (!state.examDate) {
-    fig!.textContent = 'defina a data ao lado';
-    fig!.classList.remove('urgent');
-    return;
-  }
-  const dias = diasParaRevisao(state.examDate);
-  fig!.classList.toggle('urgent', dias !== null && dias <= 7);
-  if (dias === null) fig!.textContent = '';
-  else if (dias < 0) fig!.textContent = 'prova foi há ' + pluralize(Math.abs(dias), 'dia');
-  else if (dias === 0) fig!.textContent = 'a prova é hoje!';
-  else fig!.textContent = 'faltam ' + pluralize(dias, 'dia') + ' para a prova';
+  dashboardTabController.renderExamCountdown();
 }
-function navigateKpi(tab: string, filter: string) {
-  activateTab(tab);
-  if (tab === 'agenda' && filter === 'overdue') {
-    const select = document.getElementById('agendaFilterStatus') as HTMLSelectElement;
-    select.value = 'Atrasadas';
-    renderAgenda();
-  }
-  document.getElementById('panel-' + tab)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function navigateKpi(tab: string, filter?: string) {
+  dashboardTabController.navigateKpi(tab, filter);
 }
 function completeUnifiedReview(id: string, origin: string) {
   calendarTabController.completeUnifiedReview(id, origin);
@@ -5859,26 +5234,14 @@ function renderCalAtrasadas(elId = 'calAtrasadas') {
   calendarTabController.renderCalAtrasadas(elId);
 }
 function renderKPIs() {
-  const resolved = state.questoes.reduce((n, q) => n + (Number(q.resolved) || 0), 0),
-    accuracy = recentPerformance().current!.accuracy,
-    simulations = projectPerformance().central,
-    late = revisoesAtrasadas(),
-    target = state.metas.metaAprovacao;
-  const hasResults = accuracy != null,
-    shown = (value: any) => (value == null ? '—' : `${formatDecimal(value)}%`);
-  document.getElementById('kpiGrid')!.innerHTML = `
-    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(resolved)}</div><div class="l">Questões resolvidas</div></button>
-    <button type="button" class="kpi-cell kpi-link ${hasResults ? (accuracy >= target ? 'ok' : 'warn') : ''}" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(accuracy)}</div><div class="l">Precisão · 30 dias</div></button>
-    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(simulations)}</div><div class="l">Simulados comparáveis</div></button>
-    <button type="button" class="kpi-cell kpi-link ${late > 0 ? 'warn' : ''}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
-    <button type="button" class="kpi-cell kpi-link ${hasResults ? (accuracy >= target ? 'ok' : 'warn') : ''}" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de aprovação</div></button>`;
+  dashboardTabController.renderKPIs();
 }
 
 /* ===== EVENTOS DELEGADOS: ações declarativas, sem JavaScript inline ===== */
 const DELEGATED_ACTION_HANDLERS = composeDelegatedActionHandlers({
   openWeeklyAdherencePlanning: () => activateTab('metas'),
   openWeeklyClose,
-  reviewPlanningCapacity: () => sustainabilityController.review(),
+  reviewPlanningCapacity: () => weeklyCloseModalController.sustainabilityController.review(),
   setStrategicTimelineFilter,
   setStrategicTimelineGroup,
   setPriorityHistorySubject,
@@ -6055,7 +5418,6 @@ createDelegatedEventsController({
   },
 }).register();
 /* ===== MASTER RENDER ===== */
-let performanceViewState = createPerformanceViewState();
 let analysisNavigationContext: any = null;
 function analysisContextBanner(destination: string) {
   if (
@@ -6071,147 +5433,11 @@ function analysisContextBanner(destination: string) {
   return `<div class="analysis-context-banner"><span>Contexto: ${escapeHtml(label || 'análise')} · ${analysisNavigationContext.period === 'all' ? 'todo o histórico' : `período de ${escapeHtml(analysisNavigationContext.period)} dias`}</span><button type="button" class="btn ghost small" data-analysis-return>Voltar à origem</button></div>`;
 }
 function performanceScopedPlans(scope: any) {
-  if (!(state.examBlueprint?.activeExamTags || []).length) return state.dailyPlans;
-  const eligible = new Set(scope.content.eligibleTopics.map((item: any) => item.id));
-  return state.dailyPlans
-    .map(plan => ({
-      ...plan,
-      items: (plan.items || []).filter(item => item.topicId && eligible.has(item.topicId)),
-    }))
-    .filter(plan => plan.items.length);
+  return performanceTabController.performanceScopedPlans(scope);
 }
 function renderPerformance() {
-  const target = document.getElementById('performancePage');
-  if (!target) return;
-  const examHub = document.getElementById('examIntelligenceHub'),
-    parking = document.getElementById('examIntelligenceParking');
-  if (examHub && parking && examHub.parentElement !== parking) parking.append(examHub);
-  const today = todayISO(),
-    range = resolvePerformanceRange({ today, ...performanceViewState }),
-    scope = examEvidenceContext();
-  const activeExamTags = state.examBlueprint?.activeExamTags || [];
-  const examSection = performanceViewState.section === 'exam';
-  const achievement =
-    performanceViewState.section === 'overview' ? currentAchievementProjection() : null;
-  const pageModel = examSection
-    ? null
-    : buildPerformancePageModel({
-        viewState: performanceViewState,
-        range,
-        today,
-        activeExamTags,
-        scope,
-        subjects: examScopedSubjects(),
-        simulations:
-          performanceViewState.section === 'subjects' ||
-          performanceViewState.section === 'simulations'
-            ? examScopedSimulations()
-            : [],
-        achievementProjection: achievement?.model || null,
-        achievementHistory: achievementProjectionHistory(
-          state.projectionSnapshots,
-          activeExamTags,
-          today
-        ),
-        achievementCapacityMinutes: achievement?.weeklyCapacityMinutes || 0,
-        adherenceContext: achievement?.adherenceContext || null,
-        recoveryPlan: achievement ? recoveryController.preview(achievement.model) : null,
-        projectionSnapshots: state.projectionSnapshots,
-        readinessSnapshots: state.readinessSnapshots,
-        readiness:
-          performanceViewState.section === 'overview'
-            ? readinessResult(computeApprovalMetrics())
-            : null,
-        blueprint: state.examBlueprint,
-        globalTarget: state.metas.metaAprovacao,
-        candidates: performanceViewState.section === 'subjects' ? intelligenceCandidates() : [],
-        dailyPlans: performanceScopedPlans(scope),
-        executionSource: {
-          dailyPlans: state.dailyPlans,
-          sessions: state.studySessions,
-          subjects: state.subjects,
-          capacityHistory: state.planningCapacityHistory,
-          adherenceTarget: state.metas.aderenciaSemanal,
-        },
-        subjectIdFor: entitySubjectId,
-        simulationCountsFor: simuladoEffectiveCounts,
-        reviewCompletedDateFor: (item: Record<string, any>) =>
-          localDateFromTimestamp(item.completedAt),
-        topicMetricsFor: (subjectId: string, topicId: string) => {
-          const mastery = topicMasteryIndex(subjectId, topicId),
-            retention = topicRetentionScore(subjectId, topicId);
-          return {
-            mastery: mastery?.confidence > 0 ? mastery.score : null,
-            retention: retention?.available ? retention.score : null,
-            evidence: mastery?.confidence || 0,
-          };
-        },
-        topicProfileFor: (topic: Record<string, any>, subject: Record<string, any>) =>
-          buildTopicExamProfile({
-            topic,
-            subjectConfig: state.examBlueprint.subjects.find(item => item.subjectId === subject.id),
-            activeExamTags,
-            exams: state.exams,
-            examQuestions: state.examQuestions,
-          }),
-        topicHistoryFor: (topicId: string) =>
-          topicHistoryService.list({ topicId, includeLifecycle: false }),
-      });
-  const sectionHtml = examSection
-    ? '<div id="examIntelligenceMount"></div>'
-    : renderPerformanceSection(pageModel!, {
-        range,
-        today,
-        activeExamTags,
-        formatDate: formatDatePt,
-        escapeHtml,
-        escapeAttr,
-        targetScore: state.examBlueprint?.configuredAt ? state.examBlueprint.targetScore : null,
-      });
-  target.innerHTML = renderPerformancePage({
-    viewState: performanceViewState,
-    range,
-    sectionHtml: analysisContextBanner('desempenho') + sectionHtml,
-    activeExamCount: (state.examBlueprint?.activeExamTags || []).length,
-    escapeHtml,
-    escapeAttr,
-  });
-  if (examSection) {
-    target.querySelector('#examIntelligenceMount')?.append(examHub!);
-    renderExamIntelligenceSection();
-  }
-  // Announce only a short summary, and only when section or period changes; the panel itself is re-rendered silently.
-  const status = document.getElementById('performanceStatus'),
-    section = target.querySelector('.performance-section-button.active')?.textContent.trim();
-  const statusText = section
-    ? `Mostrando ${section}${examSection ? '' : ` · ${range.label}`}.`
-    : '';
-  if (status && status.textContent !== statusText) status.textContent = statusText;
-  const dialog = target.querySelector<HTMLDialogElement>('#performanceTopicDialog');
-  if (dialog) {
-    dialog.addEventListener(
-      'close',
-      () => {
-        performanceViewState = updatePerformanceViewState(performanceViewState, { topicId: null });
-      },
-      { once: true }
-    );
-    dialog.showModal();
-  }
+  performanceTabController.renderPerformance();
 }
-createPerformanceController({
-  document,
-  getViewState: () => performanceViewState,
-  setViewState: (value: any) => {
-    performanceViewState = value;
-  },
-  render: () => render('desempenho'),
-  activateTab,
-  simulateScenario: (scenario: Record<string, any>) => projectionController.simulate(scenario),
-  renderScenarioResult: (result: Record<string, any>) =>
-    renderProjectionScenarioResult(result, { escapeHtml }),
-  applyRecovery: (signature: string) => applyConfirmedRecoveryPlan(signature),
-}).register();
 document.addEventListener('click', event => {
   const back = (event.target as HTMLElement).closest('[data-analysis-return]');
   if (back) {
@@ -6219,12 +5445,14 @@ document.addEventListener('click', event => {
     if (!analysisContextInScope(previous, state.examBlueprint?.activeExamTags || [])) return;
     analysisNavigationContext = null;
     if (previous.origin === 'desempenho')
-      performanceViewState = updatePerformanceViewState(performanceViewState, {
-        section: 'subjects',
-        period: previous.period,
-        subjectId: previous.subjectId,
-        topicId: previous.topicId,
-      });
+      performanceTabController.setViewState(
+        updatePerformanceViewState(performanceTabController.getViewState(), {
+          section: 'subjects',
+          period: previous.period,
+          subjectId: previous.subjectId,
+          topicId: previous.topicId,
+        })
+      );
     activateTab(previous.origin);
     return;
   }
@@ -6238,17 +5466,19 @@ document.addEventListener('click', event => {
     origin: activeTabName(),
     subjectId,
     topicId,
-    period: performanceViewState.period,
+    period: performanceTabController.getViewState().period,
     activeExamTags: state.examBlueprint?.activeExamTags || [],
   });
   const topicDialog = document.getElementById('performanceTopicDialog') as HTMLDialogElement;
   if (topicDialog?.open) topicDialog.close();
   if (destination === 'desempenho')
-    performanceViewState = updatePerformanceViewState(performanceViewState, {
-      section: 'subjects',
-      subjectId,
-      topicId,
-    });
+    performanceTabController.setViewState(
+      updatePerformanceViewState(performanceTabController.getViewState(), {
+        section: 'subjects',
+        subjectId,
+        topicId,
+      })
+    );
   if (destination === 'metas') calculateStudyPlanPreview();
   activateTab(destination!);
   requestAnimationFrame(() => {
