@@ -494,7 +494,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
 
     const ritmoTxt =
       r.ratePerDay! >= 1
-        ? `${r.ratePerDay!.toFixed(1)} tópicos por dia`
+        ? `${formatDecimal(r.ratePerDay!)} tópicos por dia`
         : `${formatDecimal(r.ratePerDay! * 7)} tópicos por semana`;
 
     let statusHtml = '';

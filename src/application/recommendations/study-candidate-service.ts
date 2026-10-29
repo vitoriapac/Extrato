@@ -1,4 +1,5 @@
 import { parseLocalDate } from '../../core/date-utils.js';
+import { formatDelta } from '../../core/format-number.js';
 import type { AppState } from '../../core/types.js';
 import { calculateWeightedTrend } from '../../domain/analytics/topic-performance.js';
 import { buildIntelligentAlerts } from '../../domain/diagnostics/alerts.js';
@@ -254,7 +255,7 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
     if (priority.diasAtrasado > 0) return 'Revisão atrasada (' + priority.diasAtrasado + 'd)';
     const diagnosis = priority.diagnosis;
     if (diagnosis?.trend?.key === 'down')
-      return 'Tendência em queda (' + diagnosis.trend.delta.toFixed(1) + ' p.p.)';
+      return 'Tendência em queda (' + formatDelta(diagnosis.trend.delta) + ' p.p.)';
     if (
       diagnosis?.performance?.resolved >= 10 &&
       diagnosis.performance.accuracy !== null &&
