@@ -36,9 +36,11 @@ export interface DelegatedActionsRegistryDeps {
     onboarding?: any;
     examMatrix?: any;
     timerUi?: any;
+    studyTimerRuntime?: any;
     diagnostics?: any;
     approval?: any;
     goals?: any;
+    goalsBlueprint?: any;
     sessionHistory?: any;
   };
 }
@@ -50,71 +52,71 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
   const defaultHandlers: Record<string, Function> = {
     // Navigation / Close
     openWeeklyAdherencePlanning: () => deps.activateTab('metas'),
-    openWeeklyClose: () => c.weeklyClose?.openWeeklyClose?.(),
+    openWeeklyClose: (...args: any[]) => c.weeklyClose?.openWeeklyClose?.(...args),
     reviewPlanningCapacity: () => c.weeklyClose?.sustainabilityController?.review?.(),
-    setStrategicTimelineFilter: (v: any) => c.weeklyClose?.setStrategicTimelineFilter?.(v),
-    setStrategicTimelineGroup: (v: any) => c.weeklyClose?.setStrategicTimelineGroup?.(v),
-    setPriorityHistorySubject: (v: any) => c.weeklyClose?.setPriorityHistorySubject?.(v),
-    saveWeeklyCloseSnapshot: () => c.weeklyClose?.saveWeeklyCloseSnapshot?.(),
-    previewWeeklyCloseActions: () => c.weeklyClose?.previewWeeklyCloseActions?.(),
-    confirmWeeklyCloseActions: () => c.weeklyClose?.confirmWeeklyCloseActions?.(),
-    toggleWeeklyPriority: (id: string, checked: boolean) => c.weeklyClose?.toggleWeeklyPriority?.(id, checked),
+    setStrategicTimelineFilter: (...args: any[]) => c.weeklyClose?.setStrategicTimelineFilter?.(...args),
+    setStrategicTimelineGroup: (...args: any[]) => c.weeklyClose?.setStrategicTimelineGroup?.(...args),
+    setPriorityHistorySubject: (...args: any[]) => c.weeklyClose?.setPriorityHistorySubject?.(...args),
+    saveWeeklyCloseSnapshot: (...args: any[]) => c.weeklyClose?.saveWeeklyCloseSnapshot?.(...args),
+    previewWeeklyCloseActions: (...args: any[]) => c.weeklyClose?.previewWeeklyCloseActions?.(...args),
+    confirmWeeklyCloseActions: (...args: any[]) => c.weeklyClose?.confirmWeeklyCloseActions?.(...args),
+    toggleWeeklyPriority: (...args: any[]) => c.weeklyClose?.toggleWeeklyPriority?.(...args),
 
     // Reviews Agenda
-    addAgendaRow: () => c.reviews?.addAgendaRow?.(),
-    cancelAgendaEdit: () => c.reviews?.cancelAgendaEdit?.(),
-    changeAgendaLimit: (d: number) => c.reviews?.changeAgendaLimit?.(d),
-    completeAgendaReview: (id: string) => c.reviews?.completeAgendaReview?.(id),
-    rateCompletedReview: (id: string, r: any) => c.reviews?.rateCompletedReview?.(id, r),
-    deleteAgendaRow: (id: string) => c.reviews?.deleteAgendaRow?.(id),
-    editAgenda: (id: string) => c.reviews?.editAgenda?.(id),
-    gerarAgendaAutomatica: () => c.reviews?.gerarAgendaAutomatica?.(),
-    resetAdaptiveReviewDate: () => c.reviews?.resetAdaptiveReviewDate?.(),
-    resetAgendaLimit: () => c.reviews?.resetAgendaLimit?.(),
-    saveAgendaEdit: (id: string) => c.reviews?.saveAgendaEdit?.(id),
-    toggleCompletedReviews: () => c.reviews?.toggleCompletedReviews?.(),
-    updateAgenda: (id: string, f: string, v: any) => c.reviews?.updateAgenda?.(id, f, v),
-    updateAgendaDraft: (id: string, f: string, v: any) => c.reviews?.updateAgendaDraft?.(id, f, v),
+    addAgendaRow: (...args: any[]) => c.reviews?.addAgendaRow?.(...args),
+    cancelAgendaEdit: (...args: any[]) => c.reviews?.cancelAgendaEdit?.(...args),
+    changeAgendaLimit: (...args: any[]) => c.reviews?.changeAgendaLimit?.(...args),
+    completeAgendaReview: (...args: any[]) => c.reviews?.completeAgendaReview?.(...args),
+    rateCompletedReview: (...args: any[]) => c.reviews?.rateCompletedReview?.(...args),
+    deleteAgendaRow: (...args: any[]) => c.reviews?.deleteAgendaRow?.(...args),
+    editAgenda: (...args: any[]) => c.reviews?.editAgenda?.(...args),
+    gerarAgendaAutomatica: (...args: any[]) => c.reviews?.gerarAgendaAutomatica?.(...args),
+    resetAdaptiveReviewDate: (...args: any[]) => c.reviews?.resetAdaptiveReviewDate?.(...args),
+    resetAgendaLimit: (...args: any[]) => c.reviews?.resetAgendaLimit?.(...args),
+    saveAgendaEdit: (...args: any[]) => c.reviews?.saveAgendaEdit?.(...args),
+    toggleCompletedReviews: (...args: any[]) => c.reviews?.toggleCompletedReviews?.(...args),
+    updateAgenda: (...args: any[]) => c.reviews?.updateAgenda?.(...args),
+    updateAgendaDraft: (...args: any[]) => c.reviews?.updateAgendaDraft?.(...args),
 
     // Simulations & Breakdowns
-    addBreakdownRow: (s: string) => c.simulations?.addBreakdownRow?.(s),
-    deleteBreakdownRow: (s: string, id: string) => c.simulations?.deleteBreakdownRow?.(s, id),
-    updateBreakdownRow: (s: string, id: string, f: string, v: any) => c.simulations?.updateBreakdownRow?.(s, id, f, v),
-    addSimuladoRow: () => c.simulations?.addSimuladoRow?.(),
-    cancelSimulationEdit: (id: string) => c.simulations?.cancelSimulationEdit?.(id),
-    deleteSimuladoRow: (id: string) => c.simulations?.deleteSimuladoRow?.(id),
-    editSimulation: (id: string) => c.simulations?.editSimulation?.(id),
-    saveSimulationEdit: (id: string) => c.simulations?.saveSimulationEdit?.(id),
-    toggleBreakdown: (id: string) => c.simulations?.toggleBreakdown?.(id),
-    updateSimulationDraft: (id: string, f: string, v: any) => c.simulations?.updateSimulationDraft?.(id, f, v),
+    addBreakdownRow: (...args: any[]) => c.simulations?.addBreakdownRow?.(...args),
+    deleteBreakdownRow: (...args: any[]) => c.simulations?.deleteBreakdownRow?.(...args),
+    updateBreakdownRow: (...args: any[]) => c.simulations?.updateBreakdownRow?.(...args),
+    addSimuladoRow: (...args: any[]) => c.simulations?.addSimuladoRow?.(...args),
+    cancelSimulationEdit: (...args: any[]) => c.simulations?.cancelSimulationEdit?.(...args),
+    deleteSimuladoRow: (...args: any[]) => c.simulations?.deleteSimuladoRow?.(...args),
+    editSimulation: (...args: any[]) => c.simulations?.editSimulation?.(...args),
+    saveSimulationEdit: (...args: any[]) => c.simulations?.saveSimulationEdit?.(...args),
+    toggleBreakdown: (...args: any[]) => c.simulations?.toggleBreakdown?.(...args),
+    updateSimulationDraft: (...args: any[]) => c.simulations?.updateSimulationDraft?.(...args),
 
     // Calendar
-    addCalRow: () => c.calendar?.addCalRow?.(),
-    cancelCalendarEdit: () => c.calendar?.cancelCalendarEdit?.(),
-    changeCalendarLimit: (d: number) => c.calendar?.changeCalendarLimit?.(d),
-    changeOverdueGroupLimit: (d: number) => c.calendar?.changeOverdueGroupLimit?.(d),
-    completeCalendarItem: (id: string) => c.calendar?.completeCalendarItem?.(id),
-    completeUnifiedReview: (id: string, o: string) => c.calendar?.completeUnifiedReview?.(id, o),
-    deleteCalRow: (id: string) => c.calendar?.deleteCalRow?.(id),
-    editCalendarItem: (id: string) => c.calendar?.editCalendarItem?.(id),
-    resetCalendarLimit: () => c.calendar?.resetCalendarLimit?.(),
-    resetOverdueGroupLimit: () => c.calendar?.resetOverdueGroupLimit?.(),
-    saveCalendarEdit: (id: string) => c.calendar?.saveCalendarEdit?.(id),
-    showAllOverdueGroups: () => c.calendar?.showAllOverdueGroups?.(),
-    toggleFilterPanel: (s: any) => c.calendar?.toggleFilterPanel?.(s),
-    toggleOverdueDate: (d: string) => c.calendar?.toggleOverdueDate?.(d),
-    updateCal: (id: string, f: string, v: any) => c.calendar?.updateCal?.(id, f, v),
-    updateCalendarDraft: (id: string, f: string, v: any) => c.calendar?.updateCalendarDraft?.(id, f, v),
+    addCalRow: (...args: any[]) => c.calendar?.addCalRow?.(...args),
+    cancelCalendarEdit: (...args: any[]) => c.calendar?.cancelCalendarEdit?.(...args),
+    changeCalendarLimit: (...args: any[]) => c.calendar?.changeCalendarLimit?.(...args),
+    changeOverdueGroupLimit: (...args: any[]) => c.calendar?.changeOverdueGroupLimit?.(...args),
+    completeCalendarItem: (...args: any[]) => c.calendar?.completeCalendarItem?.(...args),
+    completeUnifiedReview: (...args: any[]) => c.calendar?.completeUnifiedReview?.(...args),
+    deleteCalRow: (...args: any[]) => c.calendar?.deleteCalRow?.(...args),
+    editCalendarItem: (...args: any[]) => c.calendar?.editCalendarItem?.(...args),
+    resetCalendarLimit: (...args: any[]) => c.calendar?.resetCalendarLimit?.(...args),
+    resetOverdueGroupLimit: (...args: any[]) => c.calendar?.resetOverdueGroupLimit?.(...args),
+    saveCalendarEdit: (...args: any[]) => c.calendar?.saveCalendarEdit?.(...args),
+    showAllOverdueGroups: (...args: any[]) => c.calendar?.showAllOverdueGroups?.(...args),
+    toggleFilterPanel: (...args: any[]) => c.calendar?.toggleFilterPanel?.(...args),
+    toggleOverdueDate: (...args: any[]) => c.calendar?.toggleOverdueDate?.(...args),
+    updateCal: (...args: any[]) => c.calendar?.updateCal?.(...args),
+    updateCalendarDraft: (...args: any[]) => c.calendar?.updateCalendarDraft?.(...args),
 
     // Questions
-    addQuestaoRow: (p?: any) => c.questions?.addQuestaoRow?.(p),
-    cancelQuestionEdit: (id: string) => c.questions?.cancelQuestionEdit?.(id),
-    deleteQuestaoRow: (id: string) => c.questions?.deleteQuestaoRow?.(id),
-    editQuestion: (id: string) => c.questions?.editQuestion?.(id),
-    saveQuestionEdit: (id: string) => c.questions?.saveQuestionEdit?.(id),
-    toggleQuestionErrors: (id: string) => c.questions?.toggleQuestionErrors?.(id),
-    updateQuestionDraft: (id: string, f: string, v: any) => c.questions?.updateQuestionDraft?.(id, f, v),
-    updateQuestionError: (id: string, f: string, v: any) => c.questions?.updateQuestionError?.(id, f, v),
+    addQuestaoRow: (...args: any[]) => c.questions?.addQuestaoRow?.(...args),
+    cancelQuestionEdit: (...args: any[]) => c.questions?.cancelQuestionEdit?.(...args),
+    deleteQuestaoRow: (...args: any[]) => c.questions?.deleteQuestaoRow?.(...args),
+    editQuestion: (...args: any[]) => c.questions?.editQuestion?.(...args),
+    saveQuestionEdit: (...args: any[]) => c.questions?.saveQuestionEdit?.(...args),
+    toggleQuestionErrors: (...args: any[]) => c.questions?.toggleQuestionErrors?.(...args),
+    updateQuestionDraft: (...args: any[]) => c.questions?.updateQuestionDraft?.(...args),
+    updateQuestionError: (...args: any[]) => c.questions?.updateQuestionError?.(...args),
     setErrorAnalysisFilter: (f: string, v: any) => {
       if (c.questions?.setErrorAnalysisFilter) {
         c.questions.setErrorAnalysisFilter(f, v);
@@ -124,88 +126,96 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     },
 
     // Subjects & Topics
-    addSubject: () => c.subjects?.addSubject?.(),
-    addTopic: (s: string) => c.subjects?.addTopic?.(s),
-    archiveSubject: (id: string) => c.subjects?.archiveSubject?.(id),
-    archiveTopic: (s: string, t: string) => c.subjects?.archiveTopic?.(s, t),
-    changeSubjectTopicLimit: (s: string, d: number) => c.subjects?.changeSubjectTopicLimit?.(s, d),
-    duplicateSubject: (id: string) => c.subjects?.duplicateSubject?.(id),
-    moveSubject: (id: string, d: number) => c.subjects?.moveSubject?.(id, d),
-    renameSubject: (id: string, name: string) => c.subjects?.renameSubject?.(id, name),
-    requestPermanentSubjectDelete: (id: string) => c.subjects?.requestPermanentSubjectDelete?.(id),
-    requestPermanentTopicDelete: (s: string, t: string) => c.subjects?.requestPermanentTopicDelete?.(s, t),
-    resetSubjectTopicLimit: (s: string) => c.subjects?.resetSubjectTopicLimit?.(s),
-    restoreSubject: (id: string) => c.subjects?.restoreSubject?.(id),
-    restoreTopic: (s: string, t: string) => c.subjects?.restoreTopic?.(s, t),
-    setSubjectExamFilter: (v: any) => c.subjects?.setSubjectExamFilter?.(v),
-    setSubjectTopicFilter: (s: string, f: string, v: any) => c.subjects?.setSubjectTopicFilter?.(s, f, v),
-    showAllSubjectTopics: (s: string) => c.subjects?.showAllSubjectTopics?.(s),
-    toggleNotes: (t: string) => c.subjects?.toggleNotes?.(t),
-    toggleSubject: (id: string) => c.subjects?.toggleSubject?.(id),
-    toggleTopicPrerequisite: (s: string, t: string, p: string, ch: boolean) => c.subjects?.toggleTopicPrerequisite?.(s, t, p, ch),
-    updateTopic: (s: string, t: string, f: string, v: any) => c.subjects?.updateTopic?.(s, t, f, v),
-    updateTopicStatus: (s: string, t: string, el: HTMLSelectElement) => c.subjects?.updateTopicStatus?.(s, t, el),
-    updateTopicStrategy: (s: string, t: string, f: string, v: any) => c.subjects?.updateTopicStrategy?.(s, t, f, v),
-    updateTopicTags: (s: string, t: string, v: any) => c.subjects?.updateTopicTags?.(s, t, v),
+    addSubject: (...args: any[]) => c.subjects?.addSubject?.(...args),
+    addTopic: (...args: any[]) => c.subjects?.addTopic?.(...args),
+    archiveSubject: (...args: any[]) => c.subjects?.archiveSubject?.(...args),
+    archiveTopic: (...args: any[]) => c.subjects?.archiveTopic?.(...args),
+    changeSubjectTopicLimit: (...args: any[]) => c.subjects?.changeSubjectTopicLimit?.(...args),
+    duplicateSubject: (...args: any[]) => c.subjects?.duplicateSubject?.(...args),
+    moveSubject: (...args: any[]) => c.subjects?.moveSubject?.(...args),
+    renameSubject: (...args: any[]) => c.subjects?.renameSubject?.(...args),
+    requestPermanentSubjectDelete: (...args: any[]) => c.subjects?.requestPermanentSubjectDelete?.(...args),
+    requestPermanentTopicDelete: (...args: any[]) => c.subjects?.requestPermanentTopicDelete?.(...args),
+    resetSubjectTopicLimit: (...args: any[]) => c.subjects?.resetSubjectTopicLimit?.(...args),
+    restoreSubject: (...args: any[]) => c.subjects?.restoreSubject?.(...args),
+    restoreTopic: (...args: any[]) => c.subjects?.restoreTopic?.(...args),
+    setSubjectExamFilter: (...args: any[]) => c.subjects?.setSubjectExamFilter?.(...args),
+    setSubjectTopicFilter: (...args: any[]) => c.subjects?.setSubjectTopicFilter?.(...args),
+    showAllSubjectTopics: (...args: any[]) => c.subjects?.showAllSubjectTopics?.(...args),
+    toggleNotes: (...args: any[]) => c.subjects?.toggleNotes?.(...args),
+    toggleSubject: (...args: any[]) => c.subjects?.toggleSubject?.(...args),
+    toggleTopicPrerequisite: (...args: any[]) => c.subjects?.toggleTopicPrerequisite?.(...args),
+    updateTopic: (...args: any[]) => c.subjects?.updateTopic?.(...args),
+    updateTopicStatus: (...args: any[]) => c.subjects?.updateTopicStatus?.(...args),
+    updateTopicStrategy: (...args: any[]) => c.subjects?.updateTopicStrategy?.(...args),
+    updateTopicTags: (...args: any[]) => c.subjects?.updateTopicTags?.(...args),
 
     // Goals Tab
-    applyTodayGoalToAllDays: () => c.goals?.applyTodayGoalToAllDays?.(),
-    clearWeekendGoals: () => c.goals?.clearWeekendGoals?.(),
-    deleteMetaDisciplina: (id: string) => c.goals?.deleteMetaDisciplina?.(id),
-    updateMeta: (f: string, v: any) => c.goals?.updateMeta?.(f, v),
-    updateMetaDisciplina: (id: string, v: any) => c.goals?.updateMetaDisciplina?.(id, v),
-    updateMetaHoursDay: (d: string, h: any) => c.goals?.updateMetaHoursDay?.(d, h),
+    applyTodayGoalToAllDays: (...args: any[]) =>
+      (c.goals?.applyTodayGoalToAllDays || c.goalsBlueprint?.applyTodayGoalToAllDays)?.(...args),
+    clearWeekendGoals: (...args: any[]) =>
+      (c.goals?.clearWeekendGoals || c.goalsBlueprint?.clearWeekendGoals)?.(...args),
+    deleteMetaDisciplina: (...args: any[]) =>
+      (c.goals?.deleteMetaDisciplina || c.goalsBlueprint?.deleteMetaDisciplina)?.(...args),
+    updateMeta: (...args: any[]) =>
+      (c.goals?.updateMeta || c.goalsBlueprint?.updateMeta)?.(...args),
+    updateMetaDisciplina: (...args: any[]) =>
+      (c.goals?.updateMetaDisciplina || c.goalsBlueprint?.updateMetaDisciplina)?.(...args),
+    updateMetaHoursDay: (...args: any[]) =>
+      (c.goals?.updateMetaHoursDay || c.goalsBlueprint?.updateMetaHoursDay)?.(...args),
 
     // Study Plan Builder & Adaptive Planning
-    previewPhaseStrategy: () => c.studyPlan?.previewPhaseStrategy?.(),
-    cancelPhaseStrategy: () => c.studyPlan?.cancelPhaseStrategy?.(),
-    confirmPhaseStrategy: () => c.studyPlan?.confirmPhaseStrategy?.(),
-    revertPhaseStrategy: () => c.studyPlan?.revertPhaseStrategy?.(),
-    calculateStudyPlanPreview: () => c.studyPlan?.calculateStudyPlanPreview?.(),
-    clearStudyPlanPreview: () => c.studyPlan?.clearStudyPlanPreview?.(),
-    confirmStudyPlan: () => c.studyPlan?.confirmStudyPlan?.(),
-    useAdaptivePlanAdvice: () => c.studyPlan?.useAdaptivePlanAdvice?.(),
-    rejectAdaptivePlanAdvice: () => c.studyPlan?.rejectAdaptivePlanAdvice?.(),
-    revertAdaptivePlanningDecision: (id: string) => c.studyPlan?.revertAdaptivePlanningDecision?.(id),
-    calculateDailyPlanPreview: () => c.studyPlan?.calculateDailyPlanPreview?.(),
-    clearDailyPlanPreview: () => c.studyPlan?.clearDailyPlanPreview?.(),
-    confirmDailyPlanPreview: () => c.studyPlan?.confirmDailyPlanPreview?.(),
-    undoLatestDailyPlanGeneration: () => c.studyPlan?.undoLatestDailyPlanGeneration?.(),
+    previewPhaseStrategy: (...args: any[]) => c.studyPlan?.previewPhaseStrategy?.(...args),
+    cancelPhaseStrategy: (...args: any[]) => c.studyPlan?.cancelPhaseStrategy?.(...args),
+    confirmPhaseStrategy: (...args: any[]) => c.studyPlan?.confirmPhaseStrategy?.(...args),
+    revertPhaseStrategy: (...args: any[]) => c.studyPlan?.revertPhaseStrategy?.(...args),
+    calculateStudyPlanPreview: (...args: any[]) => c.studyPlan?.calculateStudyPlanPreview?.(...args),
+    clearStudyPlanPreview: (...args: any[]) => c.studyPlan?.clearStudyPlanPreview?.(...args),
+    confirmStudyPlan: (...args: any[]) => c.studyPlan?.confirmStudyPlan?.(...args),
+    useAdaptivePlanAdvice: (...args: any[]) => c.studyPlan?.useAdaptivePlanAdvice?.(...args),
+    rejectAdaptivePlanAdvice: (...args: any[]) => c.studyPlan?.rejectAdaptivePlanAdvice?.(...args),
+    revertAdaptivePlanningDecision: (...args: any[]) => c.studyPlan?.revertAdaptivePlanningDecision?.(...args),
+    calculateDailyPlanPreview: (...args: any[]) => c.studyPlan?.calculateDailyPlanPreview?.(...args),
+    clearDailyPlanPreview: (...args: any[]) => c.studyPlan?.clearDailyPlanPreview?.(...args),
+    confirmDailyPlanPreview: (...args: any[]) => c.studyPlan?.confirmDailyPlanPreview?.(...args),
+    undoLatestDailyPlanGeneration: (...args: any[]) => c.studyPlan?.undoLatestDailyPlanGeneration?.(...args),
 
     // Study Recommendations & Replan
-    calculateReplanPreview: () => c.recommendations?.calculateReplanPreview?.(),
-    clearReplanPreview: () => c.recommendations?.clearReplanPreview?.(),
-    confirmReplan: () => c.recommendations?.confirmReplan?.(),
-    undoPlanAdjustment: () => c.recommendations?.undoPlanAdjustment?.(),
-    executeStudyRecommendation: (id: string) => c.recommendations?.executeStudyRecommendation?.(id),
-    dismissStudyRecommendation: (id: string) => c.recommendations?.dismissStudyRecommendation?.(id),
-    markRecommendationNotUseful: (id: string) => c.recommendations?.markRecommendationNotUseful?.(id),
-    rateRecommendationOutcome: (id: string, r: any) => c.recommendations?.rateRecommendationOutcome?.(id, r),
-    startStudyRecommendation: (id: string) => c.recommendations?.startStudyRecommendation?.(id),
+    calculateReplanPreview: (...args: any[]) => c.recommendations?.calculateReplanPreview?.(...args),
+    clearReplanPreview: (...args: any[]) => c.recommendations?.clearReplanPreview?.(...args),
+    confirmReplan: (...args: any[]) => c.recommendations?.confirmReplan?.(...args),
+    undoPlanAdjustment: (...args: any[]) => c.recommendations?.undoPlanAdjustment?.(...args),
+    executeStudyRecommendation: (...args: any[]) => c.recommendations?.executeStudyRecommendation?.(...args),
+    dismissStudyRecommendation: (...args: any[]) => c.recommendations?.dismissStudyRecommendation?.(...args),
+    markRecommendationNotUseful: (...args: any[]) => c.recommendations?.markRecommendationNotUseful?.(...args),
+    rateRecommendationOutcome: (...args: any[]) => c.recommendations?.rateRecommendationOutcome?.(...args),
+    startStudyRecommendation: (...args: any[]) =>
+      (c.recommendations?.startStudyRecommendation || c.studyTimerRuntime?.startStudyRecommendation)?.(...args),
 
     // Timer UI
-    focusStudyTimer: () => c.timerUi?.focusStudyTimer?.(),
-    openStudyTimerFocus: () => c.timerUi?.openStudyTimerFocus?.(),
+    focusStudyTimer: (...args: any[]) => c.timerUi?.focusStudyTimer?.(...args),
+    openStudyTimerFocus: (...args: any[]) => c.timerUi?.openStudyTimerFocus?.(...args),
     toggleTimerFocus: (f: boolean | null = null) => c.timerUi?.toggleTimerFocus?.(f),
-    advanceGuidedStrategy: () => c.timerUi?.advanceGuidedStrategy?.(),
+    advanceGuidedStrategy: (...args: any[]) =>
+      (c.studyTimerRuntime?.advanceGuidedStrategy || c.timerUi?.advanceGuidedStrategy)?.(...args),
 
     // Dashboard
-    navigateKpi: (tab: string, f?: string) => c.dashboard?.navigateKpi?.(tab, f),
-    selectHeatmapDay: (d: string) => c.dashboard?.selectHeatmapDay?.(d),
-    setHeatmapFilter: (f: string, v: any) => c.dashboard?.setHeatmapFilter?.(f, v),
-    viewSelectedHeatmapSessions: () => c.dashboard?.viewSelectedHeatmapSessions?.(),
-    toggleStreakActiveDays: () => c.dashboard?.toggleStreakActiveDays?.(),
-    toggleStreakExpanded: () => c.dashboard?.toggleStreakExpanded?.(),
-    changeUpcomingLimit: (d: number) => c.dashboard?.changeUpcomingLimit?.(d),
-    resetUpcomingLimit: () => c.dashboard?.resetUpcomingLimit?.(),
-    showAllUpcoming: () => c.dashboard?.showAllUpcoming?.(),
+    navigateKpi: (...args: any[]) => c.dashboard?.navigateKpi?.(...args),
+    selectHeatmapDay: (...args: any[]) => c.dashboard?.selectHeatmapDay?.(...args),
+    setHeatmapFilter: (...args: any[]) => c.dashboard?.setHeatmapFilter?.(...args),
+    viewSelectedHeatmapSessions: (...args: any[]) => c.dashboard?.viewSelectedHeatmapSessions?.(...args),
+    toggleStreakActiveDays: (...args: any[]) => c.dashboard?.toggleStreakActiveDays?.(...args),
+    toggleStreakExpanded: (...args: any[]) => c.dashboard?.toggleStreakExpanded?.(...args),
+    changeUpcomingLimit: (...args: any[]) => c.dashboard?.changeUpcomingLimit?.(...args),
+    resetUpcomingLimit: (...args: any[]) => c.dashboard?.resetUpcomingLimit?.(...args),
+    showAllUpcoming: (...args: any[]) => c.dashboard?.showAllUpcoming?.(...args),
     openNextSessionAction: () => {
       deps.activateTab('dashboard');
       deps.document?.getElementById('overviewNextAction')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     },
 
     // Diagnostics & Approval
-    dismissIntelligentAlert: (id: string) => c.diagnostics?.dismissIntelligentAlert?.(id),
+    dismissIntelligentAlert: (...args: any[]) => c.diagnostics?.dismissIntelligentAlert?.(...args),
     setRetentionFilter: (f: string, v?: any) => {
       if (c.approval?.setRetentionFilter) {
         c.approval.setRetentionFilter(f, v);
@@ -229,7 +239,7 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     },
 
     // Performance
-    setRadarSubject: (slot: string, v: any) => c.performance?.setRadarSubject?.(slot, v),
+    setRadarSubject: (...args: any[]) => c.performance?.setRadarSubject?.(...args),
     setPerformanceViewMode: (v: any) => {
       if (c.performance?.setPerformanceViewMode) {
         c.performance.setPerformanceViewMode(v);
@@ -260,32 +270,36 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     },
 
     // Session History
-    cancelStudySessionEdit: (id: string) => c.sessionHistory?.cancelStudySessionEdit?.(id),
-    clearSessionHistoryFilters: () => c.sessionHistory?.clearSessionHistoryFilters?.(),
-    deleteStudySession: (id: string) => c.sessionHistory?.deleteStudySession?.(id),
-    editStudySession: (id: string) => c.sessionHistory?.editStudySession?.(id),
-    saveStudySessionEdit: (id: string) => c.sessionHistory?.saveStudySessionEdit?.(id),
-    selectSessionHistoryDate: (d: string) => c.sessionHistory?.selectSessionHistoryDate?.(d),
-    toggleSessionDay: (d: string) => c.sessionHistory?.toggleSessionDay?.(d),
-    toggleSessionDetails: (id: string) => c.sessionHistory?.toggleSessionDetails?.(id),
-    updateSessionHistoryFilter: (f: string, v: any) => c.sessionHistory?.updateSessionHistoryFilter?.(f, v),
-    updateStudySessionDraft: (id: string, f: string, v: any) => c.sessionHistory?.updateStudySessionDraft?.(id, f, v),
+    cancelStudySessionEdit: (...args: any[]) => c.sessionHistory?.cancelStudySessionEdit?.(...args),
+    clearSessionHistoryFilters: (...args: any[]) => c.sessionHistory?.clearSessionHistoryFilters?.(...args),
+    deleteStudySession: (...args: any[]) => c.sessionHistory?.deleteStudySession?.(...args),
+    editStudySession: (...args: any[]) => c.sessionHistory?.editStudySession?.(...args),
+    saveStudySessionEdit: (...args: any[]) => c.sessionHistory?.saveStudySessionEdit?.(...args),
+    selectSessionHistoryDate: (...args: any[]) => c.sessionHistory?.selectSessionHistoryDate?.(...args),
+    toggleSessionDay: (...args: any[]) => c.sessionHistory?.toggleSessionDay?.(...args),
+    toggleSessionDetails: (...args: any[]) => c.sessionHistory?.toggleSessionDetails?.(...args),
+    updateSessionHistoryFilter: (...args: any[]) => c.sessionHistory?.updateSessionHistoryFilter?.(...args),
+    updateStudySessionDraft: (...args: any[]) => c.sessionHistory?.updateStudySessionDraft?.(...args),
 
     // Exam Matrix / Blueprint
-    toggleActiveExamTag: (tag: string) => c.examMatrix?.toggleActiveExamTag?.(tag),
-    updateExamBlueprint: (f: string, v: any, o?: any) => c.examMatrix?.updateExamBlueprint?.(f, v, o),
+    toggleActiveExamTag: (...args: any[]) => c.examMatrix?.toggleActiveExamTag?.(...args),
+    updateExamBlueprint: (...args: any[]) =>
+      (c.examMatrix?.updateExamBlueprint || c.goalsBlueprint?.updateExamBlueprint)?.(...args),
     updateExamSubject: (id: string, f: string, v: any) => {
       if (c.examMatrix?.updateExamSubject) {
         c.examMatrix.updateExamSubject(id, f, v);
+      } else if (c.goalsBlueprint?.updateExamSubject) {
+        c.goalsBlueprint.updateExamSubject(id, f, v);
       } else if (custom?.['updateExamSubject']) {
         custom['updateExamSubject'](id, f, v);
       }
     },
-    saveExamSubjectConfig: (id: string) => c.examMatrix?.saveExamSubjectConfig?.(id),
-    cancelExamSubjectConfig: (id: string) => c.examMatrix?.cancelExamSubjectConfig?.(id),
+    saveExamSubjectConfig: (...args: any[]) => c.examMatrix?.saveExamSubjectConfig?.(...args),
+    cancelExamSubjectConfig: (...args: any[]) => c.examMatrix?.cancelExamSubjectConfig?.(...args),
 
-    // Today Tab
-    startPlannedActivity: (p: any) => c.today?.startPlannedActivity?.(p),
+    // Today Tab / Timer Runtime
+    startPlannedActivity: (...args: any[]) =>
+      (c.studyTimerRuntime?.startPlannedActivity || c.today?.startPlannedActivity)?.(...args),
   };
 
   return composeDelegatedActionHandlers(defaultHandlers, custom);

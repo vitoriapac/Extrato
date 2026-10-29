@@ -29,6 +29,8 @@ test('limpeza exige confirmação textual e fica desabilitada na demo', async ({
     sessionStorage.clear();
   });
   await page.reload();
+  await page.locator('#openDataManagementBtn').click();
+  await expect(page.locator('#dataManagementOverlay, #dataManagementDialog')).toBeVisible();
   await page.getByRole('button', { name: 'Limpar todos os dados' }).click();
   await expect(page.locator('#modalMessage')).toContainText('excluirá');
   await page.getByRole('button', { name: 'Confirmar' }).click();
@@ -38,10 +40,14 @@ test('limpeza exige confirmação textual e fica desabilitada na demo', async ({
   await expect(page.locator('#modalPromptError')).toContainText('LIMPAR');
   await page.getByRole('button', { name: 'Cancelar' }).click();
   await openDemo(page);
+  await page.locator('#openDataManagementBtn').click();
+  await expect(page.locator('#dataManagementOverlay, #dataManagementDialog')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Limpar todos os dados' })).toBeDisabled();
 });
 test('backup mantém ações destrutivas em zona separada', async ({ page }) => {
   await page.goto('/');
+  await page.locator('#openDataManagementBtn').click();
+  await expect(page.locator('#dataManagementOverlay, #dataManagementDialog')).toBeVisible();
   const danger = page.locator('.backup-block > .backup-danger-zone');
   await expect(danger).toContainText('Zona de perigo');
   await expect(danger.getByRole('button', { name: 'Limpar todos os dados' })).toBeVisible();

@@ -293,6 +293,8 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     get state() {
       return getState();
     },
+    listViewState: deps.listViewState,
+    LIST_VIEW_STEPS: deps.LIST_VIEW_STEPS,
     sessionService: services.sessionService,
     todayISO,
     addDays,

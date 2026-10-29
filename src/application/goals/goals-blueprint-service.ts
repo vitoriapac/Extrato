@@ -13,10 +13,14 @@ export interface GoalsBlueprintServiceDependencies {
     hoursForDate: (date: string) => number;
     hoursForDay: (day: any) => number;
     updateDailyHours: (day: any, value: any, options?: { isToday?: boolean }) => void;
-    update: (field: string, value: any) => void;
+    update: (field: string, value: any) => any;
+    applyHoursToEveryDay?: (hours: number) => void;
+    clearWeekend?: () => void;
   };
   subjectGoalService: {
     create: (payload: { subjectId: string; meta: number }) => any;
+    update?: (id: string, patch: { meta: number }) => any;
+    remove?: (id: string) => any;
   };
   captureReadinessBeforeStrategy: (reason: string) => void;
   invalidatePlanPreview: () => void;
@@ -177,6 +181,51 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
     persistAndRender();
   }
 
+  function updateMeta(key: string, value: any) {
+    const state = getState();
+    if (
+      key === 'metaAprovacao' &&
+      (state.metas as Record<string, any>)[key] !== Math.max(0, Math.min(100, Number(value) || 0))
+    )
+      captureReadinessBeforeStrategy('Antes de alterar a meta de nota');
+    if (goalsService.update(key, value) === false) {
+      showToast('Informe uma meta de aderência entre 50 e 100%.');
+      return;
+    }
+    persistAndRender();
+  }
+
+  function applyTodayGoalToAllDays() {
+    const value = metaHoursToday();
+    if (
+      Array.from({ length: 7 }, (_, day) => goalsService.hoursForDay(day)).some(
+        hours => hours !== value
+      )
+    )
+      captureReadinessBeforeStrategy('Antes de redistribuir a disponibilidade semanal');
+    goalsService.applyHoursToEveryDay?.(value);
+    persistAndRender();
+    showToast(`Meta de ${value}h aplicada a todos os dias.`);
+  }
+
+  function clearWeekendGoals() {
+    if (goalsService.hoursForDay(0) || goalsService.hoursForDay(6))
+      captureReadinessBeforeStrategy('Antes de remover a disponibilidade do fim de semana');
+    goalsService.clearWeekend?.();
+    persistAndRender();
+    showToast('Metas do fim de semana removidas.');
+  }
+
+  function updateMetaDisciplina(id: string, value: any) {
+    subjectGoalService.update?.(id, { meta: Number(value) || 1 });
+    persistAndRender();
+  }
+
+  function deleteMetaDisciplina(id: string) {
+    subjectGoalService.remove?.(id);
+    persistAndRender();
+  }
+
   return {
     metaHoursForDate,
     metaHoursToday,
@@ -184,5 +233,10 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
     updateExamBlueprint,
     updateExamSubject,
     addMetaDisciplina,
+    updateMeta,
+    applyTodayGoalToAllDays,
+    clearWeekendGoals,
+    updateMetaDisciplina,
+    deleteMetaDisciplina,
   };
 }

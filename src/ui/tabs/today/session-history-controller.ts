@@ -29,13 +29,15 @@ export const SESSION_TYPES: Record<string, string> = Object.freeze({
   simulation: 'Simulado',
 });
 
-export const DEFAULT_SESSION_DAYS_VISIBLE = 10;
+export const DEFAULT_SESSION_DAYS_VISIBLE = 5;
 
 export interface SessionHistoryControllerOptions {
   state: {
     studySessions: any[];
     subjects: any[];
   };
+  listViewState?: { sessionDaysVisible: number; [key: string]: any };
+  LIST_VIEW_STEPS?: { sessionDays: number; [key: string]: any };
   sessionService?: any;
   clock?: { today: () => string };
   todayISO?: () => string;
@@ -120,6 +122,13 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   let expandedSessionDetails = new Set<string>();
   let sessionHistoryExpansionInitialized = false;
   let sessionDaysVisible = DEFAULT_SESSION_DAYS_VISIBLE;
+  const getStep = () => opts.LIST_VIEW_STEPS?.sessionDays || DEFAULT_SESSION_DAYS_VISIBLE;
+  const getVisibleLimit = () =>
+    opts.listViewState ? opts.listViewState.sessionDaysVisible : sessionDaysVisible;
+  const setVisibleLimit = (val: number) => {
+    sessionDaysVisible = val;
+    if (opts.listViewState) opts.listViewState.sessionDaysVisible = val;
+  };
 
   const historyEditState = {
     sessionId: null as string | null,
@@ -204,7 +213,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   function updateSessionHistoryFilter(field: string, value: any) {
     (sessionHistoryFilters as Record<string, any>)[field] = value;
     if (field === 'period') sessionHistoryFilters.date = '';
-    sessionDaysVisible = DEFAULT_SESSION_DAYS_VISIBLE;
+    setVisibleLimit(getStep());
     expandedSessionDays.clear();
     sessionHistoryExpansionInitialized = false;
     renderStudySessionsHistory();
@@ -217,7 +226,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     sessionHistoryFilters.subjectId = '';
     sessionHistoryFilters.type = '';
     sessionHistoryFilters.date = '';
-    sessionDaysVisible = DEFAULT_SESSION_DAYS_VISIBLE;
+    setVisibleLimit(getStep());
     expandedSessionDays.clear();
     sessionHistoryExpansionInitialized = false;
     renderStudySessionsHistory();
@@ -228,7 +237,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   function selectSessionHistoryDate(date: string) {
     sessionHistoryFilters.date = date;
     sessionHistoryFilters.period = 'all';
-    sessionDaysVisible = DEFAULT_SESSION_DAYS_VISIBLE;
+    setVisibleLimit(getStep());
     expandedSessionDays = new Set([date]);
     sessionHistoryExpansionInitialized = true;
     renderStudySessionsHistory();
@@ -252,8 +261,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   }
 
   function changeSessionDaysLimit(delta: number) {
-    sessionDaysVisible =
-      delta > 0 ? Number.MAX_SAFE_INTEGER : DEFAULT_SESSION_DAYS_VISIBLE;
+    setVisibleLimit(delta > 0 ? Number.MAX_SAFE_INTEGER : getStep());
     renderStudySessionsHistory();
   }
 
@@ -368,7 +376,9 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     if (tableWrap) tableWrap.hidden = false;
     if (emptyState) emptyState.hidden = true;
 
-    const visibleGroups = groupStudySessionsByDate(rows.slice(0, sessionDaysVisible));
+    const currentLimit = getVisibleLimit();
+    const currentStep = getStep();
+    const visibleGroups = groupStudySessionsByDate(rows.slice(0, currentLimit));
     if (!sessionHistoryExpansionInitialized && visibleGroups.length) {
       expandedSessionDays.add(visibleGroups[0][0]);
       sessionHistoryExpansionInitialized = true;
@@ -401,12 +411,12 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     html.push(
       renderCollectionFooter({
         total: rows.length,
-        visible: sessionDaysVisible,
-        step: DEFAULT_SESSION_DAYS_VISIBLE,
-        showMoreAction: "changeListLimit('sessionDays',10,renderStudySessionsHistory)",
+        visible: currentLimit,
+        step: currentStep,
+        showMoreAction: "changeListLimit('sessionDays',LIST_VIEW_STEPS.sessionDays,renderStudySessionsHistory)",
         showLessAction:
-          sessionDaysVisible > DEFAULT_SESSION_DAYS_VISIBLE
-            ? "changeListLimit('sessionDays',-10,renderStudySessionsHistory)"
+          currentLimit > currentStep
+            ? "changeListLimit('sessionDays',-listViewState.sessionDaysVisible,renderStudySessionsHistory)"
             : '',
         colspan: 10,
         label: 'sessões',

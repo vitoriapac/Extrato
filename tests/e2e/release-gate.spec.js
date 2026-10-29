@@ -19,6 +19,8 @@ test('paleta abre sem consulta, agrupa comandos e navega por teclado', async ({ 
 
 test('relatório inclui planejamento adaptativo e resultados posteriores', async ({ page }) => {
   await openDemo(page);
+  await page.locator('#openDataManagementBtn').click();
+  await expect(page.locator('#dataManagementOverlay, #dataManagementDialog')).toBeVisible();
   await page.getByRole('button', { name: /Exportar relatório PDF/i }).click();
   const report = page.locator('#strategicPrintReport');
   await expect(report).toContainText('Planejamento adaptativo');

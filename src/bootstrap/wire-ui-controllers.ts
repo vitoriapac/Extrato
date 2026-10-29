@@ -179,14 +179,16 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       executionUi.studyRecommendationController.refreshStudyRecommendationItems(),
     getCurrentStudyRecommendations: () =>
       executionUi.studyRecommendationController.getCurrentRecommendations(),
-    executeStudyRecommendation: (id: string) =>
-      executionUi.studyRecommendationController.executeStudyRecommendation(id),
+    executeStudyRecommendation: (id: string, source?: string) =>
+      executionUi.studyRecommendationController.executeStudyRecommendation(id, source),
     getDailyPriority: (action: any) =>
       executionUi.todayTabController.dailyExecutionController.build(action)?.priority,
   });
 
   executionUi = wireExecutionAndOnboardingUi({
     ...deps,
+    listViewState,
+    LIST_VIEW_STEPS,
     isMobileHistoryLayout,
     activeTabName,
     activateTab,
@@ -237,9 +239,11 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       onboarding: executionUi.onboardingModalController,
       examMatrix: planningUi.examMatrixController,
       timerUi: executionUi.timerUiController,
+      studyTimerRuntime: executionUi.studyTimerRuntime,
       diagnostics: analyticsUi.diagnosticsTabController,
       approval: analyticsUi.approvalTabController,
       goals: planningUi.goalsTabController,
+      goalsBlueprint: analytics.goalsBlueprintService,
       sessionHistory: executionUi.sessionHistoryController,
     },
     customHandlers: {
