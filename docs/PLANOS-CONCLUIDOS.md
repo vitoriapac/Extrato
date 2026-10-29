@@ -63,6 +63,9 @@ flowchart TD
 | **3. Evolução Unificada (Fases 1 a 4)** | Decisão rápida, inteligência preditiva, hub de estudos e caderno de erros | ✅ 100% Concluído | Card Próxima Ação (6 perguntas), bookmarks de parada, simulador *What-If*, modo reta final, edital verticalizado, ciclo rotativo, foco/energia e motor SM-2. |
 | **4. Melhorias Pós-Fase 4 (Fases A a F)** | Integridade, usabilidade do caderno e acessibilidade | ✅ 100% Concluído | Schema e persistência de flashcards, avisos na agenda e hoje, exportação JSON/CSV, focus traps, `aria-live`, roteiro NVDA e controller isolado. |
 | **5. Micro-Módulos Fundacionais** | Sessões, importações e sincronização segura | ✅ 100% Concluído | Timer em Document Picture-in-Picture, normalizador de questões (Tec/QC), WebDAV com PBKDF2/AES-GCM-256 e runners de gates. |
+| **6. Central de Ajuda & Instruções 2.0** | Code-splitting, Preact 11 e micro-simuladores | ✅ 100% Concluído | Bundle sob demanda (`help.bundle.js`), simuladores Ebbinghaus e Evidência 95% CI, deep-linking e feedback local. |
+| **7. Auditoria UX, UI & Acessibilidade** | Contraste WCAG AA, pilha sticky e tipografia | ✅ 100% Concluído | Token `--border-control` (> 3:1), raios 2px, `formatDelta()`, modal `#dataManagementOverlay`, ícones SVG e piso 12px. |
+| **8. Modularização Integral do `app.ts`** | Desacoplamento em 10 fases (Domínio, Aplicação, UI e Bootstrap) | ✅ 100% Concluído | Redução de 10.921 para **146 linhas (-98,7%)**, zero funções de negócio no `app.ts`, 1.154 testes unitários verdes e CI Full/Visual 100% aprovado. |
 
 ---
 
@@ -326,9 +329,9 @@ Com base na auditoria visual e de experiência executada com Playwright em múlt
 
 ---
 
-## 8. Plano Diretor de Modularização do `app.ts` (Fases 1 a 5 Concluídas)
+## 8. Plano Diretor de Modularização do `app.ts` (Fases 1 a 10 — 100% Concluído)
 
-Em atendimento estrito à política inegociável de governança de `AGENTS.md` (*Modularização Obrigatória: Zero Novas Funções no `app.ts`*), foi executado e concluído o [Plano Diretor de Modularização](PLANO-MODULARIZACAO-APP.md), reduzindo o monolito de **10.921 linhas** para **9.254 linhas** (-1.667 linhas líquidas / -15.3%):
+Em atendimento estrito à política inegociável de governança de `AGENTS.md` (*Modularização Obrigatória: Zero Novas Funções no `app.ts`*), foi executado e concluído integralmente o [Plano Diretor de Modularização](PLANO-MODULARIZACAO-APP.md), reduzindo o monolito original de **10.921 linhas** (473 funções) para **146 linhas** (**-10.775 linhas líquidas / -98,7% de redução**), consolidando o `src/app.ts` exclusivamente como *Pure Composition Root*:
 
 ### 8.1. Fase 1: Extração do Domínio Puro
 - Isolamento de motores determinísticos sob `src/domain/`, sem dependências de DOM, Preact ou storage:
@@ -400,6 +403,14 @@ Em atendimento estrito à política inegociável de governança de `AGENTS.md` (
 - `src/app.ts` reduzido de 6.736 para **5.966 linhas** (-770 linhas líquidas na fase; **-4.955 linhas acumuladas** desde o início do plano).
 - Conclusão homologada com **1136 testes unitários verdes em 36.78s** no Fast Gate (dual timezone UTC e America/Sao_Paulo, Playwright smoke passing e bundles 100% reproduzíveis).
 
+### 8.10. Fase 10: Desacoplamento Final (Ondas 1, 2 e 3) e Purificação do Composition Root
+- Extração das últimas camadas de orquestração, seletores, adaptadores de persistência, ciclo de vida, sub-wirers de UI e fachada de testes:
+  - **Onda 1 (5.966 → 4.241 linhas):** [`src/application/analytics/app-analytics-facade.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/analytics/app-analytics-facade.ts), [`src/application/goals/goals-blueprint-service.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/goals/goals-blueprint-service.ts), [`src/ui/navigation/delegated-actions-registry.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/navigation/delegated-actions-registry.ts) e [`src/ui/controllers/global-events-wiring.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/controllers/global-events-wiring.ts).
+  - **Onda 2 (4.241 → 1.976 linhas):** [`src/application/selectors/study-metrics-selectors.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/selectors/study-metrics-selectors.ts), [`src/application/backup/backup-import-service.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/backup/backup-import-service.ts), [`src/ui/tabs/today/study-timer-runtime.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/today/study-timer-runtime.ts) e [`src/bootstrap/app-lifecycle.ts`](file:///c:/Users/vitor/Documents/Extrato/src/bootstrap/app-lifecycle.ts).
+  - **Onda 3 (1.976 → 146 linhas):** [`src/bootstrap/wire-ui-controllers.ts`](file:///c:/Users/vitor/Documents/Extrato/src/bootstrap/wire-ui-controllers.ts) + 4 sub-wirers especializados em [`src/bootstrap/ui/`](file:///c:/Users/vitor/Documents/Extrato/src/bootstrap/ui/) (`wire-analytics-and-planning-ui.ts`, `wire-practice-and-catalog-ui.ts`, `wire-temporal-and-support-ui.ts`, `wire-execution-and-onboarding-ui.ts`) e [`src/bootstrap/test-api.ts`](file:///c:/Users/vitor/Documents/Extrato/src/bootstrap/test-api.ts).
+- `src/app.ts` reduzido ao estado final de **146 linhas** (-98,7% em relação às 10.921 linhas iniciais), sem nenhuma função de regra de negócio, atuando exclusivamente como raiz de composição.
+- Conclusão homologada com **1.154 testes unitários verdes em ~43s** no Fast Gate (UTC e `America/Sao_Paulo`) e **100% de aprovação no gate Full e Visual Windows do GitHub Actions**.
+
 ---
 
 ## 9. Rastreabilidade de Arquitetura e Governança
@@ -410,7 +421,7 @@ Todas as decisões e entregas registradas neste histórico respeitam os contrato
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
-- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (312 arquivos auditados, 1136 testes unitários verdes em ~36s)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (317 arquivos auditados, 1.154 testes unitários verdes em ~43s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

@@ -80,7 +80,7 @@ flowchart TD
 
 ---
 
-## 4. Roteiro de Execução em 5 Fases
+## 4. Roteiro de Execução em 10 Fases (100% Concluído ✅)
 
 ### Fase 1: Extração do Domínio Puro (Sem Risco de Regressão Visual) — CONCLUÍDA ✅
 - **Objetivo:** Isolar algoritmos matemáticos determinísticos em `src/domain/`, sem qualquer dependência de DOM ou storage, acompanhados por testes unitários no Node (`npm run test:fast`).
@@ -169,6 +169,29 @@ flowchart TD
   4. `src/ui/tabs/performance/performance-tab-controller.ts`: controller unificado da aba de desempenho com gráfico de evolução de progresso de 180 dias (`recordProgressSnapshot`, `renderProgressChart`), radar de disciplinas (`renderRadarDisciplinas`, `setRadarSubject`), página completa de desempenho `renderPerformance` (visão geral, matérias, simulados e inteligência de exame) e registro encapsulado via `registerController()`. (3 testes unitários em `tests/unit/performance-tab-controller.test.js`).
 - **Redução Obtida:** `src/app.ts` reduzido de 6.736 para **5.966 linhas** (-770 linhas líquidas eliminadas na Fase 9; -4.955 linhas acumuladas desde o início do plano).
 - **Status:** 100% concluída e validada no Fast Gate (1136 testes passando, tempo 36.78s, dual timezone UTC/SP, Playwright smoke passing, bundles 100% reproduzíveis).
+
+### Fase 10: Desacoplamento Final (Ondas 1, 2 e 3) e Purificação Definitiva do `src/app.ts` — CONCLUÍDA ✅
+- **Objetivo:** Eliminar 100% das funções de negócio, seletores, adaptadores de persistência, fiação imperativa de controladores e API de testes remanescentes em `src/app.ts`, consolidando-o exclusivamente como *Pure Composition Root* (~146 linhas).
+- **Módulos Entregues e Integrados:**
+  - **Onda 1 — Fachada Analítica, Blueprint de Metas e Registro Declarativo de Eventos (5.966 → 4.241 linhas):**
+    1. `src/application/analytics/app-analytics-facade.ts`: fachada unificada de diagnóstico consolidado, recomendações, prontidão, cobertura, consistência, tendências, calibração e projeções (`createAppAnalyticsFacade`).
+    2. `src/application/goals/goals-blueprint-service.ts`: serviço de blueprint da prova, transição de escopo ativo (`setActiveExamTags`, `toggleActiveExamTag`), metas gerais/semanais/mensais (`updateMeta`, `applyTodayGoalToAllDays`, `clearWeekendGoals`, `updateMetaDisciplina`, `deleteMetaDisciplina`) e configuração estratégica por disciplina (`createGoalsBlueprintService`).
+    3. `src/ui/navigation/delegated-actions-registry.ts`: registro declarativo completo de todas as ações delegadas (`registerDelegatedActions`) e resolvedores de atributos dinâmicos (`createSpecialActionResolver`).
+    4. `src/ui/controllers/global-events-wiring.ts`: fiação centralizada de eventos globais (`DOMContentLoaded`, cliques delegados, atalhos de teclado, busca e filtros).
+  - **Onda 2 — Seletores de Métricas, Backup/Importação, Runtime do Timer e Ciclo de Vida (4.241 → 1.976 linhas):**
+    5. `src/application/selectors/study-metrics-selectors.ts`: mais de 50 seletores determinísticos e agregadores de horas, sessões, questões, simulados, revisões e metas (`createStudyMetricsSelectors`).
+    6. `src/application/backup/backup-import-service.ts`: serviço unificado de exportação/importação de backup JSON, importação de questões CSV/TSV, migração de estado e limpeza segura (`createBackupImportService`).
+    7. `src/ui/tabs/today/study-timer-runtime.ts`: runtime do cronômetro de estudos, restauração pós-reload, integração Document Picture-in-Picture e modo foco (`createStudyTimerRuntime`).
+    8. `src/bootstrap/app-lifecycle.ts`: orquestração de inicialização (`init`), transição de dia civil local, carregamento do estado real/demonstração e controle do banner da demo (`createAppLifecycle`).
+  - **Onda 3 — Orquestrador de Controladores de UI em Sub-Wirers e API de Testes (1.976 → 146 linhas):**
+    9. `src/bootstrap/wire-ui-controllers.ts`: composição unificada dos controladores de interface, delegando a inicialização para 4 sub-wirers especializados em `src/bootstrap/ui/`:
+       - `src/bootstrap/ui/wire-analytics-and-planning-ui.ts` (Desempenho, Aprovação, Diagnósticos, Metas, Matriz de Prova, Construtor de Plano e Fechamento Semanal).
+       - `src/bootstrap/ui/wire-practice-and-catalog-ui.ts` (Disciplinas, Questões, Simulados, Importação Estruturada, Edital e Caderno de Erros).
+       - `src/bootstrap/ui/wire-temporal-and-support-ui.ts` (Calendário, Agenda de Revisões, Busca, Conquistas, Ajuda, Sincronização Remota WebDAV e Relatório PDF).
+       - `src/bootstrap/ui/wire-execution-and-onboarding-ui.ts` (Aba Hoje, Histórico de Sessões, Recomendações, Cronômetro e Onboarding 2.0).
+    10. `src/bootstrap/test-api.ts`: isolamento completo da fachada de testes `window.__EXTRATO_TEST__` (`mountExtratoTestApi`), ativada exclusivamente sob `?test=1`.
+- **Redução Obtida:** `src/app.ts` reduzido de **10.921 linhas** (473 funções) no início do plano para **146 linhas** (**-10.775 linhas eliminadas / -98,7% de redução**, com **zero funções de negócio** no arquivo raiz).
+- **Status:** 100% concluída e homologada no Fast Gate (1.154 testes unitários passando em ~43s em UTC e `America/Sao_Paulo`) e no pipeline Full + Visual Windows do GitHub Actions (100% dos jobs aprovados).
 
 ---
 

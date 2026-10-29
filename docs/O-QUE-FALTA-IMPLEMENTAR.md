@@ -26,7 +26,7 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 | **Master Fase 4 & Melhorias Pós-Fase 4** | Caderno de Erros, A11y, Onboarding 2.0 & Base SaaS | Concluída | `error-notebook-engine.ts` (SM-2 adaptado), `ErrorNotebookView.tsx`, avisos de revisão na Agenda e Hoje (`ErrorNotebookDueNotice.tsx`), persistência e integridade de `errorFlashcards`, focus traps em modais/tour, anúncios `aria-live` no cronômetro (`timerAriaLive`), roteiro NVDA (`ROTEIRO-AUDITORIA-NVDA.md`), Onboarding 2.0 com viabilidade pedagógica (`calculatePlanFeasibility`), nivelamento em lote e disparo direto do plano em Hoje. |
 | **Central de Ajuda 2.0** | Instruções Reativas, Micro-Simuladores & Code-Splitting | Concluída | Code-splitting assíncrono em `src/help.bundle.js` (~80 KB), Preact 11 unificado via `preact-render-to-string`, simulador de retenção Ebbinghaus (`EbbinghausSimulator.tsx`), simulador de amostragem/evidência com 95% CI (`EvidenceConfidenceSimulator.tsx`), hash routing (`#instrucoes?topic=<id>`), cópia de atalho direto no clipboard, chips interativos, metadados automáticos e conformidade estrita WCAG AA. |
 | **Auditoria UX/UI & A11y** | Contraste WCAG 2.1 AA, Pilha Sticky, Modal de Dados & Tipografia | Concluída | Token `--border-control` (> 3:1), raios 2px, formatDelta(), sticky sem gap, colapso na demo, modal `#dataManagementOverlay`, ícones SVG nativos e piso 12px. |
-| **Modularização do app.ts** | Desacoplamento Arquitetural (Fases 1–5) | Concluída | Redução de 10.921 para 9.254 linhas (-1.667 linhas), isolamento de domínio puro (`src/domain/`), eventos/atalhos/diálogos (`src/ui/`), timer (`src/application/sessions/`), controladores de abas/matrizes/editores (`src/ui/tabs/`), wiring de bootstrap (`src/bootstrap/wire-dependencies.ts`) e master renderer (`src/bootstrap/master-renderer.ts`). Fast Gate com 1070 testes passando em ~35s. |
+| **Modularização do app.ts** | Desacoplamento Arquitetural Integral (Fases 1–10) | Concluída | Redução de 10.921 para **146 linhas (-98,7%)**, zero funções de negócio no `src/app.ts`, isolamento completo de domínio (`src/domain/`), aplicação (`src/application/`), controladores de abas/modais (`src/ui/` e `src/features/`) e wiring de bootstrap (`src/bootstrap/`). Fast Gate com 1.154 testes passando em ~43s e CI Full/Visual 100% verde. |
 
 ---
 
@@ -125,10 +125,9 @@ Detalhadas formalmente em **[docs/PLANO-PROXIMAS-EVOLUCOES.md](file:///c:/Users/
 2. **Evolução do Caderno de Erros:**
    - Filtros rápidos por organizadora/banca examinadora (Cebraspe, FGV, FCC, Vunesp) e classificação do motivo cognitivo da armadilha.
    - Métricas do algoritmo SM-2 e gráfico da curva de retenção / esquecimento revertida.
-3. **Engenharia e Redução Progressiva do `app.ts`:**
-   - Extração de `onboarding-modal-controller.ts` (~350 linhas).
-   - Extração de `timer-ui-controller.ts` (~400 linhas).
-   - Testes de estresse automatizados com histórico simulado de 1 a 3 anos (5.000+ sessões).
+3. **Engenharia e Performance em Escala:**
+   - *(Concluído)* Extração integral do `src/app.ts` em 10 fases (reduzido de 10.921 para **146 linhas** como *Pure Composition Root*, incluindo `onboarding-modal-controller.ts`, `timer-ui-controller.ts`, `study-timer-runtime.ts` e sub-wirers em `src/bootstrap/ui/`).
+   - Testes de estresse automatizados com histórico simulado de 1 a 3 anos (5.000+ sessões e 15.000+ questões).
 4. **Engajamento e PWA:**
    - Lembretes locais diários de revisão via `Notification API` e Service Worker, com privacidade total e sem servidores.
 
@@ -191,4 +190,4 @@ Todas as alterações preservam os seguintes critérios inegociáveis:
 
 1. **Tipagem Estática:** 100% TypeScript com `strict: true` validado via `npm run check:types` e `npm run check:types:tests`.
 2. **Design System:** Interfaces declarativas Preact (`.tsx`) e utilitários Tailwind CSS v4 integrados aos tokens de cores.
-3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 992 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 31 segundos (meta < 120s).
+3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 1.154 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 43 segundos (meta < 120s).
