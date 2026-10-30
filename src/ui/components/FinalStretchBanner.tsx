@@ -1,4 +1,5 @@
 import type { FinalStretchBanner as FinalStretchBannerModel } from '../../domain/planning/final-stretch-policy.js';
+import { Icon } from '../primitives/icon.js';
 
 export interface FinalStretchBannerProps {
   banner: FinalStretchBannerModel;
@@ -20,6 +21,7 @@ export function FinalStretchBanner({ banner, onOpenWhatIf }: FinalStretchBannerP
     >
       <div class="space-y-1">
         <div class="flex items-center gap-2">
+          <Icon name="flame" size={16} class="shrink-0" />
           <span class="font-bold text-sm tracking-wide">{banner.badge}</span>
           <span class="text-xs px-2 py-0.5 rounded-full font-semibold bg-surface-card/70">
             {banner.daysToExam === 0 ? 'Prova Hoje!' : `Faltam ${banner.daysToExam} dias`}
@@ -31,10 +33,11 @@ export function FinalStretchBanner({ banner, onOpenWhatIf }: FinalStretchBannerP
       {onOpenWhatIf && (
         <button
           type="button"
-          class="shrink-0 px-3 py-1.5 rounded text-xs font-semibold bg-surface-card text-primary border border-border-default hover:border-primary shadow-xs transition-colors"
+          class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-surface-card text-primary border border-border-default hover:border-primary shadow-xs transition-colors"
           onClick={onOpenWhatIf}
         >
-          🔮 Simular "E se?"
+          <Icon name="crystal-ball" size={14} class="shrink-0" />
+          <span>Simular "E se?"</span>
         </button>
       )}
     </aside>

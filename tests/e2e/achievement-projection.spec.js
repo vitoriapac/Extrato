@@ -470,6 +470,7 @@ test('Demo de reta final conecta trajetória, ajuda e fechamento sem alterar his
   await expect(page.locator('#projections')).toContainText('não acrescenta horas');
   await activateTab(page, 'metas');
   const close = page.locator('#weeklyCloseDashboard');
+  await close.locator('.weekly-close-analysis > summary').click();
   await expect(close.getByRole('region', { name: 'Síntese para a próxima decisão' })).toContainText(
     'Decisão sugerida'
   );

@@ -36,10 +36,10 @@ export function performanceConfidence(
 }
 
 export function classifyAccuracy(accuracy: number | null, target: number): AccuracyClassification {
-  if (accuracy === null) return { key: 'none', icon: '⚪', label: 'Sem dados' };
-  if (accuracy >= target) return { key: 'strong', icon: '🟢', label: 'Na meta' };
-  if (accuracy >= target - 10) return { key: 'attention', icon: '🟡', label: 'Atenção' };
-  return { key: 'weak', icon: '🔴', label: 'Prioritário' };
+  if (accuracy === null) return { key: 'none', icon: 'circle', label: 'Sem dados' };
+  if (accuracy >= target) return { key: 'strong', icon: 'circle-check', label: 'Na meta' };
+  if (accuracy >= target - 10) return { key: 'attention', icon: 'alert-triangle', label: 'Atenção' };
+  return { key: 'weak', icon: 'alert-circle', label: 'Prioritário' };
 }
 
 export function calculateTopicPerformance(

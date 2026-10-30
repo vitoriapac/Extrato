@@ -49,11 +49,20 @@ export function renderIconSvg(
   options: {
     size?: number | string;
     stroke?: number | string;
+    strokeWidth?: number | string;
     class?: string;
+    className?: string;
     'aria-label'?: string;
   } = {}
 ): string {
-  const { size = 16, stroke = 2, class: className = '', 'aria-label': ariaLabel } = options;
+  const {
+    size = 16,
+    stroke = options.strokeWidth ?? 2,
+    class: classProp,
+    className: classNameProp,
+    'aria-label': ariaLabel,
+  } = options;
+  const className = classProp || classNameProp || '';
   const isAccessible = Boolean(ariaLabel);
   const nodes: TablerNode[] = TABLER_ICONS_DATA[name] || TABLER_ICONS_DATA['help'] || [];
 
@@ -70,5 +79,7 @@ export function renderIconSvg(
     ? `role="img" aria-label="${ariaLabel}"`
     : 'aria-hidden="true"';
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-${name} ${className}" ${accessibility}>${inner}</svg>`;
+  const classAttr = `icon icon-tabler icon-tabler-${name} ${className}`.trim();
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" class="${classAttr}" ${accessibility}>${inner}</svg>`;
 }

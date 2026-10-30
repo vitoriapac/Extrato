@@ -1,4 +1,5 @@
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
+import { renderIconSvg } from '../../ui/primitives/icon.js';
 const stepCopy: Record<string, any> = {
   goal: {
     title: 'Qual é o seu objetivo?',
@@ -134,10 +135,10 @@ export function renderOnboardingContent(
       })
       .join('');
     const presetsGroup = presets
-      ? `<div class="guided-routine-presets" role="group" aria-label="Rotinas sugeridas"><span class="guided-shortcut-title">Rotinas sugeridas em 1 clique:</span><div class="guided-shortcut-chips">${presets}<button type="button" class="btn ghost small" data-guided-action="rest-sunday" aria-label="Zerar domingo para descanso semanal">🏖️ Folga aos Domingos</button></div></div>`
+      ? `<div class="guided-routine-presets" role="group" aria-label="Rotinas sugeridas"><span class="guided-shortcut-title">Rotinas sugeridas em 1 clique:</span><div class="guided-shortcut-chips">${presets}<button type="button" class="btn ghost small" data-guided-action="rest-sunday" aria-label="Zerar domingo para descanso semanal">${renderIconSvg('sun', { size: 14, className: 'inline-block align-middle mr-1' })}Folga aos Domingos</button></div></div>`
       : '';
     const sustainabilityCallout = model.routineSustainability?.isExcessive
-      ? `<div class="guided-sustainability-callout" data-sustainability="${escapeAttr(model.routineSustainability.statusTag)}"><strong>💡 Dica de sustentabilidade (${escapeHtml(model.routineSustainability.statusTag)}):</strong><p>${escapeHtml(model.routineSustainability.feedbackMessage)}</p></div>`
+      ? `<div class="guided-sustainability-callout" data-sustainability="${escapeAttr(model.routineSustainability.statusTag)}"><strong>${renderIconSvg('bulb', { size: 14, className: 'inline-block align-middle mr-1' })}Dica de sustentabilidade (${escapeHtml(model.routineSustainability.statusTag)}):</strong><p>${escapeHtml(model.routineSustainability.feedbackMessage)}</p></div>`
       : '';
     return `<div class="guided-onboarding-panel"><h3>${copy.title}</h3><p>${copy.help}</p>${presetsGroup}<div class="guided-availability">${model.weekdays.map((item: any) => `<label for="guided-day-${item.day}"><span>${escapeHtml(item.label)}</span><input id="guided-day-${item.day}" type="number" min="0" max="24" step="0.25" value="${item.hours}" data-guided-day="${item.day}" aria-label="Horas disponíveis em ${escapeAttr(item.label)}"><small>h</small></label>`).join('')}</div><div class="guided-capacity"><strong>${formatMinutes(model.availableMinutes)}</strong><span>de capacidade semanal</span></div>${sustainabilityCallout}</div>`;
   }

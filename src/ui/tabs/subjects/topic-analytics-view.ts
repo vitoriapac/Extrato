@@ -97,9 +97,9 @@ export function renderTopicAnalyticsState({
     `<div class="topic-metric"><span>${name}</span><strong>${escapeHtml(value)}</strong>${detail ? `<small>${escapeHtml(detail)}</small>` : ''}</div>`;
 
   const trendText =
-    !trend || trend.key === 'insufficient' ? 'Aguardando dados' : `${trend.icon} ${trend.label}`;
+    !trend || trend.key === 'insufficient' ? 'Aguardando dados' : `${trend.label}`;
   const eligibility = blockers.length
-    ? `🔒 Aguarda ${blockers.map(id => getTopicName(id) || id).join(', ')}`
+    ? `Aguarda ${blockers.map(id => getTopicName(id) || id).join(', ')}`
     : coverage === 100 &&
         !needsMaintenance({
           covered: true,
@@ -107,12 +107,12 @@ export function renderTopicAnalyticsState({
           retentionRisk: retention === null ? null : 100 - retention,
           reviewHealthRisk: reviewHealth.value === null ? null : 100 - reviewHealth.value,
         })
-      ? '✓ Consolidado'
+      ? 'Consolidado'
       : (reviewHealth as { level?: string }).level === 'critical'
-        ? '↻ Revisão recomendada'
+        ? 'Revisão recomendada'
         : masteryResult.evidence?.evidenceStrength! < 0.35
-          ? '⚠ Poucos dados'
-          : '★ Elegível para priorização';
+          ? 'Poucos dados'
+          : 'Elegível para priorização';
 
   return `<div class="topic-analytics-state"><div class="topic-analytics-title">Estado analítico <strong>${escapeHtml(label)}</strong><small>${escapeHtml(eligibility)}</small></div><div class="topic-analytics-metrics">${pctMetric('Cobertura', coverage)}${pctMetric('Domínio', mastery, mastery === null ? 'Registre questões deste tópico' : 'Evidência ' + masteryResult.evidence.evidenceLabel.toLowerCase())}${pctMetric('Retenção', retention, retention === null ? 'Conclua revisões vinculadas' : 'Evidência ' + (retentionResult as { evidence: { evidenceLabel: string } }).evidence.evidenceLabel.toLowerCase())}${pctMetric('Saúde da revisão', reviewHealth.value, reviewHealth.reasons[0] as string)}${textMetric('Último contato', lastContact === null ? 'Sem registro' : lastContact === 0 ? 'Hoje' : lastContact + ' dias')}${textMetric('Última revisão', lastReview === null ? 'Sem registro' : lastReview === 0 ? 'Hoje' : lastReview + ' dias')}${pctMetric('Desempenho recente', performance, diagnosis?.performance?.resolved ? diagnosis.performance.resolved + ' questões' : 'Sem questões')}${textMetric('Tendência', trendText, trend?.delta == null ? '' : (trend.delta >= 0 ? '+' : '') + trend.delta + ' p.p.')}</div></div>`;
 }

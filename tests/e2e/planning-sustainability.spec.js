@@ -93,6 +93,7 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
   await activateTab(page, 'metas');
   const close = page.locator('#weeklyCloseDashboard'),
     section = close.locator('.planning-sustainability').first();
+  await close.locator('.weekly-close-analysis > summary').click();
   await expect(section).toContainText('Carga acima da execução recente');
   await expect(section).toContainText('4 comparáveis');
   const before = await page.evaluate(() => JSON.stringify(window.__EXTRATO_TEST__.getState()));
@@ -150,6 +151,7 @@ for (const [width, theme] of [
     await expect(page.locator('.adherence-change')).toContainText('O que mudou?');
     await expectNoPageOverflow(page);
     await activateTab(page, 'metas');
+    await page.locator('#weeklyCloseDashboard .weekly-close-analysis > summary').click();
     const section = page.locator('#weeklyCloseDashboard .planning-sustainability').first();
     await expect(section).toContainText('Carga acima da execução recente');
     await expect(section).toContainText('4 comparáveis');

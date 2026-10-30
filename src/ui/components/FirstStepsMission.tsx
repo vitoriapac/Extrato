@@ -4,6 +4,7 @@ import { Card } from '../primitives/card.js';
 import { Button } from '../primitives/button.js';
 import { ProgressBar } from '../primitives/progress-bar.js';
 import { Badge } from '../primitives/badge.js';
+import { Icon } from '../primitives/icon.js';
 
 export interface FirstStepsMissionProps {
   model: FirstStepsMissionModel;
@@ -70,7 +71,8 @@ export function FirstStepsMission({
               onClick={onStartTour}
               aria-label="Iniciar tour rápido pelas áreas do aplicativo"
             >
-              🧭 Tour rápido
+              <Icon name="compass" size={14} class="mr-1 inline-block shrink-0" />
+              <span>Tour rápido</span>
             </Button>
             <Button
               variant="ghost"
@@ -80,7 +82,8 @@ export function FirstStepsMission({
               aria-label="Dispensar guia de primeiros passos"
               className="text-muted hover:text-primary"
             >
-              ✕ Dispensar
+              <Icon name="x" size={14} class="mr-1 inline-block shrink-0" />
+              <span>Dispensar</span>
             </Button>
           </div>
         </div>
@@ -134,7 +137,7 @@ export function FirstStepsMission({
                     }`}
                     aria-hidden="true"
                   >
-                    {isDone ? '✓' : ''}
+                    {isDone ? <Icon name="check" size={12} stroke={3} /> : ''}
                   </span>
                   <div className="flex flex-col">
                     <span

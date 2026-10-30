@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { calculateEbbinghausRetention } from '../../domain/help/retention-simulator.js';
+import { Icon } from '../primitives/icon.js';
 
 export function EbbinghausSimulator(): JSX.Element {
   const [days, setDays] = useState(7);
@@ -25,7 +26,7 @@ export function EbbinghausSimulator(): JSX.Element {
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
           <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-            🧠
+            <Icon name="brain" size={14} class="text-primary" />
           </span>
           <h5 class="text-sm font-semibold text-text">
             Simulador de Retenção e Curva de Ebbinghaus
@@ -107,11 +108,23 @@ export function EbbinghausSimulator(): JSX.Element {
 
           <div class="mt-2.5 flex items-start gap-2">
             <span class="mt-0.5 inline-block text-xs">
-              {simulation.decayStage === 'consolidated'
-                ? '🟢'
-                : simulation.decayStage === 'declining'
-                  ? '🟡'
-                  : '🔴'}
+              <Icon
+                name={
+                  simulation.decayStage === 'consolidated'
+                    ? 'circle-check'
+                    : simulation.decayStage === 'declining'
+                      ? 'alert-triangle'
+                      : 'alert-circle'
+                }
+                size={14}
+                class={
+                  simulation.decayStage === 'consolidated'
+                    ? 'text-green'
+                    : simulation.decayStage === 'declining'
+                      ? 'text-amber'
+                      : 'text-red'
+                }
+              />
             </span>
             <div class="text-xs">
               <strong class="font-semibold text-text">{simulation.stageLabel}: </strong>
@@ -120,10 +133,13 @@ export function EbbinghausSimulator(): JSX.Element {
           </div>
         </div>
 
-        <p class="text-[11px] leading-relaxed text-text-muted">
-          💡 <strong>Por que isso importa?</strong> Sem revisões programadas, você precisará
-          reaprender a matéria do zero perto da prova. O StudyTrack calcula automaticamente esses
-          ciclos para você na aba <em>Agenda</em>.
+        <p class="text-[11px] leading-relaxed text-text-muted flex items-start gap-1.5">
+          <Icon name="bulb" size={14} class="shrink-0 text-amber mt-0.5" />
+          <span>
+            <strong>Por que isso importa?</strong> Sem revisões programadas, você precisará
+            reaprender a matéria do zero perto da prova. O StudyTrack calcula automaticamente esses
+            ciclos para você na aba <em>Agenda</em>.
+          </span>
         </p>
       </div>
     </div>

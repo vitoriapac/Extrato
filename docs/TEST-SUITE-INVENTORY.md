@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-259 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+260 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -196,6 +196,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/multidimensional-radar.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/navigation-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/next-action-card.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/no-emojis.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/onboarding-modal-controller.test.js | node | Onboarding | functional | — | contract, viewport | none |
 | tests/unit/onboarding-renderer.test.js | node | Onboarding | functional | — | contract | none |
 | tests/unit/onboarding-view-model.test.js | node | Onboarding | functional | — | contract | none |

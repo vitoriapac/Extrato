@@ -380,7 +380,7 @@ export function createHelpController({
           window.navigator.clipboard.writeText(url).catch(() => {});
         }
         const originalText = copyBtn.textContent;
-        copyBtn.textContent = '✓ Copiado';
+        copyBtn.textContent = 'Copiado';
         copyBtn.setAttribute('aria-label', 'Atalho copiado para a área de transferência');
         setTimeout(() => {
           copyBtn.textContent = originalText;

@@ -22,6 +22,7 @@ import { createWeeklyCloseController } from '../../application/analytics/weekly-
 import { createSustainabilityController } from '../../ui/controllers/sustainability-controller.js';
 import {
   renderWeeklyClose,
+  renderWeeklyCloseKpis,
   renderWeeklyCloseNext,
   renderWeeklyStrategicFocus,
   renderPeriodComparison,
@@ -193,7 +194,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
       })
       .join('');
     const proposal = draft.proposal;
-    return `<section class="weekly-close-actions"><h4>Decida as prioridades</h4>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()">Conferir impacto</button>${proposal ? `<div class="weekly-action-preview"><strong>${proposal.allocations.length} alocações · ${formatPlanMinutes(proposal.unallocatedMinutes)} sem capacidade</strong><button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button></div>` : ''}</section>`;
+    return `<section class="weekly-close-actions"><h4>Decida as prioridades</h4><p>Selecione até três, confira a capacidade restante e confirme o próximo plano.</p>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()">Conferir impacto</button>${proposal ? `<div class="weekly-action-preview"><strong>${proposal.allocations.length} alocações · ${formatPlanMinutes(proposal.unallocatedMinutes)} sem capacidade</strong><button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button></div>` : ''}</section>`;
   }
 
   function previewWeeklyCloseActions() {
@@ -349,9 +350,20 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         today: todayISO(),
       });
       const candidate = weeklyCloseCandidate();
+      // Redesenhar depois de uma ação não pode fechar a análise que o estudante abriu.
+      const analysisOpen = Boolean(
+        (close.querySelector?.('.weekly-close-analysis') as HTMLDetailsElement | null)?.open
+      );
       close.innerHTML =
         '<section class="weekly-close-act" aria-labelledby="weeklyWeekTitle"><h4 class="weekly-close-act__title" id="weeklyWeekTitle">A semana</h4>' +
-        renderWeeklyClose(model.weeklyClose, { ...options, includeNext: false }) +
+        renderWeeklyCloseKpis(model.weeklyClose, options) +
+        // A semana lê-se nos três números; a análise inteira fica num único disclosure.
+        `<details class="weekly-close-analysis editorial-disclosure"${analysisOpen ? ' open' : ''}><summary>Ver análise completa da semana</summary>` +
+        renderWeeklyClose(model.weeklyClose, {
+          ...options,
+          includeNext: false,
+          includeKpis: false,
+        }) +
         renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle, {
           adherence: model.weeklyClose.adherence,
           trajectory: trajectoryClose,
@@ -369,7 +381,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
             ) + renderProjectionCloseContext(trajectoryClose, { escapeHtml }),
         }) +
         renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus) +
-        '</section>' +
+        '</details></section>' +
         renderWeeklyCloseRecord({
           close: model.weeklyClose,
           candidate,
@@ -382,10 +394,10 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
           escapeHtml,
         }) +
         '<section class="weekly-close-act" aria-labelledby="weeklyNextTitle"><h4 class="weekly-close-act__title" id="weeklyNextTitle">A decisão</h4>' +
-        renderWeeklyCloseNext(model.weeklyClose, options) +
-        (model.weeklyClose.state === 'insufficient'
-          ? ''
-          : renderWeeklyCloseActions(model.weeklyClose)) +
+        ((model.weeklyClose.priorities || []).length
+          ? renderWeeklyCloseNext(model.weeklyClose, options) +
+            renderWeeklyCloseActions(model.weeklyClose)
+          : '<p class="weekly-close-empty">Nenhuma prioridade sugerida para a próxima semana ainda. Elas vêm das recomendações deste período que não foram dispensadas, mostradas em Hoje.</p>') +
         '</section>';
     }
     const closeHistory = doc.getElementById('weeklyCloseHistoryDashboard');

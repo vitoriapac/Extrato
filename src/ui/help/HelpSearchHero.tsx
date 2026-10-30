@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { Icon } from '../primitives/icon.js';
 
 export interface HelpSearchHeroProps {
   chips?: Array<{ label: string; query: string }>;
@@ -24,12 +25,13 @@ export function HelpSearchHero({ chips = DEFAULT_CHIPS }: HelpSearchHeroProps = 
             <h2 class="module-heading__title">Como usar o StudyTrack</h2>
           </div>
           <button
-            class="btn ghost small help-tour-btn"
+            class="btn ghost small help-tour-btn inline-flex items-center gap-1.5"
             type="button"
             data-guided-tour-start="true"
             aria-label="Iniciar tour guiado pelo aplicativo"
           >
-            🧭 Tour guiado
+            <Icon name="compass" size={14} class="shrink-0" />
+            <span>Tour guiado</span>
           </button>
         </div>
         <p class="module-heading__description">

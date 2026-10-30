@@ -79,22 +79,22 @@ test('buildExcludedCandidates — classifica estados de exclusão corretamente',
   const dismissedIds = new Set(['rec-dismissed']);
   const excluded = buildExcludedCandidates(candidates, visibleIds, dismissedIds, getTopicName);
 
-  assert.equal(excluded[0].stateIcon, '🔒');
+  assert.equal(excluded[0].stateIcon, 'lock');
   assert.ok(excluded[0].stateText.includes('Aguarda Controle de Constitucionalidade'));
 
-  assert.equal(excluded[1].stateIcon, '✓');
+  assert.equal(excluded[1].stateIcon, 'check');
   assert.equal(excluded[1].stateText, 'Atividade já realizada hoje');
 
-  assert.equal(excluded[2].stateIcon, '✓');
+  assert.equal(excluded[2].stateIcon, 'check');
   assert.equal(excluded[2].stateText, 'Concluído e consolidado');
 
-  assert.equal(excluded[3].stateIcon, '○');
+  assert.equal(excluded[3].stateIcon, 'circle');
   assert.equal(excluded[3].stateText, 'Carga de estudo ainda não configurada');
 
-  assert.equal(excluded[4].stateIcon, '○');
+  assert.equal(excluded[4].stateIcon, 'circle');
   assert.equal(excluded[4].stateText, 'Ocultado nesta sessão');
 
-  assert.equal(excluded[5].stateIcon, '○');
+  assert.equal(excluded[5].stateIcon, 'circle');
   assert.equal(excluded[5].stateText, 'Baixa relevância configurada para a prova');
 });
 
@@ -117,7 +117,7 @@ test('buildExcludedCandidates — respeita needsMaintenanceFn para tópicos cobe
     item => item.id === 'rec-maintenance'
   );
 
-  assert.equal(excluded[0].stateIcon, '★');
+  assert.equal(excluded[0].stateIcon, 'star');
   assert.equal(excluded[0].stateText, 'Prioridade inferior às três recomendações atuais');
 });
 
@@ -130,7 +130,7 @@ test('renderExcludedCandidatesHtml — gera HTML estruturado ou vazio', () => {
       id: 'r1',
       subjectName: 'Matemática',
       topicName: 'Álgebra & Funções',
-      stateIcon: '🔒',
+      stateIcon: 'lock',
       stateText: 'Aguarda Aritmética',
     },
   ];

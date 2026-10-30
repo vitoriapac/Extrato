@@ -100,7 +100,7 @@ export function analyzeTopicVolatileMastery({
       accuracyDrop: Math.max(0, drop),
       daysBetweenAssessments: daysBetween,
       sampleQuestionsCount: totalQuestions,
-      alertMessage: `⚠️ Domínio Volátil: Acerto caiu de ${initialAccuracy}% para ${spacedAccuracy}% após ${daysBetween} dias.`,
+      alertMessage: `Domínio Volátil: Acerto caiu de ${initialAccuracy}% para ${spacedAccuracy}% após ${daysBetween} dias.`,
       recommendedAction:
         'Aplicar bateria cega de 15 questões (sem consulta prévia) para restaurar a memória de longo prazo.',
     };

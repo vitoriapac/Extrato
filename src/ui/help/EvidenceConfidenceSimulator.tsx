@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { calculateEvidenceConfidence } from '../../domain/help/evidence-simulator.js';
+import { Icon } from '../primitives/icon.js';
 
 export function EvidenceConfidenceSimulator(): JSX.Element {
   const [sampleSize, setSampleSize] = useState(25);
@@ -27,7 +28,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
           <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-            📊
+            <Icon name="chart-bar" size={14} class="text-primary" />
           </span>
           <h5 class="text-sm font-semibold text-text">
             Simulador de Força da Evidência & Margem de Erro
@@ -138,15 +139,21 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
           </div>
 
           <div class="rounded-default bg-surface-subtle p-2 text-xs leading-relaxed text-text-muted">
-            ⚖️ <strong>Como o algoritmo age: </strong>
+            <span class="inline-flex items-center gap-1 font-semibold text-text">
+              <Icon name="scale" size={13} class="shrink-0 text-primary" />
+              <span>Como o algoritmo age: </span>
+            </span>
             {simulation.recommendationDecision}
           </div>
         </div>
 
-        <p class="text-[11px] leading-relaxed text-text-muted">
-          💡 <strong>Princípio da Amostragem:</strong> Uma taxa de 100% com apenas 2 questões não
-          prova maestria; assim como 0% em 1 questão não significa que você deve desistir do tópico.
-          O StudyTrack exige massa crítica para consolidar a Prontidão.
+        <p class="text-[11px] leading-relaxed text-text-muted flex items-start gap-1.5">
+          <Icon name="bulb" size={14} class="shrink-0 text-amber mt-0.5" />
+          <span>
+            <strong>Princípio da Amostragem:</strong> Uma taxa de 100% com apenas 2 questões não
+            prova maestria; assim como 0% em 1 questão não significa que você deve desistir do tópico.
+            O StudyTrack exige massa crítica para consolidar a Prontidão.
+          </span>
         </p>
       </div>
     </div>

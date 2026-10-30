@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
+import { Icon } from '../primitives/icon.js';
 import {
   simulateWhatIfScenario,
   type WhatIfSimulationInput,
@@ -208,7 +209,8 @@ export function WhatIfSimulatorModal({
         {insights.length > 0 && (
           <div class="rounded-default bg-navy/5 dark:bg-navy/20 p-4 border border-navy/10 dark:border-navy/30">
             <h4 class="font-semibold text-primary mb-2 flex items-center gap-1.5">
-              <span>💡</span> Conclusões da Simulação:
+              <Icon name="bulb" size={16} class="shrink-0" />
+              <span>Conclusões da Simulação:</span>
             </h4>
             <ul class="space-y-1.5 text-secondary pl-5 list-disc">
               {insights.map((insight, idx) => (
@@ -222,7 +224,7 @@ export function WhatIfSimulatorModal({
 
         {/* Garantia de Não-Mutação */}
         <div class="flex items-center gap-2 text-xs text-muted border-t border-border-subtle pt-3">
-          <span>🔒</span>
+          <Icon name="lock" size={14} class="shrink-0" />
           <span>
             Simulação 100% isolada em memória. Seu histórico real e planos persistidos permanecem
             inalterados.

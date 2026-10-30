@@ -338,7 +338,7 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     render();
     activateTab('hoje');
     showToast(
-      '🎉 Parabéns! Seu plano semanal está pronto. Demos o pontapé inicial na sua meta de hoje.'
+      'Parabéns! Seu plano semanal está pronto. Demos o pontapé inicial na sua meta de hoje.'
     );
     requestFrame(() => document.querySelector<HTMLElement>('#planoHojeContent .btn')?.focus());
   }

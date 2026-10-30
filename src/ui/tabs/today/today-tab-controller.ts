@@ -16,7 +16,7 @@ import { createDailyExecutionController } from '../../controllers/daily-executio
 import { renderDailyExecution } from '../../renderers/daily-execution-renderer.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
 
-const PRIORITY_TIER_EMOJI: Record<string, string> = { Alta: '🔴', Média: '🟡', Baixa: '🟢' };
+const PRIORITY_TIER_EMOJI: Record<string, string> = { Alta: 'alert-circle', Média: 'alert-triangle', Baixa: 'circle-check' };
 
 export interface TodayTabControllerContext {
   formatPlanMinutes: (mins: number) => string;
@@ -241,7 +241,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         score: Number(item.score) || 0,
         tier: item.tier || 'Baixa',
         position: index + 1,
-        statusIcon: item.diagnosis?.statusIcon || PRIORITY_TIER_EMOJI[item.tier] || '📌',
+        statusIcon: item.diagnosis?.statusIcon || PRIORITY_TIER_EMOJI[item.tier] || 'bookmark',
         statusLabel: item.diagnosis?.status || 'Prioridade ' + (index + 1),
         reason: motivoPrioridade(item),
         action: item.recommendedAction || 'Estudar o tópico',
@@ -511,9 +511,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
             !['completed', 'deferred', 'replaced', 'skipped'].includes(item.status) && !active,
           blocked = hasTimer && !active;
         const actionButton = active
-          ? '<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>'
+          ? '<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button>'
           : canStart && !blocked
-            ? `<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds > 0 ? '▶ Continuar' : '▶ Iniciar'}</button>`
+            ? `<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds > 0 ? 'Continuar' : 'Iniciar'}</button>`
             : canStart && blocked
               ? '<button type="button" class="btn small" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
               : '';

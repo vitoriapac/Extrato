@@ -7,6 +7,7 @@ import {
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
+import { Icon } from '../primitives/icon.js';
 
 export interface VerticalizedTopicItem {
   id: string;
@@ -65,7 +66,8 @@ export function VerticalizedSyllabusView({
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-card p-4 rounded-default border border-border-default shadow-xs">
         <div>
           <h3 class="text-base font-bold text-primary flex items-center gap-2">
-            <span>📑</span> Edital Verticalizado Interativo
+            <Icon name="clipboard-text" size={18} class="text-primary shrink-0" />
+            <span>Edital Verticalizado Interativo</span>
           </h3>
           <p class="text-xs text-secondary mt-0.5">
             Acompanhe cada etapa de estudo (Teoria, Resumo, Lei Seca e Questões) por tópico do
@@ -92,13 +94,14 @@ export function VerticalizedSyllabusView({
           {/* Botão de Importar do PDF */}
           <Button
             variant="secondary"
-            className="text-xs shrink-0 flex items-center gap-1.5"
+            className="text-xs shrink-0 inline-flex items-center gap-1.5"
             onClick={() => {
               setImportModalOpen(true);
               setParsedPreview(null);
             }}
           >
-            <span>📋</span> Colar Edital (PDF)
+            <Icon name="file-text" size={14} class="shrink-0" />
+            <span>Colar Edital (PDF)</span>
           </Button>
         </div>
       </div>
@@ -147,7 +150,7 @@ export function VerticalizedSyllabusView({
                       </div>
                       {topic.bookmark && (
                         <div class="text-xs text-secondary mt-1 flex items-center gap-1">
-                          <span>🔖</span>
+                          <Icon name="bookmark" size={12} class="shrink-0" />
                           <span>
                             {topic.bookmark.label || 'Marcador'}:{' '}
                             {topic.bookmark.currentUnit != null
@@ -238,11 +241,12 @@ export function VerticalizedSyllabusView({
 
                         <button
                           type="button"
-                          class="px-2.5 py-1 rounded text-xs font-semibold bg-surface-subtle hover:bg-primary hover:text-white border border-border-default transition-colors text-primary"
+                          class="px-2.5 py-1 rounded text-xs font-semibold bg-surface-subtle hover:bg-primary hover:text-white border border-border-default transition-colors text-primary inline-flex items-center gap-1"
                           onClick={() => onStartStudy?.(subject.id, topic.id)}
                           aria-label={`Iniciar estudo de ${topic.name}`}
                         >
-                          ▶ Estudar
+                          <Icon name="player-play" size={12} class="shrink-0" />
+                          <span>Estudar</span>
                         </button>
                       </div>
                     </div>
@@ -280,8 +284,14 @@ export function VerticalizedSyllabusView({
           </div>
 
           <div class="flex justify-between items-center">
-            <Button variant="secondary" onClick={handleParseText} disabled={!rawText.trim()}>
-              🔍 Analisar Texto
+            <Button
+              variant="secondary"
+              onClick={handleParseText}
+              disabled={!rawText.trim()}
+              className="inline-flex items-center gap-1.5"
+            >
+              <Icon name="search" size={14} class="shrink-0" />
+              <span>Analisar Texto</span>
             </Button>
 
             {parsedPreview && (

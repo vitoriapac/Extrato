@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { formatDecimal } from '../../../core/format-number.js';
+import { Icon } from '../../primitives/icon.js';
 
 export interface SimulationBreakdownItem {
   id: string;
@@ -276,11 +277,12 @@ export function SimulationLogTable({
                       </button>
                       <button
                         type="button"
-                        class="btn small breakdown-remediation-btn"
+                        class="btn small breakdown-remediation-btn inline-flex items-center gap-1"
                         data-delegated-click={`openSimulatedRemediation('${sim.id}')`}
                         aria-label={`Abrir Raio-X e Plano de Remediação para ${vm.name}`}
                       >
-                        ⚡ Raio-X &amp; Remediação
+                        <Icon name="bolt" size={14} class="shrink-0" />
+                        <span>Raio-X &amp; Remediação</span>
                       </button>
                     </div>
                   </div>

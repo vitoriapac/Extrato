@@ -18,6 +18,7 @@ import { initialGoalSuggestions as defaultInitialGoalSuggestions } from '../../.
 import { buildPeriodComparisonViewModel as defaultBuildPeriodComparisonViewModel } from '../../../application/analytics/build-period-comparison-view-model.js';
 import { renderPeriodComparisonDetail as defaultRenderPeriodComparisonDetail } from '../../renderers/period-comparison-detail-renderer.js';
 import { countStudyDaysThisWeek } from '../../../application/performance/study-day-count.js';
+import { renderIconSvg } from '../../primitives/icon.js';
 
 const DEFAULT_WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
 
@@ -516,10 +517,10 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     let statusHtml = '';
     if (r.comparativo === 'no-prazo') {
       const folga = r.daysToExam! - r.daysNeeded!;
-      statusHtml = `<div class="pace-status ok">🟢 No ritmo atual, você termina com ${folga} dia${folga === 1 ? '' : 's'} de folga antes da prova.</div>`;
+      statusHtml = `<div class="pace-status ok">${renderIconSvg('circle-check', { size: 14, className: 'inline-block align-middle mr-1' })}No ritmo atual, você termina com ${folga} dia${folga === 1 ? '' : 's'} de folga antes da prova.</div>`;
     } else if (r.comparativo === 'atrasado') {
       const atraso = r.daysNeeded! - r.daysToExam!;
-      statusHtml = `<div class="pace-status warn">🔴 No ritmo atual, você terminaria ${atraso} dia${atraso === 1 ? '' : 's'} depois da prova. Considere acelerar ou rever o plano.</div>`;
+      statusHtml = `<div class="pace-status warn">${renderIconSvg('alert-triangle', { size: 14, className: 'inline-block align-middle mr-1' })}No ritmo atual, você terminaria ${atraso} dia${atraso === 1 ? '' : 's'} depois da prova. Considere acelerar ou rever o plano.</div>`;
     } else {
       statusHtml = `<div class="pace-status neutral">Defina a data da prova na Visão geral para comparar com o prazo.</div>`;
     }

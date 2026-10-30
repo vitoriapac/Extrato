@@ -19,6 +19,7 @@ import {
   buildStudyAction as defaultBuildStudyAction,
   recommendationActionLabel as defaultRecommendationActionLabel,
 } from '../../../application/recommendations/recommendation-action.js';
+import { renderIconSvg } from '../../primitives/icon.js';
 
 export interface DiagnosticsTabControllerOptions {
   document: any;
@@ -238,7 +239,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     let energyAlertHtml = '';
     if (energyAnalysis.fatigueAlert) {
       energyAlertHtml = `<div class="alerta-item alerta-media mt-4">
-        <span class="alerta-icon">⚠️</span><span><strong>Alerta Cronobiológico:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}</span>
+        <span class="alerta-icon">${renderIconSvg('alert-triangle', { size: 16, className: 'inline-block align-middle' })}</span><span><strong>Alerta Cronobiológico:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}</span>
       </div>`;
     }
 

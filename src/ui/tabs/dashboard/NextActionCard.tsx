@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import type { TopicBookmark } from '../../../core/types.js';
 import { BookmarkBadge } from '../../components/BookmarkBadge.js';
+import { Icon } from '../../primitives/icon.js';
 
 export interface NextActionSixQuestions {
   what: {
@@ -91,7 +92,7 @@ export function NextActionCard({
                 id="welcomeHeroTitle"
                 className="text-lg font-bold text-primary m-0 flex items-center gap-2"
               >
-                {emptyState.onboardingTitle || 'Bem-vindo ao StudyTrack 👋'}
+                {emptyState.onboardingTitle || 'Bem-vindo ao StudyTrack'}
               </h3>
               <p className="text-sm text-secondary m-0 leading-relaxed">
                 {emptyState.onboardingDescription ||
@@ -102,16 +103,17 @@ export function NextActionCard({
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <button
                 type="button"
-                className="btn"
+                className="btn inline-flex items-center gap-1.5"
                 data-guided-action="open"
                 onClick={emptyState.onOpenOnboarding}
                 aria-label="Montar meu plano de estudos agora"
               >
-                🚀 Montar meu plano de estudos
+                <Icon name="rocket" size={16} class="shrink-0" />
+                <span>Montar meu plano de estudos</span>
               </button>
               <button
                 type="button"
-                className="btn ghost text-secondary hover:text-primary"
+                className="btn ghost text-secondary hover:text-primary inline-flex items-center gap-1.5"
                 id="enterDemoHeroBtn"
                 data-delegated-click="openDemoIntro()"
                 onClick={() => {
@@ -126,7 +128,8 @@ export function NextActionCard({
                 }}
                 aria-label="Experimentar demonstração interativa com dados fictícios"
               >
-                ▶ Experimentar demonstração
+                <Icon name="player-play" size={14} class="shrink-0" />
+                <span>Experimentar demonstração</span>
               </button>
             </div>
           </section>
@@ -172,7 +175,7 @@ export function NextActionCard({
           data-delegated-click="openStudyTimerFocus()"
           onClick={onExecuteAction}
         >
-          {buttonText || '▶ Retomar sessão'}
+          {buttonText || 'Retomar sessão'}
         </button>
       );
     }
@@ -180,7 +183,7 @@ export function NextActionCard({
     if (buttonAction.type === 'daily-resume') {
       return (
         <button className="btn" type="button" data-daily-resume onClick={onExecuteAction}>
-          {buttonText || '▶ Retomar sessão'}
+          {buttonText || 'Retomar sessão'}
         </button>
       );
     }
@@ -193,7 +196,7 @@ export function NextActionCard({
           data-daily-start={buttonAction.planItemId}
           onClick={onExecuteAction}
         >
-          {buttonText || '▶ Iniciar estudo'}
+          {buttonText || 'Iniciar estudo'}
         </button>
       );
     }
@@ -206,14 +209,14 @@ export function NextActionCard({
           data-delegated-click={`executeStudyRecommendation('${buttonAction.actionId}','${buttonAction.source}')`}
           onClick={onExecuteAction}
         >
-          {buttonText || '▶ Iniciar'}
+          {buttonText || 'Iniciar'}
         </button>
       );
     }
 
     return (
       <button className="btn" type="button" onClick={onExecuteAction}>
-        {buttonText || '▶ Iniciar'}
+        {buttonText || 'Iniciar'}
       </button>
     );
   };

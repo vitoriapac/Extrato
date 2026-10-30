@@ -1,5 +1,6 @@
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
 import { formatDecimal } from '../../core/format-number.js';
+import { renderIconSvg } from '../primitives/icon.js';
 export function renderErrorAnalysis(
   model: Record<string, any>,
   { toolbar = '', escapeHtml = defaultEscapeHtml }: any = {}
@@ -11,9 +12,10 @@ export function renderErrorAnalysis(
     .sort((a: any, b: any) => b.value - a.value)
     .map((item: any) => {
       const share = Math.round((item.value / model.totalErrors) * 100);
+      const iconMarkup = item.icon ? renderIconSvg(item.icon, { size: 14, className: 'inline-block align-middle mr-1' }) : '';
       return (
         '<li class="error-profile-item"><span class="error-profile-label">' +
-        item.icon +
+        iconMarkup +
         ' ' +
         escapeHtml(item.label) +
         '</span><span class="error-profile-track" aria-hidden="true"><span style="width:' +

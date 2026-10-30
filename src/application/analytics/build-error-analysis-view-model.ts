@@ -7,12 +7,12 @@ const LABELS: Record<string, string> = {
   chute: 'Chute',
 };
 const ICONS: Record<string, string> = {
-  naoSabia: '📚',
-  esqueci: '🧠',
-  interpretacao: '📖',
-  calculo: '➗',
-  desatencao: '⚠️',
-  chute: '🎲',
+  naoSabia: 'book',
+  esqueci: 'brain',
+  interpretacao: 'file-text',
+  calculo: 'calculator',
+  desatencao: 'alert-triangle',
+  chute: 'dice',
 };
 export function buildErrorAnalysisViewModel({
   current,
@@ -37,7 +37,7 @@ export function buildErrorAnalysisViewModel({
     {
       key: 'uncategorized',
       label: 'Sem categoria',
-      icon: '○',
+      icon: 'circle',
       value: current.uncategorized || 0,
       previous: previous?.uncategorized || 0,
     },

@@ -22,7 +22,7 @@ test('renderTopicAnalyticsState — formata estado analítico e métricas do tó
     diagnoseTopic: () => ({
       lastActivity: '2026-10-25',
       performance: { accuracy: 85, resolved: 20 },
-      trend: { icon: '🟢', label: 'Estável', delta: 0 },
+      trend: { icon: 'minus', label: 'Estável', delta: 0 },
     }),
     topicReviewHealthScore: () => ({
       value: 80,

@@ -130,7 +130,7 @@ export function HelpVisualRenderer({ visual }: HelpVisualProps): JSX.Element | n
           <p>
             {visual.activity} · {num(visual.minutes)} min
           </p>
-          <span class="instruction-action">▶ Iniciar estudo</span>
+          <span class="instruction-action">Iniciar estudo</span>
           <p class="instruction-legend">Representação de uma atividade; não inicia uma sessão.</p>
         </>
       );

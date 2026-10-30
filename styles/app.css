@@ -2450,7 +2450,11 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 /* Fechamento semanal em três atos: a semana, o retrato, a próxima semana. */
 .weekly-close-act{display:grid;gap:var(--space-4);padding-block:var(--space-6);border-top:1px solid var(--paper-line)}
 .weekly-close-act:first-child{padding-top:0;border-top:0}
-.weekly-close-act__title{margin:0;font:var(--font-weight-semibold) var(--text-label)/1.3 var(--font-data);letter-spacing:.08em;text-transform:uppercase;color:var(--heading)}
+.weekly-close-act__title{margin:0;font:var(--font-weight-semibold) var(--text-card-title)/var(--line-height-heading) var(--font-display);color:var(--heading)}
+.weekly-close-analysis{border-top:1px solid var(--paper-line)}
+.weekly-close-analysis[open]>summary{margin-bottom:var(--space-4)}
+.weekly-close-empty{margin:0;max-width:75ch;color:var(--text-secondary)}
+.weekly-close-act>.btn{justify-self:start}
 .weekly-close-record p{margin:0;max-width:75ch}
 .weekly-record-preview{display:grid;gap:var(--space-4);padding:var(--space-4) var(--space-5);background:var(--surface-card);border:1px solid var(--border-default);border-top:3px solid var(--gold);border-radius:var(--radius)}
 .weekly-record-preview>strong{color:var(--heading)}

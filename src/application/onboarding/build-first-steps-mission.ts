@@ -50,7 +50,7 @@ export function buildFirstStepsMission({
       done: hasSession,
       ctaLabel: 'Iniciar 1ª atividade',
       ctaAction: 'start-first-session',
-      quickActionLabel: '⚡ Aquecimento (15 min)',
+      quickActionLabel: 'Aquecimento (15 min)',
       quickAction: 'start-quick-warmup',
     },
     {

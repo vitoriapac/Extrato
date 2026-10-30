@@ -56,17 +56,23 @@ export function renderWeeklyCloseNext(
     .join('');
   return `<section class="weekly-next" aria-label="Próxima semana"><h4>Próxima semana</h4>${model.decisionCycle ? '' : `<p class="weekly-action"><b>Próxima ação</b>${safe(escapeHtml, model.recommendedAction)}</p>`}${priorities ? `<div class="weekly-priorities"><b>Até três prioridades sugeridas</b><ul>${priorities}</ul></div>` : ''}</section>`;
 }
-export function renderWeeklyClose(
-  model: Record<string, any>,
-  { escapeHtml, formatMinutes, includeNext = true }: any
-) {
+// The three figures of the week, kept apart so the close can show them before the analysis.
+export function renderWeeklyCloseKpis(model: Record<string, any>, { formatMinutes }: any) {
   if (model.state === 'insufficient')
     return '<div class="upcoming-empty ui-state--empty">Ainda não há evidência suficiente para fechar a semana.</div>';
   const summary = model.adherence?.model?.summary,
-    adherence = summary ? summary.temporalAdherence : model.investment?.adherence,
-    delta = model.comparison?.accuracy?.delta,
+    adherence = summary ? summary.temporalAdherence : model.investment?.adherence;
+  return `<section class="weekly-kpis" aria-label="Resultado da semana"><div><strong>${(summary?.plannedMinutes ?? model.investment?.plannedMinutes) == null ? '—' : formatMinutes(summary?.plannedMinutes ?? model.investment.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(summary?.executedMinutes ?? model.investment?.executedMinutes ?? 0)}</strong><span>Realizado</span></div><div><strong>${adherence == null ? '—' : formatDecimal(adherence) + '%'}</strong><span>${summary ? 'Crédito ao plano' : 'Volume de carga'}</span></div></section>`;
+}
+export function renderWeeklyClose(
+  model: Record<string, any>,
+  { escapeHtml, formatMinutes, includeNext = true, includeKpis = true }: any
+) {
+  if (model.state === 'insufficient')
+    return includeKpis ? renderWeeklyCloseKpis(model, { formatMinutes }) : '';
+  const delta = model.comparison?.accuracy?.delta,
     decisions = model.recommendations || {};
-  return `<section class="weekly-kpis" aria-label="Resultado da semana"><div><strong>${(summary?.plannedMinutes ?? model.investment?.plannedMinutes) == null ? '—' : formatMinutes(summary?.plannedMinutes ?? model.investment.plannedMinutes)}</strong><span>Planejado</span></div><div><strong>${formatMinutes(summary?.executedMinutes ?? model.investment?.executedMinutes ?? 0)}</strong><span>Realizado</span></div><div><strong>${adherence == null ? '—' : formatDecimal(adherence) + '%'}</strong><span>${summary ? 'Crédito ao plano' : 'Volume de carga'}</span></div></section><section class="weekly-assessment" aria-label="Auditoria da semana"><small>Questões</small><p><b>Resolvidas e precisão</b>${model.questions?.resolved ?? 0} questões · ${model.questions?.accuracy == null ? 'sem precisão medida' : model.questions.accuracy + '% de acerto'}</p><p><b>Comparação anterior</b>${delta == null ? 'Sem semana comparável' : `${delta >= 0 ? '+' : ''}${delta} p.p. de precisão`}</p><p><b>Decisões</b>${decisions.accepted ?? 0} aceitas · ${decisions.declined ?? 0} recusadas · ${decisions.completed ?? 0} executadas · ${decisions.measured ?? 0} com resultado medido</p><small>Diagnóstico</small><strong>${model.assessment === 'attention' ? 'Atenção' : model.assessment === 'on_target' ? 'Meta alcançada' : 'Semana em formação'}</strong>${model.mainRisk ? `<p class="weekly-risk"><b>Principal risco</b>${safe(escapeHtml, model.mainRisk.message)}</p>` : ''}${model.bestSignal ? `<p><b>Melhor sinal</b>${safe(escapeHtml, model.bestSignal.message)}</p>` : ''}</section>${model.subjectAccuracy ? renderSubjectAccuracy(model.subjectAccuracy) : ''}${includeNext ? renderWeeklyCloseNext(model, { escapeHtml, formatMinutes }) : ''}`;
+  return `${includeKpis ? renderWeeklyCloseKpis(model, { formatMinutes }) : ''}<section class="weekly-assessment" aria-label="Auditoria da semana"><small>Questões</small><p><b>Resolvidas e precisão</b>${model.questions?.resolved ?? 0} questões · ${model.questions?.accuracy == null ? 'sem precisão medida' : model.questions.accuracy + '% de acerto'}</p><p><b>Comparação anterior</b>${delta == null ? 'Sem semana comparável' : `${delta >= 0 ? '+' : ''}${delta} p.p. de precisão`}</p><p><b>Decisões</b>${decisions.accepted ?? 0} aceitas · ${decisions.declined ?? 0} recusadas · ${decisions.completed ?? 0} executadas · ${decisions.measured ?? 0} com resultado medido</p><small>Diagnóstico</small><strong>${model.assessment === 'attention' ? 'Atenção' : model.assessment === 'on_target' ? 'Meta alcançada' : 'Semana em formação'}</strong>${model.mainRisk ? `<p class="weekly-risk"><b>Principal risco</b>${safe(escapeHtml, model.mainRisk.message)}</p>` : ''}${model.bestSignal ? `<p><b>Melhor sinal</b>${safe(escapeHtml, model.bestSignal.message)}</p>` : ''}</section>${model.subjectAccuracy ? renderSubjectAccuracy(model.subjectAccuracy) : ''}${includeNext ? renderWeeklyCloseNext(model, { escapeHtml, formatMinutes }) : ''}`;
 }
 export function renderPeriodComparison(
   model: Record<string, any>,

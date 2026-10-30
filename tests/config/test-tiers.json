@@ -967,6 +967,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/no-emojis.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Governança visual automatizada: garante zero emojis Unicode na aplicação e conformidade com Tabler Icons."
+    },
+    {
       "file": "tests/unit/onboarding-modal-controller.test.js",
       "tier": "FAST_GATE",
       "rationale": "Teste unitário determinístico Node (< 1s) para o controller do modal de onboarding guiado 2.0."

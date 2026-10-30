@@ -5,6 +5,7 @@ import {
   saveTopicFeedback,
   clearTopicFeedback,
 } from '../../domain/help/help-feedback.js';
+import { Icon } from '../primitives/icon.js';
 
 export interface HelpFeedbackWidgetProps {
   topicId: string;
@@ -85,7 +86,7 @@ export function HelpFeedbackWidget({
           class="inline-flex items-center gap-1 rounded-default border border-border bg-surface px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-primary/40 cursor-pointer"
           aria-label={`Sim, a explicação sobre ${topicTitle || topicId} foi útil`}
         >
-          <span>👍</span>
+          <Icon name="thumb-up" size={14} class="shrink-0" />
           <span>Sim</span>
         </button>
         <button
@@ -94,7 +95,7 @@ export function HelpFeedbackWidget({
           class="inline-flex items-center gap-1 rounded-default border border-border bg-surface px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:px-3 text-xs font-medium text-text transition-colors hover:bg-surface-muted hover:border-danger/40 cursor-pointer"
           aria-label={`Não, a explicação sobre ${topicTitle || topicId} precisa melhorar`}
         >
-          <span>👎</span>
+          <Icon name="thumb-down" size={14} class="shrink-0" />
           <span>Não</span>
         </button>
       </div>

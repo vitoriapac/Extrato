@@ -40,7 +40,7 @@ test('VerticalizedSyllabusView — renderiza tabela de disciplinas com etapas de
   assert.match(html, /Resumo/);
   assert.match(html, /Lei Seca/);
   assert.match(html, /Questões/);
-  assert.match(html, /▶ Estudar/);
+  assert.match(html, /Estudar/);
   assert.match(html, /Colar Edital \(PDF\)/);
 });
 

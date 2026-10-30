@@ -15,20 +15,20 @@ const accuracy = (data: Tally) =>
   data.resolved ? round((data.correct / data.resolved) * 100) : null;
 function classification(delta: number) {
   if (delta >= 12)
-    return { state: 'strong_up', key: 'up', direction: 'up', icon: '↗', label: 'Forte evolução' };
+    return { state: 'strong_up', key: 'up', direction: 'up', icon: 'trending-up', label: 'Forte evolução' };
   if (delta >= 3)
-    return { state: 'up', key: 'up', direction: 'up', icon: '↗', label: 'Em evolução' };
+    return { state: 'up', key: 'up', direction: 'up', icon: 'trending-up', label: 'Em evolução' };
   if (delta <= -12)
     return {
       state: 'strong_down',
       key: 'down',
       direction: 'down',
-      icon: '↘',
+      icon: 'trending-down',
       label: 'Forte queda',
     };
   if (delta <= -3)
-    return { state: 'down', key: 'down', direction: 'down', icon: '↘', label: 'Em queda' };
-  return { state: 'stable', key: 'stable', direction: 'stable', icon: '→', label: 'Estável' };
+    return { state: 'down', key: 'down', direction: 'down', icon: 'trending-down', label: 'Em queda' };
+  return { state: 'stable', key: 'stable', direction: 'stable', icon: 'minus', label: 'Estável' };
 }
 export function calculateWindowTrend(weeklyData: Row[] = [], minWindow = 30, windowWeeks = 4) {
   const weeks = Array.isArray(weeklyData) ? weeklyData : [],

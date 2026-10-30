@@ -341,9 +341,8 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
   function gerarDiagnosticoAprovacao(metrics?: Record<string, any>) {
     const state = getState();
     const m = metrics || computeApprovalMetrics();
-    const icons: Record<string, any> = { positive: '✅', warning: '⚠️', info: 'ℹ️' };
     return buildApprovalSignals(m, { target: state.metas.metaAprovacao }).map(
-      item => `${icons[item.level]} ${item.text}`
+      item => item.text
     );
   }
 
