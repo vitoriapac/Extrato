@@ -12,8 +12,6 @@ test('QuickStatsGrid Preact Component — renderiza contadores de tópicos', () 
     h(QuickStatsGrid, {
       total: 50,
       naoIniciado: 20,
-      emAndamento: 15,
-      concluido: 15,
     })
   );
 
@@ -21,9 +19,8 @@ test('QuickStatsGrid Preact Component — renderiza contadores de tópicos', () 
   assert.match(html, /Tópicos totais/);
   assert.match(html, /20/);
   assert.match(html, /Não iniciados/);
-  assert.match(html, /15/);
-  assert.match(html, /Em andamento/);
-  assert.match(html, /Concluídos/);
+  // Em andamento e concluídos ficam só no cabeçalho do extrato.
+  assert.doesNotMatch(html, /Em andamento|Concluídos/);
 });
 
 test('SubjectProgressList Preact Component — renderiza barras de progresso ou vazio', () => {
@@ -81,8 +78,6 @@ test('createDashboardTabController — gera HTML dos 3 blocos da visão geral', 
   const statsHtml = controller.renderQuickStatsHtml({
     total: 10,
     naoIniciado: 5,
-    emAndamento: 3,
-    concluido: 2,
   });
   assert.match(statsHtml, /Tópicos totais/);
 

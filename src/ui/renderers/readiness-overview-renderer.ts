@@ -20,7 +20,7 @@ export function renderReadinessOverview(
   }: any,
   { escapeHtml, escapeAttr, getMetricDataState, metricStateLabel }: any
 ) {
-  return `<div class="metric-state metric-state--${approvalState}">${approvalLabel}${approvalState !== 'ready' ? '<span>Registre mais atividades para liberar uma classificação definitiva.</span>' : ''}</div><div class="kpi-grid">
+  return `<div class="metric-state metric-state--${approvalState}">${approvalState !== 'ready' ? '<span>Registre mais atividades para liberar uma classificação definitiva.</span>' : approvalLabel}</div><div class="kpi-grid">
     <div class="kpi-cell ${approvalState === 'ready' ? (level.cor === 'danger' ? 'warn' : level.cor) : 'neutral'}"><div class="n">${approvalState === 'empty' || factors.filter((item: any) => item[1]?.available).length < MIN_READINESS_FACTORS ? '—' : score + '/100'}</div><div class="l">Índice de Prontidão</div></div>
     <div class="kpi-cell ${approvalState === 'ready' ? (level.cor === 'danger' ? 'warn' : level.cor) : 'neutral'}"><div class="n" style="font-size:18px">${approvalState === 'ready' ? level.nivel : approvalLabel}</div><div class="l">${approvalState === 'ready' ? 'Nível de preparação · ' + level.faixa : 'Sem classificação definitiva'}</div></div>
     <div class="kpi-cell"><div class="n">${confidence.nivel}</div><div class="l">Confiança do índice · ${Math.round(confidence.value * 100)}%</div></div>

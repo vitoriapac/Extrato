@@ -380,19 +380,10 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     }
     const topics = deps.activeTopics ? deps.activeTopics() : [];
     const total = topics.length;
-    const done = topics.filter((t: any) => t.status === 'Concluído').length;
-    const andamento = topics.filter((t: any) => t.status === 'Em andamento').length;
     const naoIniciado = topics.filter((t: any) => t.status === 'Não iniciado').length;
 
     const qs = doc.getElementById('quickStats');
-    if (qs) {
-      mountQuickStats(qs, {
-        total,
-        naoIniciado,
-        emAndamento: andamento,
-        concluido: done,
-      });
-    }
+    if (qs) mountQuickStats(qs, { total, naoIniciado });
 
     const bars = doc.getElementById('progressBars');
     if (bars && deps.activeSubjects) {

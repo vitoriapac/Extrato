@@ -340,10 +340,11 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     const state = getState();
     const dismissed = isFirstStepsDismissed();
 
-    const hasPlan =
-      (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
-      (Array.isArray(state.dailyPlans) &&
-        state.dailyPlans.some((p: any) => Array.isArray(p.items) && p.items.length > 0));
+    // Mesma regra do assistente de configuração: o plano diário automático não conta,
+    // então a missão só aparece quando a configuração termina e as duas listas não coexistem.
+    const hasPlan = Array.isArray(state.studyPlans)
+      ? state.studyPlans.length > 0
+      : (state.dailyPlans || []).some((p: any) => Array.isArray(p.items) && p.items.length > 0);
     const sessionsCount = Array.isArray(state.studySessions) ? state.studySessions.length : 0;
     const questionsCount = Array.isArray(state.questoes) ? state.questoes.length : 0;
 
