@@ -2,6 +2,7 @@ import { formatDecimal, formatDelta } from '../../core/format-number.js';
 import { presentEvidence } from '../evidence-state.js';
 import { formatStudyMinutes, formatStudyMinuteDelta } from '../format-study-time.js';
 import { renderReadinessHistory } from '../renderers/readiness-history-renderer.js';
+import { displayReadinessValue } from '../../application/analytics/build-header-view-model.js';
 import { renderPerformanceComparison } from './performance-comparison-renderer.js';
 import {
   renderPerformanceStory,
@@ -42,7 +43,7 @@ export function renderPerformanceOverview(
     ? 'Comparação com período anterior'
     : 'Sem comparação';
   const kpis = `<section class="performance-kpis ui-metric-group" aria-label="Estado atual no período selecionado">
-    ${card('Índice de Prontidão', model.readiness?.value, '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : `${change(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} entre os dois últimos fechamentos`)}
+    ${card('Índice de Prontidão', displayReadinessValue(model.readiness), '/100', model.readinessDelta == null ? 'Histórico comparável indisponível' : `${change(model.readinessDelta)} ${Math.abs(model.readinessDelta) === 1 ? 'ponto' : 'pontos'} entre os dois últimos fechamentos`)}
     ${card('Precisão em questões', current.accuracy, '%', `${current.resolved || 0} questões${previous && previous.accuracy != null && current.accuracy != null ? ' · ' + change(current.accuracy - previous.accuracy) + ' p.p.' : ''}`)}
     ${renderMetricCard({ label: 'Tempo estudado', value: formatStudyMinutes(current.studiedMinutes), detail: `${current.sessionCount || 0} sessões${previous ? ' · ' + formatStudyMinuteDelta(current.studiedMinutes - previous.studiedMinutes) : ''}` })}
     ${card('Volume de carga', current.adherence, '%', current.adherence == null ? 'Sem plano no período' : `${formatStudyMinutes(current.studiedMinutes)} de ${formatStudyMinutes(current.plannedMinutes)} planejados`)}

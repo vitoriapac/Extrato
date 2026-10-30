@@ -84,3 +84,13 @@ test('createSearchController — instanciação e busca integrada', () => {
   assert.equal(results.length, 1);
   assert.equal(results[0].topicName, 'Segurança da Informação');
 });
+
+test('SEARCH_COMMANDS — termos do glossário encontram o destino certo', () => {
+  const find = query =>
+    SEARCH_COMMANDS.filter(item =>
+      normalizeSearchText(`${item.label} ${item.keywords}`).includes(normalizeSearchText(query))
+    ).map(item => item.label);
+  assert.ok(find('fecha').includes('Abrir fechamento semanal'));
+  assert.ok(find('Aderência').includes('Abrir Planejamento e metas'));
+  assert.ok(find('trajetória').includes('Abrir Desempenho'));
+});

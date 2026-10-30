@@ -43,18 +43,22 @@ export function createTabRouter(options: TabRouterOptions) {
     navigation.registerShortcuts();
   }
 
-  function activateInitialTab(): void {
-    const initialHash = window.location.hash.replace('#', '');
-    const tabFromHash = Object.keys(TAB_HASHES).find(
-      tab => (TAB_HASHES as Record<string, string>)[tab] === initialHash
-    );
-    const initialTab = tabFromHash || initialHash || 'dashboard';
+  // "#instrucoes/topico?x" aponta para a aba "instrucoes"; âncoras internas não são abas.
+  function tabFromHash(hash: string): string | null {
+    const base = hash.replace('#', '').split(/[/?]/)[0];
+    const tab =
+      Object.keys(TAB_HASHES).find(name => (TAB_HASHES as Record<string, string>)[name] === base) ||
+      base;
+    return tab && document.querySelector(`.tab-btn[data-tab="${tab}"]`) ? tab : null;
+  }
 
-    if (document.querySelector(`.tab-btn[data-tab="${initialTab}"]`)) {
-      activateTab(initialTab, false);
-    } else {
-      activateTab('dashboard', false);
-    }
+  function activateInitialTab(): void {
+    activateTab(tabFromHash(window.location.hash) || 'dashboard', false);
+    // Links internos e hash editado na barra trocam de aba sem recarregar.
+    window.addEventListener?.('hashchange', () => {
+      const tab = tabFromHash(window.location.hash);
+      if (tab && tab !== activeTabName()) activateTab(tab, false);
+    });
   }
 
   return {

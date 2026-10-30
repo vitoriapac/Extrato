@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildHeaderViewModel } from '../../src/application/analytics/build-header-view-model.js';
+import {
+  buildHeaderViewModel,
+  displayReadinessValue,
+} from '../../src/application/analytics/build-header-view-model.js';
 test('separa prontidão composta de conteúdo concluído', () => {
   const topics = Array.from({ length: 47 }, (_, index) => ({
       id: String(index),
@@ -50,4 +53,10 @@ test('não mostra saldo com um único fator disponível', () => {
   assert.equal(model.readinessValue, null);
   assert.equal(model.readiness.availableFactors, 1);
   assert.equal(model.readiness.totalFactors, 5);
+});
+
+test('Prontidão abaixo do mínimo de fatores aparece como ausente em qualquer superfície', () => {
+  assert.equal(displayReadinessValue({ value: 45, availableFactors: ['coverage'] }), null);
+  assert.equal(displayReadinessValue({ value: 45, availableFactors: ['coverage', 'mastery'] }), 45);
+  assert.equal(displayReadinessValue(null), null);
 });

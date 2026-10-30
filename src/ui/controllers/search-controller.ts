@@ -10,13 +10,22 @@ export interface SearchCommand {
 }
 
 export const SEARCH_COMMANDS: SearchCommand[] = [
-  { label: 'Visão Geral', keywords: 'inicio dashboard resumo prontidao', tab: 'dashboard' },
+  {
+    label: 'Visão Geral',
+    keywords: 'inicio dashboard resumo prontidao conquistas saldo',
+    tab: 'dashboard',
+  },
   {
     label: 'Abrir Desempenho',
-    keywords: 'evolucao historico tendencias comparacao progresso',
+    keywords:
+      'evolucao historico tendencias comparacao progresso prontidao trajetoria consistencia inteligencia da prova incidencia dominio retencao',
     tab: 'desempenho',
   },
-  { label: 'Ir para Hoje', keywords: 'hoje tarefa recomendacao estudo', tab: 'hoje' },
+  {
+    label: 'Ir para Hoje',
+    keywords: 'hoje tarefa recomendacao estudo proxima melhor acao plano do dia',
+    tab: 'hoje',
+  },
   {
     label: 'Iniciar recomendação prioritária',
     keywords: 'começar iniciar próxima ação estudar recomendação prioritária',
@@ -49,8 +58,14 @@ export const SEARCH_COMMANDS: SearchCommand[] = [
   },
   {
     label: 'Abrir Planejamento e metas',
-    keywords: 'metas capacidade plano planejamento estrategia',
+    keywords:
+      'metas capacidade plano planejamento estrategia aderencia adaptacao semanal recuperacao',
     tab: 'metas',
+  },
+  {
+    label: 'Abrir fechamento semanal',
+    keywords: 'fechamento semana retrato linha do tempo historico de decisoes',
+    action: 'weekly-close',
   },
   { label: 'Ver Diagnóstico', keywords: 'diagnostico lacunas prioridades', action: 'diagnosis' },
   { label: 'Planejar semana', keywords: 'plano semanal distribuir carga', tab: 'metas' },
@@ -185,6 +200,11 @@ export function createSearchController(options: SearchControllerOptions) {
     } else if (action === 'timer') {
       activateTab('dashboard');
       document.getElementById('timerSubjectSelect')?.focus();
+    } else if (action === 'weekly-close') {
+      activateTab('metas');
+      (
+        document.querySelector('[data-delegated-click="openWeeklyClose()"]') as HTMLElement | null
+      )?.click();
     } else if (action === 'diagnosis') {
       activateTab('dashboard');
       document

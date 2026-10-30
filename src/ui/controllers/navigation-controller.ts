@@ -121,6 +121,7 @@ export function createNavigationController({
       activate(tabs[next]?.dataset.tab);
     });
   });
+  let searchReturnFocus: HTMLElement | null = null;
   const registerShortcuts = () =>
     document.addEventListener('keydown', (event: any) => {
       trapModalTab(event);
@@ -133,7 +134,9 @@ export function createNavigationController({
           active?.isContentEditable;
       if (modifier && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        document.getElementById('globalSearchInput')?.focus();
+        const search = document.getElementById('globalSearchInput');
+        if (active !== search) searchReturnFocus = active;
+        search?.focus();
         return;
       }
       if (event.key === 'Escape') {
@@ -143,7 +146,11 @@ export function createNavigationController({
           event.preventDefault();
           results.classList.remove('show');
           search?.setAttribute('aria-expanded', 'false');
-          search?.blur();
+          // Esc desfaz a busca: limpa o termo e devolve o foco a quem a abriu.
+          if (search) (search as HTMLInputElement).value = '';
+          if (searchReturnFocus?.isConnected) searchReturnFocus.focus();
+          else search?.blur();
+          searchReturnFocus = null;
           return;
         }
         if (document.getElementById('reviewRatingOverlay')?.classList.contains('show')) {

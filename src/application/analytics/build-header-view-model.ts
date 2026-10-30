@@ -1,6 +1,13 @@
 // One factor is not a balance: an empty account would open at ~45/100.
 export const MIN_READINESS_FACTORS = 2;
 
+// Única regra de exibição da Prontidão: abaixo do mínimo de fatores, toda superfície mostra "—".
+export function displayReadinessValue(readiness: any): number | null {
+  return (readiness?.availableFactors?.length || 0) >= MIN_READINESS_FACTORS
+    ? (readiness?.value ?? null)
+    : null;
+}
+
 export function buildHeaderViewModel({
   readiness = {},
   subjects = [],
@@ -28,7 +35,7 @@ export function buildHeaderViewModel({
           )
         : null,
     flat = {
-      readinessValue: availableFactors >= MIN_READINESS_FACTORS ? (readiness.value ?? null) : null,
+      readinessValue: displayReadinessValue(readiness),
       readinessConfidence: readiness.confidenceLabel || 'Baixa',
       availableFactors,
       totalFactors,

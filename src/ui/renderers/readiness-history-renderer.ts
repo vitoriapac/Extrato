@@ -5,6 +5,7 @@ import {
   buildReadinessEvolution,
   compareReadinessSnapshots,
 } from '../../application/analytics/build-readiness-evolution.js';
+import { displayReadinessValue } from '../../application/analytics/build-header-view-model.js';
 
 type Row = Record<string, any>;
 const points = (value: number) => `${formatDelta(value)} ${Math.abs(value) === 1 ? 'ponto' : 'pontos'}`;
@@ -21,7 +22,12 @@ export function renderReadinessHistory(
     showComparisonDetails = true,
   }: any = {}
 ) {
-  const model = buildReadinessEvolution({ snapshots: items, activeExamTags, current, today });
+  const model = buildReadinessEvolution({
+    snapshots: items,
+    activeExamTags,
+    current: displayReadinessValue(current) == null ? null : current,
+    today,
+  });
   const currentDelta = model.currentComparison;
   const weekly = model.weeklyComparison;
   const summary = `<div class="readiness-history-summary"><div><span>Prontidão atual</span><strong>${value(model.current)}</strong><small>${model.current ? 'Cálculo atual · confiança do índice: ' + escapeHtml(model.current.confidenceLabel) : 'Aguardando dados atuais'}</small></div><div><span>Último fechamento</span><strong>${value(model.latest)}</strong><small>${model.latest ? escapeHtml(formatDate(model.latest.date)) : 'Salve um fechamento semanal'}</small></div><div><span>Entre os dois últimos fechamentos</span><strong>${weekly.delta === null ? '—' : points(weekly.delta)}</strong><small>${model.weeklyPeriod ? escapeHtml(formatDate(model.weeklyPeriod.start) + ' a ' + formatDate(model.weeklyPeriod.end)) : 'São necessários dois fechamentos'}${weekly.state === 'comparable' ? ' · ' + weekly.trend : ''}</small></div><div><span>Melhor registro comparável</span><strong>${value(model.best)}</strong><small>${model.best ? escapeHtml(formatDate(model.best.date)) : 'Sem registro com a mesma base de cálculo'}</small></div></div>`;
