@@ -182,6 +182,26 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
     openStudyTimerFocus: () => timerUiController.openStudyTimerFocus(),
     startPlannedActivity: itemId => studyTimerRuntime.startPlannedActivity(itemId),
     openGuidedOnboarding: (opts?: any) => onboardingModalController.openGuidedOnboarding(opts),
+    onDismissFirstSteps: () => todayTabController.dismissFirstSteps(),
+    onRestoreFirstSteps: () => todayTabController.restoreFirstSteps(),
+    onStartTour: () => guidedTourController?.start(),
+    onExecuteFirstStepsMission: (action: string) => {
+      if (action === 'open-onboarding') {
+        onboardingModalController.openGuidedOnboarding();
+      } else if (action === 'open-questions') {
+        activateTab('questoes');
+      } else if (action === 'start-first-session' || action === 'start-quick-warmup') {
+        const plan = todayTabController.todayDailyStudyPlan();
+        const first = plan?.items?.find(
+          (it: any) => it.status !== 'completed' && it.status !== 'skipped'
+        );
+        if (first) {
+          studyTimerRuntime.startPlannedActivity(first.id);
+        } else {
+          activateTab('hoje');
+        }
+      }
+    },
     guidedTourController,
     whatIfController,
     latestStudyPlan: getLatestStudyPlan,
@@ -227,7 +247,8 @@ export function wireExecutionAndOnboardingUi(deps: Record<string, any>) {
       build: (action?: any) => todayTabController.dailyExecutionController.build(action),
     },
     hasStartedStudyTimer: () => studyTimerRuntime.hasStartedStudyTimer(),
-    activeTimerMatchesRecommendation: rec => studyTimerRuntime.activeTimerMatchesRecommendation(rec),
+    activeTimerMatchesRecommendation: rec =>
+      studyTimerRuntime.activeTimerMatchesRecommendation(rec),
     renderActiveStudyTimerNotice: rec => studyTimerRuntime.renderActiveStudyTimerNotice(rec),
     openStudyTimerFocus: () => timerUiController.openStudyTimerFocus(),
     topicResumeLabel: topicId => timerUiController.topicResumeLabel(topicId),

@@ -69,11 +69,20 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   const subjectTopicLimits = new Map<string, number>();
   const subjectTopicFilters = new Map<string, { status: string; difficulty: string }>();
 
-  const uid = ctx.uid || ((prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
+  const uid =
+    ctx.uid ||
+    ((prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
   const nowISO = ctx.nowISO || (() => new Date().toISOString());
   const todayISO = ctx.todayISO || (() => new Date().toISOString().slice(0, 10));
-  const escapeHtml = ctx.escapeHtml || ((str: string) => String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c));
-  const entitySubjectId = ctx.entitySubjectId || ((item: any) => item?.subjectId || item?.subjectRef || null);
+  const escapeHtml =
+    ctx.escapeHtml ||
+    ((str: string) =>
+      String(str || '').replace(
+        /[&<>"']/g,
+        c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c
+      ));
+  const entitySubjectId =
+    ctx.entitySubjectId || ((item: any) => item?.subjectId || item?.subjectRef || null);
 
   function isVerticalizedSyllabusActive(): boolean {
     return verticalizedSyllabusActive;
@@ -105,7 +114,10 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   }
 
   function changeSubjectTopicLimit(subjectId: string, delta: number): void {
-    subjectTopicLimits.set(subjectId, (subjectTopicLimits.get(subjectId) || 10) + Number(delta || 0));
+    subjectTopicLimits.set(
+      subjectId,
+      (subjectTopicLimits.get(subjectId) || 10) + Number(delta || 0)
+    );
     renderSubjects();
   }
 
@@ -134,7 +146,10 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     return `${tags.includes(ctx.EXAM_TAGS.BB) ? '<span class="exam-tag exam-tag--bb">BB</span>' : ''}${tags.includes(ctx.EXAM_TAGS.CAIXA) ? '<span class="exam-tag exam-tag--caixa">CAIXA</span>' : ''}${tags.includes(ctx.EXAM_TAGS.CAIXA_TI) ? '<span class="exam-tag exam-tag--caixa">CAIXA TI</span>' : ''}`;
   }
 
-  function renderTopicStrategyEditor(subject: Record<string, any>, topic: Record<string, any>): string {
+  function renderTopicStrategyEditor(
+    subject: Record<string, any>,
+    topic: Record<string, any>
+  ): string {
     const subjectConfig =
       ctx.state.examBlueprint?.subjects?.find((item: any) => item.subjectId === subject.id) || null;
     return renderTopicStrategyEditorComponent({
@@ -157,7 +172,7 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
       diagnoseTopic: ctx.diagnoseTopic || (() => null),
       topicReviewHealthScore: ctx.topicReviewHealthScore
         ? (t: any, m: any, r: any, d: any) => (ctx.topicReviewHealthScore as any)(t, m, r, d)
-        : (() => null),
+        : () => null,
       diasParaRevisao: ctx.diasParaRevisao || (() => null),
       localDateFromTimestamp: ctx.localDateFromTimestamp || (() => null),
       prerequisiteBlockers: ctx.prerequisiteBlockers || (() => []),
@@ -233,7 +248,8 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
             if (targetSubject) {
               for (const t of item.topics || []) {
                 const topicExists = (targetSubject.topics || []).some(
-                  (existing: Topic) => existing.name.trim().toLowerCase() === t.name.trim().toLowerCase()
+                  (existing: Topic) =>
+                    existing.name.trim().toLowerCase() === t.name.trim().toLowerCase()
                 );
                 if (!topicExists) {
                   ctx.subjectService.addTopic(targetSubject.id, { name: t.name });
@@ -317,7 +333,12 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
     ctx.persistAndRender();
   }
 
-  function updateTopicStrategy(subjectId: string, topicId: string, field: string, value: any): void {
+  function updateTopicStrategy(
+    subjectId: string,
+    topicId: string,
+    field: string,
+    value: any
+  ): void {
     if (ctx.topicStrategyController) {
       ctx.topicStrategyController.update(subjectId, topicId, field, value);
     }
@@ -464,26 +485,37 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
         (item: any) => entitySubjectId(item) === subjectId || topicIds.has(item.topicId!)
       ).length,
       reviews: (ctx.state.reviewAgenda || []).filter(
-        (item: any) => entitySubjectId(item) === subjectId || topicIds.has((item.topicId || item.topicRef)!)
+        (item: any) =>
+          entitySubjectId(item) === subjectId || topicIds.has((item.topicId || item.topicRef)!)
       ).length,
-      goals: (ctx.state.metasPorDisciplina || []).filter((item: any) => entitySubjectId(item) === subjectId).length,
+      goals: (ctx.state.metasPorDisciplina || []).filter(
+        (item: any) => entitySubjectId(item) === subjectId
+      ).length,
       history: ctx.topicHistoryService
         ? ctx.topicHistoryService
             .list({ includeLifecycle: false })
-            .filter((item: any) => item.subjectId === subjectId || topicIds.has(item.topicId)).length
+            .filter((item: any) => item.subjectId === subjectId || topicIds.has(item.topicId))
+            .length
         : 0,
       simulatedBreakdowns: (ctx.state.simulados || []).reduce(
         (sum: number, sim: any) =>
-          sum + (sim.breakdown || []).filter((item: any) => entitySubjectId(item) === subjectId).length,
+          sum +
+          (sim.breakdown || []).filter((item: any) => entitySubjectId(item) === subjectId).length,
         0
       ),
       activeTimer:
-        ctx.state.activeTimer?.subjectId === subjectId || topicIds.has(ctx.state.activeTimer?.topicId!) ? 1 : 0,
+        ctx.state.activeTimer?.subjectId === subjectId ||
+        topicIds.has(ctx.state.activeTimer?.topicId!)
+          ? 1
+          : 0,
     };
   }
 
   function dependencyTotal(dependencies: Record<string, any>): number {
-    return Object.values(dependencies).reduce<number>((sum, value) => sum + (Number(value) || 0), 0);
+    return Object.values(dependencies).reduce<number>(
+      (sum, value) => sum + (Number(value) || 0),
+      0
+    );
   }
 
   function requestPermanentSubjectDelete(id: string): void {
@@ -498,11 +530,14 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
         `A disciplina possui ${ctx.pluralize(total, 'registro')} ${total === 1 ? 'vinculado' : 'vinculados'} e não pode ser excluída.`
       );
     }
-    ctx.showConfirm(`Excluir definitivamente "${subject.name}"? Esta ação não pode ser desfeita.`, () => {
-      ctx.subjectService.remove(id);
-      ctx.persistAndRender();
-      ctx.showToast('Disciplina excluída definitivamente.');
-    });
+    ctx.showConfirm(
+      `Excluir definitivamente "${subject.name}"? Esta ação não pode ser desfeita.`,
+      () => {
+        ctx.subjectService.remove(id);
+        ctx.persistAndRender();
+        ctx.showToast('Disciplina excluída definitivamente.');
+      }
+    );
   }
 
   function addTopic(subjectId: string): void {
@@ -529,7 +564,8 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
   function getTopicDependencies(topicId: string) {
     return {
       questions: (ctx.state.questoes || []).filter((item: any) => item.topicId === topicId).length,
-      sessions: (ctx.state.studySessions || []).filter((item: any) => item.topicId === topicId).length,
+      sessions: (ctx.state.studySessions || []).filter((item: any) => item.topicId === topicId)
+        .length,
       reviews: (ctx.state.reviewAgenda || []).filter(
         (item: any) => item.topicId === topicId || item.topicRef === topicId
       ).length,
@@ -584,7 +620,8 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
 
   function completedReviewsForTopic(topicId: string) {
     return (ctx.state.reviewAgenda || []).filter(
-      (review: any) => (review.topicId || review.topicRef) === topicId && review.status === 'Concluído'
+      (review: any) =>
+        (review.topicId || review.topicRef) === topicId && review.status === 'Concluído'
     );
   }
 
@@ -640,9 +677,9 @@ export function createSubjectsTabController(ctx: SubjectsTabControllerContext) {
 
   function bindEvents(): void {
     ctx.document.getElementById('addSubjectBtn')?.addEventListener('click', () => addSubject());
-    ctx.document.getElementById('loadDefaultSubjectsBtn')?.addEventListener('click', () =>
-      ctx.openExamImport?.()
-    );
+    ctx.document
+      .getElementById('loadDefaultSubjectsBtn')
+      ?.addEventListener('click', () => ctx.openExamImport?.());
     ctx.document.getElementById('verticalizedSyllabusToggleBtn')?.addEventListener('click', () => {
       setVerticalizedSyllabusActive(!isVerticalizedSyllabusActive());
       renderSubjects();

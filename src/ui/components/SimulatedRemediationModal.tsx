@@ -41,8 +41,7 @@ export function SimulatedRemediationModal({
     }
   };
 
-  const isBelowCutoff =
-    diagnostic.gapToCutoff != null && diagnostic.gapToCutoff < 0;
+  const isBelowCutoff = diagnostic.gapToCutoff != null && diagnostic.gapToCutoff < 0;
 
   return (
     <Dialog
@@ -82,7 +81,10 @@ export function SimulatedRemediationModal({
                     isBelowCutoff ? 'text-status-danger' : 'text-status-success'
                   }`}
                 >
-                  {diagnostic.gapToCutoff! >= 0 ? `+${diagnostic.gapToCutoff}` : diagnostic.gapToCutoff} pts
+                  {diagnostic.gapToCutoff! >= 0
+                    ? `+${diagnostic.gapToCutoff}`
+                    : diagnostic.gapToCutoff}{' '}
+                  pts
                 </span>
               </div>
             )}
@@ -133,9 +135,7 @@ export function SimulatedRemediationModal({
                     <strong class="text-sm block text-content-primary leading-tight">
                       {topic.name}
                     </strong>
-                    <small class="text-xs text-content-secondary block">
-                      {topic.subjectName}
-                    </small>
+                    <small class="text-xs text-content-secondary block">{topic.subjectName}</small>
                   </div>
 
                   <div class="mt-3 pt-2 border-t border-border-subtle flex justify-between items-center text-xs">
@@ -158,7 +158,8 @@ export function SimulatedRemediationModal({
                 Plano de Remediação — 7 Dias
               </h4>
               <p class="text-xs text-content-muted mt-0.5">
-                Realocação estratégica de 60% da carga horária para estancar os tópicos com maior sangria.
+                Realocação estratégica de 60% da carga horária para estancar os tópicos com maior
+                sangria.
               </p>
             </div>
             <div class="flex items-center gap-2">
@@ -191,9 +192,7 @@ export function SimulatedRemediationModal({
                         : 'Revisão'}
                   </Badge>
                 </div>
-                <p class="text-content-secondary font-medium leading-snug">
-                  {item.focusHeadline}
-                </p>
+                <p class="text-content-secondary font-medium leading-snug">{item.focusHeadline}</p>
                 <span class="text-[11px] text-content-muted block mt-auto">
                   {item.allocatedMinutes} min alocados
                 </span>
@@ -228,7 +227,12 @@ export function SimulatedRemediationModal({
             </Button>
           </div>
 
-          <Button variant="ghost" size="small" onClick={onClose} aria-label="Fechar modal de Raio-X">
+          <Button
+            variant="ghost"
+            size="small"
+            onClick={onClose}
+            aria-label="Fechar modal de Raio-X"
+          >
             Fechar
           </Button>
         </div>

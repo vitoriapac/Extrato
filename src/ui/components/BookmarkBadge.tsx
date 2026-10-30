@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import type { TopicBookmark } from '../../core/types.js';
 import { formatBookmarkLabel } from '../../domain/topic-bookmark.js';
+import { Icon } from '../primitives/icon.js';
 
 export interface BookmarkBadgeProps {
   bookmark: TopicBookmark | null | undefined;
@@ -19,14 +20,14 @@ export function BookmarkBadge({
   const label = formatBookmarkLabel(bookmark);
   if (!label) return null;
 
-  const icon =
+  const iconName =
     bookmark.resourceType === 'video'
-      ? '🎥'
+      ? 'video'
       : bookmark.resourceType === 'law'
-        ? '⚖️'
+        ? 'scale'
         : bookmark.resourceType === 'pdf'
-          ? '📄'
-          : '📌';
+          ? 'file-text'
+          : 'bookmark';
 
   return (
     <span
@@ -36,7 +37,7 @@ export function BookmarkBadge({
       title={`Ponto de parada: ${label}`}
       onClick={onClick}
     >
-      {showIcon && <span aria-hidden="true">{icon}</span>}
+      {showIcon && <Icon name={iconName} size={13} class="shrink-0" />}
       <span className="truncate max-w-[240px]">{label}</span>
     </span>
   );

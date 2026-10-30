@@ -28,6 +28,7 @@ import {
 } from '../../../application/recommendations/recommendation-action.js';
 import { createRecommendationController } from '../../../application/recommendations/recommendation-controller.js';
 import { createReplanController } from '../../../application/planning/replan-controller.js';
+import { renderIconSvg } from '../../primitives/icon.js';
 import { renderReplanProposal } from '../../../features/replan/replan-renderer.js';
 import {
   buildExcludedCandidates,
@@ -179,7 +180,9 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     return `<section class="recommendation-impact ${escapeAttr(model.state)}"><header><span>Resultado da recomendação</span><strong>${escapeHtml(model.title)}</strong><small>Confiança da medição: ${escapeHtml((model.confidenceLabel || 'não calculada').toLowerCase())} · ${model.questionVolume} questões</small></header><div class="recommendation-impact-metrics">${metrics || '<p>Indicadores comparáveis ainda indisponíveis.</p>'}</div>${reasons}</section>`;
   }
 
-  function refreshStudyRecommendationItems({ recordHistory = true }: { recordHistory?: boolean } = {}) {
+  function refreshStudyRecommendationItems({
+    recordHistory = true,
+  }: { recordHistory?: boolean } = {}) {
     const state = getState();
     const availableMinutes = Math.max(0, Math.round(metaHoursToday() * 60));
     const candidates = intelligenceCandidates();
@@ -189,7 +192,9 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
       excludedIds: [...dismissedRecommendationIds],
     }).map(item => {
       const old = previous.get(item.id);
-      const record = state.recommendationHistory.find((entry: any) => entry.id === old?.recommendationId);
+      const record = state.recommendationHistory.find(
+        (entry: any) => entry.id === old?.recommendationId
+      );
       const reusablePresentation = canReuseRecommendationPresentation(old, item, {
         record,
         today: todayISO(),
@@ -272,28 +277,42 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
       const ownTimer =
         hasStartedStudyTimer() && state.activeTimer?.planItemId === priority.nextItem.id;
       unmountPreact(container);
-      container.innerHTML = `${ownTimer ? '' : renderActiveStudyTimerNotice(null)}${outcome}${renderPlannedAction(priority, {
-        suggestion,
-        escapeHtml,
-        escapeAttr,
-        formatMinutes: formatPlanMinutes,
-        timer: { active: hasStartedStudyTimer(), planItemId: state.activeTimer?.planItemId },
-        resumeLabel: topicResumeLabel(priority.nextItem.topicId),
-      })}`;
+      container.innerHTML = `${ownTimer ? '' : renderActiveStudyTimerNotice(null)}${outcome}${renderPlannedAction(
+        priority,
+        {
+          suggestion,
+          escapeHtml,
+          escapeAttr,
+          formatMinutes: formatPlanMinutes,
+          timer: { active: hasStartedStudyTimer(), planItemId: state.activeTimer?.planItemId },
+          resumeLabel: topicResumeLabel(priority.nextItem.topicId),
+        }
+      )}`;
       return;
     }
     unmountPreact(container);
     container.replaceChildren();
     const dashboardController = createDashboardTabController();
     if (!item) {
+      const hasPlan =
+        (Array.isArray(state.studyPlans) && state.studyPlans.length > 0) ||
+        (state.dailyPlans || []).some((plan: any) => (plan.items || []).length > 0);
+      const hasHistory =
+        (state.studySessions || []).length > 0 || (state.questoes || []).length > 0;
+      const hasActiveContent = (state.subjects || []).some(
+        (s: any) => !s.archived && (s.topics || []).some((t: any) => !t.archived)
+      );
+      const isFirstRun = !hasPlan && !hasHistory;
+
       dashboardController.mountNextActionCard(container, {
         model: null,
         emptyState: {
+          isFirstRun,
           message:
             effectiveMinutes < 15
               ? 'Defina pelo menos 15 minutos para hoje para receber uma sugestão.'
               : 'Ainda não há uma atividade elegível com os dados atuais.',
-          timerHref: '#overview-timer',
+          timerHref: hasActiveContent ? '#overview-timer' : null,
         },
         activeTimerNoticeHtml: renderActiveStudyTimerNotice(null),
       });
@@ -323,10 +342,10 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         : { type: 'recommendation', actionId: action!.id, source: action!.source };
 
     const buttonText = inProgress
-      ? '▶ Retomar sessão'
+      ? 'Retomar sessão'
       : blocked
         ? 'Finalize a sessão atual'
-        : `▶ ${label}`;
+        : label;
 
     dashboardController.mountNextActionCard(container, {
       model: {
@@ -449,8 +468,10 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
             `<div><span>${escapeHtml(row.label)}</span><span class="contribution-track"><i style="width:${Math.min(100, row.value * 4)}%"></i></span><strong>+${row.value}</strong></div>`
         )
         .join('');
-      const stateIcon =
-        { review: '↻', limited: '⚠', high: '★', calculated: '○', blocked: '🔒' }[model.state] || '○';
+      const stateIconName =
+        { review: 'refresh', limited: 'alert-triangle', high: 'star', calculated: 'circle', blocked: 'lock' }[model.state] ||
+        'circle';
+      const stateIconHtml = renderIconSvg(stateIconName, { size: 12, className: 'inline-block align-middle' });
       const planChoice =
           index === 0
             ? renderPlanRecommendationChoice(action!, dailyPriority!, {
@@ -461,11 +482,11 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
             : '',
         planExtras = planChoice ? renderPlanRecommendationExtras(action!, { escapeAttr }) : '';
       const actionButton = inProgress
-        ? `<button class="btn" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>`
+        ? `<button class="btn" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button>`
         : blocked
           ? '<button class="btn" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
-          : `<button class="btn ${planChoice ? 'ghost' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">▶ ${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
-      return `<article class="study-recommendation ${index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'Fora do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · empata com #2 em ${Math.round(Number(item.score))}; ${Number(item.score) !== Number(visible[1].score) ? 'diferença menor que 1 ponto' : Number(item.estimatedMinutes) !== Number(visible[1].estimatedMinutes) ? 'vem primeiro a mais curta' : 'ordem de desempate fixa'}` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIcon} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action!.reasons
+          : `<button class="btn ${planChoice ? 'ghost' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
+      return `<article class="study-recommendation ${index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'Fora do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · empata com #2 em ${Math.round(Number(item.score))}; ${Number(item.score) !== Number(visible[1].score) ? 'diferença menor que 1 ponto' : Number(item.estimatedMinutes) !== Number(visible[1].estimatedMinutes) ? 'vem primeiro a mais curta' : 'ordem de desempate fixa'}` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIconHtml} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action!.reasons
         .slice(0, 4)
         .map(reason => `<span>+ ${escapeHtml(reason)}</span>`)
         .join(
@@ -502,7 +523,13 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
 
   function recordRecommendationFeedback(
     recommendation: Record<string, any>,
-    { accepted, reasonSkipped = null, source = null }: { accepted: boolean; reasonSkipped?: string | null; source?: string | null } = { accepted: false }
+    {
+      accepted,
+      reasonSkipped = null,
+      source = null,
+    }: { accepted: boolean; reasonSkipped?: string | null; source?: string | null } = {
+      accepted: false,
+    }
   ) {
     const state = getState();
     const baseline = recommendationBaseline(recommendation),
@@ -536,7 +563,11 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
   function measureRecommendationResults(session: Record<string, any>) {
     const state = getState();
     if (session?.recommendationId) {
-      attachRecommendationSession(state.recommendationHistory, session.recommendationId, session.id);
+      attachRecommendationSession(
+        state.recommendationHistory,
+        session.recommendationId,
+        session.id
+      );
     }
     if (!session?.topicId) return;
     const measuredAt = nowISO();
@@ -564,7 +595,9 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
               item.id !== session.id &&
               Date.parse(String(item.createdAt || item.startedAt || 0)) >= since
           ).length,
-          candidate = intelligenceCandidates().find((item: any) => item.topicId === session.topicId);
+          candidate = intelligenceCandidates().find(
+            (item: any) => item.topicId === session.topicId
+          );
         measureRecommendationOutcome(feedback, {
           masteryAfter: candidate?.mastery,
           accuracyAfter: volume ? Math.round((correct / volume) * 1000) / 10 : null,
@@ -688,7 +721,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         score: recommendation.score,
         tier: recommendation.score >= 70 ? 'Alta' : recommendation.score >= 40 ? 'Média' : 'Baixa',
         position: plan.items.length + 1,
-        statusIcon: '🎯',
+        statusIcon: 'target',
         statusLabel: 'Recomendação inteligente',
         prioritySnapshot: capturePlanPriority(recommendation, {
           capturedAt: nowISO(),

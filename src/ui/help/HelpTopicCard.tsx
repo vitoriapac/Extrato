@@ -3,6 +3,7 @@ import { HelpVisualRenderer } from './HelpVisualRenderer.js';
 import { HelpFeedbackWidget } from './HelpFeedbackWidget.js';
 import { buildHelpSearchIndex } from './help-search.js';
 import { computeTopicMetadata } from '../../domain/help/topic-metadata.js';
+import { Icon } from '../primitives/icon.js';
 
 export interface HelpTopicEntry {
   id: string;
@@ -56,16 +57,20 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
       <div class="mb-2 flex items-center justify-between gap-2 border-b border-border/40 pb-1.5 text-xs">
         <div class="flex items-center gap-2">
           <span class={metadata.levelBadgeClass}>{metadata.level}</span>
-          <span class="text-[11px] text-text-muted">⏱ {metadata.readingTimeLabel}</span>
+          <span class="text-[11px] text-text-muted inline-flex items-center gap-1">
+            <Icon name="clock" size={12} class="shrink-0" />
+            <span>{metadata.readingTimeLabel}</span>
+          </span>
         </div>
         <button
           type="button"
-          class="btn ghost small !p-1 text-[11px] text-text-muted hover:text-text"
+          class="btn ghost small !p-1 text-[11px] text-text-muted hover:text-text inline-flex items-center gap-1"
           data-help-copy-link={entry.id}
           title="Copiar atalho direto para este tópico"
           aria-label={`Copiar atalho direto para ${entry.title}`}
         >
-          🔗 Copiar link
+          <Icon name="link" size={12} class="shrink-0" />
+          <span>Copiar link</span>
         </button>
       </div>
       <h4>{entry.title}</h4>

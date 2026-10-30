@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=873865a4a9b6">
-<link rel="stylesheet" href="styles/app.css?v=873865a4a9b6">
+<link rel="stylesheet" href="styles/tailwind.css?v=c13ed35844d7">
+<link rel="stylesheet" href="styles/app.css?v=c13ed35844d7">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -28,7 +28,7 @@
   <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
     <div><strong>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
     <nav class="demo-tour" aria-label="Roteiro da demonstração"><span>Explore:</span><button data-demo-target="hoje">Prioridades</button><button data-demo-target="dashboard">Riscos e projeção</button><button data-demo-target="agenda">Revisões</button><button data-demo-target="metas">Planejamento</button><button id="demoReportShortcut">Relatório</button></nav>
-    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo">🧭 Tour guiado</button><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn">Sair da demonstração</button></div>
+    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo">Tour guiado</button><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn">Sair da demonstração</button></div>
   </aside>
 
   <dialog class="demo-intro-dialog" id="demoIntroDialog" aria-labelledby="demoIntroTitle" aria-describedby="demoIntroDescription">
@@ -43,7 +43,7 @@
     </div>
   </dialog>
 
-  <aside class="demo-empty-cta" id="demoEmptyCta" hidden><div><strong>Veja o StudyTrack funcionando</strong><span>Explore 140 dias de dados fictícios sem alterar seus registros.</span></div><button class="btn small" id="enterDemoEmptyBtn">▶ Explorar demonstração</button></aside>
+  <aside class="demo-empty-cta" id="demoEmptyCta" hidden><div><strong>Veja o StudyTrack funcionando</strong><span>Explore 140 dias de dados fictícios sem alterar seus registros.</span></div><button class="btn small" id="enterDemoEmptyBtn">Explorar demonstração</button></aside>
 
   <div class="statement">
     <div class="statement-top">
@@ -85,7 +85,7 @@
   <div class="global-search-row">
     <div class="global-search">
       <label class="sr-only" for="globalSearchInput">Busca global</label>
-      <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar ações, páginas, tópicos, notas ou tags" placeholder="🔎 O que você quer fazer? (Ctrl+K)">
+      <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar ações, páginas, tópicos, notas ou tags" placeholder="O que você quer fazer? (Ctrl+K)">
       <div class="search-results" id="globalSearchResults" role="listbox" aria-label="Resultados e comandos"></div>
     </div>
     <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon">◐</span></button>
@@ -163,12 +163,12 @@
       <div class="timer-target" id="studyTimerTarget" hidden></div>
       <div id="guidedStrategy" class="guided-strategy" hidden></div>
         <div class="timer-actions action-group" role="group" aria-label="Ações do cronômetro">
-          <button class="btn" id="timerStartBtn">▶ Iniciar</button>
-          <button class="btn" id="timerPauseBtn" style="display:none;">⏸ Pausar</button>
-          <button class="btn ghost" id="timerResetBtn">↺ Zerar</button>
-          <button class="btn ghost" id="timerFinishBtn">✓ Finalizar sessão</button>
-          <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()">⛶ Modo foco</button>
-          <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden>⧉ Janela flutuante</button>
+          <button class="btn" id="timerStartBtn">Iniciar</button>
+          <button class="btn" id="timerPauseBtn" style="display:none;">Pausar</button>
+          <button class="btn ghost" id="timerResetBtn">Zerar</button>
+          <button class="btn ghost" id="timerFinishBtn">Finalizar sessão</button>
+          <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()">Modo foco</button>
+          <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden>Janela flutuante</button>
         </div>
         <div id="timerAriaLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
       </div>
@@ -414,9 +414,9 @@
 
     <div class="chart-card calendar-month-card" id="calendarMonthCard">
       <div class="calendar-month-toolbar">
-        <button class="month-nav-btn" id="monthPrevBtn" title="Mês anterior">◀</button>
+        <button class="month-nav-btn" id="monthPrevBtn" title="Mês anterior">‹</button>
         <h3 id="calendarMonthTitle"></h3>
-        <button class="month-nav-btn" id="monthNextBtn" title="Próximo mês">▶</button>
+        <button class="month-nav-btn" id="monthNextBtn" title="Próximo mês">›</button>
         <button class="btn ghost small" id="monthTodayBtn" style="margin-left:8px;">Hoje</button>
       </div>
       <p class="helper-text helper-text--compact calendar-helper-text">
@@ -655,8 +655,8 @@
     <div class="footer-primary-row">
       <span>Salvo automaticamente no seu navegador — extrato.gerado localmente</span>
       <div class="footer-actions">
-        <button class="btn small" id="enterDemoBtn">▶ Explorar demonstração</button>
-        <button type="button" class="btn ghost small" id="openDataManagementBtn" aria-haspopup="dialog" aria-expanded="false">⚙ Gerenciar dados e backups</button>
+        <button class="btn small" id="enterDemoBtn">Explorar demonstração</button>
+        <button type="button" class="btn ghost small" id="openDataManagementBtn" aria-haspopup="dialog" aria-expanded="false">Gerenciar dados e backups</button>
       </div>
     </div>
     <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>Ctrl/⌘+Shift+1–8</strong> troca de área · <strong>Esc</strong> fecha</span>
@@ -665,7 +665,7 @@
 
 <button class="back-to-top" id="backToTopBtn" type="button" aria-label="Voltar ao topo" title="Voltar ao topo">↑<span>Topo</span></button>
 
-<div class="save-indicator" id="saveIndicator" role="status" aria-live="polite">✓ Salvo</div>
+<div class="save-indicator" id="saveIndicator" role="status" aria-live="polite">Salvo</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <aside class="app-error-state" id="appErrorState" role="alert" hidden>
   <span id="appErrorMessage">Não foi possível atualizar esta área.</span>
@@ -687,11 +687,11 @@
       <div class="backup-actions">
         <label class="backup-period"><span>Período do relatório</span><select class="select-control select-control--compact" id="reportPeriodSelect" aria-label="Período do relatório"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option><option value="custom">Período personalizado</option></select></label>
         <input type="date" id="reportPeriodStart" aria-label="Início do período do relatório" hidden><input type="date" id="reportPeriodEnd" aria-label="Fim do período do relatório" hidden>
-        <button class="btn ghost small" id="exportReportBtn">▣ Exportar relatório PDF</button>
-        <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>⬇ Exportar backup</button>
+        <button class="btn ghost small" id="exportReportBtn">Exportar relatório PDF</button>
+        <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>Exportar backup</button>
         <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected>Baixar recuperação</button>
-        <button class="btn ghost small" id="importBackupBtn" data-demo-protected>⬆ Importar backup</button>
-        <button class="btn ghost small" id="openRemoteSyncBtn" data-demo-protected>☁ Sincronização WebDAV (E2EE)</button>
+        <button class="btn ghost small" id="importBackupBtn" data-demo-protected>Importar backup</button>
+        <button class="btn ghost small" id="openRemoteSyncBtn" data-demo-protected>Sincronização WebDAV (E2EE)</button>
         <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
       </div>
       <section class="backup-danger-zone" aria-labelledby="dangerZoneTitle"><div><strong id="dangerZoneTitle">Zona de perigo</strong><span>Apaga permanentemente os dados deste navegador. A demonstração permanece isolada.</span></div><button class="btn danger small" id="clearAllDataBtn" data-demo-protected>Limpar todos os dados</button></section>
@@ -725,7 +725,7 @@
 </div>
 <div class="modal-overlay" id="remoteSyncOverlay" role="dialog" aria-modal="true" aria-labelledby="remoteSyncTitle">
   <div class="modal-box remote-sync-box" style="max-width:540px;">
-    <h3 id="remoteSyncTitle">☁ Sincronização em Nuvem (WebDAV + E2EE)</h3>
+    <h3 id="remoteSyncTitle">Sincronização em Nuvem (WebDAV + E2EE)</h3>
     <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
       Conecte-se ao seu Nextcloud, ownCloud ou WebDAV pessoal. Os dados são <strong>criptografados com AES-GCM 256 bits</strong> antes do envio. O servidor nunca tem acesso ao conteúdo dos seus estudos.
     </p>
@@ -760,8 +760,8 @@
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
       <button class="btn ghost small" type="button" id="testRemoteSyncBtn">Testar conexão</button>
       <button class="btn ghost small" type="button" id="reconcileRemoteSyncBtn">Verificar status</button>
-      <button class="btn small" type="button" id="pushRemoteSyncBtn">⬆ Enviar para nuvem</button>
-      <button class="btn small" type="button" id="pullRemoteSyncBtn">⬇ Baixar da nuvem</button>
+      <button class="btn small" type="button" id="pushRemoteSyncBtn">Enviar para nuvem</button>
+      <button class="btn small" type="button" id="pullRemoteSyncBtn">Baixar da nuvem</button>
     </div>
 
     <div class="modal-actions">
@@ -926,7 +926,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=873865a4a9b6"></script>
+  <script src="src/app.bundle.js?v=c13ed35844d7"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

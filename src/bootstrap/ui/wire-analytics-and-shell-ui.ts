@@ -196,8 +196,7 @@ export function wireAnalyticsAndShellUi(deps: Record<string, any>) {
     renderFirstStepsMissionCard,
     showToast,
     onboardingController: {
-      openGuidedOnboarding: (opts?: any) =>
-        getOnboardingController()?.openGuidedOnboarding(opts),
+      openGuidedOnboarding: (opts?: any) => getOnboardingController()?.openGuidedOnboarding(opts),
     },
   });
   shellUiController.initStickyHeaderAndOverviewNav();

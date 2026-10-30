@@ -221,7 +221,8 @@ export function wireDomainAnalytics(deps: WireDomainAnalyticsDeps) {
     getState: deps.getState,
     getPlan: deps.getLatestStudyPlan,
     getActiveExamTags: () => deps.getState().examBlueprint.activeExamTags || [],
-    getPreview: (trajectory: Record<string, any> | null) => projectionController.recovery(trajectory),
+    getPreview: (trajectory: Record<string, any> | null) =>
+      projectionController.recovery(trajectory),
     isDisabled: () => deps.isDemoMode,
     services: {
       clock: deps.appClock,

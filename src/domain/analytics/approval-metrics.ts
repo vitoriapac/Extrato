@@ -244,9 +244,7 @@ export function calculateApprovalDominioMetric(params: {
 /**
  * Avalia a saúde da execução de revisões em relação às revisões vencidas até a data atual.
  */
-export function calculateApprovalRevisoesMetric(
-  dueReviews: DueReviewItem[]
-): ApprovalMetricResult {
+export function calculateApprovalRevisoesMetric(dueReviews: DueReviewItem[]): ApprovalMetricResult {
   if (dueReviews.length === 0) {
     return {
       score: 50,
@@ -262,7 +260,10 @@ export function calculateApprovalRevisoesMetric(
     const daysLate = Math.max(0, r.daysLate || 0);
     return sum + Math.min(1, daysLate / 14);
   }, 0);
-  const raw = Math.max(0, (completed / dueReviews.length) * 100 - (severity / dueReviews.length) * 20);
+  const raw = Math.max(
+    0,
+    (completed / dueReviews.length) * 100 - (severity / dueReviews.length) * 20
+  );
   const confidence = Math.min(1, dueReviews.length / 10);
   const evidence = Math.max(0.4, confidence);
   return {
@@ -277,9 +278,7 @@ export function calculateApprovalRevisoesMetric(
 /**
  * Avalia a tendência de variação nas notas dos simulados recentes.
  */
-export function calculateApprovalTendenciaMetric(
-  simulationScores: number[]
-): ApprovalMetricResult {
+export function calculateApprovalTendenciaMetric(simulationScores: number[]): ApprovalMetricResult {
   if (simulationScores.length < 2) {
     return {
       score: 50,

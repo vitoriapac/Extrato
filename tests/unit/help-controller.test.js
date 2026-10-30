@@ -205,7 +205,7 @@ test('createHelpController — clique em copiar atalho copia url para clipboard 
   const attributes = new Map();
   const copyBtn = {
     dataset: { helpCopyLink: 'error-notebook-guide' },
-    textContent: '🔗 Copiar link',
+    textContent: 'Copiar link',
     setAttribute: (k, v) => attributes.set(k, v),
     getAttribute: k => attributes.get(k),
     closest: sel => (sel === '[data-help-copy-link]' ? copyBtn : null),
@@ -217,5 +217,5 @@ test('createHelpController — clique em copiar atalho copia url para clipboard 
   });
 
   assert.equal(writtenText, 'http://localhost:3000/app#instrucoes?topic=error-notebook-guide');
-  assert.equal(copyBtn.textContent, '✓ Copiado');
+  assert.equal(copyBtn.textContent, 'Copiado');
 });

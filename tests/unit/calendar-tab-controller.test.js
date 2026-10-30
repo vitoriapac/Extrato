@@ -5,8 +5,22 @@ import { createCalendarTabController } from '../../src/ui/tabs/calendar/calendar
 test('createCalendarTabController — unifica revisões e filtra por status/disciplina', () => {
   const state = {
     calendar: [
-      { id: 'c1', date: '2026-03-10', week: 'Semana 1', subjectId: 's1', status: 'Não iniciado', reviewType: 'Teoria' },
-      { id: 'c2', date: '2026-03-12', week: 'Semana 1', subjectId: 's2', status: 'Concluído', reviewType: 'Exercício' },
+      {
+        id: 'c1',
+        date: '2026-03-10',
+        week: 'Semana 1',
+        subjectId: 's1',
+        status: 'Não iniciado',
+        reviewType: 'Teoria',
+      },
+      {
+        id: 'c2',
+        date: '2026-03-12',
+        week: 'Semana 1',
+        subjectId: 's2',
+        status: 'Concluído',
+        reviewType: 'Exercício',
+      },
     ],
     reviewAgenda: [
       { id: 'r1', date: '2026-03-09', status: 'Pendente', subjectId: 's1', tipo: 'D+1' },
@@ -91,9 +105,7 @@ test('createCalendarTabController — CRUD e conclusões integradas', () => {
   let confirmed = false;
 
   const state = {
-    calendar: [
-      { id: 'c1', date: '2026-03-10', subjectId: 's1', status: 'Não iniciado' },
-    ],
+    calendar: [{ id: 'c1', date: '2026-03-10', subjectId: 's1', status: 'Não iniciado' }],
     reviewAgenda: [{ id: 'r1', status: 'Não iniciado' }],
     subjects: [{ id: 's1', name: 'Constitucional' }],
   };
@@ -125,10 +137,19 @@ test('createCalendarTabController — CRUD e conclusões integradas', () => {
     calendarService: mockCalendarService,
     clock: { today: () => '2026-03-10' },
     activeSubjects: () => [{ id: 's1', name: 'Constitucional' }],
-    persistAndRender: () => { saved = true; },
-    showToast: msg => { toasted = msg; },
-    showConfirm: (_msg, onConfirm) => { confirmed = true; onConfirm(); },
-    onCompleteAgendaReview: id => { agendaCompletedId = id; },
+    persistAndRender: () => {
+      saved = true;
+    },
+    showToast: msg => {
+      toasted = msg;
+    },
+    showConfirm: (_msg, onConfirm) => {
+      confirmed = true;
+      onConfirm();
+    },
+    onCompleteAgendaReview: id => {
+      agendaCompletedId = id;
+    },
   });
 
   // addCalRow

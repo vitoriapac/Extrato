@@ -1,5 +1,6 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { renderChartFrame } from '../chart-components.js';
+import { renderIconSvg } from '../primitives/icon.js';
 
 type Row = Record<string, any>;
 type Esc = (value: any) => string;
@@ -180,7 +181,7 @@ export function renderSubjectPerformanceRows({
   const alerts = weak
     .map(
       item =>
-        `<div class="desempenho-alerta">🔴 ${escapeHtml(item.subject)} precisa de atenção.</div>`
+        `<div class="desempenho-alerta">${renderIconSvg('alert-triangle', { size: 14, className: 'inline-block align-middle mr-1 text-red' })}${escapeHtml(item.subject)} precisa de atenção.</div>`
     )
     .join('');
   return `<table class="weekly-history-table" style="margin-bottom:${weak.length ? '12px' : '0'};"><thead><tr><th>Disciplina</th><th style="text-align:right;">Acerto</th><th style="text-align:right;">Questões</th><th style="text-align:right;">Tendência · 4 semanas × 4 anteriores</th></tr></thead><tbody>${rows}</tbody></table>${alerts}`;

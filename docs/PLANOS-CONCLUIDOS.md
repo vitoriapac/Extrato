@@ -49,11 +49,18 @@ flowchart TD
         P6C --> P6D["Deep-linking, Chips & Feedback Local"]
     end
 
+    subgraph P7 ["7. Onboarding & Primeiro Uso para Iniciantes"]
+        P7A["Fase 1: Welcome Hero & Zero Links Vazios"] --> P7B["Fase 2: Starter Packs & Calibrador"]
+        P7B --> P7C["Fase 3: Aquecimento 15m no Dia 1"]
+        P7C --> P7D["Fase 4: Tour Essencial & Estudo Sem Culpa"]
+    end
+
     P1 --> P3
     P2 --> P3
     P3 --> P4
     P5 --> P1
     P4 --> P6
+    P6 --> P7
 ```
 
 | Plano | Foco Principal | Status | Entregáveis Centrais |
@@ -66,6 +73,7 @@ flowchart TD
 | **6. Central de Ajuda & Instruções 2.0** | Code-splitting, Preact 11 e micro-simuladores | ✅ 100% Concluído | Bundle sob demanda (`help.bundle.js`), simuladores Ebbinghaus e Evidência 95% CI, deep-linking e feedback local. |
 | **7. Auditoria UX, UI & Acessibilidade** | Contraste WCAG AA, pilha sticky e tipografia | ✅ 100% Concluído | Token `--border-control` (> 3:1), raios 2px, `formatDelta()`, modal `#dataManagementOverlay`, ícones SVG e piso 12px. |
 | **8. Modularização Integral do `app.ts`** | Desacoplamento em 10 fases (Domínio, Aplicação, UI e Bootstrap) | ✅ 100% Concluído | Redução de 10.921 para **146 linhas (-98,7%)**, zero funções de negócio no `app.ts`, 1.154 testes unitários verdes e CI Full/Visual 100% aprovado. |
+| **9. Onboarding & Primeiro Uso para Iniciantes** | Acolhimento, Starter Packs, Calibração e Ativação Rápida (Fases 1 a 4) | ✅ 100% Concluído | Hero Welcome Card no Dashboard, Starter Packs em 1 clique (Admin, Policial, Fiscal), calibrador anti-sobrecarga com folga dominical, aquecimento de 15 min no Dia 1, tour de 3 paradas e pedagogia de estudo sem culpa. 1.172 testes unitários verdes e 19 testes E2E Playwright aprovados. |
 
 ---
 
@@ -130,6 +138,9 @@ Garantir que um concurseiro novo configure sua preparação completa em menos de
 ### 2.3. Validação
 - 6 testes unitários dedicados em `tests/unit/guided-first-run.test.js`.
 - 19 testes E2E no Playwright em `tests/e2e/onboarding.spec.js`.
+
+> [!NOTE]
+> As evoluções subsequentes de acolhimento de novos alunos, templates de 1 clique (Starter Packs), prevenção de sobrecarga (folga dominical) e ativação com sessão de aquecimento prático no primeiro dia foram consolidadas na [Seção 9: Plano de Excelência no Onboarding e Primeiro Uso Guiado para Iniciantes](#9-plano-de-excelência-no-onboarding-e-primeiro-uso-guiado-para-iniciantes-fases-1-a-4).
 
 ---
 
@@ -413,7 +424,70 @@ Em atendimento estrito à política inegociável de governança de `AGENTS.md` (
 
 ---
 
-## 9. Rastreabilidade de Arquitetura e Governança
+## 9. Plano de Excelência no Onboarding e Primeiro Uso Guiado para Iniciantes (Fases 1 a 4)
+
+Com base no planejamento estratégico aprovado em [`plano-melhoria-onboarding-primeiro-uso.md`](file:///C:/Users/vitor/.gemini/antigravity/brain/86b708c1-f0bb-4bb1-8117-58894bd5cd27/plano-melhoria-onboarding-primeiro-uso.md), este ciclo de desenvolvimento focou na humanização da recepção de novos concurseiros, erradicação de atritos e telas vazias desorientadoras, prevenção de burnout através de calibradores de sustentabilidade e ativação prática imediata já no primeiro dia:
+
+### 9.1. Fase 1: Hero Welcome State no Dashboard & Eliminação de Links Quebrados
+- **Detecção Precisa de Primeiro Uso:**
+  - Em [`src/ui/tabs/today/study-recommendation-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/today/study-recommendation-controller.ts), identificação explícita de `isFirstRun = !hasPlan && !hasHistory` repassada com segurança ao `mountNextActionCard`.
+- **Componente Hero Welcome Card:**
+  - Em [`src/ui/tabs/dashboard/NextActionCard.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/dashboard/NextActionCard.tsx), quando `emptyState.isFirstRun` está ativo, é renderizado um card de boas-vindas acolhedor e visualmente rico, oferecendo contextualização clara do método StudyTrack e dois CTAs de alto contraste:
+    - `[🚀 Montar meu plano de estudos]` (abre o assistente de onboarding em 1 clique).
+    - `[▶ Experimentar demonstração]` (carrega o ambiente de exemplo determinístico em memória sem efeitos colaterais).
+- **Neutralização de Links Âncora Vazios:**
+  - Quando o usuário não possui disciplinas cadastradas, o botão de ação do card não renderiza links ocos para `#overview-timer`, mantendo `href: null` e evitando saltos estéreis na tela inicial.
+- **Validação:**
+  - Suíte de 5 testes unitários dedicados em [`tests/unit/next-action-card.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/next-action-card.test.js).
+
+### 9.2. Fase 2: Starter Packs de 1 Clique & Calibrador Anti-Sobrecarga
+- **Módulo de Starter Packs Fundamentais (`src/domain/onboarding/starter-packs.ts`):**
+  - Módulo puramente algorítmico e sem efeitos colaterais contendo templates essenciais para iniciantes que não possuem edital aberto:
+    - *Área Administrativa Geral* (Português, Dir. Administrativo, Dir. Constitucional, RLM, Administração Geral, Informática).
+    - *Carreiras Policiais Básicas* (Português, RLM/RLC, Dir. Administrativo, Dir. Constitucional, Dir. Penal, Dir. Processual Penal, Legislação Especial).
+    - *Área Fiscal & Controle Básica* (Português, RLM/Estatística, Dir. Constitucional, Dir. Administrativo, Dir. Tributário, Contabilidade Geral, Auditoria).
+  - Suporte a carga em 1 clique na etapa de conteúdo do wizard (`loadStarterPack()`), com persistência e re-renderização instantâneas.
+- **Calibrador Anti-Sobrecarga e Folga Dominical (`src/domain/onboarding/routine-sustainability.ts`):**
+  - Função pura `evaluateRoutineSustainability(dailyMinutes)` que analisa a carga semanal e dispara avisos pedagógicos amigáveis se a carga exceder 35 horas/semana ou se os 7 dias da semana forem configurados sem nenhuma folga programada.
+  - Função pura `applySundayRestDay(dailyMinutes)` e botão de atalho `[🏖️ Folga aos Domingos]` na etapa de rotina semanal, zerando a carga dominical em 1 clique e preservando os demais dias.
+- **Concurso Personalizado:**
+  - Opção `[✏️ Outro Concurso Personalizado]` na etapa de objetivos (`goal`), exibindo campo de texto livre para o estudante nomear sua própria meta.
+- **Humanização da Mensagem de Déficit:**
+  - Reformulação em [`src/application/onboarding/build-onboarding-view-model.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/onboarding/build-onboarding-view-model.ts) da mensagem de inviabilidade de prazo (`deficit`), substituindo termos matemáticos frios por orientação encorajadora sobre priorização das matérias com maior peso.
+- **Validação:**
+  - Testes unitários puros em [`tests/unit/starter-packs.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/starter-packs.test.js) e [`tests/unit/routine-sustainability.test.js`](file:///c:/Users/vitor/Documents/Extrato/tests/unit/routine-sustainability.test.js).
+
+### 9.3. Fase 3: Ativação Prática do Dia 1 (Sessão de Aquecimento de 15 Minutos)
+- **Checklist com Sessão de Aquecimento:**
+  - Em [`src/application/onboarding/build-first-steps-mission.ts`](file:///c:/Users/vitor/Documents/Extrato/src/application/onboarding/build-first-steps-mission.ts) e [`src/ui/components/FirstStepsMission.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/FirstStepsMission.tsx), inclusão da ação de aquecimento rápido: `quickAction: 'start-quick-warmup'` (`⚡ Aquecimento (15 min)`).
+  - Permite ao estudante vencer a inércia do primeiro dia disparando o cronômetro para o 1º item do plano diário configurado para apenas 15 minutos, gerando um micro-sucesso imediato e sensação de progresso tangível.
+- **Tratamento de Eventos e Roteamento Seguro:**
+  - Ação delegada conectada em [`src/ui/tabs/today/today-tab-controller.ts`](file:///c:/Users/vitor/Documents/Extrato/src/ui/tabs/today/today-tab-controller.ts) e orquestrada pelo wirer [`src/bootstrap/ui/wire-execution-and-onboarding-ui.ts`](file:///c:/Users/vitor/Documents/Extrato/src/bootstrap/ui/wire-execution-and-onboarding-ui.ts).
+- **Toast Comemorativo de Boas-Vindas:**
+  - Notificação amigável disparada após a geração do plano inicial via [`showToast`](file:///c:/Users/vitor/Documents/Extrato/src/ui/primitives/modal-dialogs.ts): *"🎉 Plano criado com sucesso! Sua jornada começa agora."*.
+
+### 9.4. Fase 4: Tour Essencial de 3 Paradas & Pedagogia de Estudo Sem Culpa
+- **Tour Essencial Focado (`src/domain/onboarding/guided-tour-steps.ts`):**
+  - Criação de `ESSENTIAL_TOUR_STEPS` reduzindo a carga cognitiva de 5 para 3 paradas fundamentais:
+    1. **Aba Hoje:** O coração da execução diária (o que estudar agora).
+    2. **Aba Visão Geral:** Métricas de consistência, prontidão e diagnóstico.
+    3. **Aba Questões:** Treino prático e consolidação no Caderno de Erros.
+- **Filosofia de "Estudo Sem Culpa":**
+  - Mensagem pedagógica incorporada na parada de fechamento semanal do tour guiado:
+    *"Planejamento vivo e Fechamento: Não se preocupe se imprevistos acontecerem! O StudyTrack reorganiza suas metas sem culpa nem atrasos acumulados no fechamento semanal."*
+- **Compatibilidade Rigorosa com Contratos E2E:**
+  - Preservação estrita dos seletores e asserções contratuais do Playwright em [`tests/e2e/onboarding.spec.js`](file:///c:/Users/vitor/Documents/Extrato/tests/e2e/onboarding.spec.js), garantindo 100% de aprovação.
+
+### 9.5. Resultados e Métricas Homologadas
+- **Testes Unitários Node:** **1.172 testes passando** em **36.55s** no Fast Gate (dual timezone UTC e `America/Sao_Paulo`).
+- **Testes E2E no Playwright:** **19 de 19 testes de onboarding passando** em **1.4m**.
+- **Checagem Estática de Tipos:** **0 erros** em `npm run check:types` e `npm run check:types:tests`.
+- **Inventário de Testes:** **321 arquivos auditados** sem divergências.
+- **Governança de Código:** **0 novas funções no `app.ts`**; 100% modularizado em `src/domain/onboarding/`, `src/features/onboarding/` e `src/ui/`.
+
+---
+
+## 10. Rastreabilidade de Arquitetura e Governança
 
 Todas as decisões e entregas registradas neste histórico respeitam os contratos vigentes:
 - **Diretrizes de Governança:** [AGENTS.md](file:///c:/Users/vitor/Documents/Extrato/AGENTS.md)
@@ -421,7 +495,7 @@ Todas as decisões e entregas registradas neste histórico respeitam os contrato
 - **Visão Arquitetural Atual:** [ARCHITECTURE.md](file:///c:/Users/vitor/Documents/Extrato/ARCHITECTURE.md)
 - **Design System e Tokens:** [DESIGN-SYSTEM.md](file:///c:/Users/vitor/Documents/Extrato/DESIGN-SYSTEM.md)
 - **Estratégia de Testes:** [docs/TEST-STRATEGY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-STRATEGY.md)
-- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (317 arquivos auditados, 1.154 testes unitários verdes em ~43s)
+- **Inventário de Testes:** [docs/TEST-SUITE-INVENTORY.md](file:///c:/Users/vitor/Documents/Extrato/docs/TEST-SUITE-INVENTORY.md) (321 arquivos auditados, 1.172 testes unitários verdes em ~36s)
 - **Contrato SM-2:** [docs/CADERNO-ERROS-SM2-CONTRATO.md](file:///c:/Users/vitor/Documents/Extrato/docs/CADERNO-ERROS-SM2-CONTRATO.md)
 - **Roteiro de Auditoria NVDA:** [docs/ROTEIRO-AUDITORIA-NVDA.md](file:///c:/Users/vitor/Documents/Extrato/docs/ROTEIRO-AUDITORIA-NVDA.md)
 - **Contrato de Decisão e Experiência:** [docs/DECISION-EXPERIENCE-CONTRACT.md](file:///c:/Users/vitor/Documents/Extrato/docs/DECISION-EXPERIENCE-CONTRACT.md)

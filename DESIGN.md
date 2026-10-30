@@ -307,6 +307,7 @@ Tópico, badge textual, score, evidência, explicação e ação em níveis dist
 - **Do** dar a todo badge de estado um rótulo textual.
 - **Do** funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px).
 - **Do** usar foco dourado visível em tudo que é interativo.
+- **Do** usar `<Icon name="..." />` ou `renderIconSvg(...)` do Tabler Icons para apoiar ações e sinalizações sem poluição visual.
 
 ### Don't:
 - **Don't** aninhar cards para criar hierarquia; use linha, espaço e tipo.
@@ -315,3 +316,4 @@ Tópico, badge textual, score, evidência, explicação e ação em níveis dist
 - **Don't** usar verde, âmbar ou vermelho como decoração.
 - **Don't** usar cantos arredondados grandes, pílulas ou gradientes (a textura de linhas do cabeçalho é a única exceção); o extrato é reto e plano.
 - **Don't** usar peso 700 como voz padrão; a hierarquia vai até 600.
+- **Don't** usar emojis Unicode na interface (`\p{Extended_Pictographic}`); use estritamente ícones vetoriais Tabler via `src/ui/primitives/icon.tsx`.

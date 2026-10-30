@@ -83,4 +83,3 @@ export function composeDelegatedActionHandlers(
   }
   return result;
 }
-

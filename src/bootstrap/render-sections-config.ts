@@ -94,9 +94,7 @@ export interface BuildRenderSectionsOptions {
   renderDailyExecutionCard: () => void;
 }
 
-export function buildRenderSections(
-  opts: BuildRenderSectionsOptions
-): Array<[string, () => void]> {
+export function buildRenderSections(opts: BuildRenderSectionsOptions): Array<[string, () => void]> {
   return [
     ['desempenho', opts.renderPerformance],
     ['indicadores', opts.renderKPIs],

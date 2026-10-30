@@ -21,7 +21,9 @@ export interface SessionModalControllerOptions {
   escapeAttr: (text: string) => string;
   getSubjectById: (id: string) => any;
   getTopicById: (id: string) => any;
-  subjectsForSelection: (currentSubjectId: string | null | undefined) => Array<{ id: string; name: string; archived?: boolean }>;
+  subjectsForSelection: (
+    currentSubjectId: string | null | undefined
+  ) => Array<{ id: string; name: string; archived?: boolean }>;
   topicsForSelection: (subject: any, currentTopicId: any) => Array<{ id: string; name: string }>;
   onDismiss?: () => void;
   onDiscard?: () => void;
@@ -85,7 +87,9 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     for (const [field, id] of Object.entries(SESSION_BOOKMARK_FIELDS)) {
       const el = document.getElementById(id) as HTMLInputElement | null;
       if (el) {
-        el.value = (bookmark as Record<string, any> | null)?.[field] ?? (field === 'resourceType' ? 'pdf' : '');
+        el.value =
+          (bookmark as Record<string, any> | null)?.[field] ??
+          (field === 'resourceType' ? 'pdf' : '');
       }
     }
     const clear = document.getElementById('sessionBookmarkClearBtn') as HTMLButtonElement | null;
@@ -117,7 +121,8 @@ export function createSessionModalController(opts: SessionModalControllerOptions
       study: 'Registre o que você estudou e atualize seus indicadores.',
       questions: 'Informe volume e acertos para atualizar seu desempenho.',
       review: 'Registre como recuperou o conteúdo; esse sinal ajuda a acompanhar a retenção.',
-      simulation: 'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.',
+      simulation:
+        'O tempo será salvo e, em seguida, você poderá registrar o resultado do simulado.',
     };
     const hint = document.getElementById('sessionModalActivityHint');
     if (hint) {
@@ -155,7 +160,9 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     const typeSel = document.getElementById('sessionModalType') as HTMLSelectElement | null;
     if (typeSel) typeSel.value = activeTimer.type || 'study';
 
-    const resolvedInput = document.getElementById('sessionModalResolved') as HTMLInputElement | null;
+    const resolvedInput = document.getElementById(
+      'sessionModalResolved'
+    ) as HTMLInputElement | null;
     if (resolvedInput) resolvedInput.value = '';
 
     const correctInput = document.getElementById('sessionModalCorrect') as HTMLInputElement | null;
@@ -188,16 +195,32 @@ export function createSessionModalController(opts: SessionModalControllerOptions
   }
 
   function readFormValues(): SessionFormValues {
-    const subjectId = (document.getElementById('sessionModalSubject') as HTMLSelectElement | null)?.value || null;
-    const topicId = (document.getElementById('sessionModalTopic') as HTMLSelectElement | null)?.value || null;
-    const type = (document.getElementById('sessionModalType') as HTMLSelectElement | null)?.value || 'study';
-    const resolved = Number((document.getElementById('sessionModalResolved') as HTMLInputElement | null)?.value) || 0;
-    const correct = Number((document.getElementById('sessionModalCorrect') as HTMLInputElement | null)?.value) || 0;
-    const perceivedRetention = (document.getElementById('sessionModalRetention') as HTMLSelectElement | null)?.value || null;
-    const perceivedDifficulty = (document.getElementById('sessionModalDifficulty') as HTMLSelectElement | null)?.value || null;
-    const focusLevel = ((document.getElementById('sessionModalFocus') as HTMLSelectElement | null)?.value as any) || null;
-    const energyLevel = ((document.getElementById('sessionModalEnergy') as HTMLSelectElement | null)?.value as any) || null;
-    const notes = ((document.getElementById('sessionModalNotes') as HTMLTextAreaElement | null)?.value || '').trim();
+    const subjectId =
+      (document.getElementById('sessionModalSubject') as HTMLSelectElement | null)?.value || null;
+    const topicId =
+      (document.getElementById('sessionModalTopic') as HTMLSelectElement | null)?.value || null;
+    const type =
+      (document.getElementById('sessionModalType') as HTMLSelectElement | null)?.value || 'study';
+    const resolved =
+      Number((document.getElementById('sessionModalResolved') as HTMLInputElement | null)?.value) ||
+      0;
+    const correct =
+      Number((document.getElementById('sessionModalCorrect') as HTMLInputElement | null)?.value) ||
+      0;
+    const perceivedRetention =
+      (document.getElementById('sessionModalRetention') as HTMLSelectElement | null)?.value || null;
+    const perceivedDifficulty =
+      (document.getElementById('sessionModalDifficulty') as HTMLSelectElement | null)?.value ||
+      null;
+    const focusLevel =
+      ((document.getElementById('sessionModalFocus') as HTMLSelectElement | null)?.value as any) ||
+      null;
+    const energyLevel =
+      ((document.getElementById('sessionModalEnergy') as HTMLSelectElement | null)?.value as any) ||
+      null;
+    const notes = (
+      (document.getElementById('sessionModalNotes') as HTMLTextAreaElement | null)?.value || ''
+    ).trim();
 
     return {
       subjectId,
@@ -218,18 +241,28 @@ export function createSessionModalController(opts: SessionModalControllerOptions
       handlers.onSkip?.();
     });
 
-    document.getElementById('sessionModalOverlay')?.addEventListener('session-modal-dismiss', () => {
-      handlers.onDismiss?.();
-    });
+    document
+      .getElementById('sessionModalOverlay')
+      ?.addEventListener('session-modal-dismiss', () => {
+        handlers.onDismiss?.();
+      });
 
-    document.getElementById('sessionModalSubject')?.addEventListener('change', function (this: any) {
-      const val = this?.value ?? (document.getElementById('sessionModalSubject') as HTMLSelectElement | null)?.value ?? '';
-      populateSessionTopicSelect(val);
-      fillSessionBookmarkFields('');
-    });
+    document
+      .getElementById('sessionModalSubject')
+      ?.addEventListener('change', function (this: any) {
+        const val =
+          this?.value ??
+          (document.getElementById('sessionModalSubject') as HTMLSelectElement | null)?.value ??
+          '';
+        populateSessionTopicSelect(val);
+        fillSessionBookmarkFields('');
+      });
 
     document.getElementById('sessionModalTopic')?.addEventListener('change', function (this: any) {
-      const val = this?.value ?? (document.getElementById('sessionModalTopic') as HTMLSelectElement | null)?.value ?? '';
+      const val =
+        this?.value ??
+        (document.getElementById('sessionModalTopic') as HTMLSelectElement | null)?.value ??
+        '';
       fillSessionBookmarkFields(val);
     });
 
@@ -238,7 +271,10 @@ export function createSessionModalController(opts: SessionModalControllerOptions
     });
 
     document.getElementById('sessionModalType')?.addEventListener('change', function (this: any) {
-      const val = this?.value ?? (document.getElementById('sessionModalType') as HTMLSelectElement | null)?.value ?? 'study';
+      const val =
+        this?.value ??
+        (document.getElementById('sessionModalType') as HTMLSelectElement | null)?.value ??
+        'study';
       syncSessionModalActivityFields(val);
     });
 

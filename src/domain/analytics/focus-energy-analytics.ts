@@ -220,12 +220,12 @@ export function analyzeFocusAndEnergy(sessions: SessionEnergyRecord[] = []): Foc
     const nightAcc = night.averageAccuracy;
 
     if (nightAcc !== null && peakAcc - nightAcc >= 20) {
-      fatigueAlert = `⚠️ Queda de ${peakAcc - nightAcc} p.p. no acerto em questões durante a noite em relação ao seu horário de pico.`;
+      fatigueAlert = `Queda de ${peakAcc - nightAcc} p.p. no acerto em questões durante a noite em relação ao seu horário de pico.`;
       recommendations.push(
         'Evite baterias extensas de questões ou novos tópicos complexos no turno da noite. Concentre esse período em revisões ativas leves ou leitura de lei seca.'
       );
     } else if (night.lowEnergyPercent >= 50) {
-      fatigueAlert = '⚠️ Mais de 50% das sessões noturnas foram registradas com cansaço mental.';
+      fatigueAlert = 'Mais de 50% das sessões noturnas foram registradas com cansaço mental.';
       recommendations.push(
         'Sinais de esgotamento noturno: considere reduzir a duração dos blocos à noite para 30-40 minutos ou priorizar o descanso reparador.'
       );

@@ -22,7 +22,11 @@ export interface PerformanceTabControllerDeps {
   examEvidenceContext: () => any;
   examScopedSubjects: () => any[];
   examScopedSimulations: () => any[];
-  currentAchievementProjection?: () => { model: any; weeklyCapacityMinutes?: number; adherenceContext?: any };
+  currentAchievementProjection?: () => {
+    model: any;
+    weeklyCapacityMinutes?: number;
+    adherenceContext?: any;
+  };
   achievementProjectionHistory?: (snapshots: any[], tags: string[], today: string) => any[];
   recoveryController?: { preview: (model: any) => any; revert?: (id: string) => Promise<any> };
   readinessResult?: (metrics: any) => any;
@@ -151,15 +155,24 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
               : [],
           achievementProjection: achievement?.model || null,
           achievementHistory: deps.achievementProjectionHistory
-            ? deps.achievementProjectionHistory(state.projectionSnapshots || [], activeExamTags, today)
+            ? deps.achievementProjectionHistory(
+                state.projectionSnapshots || [],
+                activeExamTags,
+                today
+              )
             : [],
           achievementCapacityMinutes: achievement?.weeklyCapacityMinutes || 0,
           adherenceContext: achievement?.adherenceContext || null,
-          recoveryPlan: achievement && deps.recoveryController ? deps.recoveryController.preview(achievement.model) : null,
+          recoveryPlan:
+            achievement && deps.recoveryController
+              ? deps.recoveryController.preview(achievement.model)
+              : null,
           projectionSnapshots: state.projectionSnapshots || [],
           readinessSnapshots: state.readinessSnapshots || [],
           readiness:
-            performanceViewState.section === 'overview' && deps.readinessResult && deps.computeApprovalMetrics
+            performanceViewState.section === 'overview' &&
+            deps.readinessResult &&
+            deps.computeApprovalMetrics
               ? deps.readinessResult(deps.computeApprovalMetrics())
               : null,
           blueprint: state.examBlueprint,
@@ -177,12 +190,19 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
             adherenceTarget: state.metas?.aderenciaSemanal,
           },
           subjectIdFor: deps.entitySubjectId || ((item: any) => item.subjectId),
-          simulationCountsFor: deps.simuladoEffectiveCounts || ((s: any) => ({ total: s.total, correct: s.correct })),
+          simulationCountsFor:
+            deps.simuladoEffectiveCounts || ((s: any) => ({ total: s.total, correct: s.correct })),
           reviewCompletedDateFor: (item: Record<string, any>) =>
-            deps.localDateFromTimestamp ? deps.localDateFromTimestamp(item.completedAt) : item.completedAt,
+            deps.localDateFromTimestamp
+              ? deps.localDateFromTimestamp(item.completedAt)
+              : item.completedAt,
           topicMetricsFor: (subjectId: string, topicId: string) => {
-            const mastery = deps.topicMasteryIndex ? deps.topicMasteryIndex(subjectId, topicId) : null;
-            const retention = deps.topicRetentionScore ? deps.topicRetentionScore(subjectId, topicId) : null;
+            const mastery = deps.topicMasteryIndex
+              ? deps.topicMasteryIndex(subjectId, topicId)
+              : null;
+            const retention = deps.topicRetentionScore
+              ? deps.topicRetentionScore(subjectId, topicId)
+              : null;
             return {
               mastery: mastery?.confidence > 0 ? mastery.score : null,
               retention: retention?.available ? retention.score : null,
@@ -193,14 +213,18 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
             deps.buildTopicExamProfile
               ? deps.buildTopicExamProfile({
                   topic,
-                  subjectConfig: (state.examBlueprint?.subjects || []).find((item: any) => item.subjectId === subject.id),
+                  subjectConfig: (state.examBlueprint?.subjects || []).find(
+                    (item: any) => item.subjectId === subject.id
+                  ),
                   activeExamTags,
                   exams: state.exams || [],
                   examQuestions: state.examQuestions || [],
                 })
               : {},
           topicHistoryFor: (topicId: string) =>
-            deps.topicHistoryService ? deps.topicHistoryService.list({ topicId, includeLifecycle: false }) : [],
+            deps.topicHistoryService
+              ? deps.topicHistoryService.list({ topicId, includeLifecycle: false })
+              : [],
         });
 
     const sectionHtml = examSection
@@ -218,7 +242,8 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
     target.innerHTML = renderPerformancePage({
       viewState: performanceViewState,
       range,
-      sectionHtml: (deps.analysisContextBanner ? deps.analysisContextBanner('desempenho') : '') + sectionHtml,
+      sectionHtml:
+        (deps.analysisContextBanner ? deps.analysisContextBanner('desempenho') : '') + sectionHtml,
       activeExamCount: (state.examBlueprint?.activeExamTags || []).length,
       escapeHtml,
       escapeAttr,
@@ -241,7 +266,9 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       dialog.addEventListener(
         'close',
         () => {
-          performanceViewState = updatePerformanceViewState(performanceViewState, { topicId: null });
+          performanceViewState = updatePerformanceViewState(performanceViewState, {
+            topicId: null,
+          });
         },
         { once: true }
       );
@@ -271,7 +298,9 @@ export function createPerformanceTabController(deps: PerformanceTabControllerDep
       simulateScenario: (scenario: Record<string, any>) =>
         deps.projectionController ? deps.projectionController.simulate(scenario) : null,
       renderScenarioResult: (result: Record<string, any>) =>
-        deps.renderProjectionScenarioResult ? deps.renderProjectionScenarioResult(result, { escapeHtml }) : '',
+        deps.renderProjectionScenarioResult
+          ? deps.renderProjectionScenarioResult(result, { escapeHtml })
+          : '',
       applyRecovery: (signature: string) =>
         deps.applyConfirmedRecoveryPlan ? deps.applyConfirmedRecoveryPlan(signature) : undefined,
     }).register();

@@ -14,10 +14,42 @@ test('buildSimulatedRemediationDiagnostic — calcula comparativo com corte e hi
     correct: 68,
     total: 100,
     breakdown: [
-      { id: 'b1', subjectId: 's-dir-trab', topicId: 't-remun', subjectName: 'Direito do Trabalho', topicName: 'Remuneração', total: 20, correct: 10 },
-      { id: 'b2', subjectId: 's-proc-trab', topicId: 't-exec', subjectName: 'Processo do Trabalho', topicName: 'Execução Trabalhista', total: 20, correct: 8 },
-      { id: 'b3', subjectId: 's-const', topicId: 't-art5', subjectName: 'Direito Constitucional', topicName: 'Art. 5º', total: 30, correct: 25 },
-      { id: 'b4', subjectId: 's-adm', topicId: 't-licit', subjectName: 'Direito Administrativo', topicName: 'Licitações', total: 30, correct: 25 },
+      {
+        id: 'b1',
+        subjectId: 's-dir-trab',
+        topicId: 't-remun',
+        subjectName: 'Direito do Trabalho',
+        topicName: 'Remuneração',
+        total: 20,
+        correct: 10,
+      },
+      {
+        id: 'b2',
+        subjectId: 's-proc-trab',
+        topicId: 't-exec',
+        subjectName: 'Processo do Trabalho',
+        topicName: 'Execução Trabalhista',
+        total: 20,
+        correct: 8,
+      },
+      {
+        id: 'b3',
+        subjectId: 's-const',
+        topicId: 't-art5',
+        subjectName: 'Direito Constitucional',
+        topicName: 'Art. 5º',
+        total: 30,
+        correct: 25,
+      },
+      {
+        id: 'b4',
+        subjectId: 's-adm',
+        topicId: 't-licit',
+        subjectName: 'Direito Administrativo',
+        topicName: 'Licitações',
+        total: 30,
+        correct: 25,
+      },
     ],
   };
 
@@ -55,8 +87,30 @@ test('buildSimulatedRemediationDiagnostic — calcula comparativo com corte e hi
 
 test('generate7DayRemediationPlan — realoca 60% para sangria e 40% para manutenção', () => {
   const topTopics = [
-    { id: 't1', subjectId: 's1', topicId: 't1', name: 'Execução', subjectName: 'Processo', total: 20, correct: 8, lostPoints: 12, accuracy: 40, shareOfLostPoints: 50 },
-    { id: 't2', subjectId: 's2', topicId: 't2', name: 'Atos', subjectName: 'Administrativo', total: 20, correct: 10, lostPoints: 10, accuracy: 50, shareOfLostPoints: 50 },
+    {
+      id: 't1',
+      subjectId: 's1',
+      topicId: 't1',
+      name: 'Execução',
+      subjectName: 'Processo',
+      total: 20,
+      correct: 8,
+      lostPoints: 12,
+      accuracy: 40,
+      shareOfLostPoints: 50,
+    },
+    {
+      id: 't2',
+      subjectId: 's2',
+      topicId: 't2',
+      name: 'Atos',
+      subjectName: 'Administrativo',
+      total: 20,
+      correct: 10,
+      lostPoints: 10,
+      accuracy: 50,
+      shareOfLostPoints: 50,
+    },
   ];
 
   const plan = generate7DayRemediationPlan(topTopics, 20);
@@ -88,7 +142,18 @@ test('generateDraftErrorCards — cria rascunhos para o Caderno de Erros', () =>
   };
 
   const topTopics = [
-    { id: 't-atos', subjectId: 's-adm', topicId: 't-atos', name: 'Atos Administrativos', subjectName: 'Direito Administrativo', total: 10, correct: 5, lostPoints: 5, accuracy: 50, shareOfLostPoints: 100 },
+    {
+      id: 't-atos',
+      subjectId: 's-adm',
+      topicId: 't-atos',
+      name: 'Atos Administrativos',
+      subjectName: 'Direito Administrativo',
+      total: 10,
+      correct: 5,
+      lostPoints: 5,
+      accuracy: 50,
+      shareOfLostPoints: 100,
+    },
   ];
 
   const drafts = generateDraftErrorCards(simulation, topTopics);

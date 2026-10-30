@@ -132,11 +132,9 @@ export function createSubjectTargetEditorController(ctx: SubjectTargetEditorCont
       const target = event.target as HTMLElement;
       if (target.matches('[data-accuracy-select-all]')) {
         const checked = (target as HTMLInputElement).checked;
-        container
-          .querySelectorAll<HTMLInputElement>('[data-accuracy-select]')
-          .forEach(input => {
-            input.checked = checked;
-          });
+        container.querySelectorAll<HTMLInputElement>('[data-accuracy-select]').forEach(input => {
+          input.checked = checked;
+        });
       }
     });
   }

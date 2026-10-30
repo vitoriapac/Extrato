@@ -15,11 +15,7 @@ import {
   peekUpcomingCycleBlocks,
 } from '../domain/planning/study-cycle-engine.js';
 import { calculateAdaptiveInterval } from '../domain/reviews.js';
-import {
-  CURRENT_SCHEMA_VERSION,
-  DIFFICULTY_OPTIONS,
-  STATUS_OPTIONS,
-} from '../state/schema.js';
+import { CURRENT_SCHEMA_VERSION, DIFFICULTY_OPTIONS, STATUS_OPTIONS } from '../state/schema.js';
 import { validateNormalizedBackup } from '../storage/backup-validator.js';
 import { createCloudSaaSProvider } from '../storage/cloud-saas-provider.js';
 

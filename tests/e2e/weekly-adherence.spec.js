@@ -104,6 +104,7 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   }, state);
   await activateTab(page, 'metas');
   const close = page.locator('#weeklyCloseDashboard');
+  await close.locator('.weekly-close-analysis > summary').click();
   await expect(close.getByRole('region', { name: 'Síntese para a próxima decisão' })).toContainText(
     'Decisão sugerida'
   );

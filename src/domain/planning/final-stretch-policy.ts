@@ -147,7 +147,7 @@ export function buildFinalStretchBanner(
   return {
     active: true,
     daysToExam,
-    badge: '🚨 Modo Reta Final',
+    badge: 'Modo Reta Final',
     title: `Reta Final Ativada: ${daysText}${examLabel}`,
     message:
       daysToExam <= 5

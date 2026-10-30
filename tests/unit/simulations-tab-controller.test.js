@@ -151,7 +151,10 @@ test('SimulationsTabController - add, edit and delete simulation', () => {
   controller.deleteSimuladoRow(sim.id);
   assert.equal(confirms.length, 1);
   confirms[0].onConfirm();
-  assert.equal(state.simulados.some(x => x.id === sim.id), false);
+  assert.equal(
+    state.simulados.some(x => x.id === sim.id),
+    false
+  );
 });
 
 test('SimulationsTabController - breakdown management and limiting', () => {

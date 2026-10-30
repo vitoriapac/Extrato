@@ -197,7 +197,7 @@ export function applyDailyPlanProposal({
         status: 'planned',
         sessionIds: [],
         position: plan.items.length + 1,
-        statusIcon: '📅',
+        statusIcon: 'calendar',
         statusLabel: 'Plano semanal',
         reason:
           source.origin === 'review'

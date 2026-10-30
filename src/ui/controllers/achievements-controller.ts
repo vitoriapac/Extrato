@@ -66,42 +66,42 @@ export function createAchievementsController(options: AchievementsControllerOpti
     return [
       {
         id: 'firstSession',
-        icon: '▶',
+        icon: 'player-play',
         name: 'Primeiros passos',
         desc: 'Primeira sessão concluída',
         check: () => (state.studySessions || []).length >= 1,
       },
       {
         id: 'streak3',
-        icon: '⚡',
+        icon: 'bolt',
         name: 'Ritmo iniciado',
         desc: '3 dias seguidos estudando',
         check: () => computeStreak(getActivityDates()) >= 3,
       },
       {
         id: 'streak7',
-        icon: '🔥',
+        icon: 'flame',
         name: 'Uma semana de foco',
         desc: '7 dias seguidos estudando',
         check: () => computeStreak(getActivityDates()) >= 7,
       },
       {
         id: 'streak14',
-        icon: '◆',
+        icon: 'sparkles',
         name: 'Duas semanas de foco',
         desc: '14 dias seguidos estudando',
         check: () => computeStreak(getActivityDates()) >= 14,
       },
       {
         id: 'streak30',
-        icon: '🏆',
+        icon: 'trophy',
         name: 'Mês de ferro',
         desc: '30 dias seguidos estudando',
         check: () => computeStreak(getActivityDates()) >= 30,
       },
       {
         id: 'subject100',
-        icon: '🎯',
+        icon: 'target',
         name: 'Disciplina dominada',
         desc: 'Uma disciplina 100% concluída',
         check: () =>
@@ -111,7 +111,7 @@ export function createAchievementsController(options: AchievementsControllerOpti
       },
       {
         id: 'allsubjects',
-        icon: '🗂️',
+        icon: 'folders',
         name: 'Plano completo',
         desc: 'Todas as disciplinas 100%',
         check: () => {
@@ -127,21 +127,21 @@ export function createAchievementsController(options: AchievementsControllerOpti
       },
       {
         id: 'topics10',
-        icon: '✅',
+        icon: 'check',
         name: 'Dez tópicos',
         desc: '10 tópicos concluídos',
         check: () => allTopics().filter((t: any) => t.status === 'Concluído').length >= 10,
       },
       {
         id: 'topics50',
-        icon: '📚',
+        icon: 'book',
         name: 'Cinquenta tópicos',
         desc: '50 tópicos concluídos',
         check: () => allTopics().filter((t: any) => t.status === 'Concluído').length >= 50,
       },
       {
         id: 'q100',
-        icon: '✍️',
+        icon: 'pencil',
         name: 'Cem questões',
         desc: '100 questões resolvidas',
         check: () =>
@@ -152,7 +152,7 @@ export function createAchievementsController(options: AchievementsControllerOpti
       },
       {
         id: 'q500',
-        icon: '🧠',
+        icon: 'brain',
         name: 'Quinhentas questões',
         desc: '500 questões resolvidas',
         check: () =>
@@ -207,21 +207,21 @@ export function createAchievementsController(options: AchievementsControllerOpti
       },
       {
         id: 'sim1',
-        icon: '📝',
+        icon: 'file-text',
         name: 'Primeiro simulado',
         desc: 'Completou o primeiro simulado',
         check: () => (state.simulados || []).length >= 1,
       },
       {
         id: 'sim5',
-        icon: '🏅',
+        icon: 'award',
         name: 'Cinco simulados',
         desc: 'Completou 5 simulados',
         check: () => (state.simulados || []).length >= 5,
       },
       {
         id: 'reviews25',
-        icon: '↻',
+        icon: 'refresh',
         name: 'Revisor disciplinado',
         desc: '25 revisões concluídas',
         check: () =>
@@ -230,7 +230,7 @@ export function createAchievementsController(options: AchievementsControllerOpti
       },
       {
         id: 'coverage50',
-        icon: '▰',
+        icon: 'chart-bar',
         name: 'Edital em andamento',
         desc: '50% do conteúdo concluído',
         check: () => {
@@ -243,14 +243,14 @@ export function createAchievementsController(options: AchievementsControllerOpti
       },
       {
         id: 'recommendation1',
-        icon: '◎',
+        icon: 'circle-dot',
         name: 'Inteligência aplicada',
         desc: 'Primeira recomendação concluída',
         check: () => (state.recommendationFeedback || []).some((item: any) => item.completed),
       },
       {
         id: 'recommendationPositive',
-        icon: '★',
+        icon: 'star',
         name: 'Estratégia funcionando',
         desc: 'Recomendação com resultado positivo',
         check: () =>

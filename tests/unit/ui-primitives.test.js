@@ -13,6 +13,7 @@ import {
   EmptyState,
   MetricCard,
   Icon,
+  renderIconSvg,
 } from '../../src/ui/primitives/index.js';
 
 test('UI Primitives — Button renderiza variantes e tamanhos acessíveis', () => {
@@ -134,6 +135,7 @@ test('UI Primitives — Icon renderiza SVG acessível ou decorativo com traço f
   assert.ok(decorativeHtml.includes('width="18"'));
   assert.ok(decorativeHtml.includes('aria-hidden="true"'));
   assert.ok(decorativeHtml.includes('stroke="currentColor"'));
+  assert.ok(decorativeHtml.includes('icon-tabler-search'));
 
   const accessibleHtml = render(
     h(Icon, { name: 'download', size: 20, 'aria-label': 'Baixar backup' })
@@ -141,5 +143,11 @@ test('UI Primitives — Icon renderiza SVG acessível ou decorativo com traço f
   assert.ok(accessibleHtml.includes('role="img"'));
   assert.ok(accessibleHtml.includes('aria-label="Baixar backup"'));
   assert.ok(!accessibleHtml.includes('aria-hidden="true"'));
-});
+  assert.ok(accessibleHtml.includes('icon-tabler-download'));
 
+  // Teste de renderIconSvg para templates de string
+  const svgString = renderIconSvg('player-play', { size: 14, class: 'mr-1' });
+  assert.ok(svgString.includes('<svg'));
+  assert.ok(svgString.includes('icon-tabler-player-play'));
+  assert.ok(svgString.includes('width="14"'));
+});

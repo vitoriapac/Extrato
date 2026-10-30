@@ -14,6 +14,7 @@ As instruções explícitas do usuário prevalecem sobre esta política. Consult
 - **Design System, Dark Mode e Acessibilidade (WCAG AA):**
   - Proibido o uso de cores ou valores hexadecimais soltos no JSX/CSS. Utilize estritamente os design tokens semânticos de `styles/tokens.css` via classes utilitárias (ex: `bg-surface-elevated`, `text-content-primary`), garantindo contraste adequado e suporte total aos temas Claro e Escuro.
   - Todo elemento interativo ou campo de formulário deve conter identificação acessível (`aria-label`, texto visível ou `aria-labelledby`) e suporte à navegação por teclado.
+  - **Proibição Estrita de Emojis e Adoção do Tabler Icons (Zero Emojis):** É expressamente proibido o uso de emojis Unicode (`\p{Extended_Pictographic}`) em qualquer elemento de UI, botões, modais, títulos, notificações, badges, diagnósticos ou templates HTML/JSX. Toda a iconografia deve utilizar exclusivamente os ícones SVG vetoriais do **Tabler Icons** através de `<Icon name="..." />` ou `renderIconSvg(...)` disponibilizados em `src/ui/primitives/icon.tsx`.
 - **Estratégia de Testes Proporcional:**
   - **Regras de negócio e algoritmos:** Testes unitários no Node rodando com hook nativo (`npm run test:fast`). Meta: < 120s.
   - **Jornadas centrais de UI:** Testes E2E dirigidos no Playwright para fluxos críticos, sem inflar a matriz browser desnecessariamente.

@@ -7,10 +7,7 @@
  * Camada: UI Controller / Tab Controller.
  */
 
-import {
-  filterStudySessions,
-  groupStudySessionsByDate,
-} from '../../session-history.js';
+import { filterStudySessions, groupStudySessionsByDate } from '../../session-history.js';
 import {
   buildSessionHistoryPresentation,
   renderStudySessionRead,
@@ -413,7 +410,8 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
         total: rows.length,
         visible: currentLimit,
         step: currentStep,
-        showMoreAction: "changeListLimit('sessionDays',LIST_VIEW_STEPS.sessionDays,renderStudySessionsHistory)",
+        showMoreAction:
+          "changeListLimit('sessionDays',LIST_VIEW_STEPS.sessionDays,renderStudySessionsHistory)",
         showLessAction:
           currentLimit > currentStep
             ? "changeListLimit('sessionDays',-listViewState.sessionDaysVisible,renderStudySessionsHistory)"
@@ -491,9 +489,7 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
   }
 
   function syncQuestionFromStudySession(session: Record<string, any>) {
-    return opts.sessionService?.edit
-      ? opts.sessionService.edit(session.id, session)
-      : null;
+    return opts.sessionService?.edit ? opts.sessionService.edit(session.id, session) : null;
   }
 
   return {
@@ -501,7 +497,9 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     historyEditState,
     historyEditDraft,
     getSessionDaysVisible: () => sessionDaysVisible,
-    setSessionDaysVisible: (v: number) => { sessionDaysVisible = v; },
+    setSessionDaysVisible: (v: number) => {
+      sessionDaysVisible = v;
+    },
     totalStudySeconds,
     segundosEstudadosHoje,
     studyTimeByTopic,

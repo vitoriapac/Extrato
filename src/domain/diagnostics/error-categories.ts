@@ -11,12 +11,12 @@ export interface ErrorRecommendationPrescription {
 }
 
 export const ERROR_CATEGORIES: Record<string, ErrorCategoryMeta> = {
-  naoSabia: { label: 'Não sabia', icon: '📚' },
-  esqueci: { label: 'Esqueci', icon: '🧠' },
-  interpretacao: { label: 'Interpretação', icon: '📖' },
-  calculo: { label: 'Cálculo', icon: '➗' },
-  desatencao: { label: 'Desatenção', icon: '⚠️' },
-  chute: { label: 'Chute', icon: '🎲' },
+  naoSabia: { label: 'Não sabia', icon: 'book' },
+  esqueci: { label: 'Esqueci', icon: 'brain' },
+  interpretacao: { label: 'Interpretação', icon: 'file-text' },
+  calculo: { label: 'Cálculo', icon: 'calculator' },
+  desatencao: { label: 'Desatenção', icon: 'alert-triangle' },
+  chute: { label: 'Chute', icon: 'dice' },
 };
 
 export const MIN_TOPIC_TREND_WINDOW_QUESTIONS = 20;
@@ -63,10 +63,10 @@ export const ERROR_RECOMMENDATIONS: Record<string, ErrorRecommendationPrescripti
 };
 
 export const DIAGNOSIS_STATUS_ICON: Record<string, string> = {
-  Crítico: '🔴',
-  Atenção: '🟠',
-  Acompanhamento: '🟡',
-  'Em dia': '🟢',
+  Crítico: 'alert-circle',
+  Atenção: 'alert-triangle',
+  Acompanhamento: 'clock',
+  'Em dia': 'circle-check',
 };
 
 export function emptyErrorBreakdown(

@@ -46,7 +46,9 @@ export interface DelegatedActionsRegistryDeps {
   };
 }
 
-export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps): Record<string, Function> {
+export function buildDelegatedActionHandlers(
+  deps: DelegatedActionsRegistryDeps
+): Record<string, Function> {
   const c = deps.controllers || {};
   const custom = deps.customHandlers || {};
 
@@ -55,14 +57,19 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     openWeeklyAdherencePlanning: () => deps.activateTab('metas'),
     openWeeklyClose: (...args: any[]) => c.weeklyClose?.openWeeklyClose?.(...args),
     reviewPlanningCapacity: () => c.weeklyClose?.sustainabilityController?.review?.(),
-    setStrategicTimelineFilter: (...args: any[]) => c.weeklyClose?.setStrategicTimelineFilter?.(...args),
-    setStrategicTimelineGroup: (...args: any[]) => c.weeklyClose?.setStrategicTimelineGroup?.(...args),
-    setPriorityHistorySubject: (...args: any[]) => c.weeklyClose?.setPriorityHistorySubject?.(...args),
+    setStrategicTimelineFilter: (...args: any[]) =>
+      c.weeklyClose?.setStrategicTimelineFilter?.(...args),
+    setStrategicTimelineGroup: (...args: any[]) =>
+      c.weeklyClose?.setStrategicTimelineGroup?.(...args),
+    setPriorityHistorySubject: (...args: any[]) =>
+      c.weeklyClose?.setPriorityHistorySubject?.(...args),
     saveWeeklyCloseSnapshot: (...args: any[]) => c.weeklyClose?.saveWeeklyCloseSnapshot?.(...args),
     openWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.openWeeklyCloseRecord?.(...args),
     closeWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.closeWeeklyCloseRecord?.(...args),
-    previewWeeklyCloseActions: (...args: any[]) => c.weeklyClose?.previewWeeklyCloseActions?.(...args),
-    confirmWeeklyCloseActions: (...args: any[]) => c.weeklyClose?.confirmWeeklyCloseActions?.(...args),
+    previewWeeklyCloseActions: (...args: any[]) =>
+      c.weeklyClose?.previewWeeklyCloseActions?.(...args),
+    confirmWeeklyCloseActions: (...args: any[]) =>
+      c.weeklyClose?.confirmWeeklyCloseActions?.(...args),
     toggleWeeklyPriority: (...args: any[]) => c.weeklyClose?.toggleWeeklyPriority?.(...args),
 
     // Reviews Agenda
@@ -137,8 +144,10 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     duplicateSubject: (...args: any[]) => c.subjects?.duplicateSubject?.(...args),
     moveSubject: (...args: any[]) => c.subjects?.moveSubject?.(...args),
     renameSubject: (...args: any[]) => c.subjects?.renameSubject?.(...args),
-    requestPermanentSubjectDelete: (...args: any[]) => c.subjects?.requestPermanentSubjectDelete?.(...args),
-    requestPermanentTopicDelete: (...args: any[]) => c.subjects?.requestPermanentTopicDelete?.(...args),
+    requestPermanentSubjectDelete: (...args: any[]) =>
+      c.subjects?.requestPermanentSubjectDelete?.(...args),
+    requestPermanentTopicDelete: (...args: any[]) =>
+      c.subjects?.requestPermanentTopicDelete?.(...args),
     resetSubjectTopicLimit: (...args: any[]) => c.subjects?.resetSubjectTopicLimit?.(...args),
     restoreSubject: (...args: any[]) => c.subjects?.restoreSubject?.(...args),
     restoreTopic: (...args: any[]) => c.subjects?.restoreTopic?.(...args),
@@ -172,28 +181,39 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     cancelPhaseStrategy: (...args: any[]) => c.studyPlan?.cancelPhaseStrategy?.(...args),
     confirmPhaseStrategy: (...args: any[]) => c.studyPlan?.confirmPhaseStrategy?.(...args),
     revertPhaseStrategy: (...args: any[]) => c.studyPlan?.revertPhaseStrategy?.(...args),
-    calculateStudyPlanPreview: (...args: any[]) => c.studyPlan?.calculateStudyPlanPreview?.(...args),
+    calculateStudyPlanPreview: (...args: any[]) =>
+      c.studyPlan?.calculateStudyPlanPreview?.(...args),
     clearStudyPlanPreview: (...args: any[]) => c.studyPlan?.clearStudyPlanPreview?.(...args),
     confirmStudyPlan: (...args: any[]) => c.studyPlan?.confirmStudyPlan?.(...args),
     useAdaptivePlanAdvice: (...args: any[]) => c.studyPlan?.useAdaptivePlanAdvice?.(...args),
     rejectAdaptivePlanAdvice: (...args: any[]) => c.studyPlan?.rejectAdaptivePlanAdvice?.(...args),
-    revertAdaptivePlanningDecision: (...args: any[]) => c.studyPlan?.revertAdaptivePlanningDecision?.(...args),
-    calculateDailyPlanPreview: (...args: any[]) => c.studyPlan?.calculateDailyPlanPreview?.(...args),
+    revertAdaptivePlanningDecision: (...args: any[]) =>
+      c.studyPlan?.revertAdaptivePlanningDecision?.(...args),
+    calculateDailyPlanPreview: (...args: any[]) =>
+      c.studyPlan?.calculateDailyPlanPreview?.(...args),
     clearDailyPlanPreview: (...args: any[]) => c.studyPlan?.clearDailyPlanPreview?.(...args),
     confirmDailyPlanPreview: (...args: any[]) => c.studyPlan?.confirmDailyPlanPreview?.(...args),
-    undoLatestDailyPlanGeneration: (...args: any[]) => c.studyPlan?.undoLatestDailyPlanGeneration?.(...args),
+    undoLatestDailyPlanGeneration: (...args: any[]) =>
+      c.studyPlan?.undoLatestDailyPlanGeneration?.(...args),
 
     // Study Recommendations & Replan
-    calculateReplanPreview: (...args: any[]) => c.recommendations?.calculateReplanPreview?.(...args),
+    calculateReplanPreview: (...args: any[]) =>
+      c.recommendations?.calculateReplanPreview?.(...args),
     clearReplanPreview: (...args: any[]) => c.recommendations?.clearReplanPreview?.(...args),
     confirmReplan: (...args: any[]) => c.recommendations?.confirmReplan?.(...args),
     undoPlanAdjustment: (...args: any[]) => c.recommendations?.undoPlanAdjustment?.(...args),
-    executeStudyRecommendation: (...args: any[]) => c.recommendations?.executeStudyRecommendation?.(...args),
-    dismissStudyRecommendation: (...args: any[]) => c.recommendations?.dismissStudyRecommendation?.(...args),
-    markRecommendationNotUseful: (...args: any[]) => c.recommendations?.markRecommendationNotUseful?.(...args),
-    rateRecommendationOutcome: (...args: any[]) => c.recommendations?.rateRecommendationOutcome?.(...args),
+    executeStudyRecommendation: (...args: any[]) =>
+      c.recommendations?.executeStudyRecommendation?.(...args),
+    dismissStudyRecommendation: (...args: any[]) =>
+      c.recommendations?.dismissStudyRecommendation?.(...args),
+    markRecommendationNotUseful: (...args: any[]) =>
+      c.recommendations?.markRecommendationNotUseful?.(...args),
+    rateRecommendationOutcome: (...args: any[]) =>
+      c.recommendations?.rateRecommendationOutcome?.(...args),
     startStudyRecommendation: (...args: any[]) =>
-      (c.recommendations?.startStudyRecommendation || c.studyTimerRuntime?.startStudyRecommendation)?.(...args),
+      (
+        c.recommendations?.startStudyRecommendation || c.studyTimerRuntime?.startStudyRecommendation
+      )?.(...args),
 
     // Timer UI
     focusStudyTimer: (...args: any[]) => c.timerUi?.focusStudyTimer?.(...args),
@@ -206,7 +226,8 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     navigateKpi: (...args: any[]) => c.dashboard?.navigateKpi?.(...args),
     selectHeatmapDay: (...args: any[]) => c.dashboard?.selectHeatmapDay?.(...args),
     setHeatmapFilter: (...args: any[]) => c.dashboard?.setHeatmapFilter?.(...args),
-    viewSelectedHeatmapSessions: (...args: any[]) => c.dashboard?.viewSelectedHeatmapSessions?.(...args),
+    viewSelectedHeatmapSessions: (...args: any[]) =>
+      c.dashboard?.viewSelectedHeatmapSessions?.(...args),
     toggleStreakActiveDays: (...args: any[]) => c.dashboard?.toggleStreakActiveDays?.(...args),
     toggleStreakExpanded: (...args: any[]) => c.dashboard?.toggleStreakExpanded?.(...args),
     changeUpcomingLimit: (...args: any[]) => c.dashboard?.changeUpcomingLimit?.(...args),
@@ -214,7 +235,9 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     showAllUpcoming: (...args: any[]) => c.dashboard?.showAllUpcoming?.(...args),
     openNextSessionAction: () => {
       deps.activateTab('dashboard');
-      deps.document?.getElementById('overviewNextAction')?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
+      deps.document
+        ?.getElementById('overviewNextAction')
+        ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
     },
 
     // Diagnostics & Approval
@@ -274,15 +297,19 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
 
     // Session History
     cancelStudySessionEdit: (...args: any[]) => c.sessionHistory?.cancelStudySessionEdit?.(...args),
-    clearSessionHistoryFilters: (...args: any[]) => c.sessionHistory?.clearSessionHistoryFilters?.(...args),
+    clearSessionHistoryFilters: (...args: any[]) =>
+      c.sessionHistory?.clearSessionHistoryFilters?.(...args),
     deleteStudySession: (...args: any[]) => c.sessionHistory?.deleteStudySession?.(...args),
     editStudySession: (...args: any[]) => c.sessionHistory?.editStudySession?.(...args),
     saveStudySessionEdit: (...args: any[]) => c.sessionHistory?.saveStudySessionEdit?.(...args),
-    selectSessionHistoryDate: (...args: any[]) => c.sessionHistory?.selectSessionHistoryDate?.(...args),
+    selectSessionHistoryDate: (...args: any[]) =>
+      c.sessionHistory?.selectSessionHistoryDate?.(...args),
     toggleSessionDay: (...args: any[]) => c.sessionHistory?.toggleSessionDay?.(...args),
     toggleSessionDetails: (...args: any[]) => c.sessionHistory?.toggleSessionDetails?.(...args),
-    updateSessionHistoryFilter: (...args: any[]) => c.sessionHistory?.updateSessionHistoryFilter?.(...args),
-    updateStudySessionDraft: (...args: any[]) => c.sessionHistory?.updateStudySessionDraft?.(...args),
+    updateSessionHistoryFilter: (...args: any[]) =>
+      c.sessionHistory?.updateSessionHistoryFilter?.(...args),
+    updateStudySessionDraft: (...args: any[]) =>
+      c.sessionHistory?.updateStudySessionDraft?.(...args),
 
     // Exam Matrix / Blueprint
     toggleActiveExamTag: (...args: any[]) => c.examMatrix?.toggleActiveExamTag?.(...args),

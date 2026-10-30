@@ -57,8 +57,7 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
 
   function toggleTimerFocus(force: boolean | null = null): boolean {
     const body = document.body;
-    const active =
-      force == null ? !body.classList.contains('timer-focus-active') : Boolean(force);
+    const active = force == null ? !body.classList.contains('timer-focus-active') : Boolean(force);
     body.classList.toggle('timer-focus-active', active);
     renderTimerFocusContext();
 
@@ -73,9 +72,7 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
         .querySelector?.('#panel-dashboard .timer-block')
         ?.scrollIntoView?.({ block: 'center', behavior: scrollBehavior() });
       rAF(() =>
-        document
-          .getElementById(isTimerRunning() ? 'timerPauseBtn' : 'timerStartBtn')
-          ?.focus?.()
+        document.getElementById(isTimerRunning() ? 'timerPauseBtn' : 'timerStartBtn')?.focus?.()
       );
     } else if (timerFocusReturnTab) {
       const tab = timerFocusReturnTab;
@@ -83,9 +80,8 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
       activateTab(tab);
       rAF(() =>
         (
-          document.querySelector(
-            `#panel-${tab} [data-delegated-click="openStudyTimerFocus()"]`
-          ) || document.getElementById(`tab-${tab}`)
+          document.querySelector(`#panel-${tab} [data-delegated-click="openStudyTimerFocus()"]`) ||
+          document.getElementById(`tab-${tab}`)
         )?.focus?.()
       );
     } else {

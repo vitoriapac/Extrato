@@ -111,11 +111,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     ctx.collectMonthKeys ||
     ((items: any[]) =>
       Array.from(
-        new Set(
-          (items || [])
-            .map(x => (x.date ? String(x.date).slice(0, 7) : ''))
-            .filter(Boolean)
-        )
+        new Set((items || []).map(x => (x.date ? String(x.date).slice(0, 7) : '')).filter(Boolean))
       ).sort());
   const activeSubjects = ctx.activeSubjects || (() => []);
   const subjectsForSelection = ctx.subjectsForSelection || (() => []);
@@ -276,8 +272,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
     if (!container) return;
     const filterSubject =
       (doc.getElementById('calFilterSubject') as HTMLSelectElement)?.value || '';
-    const filterStatus =
-      (doc.getElementById('calFilterStatus') as HTMLSelectElement)?.value || '';
+    const filterStatus = (doc.getElementById('calFilterStatus') as HTMLSelectElement)?.value || '';
 
     const result = renderCalendarMonthView({
       month: calendarUiState.month,

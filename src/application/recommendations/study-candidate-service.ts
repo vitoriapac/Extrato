@@ -24,7 +24,10 @@ export interface StudyCandidateServiceDependencies {
   allTopics: () => any[];
   activeTopics: () => any[];
   activeSubjects: () => any[];
-  isActiveStudyReference: (subjectId: string | null | undefined, topicId?: string | null) => boolean;
+  isActiveStudyReference: (
+    subjectId: string | null | undefined,
+    topicId?: string | null
+  ) => boolean;
   topicInActiveExamScope: (topic: Record<string, any>) => boolean;
   examScopedTopics: () => any[];
   examScopedRecords: (records?: any[]) => any[];
@@ -313,15 +316,16 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
     const subjects = activeSubjects()
       .filter(subject => eligibleSubjectIds.has(subject.id))
       .map(subject => {
-        const trend = calculateWeightedTrend(
-          getSubjectWeeklyTrend(subject.id, 8, scopedQuestions)
-        );
+        const trend = calculateWeightedTrend(getSubjectWeeklyTrend(subject.id, 8, scopedQuestions));
         const lastSession = scope.sessions.included
           .filter((session: any) => entitySubjectId(session) === subject.id && session.date)
           .sort((a: any, b: any) => String(b.date).localeCompare(String(a.date)))[0];
         const lastStudyDay = parseLocalDate(lastSession?.date);
         const daysSinceStudy = lastStudyDay
-          ? Math.max(0, Math.floor((Number(parseLocalDate(today)) - Number(lastStudyDay)) / 86400000))
+          ? Math.max(
+              0,
+              Math.floor((Number(parseLocalDate(today)) - Number(lastStudyDay)) / 86400000)
+            )
           : null;
         return {
           subjectId: subject.id,

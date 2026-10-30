@@ -215,9 +215,10 @@ export interface ResolveSessionBookmarkParams {
 /**
  * Decide se o bookmark deve ser removido, atualizado ou preservado.
  */
-export function resolveSessionBookmark(
-  params: ResolveSessionBookmarkParams
-): { shouldUpdate: boolean; nextBookmark: any } {
+export function resolveSessionBookmark(params: ResolveSessionBookmarkParams): {
+  shouldUpdate: boolean;
+  nextBookmark: any;
+} {
   const { topicId, endedAt, isCleared, fieldValues, currentBookmark } = params;
   if (!topicId) return { shouldUpdate: false, nextBookmark: null };
 
@@ -236,7 +237,8 @@ export function resolveSessionBookmark(
   const isIdentical =
     normalizedCurrent &&
     Object.keys(SESSION_BOOKMARK_FIELDS).every(
-      field => (normalizedCurrent as Record<string, any>)[field] === (next as Record<string, any>)[field]
+      field =>
+        (normalizedCurrent as Record<string, any>)[field] === (next as Record<string, any>)[field]
     );
 
   if (isIdentical) {

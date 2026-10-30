@@ -595,7 +595,9 @@ export function createStudyTimerRuntimeController(options: StudyTimerRuntimeCont
         renderDiagnosisCenter();
         const nextPriority = getCurrentStudyRecommendations()[0] || null;
         const priorityChanged =
-          previousPriority && nextPriority && !sameStudyActionTarget(previousPriority, nextPriority);
+          previousPriority &&
+          nextPriority &&
+          !sameStudyActionTarget(previousPriority, nextPriority);
         const openSimulationFlow = formValues.type === 'simulation';
         closeSessionModal();
         showSessionResult(

@@ -89,7 +89,7 @@ export function ReviewsTable({
           <tr
             dangerouslySetInnerHTML={{
               __html: renderGroupHeader({
-                title: '🔴 Atrasadas',
+                title: 'Atrasadas',
                 count: groups.overdue.length,
                 tone: 'overdue',
               }),
@@ -104,7 +104,7 @@ export function ReviewsTable({
           <tr
             dangerouslySetInnerHTML={{
               __html: renderGroupHeader({
-                title: '🟡 Hoje',
+                title: 'Hoje',
                 count: groups.today.length,
                 tone: 'today',
               }),
@@ -119,7 +119,7 @@ export function ReviewsTable({
           <tr
             dangerouslySetInnerHTML={{
               __html: renderGroupHeader({
-                title: '🔵 Próximas',
+                title: 'Próximas',
                 count: groups.upcoming.length,
                 tone: 'upcoming',
               }),
@@ -148,7 +148,7 @@ export function ReviewsTable({
           <tr
             dangerouslySetInnerHTML={{
               __html: renderGroupHeader({
-                title: '✓ Concluídas',
+                title: 'Concluídas',
                 count: groups.completed.length,
                 tone: 'completed',
                 expanded: completedExpanded,

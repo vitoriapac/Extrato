@@ -106,10 +106,34 @@ test('calculateOpportunityCostMatrix — ordena por PPH decrescente', () => {
 
 test('getTopStudyOpportunities — filtra apenas as principais prioridades limitadas pela quantidade', () => {
   const matrix = calculateOpportunityCostMatrix([
-    { subjectId: 's1', subjectName: 'S1', examWeightPercent: 30, currentMastery: 50, estimatedEffortHours: 8 },
-    { subjectId: 's2', subjectName: 'S2', examWeightPercent: 25, currentMastery: 55, estimatedEffortHours: 8 },
-    { subjectId: 's3', subjectName: 'S3', examWeightPercent: 20, currentMastery: 60, estimatedEffortHours: 8 },
-    { subjectId: 's4', subjectName: 'S4', examWeightPercent: 5, currentMastery: 80, estimatedEffortHours: 20 },
+    {
+      subjectId: 's1',
+      subjectName: 'S1',
+      examWeightPercent: 30,
+      currentMastery: 50,
+      estimatedEffortHours: 8,
+    },
+    {
+      subjectId: 's2',
+      subjectName: 'S2',
+      examWeightPercent: 25,
+      currentMastery: 55,
+      estimatedEffortHours: 8,
+    },
+    {
+      subjectId: 's3',
+      subjectName: 'S3',
+      examWeightPercent: 20,
+      currentMastery: 60,
+      estimatedEffortHours: 8,
+    },
+    {
+      subjectId: 's4',
+      subjectName: 'S4',
+      examWeightPercent: 5,
+      currentMastery: 80,
+      estimatedEffortHours: 20,
+    },
   ]);
 
   const top2 = getTopStudyOpportunities(matrix, 2);

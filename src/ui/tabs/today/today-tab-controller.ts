@@ -4,7 +4,10 @@ import { mountPreact, unmountPreact } from '../../preact-mount.js';
 import { TodayExecutionSummary } from './TodayExecutionSummary.js';
 import { TodayAgendaSections, type TodayAgendaSectionsProps } from './TodayAgendaSections.js';
 import { FirstStepsMission } from '../../components/FirstStepsMission.js';
-import { buildFirstStepsMission, type FirstStepsMissionModel } from '../../../application/onboarding/build-first-steps-mission.js';
+import {
+  buildFirstStepsMission,
+  type FirstStepsMissionModel,
+} from '../../../application/onboarding/build-first-steps-mission.js';
 import { buildFinalStretchBanner } from '../../../domain/planning/final-stretch-policy.js';
 import { FinalStretchBanner } from '../../components/FinalStretchBanner.js';
 import { buildTodayViewModel } from '../../../application/planning/build-today-view-model.js';
@@ -13,7 +16,7 @@ import { createDailyExecutionController } from '../../controllers/daily-executio
 import { renderDailyExecution } from '../../renderers/daily-execution-renderer.js';
 import { capturePlanPriority } from '../../../domain/planning/plan-priority-snapshot.js';
 
-const PRIORITY_TIER_EMOJI: Record<string, string> = { Alta: '🔴', Média: '🟡', Baixa: '🟢' };
+const PRIORITY_TIER_EMOJI: Record<string, string> = { Alta: 'alert-circle', Média: 'alert-triangle', Baixa: 'circle-check' };
 
 export interface TodayTabControllerContext {
   formatPlanMinutes: (mins: number) => string;
@@ -190,7 +193,10 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
     const items = [];
     for (const priority of (priorities || []).slice(0, 5)) {
       if (remaining < 15) break;
-      const desired = Math.max(15, Math.min(60, Math.round(Number(priority.estimatedMinutes) || 30)));
+      const desired = Math.max(
+        15,
+        Math.min(60, Math.round(Number(priority.estimatedMinutes) || 30))
+      );
       let minutes = Math.min(desired, remaining);
       if (remaining - minutes > 0 && remaining - minutes < 15) minutes = remaining;
       items.push({ ...priority, minutes });
@@ -235,7 +241,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         score: Number(item.score) || 0,
         tier: item.tier || 'Baixa',
         position: index + 1,
-        statusIcon: item.diagnosis?.statusIcon || PRIORITY_TIER_EMOJI[item.tier] || '📌',
+        statusIcon: item.diagnosis?.statusIcon || PRIORITY_TIER_EMOJI[item.tier] || 'bookmark',
         statusLabel: item.diagnosis?.status || 'Prioridade ' + (index + 1),
         reason: motivoPrioridade(item),
         action: item.recommendedAction || 'Estudar o tópico',
@@ -298,7 +304,10 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       return demoFirstStepsDismissed;
     }
     try {
-      return typeof localStorage !== 'undefined' && Boolean(localStorage.getItem('studytrack_first_steps_dismissed'));
+      return (
+        typeof localStorage !== 'undefined' &&
+        Boolean(localStorage.getItem('studytrack_first_steps_dismissed'))
+      );
     } catch {
       return false;
     }
@@ -309,7 +318,8 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       demoFirstStepsDismissed = true;
     } else {
       try {
-        if (typeof localStorage !== 'undefined') localStorage.setItem('studytrack_first_steps_dismissed', '1');
+        if (typeof localStorage !== 'undefined')
+          localStorage.setItem('studytrack_first_steps_dismissed', '1');
       } catch {}
     }
   }
@@ -319,7 +329,8 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       demoFirstStepsDismissed = false;
     } else {
       try {
-        if (typeof localStorage !== 'undefined') localStorage.removeItem('studytrack_first_steps_dismissed');
+        if (typeof localStorage !== 'undefined')
+          localStorage.removeItem('studytrack_first_steps_dismissed');
       } catch {}
     }
   }
@@ -464,7 +475,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       return;
     }
 
-    const reconciled = new Map((todayModel.execution?.items || []).map((item: any) => [item.id, item]));
+    const reconciled = new Map(
+      (todayModel.execution?.items || []).map((item: any) => [item.id, item])
+    );
     const eligibleItems = plan.items
       .filter((item: any) => !['discarded'].includes(item.status))
       .map((item: any) =>
@@ -481,7 +494,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       );
     const items =
       state.executionMode === 'sequence'
-        ? [...eligibleItems].sort((a: any, b: any) => (Number(b.score) || 0) - (Number(a.score) || 0))
+        ? [...eligibleItems].sort(
+            (a: any, b: any) => (Number(b.score) || 0) - (Number(a.score) || 0)
+          )
         : eligibleItems;
     const listaHtml = items
       .map((item: any) => {
@@ -496,9 +511,9 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
             !['completed', 'deferred', 'replaced', 'skipped'].includes(item.status) && !active,
           blocked = hasTimer && !active;
         const actionButton = active
-          ? '<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">▶ Retomar sessão</button>'
+          ? '<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button>'
           : canStart && !blocked
-            ? `<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds > 0 ? '▶ Continuar' : '▶ Iniciar'}</button>`
+            ? `<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds > 0 ? 'Continuar' : 'Iniciar'}</button>`
             : canStart && blocked
               ? '<button type="button" class="btn small" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
               : '';
@@ -637,8 +652,35 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         _renderOverviewDecisionArea();
       }
       if ((event.target as HTMLElement)?.closest?.('[data-daily-resume]')) openStudyTimerFocus();
-      if ((event.target as HTMLElement)?.closest?.('[data-open-what-if]'))
-        whatIfController?.open();
+      if ((event.target as HTMLElement)?.closest?.('[data-open-what-if]')) whatIfController?.open();
+
+      const firstStepsBtn = (event.target as HTMLElement)?.closest?.<HTMLElement>(
+        '[data-first-steps-action]'
+      );
+      if (firstStepsBtn) {
+        const action = firstStepsBtn.dataset.firstStepsAction;
+        if (action === 'open-onboarding') {
+          _openGuidedOnboarding();
+        } else if (action === 'open-questions') {
+          _activateTab('questoes');
+        } else if (action === 'start-first-session' || action === 'start-quick-warmup') {
+          const currentPlan = todayDailyStudyPlan();
+          const firstItem = currentPlan?.items?.find(
+            (it: any) => it.status !== 'completed' && it.status !== 'skipped'
+          );
+          if (firstItem) {
+            const startResult = dailyExecutionController.start(firstItem.id);
+            if (startResult.state === 'blocked') {
+              _showToast('Finalize a sessão atual antes de iniciar outra.');
+            }
+            renderDailyExecutionCard();
+            _renderOverviewDecisionArea();
+          } else {
+            _activateTab('hoje');
+            doc.getElementById('overview-timer')?.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }
     });
   }
 

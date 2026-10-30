@@ -3,6 +3,8 @@ import {
   applyOnboardingDateShortcut,
   AVAILABILITY_PRESETS,
 } from '../../application/onboarding/build-onboarding-view-model.js';
+import { findStarterPackById, type StarterPack } from '../../domain/onboarding/starter-packs.js';
+import { applySundayRestDay } from '../../domain/onboarding/routine-sustainability.js';
 import { syncOnboardingPhase } from '../../ui/controllers/onboarding-phase-controller.js';
 import {
   renderOnboardingEntry,
@@ -88,7 +90,8 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     render,
     activateTab,
     syncModalShell,
-    requestFrame = (cb: () => void) => (typeof requestAnimationFrame === 'function' ? requestAnimationFrame(cb) : cb()),
+    requestFrame = (cb: () => void) =>
+      typeof requestAnimationFrame === 'function' ? requestAnimationFrame(cb) : cb(),
   } = deps;
 
   function onboardingModel() {
@@ -113,13 +116,16 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       today: todayISO(),
       presets: examPresets,
       presetId: uiState.onboarding.presetId,
+      customExamName: state.examBlueprint?.customTitle || null,
     });
   }
 
   function syncGuidedNext(model?: Record<string, any>) {
     const effectiveModel = model || onboardingModel();
     const actions = document.getElementById('guidedOnboardingActions');
-    const next = actions?.querySelector?.('[data-guided-action="next"]') as HTMLButtonElement | null;
+    const next = actions?.querySelector?.(
+      '[data-guided-action="next"]'
+    ) as HTMLButtonElement | null;
     if (!next) return;
     const reason = onboardingBlockedReason(effectiveModel);
     next.disabled = Boolean(reason);
@@ -185,7 +191,9 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     const manualBanner = document.getElementById('guidedManualReturn');
     if (manualBanner) {
       manualBanner.hidden = !uiState.onboarding.manualReturn;
-      const returnBtn = manualBanner.querySelector?.('[data-guided-manual-return]') as HTMLButtonElement | null;
+      const returnBtn = manualBanner.querySelector?.(
+        '[data-guided-manual-return]'
+      ) as HTMLButtonElement | null;
       if (returnBtn) returnBtn.disabled = !model.hasContent;
     }
   }
@@ -250,7 +258,11 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     uiState.onboarding.previousFocus = null;
   }
 
-  function setGuidedSubjectLevel(subjectId: string, level: string, { refresh = true }: { refresh?: boolean } = {}) {
+  function setGuidedSubjectLevel(
+    subjectId: string,
+    level: string,
+    { refresh = true }: { refresh?: boolean } = {}
+  ) {
     if (!difficultyOptions.includes(level)) return;
     const subject = getSubjectById(subjectId);
     if (!subject) return;
@@ -278,6 +290,32 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     }
   }
 
+  function loadStarterPack(pack: StarterPack) {
+    const state = getState();
+    const newSubjects = pack.subjects.map((subj, sIdx) => {
+      const subjectId = `subj-${Date.now()}-${sIdx}-${Math.random().toString(36).slice(2, 7)}`;
+      return {
+        id: subjectId,
+        name: subj.name,
+        archived: false,
+        topics: subj.topics.map((top, tIdx) => ({
+          id: `top-${Date.now()}-${sIdx}-${tIdx}-${Math.random().toString(36).slice(2, 7)}`,
+          name: top.name,
+          difficulty: top.difficulty || 'Médio',
+          estimatedStudyMinutes: top.estimatedStudyMinutes || 60,
+          status: 'Não iniciado',
+          archived: false,
+        })),
+      };
+    });
+
+    state.subjects = [...(state.subjects || []), ...newSubjects];
+    calculateStudyPlanPreview();
+    persistAndRender();
+    renderGuidedOnboarding();
+    showToast(`Pacote "${pack.name}" carregado com sucesso!`);
+  }
+
   function createGuidedInitialPlan() {
     if (!onboardingModel().canCreatePlan) return;
     const uiState = getUiState();
@@ -299,9 +337,10 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
     document.body.classList.remove('onboarding-open');
     render();
     activateTab('hoje');
-    requestFrame(() =>
-      document.querySelector<HTMLElement>('#planoHojeContent .btn')?.focus()
+    showToast(
+      'Parabéns! Seu plano semanal está pronto. Demos o pontapé inicial na sua meta de hoje.'
     );
+    requestFrame(() => document.querySelector<HTMLElement>('#planoHojeContent .btn')?.focus());
   }
 
   function handleOverlayClick(event: MouseEvent) {
@@ -369,11 +408,37 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
       return;
     }
 
+    const starterPackBtn = target.closest<HTMLElement>('[data-guided-starter-pack]');
+    if (starterPackBtn) {
+      const packId = starterPackBtn.dataset.guidedStarterPack;
+      const pack = findStarterPackById(packId || '');
+      if (pack) {
+        loadStarterPack(pack);
+      }
+      return;
+    }
+
     const action = target.closest<HTMLElement>('[data-guided-action]')?.dataset.guidedAction;
     if (!action) return;
     if (action === 'cancel') closeGuidedOnboarding();
     if (action === 'back') moveOnboarding(-1);
     if (action === 'next') moveOnboarding(1);
+    if (action === 'rest-sunday') {
+      const state = getState();
+      const currentHours = state.metas?.horasPorDia || {};
+      const newHours = applySundayRestDay(currentHours);
+      for (let day = 0; day <= 6; day++) {
+        const h = newHours[String(day)] ?? 0;
+        deps.updateMetaHoursDay?.(String(day), String(h), { refresh: false });
+        const input = document.querySelector<HTMLInputElement>(`[data-guided-day="${day}"]`);
+        if (input) input.value = String(h);
+      }
+      const model = onboardingModel();
+      syncGuidedNext(model);
+      renderGuidedOnboarding();
+      showToast('Domingo definido como dia de folga.');
+      return;
+    }
     if (action === 'import' && deps.openExamImport) {
       deps.openExamImport(getUiState().onboarding.presetId, 'onboarding');
     }
@@ -411,16 +476,28 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
         const target = event.target as HTMLElement;
         if (target?.id === 'guidedExamPreset') {
           const ui = getUiState();
-          if (ui.onboarding) ui.onboarding.presetId = (target as HTMLInputElement).value;
+          if (ui.onboarding) {
+            ui.onboarding.presetId = (target as HTMLInputElement).value;
+            renderGuidedOnboarding();
+          }
+          return;
+        }
+        if (target?.id === 'guidedCustomExamName') {
+          const customName = (target as HTMLInputElement).value;
+          deps.updateExamBlueprint?.('customTitle', customName, { refresh: false });
           return;
         }
         if (target?.id === 'guidedExamDate') {
-          deps.updateExamBlueprint?.('examDate', (target as HTMLInputElement).value, { refresh: false });
+          deps.updateExamBlueprint?.('examDate', (target as HTMLInputElement).value, {
+            refresh: false,
+          });
           syncGuidedNext(onboardingModel());
           return;
         }
         if (target?.dataset?.guidedDay !== undefined) {
-          deps.updateMetaHoursDay?.(target.dataset.guidedDay, (target as HTMLInputElement).value, { refresh: false });
+          deps.updateMetaHoursDay?.(target.dataset.guidedDay, (target as HTMLInputElement).value, {
+            refresh: false,
+          });
           const model = onboardingModel();
           syncGuidedNext(model);
           const cap = document.querySelector('#guidedOnboardingContent .guided-capacity strong');
@@ -428,13 +505,18 @@ export function createOnboardingModalController(deps: OnboardingModalControllerD
           return;
         }
         if (target?.dataset?.guidedLevel) {
-          setGuidedSubjectLevel(target.dataset.guidedLevel, (target as HTMLInputElement).value, { refresh: false });
+          setGuidedSubjectLevel(target.dataset.guidedLevel, (target as HTMLInputElement).value, {
+            refresh: false,
+          });
         }
       });
     }
-    document.getElementById('guidedOnboardingClose')?.addEventListener('click', () => closeGuidedOnboarding());
+    document
+      .getElementById('guidedOnboardingClose')
+      ?.addEventListener('click', () => closeGuidedOnboarding());
     document.getElementById('guidedOnboarding')?.addEventListener('click', (event: any) => {
-      if ((event.target as HTMLElement)?.closest('[data-guided-action="open"]')) openGuidedOnboarding();
+      if ((event.target as HTMLElement)?.closest('[data-guided-action="open"]'))
+        openGuidedOnboarding();
     });
   }
 

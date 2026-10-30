@@ -40,7 +40,10 @@ export interface ReviewsTabControllerContext {
   activeTopics?: () => any[];
   activeSubjects?: () => Array<{ id: string; name: string }>;
   subjectsForSelection?: (selectedId?: any) => Array<{ id: string; name: string }>;
-  topicsForSelection?: (subjectId?: any, selectedTopicId?: any) => Array<{ id: string; name: string }>;
+  topicsForSelection?: (
+    subjectId?: any,
+    selectedTopicId?: any
+  ) => Array<{ id: string; name: string }>;
   entitySubjectId?: (item: any) => string | null;
   getSubjectName?: (id?: any) => string;
   getTopicName?: (id?: any) => string;
@@ -108,7 +111,8 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
   const pluralize = ctx.pluralize || defaultPluralize;
   const todayISO = ctx.todayISO || defaultTodayISO;
   const nowISO = ctx.nowISO || defaultNowISO;
-  const uid = ctx.uid || ((prefix = 'review') => `${prefix}_${Math.random().toString(36).slice(2, 9)}`);
+  const uid =
+    ctx.uid || ((prefix = 'review') => `${prefix}_${Math.random().toString(36).slice(2, 9)}`);
   const formatDatePt = ctx.formatDatePt || ((iso?: string | null) => iso || '—');
   const entitySubjectId = ctx.entitySubjectId || ((item: any) => item?.subjectId || null);
   const getSubjectName = ctx.getSubjectName || ((id?: string | null) => id || '—');
@@ -119,11 +123,7 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     ctx.collectMonthKeys ||
     ((items: any[]) =>
       Array.from(
-        new Set(
-          (items || [])
-            .map(x => (x.date ? String(x.date).slice(0, 7) : ''))
-            .filter(Boolean)
-        )
+        new Set((items || []).map(x => (x.date ? String(x.date).slice(0, 7) : '')).filter(Boolean))
       ).sort());
   const diasParaRevisaoPill =
     ctx.diasParaRevisaoPill || ((_date?: string | null, _status?: string) => '');
@@ -200,8 +200,14 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
       .sort((a, b) => {
         const dateCompare = (a.date || '').localeCompare(b.date || '');
         if (dateCompare !== 0) return dateCompare;
-        const wA = (difficultyWeightMap as Record<string, number>)[getTopicDifficulty(a.topicId || a.topicRef)] || 2;
-        const wB = (difficultyWeightMap as Record<string, number>)[getTopicDifficulty(b.topicId || b.topicRef)] || 2;
+        const wA =
+          (difficultyWeightMap as Record<string, number>)[
+            getTopicDifficulty(a.topicId || a.topicRef)
+          ] || 2;
+        const wB =
+          (difficultyWeightMap as Record<string, number>)[
+            getTopicDifficulty(b.topicId || b.topicRef)
+          ] || 2;
         return wB - wA;
       });
   }
@@ -521,7 +527,8 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     let adicionados = 0;
     concluidos.forEach((t: any) => {
       const intervalos =
-        (t.difficulty && (DIFFICULTY_INTERVALS as Record<string, any>)[t.difficulty]) || AGENDA_INTERVALS;
+        (t.difficulty && (DIFFICULTY_INTERVALS as Record<string, any>)[t.difficulty]) ||
+        AGENDA_INTERVALS;
       intervalos.forEach((intervalo: any) => {
         const jaExiste = (ctx.state.reviewAgenda || []).some(
           a => (a.topicId || a.topicRef) === t.id && a.tipo === intervalo.tipo
@@ -600,7 +607,9 @@ export function createReviewsTabController(ctx: ReviewsTabControllerContext) {
     if (!result) return closeReviewRating();
     closeReviewRating();
     persistAndRender();
-    showToast(`Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState?.nextReviewDate)}.`);
+    showToast(
+      `Revisão concluída. Próxima em ${formatDatePt(result.adaptiveState?.nextReviewDate)}.`
+    );
   }
 
   function bindEvents(doc?: any) {

@@ -26,7 +26,8 @@ export interface PlateauDetectionInput {
   }>;
 }
 
-export type PlateauPrescribedStrategy = 'active_recall' | 'statute_deep_dive' | 'prerequisite_review';
+export type PlateauPrescribedStrategy =
+  'active_recall' | 'statute_deep_dive' | 'prerequisite_review';
 
 export interface PlateauDiagnosticResult {
   hasPlateau: boolean;
@@ -177,9 +178,10 @@ export function detectTopicPlateau(input: PlateauDetectionInput): PlateauDiagnos
     return {
       hasPlateau: false,
       confidence: 'low',
-      averageAccuracy: windows.length > 0
-        ? Math.round((windows.reduce((acc, w) => acc + w.accuracy, 0) / windows.length) * 10) / 10
-        : 0,
+      averageAccuracy:
+        windows.length > 0
+          ? Math.round((windows.reduce((acc, w) => acc + w.accuracy, 0) / windows.length) * 10) / 10
+          : 0,
       variance: 0,
       questionCount: totalQuestions,
       weeksStagnant: 0,
@@ -202,7 +204,8 @@ export function detectTopicPlateau(input: PlateauDetectionInput): PlateauDiagnos
   // Cálculo da variância populacional
   const variance =
     Math.round(
-      (accuracies.reduce((sum, val) => sum + Math.pow(val - avgAcc, 2), 0) / accuracies.length) * 100
+      (accuracies.reduce((sum, val) => sum + Math.pow(val - avgAcc, 2), 0) / accuracies.length) *
+        100
     ) / 100;
 
   // Critérios de platô:
@@ -239,12 +242,14 @@ export function detectTopicPlateau(input: PlateauDetectionInput): PlateauDiagnos
     ? prescribePlateauAction(avgAcc, errorBreakdown)
     : {
         strategy: 'active_recall' as const,
-        headline: avgAcc >= MAX_PLATEAU_ACCURACY_THRESHOLD
-          ? 'Domínio Consolidado'
-          : 'Desempenho em Evolução Ativa',
-        rationale: avgAcc >= MAX_PLATEAU_ACCURACY_THRESHOLD
-          ? 'Precisão sustentada acima de 75%. Mantenha manutenções periódicas de revisão.'
-          : 'A precisão apresenta oscilação e amplitude de aprendizado ativa, sem estagnação identificada.',
+        headline:
+          avgAcc >= MAX_PLATEAU_ACCURACY_THRESHOLD
+            ? 'Domínio Consolidado'
+            : 'Desempenho em Evolução Ativa',
+        rationale:
+          avgAcc >= MAX_PLATEAU_ACCURACY_THRESHOLD
+            ? 'Precisão sustentada acima de 75%. Mantenha manutenções periódicas de revisão.'
+            : 'A precisão apresenta oscilação e amplitude de aprendizado ativa, sem estagnação identificada.',
       };
 
   return {

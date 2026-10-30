@@ -1,4 +1,5 @@
 import { escapeHtml as defaultEscapeHtml } from '../../core/utils.js';
+import { renderIconSvg } from '../primitives/icon.js';
 /**
  * Controller e utilitários puros para Apresentação e Gestão de Recomendações de Estudo.
  */
@@ -51,7 +52,7 @@ export function buildExcludedCandidates(
           id: item.id,
           subjectName: item.subjectName,
           topicName: item.topicName,
-          stateIcon: '🔒',
+          stateIcon: 'lock',
           stateText:
             'Aguarda ' + item.blockedPrerequisites.map(id => getTopicName(id) || id).join(', '),
         };
@@ -61,7 +62,7 @@ export function buildExcludedCandidates(
           id: item.id,
           subjectName: item.subjectName,
           topicName: item.topicName,
-          stateIcon: '✓',
+          stateIcon: 'check',
           stateText: 'Atividade já realizada hoje',
         };
       }
@@ -70,7 +71,7 @@ export function buildExcludedCandidates(
           id: item.id,
           subjectName: item.subjectName,
           topicName: item.topicName,
-          stateIcon: '✓',
+          stateIcon: 'check',
           stateText: 'Concluído e consolidado',
         };
       }
@@ -79,7 +80,7 @@ export function buildExcludedCandidates(
           id: item.id,
           subjectName: item.subjectName,
           topicName: item.topicName,
-          stateIcon: '○',
+          stateIcon: 'circle',
           stateText: 'Carga de estudo ainda não configurada',
         };
       }
@@ -88,7 +89,7 @@ export function buildExcludedCandidates(
           id: item.id,
           subjectName: item.subjectName,
           topicName: item.topicName,
-          stateIcon: '○',
+          stateIcon: 'circle',
           stateText: 'Ocultado nesta sessão',
         };
       }
@@ -96,7 +97,7 @@ export function buildExcludedCandidates(
         id: item.id,
         subjectName: item.subjectName,
         topicName: item.topicName,
-        stateIcon: item.examImpact != null && item.examImpact < 30 ? '○' : '★',
+        stateIcon: item.examImpact != null && item.examImpact < 30 ? 'circle' : 'star',
         stateText:
           item.examImpact != null && item.examImpact < 30
             ? 'Baixa relevância configurada para a prova'
@@ -114,7 +115,7 @@ export function renderExcludedCandidatesHtml(
   return `<details class="recommendation-exclusions"><summary>Por que outros tópicos não aparecem?</summary>${excluded
     .map(
       item =>
-        `<div><span>${item.stateIcon}</span><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(
+        `<div><span>${renderIconSvg(item.stateIcon, { size: 14, className: 'inline-block align-middle' })}</span><strong>${escapeHtml(item.subjectName)} — ${escapeHtml(
           item.topicName
         )}</strong><small>${escapeHtml(item.stateText)}</small></div>`
     )

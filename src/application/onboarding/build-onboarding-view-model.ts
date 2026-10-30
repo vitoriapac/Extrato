@@ -1,5 +1,12 @@
 import { pluralize } from '../../core/utils.js';
 import { parseLocalDate } from '../../core/date-utils.js';
+import { STARTER_PACKS, type StarterPack } from '../../domain/onboarding/starter-packs.js';
+import {
+  validateRoutineSustainability,
+  type RoutineSustainabilityResult,
+} from '../../domain/onboarding/routine-sustainability.js';
+
+export type { StarterPack, RoutineSustainabilityResult };
 
 export interface ExamDateShortcut {
   offsetDays: number;
@@ -9,7 +16,7 @@ export interface ExamDateShortcut {
 
 export const EXAM_DATE_SHORTCUTS: readonly ExamDateShortcut[] = Object.freeze([
   { offsetDays: 90, label: '3 meses', sublabel: 'Reta curta' },
-  { offsetDays: 180, label: '6 meses', sublabel: 'Pré-edital' },
+  { offsetDays: 180, label: '6 meses', sublabel: 'Recomendado pré-edital' },
   { offsetDays: 365, label: '1 ano', sublabel: 'Base longa' },
 ]);
 
@@ -123,7 +130,7 @@ export function calculatePlanFeasibility({
     totalNeededHours,
     coverageRatio: Math.round(coverageRatio * 100) / 100,
     badgeText: 'Priorização Crítica',
-    verdictMessage: `Déficit de prazo. Com a disponibilidade atual, cerca de ${coveredPercent}% do edital será coberto. O StudyTrack priorizará as matérias de maior peso.`,
+    verdictMessage: `Déficit de prazo. Com sua disponibilidade, cerca de ${coveredPercent}% do edital será coberto. O StudyTrack concentrará suas horas nos assuntos de maior peso para maximizar sua nota.`,
   };
 }
 
@@ -146,6 +153,7 @@ export function buildOnboardingViewModel({
   today = null,
   presets = [],
   presetId = null,
+  customExamName = null,
 }: any = {}) {
   type Row = Record<string, any>;
   const hasGoal = Boolean(examDate),
@@ -270,6 +278,11 @@ export function buildOnboardingViewModel({
     weeksUntilExam,
   });
 
+  const routineSustainability = validateRoutineSustainability({
+    hoursByDay,
+    weeklyHours: availableMinutes / 60,
+  });
+
   return {
     visible: !hasHistory && !hasPlan && Boolean(next),
     steps,
@@ -293,8 +306,11 @@ export function buildOnboardingViewModel({
     today,
     presets,
     presetId,
+    customExamName,
     dateShortcuts: EXAM_DATE_SHORTCUTS,
     availabilityPresets: AVAILABILITY_PRESETS,
+    starterPacks: STARTER_PACKS,
+    routineSustainability,
     activeDateShortcut,
     activeAvailabilityPreset,
     planFeasibility,

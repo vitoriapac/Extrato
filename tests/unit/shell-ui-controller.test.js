@@ -91,7 +91,7 @@ function createMockEnvironment() {
       const list = listeners[event.type] || [];
       for (const fn of list) fn(event);
     },
-    scrollTo: (_opts) => {},
+    scrollTo: _opts => {},
     matchMedia: () => ({ matches: false }),
   };
 

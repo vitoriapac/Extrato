@@ -38,11 +38,19 @@ for (const viewport of viewports) {
       [...element.children].map(child => child.querySelector('h4')?.textContent)
     );
     expect(acts).toEqual(['A semana', 'O retrato', 'A decisão']);
+    // A semana mostra os três números; a análise completa fica num único disclosure, na ordem de antes.
     const week = await close.evaluate(element =>
       [...element.children[0].children].map(child => child.className)
     );
-    expect(week.indexOf('weekly-kpis')).toBeLessThan(week.indexOf('weekly-assessment'));
-    expect(week.indexOf('weekly-assessment')).toBeLessThan(week.indexOf('weekly-strategic-focus'));
+    expect(week.indexOf('weekly-kpis')).toBeLessThan(
+      week.indexOf('weekly-close-analysis editorial-disclosure')
+    );
+    const analysis = await close.evaluate(element =>
+      [...element.querySelector('.weekly-close-analysis').children].map(child => child.className)
+    );
+    expect(analysis.indexOf('weekly-assessment')).toBeLessThan(
+      analysis.indexOf('weekly-strategic-focus')
+    );
     // O histórico de foco saiu do fechamento e vive na seção Histórico.
     await expect(close.locator('.weekly-focus-history')).toHaveCount(0);
     await expect(page.locator('#weeklyCloseHistoryDashboard .weekly-focus-history')).toHaveCount(1);

@@ -319,7 +319,10 @@ test('SubjectsTabController - subject dependency check and deletion protection',
   controller.requestPermanentSubjectDelete('sub-1');
   assert.equal(confirms.length, 1);
   confirms[0].onConfirm();
-  assert.equal(state.subjects.some(s => s.id === 'sub-1'), false);
+  assert.equal(
+    state.subjects.some(s => s.id === 'sub-1'),
+    false
+  );
 });
 
 test('SubjectsTabController - limits, filters and syllabus toggle', () => {
@@ -337,7 +340,10 @@ test('SubjectsTabController - limits, filters and syllabus toggle', () => {
   assert.equal(controller.subjectTopicLimits.get('sub-1'), 10);
 
   controller.setSubjectTopicFilter('sub-1', 'status', 'Concluído');
-  assert.deepEqual(controller.subjectTopicFilters.get('sub-1'), { status: 'Concluído', difficulty: '' });
+  assert.deepEqual(controller.subjectTopicFilters.get('sub-1'), {
+    status: 'Concluído',
+    difficulty: '',
+  });
 
   controller.toggleNotes('top-1');
   assert.ok(controller.openNotesIds.has('top-1'));

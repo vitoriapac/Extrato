@@ -10,6 +10,7 @@ import {
 import { Dialog } from '../primitives/dialog.js';
 import { Button } from '../primitives/button.js';
 import { Badge } from '../primitives/badge.js';
+import { Icon } from '../primitives/icon.js';
 
 export interface SubjectWithTopics {
   id: string;
@@ -176,7 +177,8 @@ export function ErrorNotebookView({
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border-default pb-4">
         <div>
           <h2 class="text-xl font-bold font-display text-primary m-0 flex items-center gap-2">
-            <span>📕</span> Caderno de Erros Ativo &amp; Flashcards
+            <Icon name="book" size={20} class="text-primary shrink-0" />
+            <span>Caderno de Erros Ativo &amp; Flashcards</span>
           </h2>
           <p class="text-sm text-secondary mt-1">
             Transforme suas questões incorretas em fixação imediata com repetição espaçada.
@@ -187,7 +189,7 @@ export function ErrorNotebookView({
           <div class="inline-flex rounded-default shadow-xs" role="group">
             <button
               type="button"
-              class={`px-3 py-1.5 text-xs font-semibold rounded-l-md border border-border-default ${
+              class={`px-3 py-1.5 text-xs font-semibold rounded-l-md border border-border-default inline-flex items-center gap-1.5 ${
                 viewMode === 'deck'
                   ? 'bg-brand-primary text-white border-brand-primary'
                   : 'bg-surface-card text-secondary hover:text-primary'
@@ -197,18 +199,20 @@ export function ErrorNotebookView({
                 setIsRevealed(false);
               }}
             >
-              🃏 Deck ({stats.dueCount})
+              <Icon name="cards" size={14} class="shrink-0" />
+              <span>Deck ({stats.dueCount})</span>
             </button>
             <button
               type="button"
-              class={`px-3 py-1.5 text-xs font-semibold rounded-r-md border-t border-b border-r border-border-default ${
+              class={`px-3 py-1.5 text-xs font-semibold rounded-r-md border-t border-b border-r border-border-default inline-flex items-center gap-1.5 ${
                 viewMode === 'catalog'
                   ? 'bg-brand-primary text-white border-brand-primary'
                   : 'bg-surface-card text-secondary hover:text-primary'
               }`}
               onClick={() => setViewMode('catalog')}
             >
-              📑 Todos ({stats.total})
+              <Icon name="file-text" size={14} class="shrink-0" />
+              <span>Todos ({stats.total})</span>
             </button>
           </div>
 
@@ -343,16 +347,18 @@ export function ErrorNotebookView({
                   <div class="border-t border-border-default p-6 space-y-4 bg-surface-subtle">
                     {activeCard.bancaTrap && (
                       <div class="rounded-default p-3 bg-amber/10 border border-amber/20 text-xs">
-                        <span class="font-bold text-amber block mb-1">
-                          ⚠️ Pegadinha da Banca / Armadilha:
+                        <span class="font-bold text-amber flex items-center gap-1.5 mb-1">
+                          <Icon name="alert-triangle" size={14} class="shrink-0" />
+                          <span>Pegadinha da Banca / Armadilha:</span>
                         </span>
                         <p class="text-primary leading-relaxed">{activeCard.bancaTrap}</p>
                       </div>
                     )}
 
                     <div class="rounded-default p-3 bg-green/10 border border-green/20 text-xs">
-                      <span class="font-bold text-green block mb-1">
-                        ✅ Conceito Correto / Fundamento:
+                      <span class="font-bold text-green flex items-center gap-1.5 mb-1">
+                        <Icon name="circle-check" size={14} class="shrink-0" />
+                        <span>Conceito Correto / Fundamento:</span>
                       </span>
                       <p class="text-primary leading-relaxed whitespace-pre-wrap">
                         {activeCard.correctConcept}
@@ -367,34 +373,46 @@ export function ErrorNotebookView({
                       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-default border border-red/30 bg-red/10 text-red hover:bg-red/20 transition-colors"
+                          class="px-3 py-2 text-xs font-medium rounded-default border border-red/30 bg-red/10 text-red hover:bg-red/20 transition-colors flex flex-col items-center gap-0.5"
                           onClick={() => handleAnswerRating('again')}
                         >
-                          ❌ Errei
+                          <span class="inline-flex items-center gap-1">
+                            <Icon name="circle-x" size={13} class="shrink-0" />
+                            <span>Errei</span>
+                          </span>
                           <span class="block text-[10px] text-muted">1 dia</span>
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-default border border-amber/30 bg-amber/10 text-amber hover:bg-amber/20 transition-colors"
+                          class="px-3 py-2 text-xs font-medium rounded-default border border-amber/30 bg-amber/10 text-amber hover:bg-amber/20 transition-colors flex flex-col items-center gap-0.5"
                           onClick={() => handleAnswerRating('hard')}
                         >
-                          ⚠️ Difícil
+                          <span class="inline-flex items-center gap-1">
+                            <Icon name="alert-triangle" size={13} class="shrink-0" />
+                            <span>Difícil</span>
+                          </span>
                           <span class="block text-[10px] text-muted">2 dias</span>
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-default border border-blue/30 bg-blue/10 text-blue hover:bg-blue/20 transition-colors"
+                          class="px-3 py-2 text-xs font-medium rounded-default border border-blue/30 bg-blue/10 text-blue hover:bg-blue/20 transition-colors flex flex-col items-center gap-0.5"
                           onClick={() => handleAnswerRating('good')}
                         >
-                          👍 Bom
+                          <span class="inline-flex items-center gap-1">
+                            <Icon name="thumb-up" size={13} class="shrink-0" />
+                            <span>Bom</span>
+                          </span>
                           <span class="block text-[10px] text-muted">4 dias</span>
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-default border border-green/30 bg-green/10 text-green hover:bg-green/20 transition-colors"
+                          class="px-3 py-2 text-xs font-medium rounded-default border border-green/30 bg-green/10 text-green hover:bg-green/20 transition-colors flex flex-col items-center gap-0.5"
                           onClick={() => handleAnswerRating('easy')}
                         >
-                          ⭐ Fácil
+                          <span class="inline-flex items-center gap-1">
+                            <Icon name="star" size={13} class="shrink-0" />
+                            <span>Fácil</span>
+                          </span>
                           <span class="block text-[10px] text-muted">7+ dias</span>
                         </button>
                       </div>
@@ -402,8 +420,13 @@ export function ErrorNotebookView({
                   </div>
                 ) : (
                   <div class="border-t border-border-default p-4 bg-surface-subtle text-center">
-                    <Button variant="primary" onClick={() => setIsRevealed(true)}>
-                      🔍 Revelar Pegadinha &amp; Resposta
+                    <Button
+                      variant="primary"
+                      onClick={() => setIsRevealed(true)}
+                      className="inline-flex items-center gap-1.5"
+                    >
+                      <Icon name="search" size={14} class="shrink-0" />
+                      <span>Revelar Pegadinha &amp; Resposta</span>
                     </Button>
                   </div>
                 )}
@@ -599,9 +622,7 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label class="block font-medium text-green mb-1">
-              Conceito Correto / Fundamento:*
-            </label>
+            <label class="block font-medium text-green mb-1">Conceito Correto / Fundamento:*</label>
             <textarea
               class="w-full h-20 p-2.5 rounded border border-green/30 bg-green/5 text-primary text-xs focus:ring-green focus:border-green"
               placeholder="Ex.: Não, para compras comuns o limite é estrito em 25%. Apenas reformas admitem até 50% (Lei 14.133/21)."

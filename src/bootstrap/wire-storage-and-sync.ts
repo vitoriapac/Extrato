@@ -21,11 +21,7 @@ import { createBackupModalController } from '../ui/controllers/backup-modal-cont
 import { createRemoteSyncProvider } from '../storage/remote-sync-provider.js';
 import { createRemoteSyncController } from '../ui/controllers/remote-sync-controller.js';
 import { createDemoController } from '../ui/controllers/demo-controller.js';
-import {
-  enterDemoMode,
-  exitDemoMode,
-  resetDemoMode,
-} from '../application/demo/demo-mode.js';
+import { enterDemoMode, exitDemoMode, resetDemoMode } from '../application/demo/demo-mode.js';
 
 export interface WireStorageAndSyncDeps {
   document: Document;
@@ -92,7 +88,8 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     currentSchemaVersion: CURRENT_SCHEMA_VERSION,
     storageManager: deps.storageManager,
     readLocalState: (key = STORAGE_KEY) => deps.appContext.storage.readLocal(key),
-    writeLocalState: (value: any, key = STORAGE_KEY) => deps.appContext.storage.writeLocal(key, value),
+    writeLocalState: (value: any, key = STORAGE_KEY) =>
+      deps.appContext.storage.writeLocal(key, value),
     validateBackupData,
     sha256,
     rotateAutomaticBackup,
@@ -164,7 +161,8 @@ export function wireStorageAndSync(deps: WireStorageAndSyncDeps) {
     validate: validateBackupData,
     describe: ({ normalized, version }: any) => backupSummary(normalized, version),
     confirm: deps.showConfirm,
-    createSnapshot: () => rotateAutomaticBackup(JSON.stringify(pickPersistentState(deps.getState()))),
+    createSnapshot: () =>
+      rotateAutomaticBackup(JSON.stringify(pickPersistentState(deps.getState()))),
     onImported: backupRestoreCoordinator.applyImportedBackup,
     notify: deps.showToast,
     isDisabled: () => deps.isDemoMode,

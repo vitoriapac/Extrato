@@ -19,6 +19,7 @@ import {
   buildStudyAction as defaultBuildStudyAction,
   recommendationActionLabel as defaultRecommendationActionLabel,
 } from '../../../application/recommendations/recommendation-action.js';
+import { renderIconSvg } from '../../primitives/icon.js';
 
 export interface DiagnosticsTabControllerOptions {
   document: any;
@@ -80,12 +81,10 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
   const buildDiagnosisPageModel = opts.buildDiagnosisPageModel || defaultBuildDiagnosisPageModel;
   const renderDiagnosisCenterView =
     opts.renderDiagnosisCenterView || defaultRenderDiagnosisCenterView;
-  const renderRecoveryReviewDebt =
-    opts.renderRecoveryReviewDebt || defaultRenderRecoveryReviewDebt;
+  const renderRecoveryReviewDebt = opts.renderRecoveryReviewDebt || defaultRenderRecoveryReviewDebt;
   const analyzeFocusAndEnergy = opts.analyzeFocusAndEnergy || defaultAnalyzeFocusAndEnergy;
   const renderNextBestAction = opts.renderNextBestAction || defaultRenderNextBestAction;
-  const renderPreparationSignals =
-    opts.renderPreparationSignals || defaultRenderPreparationSignals;
+  const renderPreparationSignals = opts.renderPreparationSignals || defaultRenderPreparationSignals;
   const buildDecisionCoherenceReport =
     opts.buildDecisionCoherenceReport || defaultBuildDecisionCoherenceReport;
   const renderDecisionCoherenceDebug =
@@ -145,11 +144,14 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       ? { ...priorities[0], reason: opts.motivoPrioridade(priorities[0]) }
       : null;
     const risks = opts.computeAlertasInteligentes();
-    const configuredTopics = opts.examScopedTopics().filter(
-      topic =>
-        (topic.examImportance !== null || Object.keys(topic.examImportanceEstimates || {}).length) &&
-        topic.estimatedStudyMinutes !== null
-    );
+    const configuredTopics = opts
+      .examScopedTopics()
+      .filter(
+        topic =>
+          (topic.examImportance !== null ||
+            Object.keys(topic.examImportanceEstimates || {}).length) &&
+          topic.estimatedStudyMinutes !== null
+      );
     const opportunityCount = configuredTopics.filter(topic =>
       priorities.some(priority => priority.topicId === topic.id)
     ).length;
@@ -237,7 +239,7 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
     let energyAlertHtml = '';
     if (energyAnalysis.fatigueAlert) {
       energyAlertHtml = `<div class="alerta-item alerta-media mt-4">
-        <span class="alerta-icon">⚠️</span><span><strong>Alerta Cronobiológico:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}</span>
+        <span class="alerta-icon">${renderIconSvg('alert-triangle', { size: 16, className: 'inline-block align-middle' })}</span><span><strong>Alerta Cronobiológico:</strong> ${opts.escapeHtml(energyAnalysis.fatigueAlert)}</span>
       </div>`;
     }
 

@@ -48,7 +48,9 @@ test('todayTabController: materializeDailyStudyPlan cria e persiste plano diári
     todayISO: () => '2026-10-28',
     nowISO: () => '2026-10-28T10:00:00Z',
     uid: (p = 'id') => `${p}_mock`,
-    scheduleSave: () => { saved = true; },
+    scheduleSave: () => {
+      saved = true;
+    },
     getSubjectName: () => 'Direito',
     getTopicName: () => 'Controle',
     motivoPrioridade: () => 'Alta relevância',

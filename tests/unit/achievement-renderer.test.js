@@ -39,7 +39,7 @@ test('renderer mostra progresso somente em conquistas bloqueadas com meta mensur
   const html = renderAchievementGroups(
     buildAchievementViewModel([
       {
-        icon: '✍️',
+        icon: 'pencil',
         name: 'Cem questões',
         desc: 'Resolver 100 questões',
         unlocked: false,

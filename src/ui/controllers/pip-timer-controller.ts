@@ -17,7 +17,8 @@ export function formatTimerTitle({
   baseTitle,
 }: FormatTimerTitleParams): string {
   if (!started) return baseTitle;
-  return `${running ? '▶' : '⏸'} ${time}${subjectName ? ` · ${subjectName}` : ''} — StudyTrack`;
+  const prefix = running ? '' : '[Pausado] ';
+  return `${prefix}${time}${subjectName ? ` · ${subjectName}` : ''} — StudyTrack`;
 }
 
 // A visible floating window is proof the person is still studying, so the "tab left hidden" check must not fire.

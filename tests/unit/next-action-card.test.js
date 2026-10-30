@@ -19,6 +19,44 @@ test('NextActionCard — renderiza estado vazio quando não há atividade elegí
   assert.ok(html.includes('Ver cronômetro e registrar estudo'));
 });
 
+test('NextActionCard — neutraliza link do cronômetro quando timerHref é nulo ou ausente', () => {
+  const props = {
+    model: null,
+    emptyState: {
+      message: 'Ainda não há uma atividade elegível com os dados atuais.',
+      timerHref: null,
+    },
+  };
+
+  const html = render(h(NextActionCard, props));
+  assert.ok(html.includes('Ainda não há uma atividade elegível com os dados atuais.'));
+  assert.ok(!html.includes('Ver cronômetro e registrar estudo'));
+  assert.ok(!html.includes('#overview-timer'));
+});
+
+test('NextActionCard — renderiza WelcomeHeroCard acolhedor quando isFirstRun é true', () => {
+  const props = {
+    model: null,
+    emptyState: {
+      isFirstRun: true,
+      onboardingTitle: 'Bem-vindo ao StudyTrack',
+      onboardingDescription: 'Seu copiloto diário até a aprovação.',
+      timerHref: null,
+    },
+  };
+
+  const html = render(h(NextActionCard, props));
+  assert.ok(html.includes('welcome-hero-card'));
+  assert.ok(html.includes('PRIMEIRO ACESSO AO STUDYTRACK'));
+  assert.ok(html.includes('Bem-vindo ao StudyTrack'));
+  assert.ok(html.includes('Seu copiloto diário até a aprovação.'));
+  assert.ok(html.includes('data-guided-action="open"'));
+  assert.ok(html.includes('Montar meu plano de estudos'));
+  assert.ok(html.includes('id="enterDemoHeroBtn"'));
+  assert.ok(html.includes('Experimentar demonstração'));
+  assert.ok(!html.includes('Ainda não há uma atividade elegível'));
+});
+
 test('NextActionCard — renderiza card estruturado respondendo às 6 perguntas contratuais', () => {
   const props = {
     model: {
@@ -46,7 +84,7 @@ test('NextActionCard — renderiza card estruturado respondendo às 6 perguntas 
       nextStep: {
         activityType: 'study',
         actionLabel: 'Teoria e Fixação',
-        buttonText: '▶ Iniciar estudo',
+        buttonText: 'Iniciar estudo',
         buttonAction: {
           type: 'daily-start',
           planItemId: 'plan-item-123',
@@ -96,7 +134,7 @@ test('NextActionCard — renderiza card estruturado respondendo às 6 perguntas 
 
   // 6. Próximo passo (Ação)
   assert.ok(html.includes('data-daily-start="plan-item-123"'));
-  assert.ok(html.includes('▶ Iniciar estudo'));
+  assert.ok(html.includes('Iniciar estudo'));
   assert.ok(html.includes('data-decision-role="planned"'));
 });
 
@@ -122,7 +160,7 @@ test('NextActionCard — renderiza estado de sessão ativa em andamento com bot�
       nextStep: {
         activityType: 'study',
         actionLabel: 'Sessão em andamento',
-        buttonText: '▶ Retomar sessão',
+        buttonText: 'Retomar sessão',
         buttonAction: {
           type: 'timer-focus',
         },
@@ -136,5 +174,5 @@ test('NextActionCard — renderiza estado de sessão ativa em andamento com bot�
   assert.ok(html.includes('is-in-progress'));
   assert.ok(html.includes('Em andamento · Sessão ativa'));
   assert.ok(html.includes('data-delegated-click="openStudyTimerFocus()"'));
-  assert.ok(html.includes('▶ Retomar sessão'));
+  assert.ok(html.includes('Retomar sessão'));
 });

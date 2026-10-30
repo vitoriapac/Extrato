@@ -31,6 +31,7 @@ Diagnóstico e projeção podem consumir evidências em paralelo. Esta narrativa
 - Valores e textos relacionados compartilham período, concurso, entidade e fonte. Arredondamento de apresentação não altera cálculos.
 - Revisão crítica, cooldown ou restrição de capacidade podem justificar divergências. O relatório de coerência explica divergências; não substitui prioridade.
 - Snapshots antigos não são recalculados com dados atuais; mudança de meta ou escopo exige comparação compatível.
+- Primeiro acesso (`isFirstRun = !hasPlan && !hasHistory`) sem disciplinas nem histórico nunca renderiza links quebrados ou âncoras para elementos inexistentes (como `#overview-timer`); em seu lugar, apresenta o Welcome Hero Card com rotas diretas para criação de plano guiado ou demonstração segura sem efeitos colaterais no estado real.
 
 ## Reuso e limites
 
