@@ -294,11 +294,9 @@ export function ErrorNotebookView({
         <div class="space-y-4">
           {dueCards.length === 0 ? (
             <div class="text-center py-12 px-4 rounded-default border border-dashed border-border-default bg-surface-card">
-              <span class="text-4xl block mb-2">🎉</span>
-              <h3 class="text-base font-semibold text-primary">Tudo revisado por hoje!</h3>
+              <h3 class="text-base font-semibold text-primary">Nenhum cartão para revisar hoje</h3>
               <p class="text-xs text-secondary max-w-md mx-auto mt-1">
-                Você não possui flashcards pendentes para esta data. Adicione novas armadilhas de
-                banca ou explore o catálogo completo.
+                Adicione novas armadilhas de banca ou explore o catálogo completo.
               </p>
               <div class="mt-4">
                 <Button variant="secondary" size="small" onClick={() => setViewMode('catalog')}>

@@ -7,7 +7,7 @@ export function renderIntelligentAlerts({
 }: any) {
   if (!alerts.length)
     return {
-      list: '<div class="upcoming-empty">Nenhum alerta no momento — tudo sob controle. 🎉</div>',
+      list: '<div class="upcoming-empty">Nenhum alerta no momento.</div>',
       overview: '<p class="overview-alert-empty">Sem alertas prioritários neste momento.</p>',
     };
   const renderAlert = (alert: Record<string, any>) =>

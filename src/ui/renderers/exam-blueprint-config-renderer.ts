@@ -20,8 +20,8 @@ export function renderExamBlueprintConfigView({
       )[config?.priority || 'normal'];
       const masteryLabel =
         config?.masteryTarget == null
-          ? `Herdar ${blueprint.masteryTarget}% (geral)`
-          : `Meta ${config.masteryTarget}%`;
+          ? `Herdar domínio ${blueprint.masteryTarget}% (geral)`
+          : `Meta de domínio ${config.masteryTarget}%`;
       const questionsLabel =
         config?.expectedQuestions > 0
           ? `${config.expectedQuestions} questões`

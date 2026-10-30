@@ -481,13 +481,13 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       return;
     }
     if (r.status === 'completo') {
-      container.innerHTML = `<div class="pace-block"><div class="pace-status ok">🎉 Todos os tópicos cadastrados já foram concluídos!</div></div>`;
+      container.innerHTML = `<div class="pace-block"><div class="pace-status ok">Todos os tópicos cadastrados foram concluídos.</div></div>`;
       return;
     }
     if (r.status === 'sem-dados') {
       container.innerHTML = `<div class="pace-block">
-      <div class="pace-line">Faltam <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} pra concluir o plano.</div>
-      <div class="pace-status neutral">Ainda sem tópicos concluídos nos últimos 14 dias — sem dados suficientes pra estimar o ritmo ainda.</div>
+      <div class="pace-line">${r.remaining === 1 ? 'Falta' : 'Faltam'} <strong>${r.remaining}</strong> tópico${r.remaining === 1 ? '' : 's'} para concluir o plano.</div>
+      <div class="pace-status neutral">Ainda sem tópicos concluídos nos últimos 14 dias — sem dados suficientes para estimar o ritmo.</div>
     </div>`;
       return;
     }
@@ -505,7 +505,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
       const atraso = r.daysNeeded! - r.daysToExam!;
       statusHtml = `<div class="pace-status warn">🔴 No ritmo atual, você terminaria ${atraso} dia${atraso === 1 ? '' : 's'} depois da prova. Considere acelerar ou rever o plano.</div>`;
     } else {
-      statusHtml = `<div class="pace-status neutral">Defina a data da prova na Visão Geral pra comparar com o prazo.</div>`;
+      statusHtml = `<div class="pace-status neutral">Defina a data da prova na Visão geral para comparar com o prazo.</div>`;
     }
 
     container.innerHTML = `

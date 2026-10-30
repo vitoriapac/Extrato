@@ -607,7 +607,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
       .sort((a: any, b: any) => (a.date || '').localeCompare(b.date || ''));
 
     if (planejados.length === 0) {
-      ul.innerHTML = `<li class="upcoming-empty">Nenhum simulado planejado. Registre um com data futura na aba Questões &amp; Simulados pra ele aparecer aqui.</li>`;
+      ul.innerHTML = `<li class="upcoming-empty">Nenhum simulado planejado. Registre um com data futura na aba Questões &amp; Simulados para ele aparecer aqui.</li>`;
     } else {
       ul.innerHTML = planejados
         .map(

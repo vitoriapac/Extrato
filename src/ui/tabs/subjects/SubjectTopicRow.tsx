@@ -164,7 +164,7 @@ export function SubjectTopicRow({
             />
             <textarea
               class="topic-notes-textarea"
-              placeholder="Resumo, pegadinha da prova, dúvida pra revisar depois..."
+              placeholder="Resumo, pegadinha da prova, dúvida para revisar depois..."
               data-delegated-blur={`updateTopic('${subjectId}','${topic.id}','notes', this.value)`}
               onBlur={e =>
                 onUpdateTopic?.(

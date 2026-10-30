@@ -453,7 +453,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       .sort((a, b) => (a.subject || '').localeCompare(b.subject || ''));
 
     if (!items.length) {
-      ul.innerHTML = '<li class="upcoming-empty">Nenhuma tarefa para hoje. 🎉</li>';
+      ul.innerHTML = '<li class="upcoming-empty">Nenhuma tarefa para hoje.</li>';
       return;
     }
     ul.innerHTML = items
@@ -475,7 +475,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
     if (!items.length) {
-      ul.innerHTML = '<li class="upcoming-empty">Nenhuma revisão atrasada. Tudo em dia!</li>';
+      ul.innerHTML = '<li class="upcoming-empty">Nenhuma revisão atrasada.</li>';
       return;
     }
     const groups = new Map<string, any[]>();

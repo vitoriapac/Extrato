@@ -19,7 +19,7 @@ test('ErrorNotebookView — renderiza métricas e mensagem de deck vazio quando 
   assert.ok(html.includes('Caderno de Erros Ativo'));
   assert.ok(html.includes('Revisões Hoje'));
   assert.ok(html.includes('0 cards'));
-  assert.ok(html.includes('Tudo revisado por hoje!'));
+  assert.ok(html.includes('Nenhum cartão para revisar hoje'));
 });
 
 test('ErrorNotebookView — renderiza card ativo com enunciado e botão de revelação', () => {

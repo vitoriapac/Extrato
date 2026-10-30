@@ -174,7 +174,7 @@ export function createGoalsBlueprintService(deps: GoalsBlueprintServiceDependenc
       return;
     }
     if (state.metasPorDisciplina.some(md => entitySubjectId(md) === subjectId)) {
-      showToast('Já existe uma meta pra essa disciplina.');
+      showToast('Já existe uma meta para essa disciplina.');
       return;
     }
     subjectGoalService.create({ subjectId, meta });
