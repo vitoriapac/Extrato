@@ -81,7 +81,9 @@ export function createExamImportModalController(ctx: ExamImportModalControllerCo
     const source = (preset.sources || []).length === 1 ? preset.sources[0] : null;
     if (!source || !(ctx.EXAM_SOURCES as Record<string, any>)[source]?.official) return;
     for (const subject of ctx.state.subjects || []) {
-      if ((ctx.state.examBlueprint?.subjects || []).some((item: any) => item.subjectId === subject.id)) {
+      if (
+        (ctx.state.examBlueprint?.subjects || []).some((item: any) => item.subjectId === subject.id)
+      ) {
         continue;
       }
       const metric = subject.examMetrics?.[source];
@@ -99,11 +101,9 @@ export function createExamImportModalController(ctx: ExamImportModalControllerCo
         mappingType: metric.mappingType,
       });
     }
-    ctx.setActiveExamTags(
-      ctx.state,
-      ctx.normalizeExamTags(preset.examTags || []),
-      { configuredAt: nowISO() }
-    );
+    ctx.setActiveExamTags(ctx.state, ctx.normalizeExamTags(preset.examTags || []), {
+      configuredAt: nowISO(),
+    });
   }
 
   function syncExamSubjectCheckboxes() {
@@ -206,7 +206,10 @@ export function createExamImportModalController(ctx: ExamImportModalControllerCo
     confirm: () => {
       const inOnboarding = examImportOrigin === 'onboarding';
       const preset = selectedExamPreset();
-      const result = editalImportFacade.confirm(examImportState.subjectIds, examImportState.topicIds);
+      const result = editalImportFacade.confirm(
+        examImportState.subjectIds,
+        examImportState.topicIds
+      );
       applyPresetBlueprintDefaults(preset);
       if (ctx.uiState?.onboarding) {
         ctx.uiState.onboarding.presetId = preset.id;

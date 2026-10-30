@@ -52,8 +52,7 @@ export function calculateSubjectOpportunity(input: SubjectOpportunityInput): Opp
   const gap = Math.max(0, MASTERY_CEILING - mastery);
 
   // Pontos líquidos recuperáveis no exame: Peso (%) * Gap (%) / 100
-  const potentialScoreGain =
-    Math.round(((normalizedWeight * gap) / 100) * 100) / 100;
+  const potentialScoreGain = Math.round(((normalizedWeight * gap) / 100) * 100) / 100;
 
   // Horas de esforço estimadas:
   // Se informado explicitamente, usa o valor.
@@ -118,7 +117,10 @@ export function calculateOpportunityCostMatrix(
   const metrics = inputs.map(calculateSubjectOpportunity);
 
   // Ordena por PPH decrescente (e desempate por potentialScoreGain)
-  metrics.sort((a, b) => b.pointsPerHourRatio - a.pointsPerHourRatio || b.potentialScoreGain - a.potentialScoreGain);
+  metrics.sort(
+    (a, b) =>
+      b.pointsPerHourRatio - a.pointsPerHourRatio || b.potentialScoreGain - a.potentialScoreGain
+  );
 
   // Se houver pelo menos 3 disciplinas com ganho potencial > 0, garante que o top 25-33% seja top_priority
   const activeOpportunities = metrics.filter(m => m.potentialScoreGain > 0.5);
@@ -142,9 +144,7 @@ export function getTopStudyOpportunities(
   metrics: OpportunityMetric[],
   limit: number = 3
 ): OpportunityMetric[] {
-  return metrics
-    .filter(m => m.tier === 'top_priority')
-    .slice(0, limit);
+  return metrics.filter(m => m.tier === 'top_priority').slice(0, limit);
 }
 
 /**
@@ -165,13 +165,10 @@ export function computeStateOpportunityCosts(
   if (!subjects || subjects.length === 0) return [];
 
   const inputs: SubjectOpportunityInput[] = subjects.map(s => {
-    const mastery =
-      subjectMasteryMap?.get(s.id) ??
-      (s.mastery != null ? Number(s.mastery) : 50);
+    const mastery = subjectMasteryMap?.get(s.id) ?? (s.mastery != null ? Number(s.mastery) : 50);
 
     const weight =
-      s.examWeightPercent ??
-      (s.questionWeight != null ? Number(s.questionWeight) * 10 : 10);
+      s.examWeightPercent ?? (s.questionWeight != null ? Number(s.questionWeight) * 10 : 10);
 
     return {
       subjectId: s.id,

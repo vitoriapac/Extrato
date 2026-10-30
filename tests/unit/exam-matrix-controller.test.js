@@ -62,9 +62,7 @@ function createBaseContext(doc, win) {
       ],
       configuredAt: '2026-10-28T00:00:00.000Z',
     },
-    exams: [
-      { id: 'exam-1', name: 'BB 2023', examTags: ['bb-escriturario'] },
-    ],
+    exams: [{ id: 'exam-1', name: 'BB 2023', examTags: ['bb-escriturario'] }],
     examQuestions: [
       {
         id: 'eq-1',
@@ -76,7 +74,11 @@ function createBaseContext(doc, win) {
       },
     ],
     subjects: [
-      { id: 'sub-1', name: 'Português', topics: [{ id: 'top-1', name: 'Ortografia', examMetrics: {} }] },
+      {
+        id: 'sub-1',
+        name: 'Português',
+        topics: [{ id: 'top-1', name: 'Ortografia', examMetrics: {} }],
+      },
     ],
     metas: {
       metaAprovacao: 80,

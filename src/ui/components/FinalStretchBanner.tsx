@@ -13,9 +13,7 @@ export function FinalStretchBanner({ banner, onOpenWhatIf }: FinalStretchBannerP
   return (
     <aside
       class={`mb-4 p-4 rounded-default border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm ${
-        isCritical
-          ? 'bg-red-bg border-red/40 text-red'
-          : 'bg-amber-bg border-amber/40 text-amber'
+        isCritical ? 'bg-red-bg border-red/40 text-red' : 'bg-amber-bg border-amber/40 text-amber'
       }`}
       role="region"
       aria-label="Aviso de Modo Reta Final"

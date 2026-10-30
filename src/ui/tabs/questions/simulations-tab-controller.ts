@@ -51,10 +51,24 @@ export interface SimulationsTabControllerContext {
 export function createSimulationsTabController(ctx: SimulationsTabControllerContext) {
   const openBreakdownIds = new Set<string>();
 
-  const uid = ctx.uid || ((prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
+  const uid =
+    ctx.uid ||
+    ((prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
   const todayISO = ctx.todayISO || (() => new Date().toISOString().slice(0, 10));
-  const escapeHtml = ctx.escapeHtml || ((str: string) => String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c));
-  const escapeAttr = ctx.escapeAttr || ((str: string) => String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c));
+  const escapeHtml =
+    ctx.escapeHtml ||
+    ((str: string) =>
+      String(str || '').replace(
+        /[&<>"']/g,
+        c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c
+      ));
+  const escapeAttr =
+    ctx.escapeAttr ||
+    ((str: string) =>
+      String(str || '').replace(
+        /[&<>"']/g,
+        c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c
+      ));
 
   function simuladoEffectiveCounts(sim: Record<string, any>) {
     if (sim.breakdown && sim.breakdown.length > 0) {
@@ -170,13 +184,15 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
     const controller = createQuestionsController({
       state: ctx.state,
       listViewState: ctx.listViewState,
-      questionEditController: ctx.questionEditController || { state: { editingId: null, draft: null } },
+      questionEditController: ctx.questionEditController || {
+        state: { editingId: null, draft: null },
+      },
       simulationEditController,
       openQuestionErrorIds: ctx.openQuestionErrorIds || new Set(),
       openBreakdownIds,
       errorCategories: ctx.errorCategories || {},
       isMobileLayout: ctx.isMobileLayout,
-      questionViewModel: () => ({} as any),
+      questionViewModel: () => ({}) as any,
       questionCategorizedErrors: () => 0,
       simulationViewModel,
       renderListViewFooter: ctx.renderListViewFooter,
@@ -224,7 +240,9 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
   }
 
   function bindEvents(): void {
-    ctx.document.getElementById('addSimuladoRowBtn')?.addEventListener('click', () => addSimuladoRow());
+    ctx.document
+      .getElementById('addSimuladoRowBtn')
+      ?.addEventListener('click', () => addSimuladoRow());
   }
 
   return {
@@ -277,11 +295,13 @@ export function createSimulationsTabController(ctx: SimulationsTabControllerCont
         open: true,
         onClose: close,
         diagnostic,
-        onApplyRemediationPlan: (plan) => {
-          ctx.showToast(`Plano de remediação de 7 dias criado (${plan.bleedAllocationHours}h focadas nas vulnerabilidades).`);
+        onApplyRemediationPlan: plan => {
+          ctx.showToast(
+            `Plano de remediação de 7 dias criado (${plan.bleedAllocationHours}h focadas nas vulnerabilidades).`
+          );
           ctx.persistAndRender();
         },
-        onGenerateErrorCards: (drafts) => {
+        onGenerateErrorCards: drafts => {
           if (!Array.isArray(ctx.state.errorFlashcards)) {
             ctx.state.errorFlashcards = [];
           }

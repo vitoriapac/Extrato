@@ -247,7 +247,8 @@ export function buildSimulatedRemediationDiagnostic(
     input.passingScorePercent != null && Number.isFinite(input.passingScorePercent)
       ? Number(input.passingScorePercent)
       : null;
-  const gapToCutoff = passingScore != null ? Math.round((scorePercent - passingScore) * 10) / 10 : null;
+  const gapToCutoff =
+    passingScore != null ? Math.round((scorePercent - passingScore) * 10) / 10 : null;
 
   // Média histórica (excluindo o atual se constar na lista)
   let historicalAverageScore: number | null =
@@ -256,7 +257,11 @@ export function buildSimulatedRemediationDiagnostic(
       : null;
   let deltaVsHistoricalAverage: number | null = null;
 
-  if (historicalAverageScore == null && input.historicalSimulations && input.historicalSimulations.length > 0) {
+  if (
+    historicalAverageScore == null &&
+    input.historicalSimulations &&
+    input.historicalSimulations.length > 0
+  ) {
     const validHistory = input.historicalSimulations.filter(
       h => h.id !== sim.id && Number(h.total) > 0
     );

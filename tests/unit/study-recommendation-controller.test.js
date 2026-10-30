@@ -8,9 +8,15 @@ function createMockDom() {
     const el = {
       id,
       innerHTML: '',
-      replaceChildren() { this.innerHTML = ''; },
-      querySelector() { return null; },
-      querySelectorAll() { return []; },
+      replaceChildren() {
+        this.innerHTML = '';
+      },
+      querySelector() {
+        return null;
+      },
+      querySelectorAll() {
+        return [];
+      },
     };
     elements.set(id, el);
     return el;
@@ -78,7 +84,9 @@ test('studyRecommendationController: refreshStudyRecommendationItems calcula rec
     pluralize: (n, s) => `${n} ${s}`,
     showToast: () => {},
     showPrompt: () => {},
-    scheduleSave: () => { saved = true; },
+    scheduleSave: () => {
+      saved = true;
+    },
     renderRecommendationHistorySummary: () => {},
     getTopicName: () => 'Tópico',
     getSubjectName: () => 'Disciplina',
@@ -117,9 +125,10 @@ test('studyRecommendationController: refreshStudyRecommendationItems calcula rec
     localDateFromTimestamp: () => '2026-10-28',
   });
 
-  const { availableMinutes, candidates: returnedCandidates } = controller.refreshStudyRecommendationItems({
-    recordHistory: true,
-  });
+  const { availableMinutes, candidates: returnedCandidates } =
+    controller.refreshStudyRecommendationItems({
+      recordHistory: true,
+    });
 
   assert.equal(availableMinutes, 120);
   assert.equal(returnedCandidates.length, 1);
@@ -161,7 +170,9 @@ test('studyRecommendationController: markRecommendationNotUseful descarta e salv
     pluralize: (n, s) => `${n} ${s}`,
     showToast: () => {},
     showPrompt: () => {},
-    scheduleSave: () => { saved = true; },
+    scheduleSave: () => {
+      saved = true;
+    },
     renderRecommendationHistorySummary: () => {},
     getTopicName: () => 'Tópico',
     getSubjectName: () => 'Disciplina',

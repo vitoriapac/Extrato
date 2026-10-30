@@ -5,6 +5,8 @@ export interface MissionItem {
   done: boolean;
   ctaLabel: string;
   ctaAction: string;
+  quickActionLabel?: string;
+  quickAction?: string;
 }
 
 export interface FirstStepsMissionModel {

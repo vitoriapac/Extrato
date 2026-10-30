@@ -1,10 +1,6 @@
 import { createClock } from '../core/clock.js';
 import { isPlainObject } from '../core/utils.js';
-import {
-  AUTOMATIC_BACKUP_SLOTS,
-  BACKUP_INDEX_KEY,
-  BACKUP_KEY,
-} from '../state/schema.js';
+import { AUTOMATIC_BACKUP_SLOTS, BACKUP_INDEX_KEY, BACKUP_KEY } from '../state/schema.js';
 import { validateBackupData as validateBackupDataInternal } from './backup-validator.js';
 
 const defaultClock = createClock();

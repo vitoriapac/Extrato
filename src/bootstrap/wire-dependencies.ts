@@ -3,13 +3,7 @@ import {
   repositoryReadLocalState,
   repositoryWriteLocalState,
 } from '../storage/repository.js';
-import {
-  DB_NAME,
-  DB_VERSION,
-  STORE_NAME,
-  STORAGE_KEY,
-  DEMO_STORAGE_KEY,
-} from '../state/schema.js';
+import { DB_NAME, DB_VERSION, STORE_NAME, STORAGE_KEY, DEMO_STORAGE_KEY } from '../state/schema.js';
 import { createRealStorageProvider } from '../storage/real-storage-provider.js';
 import { createDemoStorageProvider } from '../storage/demo-storage-provider.js';
 import { createAppContext } from '../application/create-app-context.js';
@@ -66,12 +60,7 @@ export interface WireAppDependenciesOptions {
   getTopicById: (topicId: string) => { topic?: any; subject?: any } | null;
   evidenceScopeForTopic: (topicId: string) => any;
   applyAdaptiveReviewRating?: (current: any, rating: any, options: Record<string, any>) => any;
-  addHistoryEvent: (
-    type: string,
-    subjectId: any,
-    topicId?: any,
-    details?: any
-  ) => any;
+  addHistoryEvent: (type: string, subjectId: any, topicId?: any, details?: any) => any;
   entitySubjectId: (entity: any) => string | null;
   refreshTopicReviewStats: (topicId: string) => void;
   buildStudyPlan?: (options: any) => any;

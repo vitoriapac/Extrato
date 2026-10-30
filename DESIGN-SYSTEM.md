@@ -135,6 +135,8 @@ renderRecommendationExplanation usa quatro perguntas: o que fazer, por que, evid
 
 O bloco de backup e zona de perigo foi desacoplado da visualização padrão de todas as abas e isolado em um modal flutuante (`#dataManagementOverlay`), acionado pelo botão discreto `#openDataManagementBtn` no rodapé. O botão `[▶ Explorar demonstração]` permanece imediatamente acessível no rodapé para descoberta rápida e onboarding. O overlay vive fora da raiz `<main>`, prevenindo traps de foco e atributos `inert` indevidos.
 
-## Conjunto Nativo de Ícones SVG
+## Iconografia Vetorial (Tabler Icons) e Regra Zero Emojis
 
-A biblioteca de primitivas [`src/ui/primitives/icon.tsx`](src/ui/primitives/icon.tsx) fornece mais de 20 ícones SVG leves de traço fino (2px stroke, `currentColor`, escaláveis via prop `size`), eliminando dependências pesadas de fontes de ícones externas ou variações imprevisíveis de renderização de emojis entre plataformas.
+- **Zero Emojis:** É terminantemente proibido o uso de emojis Unicode em qualquer elemento de interface (botões, rótulos, badges, tabelas, modais, etc.). Emojis geram inconsistência visual entre sistemas operacionais (Windows, macOS, Linux, iOS, Android) e quebram a estética técnica sóbria de extrato bancário.
+- **Tabler Icons:** Toda iconografia utiliza exclusivamente a biblioteca **Tabler Icons** através do componente `<Icon name="..." size={16} stroke={2} class="..." />` ou da função utilitária `renderIconSvg(name, { size, strokeWidth, className })` em [`src/ui/primitives/icon.tsx`](src/ui/primitives/icon.tsx). Os ícones utilizam `currentColor` e adaptam-se perfeitamente aos temas Claro e Escuro.
+- **Adição de Novos Ícones:** Para adicionar novos ícones do Tabler, adicione o identificador kebab-case à lista em [`scripts/generate-tabler-icons.mjs`](scripts/generate-tabler-icons.mjs) e execute `node scripts/generate-tabler-icons.mjs` para regenerar os dados vetoriais otimizados sem inflar o bundle desnecessariamente.

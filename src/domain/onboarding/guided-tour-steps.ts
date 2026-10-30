@@ -64,7 +64,7 @@ export const GUIDED_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     order: 5,
     tab: 'metas',
     selector: '#metasPlanning',
-    title: 'Planejamento vivo e Estudo Sem Culpa',
+    title: 'Planejamento vivo e Fechamento',
     message:
       'Redistribua atrasos sem estourar sua capacidade diária. Imprevistos acontecem: o motor reorganiza seus estudos sem plano quebrado.',
     badgeLabel: '5 de 5 · Planejamento',

@@ -10,17 +10,20 @@ import {
 test('calculateDailyStudySummary: totaliza sessoes, questoes independentes e simulados', () => {
   const summary = calculateDailyStudySummary({
     date: '2026-10-28',
-    studySessions: [
-      { id: 's1', date: '2026-10-28', durationSeconds: 1800, subjectId: 'sub1' },
-    ],
+    studySessions: [{ id: 's1', date: '2026-10-28', durationSeconds: 1800, subjectId: 'sub1' }],
     questoes: [
-      { id: 'q1', date: '2026-10-28', resolved: 10, correct: 8, studySessionId: 's1', subjectId: 'sub1' }, // ligada à sessão
+      {
+        id: 'q1',
+        date: '2026-10-28',
+        resolved: 10,
+        correct: 8,
+        studySessionId: 's1',
+        subjectId: 'sub1',
+      }, // ligada à sessão
       { id: 'q2', date: '2026-10-28', resolved: 5, correct: 4, subjectId: 'sub1' }, // independente
     ],
     simulados: [],
-    reviewAgenda: [
-      { status: 'Concluído', completedAt: '2026-10-28T12:00:00Z', subjectId: 'sub1' },
-    ],
+    reviewAgenda: [{ status: 'Concluído', completedAt: '2026-10-28T12:00:00Z', subjectId: 'sub1' }],
     targetHours: 1, // 3600 segundos
     entitySubjectId: item => item.subjectId,
     getSubjectName: () => 'Direito Constitucional',
@@ -50,10 +53,7 @@ test('collectActivityDates e collectGoalDates: filtram dias com atividade e meta
   assert.deepEqual([...activityDates], ['2026-10-28']);
 
   const goalDates = collectGoalDates({
-    studySessions: [
-      { date: '2026-10-27' },
-      { date: '2026-10-28' },
-    ],
+    studySessions: [{ date: '2026-10-27' }, { date: '2026-10-28' }],
     isGoalAchievedForDate: date => date === '2026-10-27',
   });
   assert.deepEqual([...goalDates], ['2026-10-27']);

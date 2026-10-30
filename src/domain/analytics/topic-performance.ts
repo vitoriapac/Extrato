@@ -35,10 +35,7 @@ export function performanceConfidence(
   return { key: 'high', label: 'Confiança da amostra: alta' };
 }
 
-export function classifyAccuracy(
-  accuracy: number | null,
-  target: number
-): AccuracyClassification {
+export function classifyAccuracy(accuracy: number | null, target: number): AccuracyClassification {
   if (accuracy === null) return { key: 'none', icon: '⚪', label: 'Sem dados' };
   if (accuracy >= target) return { key: 'strong', icon: '🟢', label: 'Na meta' };
   if (accuracy >= target - 10) return { key: 'attention', icon: '🟡', label: 'Atenção' };
@@ -202,9 +199,7 @@ export function calculateTopicPerformanceBetween({
   end: string;
   minWeekly?: number;
 }) {
-  const filtered = records.filter(
-    q => q.topicId === topicId && q.date >= start && q.date <= end
-  );
+  const filtered = records.filter(q => q.topicId === topicId && q.date >= start && q.date <= end);
   const resolved = filtered.reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
   const correct = filtered.reduce((sum, q) => sum + (Number(q.correct) || 0), 0);
   return {

@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=873865a4a9b6">
-<link rel="stylesheet" href="styles/app.css?v=873865a4a9b6">
+<link rel="stylesheet" href="styles/tailwind.css?v=ba328bfd27c6">
+<link rel="stylesheet" href="styles/app.css?v=ba328bfd27c6">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -28,7 +28,7 @@
   <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
     <div><strong>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
     <nav class="demo-tour" aria-label="Roteiro da demonstração"><span>Explore:</span><button data-demo-target="hoje">Prioridades</button><button data-demo-target="dashboard">Riscos e projeção</button><button data-demo-target="agenda">Revisões</button><button data-demo-target="metas">Planejamento</button><button id="demoReportShortcut">Relatório</button></nav>
-    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo">🧭 Tour guiado</button><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn">Sair da demonstração</button></div>
+    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo">Tour guiado</button><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn">Sair da demonstração</button></div>
   </aside>
 
   <dialog class="demo-intro-dialog" id="demoIntroDialog" aria-labelledby="demoIntroTitle" aria-describedby="demoIntroDescription">
@@ -43,7 +43,7 @@
     </div>
   </dialog>
 
-  <aside class="demo-empty-cta" id="demoEmptyCta" hidden><div><strong>Veja o StudyTrack funcionando</strong><span>Explore 140 dias de dados fictícios sem alterar seus registros.</span></div><button class="btn small" id="enterDemoEmptyBtn">▶ Explorar demonstração</button></aside>
+  <aside class="demo-empty-cta" id="demoEmptyCta" hidden><div><strong>Veja o StudyTrack funcionando</strong><span>Explore 140 dias de dados fictícios sem alterar seus registros.</span></div><button class="btn small" id="enterDemoEmptyBtn">Explorar demonstração</button></aside>
 
   <div class="statement">
     <div class="statement-top">
@@ -85,7 +85,7 @@
   <div class="global-search-row">
     <div class="global-search">
       <label class="sr-only" for="globalSearchInput">Busca global</label>
-      <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar ações, páginas, tópicos, notas ou tags" placeholder="🔎 O que você quer fazer? (Ctrl+K)">
+      <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar ações, páginas, tópicos, notas ou tags" placeholder="O que você quer fazer? (Ctrl+K)">
       <div class="search-results" id="globalSearchResults" role="listbox" aria-label="Resultados e comandos"></div>
     </div>
     <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon">◐</span></button>
@@ -163,12 +163,12 @@
       <div class="timer-target" id="studyTimerTarget" hidden></div>
       <div id="guidedStrategy" class="guided-strategy" hidden></div>
         <div class="timer-actions action-group" role="group" aria-label="Ações do cronômetro">
-          <button class="btn" id="timerStartBtn">▶ Iniciar</button>
-          <button class="btn" id="timerPauseBtn" style="display:none;">⏸ Pausar</button>
-          <button class="btn ghost" id="timerResetBtn">↺ Zerar</button>
-          <button class="btn ghost" id="timerFinishBtn">✓ Finalizar sessão</button>
-          <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()">⛶ Modo foco</button>
-          <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden>⧉ Janela flutuante</button>
+          <button class="btn" id="timerStartBtn">Iniciar</button>
+          <button class="btn" id="timerPauseBtn" style="display:none;">Pausar</button>
+          <button class="btn ghost" id="timerResetBtn">Zerar</button>
+          <button class="btn ghost" id="timerFinishBtn">Finalizar sessão</button>
+          <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()">Modo foco</button>
+          <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden>Janela flutuante</button>
         </div>
         <div id="timerAriaLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
       </div>
@@ -414,9 +414,9 @@
 
     <div class="chart-card calendar-month-card" id="calendarMonthCard">
       <div class="calendar-month-toolbar">
-        <button class="month-nav-btn" id="monthPrevBtn" title="Mês anterior">◀</button>
+        <button class="month-nav-btn" id="monthPrevBtn" title="Mês anterior">‹</button>
         <h3 id="calendarMonthTitle"></h3>
-        <button class="month-nav-btn" id="monthNextBtn" title="Próximo mês">▶</button>
+        <button class="month-nav-btn" id="monthNextBtn" title="Próximo mês">›</button>
         <button class="btn ghost small" id="monthTodayBtn" style="margin-left:8px;">Hoje</button>
       </div>
       <p class="helper-text helper-text--compact calendar-helper-text">
@@ -926,7 +926,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=873865a4a9b6"></script>
+  <script src="src/app.bundle.js?v=ba328bfd27c6"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

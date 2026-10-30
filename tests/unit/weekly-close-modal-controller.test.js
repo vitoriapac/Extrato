@@ -81,9 +81,7 @@ test('WeeklyCloseModalController — renderWeeklyCloseActions gera formulário d
   assert.equal(emptyActions, '');
 
   const actionsWithPriorities = controller.renderWeeklyCloseActions({
-    priorities: [
-      { priorityId: 'p1', action: 'Revisar Crase', estimatedMinutes: 60 },
-    ],
+    priorities: [{ priorityId: 'p1', action: 'Revisar Crase', estimatedMinutes: 60 }],
   });
   assert.match(actionsWithPriorities, /Revisar Crase/);
   assert.match(actionsWithPriorities, /Conferir impacto/);

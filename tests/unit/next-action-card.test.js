@@ -19,6 +19,44 @@ test('NextActionCard — renderiza estado vazio quando não há atividade elegí
   assert.ok(html.includes('Ver cronômetro e registrar estudo'));
 });
 
+test('NextActionCard — neutraliza link do cronômetro quando timerHref é nulo ou ausente', () => {
+  const props = {
+    model: null,
+    emptyState: {
+      message: 'Ainda não há uma atividade elegível com os dados atuais.',
+      timerHref: null,
+    },
+  };
+
+  const html = render(h(NextActionCard, props));
+  assert.ok(html.includes('Ainda não há uma atividade elegível com os dados atuais.'));
+  assert.ok(!html.includes('Ver cronômetro e registrar estudo'));
+  assert.ok(!html.includes('#overview-timer'));
+});
+
+test('NextActionCard — renderiza WelcomeHeroCard acolhedor quando isFirstRun é true', () => {
+  const props = {
+    model: null,
+    emptyState: {
+      isFirstRun: true,
+      onboardingTitle: 'Bem-vindo ao StudyTrack 👋',
+      onboardingDescription: 'Seu copiloto diário até a aprovação.',
+      timerHref: null,
+    },
+  };
+
+  const html = render(h(NextActionCard, props));
+  assert.ok(html.includes('welcome-hero-card'));
+  assert.ok(html.includes('PRIMEIRO ACESSO AO STUDYTRACK'));
+  assert.ok(html.includes('Bem-vindo ao StudyTrack 👋'));
+  assert.ok(html.includes('Seu copiloto diário até a aprovação.'));
+  assert.ok(html.includes('data-guided-action="open"'));
+  assert.ok(html.includes('🚀 Montar meu plano de estudos'));
+  assert.ok(html.includes('id="enterDemoHeroBtn"'));
+  assert.ok(html.includes('▶ Experimentar demonstração'));
+  assert.ok(!html.includes('Ainda não há uma atividade elegível'));
+});
+
 test('NextActionCard — renderiza card estruturado respondendo às 6 perguntas contratuais', () => {
   const props = {
     model: {

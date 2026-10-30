@@ -77,7 +77,10 @@ test('createStudyTimerViewController — updateTimerDisplay formata tempo e meta
 
   assert.equal(mockDoc.getElementById('studyTimerDisplay').textContent, '10:00');
   assert.equal(pipRendered, true);
-  assert.match(mockDoc.getElementById('studyTimerTarget').textContent, /Direito — Controle de Constitucionalidade/);
+  assert.match(
+    mockDoc.getElementById('studyTimerTarget').textContent,
+    /Direito — Controle de Constitucionalidade/
+  );
   assert.match(mockDoc.getElementById('studyTimerTarget').textContent, /restantes/);
   assert.equal(mockDoc.getElementById('studyTimerProgress').value, 33);
 });

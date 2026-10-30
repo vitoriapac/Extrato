@@ -117,7 +117,13 @@ function createBaseContext(doc) {
     pluralize: (c, s, p) => `${c} ${c === 1 ? s : p || s + 's'}`,
   };
 
-  return { context, state, toasts, getPersists: () => persists, getActiveTags: () => activeTagsRecorded };
+  return {
+    context,
+    state,
+    toasts,
+    getPersists: () => persists,
+    getActiveTags: () => activeTagsRecorded,
+  };
 }
 
 test('ExamImportModalController - open, render and close modal', async () => {

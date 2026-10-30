@@ -415,9 +415,7 @@ export function createTopicDiagnosisService(deps: TopicDiagnosisServiceDependenc
       topicHistoryDates: topicHistoryService
         .list({ subjectId, includeLifecycle: false })
         .map(event => topicHistoryService.eventLocalDate(event)),
-      questionDates: state.questoes
-        .filter(q => entitySubjectId(q) === subjectId)
-        .map(q => q.date),
+      questionDates: state.questoes.filter(q => entitySubjectId(q) === subjectId).map(q => q.date),
       calendarDates: state.calendar
         .filter(c => entitySubjectId(c) === subjectId && c.status === 'Concluído')
         .map(c => c.date),

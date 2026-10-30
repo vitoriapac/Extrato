@@ -41,10 +41,7 @@ export function createExamCatalogLoader(options: ExamCatalogLoaderOptions) {
           return;
         }
         const script = document.createElement('script');
-        script.src = new URL(
-          `src/exam-catalog.bundle.js?v=${buildVersion}`,
-          document.baseURI
-        ).href;
+        script.src = new URL(`src/exam-catalog.bundle.js?v=${buildVersion}`, document.baseURI).href;
         script.async = true;
         script.onload = accept;
         script.onerror = () =>

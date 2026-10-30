@@ -1247,6 +1247,11 @@
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
     },
     {
+      "file": "tests/unit/routine-sustainability.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; avaliação de sustentabilidade de carga e descanso no onboarding."
+    },
+    {
       "file": "tests/unit/review-health.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
@@ -1345,6 +1350,11 @@
       "file": "tests/unit/stability-phase-comparison.test.js",
       "tier": "FAST_GATE",
       "rationale": "Contrato Node barato; inclui integrações, datas, invariantes e Demo unitária sem browser."
+    },
+    {
+      "file": "tests/unit/starter-packs.test.js",
+      "tier": "FAST_GATE",
+      "rationale": "Contrato Node barato; integridade e estrutura dos pacotes de matérias recomendadas."
     },
     {
       "file": "tests/unit/state-boundaries.test.js",

@@ -79,7 +79,10 @@ export function findSubjectLatestActivityDate(inputs: LatestActivityInputs): str
 
   if (allDates.length === 0) return null;
 
-  return allDates.reduce((latest, current) => (!latest || current > latest ? current : latest), allDates[0]);
+  return allDates.reduce(
+    (latest, current) => (!latest || current > latest ? current : latest),
+    allDates[0]
+  );
 }
 
 /**

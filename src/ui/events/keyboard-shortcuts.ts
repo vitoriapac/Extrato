@@ -42,7 +42,9 @@ export function createKeyboardShortcutsController(opts: KeyboardShortcutsOptions
     ].filter(
       (element: any) =>
         (element.getClientRects ? element.getClientRects().length > 0 : true) &&
-        (typeof getComputedStyle === 'function' ? getComputedStyle(element).visibility !== 'hidden' : true)
+        (typeof getComputedStyle === 'function'
+          ? getComputedStyle(element).visibility !== 'hidden'
+          : true)
     );
     if (!focusable.length) {
       event.preventDefault();

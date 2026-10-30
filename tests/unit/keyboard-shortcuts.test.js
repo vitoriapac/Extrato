@@ -66,7 +66,14 @@ test('createKeyboardShortcutsController — Escape fecha menus de ação abertos
   let summaryFocused = false;
   const menu1 = {
     open: true,
-    querySelector: sel => (sel === 'summary' ? { focus: () => { summaryFocused = true; } } : null),
+    querySelector: sel =>
+      sel === 'summary'
+        ? {
+            focus: () => {
+              summaryFocused = true;
+            },
+          }
+        : null,
   };
   mockDoc._menus.push(menu1);
 

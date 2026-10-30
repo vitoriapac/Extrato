@@ -8,7 +8,8 @@ import {
 import { displayReadinessValue } from '../../application/analytics/build-header-view-model.js';
 
 type Row = Record<string, any>;
-const points = (value: number) => `${formatDelta(value)} ${Math.abs(value) === 1 ? 'ponto' : 'pontos'}`;
+const points = (value: number) =>
+  `${formatDelta(value)} ${Math.abs(value) === 1 ? 'ponto' : 'pontos'}`;
 const value = (item: Row | null | undefined) => (item ? `${item.score}/100` : '—');
 
 export function renderReadinessHistory(

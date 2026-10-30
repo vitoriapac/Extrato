@@ -104,9 +104,7 @@ export function createAnalysisNavigationController(options: AnalysisNavigationCo
           document.querySelector('#examStudyPlan .study-plan-details')?.setAttribute('open', '');
         const targets: HTMLElement[] | NodeListOf<HTMLElement> =
           destination === 'hoje'
-            ? document.querySelectorAll<HTMLElement>(
-                '#diagnosisCenter [data-diagnosis-subject-id]'
-              )
+            ? document.querySelectorAll<HTMLElement>('#diagnosisCenter [data-diagnosis-subject-id]')
             : destination === 'metas'
               ? document.querySelectorAll<HTMLElement>('#examStudyPlan [data-plan-topic-id]')
               : [];

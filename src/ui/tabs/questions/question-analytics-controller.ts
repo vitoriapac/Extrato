@@ -89,7 +89,9 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
     if (!subjects.some(subject => subject.id === currentSubjectId)) {
       currentSubjectId =
         subjects.find(subject =>
-          opts.validQuestionRecords().some(question => opts.entitySubjectId(question) === subject.id)
+          opts
+            .validQuestionRecords()
+            .some(question => opts.entitySubjectId(question) === subject.id)
         )?.id ||
         subjects[0]?.id ||
         null;
@@ -120,9 +122,9 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
       return;
     }
 
-    const records = opts.validQuestionRecords().filter(
-      question => opts.entitySubjectId(question) === currentSubjectId
-    );
+    const records = opts
+      .validQuestionRecords()
+      .filter(question => opts.entitySubjectId(question) === currentSubjectId);
     const resolved = records.reduce((sum, q) => sum + (Number(q.resolved) || 0), 0);
     const correct = records.reduce((sum, q) => sum + (Number(q.correct) || 0), 0);
     const identified = records
@@ -140,7 +142,9 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
 
     const topicPerformance = opts.getSubjectTopicPerformance(currentSubjectId);
     const mature = topicPerformance.filter(topic => topic.resolved >= 30);
-    const insufficient = topicPerformance.filter(topic => topic.resolved > 0 && topic.resolved < 30);
+    const insufficient = topicPerformance.filter(
+      topic => topic.resolved > 0 && topic.resolved < 30
+    );
 
     let viewMode = getPerformanceViewMode();
     if (viewMode === 'with-data' && !mature.length && insufficient.length) {
@@ -194,17 +198,23 @@ export function createQuestionAnalyticsController(opts: QuestionAnalyticsControl
     const previousEnd = opts.addDays(currentStart, -1);
     const previousStart = opts.addDays(previousEnd, -(errorAnalysisView.days - 1));
 
-    const scopedRecords = opts.validQuestionRecords().filter(
-      question =>
-        opts.entitySubjectId(question) === currentSubjectId &&
-        (!errorAnalysisView.topicId || question.topicId === errorAnalysisView.topicId)
-    );
+    const scopedRecords = opts
+      .validQuestionRecords()
+      .filter(
+        question =>
+          opts.entitySubjectId(question) === currentSubjectId &&
+          (!errorAnalysisView.topicId || question.topicId === errorAnalysisView.topicId)
+      );
 
     const profile = opts.buildErrorProfile(
-      scopedRecords.filter(question => question.date >= currentStart && question.date <= opts.todayISO())
+      scopedRecords.filter(
+        question => question.date >= currentStart && question.date <= opts.todayISO()
+      )
     );
     const previousProfile = opts.buildErrorProfile(
-      scopedRecords.filter(question => question.date >= previousStart && question.date <= previousEnd)
+      scopedRecords.filter(
+        question => question.date >= previousStart && question.date <= previousEnd
+      )
     );
 
     const errorToolbar = renderQuestionErrorToolbar({

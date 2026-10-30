@@ -80,12 +80,10 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
   const buildDiagnosisPageModel = opts.buildDiagnosisPageModel || defaultBuildDiagnosisPageModel;
   const renderDiagnosisCenterView =
     opts.renderDiagnosisCenterView || defaultRenderDiagnosisCenterView;
-  const renderRecoveryReviewDebt =
-    opts.renderRecoveryReviewDebt || defaultRenderRecoveryReviewDebt;
+  const renderRecoveryReviewDebt = opts.renderRecoveryReviewDebt || defaultRenderRecoveryReviewDebt;
   const analyzeFocusAndEnergy = opts.analyzeFocusAndEnergy || defaultAnalyzeFocusAndEnergy;
   const renderNextBestAction = opts.renderNextBestAction || defaultRenderNextBestAction;
-  const renderPreparationSignals =
-    opts.renderPreparationSignals || defaultRenderPreparationSignals;
+  const renderPreparationSignals = opts.renderPreparationSignals || defaultRenderPreparationSignals;
   const buildDecisionCoherenceReport =
     opts.buildDecisionCoherenceReport || defaultBuildDecisionCoherenceReport;
   const renderDecisionCoherenceDebug =
@@ -145,11 +143,14 @@ export function createDiagnosticsTabController(opts: DiagnosticsTabControllerOpt
       ? { ...priorities[0], reason: opts.motivoPrioridade(priorities[0]) }
       : null;
     const risks = opts.computeAlertasInteligentes();
-    const configuredTopics = opts.examScopedTopics().filter(
-      topic =>
-        (topic.examImportance !== null || Object.keys(topic.examImportanceEstimates || {}).length) &&
-        topic.estimatedStudyMinutes !== null
-    );
+    const configuredTopics = opts
+      .examScopedTopics()
+      .filter(
+        topic =>
+          (topic.examImportance !== null ||
+            Object.keys(topic.examImportanceEstimates || {}).length) &&
+          topic.estimatedStudyMinutes !== null
+      );
     const opportunityCount = configuredTopics.filter(topic =>
       priorities.some(priority => priority.topicId === topic.id)
     ).length;

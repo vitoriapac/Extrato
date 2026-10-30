@@ -8,7 +8,10 @@ import { NextActionCard, type NextActionCardProps } from './NextActionCard.js';
 import { buildHeatmapViewModel } from '../../../application/analytics/build-analytics-view-model.js';
 import { renderHeatmap as renderHeatmapView } from '../../renderers/heatmap-renderer.js';
 import { buildHeaderViewModel } from '../../../application/analytics/build-header-view-model.js';
-import { HEATMAP_METRICS, heatmapMetricLevel as defaultHeatmapMetricLevel } from '../../../domain/analytics/heatmap.js';
+import {
+  HEATMAP_METRICS,
+  heatmapMetricLevel as defaultHeatmapMetricLevel,
+} from '../../../domain/analytics/heatmap.js';
 import { resolveExamPhase } from '../../../domain/planning/adaptive-planning.js';
 import { renderCollectionFooter } from '../../list-components.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
@@ -55,16 +58,26 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
   const doc = deps.document || (typeof document !== 'undefined' ? document : null);
   const todayISO = deps.todayISO || (() => new Date().toISOString().slice(0, 10));
   const parseLocalDate = deps.parseLocalDate || ((s: string) => new Date(s + 'T00:00:00'));
-  const addDays = deps.addDays || ((s: string, d: number) => {
-    const dt = new Date(s + 'T00:00:00');
-    dt.setDate(dt.getDate() + d);
-    return dt.toISOString().slice(0, 10);
-  });
-  const formatDecimal = deps.formatDecimal || ((v: any) => (v != null ? Number(v).toLocaleString('pt-BR') : '0'));
+  const addDays =
+    deps.addDays ||
+    ((s: string, d: number) => {
+      const dt = new Date(s + 'T00:00:00');
+      dt.setDate(dt.getDate() + d);
+      return dt.toISOString().slice(0, 10);
+    });
+  const formatDecimal =
+    deps.formatDecimal || ((v: any) => (v != null ? Number(v).toLocaleString('pt-BR') : '0'));
   const formatDatePt = deps.formatDatePt || ((s: string) => s);
   const formatDuration = deps.formatDuration || ((s: number) => `${Math.round(s / 60)} min`);
-  const pluralize = deps.pluralize || ((c: number, s: string, p?: string) => `${c} ${c === 1 ? s : p || s + 's'}`);
-  const escapeHtml = deps.escapeHtml || ((str: any) => String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+  const pluralize =
+    deps.pluralize || ((c: number, s: string, p?: string) => `${c} ${c === 1 ? s : p || s + 's'}`);
+  const escapeHtml =
+    deps.escapeHtml ||
+    ((str: any) =>
+      String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;'));
   const escapeAttr = deps.escapeAttr || ((str: any) => String(str ?? '').replace(/"/g, '&quot;'));
   const DEFAULT_STREAK_WEEKS = 12;
   const heatmapMetricLevel = deps.heatmapMetricLevel || defaultHeatmapMetricLevel;
@@ -236,7 +249,15 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       const d = addDays(today, -i);
       const summary = deps.getDailyStudySummary
         ? deps.getDailyStudySummary(d, { subjectId: streakView.subjectId })
-        : { date: d, seconds: 0, sessions: [], questions: 0, reviews: 0, simulations: 0, subjectNames: [] };
+        : {
+            date: d,
+            seconds: 0,
+            sessions: [],
+            questions: 0,
+            reviews: 0,
+            simulations: 0,
+            subjectNames: [],
+          };
       const active = heatmapMetricLevel(summary, streakView.metric) > 0;
       if (!streakView.onlyActiveDays || active) cells.push(summary);
     }
@@ -247,7 +268,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       selectedDate: streakView.selectedDate,
     });
     const activityStreak = deps.computeStreak ? deps.computeStreak(activityDates) : 0;
-    const goalStreak = deps.computeStreak && deps.getGoalDates ? deps.computeStreak(deps.getGoalDates()) : 0;
+    const goalStreak =
+      deps.computeStreak && deps.getGoalDates ? deps.computeStreak(deps.getGoalDates()) : 0;
     const selectedSummary =
       streakView.selectedDate && deps.getDailyStudySummary
         ? deps.getDailyStudySummary(streakView.selectedDate, { subjectId: streakView.subjectId })

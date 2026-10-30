@@ -90,7 +90,12 @@ test('createApprovalTabController — renderApprovalDashboard monta visão geral
     renderRecommendationFollowup: () => '',
     summarizeRecommendationHistory: () => ({}),
     renderRecommendationHistory: () => '',
-    topicRetentionScore: () => ({ available: true, value: 80, confidence: 0.9, confidenceLabel: 'Alta' }),
+    topicRetentionScore: () => ({
+      available: true,
+      value: 80,
+      confidence: 0.9,
+      confidenceLabel: 'Alta',
+    }),
     topicReviewHealthScore: () => ({ score: 85 }),
     topicMasteryIndex: () => ({ score: 90, confidence: 1 }),
     onRenderStudyTrack32Insights: () => {

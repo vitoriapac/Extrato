@@ -78,10 +78,13 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   const buildStudyDistribution = ctx.buildStudyDistribution || defaultBuildStudyDistribution;
   const renderStudyDistribution = ctx.renderStudyDistribution || defaultRenderStudyDistribution;
   const buildPlanImpactAlignment = ctx.buildPlanImpactAlignment || defaultBuildPlanImpactAlignment;
-  const renderPlanImpactAlignment = ctx.renderPlanImpactAlignment || defaultRenderPlanImpactAlignment;
+  const renderPlanImpactAlignment =
+    ctx.renderPlanImpactAlignment || defaultRenderPlanImpactAlignment;
   const buildTopicExamProfile = ctx.buildTopicExamProfile || defaultBuildTopicExamProfile;
-  const resolveValidatedExamImpact = ctx.resolveValidatedExamImpact || defaultResolveValidatedExamImpact;
-  const buildResultGoalsViewModel = ctx.buildResultGoalsViewModel || defaultBuildResultGoalsViewModel;
+  const resolveValidatedExamImpact =
+    ctx.resolveValidatedExamImpact || defaultResolveValidatedExamImpact;
+  const buildResultGoalsViewModel =
+    ctx.buildResultGoalsViewModel || defaultBuildResultGoalsViewModel;
   const renderGoals = ctx.renderGoals || defaultRenderGoals;
   const initialGoalSuggestions = ctx.initialGoalSuggestions || defaultInitialGoalSuggestions;
   const buildPeriodComparisonViewModel =
@@ -246,10 +249,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     });
   }
 
-  function renderMetasPorDisciplina(
-    container: any,
-    selectEl?: any
-  ): void {
+  function renderMetasPorDisciplina(container: any, selectEl?: any): void {
     const state = resolveState();
     const escapeHtml = ctx.escapeHtml || (s => s);
     const escapeAttr = ctx.escapeAttr || (s => s);
@@ -278,7 +278,8 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
           : 0;
         const pct = md.meta > 0 ? Math.round((atingido / md.meta) * 100) : 0;
         const pctDisplay = Math.min(pct, 100);
-        const name = subjectId && ctx.getSubjectName ? ctx.getSubjectName(subjectId) : '(sem disciplina)';
+        const name =
+          subjectId && ctx.getSubjectName ? ctx.getSubjectName(subjectId) : '(sem disciplina)';
         return `
     <div class="meta-card">
       <div class="meta-info">
@@ -359,10 +360,14 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
     const resolvedPreset = presetEl || doc?.getElementById('periodComparisonPreset');
     if (!resolvedContainer || !resolvedPreset) return;
 
-    const resolvedStartInput = startInput !== undefined ? startInput : doc?.getElementById('periodComparisonStart');
-    const resolvedEndInput = endInput !== undefined ? endInput : doc?.getElementById('periodComparisonEnd');
-    const resolvedStartWrap = startWrap !== undefined ? startWrap : doc?.getElementById('periodComparisonStartWrap');
-    const resolvedEndWrap = endWrap !== undefined ? endWrap : doc?.getElementById('periodComparisonEndWrap');
+    const resolvedStartInput =
+      startInput !== undefined ? startInput : doc?.getElementById('periodComparisonStart');
+    const resolvedEndInput =
+      endInput !== undefined ? endInput : doc?.getElementById('periodComparisonEnd');
+    const resolvedStartWrap =
+      startWrap !== undefined ? startWrap : doc?.getElementById('periodComparisonStartWrap');
+    const resolvedEndWrap =
+      endWrap !== undefined ? endWrap : doc?.getElementById('periodComparisonEndWrap');
 
     const state = resolveState();
     const custom = resolvedPreset.value === 'custom';
@@ -380,9 +385,10 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
 
     const reviews = (state.reviewAgenda || []).map((item: any) => ({
       ...item,
-      date: item.completedAt && ctx.localDateFromTimestamp
-        ? ctx.localDateFromTimestamp(item.completedAt)
-        : item.date,
+      date:
+        item.completedAt && ctx.localDateFromTimestamp
+          ? ctx.localDateFromTimestamp(item.completedAt)
+          : item.date,
     }));
 
     const model = buildPeriodComparisonViewModel({
@@ -403,7 +409,15 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   function renderMetasSection(): void {
     const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
     const container = doc?.getElementById('metasContainer');
-    if (container && ctx.contarTopicosConcluidosNoPeriodo && ctx.isSameWeek && ctx.isSameMonth && ctx.somarQuestoesNaSemana && ctx.contarSimuladosNaSemana && ctx.recentPerformance) {
+    if (
+      container &&
+      ctx.contarTopicosConcluidosNoPeriodo &&
+      ctx.isSameWeek &&
+      ctx.isSameMonth &&
+      ctx.somarQuestoesNaSemana &&
+      ctx.contarSimuladosNaSemana &&
+      ctx.recentPerformance
+    ) {
       const state = resolveState();
       const hasAccuracyEvidence =
         (state.questoes || []).some((item: any) => Number(item.resolved) > 0) ||
@@ -451,18 +465,20 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
   function bindEvents(): void {
     const doc = ctx.document || (typeof document !== 'undefined' ? document : null);
     if (!doc) return;
-    doc.getElementById('periodComparisonPreset')?.addEventListener('change', () =>
-      renderSelectedPeriodComparison()
-    );
-    doc.getElementById('periodComparisonStart')?.addEventListener('change', () =>
-      renderSelectedPeriodComparison()
-    );
-    doc.getElementById('periodComparisonEnd')?.addEventListener('change', () =>
-      renderSelectedPeriodComparison()
-    );
+    doc
+      .getElementById('periodComparisonPreset')
+      ?.addEventListener('change', () => renderSelectedPeriodComparison());
+    doc
+      .getElementById('periodComparisonStart')
+      ?.addEventListener('change', () => renderSelectedPeriodComparison());
+    doc
+      .getElementById('periodComparisonEnd')
+      ?.addEventListener('change', () => renderSelectedPeriodComparison());
     doc.getElementById('addMetaDisciplinaBtn')?.addEventListener('click', () => {
-      const subjectId = (doc.getElementById('novaMetaDisciplinaSelect') as HTMLSelectElement)?.value || '';
-      const rawMeta = (doc.getElementById('novaMetaDisciplinaValor') as HTMLInputElement)?.value || '';
+      const subjectId =
+        (doc.getElementById('novaMetaDisciplinaSelect') as HTMLSelectElement)?.value || '';
+      const rawMeta =
+        (doc.getElementById('novaMetaDisciplinaValor') as HTMLInputElement)?.value || '';
       ctx.addMetaDisciplina?.(subjectId, rawMeta);
     });
   }

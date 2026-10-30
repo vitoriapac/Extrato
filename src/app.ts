@@ -15,7 +15,10 @@ import { createDefaultState } from './state/defaults.js';
 import { ensureStateDefaultsWithDeps } from './state/ensure-state-defaults.js';
 import { createUiState, pickPersistentState } from './state/state-boundaries.js';
 import { createStateMigrator } from './state/migrations.js';
-import { ERROR_CATEGORIES, normalizeErrorBreakdown } from './domain/diagnostics/error-categories.js';
+import {
+  ERROR_CATEGORIES,
+  normalizeErrorBreakdown,
+} from './domain/diagnostics/error-categories.js';
 import { createAppSelectors } from './application/selectors/app-selectors.js';
 import { createExamCatalogLoader } from './application/exams/exam-catalog-loader.js';
 import { APP_MODES, readAppMode } from './application/demo/demo-mode.js';
@@ -56,9 +59,9 @@ const preferencesController = createPreferencesController({
   storage: localStorage,
   key: THEME_STORAGE_KEY,
 });
-document.getElementById('themeToggleBtn')!.addEventListener('click', () =>
-  preferencesController.toggle()
-);
+document
+  .getElementById('themeToggleBtn')!
+  .addEventListener('click', () => preferencesController.toggle());
 preferencesController.sync();
 
 let state: AppState = createDefaultState();
@@ -125,7 +128,8 @@ const coreServices = wireAppDependencies({
   clock: appClock,
   idGenerator: uid,
   getTopicById: appSelectors.getTopicById,
-  evidenceScopeForTopic: topicId => domainAnalytics.studyMetricsSelectors.evidenceScopeForTopic(topicId),
+  evidenceScopeForTopic: topicId =>
+    domainAnalytics.studyMetricsSelectors.evidenceScopeForTopic(topicId),
   addHistoryEvent: (type, sId, tId, meta) =>
     domainAnalytics.studyMetricsSelectors.addHistoryEvent(type, sId, tId, meta),
   entitySubjectId: appSelectors.entitySubjectId,
@@ -218,8 +222,7 @@ uiControllers = wireUiControllers({
   ensureExamCatalog,
   openExamImport: (presetId?: string, source?: string) =>
     importControllers.examImportModalController.openExamImport(presetId, source),
-  openStructuredImportFromOnboarding: () =>
-    importControllers.openStructuredImportFromOnboarding(),
+  openStructuredImportFromOnboarding: () => importControllers.openStructuredImportFromOnboarding(),
   scheduleSave: storageAndSync.scheduleSave,
   render: (scope?: string) => render(scope),
   persistAndRender: () => persistAndRender(),

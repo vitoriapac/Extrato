@@ -145,7 +145,10 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
     const projectionInputs = examScopedSimulations().map((item: any) => ({
       ...item,
       ...simuladoEffectiveCounts(item),
-      breakdown: (item.breakdown || []).map((row: any) => ({ ...row, subjectId: entitySubjectId(row) })),
+      breakdown: (item.breakdown || []).map((row: any) => ({
+        ...row,
+        subjectId: entitySubjectId(row),
+      })),
     }));
     if (
       captureProjection({
@@ -275,9 +278,13 @@ export function createApprovalTabController(opts: ApprovalTabControllerOptions) 
     const el = document.getElementById('recommendationCalibration');
     if (!el) return;
     const state = getState();
-    const subjectNames = Object.fromEntries(state.subjects.map((item: any) => [item.id, item.name]));
+    const subjectNames = Object.fromEntries(
+      state.subjects.map((item: any) => [item.id, item.name])
+    );
     const topicNames = Object.fromEntries(
-      state.subjects.flatMap((subject: any) => (subject.topics || []).map((topic: any) => [topic.id, topic.name]))
+      state.subjects.flatMap((subject: any) =>
+        (subject.topics || []).map((topic: any) => [topic.id, topic.name])
+      )
     );
     const model = buildRecommendationCalibration(state.recommendationFeedback, {
       minimumSample: 5,

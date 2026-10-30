@@ -599,9 +599,7 @@ export function ErrorNotebookView({
           </div>
 
           <div>
-            <label class="block font-medium text-green mb-1">
-              Conceito Correto / Fundamento:*
-            </label>
+            <label class="block font-medium text-green mb-1">Conceito Correto / Fundamento:*</label>
             <textarea
               class="w-full h-20 p-2.5 rounded border border-green/30 bg-green/5 text-primary text-xs focus:ring-green focus:border-green"
               placeholder="Ex.: Não, para compras comuns o limite é estrito em 25%. Apenas reformas admitem até 50% (Lei 14.133/21)."

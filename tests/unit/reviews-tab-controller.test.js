@@ -5,10 +5,39 @@ import { createReviewsTabController } from '../../src/ui/tabs/reviews/reviews-ta
 test('createReviewsTabController — agrupa, filtra e ordena revisões por data e dificuldade', () => {
   const state = {
     reviewAgenda: [
-      { id: 'r1', date: '2026-03-08', status: 'Não iniciado', subjectId: 's1', topicId: 't1', tipo: 'D+1' },
-      { id: 'r2', date: '2026-03-10', status: 'Não iniciado', subjectId: 's1', topicId: 't2', tipo: 'D+7' },
-      { id: 'r3', date: '2026-03-15', status: 'Não iniciado', subjectId: 's2', topicId: 't3', tipo: 'D+30' },
-      { id: 'r4', date: '2026-03-01', status: 'Concluído', subjectId: 's1', topicId: 't1', tipo: 'D+1', completedAt: '2026-03-01' },
+      {
+        id: 'r1',
+        date: '2026-03-08',
+        status: 'Não iniciado',
+        subjectId: 's1',
+        topicId: 't1',
+        tipo: 'D+1',
+      },
+      {
+        id: 'r2',
+        date: '2026-03-10',
+        status: 'Não iniciado',
+        subjectId: 's1',
+        topicId: 't2',
+        tipo: 'D+7',
+      },
+      {
+        id: 'r3',
+        date: '2026-03-15',
+        status: 'Não iniciado',
+        subjectId: 's2',
+        topicId: 't3',
+        tipo: 'D+30',
+      },
+      {
+        id: 'r4',
+        date: '2026-03-01',
+        status: 'Concluído',
+        subjectId: 's1',
+        topicId: 't1',
+        tipo: 'D+1',
+        completedAt: '2026-03-01',
+      },
     ],
     subjects: [
       {
@@ -60,9 +89,16 @@ test('createReviewsTabController — CRUD de revisões manuais e edição de ras
     todayISO: () => '2026-03-10',
     nowISO: () => '2026-03-10T10:00:00Z',
     activeSubjects: () => [{ id: 's1', name: 'Constitucional' }],
-    persistAndRender: () => { saved = true; },
-    showToast: msg => { toasted = msg; },
-    showConfirm: (_msg, onConfirm) => { confirmed = true; onConfirm(); },
+    persistAndRender: () => {
+      saved = true;
+    },
+    showToast: msg => {
+      toasted = msg;
+    },
+    showConfirm: (_msg, onConfirm) => {
+      confirmed = true;
+      onConfirm();
+    },
   });
 
   // Criar revisão manual
@@ -100,7 +136,13 @@ test('createReviewsTabController — geração automática e avaliação adaptat
         id: 's1',
         name: 'Constitucional',
         topics: [
-          { id: 't1', name: 'Artigo 5º', status: 'Concluído', completedAt: '2026-03-01', difficulty: 'Médio' },
+          {
+            id: 't1',
+            name: 'Artigo 5º',
+            status: 'Concluído',
+            completedAt: '2026-03-01',
+            difficulty: 'Médio',
+          },
         ],
       },
     ],
@@ -114,12 +156,18 @@ test('createReviewsTabController — geração automática e avaliação adaptat
         elements[id] = {
           id,
           classList: {
-            add(cls) { this[cls] = true; },
-            remove(cls) { this[cls] = false; },
+            add(cls) {
+              this[cls] = true;
+            },
+            remove(cls) {
+              this[cls] = false;
+            },
           },
           setAttribute() {},
           removeAttribute() {},
-          querySelector() { return { focus() {} }; },
+          querySelector() {
+            return { focus() {} };
+          },
         };
       }
       return elements[id];
@@ -149,8 +197,12 @@ test('createReviewsTabController — geração automática e avaliação adaptat
     diagnoseTopic: () => ({ performance: { accuracy: 85, resolved: 30 } }),
     subjectAccuracyTarget: () => 80,
     reviewService: mockReviewService,
-    persistAndRender: () => { saved = true; },
-    showToast: msg => { toasted = msg; },
+    persistAndRender: () => {
+      saved = true;
+    },
+    showToast: msg => {
+      toasted = msg;
+    },
     formatDatePt: d => d,
   });
 

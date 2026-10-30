@@ -27,7 +27,9 @@ export interface StudyTimerViewControllerOptions {
   getSubjectName: (subjectId: string) => string;
   getTopicName: (topicId: string) => string;
   getSubjectById: (subjectId: string) => any;
-  subjectsForSelection: (currentSubjectId: string | null | undefined) => Array<{ id: string; name: string; archived?: boolean }>;
+  subjectsForSelection: (
+    currentSubjectId: string | null | undefined
+  ) => Array<{ id: string; name: string; archived?: boolean }>;
   topicsForSelection: (subject: any, currentTopicId: any) => Array<{ id: string; name: string }>;
   topicResumeLabel: (topicId: string) => string;
   findDailyPlanItem: (itemId: string) => any;
@@ -61,7 +63,9 @@ export function createStudyTimerViewController(opts: StudyTimerViewControllerOpt
     if (section.hidden) return;
 
     const active = getActiveTimer();
-    const subject = active.subjectId ? getSubjectName(active.subjectId) : 'Disciplina não selecionada';
+    const subject = active.subjectId
+      ? getSubjectName(active.subjectId)
+      : 'Disciplina não selecionada';
     const topic = active.topicId ? getTopicName(active.topicId) : 'Tópico não selecionado';
     const activityLabels: Record<string, string> = {
       study: 'Estudo teórico',
@@ -97,11 +101,7 @@ export function createStudyTimerViewController(opts: StudyTimerViewControllerOpt
       el.innerHTML = '';
       return;
     }
-    el.innerHTML = renderGuidedStrategyHtml(
-      strategy,
-      active.strategyStep || 0,
-      escapeHtml
-    );
+    el.innerHTML = renderGuidedStrategyHtml(strategy, active.strategyStep || 0, escapeHtml);
   }
 
   function updateTimerDisplay(timerSeconds: number, isRunning: boolean) {
@@ -145,7 +145,9 @@ export function createStudyTimerViewController(opts: StudyTimerViewControllerOpt
       }
     }
 
-    const hasStarted = Boolean(active.startedAt || active.isRunning || (Number(active.accumulatedSeconds) || 0) > 0);
+    const hasStarted = Boolean(
+      active.startedAt || active.isRunning || (Number(active.accumulatedSeconds) || 0) > 0
+    );
     const title = formatTimerTitle({
       started: hasStarted,
       running: isRunning,

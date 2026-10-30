@@ -34,33 +34,53 @@ test('Backup & Restore Controller — rotateAutomaticBackup gerencia slots rotat
   const indexKey = 'test-backup-index';
 
   // 1. Inválido (sem subjects): retorna false
-  const invalid = await rotateAutomaticBackup(
-    JSON.stringify({ foo: 'bar' }),
-    { backupKey, indexKey, storage, slotCount: 3 }
-  );
+  const invalid = await rotateAutomaticBackup(JSON.stringify({ foo: 'bar' }), {
+    backupKey,
+    indexKey,
+    storage,
+    slotCount: 3,
+  });
   assert.equal(invalid, false);
 
   // 2. Três rotações válidas com slotCount 2
-  const snapshot1 = { subjects: [{ id: 's1', name: 'Direito' }], updatedAt: '2026-10-29T10:00:00.000Z' };
-  const ok1 = await rotateAutomaticBackup(
-    JSON.stringify(snapshot1),
-    { backupKey, indexKey, storage, slotCount: 2, nowISO: () => '2026-10-29T10:00:00.000Z' }
-  );
+  const snapshot1 = {
+    subjects: [{ id: 's1', name: 'Direito' }],
+    updatedAt: '2026-10-29T10:00:00.000Z',
+  };
+  const ok1 = await rotateAutomaticBackup(JSON.stringify(snapshot1), {
+    backupKey,
+    indexKey,
+    storage,
+    slotCount: 2,
+    nowISO: () => '2026-10-29T10:00:00.000Z',
+  });
   assert.equal(ok1, true);
 
-  const snapshot2 = { subjects: [{ id: 's2', name: 'Processo' }], updatedAt: '2026-10-29T11:00:00.000Z' };
-  const ok2 = await rotateAutomaticBackup(
-    JSON.stringify(snapshot2),
-    { backupKey, indexKey, storage, slotCount: 2, nowISO: () => '2026-10-29T11:00:00.000Z' }
-  );
+  const snapshot2 = {
+    subjects: [{ id: 's2', name: 'Processo' }],
+    updatedAt: '2026-10-29T11:00:00.000Z',
+  };
+  const ok2 = await rotateAutomaticBackup(JSON.stringify(snapshot2), {
+    backupKey,
+    indexKey,
+    storage,
+    slotCount: 2,
+    nowISO: () => '2026-10-29T11:00:00.000Z',
+  });
   assert.equal(ok2, true);
 
   // SlotCount é 2, ao inserir snapshot 3, sobrescreve o slot 0
-  const snapshot3 = { subjects: [{ id: 's3', name: 'Constitucional' }], updatedAt: '2026-10-29T12:00:00.000Z' };
-  const ok3 = await rotateAutomaticBackup(
-    JSON.stringify(snapshot3),
-    { backupKey, indexKey, storage, slotCount: 2, nowISO: () => '2026-10-29T12:00:00.000Z' }
-  );
+  const snapshot3 = {
+    subjects: [{ id: 's3', name: 'Constitucional' }],
+    updatedAt: '2026-10-29T12:00:00.000Z',
+  };
+  const ok3 = await rotateAutomaticBackup(JSON.stringify(snapshot3), {
+    backupKey,
+    indexKey,
+    storage,
+    slotCount: 2,
+    nowISO: () => '2026-10-29T12:00:00.000Z',
+  });
   assert.equal(ok3, true);
 
   const rawIndex = await storage.get(indexKey);

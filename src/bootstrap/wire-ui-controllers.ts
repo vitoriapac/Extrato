@@ -100,8 +100,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     });
     if (practiceUi?.reviewsTabController) {
       practiceUi.reviewsTabController.agendaUiState.upcomingVisible =
-        practiceUi.reviewsTabController.agendaUiState.completedVisible =
-          DEFAULT_LIST_VISIBLE_ITEMS;
+        practiceUi.reviewsTabController.agendaUiState.completedVisible = DEFAULT_LIST_VISIBLE_ITEMS;
     }
     analyticsUi?.dashboardTabController?.resetUpcomingListDefault();
     if (practiceUi?.calendarTabController) {
@@ -141,7 +140,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     activeTabName,
     activateTab,
     startTimer: () => executionUi.studyTimerRuntime.startTimer(),
-    populateTimerContextControls: () => executionUi.studyTimerRuntime.populateTimerContextControls(),
+    populateTimerContextControls: () =>
+      executionUi.studyTimerRuntime.populateTimerContextControls(),
     openStudyTimerFocus: () => executionUi.timerUiController.openStudyTimerFocus(),
   });
 
@@ -162,8 +162,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     renderPlanoHoje: () => executionUi.todayTabController.renderPlanoHoje(),
     dismissFirstSteps: () => executionUi.todayTabController.dismissFirstSteps(),
     restoreFirstSteps: () => executionUi.todayTabController.restoreFirstSteps(),
-    renderFirstStepsMissionCard: () =>
-      executionUi.todayTabController.renderFirstStepsMissionCard(),
+    renderFirstStepsMissionCard: () => executionUi.todayTabController.renderFirstStepsMissionCard(),
     getOnboardingController: () => executionUi?.onboardingModalController,
     selectSessionHistoryDate: (date: string) =>
       executionUi.sessionHistoryController.selectSessionHistoryDate(date),
@@ -172,7 +171,8 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
     renderStudyTrack32Insights: () =>
       planningUi.weeklyCloseModalController.renderStudyTrack32Insights(),
     feedbackRecoveryResult: planningUi.feedbackRecoveryResult,
-    calculateStudyPlanPreview: () => planningUi.studyPlanBuilderController.calculateStudyPlanPreview(),
+    calculateStudyPlanPreview: () =>
+      planningUi.studyPlanBuilderController.calculateStudyPlanPreview(),
     getStudyPlanPreview: () => planningUi.studyPlanBuilderController.getStudyPlanPreview(),
     getLatestStudyPlan: () => planningUi.studyPlanBuilderController.latestStudyPlan(),
     refreshStudyRecommendationItems: () =>
@@ -202,8 +202,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       analyticsUi.approvalTabController.renderRecommendationHistorySummary(),
     addQuestaoRow: (initial?: any) => practiceUi.questionsTabController.addQuestaoRow(initial),
     addSimuladoRow: () => practiceUi.simulationsTabController.addSimuladoRow(),
-    completeAgendaReview: (id: string) =>
-      practiceUi.reviewsTabController.completeAgendaReview(id),
+    completeAgendaReview: (id: string) => practiceUi.reviewsTabController.completeAgendaReview(id),
     getLatestStudyPlan: () => planningUi.studyPlanBuilderController.latestStudyPlan(),
     buildCurrentStudyPlanProposal: (opts?: any) =>
       planningUi.studyPlanBuilderController.buildCurrentStudyPlanProposal(opts),
@@ -256,8 +255,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
         practiceUi.questionAnalyticsController.setViewMode(mode),
       setErrorAnalysisFilter: (field: string, value: any) =>
         practiceUi.questionAnalyticsController.setErrorAnalysisFilter(field, value),
-      changePerformanceLimit: () =>
-        practiceUi.questionAnalyticsController.changePerformanceLimit(),
+      changePerformanceLimit: () => practiceUi.questionAnalyticsController.changePerformanceLimit(),
       showAllPerformance: () => practiceUi.questionAnalyticsController.showAllPerformance(),
       resetPerformanceLimit: () => practiceUi.questionAnalyticsController.resetPerformanceLimit(),
       showAllRetention: () => analyticsUi.approvalTabController.showAllRetention(),
@@ -328,8 +326,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       renderMetas: () => planningUi.goalsTabController.renderMetasSection(),
       renderPlanExecution: () => planningUi.goalsTabController.renderPlanExecutionSection(),
       renderExamBlueprintConfig: () => planningUi.examMatrixController.renderExamBlueprintConfig(),
-      renderStudyPlanBuilder: () =>
-        planningUi.studyPlanBuilderController.renderStudyPlanBuilder(),
+      renderStudyPlanBuilder: () => planningUi.studyPlanBuilderController.renderStudyPlanBuilder(),
       renderWeeklyHoursGoals: () => planningUi.goalsTabController.renderWeeklyHoursGoalsSection(),
       renderSubjectTargetEditor: () =>
         planningUi.subjectTargetEditorController.renderSubjectTargetEditor(),
@@ -342,8 +339,7 @@ export function wireUiControllers(deps: WireUiControllersDeps) {
       renderStudyRecommendation: () =>
         executionUi.studyRecommendationController.renderStudyRecommendation(),
       renderWeeklyReplan: () => executionUi.studyRecommendationController.renderWeeklyReplan(),
-      renderSimuladosPlanejados: () =>
-        executionUi.todayTabController.renderSimuladosPlanejados(),
+      renderSimuladosPlanejados: () => executionUi.todayTabController.renderSimuladosPlanejados(),
       renderMetasHoje: () => executionUi.todayTabController.renderMetasHoje(),
       renderAlertasInteligentes: () =>
         analyticsUi.diagnosticsTabController.renderAlertasInteligentes(),

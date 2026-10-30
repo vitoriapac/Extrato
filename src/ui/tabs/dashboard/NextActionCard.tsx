@@ -45,8 +45,13 @@ export interface NextActionSixQuestions {
 export interface NextActionCardProps {
   model: NextActionSixQuestions | null;
   emptyState?: {
-    message: string;
-    timerHref?: string;
+    message?: string;
+    timerHref?: string | null;
+    isFirstRun?: boolean;
+    onboardingTitle?: string;
+    onboardingDescription?: string;
+    onOpenOnboarding?: () => void;
+    onOpenDemo?: () => void;
   } | null;
   isInProgress?: boolean;
   activeTimerNoticeHtml?: string;
@@ -67,6 +72,68 @@ export function NextActionCard({
   onExecuteAction,
 }: NextActionCardProps): JSX.Element {
   if (!model) {
+    if (emptyState?.isFirstRun) {
+      return (
+        <div className="overview-next-action-container">
+          {activeTimerNoticeHtml && (
+            <div dangerouslySetInnerHTML={{ __html: activeTimerNoticeHtml }} />
+          )}
+          <section
+            className="welcome-hero-card p-5 rounded-default border border-border-default bg-surface-card shadow-xs flex flex-col gap-3"
+            aria-labelledby="welcomeHeroTitle"
+            data-welcome-hero="true"
+          >
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-bold tracking-wider uppercase text-secondary">
+                PRIMEIRO ACESSO AO STUDYTRACK
+              </span>
+              <h3
+                id="welcomeHeroTitle"
+                className="text-lg font-bold text-primary m-0 flex items-center gap-2"
+              >
+                {emptyState.onboardingTitle || 'Bem-vindo ao StudyTrack 👋'}
+              </h3>
+              <p className="text-sm text-secondary m-0 leading-relaxed">
+                {emptyState.onboardingDescription ||
+                  'Seu copiloto diário até a aprovação. Vamos montar sua rota de estudos personalizada em menos de 2 minutos?'}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <button
+                type="button"
+                className="btn"
+                data-guided-action="open"
+                onClick={emptyState.onOpenOnboarding}
+                aria-label="Montar meu plano de estudos agora"
+              >
+                🚀 Montar meu plano de estudos
+              </button>
+              <button
+                type="button"
+                className="btn ghost text-secondary hover:text-primary"
+                id="enterDemoHeroBtn"
+                data-delegated-click="openDemoIntro()"
+                onClick={() => {
+                  if (emptyState.onOpenDemo) {
+                    emptyState.onOpenDemo();
+                  } else {
+                    const enterBtn =
+                      document.getElementById('enterDemoBtn') ||
+                      document.getElementById('enterDemoEmptyBtn');
+                    enterBtn?.click();
+                  }
+                }}
+                aria-label="Experimentar demonstração interativa com dados fictícios"
+              >
+                ▶ Experimentar demonstração
+              </button>
+            </div>
+          </section>
+        </div>
+      );
+    }
+
     return (
       <div className="overview-next-action-container">
         {activeTimerNoticeHtml && (
@@ -75,9 +142,11 @@ export function NextActionCard({
         <p className="overview-alert-empty">
           {emptyState?.message || 'Ainda não há uma atividade elegível com os dados atuais.'}
         </p>
-        <a className="btn ghost small" href={emptyState?.timerHref || '#overview-timer'}>
-          Ver cronômetro e registrar estudo
-        </a>
+        {Boolean(emptyState?.timerHref) && (
+          <a className="btn ghost small" href={emptyState!.timerHref!}>
+            Ver cronômetro e registrar estudo
+          </a>
+        )}
       </div>
     );
   }

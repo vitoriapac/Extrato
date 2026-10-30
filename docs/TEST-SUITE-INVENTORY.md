@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-257 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+259 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -260,6 +260,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/reviews.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/rhythm-estimator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/risk-score.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/routine-sustainability.test.js | node | Sustentabilidade | functional | — | contract | none |
 | tests/unit/scroll-behavior.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/search-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/session-history-controller.test.js | node | Sessões | critical | — | contract | none |
@@ -272,6 +273,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/simulated-remediation.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/simulations-tab-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/stability-phase-comparison.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/starter-packs.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/state-boundaries.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/state-migrations.test.js | node | Estado | critical | — | contract | none |
 | tests/unit/storage-manager.test.js | node | Persistência | critical | — | contract | none |

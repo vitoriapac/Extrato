@@ -64,12 +64,27 @@ export interface QuestionsTabControllerContext {
 export function createQuestionsTabController(ctx: QuestionsTabControllerContext) {
   const openQuestionErrorIds = new Set<string>();
 
-  const uid = ctx.uid || ((prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
+  const uid =
+    ctx.uid ||
+    ((prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
   const nowISO = ctx.nowISO || (() => new Date().toISOString());
   const todayISO = ctx.todayISO || (() => new Date().toISOString().slice(0, 10));
-  const escapeHtml = ctx.escapeHtml || ((str: string) => String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c));
-  const escapeAttr = ctx.escapeAttr || ((str: string) => String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c));
-  const entitySubjectId = ctx.entitySubjectId || ((item: any) => item?.subjectId || item?.subjectRef || null);
+  const escapeHtml =
+    ctx.escapeHtml ||
+    ((str: string) =>
+      String(str || '').replace(
+        /[&<>"']/g,
+        c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c
+      ));
+  const escapeAttr =
+    ctx.escapeAttr ||
+    ((str: string) =>
+      String(str || '').replace(
+        /[&<>"']/g,
+        c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] || c
+      ));
+  const entitySubjectId =
+    ctx.entitySubjectId || ((item: any) => item?.subjectId || item?.subjectRef || null);
   const getSubjectName = ctx.getSubjectName || ((_id: string) => 'Disciplina');
   const getTopicName = ctx.getTopicName || ((_id: string) => 'Tópico');
 
@@ -188,7 +203,9 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
       state: ctx.state,
       listViewState: ctx.listViewState,
       questionEditController,
-      simulationEditController: ctx.simulationEditController || { state: { editingId: null, draft: null } },
+      simulationEditController: ctx.simulationEditController || {
+        state: { editingId: null, draft: null },
+      },
       openQuestionErrorIds,
       openBreakdownIds: ctx.openBreakdownIds || new Set(),
       errorCategories: ctx.errorCategories,
@@ -264,7 +281,9 @@ export function createQuestionsTabController(ctx: QuestionsTabControllerContext)
   }
 
   function bindEvents(): void {
-    ctx.document.getElementById('addQuestaoRowBtn')?.addEventListener('click', () => addQuestaoRow());
+    ctx.document
+      .getElementById('addQuestaoRowBtn')
+      ?.addEventListener('click', () => addQuestaoRow());
     ctx.document.getElementById('errorNotebookToggleBtn')?.addEventListener('click', () => {
       ctx.errorNotebookController?.toggle();
       renderQuestoes();

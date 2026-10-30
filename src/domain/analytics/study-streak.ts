@@ -41,9 +41,7 @@ export interface DailyStudySummaryResult {
  * Consolida o resumo de estudos de uma data civil específica, calculando tempo total,
  * questões resolvidas, revisões e atingimento da meta diária configurada.
  */
-export function calculateDailyStudySummary(
-  input: DailyStudySummaryInput
-): DailyStudySummaryResult {
+export function calculateDailyStudySummary(input: DailyStudySummaryInput): DailyStudySummaryResult {
   const {
     date,
     studySessions,
@@ -73,7 +71,10 @@ export function calculateDailyStudySummary(
   const simulations = simulados.filter(
     sim =>
       sim.date === date &&
-      (!subjectId || (sim.breakdown || []).some((row: Record<string, any>) => entitySubjectId(row) === subjectId))
+      (!subjectId ||
+        (sim.breakdown || []).some(
+          (row: Record<string, any>) => entitySubjectId(row) === subjectId
+        ))
   );
 
   const reviews = reviewAgenda.filter(

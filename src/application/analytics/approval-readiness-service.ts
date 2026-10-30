@@ -14,7 +14,10 @@ import {
 } from '../../domain/analytics/approval-metrics.js';
 import { calculateGoalConsistency } from '../../domain/analytics/consistency.js';
 import { calculateSubjectRadar } from '../../domain/analytics/multidimensional-radar.js';
-import { calculateReadinessScore, READINESS_WEIGHTS } from '../../domain/analytics/readiness-score.js';
+import {
+  calculateReadinessScore,
+  READINESS_WEIGHTS,
+} from '../../domain/analytics/readiness-score.js';
 import { buildCalibratedScoreProjection } from '../../domain/forecasts/calibrated-score-projection.js';
 import { buildPerformanceForecast } from '../../domain/forecasts/performance-forecast.js';
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
@@ -103,7 +106,8 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
       ? masteryValues.reduce((sum: any, item: any) => sum + item.score, 0) / masteryValues.length
       : null;
     const retention = retentionValues.length
-      ? retentionValues.reduce((sum: any, item: any) => sum + item.score, 0) / retentionValues.length
+      ? retentionValues.reduce((sum: any, item: any) => sum + item.score, 0) /
+        retentionValues.length
       : null;
     const last = ultimaAtividadeDisciplina(subject.id),
       distance = last ? diasParaRevisao(last) : null,
@@ -208,7 +212,10 @@ export function createApprovalReadinessService(deps: ApprovalReadinessServiceDep
     const days = [];
     for (let n = 27; n >= 0; n--) {
       const date = addDays(today, -n);
-      days.push({ targetSeconds: metaHoursForDate(date) * 3600, studiedSeconds: byDate[date] || 0 });
+      days.push({
+        targetSeconds: metaHoursForDate(date) * 3600,
+        studiedSeconds: byDate[date] || 0,
+      });
     }
     const result = calculateGoalConsistency(days);
     return calculateApprovalConsistenciaMetric({ consistencyResult: result });

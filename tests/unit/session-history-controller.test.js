@@ -5,9 +5,32 @@ import { createSessionHistoryController } from '../../src/ui/tabs/today/session-
 test('createSessionHistoryController — calcula tempos acumulados e filtra sessões', () => {
   const state = {
     studySessions: [
-      { id: 's1', date: '2026-03-10', durationSeconds: 3600, subjectId: 'sub1', topicId: 'top1', type: 'study' },
-      { id: 's2', date: '2026-03-10', durationSeconds: 1800, subjectId: 'sub2', topicId: 'top2', type: 'questions', questionsResolved: 20, correctAnswers: 16 },
-      { id: 's3', date: '2026-03-05', durationSeconds: 5400, subjectId: 'sub1', topicId: 'top1', type: 'study' },
+      {
+        id: 's1',
+        date: '2026-03-10',
+        durationSeconds: 3600,
+        subjectId: 'sub1',
+        topicId: 'top1',
+        type: 'study',
+      },
+      {
+        id: 's2',
+        date: '2026-03-10',
+        durationSeconds: 1800,
+        subjectId: 'sub2',
+        topicId: 'top2',
+        type: 'questions',
+        questionsResolved: 20,
+        correctAnswers: 16,
+      },
+      {
+        id: 's3',
+        date: '2026-03-05',
+        durationSeconds: 5400,
+        subjectId: 'sub1',
+        topicId: 'top1',
+        type: 'study',
+      },
     ],
     subjects: [
       { id: 'sub1', name: 'Constitucional', topics: [{ id: 'top1', name: 'Artigo 5º' }] },
@@ -47,11 +70,16 @@ test('createSessionHistoryController — CRUD de sessões inline e exclusão', (
 
   const state = {
     studySessions: [
-      { id: 's1', date: '2026-03-10', durationSeconds: 3600, subjectId: 'sub1', topicId: 'top1', type: 'study' },
+      {
+        id: 's1',
+        date: '2026-03-10',
+        durationSeconds: 3600,
+        subjectId: 'sub1',
+        topicId: 'top1',
+        type: 'study',
+      },
     ],
-    subjects: [
-      { id: 'sub1', name: 'Constitucional', topics: [{ id: 'top1', name: 'Artigo 5º' }] },
-    ],
+    subjects: [{ id: 'sub1', name: 'Constitucional', topics: [{ id: 'top1', name: 'Artigo 5º' }] }],
   };
 
   const mockSessionService = {
@@ -70,9 +98,16 @@ test('createSessionHistoryController — CRUD de sessões inline e exclusão', (
     state,
     sessionService: mockSessionService,
     todayISO: () => '2026-03-10',
-    persistAndRender: () => { saved = true; },
-    showToast: msg => { toasted = msg; },
-    showConfirm: (_msg, onConfirm) => { confirmed = true; onConfirm(); },
+    persistAndRender: () => {
+      saved = true;
+    },
+    showToast: msg => {
+      toasted = msg;
+    },
+    showConfirm: (_msg, onConfirm) => {
+      confirmed = true;
+      onConfirm();
+    },
   });
 
   // Iniciar edição
@@ -100,8 +135,22 @@ test('createSessionHistoryController — CRUD de sessões inline e exclusão', (
 test('createSessionHistoryController — expansão de dias e filtros dinâmicos', () => {
   const state = {
     studySessions: [
-      { id: 's1', date: '2026-03-10', durationSeconds: 3600, subjectId: 'sub1', topicId: 'top1', type: 'study' },
-      { id: 's2', date: '2026-03-09', durationSeconds: 1800, subjectId: 'sub1', topicId: 'top1', type: 'study' },
+      {
+        id: 's1',
+        date: '2026-03-10',
+        durationSeconds: 3600,
+        subjectId: 'sub1',
+        topicId: 'top1',
+        type: 'study',
+      },
+      {
+        id: 's2',
+        date: '2026-03-09',
+        durationSeconds: 1800,
+        subjectId: 'sub1',
+        topicId: 'top1',
+        type: 'study',
+      },
     ],
     subjects: [{ id: 'sub1', name: 'Constitucional', topics: [] }],
   };
@@ -111,7 +160,9 @@ test('createSessionHistoryController — expansão de dias e filtros dinâmicos'
   const controller = createSessionHistoryController({
     state,
     todayISO: () => '2026-03-10',
-    onFilterChange: () => { filterChanged = true; },
+    onFilterChange: () => {
+      filterChanged = true;
+    },
   });
 
   // Atualiza filtro de tipo

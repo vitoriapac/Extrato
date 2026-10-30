@@ -12,26 +12,47 @@ function createMockDom() {
       innerHTML: '',
       classList: {
         classes: new Set(),
-        add(c) { this.classes.add(c); },
-        remove(c) { this.classes.delete(c); },
+        add(c) {
+          this.classes.add(c);
+        },
+        remove(c) {
+          this.classes.delete(c);
+        },
         toggle(c, force) {
           if (force !== undefined) {
-            if (force) this.classes.add(c); else this.classes.delete(c);
+            if (force) this.classes.add(c);
+            else this.classes.delete(c);
             return force;
           }
-          if (this.classes.has(c)) { this.classes.delete(c); return false; }
-          this.classes.add(c); return true;
+          if (this.classes.has(c)) {
+            this.classes.delete(c);
+            return false;
+          }
+          this.classes.add(c);
+          return true;
         },
-        contains(c) { return this.classes.has(c); },
+        contains(c) {
+          return this.classes.has(c);
+        },
       },
       attributes: {},
-      setAttribute(k, v) { this.attributes[k] = String(v); },
-      getAttribute(k) { return this.attributes[k] ?? null; },
-      removeAttribute(k) { delete this.attributes[k]; },
-      focus() { el.isFocused = true; },
+      setAttribute(k, v) {
+        this.attributes[k] = String(v);
+      },
+      getAttribute(k) {
+        return this.attributes[k] ?? null;
+      },
+      removeAttribute(k) {
+        delete this.attributes[k];
+      },
+      focus() {
+        el.isFocused = true;
+      },
       isFocused: false,
       isConnected: true,
-      getClientRects() { return [{ width: 100, height: 20 }]; },
+      getClientRects() {
+        return [{ width: 100, height: 20 }];
+      },
       querySelector(selector) {
         if (selector === '[data-guided-action="next"]') {
           return elements.get('guidedNextBtn') || null;
@@ -71,8 +92,12 @@ function createMockDom() {
     body: {
       classList: {
         classes: new Set(),
-        add(c) { this.classes.add(c); },
-        remove(c) { this.classes.delete(c); },
+        add(c) {
+          this.classes.add(c);
+        },
+        remove(c) {
+          this.classes.delete(c);
+        },
       },
     },
     activeElement: null,
@@ -101,14 +126,20 @@ test('onboardingModalController: navegação de passos e abertura/fechamento', a
   let toasted = '';
   const state = {
     examDate: '2026-12-01',
-    metas: { horasPorDia: { '1': 2, '2': 2 } },
+    metas: { horasPorDia: { 1: 2, 2: 2 } },
     subjects: [
       {
         id: 'sub-1',
         name: 'Direito Constitucional',
         archived: false,
         topics: [
-          { id: 'top-1', name: 'Direitos Fundamentais', archived: false, difficulty: 'Médio', estimatedStudyMinutes: 60 },
+          {
+            id: 'top-1',
+            name: 'Direitos Fundamentais',
+            archived: false,
+            difficulty: 'Médio',
+            estimatedStudyMinutes: 60,
+          },
         ],
       },
     ],
@@ -136,7 +167,9 @@ test('onboardingModalController: navegação de passos e abertura/fechamento', a
     getUiState: () => uiState,
     isDemoMode: () => false,
     ensureExamCatalog: async () => {},
-    showToast: msg => { toasted = msg; },
+    showToast: msg => {
+      toasted = msg;
+    },
     escapeHtml: s => String(s),
     escapeAttr: s => String(s),
     formatPlanMinutes: m => `${m} min`,
@@ -150,8 +183,12 @@ test('onboardingModalController: navegação de passos e abertura/fechamento', a
     },
     getSubjectById: id => state.subjects.find(s => s.id === id),
     activeSubjects: () => state.subjects.filter(s => !s.archived),
-    scheduleSave: () => { saved = true; },
-    persistAndRender: () => { saved = true; },
+    scheduleSave: () => {
+      saved = true;
+    },
+    persistAndRender: () => {
+      saved = true;
+    },
     buildStudyPlanProposal: () => null,
     calculateStudyPlanPreview: () => {},
     getStudyPlanPreview: () => null,
@@ -185,15 +222,27 @@ test('onboardingModalController: setGuidedSubjectLevel atualiza tópicos com tem
   const { document } = createMockDom();
   const state = {
     examDate: '2026-12-01',
-    metas: { horasPorDia: { '1': 2 } },
+    metas: { horasPorDia: { 1: 2 } },
     subjects: [
       {
         id: 'sub-1',
         name: 'Português',
         archived: false,
         topics: [
-          { id: 'top-1', name: 'Sintaxe', archived: false, difficulty: 'Médio', estimatedStudyMinutes: 60 },
-          { id: 'top-2', name: 'Morfologia', archived: false, difficulty: 'Médio', estimatedStudyMinutes: null },
+          {
+            id: 'top-1',
+            name: 'Sintaxe',
+            archived: false,
+            difficulty: 'Médio',
+            estimatedStudyMinutes: 60,
+          },
+          {
+            id: 'top-2',
+            name: 'Morfologia',
+            archived: false,
+            difficulty: 'Médio',
+            estimatedStudyMinutes: null,
+          },
         ],
       },
     ],
@@ -281,7 +330,9 @@ test('onboardingModalController: Escape fecha o modal de onboarding', () => {
   let prevented = false;
   controller.handleOverlayKeydown({
     key: 'Escape',
-    preventDefault: () => { prevented = true; },
+    preventDefault: () => {
+      prevented = true;
+    },
   });
 
   assert.equal(prevented, true);

@@ -135,7 +135,8 @@ export function wirePlanningAndGoalsUi(deps: Record<string, any>) {
     captureReadinessBeforeStrategy: approvalReadinessService.captureReadinessBeforeStrategy,
     invalidatePlanPreview: () => studyPlanBuilderController.clearStudyPlanPreviewState(),
     resetRecordListLimits,
-    updateExamBlueprint: (field, val) => goalsBlueprintService.updateExamBlueprint(field as any, val),
+    updateExamBlueprint: (field, val) =>
+      goalsBlueprintService.updateExamBlueprint(field as any, val),
     getProgressiveLists: () => (globalThis as Record<string, any>).studytrackProgressiveLists,
     EXAM_TAGS,
     EXAM_SOURCES,

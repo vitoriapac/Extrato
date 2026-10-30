@@ -16,7 +16,7 @@ function createMockState() {
     metasPorDisciplina: [],
     planningCapacityHistory: [],
     metas: {
-      horasPorDia: { '0': 2, '1': 3, '2': 3, '3': 3, '4': 3, '5': 3, '6': 4 },
+      horasPorDia: { 0: 2, 1: 3, 2: 3, 3: 3, 4: 3, 5: 3, 6: 4 },
     },
     settings: {},
     examBlueprint: { activeExamTags: ['tag1'] },

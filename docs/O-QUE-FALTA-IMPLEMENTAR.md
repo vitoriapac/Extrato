@@ -27,6 +27,7 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 | **Central de Ajuda 2.0** | Instruções Reativas, Micro-Simuladores & Code-Splitting | Concluída | Code-splitting assíncrono em `src/help.bundle.js` (~80 KB), Preact 11 unificado via `preact-render-to-string`, simulador de retenção Ebbinghaus (`EbbinghausSimulator.tsx`), simulador de amostragem/evidência com 95% CI (`EvidenceConfidenceSimulator.tsx`), hash routing (`#instrucoes?topic=<id>`), cópia de atalho direto no clipboard, chips interativos, metadados automáticos e conformidade estrita WCAG AA. |
 | **Auditoria UX/UI & A11y** | Contraste WCAG 2.1 AA, Pilha Sticky, Modal de Dados & Tipografia | Concluída | Token `--border-control` (> 3:1), raios 2px, formatDelta(), sticky sem gap, colapso na demo, modal `#dataManagementOverlay`, ícones SVG nativos e piso 12px. |
 | **Modularização do app.ts** | Desacoplamento Arquitetural Integral (Fases 1–10) | Concluída | Redução de 10.921 para **146 linhas (-98,7%)**, zero funções de negócio no `src/app.ts`, isolamento completo de domínio (`src/domain/`), aplicação (`src/application/`), controladores de abas/modais (`src/ui/` e `src/features/`) e wiring de bootstrap (`src/bootstrap/`). Fast Gate com 1.154 testes passando em ~43s e CI Full/Visual 100% verde. |
+| **Onboarding & Primeiro Uso para Iniciantes** | Acolhimento, Starter Packs e Ativação no Dia 1 (Fases 1–4) | Concluída | Welcome Hero State (`NextActionCard.tsx`) sem links vazios, Starter Packs em 1 clique (`src/domain/onboarding/starter-packs.ts`), Calibrador Anti-Sobrecarga com folga dominical (`src/domain/onboarding/routine-sustainability.ts`), Sessão de Aquecimento de 15 min no Dia 1 (`FirstStepsMission.tsx`), Tour Essencial em 3 Paradas e pedagogia de estudo sem culpa (`guided-tour-steps.ts`). Fast Gate com 1.172 testes passando em 36s e 19/19 testes E2E verdes. |
 
 ---
 
@@ -37,12 +38,16 @@ O StudyTrack opera em arquitetura moderna **TypeScript (`strict: true`), Preact 
 - **Card de Próxima Ação (`NextActionCard.tsx`):**
   - Responde de imediato às 6 perguntas contratuais: _O que estudar_, _Por que estudar_, _Quanto tempo reservar_, _Importância para a prova_, _Evidência que indica a necessidade_ e _O que fazer a seguir_.
   - Ação de 1 clique `[Iniciar agora]` conectada ao cronômetro sem fricção.
+  - **Welcome Hero Card (Primeiro Acesso):** Quando o usuário acessa pela primeira vez (`isFirstRun = !hasPlan && !hasHistory`), o card atua como portal de acolhimento amigável com CTAs diretos para montar o plano guiado ou explorar a demonstração, neutralizando links âncora vazios para `#overview-timer`.
 - **Rastreador de Ponto de Parada (Bookmarks de Estudo):**
   - Mapeado em [`src/domain/topic-bookmark.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/topic-bookmark.ts) e integrado aos cards e linhas de tópicos (`SubjectTopicRow.tsx`).
   - Permite retomar leituras de PDF, videoaulas e lei seca exatamente do ponto em que parou (ex.: `📄 Pág. 42 de 110 (38%)`).
-- **Primeiro Uso Guiado & Missão do 1º Dia:**
+- **Primeiro Uso Guiado & Ativação no Dia 1:**
   - Pílulas de data pré-edital (90, 180, 365 dias) e 3 presets de disponibilidade semanal (Leve, Padrão, Fim de Semana).
-  - Componente [`FirstStepsMission.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/FirstStepsMission.tsx) reativo na aba Hoje orientando os primeiros passos práticos.
+  - **Starter Packs de 1 Clique:** Templates pré-configurados de matérias fundamentais para Área Administrativa, Carreiras Policiais e Área Fiscal & Controle ([`src/domain/onboarding/starter-packs.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/onboarding/starter-packs.ts)).
+  - **Calibrador Anti-Sobrecarga:** Detecção preventiva de rotinas exaustivas (>35h/sem ou 7 dias contínuos) e atalho `[🏖️ Folga aos Domingos]` ([`src/domain/onboarding/routine-sustainability.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/onboarding/routine-sustainability.ts)).
+  - **Sessão de Aquecimento (15 min):** Componente [`FirstStepsMission.tsx`](file:///c:/Users/vitor/Documents/Extrato/src/ui/components/FirstStepsMission.tsx) reativo na aba Hoje com ação rápida `[⚡ Aquecimento (15 min)]` para superar a inércia do primeiro dia disparando o cronômetro para a 1ª atividade planejada.
+  - **Tour Essencial de 3 Paradas:** Roteiro cognitivamente leve (Hoje → Visão Geral → Questões) e pedagogia de estudo sem culpa ([`src/domain/onboarding/guided-tour-steps.ts`](file:///c:/Users/vitor/Documents/Extrato/src/domain/onboarding/guided-tour-steps.ts)).
 
 ### 2.2. Fase 2: Inteligência Preditiva, Modo Reta Final & Explicabilidade
 
@@ -190,4 +195,4 @@ Todas as alterações preservam os seguintes critérios inegociáveis:
 
 1. **Tipagem Estática:** 100% TypeScript com `strict: true` validado via `npm run check:types` e `npm run check:types:tests`.
 2. **Design System:** Interfaces declarativas Preact (`.tsx`) e utilitários Tailwind CSS v4 integrados aos tokens de cores.
-3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 1.154 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 43 segundos (meta < 120s).
+3. **Orçamento do Gate Rápido:** `npm run test:fast` executando 1.172 testes unitários em fuso duplo (UTC e `America/Sao_Paulo`) mais smoke E2E em cerca de 36 segundos (meta < 120s).

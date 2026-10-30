@@ -75,9 +75,7 @@ function createMockDeps() {
       confirm: () => ({ createdItems: 2 }),
       undo: () => ({ removedItems: 2, protectedItems: [] }),
     },
-    intelligenceCandidates: () => [
-      { subjectId: 's1', topicId: 't1', remainingMinutes: 60 },
-    ],
+    intelligenceCandidates: () => [{ subjectId: 's1', topicId: 't1', remainingMinutes: 60 }],
     getTopicName: id => (id === 't1' ? 'Controle' : id),
     getSubjectName: id => (id === 's1' ? 'Direito' : id),
     todayISO: () => '2026-10-28',

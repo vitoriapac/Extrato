@@ -82,9 +82,7 @@ test('calculateTopicErrorRate pondera taxa de topico e disciplina', () => {
 });
 
 test('calculateSubjectWeeklyTrend gera array de semanas', () => {
-  const records = [
-    { subjectId: 's1', date: '2026-10-26', resolved: 10, correct: 8 },
-  ];
+  const records = [{ subjectId: 's1', date: '2026-10-26', resolved: 10, correct: 8 }];
   const trend = calculateSubjectWeeklyTrend({
     records,
     subjectId: 's1',

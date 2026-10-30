@@ -111,13 +111,16 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
   function currentPhaseStrategy() {
     const state = deps.getState();
     const candidates = deps.intelligenceCandidates();
-    const readiness = deps.readinessResult && deps.computeApprovalMetrics
-      ? deps.readinessResult(deps.computeApprovalMetrics())
-      : null;
+    const readiness =
+      deps.readinessResult && deps.computeApprovalMetrics
+        ? deps.readinessResult(deps.computeApprovalMetrics())
+        : null;
     const trajectory = deps.currentAchievementProjection
       ? deps.currentAchievementProjection(undefined, undefined, candidates).model
       : null;
-    const evidenceScope = deps.examEvidenceContext ? deps.examEvidenceContext() : { content: { eligibleTopics: [] } };
+    const evidenceScope = deps.examEvidenceContext
+      ? deps.examEvidenceContext()
+      : { content: { eligibleTopics: [] } };
 
     return buildPhasePlanningPreview({
       plan: latestStudyPlan(),
@@ -181,7 +184,8 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
   }
 
   function studyPlanCandidates({ guidedDefaults = false }: any = {}) {
-    return deps.intelligenceCandidates()
+    return deps
+      .intelligenceCandidates()
       .filter((item: any) => item.topicId)
       .map((item: any) => {
         let estimatedMinutes = item.remainingMinutes;
@@ -293,7 +297,10 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
   }
 
   function useAdaptivePlanAdvice() {
-    const adjusted = applyAdaptivePlanningAdvice(studyPlanPreview, studyPlanPreview?.adaptiveAdvice);
+    const adjusted = applyAdaptivePlanningAdvice(
+      studyPlanPreview,
+      studyPlanPreview?.adaptiveAdvice
+    );
     if (!adjusted) {
       showToast(
         'Não há capacidade livre suficiente nos tópicos indicados para aplicar esta sugestão.'
@@ -407,7 +414,8 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
       days,
       dueReviews,
       reserveRatio: 0.1,
-      eligibleTopicIds: deps.intelligenceCandidates()
+      eligibleTopicIds: deps
+        .intelligenceCandidates()
         .filter((item: any) => !item.archived && !item.blockedPrerequisites?.length)
         .map((item: any) => item.topicId),
     });
@@ -503,7 +511,9 @@ export function createStudyPlanBuilderController(deps: StudyPlanBuilderControlle
             (item: any) =>
               escapeHtml(item.topicName || item.id) +
               ' — requer ' +
-              (item.prerequisites || []).map((id: any) => escapeHtml(deps.getTopicName ? deps.getTopicName(id) || id : id)).join(', ')
+              (item.prerequisites || [])
+                .map((id: any) => escapeHtml(deps.getTopicName ? deps.getTopicName(id) || id : id))
+                .join(', ')
           )
           .join(
             '; '

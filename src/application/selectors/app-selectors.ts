@@ -87,19 +87,13 @@ export function activeTopics(subjects: any[]): any[] {
   return allTopics(subjects).filter(topic => !topic.subjectArchived && !topic.topicArchived);
 }
 
-export function isActiveSubjectId(
-  subjects: any[],
-  subjectId: string | null | undefined
-): boolean {
+export function isActiveSubjectId(subjects: any[], subjectId: string | null | undefined): boolean {
   if (!subjectId) return false;
   const subject = getSubjectById(subjects, subjectId);
   return Boolean(subject && !subject.archived);
 }
 
-export function isActiveTopicId(
-  subjects: any[],
-  topicId: string | null | undefined
-): boolean {
+export function isActiveTopicId(subjects: any[], topicId: string | null | undefined): boolean {
   if (!topicId) return false;
   const found = getTopicById(subjects, topicId);
   return Boolean(found && !found.subject.archived && !found.topic.archived);

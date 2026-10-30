@@ -151,14 +151,27 @@ export function FirstStepsMission({
                 </div>
 
                 {!isDone && (
-                  <Button
-                    variant={isActive ? 'primary' : 'secondary'}
-                    size="small"
-                    data-first-steps-action={mission.ctaAction}
-                    onClick={() => onExecuteMission?.(mission.ctaAction)}
-                  >
-                    {mission.ctaLabel} →
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {Boolean(mission.quickAction && mission.quickActionLabel) && (
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        data-first-steps-action={mission.quickAction!}
+                        onClick={() => onExecuteMission?.(mission.quickAction!)}
+                        aria-label="Iniciar aquecimento rápido de 15 minutos"
+                      >
+                        {mission.quickActionLabel}
+                      </Button>
+                    )}
+                    <Button
+                      variant={isActive ? 'primary' : 'secondary'}
+                      size="small"
+                      data-first-steps-action={mission.ctaAction}
+                      onClick={() => onExecuteMission?.(mission.ctaAction)}
+                    >
+                      {mission.ctaLabel} →
+                    </Button>
+                  </div>
                 )}
               </li>
             );

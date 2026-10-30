@@ -65,7 +65,12 @@ export interface WeeklyCloseModalControllerDeps {
   escapeAttr: (text: any) => string;
   uid: (prefix: string) => string;
   showToast: (message: string) => void;
-  showConfirm: (message: string, onConfirm: () => void, onCancel?: () => void, options?: any) => void;
+  showConfirm: (
+    message: string,
+    onConfirm: () => void,
+    onCancel?: () => void,
+    options?: any
+  ) => void;
   scheduleSave: () => void;
   renderApprovalDashboard?: () => void;
   renderPlanoHoje?: () => void;
@@ -139,7 +144,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     upsertSnapshot: upsertWeeklyCloseSnapshot,
     clock: { today: todayISO, nowISO, addDays },
     idGenerator: uid,
-    getDailyCapacity: (date: string) => (deps.metaHoursForDate ? deps.metaHoursForDate(date) * 60 : 240),
+    getDailyCapacity: (date: string) =>
+      deps.metaHoursForDate ? deps.metaHoursForDate(date) * 60 : 240,
     onChanged: renderStudyTrack32Insights,
     onBeforeApply: () => {
       if (deps.saveCurrentReadinessSnapshot) deps.saveCurrentReadinessSnapshot();
@@ -265,7 +271,9 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     const state = deps.getState();
     const scope = deps.examEvidenceContext();
     const scopedTopicIds = new Set(scope.content.eligibleTopics.map((item: any) => item.id));
-    const scopedSubjectIds = new Set(scope.content.eligibleTopics.map((item: any) => item.subjectId));
+    const scopedSubjectIds = new Set(
+      scope.content.eligibleTopics.map((item: any) => item.subjectId)
+    );
     const dailyPlansSource = deps.planningRepository?.getDailyPlans
       ? deps.planningRepository.getDailyPlans()
       : state.dailyPlans || [];
@@ -282,9 +290,10 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
 
     const model = buildStudyTrack32ViewModel({
       readinessSnapshots: state.readinessSnapshots || [],
-      readiness: deps.readinessResult && deps.computeApprovalMetrics
-        ? deps.readinessResult(deps.computeApprovalMetrics())
-        : null,
+      readiness:
+        deps.readinessResult && deps.computeApprovalMetrics
+          ? deps.readinessResult(deps.computeApprovalMetrics())
+          : null,
       today: todayISO(),
       sessions: scope.sessions.included,
       questions: scope.questions.included,

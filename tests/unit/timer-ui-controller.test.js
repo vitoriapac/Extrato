@@ -10,7 +10,9 @@ test('createTimerUiController — ativa e desativa modo foco restaurando a aba d
   const mockBody = {
     classList: {
       classes: new Set(),
-      contains(cls) { return this.classes.has(cls); },
+      contains(cls) {
+        return this.classes.has(cls);
+      },
       toggle(cls, force) {
         if (force === undefined) {
           if (this.classes.has(cls)) this.classes.delete(cls);
@@ -32,7 +34,9 @@ test('createTimerUiController — ativa e desativa modo foco restaurando a aba d
       if (!elements[id]) {
         elements[id] = {
           id,
-          setAttribute(k, v) { this[k] = v; },
+          setAttribute(k, v) {
+            this[k] = v;
+          },
           textContent: '',
           focus() {},
         };
@@ -51,7 +55,9 @@ test('createTimerUiController — ativa e desativa modo foco restaurando a aba d
       activeTab = tab;
       activatedTabs.push(tab);
     },
-    renderTimerFocusContext: () => { contextRendered = true; },
+    renderTimerFocusContext: () => {
+      contextRendered = true;
+    },
     isTimerRunning: () => false,
     getTopicById: () => null,
   });

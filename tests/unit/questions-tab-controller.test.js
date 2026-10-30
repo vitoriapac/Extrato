@@ -155,7 +155,10 @@ test('QuestionsTabController - add, edit and delete question', () => {
   controller.deleteQuestaoRow(q.id);
   assert.equal(confirms.length, 1);
   confirms[0].onConfirm();
-  assert.equal(state.questoes.some(x => x.id === q.id), false);
+  assert.equal(
+    state.questoes.some(x => x.id === q.id),
+    false
+  );
 });
 
 test('QuestionsTabController - error breakdown normalization and limiting', () => {
