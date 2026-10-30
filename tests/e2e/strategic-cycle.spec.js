@@ -161,6 +161,9 @@ test('prova → decisão → plano → execução → resultado → fechamento �
     'Da semana encerrada ao próximo plano'
   );
   await page
+    .locator('#weeklyCloseDashboard [data-delegated-click="openWeeklyCloseRecord()"]')
+    .click();
+  await page
     .locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"] ')
     .click();
   const closed = await getState(page),
@@ -263,6 +266,9 @@ test('Desempenho → Diagnóstico → prévia → confirmação → execução �
   expect(executed.studySessions.at(-1).recommendationId).toBe(timer.recommendationId);
   await page.clock.setSystemTime(new Date('2026-10-04T12:00:00-03:00'));
   await activateTab(page, 'metas');
+  await page
+    .locator('#weeklyCloseDashboard [data-delegated-click="openWeeklyCloseRecord()"]')
+    .click();
   await page
     .locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"] ')
     .click();

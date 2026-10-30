@@ -68,7 +68,7 @@ test('histórico compara apenas retratos salvos no escopo ativo e registra o con
     api.renderAll();
   });
   await activateTab(page, 'metas');
-  const history = page.locator('#weeklyCloseDashboard .weekly-focus-history');
+  const history = page.locator('#weeklyCloseHistoryDashboard .weekly-focus-history');
   await expect(history).toContainText('Foco estratégico ao longo do tempo');
   await expect(history.locator('.weekly-focus-history-row')).toHaveCount(2);
   await expect(history).toContainText('60%');
@@ -77,11 +77,13 @@ test('histórico compara apenas retratos salvos no escopo ativo e registra o con
   const accessibility = await new AxeBuilder({ page }).include('#weeklyCloseDashboard').analyze();
   expect(accessibility.violations).toEqual([]);
   await page
+    .locator('#weeklyCloseDashboard [data-delegated-click="openWeeklyCloseRecord()"]')
+    .click();
+  await expect(page.locator('#weeklyRecordPreview')).toBeFocused();
+  await page
     .locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"] ')
     .click();
-  await expect(
-    page.locator('#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]')
-  ).toBeFocused();
+  await expect(page.locator('#weeklyRecordStatus')).toBeFocused();
   const saved = await page.evaluate(() =>
     window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1)
   );

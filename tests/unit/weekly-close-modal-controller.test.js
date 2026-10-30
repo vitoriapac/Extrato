@@ -76,8 +76,9 @@ test('WeeklyCloseModalController — renderWeeklyCloseActions gera formulário d
   const { deps } = createMockDeps();
   const controller = createWeeklyCloseModalController(deps);
 
+  // Salvar o retrato agora fica no ato "O retrato", depois da prévia.
   const emptyActions = controller.renderWeeklyCloseActions({ priorities: [] });
-  assert.match(emptyActions, /Salvar fechamento desta semana/);
+  assert.equal(emptyActions, '');
 
   const actionsWithPriorities = controller.renderWeeklyCloseActions({
     priorities: [

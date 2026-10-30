@@ -59,6 +59,8 @@ export function buildDelegatedActionHandlers(deps: DelegatedActionsRegistryDeps)
     setStrategicTimelineGroup: (...args: any[]) => c.weeklyClose?.setStrategicTimelineGroup?.(...args),
     setPriorityHistorySubject: (...args: any[]) => c.weeklyClose?.setPriorityHistorySubject?.(...args),
     saveWeeklyCloseSnapshot: (...args: any[]) => c.weeklyClose?.saveWeeklyCloseSnapshot?.(...args),
+    openWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.openWeeklyCloseRecord?.(...args),
+    closeWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.closeWeeklyCloseRecord?.(...args),
     previewWeeklyCloseActions: (...args: any[]) => c.weeklyClose?.previewWeeklyCloseActions?.(...args),
     confirmWeeklyCloseActions: (...args: any[]) => c.weeklyClose?.confirmWeeklyCloseActions?.(...args),
     toggleWeeklyPriority: (...args: any[]) => c.weeklyClose?.toggleWeeklyPriority?.(...args),

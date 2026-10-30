@@ -1,6 +1,7 @@
 import { buildWeeklyClose } from '../../domain/analytics/weekly-close.js';
 import {
   createWeeklyCloseSnapshot,
+  planWeeklyCloseRevision,
   upsertWeeklyCloseSnapshot,
 } from '../../application/analytics/weekly-close-snapshot.js';
 import { buildStudyTrack32ViewModel } from '../../application/analytics/build-studytrack32-view-model.js';
@@ -42,6 +43,7 @@ import { buildProjectionCloseContext } from '../../application/projection/index.
 import { renderProjectionCloseContext } from '../../ui/renderers/projection-close-context-renderer.js';
 import { resolveExamPhase } from '../../domain/planning/adaptive-planning.js';
 import { scrollBehavior } from '../../ui/accessibility.js';
+import { renderWeeklyCloseRecord } from '../../ui/renderers/weekly-close-record-renderer.js';
 
 export interface WeeklyCloseModalControllerDeps {
   document?: any;
@@ -93,6 +95,9 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
   const uid = deps.uid;
 
   let currentStudyTrackModel: any = null;
+  // Prévia do retrato aberta e retrato acabado de salvar (mensagem de confirmação).
+  let recordPreviewOpen = false;
+  let recordSavedNow = false;
   let strategicTimelineFilter = 'all';
   let strategicTimelineGroup = 'none';
   let priorityHistorySubject = '';
@@ -173,9 +178,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
 
   function renderWeeklyCloseActions(close: Record<string, any>): string {
     const priorities = close?.priorities || [];
-    if (!priorities.length) {
-      return `<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button>`;
-    }
+    if (!priorities.length) return '';
     const draft = weeklyCloseController.view();
     const checks = priorities
       .map((item: any, index: any) => {
@@ -184,7 +187,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
       })
       .join('');
     const proposal = draft.proposal;
-    return `<section class="weekly-close-actions"><h4>Decida as prioridades</h4>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()">Conferir impacto</button>${proposal ? `<div class="weekly-action-preview"><strong>${proposal.allocations.length} alocações · ${formatPlanMinutes(proposal.unallocatedMinutes)} sem capacidade</strong><button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button></div>` : ''}<button class="btn ghost small" data-delegated-click="saveWeeklyCloseSnapshot()">Salvar fechamento desta semana</button></section>`;
+    return `<section class="weekly-close-actions"><h4>Decida as prioridades</h4>${checks}<button class="btn ghost small" data-delegated-click="previewWeeklyCloseActions()">Conferir impacto</button>${proposal ? `<div class="weekly-action-preview"><strong>${proposal.allocations.length} alocações · ${formatPlanMinutes(proposal.unallocatedMinutes)} sem capacidade</strong><button class="btn small" data-delegated-click="confirmWeeklyCloseActions()">Aplicar prioridades selecionadas</button></div>` : ''}</section>`;
   }
 
   function previewWeeklyCloseActions() {
@@ -203,6 +206,32 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     }
   }
 
+  function weeklyCloseCandidate() {
+    if (!currentStudyTrackModel) return null;
+    return createWeeklyCloseSnapshot(currentStudyTrackModel, {
+      savedAt: null,
+      id: 'preview',
+      examPhase: recordedExamPhase(),
+    });
+  }
+
+  function focusRecord(selector: string) {
+    (doc?.querySelector(selector) as HTMLElement | null)?.focus();
+  }
+
+  function openWeeklyCloseRecord() {
+    recordPreviewOpen = true;
+    recordSavedNow = false;
+    renderStudyTrack32Insights();
+    focusRecord('#weeklyRecordPreview');
+  }
+
+  function closeWeeklyCloseRecord() {
+    recordPreviewOpen = false;
+    renderStudyTrack32Insights();
+    focusRecord('[data-delegated-click="openWeeklyCloseRecord()"]');
+  }
+
   function saveWeeklyCloseSnapshot() {
     const state = deps.getState();
     const snapshot = createWeeklyCloseSnapshot(currentStudyTrackModel, {
@@ -217,14 +246,11 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     }
     if (deps.saveCurrentReadinessSnapshot) deps.saveCurrentReadinessSnapshot();
     scheduleSave();
+    recordPreviewOpen = false;
+    recordSavedNow = true;
     if (deps.renderApprovalDashboard) deps.renderApprovalDashboard();
-    if (doc) {
-      (
-        doc.querySelector(
-          '#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]'
-        ) as HTMLElement | null
-      )?.focus();
-    }
+    renderStudyTrack32Insights();
+    focusRecord('#weeklyRecordStatus');
     showToast('Fechamento semanal salvo como retrato deste período.');
   }
 
@@ -313,7 +339,9 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         periodStart: model.period.start,
         today: todayISO(),
       });
+      const candidate = weeklyCloseCandidate();
       close.innerHTML =
+        '<section class="weekly-close-act" aria-labelledby="weeklyWeekTitle"><h4 class="weekly-close-act__title" id="weeklyWeekTitle">A semana</h4>' +
         renderWeeklyClose(model.weeklyClose, { ...options, includeNext: false }) +
         renderWeeklyDecisionCycle(model.weeklyClose.decisionCycle, {
           adherence: model.weeklyClose.adherence,
@@ -332,11 +360,30 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
             ) + renderProjectionCloseContext(trajectoryClose, { escapeHtml }),
         }) +
         renderWeeklyStrategicFocus(model.weeklyClose.strategicFocus) +
-        renderWeeklySnapshotHistory() +
+        '</section>' +
+        renderWeeklyCloseRecord({
+          close: model.weeklyClose,
+          candidate,
+          plan: candidate
+            ? planWeeklyCloseRevision(state.weeklyCloseSnapshots || [], candidate)
+            : null,
+          previewOpen: recordPreviewOpen,
+          savedNow: recordSavedNow,
+          formatMinutes: formatPlanMinutes,
+          escapeHtml,
+        }) +
+        '<section class="weekly-close-act" aria-labelledby="weeklyNextTitle"><h4 class="weekly-close-act__title" id="weeklyNextTitle">A decisão</h4>' +
         renderWeeklyCloseNext(model.weeklyClose, options) +
         (model.weeklyClose.state === 'insufficient'
           ? ''
-          : renderWeeklyCloseActions(model.weeklyClose));
+          : renderWeeklyCloseActions(model.weeklyClose)) +
+        '</section>';
+    }
+    const closeHistory = doc.getElementById('weeklyCloseHistoryDashboard');
+    if (closeHistory) {
+      closeHistory.innerHTML =
+        renderWeeklySnapshotHistory() ||
+        '<p class="analytics-note">Nenhum retrato salvo ainda. Cada fechamento salvo aparece aqui, sem recálculo.</p>';
     }
 
     const timeline = doc.getElementById('strategicTimelineDashboard');
@@ -427,6 +474,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     toggleWeeklyPriority,
     confirmWeeklyCloseActions,
     saveWeeklyCloseSnapshot,
+    openWeeklyCloseRecord,
+    closeWeeklyCloseRecord,
     openWeeklyClose,
     setStrategicTimelineFilter,
     setStrategicTimelineGroup,

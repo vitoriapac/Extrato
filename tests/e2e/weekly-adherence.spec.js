@@ -151,6 +151,7 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
   });
   expect(after).toEqual(before);
   await activateTab(page, 'metas');
+  await close.getByRole('button', { name: 'Revisar o retrato da semana', exact: true }).click();
   await close.getByRole('button', { name: 'Salvar fechamento desta semana', exact: true }).click();
   const frozen = await page.evaluate(() =>
     structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1))
@@ -171,7 +172,7 @@ test('fechamento preserva aderência e pendências, e a revisão só navega para
     structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1))
   );
   expect(preserved).toEqual(frozen);
-  const history = close.locator('.weekly-adherence-history');
+  const history = page.locator('#weeklyCloseHistoryDashboard .weekly-adherence-history');
   await expect(history).toContainText('Aderência nos fechamentos salvos');
   await history.locator('details > summary').first().click();
   await expect(history).toContainText('30 min');

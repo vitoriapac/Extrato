@@ -35,21 +35,34 @@ const content = (snapshot: Record<string, any>) =>
     snapshot.priorityDecisions ?? null,
     Boolean(snapshot.appliedAt),
   ]);
-// Existing callers keep this name; changed content now appends a version.
-export function upsertWeeklyCloseSnapshot(
+// What saving `snapshot` would do, by the same rule the upsert applies: the prévia never
+// promises a revision that the save would not create.
+export function planWeeklyCloseRevision(
   list: Array<Record<string, any>>,
   snapshot: Record<string, any>
 ) {
-  if (!snapshot || list.some((item: any) => item.id === snapshot.id)) return false;
   const same = list.filter(
     (item: any) =>
       item.period?.start === snapshot.period?.start &&
       item.period?.end === snapshot.period?.end &&
       strategicScopeKey(item.activeExamTags) === strategicScopeKey(snapshot.activeExamTags)
   );
-  const previous = same.at(-1);
-  if (previous && content(previous) === content(snapshot)) return false;
-  const revision = Math.max(0, ...same.map((item: any) => Number(item.revision) || 1)) + 1;
+  const previous = same.at(-1) || null;
+  return {
+    previous,
+    unchanged: Boolean(previous && content(previous) === content(snapshot)),
+    revision: Math.max(0, ...same.map((item: any) => Number(item.revision) || 1)) + 1,
+  };
+}
+
+// Existing callers keep this name; changed content now appends a version.
+export function upsertWeeklyCloseSnapshot(
+  list: Array<Record<string, any>>,
+  snapshot: Record<string, any>
+) {
+  if (!snapshot || list.some((item: any) => item.id === snapshot.id)) return false;
+  const { previous, unchanged, revision } = planWeeklyCloseRevision(list, snapshot);
+  if (unchanged) return false;
   list.push({ ...structuredClone(snapshot), revision, previousSnapshotId: previous?.id || null });
   return true;
 }

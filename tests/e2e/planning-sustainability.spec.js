@@ -109,6 +109,7 @@ test('sustainability opens a readonly capacity preview, navigates and freezes it
     before
   );
   await activateTab(page, 'metas');
+  await close.getByRole('button', { name: 'Revisar o retrato da semana', exact: true }).click();
   await close.getByRole('button', { name: 'Salvar fechamento desta semana', exact: true }).click();
   const snapshot = await page.evaluate(() =>
     structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1))

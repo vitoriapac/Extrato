@@ -2447,3 +2447,18 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 .limits-disclosure[open]>summary{color:var(--heading)}
 .limits-disclosure>.analytics-note{margin:0 0 var(--space-2)}
 @media (max-width:360px){.compact-header .compact-plan{display:none}}@media (max-width:600px){.statement .mini-stats{display:none}}
+/* Fechamento semanal em três atos: a semana, o retrato, a próxima semana. */
+.weekly-close-act{display:grid;gap:var(--space-4);padding-block:var(--space-6);border-top:1px solid var(--paper-line)}
+.weekly-close-act:first-child{padding-top:0;border-top:0}
+.weekly-close-act__title{margin:0;font:var(--font-weight-semibold) var(--text-label)/1.3 var(--font-data);letter-spacing:.08em;text-transform:uppercase;color:var(--heading)}
+.weekly-close-record p{margin:0;max-width:75ch}
+.weekly-record-preview{display:grid;gap:var(--space-4);padding:var(--space-4) var(--space-5);background:var(--surface-card);border:1px solid var(--border-default);border-top:3px solid var(--gold);border-radius:var(--radius)}
+.weekly-record-preview>strong{color:var(--heading)}
+.weekly-record-preview dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:var(--space-3) var(--space-5);margin:0}
+.weekly-record-preview dt{font:var(--text-label) var(--font-data);letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary)}
+.weekly-record-preview dd{margin:var(--space-1) 0 0;color:var(--text-primary);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.weekly-record-changes{display:grid;gap:var(--space-2);padding-top:var(--space-3);border-top:1px solid var(--border-default)}
+.weekly-record-changes ul,.weekly-record-changes p{margin:0}
+.weekly-record-changes ul{padding-left:var(--space-5)}
+.weekly-record-actions{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.weekly-record-status{font-weight:var(--font-weight-semibold);color:var(--heading)}

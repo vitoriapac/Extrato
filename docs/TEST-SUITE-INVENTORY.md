@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-255 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+257 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -260,6 +260,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/reviews.test.js | node | Revisões | functional | — | contract | none |
 | tests/unit/rhythm-estimator.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/risk-score.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/scroll-behavior.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/search-controller.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/session-history-controller.test.js | node | Sessões | critical | — | contract | none |
 | tests/unit/session-history.test.js | node | Sessões | critical | — | contract | none |
@@ -334,6 +335,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/weekly-close-adherence.test.js | node | Aderência | critical | — | contract | none |
 | tests/unit/weekly-close-controller.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-modal-controller.test.js | node | Fechamento | functional | — | contract | none |
+| tests/unit/weekly-close-record-renderer.test.js | node | Fechamento | functional | — | contract | none |
 | tests/unit/weekly-close-snapshot.test.js | node | Fechamento | critical | — | contract | none |
 | tests/unit/what-if-modal-components.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/what-if-simulator.test.js | node | Aplicação | functional | — | contract | none |

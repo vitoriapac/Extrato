@@ -14,6 +14,7 @@ import {
   prevTourStep,
   closeTour,
   GUIDED_TOUR_STEPS,
+  ESSENTIAL_TOUR_STEPS,
 } from '../../src/domain/onboarding/guided-tour-steps.js';
 
 test('applyOnboardingDateShortcut calcula datas sem deriva de fuso horário', () => {
@@ -58,6 +59,8 @@ test('buildFirstStepsMission exibe missões pós-plano e calcula progresso', () 
   assert.equal(planOnly.totalCount, 3);
   assert.equal(planOnly.progressPercent, 33);
   assert.equal(planOnly.activeMission?.id, 'session');
+  assert.equal(planOnly.activeMission?.quickAction, 'start-quick-warmup');
+  assert.ok(planOnly.activeMission?.quickActionLabel?.includes('Aquecimento'));
 
   // Cenário 3: Tem plano e 1 sessão -> 2/3 completo
   const planAndSession = buildFirstStepsMission({
@@ -208,4 +211,23 @@ test('buildOnboardingViewModel detecta activeDateShortcut, activeAvailabilityPre
   assert.equal(model.activeAvailabilityPreset, 'work_study');
   assert.ok(model.planFeasibility);
   assert.equal(model.planFeasibility.status, 'comfortable');
+});
+
+test('ESSENTIAL_TOUR_STEPS — gerencia 3 paradas focadas no primeiro uso do estudante', () => {
+  const state = createGuidedTourState(0, ESSENTIAL_TOUR_STEPS);
+  assert.equal(state.totalSteps, 3);
+  assert.equal(state.currentStep?.id, 'today-execution');
+  assert.equal(state.currentStep?.tab, 'hoje');
+
+  const step2 = nextTourStep(state);
+  assert.equal(step2.currentStep?.id, 'overview-action');
+  assert.equal(step2.currentStep?.tab, 'dashboard');
+
+  const step3 = nextTourStep(step2);
+  assert.equal(step3.currentStep?.id, 'questions-hub');
+  assert.equal(step3.currentStep?.tab, 'questoes');
+  assert.equal(step3.isLast, true);
+
+  const done = nextTourStep(step3);
+  assert.equal(done.active, false);
 });

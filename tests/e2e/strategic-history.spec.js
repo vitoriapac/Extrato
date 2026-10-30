@@ -66,11 +66,16 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
   const save = page.locator(
     '#weeklyCloseDashboard [data-delegated-click="saveWeeklyCloseSnapshot()"]'
   );
+  await page
+    .locator('#weeklyCloseDashboard [data-delegated-click="openWeeklyCloseRecord()"]')
+    .click();
   await save.click();
   const first = await page.evaluate(() =>
     structuredClone(window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.at(-1))
   );
-  await save.click();
+  // Sem mudanças, o retrato aparece como já salvo e não oferece salvar de novo.
+  await expect(page.locator('#weeklyRecordStatus')).toContainText('revisão 1');
+  await expect(save).toHaveCount(0);
   expect(
     await page.evaluate(() => window.__EXTRATO_TEST__.getState().weeklyCloseSnapshots.length)
   ).toBe(1);
@@ -89,6 +94,11 @@ test('históricos filtram, expandem, versionam e sobrevivem ao backup no mobile'
     api.renderAll();
   });
   await expect(page.locator('#weeklyCloseDashboard .close-comparison')).toContainText('Precisão');
+  await page
+    .locator('#weeklyCloseDashboard [data-delegated-click="openWeeklyCloseRecord()"]')
+    .click();
+  await expect(page.locator('#weeklyRecordPreview')).toContainText('revisão 2');
+  await expect(page.locator('#weeklyRecordPreview')).toContainText('continua guardada');
   await save.click();
   const result = await page.evaluate(() => {
     const api = window.__EXTRATO_TEST__,

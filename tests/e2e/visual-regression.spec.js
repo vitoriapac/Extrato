@@ -33,17 +33,20 @@ for (const viewport of viewports) {
     await expect(close.locator('.weekly-next')).toContainText('Próxima semana');
     await expect(close.locator('.weekly-decision-summary')).toContainText('Decisão sugerida');
     await expect(close.locator('.weekly-next')).not.toContainText('Próxima ação');
-    const order = await close.evaluate(element =>
-      [...element.children].map(child => child.className)
+    // Três atos em ordem: a semana, o retrato, a decisão sobre a próxima semana.
+    const acts = await close.evaluate(element =>
+      [...element.children].map(child => child.querySelector('h4')?.textContent)
     );
-    expect(order.indexOf('weekly-kpis')).toBeLessThan(order.indexOf('weekly-assessment'));
-    expect(order.indexOf('weekly-assessment')).toBeLessThan(
-      order.indexOf('weekly-strategic-focus')
+    expect(acts).toEqual(['A semana', 'O retrato', 'A decisão']);
+    const week = await close.evaluate(element =>
+      [...element.children[0].children].map(child => child.className)
     );
-    expect(order.indexOf('weekly-strategic-focus')).toBeLessThan(
-      order.indexOf('weekly-focus-history')
-    );
-    expect(order.indexOf('weekly-focus-history')).toBeLessThan(order.indexOf('weekly-next'));
+    expect(week.indexOf('weekly-kpis')).toBeLessThan(week.indexOf('weekly-assessment'));
+    expect(week.indexOf('weekly-assessment')).toBeLessThan(week.indexOf('weekly-strategic-focus'));
+    // O histórico de foco saiu do fechamento e vive na seção Histórico.
+    await expect(close.locator('.weekly-focus-history')).toHaveCount(0);
+    await expect(page.locator('#weeklyCloseHistoryDashboard .weekly-focus-history')).toHaveCount(1);
+    await expect(close.locator('.weekly-close-act').nth(2).locator('.weekly-next')).toHaveCount(1);
     const bounds = await close.evaluate(element => ({
       right: element.getBoundingClientRect().right,
       viewport: innerWidth,

@@ -64,10 +64,43 @@ export const GUIDED_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
     order: 5,
     tab: 'metas',
     selector: '#metasPlanning',
-    title: 'Planejamento vivo e Fechamento',
+    title: 'Planejamento vivo e Estudo Sem Culpa',
     message:
-      'Redistribua atrasos sem estourar sua capacidade diária e feche a semana para congelar seu histórico estratégico.',
+      'Redistribua atrasos sem estourar sua capacidade diária. Imprevistos acontecem: o motor reorganiza seus estudos sem plano quebrado.',
     badgeLabel: '5 de 5 · Planejamento',
+  },
+]);
+
+export const ESSENTIAL_TOUR_STEPS: readonly GuidedTourStep[] = Object.freeze([
+  {
+    id: 'today-execution',
+    order: 1,
+    tab: 'hoje',
+    selector: '.plano-hoje-card',
+    title: 'Seu QG diário de estudo',
+    message:
+      'Aqui ficam suas matérias planejadas para hoje e o cronômetro integrado. Basta seguir a lista sem perder tempo decidindo o que fazer.',
+    badgeLabel: '1 de 3 · Hoje',
+  },
+  {
+    id: 'overview-action',
+    order: 2,
+    tab: 'dashboard',
+    selector: '#overviewNextAction',
+    title: 'Sua bússola estratégica',
+    message:
+      'Em qualquer momento de dúvida, o algoritmo cruza peso do edital, lacunas e revisões para apontar uma única recomendação clara.',
+    badgeLabel: '2 de 3 · Visão Geral',
+  },
+  {
+    id: 'questions-hub',
+    order: 3,
+    tab: 'questoes',
+    selector: '#panel-questoes .section-head',
+    title: 'Onde o diagnóstico acontece',
+    message:
+      'Registre suas baterias ou importe relatórios do QConcursos/Tec Concursos. É aqui que o StudyTrack aprende onde você erra para calibrar suas revisões.',
+    badgeLabel: '3 de 3 · Questões',
   },
 ]);
 
