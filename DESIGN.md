@@ -220,7 +220,7 @@ Ação primária (`--action-primary-bg` / `--action-primary-text` / `--action-pr
 - **Title** (600, 1rem, 1.3): títulos de blocos de decisão ("Hoje", diagnóstico principal).
 - **Body** (400, 0.875rem, 1.5): explicações e formulários; parágrafos limitados a 80ch.
 - **Label** (600, 12px, 0.08em, MAIÚSCULAS): títulos de cards, abas, botões (botões a 0.03em).
-- **Caption** (400, 10–11px, 0.04–0.14em, MAIÚSCULAS): eyebrows, rótulos de KPI, navegação de seções, badges.
+- **Caption** (400, 12px, 0.04–0.14em, MAIÚSCULAS; 12px é o piso de toda a interface): eyebrows, rótulos de KPI, navegação de seções, badges.
 
 Pesos permitidos: 400, 500, 600. O 700 existe como token mas não é a voz do sistema.
 

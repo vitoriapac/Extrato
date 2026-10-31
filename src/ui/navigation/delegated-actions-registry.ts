@@ -66,6 +66,7 @@ export function buildDelegatedActionHandlers(
     saveWeeklyCloseSnapshot: (...args: any[]) => c.weeklyClose?.saveWeeklyCloseSnapshot?.(...args),
     openWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.openWeeklyCloseRecord?.(...args),
     closeWeeklyCloseRecord: (...args: any[]) => c.weeklyClose?.closeWeeklyCloseRecord?.(...args),
+    goToWeeklyDecision: (...args: any[]) => c.weeklyClose?.goToWeeklyDecision?.(...args),
     previewWeeklyCloseActions: (...args: any[]) =>
       c.weeklyClose?.previewWeeklyCloseActions?.(...args),
     confirmWeeklyCloseActions: (...args: any[]) =>

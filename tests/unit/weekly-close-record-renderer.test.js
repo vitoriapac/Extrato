@@ -74,3 +74,18 @@ test('retrato sem mudanças informa que já está salvo e não oferece salvar de
   assert.match(html, /Retrato salvo em 25\/10\/2026 · revisão 1/);
   assert.doesNotMatch(html, /saveWeeklyCloseSnapshot|openWeeklyCloseRecord/);
 });
+
+test('logo após salvar, o retrato vira comprovante com selo, números congelados e passo seguinte', () => {
+  const saved = {
+    ...createWeeklyCloseSnapshot(model(60), { id: 'r1', savedAt: '2026-10-25T20:00:00Z' }),
+    revision: 1,
+  };
+  const candidate = createWeeklyCloseSnapshot(model(60), { id: 'preview', savedAt: null });
+  const html = view([saved], candidate, { savedNow: true });
+  assert.match(html, /weekly-record-stamp/);
+  assert.match(html, /Rev\. 1 · 25\/10\/2026/);
+  assert.match(html, /id="weeklyRecordStatus"[^>]*>Retrato de .* registrado · revisão 1/);
+  assert.match(html, /<dt>Realizado<\/dt><dd>60 min<\/dd>/);
+  assert.match(html, /goToWeeklyDecision\(\)/);
+  assert.doesNotMatch(html, /saveWeeklyCloseSnapshot/);
+});

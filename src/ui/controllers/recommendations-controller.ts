@@ -137,7 +137,7 @@ export function renderPendingOutcomeHtml(
     ? `O estudo de ${escapeHtml(getTopicName(pending.topicId))} ajudou?`
     : 'Esta recomendação ajudou?';
 
-  return `<div class="recommendation-outcome" role="group" aria-label="Avaliação do resultado da recomendação"><strong>${label}</strong><button class="btn small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(
+  return `<div class="recommendation-outcome" role="group" aria-label="Avaliação do resultado da recomendação"><strong>${label}</strong><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(
     pending.recommendationId
   )}',true)">Sim</button><button class="btn ghost small" data-delegated-click="rateRecommendationOutcome('${escapeAttr(
     pending.recommendationId

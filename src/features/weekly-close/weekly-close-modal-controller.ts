@@ -268,8 +268,16 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     recordSavedNow = true;
     if (deps.renderApprovalDashboard) deps.renderApprovalDashboard();
     renderStudyTrack32Insights();
+    // O comprovante no lugar confirma o salvamento; um toast extra ficava sob a faixa da demonstração.
     focusRecord('#weeklyRecordStatus');
-    showToast('Fechamento semanal salvo como retrato deste período.');
+  }
+
+  function goToWeeklyDecision() {
+    const title = doc?.getElementById('weeklyNextTitle') as HTMLElement | null;
+    if (!title) return;
+    title.tabIndex = -1;
+    title.scrollIntoView({ block: 'start', behavior: scrollBehavior() });
+    title.focus({ preventScroll: true });
   }
 
   function renderStudyTrack32Insights() {
@@ -508,6 +516,7 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     saveWeeklyCloseSnapshot,
     openWeeklyCloseRecord,
     closeWeeklyCloseRecord,
+    goToWeeklyDecision,
     openWeeklyClose,
     setStrategicTimelineFilter,
     setStrategicTimelineGroup,

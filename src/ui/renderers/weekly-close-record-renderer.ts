@@ -62,11 +62,20 @@ export function renderWeeklyCloseRecord({
   if (plan.unchanged && previous) {
     const when = formatDateBR(previous.savedAt);
     const revision = Number(previous.revision) || 1;
-    const message = savedNow
-      ? `Retrato salvo · revisão ${revision} de ${escapeHtml(period)}.`
-      : `Retrato salvo em ${escapeHtml(when)} · revisão ${revision}. Nada mudou desde então.`;
+    if (savedNow) {
+      // Salvar o retrato fecha a semana como um extrato carimbado: o que ficou guardado e o passo seguinte.
+      const frozen = weeklyCloseFigures(previous.weeklyClose, formatMinutes)
+        .map(
+          ([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`
+        )
+        .join('');
+      const hasPriorities = Boolean((close.priorities || []).length);
+      return section(
+        `<div class="weekly-record-receipt"><div class="weekly-record-stamp" aria-hidden="true"><span>Registrado</span><span>Rev. ${revision} · ${escapeHtml(when)}</span></div><p class="weekly-record-status" id="weeklyRecordStatus" role="status" tabindex="-1">Retrato de ${escapeHtml(period)} registrado · revisão ${revision}. Fica no Histórico e não será recalculado.</p><dl>${frozen}</dl><button class="btn ghost small" type="button" data-delegated-click="goToWeeklyDecision()">${hasPriorities ? 'Decidir as prioridades da semana' : 'Ver a decisão da semana'}</button></div>`
+      );
+    }
     return section(
-      `<p class="weekly-record-status" id="weeklyRecordStatus" role="status" tabindex="-1">${message}</p><p class="analytics-note">Os retratos ficam em Histórico e não são recalculados.</p>`
+      `<p class="weekly-record-status" id="weeklyRecordStatus" role="status" tabindex="-1">Retrato salvo em ${escapeHtml(when)} · revisão ${revision}. Nada mudou desde então.</p><p class="analytics-note">Os retratos ficam em Histórico e não são recalculados.</p>`
     );
   }
 

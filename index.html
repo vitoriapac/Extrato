@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=d3c96b3f1cf2">
-<link rel="stylesheet" href="styles/app.css?v=d3c96b3f1cf2">
+<link rel="stylesheet" href="styles/tailwind.css?v=422cfde49712">
+<link rel="stylesheet" href="styles/app.css?v=422cfde49712">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -88,7 +88,7 @@
       <input type="search" id="globalSearchInput" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="globalSearchResults" aria-label="Buscar ações, páginas, tópicos, notas ou tags" placeholder="O que você quer fazer? (Ctrl+K)">
       <div class="search-results" id="globalSearchResults" role="listbox" aria-label="Resultados e comandos"></div>
     </div>
-    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon">◐</span></button>
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar modo claro/escuro" aria-label="Mudar para o tema escuro"><span id="themeToggleIcon" aria-hidden="true"></span></button>
   </div>
 
   <div class="sticky-shell">
@@ -926,7 +926,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=d3c96b3f1cf2"></script>
+  <script src="src/app.bundle.js?v=422cfde49712"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

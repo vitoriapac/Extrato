@@ -1,3 +1,4 @@
+import { renderIconSvg } from '../primitives/icon.js';
 export function createPreferencesController({
   document,
   storage,
@@ -10,7 +11,8 @@ export function createPreferencesController({
     const dark = current() === 'dark',
       icon = document.getElementById('themeToggleIcon'),
       button = document.getElementById('themeToggleBtn');
-    if (icon) icon.textContent = dark ? '◑' : '◐';
+    // O ícone mostra o tema para o qual o botão leva.
+    if (icon) icon.innerHTML = renderIconSvg(dark ? 'sun' : 'moon', { size: 16 });
     if (button)
       button.setAttribute('aria-label', dark ? 'Mudar para modo claro' : 'Mudar para modo escuro');
     return current();
