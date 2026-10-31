@@ -287,9 +287,9 @@ test('sugestão fora do plano mantém a atividade planejada como escolha operaci
     dailyPriority: daily.priority,
   });
   assert.match(html, /Sugestão fora do plano de hoje/);
-  assert.match(html, /Seguir plano de hoje/);
+  assert.doesNotMatch(html, /Seguir plano de hoje/); // a escolha fica no cartão de Hoje
   assert.match(html, /Estudar como atividade adicional/);
-  assert.match(html, /data-ignore-outside-suggestion/);
+  assert.doesNotMatch(html, /data-ignore-outside-suggestion/);
   assert.match(html, /data-next-best-preview/);
   assert.equal(JSON.stringify(daily), before);
 });
