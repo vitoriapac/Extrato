@@ -259,7 +259,7 @@ test('atalho modificado navega sem capturar números isolados', async ({ page })
   await page.goto('/');
   await page.keyboard.press('2');
   await expect(page.locator('#panel-dashboard')).toHaveClass(/active/);
-  await page.keyboard.press('Control+Shift+Digit2');
+  await page.keyboard.press('Control+Shift+Digit3');
   await expect(page.locator('#panel-hoje')).toHaveClass(/active/);
 });
 

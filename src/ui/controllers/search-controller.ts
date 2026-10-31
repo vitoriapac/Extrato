@@ -179,6 +179,8 @@ export function createSearchController(options: SearchControllerOptions) {
 
     if (button.dataset.searchTopic) {
       jumpToTopic(button.dataset.searchSubject || '', button.dataset.searchTopic);
+      const topicInput = document.getElementById('globalSearchInput') as HTMLInputElement | null;
+      if (topicInput) topicInput.value = '';
       return;
     }
 
