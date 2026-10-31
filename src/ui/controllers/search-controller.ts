@@ -155,6 +155,11 @@ export function createSearchController(options: SearchControllerOptions) {
     });
     panel.classList.add('show');
     input.setAttribute('aria-expanded', 'true');
+    // Options get stable ids so the input can point at the active one (aria-activedescendant).
+    panel.querySelectorAll<HTMLElement>('.search-result-item').forEach((item, index) => {
+      item.id = `globalSearchOption-${index}`;
+    });
+    input.removeAttribute('aria-activedescendant');
 
     if (typeof input.getBoundingClientRect === 'function') {
       const inputRect = input.getBoundingClientRect();
@@ -247,15 +252,32 @@ export function createSearchController(options: SearchControllerOptions) {
 
     panel.addEventListener('click', handleActionClick);
 
+    // Combobox pattern: focus stays in the input, so typing keeps refining while the arrows
+    // move the active option and screen readers announce it.
     input.addEventListener('keydown', (event: KeyboardEvent) => {
       if (!['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) return;
       const items = [...panel.querySelectorAll<HTMLElement>('.search-result-item')];
-      const selected = event.key === 'ArrowUp' ? items.at(-1) : items[0];
-      if (selected) {
-        event.preventDefault();
-        if (event.key === 'Enter') selected.click();
-        else selected.focus();
+      if (!items.length) return;
+      event.preventDefault();
+      const current = items.findIndex(
+        item => item.id === input.getAttribute('aria-activedescendant')
+      );
+      if (event.key === 'Enter') {
+        items[Math.max(0, current)].click();
+        return;
       }
+      const next =
+        event.key === 'ArrowDown'
+          ? (current + 1) % items.length
+          : current <= 0
+            ? items.length - 1
+            : current - 1;
+      items.forEach((item, index) => {
+        item.setAttribute('aria-selected', String(index === next));
+        item.classList.toggle('is-active', index === next);
+      });
+      input.setAttribute('aria-activedescendant', items[next].id);
+      items[next].scrollIntoView?.({ block: 'nearest' });
     });
 
     panel.addEventListener('keydown', (event: KeyboardEvent) => {

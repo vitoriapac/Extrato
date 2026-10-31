@@ -15,8 +15,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=c13ed35844d7">
-<link rel="stylesheet" href="styles/app.css?v=c13ed35844d7">
+<link rel="stylesheet" href="styles/tailwind.css?v=a63dc3ec5bff">
+<link rel="stylesheet" href="styles/app.css?v=a63dc3ec5bff">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -189,7 +189,7 @@
       <div id="approvalDashboard"></div>
       <button class="btn ghost small" type="button" data-performance-jump="overview">Explorar desempenho completo →</button>
       <p class="overview-close-link">Fechamento semanal, linha do tempo e histórico de decisões ficam em Planejamento. <button class="btn ghost small" type="button" data-delegated-click="openWeeklyClose()">Abrir fechamento</button></p>
-      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3></header><div id="gapMapDashboard"></div></section>
+      <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Gravidade combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A ordem de estudo segue a prioridade da Próxima melhor ação.</p></header><div id="gapMapDashboard"></div></section>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
     </div>
     <details class="chart-card overview-fold">
@@ -237,7 +237,7 @@
         <p>Ajuste os filtros ou inicie uma nova sessão de estudo.</p>
         <div class="empty-state-actions">
           <button class="btn ghost small" data-delegated-click="clearSessionHistoryFilters()">Limpar filtros</button>
-          <button class="btn small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button>
+          <button class="btn ghost small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button>
         </div>
       </div>
       <div class="log-table-wrap study-sessions-table-wrap" id="studySessionsTableWrap">
@@ -655,7 +655,7 @@
     <div class="footer-primary-row">
       <span>Salvo automaticamente no seu navegador — extrato.gerado localmente</span>
       <div class="footer-actions">
-        <button class="btn small" id="enterDemoBtn">Explorar demonstração</button>
+        <button class="btn ghost small" id="enterDemoBtn" aria-describedby="enterDemoNote">Explorar demonstração</button><small class="footer-demo-note" id="enterDemoNote">Dados fictícios, separados dos seus.</small>
         <button type="button" class="btn ghost small" id="openDataManagementBtn" aria-haspopup="dialog" aria-expanded="false">Gerenciar dados e backups</button>
       </div>
     </div>
@@ -726,7 +726,7 @@
 <div class="modal-overlay" id="remoteSyncOverlay" role="dialog" aria-modal="true" aria-labelledby="remoteSyncTitle">
   <div class="modal-box remote-sync-box" style="max-width:540px;">
     <h3 id="remoteSyncTitle">Sincronização em Nuvem (WebDAV + E2EE)</h3>
-    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+    <p class="helper-text">
       Conecte-se ao seu Nextcloud, ownCloud ou WebDAV pessoal. Os dados são <strong>criptografados com AES-GCM 256 bits</strong> antes do envio. O servidor nunca tem acesso ao conteúdo dos seus estudos.
     </p>
 
@@ -926,7 +926,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=c13ed35844d7"></script>
+  <script src="src/app.bundle.js?v=a63dc3ec5bff"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

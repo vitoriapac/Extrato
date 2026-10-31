@@ -22,7 +22,7 @@ export function FinalStretchBanner({ banner, onOpenWhatIf }: FinalStretchBannerP
       <div class="space-y-1">
         <div class="flex items-center gap-2">
           <Icon name="flame" size={16} class="shrink-0" />
-          <span class="font-bold text-sm tracking-wide">{banner.badge}</span>
+          <span class="font-semibold text-sm tracking-wide">{banner.badge}</span>
           <span class="text-xs px-2 py-0.5 rounded-full font-semibold bg-surface-card/70">
             {banner.daysToExam === 0 ? 'Prova Hoje!' : `Faltam ${banner.daysToExam} dias`}
           </span>

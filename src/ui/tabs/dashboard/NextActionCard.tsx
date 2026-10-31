@@ -85,12 +85,12 @@ export function NextActionCard({
             data-welcome-hero="true"
           >
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-bold tracking-wider uppercase text-secondary">
+              <span className="text-xs font-semibold tracking-wider uppercase text-secondary">
                 PRIMEIRO ACESSO AO STUDYTRACK
               </span>
               <h3
                 id="welcomeHeroTitle"
-                className="text-lg font-bold text-primary m-0 flex items-center gap-2"
+                className="text-lg font-semibold text-primary m-0 flex items-center gap-2"
               >
                 {emptyState.onboardingTitle || 'Bem-vindo ao StudyTrack'}
               </h3>

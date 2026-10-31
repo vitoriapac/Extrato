@@ -27,7 +27,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
     >
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
-          <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+          <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
             <Icon name="chart-bar" size={14} class="text-primary" />
           </span>
           <h5 class="text-sm font-semibold text-text">
@@ -102,7 +102,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
               <span class="text-xs font-medium text-text-muted">
                 Margem de incerteza estatística:
               </span>
-              <div class="text-sm font-bold text-text">
+              <div class="text-sm font-semibold text-text">
                 ±{simulation.marginOfErrorPct}% de margem
               </div>
             </div>
@@ -110,7 +110,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
               <span class="text-xs font-medium text-text-muted">
                 Intervalo real plausível (95% CI):
               </span>
-              <div class="text-sm font-bold text-text">
+              <div class="text-sm font-semibold text-text">
                 {simulation.confidenceRange[0]}% a {simulation.confidenceRange[1]}%
               </div>
             </div>
@@ -147,7 +147,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
           </div>
         </div>
 
-        <p class="text-[11px] leading-relaxed text-text-muted flex items-start gap-1.5">
+        <p class="text-xs leading-relaxed text-text-muted flex items-start gap-1.5">
           <Icon name="bulb" size={14} class="shrink-0 text-amber mt-0.5" />
           <span>
             <strong>Princípio da Amostragem:</strong> Uma taxa de 100% com apenas 2 questões não

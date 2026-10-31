@@ -65,7 +65,7 @@ export function VerticalizedSyllabusView({
       {/* Header e Filtros */}
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-card p-4 rounded-default border border-border-default shadow-xs">
         <div>
-          <h3 class="text-base font-bold text-primary flex items-center gap-2">
+          <h3 class="text-base font-semibold text-primary flex items-center gap-2">
             <Icon name="clipboard-text" size={18} class="text-primary shrink-0" />
             <span>Edital Verticalizado Interativo</span>
           </h3>
@@ -123,7 +123,7 @@ export function VerticalizedSyllabusView({
           >
             {/* Cabeçalho da Disciplina */}
             <div class="bg-surface-subtle px-4 py-3 border-b border-border-subtle flex justify-between items-center">
-              <h4 class="font-bold text-sm text-primary">{subject.name}</h4>
+              <h4 class="font-semibold text-sm text-primary">{subject.name}</h4>
               <span class="text-xs text-secondary font-medium">
                 {subject.topics.length} tópicos
               </span>
@@ -305,7 +305,7 @@ export function VerticalizedSyllabusView({
           {/* Prévia dos Dados Analisados */}
           {parsedPreview && (
             <div class="rounded-default bg-surface-subtle p-3 border border-border-subtle max-h-52 overflow-y-auto space-y-2 text-xs">
-              <h5 class="font-bold text-primary">Prévia da Estrutura:</h5>
+              <h5 class="font-semibold text-primary">Prévia da Estrutura:</h5>
               {parsedPreview.subjects.map((sub, i) => (
                 <div key={i} class="space-y-1">
                   <div class="font-semibold text-primary">

@@ -60,6 +60,9 @@
   --color-status-success: var(--status-positive);
   --color-status-warning: var(--status-warning);
   --color-status-info: var(--status-info);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-content-muted: var(--text-muted);
 
   --font-body: var(--font-body);
   --font-display: var(--font-display);

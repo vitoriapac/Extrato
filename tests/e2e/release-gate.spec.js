@@ -10,8 +10,15 @@ test('paleta abre sem consulta, agrupa comandos e navega por teclado', async ({ 
   await expect(search).toHaveAttribute('aria-expanded', 'true');
   await expect(panel.getByRole('group', { name: 'Ações' })).toBeVisible();
   await expect(panel.getByRole('group', { name: 'Navegação' })).toBeVisible();
+  // Padrão combobox: o foco fica no campo e a seta marca a opção ativa.
   await search.press('ArrowDown');
-  await expect(panel.locator('.search-result-item').first()).toBeFocused();
+  const first = panel.locator('.search-result-item').first();
+  await expect(search).toBeFocused();
+  await expect(first).toHaveAttribute('aria-selected', 'true');
+  await expect(search).toHaveAttribute(
+    'aria-activedescendant',
+    (await first.getAttribute('id')) || ''
+  );
   await page.keyboard.press('Escape');
   await expect(panel).not.toHaveClass(/show/);
   await expect(search).toHaveAttribute('aria-expanded', 'false');

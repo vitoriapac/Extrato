@@ -57,7 +57,7 @@ export function QuestionLogTable({
         <td colSpan={8}>
           <div class="empty-state" style={{ border: 'none' }}>
             <p>Nenhuma sessão de questões registrada ainda.</p>
-            <button type="button" class="btn small" data-delegated-click="addQuestaoRow()">
+            <button type="button" class="btn ghost small" data-delegated-click="addQuestaoRow()">
               + Registrar sessão
             </button>
           </div>

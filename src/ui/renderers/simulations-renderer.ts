@@ -203,7 +203,7 @@ export function renderSimulationRows({
   renderFooter: (...args: any[]) => string;
 }) {
   if (!items.length)
-    return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum simulado registrado ainda.</p><button class="btn small" data-delegated-click="addSimuladoRow()">+ Registrar simulado</button></div></td></tr>`;
+    return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum simulado registrado ainda.</p><button class="btn ghost small" data-delegated-click="addSimuladoRow()">+ Registrar simulado</button></div></td></tr>`;
   const visibleItems = items.slice(0, visible);
   return (
     visibleItems

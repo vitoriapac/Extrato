@@ -315,6 +315,18 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
         : ok
           ? `<span class="wk-ok">✓ cumprida</span>`
           : `<span class="wk-fail">✗ não cumprida</span>`;
+    // Semanas anteriores ao primeiro registro não são listadas; a nota diz onde o histórico começa.
+    const lived = weeks.filter(w => !w.beforeStart);
+    const firstLived = lived.filter(w => !w.current).at(-1);
+    const note =
+      lived.length === weeks.length
+        ? ''
+        : `<p class="analytics-note">${
+            firstLived
+              ? `O histórico começa na semana de ${formatDate(firstLived.weekStart)}, com o seu primeiro registro.`
+              : 'As semanas encerradas aparecem aqui à medida que você registra estudo.'
+          }</p>`;
+    weeks = lived;
 
     container.innerHTML = `
     <div class="weekly-history-table-wrap">
@@ -342,7 +354,7 @@ export function createGoalsTabController(ctx: GoalsTabControllerContext) {
           .join('')}
       </tbody>
     </table>
-    </div>
+    </div>${note}
   `;
   }
 

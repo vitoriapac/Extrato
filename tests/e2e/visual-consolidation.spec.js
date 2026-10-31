@@ -296,7 +296,7 @@ test('fechamento semanal e configuração estratégica preservam a hierarquia vi
   await activateTab(page, 'dashboard');
   const rows = page.locator('#gapMapDashboard .data-row');
   if (await rows.count())
-    await expect(rows.first().locator('.data-score')).toContainText(/Prioridade \d+\/100/);
+    await expect(rows.first().locator('.data-score')).toContainText(/Gravidade \d+\/100/);
   await activateTab(page, 'metas');
   const strategicRow = page.locator('#examBlueprintConfig .exam-subject-row').first();
   expect(await strategicRow.evaluate(row => row.scrollWidth <= row.clientWidth + 1)).toBe(true);

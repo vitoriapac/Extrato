@@ -66,7 +66,7 @@ export function SimulatedRemediationModal({
           <div class="flex items-center gap-4 flex-wrap">
             <div class="text-right">
               <span class="text-xs text-content-secondary block">Aproveitamento</span>
-              <strong class="text-xl font-bold text-content-primary">
+              <strong class="text-xl font-semibold text-content-primary">
                 {diagnostic.scorePercent}%
               </strong>
             </div>
@@ -111,7 +111,7 @@ export function SimulatedRemediationModal({
 
         {/* Top 3 Vulnerabilidades (Sangria de Pontos) */}
         <div>
-          <h4 class="text-xs font-bold uppercase tracking-wider text-content-secondary mb-3">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary mb-3">
             Top 3 Vulnerabilidades — Maior Sangria de Pontos
           </h4>
           {diagnostic.topBleedingTopics.length === 0 ? (
@@ -125,7 +125,7 @@ export function SimulatedRemediationModal({
                 >
                   <div class="space-y-1">
                     <div class="flex items-center justify-between">
-                      <span class="text-[10px] font-bold text-status-danger uppercase tracking-wider">
+                      <span class="text-[10px] font-semibold text-status-danger uppercase tracking-wider">
                         #{index + 1} Maior Perda
                       </span>
                       <Badge variant={topic.accuracy < 50 ? 'danger' : 'warning'}>
@@ -154,7 +154,7 @@ export function SimulatedRemediationModal({
         <div>
           <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div>
-              <h4 class="text-xs font-bold uppercase tracking-wider text-content-secondary">
+              <h4 class="text-xs font-semibold uppercase tracking-wider text-content-secondary">
                 Plano de Remediação — 7 Dias
               </h4>
               <p class="text-xs text-content-muted mt-0.5">
@@ -183,7 +183,7 @@ export function SimulatedRemediationModal({
                 }`}
               >
                 <div class="flex justify-between items-center">
-                  <span class="font-bold text-content-primary">{item.dayLabel}</span>
+                  <span class="font-semibold text-content-primary">{item.dayLabel}</span>
                   <Badge variant={item.activityType === 'statute' ? 'warning' : 'info'}>
                     {item.activityType === 'statute'
                       ? 'Lei Seca'
@@ -193,7 +193,7 @@ export function SimulatedRemediationModal({
                   </Badge>
                 </div>
                 <p class="text-content-secondary font-medium leading-snug">{item.focusHeadline}</p>
-                <span class="text-[11px] text-content-muted block mt-auto">
+                <span class="text-xs text-content-muted block mt-auto">
                   {item.allocatedMinutes} min alocados
                 </span>
               </div>

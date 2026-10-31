@@ -158,4 +158,12 @@ test('createGoalsTabController — renderMetas e metas por disciplina montam HTM
   controller.renderHistoricoMetas(container, weeks);
   assert.match(container.innerHTML, /2026-10-20 – 2026-10-26/);
   assert.match(container.innerHTML, /cumprida/);
+
+  // Semanas anteriores ao primeiro registro não aparecem nem como "não cumprida".
+  controller.renderHistoricoMetas(container, [
+    { ...weeks[0], weekStart: '2026-10-27', weekEnd: '2026-11-02', current: true },
+    { ...weeks[0], semanalOk: false, beforeStart: true },
+  ]);
+  assert.doesNotMatch(container.innerHTML, /não cumprida/);
+  assert.match(container.innerHTML, /aparecem aqui à medida que você registra estudo/);
 });
