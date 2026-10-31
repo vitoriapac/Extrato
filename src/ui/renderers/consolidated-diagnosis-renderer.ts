@@ -20,13 +20,7 @@ export function renderConsolidatedDiagnosis(
       <div class="diagnostic-row-action"><span>PRÓXIMO PASSO</span><div class="diagnostic-row-buttons">${action ? `<button class="btn ghost small" type="button" data-study-action-source="${escapeAttr(action.source)}" data-study-action-id="${escapeAttr(action.id)}" data-activity-type="${escapeAttr(action.activityType)}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action.id)}','${escapeAttr(action.source)}')">${escapeHtml(action.label)}</button>` : ''}<button class="btn ghost small" type="button" data-analysis-nav="desempenho" data-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-topic-id="${escapeAttr(item.topicId)}"` : ''}>Ver evolução</button><button class="btn ghost small" type="button" data-analysis-nav="metas" data-subject-id="${escapeAttr(item.subjectId)}" ${item.topicId ? `data-topic-id="${escapeAttr(item.topicId)}"` : ''}>Planejar ação</button></div></div>
     </article>`;
   };
-  // Conteúdos sem evidência suficiente viram uma linha só: listá-los um a um repete o mesmo aviso.
-  const evidenced = rows.filter(item => item.state !== 'insufficient'),
-    insufficient = rows.filter(item => item.state === 'insufficient');
-  const first = evidenced.slice(0, 5),
-    remaining = evidenced.slice(5);
-  const insufficientHtml = insufficient.length
-    ? `<details class="performance-more diagnosis-insufficient"><summary>${insufficient.length} ${insufficient.length === 1 ? 'conteúdo' : 'conteúdos'} sem evidência suficiente · registre questões e sessões para diagnosticar</summary><div class="diagnosis-consolidated-list">${insufficient.map((item, index) => renderRow(item, evidenced.length + index)).join('')}</div></details>`
-    : '';
-  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por conteúdo, com evidências disponíveis para consulta.</p>${first.length ? `<div class="diagnosis-consolidated-list">${first.map(renderRow).join('')}</div>` : ''}${remaining.length ? `<details class="performance-more"><summary>Mostrar mais diagnósticos · +${remaining.length}</summary><div class="diagnosis-consolidated-list">${remaining.map((item, index) => renderRow(item, index + 5)).join('')}</div></details>` : ''}${insufficientHtml}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
+  const first = rows.slice(0, 5),
+    remaining = rows.slice(5);
+  return `<div class="diagnosis-consolidated"><p class="analytics-note">Um diagnóstico principal por conteúdo, com evidências disponíveis para consulta.</p><div class="diagnosis-consolidated-list">${first.map(renderRow).join('')}</div>${remaining.length ? `<details class="performance-more"><summary>Mostrar mais diagnósticos · +${remaining.length}</summary><div class="diagnosis-consolidated-list">${remaining.map((item, index) => renderRow(item, index + 5)).join('')}</div></details>` : ''}<p class="confidence-note">Diagnóstico estimado a partir dos registros disponíveis; não representa certeza de resultado.</p></div>`;
 }
