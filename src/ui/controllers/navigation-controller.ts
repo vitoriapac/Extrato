@@ -5,6 +5,7 @@ export const TAB_HASHES: Readonly<Record<string, string>> = Object.freeze({
 });
 export const MAIN_TABS = Object.freeze([
   'dashboard',
+  'desempenho',
   'hoje',
   'disciplinas',
   'calendario',
@@ -23,7 +24,7 @@ export function nextNavigationIndex(current: number, length: number, key: string
 export function shortcutTabIndex(event: any = {}) {
   const modifier = Boolean(event.ctrlKey || event.metaKey);
   if (!modifier || !event.shiftKey || event.altKey) return -1;
-  const match = /^Digit([1-8])$/.exec(event.code || '');
+  const match = /^Digit([1-9])$/.exec(event.code || '');
   return match ? Number(match[1]) - 1 : -1;
 }
 

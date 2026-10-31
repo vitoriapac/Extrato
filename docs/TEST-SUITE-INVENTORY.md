@@ -2,7 +2,7 @@
 
 Gerado por `node scripts/audit-test-suite.mjs`. Base medida: `4b4fe2334fc1be960ae8b416975bc8f1f5bb9555`.
 
-260 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
+261 arquivos Node e 62 arquivos E2E. Integrações existentes estão em tests/unit; não há uma suíte de integração separada.
 
 ## Tempos observados
 
@@ -168,6 +168,7 @@ Medições locais em Windows, não tempos do GitHub Actions. Duração por arqui
 | tests/unit/executive-summary.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/filter-panel.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/final-stretch-policy.test.js | node | Aplicação | functional | — | contract | none |
+| tests/unit/first-activity-date.test.js | node | Datas | critical | — | contract | none |
 | tests/unit/focus-energy-analytics.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-duration.test.js | node | Aplicação | functional | — | contract | none |
 | tests/unit/format-number.test.js | node | Aplicação | functional | — | contract | none |

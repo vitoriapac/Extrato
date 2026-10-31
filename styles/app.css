@@ -800,8 +800,11 @@
   }
   .event-hoje{background:var(--info-bg);color:var(--blue);}
   .event-atrasada{background:var(--red-bg);color:var(--red);}
-  .event-concluida{background:var(--green-bg);color:var(--green);}
+  .event-concluida{background:var(--green-bg);color:var(--green);text-decoration:line-through;}
   .event-futura{background:var(--slate-bg);color:var(--ink-soft);}
+  .cal-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:10px 0 0;padding:0;list-style:none;font-size:var(--text-micro);color:var(--ink-soft);}
+  .cal-legend li{display:flex;align-items:center;gap:6px;}
+  .cal-legend .cal-event{padding:0 4px;}
   .cal-event-more{font-size:var(--text-micro);color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;padding:1px 6px;}
   table.cal{width:100%;border-collapse:collapse;font-size:13px;min-width:1000px;}
   table.cal thead th{

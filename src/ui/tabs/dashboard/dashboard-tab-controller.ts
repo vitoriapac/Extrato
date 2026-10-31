@@ -15,6 +15,7 @@ import {
 import { resolveExamPhase } from '../../../domain/planning/adaptive-planning.js';
 import { renderCollectionFooter } from '../../list-components.js';
 import { DEFAULT_LIST_VISIBLE_ITEMS } from '../../progressive-list.js';
+import { scrollBehavior } from '../../accessibility.js';
 import { renderExamPhaseCompact } from '../../renderers/adaptive-planning-renderer.js';
 import { renderCompactHeader, renderHeroHeader } from '../../renderers/header-renderer.js';
 
@@ -144,8 +145,8 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('questoes')"><div class="n">${formatDecimal(resolved)}</div><div class="l">Questões resolvidas</div></button>
     <button type="button" class="kpi-cell kpi-link ${hasResults ? (accuracy >= target ? 'ok' : 'warn') : ''}" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(accuracy)}</div><div class="l">Precisão · 30 dias</div></button>
     <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('desempenho')"><div class="n">${shown(simulations)}</div><div class="l">Simulados comparáveis</div></button>
-    <button type="button" class="kpi-cell kpi-link ${late > 0 ? 'warn' : ''}" data-delegated-click="navigateKpi('agenda','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
-    <button type="button" class="kpi-cell kpi-link ${hasResults ? (accuracy >= target ? 'ok' : 'warn') : ''}" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de acerto</div></button>`;
+    <button type="button" class="kpi-cell kpi-link ${late > 0 ? 'warn' : ''}" data-delegated-click="navigateKpi('calendario','overdue')"><div class="n">${late}</div><div class="l">Revisões atrasadas</div></button>
+    <button type="button" class="kpi-cell kpi-link" data-delegated-click="navigateKpi('metas')"><div class="n">${target}%</div><div class="l">Meta de acerto</div></button>`;
   }
 
   function renderExamProgress(): void {
@@ -206,9 +207,16 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
         if (deps.renderAgenda) deps.renderAgenda();
       }
     }
-    if (doc) {
-      doc.getElementById('panel-' + tab)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (!doc) return;
+    // A lista unificada do Calendário soma Calendário + Agenda, o mesmo total do KPI.
+    const target =
+      tab === 'calendario' && filter === 'overdue'
+        ? doc.getElementById('calAtrasadas')?.closest('.chart-card')
+        : null;
+    (target || doc.getElementById('panel-' + tab))?.scrollIntoView({
+      behavior: scrollBehavior(),
+      block: 'start',
+    });
   }
 
   function heatmapTooltip(summary: Record<string, any>): string {

@@ -66,7 +66,7 @@ test('cabeçalhos analíticos com dados densos em desktop', async ({ page }) => 
   ).toHaveCount(2);
   await activateTab(page, 'metas');
   await expect(
-    page.locator('.metas-close-section > .analytics-card > .module-heading')
+    page.locator('.metas-history-section > .analytics-card > .module-heading')
   ).toHaveCount(4);
   await activateTab(page, 'agenda');
   await expect(page.locator('#panel-agenda > .module-heading')).toBeVisible();

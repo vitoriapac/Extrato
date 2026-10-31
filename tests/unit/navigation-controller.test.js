@@ -9,6 +9,7 @@ import {
 test('ordem dos atalhos permanece estável', () => {
   assert.deepEqual(MAIN_TABS, [
     'dashboard',
+    'desempenho',
     'hoje',
     'disciplinas',
     'calendario',
@@ -26,7 +27,7 @@ test('navegação circular respeita setas, início e fim', () => {
 });
 test('atalho de área exige Ctrl ou Cmd junto de Shift', () => {
   assert.equal(shortcutTabIndex({ ctrlKey: true, shiftKey: true, code: 'Digit1' }), 0);
-  assert.equal(shortcutTabIndex({ metaKey: true, shiftKey: true, code: 'Digit8' }), 7);
+  assert.equal(shortcutTabIndex({ metaKey: true, shiftKey: true, code: 'Digit9' }), 8);
   assert.equal(shortcutTabIndex({ ctrlKey: true, code: 'Digit2' }), -1);
   assert.equal(
     shortcutTabIndex({ ctrlKey: true, shiftKey: true, altKey: true, code: 'Digit3' }),
@@ -36,17 +37,17 @@ test('atalho de área exige Ctrl ou Cmd junto de Shift', () => {
 });
 
 test('trocar de área abre no topo; reativar a mesma área não rola', () => {
-  const panels = {
-    dashboard: { classList: new Set(['active']) },
-    hoje: { classList: new Set() },
-  };
-  for (const panel of Object.values(panels)) {
-    const set = panel.classList;
-    panel.classList = {
+  const makeClassList = (initial = []) => {
+    const set = new Set(initial);
+    return {
       contains: name => set.has(name),
       toggle: (name, on) => (on ? set.add(name) : set.delete(name)),
     };
-  }
+  };
+  const panels = {
+    dashboard: { classList: makeClassList(['active']) },
+    hoje: { classList: makeClassList() },
+  };
   const tab = { classList: { toggle() {} }, setAttribute() {}, removeAttribute() {} };
   const scrolls = [];
   const document = {

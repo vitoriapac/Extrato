@@ -77,22 +77,43 @@ export function renderCalendarMonth({
       outside = cursor.getMonth() !== monthIndex;
     html += `<div class="month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''}"><div class="day-number">${cursor.getDate()}</div>`;
     dayEvents.slice(0, maxEventsPerDay).forEach((event: any) => {
-      let className = 'event-futura';
-      if (event.status === 'Concluído') className = 'event-concluida';
-      else {
-        const days = daysUntil(event.date);
-        if (days !== null && days < 0) className = 'event-atrasada';
-        else if (days === 0) className = 'event-hoje';
-      }
-      const tooltip = `${event.subject || '—'} · ${event.label} (${event.origem})`;
-      html += `<div class="cal-event ${className}" title="${escapeAttr(tooltip)}">${escapeHtml(event.subject || event.label)}</div>`;
+      const stage = calendarEventStage(event, daysUntil);
+      const tooltip = `${CALENDAR_EVENT_STAGES[stage]} · ${event.subject || '—'} · ${event.label} (${event.origem})`;
+      html += `<div class="cal-event event-${stage}" title="${escapeAttr(tooltip)}"><span class="sr-only">${CALENDAR_EVENT_STAGES[stage]}: </span>${escapeHtml(event.subject || event.label)}</div>`;
     });
     if (dayEvents.length > maxEventsPerDay)
       html += `<div class="cal-event-more">+${dayEvents.length - maxEventsPerDay} mais</div>`;
     html += '</div>';
     cursor.setDate(cursor.getDate() + 1);
   }
-  return { title: title.charAt(0).toUpperCase() + title.slice(1), html: html + '</div></div>' };
+  // Cor nunca é o único indicador: a legenda nomeia cada cor dos itens.
+  const legend = `<ul class="cal-legend" aria-label="Legenda do calendário">${Object.entries(
+    CALENDAR_EVENT_STAGES
+  )
+    .map(
+      ([stage, label]) =>
+        `<li><span class="cal-event event-${stage}" aria-hidden="true">Aa</span>${label}</li>`
+    )
+    .join('')}</ul>`;
+  return {
+    title: title.charAt(0).toUpperCase() + title.slice(1),
+    html: html + '</div></div>' + legend,
+  };
+}
+
+const CALENDAR_EVENT_STAGES = {
+  atrasada: 'Atrasada',
+  hoje: 'Hoje',
+  futura: 'Prevista',
+  concluida: 'Concluída',
+} as const;
+
+function calendarEventStage(event: any, daysUntil: any): keyof typeof CALENDAR_EVENT_STAGES {
+  if (event.status === 'Concluído') return 'concluida';
+  const days = daysUntil(event.date);
+  if (days !== null && days < 0) return 'atrasada';
+  if (days === 0) return 'hoje';
+  return 'futura';
 }
 
 export function renderCalendarFilterOptions({

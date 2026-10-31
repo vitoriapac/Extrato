@@ -131,6 +131,8 @@ test('createDashboardTabController — renderKPIs e navegação de KPI', () => {
   assert.match(elements['kpiGrid'].innerHTML, /88%/);
   assert.match(elements['kpiGrid'].innerHTML, /3/);
   assert.match(elements['kpiGrid'].innerHTML, /Revisões atrasadas/);
+  // O total soma Calendário + Agenda; só a lista do Calendário mostra os dois.
+  assert.match(elements['kpiGrid'].innerHTML, /navigateKpi\('calendario','overdue'\)/);
 
   controller.navigateKpi('agenda', 'overdue');
   assert.equal(navigatedTab, 'agenda');

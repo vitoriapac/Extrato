@@ -211,10 +211,17 @@ export function createSearchController(options: SearchControllerOptions) {
         document.querySelector('[data-delegated-click="openWeeklyClose()"]') as HTMLElement | null
       )?.click();
     } else if (action === 'diagnosis') {
-      activateTab('dashboard');
-      document
-        .getElementById('diagnosisCenter')
-        ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
+      // A central fica num <details> fechado em Hoje: abrir, rolar e focar o título.
+      activateTab('hoje');
+      const center = document.getElementById('diagnosisCenter');
+      const details = center?.closest('details') as HTMLDetailsElement | null;
+      if (details) details.open = true;
+      const heading = center?.closest('section')?.querySelector('h3') as HTMLElement | null;
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.scrollIntoView({ block: 'start', behavior: scrollBehavior() });
+        heading.focus({ preventScroll: true });
+      }
     } else if (action === 'recommendation') {
       const recommendations = options.getRecommendations ? options.getRecommendations() : [];
       const recommendation = recommendations[0];
@@ -232,7 +239,9 @@ export function createSearchController(options: SearchControllerOptions) {
 
     panel?.classList.remove('show');
     input?.setAttribute('aria-expanded', 'false');
-    input?.blur();
+    // Busca concluída: não deixar a consulta antiga no campo.
+    if (input) (input as HTMLInputElement).value = '';
+    if (document.activeElement === input) input?.blur();
   }
 
   function mount(): void {
