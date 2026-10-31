@@ -110,7 +110,7 @@ export function renderGapMap(model: Record<string, any>, { escapeHtml }: any) {
     ? model.items
         .map(
           (item: any) =>
-            `<article class="data-row"><strong>${safe(escapeHtml, item.name)}</strong><b class="data-score">Prioridade ${item.priority}/100</b><span>Lacuna de domínio ${item.gap ?? '—'} pts · impacto ${item.factors.examImpact ?? '—'}%${item.accuracyGap == null ? '' : ` · lacuna de acerto ${item.accuracyGap} p.p. até a meta de ${item.accuracyTarget}%`}</span></article>`
+            `<article class="data-row"><strong>${safe(escapeHtml, item.name)}</strong><b class="data-score">Gravidade ${item.priority}/100</b><span>Lacuna de domínio ${item.gap ?? '—'} pts · impacto ${item.factors.examImpact ?? '—'}%${item.accuracyGap == null ? '' : ` · lacuna de acerto ${item.accuracyGap} p.p. até a meta de ${item.accuracyTarget}%`}</span></article>`
         )
         .join('')
     : '<div class="analytics-empty"><span aria-hidden="true">◎</span><div><strong>Nenhuma lacuna priorizada</strong><p>As lacunas aparecerão quando houver tópicos e evidências suficientes.</p></div></div>';
