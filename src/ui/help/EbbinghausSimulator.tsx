@@ -25,7 +25,7 @@ export function EbbinghausSimulator(): JSX.Element {
     >
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
-          <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+          <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
             <Icon name="brain" size={14} class="text-primary" />
           </span>
           <h5 class="text-sm font-semibold text-text">
@@ -82,9 +82,9 @@ export function EbbinghausSimulator(): JSX.Element {
           />
           <div class="mt-1 flex justify-between text-[10px] text-text-muted">
             <span>D+0</span>
-            <span class={withReviews ? 'font-bold text-primary' : ''}>D+1 (1ª rev)</span>
-            <span class={withReviews ? 'font-bold text-primary' : ''}>D+7 (2ª rev)</span>
-            <span class={withReviews ? 'font-bold text-primary' : ''}>D+21 (3ª rev)</span>
+            <span class={withReviews ? 'font-semibold text-primary' : ''}>D+1 (1ª rev)</span>
+            <span class={withReviews ? 'font-semibold text-primary' : ''}>D+7 (2ª rev)</span>
+            <span class={withReviews ? 'font-semibold text-primary' : ''}>D+21 (3ª rev)</span>
             <span>D+30</span>
           </div>
         </div>
@@ -92,7 +92,7 @@ export function EbbinghausSimulator(): JSX.Element {
         <div class="rounded-default border border-border bg-surface p-3">
           <div class="flex items-center justify-between">
             <span class="text-xs font-medium text-text-muted">Retenção estimada na memória:</span>
-            <span class="text-base font-bold text-text">{simulation.retentionPct}%</span>
+            <span class="text-base font-semibold text-text">{simulation.retentionPct}%</span>
           </div>
 
           <div class="mt-1.5 h-3 w-full overflow-hidden rounded-full bg-surface-muted">
@@ -133,7 +133,7 @@ export function EbbinghausSimulator(): JSX.Element {
           </div>
         </div>
 
-        <p class="text-[11px] leading-relaxed text-text-muted flex items-start gap-1.5">
+        <p class="text-xs leading-relaxed text-text-muted flex items-start gap-1.5">
           <Icon name="bulb" size={14} class="shrink-0 text-amber mt-0.5" />
           <span>
             <strong>Por que isso importa?</strong> Sem revisões programadas, você precisará

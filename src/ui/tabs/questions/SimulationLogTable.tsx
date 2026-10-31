@@ -55,7 +55,7 @@ export function SimulationLogTable({
         <td colSpan={7}>
           <div class="empty-state" style={{ border: 'none' }}>
             <p>Nenhum simulado registrado ainda.</p>
-            <button type="button" class="btn small" data-delegated-click="addSimuladoRow()">
+            <button type="button" class="btn ghost small" data-delegated-click="addSimuladoRow()">
               + Registrar simulado
             </button>
           </div>

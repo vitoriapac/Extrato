@@ -36,7 +36,7 @@ export function renderHeatmap({
       <button class="btn ghost small" aria-pressed="${onlyActiveDays}" data-delegated-click="toggleStreakActiveDays()">${onlyActiveDays ? 'Mostrar todos os dias' : 'Apenas dias com atividade'}</button>
     </div>
     <div class="heatmap-grid">${cellsHtml}</div>
-    ${hasActivity ? '' : `<div class="empty-inline heatmap-empty"><p>Nenhuma atividade encontrada para este indicador e disciplina.</p><button class="btn small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button></div>`}
+    ${hasActivity ? '' : `<div class="empty-inline heatmap-empty"><p>Nenhuma atividade encontrada para este indicador e disciplina.</p><button class="btn ghost small" data-delegated-click="focusStudyTimer()">Iniciar estudo</button></div>`}
     <div class="heatmap-legend">0%<span class="heatmap-cell"></span><span class="heatmap-cell heat-1"></span><span class="heatmap-cell heat-2"></span><span class="heatmap-cell heat-3"></span>meta atingida</div>
     <div class="heatmap-summary"><span>Atividade: ${pluralize(activityStreak, 'dia')}</span><span>Meta atingida: ${pluralize(goalStreak, 'dia')}</span><span>${metric === 'hours' ? 'Cores: <50% · 50–99% · ≥100% da meta diária' : 'Intensidade relativa da atividade selecionada'}</span></div>
     ${selectedDate ? `<div class="heatmap-detail" role="status">${escapeHtml(selectedTooltip)} <button class="btn ghost small" data-delegated-click="viewSelectedHeatmapSessions()">Ver sessões deste dia</button></div>` : ''}`;

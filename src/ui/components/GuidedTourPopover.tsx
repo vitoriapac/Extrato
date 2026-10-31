@@ -148,7 +148,7 @@ export function GuidedTourPopover({
           <div className="flex flex-col gap-2.5">
             {/* Cabeçalho */}
             <div className="flex items-center justify-between gap-2">
-              <Badge variant="warning" className="text-xs font-bold uppercase tracking-wide">
+              <Badge variant="warning" className="text-xs font-semibold uppercase tracking-wide">
                 {step.badgeLabel || `${currentIndex + 1} de ${totalSteps}`}
               </Badge>
               <button
@@ -163,7 +163,7 @@ export function GuidedTourPopover({
             </div>
 
             {/* Conteúdo */}
-            <h3 id="guidedTourTitle" className="text-base font-bold text-on-navy m-0">
+            <h3 id="guidedTourTitle" className="text-base font-semibold text-on-navy m-0">
               {step.title}
             </h3>
             <p id="guidedTourMessage" className="text-xs text-on-navy/85 leading-relaxed m-0">

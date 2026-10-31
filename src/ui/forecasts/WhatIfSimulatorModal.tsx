@@ -136,7 +136,7 @@ export function WhatIfSimulatorModal({
           {/* Card Prontidão */}
           <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
             <span class="text-xs text-muted block mb-1">Prontidão Geral</span>
-            <div class="text-xl font-bold text-primary">{simulated.readinessScore}%</div>
+            <div class="text-xl font-semibold text-primary">{simulated.readinessScore}%</div>
             <div class="text-xs text-secondary mt-1">Atual: {baseline.readinessScore}%</div>
             {delta.readinessScoreDelta !== 0 && (
               <Badge
@@ -153,7 +153,7 @@ export function WhatIfSimulatorModal({
           {/* Card Carga Semanal */}
           <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
             <span class="text-xs text-muted block mb-1">Carga Semanal</span>
-            <div class="text-xl font-bold text-primary">{simulated.weeklyStudyHours}h</div>
+            <div class="text-xl font-semibold text-primary">{simulated.weeklyStudyHours}h</div>
             <div class="text-xs text-secondary mt-1">Atual: {baseline.weeklyStudyHours}h</div>
             {delta.weeklyStudyHoursDelta !== 0 && (
               <Badge
@@ -170,7 +170,7 @@ export function WhatIfSimulatorModal({
           {/* Card Cobertura do Edital */}
           <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
             <span class="text-xs text-muted block mb-1">Cobertura do Edital</span>
-            <div class="text-xl font-bold text-primary">{simulated.coveragePercent}%</div>
+            <div class="text-xl font-semibold text-primary">{simulated.coveragePercent}%</div>
             <div class="text-xs text-secondary mt-1">Atual: {baseline.coveragePercent}%</div>
             {delta.coveragePercentDelta !== 0 && (
               <Badge
@@ -187,7 +187,7 @@ export function WhatIfSimulatorModal({
           {/* Card Dias até a Meta */}
           <div class="rounded-default border border-border-default bg-surface-card p-3 shadow-xs">
             <span class="text-xs text-muted block mb-1">Prazo para a Meta</span>
-            <div class="text-xl font-bold text-primary">
+            <div class="text-xl font-semibold text-primary">
               {simulated.estimatedDaysToTarget != null
                 ? `${simulated.estimatedDaysToTarget} d`
                 : '—'}

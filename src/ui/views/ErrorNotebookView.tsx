@@ -176,7 +176,7 @@ export function ErrorNotebookView({
       {/* Cabeçalho do Caderno de Erros */}
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border-default pb-4">
         <div>
-          <h2 class="text-xl font-bold font-display text-primary m-0 flex items-center gap-2">
+          <h2 class="text-xl font-semibold font-display text-primary m-0 flex items-center gap-2">
             <Icon name="book" size={20} class="text-primary shrink-0" />
             <span>Caderno de Erros Ativo &amp; Flashcards</span>
           </h2>
@@ -269,25 +269,25 @@ export function ErrorNotebookView({
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Revisões Hoje</span>
-          <span class="text-lg font-bold text-amber font-display mt-0.5 block">
+          <span class="text-lg font-semibold text-amber font-display mt-0.5 block">
             {stats.dueCount} cards
           </span>
         </div>
         <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Novos / Pendentes</span>
-          <span class="text-lg font-bold text-blue font-display mt-0.5 block">
+          <span class="text-lg font-semibold text-blue font-display mt-0.5 block">
             {stats.pendingCount}
           </span>
         </div>
         <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Em Fixação</span>
-          <span class="text-lg font-bold text-primary font-display mt-0.5 block">
+          <span class="text-lg font-semibold text-primary font-display mt-0.5 block">
             {stats.reviewingCount}
           </span>
         </div>
         <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Dominados</span>
-          <span class="text-lg font-bold text-green font-display mt-0.5 block">
+          <span class="text-lg font-semibold text-green font-display mt-0.5 block">
             {stats.masteredCount}
           </span>
         </div>
@@ -347,7 +347,7 @@ export function ErrorNotebookView({
                   <div class="border-t border-border-default p-6 space-y-4 bg-surface-subtle">
                     {activeCard.bancaTrap && (
                       <div class="rounded-default p-3 bg-amber/10 border border-amber/20 text-xs">
-                        <span class="font-bold text-amber flex items-center gap-1.5 mb-1">
+                        <span class="font-semibold text-amber flex items-center gap-1.5 mb-1">
                           <Icon name="alert-triangle" size={14} class="shrink-0" />
                           <span>Pegadinha da Banca / Armadilha:</span>
                         </span>
@@ -356,7 +356,7 @@ export function ErrorNotebookView({
                     )}
 
                     <div class="rounded-default p-3 bg-green/10 border border-green/20 text-xs">
-                      <span class="font-bold text-green flex items-center gap-1.5 mb-1">
+                      <span class="font-semibold text-green flex items-center gap-1.5 mb-1">
                         <Icon name="circle-check" size={14} class="shrink-0" />
                         <span>Conceito Correto / Fundamento:</span>
                       </span>
@@ -496,7 +496,7 @@ export function ErrorNotebookView({
                     </span>
                     <div class="flex items-center gap-1.5 shrink-0">
                       <span
-                        class={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                        class={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                           card.status === 'mastered'
                             ? 'bg-green/20 text-green'
                             : card.status === 'pending'
@@ -526,16 +526,16 @@ export function ErrorNotebookView({
                   <p class="text-primary font-medium">{card.statementSummary}</p>
 
                   {card.bancaTrap && (
-                    <div class="p-2 rounded bg-amber/10 text-amber text-[11px]">
+                    <div class="p-2 rounded bg-amber/10 text-amber text-xs">
                       <strong>Pegadinha:</strong> {card.bancaTrap}
                     </div>
                   )}
 
-                  <div class="p-2 rounded bg-green/10 text-green text-[11px]">
+                  <div class="p-2 rounded bg-green/10 text-green text-xs">
                     <strong>Fundamento:</strong> {card.correctConcept}
                   </div>
 
-                  <div class="flex justify-between items-center text-[11px] text-muted pt-1 border-t border-border-subtle">
+                  <div class="flex justify-between items-center text-xs text-muted pt-1 border-t border-border-subtle">
                     <span>Revisões: {card.reviewCount}</span>
                     <span>Próxima: {card.nextReviewDate || 'Hoje'}</span>
                   </div>

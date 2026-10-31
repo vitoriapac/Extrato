@@ -40,7 +40,7 @@ export function CalendarTable({
         <td colSpan={7}>
           <div class="empty-state" style={{ border: 'none' }}>
             <p>Nenhum item encontrado no calendário.</p>
-            <button type="button" class="btn small" data-delegated-click="addCalRow()">
+            <button type="button" class="btn ghost small" data-delegated-click="addCalRow()">
               + Adicionar item
             </button>
           </div>

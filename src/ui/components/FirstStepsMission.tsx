@@ -56,7 +56,7 @@ export function FirstStepsMission({
         {/* Cabeçalho do Card */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-default pb-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold tracking-wider uppercase text-secondary">
+            <span className="text-xs font-semibold tracking-wider uppercase text-secondary">
               PRIMEIROS PASSOS NA PRÁTICA
             </span>
             <Badge variant="info">
@@ -128,7 +128,7 @@ export function FirstStepsMission({
               >
                 <div className="flex items-start gap-2.5 min-w-[200px] flex-1">
                   <span
-                    className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold mt-0.5 shrink-0 ${
+                    className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-semibold mt-0.5 shrink-0 ${
                       isDone
                         ? 'bg-green text-white'
                         : isActive

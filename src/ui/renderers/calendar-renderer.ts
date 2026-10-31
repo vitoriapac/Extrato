@@ -122,7 +122,7 @@ export function renderCalendarRows({
   renderFooter,
 }: any) {
   if (!rows.length)
-    return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum item encontrado com esses filtros.</p><button class="btn" data-delegated-click="addCalRow()">+ Adicionar item</button></div></td></tr>`;
+    return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum item encontrado com esses filtros.</p><button class="btn ghost" data-delegated-click="addCalRow()">+ Adicionar item</button></div></td></tr>`;
   return (
     rows
       .slice(0, visible)

@@ -459,6 +459,10 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
           action!.suggestedMinutes == null
             ? 'Tempo não estimado'
             : formatPlanMinutes(action!.suggestedMinutes);
+      // A mesma tarefa já tem o "Iniciar" do Plano de hoje como ação principal.
+      const sameAsPlan =
+        dailyPriority?.nextItem?.subjectId === item.subjectId &&
+        dailyPriority?.nextItem?.topicId === item.topicId;
       const inProgress = activeTimerMatchesRecommendation(item),
         blocked = hasStartedStudyTimer() && !inProgress,
         sessionLabel = state.activeTimer?.isRunning ? 'Cronômetro rodando' : 'Sessão pausada';
@@ -485,7 +489,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
         ? `<button class="btn" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button>`
         : blocked
           ? '<button class="btn" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
-          : `<button class="btn ${planChoice ? 'ghost' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
+          : `<button class="btn ${planChoice || sameAsPlan ? 'ghost' : ''}" data-delegated-click="executeStudyRecommendation('${escapeAttr(action!.id)}','${action!.source}')">${escapeHtml(planChoice ? 'Estudar como atividade adicional' : label)}</button>`;
       return `<article class="study-recommendation ${index === 0 ? 'is-primary' : ''} ${inProgress ? 'is-in-progress' : ''}" data-study-action-source="${action!.source}" data-study-action-id="${escapeAttr(action!.id)}" data-activity-type="${action!.activityType}"><div class="priority-score-gauge" style="--priority:${model.score}"><strong>${model.score}</strong><span>/100</span></div><div class="recommendation-content"><span class="recommendation-rank">${planChoice ? 'Fora do plano de hoje · ' : ''}#${model.position} entre as sugestões${index === 0 && visible[1] && Math.round(Number(visible[1].score)) === Math.round(Number(item.score)) ? ` · empata com #2 em ${Math.round(Number(item.score))}; ${Number(item.score) !== Number(visible[1].score) ? 'diferença menor que 1 ponto' : Number(item.estimatedMinutes) !== Number(visible[1].estimatedMinutes) ? 'vem primeiro a mais curta' : 'ordem de desempate fixa'}` : ''}</span><h4>${escapeHtml(item.subjectName)} — ${escapeHtml(item.topicName)}</h4><strong>${escapeHtml(item.action || 'Estudar agora')}</strong><p>${minutes}${item.recommendedQuestions ? ` · ${pluralize(item.recommendedQuestions, 'questão', 'questões')}` : ''} · ${stateIconHtml} ${escapeHtml(model.stateLabel)}</p>${inProgress ? `<span class="active-study-status">Em andamento · ${sessionLabel}</span>` : ''}<div class="priority-reasons">${action!.reasons
         .slice(0, 4)
         .map(reason => `<span>+ ${escapeHtml(reason)}</span>`)
@@ -894,7 +898,7 @@ export function createStudyRecommendationController(deps: StudyRecommendationCon
     )[0];
     const preview = replanController.view();
     if (!preview) {
-      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt ? 'desfeito' : 'aplicado'}</strong><span>${formatPlanMinutes(latest.redistributedMinutes!)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes!)} sem capacidade</span></div>` : ''}<div class="study-plan-actions"><button class="btn" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest && !latest.undoneAt && latest.status !== 'undone' && latest.changes?.length ? `<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>` : ''}</div>`;
+      container.innerHTML = `${latest ? `<div class="confirmed-plan-note"><strong>Último ajuste ${latest.undoneAt ? 'desfeito' : 'aplicado'}</strong><span>${formatPlanMinutes(latest.redistributedMinutes!)} redistribuídos · ${formatPlanMinutes(latest.discardedMinutes!)} sem capacidade</span></div>` : ''}<div class="study-plan-actions"><button class="btn ghost" data-delegated-click="calculateReplanPreview()">Analisar execução da semana</button>${latest && !latest.undoneAt && latest.status !== 'undone' && latest.changes?.length ? `<button class="btn ghost" data-delegated-click="undoPlanAdjustment('${latest.id}')">Desfazer redistribuição</button>` : ''}</div>`;
       return;
     }
     if (preview.state === 'balanced') {

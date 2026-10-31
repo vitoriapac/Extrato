@@ -68,7 +68,7 @@ export function ReviewsTable({
             >
               ⟳ Gerar a partir dos concluídos
             </button>
-            <button type="button" class="btn small" data-delegated-click="addAgendaRow()">
+            <button type="button" class="btn ghost small" data-delegated-click="addAgendaRow()">
               + Adicionar manualmente
             </button>
           </div>
