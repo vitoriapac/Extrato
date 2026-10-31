@@ -58,6 +58,7 @@ export function createNavigationController({
     const button = document.querySelector(`.tab-btn[data-tab="${tabName}"]`),
       panel = document.getElementById(`panel-${tabName}`);
     if (!button || !panel) return false;
+    const changed = !panel.classList?.contains('active');
     // Only real tabs carry tab state; "Mais" is a menu button, where aria-selected is invalid.
     document.querySelectorAll('.tab-btn[data-tab]').forEach((item: any) => {
       const active = item === button;
@@ -72,6 +73,8 @@ export function createNavigationController({
       .forEach((item: any) => item.classList.toggle('active', item === panel));
     syncMore(tabName);
     if (document.body?.dataset) document.body.dataset.activeTab = tabName;
+    // A new area opens at its top; callers that target a section scroll to it afterwards.
+    if (changed) window.scrollTo?.({ top: 0, left: 0 });
     button.scrollIntoView?.({ block: 'nearest', inline: 'nearest', behavior: scrollBehavior() });
     document.dispatchEvent(new window.Event('studytrack:navigate'));
     render(tabName);

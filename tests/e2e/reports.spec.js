@@ -54,7 +54,8 @@ test('busca global abre instruções por teclado', async ({ page }) => {
   await expect(command).toBeVisible();
   await expect(search).toHaveAttribute('aria-expanded', 'true');
   await search.press('ArrowDown');
-  await expect(command).toBeFocused();
+  await expect(command).toHaveAttribute('aria-selected', 'true');
+  await expect(search).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('#panel-instrucoes')).toBeVisible();
 });
@@ -68,7 +69,7 @@ test('paleta executa ações de registro por teclado e fecha com Escape', async 
   const command = page.getByRole('option', { name: /Registrar questões/ });
   await expect(command).toBeVisible();
   await search.press('ArrowDown');
-  await command.press('Enter');
+  await search.press('Enter');
   await expect(page.locator('#panel-questoes')).toHaveClass(/active/);
   await expect(page.locator('#questoesBody tr.row-editing')).toBeVisible();
   await expect(

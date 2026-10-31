@@ -950,7 +950,7 @@
   }
   .search-result-item:last-child{border-bottom:none;}
   .search-result-item:hover{background:var(--paper);}
-  .search-result-item:focus-visible{outline:2px solid var(--gold);outline-offset:-2px;background:var(--paper)}
+  .search-result-item:focus-visible,.search-result-item.is-active{outline:2px solid var(--gold);outline-offset:-2px;background:var(--paper)}
   .search-result-item strong{color:var(--heading);font-family:'Fraunces',serif;font-weight:600;}
   .search-result-item span{color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:11px;flex-shrink:0;}
   .search-result-empty{padding:14px 16px;color:var(--ink-soft);font-size:13px;}

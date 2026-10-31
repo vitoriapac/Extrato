@@ -4,6 +4,7 @@ import {
   MAIN_TABS,
   nextNavigationIndex,
   shortcutTabIndex,
+  createNavigationController,
 } from '../../src/ui/controllers/navigation-controller.js';
 test('ordem dos atalhos permanece estável', () => {
   assert.deepEqual(MAIN_TABS, [
@@ -32,4 +33,39 @@ test('atalho de área exige Ctrl ou Cmd junto de Shift', () => {
     -1
   );
   assert.equal(shortcutTabIndex({ ctrlKey: true, shiftKey: true, code: 'Numpad1' }), -1);
+});
+
+test('trocar de área abre no topo; reativar a mesma área não rola', () => {
+  const panels = {
+    dashboard: { classList: new Set(['active']) },
+    hoje: { classList: new Set() },
+  };
+  for (const panel of Object.values(panels)) {
+    const set = panel.classList;
+    panel.classList = {
+      contains: name => set.has(name),
+      toggle: (name, on) => (on ? set.add(name) : set.delete(name)),
+    };
+  }
+  const tab = { classList: { toggle() {} }, setAttribute() {}, removeAttribute() {} };
+  const scrolls = [];
+  const document = {
+    getElementById: id => panels[id.replace('panel-', '')] || null,
+    querySelector: sel =>
+      sel.includes('data-tab="dashboard"') || sel.includes('data-tab="hoje"') ? tab : null,
+    querySelectorAll: sel => (sel === '.panel' ? Object.values(panels) : []),
+    addEventListener() {},
+    dispatchEvent() {},
+  };
+  const window = {
+    Event: class {},
+    scrollTo: options => scrolls.push(options),
+    history: { replaceState() {} },
+    navigator: { platform: 'Win32' },
+  };
+  const navigation = createNavigationController({ document, window, render() {} });
+  navigation.activate('hoje', false);
+  assert.deepEqual(scrolls, [{ top: 0, left: 0 }]);
+  navigation.activate('hoje', false);
+  assert.equal(scrolls.length, 1);
 });
