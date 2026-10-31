@@ -192,9 +192,12 @@ test.describe('validação dos fluxos recentes', () => {
     await openDemo(page);
     await activateTab(page, 'hoje');
     await page.locator('.today-analysis-details > summary').click();
+    // Na demonstração, as ações de estudo vêm de conteúdos sem evidência, agrupados num bloco recolhido.
+    const insufficient = page.locator('#diagnosisCenter .diagnosis-insufficient > summary');
+    if (await insufficient.count()) await insufficient.click();
     const action = page
       .locator(
-        '#diagnosisCenter .diagnostic-row[data-activity-type="study"] button[data-study-action-source="diagnosis"]'
+        '#diagnosisCenter .diagnostic-row[data-activity-type="study"] button[data-study-action-source="diagnosis"]:visible'
       )
       .first();
     await expect(
