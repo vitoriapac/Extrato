@@ -59,7 +59,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
               class="mt-1 h-2 w-full cursor-pointer appearance-none rounded-default bg-surface-muted accent-primary"
               aria-label="Volume de questões resolvidas"
             />
-            <div class="mt-1 flex justify-between text-[10px] text-text-muted">
+            <div class="mt-1 flex justify-between text-xs text-text-muted">
               <span>1</span>
               <span>10 (Mínimo)</span>
               <span>30 (Sólido)</span>
@@ -86,7 +86,7 @@ export function EvidenceConfidenceSimulator(): JSX.Element {
               class="mt-1 h-2 w-full cursor-pointer appearance-none rounded-default bg-surface-muted accent-primary"
               aria-label="Taxa de acerto observada"
             />
-            <div class="mt-1 flex justify-between text-[10px] text-text-muted">
+            <div class="mt-1 flex justify-between text-xs text-text-muted">
               <span>40%</span>
               <span>60%</span>
               <span>80%</span>

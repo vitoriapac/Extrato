@@ -331,7 +331,7 @@ export function ErrorNotebookView({
                       Enunciado / Contexto da Questão
                     </span>
                     {activeCard.errorCategory && (
-                      <span class="text-[11px] px-2 py-0.5 rounded bg-surface-subtle text-secondary font-medium">
+                      <span class="text-xs px-2 py-0.5 rounded bg-surface-subtle text-secondary font-medium">
                         {ERROR_CATEGORY_LABELS[activeCard.errorCategory] ||
                           activeCard.errorCategory}
                       </span>
@@ -380,7 +380,7 @@ export function ErrorNotebookView({
                             <Icon name="circle-x" size={13} class="shrink-0" />
                             <span>Errei</span>
                           </span>
-                          <span class="block text-[10px] text-muted">1 dia</span>
+                          <span class="block text-xs text-muted">1 dia</span>
                         </button>
                         <button
                           type="button"
@@ -391,7 +391,7 @@ export function ErrorNotebookView({
                             <Icon name="alert-triangle" size={13} class="shrink-0" />
                             <span>Difícil</span>
                           </span>
-                          <span class="block text-[10px] text-muted">2 dias</span>
+                          <span class="block text-xs text-muted">2 dias</span>
                         </button>
                         <button
                           type="button"
@@ -402,7 +402,7 @@ export function ErrorNotebookView({
                             <Icon name="thumb-up" size={13} class="shrink-0" />
                             <span>Bom</span>
                           </span>
-                          <span class="block text-[10px] text-muted">4 dias</span>
+                          <span class="block text-xs text-muted">4 dias</span>
                         </button>
                         <button
                           type="button"
@@ -413,7 +413,7 @@ export function ErrorNotebookView({
                             <Icon name="star" size={13} class="shrink-0" />
                             <span>Fácil</span>
                           </span>
-                          <span class="block text-[10px] text-muted">7+ dias</span>
+                          <span class="block text-xs text-muted">7+ dias</span>
                         </button>
                       </div>
                     </div>
@@ -496,7 +496,7 @@ export function ErrorNotebookView({
                     </span>
                     <div class="flex items-center gap-1.5 shrink-0">
                       <span
-                        class={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                        class={`px-1.5 py-0.5 rounded text-xs font-semibold ${
                           card.status === 'mastered'
                             ? 'bg-green/20 text-green'
                             : card.status === 'pending'

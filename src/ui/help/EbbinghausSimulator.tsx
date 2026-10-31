@@ -80,7 +80,7 @@ export function EbbinghausSimulator(): JSX.Element {
             class="mt-1 h-2 w-full cursor-pointer appearance-none rounded-default bg-surface-muted accent-primary"
             aria-label="Dias decorridos"
           />
-          <div class="mt-1 flex justify-between text-[10px] text-text-muted">
+          <div class="mt-1 flex justify-between text-xs text-text-muted">
             <span>D+0</span>
             <span class={withReviews ? 'font-semibold text-primary' : ''}>D+1 (1ª rev)</span>
             <span class={withReviews ? 'font-semibold text-primary' : ''}>D+7 (2ª rev)</span>

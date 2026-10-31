@@ -125,7 +125,7 @@ export function SimulatedRemediationModal({
                 >
                   <div class="space-y-1">
                     <div class="flex items-center justify-between">
-                      <span class="text-[10px] font-semibold text-status-danger uppercase tracking-wider">
+                      <span class="text-xs font-semibold text-status-danger uppercase tracking-wider">
                         #{index + 1} Maior Perda
                       </span>
                       <Badge variant={topic.accuracy < 50 ? 'danger' : 'warning'}>
