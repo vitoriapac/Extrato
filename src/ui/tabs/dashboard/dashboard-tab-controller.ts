@@ -186,7 +186,7 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
     if (!fig) return;
 
     if (!state.examDate) {
-      fig.textContent = 'defina a data ao lado';
+      fig.textContent = 'defina a data da prova';
       fig.classList.remove('urgent');
       return;
     }

@@ -4,6 +4,11 @@ export const EXAM_TAGS = Object.freeze({
   CAIXA: 'caixa-tbn',
   CAIXA_TI: 'caixa-tbn-ti',
 });
+export const EXAM_TAG_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  [EXAM_TAGS.BB]: 'Banco do Brasil — Escriturário',
+  [EXAM_TAGS.CAIXA]: 'Caixa — TBN',
+  [EXAM_TAGS.CAIXA_TI]: 'Caixa — TBN TI',
+});
 export const INSTITUTIONS = Object.freeze({ BB: 'bb', CAIXA: 'caixa' });
 export const EXAM_SOURCES = Object.freeze({
   'bb-escriturario-2023': Object.freeze({

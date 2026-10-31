@@ -1,5 +1,6 @@
 import { formatDecimal } from '../../core/format-number.js';
 import { formatDateBR, formatPeriodBR } from '../../core/format-date.js';
+import { EXAM_TAG_LABELS } from '../../domain/exams/exam-constants.js';
 
 type Row = Record<string, any>;
 
@@ -80,7 +81,7 @@ export function renderWeeklyCloseRecord({
   }
 
   const scope = candidate.activeExamTags?.length
-    ? candidate.activeExamTags.join(', ')
+    ? candidate.activeExamTags.map((tag: string) => EXAM_TAG_LABELS[tag] || tag).join(', ')
     : 'Todas as provas';
   const rows: Array<[string, string]> = [
     ['Período', period],

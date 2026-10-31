@@ -183,6 +183,17 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
     );
   }
 
+  // "Praticar o tópico" sozinho não diz qual: a decisão nomeia o tópico de cada prioridade.
+  function withTopicNames(close: Record<string, any>): Record<string, any> {
+    return {
+      ...close,
+      priorities: (close.priorities || []).map((item: any) => {
+        const name = item.topicId ? deps.getTopicName(item.topicId) : '';
+        return name ? { ...item, action: `${item.action} · ${name}` } : item;
+      }),
+    };
+  }
+
   function renderWeeklyCloseActions(close: Record<string, any>): string {
     const priorities = close?.priorities || [];
     if (!priorities.length) return '';
@@ -395,8 +406,8 @@ export function createWeeklyCloseModalController(deps: WeeklyCloseModalControlle
         }) +
         '<section class="weekly-close-act" aria-labelledby="weeklyNextTitle"><h4 class="weekly-close-act__title" id="weeklyNextTitle">A decisão</h4>' +
         ((model.weeklyClose.priorities || []).length
-          ? renderWeeklyCloseNext(model.weeklyClose, options) +
-            renderWeeklyCloseActions(model.weeklyClose)
+          ? renderWeeklyCloseNext(withTopicNames(model.weeklyClose), options) +
+            renderWeeklyCloseActions(withTopicNames(model.weeklyClose))
           : '<p class="weekly-close-empty">Nenhuma prioridade sugerida para a próxima semana ainda. Elas vêm das recomendações deste período que não foram dispensadas, mostradas em Hoje.</p>') +
         '</section>';
     }

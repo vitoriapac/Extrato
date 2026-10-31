@@ -295,11 +295,7 @@ export function buildStrategicReport({
             )[item.outcome?.state] || 'Resultado em acompanhamento',
         };
       });
-  const examLabels: Record<string, any> = {
-    [EXAM_TAGS.BB]: 'Banco do Brasil — Escriturário',
-    [EXAM_TAGS.CAIXA]: 'Caixa — TBN',
-    [EXAM_TAGS.CAIXA_TI]: 'Caixa — TBN TI',
-  };
+  const examLabels: Record<string, any> = EXAM_TAG_LABELS;
   const reportTopicIds = new Set(topics.map((item: any) => item.id)),
     topicCompletions = (state.topicHistory || []).filter(
       (item: any) =>
@@ -548,7 +544,7 @@ export function buildStrategicReport({
 }
 import { isTopicInExamScope, isSimulationInExamScope } from '../domain/exams/exam-scope.js';
 import { resolveExamEvidenceScope } from '../domain/exams/exam-evidence-scope.js';
-import { CATALOG_VERSION, EXAM_TAGS } from '../domain/exams/exam-constants.js';
+import { CATALOG_VERSION, EXAM_TAG_LABELS } from '../domain/exams/exam-constants.js';
 import { buildPeriodComparison } from '../domain/analytics/period-comparison.js';
 import { buildPeriodComparisonInsights } from '../domain/analytics/period-comparison-insights.js';
 import { localDateRange } from '../core/date-utils.js';
