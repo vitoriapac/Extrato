@@ -17,6 +17,7 @@ import {
 } from '../../domain/exams/exam-scope.js';
 import { buildUnifiedReviews } from '../calendar/build-unified-reviews.js';
 import type { AppState } from '../../core/types.js';
+import { firstActivityDate } from './first-activity-date.js';
 
 export interface StudyMetricsSelectorsDependencies {
   getState: () => AppState;
@@ -223,6 +224,7 @@ export function createStudyMetricsSelectors(deps: StudyMetricsSelectorsDependenc
 
   function computeWeeklyHistory(numWeeks: number) {
     const state = getState();
+    const start = firstActivityDate(state);
     const weeks = [];
     for (let i = 0; i < numWeeks; i++) {
       const weekStart = getWeekStartMinus(i);
@@ -238,6 +240,8 @@ export function createStudyMetricsSelectors(deps: StudyMetricsSelectorsDependenc
         weekStart,
         weekEnd,
         current: i === 0,
+        // Semanas encerradas antes do primeiro registro não contam como cumpridas nem perdidas.
+        beforeStart: i !== 0 && (!start || weekEnd < start),
         topicsConcl,
         questoesResolved,
         simuladosCount,

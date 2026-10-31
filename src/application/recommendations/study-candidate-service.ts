@@ -10,6 +10,7 @@ import {
 import { buildStudyCandidates } from '../build-study-candidates.js';
 import { buildStudyPlan } from '../build-study-plan.js';
 import { recommendStudy } from '../recommend-study.js';
+import { firstActivityDate } from '../selectors/first-activity-date.js';
 
 export interface StudyCandidateServiceDependencies {
   getState: () => AppState;
@@ -51,6 +52,26 @@ export interface StudyCandidateServiceDependencies {
   getRevisoesUnificadas: () => any[];
   getStudyPlanCandidates?: () => any[];
   isRendering: () => boolean;
+}
+
+// Percentage the weekly goal is behind the expected pace, or null when there is no fair base.
+// Only a week the student lived entirely in the app is charged: someone who started on Thursday
+// was never behind on Monday's share.
+export function weeklyGoalGapFor({
+  expectedFrac,
+  actualFrac,
+  historyStart,
+  weekStart,
+}: {
+  expectedFrac: number;
+  actualFrac: number;
+  historyStart: string | null;
+  weekStart: string;
+}): number | null {
+  if (!historyStart || historyStart > weekStart) return null;
+  return expectedFrac >= 0.5 && actualFrac < expectedFrac - 0.15
+    ? Math.round((expectedFrac - actualFrac) * 100)
+    : null;
 }
 
 export function createStudyCandidateService(deps: StudyCandidateServiceDependencies) {
@@ -362,11 +383,12 @@ export function createStudyCandidateService(deps: StudyCandidateServiceDependenc
       expectedFrac = elapsed / 7;
     const weekStart = startOfWeek(today),
       achieved = uniqueTopicsCompletedBetween(weekStart, addDays(weekStart, 6));
-    const actualFrac = state.metas.semanal > 0 ? achieved / state.metas.semanal : 1;
-    const weeklyGoalGap =
-      expectedFrac >= 0.5 && actualFrac < expectedFrac - 0.15
-        ? Math.round((expectedFrac - actualFrac) * 100)
-        : null;
+    const weeklyGoalGap = weeklyGoalGapFor({
+      expectedFrac,
+      actualFrac: state.metas.semanal > 0 ? achieved / state.metas.semanal : 1,
+      historyStart: firstActivityDate(state),
+      weekStart,
+    });
     const scopedReviews = examScopedRecords(getRevisoesUnificadas()),
       hardTopicsWithoutReview = examScopedTopics().filter(
         topic =>
