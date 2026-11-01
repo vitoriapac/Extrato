@@ -1,12 +1,12 @@
 # Design System do StudyTrack
 
-O StudyTrack usa a linguagem visual de um extrato: navy para estrutura, dourado para destaque, papel para superfícies e linhas finas para separar informação.
+O StudyTrack usa a linguagem visual de um extrato: verde-musgo para estrutura, sálvia para destaque, âmbar só para atenção, papel para superfícies e linhas finas para separar informação (paleta Sálvia; valores em `styles/tokens.css` e no DESIGN.md).
 
 ## Tipografia
 
 - Fraunces: marca e valores principais.
-- IBM Plex Mono: métricas, datas, estados e títulos de seção.
-- IBM Plex Sans: textos, formulários e explicações.
+- IBM Plex Mono: números, datas, durações, códigos e eixos de gráfico.
+- IBM Plex Sans: textos, formulários, explicações, rótulos, botões e abas (Sans 500 13px, sem caixa-alta).
 - Pesos semânticos: regular 400, medium 500 e semibold 600.
 
 ## Espaçamento
@@ -17,17 +17,17 @@ As superfícies, textos, divisores e estados semânticos também têm aliases (`
 
 ### Controles de Formulário e Acessibilidade (WCAG 2.1 AA 1.4.11)
 
-- **Token `--border-control`:** `#857F6F` (tema Claro) e `#738198` (tema Escuro), garantindo contraste mínimo estrito de 3:1 contra `--paper` e `--surface-card` para limites de campos interativos (`input`, `select`, `textarea`, `.subject-search`).
+- **Token `--border-control`:** `#6F857A` (tema Claro) e `#6F8579` (tema Escuro), garantindo contraste mínimo estrito de 3:1 contra `--paper` e `--surface-card` para limites de campos interativos (`input`, `select`, `textarea`, `.subject-search`).
 - **Dimensões e Alvos de Toque:** `--control-height` (36px) e `--touch-target` (44px) no mobile, com anel de foco `outline: 2px solid var(--border-emphasis)` e offset de 1–2px.
-- **Normalização de Radii (`--radius`):** Todas as bordas utilizam `var(--radius)` (2px estrito), conferindo identidade visual técnica uniforme (estilo extrato/ledger) a badges, tags (`.tag-chip`), pills (`.subject-progress-pill`), seletores e modais.
+- **Raios (`--radius-card` e `--radius-control`):** cards, painéis, modais e tabelas usam `var(--radius-card)` (8px); botões, campos, selos, tags (`.tag-chip`) e pills (`.subject-progress-pill`) usam `var(--radius-control)` (6px). Barras, células do heatmap e eventos do calendário mantêm 2px. `--radius` não existe mais.
 - **Formatação de Deltas Numéricos:** Todos os indicadores de variação utilizam [`formatDelta()`](src/core/format-number.ts) com o caractere tipográfico de subtração `−` (U+2212) e positivo explícito `+` (ex.: `+2.4 p.p.`, `−1.8%`), evitando hifens ASCII soltos `-`.
 - **Pilha Sticky Unificada:** A casca de navegação fixa (`.sticky-shell`) adere estritamente a `top: var(--demo-banner-height, 0px)` sem gaps residuais, prevenindo vazamentos visuais durante a rolagem.
 - **Densidade Mobile:** Na aba de Disciplinas da demonstração, tópicos de disciplinas secundárias iniciam colapsados por padrão (`collapsed: subjectIndex > 0`), mantendo a primeira disciplina expandida para descoberta e preservando a performance em telas pequenas.
 
 ## Componentes
 
-- `btn`: ação principal; use `ghost`, `danger`, `small` e botões de ícone conforme o contexto.
-- Estados dos botões: hover, foco visível, active e disabled são comuns; `btn` é primário, `btn ghost` secundário, `btn danger` destrutivo e `icon-btn` para ações somente por ícone.
+- `btn`: ação principal; use `tonal`, `tertiary`, `ghost`, `danger`, `small` e botões de ícone conforme o contexto.
+- Níveis dos botões: `btn` é primário (no máximo um por card), `btn tonal` repete ações em listas (fundo `--action-tonal-bg`, sem borda), `btn tertiary` é ação com peso de link, `btn ghost` secundário, `btn danger` destrutivo e `icon-btn` para ações somente por ícone. Hover, foco visível, active e disabled são comuns.
 - `card`, `card__header`, `card__body` e `card__footer`: estrutura compartilhada; use variantes `card--action`, `card--interactive` ou `card--muted` quando a função justificar.
 - `status-badge`: sinal textual semântico; use `--danger`, `--warning`, `--success`, `--info` ou `--insufficient`. A cor nunca deve ser o único indicador.
 - `chart-card`: agrupamento lógico de dados.
@@ -70,7 +70,7 @@ Os tokens --chart-series-primary, --chart-series-secondary e --chart-series-targ
 
 | Papel                 | Contrato existente                                                   | Componente Preact (`src/ui/primitives/`)                 |
 | --------------------- | -------------------------------------------------------------------- | -------------------------------------------------------- |
-| Ações e botões        | `btn`, `btn-primary`, `btn-ghost`, `btn-danger`, `btn-small`         | `<Button variant="..." size="..." />`                    |
+| Ações e botões        | `btn`, `btn-tonal`, `btn-tertiary`, `btn-ghost`, `btn-danger`        | `<Button variant="..." size="..." />`                    |
 | Badges e status       | `status-badge`, `status-pill`, `badge`                               | `<Badge variant="..." />` / `<StatusPill />`             |
 | Cards e seções        | `card`, `card--insight`, `card--attention`, `card--primary`          | `<Card variant="..." as="..." />`                        |
 | Cabeçalhos editoriais | `module-heading`, `ui-section-header`                                | `<SectionHeader title="..." eyebrow="..." />`            |
@@ -111,7 +111,7 @@ Para garantir fidelidade visual pixel a pixel e prevenir regressões nas suítes
 
 - **Fundos:** `bg-surface-page`, `bg-surface-card`, `bg-surface-card-muted`, `bg-surface-primary`, `bg-navy`, `bg-paper`, `bg-surface-subtle`, `bg-surface-highlight`.
 - **Textos:** `text-primary`, `text-secondary`, `text-muted`, `text-on-navy`, `text-green`, `text-amber`, `text-red`.
-- **Bordas:** `border-border-default`, `border-border-subtle`, `border-border-emphasis`, `rounded-default`.
+- **Bordas:** `border-border-default`, `border-border-subtle`, `border-border-emphasis`, `rounded-default` (raio de card), `rounded` (raio de controle).
 - **Tipografia:** `font-body` (IBM Plex Sans), `font-display` (Fraunces), `font-data` (IBM Plex Mono).
 
 ## Histórico explicável de prontidão
@@ -128,7 +128,8 @@ renderRecommendationExplanation usa quatro perguntas: o que fazer, por que, evid
 
 - `--text-page-title: 1.5rem` (24px, Fraunces serif semibold) — Títulos de página/aba.
 - `--text-card-title: 1.25rem` (20px, Fraunces serif semibold) — Títulos de cards de primeiro nível.
-- `--text-label: 0.75rem` (12px, IBM Plex Mono uppercase) — Rótulos, metadados e tags.
+- `--text-label: 0.75rem` (12px, IBM Plex Sans uppercase) — Rótulos de seção, metadados e tags.
+- `--text-body: 0.875rem` (14px), 0.9375rem (15px) até 600px de largura — corpo de texto.
 - `--text-micro: 0.75rem` (12px) — Piso absoluto de legibilidade. Todo texto do sistema respeita o limite mínimo de 12px sem quebras indesejadas em 320px.
 
 ## Gerenciamento de Dados e Backups

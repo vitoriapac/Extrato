@@ -509,7 +509,7 @@
   .result-period-comparison .comparison-delta.up{color:var(--green)}
   .result-period-comparison .comparison-delta.down{color:var(--danger)}
   .result-period-comparison .comparison-delta.insufficient{color:var(--ink-soft);font-weight:400}
-  .meta-progress-label{font-family:var(--font-body);font-size:11px;color:var(--ink-soft);margin-top:6px;display:flex;justify-content:space-between;}
+  .meta-progress-label{font-family:var(--font-data);font-size:11px;color:var(--ink-soft);margin-top:6px;display:flex;justify-content:space-between;}
   .result-goal-status{flex-basis:100%;margin-top:-12px;color:var(--ink-soft);font-size:11px}
   .weekday-goals{display:grid;grid-template-columns:repeat(7,minmax(78px,1fr));gap:8px;}
   .weekday-goal{display:flex;flex-direction:column;gap:6px;background:var(--paper);border:1px solid var(--paper-line);padding:10px;}

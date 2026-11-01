@@ -82,9 +82,10 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### V6: Documentação e snapshots
 **Descrição:** Reescrever as cores, a tipografia e o raio do DESIGN.md (tokens no topo e "Creative North Star", conforme o Checkpoint 0) e do DESIGN-SYSTEM.md (incluindo `--border-control`). Regerar os snapshots `win32` e `linux` depois de inspecionar cada diff.
 **Aceite:**
-- [ ] DESIGN.md mantém a North Star "O Extrato Bancário" e reescreve só a paleta ("navy, dourado, papel" → nomes do Sálvia) e os tokens do topo
-- [ ] Cada snapshot regerado foi aberto e conferido (lista no PR)
-- [ ] Suíte E2E completa verde, salvo falhas já existentes antes (registrar quais)
+- [x] DESIGN.md mantém a North Star "O Extrato Bancário" e reescreve só a paleta ("navy, dourado, papel" → nomes do Sálvia) e os tokens do topo
+- [x] Cada snapshot regerado foi aberto e conferido (lista no commit)
+- [x] Suíte E2E completa verde, salvo falhas já existentes antes (registrar quais)
+**Resultado (01/11/2026):** DESIGN.md (tokens do topo, paleta, tipografia em três vozes revista, raio, botões em três níveis, regras do Sálvia sobre Musgo e do Âmbar), DESIGN-SYSTEM.md (`--border-control`, raios, níveis de botão, `--text-label` em Sans) e `.impeccable/design.json` reescritos; North Star mantida. 24 snapshots `win32` regerados e conferidos lado a lado: achievement-projection (3), adherence (3), agora (2), desempenho-resumo-mobile (2), help-map-375, help-matrix-375, hero-mobile-375, metas-mobile (2), recovery-preview (3), sustainability (3), today (3). O `desempenho-resumo` também traz a troca de texto do commit `cdbd486`, que já estava no `main`. A conferência revelou o progresso de Metas em Sans; voltou para mono. Suíte completa: 250 passaram; 22 falharam (21 snapshots, agora regerados, e `action-first-mobile`, que já falhava antes deste trabalho). Gate visual 58/58. Limites: os 14 snapshots `linux` não foram regerados (sem Docker; usar o workflow "Generate visual baselines"); snapshots `win32` que mudaram dentro da tolerância de 8% (ex.: `metas-desktop`, `desempenho-resumo-desktop`) continuam com a imagem antiga.
 **Verificação:** `npm run test:visual`; `npx playwright test`; demo conferida aba por aba
 **Dependências:** V1–V5 · **Arquivos:** `DESIGN.md`, `DESIGN-SYSTEM.md`, `.impeccable/design.json`, `tests/e2e/*-snapshots/*` · **Tamanho:** M
 

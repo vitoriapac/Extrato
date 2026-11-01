@@ -1,28 +1,30 @@
 ---
 name: StudyTrack — Extrato de Estudos
-description: O estudo lido como um extrato de conta — navy, dourado, papel e linhas finas.
+description: O estudo lido como um extrato de conta — musgo, sálvia, papel e linhas finas.
 colors:
-  navy: "#0B2545"
-  blue: "#0F3D73"
-  gold: "#765500"
-  gold-bright: "#E8B94A"
-  paper: "#F6F3EC"
-  paper-line: "#E4DFD1"
-  white: "#FFFDF9"
-  slate-bg: "#EDEAE0"
-  ink: "#1C2430"
-  ink-soft: "#4F5865"
-  on-navy: "#F6F3EC"
-  green: "#245F47"
-  green-bg: "#E4F0EA"
-  amber: "#765018"
-  amber-bg: "#F5E9D4"
-  red: "#8F302A"
-  red-bg: "#F3E0DD"
-  info-bg: "#E3E9F3"
-  highlight-bg: "#FFF8E6"
-  tab-hover-bg: "#E1DCCB"
-  border-control: "#857F6F"
+  navy: "#1E3F35"
+  blue: "#2F5D4E"
+  gold: "#2F5D4E"
+  gold-bright: "#E9953F"
+  brand-on-header: "#A8D3B8"
+  paper: "#F4F6F4"
+  paper-line: "#D5DDD6"
+  white: "#FBFCFA"
+  slate-bg: "#E6EDE6"
+  ink: "#17302A"
+  ink-soft: "#4F6158"
+  on-navy: "#F4F6F4"
+  green: "#2F6B4F"
+  green-bg: "#E2EEE6"
+  amber: "#9A4F0E"
+  amber-bg: "#F7E9D9"
+  red: "#A23B2A"
+  red-bg: "#F5E3DE"
+  info-bg: "#E3ECE7"
+  highlight-bg: "#FBF1E4"
+  tab-hover-bg: "#DDE6DE"
+  heat-1: "#CFE0D3"
+  border-control: "#6F857A"
 typography:
   page-title:
     fontFamily: "Fraunces, Georgia, serif"
@@ -58,17 +60,21 @@ typography:
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "IBM Plex Mono, Consolas, Courier New, monospace"
+    fontFamily: "IBM Plex Sans, Segoe UI, Arial, sans-serif"
     fontSize: "12px"
     fontWeight: 600
     letterSpacing: "0.08em"
-  caption:
+  action:
+    fontFamily: "IBM Plex Sans, Segoe UI, Arial, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 500
+  data:
     fontFamily: "IBM Plex Mono, Consolas, Courier New, monospace"
     fontSize: "12px"
     fontWeight: 400
-    letterSpacing: "0.05em"
 rounded:
-  sharp: "2px"
+  card: "8px"
+  control: "6px"
 spacing:
   space-1: "4px"
   space-2: "8px"
@@ -83,22 +89,34 @@ components:
   button-primary:
     backgroundColor: "{colors.navy}"
     textColor: "{colors.on-navy}"
-    typography: "{typography.label}"
-    rounded: "{rounded.sharp}"
+    typography: "{typography.action}"
+    rounded: "{rounded.control}"
     padding: "9px 16px"
     height: "36px"
   button-primary-hover:
     backgroundColor: "{colors.blue}"
+  button-tonal:
+    backgroundColor: "{colors.green-bg}"
+    textColor: "{colors.navy}"
+    typography: "{typography.action}"
+    rounded: "{rounded.control}"
+    padding: "9px 16px"
+  button-tonal-hover:
+    backgroundColor: "{colors.heat-1}"
+  button-tertiary:
+    textColor: "{colors.navy}"
+    typography: "{typography.action}"
+    padding: "9px 4px"
   button-ghost:
     textColor: "{colors.navy}"
-    rounded: "{rounded.sharp}"
+    rounded: "{rounded.control}"
     padding: "9px 16px"
   button-ghost-hover:
     backgroundColor: "{colors.navy}"
     textColor: "{colors.on-navy}"
   button-danger:
     textColor: "{colors.red}"
-    rounded: "{rounded.sharp}"
+    rounded: "{rounded.control}"
     padding: "7px 11px"
   button-danger-hover:
     backgroundColor: "{colors.red}"
@@ -106,27 +124,27 @@ components:
   tab:
     backgroundColor: "{colors.slate-bg}"
     textColor: "{colors.ink-soft}"
-    typography: "{typography.label}"
+    typography: "{typography.action}"
     padding: "11px 18px"
   tab-hover:
     backgroundColor: "{colors.tab-hover-bg}"
   tab-active:
     backgroundColor: "{colors.navy}"
-    textColor: "{colors.gold-bright}"
+    textColor: "{colors.brand-on-header}"
   card:
     backgroundColor: "{colors.white}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.sharp}"
+    rounded: "{rounded.card}"
     padding: "20px 22px"
   kpi-cell:
     backgroundColor: "{colors.navy}"
-    textColor: "{colors.gold-bright}"
+    textColor: "{colors.brand-on-header}"
     typography: "{typography.value}"
     padding: "16px 18px"
   select:
     backgroundColor: "{colors.paper}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.sharp}"
+    rounded: "{rounded.control}"
     padding: "7px 32px 7px 10px"
     height: "36px"
   status-badge-success:
@@ -157,51 +175,54 @@ components:
 
 **Creative North Star: "O Extrato Bancário"**
 
-O StudyTrack apresenta o estudo como um extrato de conta: um cabeçalho navy com o saldo em serifa dourada, lançamentos em papel separados por linhas finas, rótulos em mono maiúscula como colunas de um documento financeiro. A prontidão é o saldo; cada sessão, questão e revisão é um lançamento. A confiança vem da mesma fonte que a de um extrato: números precisos, registro que não se reescreve, nenhuma decoração competindo com o dado.
+O StudyTrack apresenta o estudo como um extrato de conta: um cabeçalho verde-musgo com o saldo em serifa âmbar, lançamentos em papel separados por linhas finas, números e datas em mono como colunas de um documento financeiro. A prontidão é o saldo; cada sessão, questão e revisão é um lançamento. A confiança vem da mesma fonte que a de um extrato: números precisos, registro que não se reescreve, nenhuma decoração competindo com o dado.
 
-A densidade é de ferramenta de uso diário e prolongado. Cards agrupam; dentro deles, hierarquia vem de linha, espaço e tipografia, não de mais caixas. Componentes são precisos e contidos: cantos quase retos, texto mono para métricas e estados, cor reservada para significado. A interface é plana por padrão; sombra existe apenas onde algo realmente flutua sobre a página.
+A densidade é de ferramenta de uso diário e prolongado. Cards agrupam; dentro deles, hierarquia vem de linha, espaço e tipografia, não de mais caixas. Componentes são precisos e contidos: cantos discretos (8px nos cards, 6px nos controles), mono só para números, datas e códigos, cor reservada para significado. A interface é plana por padrão; sombra existe apenas onde algo realmente flutua sobre a página.
 
-Os dois temas (claro "papel" e escuro "noite navy") são o mesmo sistema com valores trocados nos tokens; nenhum componente define cor literal.
+Os dois temas (claro "papel" e escuro "noite musgo", paleta Sálvia) são o mesmo sistema com valores trocados nos tokens; nenhum componente define cor literal.
 
 **Key Characteristics:**
-- Navy estrutural, dourado de destaque, papel como superfície.
-- Três vozes tipográficas: Fraunces para marca e valores, IBM Plex Mono para dados e rótulos, IBM Plex Sans para leitura.
-- Cantos de 2px, bordas de 1px, faixas laterais/superiores de 3px como marcadores semânticos.
+- Musgo estrutural, sálvia de destaque, âmbar só para atenção, papel como superfície.
+- Três vozes tipográficas: Fraunces para marca e valores, IBM Plex Mono para números, datas, durações e códigos, IBM Plex Sans para leitura, rótulos e ações.
+- Cantos de 8px (cards) e 6px (controles), bordas de 1px, faixas laterais/superiores de 3px como marcadores semânticos.
 - Plano por padrão; sombra só em sobreposições.
 - Estado sempre textual; cor nunca é o único indicador.
 
 ## Colors
 
-Paleta de documento financeiro: um navy profundo e um dourado envelhecido sobre papel quente, com semânticos dessaturados que não gritam em uso diário.
+Paleta Sálvia: um verde-musgo profundo e um sálvia claro sobre papel frio, com âmbar reservado para atenção e semânticos dessaturados que não gritam em uso diário. Os nomes dos tokens (`navy`, `gold`, `gold-bright`) ainda são os da paleta anterior; o renome está pendente (Checkpoint 1).
 
 ### Primary
-- **Navy de Extrato** (`navy`): estrutura e autoridade — cabeçalho do extrato, botão primário, aba ativa, células de KPI, card primário. Também é a cor dos títulos (`--heading`).
-- **Azul Tinta** (`blue`): hover do botão primário, série principal de gráficos, estado informativo.
+- **Musgo de Extrato** (`navy`, `#1E3F35`): estrutura e autoridade — cabeçalho do extrato, botão primário, aba ativa, células de KPI, card primário. Também é a cor dos títulos (`--heading`).
+- **Sálvia Tinta** (`blue`, `#2F5D4E`): hover do botão primário, série principal de gráficos, estado informativo.
 
 ### Secondary
-- **Ouro Envelhecido** (`gold`): borda de ênfase, faixa de `card--action`, anel de foco. No claro é escuro o bastante para contraste AA como texto.
-- **Ouro Vivo** (`gold-bright`): só sobre navy — valores do KPI, eyebrow do extrato, texto da aba ativa.
+- **Sálvia Escuro** (`gold`, `#2F5D4E`): borda de ênfase, faixa de `card--action`, anel de foco, pontos de gráfico.
+- **Sálvia Claro** (`brand-on-header`, `#A8D3B8`): só sobre musgo — eyebrow do extrato, aba ativa, valores do KPI, seleção, toast.
+- **Âmbar Saldo** (`gold-bright`, `#E9953F`): só para atenção — saldo da prontidão, contagem regressiva e barra de progresso até a prova.
 
 ### Tertiary (semânticos)
 - **Verde Conta** (`green` sobre `green-bg`): positivo, meta atingida.
-- **Âmbar Aviso** (`amber` sobre `amber-bg`): atenção, revisão pendente; também série secundária de gráficos.
+- **Âmbar Aviso** (`amber` sobre `amber-bg`): atenção, revisão pendente.
 - **Vermelho Débito** (`red` sobre `red-bg`): risco, perda, ação destrutiva.
-- **Azul Informe** (`info-bg`): fundo de badge informativo.
+- **Informe** (`info-bg`): fundo de badge informativo.
 
 ### Neutral
 - **Papel** (`paper`): fundo da página e de campos.
-- **Papel Branco** (`white`): superfície de cards; um branco quente, nunca `#FFF` puro.
-- **Ardósia Clara** (`slate-bg`): superfícies recolhidas, abas inativas, trilhas de barra, evidência insuficiente.
+- **Papel Branco** (`white`): superfície de cards; um branco levemente esverdeado, nunca `#FFF` puro.
+- **Ardósia Sálvia** (`slate-bg`): superfícies recolhidas, abas inativas, trilhas de barra, evidência insuficiente.
 - **Linha de Papel** (`paper-line`): toda borda e divisor de 1px.
 - **Tinta** (`ink`) e **Tinta Suave** (`ink-soft`): texto principal e secundário.
 - **Destaque** (`highlight-bg`): fundo de `card--attention`.
 
-Tema escuro (`[data-theme="dark"]`, `styles/tokens.css`): navy `#0B1E38`, papel `#10161F`, card `#171F2E`, tinta `#E9E5D8`, ouro `#C89A3E`, semânticos clareados (verde `#4FAE81`, âmbar `#E0A94A`, vermelho `#E2897E`). Componentes usam apenas os aliases de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`, `--action-*`).
+Tema escuro (`[data-theme="dark"]`, `styles/tokens.css`): musgo `#0C1411`, papel `#111A17`, card `#16211D`, tinta `#E3EAE4`, sálvia `#8CC5A2`, título `#EEF3EE`, semânticos clareados (verde `#6FBF93`, âmbar `#E9953F`, vermelho `#E58A78`). Componentes usam apenas os aliases de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`, `--action-*`). Séries de gráfico: `--chart-series-primary` (sálvia), `--chart-series-secondary` (âmbar), `--chart-series-target` (tinta suave).
 
-Ação primária (`--action-primary-bg` / `--action-primary-text` / `--action-primary-hover`): navy com texto papel no claro; no escuro, ouro claro `#E8B94A` com texto navy `#0B1E38` (hover `#EFC463`), o mesmo par do assistente de primeiro uso, porque um botão navy some sobre card navy (1,1:1). Vale para `.btn`, `.month-nav-btn`, botões alternáveis pressionados e o seletor ativo de Desempenho. O navy continua sendo a superfície estrutural do extrato (cabeçalho, KPIs, aba ativa). Contorno de `.btn.ghost`: `--action-outline` (título no claro, `ink-soft` no escuro).
+Ação primária (`--action-primary-bg` / `--action-primary-text` / `--action-primary-hover`): musgo com texto papel no claro; no escuro, sálvia claro `#A8D3B8` com texto `#0C1411` (hover `#C2E3CD`), porque um botão musgo some sobre card musgo. Ação tonal (`--action-tonal-*`): `green-bg` com texto título no claro (9,7:1), `#2A4636` com `#A8D3B8` no escuro (6,3:1). Contorno de `.btn.ghost`: `--action-outline` (título no claro, `ink-soft` no escuro). Backdrop de modais: `--backdrop` (musgo a 65%).
 
 ### Named Rules
-**A Regra do Ouro sobre Navy.** `gold-bright` aparece apenas sobre navy. Sobre papel, o dourado é `gold` e serve como linha ou foco, não como preenchimento.
+**A Regra do Sálvia sobre Musgo.** `brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `gold` e serve como linha ou foco.
+
+**A Regra do Âmbar.** O âmbar (`gold-bright`, `amber`) só marca atenção: prontidão, prazo, atraso. Nunca navegação nem marca.
 
 **A Regra do Significado.** Verde, âmbar e vermelho só carregam estado. Nunca decoram, e sempre acompanham um rótulo textual.
 
@@ -209,23 +230,24 @@ Ação primária (`--action-primary-bg` / `--action-primary-text` / `--action-pr
 
 **Display Font:** Fraunces (com Georgia)
 **Body Font:** IBM Plex Sans (com Segoe UI, Arial)
-**Label/Mono Font:** IBM Plex Mono (com Consolas, Courier New)
+**Data Font:** IBM Plex Mono (com Consolas, Courier New)
 
-**Character:** Uma serifa editorial para o "saldo" e a marca, uma mono para tudo que é registro — rótulos, datas, métricas, estados — e uma sans neutra para explicar. A mono é o que faz a interface parecer um extrato.
+**Character:** Uma serifa editorial para o "saldo", os valores e a marca; uma mono só para o que é número de registro — datas, durações, contagens, percentuais, códigos e eixos de gráfico; e uma sans neutra para explicar, rotular e agir. A mono nos números é o que faz a interface parecer um extrato.
 
 ### Hierarchy
 - **Display** (600, 28px, -0.01em): título do extrato no cabeçalho.
 - **Headline** (600, clamp(1.75rem, 3vw, 2.25rem)): título de página e de diálogos de entrada.
 - **Value** (600, 24px): números principais em KPIs e saldos.
 - **Title** (600, 1rem, 1.3): títulos de blocos de decisão ("Hoje", diagnóstico principal).
-- **Body** (400, 0.875rem, 1.5): explicações e formulários; parágrafos limitados a 80ch.
-- **Label** (600, 12px, 0.08em, MAIÚSCULAS): títulos de cards, abas, botões (botões a 0.03em).
-- **Caption** (400, 12px, 0.04–0.14em, MAIÚSCULAS; 12px é o piso de toda a interface): eyebrows, rótulos de KPI, navegação de seções, badges.
+- **Body** (400, 0.875rem, 1.5; 15px até 600px de largura): explicações e formulários; parágrafos limitados a 80ch.
+- **Action** (Sans 500, 0.8125rem, sem caixa-alta): botões e abas.
+- **Label** (Sans 600, 12px, 0.08em, MAIÚSCULAS): rótulos de seção, eyebrows, cabeçalhos de tabela, rótulos de KPI. Caixa-alta só aqui.
+- **Data** (Mono 400, 12px): datas, durações, contagens, percentuais e códigos; 12px é o piso de toda a interface.
 
 Pesos permitidos: 400, 500, 600. O 700 existe como token mas não é a voz do sistema.
 
 ### Named Rules
-**A Regra da Coluna de Extrato.** Se é um dado, uma data, um estado ou um rótulo de coluna, é Plex Mono. Se é um valor que importa, é Fraunces. Todo o resto é Plex Sans.
+**A Regra da Coluna de Extrato.** Se é um número, uma data, uma duração ou um código, é Plex Mono. Se é um valor que importa (saldo, KPI, cronômetro), é Fraunces. Todo o resto — rótulos, estados, ações, explicações — é Plex Sans.
 
 ## Layout
 
@@ -240,60 +262,62 @@ Listas de registros mostram 5 itens e expandem com "Mostrar mais · +N".
 
 ## Elevation & Depth
 
-Plano por padrão. Profundidade vem de tom (papel → papel branco → ardósia) e de bordas de 1px em `paper-line`. Sombras existem apenas em elementos que flutuam sobre o conteúdo e usam `--shadow-color` (navy translúcido no claro, preto no escuro).
+Plano por padrão. Profundidade vem de tom (papel → papel branco → ardósia) e de bordas de 1px em `paper-line`. Sombras existem apenas em elementos que flutuam sobre o conteúdo e usam `--shadow-color` (musgo translúcido no claro, preto no escuro).
 
 ### Shadow Vocabulary
-- **Fio dourado** (`box-shadow: 0 1px 0 var(--gold)`): base do cabeçalho do extrato, como a linha de assinatura de um documento.
-- **Barra fixa** (`box-shadow: 0 4px 12px rgba(11,37,69,.08)`): busca/compact header grudados no topo.
+- **Fio sálvia** (`box-shadow: 0 1px 0 var(--gold)`): base do cabeçalho do extrato, como a linha de assinatura de um documento.
+- **Barra fixa** (`box-shadow: 0 4px 12px color-mix(in srgb,var(--shadow-color) 25%,transparent)`): busca/compact header grudados no topo.
 - **Menu flutuante** (`box-shadow: 0 10px 24px var(--shadow-color)`): menus e popovers.
-- **Diálogo** (`box-shadow: 0 24px 70px rgba(0,0,0,.25)`): modais e assistente inicial, com backdrop `rgba(12,20,30,.65)`.
+- **Diálogo** (`box-shadow: 0 24px 70px var(--shadow-color)`): modais e assistente inicial, com backdrop `var(--backdrop)`.
 
 ### Named Rules
 **A Regra do Papel Plano.** Um card em repouso não tem sombra. Se algo precisa de sombra, é porque está acima da página — modal, menu, barra fixa.
 
 ## Shapes
 
-Cantos quase retos (2px) em tudo: botões, cards, campos, barras, abas (só nos cantos superiores). Bordas de 1px em `paper-line`. Marcadores semânticos são faixas de 3px: no topo para ação (`gold`), à esquerda para insight (`gold`) e atenção (`amber`). Ativos e seleções usam sublinhado ou contorno interno dourado (`inset 0 -2px` ou `inset 0 0 0 1px var(--gold)`). O cabeçalho do extrato tem uma textura de linhas verticais douradas a 5% de opacidade a cada 40px — a única textura do sistema.
+Cantos discretos: 8px (`--radius-card`) em cards, painéis, modais e tabelas; 6px (`--radius-control`) em botões, campos, selos e abas (só nos cantos superiores). Marcas pequenas — barras de progresso, células do heatmap, eventos do calendário — mantêm 2px. No Tailwind, `rounded-default` é o raio de card e `rounded` o de controle. Bordas de 1px em `paper-line`. Marcadores semânticos são faixas de 3px: no topo para ação (`gold`), à esquerda para insight (`gold`) e atenção (`amber`). Ativos e seleções usam sublinhado ou contorno interno sálvia (`inset 0 -2px` ou `inset 0 0 0 1px var(--gold)`). O cabeçalho do extrato tem uma textura de linhas verticais sálvia a 5% de opacidade a cada 40px — a única textura do sistema.
 
 ## Components
 
 ### Buttons
-Precisos e contidos: rótulo mono, cantos de 2px, sem ícone obrigatório.
-- **Shape:** quase reto (2px), altura 36px.
-- **Primary:** navy com texto papel, mono 12px a 0.03em, padding 9px 16px.
-- **Hover / Focus:** hover troca para Azul Tinta; foco é contorno dourado de 2px com offset 2px; active desce 1px. Transições de 150ms.
-- **Ghost (secundário):** transparente com borda e texto navy; hover preenche de navy.
-- **Danger:** transparente com borda e texto vermelho, 11px; hover preenche de vermelho.
-- **Small:** padding 6px 10px, 11px.
+Três níveis, um primário por card: o primário é a próxima ação; o tonal repete ações em lista; o terciário é um link de ação.
+- **Shape:** 6px, altura 36px.
+- **Primary:** musgo com texto papel, Sans 500 13px, padding 9px 16px.
+- **Tonal:** fundo `--action-tonal-bg` (sálvia suave), texto título, sem borda; para "Iniciar" e "Revisar" repetidos em listas.
+- **Tertiary:** sem fundo nem borda, sublinhado, texto título; para ações de leitura ("ver detalhes").
+- **Hover / Focus:** hover troca para Sálvia Tinta (o tonal escurece um tom); foco é contorno sálvia de 2px com offset 2px; active desce 1px. Transições de 150ms.
+- **Ghost (secundário):** transparente com borda e texto título; hover preenche.
+- **Danger:** transparente com borda e texto vermelho; hover preenche de vermelho.
+- **Small:** padding 6px 10px.
 - **Icon-btn:** ações só com ícone; sempre com nome acessível.
 
 ### Chips (status-badge)
-- **Style:** mono 10px peso 500, padding 4px 8px, fundo tonal e texto saturado da mesma família (sucesso, aviso, perigo, info, insuficiente).
+- **Style:** 12px peso 500, padding 4px 8px, fundo tonal e texto saturado da mesma família (sucesso, aviso, perigo, info, insuficiente).
 - **State:** sempre com texto; quebra palavras longas em vez de transbordar.
 
 ### Cards / Containers
-- **Corner Style:** 2px.
-- **Background:** papel branco; variantes ardósia (`--muted`), hover-bg (`--interactive`), destaque (`--attention`) e navy (`--primary`, texto papel).
+- **Corner Style:** 8px; blocos internos sem moldura própria, separados por linha.
+- **Background:** papel branco; variantes ardósia (`--muted`), hover-bg (`--interactive`), destaque (`--attention`) e musgo (`--primary`, texto papel).
 - **Shadow Strategy:** nenhuma (ver Elevation).
-- **Border:** 1px `paper-line`; faixa de 3px dourada (ação, insight) ou âmbar (atenção).
+- **Border:** 1px `paper-line`; faixa de 3px sálvia (ação, insight) ou âmbar (atenção).
 - **Internal Padding:** 20–24px; título do card em Label, cinza tinta-suave.
 
 ### Inputs / Fields
-- **Style:** fundo papel, borda 1px `paper-line`, 2px de raio, mono nos seletores, padding 7px 32px 7px 10px, altura 36px.
-- **Focus:** borda dourada e contorno dourado de 3px com offset 1px.
+- **Style:** fundo de card, borda 1px `border-control`, 6px de raio, Sans, padding 7px 32px 7px 10px, altura 36px.
+- **Focus:** borda sálvia e contorno sálvia de 3px com offset 1px.
 - **Hover:** borda escurece para tinta-suave.
 - **Disabled:** opacidade 50%, cursor not-allowed.
 
 ### Navigation
-- **Abas:** mono 12px maiúsculas a 0.06em, fundo ardósia, texto tinta-suave; ativa em navy com texto Ouro Vivo; hover em `tab-hover-bg`.
-- **Navegação de seções (Visão Geral):** barra fixa em papel com links mono 10px maiúsculos; hover/foco ganham fundo ardósia e contorno dourado de 1px.
+- **Abas:** Sans 500 13px sem caixa-alta, fundo ardósia, texto tinta-suave; ativa em musgo com texto Sálvia Claro; hover em `tab-hover-bg`.
+- **Navegação de seções (Visão Geral):** barra fixa em papel com links Sans 12px; hover/foco ganham fundo ardósia e contorno sálvia de 1px.
 - **Mobile (<760px):** navegação inferior fixa com menu "Mais".
 
 ### Cabeçalho do Extrato (signature)
-Bloco navy com eyebrow mono dourado (11px, 0.14em), título Fraunces 28px, "conta" em mono à direita, divisor papel a 18%, saldo em Fraunces dourado e textura de linhas verticais. Um único modelo alimenta a versão hero e a compacta fixa.
+Bloco musgo com eyebrow Sálvia Claro (11px, 0.14em), título Fraunces 28px, número do plano em mono à direita, divisor papel a 18%, saldo em Fraunces âmbar e textura de linhas verticais. Um único modelo alimenta a versão hero e a compacta fixa.
 
 ### Célula de KPI (signature)
-Bloco navy, valor Fraunces 24px em Ouro Vivo (aviso em `#F0A9A0`, positivo em `#8FD6B4`), rótulo mono 11px maiúsculo a 72% de opacidade. Versões clicáveis clareiam no hover e ganham contorno dourado interno no foco.
+Bloco musgo, valor Fraunces 24px em Sálvia Claro (aviso em `--warn-on-dark` `#F2B07A`, positivo em `--ok-on-dark` `#A8D3B8`), rótulo Sans 11px maiúsculo a 72% de opacidade. Versões clicáveis clareiam no hover e ganham contorno sálvia interno no foco.
 
 ### Linha de Diagnóstico (signature)
 Tópico, badge textual, score, evidência, explicação e ação em níveis distintos numa só linha; empilha no mobile. Explicações extras ficam em disclosures fechados.
@@ -302,18 +326,19 @@ Tópico, badge textual, score, evidência, explicação e ação em níveis dist
 
 ### Do:
 - **Do** usar apenas tokens de papel (`--surface-*`, `--text-*`, `--status-*`, `--border-*`) em componentes novos, para que funcionem nos dois temas.
-- **Do** manter Plex Mono para métricas, datas, estados e rótulos, e Fraunces para valores e marca.
-- **Do** usar 2px de raio, 1px de borda e faixas de 3px como marcadores semânticos.
+- **Do** manter Plex Mono para números, datas, durações e códigos, Fraunces para valores e marca, e Plex Sans para rótulos, estados e ações.
+- **Do** usar `--radius-card` (8px) e `--radius-control` (6px), 1px de borda e faixas de 3px como marcadores semânticos.
 - **Do** dar a todo badge de estado um rótulo textual.
 - **Do** funcionar a partir de 320px, empilhando antes de reduzir alvos de toque (mínimo 44px).
-- **Do** usar foco dourado visível em tudo que é interativo.
+- **Do** usar foco sálvia visível em tudo que é interativo.
+- **Do** manter um único botão primário por card; repetições em lista usam `tonal`.
 - **Do** usar `<Icon name="..." />` ou `renderIconSvg(...)` do Tabler Icons para apoiar ações e sinalizações sem poluição visual.
 
 ### Don't:
 - **Don't** aninhar cards para criar hierarquia; use linha, espaço e tipo.
 - **Don't** pôr sombra em cards em repouso.
-- **Don't** usar `gold-bright` sobre papel nem cor literal fora de `styles/tokens.css`.
+- **Don't** usar `brand-on-header` sobre papel, âmbar como marca ou navegação, nem cor literal fora de `styles/tokens.css`.
 - **Don't** usar verde, âmbar ou vermelho como decoração.
-- **Don't** usar cantos arredondados grandes, pílulas ou gradientes (a textura de linhas do cabeçalho é a única exceção); o extrato é reto e plano.
+- **Don't** usar raios acima de 8px, pílulas em contêineres ou gradientes (a textura de linhas do cabeçalho é a única exceção); o extrato é discreto e plano.
 - **Don't** usar peso 700 como voz padrão; a hierarquia vai até 600.
 - **Don't** usar emojis Unicode na interface (`\p{Extended_Pictographic}`); use estritamente ícones vetoriais Tabler via `src/ui/primitives/icon.tsx`.
