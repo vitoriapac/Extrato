@@ -4,6 +4,7 @@ import {
   nextTourStep,
   prevTourStep,
   closeTour,
+  ESSENTIAL_TOUR_STEPS,
   type GuidedTourState,
 } from '../../domain/onboarding/guided-tour-steps.js';
 import { mountPreact, unmountPreact } from '../preact-mount.js';
@@ -144,7 +145,7 @@ export function createGuidedTourController({
 
   function start() {
     previousFocusedElement = (document.activeElement as HTMLElement) || null;
-    tourState = createGuidedTourState(0);
+    tourState = createGuidedTourState(0, ESSENTIAL_TOUR_STEPS);
     document.addEventListener('keydown', handleKeyDown);
     renderCurrentStep();
   }

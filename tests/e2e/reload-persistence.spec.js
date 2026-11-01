@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { activateTab } from './helpers.js';
+import { createDefaultState } from '../../src/state/defaults.js';
 
 // Real mode (no ?test=1): the only path that boots through loadState.
 const stored = page =>
@@ -15,6 +16,23 @@ const stored = page =>
 
 test('recarregar com hash de aba mantém sessões salvas', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-01T12:00:00-03:00') });
+  // A first run has no subjects; seed one before boot so loadState reads it from storage.
+  const seed = {
+    ...createDefaultState(),
+    subjects: [
+      {
+        id: 'reload-subject',
+        name: 'Português',
+        archived: false,
+        createdAt: '2026-10-01T12:00:00-03:00',
+        topics: [{ id: 'reload-topic', name: 'Crase', status: 'Não iniciado', archived: false }],
+      },
+    ],
+  };
+  await page.addInitScript(value => {
+    if (!localStorage.getItem('bb-premium-study-data'))
+      localStorage.setItem('bb-premium-study-data', value);
+  }, JSON.stringify(seed));
   await page.goto('/');
   await activateTab(page, 'dashboard');
   await page.locator('#timerSubjectSelect').selectOption({ index: 1 });

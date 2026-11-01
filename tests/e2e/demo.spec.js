@@ -9,7 +9,10 @@ test('prévia e selo da demonstração funcionam no mobile sem alterar a base an
   const before = await page.evaluate(
     () => JSON.parse(localStorage.getItem('bb-premium-study-data'))?.subjects
   );
-  await page.getByRole('button', { name: /Explorar demonstração/i }).click();
+  await page
+    .getByRole('button', { name: /Explorar demonstração/i })
+    .first()
+    .click();
   const dialog = page.locator('#demoIntroDialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('1.750 questões de estudo');
@@ -21,7 +24,10 @@ test('prévia e selo da demonstração funcionam no mobile sem alterar a base an
   ).toEqual(before);
   for (const width of [320, 375, 390, 430]) {
     await page.setViewportSize({ width, height: 720 });
-    await page.getByRole('button', { name: /Explorar demonstração/i }).click();
+    await page
+      .getByRole('button', { name: /Explorar demonstração/i })
+      .first()
+      .click();
     await expect(dialog).toBeVisible();
     const bounds = await dialog.boundingBox();
     expect(bounds.x).toBeGreaterThanOrEqual(0);
@@ -29,7 +35,10 @@ test('prévia e selo da demonstração funcionam no mobile sem alterar a base an
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
   }
-  await page.getByRole('button', { name: /Explorar demonstração/i }).click();
+  await page
+    .getByRole('button', { name: /Explorar demonstração/i })
+    .first()
+    .click();
   await page.getByRole('button', { name: 'Carregar demonstração' }).click();
   await expect(page.locator('#demoHeaderBadge')).toBeVisible();
   await expect(page.locator('#demoHeaderBadge')).toContainText('Dados fictícios');
@@ -43,7 +52,7 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real', asy
     const api = window.__EXTRATO_TEST__;
     await api.settleSaves();
     const state = structuredClone(api.getState());
-    state.subjects[0].name = 'Registro real preservado';
+    state.subjects = [{ id: 'real-subject', name: 'Registro real preservado', topics: [] }];
     state.updatedAt = '2099-01-01T12:00:00.000Z';
     api.setState(state);
     await new Promise((resolve, reject) => {
@@ -83,7 +92,7 @@ test('isola, reinicia e encerra a demonstração sem alterar o estado real', asy
   );
   expect(restarted.subjects[0].name).not.toBe('Alteração fictícia');
   await page.getByRole('button', { name: /Sair da demonstração/i }).click();
-  await expect(page.getByRole('button', { name: /Explorar demonstração/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Explorar demonstração/i }).first()).toBeVisible();
   const restored = JSON.parse(
     await page.evaluate(() => localStorage.getItem('bb-premium-study-data'))
   );

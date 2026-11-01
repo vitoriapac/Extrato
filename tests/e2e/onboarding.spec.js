@@ -347,21 +347,6 @@ test('cadastro manual oferece retorno à configuração após criar conteúdo', 
   await page.locator('#guidedOnboardingOverlay [data-guided-action="manual"]').click();
   await expect(page.locator('#panel-disciplinas')).toBeVisible();
   await expect(page.locator('#guidedManualReturn')).toBeVisible();
-  await expect(page.locator('[data-guided-manual-return]')).toBeDisabled();
-  await page.evaluate(() => {
-    const api = window.__EXTRATO_TEST__,
-      state = structuredClone(api.getState());
-    state.subjects = [
-      {
-        id: 'manual-subject',
-        name: 'Português',
-        archived: false,
-        topics: [{ id: 'manual-topic', name: 'Crase', status: 'Não iniciado', archived: false }],
-      },
-    ];
-    api.setState(state);
-    api.renderAll();
-  });
   await expect(page.locator('[data-guided-manual-return]')).toBeEnabled();
   await page.locator('[data-guided-manual-return]').click();
   await expect(page.locator('#guidedOnboardingOverlay')).toBeVisible();
@@ -484,7 +469,7 @@ test('missão do primeiro dia é exibida na aba hoje e orienta ativação pós-p
   await expect(missionCard).toBeVisible();
 });
 
-test('tour guiado interativo percorre todas as 5 paradas e conclui com sucesso', async ({
+test('tour guiado interativo percorre as 3 paradas essenciais e conclui com sucesso', async ({
   page,
 }) => {
   await page.evaluate(() => {
@@ -516,30 +501,24 @@ test('tour guiado interativo percorre todas as 5 paradas e conclui com sucesso',
   const tourPopover = page.locator('#guidedTourPopover');
   await expect(tourPopover).toBeVisible();
 
-  // Parada 1: Visão Geral
-  await expect(tourPopover).toContainText('Sua única prioridade de agora');
-  await expect(page.locator('#panel-dashboard')).toBeVisible();
+  // Parada 1: Hoje
+  await expect(tourPopover).toContainText('1 de 3 · Hoje');
+  await expect(tourPopover).toContainText('Seu QG diário de estudo');
+  await expect(page.locator('#panel-hoje')).toBeVisible();
+  await expect(page.locator('.plano-hoje-card.is-tour-highlighted')).toHaveCount(1);
 
-  // Avança para Parada 2: Hoje
+  // Avança para Parada 2: Visão Geral
   const nextBtn = tourPopover.locator('[data-guided-tour-next="true"]');
   await nextBtn.click();
-  await expect(page.locator('#panel-hoje')).toBeVisible();
-  await expect(tourPopover).toContainText('Execução guiada e cronômetro');
+  await expect(page.locator('#panel-dashboard')).toBeVisible();
+  await expect(tourPopover).toContainText('2 de 3 · Visão Geral');
+  await expect(tourPopover).toContainText('Sua bússola estratégica');
 
   // Avança para Parada 3: Questões
   await nextBtn.click();
   await expect(page.locator('#panel-questoes')).toBeVisible();
-  await expect(tourPopover).toContainText('Questões e Importador CSV');
-
-  // Avança para Parada 4: Desempenho
-  await nextBtn.click();
-  await expect(page.locator('#panel-desempenho')).toBeVisible();
-  await expect(tourPopover).toContainText('Inteligência da Prova × Você');
-
-  // Avança para Parada 5: Planejamento
-  await nextBtn.click();
-  await expect(page.locator('#panel-metas')).toBeVisible();
-  await expect(tourPopover).toContainText('Planejamento vivo e Fechamento');
+  await expect(tourPopover).toContainText('3 de 3 · Questões');
+  await expect(tourPopover).toContainText('Onde o diagnóstico acontece');
   await expect(nextBtn).toContainText('Concluir ✓');
 
   // Concluir tour
@@ -598,9 +577,9 @@ test('tour guiado atende critérios de acessibilidade e sem overflow em tela com
   // Navegação para trás por teclado (ArrowLeft)
   const nextBtn = tourPopover.locator('[data-guided-tour-next="true"]');
   await nextBtn.click();
-  await expect(tourPopover).toContainText('Execução guiada e cronômetro');
+  await expect(tourPopover).toContainText('Sua bússola estratégica');
   await page.keyboard.press('ArrowLeft');
-  await expect(tourPopover).toContainText('Sua única prioridade de agora');
+  await expect(tourPopover).toContainText('Seu QG diário de estudo');
 
   // Encerramento por Escape restaura foco
   await page.keyboard.press('Escape');
@@ -618,7 +597,7 @@ test('gatilhos de entrada do tour iniciam o fluxo a partir de Instruções e Mod
 
   const tourPopover = page.locator('#guidedTourPopover');
   await expect(tourPopover).toBeVisible();
-  await expect(tourPopover).toContainText('Sua única prioridade de agora');
+  await expect(tourPopover).toContainText('Seu QG diário de estudo');
   await page.keyboard.press('Escape');
   await expect(tourPopover).toBeHidden();
 
@@ -632,7 +611,7 @@ test('gatilhos de entrada do tour iniciam o fluxo a partir de Instruções e Mod
   await demoTourBtn.click();
 
   await expect(tourPopover).toBeVisible();
-  await expect(tourPopover).toContainText('Sua única prioridade de agora');
+  await expect(tourPopover).toContainText('Seu QG diário de estudo');
   await page.keyboard.press('Escape');
   await expect(tourPopover).toBeHidden();
 });

@@ -39,7 +39,7 @@ T6 cabeçalho sem zeros no primeiro acesso (depende de T1; opcional)
 ### Fase 1 — Fazer o primeiro uso que já existe funcionar
 - [x] T1: Estado inicial vazio e etapas concluídas só em ordem
 - [x] T2: Teste E2E de primeiro acesso com armazenamento vazio
-- [ ] T3: Ligar o tour essencial de 3 paradas
+- [x] T3: Ligar o tour essencial de 3 paradas
 
 ### Checkpoint 1
 - [ ] `npm run test:fast` verde; `npx playwright test tests/e2e/onboarding.spec.js` verde
@@ -60,7 +60,7 @@ T6 cabeçalho sem zeros no primeiro acesso (depende de T1; opcional)
 
 | Risco | Impacto | Mitigação |
 |---|---|---|
-| Testes E2E assumem a matéria "Português" padrão (`state.subjects[0].id`) | Alto | Confirmado em 4 testes: `product-consolidation.spec.js:214`, `achievement-projection.spec.js:299` e `:341`, `action-first-mobile.spec.js:4`. Ajustar para criarem a própria matéria, sem reintroduzi-la no padrão |
+| Testes E2E assumem a matéria "Português" padrão (`state.subjects[0].id`) | Alto | Resolvido: o autoteste `tests/tests.js` (rodado por `?test=1`) agora termina com uma matéria de teste, então o harness E2E parte do mesmo estado de antes da T1; o primeiro acesso vazio é coberto pelo teste da T2, que não usa `?test=1`. Testes sem `?test=1` (`reload-persistence`) semeiam a própria matéria |
 | Testes visuais (snapshots) mudam porque a tela inicial muda | Médio | Atualizar snapshots só das telas de primeiro acesso, conferindo o diff à mão |
 | Tour de 3 paradas aponta para `.plano-hoje-card`, que pode não existir antes do plano | Médio | T3 verifica o tour com e sem plano; parada sem alvo deve ser pulada ou ter alvo alternativo |
 

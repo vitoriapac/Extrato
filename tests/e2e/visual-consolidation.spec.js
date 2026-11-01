@@ -265,7 +265,8 @@ test('atalho modificado navega sem capturar números isolados', async ({ page })
 
 test('botão de retorno permanece visível e volta ao topo', async ({ page }) => {
   await openDemo(page);
-  await expect(page.locator('#backToTopBtn')).toBeVisible();
+  await page.evaluate(() => scrollTo(0, 0));
+  await expect(page.locator('#backToTopBtn')).toBeHidden();
   await page.evaluate(() => scrollTo(0, 900));
   await expect(page.locator('#backToTopBtn')).toBeVisible();
   await page.locator('#backToTopBtn').click();

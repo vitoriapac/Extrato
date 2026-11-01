@@ -11,11 +11,46 @@
     assert(Object.is(actual, expected), message || `Esperado ${expected}; recebido ${actual}`);
   const validScore = value => Number.isFinite(value) && value >= 0 && value <= 100;
 
+  // The default state starts without subjects; these checks need one to work on.
+  function withFixtureSubject(state) {
+    if (!state.subjects.length)
+      state.subjects.push({
+        id: 'subject-selftest',
+        name: 'Português',
+        collapsed: false,
+        archived: false,
+        archivedAt: null,
+        createdAt: new Date().toISOString(),
+        topics: [
+          {
+            id: 'topic-selftest',
+            name: 'Interpretação de Texto',
+            link: '',
+            status: 'Não iniciado',
+            archived: false,
+            archivedAt: null,
+            notes: '',
+            tags: [],
+            difficulty: 'Médio',
+            createdAt: new Date().toISOString(),
+            firstCompletedAt: null,
+            lastCompletedAt: null,
+            completionCount: 0,
+            lastReviewedAt: null,
+            reviewCount: 0,
+            examImportance: null,
+            estimatedStudyMinutes: null,
+            prerequisites: [],
+          },
+        ],
+      });
+    return state;
+  }
   function baseState() {
-    return api.resetState();
+    return withFixtureSubject(api.resetState());
   }
   function cloneState() {
-    return api.structuredCloneSafe(api.getState());
+    return api.structuredCloneSafe(withFixtureSubject(api.getState()));
   }
 
   test('migra um backup v1 até o schema atual', () => {
@@ -348,6 +383,7 @@
       console.error('Teste falhou:', item.name, error);
     }
   }
-  api.resetState();
+  // E2E specs start from this state and expect one subject; the empty first run has its own spec.
+  baseState();
   renderReport();
 })();

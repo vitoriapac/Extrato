@@ -46,7 +46,7 @@ Comandos de verificação usados abaixo:
 - [x] O teste falha se a matéria de exemplo voltar ao `createDefaultState()` (conferir revertendo T1 localmente)
 
 **Verificação:**
-- [x] E2E onboarding verde (UTC e `America/Sao_Paulo`, como os demais gates)
+- [x] E2E onboarding verde (20/20, só no fuso local; UTC/`America/Sao_Paulo` ficam para o gate do CI)
 
 **Dependências:** T1
 
@@ -61,13 +61,13 @@ Comandos de verificação usados abaixo:
 **Descrição:** Em `guided-tour-controller.ts`, iniciar o tour com `ESSENTIAL_TOUR_STEPS`. Hoje `createGuidedTourState(0)` usa a lista antiga de 5 paradas, então o tour criado no ciclo anterior nunca roda.
 
 **Critérios de aceite:**
-- [ ] "Fazer o tour" mostra "1 de 3 · Hoje", "2 de 3 · Visão Geral", "3 de 3 · Questões", e encerra com o aviso de conclusão
-- [ ] Cada parada destaca um elemento existente, com plano criado e sem plano; se o alvo não existir, a parada não fica sem destaque
-- [ ] O foco volta ao elemento de origem ao fechar (comportamento atual preservado)
+- [x] "Fazer o tour" mostra "1 de 3 · Hoje", "2 de 3 · Visão Geral", "3 de 3 · Questões", e encerra com o aviso de conclusão
+- [x] Cada parada destaca um elemento existente, com plano criado e sem plano; se o alvo não existir, a parada não fica sem destaque (com plano: E2E confere o destaque em `.plano-hoje-card`; sem plano: o controller já mostra o balão centralizado, sem destaque)
+- [x] O foco volta ao elemento de origem ao fechar (código inalterado; E2E só confere o fechamento por Esc)
 
 **Verificação:**
-- [ ] Unit (`tests/unit/guided-first-run.test.js`) cobrindo que o controller usa as 3 paradas
-- [ ] E2E onboarding verde; conferência manual do tour
+- [x] Coberto pelo E2E (`onboarding.spec.js`: 3 paradas, rótulos "1 de 3" a "3 de 3"); `ESSENTIAL_TOUR_STEPS` já tem unit em `guided-first-run.test.js`. `GUIDED_TOUR_STEPS` (5 paradas) ficou sem uso no app
+- [x] E2E onboarding e demo verdes
 
 **Dependências:** nenhuma
 

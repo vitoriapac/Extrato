@@ -1097,7 +1097,8 @@
       ],
       "imports": [
         "@playwright/test",
-        "./helpers.js"
+        "./helpers.js",
+        "../../src/state/defaults.js"
       ],
       "staticTestDeclarations": 1,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
