@@ -29,12 +29,13 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### V1: Tokens Sálvia + cores fixas do app.css
 **Descrição:** Trocar os valores de `:root` e do tema escuro em `styles/tokens.css` pelos de `tasks/theme-salvia.css`, mantendo os nomes (`--navy`, `--gold`…). Definir `--action-danger-hover-text` no claro (o Sálvia não traz) e separar `--gold-bright` conforme a decisão do Checkpoint 0. Unificar o foco: `--wizard-focus` passa a seguir o anel do app. Tokenizar todas as cores literais de `styles/app.css`: os 7 rgba citados no plano, as 18 ocorrências de `rgba(246,243,236)` (texto claro sobre o cabeçalho), `rgba(12,20,30)`, os 5 hex e `#fff`. Ajustar `--chart-series-primary/secondary/target`.
 **Aceite:**
-- [ ] `grep -E "#[0-9a-fA-F]{3,8}\b|rgba\(" styles/app.css` só encontra usos de `color-mix`/token (zero literais)
-- [ ] Musgo é a ação principal; âmbar só em prontidão, contagem e atrasos; vermelho só em risco
-- [ ] Os 22 usos de `var(--gold-bright)` classificados no commit: cabeçalho → `--brand-on-header`, papel/card → `--gold`, atenção → âmbar; nenhum resta em navegação, KPIs ou decoração
-- [ ] `--brand-on-header` (`#A8D3B8`) nunca usado sobre papel ou card (1,53:1 no claro)
-- [ ] Um único anel de foco no app inteiro, assistente incluído
-- [ ] axe sem violações de contraste nas telas Visão Geral, Hoje e assistente, nos dois temas
+- [x] `grep -E "#[0-9a-fA-F]{3,8}\b|rgba\(" styles/app.css` só encontra usos de `color-mix`/token (zero literais)
+- [x] Musgo é a ação principal; âmbar só em prontidão, contagem e atrasos; vermelho só em risco
+- [x] Os 22 usos de `var(--gold-bright)` classificados no commit: cabeçalho → `--brand-on-header`, papel/card → `--gold`, atenção → âmbar; nenhum resta em navegação, KPIs ou decoração
+- [x] `--brand-on-header` (`#A8D3B8`) nunca usado sobre papel ou card (1,53:1 no claro)
+- [x] Um único anel de foco no app inteiro, assistente incluído
+- [x] axe sem violações de contraste nas telas Visão Geral, Hoje e assistente, nos dois temas
+**Resultado (01/11/2026, commit local):** 0 cores literais no `app.css` (35 trocadas). `--gold-bright`: 17 → `--brand-on-header`, 2 → `--gold`, 3 ficam âmbar (saldo, dias até a prova, barra da prova). Fallbacks de tokens inexistentes (`--status-success`, `--status-danger`, `--border-color`) trocados pelos que existem. axe 9/9 no claro e 9/9 no escuro: o escuro tinha 2 falhas que já existiam antes (7 regras com `color:var(--navy)` como texto, 1,01:1 no tema antigo) e passaram para `--heading`, igual ao navy no claro. Achados para depois: (1) o cabeçalho compacto mostra a prontidão em verde-sálvia, e o saldo grande em âmbar; (2) no escuro, a aba ativa (`#0C1411`) quase some no papel, como no tema antigo; (3) 57 de 58 testes de captura passaram com a paleta nova, porque a maioria aceita até 8% de pixels diferentes. A V6 precisa regerar as capturas mesmo com o gate verde.
 **Verificação:** `npx playwright test tests/e2e/accessibility.spec.js`; capturas de antes e depois das 9 abas nos dois temas (sem regerar snapshots ainda)
 **Dependências:** Checkpoint 0 · **Arquivos:** `styles/tokens.css`, `styles/app.css` · **Tamanho:** M
 

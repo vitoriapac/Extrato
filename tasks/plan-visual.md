@@ -75,7 +75,7 @@ Checkpoint 0 (decisões)
 ### Checkpoint 0 — Decisões (sem código) — fechado em 01/11/2026
 
 ### Fase 1 — Fundação visual (1 PR, commits por tarefa)
-- [ ] V1: Tokens Sálvia nos dois temas + cores fixas do app.css + `--chart-series-*`
+- [x] V1: Tokens Sálvia nos dois temas + cores fixas do app.css + `--chart-series-*`
 - [ ] V2: Marca fora do CSS (theme-color, manifest, favicon, `icons/`)
 - [ ] V3: Raio e respiro (`--radius-card`, `--radius-control`, sem caixa dentro de caixa)
 - [ ] V4: Tipografia (mono só em dados; corpo 15–16 px no celular)
