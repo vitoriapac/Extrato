@@ -497,3 +497,16 @@ test('ajuda visual mantém mapa, estudo, busca e navegação acessíveis', async
   await page.keyboard.press('Enter');
   await expect(page.locator('#panel-hoje')).toBeVisible();
 });
+test('tipografia separa ações em Sans, valores em Fraunces e durações em mono', async ({ page }) => {
+  await openDemo(page);
+  const family = selector =>
+    page.locator(selector).first().evaluate(el => getComputedStyle(el).fontFamily);
+  expect(await family('.tab-btn.active')).toMatch(/^["']?IBM Plex Sans/);
+  expect(await family('#panel-dashboard .btn')).toMatch(/^["']?IBM Plex Sans/);
+  expect(await family('.kpi-cell .n')).toMatch(/^["']?Fraunces/);
+  expect(await family('#studyTimerDisplay')).toMatch(/^["']?Fraunces/);
+  expect(await family('.daily-execution-metrics strong')).toMatch(/^["']?IBM Plex Mono/);
+  await page.setViewportSize({ width: 375, height: 812 });
+  const bodySize = await page.evaluate(() => getComputedStyle(document.body).fontSize);
+  expect(parseFloat(bodySize)).toBeGreaterThanOrEqual(15);
+});

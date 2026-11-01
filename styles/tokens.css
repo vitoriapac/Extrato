@@ -57,3 +57,5 @@
 }
 
 :root{--chart-series-primary:var(--blue);--chart-series-target:var(--ink-soft)}
+/* Phones read body copy at 15px; labels and metadata keep their own sizes. */
+@media(max-width:600px){:root{--text-body:.9375rem}}

@@ -62,9 +62,10 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### V4: Tipografia (4.1)
 **Descrição:** IBM Plex Sans em botões, abas, textos de apoio e metadados; mono só em números, datas, durações e códigos; caixa-alta só em rótulos de seção; corpo 15–16 px no celular (piso de 12 px só para rótulos). Revisar os 198 usos de `var(--font-data)` em `styles/app.css`.
 **Aceite:**
-- [ ] Lista no commit de quais classes mantêm mono (números/datas/durações/códigos) e quais passaram para Sans
-- [ ] Título, saldo da prontidão e valores dos KPIs continuam em Fraunces; cronômetro, datas e durações continuam em mono (as três vozes do DESIGN.md ficam)
-- [ ] Nenhum texto de corpo abaixo de 15 px em 375 px
+- [x] Lista no commit de quais classes mantêm mono (números/datas/durações/códigos) e quais passaram para Sans
+- [x] Título, saldo da prontidão e valores dos KPIs continuam em Fraunces; datas e durações continuam em mono (as três vozes do DESIGN.md ficam). Correção do plano: o cronômetro já era Fraunces ("valores" no DESIGN.md) e continua assim
+- [x] Nenhum texto de corpo abaixo de 15 px em 375 px (o `body` e `--text-body`; ver limite abaixo)
+**Resultado (01/11/2026, commit local):** 290 regras com mono (198 por token + 92 com `'IBM Plex Mono'` escrito à mão, agora todas por `var(--font-data)`). 51 mantêm mono, 239 passaram para Sans; lista completa no corpo do commit. `.btn` e `.tab-btn` em Sans 13 px peso 500, sem espaçamento extra; abas, âncoras da Visão Geral e dois `summary` perderam a caixa-alta (cabeçalhos de tabela e rótulos de seção mantêm). Em ≤600 px `--text-body` passa a 15 px. Teste novo em `visual-consolidation.spec.js` confere aba e botão (Sans), KPI e cronômetro (Fraunces), duração (mono) e corpo ≥ 15 px em 375. Conferido em 1440 e 375 px. Limite: textos de apoio com tamanho próprio (12–13 px, ex.: metadados da próxima ação) não foram aumentados; ficam para a Fase 4 (conforto).
 **Verificação:** teste E2E novo que confere `font-family` de 3 elementos-chave (botão, KPI, cronômetro); conferência visual em 375 e 1440 px
 **Dependências:** V1 · **Arquivos:** `styles/tokens.css`, `styles/app.css` · **Tamanho:** M
 
