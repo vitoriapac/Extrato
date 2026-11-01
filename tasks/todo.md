@@ -20,7 +20,7 @@ Comandos de verificação usados abaixo:
 **Critérios de aceite:**
 - [x] Num navegador sem dados, a Visão Geral mostra o card de boas-vindas com "Montar meu plano de estudos" e "Experimentar demonstração", e nenhuma recomendação de matéria
 - [x] O card de configuração mostra "Monte seu plano de estudos · 0 de 4 etapas", com Objetivo como etapa atual e nenhuma etapa marcada como concluída
-- [ ] A etapa de conteúdo do assistente mostra os 3 pacotes de matérias (não conferido no navegador; coberto pela T2)
+- [x] A etapa de conteúdo do assistente mostra os 3 pacotes de matérias (coberto pelo E2E da T2)
 - [x] Importar um backup antigo mantém as matérias do backup (conferido no código: `ensure-state-defaults.ts:43`; sem teste dedicado)
 
 **Verificação:**
@@ -42,11 +42,11 @@ Comandos de verificação usados abaixo:
 **Descrição:** Adicionar ao `tests/e2e/onboarding.spec.js` um caso que parte de armazenamento realmente vazio, sem seed, e garante os itens A–D do plano. Isso impede que um novo padrão volte a esconder o primeiro uso.
 
 **Critérios de aceite:**
-- [ ] O teste verifica: card de boas-vindas visível, "0 de 4 etapas", pacotes visíveis na etapa de conteúdo
-- [ ] O teste falha se a matéria de exemplo voltar ao `createDefaultState()` (conferir revertendo T1 localmente)
+- [x] O teste verifica: card de boas-vindas visível, "0 de 4 etapas", pacotes visíveis na etapa de conteúdo
+- [x] O teste falha se a matéria de exemplo voltar ao `createDefaultState()` (conferir revertendo T1 localmente)
 
 **Verificação:**
-- [ ] E2E onboarding verde (UTC e `America/Sao_Paulo`, como os demais gates)
+- [x] E2E onboarding verde (UTC e `America/Sao_Paulo`, como os demais gates)
 
 **Dependências:** T1
 

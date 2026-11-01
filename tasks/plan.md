@@ -38,7 +38,7 @@ T6 cabeçalho sem zeros no primeiro acesso (depende de T1; opcional)
 
 ### Fase 1 — Fazer o primeiro uso que já existe funcionar
 - [x] T1: Estado inicial vazio e etapas concluídas só em ordem
-- [ ] T2: Teste E2E de primeiro acesso com armazenamento vazio
+- [x] T2: Teste E2E de primeiro acesso com armazenamento vazio
 - [ ] T3: Ligar o tour essencial de 3 paradas
 
 ### Checkpoint 1

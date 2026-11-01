@@ -94,6 +94,30 @@ test('Visão Geral mantém ação antes da configuração em todos os estados de
   await expect(page.locator('#guidedOnboarding')).toBeVisible();
 });
 
+test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', async ({
+  browser,
+}) => {
+  // A new context skips the beforeEach seeding: storage is truly empty, as for a new user.
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto('/');
+  await waitForAppReady(page);
+  const welcome = page.locator('#overviewNextAction');
+  await expect(welcome).toContainText('Montar meu plano de estudos');
+  await expect(welcome).toContainText('Experimentar demonstração');
+  const entry = page.locator('#guidedOnboarding');
+  await expect(entry).toContainText('0 de 4 etapas');
+  await expect(entry.locator('[aria-current="step"]')).toContainText('Objetivo e data');
+  await expect(entry.locator('.is-complete')).toHaveCount(0);
+  await entry.locator('[data-guided-action="open"]').click();
+  const overlay = page.locator('#guidedOnboardingOverlay');
+  await overlay.locator('#guidedExamDate').fill('2027-03-14');
+  await overlay.locator('[data-guided-action="next"]').click();
+  await overlay.locator('[data-guided-action="next"]').click();
+  await expect(overlay.locator('[data-guided-starter-pack]')).toHaveCount(3);
+  await context.close();
+});
+
 test('primeiro uso preserva escolhas e chega à prévia do plano', async ({ page }) => {
   const onboarding = page.locator('#guidedOnboarding');
   const overlay = page.locator('#guidedOnboardingOverlay');
