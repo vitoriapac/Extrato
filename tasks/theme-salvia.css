@@ -1,0 +1,44 @@
+/* StudyTrack — tema "Sálvia suíça" (híbrida das propostas 3 + 4)
+   Só cores: carregar DEPOIS de tokens.css. Fontes, espaçamentos e layout não mudam.
+   Musgo = marca e ação; âmbar = único sinal de atenção; vermelho = risco. */
+
+:root{
+  --navy:#1E3F35;--blue:#2F5D4E;--gold:#2F5D4E;--gold-bright:#E9953F;
+  --paper:#F4F6F4;--paper-line:#D5DDD6;--ink:#17302A;--ink-soft:#4F6158;
+  --green:#2F6B4F;--green-bg:#E2EEE6;--amber:#9A4F0E;--amber-bg:#F7E9D9;
+  --red:#A23B2A;--red-bg:#F5E3DE;--slate-bg:#E6EDE6;--white:#FBFCFA;
+  --heading:#1E3F35;--warn-on-dark:#F2B07A;--ok-on-dark:#A8D3B8;
+  --danger-text:#A23B2A;--warn-text:#9A4F0E;--good-text:#2F6B4F;--ok-fill:#3E7A5C;
+  --highlight-bg:#FBF1E4;--tab-hover-bg:#DDE6DE;--alerta-baixa-bg:#F7EEDC;
+  --alerta-baixa-text:#7E5A12;--heat-1:#CFE0D3;--info-bg:#E3ECE7;
+  --green-bright:#5DAA80;--zebra-bg:#F8FAF8;--month-outside-bg:#EEF1EE;
+  --month-outside-text:#5B6B63;--shadow-color:rgba(30,63,53,0.30);--on-navy:#F4F6F4;
+  --border-control:#6F857A;
+  --wizard-bg:#FBFCFA;--wizard-surface:#FFFFFF;--wizard-surface-muted:#E6EDE6;
+  --wizard-border:#A9B8AE;--wizard-text:#1E3F35;--wizard-text-muted:#4F6158;
+  --wizard-accent:#2F5D4E;--wizard-primary:#1E3F35;--wizard-primary-text:#F4F6F4;
+  --wizard-input-bg:#FFFFFF;--wizard-focus:#D97706;--wizard-step-line:#9DADA4;
+  --wizard-disabled-bg:#D9DFDA;--wizard-disabled-text:#66756D;
+  --chart-series-primary:#2F5D4E;--chart-series-secondary:#D97706;--chart-series-target:#4F6158;
+}
+
+[data-theme="dark"]{
+  --navy:#0C1411;--blue:#7FB59A;--gold:#8CC5A2;--gold-bright:#E9953F;
+  --paper:#111A17;--paper-line:#26332E;--ink:#E3EAE4;--ink-soft:#9DADA4;
+  --green:#6FBF93;--green-bg:#16291F;--amber:#E9953F;--amber-bg:#3A2814;
+  --red:#E58A78;--red-bg:#3A1E19;--slate-bg:#1A2621;--white:#16211D;
+  --heading:#EEF3EE;--danger-text:#E58A78;--warn-text:#F0A55A;--good-text:#8CC5A2;
+  --ok-fill:#6FBF93;--highlight-bg:#2A2416;--tab-hover-bg:#1F2D27;
+  --alerta-baixa-bg:#2E2715;--alerta-baixa-text:#D9B66B;--heat-1:#2C4A3B;
+  --info-bg:#1A2E26;--green-bright:#8CC5A2;--zebra-bg:#141F1B;
+  --month-outside-bg:#0D1412;--month-outside-text:#9DADA4;--shadow-color:rgba(0,0,0,.55);
+  --on-navy:#E3EAE4;
+  --action-primary-bg:#A8D3B8;--action-primary-text:#0C1411;--action-primary-hover:#C2E3CD;
+  --action-outline:var(--ink-soft);--action-danger-hover-text:#0C1411;--border-control:#6F8579;
+  --wizard-bg:#16211D;--wizard-surface:#121B18;--wizard-surface-muted:#1F2D27;
+  --wizard-border:#4A5E55;--wizard-text:#EEF3EE;--wizard-text-muted:#B3C2B9;
+  --wizard-accent:#A8D3B8;--wizard-primary:#A8D3B8;--wizard-primary-text:#0C1411;
+  --wizard-input-bg:#0F1714;--wizard-focus:#E9953F;--wizard-step-line:#5E7369;
+  --wizard-disabled-bg:#2A3833;--wizard-disabled-text:#8FA097;
+  --chart-series-primary:#7FB59A;--chart-series-secondary:#E9953F;--chart-series-target:#9DADA4;
+}
