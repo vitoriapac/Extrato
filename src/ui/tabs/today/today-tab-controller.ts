@@ -513,7 +513,7 @@ export function createTodayTabController(ctx: TodayTabControllerContext) {
         const actionButton = active
           ? '<button type="button" class="btn small" data-delegated-click="openStudyTimerFocus()">Retomar sessão</button>'
           : canStart && !blocked
-            ? `<button type="button" class="btn small" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds > 0 ? 'Continuar' : 'Iniciar'}</button>`
+            ? `<button type="button" class="btn small tonal" data-delegated-click="startPlannedActivity('${escapeAttr(item.id)}')">${item.executedSeconds > 0 ? 'Continuar' : 'Iniciar'}</button>`
             : canStart && blocked
               ? '<button type="button" class="btn small" disabled title="Retome ou finalize a sessão em andamento antes de iniciar outra.">Finalize a sessão atual</button>'
               : '';

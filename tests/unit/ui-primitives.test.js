@@ -31,6 +31,16 @@ test('UI Primitives — Button renderiza variantes e tamanhos acessíveis', () =
   assert.ok(smallDangerHtml.includes('Excluir'));
 });
 
+test('UI Primitives — Button tem níveis tonal e terciário sem o preenchimento do primário', () => {
+  const tonalHtml = render(h(Button, { variant: 'tonal', children: 'Iniciar' }));
+  assert.match(tonalHtml, /class="btn [^"]*\btonal\b/);
+  assert.ok(!tonalHtml.includes('bg-navy'));
+
+  const tertiaryHtml = render(h(Button, { variant: 'tertiary', children: 'Ver detalhes' }));
+  assert.match(tertiaryHtml, /class="btn [^"]*\btertiary\b/);
+  assert.ok(!tertiaryHtml.includes('bg-navy'));
+});
+
 test('UI Primitives — Badge / StatusPill renderiza estados e classes semânticas', () => {
   const successHtml = render(h(Badge, { variant: 'success', children: 'Concluído' }));
   assert.ok(successHtml.includes('status-pill--success'));

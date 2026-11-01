@@ -434,7 +434,7 @@ export function createCalendarTabController(ctx: CalendarTabControllerContext) {
 
   function quickReviewButton(item: Record<string, any>, elId: string) {
     if (!String(elId || '').startsWith('hoje') || item.status === 'Concluído') return '';
-    return `<button type="button" class="btn small quick-review-btn" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">✓ Revisar</button>`;
+    return `<button type="button" class="btn small tonal quick-review-btn" data-delegated-click="completeUnifiedReview('${escapeAttr(item.id)}','${escapeAttr(item.origem)}')">✓ Revisar</button>`;
   }
 
   function renderCalTarefasHoje(elId = 'calTarefasHoje') {

@@ -9416,7 +9416,7 @@
         "preact-render-to-string",
         "../../src/ui/primitives/index.js"
       ],
-      "staticTestDeclarations": 8,
+      "staticTestDeclarations": 9,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 0,
       "observedCaseSeconds": null,

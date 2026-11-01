@@ -1,7 +1,7 @@
 import type { ComponentChildren, JSX } from 'preact';
 
 export type ButtonProps = JSX.IntrinsicElements['button'] & {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'icon';
+  variant?: 'primary' | 'secondary' | 'tonal' | 'tertiary' | 'ghost' | 'danger' | 'icon';
   size?: 'default' | 'small' | 'touch';
   children?: ComponentChildren;
   className?: string;
@@ -20,6 +20,8 @@ export function Button({
     primary: 'btn-primary bg-navy text-on-navy hover:brightness-110 active:brightness-95',
     secondary:
       'btn-secondary bg-surface-card text-primary border border-border-default hover:bg-surface-subtle',
+    tonal: 'btn-tonal tonal',
+    tertiary: 'btn-tertiary tertiary',
     ghost: 'btn-ghost bg-transparent text-secondary hover:text-primary hover:bg-surface-subtle',
     danger: 'btn-danger bg-red text-white hover:brightness-110',
     icon: 'btn-icon p-1 bg-transparent text-secondary hover:text-primary',

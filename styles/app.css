@@ -194,6 +194,11 @@
   }
   .btn:hover{background:var(--action-primary-hover);}
   .btn.ghost{background:transparent;color:var(--heading);border:1px solid var(--action-outline);}
+  .btn.tonal{background:var(--action-tonal-bg);color:var(--action-tonal-text);border:none;}
+  .btn.tonal:hover{background:var(--action-tonal-hover);}
+  /* Tertiary: a link-weight action, no fill or frame. */
+  .btn.tertiary{display:inline-flex;align-items:center;gap:var(--space-1);background:transparent;color:var(--heading);border:none;padding-inline:var(--space-1);text-decoration:underline;text-underline-offset:3px;}
+  .btn.tertiary:hover{background:transparent;text-decoration-thickness:2px;}
   .btn.ghost:hover{background:var(--action-primary-bg);color:var(--action-primary-text);}
   .btn.danger{background:transparent;color:var(--red);border:1px solid var(--red);padding:6px 10px;font-size:11px;}
   .btn.danger:hover{background:var(--red);color:var(--action-danger-hover-text);}

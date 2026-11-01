@@ -72,9 +72,10 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### V5: Botões em três níveis (4.3)
 **Descrição:** Variante `tonal` em `button.tsx` (fundo sálvia, sem borda) e o equivalente em `.btn`; terciário como link com ícone. Aplicar na Visão Geral e em Hoje: um primário por área.
 **Aceite:**
-- [ ] `button.tsx` aceita `variant="tonal"`, com teste unitário
-- [ ] Visão Geral e Hoje têm no máximo um botão primário por card
-- [ ] Contraste do `tonal` ≥ 4,5:1 nos dois temas
+- [x] `button.tsx` aceita `variant="tonal"`, com teste unitário
+- [x] Visão Geral e Hoje têm no máximo um botão primário por card
+- [x] Contraste do `tonal` ≥ 4,5:1 nos dois temas
+**Resultado (01/11/2026, commit local):** `.btn.tonal` (fundo sálvia, sem borda) e `.btn.tertiary` (link sublinhado, sem fundo nem moldura); tokens `--action-tonal-bg/-text/-hover` nos dois temas. `Button` aceita `tonal` e `tertiary`, com teste unitário. Hoje: "Iniciar" dos itens do Plano de hoje, recomendações além da primeira e "Revisar" das listas passaram a tonal; Visão Geral já tinha um primário por card. Contraste do texto: tonal 9,7:1 (claro) e 6,3:1 (escuro); hover 8,4:1 e 5,1:1. Auditoria por script: cada card de Visão Geral e Hoje com no máximo um botão preenchido (o "Agenda" preenchido é o estado ativo do seletor Agenda/Sequência, não uma ação). axe claro e escuro verdes. O terciário ainda não tem uso: entra com os ícones da Fase 2. Ícones nos botões e o "✓" de "Revisar" ficam para a Fase 2.
 **Verificação:** unit do botão; axe
 **Dependências:** V1 · **Arquivos:** `src/ui/primitives/button.tsx`, `styles/app.css`, telas de Visão Geral e Hoje · **Tamanho:** M
 
