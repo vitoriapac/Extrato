@@ -48,7 +48,7 @@ T6 cabeçalho sem zeros no primeiro acesso (depende de T1; opcional)
 
 ### Fase 2 — Menos atrito para iniciantes
 - [x] T4: Rodapé do assistente fixo e sempre visível
-- [ ] T5: Etapa 1 com "Ainda não escolhi um concurso" e etapa 3 ligada à escolha
+- [x] T5: Etapa 1 com "Ainda não escolhi um concurso" e etapa 3 ligada à escolha
 
 ### Checkpoint 2
 - [ ] Gates verdes; fluxo completo do assistente a 375×667 sem rolar para achar os botões

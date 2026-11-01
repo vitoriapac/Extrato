@@ -111,6 +111,7 @@ test('primeiro acesso sem dados salvos mostra boas-vindas, 0 etapas e pacotes', 
   await expect(entry.locator('.is-complete')).toHaveCount(0);
   await entry.locator('[data-guided-action="open"]').click();
   const overlay = page.locator('#guidedOnboardingOverlay');
+  await expect(overlay.locator('#guidedExamPreset')).toHaveValue('undecided');
   await overlay.locator('#guidedExamDate').fill('2027-03-14');
   await overlay.locator('[data-guided-action="next"]').click();
   await overlay.locator('[data-guided-action="next"]').click();

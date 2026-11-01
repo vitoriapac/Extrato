@@ -8,6 +8,7 @@ import {
   renderOnboardingActions,
   onboardingBlockedReason,
 } from '../../src/features/onboarding/onboarding-renderer.js';
+import { buildOnboardingViewModel } from '../../src/application/onboarding/build-onboarding-view-model.js';
 
 const base = {
   steps: [{ id: 'goal' }, { id: 'availability' }, { id: 'content' }, { id: 'plan' }],
@@ -219,4 +220,27 @@ test('ação primária desabilitada explica o motivo ao lado do botão', () => {
     canAdvance: true,
   });
   assert.doesNotMatch(ready, /guided-action-hint|aria-describedby|disabled/);
+});
+
+test('conteúdo destaca o edital escolhido ou, sem concurso, os pacotes', () => {
+  const presets = [{ id: 'bb', name: 'Banco do Brasil' }];
+  const render = presetId =>
+    renderOnboardingContent(
+      buildOnboardingViewModel({ presets, presetId, currentStep: 'content', today: '2026-09-14' })
+    );
+  const chosen = render('bb');
+  assert.match(chosen, /class="btn" data-guided-action=.import.>Carregar edital: Banco do Brasil</);
+  assert.ok(chosen.indexOf('Carregar edital') < chosen.indexOf('data-guided-starter-pack'));
+  for (const presetId of [null, 'undecided', 'custom']) {
+    const undecided = render(presetId);
+    assert.match(
+      undecided,
+      /class="btn ghost" data-guided-action=.import.>Carregar edital do catálogo</
+    );
+    assert.ok(undecided.indexOf('data-guided-starter-pack') < undecided.indexOf('Carregar edital'));
+  }
+  const goal = presetId =>
+    renderOnboardingContent({ ...base, presetId, presets, current: { id: 'goal' } });
+  assert.match(goal(null), /<option value="undecided" selected>Ainda não escolhi um concurso/);
+  assert.match(goal('bb'), /<option value="undecided" >/);
 });

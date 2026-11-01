@@ -72,7 +72,6 @@ const { EXAM_PRESETS, ensureExamCatalog } = createExamCatalogLoader({
   window,
   buildVersion: __STUDYTRACK_BUILD_VERSION__,
 });
-uiState.onboarding.presetId = EXAM_PRESETS[0]?.id || null;
 
 const appSelectors = createAppSelectors({ getState: () => state, getToday: todayISO });
 const localDateFromTimestamp = (v: any) => appSelectors.localDateISO(v);

@@ -192,6 +192,7 @@ export function buildOnboardingViewModel({
             steps.findIndex(step => step === next)
           ),
     current = steps[currentIndex];
+  const selectedPreset = (presets || []).find((preset: Row) => preset.id === presetId) || null;
   const examDay = parseLocalDate(examDate),
     currentDay = parseLocalDate(today);
   const activeSubjects = (subjects || []).filter(
@@ -319,7 +320,15 @@ export function buildOnboardingViewModel({
     activeAvailabilityPreset,
     planFeasibility,
     subjects: subjectModels,
-    contentPaths: CONTENT_PATHS,
+    // A chosen catalog exam leads with its own edital; otherwise the starter packs lead.
+    contentPaths: selectedPreset
+      ? CONTENT_PATHS.map(path =>
+          path.action === 'import'
+            ? { ...path, label: `Carregar edital: ${selectedPreset.name}` }
+            : path
+        )
+      : CONTENT_PATHS.map(path => ({ ...path, primary: false })),
+    packsFirst: !selectedPreset,
     firstActivities,
     planPreviewState: planPreview?.state || null,
     planReasons,

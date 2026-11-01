@@ -113,17 +113,17 @@ Comandos de verificação usados abaixo:
 **Descrição:** Na etapa 1, deixar o seletor sem concurso pré-selecionado ("Selecione…") e adicionar a opção "Ainda não escolhi um concurso". Na etapa 3: se houver concurso do catálogo, o botão principal diz "Carregar edital: <nome do concurso>"; se for "ainda não escolhi", os pacotes de matérias aparecem primeiro e viram a ação principal.
 
 **Critérios de aceite:**
-- [ ] A etapa 1 não avança sem uma escolha no seletor; a mensagem de bloqueio diz o que falta
-- [ ] Com um concurso do catálogo, a etapa 3 mostra "Carregar edital: <nome>" e abre a importação desse concurso
-- [ ] Com "Ainda não escolhi", a etapa 3 mostra os pacotes em destaque e o edital do catálogo como opção secundária
+- [x] ~~A etapa 1 não avança sem uma escolha no seletor~~ Decisão na implementação: em vez de bloquear, "Ainda não escolhi um concurso" vem marcado por padrão. Nenhum concurso aparece escolhido sem o usuário escolher (antes, `app.ts` pré-selecionava o 1º do catálogo) e não há bloqueio extra para iniciantes
+- [x] Com um concurso do catálogo, a etapa 3 mostra "Carregar edital: <nome>" e abre a importação desse concurso
+- [x] Com "Ainda não escolhi" (ou "Outro concurso"), a etapa 3 mostra os pacotes em destaque e o edital do catálogo como opção secundária
 
 **Verificação:**
-- [ ] Unit para o renderer/view model (rótulo do botão por escolha) + E2E onboarding verde
-- [ ] Conferência manual dos dois caminhos
+- [x] Unit para o renderer/view model (rótulo do botão por escolha) + E2E onboarding, exam-import e csp verdes
+- [x] Conferência num navegador limpo dos dois caminhos. Achado: os cartões dos pacotes não têm CSS nenhum (nenhuma regra `guided-starter-pack` em `styles/`) e aparecem como botões cinza do navegador
 
 **Dependências:** T1
 
-**Arquivos prováveis:** `src/features/onboarding/onboarding-renderer.ts`, `src/application/onboarding/build-onboarding-view-model.ts`, `src/features/onboarding/onboarding-modal-controller.ts`, testes correspondentes
+**Arquivos prováveis:** `src/features/onboarding/onboarding-renderer.ts`, `src/application/onboarding/build-onboarding-view-model.ts`, `src/app.ts` (removido o preset padrão), testes correspondentes
 
 **Tamanho:** M
 
