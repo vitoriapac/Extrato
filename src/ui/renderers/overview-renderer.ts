@@ -1,3 +1,4 @@
+import { ALERT_SEVERITY_VARIANT, renderBadgeIcon } from '../primitives/badge.js';
 export function renderIntelligentAlerts({
   alerts,
   additional,
@@ -11,13 +12,13 @@ export function renderIntelligentAlerts({
       overview: '<p class="overview-alert-empty">Sem alertas prioritários neste momento.</p>',
     };
   const renderAlert = (alert: Record<string, any>) =>
-    `<div class="alerta-item alerta-${escapeAttr(alert.nivel)}"><span class="alerta-icon">${escapeHtml(alert.icon || '')}</span><span><strong>${escapeHtml(alert.reason || alert.texto)}</strong> <small>${escapeHtml(alert.recommendedAction || '')}</small></span>${alert.severity !== 'ok' ? `<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(alert.id)}')">Dispensar 7 dias</button>` : ''}</div>`;
+    `<div class="alerta-item alerta-${escapeAttr(alert.nivel)}"><span class="alerta-icon">${renderBadgeIcon(ALERT_SEVERITY_VARIANT[alert.severity] || 'info')}</span><span><strong>${escapeHtml(alert.reason || alert.texto)}</strong> <small>${escapeHtml(alert.recommendedAction || '')}</small></span>${alert.severity !== 'ok' ? `<button class="btn ghost small alert-dismiss" data-delegated-click="dismissIntelligentAlert('${escapeAttr(alert.id)}')">Dispensar 7 dias</button>` : ''}</div>`;
   const list = [...alerts, ...additional].map(renderAlert).join('');
   const overview = `<div class="overview-alert-list">${alerts
     .slice(0, 2)
     .map(
       (alert: any) =>
-        `<article class="overview-alert alerta-${escapeAttr(alert.severity)}">${alert.topicId && alert.topicId === currentAction?.topicId && alert.subjectId === currentAction?.subjectId ? '<span class="overview-alert-related">Relacionado à recomendação atual</span>' : ''}<strong>${escapeHtml(alert.reason || alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction || '')}</small></article>`
+        `<article class="overview-alert alerta-${escapeAttr(alert.severity)}">${alert.topicId && alert.topicId === currentAction?.topicId && alert.subjectId === currentAction?.subjectId ? '<span class="overview-alert-related">Relacionado à recomendação atual</span>' : ''}<strong>${renderBadgeIcon(ALERT_SEVERITY_VARIANT[alert.severity] || 'info')}${escapeHtml(alert.reason || alert.texto)}</strong><small>${escapeHtml(alert.recommendedAction || '')}</small></article>`
     )
     .join(
       ''

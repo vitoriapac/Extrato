@@ -1,4 +1,5 @@
 import { SubjectTopicRow } from './SubjectTopicRow.js';
+import { Icon } from '../../primitives/icon.js';
 
 export interface SubjectBlockProps {
   subject: any;
@@ -84,7 +85,7 @@ export function SubjectBlock({
             aria-label={`Expandir ou recolher ${subject.name}`}
             data-delegated-click={`event.stopPropagation();toggleSubject('${subject.id}')`}
           >
-            {collapsed ? '▸' : '▾'}
+            <Icon name={collapsed ? 'chevron-right' : 'chevron-down'} size={16} />
           </button>
           <span
             class="subject-name"

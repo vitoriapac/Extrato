@@ -520,7 +520,7 @@ test('tour guiado interativo percorre as 3 paradas essenciais e conclui com suce
   await expect(page.locator('#panel-questoes')).toBeVisible();
   await expect(tourPopover).toContainText('3 de 3 · Questões');
   await expect(tourPopover).toContainText('Onde o diagnóstico acontece');
-  await expect(nextBtn).toContainText('Concluir ✓');
+  await expect(nextBtn).toContainText('Concluir');
 
   // Concluir tour
   await nextBtn.click();

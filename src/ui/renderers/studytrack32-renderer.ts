@@ -2,6 +2,7 @@ import { formatDecimal } from '../../core/format-number.js';
 import { formatPeriodBR } from '../../core/format-date.js';
 import { renderSubjectAccuracy } from './subject-accuracy-renderer.js';
 import { renderRecommendationExplanation } from './recommendation-explanation-renderer.js';
+import { renderIconSvg } from '../primitives/icon.js';
 const safe = (escapeHtml: (value: any) => string, value: unknown) =>
   escapeHtml(String(value ?? ''));
 const focusMinutes = (value: unknown) => {
@@ -25,7 +26,7 @@ export function renderWeeklyStrategicFocus(model: Record<string, any>) {
     return '<section class="weekly-strategic-focus is-insufficient" aria-label="Foco estratégico da semana"><h4>Foco estratégico da semana</h4><p>Registre sessões para ver como o tempo foi distribuído entre os tópicos da prova.</p></section>';
   const percent = Math.max(0, Math.min(100, Math.round(Number(model.highImpactPercent) || 0)));
   const outcomes = model.workedGaps
-    ? `<div class="weekly-focus-outcomes"><strong>${model.workedGaps} ${model.workedGaps === 1 ? 'lacuna prioritária trabalhada' : 'lacunas prioritárias trabalhadas'}</strong><ul><li>↑ ${model.improved} melhoraram</li><li>→ ${model.stable} permaneceram estáveis</li>${model.declined ? `<li>↓ ${model.declined} pioraram</li>` : ''}<li>○ ${model.unmeasured} ainda sem medida posterior</li></ul></div>`
+    ? `<div class="weekly-focus-outcomes"><strong>${model.workedGaps} ${model.workedGaps === 1 ? 'lacuna prioritária trabalhada' : 'lacunas prioritárias trabalhadas'}</strong><ul><li>${renderIconSvg('trending-up', { size: 14, className: 'icon-inline' })}${model.improved} melhoraram</li><li>${renderIconSvg('arrow-right', { size: 14, className: 'icon-inline' })}${model.stable} permaneceram estáveis</li>${model.declined ? `<li>${renderIconSvg('trending-down', { size: 14, className: 'icon-inline' })}${model.declined} pioraram</li>` : ''}<li>${renderIconSvg('circle-dashed', { size: 14, className: 'icon-inline' })}${model.unmeasured} ainda sem medida posterior</li></ul></div>`
     : '<p class="weekly-focus-empty">Nenhuma lacuna de alto impacto com domínio baixo foi trabalhada nesta semana.</p>';
   return `<section class="weekly-strategic-focus" aria-label="Foco estratégico da semana"><h4>Foco estratégico da semana</h4><div class="weekly-focus-main"><strong>${percent}%</strong><span>do tempo em tópicos de alto impacto</span></div><div class="weekly-focus-bar" role="progressbar" aria-label="Parcela do tempo em tópicos de alto impacto" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-valuetext="${percent}% do tempo estudado"><span style="width:${percent}%"></span></div><p class="weekly-focus-time"><b>${focusMinutes(model.highImpactMinutes)}</b> em tópicos de alto impacto · ${focusMinutes(model.totalMinutes)} estudadas</p><p class="weekly-focus-time">Lacunas prioritárias: ${focusMinutes(model.priorityMinutes)} · domínio consolidado: ${focusMinutes(model.consolidatedMinutes)} · sem impacto classificado: ${focusMinutes(model.unknownMinutes)}</p>${outcomes}<small>Indicador descritivo, sem meta mínima. As categorias descrevem sinais diferentes e não formam uma partição do tempo. Melhora e estabilidade exigem resultado posterior medido.</small></section>`;
 }

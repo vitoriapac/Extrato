@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=3ece02754921">
-<link rel="stylesheet" href="styles/app.css?v=3ece02754921">
+<link rel="stylesheet" href="styles/tailwind.css?v=c4e59d76d752">
+<link rel="stylesheet" href="styles/app.css?v=c4e59d76d752">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -27,9 +27,9 @@
   <h2 class="sr-only">Painel de acompanhamento e planejamento</h2>
 
   <aside class="demo-banner" id="demoBanner" hidden aria-label="Modo demonstração">
-    <div><strong>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
+    <div><strong><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-flask icon-inline" aria-hidden="true"><path d="M9 3l6 0"></path><path d="M10 9l4 0"></path><path d="M10 3v6l-4 11a.7 .7 0 0 0 .5 1h11a.7 .7 0 0 0 .5 -1l-4 -11v-6"></path></svg>MODO DEMONSTRAÇÃO</strong><span>Você está usando dados fictícios. Suas informações pessoais permanecem preservadas.</span></div>
     <nav class="demo-tour" aria-label="Roteiro da demonstração"><span>Explore:</span><button data-demo-target="hoje">Prioridades</button><button data-demo-target="dashboard">Riscos e projeção</button><button data-demo-target="agenda">Revisões</button><button data-demo-target="metas">Planejamento</button><button id="demoReportShortcut">Relatório</button></nav>
-    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo">Tour guiado</button><button class="btn ghost small" id="resetDemoBtn">Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn">Sair da demonstração</button></div>
+    <div class="demo-banner-actions"><button class="btn ghost small" id="demoTourBtn" data-guided-tour-start="true" aria-label="Iniciar tour guiado pelo aplicativo"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-route icon-inline" aria-hidden="true"><path d="M3 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path><path d="M19 7a2 2 0 1 0 0 -4a2 2 0 0 0 0 4"></path><path d="M11 19h5.5a3.5 3.5 0 0 0 0 -7h-8a3.5 3.5 0 0 1 0 -7h4.5"></path></svg>Tour guiado</button><button class="btn ghost small" id="resetDemoBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-refresh icon-inline" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>Reiniciar demo</button><button class="btn ghost small" id="exitDemoBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-logout icon-inline" aria-hidden="true"><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"></path><path d="M9 12h12l-3 -3"></path><path d="M18 15l3 -3"></path></svg>Sair da demonstração</button></div>
   </aside>
 
   <dialog class="demo-intro-dialog" id="demoIntroDialog" aria-labelledby="demoIntroTitle" aria-describedby="demoIntroDescription">
@@ -188,7 +188,7 @@
     <div class="chart-card intelligence-column">
       <h3>Índice de Prontidão</h3>
       <div id="approvalDashboard"></div>
-      <button class="btn ghost small" type="button" data-performance-jump="overview">Explorar desempenho completo →</button>
+      <button class="btn ghost small" type="button" data-performance-jump="overview">Explorar desempenho completo<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
       <p class="overview-close-link">Fechamento semanal, linha do tempo e histórico de decisões ficam em Planejamento. <button class="btn ghost small" type="button" data-delegated-click="openWeeklyClose()">Abrir fechamento</button></p>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Mapa de lacunas</h3><p class="module-heading__description">Gravidade combina lacuna de domínio, impacto na prova, retenção, tendência e cobertura. A ordem de estudo segue a prioridade da Próxima melhor ação.</p></header><div id="gapMapDashboard"></div></section>
       <section class="analytics-card"><header class="module-heading module-heading--compact"><h3 class="module-heading__title">Replanejamento pós-simulado</h3></header><div id="postSimulationReplanDashboard"></div></section>
@@ -204,7 +204,7 @@
     <div class="chart-card">
       <h3>Tempo de estudo</h3>
       <div class="stat-grid" id="studyTimeStats" style="margin-top:18px;margin-bottom:0;"></div>
-      <header class="study-distribution-heading"><h3>Distribuição por disciplina</h3><div class="action-group"><button class="btn ghost small" type="button" data-performance-jump="consistency">Ver evolução e consistência →</button></div></header>
+      <header class="study-distribution-heading"><h3>Distribuição por disciplina</h3><div class="action-group"><button class="btn ghost small" type="button" data-performance-jump="consistency">Ver evolução e consistência<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button></div></header>
       <div id="subjectHoursBars"></div>
     </div>
 
@@ -213,7 +213,7 @@
         <h3 style="margin:0;">Histórico de sessões</h3>
         <span class="subject-progress-pill" id="studySessionsCount">0 sessões</span>
       </div>
-      <button class="btn ghost small mobile-filter-toggle" id="studySessionsFilterToggle" type="button" aria-expanded="false" aria-controls="studySessionsFilters" data-delegated-click="toggleFilterPanel('sessions')">Filtros ▾</button>
+      <button class="btn ghost small mobile-filter-toggle" id="studySessionsFilterToggle" type="button" aria-expanded="false" aria-controls="studySessionsFilters" data-delegated-click="toggleFilterPanel('sessions')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-filter icon-inline" aria-hidden="true"><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227"></path></svg>Filtros<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-chevron-down icon-inline" aria-hidden="true"><path d="M6 9l6 6l6 -6"></path></svg></button>
       <div class="cal-filters responsive-filters" id="studySessionsFilters" style="margin-top:14px;">
         <select class="select-control" id="studySessionsPeriod" aria-label="Período do histórico" data-delegated-change="updateSessionHistoryFilter('period',this.value)">
           <option value="7">Últimos 7 dias</option>
@@ -361,10 +361,10 @@
       <div class="subjects-header-actions">
         <button class="btn ghost small" type="button" data-performance-jump="subjects">Ver evolução</button>
         <button class="btn ghost small" type="button" id="verticalizedSyllabusToggleBtn" data-testid="verticalized-syllabus-toggle">Edital verticalizado</button>
-        <details class="action-menu subjects-import-menu"><summary class="btn ghost" aria-label="Opções de importação de disciplinas">Importar ▾</summary><div class="action-menu__items">
+        <details class="action-menu subjects-import-menu"><summary class="btn ghost" aria-label="Opções de importação de disciplinas"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-chevron-down icon-inline" aria-hidden="true"><path d="M6 9l6 6l6 -6"></path></svg></summary><div class="action-menu__items">
           <button type="button" id="loadDefaultSubjectsBtn" data-testid="open-exam-import">Carregar disciplinas do edital</button>
-          <button type="button" id="structuredContentImportBtn">Importar JSON ou CSV</button>
-          <button type="button" id="downloadStructuredCsvBtn">Baixar modelo CSV</button>
+          <button type="button" id="structuredContentImportBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar JSON ou CSV</button>
+          <button type="button" id="downloadStructuredCsvBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-download icon-inline" aria-hidden="true"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path><path d="M7 11l5 5l5 -5"></path><path d="M12 4l0 12"></path></svg>Baixar modelo CSV</button>
         </div></details>
         <input type="file" id="structuredContentFile" accept=".json,.csv,text/csv,application/json" hidden>
         <button class="btn" id="addSubjectBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Nova disciplina</button>
@@ -501,12 +501,12 @@
       <h2 class="module-heading__title">Questões resolvidas</h2>
       <button class="btn ghost small" type="button" id="errorNotebookToggleBtn" data-testid="error-notebook-toggle">Caderno de Erros (Flashcards)</button>
       <button class="btn" id="addQuestaoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Registrar sessão</button>
-      <details class="action-menu questions-import-menu"><summary class="btn ghost" aria-label="Opções de importação de questões">Importar ▾</summary><div class="action-menu__items">
-        <button type="button" id="importQuestionsBtn">Importar CSV (QConcursos / Tec / Padrão)</button>
-        <button type="button" id="downloadQuestionsCsvBtn">Baixar modelo CSV</button>
+      <details class="action-menu questions-import-menu"><summary class="btn ghost" aria-label="Opções de importação de questões"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-chevron-down icon-inline" aria-hidden="true"><path d="M6 9l6 6l6 -6"></path></svg></summary><div class="action-menu__items">
+        <button type="button" id="importQuestionsBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar CSV (QConcursos / Tec / Padrão)</button>
+        <button type="button" id="downloadQuestionsCsvBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-download icon-inline" aria-hidden="true"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path><path d="M7 11l5 5l5 -5"></path><path d="M12 4l0 12"></path></svg>Baixar modelo CSV</button>
       </div></details>
       <input type="file" id="questionsImportFile" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
-      <button class="btn ghost small" type="button" data-performance-jump="questions">Ver análise completa →</button>
+      <button class="btn ghost small" type="button" data-performance-jump="questions">Ver análise completa<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
     </div>
     <div id="errorNotebookMount" hidden></div>
     <div id="questionsMainContainer">
@@ -549,7 +549,7 @@
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Simulados</h2>
       <button class="btn" id="addSimuladoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Registrar simulado</button>
-      <button class="btn ghost small" type="button" data-performance-jump="simulations">Ver análise completa →</button>
+      <button class="btn ghost small" type="button" data-performance-jump="simulations">Ver análise completa<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
     </div>
     <div class="log-table-wrap">
       <table class="log responsive-history-table">
@@ -594,7 +594,7 @@
     <section class="chart-card card--default metas-execution" id="planExecutionCard" aria-labelledby="planExecutionTitle">
       <header class="module-heading"><span class="module-heading__eyebrow">04 · Execução</span><h3 class="module-heading__title" id="planExecutionTitle">Resumo da semana</h3><p class="module-heading__description">Capacidade, tempo planejado e estudo realizado no período atual.</p></header>
       <div id="planExecutionResults"></div>
-      <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver histórico de consistência →</button>
+      <button class="btn ghost small" type="button" data-performance-jump="consistency">Ver histórico de consistência<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
     </section>
 
 
@@ -606,7 +606,7 @@
 
     <div class="chart-card" id="metasExamStrategy" data-metas-section>
       <header class="module-heading"><h3 class="module-heading__title">Configuração estratégica da prova</h3><p class="module-heading__description">Esses dados alimentam oportunidades, riscos e recomendações. Campos não preenchidos permanecem ausentes e reduzem a confiança, sem virar nota zero.</p></header>
-      <button class="btn ghost small" type="button" data-performance-jump="exam">Analisar histórico em Desempenho →</button>
+      <button class="btn ghost small" type="button" data-performance-jump="exam">Analisar histórico em Desempenho<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-inline--end icon-tabler-arrow-right icon-inline" aria-hidden="true"><path d="M5 12l14 0"></path><path d="M13 18l6 -6"></path><path d="M13 6l6 6"></path></svg></button>
       <div id="examBlueprintConfig"></div>
     </div>
     <div class="chart-card"><header class="module-heading"><h3 class="module-heading__title">Matriz Edital × Domínio</h3><p class="module-heading__description">Cobertura, domínio, retenção e lacuna em relação à meta configurada.</p></header><div id="examMasteryMatrix"></div></div>
@@ -657,7 +657,7 @@
       <span>Salvo automaticamente no seu navegador — extrato.gerado localmente</span>
       <div class="footer-actions">
         <button class="btn ghost small" id="enterDemoBtn" aria-describedby="enterDemoNote">Explorar demonstração</button><small class="footer-demo-note" id="enterDemoNote">Dados fictícios, separados dos seus.</small>
-        <button type="button" class="btn ghost small" id="openDataManagementBtn" aria-haspopup="dialog" aria-expanded="false">Gerenciar dados e backups</button>
+        <button type="button" class="btn ghost small" id="openDataManagementBtn" aria-haspopup="dialog" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-database icon-inline" aria-hidden="true"><path d="M4 6a8 3 0 1 0 16 0a8 3 0 1 0 -16 0"></path><path d="M4 6v6a8 3 0 0 0 16 0v-6"></path><path d="M4 12v6a8 3 0 0 0 16 0v-6"></path></svg>Gerenciar dados e backups</button>
       </div>
     </div>
     <span>Atalhos: <strong>Ctrl/⌘+K</strong> busca · <strong>Ctrl/⌘+Shift+1–8</strong> troca de área · <strong>Esc</strong> fecha</span>
@@ -688,14 +688,14 @@
       <div class="backup-actions">
         <label class="backup-period"><span>Período do relatório</span><select class="select-control select-control--compact" id="reportPeriodSelect" aria-label="Período do relatório"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="60">Últimos 60 dias</option><option value="90">Últimos 90 dias</option><option value="custom">Período personalizado</option></select></label>
         <input type="date" id="reportPeriodStart" aria-label="Início do período do relatório" hidden><input type="date" id="reportPeriodEnd" aria-label="Fim do período do relatório" hidden>
-        <button class="btn ghost small" id="exportReportBtn">Exportar relatório PDF</button>
-        <button class="btn ghost small" id="exportBackupBtn" data-demo-protected>Exportar backup</button>
-        <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected>Baixar recuperação</button>
-        <button class="btn ghost small" id="importBackupBtn" data-demo-protected>Importar backup</button>
-        <button class="btn ghost small" id="openRemoteSyncBtn" data-demo-protected>Sincronização WebDAV (E2EE)</button>
+        <button class="btn ghost small" id="exportReportBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-type-pdf icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"></path><path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"></path><path d="M17 18h2"></path><path d="M20 15h-3v6"></path><path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1"></path></svg>Exportar relatório PDF</button>
+        <button class="btn ghost small" id="exportBackupBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-export icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3"></path></svg>Exportar backup</button>
+        <button class="btn ghost small" id="exportAutomaticBackupBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-download icon-inline" aria-hidden="true"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path><path d="M7 11l5 5l5 -5"></path><path d="M12 4l0 12"></path></svg>Baixar recuperação</button>
+        <button class="btn ghost small" id="importBackupBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-file-import icon-inline" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 13v-8a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-5.5m-9.5 -2h7m-3 -3l3 3l-3 3"></path></svg>Importar backup</button>
+        <button class="btn ghost small" id="openRemoteSyncBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-cloud icon-inline" aria-hidden="true"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878"></path></svg>Sincronização WebDAV (E2EE)</button>
         <input type="file" id="importBackupFile" aria-label="Selecionar arquivo de backup" accept="application/json" style="display:none;">
       </div>
-      <section class="backup-danger-zone" aria-labelledby="dangerZoneTitle"><div><strong id="dangerZoneTitle">Zona de perigo</strong><span>Apaga permanentemente os dados deste navegador. A demonstração permanece isolada.</span></div><button class="btn danger small" id="clearAllDataBtn" data-demo-protected>Limpar todos os dados</button></section>
+      <section class="backup-danger-zone" aria-labelledby="dangerZoneTitle"><div><strong id="dangerZoneTitle">Zona de perigo</strong><span>Apaga permanentemente os dados deste navegador. A demonstração permanece isolada.</span></div><button class="btn danger small" id="clearAllDataBtn" data-demo-protected><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-trash icon-inline" aria-hidden="true"><path d="M4 7l16 0"></path><path d="M10 11l0 6"></path><path d="M14 11l0 6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>Limpar todos os dados</button></section>
     </div>
   </div>
 </div>
@@ -761,8 +761,8 @@
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
       <button class="btn ghost small" type="button" id="testRemoteSyncBtn">Testar conexão</button>
       <button class="btn ghost small" type="button" id="reconcileRemoteSyncBtn">Verificar status</button>
-      <button class="btn small" type="button" id="pushRemoteSyncBtn">Enviar para nuvem</button>
-      <button class="btn small" type="button" id="pullRemoteSyncBtn">Baixar da nuvem</button>
+      <button class="btn small" type="button" id="pushRemoteSyncBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-cloud-upload icon-inline" aria-hidden="true"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"></path><path d="M9 15l3 -3l3 3"></path><path d="M12 12l0 9"></path></svg>Enviar para nuvem</button>
+      <button class="btn small" type="button" id="pullRemoteSyncBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-cloud-download icon-inline" aria-hidden="true"><path d="M19 18a3.5 3.5 0 0 0 0 -7h-1a5 4.5 0 0 0 -11 -2a4.6 4.4 0 0 0 -2.1 8.4"></path><path d="M12 13l0 9"></path><path d="M9 19l3 3l3 -3"></path></svg>Baixar da nuvem</button>
     </div>
 
     <div class="modal-actions">
@@ -927,7 +927,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=3ece02754921"></script>
+  <script src="src/app.bundle.js?v=c4e59d76d752"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

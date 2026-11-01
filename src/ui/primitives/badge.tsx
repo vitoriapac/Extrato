@@ -1,5 +1,5 @@
 import type { ComponentChildren, JSX } from 'preact';
-import { Icon, type IconName } from './icon.js';
+import { Icon, renderIconSvg, type IconName } from './icon.js';
 
 export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'insufficient';
 
@@ -55,3 +55,19 @@ export function Badge({
 }
 
 export const StatusPill = Badge;
+
+/** Same state icon as <Badge>, for renderers that build `status-badge` markup as strings. */
+export function renderBadgeIcon(variant: string): string {
+  const name = BADGE_VARIANT_ICONS[variant as BadgeVariant];
+  return name ? renderIconSvg(name, { size: 14, className: 'icon-inline' }) : '';
+}
+
+/** Alert severity from the diagnostics domain mapped to a badge state. */
+export const ALERT_SEVERITY_VARIANT: Record<string, BadgeVariant> = {
+  critical: 'danger',
+  high: 'danger',
+  important: 'warning',
+  medium: 'warning',
+  low: 'info',
+  info: 'info',
+};

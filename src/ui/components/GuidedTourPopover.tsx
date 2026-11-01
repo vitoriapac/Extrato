@@ -201,8 +201,9 @@ export function GuidedTourPopover({
                 className="bg-accent text-brand font-semibold hover:bg-accent/90 border-0"
                 data-guided-tour-next="true"
                 aria-label={isLast ? 'Concluir tour guiado' : 'Próxima parada'}
+                iconRight={isLast ? 'check' : 'arrow-right'}
               >
-                {isLast ? 'Concluir ✓' : 'Próximo →'}
+                {isLast ? 'Concluir' : 'Próximo'}
               </Button>
             </div>
           </div>

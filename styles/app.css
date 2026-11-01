@@ -2512,3 +2512,6 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 @media(min-width:761px) and (max-width:1199px){.tabs .tab-icon{display:none}}
 /* Decorative icon before a button or field label (14px, matches the text cap height). */
 .icon-inline{display:inline-block;flex:0 0 auto;vertical-align:-2px;margin-inline-end:6px}
+.icon-inline.icon-inline--end{margin-inline:6px 0}
+/* The demo strip's three actions already fill a phone row; icons would push it past 320px. */
+@media(max-width:430px){.demo-banner-actions .icon-inline{display:none}}

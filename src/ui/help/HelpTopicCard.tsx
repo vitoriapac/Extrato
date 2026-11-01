@@ -123,7 +123,7 @@ export function HelpTopicCard({ entry }: HelpTopicCardProps): JSX.Element {
         )}
         {entry.action && (
           <button type="button" class="help-text-link" data-help-action={entry.action.target}>
-            {entry.action.label} <span aria-hidden="true">→</span>
+            {entry.action.label} <Icon name="arrow-right" size={14} />
           </button>
         )}
         <HelpFeedbackWidget topicId={entry.id} topicTitle={entry.title} />

@@ -171,8 +171,9 @@ export function FirstStepsMission({
                       size="small"
                       data-first-steps-action={mission.ctaAction}
                       onClick={() => onExecuteMission?.(mission.ctaAction)}
+                      iconRight="arrow-right"
                     >
-                      {mission.ctaLabel} →
+                      {mission.ctaLabel}
                     </Button>
                   </div>
                 )}

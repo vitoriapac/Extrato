@@ -18,6 +18,7 @@ import { renderCollectionFooter } from '../../list-components.js';
 import { countActiveFilters, filterPanelLabel } from '../../filter-panel.js';
 import { formatDuration } from '../../../core/format-duration.js';
 import { parseLocalDate } from '../../../core/date-utils.js';
+import { renderIconSvg } from '../../primitives/icon.js';
 
 export const SESSION_TYPES: Record<string, string> = Object.freeze({
   study: 'Estudo teórico',
@@ -287,8 +288,8 @@ export function createSessionHistoryController(opts: SessionHistoryControllerOpt
     });
     const toggle = doc.getElementById('studySessionsFilterToggle');
     if (toggle) {
-      toggle.textContent =
-        filterPanelLabel(active) + (toggle.getAttribute('aria-expanded') === 'true' ? ' ▴' : ' ▾');
+      const open = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.innerHTML = `${renderIconSvg('filter', { size: 14, className: 'icon-inline' })}${filterPanelLabel(active)}${renderIconSvg(open ? 'chevron-up' : 'chevron-down', { size: 14, className: 'icon-inline icon-inline--end' })}`;
     }
   }
 
