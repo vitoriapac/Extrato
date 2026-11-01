@@ -121,16 +121,18 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### I3: Abas e barra inferior com ícones
 **Descrição:** Ícone antes de cada aba e no menu "Mais"; no celular, ícone com texto até 375 px e só ícone (com `aria-label`) abaixo disso.
 **Aceite:**
-- [ ] Botões só com ícone têm `aria-label` e área de toque ≥ 44 × 44 px
-- [ ] Sem rolagem horizontal a 320 px
+- [x] Botões só com ícone têm `aria-label` e área de toque ≥ 44 × 44 px (nome acessível vem do texto escondido só visualmente, sem `aria-label` duplicado)
+- [x] Sem rolagem horizontal a 320 px
+**Resultado (01/11/2026):** ícone de 16 px antes de cada aba, no "Mais" (`dots`) e nos itens do menu, em SVG estático no `index.html`. Na barra inferior o ícone vai acima do texto (20 px); abaixo de 375 px o texto fica oculto só visualmente. Entre 761 e 1199 px os ícones das abas do topo somem, porque os rótulos sozinhos já ocupam a linha (sem isso as abas passavam a rolar em 1024–1100 px). Corrigido: o clique no ícone do "Mais" abria e fechava o menu na hora (o listener do documento comparava `event.target` com o botão). E2E novo na `visual-consolidation.spec.js` (5 botões com ícone, nome, 44 px, sem rolagem a 320 px, menu Mais pelo ícone).
 **Verificação:** E2E de navegação e de tour (`onboarding.spec.js`) verdes; axe
 **Dependências:** I2 · **Arquivos:** `index.html`, `src/ui/navigation/*`, `styles/app.css` · **Tamanho:** M
 
 ### I4: Cronômetro, sessões, revisão e botões de criar
 **Descrição:** Ícones em Iniciar/Pausar/Zerar/Finalizar/Foco/Janela flutuante, nos tipos de sessão, na avaliação da revisão (Errei, Difícil, Bom, Fácil) e em "+ Nova disciplina" e similares (trocar `+` por `plus`).
 **Aceite:**
-- [ ] Nenhum `+`, `→` ou `▾` escrito como texto nesses botões
-- [ ] Nomes acessíveis inalterados (os E2E que buscam por nome continuam passando)
+- [x] Nenhum `+`, `→` ou `▾` escrito como texto nesses botões
+- [x] Nomes acessíveis inalterados (os E2E que buscam por nome continuam passando); os botões de criar perdem o "+ " do nome ("Nova disciplina")
+**Resultado (01/11/2026):** cronômetro (Iniciar, Pausar, Zerar, Finalizar, Modo foco, Janela flutuante), avaliação da revisão (Errei, Difícil, Bom, Fácil), 6 botões de criar no `index.html` e 3 nos renderers com `plus`, e tipo de sessão no histórico (`book`, `repeat`, `pencil`, `clipboard-text`). O "⛶" do modo foco virou `focus-2` (e `x` para sair). Classe `.icon-inline` (14 px). Os tipos de sessão no `<select>` ficam sem ícone (opções não aceitam SVG). E2E de sessões, cronômetro, revisões e metas: 34/34; gate visual 58/58.
 **Verificação:** E2E de cronômetro, sessões e revisões
 **Dependências:** I2 · **Arquivos:** `index.html`, controlador do timer, `study-sessions-renderer.ts`, modal de revisão · **Tamanho:** M
 

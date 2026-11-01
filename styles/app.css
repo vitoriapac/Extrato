@@ -2497,3 +2497,18 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 
 /* Nota ao lado da demonstração: deixa claro que ela não toca nos dados do estudante. */
 .footer-demo-note{align-self:center;color:var(--text-secondary);font-size:var(--text-xs);line-height:1.4}
+/* Nav icons: icon before the label on desktop, above it in the bottom bar, alone under 375px. */
+.tab-btn:not(.more-tab-btn){display:inline-flex;align-items:center;justify-content:center;gap:6px;padding-inline:12px}
+.tab-icon{flex:0 0 auto}
+.mobile-more-menu button{display:flex;align-items:center;gap:10px}
+@media(max-width:760px){
+  .primary-nav-shell .tab-btn:not(.tab-secondary),.primary-nav-shell .more-tab-btn{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+  .primary-nav-shell .tab-icon{width:20px;height:20px}
+}
+@media(max-width:374px){
+  .primary-nav-shell .tab-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+}
+/* Between the bottom bar and 1200px the labels alone fill the row; icons would push tabs off-screen. */
+@media(min-width:761px) and (max-width:1199px){.tabs .tab-icon{display:none}}
+/* Decorative icon before a button or field label (14px, matches the text cap height). */
+.icon-inline{display:inline-block;flex:0 0 auto;vertical-align:-2px;margin-inline-end:6px}

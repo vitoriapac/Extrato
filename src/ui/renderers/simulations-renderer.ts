@@ -57,7 +57,7 @@ export function renderSimulationBreakdown({
         )}</select></label><label><span>Acertos</span><input type="number" min="0" max="${total || 999}" value="${correct}" placeholder="0" data-delegated-blur="updateBreakdownRow('${item.id}','${row.id}','correct',this.value)"></label><label><span>Questões</span><input type="number" min="0" value="${total}" placeholder="0" data-delegated-blur="updateBreakdownRow('${item.id}','${row.id}','total',this.value)"></label><div class="breakdown-result"><span>Aproveitamento</span><strong>${accuracy == null ? '—' : accuracy + '%'}</strong></div><button class="icon-btn" aria-label="Excluir disciplina do simulado" data-delegated-click="deleteBreakdownRow('${item.id}','${row.id}')">✕</button></div>`;
     })
     .join('');
-  return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><strong class="breakdown-title">Desempenho por disciplina</strong><div class="breakdown-list">${rows}</div><button class="btn ghost small breakdown-add-btn" data-delegated-click="addBreakdownRow('${item.id}')">+ Adicionar disciplina</button></div></td></tr>`;
+  return `<tr class="breakdown-row"><td colspan="7"><div class="breakdown-box"><strong class="breakdown-title">Desempenho por disciplina</strong><div class="breakdown-list">${rows}</div><button class="btn ghost small breakdown-add-btn" data-delegated-click="addBreakdownRow('${item.id}')">${renderIconSvg('plus', { size: 14, className: 'icon-inline' })}Adicionar disciplina</button></div></td></tr>`;
 }
 
 export function renderSimulationEdit({
@@ -203,7 +203,7 @@ export function renderSimulationRows({
   renderFooter: (...args: any[]) => string;
 }) {
   if (!items.length)
-    return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum simulado registrado ainda.</p><button class="btn ghost small" data-delegated-click="addSimuladoRow()">+ Registrar simulado</button></div></td></tr>`;
+    return `<tr><td colspan="7"><div class="empty-state" style="border:none;"><p>Nenhum simulado registrado ainda.</p><button class="btn ghost small" data-delegated-click="addSimuladoRow()">${renderIconSvg('plus', { size: 14, className: 'icon-inline' })}Registrar simulado</button></div></td></tr>`;
   const visibleItems = items.slice(0, visible);
   return (
     visibleItems

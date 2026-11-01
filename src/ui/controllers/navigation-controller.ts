@@ -109,7 +109,7 @@ export function createNavigationController({
     items[nextNavigationIndex(index, items.length, event.key)]?.focus();
   });
   document.addEventListener('click', (event: any) => {
-    if (!moreMenu?.hidden && !moreMenu.contains(event.target) && event.target !== moreButton)
+    if (!moreMenu?.hidden && !moreMenu.contains(event.target) && !moreButton?.contains(event.target))
       closeMore();
   });
   document.querySelectorAll('.tab-btn[data-tab]').forEach((button: any) => {

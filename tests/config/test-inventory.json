@@ -1581,7 +1581,7 @@
         "./helpers.js",
         "@axe-core/playwright"
       ],
-      "staticTestDeclarations": 19,
+      "staticTestDeclarations": 20,
       "staticCountCaveat": "Declarations are not executed cases; loops and builders can generate more tests.",
       "measuredCases": 17,
       "observedCaseSeconds": 125.4,

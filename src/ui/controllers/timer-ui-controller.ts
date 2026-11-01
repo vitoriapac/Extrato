@@ -12,6 +12,7 @@ import {
 } from '../../application/sessions/timer-coordinator.js';
 import { createKeyboardShortcutsController } from '../events/keyboard-shortcuts.js';
 import { scrollBehavior } from '../accessibility.js';
+import { renderIconSvg } from '../primitives/icon.js';
 
 export interface TimerUiControllerOptions {
   document: any;
@@ -64,7 +65,7 @@ export function createTimerUiController(options: TimerUiControllerOptions) {
     const toggle = document.getElementById('timerFocusToggle');
     if (toggle) {
       toggle.setAttribute('aria-pressed', String(active));
-      toggle.textContent = active ? 'Sair do modo foco' : '⛶ Modo foco';
+      toggle.innerHTML = `${renderIconSvg(active ? 'x' : 'focus-2', { size: 14, className: 'icon-inline' })}${active ? 'Sair do modo foco' : 'Modo foco'}`;
     }
 
     if (active) {

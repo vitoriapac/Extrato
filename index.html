@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=a556c782333c">
-<link rel="stylesheet" href="styles/app.css?v=a556c782333c">
+<link rel="stylesheet" href="styles/tailwind.css?v=3ece02754921">
+<link rel="stylesheet" href="styles/app.css?v=3ece02754921">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -96,23 +96,23 @@
     <div class="compact-header" aria-label="Resumo do plano"><button class="compact-brand brand-home" type="button" data-go-home aria-label="Voltar para a Visão Geral">StudyTrack</button><div class="compact-meta"><span>Prontidão <b id="compactReadiness">—</b></span><span id="compactExamDate"></span><span class="compact-plan">Nº <b id="compactPlanNumber">2026-001</b></span></div></div>
     <div class="primary-nav-shell">
       <div class="tabs" role="tablist" aria-label="Seções do extrato">
-        <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard">Visão geral</button>
-        <button class="tab-btn tab-secondary" id="tab-desempenho" role="tab" aria-selected="false" aria-controls="panel-desempenho" data-tab="desempenho">Desempenho</button>
-        <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje">Hoje</button>
-        <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas">Disciplinas</button>
-        <button class="tab-btn" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario">Calendário</button>
-        <button class="tab-btn tab-secondary" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda">Agenda de Revisões</button>
-        <button class="tab-btn tab-secondary" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes">Questões &amp; Simulados</button>
-        <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas">Planejamento</button>
-        <button class="tab-btn tab-secondary" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes">Instruções</button>
+        <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="panel-dashboard" data-tab="dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-layout-dashboard tab-icon" aria-hidden="true"><path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"></path><path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"></path><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"></path><path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"></path></svg><span class="tab-label">Visão geral</span></button>
+        <button class="tab-btn tab-secondary" id="tab-desempenho" role="tab" aria-selected="false" aria-controls="panel-desempenho" data-tab="desempenho"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-chart-line tab-icon" aria-hidden="true"><path d="M4 19l16 0"></path><path d="M4 15l4 -6l4 2l4 -5l4 4"></path></svg><span class="tab-label">Desempenho</span></button>
+        <button class="tab-btn" id="tab-hoje" role="tab" aria-selected="false" aria-controls="panel-hoje" data-tab="hoje"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-sun tab-icon" aria-hidden="true"><path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path></svg><span class="tab-label">Hoje</span></button>
+        <button class="tab-btn" id="tab-disciplinas" role="tab" aria-selected="false" aria-controls="panel-disciplinas" data-tab="disciplinas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-books tab-icon" aria-hidden="true"><path d="M5 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"></path><path d="M9 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"></path><path d="M5 8h4"></path><path d="M9 16h4"></path><path d="M13.803 4.56l2.184 -.53c.562 -.135 1.133 .19 1.282 .732l3.695 13.418a1.02 1.02 0 0 1 -.634 1.219l-.133 .041l-2.184 .53c-.562 .135 -1.133 -.19 -1.282 -.732l-3.695 -13.418a1.02 1.02 0 0 1 .634 -1.219l.133 -.041"></path><path d="M14 9l4 -1"></path><path d="M16 16l3.923 -.98"></path></svg><span class="tab-label">Disciplinas</span></button>
+        <button class="tab-btn" id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario" data-tab="calendario"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-calendar-month tab-icon" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"></path><path d="M16 3v4"></path><path d="M8 3v4"></path><path d="M4 11h16"></path><path d="M8 14v4"></path><path d="M12 14v4"></path><path d="M16 14v4"></path></svg><span class="tab-label">Calendário</span></button>
+        <button class="tab-btn tab-secondary" id="tab-agenda" role="tab" aria-selected="false" aria-controls="panel-agenda" data-tab="agenda"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-repeat tab-icon" aria-hidden="true"><path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3"></path><path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3"></path></svg><span class="tab-label">Agenda de Revisões</span></button>
+        <button class="tab-btn tab-secondary" id="tab-questoes" role="tab" aria-selected="false" aria-controls="panel-questoes" data-tab="questoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-list-check tab-icon" aria-hidden="true"><path d="M3.5 5.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 11.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 17.5l1.5 1.5l2.5 -2.5"></path><path d="M11 6l9 0"></path><path d="M11 12l9 0"></path><path d="M11 18l9 0"></path></svg><span class="tab-label">Questões &amp; Simulados</span></button>
+        <button class="tab-btn tab-secondary" id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-metas" data-tab="metas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-map-2 tab-icon" aria-hidden="true"><path d="M12 18.5l-3 -1.5l-6 3v-13l6 -3l6 3l6 -3v7.5"></path><path d="M9 4v13"></path><path d="M15 7v5.5"></path><path d="M21.121 20.121a3 3 0 1 0 -4.242 0c.418 .419 1.125 1.045 2.121 1.879c1.051 -.89 1.759 -1.516 2.121 -1.879"></path><path d="M19 18v.01"></path></svg><span class="tab-label">Planejamento</span></button>
+        <button class="tab-btn tab-secondary" id="tab-instrucoes" role="tab" aria-selected="false" aria-controls="panel-instrucoes" data-tab="instrucoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-help-circle tab-icon" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path><path d="M12 16v.01"></path><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"></path></svg><span class="tab-label">Instruções</span></button>
       </div>
-      <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu">Mais</button>
+      <button class="tab-btn more-tab-btn" id="moreTabButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="mobileMoreMenu"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-dots tab-icon" aria-hidden="true"><path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path><path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path></svg><span class="tab-label">Mais</span></button>
       <div class="mobile-more-menu" id="mobileMoreMenu" role="menu" hidden>
-        <button type="button" role="menuitem" data-more-tab="desempenho">Desempenho</button>
-        <button type="button" role="menuitem" data-more-tab="agenda">Agenda de Revisões</button>
-        <button type="button" role="menuitem" data-more-tab="questoes">Questões e Simulados</button>
-        <button type="button" role="menuitem" data-more-tab="metas">Planejamento</button>
-        <button type="button" role="menuitem" data-more-tab="instrucoes">Instruções</button>
+        <button type="button" role="menuitem" data-more-tab="desempenho"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-chart-line tab-icon" aria-hidden="true"><path d="M4 19l16 0"></path><path d="M4 15l4 -6l4 2l4 -5l4 4"></path></svg><span>Desempenho</span></button>
+        <button type="button" role="menuitem" data-more-tab="agenda"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-repeat tab-icon" aria-hidden="true"><path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3"></path><path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3"></path></svg><span>Agenda de Revisões</span></button>
+        <button type="button" role="menuitem" data-more-tab="questoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-list-check tab-icon" aria-hidden="true"><path d="M3.5 5.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 11.5l1.5 1.5l2.5 -2.5"></path><path d="M3.5 17.5l1.5 1.5l2.5 -2.5"></path><path d="M11 6l9 0"></path><path d="M11 12l9 0"></path><path d="M11 18l9 0"></path></svg><span>Questões e Simulados</span></button>
+        <button type="button" role="menuitem" data-more-tab="metas"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-map-2 tab-icon" aria-hidden="true"><path d="M12 18.5l-3 -1.5l-6 3v-13l6 -3l6 3l6 -3v7.5"></path><path d="M9 4v13"></path><path d="M15 7v5.5"></path><path d="M21.121 20.121a3 3 0 1 0 -4.242 0c.418 .419 1.125 1.045 2.121 1.879c1.051 -.89 1.759 -1.516 2.121 -1.879"></path><path d="M19 18v.01"></path></svg><span>Planejamento</span></button>
+        <button type="button" role="menuitem" data-more-tab="instrucoes"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-help-circle tab-icon" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path><path d="M12 16v.01"></path><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"></path></svg><span>Instruções</span></button>
       </div>
     </div>
   </div>
@@ -164,12 +164,12 @@
       <div class="timer-target" id="studyTimerTarget" hidden></div>
       <div id="guidedStrategy" class="guided-strategy" hidden></div>
         <div class="timer-actions action-group" role="group" aria-label="Ações do cronômetro">
-          <button class="btn" id="timerStartBtn">Iniciar</button>
-          <button class="btn" id="timerPauseBtn" style="display:none;">Pausar</button>
-          <button class="btn ghost" id="timerResetBtn">Zerar</button>
-          <button class="btn ghost" id="timerFinishBtn">Finalizar sessão</button>
-          <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()">Modo foco</button>
-          <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden>Janela flutuante</button>
+          <button class="btn" id="timerStartBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-player-play icon-inline" aria-hidden="true"><path d="M7 4v16l13 -8l-13 -8"></path></svg>Iniciar</button>
+          <button class="btn" id="timerPauseBtn" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-player-pause icon-inline" aria-hidden="true"><path d="M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"></path><path d="M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"></path></svg>Pausar</button>
+          <button class="btn ghost" id="timerResetBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-refresh icon-inline" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>Zerar</button>
+          <button class="btn ghost" id="timerFinishBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-square-check icon-inline" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14"></path><path d="M9 12l2 2l4 -4"></path></svg>Finalizar sessão</button>
+          <button class="btn ghost timer-focus-toggle" id="timerFocusToggle" type="button" aria-pressed="false" data-delegated-click="toggleTimerFocus()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-focus-2 icon-inline" aria-hidden="true"><path d="M11.5 12a.5 .5 0 1 0 1 0a.5 .5 0 1 0 -1 0" fill="currentColor"></path><path d="M5 12a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path><path d="M12 3l0 2"></path><path d="M3 12l2 0"></path><path d="M12 19l0 2"></path><path d="M19 12l2 0"></path></svg>Modo foco</button>
+          <button class="btn ghost timer-pip-toggle" id="timerPipBtn" type="button" hidden><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-picture-in-picture icon-inline" aria-hidden="true"><path d="M11 19h-6a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v4"></path><path d="M14 15a1 1 0 0 1 1 -1h5a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-5a1 1 0 0 1 -1 -1l0 -3"></path></svg>Janela flutuante</button>
         </div>
         <div id="timerAriaLive" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
       </div>
@@ -367,7 +367,7 @@
           <button type="button" id="downloadStructuredCsvBtn">Baixar modelo CSV</button>
         </div></details>
         <input type="file" id="structuredContentFile" accept=".json,.csv,text/csv,application/json" hidden>
-        <button class="btn" id="addSubjectBtn">+ Nova disciplina</button>
+        <button class="btn" id="addSubjectBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Nova disciplina</button>
       </div>
     </div>
     <div id="subjectsContainer"></div>
@@ -378,7 +378,7 @@
   <div class="panel" id="panel-calendario" role="tabpanel" aria-labelledby="tab-calendario">
     <div class="section-head">
       <h2 class="section-title">Calendário de estudos</h2>
-      <button class="btn" id="addCalRowBtn">+ Novo item</button>
+      <button class="btn" id="addCalRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Novo item</button>
     </div>
 
     <div class="kpi-grid" id="calIndicadores"></div>
@@ -455,7 +455,7 @@
       <h2 class="module-heading__title">Agenda de revisões</h2>
       <div style="display:flex;gap:8px;">
         <button class="btn ghost" id="autoGenBtn">⟳ Gerar a partir dos concluídos</button>
-        <button class="btn" id="addAgendaRowBtn">+ Novo item</button>
+        <button class="btn" id="addAgendaRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Novo item</button>
       </div>
     </div>
     <p class="helper-text">
@@ -500,7 +500,7 @@
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Questões resolvidas</h2>
       <button class="btn ghost small" type="button" id="errorNotebookToggleBtn" data-testid="error-notebook-toggle">Caderno de Erros (Flashcards)</button>
-      <button class="btn" id="addQuestaoRowBtn">+ Registrar sessão</button>
+      <button class="btn" id="addQuestaoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Registrar sessão</button>
       <details class="action-menu questions-import-menu"><summary class="btn ghost" aria-label="Opções de importação de questões">Importar ▾</summary><div class="action-menu__items">
         <button type="button" id="importQuestionsBtn">Importar CSV (QConcursos / Tec / Padrão)</button>
         <button type="button" id="downloadQuestionsCsvBtn">Baixar modelo CSV</button>
@@ -548,7 +548,7 @@
 
     <div class="section-head module-heading module-heading--section">
       <h2 class="module-heading__title">Simulados</h2>
-      <button class="btn" id="addSimuladoRowBtn">+ Registrar simulado</button>
+      <button class="btn" id="addSimuladoRowBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Registrar simulado</button>
       <button class="btn ghost small" type="button" data-performance-jump="simulations">Ver análise completa →</button>
     </div>
     <div class="log-table-wrap">
@@ -627,7 +627,7 @@
                 <select class="select-control" id="novaMetaDisciplinaSelect" aria-label="Disciplina da nova meta"></select>
                 <input type="number" id="novaMetaDisciplinaValor" aria-label="Quantidade de questões da nova meta" min="1" value="20" style="width:80px;">
       <span class="metadata-text">questões/semana</span>
-      <button class="btn small" id="addMetaDisciplinaBtn">+ Adicionar meta</button>
+      <button class="btn small" id="addMetaDisciplinaBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-plus icon-inline" aria-hidden="true"><path d="M12 5l0 14"></path><path d="M5 12l14 0"></path></svg>Adicionar meta</button>
     </div>
     <div id="metasPorDisciplinaContainer"></div>
 
@@ -917,17 +917,17 @@
     <h3 id="reviewRatingTitle">Como foi esta revisão?</h3>
     <p>Seu resultado define quando este tópico deve aparecer novamente.</p>
     <div class="review-rating-actions">
-      <button class="btn ghost" data-review-rating="again">Errei<small>rever amanhã</small></button>
-      <button class="btn ghost" data-review-rating="hard">Difícil<small>intervalo menor</small></button>
-      <button class="btn" data-review-rating="good">Bom<small>intervalo normal</small></button>
-      <button class="btn ghost" data-review-rating="easy">Fácil<small>intervalo maior</small></button>
+      <button class="btn ghost" data-review-rating="again"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-circle-x icon-inline" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path><path d="M10 10l4 4m0 -4l-4 4"></path></svg>Errei<small>rever amanhã</small></button>
+      <button class="btn ghost" data-review-rating="hard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-alert-triangle icon-inline" aria-hidden="true"><path d="M12 9v4"></path><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0"></path><path d="M12 16h.01"></path></svg>Difícil<small>intervalo menor</small></button>
+      <button class="btn" data-review-rating="good"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-circle-check icon-inline" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path><path d="M9 12l2 2l4 -4"></path></svg>Bom<small>intervalo normal</small></button>
+      <button class="btn ghost" data-review-rating="easy"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-bolt icon-inline" aria-hidden="true"><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11"></path></svg>Fácil<small>intervalo maior</small></button>
     </div>
     <button class="btn ghost small" id="reviewRatingCancelBtn">Cancelar</button>
   </div>
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=a556c782333c"></script>
+  <script src="src/app.bundle.js?v=3ece02754921"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

@@ -68,14 +68,15 @@ test('createTimerUiController — ativa e desativa modo foco restaurando a aba d
   assert.equal(mockBody.classList.contains('timer-focus-active'), true);
   assert.equal(controller.getTimerFocusReturnTab(), 'hoje');
   assert.equal(contextRendered, true);
-  assert.equal(elements.timerFocusToggle.textContent, 'Sair do modo foco');
+  assert.match(elements.timerFocusToggle.innerHTML, /icon-tabler-x[^]*Sair do modo foco$/);
 
   // Sai do modo foco: deve retornar à aba 'hoje'
   controller.toggleTimerFocus(false);
   assert.equal(activeTab, 'hoje');
   assert.equal(mockBody.classList.contains('timer-focus-active'), false);
   assert.equal(controller.getTimerFocusReturnTab(), null);
-  assert.equal(elements.timerFocusToggle.textContent, '⛶ Modo foco');
+  assert.match(elements.timerFocusToggle.innerHTML, /icon-tabler-focus-2[^]*Modo foco$/);
+  assert.ok(!elements.timerFocusToggle.innerHTML.includes('⛶'));
 });
 
 test('createTimerUiController — salva e limpa bookmarks de sessão no tópico', () => {

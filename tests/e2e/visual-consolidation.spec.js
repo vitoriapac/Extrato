@@ -510,3 +510,23 @@ test('tipografia separa ações em Sans, valores em Fraunces e durações em mon
   const bodySize = await page.evaluate(() => getComputedStyle(document.body).fontSize);
   expect(parseFloat(bodySize)).toBeGreaterThanOrEqual(15);
 });
+test('barra inferior com ícones mantém nome acessível, toque de 44 px e menu Mais', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto('/');
+  const buttons = page.locator('.primary-nav-shell .tab-btn:visible, .primary-nav-shell .more-tab-btn:visible');
+  await expect(buttons).toHaveCount(5);
+  for (const button of await buttons.all()) {
+    await expect(button.locator('svg[aria-hidden="true"]')).toHaveCount(1);
+    expect((await button.evaluate(el => el.textContent || '')).trim().length).toBeGreaterThan(0);
+    const box = await button.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+  }
+  await expect(page.getByRole('tab', { name: 'Hoje' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
+  // The click lands on the icon, not on the button itself.
+  await page.locator('#moreTabButton svg').click();
+  await expect(page.locator('#mobileMoreMenu')).toBeVisible();
+  await page.getByRole('menuitem', { name: 'Planejamento' }).click();
+  await expect(page.locator('#panel-metas')).toBeVisible();
+});
