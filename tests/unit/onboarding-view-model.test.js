@@ -16,6 +16,19 @@ test('onboarding aponta a próxima etapa sem substituir histórico real', () => 
   const legacy = buildOnboardingViewModel({ sessions: [{ id: 'session' }] });
   assert.equal(legacy.visible, false);
 });
+
+test('onboarding não marca etapas preenchidas por padrão antes da etapa anterior', () => {
+  const prefilled = buildOnboardingViewModel({
+    hoursByDay: { 1: 2.5 },
+    subjects: [{ topics: [{ archived: false }] }],
+  });
+  assert.equal(prefilled.completed, 0);
+  assert.equal(prefilled.next.id, 'goal');
+  assert.deepEqual(
+    prefilled.steps.map(step => step.status),
+    ['current', 'pending', 'pending', 'pending']
+  );
+});
 test('onboarding calcula capacidade e bloqueia proposta sem atividades elegíveis', () => {
   const model = buildOnboardingViewModel({
     examDate: '2026-12-01',

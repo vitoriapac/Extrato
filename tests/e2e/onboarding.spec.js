@@ -323,6 +323,21 @@ test('cadastro manual oferece retorno à configuração após criar conteúdo', 
   await page.locator('#guidedOnboardingOverlay [data-guided-action="manual"]').click();
   await expect(page.locator('#panel-disciplinas')).toBeVisible();
   await expect(page.locator('#guidedManualReturn')).toBeVisible();
+  await expect(page.locator('[data-guided-manual-return]')).toBeDisabled();
+  await page.evaluate(() => {
+    const api = window.__EXTRATO_TEST__,
+      state = structuredClone(api.getState());
+    state.subjects = [
+      {
+        id: 'manual-subject',
+        name: 'Português',
+        archived: false,
+        topics: [{ id: 'manual-topic', name: 'Crase', status: 'Não iniciado', archived: false }],
+      },
+    ];
+    api.setState(state);
+    api.renderAll();
+  });
   await expect(page.locator('[data-guided-manual-return]')).toBeEnabled();
   await page.locator('[data-guided-manual-return]').click();
   await expect(page.locator('#guidedOnboardingOverlay')).toBeVisible();

@@ -176,6 +176,10 @@ export function buildOnboardingViewModel({
     { id: 'content', label: 'Edital ou matérias', complete: hasContent },
     { id: 'plan', label: 'Prévia e Hoje', complete: hasPlan || hasHistory },
   ];
+  // Prefilled defaults must not show later steps as done before the user reaches them.
+  steps.forEach((step, index) => {
+    if (index > 0 && !steps[index - 1].complete) step.complete = false;
+  });
   const next = steps.find(step => !step.complete) || null;
   for (const step of steps)
     step.status = step.complete ? 'complete' : step === next ? 'current' : 'pending';

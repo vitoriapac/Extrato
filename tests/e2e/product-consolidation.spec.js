@@ -98,6 +98,22 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
   await page.evaluate(() => {
     const api = window.__EXTRATO_TEST__,
       state = structuredClone(api.getState());
+    // A fresh state has no subjects; the session needs one to belong to.
+    state.subjects = [
+      {
+        id: 'editorial-subject',
+        name: 'Português',
+        archived: false,
+        topics: [
+          {
+            id: 'editorial-topic',
+            name: 'Interpretação de Texto',
+            status: 'Não iniciado',
+            archived: false,
+          },
+        ],
+      },
+    ];
     state.studySessions = [
       {
         id: 'editorial-session',
@@ -106,7 +122,7 @@ test('históricos editoriais distinguem filtros e mantêm estudo legível com po
         endedAt: '2026-10-03T12:05:00-03:00',
         durationSeconds: 300,
         type: 'study',
-        subjectId: state.subjects[0].id,
+        subjectId: 'editorial-subject',
         topicId: null,
         questionsResolved: 0,
         correctAnswers: 0,
@@ -239,10 +255,10 @@ test('iniciante sem falsa precisão encontra configuração e coleta de evidênc
   await activateTab(page, 'hoje');
   await page.locator('.today-analysis-details > summary').click();
   const action = page.locator('#diagnosisCenter .next-best-action');
-  // The default catalog permits introductory study, but cannot justify a required intervention.
-  await expect(action).toHaveAttribute('data-action-state', 'ACTION_OPTIONAL');
-  await expect(action).toContainText('Evidência: Baixa');
-  await expect(action.locator('[data-study-action-source]')).toHaveClass(/ghost/);
+  // A fresh start has no subjects, so no study action can be justified yet.
+  await expect(action).toHaveAttribute('data-action-state', 'INSUFFICIENT_EVIDENCE');
+  await expect(action).toContainText('Reunir evidências');
+  await expect(action.locator('[data-study-action-source]')).toHaveCount(0);
   await activateTab(page, 'dashboard');
   await expect(page.locator('#guidedOnboarding .onboarding-entry-cta')).toBeVisible();
 });

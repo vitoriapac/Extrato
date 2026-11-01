@@ -306,7 +306,23 @@ test('histórico comparável mostra tendência futura distinta dos resultados ob
   await page.evaluate(() => {
     const api = window.__EXTRATO_TEST__,
       state = structuredClone(api.getState()),
-      subjectId = state.subjects[0].id;
+      subjectId = 'projection-subject';
+    // A fresh state has no subjects; simulations need one to break down.
+    state.subjects = [
+      {
+        id: subjectId,
+        name: 'Português',
+        archived: false,
+        topics: [
+          {
+            id: 'projection-topic',
+            name: 'Interpretação de Texto',
+            status: 'Não iniciado',
+            archived: false,
+          },
+        ],
+      },
+    ];
     state.examDate = '2026-12-15';
     state.examBlueprint.examDate = state.examDate;
     state.metas.metaAprovacao = 80;
@@ -346,7 +362,23 @@ test('simulador compara cenário sem persistir estado real ou snapshots', async 
   await page.evaluate(() => {
     const api = window.__EXTRATO_TEST__,
       state = structuredClone(api.getState()),
-      subjectId = state.subjects[0].id;
+      subjectId = 'projection-subject';
+    // A fresh state has no subjects; simulations need one to break down.
+    state.subjects = [
+      {
+        id: subjectId,
+        name: 'Português',
+        archived: false,
+        topics: [
+          {
+            id: 'projection-topic',
+            name: 'Interpretação de Texto',
+            status: 'Não iniciado',
+            archived: false,
+          },
+        ],
+      },
+    ];
     state.examDate = '2026-12-15';
     state.examBlueprint.examDate = state.examDate;
     state.metas.metaAprovacao = 80;

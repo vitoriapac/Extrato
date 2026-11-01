@@ -1,44 +1,12 @@
 import { INITIAL_GOAL_VALUES } from '../domain/goals/initial-goal-guidance.js';
 import { CURRENT_SCHEMA_VERSION } from './schema.ts';
-import { nowISO, uid } from '../core/utils.ts';
 import { DEFAULT_ALGORITHM_VERSIONS } from './strategic.ts';
 import type { AppState } from '../core/types.ts';
 
 export function createDefaultState(): AppState {
   return {
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    subjects: [
-      {
-        id: uid('subject'),
-        name: 'Português',
-        collapsed: false,
-        archived: false,
-        archivedAt: null,
-        createdAt: nowISO(),
-        topics: [
-          {
-            id: uid('topic'),
-            name: 'Interpretação de Texto',
-            link: 'https://youtube.com',
-            status: 'Não iniciado',
-            archived: false,
-            archivedAt: null,
-            notes: '',
-            tags: [],
-            difficulty: 'Médio',
-            createdAt: nowISO(),
-            firstCompletedAt: null,
-            lastCompletedAt: null,
-            completionCount: 0,
-            lastReviewedAt: null,
-            reviewCount: 0,
-            examImportance: null,
-            estimatedStudyMinutes: null,
-            prerequisites: [],
-          },
-        ],
-      },
-    ],
+    subjects: [],
     calendar: [],
     reviewAgenda: [],
     questoes: [],
