@@ -60,7 +60,7 @@ export function Dialog({
   return (
     <dialog
       ref={dialogRef}
-      class={`p-0 rounded-default border border-border-default bg-surface-card text-primary shadow-xl backdrop:bg-navy/40 w-full ${maxWidthClasses[maxWidth]}${className ? ` ${className}` : ''}`}
+      class={`p-0 rounded-default border border-border-default bg-surface-card text-primary shadow-xl backdrop:bg-brand/40 w-full ${maxWidthClasses[maxWidth]}${className ? ` ${className}` : ''}`}
       onCancel={e => {
         e.preventDefault();
         onClose();

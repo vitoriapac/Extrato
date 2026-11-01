@@ -12,7 +12,7 @@ export function Badge({ variant = 'default', children, className = '', ...rest }
     success: 'status-pill--success bg-green-bg text-green',
     warning: 'status-pill--warning bg-amber-bg text-amber',
     danger: 'status-pill--danger bg-red-bg text-red',
-    info: 'status-pill--info bg-info-bg text-blue',
+    info: 'status-pill--info bg-info-bg text-brand-secondary',
     insufficient: 'status-pill--insufficient bg-surface-subtle text-muted',
   };
 

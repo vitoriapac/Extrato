@@ -19,7 +19,7 @@ export function Card({
     default: 'card--default bg-surface-card border-border-default text-primary',
     insight: 'card--insight bg-surface-card border-border-emphasis text-primary',
     attention: 'card--attention bg-surface-highlight border-amber text-primary',
-    primary: 'card--primary bg-navy text-on-navy border-navy',
+    primary: 'card--primary bg-brand text-on-brand border-brand',
     muted: 'card--muted bg-surface-subtle border-border-default text-secondary',
   };
 

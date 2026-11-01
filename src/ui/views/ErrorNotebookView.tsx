@@ -275,7 +275,7 @@ export function ErrorNotebookView({
         </div>
         <div class="p-3 rounded-default border border-border-default bg-surface-card">
           <span class="text-secondary block font-medium">Novos / Pendentes</span>
-          <span class="text-lg font-semibold text-blue font-display mt-0.5 block">
+          <span class="text-lg font-semibold text-brand-secondary font-display mt-0.5 block">
             {stats.pendingCount}
           </span>
         </div>
@@ -395,7 +395,7 @@ export function ErrorNotebookView({
                         </button>
                         <button
                           type="button"
-                          class="px-3 py-2 text-xs font-medium rounded-default border border-blue/30 bg-blue/10 text-blue hover:bg-blue/20 transition-colors flex flex-col items-center gap-0.5"
+                          class="px-3 py-2 text-xs font-medium rounded-default border border-brand-secondary/30 bg-brand-secondary/10 text-brand-secondary hover:bg-brand-secondary/20 transition-colors flex flex-col items-center gap-0.5"
                           onClick={() => handleAnswerRating('good')}
                         >
                           <span class="inline-flex items-center gap-1">
@@ -500,7 +500,7 @@ export function ErrorNotebookView({
                           card.status === 'mastered'
                             ? 'bg-green/20 text-green'
                             : card.status === 'pending'
-                              ? 'bg-blue/20 text-blue'
+                              ? 'bg-brand-secondary/20 text-brand-secondary'
                               : 'bg-amber/20 text-amber'
                         }`}
                       >

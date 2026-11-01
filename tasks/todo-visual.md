@@ -90,9 +90,10 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 **Dependências:** V1–V5 · **Arquivos:** `DESIGN.md`, `DESIGN-SYSTEM.md`, `.impeccable/design.json`, `tests/e2e/*-snapshots/*` · **Tamanho:** M
 
 ### Checkpoint 1
-- [ ] Suíte E2E completa e gate visual verdes
-- [ ] Revisão humana das capturas antes/depois nos dois temas
-- [ ] Decidir se o renome de tokens (`--navy` → `--brand`…) entra agora ou fica para depois
+- [x] Suíte E2E completa e gate visual verdes
+- [x] Revisão humana das capturas antes/depois nos dois temas (aprovada em 01/11/2026)
+- [x] Decidir se o renome de tokens (`--navy` → `--brand`…) entra agora ou fica para depois: entrou agora
+**Renome (01/11/2026):** `--navy` → `--brand`, `--on-navy` → `--on-brand`, `--blue` → `--brand-secondary`, `--gold` → `--accent`, `--gold-bright` → `--attention`, nos tokens, no `app.css`, no tema Tailwind (`bg-brand`, `text-on-brand`, `border-accent`…), nos componentes TSX, nos testes e na documentação. Gate visual 58/58 e unitários 1182/1182. Snapshots linux: o workflow "Generate visual baselines" só regravou os 4 `hero` (os outros 10 passam dentro da tolerância de 8% e continuam na paleta antiga). Achado: `--gold-deep` (17 usos) e `--paper-soft` (7) nunca foram definidos; os elementos herdam a cor do texto e ficam sem fundo. Não mexido no renome.
 
 ---
 

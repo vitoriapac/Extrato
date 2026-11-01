@@ -352,7 +352,7 @@
     const panel = document.createElement('section');
     panel.id = 'testReport';
     panel.style.cssText =
-      'position:fixed;inset:16px;z-index:10000;overflow:auto;background:var(--paper);color:var(--ink);border:2px solid var(--gold);padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.35);font:14px IBM Plex Mono,monospace';
+      'position:fixed;inset:16px;z-index:10000;overflow:auto;background:var(--paper);color:var(--ink);border:2px solid var(--accent);padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.35);font:14px IBM Plex Mono,monospace';
     const items = results
       .map(
         item =>

@@ -2,10 +2,10 @@
 name: StudyTrack — Extrato de Estudos
 description: O estudo lido como um extrato de conta — musgo, sálvia, papel e linhas finas.
 colors:
-  navy: "#1E3F35"
-  blue: "#2F5D4E"
-  gold: "#2F5D4E"
-  gold-bright: "#E9953F"
+  brand: "#1E3F35"
+  brand-secondary: "#2F5D4E"
+  accent: "#2F5D4E"
+  attention: "#E9953F"
   brand-on-header: "#A8D3B8"
   paper: "#F4F6F4"
   paper-line: "#D5DDD6"
@@ -13,7 +13,7 @@ colors:
   slate-bg: "#E6EDE6"
   ink: "#17302A"
   ink-soft: "#4F6158"
-  on-navy: "#F4F6F4"
+  on-brand: "#F4F6F4"
   green: "#2F6B4F"
   green-bg: "#E2EEE6"
   amber: "#9A4F0E"
@@ -87,33 +87,33 @@ spacing:
   space-16: "64px"
 components:
   button-primary:
-    backgroundColor: "{colors.navy}"
-    textColor: "{colors.on-navy}"
+    backgroundColor: "{colors.brand}"
+    textColor: "{colors.on-brand}"
     typography: "{typography.action}"
     rounded: "{rounded.control}"
     padding: "9px 16px"
     height: "36px"
   button-primary-hover:
-    backgroundColor: "{colors.blue}"
+    backgroundColor: "{colors.brand-secondary}"
   button-tonal:
     backgroundColor: "{colors.green-bg}"
-    textColor: "{colors.navy}"
+    textColor: "{colors.brand}"
     typography: "{typography.action}"
     rounded: "{rounded.control}"
     padding: "9px 16px"
   button-tonal-hover:
     backgroundColor: "{colors.heat-1}"
   button-tertiary:
-    textColor: "{colors.navy}"
+    textColor: "{colors.brand}"
     typography: "{typography.action}"
     padding: "9px 4px"
   button-ghost:
-    textColor: "{colors.navy}"
+    textColor: "{colors.brand}"
     rounded: "{rounded.control}"
     padding: "9px 16px"
   button-ghost-hover:
-    backgroundColor: "{colors.navy}"
-    textColor: "{colors.on-navy}"
+    backgroundColor: "{colors.brand}"
+    textColor: "{colors.on-brand}"
   button-danger:
     textColor: "{colors.red}"
     rounded: "{rounded.control}"
@@ -129,7 +129,7 @@ components:
   tab-hover:
     backgroundColor: "{colors.tab-hover-bg}"
   tab-active:
-    backgroundColor: "{colors.navy}"
+    backgroundColor: "{colors.brand}"
     textColor: "{colors.brand-on-header}"
   card:
     backgroundColor: "{colors.white}"
@@ -137,7 +137,7 @@ components:
     rounded: "{rounded.card}"
     padding: "20px 22px"
   kpi-cell:
-    backgroundColor: "{colors.navy}"
+    backgroundColor: "{colors.brand}"
     textColor: "{colors.brand-on-header}"
     typography: "{typography.value}"
     padding: "16px 18px"
@@ -161,7 +161,7 @@ components:
     padding: "4px 8px"
   status-badge-info:
     backgroundColor: "{colors.info-bg}"
-    textColor: "{colors.blue}"
+    textColor: "{colors.brand-secondary}"
     padding: "4px 8px"
   status-badge-insufficient:
     backgroundColor: "{colors.slate-bg}"
@@ -190,16 +190,16 @@ Os dois temas (claro "papel" e escuro "noite musgo", paleta Sálvia) são o mesm
 
 ## Colors
 
-Paleta Sálvia: um verde-musgo profundo e um sálvia claro sobre papel frio, com âmbar reservado para atenção e semânticos dessaturados que não gritam em uso diário. Os nomes dos tokens (`navy`, `gold`, `gold-bright`) ainda são os da paleta anterior; o renome está pendente (Checkpoint 1).
+Paleta Sálvia: um verde-musgo profundo e um sálvia claro sobre papel frio, com âmbar reservado para atenção e semânticos dessaturados que não gritam em uso diário. Os tokens têm nomes de papel, não de cor: `brand` (antes `navy`), `on-brand` (`on-navy`), `brand-secondary` (`blue`), `accent` (`gold`) e `attention` (`gold-bright`).
 
 ### Primary
-- **Musgo de Extrato** (`navy`, `#1E3F35`): estrutura e autoridade — cabeçalho do extrato, botão primário, aba ativa, células de KPI, card primário. Também é a cor dos títulos (`--heading`).
-- **Sálvia Tinta** (`blue`, `#2F5D4E`): hover do botão primário, série principal de gráficos, estado informativo.
+- **Musgo de Extrato** (`brand`, `#1E3F35`): estrutura e autoridade — cabeçalho do extrato, botão primário, aba ativa, células de KPI, card primário. Também é a cor dos títulos (`--heading`).
+- **Sálvia Tinta** (`brand-secondary`, `#2F5D4E`): hover do botão primário, série principal de gráficos, estado informativo.
 
 ### Secondary
-- **Sálvia Escuro** (`gold`, `#2F5D4E`): borda de ênfase, faixa de `card--action`, anel de foco, pontos de gráfico.
+- **Sálvia Escuro** (`accent`, `#2F5D4E`): borda de ênfase, faixa de `card--action`, anel de foco, pontos de gráfico.
 - **Sálvia Claro** (`brand-on-header`, `#A8D3B8`): só sobre musgo — eyebrow do extrato, aba ativa, valores do KPI, seleção, toast.
-- **Âmbar Saldo** (`gold-bright`, `#E9953F`): só para atenção — saldo da prontidão, contagem regressiva e barra de progresso até a prova.
+- **Âmbar Saldo** (`attention`, `#E9953F`): só para atenção — saldo da prontidão, contagem regressiva e barra de progresso até a prova.
 
 ### Tertiary (semânticos)
 - **Verde Conta** (`green` sobre `green-bg`): positivo, meta atingida.
@@ -220,9 +220,9 @@ Tema escuro (`[data-theme="dark"]`, `styles/tokens.css`): musgo `#0C1411`, papel
 Ação primária (`--action-primary-bg` / `--action-primary-text` / `--action-primary-hover`): musgo com texto papel no claro; no escuro, sálvia claro `#A8D3B8` com texto `#0C1411` (hover `#C2E3CD`), porque um botão musgo some sobre card musgo. Ação tonal (`--action-tonal-*`): `green-bg` com texto título no claro (9,7:1), `#2A4636` com `#A8D3B8` no escuro (6,3:1). Contorno de `.btn.ghost`: `--action-outline` (título no claro, `ink-soft` no escuro). Backdrop de modais: `--backdrop` (musgo a 65%).
 
 ### Named Rules
-**A Regra do Sálvia sobre Musgo.** `brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `gold` e serve como linha ou foco.
+**A Regra do Sálvia sobre Musgo.** `brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `accent` e serve como linha ou foco.
 
-**A Regra do Âmbar.** O âmbar (`gold-bright`, `amber`) só marca atenção: prontidão, prazo, atraso. Nunca navegação nem marca.
+**A Regra do Âmbar.** O âmbar (`attention`, `amber`) só marca atenção: prontidão, prazo, atraso. Nunca navegação nem marca.
 
 **A Regra do Significado.** Verde, âmbar e vermelho só carregam estado. Nunca decoram, e sempre acompanham um rótulo textual.
 
@@ -265,7 +265,7 @@ Listas de registros mostram 5 itens e expandem com "Mostrar mais · +N".
 Plano por padrão. Profundidade vem de tom (papel → papel branco → ardósia) e de bordas de 1px em `paper-line`. Sombras existem apenas em elementos que flutuam sobre o conteúdo e usam `--shadow-color` (musgo translúcido no claro, preto no escuro).
 
 ### Shadow Vocabulary
-- **Fio sálvia** (`box-shadow: 0 1px 0 var(--gold)`): base do cabeçalho do extrato, como a linha de assinatura de um documento.
+- **Fio sálvia** (`box-shadow: 0 1px 0 var(--accent)`): base do cabeçalho do extrato, como a linha de assinatura de um documento.
 - **Barra fixa** (`box-shadow: 0 4px 12px color-mix(in srgb,var(--shadow-color) 25%,transparent)`): busca/compact header grudados no topo.
 - **Menu flutuante** (`box-shadow: 0 10px 24px var(--shadow-color)`): menus e popovers.
 - **Diálogo** (`box-shadow: 0 24px 70px var(--shadow-color)`): modais e assistente inicial, com backdrop `var(--backdrop)`.
@@ -275,7 +275,7 @@ Plano por padrão. Profundidade vem de tom (papel → papel branco → ardósia)
 
 ## Shapes
 
-Cantos discretos: 8px (`--radius-card`) em cards, painéis, modais e tabelas; 6px (`--radius-control`) em botões, campos, selos e abas (só nos cantos superiores). Marcas pequenas — barras de progresso, células do heatmap, eventos do calendário — mantêm 2px. No Tailwind, `rounded-default` é o raio de card e `rounded` o de controle. Bordas de 1px em `paper-line`. Marcadores semânticos são faixas de 3px: no topo para ação (`gold`), à esquerda para insight (`gold`) e atenção (`amber`). Ativos e seleções usam sublinhado ou contorno interno sálvia (`inset 0 -2px` ou `inset 0 0 0 1px var(--gold)`). O cabeçalho do extrato tem uma textura de linhas verticais sálvia a 5% de opacidade a cada 40px — a única textura do sistema.
+Cantos discretos: 8px (`--radius-card`) em cards, painéis, modais e tabelas; 6px (`--radius-control`) em botões, campos, selos e abas (só nos cantos superiores). Marcas pequenas — barras de progresso, células do heatmap, eventos do calendário — mantêm 2px. No Tailwind, `rounded-default` é o raio de card e `rounded` o de controle. Bordas de 1px em `paper-line`. Marcadores semânticos são faixas de 3px: no topo para ação (`accent`), à esquerda para insight (`accent`) e atenção (`amber`). Ativos e seleções usam sublinhado ou contorno interno sálvia (`inset 0 -2px` ou `inset 0 0 0 1px var(--accent)`). O cabeçalho do extrato tem uma textura de linhas verticais sálvia a 5% de opacidade a cada 40px — a única textura do sistema.
 
 ## Components
 

@@ -143,7 +143,7 @@ export function GuidedTourPopover({
       >
         <Card
           variant="primary"
-          className="shadow-xl border-2 border-gold rounded-default p-4 bg-navy text-on-navy"
+          className="shadow-xl border-2 border-accent rounded-default p-4 bg-brand text-on-brand"
         >
           <div className="flex flex-col gap-2.5">
             {/* Cabeçalho */}
@@ -153,7 +153,7 @@ export function GuidedTourPopover({
               </Badge>
               <button
                 type="button"
-                className="btn-icon p-1 text-on-navy/70 hover:text-on-navy cursor-pointer transition-colors"
+                className="btn-icon p-1 text-on-brand/70 hover:text-on-brand cursor-pointer transition-colors"
                 onClick={onClose}
                 aria-label="Fechar tour interativo"
                 data-guided-tour-close="true"
@@ -163,21 +163,21 @@ export function GuidedTourPopover({
             </div>
 
             {/* Conteúdo */}
-            <h3 id="guidedTourTitle" className="text-base font-semibold text-on-navy m-0">
+            <h3 id="guidedTourTitle" className="text-base font-semibold text-on-brand m-0">
               {step.title}
             </h3>
-            <p id="guidedTourMessage" className="text-xs text-on-navy/85 leading-relaxed m-0">
+            <p id="guidedTourMessage" className="text-xs text-on-brand/85 leading-relaxed m-0">
               {step.message}
             </p>
 
             {/* Controles de Navegação */}
-            <div className="flex items-center justify-between gap-2 pt-2 border-t border-on-navy/20 mt-1">
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-on-brand/20 mt-1">
               <Button
                 variant="ghost"
                 size="small"
                 onClick={onPrev}
                 disabled={isFirst}
-                className="text-on-navy hover:bg-white/10 disabled:opacity-30"
+                className="text-on-brand hover:bg-white/10 disabled:opacity-30"
                 aria-label="Parada anterior"
               >
                 ← Anterior
@@ -188,7 +188,7 @@ export function GuidedTourPopover({
                   <span
                     key={idx}
                     className={`inline-block w-2 h-2 rounded-full transition-colors ${
-                      idx === currentIndex ? 'bg-gold' : 'bg-on-navy/30'
+                      idx === currentIndex ? 'bg-accent' : 'bg-on-brand/30'
                     }`}
                   />
                 ))}
@@ -198,7 +198,7 @@ export function GuidedTourPopover({
                 variant="secondary"
                 size="small"
                 onClick={onNext}
-                className="bg-gold text-navy font-semibold hover:bg-gold/90 border-0"
+                className="bg-accent text-brand font-semibold hover:bg-accent/90 border-0"
                 data-guided-tour-next="true"
                 aria-label={isLast ? 'Concluir tour guiado' : 'Próxima parada'}
               >

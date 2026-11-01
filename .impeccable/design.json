@@ -4,11 +4,11 @@
   "title": "Design System: StudyTrack — Extrato de Estudos",
   "extensions": {
     "colorMeta": {
-      "navy": { "role": "primary", "displayName": "Musgo de Extrato", "canonical": "#1E3F35", "tonalRamp": ["oklch(15% 0.03 165)", "oklch(26% 0.04 165)", "oklch(35% 0.05 165)", "oklch(48% 0.06 165)", "oklch(60% 0.06 165)", "oklch(72% 0.05 165)", "oklch(84% 0.04 160)", "oklch(95% 0.01 160)"] },
-      "blue": { "role": "primary", "displayName": "Sálvia Tinta", "canonical": "#2F5D4E", "tonalRamp": ["oklch(15% 0.03 165)", "oklch(26% 0.04 165)", "oklch(37% 0.05 165)", "oklch(45% 0.06 165)", "oklch(60% 0.06 165)", "oklch(72% 0.05 165)", "oklch(84% 0.04 160)", "oklch(95% 0.01 160)"] },
-      "gold": { "role": "secondary", "displayName": "Sálvia Escuro", "canonical": "#2F5D4E" },
+      "brand": { "role": "primary", "displayName": "Musgo de Extrato", "canonical": "#1E3F35", "tonalRamp": ["oklch(15% 0.03 165)", "oklch(26% 0.04 165)", "oklch(35% 0.05 165)", "oklch(48% 0.06 165)", "oklch(60% 0.06 165)", "oklch(72% 0.05 165)", "oklch(84% 0.04 160)", "oklch(95% 0.01 160)"] },
+      "brand-secondary": { "role": "primary", "displayName": "Sálvia Tinta", "canonical": "#2F5D4E", "tonalRamp": ["oklch(15% 0.03 165)", "oklch(26% 0.04 165)", "oklch(37% 0.05 165)", "oklch(45% 0.06 165)", "oklch(60% 0.06 165)", "oklch(72% 0.05 165)", "oklch(84% 0.04 160)", "oklch(95% 0.01 160)"] },
+      "accent": { "role": "secondary", "displayName": "Sálvia Escuro", "canonical": "#2F5D4E" },
       "brand-on-header": { "role": "secondary", "displayName": "Sálvia Claro", "canonical": "#A8D3B8" },
-      "gold-bright": { "role": "secondary", "displayName": "Âmbar Saldo", "canonical": "#E9953F" },
+      "attention": { "role": "secondary", "displayName": "Âmbar Saldo", "canonical": "#E9953F" },
       "paper": { "role": "neutral", "displayName": "Papel", "canonical": "#F4F6F4", "tonalRamp": ["oklch(15% 0.006 150)", "oklch(26% 0.006 150)", "oklch(37% 0.006 150)", "oklch(48% 0.006 150)", "oklch(60% 0.006 150)", "oklch(72% 0.006 150)", "oklch(84% 0.008 150)", "oklch(97% 0.004 150)"] },
       "paper-line": { "role": "neutral", "displayName": "Linha de Papel", "canonical": "#D5DDD6" },
       "white": { "role": "neutral", "displayName": "Papel Branco", "canonical": "#FBFCFA" },
@@ -32,7 +32,7 @@
       "data": { "displayName": "Data", "purpose": "Datas, durações, contagens, percentuais e códigos, em mono." }
     },
     "shadows": [
-      { "name": "sage-rule", "value": "0 1px 0 var(--gold)", "purpose": "Base do cabeçalho do extrato." },
+      { "name": "sage-rule", "value": "0 1px 0 var(--accent)", "purpose": "Base do cabeçalho do extrato." },
       { "name": "sticky-bar", "value": "0 4px 12px color-mix(in srgb,var(--shadow-color) 25%,transparent)", "purpose": "Busca e cabeçalho compacto fixos." },
       { "name": "floating-menu", "value": "0 10px 24px var(--shadow-color)", "purpose": "Menus e popovers." },
       { "name": "dialog", "value": "0 24px 70px var(--shadow-color)", "purpose": "Modais e assistente inicial, sobre var(--backdrop)." }
@@ -60,7 +60,7 @@
       "refersTo": "button-primary",
       "description": "Ação principal: musgo, rótulo Sans; um por card.",
       "html": "<button class=\"ds-btn\">Confirmar plano</button>",
-      "css": ".ds-btn { font: 500 13px 'IBM Plex Sans', sans-serif; background: var(--action-primary-bg, #1E3F35); color: var(--action-primary-text, #F4F6F4); border: none; padding: 9px 16px; min-height: 36px; border-radius: var(--radius-control, 6px); cursor: pointer; transition: background-color .15s ease, transform .1s ease; } .ds-btn:hover { background: var(--action-primary-hover, #2F5D4E); } .ds-btn:focus-visible { outline: 2px solid var(--gold, #2F5D4E); outline-offset: 2px; } .ds-btn:active { transform: translateY(1px); }"
+      "css": ".ds-btn { font: 500 13px 'IBM Plex Sans', sans-serif; background: var(--action-primary-bg, #1E3F35); color: var(--action-primary-text, #F4F6F4); border: none; padding: 9px 16px; min-height: 36px; border-radius: var(--radius-control, 6px); cursor: pointer; transition: background-color .15s ease, transform .1s ease; } .ds-btn:hover { background: var(--action-primary-hover, #2F5D4E); } .ds-btn:focus-visible { outline: 2px solid var(--accent, #2F5D4E); outline-offset: 2px; } .ds-btn:active { transform: translateY(1px); }"
     },
     {
       "name": "Tonal Button",
@@ -68,7 +68,7 @@
       "refersTo": "button-tonal",
       "description": "Ação repetida em listas: fundo sálvia suave, sem borda.",
       "html": "<button class=\"ds-btn-tonal\">Iniciar</button>",
-      "css": ".ds-btn-tonal { font: 500 13px 'IBM Plex Sans', sans-serif; background: var(--action-tonal-bg, #E2EEE6); color: var(--action-tonal-text, #1E3F35); border: none; padding: 9px 16px; min-height: 36px; border-radius: var(--radius-control, 6px); cursor: pointer; transition: background-color .15s ease; } .ds-btn-tonal:hover { background: var(--action-tonal-hover, #CFE0D3); } .ds-btn-tonal:focus-visible { outline: 2px solid var(--gold, #2F5D4E); outline-offset: 2px; }"
+      "css": ".ds-btn-tonal { font: 500 13px 'IBM Plex Sans', sans-serif; background: var(--action-tonal-bg, #E2EEE6); color: var(--action-tonal-text, #1E3F35); border: none; padding: 9px 16px; min-height: 36px; border-radius: var(--radius-control, 6px); cursor: pointer; transition: background-color .15s ease; } .ds-btn-tonal:hover { background: var(--action-tonal-hover, #CFE0D3); } .ds-btn-tonal:focus-visible { outline: 2px solid var(--accent, #2F5D4E); outline-offset: 2px; }"
     },
     {
       "name": "Tertiary Button",
@@ -76,7 +76,7 @@
       "refersTo": "button-tertiary",
       "description": "Ação com peso de link: sem fundo nem moldura, sublinhada.",
       "html": "<button class=\"ds-btn-tertiary\">Ver detalhes</button>",
-      "css": ".ds-btn-tertiary { font: 500 13px 'IBM Plex Sans', sans-serif; background: transparent; color: var(--heading, #1E3F35); border: none; padding: 9px 4px; min-height: 36px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; } .ds-btn-tertiary:hover { text-decoration-thickness: 2px; } .ds-btn-tertiary:focus-visible { outline: 2px solid var(--gold, #2F5D4E); outline-offset: 2px; }"
+      "css": ".ds-btn-tertiary { font: 500 13px 'IBM Plex Sans', sans-serif; background: transparent; color: var(--heading, #1E3F35); border: none; padding: 9px 4px; min-height: 36px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; } .ds-btn-tertiary:hover { text-decoration-thickness: 2px; } .ds-btn-tertiary:focus-visible { outline: 2px solid var(--accent, #2F5D4E); outline-offset: 2px; }"
     },
     {
       "name": "Ghost Button",
@@ -84,7 +84,7 @@
       "refersTo": "button-ghost",
       "description": "Ação secundária: contorno na cor do título.",
       "html": "<button class=\"ds-btn-ghost\">Ver evidências</button>",
-      "css": ".ds-btn-ghost { font: 500 13px 'IBM Plex Sans', sans-serif; background: transparent; color: var(--heading, #1E3F35); border: 1px solid var(--action-outline, #1E3F35); padding: 9px 16px; min-height: 36px; border-radius: var(--radius-control, 6px); cursor: pointer; transition: background-color .15s ease, color .15s ease; } .ds-btn-ghost:hover { background: var(--navy, #1E3F35); color: var(--on-navy, #F4F6F4); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--gold, #2F5D4E); outline-offset: 2px; }"
+      "css": ".ds-btn-ghost { font: 500 13px 'IBM Plex Sans', sans-serif; background: transparent; color: var(--heading, #1E3F35); border: 1px solid var(--action-outline, #1E3F35); padding: 9px 16px; min-height: 36px; border-radius: var(--radius-control, 6px); cursor: pointer; transition: background-color .15s ease, color .15s ease; } .ds-btn-ghost:hover { background: var(--brand, #1E3F35); color: var(--on-brand, #F4F6F4); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--accent, #2F5D4E); outline-offset: 2px; }"
     },
     {
       "name": "Danger Button",
@@ -92,7 +92,7 @@
       "refersTo": "button-danger",
       "description": "Ação destrutiva: contorno vermelho.",
       "html": "<button class=\"ds-btn-danger\">Apagar dados</button>",
-      "css": ".ds-btn-danger { font: 500 13px 'IBM Plex Sans', sans-serif; background: transparent; color: var(--red, #A23B2A); border: 1px solid var(--red, #A23B2A); padding: 7px 11px; min-height: 36px; border-radius: var(--radius-control, 6px); cursor: pointer; transition: background-color .15s ease, color .15s ease; } .ds-btn-danger:hover { background: var(--red, #A23B2A); color: var(--action-danger-hover-text, #FBFCFA); } .ds-btn-danger:focus-visible { outline: 2px solid var(--gold, #2F5D4E); outline-offset: 2px; }"
+      "css": ".ds-btn-danger { font: 500 13px 'IBM Plex Sans', sans-serif; background: transparent; color: var(--red, #A23B2A); border: 1px solid var(--red, #A23B2A); padding: 7px 11px; min-height: 36px; border-radius: var(--radius-control, 6px); cursor: pointer; transition: background-color .15s ease, color .15s ease; } .ds-btn-danger:hover { background: var(--red, #A23B2A); color: var(--action-danger-hover-text, #FBFCFA); } .ds-btn-danger:focus-visible { outline: 2px solid var(--accent, #2F5D4E); outline-offset: 2px; }"
     },
     {
       "name": "Select",
@@ -100,7 +100,7 @@
       "refersTo": "select",
       "description": "Seletor padrão em Sans com borda de controle.",
       "html": "<select class=\"ds-select\"><option>Últimos 30 dias</option><option>Últimos 90 dias</option></select>",
-      "css": ".ds-select { min-height: 36px; padding: 7px 32px 7px 10px; border: 1px solid var(--border-control, #6F857A); border-radius: var(--radius-control, 6px); background-color: var(--surface-card, #FBFCFA); color: var(--ink, #17302A); font: 13px 'IBM Plex Sans', sans-serif; transition: border-color .15s ease; } .ds-select:hover { border-color: var(--ink-soft, #4F6158); } .ds-select:focus-visible { border-color: var(--gold, #2F5D4E); outline: 3px solid var(--gold, #2F5D4E); outline-offset: 1px; }"
+      "css": ".ds-select { min-height: 36px; padding: 7px 32px 7px 10px; border: 1px solid var(--border-control, #6F857A); border-radius: var(--radius-control, 6px); background-color: var(--surface-card, #FBFCFA); color: var(--ink, #17302A); font: 13px 'IBM Plex Sans', sans-serif; transition: border-color .15s ease; } .ds-select:hover { border-color: var(--ink-soft, #4F6158); } .ds-select:focus-visible { border-color: var(--accent, #2F5D4E); outline: 3px solid var(--accent, #2F5D4E); outline-offset: 1px; }"
     },
     {
       "name": "Tabs",
@@ -108,7 +108,7 @@
       "refersTo": "tab",
       "description": "Abas principais; ativa em musgo com sálvia claro.",
       "html": "<nav class=\"ds-tabs\"><button class=\"ds-tab is-active\">Hoje</button><button class=\"ds-tab\">Planejamento</button><button class=\"ds-tab\">Desempenho</button></nav>",
-      "css": ".ds-tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--heading, #1E3F35); } .ds-tab { font: 500 13px 'IBM Plex Sans', sans-serif; background: var(--slate-bg, #E6EDE6); color: var(--ink-soft, #4F6158); border: none; padding: 11px 18px; border-radius: var(--radius-control, 6px) var(--radius-control, 6px) 0 0; cursor: pointer; transition: background .15s, color .15s; } .ds-tab:hover:not(.is-active) { background: var(--tab-hover-bg, #DDE6DE); } .ds-tab.is-active { background: var(--navy, #1E3F35); color: var(--brand-on-header, #A8D3B8); } .ds-tab:focus-visible { outline: 2px solid var(--gold, #2F5D4E); outline-offset: 2px; }"
+      "css": ".ds-tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--heading, #1E3F35); } .ds-tab { font: 500 13px 'IBM Plex Sans', sans-serif; background: var(--slate-bg, #E6EDE6); color: var(--ink-soft, #4F6158); border: none; padding: 11px 18px; border-radius: var(--radius-control, 6px) var(--radius-control, 6px) 0 0; cursor: pointer; transition: background .15s, color .15s; } .ds-tab:hover:not(.is-active) { background: var(--tab-hover-bg, #DDE6DE); } .ds-tab.is-active { background: var(--brand, #1E3F35); color: var(--brand-on-header, #A8D3B8); } .ds-tab:focus-visible { outline: 2px solid var(--accent, #2F5D4E); outline-offset: 2px; }"
     },
     {
       "name": "Status Badges",
@@ -124,7 +124,7 @@
       "refersTo": "card",
       "description": "Agrupamento plano de 8px; faixa sálvia para ação; blocos internos sem moldura.",
       "html": "<section class=\"ds-card ds-card--action\"><h3 class=\"ds-card__title\">Próxima melhor ação</h3><p>Revisar Juros Compostos: domínio <span class=\"ds-data\">48</span>, incidência alta.</p></section>",
-      "css": ".ds-card { background: var(--white, #FBFCFA); color: var(--ink, #17302A); border: 1px solid var(--paper-line, #D5DDD6); border-radius: var(--radius-card, 8px); padding: 20px 22px; font: 14px/1.5 'IBM Plex Sans', sans-serif; } .ds-card--action { border-top: 3px solid var(--gold, #2F5D4E); } .ds-card__title { margin: 0 0 16px; font: 600 12px 'IBM Plex Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft, #4F6158); } .ds-card p { margin: 0; } .ds-data { font-family: 'IBM Plex Mono', monospace; }"
+      "css": ".ds-card { background: var(--white, #FBFCFA); color: var(--ink, #17302A); border: 1px solid var(--paper-line, #D5DDD6); border-radius: var(--radius-card, 8px); padding: 20px 22px; font: 14px/1.5 'IBM Plex Sans', sans-serif; } .ds-card--action { border-top: 3px solid var(--accent, #2F5D4E); } .ds-card__title { margin: 0 0 16px; font: 600 12px 'IBM Plex Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft, #4F6158); } .ds-card p { margin: 0; } .ds-data { font-family: 'IBM Plex Mono', monospace; }"
     },
     {
       "name": "KPI Cell",
@@ -132,7 +132,7 @@
       "refersTo": "kpi-cell",
       "description": "Valor Fraunces em sálvia claro sobre musgo.",
       "html": "<div class=\"ds-kpi\"><div class=\"ds-kpi__n\">72</div><div class=\"ds-kpi__l\">Questões resolvidas</div></div>",
-      "css": ".ds-kpi { background: var(--navy, #1E3F35); color: var(--on-navy, #F4F6F4); padding: 16px 18px; min-width: 140px; } .ds-kpi__n { font: 600 24px 'Fraunces', serif; color: var(--brand-on-header, #A8D3B8); } .ds-kpi__l { margin-top: 2px; font: 11px 'IBM Plex Sans', sans-serif; text-transform: uppercase; letter-spacing: .05em; color: color-mix(in srgb, var(--on-navy, #F4F6F4) 72%, transparent); }"
+      "css": ".ds-kpi { background: var(--brand, #1E3F35); color: var(--on-brand, #F4F6F4); padding: 16px 18px; min-width: 140px; } .ds-kpi__n { font: 600 24px 'Fraunces', serif; color: var(--brand-on-header, #A8D3B8); } .ds-kpi__l { margin-top: 2px; font: 11px 'IBM Plex Sans', sans-serif; text-transform: uppercase; letter-spacing: .05em; color: color-mix(in srgb, var(--on-brand, #F4F6F4) 72%, transparent); }"
     },
     {
       "name": "Statement Header",
@@ -140,7 +140,7 @@
       "refersTo": "kpi-cell",
       "description": "Cabeçalho do extrato com textura de linhas, fio sálvia e saldo em âmbar.",
       "html": "<header class=\"ds-statement\"><div class=\"ds-statement__eyebrow\">Extrato de estudos</div><h1 class=\"ds-statement__title\">StudyTrack</h1><div class=\"ds-statement__balance\">46<span>/100</span></div></header>",
-      "css": ".ds-statement { position: relative; overflow: hidden; background: var(--navy, #1E3F35); color: var(--on-navy, #F4F6F4); border-radius: var(--radius-card, 8px); padding: 32px 30px 26px; box-shadow: 0 1px 0 var(--gold, #2F5D4E); } .ds-statement::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, color-mix(in srgb, var(--brand-on-header, #A8D3B8) 5%, transparent) 0 1px, transparent 1px 40px); pointer-events: none; } .ds-statement__eyebrow { font: 11px 'IBM Plex Sans', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--brand-on-header, #A8D3B8); } .ds-statement__title { margin: 4px 0 0; font: 600 28px 'Fraunces', serif; letter-spacing: -.01em; } .ds-statement__balance { margin-top: 16px; font: 600 48px/1 'Fraunces', serif; color: var(--gold-bright, #E9953F); } .ds-statement__balance span { font: 22px 'IBM Plex Mono', monospace; color: color-mix(in srgb, var(--on-navy, #F4F6F4) 70%, transparent); }"
+      "css": ".ds-statement { position: relative; overflow: hidden; background: var(--brand, #1E3F35); color: var(--on-brand, #F4F6F4); border-radius: var(--radius-card, 8px); padding: 32px 30px 26px; box-shadow: 0 1px 0 var(--accent, #2F5D4E); } .ds-statement::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, color-mix(in srgb, var(--brand-on-header, #A8D3B8) 5%, transparent) 0 1px, transparent 1px 40px); pointer-events: none; } .ds-statement__eyebrow { font: 11px 'IBM Plex Sans', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--brand-on-header, #A8D3B8); } .ds-statement__title { margin: 4px 0 0; font: 600 28px 'Fraunces', serif; letter-spacing: -.01em; } .ds-statement__balance { margin-top: 16px; font: 600 48px/1 'Fraunces', serif; color: var(--attention, #E9953F); } .ds-statement__balance span { font: 22px 'IBM Plex Mono', monospace; color: color-mix(in srgb, var(--on-brand, #F4F6F4) 70%, transparent); }"
     }
   ],
   "narrative": {
@@ -154,8 +154,8 @@
       "Estado sempre textual; cor nunca é o único indicador."
     ],
     "rules": [
-      { "name": "A Regra do Sálvia sobre Musgo", "body": "`brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `gold` e serve como linha ou foco.", "section": "colors" },
-      { "name": "A Regra do Âmbar", "body": "O âmbar (`gold-bright`, `amber`) só marca atenção: prontidão, prazo, atraso. Nunca navegação nem marca.", "section": "colors" },
+      { "name": "A Regra do Sálvia sobre Musgo", "body": "`brand-on-header` aparece apenas sobre o musgo do cabeçalho e dos KPIs (sobre papel o contraste é 1,5:1). Sobre papel, o sálvia é `accent` e serve como linha ou foco.", "section": "colors" },
+      { "name": "A Regra do Âmbar", "body": "O âmbar (`attention`, `amber`) só marca atenção: prontidão, prazo, atraso. Nunca navegação nem marca.", "section": "colors" },
       { "name": "A Regra do Significado", "body": "Verde, âmbar e vermelho só carregam estado. Nunca decoram, e sempre acompanham um rótulo textual.", "section": "colors" },
       { "name": "A Regra da Coluna de Extrato", "body": "Se é um número, uma data, uma duração ou um código, é Plex Mono. Se é um valor que importa (saldo, KPI, cronômetro), é Fraunces. Todo o resto — rótulos, estados, ações, explicações — é Plex Sans.", "section": "typography" },
       { "name": "A Regra do Card como Agrupamento", "body": "Um card agrupa um assunto. Dentro dele, use linhas, espaço e tipo; nunca aninhe cards para criar hierarquia.", "section": "layout" },

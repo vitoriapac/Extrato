@@ -28,10 +28,10 @@
   --color-border-subtle: var(--border-subtle);
   --color-border-emphasis: var(--border-emphasis);
 
-  --color-navy: var(--navy);
-  --color-blue: var(--blue);
-  --color-gold: var(--gold);
-  --color-gold-bright: var(--gold-bright);
+  --color-brand: var(--brand);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-accent: var(--accent);
+  --color-attention: var(--attention);
   --color-paper: var(--paper);
   --color-paper-line: var(--paper-line);
   --color-ink: var(--ink);
@@ -51,7 +51,7 @@
   --color-surface-elevated: var(--surface-raised);
   --color-border: var(--border-default);
   --color-text: var(--text-primary);
-  --color-on-navy: var(--on-navy);
+  --color-on-brand: var(--on-brand);
   --color-primary: var(--action-primary-bg);
   --color-primary-contrast: var(--action-primary-text);
   --color-danger: var(--status-negative);

@@ -17,7 +17,7 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const variantClasses: Record<string, string> = {
-    primary: 'btn-primary bg-navy text-on-navy hover:brightness-110 active:brightness-95',
+    primary: 'btn-primary bg-brand text-on-brand hover:brightness-110 active:brightness-95',
     secondary:
       'btn-secondary bg-surface-card text-primary border border-border-default hover:bg-surface-subtle',
     tonal: 'btn-tonal tonal',
@@ -34,7 +34,7 @@ export function Button({
   };
 
   const baseClass =
-    'btn inline-flex items-center justify-center font-medium font-body rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold';
+    'btn inline-flex items-center justify-center font-medium font-body rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent';
 
   const combinedClass = [
     baseClass,

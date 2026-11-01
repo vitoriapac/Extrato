@@ -23,7 +23,7 @@ export function ProgressBar({
   const percentage = Math.round((clampedValue / safeMax) * 100);
 
   const fillColors: Record<string, string> = {
-    default: 'bg-navy',
+    default: 'bg-brand',
     success: 'bg-green',
     warning: 'bg-amber',
     danger: 'bg-red',

@@ -207,7 +207,7 @@ export function WhatIfSimulatorModal({
 
         {/* Lista de Insights da Simulação */}
         {insights.length > 0 && (
-          <div class="rounded-default bg-navy/5 dark:bg-navy/20 p-4 border border-navy/10 dark:border-navy/30">
+          <div class="rounded-default bg-brand/5 dark:bg-brand/20 p-4 border border-brand/10 dark:border-brand/30">
             <h4 class="font-semibold text-primary mb-2 flex items-center gap-1.5">
               <Icon name="bulb" size={16} class="shrink-0" />
               <span>Conclusões da Simulação:</span>
