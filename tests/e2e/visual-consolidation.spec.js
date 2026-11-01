@@ -530,3 +530,50 @@ test('barra inferior com ícones mantém nome acessível, toque de 44 px e menu 
   await page.getByRole('menuitem', { name: 'Planejamento' }).click();
   await expect(page.locator('#panel-metas')).toBeVisible();
 });
+test('prontidão no topo tem anel e tendência acessíveis; sem dados não mostra zero', async ({ page }) => {
+  await page.goto('/');
+  const ring = page.locator('#balanceRing svg[role="img"]');
+  await expect(ring).toHaveAttribute('aria-label', 'Índice de prontidão: sem dados suficientes');
+  await expect(ring).toHaveClass(/chart-ring--empty/);
+  await expect(page.locator('#balanceFigure')).toContainText('—');
+  await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute('aria-label', /histórico insuficiente/);
+
+  await openDemo(page);
+  const value = Number((await page.locator('#balanceFigure').innerText()).split('/')[0].trim());
+  expect(Number.isFinite(value)).toBe(true);
+  await expect(ring).toHaveAttribute('aria-label', new RegExp(`^Índice de prontidão: ${value} de 100`));
+  await expect(ring).toHaveClass(value < 70 ? /chart-ring--attention/ : /chart-ring--ok/);
+  await expect(page.locator('#balanceTrend svg[role="img"]')).toHaveAttribute('aria-label', new RegExp(`a ${value} pontos em 8 pontos$`));
+});
+test('primeira tela mostra a próxima ação sem rolar no celular e no desktop', async ({ page }) => {
+  // Phone, first visit: the welcome card and its button sit above the bottom bar.
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/');
+  const navTop = async () => (await page.locator('.primary-nav-shell').boundingBox()).y;
+  const welcome = await page.locator('[data-welcome-hero]').boundingBox();
+  expect(welcome.y + welcome.height).toBeLessThanOrEqual(await navTop());
+
+  // Phone, with data: "Iniciar" of the next action is in the first screen.
+  await openDemo(page);
+  await page.evaluate(() => scrollTo(0, 0));
+  const start = await page.locator('#panel-dashboard .overview-now-action .overview-action-card .btn').first().boundingBox();
+  expect(start.y + start.height).toBeLessThanOrEqual(await navTop());
+
+  // Desktop: the next action starts above 400px; the demo strip is discounted.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.evaluate(() => scrollTo(0, 0));
+  await expect(page.locator('.sticky-shell')).not.toHaveClass(/is-compact/);
+  const banner = await page.locator('#demoBanner').boundingBox();
+  const action = await page.locator('#panel-dashboard .overview-now-action').boundingBox();
+  expect(action.y - banner.height).toBeLessThan(400);
+});
+test('primeiro acesso no desktop: próxima ação acima de 400 px e sem convite duplicado à demo', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await expect(page.locator('[data-welcome-hero]')).toBeVisible();
+  await expect(page.locator('#demoEmptyCta')).toBeHidden();
+  const action = await page.locator('#panel-dashboard .overview-now-action').boundingBox();
+  expect(action.y).toBeLessThan(400);
+  const welcome = await page.locator('[data-welcome-hero]').boundingBox();
+  expect(welcome.y + welcome.height).toBeLessThanOrEqual(900);
+});

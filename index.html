@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/tokens.css">
-<link rel="stylesheet" href="styles/tailwind.css?v=c4e59d76d752">
-<link rel="stylesheet" href="styles/app.css?v=c4e59d76d752">
+<link rel="stylesheet" href="styles/tailwind.css?v=48d4e0c8e791">
+<link rel="stylesheet" href="styles/app.css?v=48d4e0c8e791">
 <link rel="stylesheet" href="styles/print.css" media="print">
 </head>
 <body>
@@ -60,7 +60,7 @@
     <div class="statement-body">
       <div class="balance-block">
         <div class="balance-label">Índice de prontidão</div>
-        <div class="balance-figure" id="balanceFigure">—<span>/100</span></div>
+        <div class="balance-row"><span class="balance-ring" id="balanceRing"></span><div class="balance-figure" id="balanceFigure">—<span>/100</span></div><span class="balance-trend" id="balanceTrend"></span></div>
         <div class="balance-sub" id="balanceSub">Aguardando evidências</div>
       </div>
       <div class="mini-stats">
@@ -927,7 +927,7 @@
 </div>
 <div id="whatIfSimulatorMount"></div>
 
-  <script src="src/app.bundle.js?v=c4e59d76d752"></script>
+  <script src="src/app.bundle.js?v=48d4e0c8e791"></script>
   <script src="src/pwa.js"></script>
 </body>
 </html>

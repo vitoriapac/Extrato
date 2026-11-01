@@ -16,6 +16,8 @@ function fakeDocument(ids) {
 test('hero e compacto apresentam a mesma prontidão e conteúdo separado', () => {
   const document = fakeDocument([
     'balanceFigure',
+    'balanceRing',
+    'balanceTrend',
     'balanceSub',
     'statSubjects',
     'statContent',
@@ -37,6 +39,9 @@ test('hero e compacto apresentam a mesma prontidão e conteúdo separado', () =>
   renderHeroHeader(model, { document });
   renderCompactHeader(model, { document, formatDate: value => value });
   assert.equal(document.nodes.balanceFigure.innerHTML, '45<span>/100</span>');
+  assert.match(document.nodes.balanceRing.innerHTML, /chart-ring--attention/);
+  assert.match(document.nodes.balanceRing.innerHTML, /abaixo da meta de 70/);
+  assert.match(document.nodes.balanceTrend.innerHTML, /histórico insuficiente/);
   assert.equal(document.nodes.compactReadiness.textContent, '45/100');
   assert.equal(document.nodes.statContent.textContent, '26%');
   assert.equal(document.nodes.statStreak.textContent, '7 dias');

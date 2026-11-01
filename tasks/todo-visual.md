@@ -156,18 +156,20 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### G1: Primitivos de gráfico + prontidão
 **Descrição:** Criar `Sparkline`, `RingGauge`, `BulletBar` e `StackedBar` como componentes Preact `.tsx` em SVG puro (AGENTS.md:13), usando os tokens `--chart-series-*`, com versão textual (valores e unidades) e uma saída em string para os renderers antigos. Primeiro uso: anel de 0 a 100 + sparkline de 8 semanas no Índice de Prontidão.
 **Aceite:**
-- [ ] Cada primitivo tem `role="img"` com descrição textual, e o valor aparece também como texto
-- [ ] Sem prontidão (dados insuficientes), o anel mostra o estado vazio e não um 0
-- [ ] Âmbar só quando abaixo da meta
+- [x] Cada primitivo tem `role="img"` com descrição textual, e o valor aparece também como texto
+- [x] Sem prontidão (dados insuficientes), o anel mostra o estado vazio e não um 0
+- [x] Âmbar só quando abaixo da meta
+**Resultado (01/11/2026):** `RingGauge`, `Sparkline`, `BulletBar` e `StackedBar` em `src/ui/primitives/charts/charts.tsx` (Preact, SVG puro, cores por tom via CSS e tokens `--chart-series-*`), com saída em string (`renderRingGauge`…) para renderers antigos; geometria pura em `geometry.ts`. Lacunas na série interrompem a linha; ponto isolado vira marcador. Meta da prontidão: `READINESS_ON_TRACK_MIN = 70`, o início da faixa "Preparação avançada" que já existia (`classifyApprovalScore`); não há meta de prontidão configurável. Hero: anel de 56 px + sparkline das 8 semanas (`readinessWeeklyTrend`, último valor salvo de cada janela de 7 dias no escopo do concurso ativo; a semana atual usa o valor calculado, para a linha terminar no número ao lado). Número em âmbar só abaixo de 70, sálvia a partir de 70, neutro sem dados. Unit: 7 testes novos (geometria em 0, 50, 100, acima do máximo e inválidos; vazio; tom; tendência por escopo). E2E novo da prontidão (vazio e com dados).
 **Verificação:** unit de cada primitivo (geometria em 0, 50 e 100 e entradas inválidas); E2E da prontidão
 **Dependências:** Checkpoint 2 · **Arquivos:** `src/ui/primitives/charts/*.tsx`, `readiness-history-renderer.ts` · **Tamanho:** M
 
 ### G2: Primeira tela orientada à ação (4.4)
 **Descrição:** No celular, topo compacto (anel, dias até a prova, número do plano) e próxima ação com "Iniciar" visível sem rolar em 375 × 812. No desktop, reduzir topo e busca (hoje cerca de 630 px antes da próxima ação).
 **Aceite:**
-- [ ] Em 375 × 812, o botão "Iniciar" da próxima ação está dentro da primeira tela (teste E2E com `boundingBox`)
-- [ ] Em 1440 × 900, a próxima ação começa acima de 400 px
-- [ ] Primeiro acesso: o card de boas-vindas também aparece sem rolar
+- [x] Em 375 × 812, o botão "Iniciar" da próxima ação está dentro da primeira tela (teste E2E com `boundingBox`)
+- [x] Em 1440 × 900, a próxima ação começa acima de 400 px
+- [x] Primeiro acesso: o card de boas-vindas também aparece sem rolar
+**Resultado (01/11/2026):** só CSS, sem reordenar o HTML. Medidas (antes → depois): celular com demo, "Iniciar" 815–857 → 694–736 (barra inferior começa em 756); celular no primeiro acesso, card de boas-vindas 719–955 → 458–694; desktop no primeiro acesso, próxima ação 594 → 385; desktop com demo, 676 → 478 (394 descontando a faixa da demo, que só existe nesse modo). Desktop: cabeçalho mais baixo, seis contadores numa linha, selo da demo ao lado do eyebrow, data, barra e contagem numa linha só, menos margem na busca e no painel. Celular: contadores e a linha "dias totais" saem do topo (estão em Disciplinas e Agenda); a data da prova fica, porque é o único lugar para editá-la. O convite "Veja o StudyTrack funcionando" some enquanto a Visão Geral mostra o card de boas-vindas, que já oferece a demo. Dois E2E novos de primeira tela. Efeito colateral bom: `action-first-mobile.spec.js`, que falhava desde antes deste trabalho, passou. Suíte completa: 270 passaram, 6 falhas de captura (hero e "Agora") conferidas e regeradas no Windows.
 **Verificação:** E2E novo de primeira tela; `tests/e2e/onboarding.spec.js`
 **Dependências:** G1 · **Arquivos:** cabeçalho do extrato, `styles/app.css`, `index.html` · **Tamanho:** M
 

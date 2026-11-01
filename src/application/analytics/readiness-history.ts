@@ -194,3 +194,26 @@ export function buildHistoricalReadinessMetrics({
   );
   return { coverage, mastery, retention, consistency, simulations: simulationFactor };
 }
+
+/**
+ * Last saved readiness score of each of the `weeks` 7-day windows ending today, oldest first.
+ * A window without a snapshot is null, so the sparkline shows a gap instead of a drop to zero.
+ * `current` (today's computed score) replaces the last window, so the line ends on the number shown beside it.
+ */
+export function readinessWeeklyTrend(
+  snapshots: Row[] = [],
+  activeExamTags: string[] = [],
+  today: string,
+  weeks = 8,
+  current: number | null = null
+): Array<number | null> {
+  const history = readinessHistoryForScope(snapshots, activeExamTags, null, today);
+  return Array.from({ length: weeks }, (_, index) => {
+    if (index === weeks - 1 && current != null && Number.isFinite(current)) return current;
+    const end = addLocalDays(today, -7 * (weeks - 1 - index)) as string;
+    const start = addLocalDays(end, -6) as string;
+    const inWindow = history.filter(item => item.date >= start && item.date <= end);
+    const last = inWindow[inWindow.length - 1];
+    return last && Number.isFinite(Number(last.score)) ? Number(last.score) : null;
+  });
+}

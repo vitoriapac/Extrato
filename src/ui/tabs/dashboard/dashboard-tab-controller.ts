@@ -8,6 +8,7 @@ import { NextActionCard, type NextActionCardProps } from './NextActionCard.js';
 import { buildHeatmapViewModel } from '../../../application/analytics/build-analytics-view-model.js';
 import { renderHeatmap as renderHeatmapView } from '../../renderers/heatmap-renderer.js';
 import { buildHeaderViewModel } from '../../../application/analytics/build-header-view-model.js';
+import { readinessWeeklyTrend } from '../../../application/analytics/readiness-history.js';
 import {
   HEATMAP_METRICS,
   heatmapMetricLevel as defaultHeatmapMetricLevel,
@@ -390,7 +391,14 @@ export function createDashboardTabController(deps: DashboardTabControllerDeps = 
       planNumber: doc.getElementById('planNumber')?.textContent || '',
       today,
     });
-    renderHeroHeader(model, { document: doc });
+    const readinessTrend = readinessWeeklyTrend(
+      state.readinessSnapshots || [],
+      state.examBlueprint?.activeExamTags || [],
+      today,
+      8,
+      readiness.value
+    );
+    renderHeroHeader({ ...model, readinessTrend }, { document: doc });
     renderCompactHeader(model, { document: doc, formatDate: formatDatePt });
 
     if (deps.recordProgressSnapshot) deps.recordProgressSnapshot(pct);

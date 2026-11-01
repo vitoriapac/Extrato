@@ -2515,3 +2515,94 @@ body:has(#moreTabButton[aria-expanded="true"]) .back-to-top{visibility:hidden;po
 .icon-inline.icon-inline--end{margin-inline:6px 0}
 /* The demo strip's three actions already fill a phone row; icons would push it past 320px. */
 @media(max-width:430px){.demo-banner-actions .icon-inline{display:none}}
+/* ===== Chart primitives (src/ui/primitives/charts) ===== */
+.chart-ring{--ring-track:var(--border-subtle);--ring-ok:var(--chart-series-primary);--ring-attention:var(--chart-series-secondary);flex:0 0 auto;overflow:visible}
+.chart-ring__track{stroke:var(--ring-track)}
+.chart-ring--empty .chart-ring__track{stroke-dasharray:3 4}
+.chart-ring--ok .chart-ring__value{stroke:var(--ring-ok)}
+.chart-ring--attention .chart-ring__value{stroke:var(--ring-attention)}
+.chart-ring__text{fill:currentColor;font:600 15px var(--font-display)}
+.chart-sparkline{--spark-line:var(--chart-series-primary);flex:0 0 auto;overflow:visible}
+.chart-sparkline__line{stroke:var(--spark-line)}
+.chart-sparkline__dot{fill:var(--spark-line)}
+.chart-sparkline__baseline{stroke:var(--chart-series-target);stroke-width:1}
+.chart-bullet{display:flex;align-items:center;gap:var(--space-2);min-width:0}
+.chart-bullet__svg{flex:1 1 auto;min-width:48px;height:8px}
+.chart-bullet__track{fill:var(--surface-card-muted)}
+.chart-bullet__fill{fill:var(--chart-series-primary)}
+.chart-bullet__fill.is-below{fill:var(--chart-series-secondary)}
+.chart-bullet__target{fill:var(--chart-series-target)}
+.chart-bullet__value{flex:0 0 auto;font:var(--text-small) var(--font-data);color:var(--text-secondary)}
+.chart-stacked__svg{display:block;width:100%;height:8px}
+.chart-stacked__track{fill:var(--surface-card-muted)}
+.chart-stacked__part--primary{fill:var(--chart-series-primary);background:var(--chart-series-primary)}
+.chart-stacked__part--secondary{fill:var(--chart-series-secondary);background:var(--chart-series-secondary)}
+.chart-stacked__part--target{fill:var(--chart-series-target);background:var(--chart-series-target)}
+.chart-stacked__part--muted{fill:var(--border-control);background:var(--border-control)}
+.chart-stacked__legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 0;padding:0;list-style:none;font:var(--text-small) var(--font-body);color:var(--text-secondary)}
+.chart-stacked__swatch{display:inline-block;width:8px;height:8px;margin-right:4px;border-radius:2px}
+/* Readiness hero: ring and 8-week trend on the brand header. */
+.balance-row{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+.balance-ring{display:inline-flex}
+.balance-ring .chart-ring{--ring-track:color-mix(in srgb,var(--on-brand) 18%,transparent);--ring-ok:var(--brand-on-header);--ring-attention:var(--attention)}
+.balance-figure.is-on-track{color:var(--brand-on-header)}
+.balance-trend{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px}
+.balance-trend .chart-sparkline{--spark-line:var(--brand-on-header)}
+.balance-trend .chart-sparkline__baseline{stroke:color-mix(in srgb,var(--on-brand) 35%,transparent)}
+.balance-trend small{font:var(--text-micro) var(--font-body);color:color-mix(in srgb,var(--on-brand) 65%,transparent)}
+.chart-sparkline__point{fill:var(--spark-line)}
+.balance-figure.is-empty{color:color-mix(in srgb,var(--on-brand) 70%,transparent)}
+/* ===== First screen (G2): the next action must fit in the first viewport. ===== */
+@media(min-width:901px){
+  .wrap{padding-top:16px}
+  .statement:not(.statement--compact){padding:20px 24px 16px}
+  .statement:not(.statement--compact) .statement-top{padding-bottom:12px;margin-bottom:14px}
+  .statement:not(.statement--compact) .statement-title{font-size:24px;margin-top:2px}
+  .statement:not(.statement--compact) .statement-body{align-items:center;gap:32px}
+  .statement:not(.statement--compact) .mini-stats{grid-template-columns:repeat(6,minmax(0,1fr));gap:12px 16px}
+  .statement:not(.statement--compact) .mini-stat .n{font-size:20px}
+  .statement:not(.statement--compact) .exam-countdown{margin-top:14px;padding-top:12px;flex-wrap:nowrap}
+  .statement:not(.statement--compact) .exam-countdown-figure{order:3;white-space:nowrap}
+  .statement:not(.statement--compact) .exam-progress{flex:1 1 auto;flex-basis:auto;margin-top:0;order:2}
+  .global-search-row{margin-top:12px}
+  #panel-dashboard{padding-top:12px}
+  #panel-dashboard .overview-now{margin-top:0}
+}
+@media(max-width:760px){
+  .statement:not(.statement--compact){padding:14px 16px}
+  .statement:not(.statement--compact) .statement-top{padding-bottom:10px;margin-bottom:10px;gap:6px}
+  .statement:not(.statement--compact) .statement-title{font-size:22px}
+  /* Counters repeat what Disciplinas and Agenda show; the phone hero keeps readiness and the exam. */
+  .statement:not(.statement--compact) .mini-stats,
+  .statement:not(.statement--compact) .exam-progress-days{display:none}
+  .statement:not(.statement--compact) .balance-block{padding-right:0;border-right:0}
+  .statement:not(.statement--compact) .balance-figure{font-size:32px}
+  .statement:not(.statement--compact) .exam-countdown{margin-top:10px;padding-top:10px;gap:6px 10px}
+  .statement:not(.statement--compact) .exam-countdown-figure{font-size:16px}
+  .global-search-row{margin-top:10px}
+  #panel-dashboard{padding-top:10px}
+  #panel-dashboard .overview-now{margin-top:0}
+}
+/* The welcome card already offers the demo; a second invitation above it only pushes the first step down. */
+body:has(#panel-dashboard.active [data-welcome-hero]) #demoEmptyCta{display:none}
+@media(min-width:901px){
+  .statement:not(.statement--compact){padding:16px 24px 14px}
+  .statement:not(.statement--compact) .statement-top{padding-bottom:10px;margin-bottom:12px}
+  .statement:not(.statement--compact) .statement-title{font-size:22px}
+  .statement:not(.statement--compact) .balance-label{margin-bottom:2px}
+  .statement:not(.statement--compact) .balance-sub{margin-top:4px}
+  .statement:not(.statement--compact) .exam-countdown{margin-top:10px;padding-top:10px}
+  .statement:not(.statement--compact) .exam-countdown-label input[type=date]{min-height:32px;padding-block:3px}
+  .global-search-row{margin-top:10px}
+  #panel-dashboard{padding-top:8px}
+}
+@media(min-width:901px){
+  /* Demo badge beside the eyebrow instead of on a line of its own. */
+  .statement:not(.statement--compact) .statement-top>div:first-child{display:flex;flex-wrap:wrap;align-items:center;column-gap:12px}
+  .statement:not(.statement--compact) .statement-top>div:first-child>.statement-title{flex-basis:100%}
+  .statement:not(.statement--compact) .demo-header-badge{margin-top:0}
+}
+@media(min-width:901px){
+  .statement:not(.statement--compact) .exam-progress{grid-template-columns:auto minmax(120px,1fr) auto auto}
+  .statement:not(.statement--compact) .exam-progress-days{grid-column:auto;white-space:nowrap}
+}

@@ -98,12 +98,15 @@ export function average(values: number[]): number {
   return values.length ? values.reduce((sum, n) => sum + n, 0) / values.length : 0;
 }
 
+/** Lower bound of the "Preparação avançada" band; below it the readiness reads as attention. */
+export const READINESS_ON_TRACK_MIN = 70;
+
 /**
  * Classificação textual e semântica do nível de prontidão para a prova.
  */
 export function classifyApprovalScore(score: number): ApprovalClassification {
   if (score >= 85) return { nivel: 'Excelente preparação', cor: 'ok', faixa: '85–100' };
-  if (score >= 70) return { nivel: 'Preparação avançada', cor: 'ok', faixa: '70–84' };
+  if (score >= READINESS_ON_TRACK_MIN) return { nivel: 'Preparação avançada', cor: 'ok', faixa: '70–84' };
   if (score >= 50) return { nivel: 'Em desenvolvimento', cor: 'warn', faixa: '50–69' };
   return { nivel: 'Preparação inicial', cor: 'danger', faixa: '0–49' };
 }
