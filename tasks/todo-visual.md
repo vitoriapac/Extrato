@@ -139,8 +139,9 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### I5: Dados, filtros, demo e alertas
 **Descrição:** Importar/exportar, nuvem e dados, "Filtros ▾" e links "… →", faixa de demonstração, alertas por gravidade.
 **Aceite:**
-- [ ] `grep -rn "▾\|→" index.html src --include=*.ts --include=*.tsx` não encontra setas usadas como ícone (setas dentro de frases continuam)
-- [ ] Todo alerta mostra ícone de gravidade
+- [x] `grep -rn "▾\|→" index.html src --include=*.ts --include=*.tsx` não encontra setas usadas como ícone (setas dentro de frases continuam)
+- [x] Todo alerta mostra ícone de gravidade
+**Resultado (01/11/2026):** ícones em importar/exportar (`file-import`, `download`, `file-export`, `file-type-pdf`), nuvem e dados (`cloud`, `cloud-upload`, `cloud-download`, `database`, `trash`), faixa da demo (`flask`, `route`, `refresh`, `logout`; no celular só texto, porque os ícones empurravam a faixa para 337 px a 320 px), "Filtros" e "Importar" com `filter`/`file-import` + `chevron-down`, 6 links "… →" com `arrow-right`, botões do onboarding, tour ("Próximo"/"Concluir" com `arrow-right`/`check`), primeiros passos, ajuda, seta de transferência, recolher disciplina (`chevron-right`/`chevron-down`) e marcadores do foco semanal (↑ → ↓ ○ viraram ícones). Alertas: `renderBadgeIcon` e `ALERT_SEVERITY_VARIANT` junto do `Badge` dão o mesmo ícone por gravidade aos alertas da Visão Geral e aos selos do diagnóstico. Setas que sobram ficam em frases ("antes → depois") e no fluxo "Prova × Você → Prioridade → Ação → Resultado" da Ajuda. E2E de dados, demo, diagnóstico, onboarding e ciclo estratégico: 76/76; gate visual 58/58. Bundle após I3–I5: `app.bundle.js` 1.333.779 bytes (+7.636 sobre o início da Fase 2; gzip +2.071). Achado: `toggleFilterPanel` está no registro de ações mas nenhum controlador o implementa, então o botão "Filtros" das sessões no celular não faz nada.
 **Verificação:** E2E de backup, demo e diagnóstico; medição do bundle
 **Dependências:** I2 · **Arquivos:** `filter-panel.ts`, `src/features/demo/*`, `consolidated-diagnosis-renderer.ts`, `diagnosis-renderer.ts`, `index.html` · **Tamanho:** M
 
