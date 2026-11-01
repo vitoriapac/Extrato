@@ -76,7 +76,7 @@ Checkpoint 0 (decisões)
 
 ### Fase 1 — Fundação visual (1 PR, commits por tarefa)
 - [x] V1: Tokens Sálvia nos dois temas + cores fixas do app.css + `--chart-series-*`
-- [ ] V2: Marca fora do CSS (theme-color, manifest, favicon, `icons/`)
+- [x] V2: Marca fora do CSS (theme-color, manifest, favicon, `icons/`)
 - [ ] V3: Raio e respiro (`--radius-card`, `--radius-control`, sem caixa dentro de caixa)
 - [ ] V4: Tipografia (mono só em dados; corpo 15–16 px no celular)
 - [ ] V5: Botões em três níveis (variante `tonal` + terciário)

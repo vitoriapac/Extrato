@@ -42,8 +42,9 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### V2: Marca fora do CSS
 **Descrição:** `theme-color` no `index.html`, `theme_color`/`background_color` no `manifest.webmanifest`, favicon SVG embutido e `icons/` (192, 512, maskable, apple-touch).
 **Aceite:**
-- [ ] Nenhuma referência ao navy `#0B2545` fora de tokens e documentação
-- [ ] O ícone maskable respeita a zona segura (conferir num simulador de máscara)
+- [x] Nenhuma referência ao navy `#0B2545` fora de tokens e documentação
+- [x] O ícone maskable respeita a zona segura (conferir num simulador de máscara)
+**Resultado (01/11/2026, commit local):** documento do ícone em `#A8D3B8` sobre musgo `#1E3F35`. `icon-192`/`icon-512` com cantos transparentes (RGBA); maskable e apple-touch com fundo até a borda (o maskable antigo tinha cantos brancos). Zona segura: quinas do documento a 184,9 px do centro, dentro do raio de 204,8 px. `theme-color` com variante `prefers-color-scheme: dark` (`#0C1411`); a meta não acompanha o tema escolhido no app quando ele difere do sistema. `pwa.spec.js` 4/4. O navy antigo só resta em `.impeccable/design.json` (documentação; atualizar na V6).
 **Verificação:** `tests/e2e/pwa.spec.js` verde; manifest válido
 **Dependências:** V1 · **Arquivos:** `index.html`, `manifest.webmanifest`, `icons/*` · **Tamanho:** S
 
@@ -82,7 +83,7 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 - [ ] Cada snapshot regerado foi aberto e conferido (lista no PR)
 - [ ] Suíte E2E completa verde, salvo falhas já existentes antes (registrar quais)
 **Verificação:** `npm run test:visual`; `npx playwright test`; demo conferida aba por aba
-**Dependências:** V1–V5 · **Arquivos:** `DESIGN.md`, `DESIGN-SYSTEM.md`, `tests/e2e/*-snapshots/*` · **Tamanho:** M
+**Dependências:** V1–V5 · **Arquivos:** `DESIGN.md`, `DESIGN-SYSTEM.md`, `.impeccable/design.json`, `tests/e2e/*-snapshots/*` · **Tamanho:** M
 
 ### Checkpoint 1
 - [ ] Suíte E2E completa e gate visual verdes
