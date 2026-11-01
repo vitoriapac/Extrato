@@ -12,7 +12,7 @@
   --paper:#F4F6F4;--paper-line:#D5DDD6;--ink:#17302A;--ink-soft:#4F6158;
   --green:#2F6B4F;--green-bg:#E2EEE6;--amber:#9A4F0E;--amber-bg:#F7E9D9;
   --red:#A23B2A;--red-bg:#F5E3DE;--slate-bg:#E6EDE6;--white:#FBFCFA;
-  --radius:2px;--heading:#1E3F35;--warn-on-dark:#F2B07A;--ok-on-dark:#A8D3B8;
+  --radius-card:8px;--radius-control:6px;--heading:#1E3F35;--warn-on-dark:#F2B07A;--ok-on-dark:#A8D3B8;
   --danger-text:#A23B2A;--warn-text:#9A4F0E;--good-text:#2F6B4F;--ok-fill:#3E7A5C;
   --highlight-bg:#FBF1E4;--tab-hover-bg:#DDE6DE;--alerta-baixa-bg:#F7EEDC;
   --alerta-baixa-text:#7E5A12;--heat-1:#CFE0D3;--info-bg:#E3ECE7;

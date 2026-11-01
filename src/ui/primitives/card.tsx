@@ -23,7 +23,7 @@ export function Card({
     muted: 'card--muted bg-surface-subtle border-border-default text-secondary',
   };
 
-  const baseClass = 'card border rounded p-4 relative overflow-hidden transition-all';
+  const baseClass = 'card border rounded-default p-4 relative overflow-hidden transition-all';
   const combinedClass = [baseClass, variantClasses[variant] || variantClasses.default, className]
     .filter(Boolean)
     .join(' ');

@@ -51,10 +51,11 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### V3: Raio e respiro (4.2)
 **Descrição:** Criar `--radius-card` (8 px) e `--radius-control` (6 px) no lugar de `--radius` (2 px). Manter borda só no card externo e separar blocos internos por `--surface-card-muted`. Remover caixa dentro de caixa (ex.: próxima ação dentro de "Agora").
 **Aceite:**
-- [ ] `--radius` não é mais usado diretamente em componentes
-- [ ] O card "Agora" tem uma única moldura
-- [ ] As linhas finas entre lançamentos (sessões, questões, revisões) continuam: "menos bordas" vale para molduras de caixa, não para as linhas do extrato
-- [ ] Foco visível continua contornando o elemento inteiro (não cortado pelo raio)
+- [x] `--radius` não é mais usado diretamente em componentes
+- [x] O card "Agora" tem uma única moldura
+- [x] As linhas finas entre lançamentos (sessões, questões, revisões) continuam: "menos bordas" vale para molduras de caixa, não para as linhas do extrato
+- [x] Foco visível continua contornando o elemento inteiro (não cortado pelo raio)
+**Resultado (01/11/2026, commit local):** `--radius` substituído por `--radius-card` (8 px, 24 molduras + `.card`, `.daily-execution-card`, `.study-recommendation`) e `--radius-control` (6 px, 35 controles). Barras, heatmap e eventos do calendário mantêm 2 px literal (marcas pequenas). Tailwind: `rounded-default` → card, `rounded` → controle; `Card` e `Dialog` passam a `rounded-default`. No "Agora", a próxima ação e o cartão de primeiro acesso perdem a moldura interna; blocos internos separados por linha. Foco: contorno 2 px com offset 2 px acompanha o raio, pai sem `overflow:hidden`. E2E `onboarding`, `visual-consolidation`, `visual-density`, `accessibility`: 49/49. Gate visual 55/58: `agora-desktop-light`, `agora-mobile-dark` e `recovery-preview-375-dark` mudam de propósito (diffs inspecionados); regenerar na V6. Não revisado: o fundo `--surface-card-muted` nos blocos internos (só a moldura saiu).
 **Verificação:** E2E que medem caixas (`onboarding`, `visual-consolidation`, `visual-density`) verdes
 **Dependências:** V1 · **Arquivos:** `styles/tokens.css`, `styles/app.css`, `src/ui/primitives/card.tsx` · **Tamanho:** M
 

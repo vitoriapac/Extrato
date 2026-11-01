@@ -68,5 +68,6 @@
   --font-display: var(--font-display);
   --font-data: var(--font-data);
 
-  --radius-default: var(--radius);
+  --radius-default: var(--radius-card);
+  --radius: var(--radius-control);
 }
