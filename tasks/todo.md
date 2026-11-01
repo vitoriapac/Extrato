@@ -92,13 +92,13 @@ Comandos de verificação usados abaixo:
 **Descrição:** Fixar no fim do modal (`position: sticky; bottom: 0`) o rodapé com Voltar/Continuar e o aviso de motivo do bloqueio. Hoje, em telas baixas, ele fica no limite da tela.
 
 **Critérios de aceite:**
-- [ ] A 375×667 e a 1280×600, os botões ficam visíveis em todas as 4 etapas sem rolar
-- [ ] O rodapé não cobre o último campo da etapa (há espaço reservado ao fim do conteúdo)
-- [ ] Contraste e foco visível mantidos nos dois temas
+- [x] A 375×667 e a 1280×600, os botões ficam visíveis em todas as 4 etapas sem rolar
+- [x] O rodapé não cobre o último campo da etapa (há espaço reservado ao fim do conteúdo)
+- [x] Contraste e foco visível mantidos nos dois temas (cores e foco inalterados; o rodapé já usava `--wizard-bg`)
 
 **Verificação:**
-- [ ] E2E onboarding + gate visual (`npm run test:visual`) verdes; snapshots atualizados só onde o rodapé mudou
-- [ ] Conferência manual com viewport mobile
+- [x] E2E onboarding + gate visual (`npm run test:visual`) verdes; nenhum snapshot mudou
+- [x] Conferência a 375×667 e 1280×600: botão principal visível nas 4 etapas sem rolar
 
 **Dependências:** nenhuma
 

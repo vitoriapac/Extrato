@@ -47,7 +47,7 @@ T6 cabeçalho sem zeros no primeiro acesso (depende de T1; opcional)
 - [ ] Revisão humana antes da Fase 2
 
 ### Fase 2 — Menos atrito para iniciantes
-- [ ] T4: Rodapé do assistente fixo e sempre visível
+- [x] T4: Rodapé do assistente fixo e sempre visível
 - [ ] T5: Etapa 1 com "Ainda não escolhi um concurso" e etapa 3 ligada à escolha
 
 ### Checkpoint 2
