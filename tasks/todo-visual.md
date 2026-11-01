@@ -102,17 +102,19 @@ Contexto, achados e decisões: `tasks/plan-visual.md`. Antes de ler código, rod
 ### I1: Ícones novos + medição do bundle
 **Descrição:** Adicionar os cerca de 30 ícones da tabela 2.2 a `scripts/generate-tabler-icons.mjs` e regenerar. Criar uma medição real de tamanho (ex.: `scripts/report-bundle-size.mjs` imprimindo os bytes de cada `src/*.bundle.js`), porque `check:bundle` não mede tamanho.
 **Aceite:**
-- [ ] Todos os nomes da tabela 2.2 existem em `tabler-icons-data.ts`
-- [ ] A medição imprime o tamanho do `app.bundle.js` (base: 1.325.924 bytes) e o aumento fica registrado no PR
+- [x] Todos os nomes da tabela 2.2 existem em `tabler-icons-data.ts`
+- [x] A medição imprime o tamanho do `app.bundle.js` (base: 1.325.924 bytes) e o aumento fica registrado no PR
+**Resultado (01/11/2026):** 31 ícones novos (30 da tabela 2.2 + `circle-dashed` para evidência insuficiente); 110 no total. `npm run report:bundle` (`scripts/report-bundle-size.mjs`) imprime bytes e gzip de cada bundle. `app.bundle.js`: 1.326.143 → 1.332.675 bytes (+6.532; gzip +1.735) com I1 e I2 juntas; `help.bundle.js` +6.200 bytes, porque carrega a própria cópia dos ícones. Teste unitário confere os 54 nomes da tabela.
 **Verificação:** unit que confere a presença dos ícones; a medição roda
 **Dependências:** Checkpoint 1 · **Arquivos:** `scripts/generate-tabler-icons.mjs`, `src/ui/primitives/tabler-icons-data.ts`, script de medição · **Tamanho:** S
 
 ### I2: Ícones nos primitivos
 **Descrição:** Badge com ícone automático por variante; EmptyState com prop `icon` (32 px, traço 1,5); MetricCard com `icon`; Button com `iconLeft`/`iconRight`.
 **Aceite:**
-- [ ] Badge de sucesso, atenção, perigo, info e evidência insuficiente mostra ícone e texto (a cor não é o único sinal)
-- [ ] Ícones decorativos com `aria-hidden="true"`
-- [ ] Tamanhos: 14 px em botões, 16 px em abas, 20 px em títulos de card, 32 px em vazios
+- [x] Badge de sucesso, atenção, perigo, info e evidência insuficiente mostra ícone e texto (a cor não é o único sinal)
+- [x] Ícones decorativos com `aria-hidden="true"`
+- [x] Tamanhos: 14 px em botões, 16 px em abas, 20 px em títulos de card, 32 px em vazios (nos primitivos: 14 px em Badge, Button e MetricCard; 32 px com traço 1,5 no EmptyState; 16 e 20 px entram com abas e títulos na I3/I4)
+**Resultado (01/11/2026):** Badge com ícone automático por estado (`circle-check`, `alert-triangle`, `alert-circle`, `info-circle`, `circle-dashed`; `icon` troca ou `false` remove) e texto em Sans; EmptyState com `icon`; MetricCard com `icon`; Button com `iconLeft`/`iconRight` e `gap`. Unitários de cada primitivo. O tema Tailwind não tinha `info-bg`, então o badge informativo ficava sem fundo: adicionado (`--color-info-bg`), contraste 6,2:1 nos dois temas. Conferido renderizando os primitivos com o CSS do app nos dois temas. axe 13/13, gate visual 58/58. Os badges só aparecem em modais e visões secundárias; nenhuma aba principal usa os primitivos ainda (I3–I5).
 **Verificação:** unit de cada primitivo
 **Dependências:** I1 · **Arquivos:** `src/ui/primitives/{badge,empty-state,metric-card,button}.tsx` · **Tamanho:** M
 

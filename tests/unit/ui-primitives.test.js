@@ -161,3 +161,61 @@ test('UI Primitives — Icon renderiza SVG acessível ou decorativo com traço f
   assert.ok(svgString.includes('icon-tabler-player-play'));
   assert.ok(svgString.includes('width="14"'));
 });
+
+test('UI Primitives — ícones da Fase 2 do plano visual existem nos dados do Tabler', () => {
+  const phaseTwoIcons = [
+    'layout-dashboard', 'chart-line', 'sun', 'books', 'calendar-month', 'repeat', 'list-check',
+    'map-2', 'help-circle', 'dots', 'gauge', 'progress', 'loader-2', 'circle-check', 'flame',
+    'list-details', 'clock', 'trophy', 'trending-up', 'arrow-right', 'player-play', 'player-pause',
+    'refresh', 'square-check', 'focus-2', 'picture-in-picture', 'book', 'pencil', 'clipboard-text',
+    'circle-x', 'alert-triangle', 'bolt', 'plus', 'file-import', 'download', 'file-export',
+    'file-type-pdf', 'cloud-upload', 'cloud-download', 'database', 'trash', 'filter', 'chevron-down',
+    'flask', 'route', 'logout', 'alert-circle', 'info-circle', 'calculator', 'building-bank',
+    'device-laptop', 'language', 'scale', 'circle-dashed',
+  ];
+  for (const name of phaseTwoIcons) {
+    const svg = renderIconSvg(name);
+    assert.ok(svg.includes(`icon-tabler-${name}`), name);
+    // Unknown names fall back to "help"; a real icon has its own paths.
+    assert.notEqual(svg.replace(`icon-tabler-${name}`, ''), renderIconSvg('help').replace('icon-tabler-help', ''), name);
+  }
+});
+
+test('UI Primitives — Badge mostra ícone decorativo por estado, além da cor', () => {
+  const expected = {
+    success: 'circle-check',
+    warning: 'alert-triangle',
+    danger: 'alert-circle',
+    info: 'info-circle',
+    insufficient: 'circle-dashed',
+  };
+  for (const [variant, icon] of Object.entries(expected)) {
+    const html = render(h(Badge, { variant, children: 'Estado' }));
+    assert.ok(html.includes(`icon-tabler-${icon}`), variant);
+    assert.ok(html.includes('aria-hidden="true"'), variant);
+    assert.ok(html.includes('width="14"'), variant);
+    assert.ok(html.includes('Estado'), variant);
+  }
+  assert.ok(!render(h(Badge, { variant: 'default', children: 'Neutro' })).includes('<svg'));
+  assert.ok(!render(h(Badge, { variant: 'success', icon: false, children: 'Sem ícone' })).includes('<svg'));
+  assert.ok(render(h(Badge, { variant: 'info', icon: 'flask', children: 'Demo' })).includes('icon-tabler-flask'));
+});
+
+test('UI Primitives — EmptyState, MetricCard e Button aceitam ícones nos tamanhos do sistema', () => {
+  const empty = render(h(EmptyState, { title: 'Sem sessões', icon: 'clock' }));
+  assert.ok(empty.includes('icon-tabler-clock'));
+  assert.ok(empty.includes('width="32"') && empty.includes('stroke-width="1.5"'));
+  assert.ok(empty.includes('aria-hidden="true"'));
+  assert.ok(!render(h(EmptyState, { title: 'Sem ícone' })).includes('<svg'));
+
+  const metric = render(h(MetricCard, { label: 'Prontidão', value: 72, icon: 'gauge' }));
+  assert.ok(metric.includes('icon-tabler-gauge') && metric.includes('width="14"'));
+
+  const button = render(
+    h(Button, { iconLeft: 'plus', iconRight: 'arrow-right', children: 'Nova disciplina' })
+  );
+  assert.ok(button.indexOf('icon-tabler-plus') < button.indexOf('Nova disciplina'));
+  assert.ok(button.indexOf('Nova disciplina') < button.indexOf('icon-tabler-arrow-right'));
+  assert.equal((button.match(/width="14"/g) || []).length, 2);
+  assert.equal((button.match(/aria-hidden="true"/g) || []).length, 2);
+});

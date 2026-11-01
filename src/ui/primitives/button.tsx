@@ -1,8 +1,12 @@
 import type { ComponentChildren, JSX } from 'preact';
+import { Icon, type IconName } from './icon.js';
 
 export type ButtonProps = JSX.IntrinsicElements['button'] & {
   variant?: 'primary' | 'secondary' | 'tonal' | 'tertiary' | 'ghost' | 'danger' | 'icon';
   size?: 'default' | 'small' | 'touch';
+  /** Decorative icons beside the label; they replace +, → and ▾ typed into the text. */
+  iconLeft?: IconName;
+  iconRight?: IconName;
   children?: ComponentChildren;
   className?: string;
 };
@@ -10,6 +14,8 @@ export type ButtonProps = JSX.IntrinsicElements['button'] & {
 export function Button({
   variant = 'secondary',
   size = 'default',
+  iconLeft,
+  iconRight,
   children,
   className = '',
   type = 'button',
@@ -34,7 +40,7 @@ export function Button({
   };
 
   const baseClass =
-    'btn inline-flex items-center justify-center font-medium font-body rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent';
+    'btn inline-flex items-center justify-center gap-1.5 font-medium font-body rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent';
 
   const combinedClass = [
     baseClass,
@@ -47,7 +53,9 @@ export function Button({
 
   return (
     <button type={type} class={combinedClass} disabled={disabled} {...rest}>
+      {iconLeft && <Icon name={iconLeft} size={14} class="shrink-0" />}
       {children}
+      {iconRight && <Icon name={iconRight} size={14} class="shrink-0" />}
     </button>
   );
 }
